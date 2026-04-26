@@ -9,19 +9,16 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<any[]>([])
   const [busqueda, setBusqueda] = useState('')
   const [loading, setLoading] = useState(true)
-  const [debug, setDebug] = useState('')
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setDebug('SIN SESIÓN — no hay usuario logueado'); setLoading(false); return }
-      setDebug(`Usuario: ${user.email} | ID: ${user.id}`)
-      const { data, error } = await supabase
+      if (!user) { setLoading(false); return }
+      const { data } = await supabase
         .from('clientes')
         .select('*, profile:profiles!profile_id(nombre, apellidos, email)')
         .eq('coach_id', user.id)
         .order('created_at', { ascending: false })
-      setDebug(`Usuario: ${user.email} | Clientes: ${data?.length ?? 0} | Error: ${error?.message ?? 'ninguno'}`)
       setClientes(data ?? [])
       setLoading(false)
     }
@@ -36,7 +33,6 @@ export default function ClientesPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      {debug && <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs font-mono text-yellow-800">{debug}</div>}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
