@@ -1,19 +1,20 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import ClienteEditar from '@/components/ClienteEditar'
 import Link from 'next/link'
 import { ArrowLeft, UtensilsCrossed, Dumbbell, Weight } from 'lucide-react'
 import { OBJETIVO_LABELS, NIVEL_LABELS } from '@/lib/utils'
 
 export default function ClienteDetallePage() {
   const { id } = useParams()
-  const router = useRouter()
   const [cliente, setCliente] = useState<any>(null)
   const [dietas, setDietas] = useState<any[]>([])
   const [entrenos, setEntrenos] = useState<any[]>([])
   const [seguimiento, setSeguimiento] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [isEditando, setIsEditando] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -42,6 +43,18 @@ export default function ClienteDetallePage() {
 
   const p = cliente.profile
 
+  const handleSave = () => {
+    setIsEditando(false)
+    ;(async () => {
+      const { data } = await supabase
+        .from('clientes')
+        .select('*, profile:profiles!profile_id(nombre, apellidos, email, telefono)')
+        .eq('id', id)
+        .single()
+      if (data) setCliente(data)
+    })()
+  }
+
   return (
     <div className="p-8 max-w-5xl mx-auto">
       {/* Header */}
@@ -51,11 +64,21 @@ export default function ClienteDetallePage() {
           <h1 className="text-2xl font-bold text-gray-900">{p.nombre} {p.apellidos}</h1>
           <p className="text-gray-500 text-sm">{p.email}</p>
         </div>
-        <span className={`badge ${cliente.activo ? 'badge-green' : 'badge-gray'} text-sm px-3 py-1`}>
-          {cliente.activo ? 'Activo' : 'Inactivo'}
-        </span>
+        {!isEditando && (
+          <button className="btn-primary" onClick={() => setIsEditando(true)}>
+            Editar
+          </button>
+        )}
       </div>
 
+      {isEditando ? (
+        <ClienteEditar
+          cliente={cliente}
+          onSave={handleSave}
+          onCancel={() => setIsEditando(false)}
+        />
+      ) : (
+      <>
       {/* Info física */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
@@ -176,6 +199,8 @@ export default function ClienteDetallePage() {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   )
 }
