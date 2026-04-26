@@ -1,0 +1,321 @@
+'use client'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { UtensilsCrossed, Dumbbell, Weight, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
+import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
+import type { Macros } from '@/types'
+
+export default function PortalClientePage() {
+  const router = useRouter()
+  const [profile, setProfile] = useState<any>(null)
+  const [cliente, setCliente] = useState<any>(null)
+  const [dieta, setDieta] = useState<any>(null)
+  const [entreno, setEntreno] = useState<any>(null)
+  const [tab, setTab] = useState<'dieta' | 'entreno' | 'progreso'>('dieta')
+  const [peso, setPeso] = useState('')
+  const [notaPeso, setNotaPeso] = useState('')
+  const [guardandoPeso, setGuardandoPeso] = useState(false)
+  const [historialPeso, setHistorialPeso] = useState<any[]>([])
+  const [expandidas, setExpandidas] = useState<Record<string, boolean>>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { window.location.href = '/login'; return }
+
+      const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      if (prof?.role === 'coach') { window.location.href = '/dashboard'; return }
+      setProfile(prof)
+
+      const { data: cli } = await supabase.from('clientes').select('*').eq('profile_id', user.id).single()
+      setCliente(cli)
+
+      if (cli) {
+        const [dietaRes, entrenoRes, histRes] = await Promise.all([
+          supabase.from('planes_nutricion').select('*, comidas(*, alimentos:comida_alimentos(*, alimento:alimentos(*)))').eq('cliente_id', cli.id).eq('activo', true).order('created_at', { ascending: false }).limit(1).single(),
+          supabase.from('planes_entrenamiento').select('*, sesiones:sesiones_entrenamiento(*, ejercicios:sesion_ejercicios(*, ejercicio:ejercicios(*)))').eq('cliente_id', cli.id).eq('activo', true).order('created_at', { ascending: false }).limit(1).single(),
+          supabase.from('seguimiento_peso').select('*').eq('cliente_id', cli.id).order('fecha', { ascending: false }).limit(15),
+        ])
+        if (dietaRes.data) {
+          const comidasOrdenadas = (dietaRes.data.comidas ?? []).sort((a: any, b: any) => a.orden - b.orden)
+          setDieta({ ...dietaRes.data, comidas: comidasOrdenadas })
+          // Expandir todas las comidas por defecto
+          const exp: Record<string, boolean> = {}
+          comidasOrdenadas.forEach((c: any) => { exp[c.id] = true })
+          setExpandidas(exp)
+        }
+        if (entrenoRes.data) {
+          const sesionesOrdenadas = (entrenoRes.data.sesiones ?? []).sort((a: any, b: any) => a.orden - b.orden)
+          setEntreno({ ...entrenoRes.data, sesiones: sesionesOrdenadas })
+        }
+        setHistorialPeso(histRes.data ?? [])
+      }
+      setLoading(false)
+    }
+    load()
+  }, [router])
+
+  function calcMacrosComida(alimentos: any[]): Macros {
+    return sumarMacros((alimentos ?? []).map(a =>
+      calcularMacrosPorCantidad(a.alimento?.calorias ?? 0, a.alimento?.proteinas ?? 0, a.alimento?.carbohidratos ?? 0, a.alimento?.grasas ?? 0, a.alimento?.fibra ?? 0, a.cantidad_gramos)
+    ))
+  }
+
+  async function guardarPeso() {
+    if (!peso || !cliente) return
+    setGuardandoPeso(true)
+    const { data } = await supabase.from('seguimiento_peso').insert({
+      cliente_id: cliente.id,
+      peso: parseFloat(peso),
+      notas: notaPeso || null,
+      fecha: new Date().toISOString().split('T')[0],
+    }).select().single()
+    if (data) setHistorialPeso(prev => [data, ...prev])
+    setPeso('')
+    setNotaPeso('')
+    setGuardandoPeso(false)
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
+    </div>
+  )
+
+  const totalDia = dieta ? sumarMacros((dieta.comidas ?? []).map((c: any) => calcMacrosComida(c.alimentos ?? []))) : null
+
+  return (
+    <div className="min-h-screen" style={{ background: '#f9fafb' }}>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 px-4 py-4">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold">
+              {profile?.nombre?.[0]?.toUpperCase()}
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">{profile?.nombre}</p>
+              <p className="text-xs text-gray-400">Mi plan de coaching</p>
+            </div>
+          </div>
+          <button onClick={handleLogout} className="text-gray-400 hover:text-gray-600">
+            <LogOut size={18} />
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-2xl mx-auto flex">
+          {[
+            { key: 'dieta', label: 'Mi dieta', icon: UtensilsCrossed },
+            { key: 'entreno', label: 'Mi entreno', icon: Dumbbell },
+            { key: 'progreso', label: 'Progreso', icon: Weight },
+          ].map(({ key, label, icon: Icon }) => (
+            <button key={key} onClick={() => setTab(key as any)}
+              className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium border-b-2 transition-colors ${
+                tab === key ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}>
+              <Icon size={16} /> {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto p-4">
+        {/* TAB: DIETA */}
+        {tab === 'dieta' && (
+          dieta ? (
+            <div>
+              {/* Resumen macros */}
+              {totalDia && (
+                <div className="card mb-4" style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)', border: 'none', color: 'white' }}>
+                  <p className="text-green-100 text-sm mb-1">{dieta.nombre}</p>
+                  <p className="text-3xl font-bold">{totalDia.calorias.toFixed(0)} <span className="text-lg font-normal text-green-200">kcal/día</span></p>
+                  <div className="flex gap-6 mt-3">
+                    {[
+                      { l: 'Proteínas', v: totalDia.proteinas, c: '#bbf7d0' },
+                      { l: 'Carbos', v: totalDia.carbohidratos, c: '#fef08a' },
+                      { l: 'Grasas', v: totalDia.grasas, c: '#fed7aa' },
+                    ].map(({ l, v, c }) => (
+                      <div key={l}>
+                        <p className="text-xl font-bold" style={{ color: c }}>{v.toFixed(0)}g</p>
+                        <p className="text-xs text-green-200">{l}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Comidas */}
+              <div className="flex flex-col gap-3">
+                {(dieta.comidas ?? []).map((comida: any) => {
+                  const macros = calcMacrosComida(comida.alimentos ?? [])
+                  const expanded = expandidas[comida.id]
+                  return (
+                    <div key={comida.id} className="card">
+                      <button onClick={() => setExpandidas(prev => ({ ...prev, [comida.id]: !prev[comida.id] }))}
+                        className="w-full flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-800">{comida.nombre}</span>
+                          {comida.hora_sugerida && <span className="text-xs text-gray-400">{comida.hora_sugerida.slice(0, 5)}</span>}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          <span className="font-medium text-gray-700">{macros.calorias.toFixed(0)} kcal</span>
+                          {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </div>
+                      </button>
+
+                      {expanded && (comida.alimentos ?? []).length > 0 && (
+                        <div className="mt-3 border-t border-gray-50 pt-3">
+                          <div className="flex flex-col gap-2">
+                            {(comida.alimentos ?? []).map((af: any) => {
+                              const m = calcularMacrosPorCantidad(af.alimento?.calorias ?? 0, af.alimento?.proteinas ?? 0, af.alimento?.carbohidratos ?? 0, af.alimento?.grasas ?? 0, af.alimento?.fibra ?? 0, af.cantidad_gramos)
+                              return (
+                                <div key={af.id} className="flex items-center justify-between py-1.5">
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-800">{af.alimento?.nombre}</p>
+                                    <p className="text-xs text-gray-400">{af.cantidad_gramos}g</p>
+                                  </div>
+                                  <div className="text-right text-xs text-gray-500">
+                                    <p className="font-semibold text-gray-700">{m.calorias.toFixed(0)} kcal</p>
+                                    <p>P:{m.proteinas.toFixed(1)} C:{m.carbohidratos.toFixed(1)} G:{m.grasas.toFixed(1)}</p>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                          <div className="mt-3 pt-2 border-t border-gray-50 flex justify-between text-sm">
+                            <span className="text-gray-500">Total comida</span>
+                            <span className="font-semibold text-gray-700">
+                              {macros.calorias.toFixed(0)} kcal · P:{macros.proteinas.toFixed(1)}g · C:{macros.carbohidratos.toFixed(1)}g · G:{macros.grasas.toFixed(1)}g
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="card text-center py-12">
+              <UtensilsCrossed size={40} className="mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500">Tu coach aún no te ha asignado un plan de dieta</p>
+            </div>
+          )
+        )}
+
+        {/* TAB: ENTRENO */}
+        {tab === 'entreno' && (
+          entreno ? (
+            <div>
+              <div className="card mb-4 p-4">
+                <p className="font-semibold text-gray-900">{entreno.nombre}</p>
+                {entreno.descripcion && <p className="text-sm text-gray-500 mt-1">{entreno.descripcion}</p>}
+                {entreno.duracion_semanas && <p className="text-sm text-gray-400 mt-1">{entreno.duracion_semanas} semanas</p>}
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {(entreno.sesiones ?? []).map((sesion: any) => (
+                  <div key={sesion.id} className="card">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-semibold text-gray-800">{sesion.nombre}</p>
+                        {sesion.dia_semana && <p className="text-xs text-gray-400">{sesion.dia_semana}</p>}
+                      </div>
+                      <span className="badge badge-purple">{(sesion.ejercicios ?? []).length} ejercicios</span>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      {(sesion.ejercicios ?? []).sort((a: any, b: any) => a.orden - b.orden).map((ej: any, idx: number) => (
+                        <div key={ej.id} className="flex items-start gap-3 p-2.5 bg-gray-50 rounded-lg">
+                          <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm text-gray-800">{ej.ejercicio?.nombre}</p>
+                            {ej.ejercicio?.grupo_muscular && <p className="text-xs text-gray-400">{ej.ejercicio.grupo_muscular}</p>}
+                            <div className="flex gap-3 mt-1.5 flex-wrap">
+                              {ej.series && <span className="text-xs bg-white border border-gray-100 rounded px-2 py-0.5 text-gray-600">{ej.series} series</span>}
+                              {ej.repeticiones && <span className="text-xs bg-white border border-gray-100 rounded px-2 py-0.5 text-gray-600">{ej.repeticiones} reps</span>}
+                              {ej.descanso_segundos && <span className="text-xs bg-white border border-gray-100 rounded px-2 py-0.5 text-gray-600">{ej.descanso_segundos}s descanso</span>}
+                              {ej.peso_sugerido && <span className="text-xs bg-white border border-gray-100 rounded px-2 py-0.5 text-gray-600">{ej.peso_sugerido}</span>}
+                            </div>
+                            {ej.notas && <p className="text-xs text-gray-400 mt-1 italic">{ej.notas}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="card text-center py-12">
+              <Dumbbell size={40} className="mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500">Tu coach aún no te ha asignado un plan de entrenamiento</p>
+            </div>
+          )
+        )}
+
+        {/* TAB: PROGRESO */}
+        {tab === 'progreso' && (
+          <div>
+            {/* Registrar peso */}
+            <div className="card mb-4">
+              <h2 className="font-semibold text-gray-800 mb-3">Registrar peso de hoy</h2>
+              <div className="flex gap-2 mb-2">
+                <input type="number" step="0.1" className="input" placeholder="Ej: 74.5" value={peso}
+                  onChange={e => setPeso(e.target.value)} />
+                <span className="flex items-center text-gray-500 font-medium">kg</span>
+              </div>
+              <input className="input mb-3" placeholder="Nota (opcional)…" value={notaPeso} onChange={e => setNotaPeso(e.target.value)} />
+              <button className="btn-primary w-full justify-center" onClick={guardarPeso} disabled={!peso || guardandoPeso}>
+                {guardandoPeso ? 'Guardando…' : 'Guardar registro'}
+              </button>
+            </div>
+
+            {/* Historial */}
+            <div className="card">
+              <h2 className="font-semibold text-gray-800 mb-4">Historial de peso</h2>
+              {historialPeso.length === 0 ? (
+                <p className="text-gray-400 text-sm text-center py-6">Aún no hay registros</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {historialPeso.map((r, idx) => {
+                    const anterior = historialPeso[idx + 1]
+                    const diff = anterior && r.peso && anterior.peso ? r.peso - anterior.peso : null
+                    return (
+                      <div key={r.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{new Date(r.fecha).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                          {r.notas && <p className="text-xs text-gray-400">{r.notas}</p>}
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-900">{r.peso} kg</p>
+                          {diff !== null && (
+                            <p className={`text-xs ${diff < 0 ? 'text-green-500' : diff > 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                              {diff > 0 ? '+' : ''}{diff.toFixed(1)} kg
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
