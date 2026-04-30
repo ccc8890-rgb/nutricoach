@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, Search, BookOpen, Clock, Users, Flame, Snowflake, CookingPot, Rotate3D, ChefHat, Microwave } from 'lucide-react'
+import { Plus, Search, BookOpen, Clock, Users, Flame, Snowflake, CookingPot, Rotate3D, ChefHat, Microwave, Inbox } from 'lucide-react'
 import { StaggerList, StaggerItem } from '@/components/ui/Motion'
 
 const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre']
@@ -24,6 +24,28 @@ const METODOS_COCCION = [
   ...Object.keys(ICONOS_COCCION).map(k => ({ value: k, label: k })),
 ]
 
+function BotonCola() {
+  const [count, setCount] = useState<number | null>(null)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      supabase.from('recetas').select('id', { count: 'exact', head: true })
+        .eq('coach_id', user.id).in('estado', ['borrador','en_revision'])
+        .then(({ count: c }) => setCount(c ?? 0))
+    })
+  }, [])
+  if (count === null || count === 0) return null
+  return (
+    <Link href='/recetas/cola'
+      className='btn-secondary flex items-center gap-2 relative'>
+      <Inbox size={16} />
+      Cola
+      <span className='absolute -top-1 -right-1 w-4 h-4 rounded-full text-white text-xs flex items-center justify-center font-bold'
+        style={{ background: 'var(--primary)', fontSize: '10px' }}>{count}</span>
+    </Link>
+  )
+}
+
 export default function RecetasPage() {
   const [recetas, setRecetas] = useState<any[]>([])
   const [busqueda, setBusqueda] = useState('')
@@ -39,6 +61,7 @@ export default function RecetasPage() {
         .from('recetas')
         .select('*')
         .eq('coach_id', user.id)
+        .eq('estado', 'aprobada')
         .order('created_at', { ascending: false })
       setRecetas(data ?? [])
       setLoading(false)
@@ -78,6 +101,7 @@ export default function RecetasPage() {
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Recetas</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{recetas.length} recetas en tu base de datos</p>
         </div>
+        <BotonCola />
         <Link href="/recetas/nueva" className="btn btn-primary">
           <Plus size={16} /> Nueva receta
         </Link>

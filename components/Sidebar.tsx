@@ -20,6 +20,7 @@ import {
   Apple,
   Sandwich,
   Calendar,
+  Inbox,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -41,6 +42,7 @@ const NUTRICION_SUBITEMS = [
   { href: '/dietas', label: 'Dietas activas', icon: Apple },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Sandwich },
   { href: '/recetas', label: 'Recetario', icon: BookOpen },
+  { href: '/recetas/cola', label: 'Cola revisión', icon: Inbox },
 ]
 
 export default function Sidebar() {
