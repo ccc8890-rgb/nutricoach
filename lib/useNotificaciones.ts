@@ -8,6 +8,7 @@ interface EstadoNotificaciones {
     total: number
     ultimaRespuesta: string | null
     cargando: boolean
+    clientesPendientes: number
 }
 
 export function useNotificaciones(refreshInterval = 30000) {
@@ -16,6 +17,7 @@ export function useNotificaciones(refreshInterval = 30000) {
         total: 0,
         ultimaRespuesta: null,
         cargando: true,
+        clientesPendientes: 0,
     })
 
     const cargar = useCallback(async () => {
@@ -38,7 +40,22 @@ export function useNotificaciones(refreshInterval = 30000) {
             const noLeidas = data?.filter(r => !r.leida).length ?? 0
             const ultimaRespuesta = data?.[0]?.created_at ?? null
 
-            setEstado({ noLeidas, total, ultimaRespuesta, cargando: false })
+            // Clientes pendientes de revisión
+            let pendientes = 0
+            try {
+                const { count, error: pendError } = await supabase
+                    .from('clientes')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('coach_id', user.id)
+                    .eq('revisado_por_coach', false)
+                if (!pendError && count !== null) {
+                    pendientes = count
+                }
+            } catch {
+                // ignore
+            }
+
+            setEstado({ noLeidas: noLeidas + pendientes, total, ultimaRespuesta, cargando: false, clientesPendientes: pendientes })
         } catch (error: any) {
             // El error PGRST205 (tabla no existe) es esperado hasta ejecutar el schema SQL
             if (error?.code !== 'PGRST205') {

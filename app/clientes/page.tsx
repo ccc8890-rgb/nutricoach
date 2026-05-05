@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useDebounce } from '@/lib/useDebounce'
 import Link from 'next/link'
-import { Plus, Search, Users } from 'lucide-react'
+import { Plus, Search, Users, Link2, Check, Loader2 } from 'lucide-react'
 import { StaggerList, StaggerItem } from '@/components/ui/Motion'
 import { OBJETIVO_LABELS, NIVEL_LABELS } from '@/lib/utils'
 
@@ -22,6 +22,26 @@ export default function ClientesPage() {
   const [busqueda, setBusqueda] = useState('')
   const busquedaDebounced = useDebounce(busqueda, 250)
   const [loading, setLoading] = useState(true)
+  const [invitando, setInvitando] = useState<'idle'|'loading'|'done'|'error'>('idle')
+
+  async function handleInvitar() {
+    setInvitando('loading')
+    try {
+      const res = await fetch('/api/invitaciones', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) {
+        await navigator.clipboard.writeText(data.url)
+        setInvitando('done')
+        setTimeout(() => setInvitando('idle'), 2000)
+      } else {
+        setInvitando('error')
+        setTimeout(() => setInvitando('idle'), 2000)
+      }
+    } catch {
+      setInvitando('error')
+      setTimeout(() => setInvitando('idle'), 2000)
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -51,9 +71,25 @@ export default function ClientesPage() {
           <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
           <p className="text-sm text-gray-500 mt-1">{clientes.length} clientes en total</p>
         </div>
-        <Link href="/clientes/nuevo" className="btn btn-primary">
-          <Plus size={16} /> Nuevo cliente
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleInvitar}
+            className="btn btn-secondary"
+            disabled={invitando === 'loading'}
+          >
+            {invitando === 'loading' ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : invitando === 'done' ? (
+              <Check size={16} />
+            ) : (
+              <Link2 size={16} />
+            )}
+            {invitando === 'done' ? 'Copiado' : 'Invitar'}
+          </button>
+          <Link href="/clientes/nuevo" className="btn btn-primary">
+            <Plus size={16} /> Nuevo cliente
+          </Link>
+        </div>
       </header>
 
       <div className="relative mb-6">
