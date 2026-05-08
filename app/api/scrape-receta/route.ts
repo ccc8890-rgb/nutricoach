@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { exec } from 'child_process'
+import { promisify } from 'util'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { completarAlimentoConIA } from '@/lib/deepseek'
+
+const execAsync = promisify(exec)
 
 // ──────────────────────────────────────────────
 // Helper: parse ISO 8601 duration → minutes
@@ -669,6 +673,64 @@ async function autoCrearAlimento(
 }
 
 // ──────────────────────────────────────────────
+// agent-browser: accesibilidad y extracción de recetas sociales
+// ──────────────────────────────────────────────
+async function agentBrowserAccessibility(url: string): Promise<string> {
+  const { stdout } = await execAsync(
+    `agent-browser accessibility "${url.replace(/"/g, '\\"')}"`,
+    { timeout: 30000 }
+  )
+  return stdout
+}
+
+async function extractRecipeFromSocial(url: string, fuenteTipo: string): Promise<any> {
+  const tree = await agentBrowserAccessibility(url)
+  if (!tree.trim()) throw new Error('agent-browser: árbol de accesibilidad vacío')
+
+  const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY
+  if (!DEEPSEEK_KEY) throw new Error('DEEPSEEK_API_KEY not configured')
+
+  const prompt = `Extrae la receta de este árbol de accesibilidad de un post de ${fuenteTipo}. Devuelve SOLO JSON con esta estructura. Si no hay receta, devuelve {"nombre": null}.
+{
+  "nombre": string | null,
+  "descripcion": string | null,
+  "categoria": "Desayuno"|"Comida"|"Cena"|"Merienda"|"Snack"|"Postre" | null,
+  "tipo_coccion": "No Bake"|"Sartén/Wok"|"Horno"|"Microondas"|"Freidora de Aire"|"Vapor"|"Olla/Cazuela"|"Plancha" | null,
+  "dificultad": "Fácil"|"Medio"|"Difícil" | null,
+  "porciones": number | null,
+  "descripcion_porcion": string | null,
+  "tiempo_prep_min": number | null,
+  "tiempo_coccion_min": number | null,
+  "ingredientes": [{"nombre": string, "cantidad": number | null, "unidad": string | null}],
+  "instrucciones": string | null,
+  "consejos": string | null,
+  "imagen_url": string | null,
+  "autor_original": string | null
+}
+Árbol: ${tree.substring(0, 10000)}`
+
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEEPSEEK_KEY}` },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.1,
+    }),
+  })
+  if (!response.ok) throw new Error(`DeepSeek error: ${response.status}`)
+  const data = await response.json()
+  const text: string = data?.choices?.[0]?.message?.content ?? ''
+  if (!text) throw new Error('DeepSeek: respuesta vacía')
+
+  let cleaned = text.trim()
+  if (cleaned.startsWith('```json')) cleaned = cleaned.slice(7)
+  else if (cleaned.startsWith('```')) cleaned = cleaned.slice(3)
+  if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3)
+  return JSON.parse(cleaned.trim())
+}
+
+// ──────────────────────────────────────────────
 // POST handler
 // ──────────────────────────────────────────────
 export async function POST(req: NextRequest) {
@@ -702,25 +764,36 @@ export async function POST(req: NextRequest) {
       fuenteTipo = 'web'
     }
 
+    // ── Fetch HTML (web) o agent-browser (social) ──
+    let html = ''
+    let extracted: any = null
+
     if (fuenteTipo !== 'web') {
-      return NextResponse.json(
-        {
-          error:
-            'Por ahora solo se pueden importar recetas desde webs. El soporte para Instagram y TikTok estará disponible próximamente.',
-        },
-        { status: 422 }
-      )
+      // Redes sociales: agent-browser extrae el árbol de accesibilidad → DeepSeek parsea receta
+      try {
+        extracted = await extractRecipeFromSocial(url, fuenteTipo)
+        if (!extracted?.nombre) {
+          return NextResponse.json(
+            { error: 'No se encontró una receta en este post. El post debe incluir ingredientes y pasos de preparación.' },
+            { status: 422 }
+          )
+        }
+        extracted.fuente_tipo_override = fuenteTipo
+      } catch (err: any) {
+        return NextResponse.json(
+          { error: `No se pudo acceder al post: ${(err as Error).message?.slice(0, 120) ?? 'error desconocido'}` },
+          { status: 422 }
+        )
+      }
+    } else {
+      const fetchResponse = await fetch(url, {
+        signal: AbortSignal.timeout(15000),
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NutriCoachBot/1.0)' },
+      })
+      html = await fetchResponse.text()
     }
 
-    // ── Fetch HTML ──
-    const fetchResponse = await fetch(url, {
-      signal: AbortSignal.timeout(15000),
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NutriCoachBot/1.0)' },
-    })
-    const html = await fetchResponse.text()
-
-    // ── Strategy A: JSON-LD ──
-    let extracted: any = null
+    // ── Strategy A: JSON-LD (solo web) ──
     const jsonLdRegex = /<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
     let match: RegExpExecArray | null
     while ((match = jsonLdRegex.exec(html)) !== null) {
@@ -890,7 +963,7 @@ export async function POST(req: NextRequest) {
         tiempo_coccion_min: extracted.tiempo_coccion_min ?? null,
         imagen_url: imagenFinal,
         fuente: 'url',
-        fuente_tipo: 'web',
+        fuente_tipo: extracted.fuente_tipo_override ?? fuenteTipo,
         url_origen: url,
         autor_original: extracted.autor_original ?? null,
         estado: 'en_revision',
