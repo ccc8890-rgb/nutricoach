@@ -105,6 +105,35 @@ function guardarBuffer(buffer, nombre, metodo) {
 }
 
 // ═══════════════════════════════════════════════════════
+//  MÉTODO 0: agent-browser (imagen real de la fuente)
+// ═══════════════════════════════════════════════════════
+
+async function capturarConAgentBrowser(url) {
+    try {
+        const { execSync } = await import('child_process')
+        const tree = execSync(
+            `agent-browser accessibility ${JSON.stringify(url)}`,
+            {
+                timeout: 30000,
+                encoding: 'utf8',
+                env: { ...process.env, PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + (process.env.PATH || '') }
+            }
+        )
+        const imgRegex = /https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp)(?:\?[^\s"'<>]*)?/gi
+        const urls = [...new Set([...tree.matchAll(imgRegex)].map(m => m[0]))]
+        for (const imgUrl of urls.slice(0, 15)) {
+            const buf = await descargarBuffer(imgUrl)
+            if (buf && buf.length > 15000) {
+                return { buffer: buf, url: imgUrl, fuente: 'agent_browser' }
+            }
+        }
+        return null
+    } catch {
+        return null
+    }
+}
+
+// ═══════════════════════════════════════════════════════
 //  MÉTODO 1: Playwright Instagram/TikTok
 // ═══════════════════════════════════════════════════════
 
@@ -360,29 +389,30 @@ const MAPA_ESTILOS_COCINA = {
     },
 }
 
-function construirPromptPremium(nombre, categoria, ingredientes) {
-    const ings = (ingredientes || []).slice(0, 6)
-    const ingNombres = ings.length > 0
-        ? ings.map(i => typeof i === 'string' ? i : (i.nombre || i)).join(', ')
-        : 'ingredientes frescos de la receta'
+function construirPromptCasero(nombre, categoria, ingredientes) {
+    const ings = (ingredientes || []).slice(0, 5).map(i => typeof i === 'string' ? i : (i.nombre || i))
+    const ingStr = ings.length > 0 ? ings.join(', ') : 'ingredientes de la receta'
 
-    const estilo = MAPA_ESTILOS_COCINA[categoria] || MAPA_ESTILOS_COCINA['Comida']
+    const estilos = {
+        Postre: ['soft afternoon light, white kitchen counter, homemade dessert', 'window light, marble surface, casual home baking moment', 'warm afternoon, simple plate on wooden table, homemade feel'],
+        Desayuno: ['morning light through kitchen window, wooden table, casual breakfast', 'bright morning Mediterranean kitchen, white countertop, simple setup', 'early morning soft light, rustic wood surface, honest home breakfast'],
+        Comida: ['afternoon natural light, home dining table, casual Spanish kitchen', 'warm midday light, simple ceramic plate, home cooked meal', 'Mediterranean kitchen, terracotta, natural window light, honest food'],
+        Cena: ['warm evening kitchen light, casual dinner plate, cozy home', 'low natural light, dark wood table, intimate Spanish kitchen', 'evening warm tones, simple plating, authentic home dinner'],
+        Snack: ['quick grab shot, kitchen counter, casual home snack', 'natural light, simple plate, casual afternoon at home'],
+        Merienda: ['afternoon light, home kitchen table, casual snack time', 'soft afternoon, simple ceramic, Mediterranean home kitchen'],
+    }
+    const opciones = estilos[categoria] || estilos['Comida']
+    const estilo = opciones[Math.floor(Math.random() * opciones.length)]
 
     return [
-        `photorealistic professional food photography of "${nombre}" served ${estilo.vajilla},`,
-        `shot at ${estilo.angulo},`,
-        `on ${estilo.fondo}.`,
-        `${estilo.detalle}.`,
-        `Key ingredients visible: ${ingNombres}.`,
-        `${estilo.extras}.`,
-        `Mood: ${estilo.vibra}.`,
-        `Lighting: soft natural window light from the side, slight warm tone,`,
-        `cinematic depth of field, sharp focus on the main dish, creamy bokeh background.`,
-        `Style: professional cookbook editorial photography, Jamie Oliver / Ottolenghi aesthetic,`,
-        `shot on Hasselblad medium format, 80mm lens, f/2.8, natural color grading.`,
-        `No text, no watermarks, no artificial-looking elements, no studio lighting, no flash.`,
-        `The food must look incredibly appetizing and real, as if a professional food photographer took it in a real kitchen.`,
-        `Ultra realistic, 8K, hyper-detailed textures, moisture and sheen on fresh ingredients.`,
+        `casual home food photo of '${nombre}',`,
+        `${estilo},`,
+        `key ingredients visible: ${ingStr}.`,
+        `Shot on Sony mirrorless camera, personal food blog aesthetic,`,
+        `authentic home-cooked presentation, honest natural food photography,`,
+        `slightly imperfect composition, no studio lighting, no flash,`,
+        `warm Mediterranean color grade, real kitchen feel, not overly styled.`,
+        `Photorealistic, no AI artifacts, no watermarks.`,
     ].join(' ')
 }
 
@@ -421,7 +451,7 @@ function construirPrompt(nombre, ingredientes, esRefino = false) {
     else if (/snack|bolitas|barrita|energy/.test(palabrasClave)) categoria = 'Snack'
     else if (/merienda/.test(palabrasClave)) categoria = 'Merienda'
 
-    return construirPromptPremium(nombre, categoria, ingsFlat)
+    return construirPromptCasero(nombre, categoria, ingsFlat)
 }
 
 // ═══════════════════════════════════════════════════════
@@ -536,6 +566,7 @@ h1 { font-size: 24px; margin-bottom: 8px; }
 .metodo-label.flux_img2img { background: #ff9500; }
 .metodo-label.flux_txt2img { background: #ff3b30; }
 .metodo-label.oembed { background: #5856d6; }
+.metodo-label.agent_browser { background: #30d158; }
 .tamano {
     position: absolute; bottom: 6px; right: 6px;
     font-size: 10px; padding: 2px 6px; border-radius: 4px;
@@ -656,7 +687,7 @@ function seleccionarMejores() {
         if (cards.length === 0) return;
 
         // Orden de preferencia
-        const orden = ['playwright', 'bing_images', 'oembed', 'flux_img2img', 'flux_txt2img'];
+        const orden = ['agent_browser', 'playwright', 'bing_images', 'oembed', 'flux_img2img', 'flux_txt2img'];
 
         for (const metodo of orden) {
             const card = Array.from(cards).find(c => c.dataset.metodo === metodo && !c.classList.contains('error'));
@@ -881,11 +912,25 @@ async function main() {
 
             console.log(`  [${idxGlobal + 1}/${total}] ${r.nombre}`)
 
-            // Solo Flux Pro con prompts premium (sin Playwright, sin Bing)
-            const prompt = construirPrompt(r.nombre, r.ingredientes, false)
+            // Método 0: agent-browser (imagen real de la fuente)
+            let imagenBase = null
+            if (r.url_origen) {
+                console.log(`     📸 agent-browser capturando imagen real...`)
+                imagenBase = await capturarConAgentBrowser(r.url_origen)
+                if (imagenBase) {
+                    console.log(`     ✅ Imagen real capturada (${(imagenBase.buffer.length / 1024).toFixed(0)}KB)`)
+                    const filename = guardarBuffer(imagenBase.buffer, r.nombre, 'agent_browser')
+                    resultados.push({ id: r.id, nombre: r.nombre, categoria: r.categoria, url_origen: r.url_origen, estado_actual: r.imagen_url ? 'tiene imagen' : 'sin imagen', ingredientes: r.ingredientes, imagenes: [{ metodo: 'agent_browser', path: filename, tamano: imagenBase.buffer.length }] })
+                    // Saltar generación Flux si ya tenemos imagen real
+                    continue
+                }
+            }
+
+            // Flux Pro con prompts caseros (sin Playwright, sin Bing)
+            const prompt = construirPromptCasero(r.nombre, r.categoria, r.ingredientes)
             console.log(`     🎨 Flux Pro generando...`)
 
-            const fluxUrl = await generarConFlux(prompt, null, 0.85)
+            const fluxUrl = await generarConFlux(prompt, null, 0.2)
             if (fluxUrl) {
                 const buf = await descargarBuffer(fluxUrl)
                 if (buf) {
