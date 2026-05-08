@@ -839,31 +839,81 @@ async function rebuildPanel() {
 
 async function main() {
     const args = process.argv.slice(2)
+
+    // ── Help ──
+    if (args.includes('--help')) {
+        console.log(`
+Uso:
+  node scripts/scrapear-imagenes-recetas.mjs           → procesa recetas SIN imagen
+  node scripts/scrapear-imagenes-recetas.mjs --todas   → procesa TODAS las recetas (sin borrar)
+  node scripts/scrapear-imagenes-recetas.mjs --reset   → BORRA imagen_url de todas y regenera
+  node scripts/scrapear-imagenes-recetas.mjs --rebuild → reconstruye panel HTML desde disco
+`)
+        return
+    }
+
+    const RESET_MODE = args.includes('--reset')
+    const TODAS_MODE = args.includes('--todas')
+
     if (args.includes('--rebuild')) {
         await rebuildPanel()
         return
     }
 
-    console.log(`
+    if (RESET_MODE) {
+        console.log(`
+╔══════════════════════════════════════════════════════════╗
+║  🔄 MODO RESET — Rehaciendo todas las imágenes          ║
+║  Borrando imágenes actuales y regenerando desde cero    ║
+╚══════════════════════════════════════════════════════════╝
+`)
+    } else if (TODAS_MODE) {
+        console.log(`
+╔══════════════════════════════════════════════════════════╗
+║  📸 MODO TODAS — Procesando todas las recetas           ║
+║  Sin borrar imágenes existentes                         ║
+╚══════════════════════════════════════════════════════════╝
+`)
+    } else {
+        console.log(`
 ╔══════════════════════════════════════════════════════════╗
 ║  📸 FLUX PRO - IMÁGENES TIPO LIBRO DE COCINA           ║
 ║  Prompts premium · Estilo Ottolenghi · 106 recetas      ║
 ╚══════════════════════════════════════════════════════════╝
 `)
+    }
 
     // Crear directorio de salida
     if (!existsSync(SALIDA_DIR)) mkdirSync(SALIDA_DIR, { recursive: true })
 
-    // Obtener recetas sin imagen
-    const { data: recetas } = await supabase
+    // ── Modo reset: limpiar imagen_url de todas las recetas aprobadas ──
+    if (RESET_MODE) {
+        const { error: resetError } = await supabase
+            .from('recetas')
+            .update({ imagen_url: null })
+            .eq('estado', 'aprobada')
+        if (resetError) {
+            console.error('  ❌ Error al limpiar imagen_url:', resetError)
+            return
+        }
+        console.log('  🗑️  imagen_url limpiada en todas las recetas aprobadas')
+    }
+
+    // ── Query según modo ──
+    let query = supabase
         .from('recetas')
         .select('id, nombre, categoria, url_origen, imagen_url, tipo_coccion')
-        .is('imagen_url', null)
         .eq('estado', 'aprobada')
         .limit(MAX_RECETAS)
 
+    if (!RESET_MODE && !TODAS_MODE) {
+        query = query.is('imagen_url', null)
+    }
+
+    const { data: recetas } = await query
+
     if (!recetas || recetas.length === 0) {
-        console.log('  ✅ Todas las recetas tienen imagen')
+        console.log('  ✅ No hay recetas pendientes')
         return
     }
 
