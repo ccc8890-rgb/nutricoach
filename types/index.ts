@@ -420,3 +420,182 @@ export interface DashboardPortalResponse {
   peso: SeguimientoPeso[]
   notas: NotaCoach[]
 }
+
+// ============================================================
+// Tipos para Módulo de Precios de Supermercado
+// ============================================================
+
+export interface Supermercado {
+  id: string
+  nombre: string
+  slug: string
+  logo_url?: string
+  color?: string
+  activo: boolean
+  created_at: string
+}
+
+export interface ProductoSupermercado {
+  id: string
+  supermercado_id: string
+  alimento_id: string
+  precio_por_kg: number
+  precio_unidad?: number
+  unidad: string
+  url_producto?: string
+  fecha_precio: string
+  notas?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PrecioActual extends ProductoSupermercado {
+  supermercado_nombre: string
+  supermercado_slug: string
+  supermercado_color?: string
+  alimento_nombre: string
+  alimento_categoria: string
+}
+
+export interface CosteAlimento {
+  alimento_id: string
+  alimento_nombre: string
+  categoria: string
+  cantidad_total_gramos: number
+  precio_por_kg: number
+  coste_total_euros: number
+  recetas_json?: { comida_nombre: string; gramos: number }[]
+}
+
+export interface CosteComida {
+  alimento_id: string
+  alimento_nombre: string
+  cantidad_gramos: number
+  precio_por_kg: number
+  coste_euros: number
+}
+
+export interface CostePorReceta {
+  comida_nombre: string
+  coste_total: number
+  alimentos: CosteComida[]
+}
+
+export interface ResumenCostesPlan {
+  supermercado_seleccionado: string | null
+  precio_total: number
+  alimentos: CosteAlimento[]
+  coste_por_comida: CostePorReceta[]
+}
+
+// ============================================================
+// Tipos para Scraping Automático de Precios (Fase 1)
+// ============================================================
+
+/** Producto scrapeado de un supermercado, ya normalizado */
+export interface ProductoScraped {
+  nombre: string
+  nombre_normalizado: string
+  precio_actual: number
+  precio_por_kg?: number
+  unidad?: string
+  url_producto: string
+  imagen_url?: string
+  marca?: string
+  cantidad?: string
+  disponible: boolean
+}
+
+/** Resultado completo de una operación de scraping */
+export interface ResultadoScraping {
+  supermercado_id: string
+  supermercado_nombre: string
+  productos: ProductoScraped[]
+  fecha_scraping: string
+  duracion_ms: number
+  errores: string[]
+  total_procesados: number
+  nuevos_productos: number
+  actualizados: number
+  no_encontrados: number
+}
+
+/** Precio histórico para tendencias */
+export interface PrecioHistorico {
+  id: string
+  supermercado_id: string
+  supermercado_nombre?: string
+  alimento_id: string | null
+  alimento_nombre?: string
+  nombre_producto?: string
+  precio_por_kg: number
+  precio_unidad?: number
+  unidad: string
+  url_producto?: string
+  fecha_precio: string
+  fuente: 'manual' | 'scraping_http' | 'scraping_playwright' | 'apify'
+  metadatos?: Record<string, unknown>
+  created_at: string
+}
+
+/** Tendencia de precio de un alimento en un supermercado */
+export interface TendenciaPrecio {
+  alimento_id: string
+  alimento_nombre: string
+  supermercado_id: string
+  supermercado_nombre: string
+  precio_inicial: number
+  precio_actual: number
+  variacion_porcentual: number
+  periodo: '30d' | '90d' | '1y'
+  puntos: { fecha: string; precio: number }[]
+}
+
+/** Producto externo (suplementos, Amazon, MyProtein, etc.) */
+export interface ProductoExterno {
+  id: string
+  coach_id: string
+  nombre: string
+  marca?: string
+  categoria: 'suplementos' | 'ropa' | 'equipamiento' | 'otros'
+  precio: number
+  moneda: string
+  cantidad?: number
+  unidad_medida?: string
+  url_producto?: string
+  tienda?: string
+  fecha_precio: string
+  created_at: string
+  updated_at: string
+}
+
+/** Comparativa de precios entre supermercados para una cesta */
+export interface ComparativaSupermercados {
+  supermercados: {
+    id: string
+    nombre: string
+    color: string
+    precio_total: number
+    dif_respecto_barato: number
+    es_mas_barato: boolean
+  }[]
+  ahorro_mensual: number
+  ahorro_anual: number
+  recomendado: string
+  desglose: {
+    alimento_id: string
+    alimento_nombre: string
+    precios: { supermercado_id: string; precio: number }[]
+    mas_barato: string
+  }[]
+}
+
+/** Proyección de ahorro entre dos supermercados */
+export interface ProyeccionAhorro {
+  semanal: number
+  mensual: number
+  anual: number
+  supermercado_base: string
+  supermercado_comparado: string
+  diferencia_porcentual: number
+}
