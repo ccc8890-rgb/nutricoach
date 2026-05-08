@@ -100,24 +100,24 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
     return (
         <div className="space-y-4 print-area">
             {/* Resumen macros del día */}
-            <div className="card !p-5" style={{ borderTop: '3px solid #0D9488' }}>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Total del día</p>
-                <p className="text-3xl font-bold text-gray-900">
+            <div className="card !p-5" style={{ borderTop: '3px solid var(--primary)' }}>
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Total del día</p>
+                <p className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
                     {totalDia.calorias.toFixed(0)}{' '}
-                    <span className="text-lg font-normal text-gray-400">kcal</span>
+                    <span className="text-lg font-normal" style={{ color: 'var(--text-muted)' }}>kcal</span>
                 </p>
                 <div className="flex gap-4 mt-3">
                     <div className="macro-pill macro-pill-protein">
-                        <span className="text-lg font-bold" style={{ color: '#DC2626' }}>{totalDia.proteinas.toFixed(0)}g</span>
-                        <span className="text-xs text-gray-500">Proteínas</span>
+                        <span className="text-lg font-bold" style={{ color: 'var(--error)' }}>{totalDia.proteinas.toFixed(0)}g</span>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Proteínas</span>
                     </div>
                     <div className="macro-pill macro-pill-carbs">
-                        <span className="text-lg font-bold" style={{ color: '#D97706' }}>{totalDia.carbohidratos.toFixed(0)}g</span>
-                        <span className="text-xs text-gray-500">Carbohidratos</span>
+                        <span className="text-lg font-bold" style={{ color: 'var(--warning)' }}>{totalDia.carbohidratos.toFixed(0)}g</span>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Carbohidratos</span>
                     </div>
                     <div className="macro-pill macro-pill-fat">
                         <span className="text-lg font-bold" style={{ color: '#7C3AED' }}>{totalDia.grasas.toFixed(0)}g</span>
-                        <span className="text-xs text-gray-500">Grasas</span>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Grasas</span>
                     </div>
                 </div>
             </div>
@@ -136,25 +136,28 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                         <div key={comida.id} className="card overflow-hidden !p-0">
                             <button
                                 onClick={() => setExpandidas(prev => ({ ...prev, [comida.id]: !prev[comida.id] }))}
-                                className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                                className="w-full px-5 py-4 flex items-center justify-between transition-colors"
+                                style={{ backgroundColor: 'transparent' }}
+                                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg)' }}
+                                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#F0FDFA' }}>
-                                        <UtensilsCrossed size={18} style={{ color: '#0D9488' }} />
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--primary-bg)' }}>
+                                        <UtensilsCrossed size={18} style={{ color: 'var(--primary)' }} />
                                     </div>
                                     <div className="text-left">
-                                        <p className="font-semibold text-gray-900">{comida.nombre}</p>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="font-semibold" style={{ color: 'var(--text)' }}>{comida.nombre}</p>
+                                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                             {macros.calorias.toFixed(0)} kcal
                                             {comida.hora_sugerida && ` · ${comida.hora_sugerida.slice(0, 5)}`}
                                         </p>
                                     </div>
                                 </div>
-                                {expanded ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+                                {expanded ? <ChevronUp size={18} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={18} style={{ color: 'var(--text-muted)' }} />}
                             </button>
 
                             {expanded && alimentos.length > 0 && (
-                                <div className="border-t px-5 py-3 space-y-2" style={{ borderColor: '#F1F5F9' }}>
+                                <div className="border-t px-5 py-3 space-y-2" style={{ borderColor: 'var(--border)' }}>
                                     {alimentos.map(af => {
                                         const m = calcularMacrosPorCantidad(
                                             af.alimento?.calorias ?? 0,
@@ -167,11 +170,11 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                                         return (
                                             <div key={af.id} className="flex items-center justify-between py-1.5">
                                                 <div>
-                                                    <p className="text-sm font-medium text-gray-800">{af.alimento?.nombre}</p>
-                                                    <p className="text-xs text-gray-400">{af.cantidad_gramos}g</p>
+                                                    <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{af.alimento?.nombre}</p>
+                                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{af.cantidad_gramos}g</p>
                                                 </div>
-                                                <div className="text-right text-xs text-gray-500">
-                                                    <p className="font-semibold text-gray-700">{m.calorias.toFixed(0)} kcal</p>
+                                                <div className="text-right text-xs" style={{ color: 'var(--text-secondary)' }}>
+                                                    <p className="font-semibold" style={{ color: 'var(--text)' }}>{m.calorias.toFixed(0)} kcal</p>
                                                     <p>P:{m.proteinas.toFixed(1)} C:{m.carbohidratos.toFixed(1)} G:{m.grasas.toFixed(1)}</p>
                                                 </div>
                                             </div>
@@ -184,7 +187,7 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                             )}
 
                             {expanded && alimentos.length === 0 && (
-                                <div className="border-t px-5 py-4 text-center text-sm text-gray-400" style={{ borderColor: '#F1F5F9' }}>
+                                <div className="border-t px-5 py-4 text-center text-sm" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
                                     Sin alimentos asignados
                                 </div>
                             )}
@@ -205,9 +208,9 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
 
                     <div className="space-y-2">
                         {(entreno.sesiones ?? []).map(sesion => (
-                            <div key={sesion.id} className="p-3 rounded-lg" style={{ background: '#F8FAFC' }}>
-                                <p className="font-medium text-sm text-gray-800">{sesion.nombre}</p>
-                                {sesion.dia_semana && <p className="text-xs text-gray-400">{sesion.dia_semana}</p>}
+                            <div key={sesion.id} className="p-3 rounded-lg" style={{ backgroundColor: 'var(--bg)' }}>
+                                <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+                                {sesion.dia_semana && <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{sesion.dia_semana}</p>}
                                 {sesion.ejercicios && sesion.ejercicios.length > 0 && (
                                     <div className="mt-2 flex flex-wrap gap-1.5">
                                         {sesion.ejercicios.sort((a, b) => a.orden - b.orden).map(ej => (

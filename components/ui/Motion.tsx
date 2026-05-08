@@ -1,10 +1,11 @@
 'use client'
 
-import { motion, HTMLMotionProps } from 'framer-motion'
-import { ReactNode } from 'react'
+import { motion, HTMLMotionProps, AnimatePresence } from 'framer-motion'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 
 // Curva ease tipo Apple / iOS — entra suave, termina con snap
-const EASE_APPLE: [number, number, number, number] = [0.16, 1, 0.3, 1]
+export const EASE_APPLE: [number, number, number, number] = [0.16, 1, 0.3, 1]
+export const EASE_SPRING = { type: 'spring' as const, stiffness: 300, damping: 24 }
 
 interface WithChildren {
   children: ReactNode
@@ -12,7 +13,7 @@ interface WithChildren {
 }
 
 // ─────────────────────────────────────────────
-// FadeIn — entrada suave con slide up (para secciones, cards individuales)
+// FadeIn — entrada suave con slide up
 // ─────────────────────────────────────────────
 interface FadeInProps extends Omit<HTMLMotionProps<'div'>, 'children'>, WithChildren {
   delay?: number
@@ -34,7 +35,7 @@ export function FadeIn({ delay = 0, distance = 10, children, className, ...props
 }
 
 // ─────────────────────────────────────────────
-// StaggerList — contenedor padre que secuencia la animación de sus hijos
+// StaggerList — contenedor que secuencia hijos
 // ─────────────────────────────────────────────
 const staggerVariants = {
   hidden: {},
@@ -57,7 +58,7 @@ export function StaggerList({ children, className }: WithChildren) {
 }
 
 // ─────────────────────────────────────────────
-// StaggerItem — cada hijo dentro de un StaggerList
+// StaggerItem — cada hijo dentro de StaggerList
 // ─────────────────────────────────────────────
 const itemVariants = {
   hidden: { opacity: 0, y: 14 },
@@ -77,7 +78,7 @@ export function StaggerItem({ children, className }: WithChildren) {
 }
 
 // ─────────────────────────────────────────────
-// ScaleIn — entrada con escala (para badges, pills, modals)
+// ScaleIn — entrada con escala (badges, pills, modals)
 // ─────────────────────────────────────────────
 interface ScaleInProps extends WithChildren {
   delay?: number
@@ -97,7 +98,7 @@ export function ScaleIn({ children, className, delay = 0 }: ScaleInProps) {
 }
 
 // ─────────────────────────────────────────────
-// MotionCard — card con hover lift y tap press (reemplaza div+className)
+// MotionCard — card con hover lift y tap press
 // ─────────────────────────────────────────────
 interface MotionCardProps extends Omit<HTMLMotionProps<'div'>, 'children'>, WithChildren {
   hoverable?: boolean
@@ -115,3 +116,146 @@ export function MotionCard({ children, className, hoverable = true, ...props }: 
     </motion.div>
   )
 }
+
+// ─────────────────────────────────────────────
+// SlideIn — slide lateral para paneles / modales
+// ─────────────────────────────────────────────
+interface SlideInProps extends WithChildren {
+  from?: 'left' | 'right' | 'bottom'
+  delay?: number
+}
+
+const slideDirections = {
+  left: { x: -24 },
+  right: { x: 24 },
+  bottom: { y: 24 },
+}
+
+export function SlideIn({ children, className, from = 'bottom', delay = 0 }: SlideInProps) {
+  const dir = slideDirections[from]
+  return (
+    <motion.div
+      initial={{ opacity: 0, ...dir }}
+      animate={{ opacity: 1, x: 0, y: 0 }}
+      transition={{ duration: 0.35, delay, ease: EASE_APPLE }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// ─────────────────────────────────────────────
+// Pressable — botón con feedback táctil iOS
+// ─────────────────────────────────────────────
+interface PressableProps extends Omit<HTMLMotionProps<'button'>, 'children'>, WithChildren {
+  scale?: number
+}
+
+export function Pressable({ children, className, scale = 0.97, ...props }: PressableProps) {
+  return (
+    <motion.button
+      className={className}
+      whileHover={{ opacity: 0.85, transition: { duration: 0.15 } }}
+      whileTap={{ scale, transition: { duration: 0.08 } }}
+      {...props}
+    >
+      {children}
+    </motion.button>
+  )
+}
+
+// ─────────────────────────────────────────────
+// PageTransition — wrapper para páginas (entrada)
+// ─────────────────────────────────────────────
+export function PageTransition({ children, className }: WithChildren) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25, ease: EASE_APPLE }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// ─────────────────────────────────────────────
+// AnimatedCounter — número que cuenta hacia arriba
+// ─────────────────────────────────────────────
+interface AnimatedCounterProps {
+  from?: number
+  to: number
+  duration?: number
+  suffix?: string
+  className?: string
+}
+
+export function AnimatedCounter({ from = 0, to, duration = 0.6, suffix = '', className }: AnimatedCounterProps) {
+  const [value, setValue] = useState(from)
+  const ref = useRef<number | null>(null)
+
+  useEffect(() => {
+    const startTime = performance.now()
+    const delta = to - from
+
+    function tick(now: number) {
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / (duration * 1000), 1)
+      // ease-out quad
+      const eased = 1 - (1 - progress) * (1 - progress)
+      setValue(from + delta * eased)
+      if (progress < 1) {
+        ref.current = requestAnimationFrame(tick)
+      }
+    }
+
+    ref.current = requestAnimationFrame(tick)
+    return () => { if (ref.current) cancelAnimationFrame(ref.current) }
+  }, [from, to, duration])
+
+  return <span className={className}>{Math.round(value)}{suffix}</span>
+}
+
+// ─────────────────────────────────────────────
+// useInView — hook para animaciones al hacer scroll
+// ─────────────────────────────────────────────
+export function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setInView(true); observer.unobserve(el) } },
+      { threshold }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [threshold])
+
+  return { ref, inView }
+}
+
+// ─────────────────────────────────────────────
+// FadeInOnView — fade in cuando entra en viewport
+// ─────────────────────────────────────────────
+export function FadeInOnView({ children, className }: WithChildren) {
+  const { ref, inView } = useInView()
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 16 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+      transition={{ duration: 0.4, ease: EASE_APPLE }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+export { AnimatePresence }

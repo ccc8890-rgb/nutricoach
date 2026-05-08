@@ -49,7 +49,7 @@ const TIPO_COLOR: Record<string, string> = {
   fuerza: '#7C3AED',
   resistencia: '#059669',
   hiit: '#DC2626',
-  especifico: '#D97706',
+  especifico: '#8E8E93',
   descanso: '#6B7280',
 }
 

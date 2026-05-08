@@ -40,8 +40,8 @@ export default function EntrenosPage() {
     <div className="p-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Planes de entrenamiento</h1>
-          <p className="text-gray-500 mt-0.5">{planes.length} planes creados</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Planes de entrenamiento</h1>
+          <p className="mt-0.5" style={{ color: 'var(--text-secondary)' }}>{planes.length} planes creados</p>
         </div>
         <Link href="/entrenos/nueva" className="btn-primary">
           <Plus size={16} /> Nuevo plan
@@ -49,7 +49,7 @@ export default function EntrenosPage() {
       </div>
 
       <div className="relative mb-6">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
         <input className="input search-input" placeholder="Buscar por nombre o cliente…" value={busqueda} onChange={e => setBusqueda(e.target.value)} />
       </div>
 
@@ -57,21 +57,24 @@ export default function EntrenosPage() {
         <div className="flex justify-center py-16"><div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" /></div>
       ) : filtrados.length === 0 ? (
         <div className="card text-center py-16">
-          <Dumbbell size={40} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-400 font-medium">No hay planes de entrenamiento</p>
+          <Dumbbell size={40} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+          <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>No hay planes de entrenamiento</p>
           <Link href="/entrenos/nueva" className="btn-primary mt-4 inline-flex"><Plus size={16} /> Crear plan</Link>
         </div>
       ) : (
         <div className="grid gap-3">
           {filtrados.map(p => (
             <Link key={p.id} href={`/entrenos/${p.id}`}
-              className="card hover:border-purple-200 hover:shadow-sm transition-all flex items-center gap-4">
-              <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
-                <Dumbbell size={20} className="text-purple-600" />
+              className="card transition-all flex items-center gap-4"
+              style={{ borderColor: 'var(--border)' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#D8B4FE'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}>
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#F5F3FF' }}>
+                <Dumbbell size={20} style={{ color: '#7C3AED' }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900">{p.nombre}</p>
-                <p className="text-sm text-gray-400">{p.cliente?.profile?.nombre} {p.cliente?.profile?.apellidos}</p>
+                <p className="font-semibold" style={{ color: 'var(--text)' }}>{p.nombre}</p>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{p.cliente?.profile?.nombre} {p.cliente?.profile?.apellidos}</p>
               </div>
               <div className="hidden md:flex items-center gap-4 text-sm">
                 {p.duracion_semanas && <span className="badge badge-purple">{p.duracion_semanas} sem</span>}

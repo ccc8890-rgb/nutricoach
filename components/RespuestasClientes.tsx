@@ -14,7 +14,7 @@ interface Props {
 }
 
 const ESTADOS: { value: EstadoRespuesta; label: string; color: string; badgeClass: string }[] = [
-    { value: 'nueva', label: 'Nueva', color: '#D97706', badgeClass: 'badge-amber' },
+    { value: 'nueva', label: 'Nueva', color: '#8E8E93', badgeClass: 'badge-graphite' },
     { value: 'procesando', label: 'Procesando (IA)', color: '#2563EB', badgeClass: 'badge-blue' },
     { value: 'dieta_lista', label: 'Dieta lista', color: '#059669', badgeClass: 'badge-green' },
     { value: 'dieta_aprobada', label: 'Aprobada', color: '#0D9488', badgeClass: 'badge-teal' },
@@ -111,9 +111,9 @@ export default function RespuestasClientes({ respuestas, onActualizar }: Props) 
     if (respuestas.length === 0) {
         return (
             <div className="card text-center py-16">
-                <MessageSquareReply size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-gray-500 font-medium">No hay respuestas de clientes todavía</p>
-                <p className="text-sm text-gray-400 mt-1">
+                <MessageSquareReply size={40} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+                <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>No hay respuestas de clientes todavía</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
                     Comparte el enlace de un cuestionario para empezar a recibir respuestas.
                 </p>
             </div>
@@ -156,9 +156,9 @@ export default function RespuestasClientes({ respuestas, onActualizar }: Props) 
                         onClick={() => setFiltroEstado(value)}
                         className={`text-xs font-medium rounded-full px-3 py-1.5 transition-all duration-150 ${filtroEstado === value
                             ? 'text-white shadow-sm scale-105'
-                            : 'text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:scale-105'
+                            : ''
                             }`}
-                        style={filtroEstado === value ? { background: color, borderColor: color } : undefined}
+                        style={filtroEstado === value ? { background: color, borderColor: color } : { color: 'var(--text-secondary)', backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}
                     >
                         <span className="font-bold mr-1">{count}</span>
                         {label}
@@ -169,8 +169,8 @@ export default function RespuestasClientes({ respuestas, onActualizar }: Props) 
             {/* Lista de respuestas */}
             {filtradas.length === 0 ? (
                 <div className="text-center py-12">
-                    <p className="text-sm text-gray-400">No hay respuestas con este filtro</p>
-                    <p className="text-xs text-gray-300 mt-1">Prueba con otro filtro o espera nuevas respuestas</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No hay respuestas con este filtro</p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Prueba con otro filtro o espera nuevas respuestas</p>
                 </div>
             ) : (
                 <div className="space-y-3">
@@ -190,10 +190,10 @@ export default function RespuestasClientes({ respuestas, onActualizar }: Props) 
                                         style={{ background: estado.color }}
                                     />
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-gray-900 truncate">
+                                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
                                             {respuesta.nombre_cliente || 'Cliente anónimo'}
                                         </p>
-                                        <p className="text-xs text-gray-400 mt-0.5">
+                                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                                             {respuesta.cuestionario && (respuesta.cuestionario as unknown as Record<string, unknown>).titulo
                                                 ? ((respuesta.cuestionario as unknown as Record<string, unknown>).titulo as string)
                                                 : 'Cuestionario'}
@@ -255,17 +255,17 @@ export default function RespuestasClientes({ respuestas, onActualizar }: Props) 
 
                                 {/* Contenido expandido */}
                                 {expandida && (
-                                    <div className="border-t border-gray-100 px-4 py-4 space-y-3 bg-gray-50">
+                                    <div className="px-4 py-4 space-y-3" style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg)' }}>
                                         {respuesta.email_cliente && (
-                                            <div className="text-xs text-gray-500 flex items-center gap-1">
-                                                <span className="font-medium text-gray-600">Email:</span>
-                                                <a href={`mailto:${respuesta.email_cliente}`} className="text-teal-600 hover:underline">{respuesta.email_cliente}</a>
+                                            <div className="text-xs flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                                                <span className="font-medium" style={{ color: 'var(--text)' }}>Email:</span>
+                                                <a href={`mailto:${respuesta.email_cliente}`} style={{ color: 'var(--primary)' }} className="hover:underline">{respuesta.email_cliente}</a>
                                             </div>
                                         )}
                                         {respuesta.plan_id && (
-                                            <div className="text-xs text-gray-500 flex items-center gap-1">
-                                                <span className="font-medium text-gray-600">Plan de dieta:</span>
-                                                <Link href={`/dietas/${respuesta.plan_id}`} className="text-teal-600 hover:underline inline-flex items-center gap-1">
+                                            <div className="text-xs flex items-center gap-1" style={{ color: 'var(--text-secondary)' }}>
+                                                <span className="font-medium" style={{ color: 'var(--text)' }}>Plan de dieta:</span>
+                                                <Link href={`/dietas/${respuesta.plan_id}`} style={{ color: 'var(--primary)' }} className="hover:underline inline-flex items-center gap-1">
                                                     Ver plan <SquareArrowOutUpRight size={10} />
                                                 </Link>
                                             </div>

@@ -39,10 +39,10 @@ const CATEGORIA_ICON: Record<string, typeof Beef> = {
 const CATEGORIA_COLOR: Record<string, string> = {
     Carnes: '#EF4444',
     Pescados: '#3B82F6',
-    Huevos: '#F59E0B',
+    Huevos: '#A1A1A6',
     Lácteos: '#8B5CF6',
     Suplementos: '#1C1C1E',
-    Cereales: '#D97706',
+    Cereales: '#8E8E93',
     Tubérculos: '#92400E',
     Legumbres: '#65A30D',
     Verduras: '#22C55E',
@@ -59,7 +59,7 @@ const CATEGORIA_COLOR: Record<string, string> = {
 const NUTRI_LABELS = [
     { key: 'calorias', label: 'Calorías', unit: 'kcal', color: '#EF4444' },
     { key: 'proteinas', label: 'Proteínas', unit: 'g', color: '#3B82F6' },
-    { key: 'carbohidratos', label: 'Carbohidratos', unit: 'g', color: '#F59E0B' },
+    { key: 'carbohidratos', label: 'Carbohidratos', unit: 'g', color: '#A1A1A6' },
     { key: 'grasas', label: 'Grasas', unit: 'g', color: '#8B5CF6' },
     { key: 'fibra', label: 'Fibra', unit: 'g', color: '#22C55E' },
 ] as const satisfies readonly { key: keyof Alimento; label: string; unit: string; color: string }[]

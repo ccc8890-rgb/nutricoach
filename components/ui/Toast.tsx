@@ -50,17 +50,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 }
 
 const ICONS: Record<ToastType, { icon: React.ReactNode; color: string }> = {
-    success: { icon: <CheckCircle size={18} />, color: '#10B981' },
-    error: { icon: <AlertCircle size={18} />, color: '#EF4444' },
-    warning: { icon: <AlertTriangle size={18} />, color: '#F59E0B' },
-    info: { icon: <Info size={18} />, color: '#3B82F6' },
-}
-
-const STYLES: Record<ToastType, { border: string; bg: string }> = {
-    success: { border: '#A7F3D0', bg: '#ECFDF5' },
-    error: { border: '#FECACA', bg: '#FEF2F2' },
-    warning: { border: '#FDE68A', bg: '#FFFBEB' },
-    info: { border: '#BFDBFE', bg: '#EFF6FF' },
+    success: { icon: <CheckCircle size={18} />, color: 'var(--success)' },
+    error: { icon: <AlertCircle size={18} />, color: 'var(--error)' },
+    warning: { icon: <AlertTriangle size={18} />, color: 'var(--warning)' },
+    info: { icon: <Info size={18} />, color: 'var(--info)' },
 }
 
 function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
@@ -79,7 +72,6 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
         return () => clearTimeout(timer)
     }, [toast.duration, onClose])
 
-    const style = STYLES[toast.type]
     const iconData = ICONS[toast.type]
 
     function handleClose() {
@@ -89,23 +81,28 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
 
     return (
         <div
-            className={`rounded-xl border p-3.5 shadow-lg transition-all duration-200 ${visible && !exiting ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+            className={`rounded-xl p-3.5 transition-all duration-200 ${visible && !exiting ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
                 }`}
-            style={{ background: style.bg, borderColor: style.border }}
+            style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-lg)',
+            }}
         >
             <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex-shrink-0" style={{ color: iconData.color }}>
                     {iconData.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-800">{toast.title}</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{toast.title}</p>
                     {toast.message && (
-                        <p className="text-xs text-gray-500 mt-0.5">{toast.message}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{toast.message}</p>
                     )}
                 </div>
                 <button
                     onClick={handleClose}
-                    className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 p-0.5 rounded-md hover:bg-white/50"
+                    className="transition-colors flex-shrink-0 p-0.5 rounded-md"
+                    style={{ color: 'var(--text-muted)' }}
                 >
                     <X size={14} />
                 </button>

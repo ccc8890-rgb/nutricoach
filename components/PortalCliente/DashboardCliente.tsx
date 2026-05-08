@@ -109,7 +109,7 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-                <Loader2 size={28} className="animate-spin" style={{ color: '#0D9488' }} />
+                <Loader2 size={28} className="animate-spin" style={{ color: 'var(--primary)' }} />
             </div>
         )
     }
@@ -119,7 +119,7 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
             <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
                 <div className="max-w-md w-full mx-4 text-center">
                     <div className="card p-12">
-                        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#FEF2F2' }}>
+                        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'var(--error-bg)' }}>
                             <span className="text-3xl">😕</span>
                         </div>
                         <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Plan no disponible</h1>
@@ -190,8 +190,8 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                             </div>
                         )}
                         {ultimoCheckin && diasDesdeUltimoCheckin !== null && (
-                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${diasDesdeUltimoCheckin <= 2 ? 'bg-green-500/20 text-green-100' : 'bg-amber-500/20 text-amber-100'}`}
-                                style={{ background: diasDesdeUltimoCheckin <= 2 ? 'rgba(34,197,94,0.2)' : 'rgba(251,191,36,0.2)', color: 'white' }}>
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${diasDesdeUltimoCheckin <= 2 ? 'bg-green-500/20 text-green-100' : ''}`}
+                                style={{ background: diasDesdeUltimoCheckin <= 2 ? 'rgba(34,197,94,0.2)' : 'rgba(161,161,166,0.2)', color: 'white' }}>
                                 <ClipboardCheck size={12} />
                                 {diasDesdeUltimoCheckin === 0 ? 'Check-in hoy' :
                                     diasDesdeUltimoCheckin === 1 ? 'Ayer' :
@@ -209,11 +209,11 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                         <button
                             key={key}
                             onClick={() => setTab(key)}
-                            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium border-b-2 transition-colors ${tab === key
-                                ? 'border-teal-500 text-teal-600'
-                                : 'border-transparent hover:text-gray-700'
-                                }`}
-                            style={{ color: tab === key ? '#0D9488' : 'var(--text-secondary)' }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium border-b-2 transition-colors`}
+                            style={{
+                                color: tab === key ? 'var(--primary)' : 'var(--text-secondary)',
+                                borderBottomColor: tab === key ? 'var(--primary)' : 'transparent',
+                            }}
                         >
                             <Icon size={16} />
                             {label}

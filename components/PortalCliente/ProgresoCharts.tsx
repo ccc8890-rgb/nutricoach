@@ -180,7 +180,7 @@ function AdherenciaChart({ data }: { data: CheckIn[] }) {
                     const gap = (W / BARS) * 0.3
                     const x = (i / BARS) * W + gap / 2
                     const h = ((c.adherencia ?? 5) / 10) * H
-                    const color = (c.adherencia ?? 5) >= 7 ? '#10B981' : (c.adherencia ?? 5) >= 4 ? '#F59E0B' : '#EF4444'
+                    const color = (c.adherencia ?? 5) >= 7 ? '#10B981' : (c.adherencia ?? 5) >= 4 ? '#A1A1A6' : '#EF4444'
                     return (
                         <rect
                             key={c.id}
@@ -201,7 +201,7 @@ function AdherenciaChart({ data }: { data: CheckIn[] }) {
                 <span>Últimos {BARS} registros</span>
                 <span className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Buena
-                    <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" /> Media
+                    <span className="w-2 h-2 rounded-full" style={{ background: '#A1A1A6' }} inline-block /> Media
                     <span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> Baja
                 </span>
             </div>
@@ -239,11 +239,11 @@ function EnergiaSuenoChart({ data }: { data: CheckIn[] }) {
         <div>
             <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-16" preserveAspectRatio="none">
                 {/* Línea de energía */}
-                <polyline points={puntos(energia)} fill="none" stroke="#F59E0B" strokeWidth="2"
+                <polyline points={puntos(energia)} fill="none" stroke="#A1A1A6" strokeWidth="2"
                     strokeLinejoin="round" strokeLinecap="round" />
                 {energia.map((v, i) => (
                     <circle key={`e${i}`} cx={(i / Math.max(energia.length - 1, 1)) * W}
-                        cy={H - (v / 10) * H} r="1.5" fill="white" stroke="#F59E0B" strokeWidth="1.2" />
+                        cy={H - (v / 10) * H} r="1.5" fill="white" stroke="#A1A1A6" strokeWidth="1.2" />
                 ))}
                 {/* Línea de sueño */}
                 <polyline points={puntos(sueno)} fill="none" stroke="#8B5CF6" strokeWidth="2"
@@ -255,7 +255,7 @@ function EnergiaSuenoChart({ data }: { data: CheckIn[] }) {
             </svg>
             <div className="flex gap-4 mt-1 text-[10px]">
                 <span className="flex items-center gap-1">
-                    <span className="w-2 h-0.5 rounded bg-amber-500 inline-block" />
+                    <span className="w-2 h-0.5 rounded inline-block" style={{ background: '#A1A1A6' }} />
                     <span className="text-gray-400">Energía</span>
                 </span>
                 <span className="flex items-center gap-1">
@@ -298,9 +298,9 @@ function MetricasResumen({ checkins, racha }: { checkins: CheckIn[]; racha: numb
                 <span className="text-lg font-bold text-gray-900">{suenoMedia}</span>
                 <span className="text-[10px] text-gray-500">Sueño</span>
             </div>
-            <div className="macro-pill !p-3 !gap-0.5" style={{ borderColor: '#F59E0B', background: '#FFFBEB' }}>
+            <div className="macro-pill !p-3 !gap-0.5" style={{ borderColor: '#A1A1A6', background: 'var(--accent-bg)' }}>
                 <div className="flex items-center gap-1">
-                    <Flame size={16} className="text-amber-500" />
+                    <Flame size={16} style={{ color: '#A1A1A6' }} />
                     <span className="text-lg font-bold text-gray-900">{racha}</span>
                 </div>
                 <span className="text-[10px] text-gray-500">Racha</span>
@@ -333,7 +333,7 @@ function TimelineCheckins({ checkins }: { checkins: CheckIn[] }) {
                             </div>
                             <div className="flex items-center gap-3 text-[11px]">
                                 {c.peso && <span className="font-medium text-gray-700">{c.peso} kg</span>}
-                                <span className={`${(c.adherencia ?? 0) >= 7 ? 'text-green-600' : (c.adherencia ?? 0) >= 4 ? 'text-amber-600' : 'text-red-500'}`}>
+                                <span className={`${(c.adherencia ?? 0) >= 7 ? 'text-green-600' : (c.adherencia ?? 0) >= 4 ? 'text-[#8E8E93]' : 'text-red-500'}`}>
                                     {c.adherencia ? `${c.adherencia}/10` : '—'}
                                 </span>
                             </div>
@@ -380,7 +380,7 @@ export default function ProgresoCharts({ checkins, peso, pesoInicial, objetivo }
             {/* Energía y Sueño */}
             <div className="card">
                 <div className="flex items-center gap-2 mb-3">
-                    <Zap size={16} style={{ color: '#F59E0B' }} />
+                    <Zap size={16} style={{ color: '#A1A1A6' }} />
                     <h3 className="font-semibold text-gray-900 text-sm">⚡ Energía y sueño</h3>
                 </div>
                 <EnergiaSuenoChart data={checkins} />

@@ -5,10 +5,8 @@ import Link from 'next/link'
 import { ArrowLeft, Link2, Plus, Search, X, Trash2, Upload } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Alimento } from '@/types'
-
-const CATEGORIAS = ['Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre']
-const TIPOS_COCCION = ['No Bake', 'Sartén/Wok', 'Horno/Airfryer', 'Microondas', 'Vapor', 'Olla/Cazuela', 'Plancha']
-const INTOLERANCIAS = ['Sin Gluten', 'Sin Lactosa', 'Vegano', 'Vegetariano', 'Sin Huevo', 'Sin Frutos Secos']
+import { CATEGORIAS, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
+import { useToast } from '@/components/ui/Toast'
 
 interface Ingrediente {
   tempId: string
@@ -91,11 +89,13 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
     }
   })()
 
+  const { addToast } = useToast()
+
   async function guardar() {
     if (!form.nombre.trim()) return
     setGuardando(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setGuardando(false); return }
 
     let imagen_url = imagenUrlExterna || null
     if (imagenFile) {
@@ -121,12 +121,18 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
       kcal: macrosTotales?.kcal ?? null, proteinas: macrosTotales?.proteinas ?? null,
       carbohidratos: macrosTotales?.carbohidratos ?? null, grasas: macrosTotales?.grasas ?? null, fibra: macrosTotales?.fibra ?? null,
     }).select().single()
-    if (error || !receta) { setGuardando(false); return }
+    if (error || !receta) {
+      addToast({ type: 'error', title: 'Error', message: error?.message || 'No se pudo guardar la receta' })
+      setGuardando(false); return
+    }
 
     if (ingredientes.length) {
-      await supabase.from('receta_ingredientes').insert(
+      const { error: ingError } = await supabase.from('receta_ingredientes').insert(
         ingredientes.map((ing, idx) => ({ receta_id: receta.id, alimento_id: ing.alimento_id || null, nombre_libre: ing.nombre_libre || null, cantidad_gramos: ing.cantidad_gramos, orden: idx }))
       )
+      if (ingError) {
+        addToast({ type: 'error', title: 'Error', message: 'Receta guardada pero fallaron los ingredientes: ' + ingError.message })
+      }
     }
     window.location.href = `/recetas/${receta.id}`
   }

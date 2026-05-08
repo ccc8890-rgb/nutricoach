@@ -7,7 +7,7 @@ s# Proyecto: NutriCoach (Human Lab)
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 
-## Estado Actual (06-05-2026 — Sesión 5)
+## Estado Actual (08-05-2026 — Sesión 6)
 - **0 errores TypeScript** ✅ — build verificado con `npx next build`
 - **0 `any` en states** ✅ — todos los `useState<any>` reemplazados por interfaces concretas
 - **0 `useParams()` sin generic** ✅ — todas las 7 páginas usan `useParams<{ id: string }>()`
@@ -45,10 +45,14 @@ s# Proyecto: NutriCoach (Human Lab)
 - Badge nunca se limpiaba → `revisado_por_coach = true` en `loadData()` del perfil
 - Contraseña sin validación servidor → `password.length < 6` añadido
 
-### Pendiente para mañana
-- ⏳ Carlos prueba el flujo completo como cliente (07-05-2026)
+### ✅ Verificado 08-05-2026
+- ✅ Flujo onboarding end-to-end verificado via API (login → invitación → token → registro con contraseña)
+- ✅ Creación de cliente con `revisado_por_coach: false` funciona correctamente
+- ⏳ Falta probar OAuth Google (requiere navegador real)
 - ⏳ Cuestionario inicial post-registro (en vez de "Tu coach te contactará")
 - ⏳ Email de bienvenida automático con link al portal
+
+**⚠️ Contraseña coach actualizada:** `Coach2026!` (la anterior expiró)
 
 ## 🧠 Lecciones aprendidas (07-05-2026 — Auditoría de bugs)
 

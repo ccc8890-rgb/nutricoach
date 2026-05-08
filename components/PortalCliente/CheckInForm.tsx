@@ -163,8 +163,8 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                     </div>
                     {diasSinCheckin !== null && !yaHizoCheckinHoy && (
                         <div className="flex items-center gap-1.5 mt-2 text-xs">
-                            <Clock size={12} className={diasSinCheckin > 2 ? 'text-red-500' : 'text-amber-500'} />
-                            <span className={diasSinCheckin > 2 ? 'text-red-500' : 'text-amber-500'}>
+                            <Clock size={12} className={diasSinCheckin > 2 ? 'text-red-500' : ''} style={{ color: diasSinCheckin > 2 ? undefined : '#A1A1A6' }} />
+                            <span className={diasSinCheckin > 2 ? 'text-red-500' : ''} style={{ color: diasSinCheckin > 2 ? undefined : '#A1A1A6' }}>
                                 {diasSinCheckin === 0 ? 'Hoy aún no registras' :
                                     diasSinCheckin === 1 ? 'Ayer fue tu último check-in' :
                                         `Hace ${diasSinCheckin} días sin check-in`}

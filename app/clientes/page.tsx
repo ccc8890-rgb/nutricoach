@@ -86,8 +86,8 @@ export default function ClientesPage() {
     <div className="p-8 max-w-5xl mx-auto">
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
-          <p className="text-sm text-gray-500 mt-1">{clientes.length} clientes en total</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Clientes</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{clientes.length} clientes en total</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -111,7 +111,7 @@ export default function ClientesPage() {
       </header>
 
       <div className="relative mb-6">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
         <input
           className="input search-input"
           placeholder="Buscar cliente por nombre o email…"
@@ -124,19 +124,19 @@ export default function ClientesPage() {
         <div className="grid gap-3">
           {[1, 2, 3].map(i => (
             <div key={i} className="card flex items-center gap-4 animate-pulse">
-              <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0" />
+              <div className="w-12 h-12 rounded-full skeleton flex-shrink-0" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-40" />
-                <div className="h-3 bg-gray-200 rounded w-56" />
+                <div className="h-4 skeleton rounded w-40" />
+                <div className="h-3 skeleton rounded w-56" />
               </div>
             </div>
           ))}
         </div>
       ) : filtrados.length === 0 ? (
         <div className="card text-center py-16">
-          <Users size={40} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500 font-medium">No hay clientes todavía</p>
-          <p className="text-sm text-gray-400 mt-1">Crea tu primer cliente para empezar</p>
+          <Users size={40} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+          <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>No hay clientes todavía</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Crea tu primer cliente para empezar</p>
           <Link href="/clientes/nuevo" className="btn btn-primary mt-4">
             <Plus size={16} /> Añadir cliente
           </Link>
@@ -149,15 +149,15 @@ export default function ClientesPage() {
                 href={`/clientes/${c.id}`}
                 className="card flex items-center gap-4 block"
               >
-                {/* Avatar con gradiente teal */}
+                {/* Avatar con gradiente charcoal */}
                 <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #1C1C1E, #3A3A3C)' }}>
+                  style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))' }}>
                   {c.profile?.nombre?.[0]?.toUpperCase() ?? '?'}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-semibold" style={{ color: 'var(--text)' }}>
                       {c.profile?.nombre} {c.profile?.apellidos}
                     </p>
                     <span className={`badge ${c.activo ? 'badge-teal' : 'badge-gray'}`}>
@@ -167,9 +167,9 @@ export default function ClientesPage() {
                       <span className="badge" style={{ background: 'var(--primary)', color: 'white' }}>Nuevo</span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-400 truncate">{c.profile?.email}</p>
+                  <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>{c.profile?.email}</p>
                   {c.fecha_proxima_revision && (
-                    <p className="text-xs text-gray-300 mt-0.5">
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                       📅 Revisión: {new Date(c.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                     </p>
                   )}
@@ -183,7 +183,7 @@ export default function ClientesPage() {
                     <span className="badge badge-purple">{NIVEL_LABELS[c.nivel]}</span>
                   )}
                   {c.peso_inicial && (
-                    <span className="text-gray-400 font-medium">{c.peso_inicial} kg</span>
+                    <span className="font-medium" style={{ color: 'var(--text-muted)' }}>{c.peso_inicial} kg</span>
                   )}
                 </div>
               </Link>

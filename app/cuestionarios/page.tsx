@@ -79,8 +79,8 @@ export default function CuestionariosPage() {
         <div className="p-8 max-w-5xl mx-auto">
             <header className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Cuestionarios</h1>
-                    <p className="text-sm text-gray-500 mt-1">{cuestionarios.length} cuestionarios creados</p>
+                    <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Cuestionarios</h1>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{cuestionarios.length} cuestionarios creados</p>
                 </div>
                 <button onClick={() => setShowCreador(true)} className="btn btn-primary">
                     <Plus size={16} /> Nuevo cuestionario
@@ -88,7 +88,7 @@ export default function CuestionariosPage() {
             </header>
 
             <div className="relative mb-6">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                 <input
                     className="input search-input"
                     placeholder="Buscar cuestionario…"
@@ -101,19 +101,19 @@ export default function CuestionariosPage() {
                 <div className="grid gap-3">
                     {[1, 2, 3].map(i => (
                         <div key={i} className="card flex items-center gap-4 animate-pulse">
-                            <div className="w-11 h-11 rounded-xl bg-gray-200 flex-shrink-0" />
+                            <div className="w-11 h-11 rounded-xl skeleton flex-shrink-0" />
                             <div className="flex-1 space-y-2">
-                                <div className="h-4 bg-gray-200 rounded w-40" />
-                                <div className="h-3 bg-gray-200 rounded w-32" />
+                                <div className="h-4 skeleton rounded w-40" />
+                                <div className="h-3 skeleton rounded w-32" />
                             </div>
                         </div>
                     ))}
                 </div>
             ) : filtrados.length === 0 ? (
                 <div className="card text-center py-16">
-                    <ClipboardList size={40} className="mx-auto text-gray-300 mb-3" />
-                    <p className="text-gray-500 font-medium">No hay cuestionarios todavía</p>
-                    <p className="text-sm text-gray-400 mt-1">Crea tu primer cuestionario para tus clientes</p>
+                    <ClipboardList size={40} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+                    <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>No hay cuestionarios todavía</p>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Crea tu primer cuestionario para tus clientes</p>
                     <button onClick={() => setShowCreador(true)} className="btn btn-primary mt-4">
                         <Plus size={16} /> Crear cuestionario
                     </button>
@@ -123,12 +123,12 @@ export default function CuestionariosPage() {
                     {filtrados.map(c => (
                         <div key={c.id} className="card flex items-center gap-4">
                             <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                                style={{ background: '#F2F2F7' }}>
-                                <ClipboardList size={20} style={{ color: '#1C1C1E' }} />
+                                style={{ background: 'var(--primary-bg)' }}>
+                                <ClipboardList size={20} style={{ color: 'var(--primary)' }} />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-gray-900">{c.titulo}</p>
-                                <p className="text-sm text-gray-400 truncate">
+                                <p className="font-semibold" style={{ color: 'var(--text)' }}>{c.titulo}</p>
+                                <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>
                                     {c.descripcion || 'Sin descripción'} &middot; {c.preguntas?.length ?? 0} preguntas
                                 </p>
                             </div>
@@ -151,7 +151,8 @@ export default function CuestionariosPage() {
                                 </a>
                                 <button
                                     onClick={() => toggleActivo(c)}
-                                    className={`btn btn-ghost btn-sm ${c.activo ? 'text-gray-700' : 'text-gray-400'}`}
+                                    className="btn btn-ghost btn-sm"
+                                    style={{ color: c.activo ? 'var(--text)' : 'var(--text-muted)' }}
                                 >
                                     {c.activo ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                                     {c.activo ? 'Activo' : 'Inactivo'}
@@ -171,7 +172,7 @@ export default function CuestionariosPage() {
             >
                 <div className="space-y-4 pt-2">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Título del cuestionario</label>
+                        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Título del cuestionario</label>
                         <input
                             type="text"
                             value={titulo}
@@ -181,7 +182,7 @@ export default function CuestionariosPage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
+                        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Descripción (opcional)</label>
                         <textarea
                             value={descripcion}
                             onChange={e => setDescripcion(e.target.value)}

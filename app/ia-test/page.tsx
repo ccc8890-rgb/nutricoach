@@ -107,15 +107,15 @@ export default function IATestPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
             {/* Nav */}
-            <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-3">
-                <Link href="/dashboard" className="text-gray-500 hover:text-gray-800">
+            <header style={{ backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--border)' }} className="px-6 py-3 flex items-center gap-3">
+                <Link href="/dashboard" style={{ color: 'var(--text-secondary)' }} className="hover:opacity-70 transition-opacity">
                     <ArrowLeft size={20} />
                 </Link>
-                <Bot size={22} className="text-teal-600" />
-                <h1 className="font-bold text-lg text-gray-900">Probador de IA</h1>
-                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">DeepSeek</span>
+                <Bot size={22} style={{ color: 'var(--primary)' }} />
+                <h1 className="font-bold text-lg" style={{ color: 'var(--text)' }}>Probador de IA</h1>
+                <span className="text-xs px-2 py-0.5 rounded-full" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--bg)' }}>DeepSeek</span>
             </header>
 
             <div className="max-w-4xl mx-auto p-6 flex flex-col gap-6">
@@ -123,26 +123,30 @@ export default function IATestPage() {
                 <div className="flex items-center justify-between">
                     <button
                         onClick={() => setMostrarOpciones(!mostrarOpciones)}
-                        className="text-sm text-gray-500 flex items-center gap-1.5 hover:text-gray-800"
+                        className="text-sm flex items-center gap-1.5"
+                        style={{ color: 'var(--text-secondary)' }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
                     >
                         <Settings size={16} />
                         Opciones avanzadas
                     </button>
                     <div className="flex gap-2">
-                        <button onClick={limpiar} className="text-sm text-gray-400 flex items-center gap-1 hover:text-gray-600">
+                        <button onClick={limpiar} className="text-sm flex items-center gap-1" style={{ color: 'var(--text-muted)' }} onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }} onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}>
                             <Trash2 size={14} /> Limpiar
                         </button>
                     </div>
                 </div>
 
                 {mostrarOpciones && (
-                    <div className="bg-white rounded-xl border border-gray-200 p-4 grid grid-cols-3 gap-4">
+                    <div className="rounded-xl p-4 grid grid-cols-3 gap-4" style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
                         <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">System Prompt</label>
+                            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>System Prompt</label>
                             <select
                                 value={systemKey}
                                 onChange={e => setSystemKey(e.target.value)}
-                                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+                                className="w-full text-sm rounded-lg px-3 py-2"
+                                style={{ border: '1px solid var(--border)', color: 'var(--text)', backgroundColor: 'var(--surface)' }}
                             >
                                 {SYSTEM_PROMPTS.map(sp => (
                                     <option key={sp.key} value={sp.key}>{sp.label}</option>
@@ -150,7 +154,7 @@ export default function IATestPage() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">
+                            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
                                 Temperatura: {temperatura.toFixed(1)}
                             </label>
                             <input
@@ -162,18 +166,19 @@ export default function IATestPage() {
                                 onChange={e => setTemperatura(Number(e.target.value))}
                                 className="w-full"
                             />
-                            <div className="flex justify-between text-[10px] text-gray-400">
+                            <div className="flex justify-between text-[10px]" style={{ color: 'var(--text-muted)' }}>
                                 <span>Preciso</span>
                                 <span>Creativo</span>
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Max tokens</label>
+                            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Max tokens</label>
                             <input
                                 type="number"
                                 value={maxTokens}
                                 onChange={e => setMaxTokens(Number(e.target.value))}
-                                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+                                className="w-full text-sm rounded-lg px-3 py-2"
+                                style={{ border: '1px solid var(--border)', color: 'var(--text)', backgroundColor: 'var(--surface)' }}
                                 min={100}
                                 max={8000}
                                 step={100}
@@ -192,7 +197,10 @@ export default function IATestPage() {
                                 enviarPrompt(pr)
                             }}
                             disabled={cargando}
-                            className="text-xs bg-white border border-gray-200 rounded-full px-3 py-1.5 text-gray-600 hover:border-teal-300 hover:text-teal-700 transition-colors disabled:opacity-50"
+                            className="text-xs rounded-full px-3 py-1.5 transition-colors disabled:opacity-50"
+                            style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+                            onMouseEnter={e => { if (!cargando) { e.currentTarget.style.borderColor = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary)' } }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
                         >
                             {pr.length > 50 ? pr.slice(0, 50) + '…' : pr}
                         </button>
@@ -200,21 +208,22 @@ export default function IATestPage() {
                 </div>
 
                 {/* Prompt input */}
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
                     <textarea
                         value={prompt}
                         onChange={e => setPrompt(e.target.value)}
                         placeholder="Escribe tu prompt aquí..."
                         rows={5}
                         className="w-full px-5 py-4 text-sm resize-none outline-none border-none"
+                        style={{ color: 'var(--text)', backgroundColor: 'transparent' }}
                         onKeyDown={e => {
                             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                                 enviarPrompt()
                             }
                         }}
                     />
-                    <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-t border-gray-100">
-                        <span className="text-xs text-gray-400">
+                    <div className="flex items-center justify-between px-5 py-3" style={{ backgroundColor: 'var(--bg)', borderTop: '1px solid var(--border)' }}>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                             {prompt.length} caracteres · Cmd+Enter para enviar
                         </span>
                         <button
@@ -234,43 +243,45 @@ export default function IATestPage() {
 
                 {/* Error */}
                 {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-4 text-sm text-red-700">
+                    <div className="rounded-xl px-5 py-4 text-sm" style={{ backgroundColor: 'var(--error-bg)', border: '1px solid var(--error)', color: 'var(--error)' }}>
                         ❌ {error}
                     </div>
                 )}
 
                 {/* Respuesta */}
                 {cargando && (
-                    <div className="bg-white rounded-xl border border-gray-200 p-8 flex items-center justify-center gap-3 text-gray-400">
+                    <div className="rounded-xl p-8 flex items-center justify-center gap-3" style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                         <Loader2 size={20} className="animate-spin" />
                         <span className="text-sm">DeepSeek está pensando...</span>
                     </div>
                 )}
 
                 {respuesta && !cargando && (
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                        <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-100">
+                    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
+                        <div className="flex items-center justify-between px-5 py-3" style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
                             <div className="flex items-center gap-3">
-                                <Bot size={18} className="text-teal-600" />
-                                <span className="text-sm font-medium text-gray-700">Respuesta</span>
+                                <Bot size={18} style={{ color: 'var(--primary)' }} />
+                                <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>Respuesta</span>
                                 {modelo && (
-                                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{modelo}</span>
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--bg)' }}>{modelo}</span>
                                 )}
                                 {tokens && (
-                                    <span className="text-xs text-gray-400">
+                                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                         {tokens.total} tokens · {tokens.prompt}p / {tokens.completion}c
                                     </span>
                                 )}
                             </div>
                             <button
                                 onClick={copiarRespuesta}
-                                className="text-gray-400 hover:text-gray-600"
+                                style={{ color: 'var(--text-muted)' }}
+                                onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
                                 title="Copiar respuesta"
                             >
-                                {copiado ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                                {copiado ? <Check size={16} style={{ color: '#34C759' }} /> : <Copy size={16} />}
                             </button>
                         </div>
-                        <pre className="px-5 py-4 text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed max-h-[500px] overflow-y-auto">
+                        <pre className="px-5 py-4 text-sm whitespace-pre-wrap font-sans leading-relaxed max-h-[500px] overflow-y-auto" style={{ color: 'var(--text)' }}>
                             {respuesta}
                         </pre>
                     </div>
@@ -279,7 +290,7 @@ export default function IATestPage() {
                 {/* Historial */}
                 {historial.length > 0 && (
                     <div>
-                        <h2 className="text-sm font-semibold text-gray-500 mb-3 flex items-center gap-2">
+                        <h2 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                             <FlaskConical size={16} />
                             Historial de pruebas ({historial.length})
                         </h2>
@@ -293,17 +304,20 @@ export default function IATestPage() {
                                         setTokens(entry.tokens)
                                         setModelo(entry.modelo)
                                     }}
-                                    className="bg-white rounded-lg border border-gray-200 px-4 py-3 text-left hover:border-teal-200 transition-colors"
+                                    className="rounded-lg px-4 py-3 text-left transition-colors"
+                                    style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary-light)' }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
                                 >
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-xs font-medium text-gray-400">
+                                        <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
                                             {entry.timestamp}
                                         </span>
-                                        <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--bg)' }}>
                                             {entry.tokens?.total || '?'} tokens
                                         </span>
                                     </div>
-                                    <p className="text-sm text-gray-700 line-clamp-2">{entry.prompt}</p>
+                                    <p className="text-sm line-clamp-2" style={{ color: 'var(--text)' }}>{entry.prompt}</p>
                                 </button>
                             ))}
                         </div>

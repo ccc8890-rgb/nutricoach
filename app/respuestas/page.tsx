@@ -41,8 +41,8 @@ export default function RespuestasPage() {
     return (
         <div className="p-8 max-w-5xl mx-auto">
             <header className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">Consultas pendientes</h1>
-                <p className="text-sm text-gray-500 mt-1">
+                <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Consultas pendientes</h1>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                     {loading ? 'Cargando...' : `${respuestas.length} respuesta${respuestas.length !== 1 ? 's' : ''} recibida${respuestas.length !== 1 ? 's' : ''}`}
                 </p>
             </header>
@@ -51,12 +51,12 @@ export default function RespuestasPage() {
                 <div className="space-y-3">
                     {[1, 2, 3].map(i => (
                         <div key={i} className="card flex items-center gap-4 animate-pulse">
-                            <div className="w-11 h-11 rounded-xl bg-gray-200 flex-shrink-0" />
+                            <div className="w-11 h-11 rounded-xl skeleton flex-shrink-0" />
                             <div className="flex-1 space-y-2">
-                                <div className="h-4 bg-gray-200 rounded w-48" />
-                                <div className="h-3 bg-gray-200 rounded w-32" />
+                                <div className="h-4 skeleton rounded w-48" />
+                                <div className="h-3 skeleton rounded w-32" />
                             </div>
-                            <div className="h-6 w-20 bg-gray-200 rounded-full" />
+                            <div className="h-6 w-20 skeleton rounded-full" />
                         </div>
                     ))}
                 </div>

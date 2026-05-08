@@ -44,13 +44,13 @@ const EMOTICONOS_SUENO = ['😫', '😐', '🙂', '😴', '💤']
 
 function getAdherenciaColor(valor: number): string {
     if (valor >= 8) return 'text-green-600 bg-green-50 border-green-200'
-    if (valor >= 5) return 'text-amber-600 bg-amber-50 border-amber-200'
+    if (valor >= 5) return 'text-[#8E8E93] bg-[#F2F2F4] border-[#D1D1D6]'
     return 'text-red-600 bg-red-50 border-red-200'
 }
 
 function getAdherenciaBarColor(valor: number): string {
     if (valor >= 8) return 'bg-green-500'
-    if (valor >= 5) return 'bg-amber-500'
+    if (valor >= 5) return 'bg-[#A1A1A6]'
     return 'bg-red-500'
 }
 
@@ -174,7 +174,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                             <div className="flex justify-center mt-0.5">
                                 {tendenciaAdherencia === 'up' ? <TrendingUp size={10} className="text-green-500" /> :
                                     tendenciaAdherencia === 'down' ? <TrendingDown size={10} className="text-red-500" /> :
-                                        <Minus size={10} className="text-amber-500" />}
+                                        <Minus size={10} style={{ color: '#A1A1A6' }} />}
                             </div>
                         </div>
                         <div className="text-center p-2.5 rounded-lg bg-gray-50">
@@ -187,8 +187,8 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                             <p className="text-[10px] text-gray-500">Sueño</p>
                             <span className="text-xs">{getEmoticono(Math.round(mediaSueno), EMOTICONOS_SUENO)}</span>
                         </div>
-                        <div className="text-center p-2.5 rounded-lg bg-amber-50">
-                            <Flame size={16} className="mx-auto text-amber-500" />
+                        <div className="text-center p-2.5 rounded-lg bg-[#F2F2F4]">
+                            <Flame size={16} className="mx-auto" style={{ color: '#A1A1A6' }} />
                             <p className="text-lg font-bold text-gray-900">{total}</p>
                             <p className="text-[10px] text-gray-500">Total</p>
                         </div>
@@ -292,7 +292,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                             <div>
                                                 <p className="text-xs text-gray-400">Energía</p>
                                                 <div className="flex items-center justify-center gap-1">
-                                                    <span className={`text-sm font-semibold ${(c.energia ?? 0) >= 7 ? 'text-amber-500' : (c.energia ?? 0) >= 4 ? 'text-amber-600' : 'text-gray-400'}`}>
+                                                    <span className={`text-sm font-semibold ${(c.energia ?? 0) >= 7 ? 'text-[#A1A1A6]' : (c.energia ?? 0) >= 4 ? 'text-[#8E8E93]' : 'text-gray-400'}`}>
                                                         {c.energia ? `${c.energia}` : '—'}
                                                     </span>
                                                     {c.energia && (
@@ -313,7 +313,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                         <div className="flex-shrink-0">
                                             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full
                                                 ${formatearFecha(c.fecha) === 'Hoy' ? 'bg-green-100 text-green-700' :
-                                                    formatearFecha(c.fecha) === 'Ayer' ? 'bg-amber-100 text-amber-700' :
+                                                    formatearFecha(c.fecha) === 'Ayer' ? 'bg-[#E5E5EA] text-[#636366]' :
                                                         'bg-gray-100 text-gray-500'}`}>
                                                 {formatearFecha(c.fecha) === 'Hoy' ? 'Hoy' :
                                                     formatearFecha(c.fecha) === 'Ayer' ? 'Ayer' :
@@ -342,7 +342,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                                     </div>
                                                 </div>
 
-                                                <div className="p-3 rounded-lg border border-amber-200 bg-amber-50/30">
+                                                <div className="p-3 rounded-lg border border-[#D1D1D6] bg-[#F2F2F4]/30">
                                                     <div className="flex items-center justify-between mb-1">
                                                         <span className="text-xs text-gray-500">Energía</span>
                                                         <span className="text-lg">{getEmoticono(c.energia ?? 0, EMOTICONOS_ENERGIA)}</span>
@@ -350,8 +350,8 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                                             <div
-                                                                className="h-full rounded-full bg-amber-500 transition-all"
-                                                                style={{ width: `${((c.energia ?? 0) / 10) * 100}%` }}
+                                                                className="h-full rounded-full transition-all"
+                                                                style={{ background: '#A1A1A6', width: `${((c.energia ?? 0) / 10) * 100}%` }}
                                                             />
                                                         </div>
                                                         <span className="text-xs font-bold">{c.energia}/10</span>

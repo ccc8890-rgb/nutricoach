@@ -3,8 +3,11 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Clock, Users, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, Brain, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, Brain, AlertTriangle, Clock, Users, ChevronLeft } from 'lucide-react'
+import { normalizarReceta } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
+import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
+import { MacroRing, IngredientChecklist, StepByStep } from '@/components/premium'
 import type { Alimento } from '@/types'
 
 interface RecetaDetalle {
@@ -50,6 +53,28 @@ interface IngredienteConAlimento {
   alimento?: Alimento | null
 }
 
+/** Divide instrucciones en pasos numerados */
+function parsePasos(text: string | null | undefined): { number: number; content: string; title?: string }[] {
+  if (!text) return []
+  const lines = text.split('\n').filter(l => l.trim())
+  // Intenta detectar si ya está numerado (1. / Paso 1: / 1-)
+  const numbered = lines.filter(l => /^\s*(?:Paso\s*)?\d+[.)\-:]/.test(l))
+  if (numbered.length >= 2) {
+    // Ya tiene numeración — usar las numbered lines
+    return numbered.map((l, i) => {
+      const clean = l.replace(/^\s*(?:Paso\s*)?\d+[.)\-:]\s*/, '').trim()
+      // Detectar si hay un título antes de :
+      const colonIdx = clean.indexOf(':')
+      if (colonIdx > 0 && colonIdx < 40) {
+        return { number: i + 1, title: clean.slice(0, colonIdx).trim(), content: clean.slice(colonIdx + 1).trim() }
+      }
+      return { number: i + 1, content: clean }
+    })
+  }
+  // No numerado — split por saltos de línea, cada línea es un paso
+  return lines.map((l, i) => ({ number: i + 1, content: l.trim() }))
+}
+
 export default function DetalleRecetaPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -58,6 +83,7 @@ export default function DetalleRecetaPage() {
   const [loading, setLoading] = useState(true)
   const [borrando, setBorrando] = useState(false)
   const [accionando, setAccionando] = useState(false)
+  const [imgLoaded, setImgLoaded] = useState(false)
 
   async function handleEstado(nuevoEstado: 'aprobada' | 'descartada') {
     setAccionando(true)
@@ -91,23 +117,24 @@ export default function DetalleRecetaPage() {
   }
 
   if (loading) return (
-    <div className="flex justify-center py-16">
-      <div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
+    <div className="flex justify-center items-center min-h-[60vh]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Cargando receta…</span>
+      </div>
     </div>
   )
 
-  if (!receta) return <div className="p-8" style={{ color: 'var(--text-secondary)' }}>Receta no encontrada</div>
+  if (!receta) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Receta no encontrada</p>
+      <Link href="/recetas" className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--accent)' }}>
+        <ChevronLeft size={16} /> Volver al recetario
+      </Link>
+    </div>
+  )
 
-  // Compatibilidad: soportar nombres de columna del esquema antiguo y nuevo
-  const r = {
-    kcal: receta.kcal ?? receta.kcal_por_porcion ?? null,
-    proteinas: receta.proteinas ?? receta.proteinas_por_porcion ?? null,
-    carbohidratos: receta.carbohidratos ?? receta.carbohidratos_por_porcion ?? null,
-    grasas: receta.grasas ?? receta.grasas_por_porcion ?? null,
-    instrucciones: receta.instrucciones ?? receta.pasos ?? null,
-    url_origen: receta.url_origen ?? receta.url ?? null,
-    tipo_coccion: receta.tipo_coccion ?? receta.tipo_plato ?? null,
-  }
+  const r = normalizarReceta(receta as unknown as Record<string, any>)
 
   const macrosPorPorcion = (() => {
     const porciones = receta.porciones ?? 1
@@ -123,9 +150,6 @@ export default function DetalleRecetaPage() {
         grasas: total.grasas / porciones,
       }
     }
-    // Fallback: usar valores almacenados directamente en la receta
-    // NOTA: Los valores ya están calculados POR PORCIÓN (tanto del esquema nuevo
-    // como del antiguo 'kcal_por_porcion'), así que NO dividir por porciones aquí
     if ((r.kcal ?? 0) > 0 || (r.proteinas ?? 0) > 0 || (r.carbohidratos ?? 0) > 0 || (r.grasas ?? 0) > 0) {
       return {
         kcal: r.kcal ?? 0,
@@ -140,222 +164,363 @@ export default function DetalleRecetaPage() {
   const tiempoTotal = (receta.tiempo_prep_min ?? 0) + (receta.tiempo_coccion_min ?? 0)
   const intolerancias = receta.intolerancias ?? []
 
-  return (
-    <div className="p-6 max-w-3xl mx-auto pb-16">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link href="/recetas" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
-        <div className="flex-1" />
-        <Link href={`/recetas/${id}/editar`} className="btn-secondary flex items-center gap-1.5 text-sm">
-          <Pencil size={14} /> Editar
-        </Link>
-        <button onClick={borrar} disabled={borrando} className="btn-secondary text-red-400 hover:text-red-600 flex items-center gap-1.5 text-sm">
-          <Trash2 size={14} /> {borrando ? 'Borrando…' : 'Borrar'}
-        </button>
-      </div>
+  // Ingredientes para el checklist
+  const checklistItems = ingredientes.map(ing => ({
+    id: ing.id,
+    nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
+    cantidad: `${ing.cantidad_gramos}g`,
+    kcal: ing.alimento ? calcularMacrosPorCantidad(
+      ing.alimento.calorias, ing.alimento.proteinas, ing.alimento.carbohidratos, ing.alimento.grasas, ing.alimento.fibra ?? 0, ing.cantidad_gramos
+    ).calorias : undefined,
+  }))
 
-      {/* Banner de revisión */}
-      {(receta.estado === 'en_revision' || receta.estado === 'borrador') && (
-        <div className="mb-6 p-4 rounded-xl flex items-center justify-between gap-4"
-          style={{ background: 'var(--warning-bg)', border: '1px solid var(--warning)' }}>
-          <div>
-            <p className="font-semibold text-sm" style={{ color: 'var(--warning)' }}>Receta pendiente de revisión</p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Revisa los datos y decide si aprobar o descartar</p>
+  // Pasos para StepByStep
+  const pasos = parsePasos(r.instrucciones ?? receta.instrucciones)
+
+  return (
+    <PageTransition>
+      {/* ═══════ HERO FULL-BLEED ═══════ */}
+      <div className="relative w-full">
+        {receta.imagen_url ? (
+          <div className="relative w-full h-[45vh] min-h-[320px] max-h-[500px] overflow-hidden">
+            <img
+              src={receta.imagen_url}
+              alt={receta.nombre}
+              className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${imgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
+              onLoad={() => setImgLoaded(true)}
+            />
+            {/* Skeleton */}
+            {!imgLoaded && <div className="absolute inset-0 skeleton" />}
+            {/* Overlay gradiente */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to top, var(--bg) 0%, rgba(10,10,11,0.6) 40%, rgba(10,10,11,0.2) 70%, transparent 100%)',
+              }}
+            />
+            {/* Overlay radial para dar profundidad */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(ellipse at center bottom, transparent 40%, var(--bg) 100%)',
+              }}
+            />
           </div>
-          <div className="flex gap-2 flex-shrink-0">
-            <button disabled={accionando} onClick={() => handleEstado('aprobada')}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
-              style={{ background: 'var(--primary)' }}>
-              {accionando ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />} Aprobar
-            </button>
-            <button disabled={accionando} onClick={() => handleEstado('descartada')}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
-              style={{ background: '#EF4444' }}>
-              {accionando ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />} Descartar
-            </button>
+        ) : (
+          <div
+            className="w-full h-[30vh] min-h-[240px] flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, var(--accent-bg), var(--bg-subtle))' }}
+          >
+            <span className="text-7xl">🥗</span>
           </div>
-        </div>
-      )}
-      {receta.estado === 'descartada' && (
-        <div className="mb-6 p-4 rounded-xl" style={{ background: '#FEF2F2', border: '1px solid #FCA5A5' }}>
-          <p className="font-semibold text-sm" style={{ color: '#DC2626' }}>Receta descartada</p>
-          <button onClick={() => handleEstado('aprobada')} className="text-xs mt-1 underline" style={{ color: '#DC2626' }}>
-            Restaurar como aprobada
+        )}
+
+        {/* Navegación flotante sobre la imagen */}
+        <div className="absolute top-4 left-4 right-4 flex items-center gap-2 z-10">
+          <Link
+            href="/recetas"
+            className="flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200"
+            style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
+          >
+            <ArrowLeft size={18} />
+          </Link>
+          <div className="flex-1" />
+          <Link
+            href={`/recetas/${id}/editar`}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
+            style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
+          >
+            <Pencil size={12} /> Editar
+          </Link>
+          <button onClick={borrar} disabled={borrando}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
+            style={{ background: 'rgba(255,69,58,0.3)', backdropFilter: 'blur(12px)', color: '#FF453A' }}
+          >
+            <Trash2 size={12} /> {borrando ? '…' : 'Borrar'}
           </button>
         </div>
-      )}
+      </div>
 
-      {/* Imagen */}
-      {receta.imagen_url && (
-        <img src={receta.imagen_url} alt={receta.nombre} className="w-full h-64 object-cover rounded-2xl mb-6 shadow-md" />
-      ) || (
-          <div className="w-full h-64 rounded-2xl mb-6 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--primary-bg), #16a34a22)', border: '2px dashed var(--border)' }}>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin imagen disponible</p>
-          </div>
-        )}
-
-      {/* Video embebido (Instagram/TikTok/YouTube) */}
-      {receta.video_url && (
-        <div className="mb-6 overflow-hidden rounded-2xl shadow-sm" style={{ border: '1px solid var(--border)' }}>
-          <div className="p-3 flex items-center gap-2 border-b" style={{ borderColor: 'var(--border)', background: 'var(--card-bg)' }}>
-            <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>🎬 Video receta</span>
-            <a href={receta.video_url} target="_blank" rel="noopener noreferrer"
-              className="ml-auto text-xs text-blue-500 hover:underline">Ver original ↗</a>
-          </div>
-          <div className="aspect-video w-full max-h-[500px]">
-            {receta.video_url.includes('youtube.com/embed') || receta.video_url.includes('youtu.be') ? (
-              <iframe
-                src={receta.video_url.includes('youtube.com/embed') ? receta.video_url :
-                  `https://www.youtube.com/embed/${new URL(receta.video_url).pathname.slice(1).split('?')[0]}`}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : receta.video_url.includes('instagram.com') ? (
-              <iframe
-                src={`${receta.video_url.includes('?') ? receta.video_url + '&' : receta.video_url + '?'}embed`}
-                className="w-full h-full"
-                allowFullScreen
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center" style={{ background: '#f5f5f5' }}>
-                <a href={receta.video_url} target="_blank" rel="noopener noreferrer"
-                  className="text-sm text-blue-500 hover:underline flex items-center gap-2">
-                  ▶ Ver video en la web original
-                </a>
+      {/* ═══════ CONTENIDO PRINCIPAL ═══════ */}
+      <div className="max-w-3xl mx-auto px-6 -mt-16 relative z-20 pb-safe">
+        {/* Banner de revisión */}
+        {(receta.estado === 'en_revision' || receta.estado === 'borrador') && (
+          <ScaleIn delay={0.05}>
+            <div
+              className="mb-6 p-4 rounded-2xl flex items-center justify-between gap-4"
+              style={{ background: 'var(--warning-bg)', border: '1px solid var(--warning)' }}
+            >
+              <div>
+                <p className="font-semibold text-sm" style={{ color: 'var(--warning)' }}>Pendiente de revisión</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Revisa los datos antes de aprobar</p>
               </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Título y badges */}
-      <div className="mb-4">
-        <div className="flex items-start gap-3 flex-wrap mb-2">
-          <h1 className="text-2xl font-bold flex-1" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
-          {receta.categoria && <span className="badge badge-green">{receta.categoria}</span>}
-          {receta.tipo_coccion && (
-            <span className="text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 font-medium"
-              style={{ background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0' }}>
-              {receta.tipo_coccion}
-            </span>
-          )}
-          {receta.dificultad && <span className="badge badge-gray">{receta.dificultad}</span>}
-        </div>
-        {receta.descripcion && <p style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>}
-      </div>
-
-      {/* Meta row */}
-      <div className="flex flex-wrap gap-4 text-sm mb-6 pb-6" style={{ color: 'var(--text-secondary)', borderBottom: '1px solid var(--border)' }}>
-        {tiempoTotal > 0 && (
-          <span className="flex items-center gap-1.5"><Clock size={15} /> {tiempoTotal} min</span>
-        )}
-        {receta.porciones && (
-          <span className="flex items-center gap-1.5"><Users size={15} /> {receta.porciones} {receta.porciones === 1 ? 'porción' : 'porciones'}</span>
-        )}
-        {r.tipo_coccion && <span>{r.tipo_coccion}</span>}
-        {r.url_origen && (
-          <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1 text-blue-500 hover:underline">
-            <ExternalLink size={13} /> Fuente original
-          </a>
-        )}
-      </div>
-
-      {/* Macros */}
-      {macrosPorPorcion && (
-        <div className="card mb-6" style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)', border: 'none', color: 'white' }}>
-          <p className="text-green-100 text-sm mb-2">
-            Macros por porción{receta.descripcion_porcion ? <span className="opacity-75"> · {receta.descripcion_porcion}</span> : ''}
-          </p>
-          <div className="flex gap-6 flex-wrap">
-            <div>
-              <p className="text-2xl font-bold">{Math.round(macrosPorPorcion.kcal)}</p>
-              <p className="text-xs text-green-200">kcal</p>
+              <div className="flex gap-2 flex-shrink-0">
+                <button disabled={accionando} onClick={() => handleEstado('aprobada')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-all duration-200"
+                  style={{ background: 'var(--success)' }}>
+                  {accionando ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />} Aprobar
+                </button>
+                <button disabled={accionando} onClick={() => handleEstado('descartada')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-all duration-200"
+                  style={{ background: 'var(--error)' }}>
+                  {accionando ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />} Descartar
+                </button>
+              </div>
             </div>
-            {[
-              { l: 'Proteínas', v: macrosPorPorcion.proteinas, c: '#bbf7d0' },
-              { l: 'Carbos', v: macrosPorPorcion.carbohidratos, c: '#fef08a' },
-              { l: 'Grasas', v: macrosPorPorcion.grasas, c: '#fed7aa' },
-            ].map(({ l, v, c }) => (
-              <div key={l}>
-                <p className="text-xl font-bold" style={{ color: c }}>{Math.round(v)}g</p>
-                <p className="text-xs text-green-200">{l}</p>
-              </div>
-            ))}
+          </ScaleIn>
+        )}
+        {receta.estado === 'descartada' && (
+          <FadeIn delay={0.05}>
+            <div className="mb-6 p-4 rounded-2xl" style={{ background: 'var(--error-bg)', border: '1px solid var(--error)' }}>
+              <p className="font-semibold text-sm" style={{ color: 'var(--error)' }}>Receta descartada</p>
+              <button onClick={() => handleEstado('aprobada')} className="text-xs mt-1 underline" style={{ color: 'var(--error)' }}>
+                Restaurar como aprobada
+              </button>
+            </div>
+          </FadeIn>
+        )}
+
+        {/* ═══════ TÍTULO + META ═══════ */}
+        <FadeIn delay={0.1}>
+          <div className="mb-6">
+            <div className="flex items-start gap-3 flex-wrap mb-2">
+              <h1 className="text-3xl font-bold tracking-tight flex-1" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
+            </div>
+            {receta.descripcion && (
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
+            )}
+
+            {/* Badges + tags */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {receta.categoria && (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+                  {receta.categoria}
+                </span>
+              )}
+              {receta.tipo_coccion && (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
+                  {receta.tipo_coccion}
+                </span>
+              )}
+              {receta.dificultad && (
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>
+                  {receta.dificultad}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        </FadeIn>
 
-      {/* Intolerancias */}
-      {intolerancias.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          {intolerancias.map((t: string) => (
-            <span key={t} className="text-xs px-3 py-1 rounded-full border" style={{ backgroundColor: 'var(--primary-bg)', color: 'var(--primary-dark)', borderColor: 'var(--primary-ring)' }}>{t}</span>
-          ))}
-        </div>
-      )}
-
-      {/* Ingredientes */}
-      {ingredientes.length > 0 && (
-        <div className="card mb-6">
-          <h2 className="font-semibold mb-3" style={{ color: 'var(--text)' }}>Ingredientes</h2>
-          <div className="flex flex-col gap-2">
-            {ingredientes.map(ing => {
-              const macros = ing.alimento
-                ? calcularMacrosPorCantidad(ing.alimento.calorias, ing.alimento.proteinas, ing.alimento.carbohidratos, ing.alimento.grasas, ing.alimento.fibra ?? 0, ing.cantidad_gramos)
-                : null
-              return (
-                <div key={ing.id} className="flex items-center justify-between py-2 last:border-0" style={{ borderBottom: '1px solid var(--border)' }}>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{ing.alimento?.nombre ?? ing.nombre_libre}</p>
-                      {!ing.alimento_id ? (
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border flex items-center gap-0.5" style={{ color: '#DC2626', backgroundColor: '#FEF2F2', borderColor: '#FECACA' }}>
-                          <AlertTriangle size={10} /> Sin vínculo
-                        </span>
-                      ) : ing.alimento?.fuente === 'ia' ? (
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border flex items-center gap-0.5" style={{ color: '#7C3AED', backgroundColor: '#F5F3FF', borderColor: '#DDD6FE' }}>
-                          <Brain size={10} /> IA
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border flex items-center gap-0.5" style={{ color: '#16A34A', backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }}>
-                          <CheckCircle size={10} /> Vinculado
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{ing.cantidad_gramos}g</p>
-                  </div>
-                  {macros && (
-                    <div className="text-right text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      <p className="font-semibold" style={{ color: 'var(--text)' }}>{Math.round(macros.calorias)} kcal</p>
-                      <p>P:{Math.round(macros.proteinas)}g · C:{Math.round(macros.carbohidratos)}g · G:{Math.round(macros.grasas)}g</p>
-                    </div>
-                  )}
+        {/* ═══════ MACRO RING + STATS ROW ═══════ */}
+        <FadeIn delay={0.15}>
+          <div
+            className="rounded-2xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-6"
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            {/* MacroRing */}
+            <div className="flex-shrink-0">
+              {macrosPorPorcion ? (
+                <MacroRing
+                  kcal={macrosPorPorcion.kcal}
+                  proteinas={macrosPorPorcion.proteinas}
+                  carbohidratos={macrosPorPorcion.carbohidratos}
+                  grasas={macrosPorPorcion.grasas}
+                  size={130}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center" style={{ width: 130, height: 130 }}>
+                  <span className="text-2xl font-bold" style={{ color: 'var(--text-muted)' }}>—</span>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>sin datos</span>
                 </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
+              )}
+            </div>
 
-      {/* Instrucciones */}
-      {r.instrucciones && (
-        <div className="card mb-6">
-          <h2 className="font-semibold mb-3" style={{ color: 'var(--text)' }}>Preparación</h2>
-          <div className="text-sm whitespace-pre-line leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            {r.instrucciones}
+            {/* Stats detalle */}
+            <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
+              {tiempoTotal > 0 && (
+                <div className="flex flex-col items-center sm:items-start">
+                  <div className="flex items-center gap-1.5 text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
+                    <Clock size={13} /> Tiempo total
+                  </div>
+                  <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{tiempoTotal} min</span>
+                </div>
+              )}
+              {receta.porciones && (
+                <div className="flex flex-col items-center sm:items-start">
+                  <div className="flex items-center gap-1.5 text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
+                    <Users size={13} /> Porciones
+                  </div>
+                  <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>
+                    {receta.porciones} {receta.descripcion_porcion ? `· ${receta.descripcion_porcion}` : ''}
+                  </span>
+                </div>
+              )}
+              {macrosPorPorcion && (
+                <>
+                  <div className="flex flex-col items-center sm:items-start">
+                    <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Proteína / porción</span>
+                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--macro-protein)' }}>
+                      {Math.round(macrosPorPorcion.proteinas)}g
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center sm:items-start">
+                    <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Carbos / porción</span>
+                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--macro-carbs)' }}>
+                      {Math.round(macrosPorPorcion.carbohidratos)}g
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center sm:items-start">
+                    <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Grasas / porción</span>
+                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--macro-fat)' }}>
+                      {Math.round(macrosPorPorcion.grasas)}g
+                    </span>
+                  </div>
+                </>
+              )}
+              {r.url_origen && (
+                <div className="flex items-center sm:col-span-4 mt-1">
+                  <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs hover:underline" style={{ color: 'var(--info)' }}>
+                    <ExternalLink size={12} /> Fuente original
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        </FadeIn>
 
-      {/* Consejos */}
-      {receta.consejos && (
-        <div className="card" style={{ background: 'var(--warning-bg)', borderColor: 'var(--warning)' }}>
-          <h2 className="font-semibold mb-2" style={{ color: 'var(--text)' }}>Consejos</h2>
-          <p className="text-sm whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>{receta.consejos}</p>
-        </div>
-      )}
-    </div>
+        {/* ═══════ VIDEO (si existe) ═══════ */}
+        {receta.video_url && (
+          <FadeIn delay={0.2}>
+            <div className="mb-6 overflow-hidden rounded-2xl" style={{ border: '1px solid var(--border)' }}>
+              <div className="flex items-center gap-2 p-3 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}>
+                <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>🎬 Video receta</span>
+                <a href={receta.video_url} target="_blank" rel="noopener noreferrer"
+                  className="ml-auto text-xs hover:underline" style={{ color: 'var(--info)' }}>Ver original ↗</a>
+              </div>
+              <div className="aspect-video w-full max-h-[500px]">
+                {receta.video_url.includes('youtube.com/embed') || receta.video_url.includes('youtu.be') ? (
+                  <iframe
+                    src={receta.video_url.includes('youtube.com/embed') ? receta.video_url :
+                      `https://www.youtube.com/embed/${new URL(receta.video_url).pathname.slice(1).split('?')[0]}`}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : receta.video_url.includes('instagram.com') ? (
+                  <iframe
+                    src={`${receta.video_url.includes('?') ? receta.video_url + '&' : receta.video_url + '?'}embed`}
+                    className="w-full h-full"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+                    <a href={receta.video_url} target="_blank" rel="noopener noreferrer"
+                      className="text-sm hover:underline flex items-center gap-2" style={{ color: 'var(--info)' }}>
+                      ▶ Ver video en la web original
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </FadeIn>
+        )}
+
+        {/* ═══════ INGREDIENTES (Checklist estilo Crouton) ═══════ */}
+        <FadeIn delay={0.25}>
+          {ingredientes.length > 0 && (
+            <div
+              className="rounded-2xl p-5 mb-6"
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <IngredientChecklist ingredientes={checklistItems} />
+            </div>
+          )}
+        </FadeIn>
+
+        {/* ═══════ INTOLERANCIAS ═══════ */}
+        {intolerancias.length > 0 && (
+          <FadeIn delay={0.3}>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {intolerancias.map((t: string) => (
+                <span
+                  key={t}
+                  className="text-xs px-3 py-1 rounded-full border"
+                  style={{ backgroundColor: 'var(--accent-bg)', color: 'var(--accent-dark)', borderColor: 'var(--accent-ring)' }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </FadeIn>
+        )}
+
+        {/* ═══════ PASOS (StepByStep estilo Crouton) ═══════ */}
+        <FadeIn delay={0.35}>
+          {pasos.length > 0 && (
+            <div
+              className="rounded-2xl p-5 mb-6"
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <StepByStep pasos={pasos} />
+            </div>
+          )}
+        </FadeIn>
+
+        {/* ═══════ CONSEJOS ═══════ */}
+        {receta.consejos && (
+          <FadeIn delay={0.4}>
+            <div
+              className="rounded-2xl p-5 mb-6"
+              style={{
+                background: 'var(--accent-bg)',
+                border: '1px solid var(--accent-ring)',
+              }}
+            >
+              <h2 className="text-sm font-bold mb-2" style={{ color: 'var(--accent)' }}>💡 Consejos</h2>
+              <p className="text-sm whitespace-pre-line leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.consejos}</p>
+            </div>
+          </FadeIn>
+        )}
+
+        {/* ═══════ FOOTER ═══════ */}
+        <FadeIn delay={0.45}>
+          <div className="flex items-center justify-between py-6 border-t" style={{ borderColor: 'var(--border)' }}>
+            <Link
+              href="/recetas"
+              className="flex items-center gap-1.5 text-sm font-medium transition-all duration-200"
+              style={{ color: 'var(--text-secondary)' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+            >
+              <ChevronLeft size={16} /> Volver al recetario
+            </Link>
+            <div className="flex gap-2">
+              <Link href={`/recetas/${id}/editar`}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+              >
+                <Pencil size={12} /> Editar
+              </Link>
+            </div>
+          </div>
+        </FadeIn>
+      </div>
+    </PageTransition>
   )
 }

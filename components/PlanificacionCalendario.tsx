@@ -206,7 +206,7 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                             </div>
                         ) : (
                             <p className="text-xs text-gray-400 flex items-center gap-1.5">
-                                <AlertCircle size={12} className="text-amber-500" />
+                                <AlertCircle size={12} style={{ color: '#A1A1A6' }} />
                                 Sin plan activo
                             </p>
                         )}
@@ -229,7 +229,7 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                             </div>
                         ) : (
                             <p className="text-xs text-gray-400 flex items-center gap-1.5">
-                                <AlertCircle size={12} className="text-amber-500" />
+                                <AlertCircle size={12} style={{ color: '#A1A1A6' }} />
                                 Sin rutina activa
                             </p>
                         )}
