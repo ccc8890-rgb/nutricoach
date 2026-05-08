@@ -1006,9 +1006,9 @@ export async function POST(req: NextRequest) {
     // ── Captura de imagen en background si no hay imagen_url ──
     if (!imagenFinal) {
         // Fire and forget — no bloqueamos la respuesta
-        fetch(request.nextUrl.origin + '/api/capturar-imagen-receta', {
+        fetch(req.nextUrl.origin + '/api/capturar-imagen-receta', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Cookie': request.headers.get('cookie') ?? '' },
+            headers: { 'Content-Type': 'application/json', 'Cookie': req.headers.get('cookie') ?? '' },
             body: JSON.stringify({
                 receta_id: receta.id,
                 url_origen: url,
