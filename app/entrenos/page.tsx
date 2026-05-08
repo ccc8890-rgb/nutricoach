@@ -4,8 +4,16 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, Dumbbell, Search } from 'lucide-react'
 
+type PlanRow = {
+  id: string
+  nombre: string
+  duracion_semanas?: number | null
+  activo: boolean
+  cliente?: { id: string; profile?: { nombre?: string; apellidos?: string } }
+}
+
 export default function EntrenosPage() {
-  const [planes, setPlanes] = useState<any[]>([])
+  const [planes, setPlanes] = useState<PlanRow[]>([])
   const [busqueda, setBusqueda] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -42,7 +50,7 @@ export default function EntrenosPage() {
 
       <div className="relative mb-6">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input className="input pl-9" placeholder="Buscar por nombre o cliente…" value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+        <input className="input search-input" placeholder="Buscar por nombre o cliente…" value={busqueda} onChange={e => setBusqueda(e.target.value)} />
       </div>
 
       {loading ? (

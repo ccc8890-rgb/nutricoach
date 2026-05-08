@@ -49,6 +49,10 @@ ALTER TABLE public.recetas
 ALTER TABLE public.recetas
   ADD COLUMN IF NOT EXISTS similar_ids uuid[] NOT NULL DEFAULT '{}';
 
+ALTER TABLE public.recetas
+  ADD COLUMN IF NOT EXISTS tipo_plato text
+    CHECK (tipo_plato IN ('Desayuno','Almuerzo','Comida','Merienda','Cena','Snack','Postre'));
+
 -- ============================================================================
 -- SECCIÓN 2: ALTER TABLE receta_ingredientes
 -- ============================================================================
@@ -147,31 +151,37 @@ EXECUTE FUNCTION public.trigger_recalcular_macros();
 -- ============================================================================
 -- SECCIÓN 5: ACTUALIZAR política RLS cliente
 -- ============================================================================
--- Eliminar políticas existentes de cliente sobre recetas y receta_ingredientes
+-- Eliminar políticas existentes de cliente (nombres del schema original y los nuevos)
+DROP POLICY IF EXISTS "Cliente puede ver recetas de su coach" ON public.recetas;
 DROP POLICY IF EXISTS "Cliente puede ver recetas aprobadas" ON public.recetas;
+DROP POLICY IF EXISTS "Cliente puede ver ingredientes de recetas de su coach" ON public.receta_ingredientes;
 DROP POLICY IF EXISTS "Cliente puede ver ingredientes de recetas aprobadas" ON public.receta_ingredientes;
 
 -- Recrear política para recetas: cliente solo ve recetas con estado = 'aprobada'
+-- Patrón del proyecto: cliente = usuario con entrada en tabla clientes con su profile_id
 CREATE POLICY "Cliente puede ver recetas aprobadas"
 ON public.recetas
 FOR SELECT
-TO authenticated
 USING (
-  (auth.jwt() ->> 'role') = 'cliente'
-  AND estado = 'aprobada'
+  estado = 'aprobada'
+  AND EXISTS (
+    SELECT 1 FROM public.clientes c
+    WHERE c.profile_id = auth.uid()
+      AND c.coach_id = coach_id
+  )
 );
 
 -- Recrear política para receta_ingredientes: cliente solo ve ingredientes de recetas aprobadas
 CREATE POLICY "Cliente puede ver ingredientes de recetas aprobadas"
 ON public.receta_ingredientes
 FOR SELECT
-TO authenticated
 USING (
-  (auth.jwt() ->> 'role') = 'cliente'
-  AND EXISTS (
+  EXISTS (
     SELECT 1 FROM public.recetas r
+    JOIN public.clientes c ON c.coach_id = r.coach_id
     WHERE r.id = receta_id
       AND r.estado = 'aprobada'
+      AND c.profile_id = auth.uid()
   )
 );
 

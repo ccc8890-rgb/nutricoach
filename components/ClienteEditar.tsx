@@ -50,8 +50,8 @@ export default function ClienteEditar({ cliente, onSave, onCancel }: Props) {
 
       if (updateError) throw updateError
       onSave()
-    } catch (err: any) {
-      setError(err.message || 'Error al guardar')
+    } catch (err: unknown) {
+      setError((err as { message?: string })?.message || 'Error al guardar')
     } finally {
       setLoading(false)
     }

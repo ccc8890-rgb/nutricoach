@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
@@ -13,6 +13,14 @@ import { ArrowLeft, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 export default function NuevaDietaPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-16"><div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" /></div>}>
+      <NuevaDietaForm />
+    </Suspense>
+  )
+}
+
+function NuevaDietaForm() {
   const router = useRouter()
   const params = useSearchParams()
   const clientePreseleccionado = params.get('cliente')
@@ -39,7 +47,7 @@ export default function NuevaDietaPage() {
         .select('*, profile:profiles!profile_id(nombre, apellidos)')
         .eq('coach_id', user.id)
         .eq('activo', true)
-      setClientes((data ?? []) as any)
+      setClientes((data ?? []) as unknown as (Cliente & { profile: { nombre: string; apellidos?: string } | null })[])
     }
     load()
   }, [])
@@ -89,6 +97,7 @@ export default function NuevaDietaPage() {
       proteinas_objetivo: form.proteinas_objetivo ? parseFloat(form.proteinas_objetivo) : null,
       carbohidratos_objetivo: form.carbohidratos_objetivo ? parseFloat(form.carbohidratos_objetivo) : null,
       grasas_objetivo: form.grasas_objetivo ? parseFloat(form.grasas_objetivo) : null,
+      generado_por_ia: false,
     }).select().single()
 
     setLoading(false)
