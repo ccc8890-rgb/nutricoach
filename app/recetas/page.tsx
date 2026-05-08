@@ -2,11 +2,49 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+<<<<<<< Updated upstream
 import { Plus, Search, BookOpen, Clock, Users, Inbox, AlertTriangle, Calendar, Sparkles } from 'lucide-react'
 import { StaggerList, StaggerItem, FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
+=======
+import { Plus, Search, BookOpen, Clock, Users, Flame, Snowflake, CookingPot, Rotate3D, ChefHat, Microwave, Inbox, AlertTriangle, Calendar } from 'lucide-react'
+import { StaggerList, StaggerItem } from '@/components/ui/Motion'
+
+const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre']
+
+const EMOJIS_CATEGORIA: Record<string, string> = {
+  Desayuno: '🌅',
+  Comida: '🍽️',
+  Cena: '🌙',
+  Merienda: '🫐',
+  Snack: '🥜',
+  Postre: '🍫',
+  '': '🥗',
+}
+
+const GRADIENTES_CATEGORIA: Record<string, string> = {
+  Desayuno: 'linear-gradient(135deg, #FFF7ED, #FFEDD5)',
+  Comida: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)',
+  Cena: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)',
+  Merienda: 'linear-gradient(135deg, #FDF4FF, #FAE8FF)',
+  Snack: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)',
+  Postre: 'linear-gradient(135deg, #FFF1F2, #FFE4E6)',
+  '': 'linear-gradient(135deg, var(--primary-bg), #E5E5EA)',
+}
+
+const ICONOS_COCCION: Record<string, React.ReactNode> = {
+  'Horno/Airfryer': <Flame size={14} />,
+  'Sartén': <CookingPot size={14} />,
+  Plancha: <ChefHat size={14} />,
+  Microondas: <Microwave size={14} />,
+  'No Bake': <Snowflake size={14} />,
+  Parrilla: <Rotate3D size={14} />,
+  Hervido: <CookingPot size={14} />,
+  Olla: <CookingPot size={14} />,
+}
+>>>>>>> Stashed changes
 
 const METODOS_COCCION = [
   { value: 'Todos', label: 'Todos' },
@@ -150,6 +188,7 @@ export default function RecetasPage() {
   const totalProtein = recetas.reduce((acc, r) => acc + (r.proteinas ?? 0), 0)
 
   return (
+<<<<<<< Updated upstream
     <PageTransition>
       {/* ═══════ HERO SECTION ═══════ */}
       <div
@@ -166,6 +205,24 @@ export default function RecetasPage() {
             backgroundSize: '24px 24px',
           }}
         />
+=======
+    <div className="p-8 max-w-6xl mx-auto">
+      <header className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Recetas</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+            {recetas.length} recetas · {recetas.filter(r => r.imagen_url).length} con foto
+          </p>
+        </div>
+        <BotonCola />
+        <Link href="/recetas/auditoria" className="btn-secondary flex items-center gap-2 text-sm" title="Auditoría de ingredientes">
+          <AlertTriangle size={15} /> Auditoría
+        </Link>
+        <Link href="/recetas/nueva" className="btn btn-primary">
+          <Plus size={16} /> Nueva receta
+        </Link>
+      </header>
+>>>>>>> Stashed changes
 
         <div className="relative px-6 pt-8 pb-4 max-w-6xl mx-auto">
           <FadeIn delay={0}>
@@ -270,11 +327,24 @@ export default function RecetasPage() {
                 onMouseEnter={e => { if (metodoCoccion !== m.value) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
                 onMouseLeave={e => { if (metodoCoccion !== m.value) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
               >
+<<<<<<< Updated upstream
                 {m.value !== 'Todos' && ICONOS_COCCION[m.value]}
                 {m.label}
               </button>
             ))}
           </div>
+=======
+                {/* Imagen */}
+                {r.imagen_url ? (
+                  <img src={r.imagen_url} alt={r.nombre} className="w-full h-40 object-cover" />
+                ) : (
+                  <div className="w-full h-40 flex flex-col items-center justify-center gap-1"
+                    style={{ background: GRADIENTES_CATEGORIA[r.categoria ?? ''] ?? GRADIENTES_CATEGORIA[''] }}>
+                    <span className="text-4xl">{EMOJIS_CATEGORIA[r.categoria ?? ''] ?? '🥗'}</span>
+                    {r.categoria && <span className="text-xs opacity-60" style={{ color: 'var(--text)' }}>{r.categoria}</span>}
+                  </div>
+                )}
+>>>>>>> Stashed changes
 
           {/* Filtros extra: fecha + orden */}
           <div className="flex items-center gap-2 text-xs flex-wrap mb-6">
