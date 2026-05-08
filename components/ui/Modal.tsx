@@ -56,27 +56,34 @@ export default function Modal({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Overlay */}
             <div
-                className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200 ${abierto ? 'opacity-100' : 'opacity-0'
+                className={`absolute inset-0 transition-opacity duration-200 ${abierto ? 'opacity-100' : 'opacity-0'
                     }`}
+                style={{ background: 'rgba(0, 0, 0, 0.45)', backdropFilter: 'blur(8px)' }}
                 onClick={onCerrar}
             />
 
             {/* Modal */}
             <div
-                className={`relative bg-white rounded-2xl shadow-2xl w-full max-w-md transition-all duration-200 ${abierto ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-2'
+                className={`relative w-full max-w-md transition-all duration-200 ${abierto ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-2'
                     }`}
+                style={{
+                    background: 'var(--surface)',
+                    borderRadius: '16px',
+                    boxShadow: 'var(--shadow-xl)',
+                }}
             >
                 {/* Header */}
                 <div className="flex items-start justify-between p-5 pb-3">
                     <div className="flex-1 pr-4">
-                        <h2 className="text-lg font-bold text-gray-900">{titulo}</h2>
+                        <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>{titulo}</h2>
                         {descripcion && (
-                            <p className="text-sm text-gray-500 mt-1">{descripcion}</p>
+                            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{descripcion}</p>
                         )}
                     </div>
                     <button
                         onClick={onCerrar}
-                        className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+                        className="transition-colors p-1 rounded-lg"
+                        style={{ color: 'var(--text-muted)' }}
                     >
                         <X size={18} />
                     </button>
@@ -87,7 +94,8 @@ export default function Modal({
 
                 {/* Footer */}
                 {(accion || accionSecundaria) && (
-                    <div className="flex items-center justify-end gap-2 p-5 pt-3 border-t" style={{ borderColor: '#F1F5F9' }}>
+                    <div className="flex items-center justify-end gap-2 p-5 pt-3 border-t"
+                        style={{ borderColor: 'var(--border-light)' }}>
                         {accionSecundaria && (
                             <button
                                 onClick={accionSecundaria.onClick}

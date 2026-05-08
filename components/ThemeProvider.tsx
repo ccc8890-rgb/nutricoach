@@ -39,10 +39,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!mounted) return
         const root = document.documentElement
-        if (theme === 'dark') {
-            root.classList.add('dark')
+        if (theme === 'light') {
+            root.classList.add('light')
         } else {
-            root.classList.remove('dark')
+            root.classList.remove('light')
         }
         localStorage.setItem('nutricoach-theme', theme)
     }, [theme, mounted])

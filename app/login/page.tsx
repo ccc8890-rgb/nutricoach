@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { LogIn } from 'lucide-react'
+import { LogIn, Sparkles } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -22,9 +22,6 @@ export default function LoginPage() {
       return
     }
 
-    // Sincronizar sesión con cookies para que el servidor pueda leerla
-    // IMPORTANTE: esperamos a que el callback termine antes de redirigir
-    // Antes: fetch() sin await → se redirigía antes de escribir las cookies
     try {
       const session = data.session
       if (session) {
@@ -52,32 +49,49 @@ export default function LoginPage() {
       return
     }
 
-    // Esperar un momento para que las cookies se propaguen
     await new Promise(r => setTimeout(r, 100))
-
-    // Redirigir — la landing page (Server Component) leerá las cookies
     window.location.href = '/'
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'linear-gradient(135deg, #F2F2F7 0%, #E5E5EA 50%, #F8FAFC 100%)' }}>
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{
+        background: 'var(--bg)',
+      }}
+    >
       <div className="w-full max-w-md animate-fade-in">
-        {/* Logo */}
+        {/* Logo — premium con glow graphite */}
         <div className="text-center mb-8">
           <div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 text-2xl font-bold text-white"
-            style={{ background: 'linear-gradient(135deg, #1C1C1E, #3A3A3C)', boxShadow: '0 4px 12px rgba(13,148,136,0.3)' }}
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 text-2xl font-bold tracking-tight"
+            style={{
+              background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
+              color: '#1C1C1E',
+              boxShadow: '0 0 30px var(--accent-glow)',
+            }}
           >
             CN
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Casanova Nutrition</h1>
-          <p className="text-gray-500 mt-1.5">Tu plataforma de coaching nutricional</p>
+          <h1
+            className="text-3xl font-bold tracking-tight"
+            style={{ color: 'var(--text)' }}
+          >
+            Casanova Nutrition
+          </h1>
+          <p className="mt-1.5" style={{ color: 'var(--text-secondary)' }}>
+            Tu plataforma de coaching nutricional
+          </p>
         </div>
 
-        {/* Card de login */}
-        <div className="card shadow-lg border-t-4" style={{ borderTopColor: '#1C1C1E' }}>
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Iniciar sesión</h2>
+        {/* Card de login — glass premium */}
+        <div className="card-glass">
+          <div className="flex items-center gap-2 mb-6">
+            <Sparkles size={16} style={{ color: 'var(--accent)' }} />
+            <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>
+              Iniciar sesión
+            </h2>
+          </div>
 
           <form onSubmit={handleLogin} className="flex flex-col gap-5">
             <div>
@@ -107,15 +121,26 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2">
+              <div
+                className="p-3 rounded-xl flex items-center gap-2 text-sm"
+                style={{
+                  background: 'var(--error-bg)',
+                  border: '1px solid rgba(255, 69, 58, 0.2)',
+                  color: 'var(--error)',
+                }}
+              >
                 <span>•</span> {error}
               </div>
             )}
 
-            <button type="submit" className="btn-primary justify-center btn-lg" disabled={loading}>
+            <button
+              type="submit"
+              className="btn btn-primary btn-lg justify-center w-full"
+              disabled={loading}
+            >
               {loading ? (
                 <>
-                  <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  <div className="w-4 h-4 rounded-full border-2 border-[#1C1C1E] border-t-transparent animate-spin" />
                   Entrando…
                 </>
               ) : (
@@ -127,7 +152,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-400 mt-6">
+          <p className="text-center text-sm mt-6" style={{ color: 'var(--text-muted)' }}>
             ¿No tienes cuenta? Pide acceso a tu coach.
           </p>
         </div>

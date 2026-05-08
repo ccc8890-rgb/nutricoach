@@ -244,7 +244,7 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
                     {/* Fase de carga */}
                     <div>
                         <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                            <Zap size={16} className="text-amber-500" /> Fase de carga de carbohidratos
+                            <Zap size={16} style={{ color: '#A1A1A6' }} /> Fase de carga de carbohidratos
                         </h3>
                         <p className="text-xs text-gray-500 mb-4">
                             Basado en protocolo clásico de supercompensación de glucógeno (3 días previos, 8-12g/kg carbohidratos)
@@ -279,30 +279,30 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
 
                         {/* Preview carga */}
                         {form.peso_inicial && Number(form.peso_inicial) > 0 && (
-                            <div className="mt-4 p-4 rounded-lg bg-amber-50 border border-amber-200">
-                                <p className="text-sm font-semibold text-amber-800 mb-2">📊 Cálculo diario estimado</p>
+                            <div className="mt-4 p-4 rounded-lg bg-[#F2F2F4] border border-[#D1D1D6]">
+                                <p className="text-sm font-semibold text-[#48484A] mb-2">📊 Cálculo diario estimado</p>
                                 <div className="grid grid-cols-4 gap-3 text-sm">
                                     <div>
-                                        <span className="text-amber-600">Carbos:</span>
-                                        <span className="font-bold text-amber-900 ml-1">
+                                        <span className="text-[#8E8E93]">Carbos:</span>
+                                        <span className="font-bold text-[#363639] ml-1">
                                             {Math.round(Number(form.peso_inicial) * Number(form.carga_carbs_kg))}g
                                         </span>
                                     </div>
                                     <div>
-                                        <span className="text-amber-600">Proteína:</span>
-                                        <span className="font-bold text-amber-900 ml-1">
+                                        <span className="text-[#8E8E93]">Proteína:</span>
+                                        <span className="font-bold text-[#363639] ml-1">
                                             {Math.round(Number(form.peso_inicial) * Number(form.carga_proteinas_kg))}g
                                         </span>
                                     </div>
                                     <div>
-                                        <span className="text-amber-600">Grasas:</span>
-                                        <span className="font-bold text-amber-900 ml-1">
+                                        <span className="text-[#8E8E93]">Grasas:</span>
+                                        <span className="font-bold text-[#363639] ml-1">
                                             {Math.round(Number(form.peso_inicial) * Number(form.carga_grasas_kg))}g
                                         </span>
                                     </div>
                                     <div>
-                                        <span className="text-amber-600">Kcal:</span>
-                                        <span className="font-bold text-amber-900 ml-1">
+                                        <span className="text-[#8E8E93]">Kcal:</span>
+                                        <span className="font-bold text-[#363639] ml-1">
                                             {Math.round(
                                                 Number(form.peso_inicial) * Number(form.carga_carbs_kg) * 4 +
                                                 Number(form.peso_inicial) * Number(form.carga_proteinas_kg) * 4 +
@@ -459,7 +459,7 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
                                                     </>
                                                 )}
                                                 <span>·</span>
-                                                <span className="font-medium text-amber-600">{carga.kcal} kcal/día en carga</span>
+                                                <span className="font-medium text-[#8E8E93]">{carga.kcal} kcal/día en carga</span>
                                             </div>
                                         </div>
                                     </div>
@@ -482,34 +482,34 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
                                 {expandido && (
                                     <div className="px-4 pb-4 border-t border-gray-100 pt-4 space-y-4">
                                         {/* Carga de carbohidratos */}
-                                        <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
-                                            <h4 className="font-semibold text-amber-800 text-sm flex items-center gap-2 mb-3">
+                                        <div className="bg-[#F2F2F4] rounded-lg p-4 border border-[#D1D1D6]">
+                                            <h4 className="font-semibold text-[#48484A] text-sm flex items-center gap-2 mb-3">
                                                 <Zap size={14} /> Fase de carga ({p.carga_dias_previos} días previos)
                                             </h4>
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                                                 <div className="bg-white rounded p-2">
-                                                    <p className="text-xs text-amber-600">Carbohidratos</p>
-                                                    <p className="text-lg font-bold text-amber-900">{carga.carbs}g</p>
-                                                    <p className="text-xs text-amber-500">{p.carga_carbs_kg}g/kg/día</p>
+                                                    <p className="text-xs text-[#8E8E93]">Carbohidratos</p>
+                                                    <p className="text-lg font-bold text-[#363639]">{carga.carbs}g</p>
+                                                    <p className="text-xs text-[#A1A1A6]">{p.carga_carbs_kg}g/kg/día</p>
                                                 </div>
                                                 <div className="bg-white rounded p-2">
-                                                    <p className="text-xs text-amber-600">Proteína</p>
-                                                    <p className="text-lg font-bold text-amber-900">{carga.proteinas}g</p>
-                                                    <p className="text-xs text-amber-500">{p.carga_proteinas_kg}g/kg/día</p>
+                                                    <p className="text-xs text-[#8E8E93]">Proteína</p>
+                                                    <p className="text-lg font-bold text-[#363639]">{carga.proteinas}g</p>
+                                                    <p className="text-xs text-[#A1A1A6]">{p.carga_proteinas_kg}g/kg/día</p>
                                                 </div>
                                                 <div className="bg-white rounded p-2">
-                                                    <p className="text-xs text-amber-600">Grasas</p>
-                                                    <p className="text-lg font-bold text-amber-900">{carga.grasas}g</p>
-                                                    <p className="text-xs text-amber-500">{p.carga_grasas_kg}g/kg/día</p>
+                                                    <p className="text-xs text-[#8E8E93]">Grasas</p>
+                                                    <p className="text-lg font-bold text-[#363639]">{carga.grasas}g</p>
+                                                    <p className="text-xs text-[#A1A1A6]">{p.carga_grasas_kg}g/kg/día</p>
                                                 </div>
                                                 <div className="bg-white rounded p-2">
-                                                    <p className="text-xs text-amber-600">Calorías</p>
-                                                    <p className="text-lg font-bold text-amber-900">{carga.kcal}</p>
-                                                    <p className="text-xs text-amber-500">kcal/día</p>
+                                                    <p className="text-xs text-[#8E8E93]">Calorías</p>
+                                                    <p className="text-lg font-bold text-[#363639]">{carga.kcal}</p>
+                                                    <p className="text-xs text-[#A1A1A6]">kcal/día</p>
                                                 </div>
                                             </div>
                                             {p.carga_inicio && (
-                                                <p className="text-xs text-amber-700 mt-2">
+                                                <p className="text-xs text-[#636366] mt-2">
                                                     <CalendarDays size={12} className="inline mr-1" />
                                                     Inicio de carga: {new Date(p.carga_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
                                                 </p>

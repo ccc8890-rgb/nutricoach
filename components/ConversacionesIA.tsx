@@ -29,7 +29,7 @@ interface MetaData {
 const TIPO_CONFIG: Record<string, { label: string; icon: typeof Brain; color: string; bg: string }> = {
     dieta: { label: 'Dieta generada', icon: Brain, color: '#0D9488', bg: '#F0FDFA' },
     informe_semanal: { label: 'Informe semanal', icon: Activity, color: '#3B82F6', bg: '#EFF6FF' },
-    ajuste_macros: { label: 'Ajuste de macros', icon: Zap, color: '#F59E0B', bg: '#FFFBEB' },
+    ajuste_macros: { label: 'Ajuste de macros', icon: Zap, color: '#A1A1A6', bg: 'rgba(161,161,166,0.08)' },
     recomendacion: { label: 'Recomendación', icon: MessageSquare, color: '#8B5CF6', bg: '#F5F3FF' },
 }
 

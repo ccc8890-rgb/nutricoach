@@ -61,10 +61,10 @@ export default function FormularioCliente({ cuestionario, onSubmit, enviando, en
 
     if (enviado) {
         return (
-            <div className="text-center py-12 animate-fade-in">
+            <div className="text-center py-12">
                 <div className="text-5xl mb-4">✅</div>
-                <h2 className="text-xl font-bold text-gray-800 mb-2">¡Respuestas enviadas!</h2>
-                <p className="text-gray-500">
+                <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text)' }}>¡Respuestas enviadas!</h2>
+                <p style={{ color: 'var(--text-secondary)' }}>
                     Gracias por completar el cuestionario. El coach revisará tus respuestas pronto.
                 </p>
             </div>
@@ -75,7 +75,7 @@ export default function FormularioCliente({ cuestionario, onSubmit, enviando, en
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Datos del cliente (opcional) */}
             <div className="card space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700">Tus datos (opcional)</h3>
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Tus datos (opcional)</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
                         type="text"
@@ -98,15 +98,15 @@ export default function FormularioCliente({ cuestionario, onSubmit, enviando, en
             {cuestionario.preguntas.map((pregunta, index) => (
                 <div
                     key={pregunta.id}
-                    className="card animate-slide-up"
+                    className="card"
                     style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                    <label className="block text-sm font-medium text-gray-800 mb-1">
+                    <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>
                         {pregunta.titulo}
-                        {pregunta.requerida && <span className="text-red-500 ml-1">*</span>}
+                        {pregunta.requerida && <span style={{ color: '#EF4444' }} className="ml-1">*</span>}
                     </label>
                     {pregunta.descripcion && (
-                        <p className="text-xs text-gray-500 mb-2">{pregunta.descripcion}</p>
+                        <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>{pregunta.descripcion}</p>
                     )}
 
                     {pregunta.tipo === 'texto' && (
@@ -157,12 +157,13 @@ export default function FormularioCliente({ cuestionario, onSubmit, enviando, en
                             {(pregunta.opciones || []).map(op => {
                                 const seleccionados = (respuestas[pregunta.id] as string[]) || []
                                 return (
-                                    <label key={op.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer hover:text-gray-900">
+                                    <label key={op.id} className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: 'var(--text)' }}>
                                         <input
                                             type="checkbox"
                                             checked={seleccionados.includes(op.value)}
                                             onChange={e => actualizarMultiselect(pregunta.id, op.value, e.target.checked)}
-                                            className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                                            className="rounded"
+                                            style={{ borderColor: 'var(--border)' }}
                                         />
                                         {op.label}
                                     </label>
@@ -174,12 +175,13 @@ export default function FormularioCliente({ cuestionario, onSubmit, enviando, en
                     {pregunta.tipo === 'checkbox' && (
                         <div className="space-y-2">
                             {(pregunta.opciones || []).map(op => (
-                                <label key={op.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer hover:text-gray-900">
+                                <label key={op.id} className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: 'var(--text)' }}>
                                     <input
                                         type="checkbox"
                                         checked={((respuestas[pregunta.id] as string[]) || []).includes(op.value)}
                                         onChange={e => actualizarMultiselect(pregunta.id, op.value, e.target.checked)}
-                                        className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                                        className="rounded"
+                                        style={{ borderColor: 'var(--border)' }}
                                     />
                                     {op.label}
                                 </label>

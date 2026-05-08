@@ -2,45 +2,41 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, Search, BookOpen, Clock, Users, Flame, Snowflake, CookingPot, Rotate3D, ChefHat, Microwave, Inbox, AlertTriangle, Calendar } from 'lucide-react'
-import { StaggerList, StaggerItem } from '@/components/ui/Motion'
-
-const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre']
-
-const ICONOS_COCCION: Record<string, React.ReactNode> = {
-  'Horno/Airfryer': <Flame size={14} />,
-  'Sartén': <CookingPot size={14} />,
-  Plancha: <ChefHat size={14} />,
-  Microondas: <Microwave size={14} />,
-  'No Bake': <Snowflake size={14} />,
-  Parrilla: <Rotate3D size={14} />,
-  Hervido: <CookingPot size={14} />,
-  Olla: <CookingPot size={14} />,
-}
+import { Plus, Search, BookOpen, Clock, Users, Inbox, AlertTriangle, Calendar, Sparkles } from 'lucide-react'
+import { StaggerList, StaggerItem, FadeIn, PageTransition } from '@/components/ui/Motion'
+import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
+import { useToast } from '@/components/ui/Toast'
+import { RecipeCardPremium } from '@/components/premium'
 
 const METODOS_COCCION = [
   { value: 'Todos', label: 'Todos' },
-  ...Object.keys(ICONOS_COCCION).map(k => ({ value: k, label: k })),
+  ...TIPOS_COCCION.map(k => ({ value: k, label: k })),
 ]
 
 function BotonCola() {
   const [count, setCount] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
+      if (!user) { setLoading(false); return }
       supabase.from('recetas').select('id', { count: 'exact', head: true })
         .eq('coach_id', user.id).in('estado', ['borrador', 'en_revision'])
-        .then(({ count: c }) => setCount(c ?? 0))
+        .then(({ count: c }) => { setCount(c ?? 0); setLoading(false) })
     })
   }, [])
+  if (loading) return <div className="flex items-center gap-2 opacity-50 text-sm px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}><Inbox size={14} /> Cola</div>
   if (count === null || count === 0) return null
   return (
     <Link href='/recetas/cola'
-      className='btn-secondary flex items-center gap-2 relative'>
-      <Inbox size={16} />
+      className="relative flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border transition-all duration-200"
+      style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+    >
+      <Inbox size={14} />
       Cola
-      <span className='absolute -top-1 -right-1 w-4 h-4 rounded-full text-white text-xs flex items-center justify-center font-bold'
-        style={{ background: 'var(--primary)', fontSize: '10px' }}>{count}</span>
+      <span className='absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-white text-[10px] flex items-center justify-center font-bold'
+        style={{ background: 'var(--accent)' }}>{count}</span>
     </Link>
   )
 }
@@ -75,6 +71,7 @@ type RecetaRow = {
 }
 
 export default function RecetasPage() {
+  const { addToast } = useToast()
   const [recetas, setRecetas] = useState<RecetaRow[]>([])
   const [busqueda, setBusqueda] = useState('')
   const [categoria, setCategoria] = useState('Todos')
@@ -113,24 +110,13 @@ export default function RecetasPage() {
     load()
   }, [])
 
-  // Compatibilidad con ambos esquemas de columnas
-  const normalizar = (r: RecetaRow) => ({
-    ...r,
-    kcal: r.kcal ?? r.kcal_por_porcion ?? null,
-    proteinas: r.proteinas ?? r.proteinas_por_porcion ?? null,
-    carbohidratos: r.carbohidratos ?? r.carbohidratos_por_porcion ?? null,
-    grasas: r.grasas ?? r.grasas_por_porcion ?? null,
-    instrucciones: r.instrucciones ?? r.pasos ?? null,
-    url_origen: r.url_origen ?? r.url ?? null,
-  })
 
   const filtradas = useMemo(() => {
-    return recetas.map(normalizar).filter(r => {
+    return recetas.map(r => ({ ...r, ...normalizarReceta(r) })).filter(r => {
       const matchBusqueda = r.nombre.toLowerCase().includes(busqueda.toLowerCase())
       const matchCategoria = categoria === 'Todos' || r.categoria === categoria
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
 
-      // Filtro por rango de fechas
       let matchFecha = true
       if (r.created_at) {
         const fechaReceta = new Date(r.created_at)
@@ -153,230 +139,252 @@ export default function RecetasPage() {
       })
   }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, orden])
 
-  // Count distinct tipo_coccion values for context
   const coccionEnUso = new Set(recetas.map(r => r.tipo_coccion).filter(Boolean))
 
   const btnStyle = (active: boolean) => active
-    ? { background: 'var(--primary)', borderColor: 'var(--primary)', color: 'white' }
-    : { color: 'var(--text-secondary)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }
+    ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
+    : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }
+
+  // Estadísticas rápidas
+  const totalKcal = recetas.reduce((acc, r) => acc + (r.kcal ?? 0), 0)
+  const totalProtein = recetas.reduce((acc, r) => acc + (r.proteinas ?? 0), 0)
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <header className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Recetas</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{recetas.length} recetas en tu base de datos</p>
-        </div>
-        <BotonCola />
-        <Link href="/recetas/auditoria" className="btn-secondary flex items-center gap-2 text-sm" title="Auditoría de ingredientes">
-          <AlertTriangle size={15} /> Auditoría
-        </Link>
-        <Link href="/recetas/nueva" className="btn btn-primary">
-          <Plus size={16} /> Nueva receta
-        </Link>
-      </header>
+    <PageTransition>
+      {/* ═══════ HERO SECTION ═══════ */}
+      <div
+        className="relative overflow-hidden pb-8 mb-6"
+        style={{
+          background: 'linear-gradient(180deg, var(--accent-bg) 0%, transparent 100%)',
+        }}
+      >
+        {/* Grid decorativo */}
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, var(--accent) 1px, transparent 0)`,
+            backgroundSize: '24px 24px',
+          }}
+        />
 
-      {/* Filtros */}
-      <div className="space-y-3 mb-6">
-        {/* Buscador + Categorías */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-            <input
-              className="input search-input"
-              placeholder="Buscar receta…"
-              value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-1.5 flex-wrap">
+        <div className="relative px-6 pt-8 pb-4 max-w-6xl mx-auto">
+          <FadeIn delay={0}>
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}
+                  >
+                    <Sparkles size={12} />
+                    Recetario premium
+                  </span>
+                </div>
+                <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
+                  Recetas
+                </h1>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+                  {recetas.length} receta{recetas.length !== 1 ? 's' : ''} en tu colección
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <BotonCola />
+                <Link href="/recetas/auditoria" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200 hide-mobile"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                >
+                  <AlertTriangle size={13} /> Auditoría
+                </Link>
+                <Link href="/recetas/nueva"
+                  className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200"
+                  style={{ background: 'var(--accent)', color: '#1C1C1E' }}
+                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px var(--accent-glow)' }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
+                >
+                  <Plus size={15} /> Nueva
+                </Link>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Stats rápidas */}
+          <FadeIn delay={0.05}>
+            <div className="flex gap-4 mb-5">
+              <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--macro-calories)' }} />
+                {totalKcal > 0 && <span className="tabular-nums">{Math.round(totalKcal).toLocaleString()} kcal totales</span>}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--macro-protein)' }} />
+                {totalProtein > 0 && <span className="tabular-nums">{Math.round(totalProtein).toLocaleString()}g proteína</span>}
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Buscador */}
+          <FadeIn delay={0.1}>
+            <div className="relative max-w-md">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+              <input
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all duration-200"
+                placeholder="Buscar receta…"
+                value={busqueda}
+                onChange={e => setBusqueda(e.target.value)}
+                style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-ring)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
+              />
+            </div>
+          </FadeIn>
+        </div>
+      </div>
+
+      <div className="px-6 max-w-6xl mx-auto pb-safe">
+        {/* ═══════ FILTROS ═══════ */}
+        <FadeIn delay={0.15}>
+          {/* Categorías — chips scrollables */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
             {CATEGORIAS.map(c => (
               <button
                 key={c}
                 onClick={() => setCategoria(c)}
-                className="text-xs px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
+                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
                 style={btnStyle(categoria === c)}
-                onMouseEnter={e => {
-                  if (categoria !== c) {
-                    e.currentTarget.style.borderColor = 'var(--primary-light)'
-                    e.currentTarget.style.color = 'var(--primary)'
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (categoria !== c) {
-                    e.currentTarget.style.borderColor = 'var(--border)'
-                    e.currentTarget.style.color = 'var(--text-secondary)'
-                  }
-                }}
+                onMouseEnter={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                onMouseLeave={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
               >
                 {c}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Filtro por fecha de creación */}
-        <div className="flex items-center gap-2 text-sm flex-wrap">
-          <Calendar size={14} style={{ color: 'var(--text-muted)' }} />
-          <span style={{ color: 'var(--text-secondary)' }}>Creada entre</span>
-          <input
-            type="date"
-            value={fechaDesde}
-            onChange={e => setFechaDesde(e.target.value)}
-            className="input text-xs py-1 px-2 rounded border max-w-[150px]"
-            style={{ color: 'var(--text)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
-          />
-          <span style={{ color: 'var(--text-muted)' }}>y</span>
-          <input
-            type="date"
-            value={fechaHasta}
-            onChange={e => setFechaHasta(e.target.value)}
-            className="input text-xs py-1 px-2 rounded border max-w-[150px]"
-            style={{ color: 'var(--text)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
-          />
-          {(fechaDesde || fechaHasta) && (
-            <button
-              onClick={() => { setFechaDesde(''); setFechaHasta('') }}
-              className="text-xs underline hover:no-underline"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              Limpiar
-            </button>
-          )}
-          <div className="flex items-center gap-1 ml-auto">
-            <span style={{ color: 'var(--text-muted)' }}>Ordenar</span>
-            <select
-              value={orden}
-              onChange={e => setOrden(e.target.value as 'reciente' | 'antiguo')}
-              className="input text-xs py-1 px-2 rounded border"
-              style={{ color: 'var(--text)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
-            >
-              <option value="reciente">Más reciente</option>
-              <option value="antiguo">Más antiguo</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Método de cocción */}
-        <div className="flex gap-1.5 flex-wrap">
-          {METODOS_COCCION.filter(m => m.value === 'Todos' || coccionEnUso.has(m.value)).map(m => (
-            <button
-              key={m.value}
-              onClick={() => setMetodoCoccion(m.value)}
-              className="text-xs px-3 py-1.5 rounded-full border font-medium transition-all duration-150 flex items-center gap-1"
-              style={btnStyle(metodoCoccion === m.value)}
-            >
-              {m.value !== 'Todos' && ICONOS_COCCION[m.value]}
-              {m.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="card-hoverable overflow-hidden !p-0 border animate-pulse">
-              <div className="w-full h-40 skeleton" />
-              <div className="p-4 space-y-3">
-                <div className="h-4 skeleton rounded w-3/4" />
-                <div className="h-3 skeleton rounded w-full" />
-                <div className="flex gap-2">
-                  <div className="h-3 skeleton rounded w-16" />
-                  <div className="h-3 skeleton rounded w-12" />
-                </div>
-                <div className="flex gap-1.5">
-                  <div className="h-5 skeleton rounded w-14" />
-                  <div className="h-5 skeleton rounded w-14" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : filtradas.length === 0 ? (
-        <div className="card text-center py-16">
-          <BookOpen size={40} style={{ color: 'var(--text-muted)' }} className="mx-auto mb-3" />
-          <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>
-            {recetas.length === 0 ? 'Aún no hay recetas' : 'No hay recetas con ese filtro'}
-          </p>
-          {recetas.length === 0 && (
-            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Crea tu primera receta o importa una desde una URL</p>
-          )}
-          <Link href="/recetas/nueva" className="btn btn-primary mt-4">
-            <Plus size={16} /> Añadir receta
-          </Link>
-        </div>
-      ) : (
-        <StaggerList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtradas.map(r => (
-            <StaggerItem key={r.id}>
-              <Link
-                href={`/recetas/${r.id}`}
-                className="card-hoverable overflow-hidden !p-0 border transition-all block"
+          {/* Método cocción */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+            {METODOS_COCCION.filter(m => m.value === 'Todos' || coccionEnUso.has(m.value)).map(m => (
+              <button
+                key={m.value}
+                onClick={() => setMetodoCoccion(m.value)}
+                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150 flex items-center gap-1"
+                style={btnStyle(metodoCoccion === m.value)}
+                onMouseEnter={e => { if (metodoCoccion !== m.value) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                onMouseLeave={e => { if (metodoCoccion !== m.value) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
               >
-                {/* Imagen */}
-                {r.imagen_url ? (
-                  <img src={r.imagen_url} alt={r.nombre} className="w-full h-40 object-cover" />
-                ) : (
-                  <div className="w-full h-40 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--primary-bg), #E5E5EA)' }}>
-                    <span className="text-5xl">🥗</span>
-                  </div>
-                )}
+                {m.value !== 'Todos' && ICONOS_COCCION[m.value]}
+                {m.label}
+              </button>
+            ))}
+          </div>
 
-                {/* Info */}
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-semibold leading-tight" style={{ color: 'var(--text)' }}>{r.nombre}</h3>
-                    <div className="flex gap-1 flex-shrink-0">
-                      {r.categoria && (
-                        <span className="badge badge-teal">{r.categoria}</span>
-                      )}
-                      {r.tipo_coccion && (
-                        <span className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 font-medium"
-                          style={{ background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0' }}>
-                          {ICONOS_COCCION[r.tipo_coccion]}
-                          {r.tipo_coccion}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+          {/* Filtros extra: fecha + orden */}
+          <div className="flex items-center gap-2 text-xs flex-wrap mb-6">
+            <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
+            <span style={{ color: 'var(--text-secondary)' }}>Creada entre</span>
+            <input
+              type="date"
+              value={fechaDesde}
+              onChange={e => setFechaDesde(e.target.value)}
+              className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
+              style={{ color: 'var(--text)', background: 'var(--surface)', borderColor: 'var(--border)' }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>y</span>
+            <input
+              type="date"
+              value={fechaHasta}
+              onChange={e => setFechaHasta(e.target.value)}
+              className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
+              style={{ color: 'var(--text)', background: 'var(--surface)', borderColor: 'var(--border)' }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+            />
+            {(fechaDesde || fechaHasta) && (
+              <button
+                onClick={() => { setFechaDesde(''); setFechaHasta('') }}
+                className="text-xs underline hover:no-underline"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Limpiar
+              </button>
+            )}
+            <div className="flex items-center gap-1 ml-auto">
+              <span style={{ color: 'var(--text-muted)' }}>Orden</span>
+              <select
+                value={orden}
+                onChange={e => setOrden(e.target.value as 'reciente' | 'antiguo')}
+                className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
+                style={{ color: 'var(--text)', background: 'var(--surface)', borderColor: 'var(--border)' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+              >
+                <option value="reciente">Más reciente</option>
+                <option value="antiguo">Más antiguo</option>
+              </select>
+            </div>
+          </div>
+        </FadeIn>
 
-                  {r.descripcion && (
-                    <p className="text-xs mb-3 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{r.descripcion}</p>
-                  )}
-
-                  <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {(r.tiempo_prep_min || r.tiempo_coccion_min) && (
-                      <span className="flex items-center gap-1">
-                        <Clock size={12} />
-                        {(r.tiempo_prep_min ?? 0) + (r.tiempo_coccion_min ?? 0)} min
-                      </span>
-                    )}
-                    {(r.porciones ?? 0) > 0 && (
-                      <span className="flex items-center gap-1">
-                        <Users size={12} />
-                        {r.porciones} {r.porciones === 1 ? 'porción' : 'porciones'}
-                        {r.descripcion_porcion && <span className="opacity-70">({r.descripcion_porcion})</span>}
-                      </span>
-                    )}
-                    {(r.kcal ?? 0) > 0 && (
-                      <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>{Math.round(r.kcal ?? 0)} kcal</span>
-                    )}
-                  </div>
-
-                  {((r.proteinas ?? 0) > 0 || (r.carbohidratos ?? 0) > 0 || (r.grasas ?? 0) > 0) && (
-                    <div className="flex gap-1.5 mt-2">
-                      {(r.proteinas ?? 0) > 0 && <span className="text-xs font-medium px-2 py-0.5 rounded" style={{ background: 'var(--error-bg)', color: 'var(--error)' }}>P:{Math.round(r.proteinas ?? 0)}g</span>}
-                      {(r.carbohidratos ?? 0) > 0 && <span className="text-xs font-medium px-2 py-0.5 rounded" style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>C:{Math.round(r.carbohidratos ?? 0)}g</span>}
-                      {(r.grasas ?? 0) > 0 && <span className="text-xs font-medium px-2 py-0.5 rounded" style={{ background: '#F5F3FF', color: '#7C3AED' }}>G:{Math.round(r.grasas ?? 0)}g</span>}
-                    </div>
-                  )}
+        {/* ═══════ CONTENIDO ═══════ */}
+        <FadeIn delay={0.2}>
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4', background: 'var(--surface)' }}>
+                  <div className="w-full h-full skeleton" />
                 </div>
-              </Link>
-            </StaggerItem>
-          ))}
-        </StaggerList>
-      )}
-    </div>
+              ))}
+            </div>
+          ) : filtradas.length === 0 ? (
+            /* Empty state premium */
+            <div className="flex flex-col items-center justify-center py-20 px-4">
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
+                style={{ background: 'var(--accent-bg)' }}
+              >
+                <BookOpen size={32} style={{ color: 'var(--accent)' }} />
+              </div>
+              <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>
+                {recetas.length === 0 ? 'Tu recetario está vacío' : 'Sin resultados'}
+              </p>
+              <p className="text-sm mt-1 mb-6 text-center max-w-xs" style={{ color: 'var(--text-muted)' }}>
+                {recetas.length === 0
+                  ? 'Crea tu primera receta o importa una desde una URL'
+                  : 'Prueba con otros filtros o términos de búsqueda'}
+              </p>
+              {recetas.length === 0 && (
+                <Link href="/recetas/nueva"
+                  className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200"
+                  style={{ background: 'var(--accent)', color: '#1C1C1E' }}
+                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px var(--accent-glow)' }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
+                >
+                  <Plus size={16} /> Crear primera receta
+                </Link>
+              )}
+            </div>
+          ) : (
+            /* Grid de cards premium — tarjetas verticales full-bleed estilo Mela */
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filtradas.map(r => (
+                <RecipeCardPremium
+                  key={r.id}
+                  id={r.id}
+                  nombre={r.nombre}
+                  imagen_url={r.imagen_url}
+                  tiempoTotal={(r.tiempo_prep_min ?? 0) + (r.tiempo_coccion_min ?? 0)}
+                  porciones={r.porciones ?? undefined}
+                  kcal={r.kcal}
+                  categoria={r.categoria}
+                  proteinas={r.proteinas ?? 0}
+                  carbohidratos={r.carbohidratos ?? 0}
+                  grasas={r.grasas ?? 0}
+                />
+              ))}
+            </div>
+          )}
+        </FadeIn>
+      </div>
+    </PageTransition>
   )
 }

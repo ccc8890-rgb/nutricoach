@@ -94,7 +94,7 @@ export async function GET() {
         const estadosRespuestas = [
             { estado: 'nueva', label: 'Nuevas', color: '#3B82F6' },
             { estado: 'leida', label: 'Leídas', color: '#8B5CF6' },
-            { estado: 'en_revision', label: 'En revisión', color: '#F59E0B' },
+            { estado: 'en_revision', label: 'En revisión', color: '#A1A1A6' },
             { estado: 'dieta_aceptada', label: 'Aceptadas', color: '#10B981' },
             { estado: 'dieta_rechazada', label: 'Rechazadas', color: '#EF4444' },
         ]

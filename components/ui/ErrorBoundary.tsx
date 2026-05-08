@@ -50,13 +50,16 @@ export default class ErrorBoundary extends Component<Props, State> {
 
             return (
                 <div className="flex flex-col items-center justify-center p-8 text-center">
-                    <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
-                        <AlertTriangle size={24} className="text-red-500" />
+                    <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
+                        style={{ background: 'var(--error-bg)' }}
+                    >
+                        <AlertTriangle size={24} style={{ color: 'var(--error)' }} />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>
                         Algo salió mal
                     </h3>
-                    <p className="text-sm text-gray-500 mb-4 max-w-md">
+                    <p className="text-sm mb-4 max-w-md" style={{ color: 'var(--text-secondary)' }}>
                         {this.state.error?.message || 'Error inesperado al renderizar este componente.'}
                     </p>
                     <button

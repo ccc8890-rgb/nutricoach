@@ -379,7 +379,7 @@ export default function EditarDietaPage() {
           <button
             onClick={toggleActivo}
             disabled={toggling}
-            className={`btn-secondary flex items-center gap-1.5 text-sm ${plan?.activo ? 'text-amber-600' : 'text-green-600'}`}
+            className={`btn-secondary flex items-center gap-1.5 text-sm ${plan?.activo ? 'text-[#8E8E93]' : 'text-green-600'}`}
             title={plan?.activo ? 'Desactivar plan' : 'Activar plan'}
           >
             {toggling ? (

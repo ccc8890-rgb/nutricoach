@@ -14,13 +14,13 @@ const TIPO_ICON: Record<PlantillaDietaTipo, typeof Zap> = {
 
 const TIPO_COLOR: Record<PlantillaDietaTipo, string> = {
     normal: '#1C1C1E',
-    carga: '#F59E0B',
+    carga: '#A1A1A6',
     suplementos: '#3B82F6',
 }
 
 const TIPO_BG: Record<PlantillaDietaTipo, string> = {
     normal: '#F2F2F7',
-    carga: '#FFFBEB',
+    carga: 'rgba(161,161,166,0.08)',
     suplementos: '#EFF6FF',
 }
 import { useToast } from '@/components/ui/Toast'
@@ -166,7 +166,7 @@ export default function PlantillasPage() {
 
     const loadingForm = (
         <div className="flex justify-center py-16">
-            <Loader2 size={28} className="animate-spin" style={{ color: '#1C1C1E' }} />
+            <Loader2 size={28} className="animate-spin" style={{ color: 'var(--primary)' }} />
         </div>
     )
 
@@ -176,10 +176,10 @@ export default function PlantillasPage() {
             <div className="p-8 max-w-3xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">
+                        <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
                             {editandoId ? 'Editar plantilla' : 'Nueva plantilla'}
                         </h1>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                             Define los macros objetivo de la plantilla
                         </p>
                     </div>
@@ -190,7 +190,7 @@ export default function PlantillasPage() {
 
                 <div className="card space-y-5 p-6">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nombre de la plantilla</label>
+                        <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--text)' }}>Nombre de la plantilla</label>
                         <input
                             type="text"
                             value={form.nombre}
@@ -201,7 +201,7 @@ export default function PlantillasPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Descripción (opcional)</label>
+                        <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--text)' }}>Descripción (opcional)</label>
                         <textarea
                             value={form.descripcion}
                             onChange={e => setForm(prev => ({ ...prev, descripcion: e.target.value }))}
@@ -211,11 +211,11 @@ export default function PlantillasPage() {
                         />
                     </div>
 
-                    <div className="border-t pt-5" style={{ borderColor: '#E2E8F0' }}>
-                        <p className="text-sm font-semibold text-gray-700 mb-4">Macros objetivo</p>
+                    <div className="border-t pt-5" style={{ borderColor: 'var(--border)' }}>
+                        <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Macros objetivo</p>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Calorías (kcal)</label>
+                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Calorías (kcal)</label>
                                 <input
                                     type="number"
                                     value={form.kcal_objetivo}
@@ -226,7 +226,7 @@ export default function PlantillasPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Proteína (g)</label>
+                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Proteína (g)</label>
                                 <input
                                     type="number"
                                     value={form.proteinas_objetivo}
@@ -237,7 +237,7 @@ export default function PlantillasPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Carbohidratos (g)</label>
+                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Carbohidratos (g)</label>
                                 <input
                                     type="number"
                                     value={form.carbohidratos_objetivo}
@@ -248,7 +248,7 @@ export default function PlantillasPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Grasas (g)</label>
+                                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Grasas (g)</label>
                                 <input
                                     type="number"
                                     value={form.grasas_objetivo}
@@ -262,8 +262,8 @@ export default function PlantillasPage() {
 
                         {/* Preview distribución porcentual */}
                         {Number(form.kcal_objetivo) > 0 && (
-                            <div className="mt-4 p-3 rounded-lg" style={{ background: '#F8FAFC' }}>
-                                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Distribución</p>
+                            <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg)' }}>
+                                <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--text-secondary)' }}>Distribución</p>
                                 <div className="flex gap-3 text-sm">
                                     <span className="macro-pill macro-pill-protein">
                                         {form.proteinas_objetivo ? ((Number(form.proteinas_objetivo) * 4 / Number(form.kcal_objetivo)) * 100).toFixed(0) : 0}% Proteína
@@ -279,7 +279,7 @@ export default function PlantillasPage() {
                         )}
                     </div>
 
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t" style={{ borderColor: '#E2E8F0' }}>
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
                         <button onClick={() => setShowEditor(false)} className="btn btn-ghost">
                             Cancelar
                         </button>
@@ -312,8 +312,8 @@ export default function PlantillasPage() {
 
             <header className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Plantillas de dieta</h1>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Plantillas de dieta</h1>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                         {plantillas.length} plantilla{plantillas.length !== 1 ? 's' : ''} — usadas por la IA para generar dietas personalizadas
                     </p>
                 </div>
@@ -333,7 +333,7 @@ export default function PlantillasPage() {
             </header>
 
             <div className="relative mb-6">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                 <input
                     className="input search-input"
                     placeholder="Buscar plantilla…"
@@ -344,11 +344,11 @@ export default function PlantillasPage() {
 
             {loading ? loadingForm : filtradas.length === 0 ? (
                 <div className="card text-center py-16">
-                    <LayoutTemplate size={40} className="mx-auto text-gray-300 mb-3" />
-                    <p className="text-gray-500 font-medium">
+                    <LayoutTemplate size={40} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+                    <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>
                         {busqueda ? 'No hay plantillas con ese filtro' : 'No hay plantillas de dieta'}
                     </p>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
                         {busqueda
                             ? 'Prueba con otro término de búsqueda'
                             : 'Crea tu primera plantilla o usa el botón "Seed" para cargar las 7 plantillas por defecto'
@@ -373,7 +373,7 @@ export default function PlantillasPage() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
-                                        <p className="font-semibold text-gray-900">{p.nombre}</p>
+                                        <p className="font-semibold" style={{ color: 'var(--text)' }}>{p.nombre}</p>
                                         {tipo !== 'normal' && (
                                             <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
                                                 style={{
@@ -385,7 +385,7 @@ export default function PlantillasPage() {
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-sm text-gray-400 truncate">
+                                    <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>
                                         {p.descripcion || 'Sin descripción'}
                                     </p>
                                 </div>
@@ -393,7 +393,7 @@ export default function PlantillasPage() {
                                     <div className="flex gap-1.5">
                                         <span className="badge badge-orange">{p.kcal_objetivo} kcal</span>
                                         <span className="badge badge-red">{p.proteinas_objetivo}g P</span>
-                                        <span className="badge badge-amber">{p.carbohidratos_objetivo}g C</span>
+                                        <span className="badge badge-graphite">{p.carbohidratos_objetivo}g C</span>
                                         <span className="badge badge-purple">{p.grasas_objetivo}g G</span>
                                     </div>
                                 </div>
@@ -407,7 +407,10 @@ export default function PlantillasPage() {
                                     </button>
                                     <button
                                         onClick={() => setModalDelete({ abierto: true, id: p.id, nombre: p.nombre })}
-                                        className="btn btn-ghost btn-sm !text-red-500 hover:!bg-red-50"
+                                        className="btn btn-ghost btn-sm"
+                                        style={{ color: '#EF4444' }}
+                                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--error-bg)' }}
+                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
                                         title="Eliminar plantilla"
                                     >
                                         <Trash2 size={14} />
