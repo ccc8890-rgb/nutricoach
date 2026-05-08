@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createBrowserSupabase } from '@/lib/supabase-browser'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Globe, CheckCircle, Loader2 } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
 
 interface Receta {
   id: string
@@ -11,7 +12,7 @@ interface Receta {
   imagen_url?: string | null
   fuente_tipo?: string | null
   autor_original?: string | null
-  calorias?: number | null
+  kcal?: number | null
   proteinas?: number | null
   carbohidratos?: number | null
   grasas?: number | null
@@ -112,11 +113,13 @@ function SkeletonCard() {
 }
 
 export default function ColaPage() {
+  const { addToast } = useToast()
   const [recetas, setRecetas] = useState<Receta[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set())
-
-  const supabase = createBrowserSupabase()
+  const [fechaDesde, setFechaDesde] = useState('')
+  const [fechaHasta, setFechaHasta] = useState('')
+  const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente')
 
   const fetchRecetas = useCallback(async () => {
     setLoading(true)
@@ -138,7 +141,7 @@ export default function ColaPage() {
       setRecetas(data ?? [])
     }
     setLoading(false)
-  }, [supabase])
+  }, [])
 
   useEffect(() => {
     fetchRecetas()
@@ -171,6 +174,7 @@ export default function ColaPage() {
       }
     } catch (err) {
       console.error(err)
+      addToast({ type: 'error', title: 'Error', message: 'No se pudo cambiar el estado' })
     } finally {
       setLoadingIds((prev) => {
         const next = new Set(prev)
@@ -196,26 +200,87 @@ export default function ColaPage() {
     )
   }
 
+  // Filtrar por fecha y ordenar
+  const recetasFiltradas = recetas
+    .filter(r => {
+      if (!fechaDesde && !fechaHasta) return true
+      if (!r.created_at) return !fechaDesde && !fechaHasta
+      const f = new Date(r.created_at)
+      if (fechaDesde && f < new Date(fechaDesde)) return false
+      if (fechaHasta && f > new Date(fechaHasta + 'T23:59:59')) return false
+      return true
+    })
+    .sort((a, b) => {
+      const da = new Date(a.created_at).getTime()
+      const db = new Date(b.created_at).getTime()
+      return orden === 'reciente' ? db - da : da - db
+    })
+
   return (
     <div className="p-6" style={{ backgroundColor: 'var(--bg)', minHeight: '100vh' }}>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
-          Cola de revisión
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-          {recetas.length} recetas pendientes
-        </p>
-        <Link
-          href="/recetas"
-          className="inline-block mt-2 text-sm underline"
-          style={{ color: 'var(--primary)' }}
-        >
-          ← Volver al recetario
-        </Link>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
+              Cola de revisión
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+              {recetasFiltradas.length} recetas pendientes
+            </p>
+          </div>
+          <Link
+            href="/recetas"
+            className="inline-block text-sm underline"
+            style={{ color: 'var(--primary)' }}
+          >
+            ← Volver al recetario
+          </Link>
+        </div>
+
+        {/* Filtro por fecha + ordenación */}
+        <div className="flex items-center gap-3 text-sm flex-wrap mt-4">
+          <span style={{ color: 'var(--text-secondary)' }}>Creada entre</span>
+          <input
+            type="date"
+            value={fechaDesde}
+            onChange={e => setFechaDesde(e.target.value)}
+            className="input text-xs py-1 px-2 rounded border max-w-[150px]"
+            style={{ color: 'var(--text)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
+          />
+          <span style={{ color: 'var(--text-muted)' }}>y</span>
+          <input
+            type="date"
+            value={fechaHasta}
+            onChange={e => setFechaHasta(e.target.value)}
+            className="input text-xs py-1 px-2 rounded border max-w-[150px]"
+            style={{ color: 'var(--text)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
+          />
+          {(fechaDesde || fechaHasta) && (
+            <button
+              onClick={() => { setFechaDesde(''); setFechaHasta('') }}
+              className="text-xs underline hover:no-underline"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Limpiar
+            </button>
+          )}
+          <div className="flex items-center gap-1 ml-auto">
+            <span style={{ color: 'var(--text-muted)' }}>Ordenar</span>
+            <select
+              value={orden}
+              onChange={e => setOrden(e.target.value as 'reciente' | 'antiguo')}
+              className="input text-xs py-1 px-2 rounded border"
+              style={{ color: 'var(--text)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}
+            >
+              <option value="reciente">Más reciente</option>
+              <option value="antiguo">Más antiguo</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      {recetas.length === 0 ? (
+      {recetasFiltradas.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
           <CheckCircle size={64} style={{ color: 'var(--primary)' }} />
           <p className="mt-4 text-lg font-medium" style={{ color: 'var(--text)' }}>
@@ -231,7 +296,7 @@ export default function ColaPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recetas.map((receta) => {
+          {recetasFiltradas.map((receta) => {
             const isPending = loadingIds.has(receta.id)
             return (
               <div
@@ -294,7 +359,7 @@ export default function ColaPage() {
 
                   {/* Macros */}
                   <div className="flex flex-wrap gap-1">
-                    <MacroBadge label="Kcal" value={receta.calorias} />
+                    <MacroBadge label="Kcal" value={receta.kcal} />
                     <MacroBadge label="P" value={receta.proteinas} />
                     <MacroBadge label="C" value={receta.carbohidratos} />
                     <MacroBadge label="G" value={receta.grasas} />

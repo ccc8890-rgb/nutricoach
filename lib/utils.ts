@@ -81,27 +81,27 @@ export const COMIDAS_PREDEFINIDAS = [
 export type NivelActividad = 'sedentario' | 'ligero' | 'moderado' | 'activo' | 'muy_activo'
 
 export const NIVEL_ACTIVIDAD_LABELS: Record<NivelActividad, string> = {
-  sedentario:   'Sedentario (sin ejercicio)',
-  ligero:       'Ligero (1-3 días/semana)',
-  moderado:     'Moderado (3-5 días/semana)',
-  activo:       'Activo (6-7 días/semana)',
-  muy_activo:   'Muy activo (2x/día o trabajo físico)',
+  sedentario: 'Sedentario (sin ejercicio)',
+  ligero: 'Ligero (1-3 días/semana)',
+  moderado: 'Moderado (3-5 días/semana)',
+  activo: 'Activo (6-7 días/semana)',
+  muy_activo: 'Muy activo (2x/día o trabajo físico)',
 }
 
 const FACTORES_ACTIVIDAD: Record<NivelActividad, number> = {
-  sedentario:  1.2,
-  ligero:      1.375,
-  moderado:    1.55,
-  activo:      1.725,
-  muy_activo:  1.9,
+  sedentario: 1.2,
+  ligero: 1.375,
+  moderado: 1.55,
+  activo: 1.725,
+  muy_activo: 1.9,
 }
 
 const AJUSTE_OBJETIVO: Record<string, number> = {
-  perder_grasa:  -500,
-  ganar_musculo:  300,
-  recomposicion:    0,
-  mantenimiento:    0,
-  rendimiento:    200,
+  perder_grasa: -500,
+  ganar_musculo: 300,
+  recomposicion: 0,
+  mantenimiento: 0,
+  rendimiento: 200,
 }
 
 export function calcularTMB(peso: number, altura: number, edad: number, sexo: 'hombre' | 'mujer'): number {
@@ -128,4 +128,63 @@ export function calcularMacrosObjetivo(
   const grasas = Math.round((kcal * 0.25) / 9)
   const carbohidratos = Math.max(0, Math.round((kcal - proteinas * 4 - grasas * 9) / 4))
   return { proteinas, carbohidratos, grasas }
+}
+
+// ── Lista de la Compra ───────────────────────────────────────────────────────
+
+export interface ItemListaCompra {
+  alimento_id: string
+  nombre: string
+  categoria: string
+  gramos_totales: number
+}
+
+export interface GrupoListaCompra {
+  categoria: string
+  items: ItemListaCompra[]
+}
+
+/**
+ * Agrupa todos los alimentos de todas las comidas de un plan
+ * por categoría, sumando los gramos totales de cada uno.
+ */
+export function generarListaCompra(
+  comidas: { alimentos?: { alimento?: { id?: string; nombre?: string; categoria?: string }; cantidad_gramos?: number }[] }[]
+): GrupoListaCompra[] {
+  const mapa = new Map<string, ItemListaCompra>()
+
+  for (const comida of comidas) {
+    for (const ca of comida.alimentos ?? []) {
+      if (!ca.alimento?.nombre) continue
+      const a = ca.alimento
+      const id: string = a.id ?? a.nombre!
+      const gramos = ca.cantidad_gramos ?? 0
+
+      if (mapa.has(id)) {
+        mapa.get(id)!.gramos_totales += gramos
+      } else {
+        mapa.set(id, {
+          alimento_id: a.id ?? id,
+          nombre: a.nombre ?? 'Sin nombre',
+          categoria: a.categoria || 'Otros',
+          gramos_totales: gramos,
+        })
+      }
+    }
+  }
+
+  // Agrupar por categoría
+  const grupos = new Map<string, ItemListaCompra[]>()
+  for (const item of mapa.values()) {
+    const cat = item.categoria || 'Otros'
+    if (!grupos.has(cat)) grupos.set(cat, [])
+    grupos.get(cat)!.push(item)
+  }
+
+  return Array.from(grupos.entries())
+    .map(([categoria, items]) => ({
+      categoria,
+      items: items.sort((a, b) => a.nombre.localeCompare(b.nombre)),
+    }))
+    .sort((a, b) => a.categoria.localeCompare(b.categoria))
 }

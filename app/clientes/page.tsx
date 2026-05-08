@@ -14,6 +14,7 @@ type ClienteRow = {
   nivel?: string
   peso_inicial?: number | null
   fecha_proxima_revision?: string | null
+  revisado_por_coach?: boolean | null
   profile?: { nombre?: string; apellidos?: string; email?: string }
 }
 
@@ -22,12 +23,16 @@ export default function ClientesPage() {
   const [busqueda, setBusqueda] = useState('')
   const busquedaDebounced = useDebounce(busqueda, 250)
   const [loading, setLoading] = useState(true)
-  const [invitando, setInvitando] = useState<'idle'|'loading'|'done'|'error'>('idle')
+  const [invitando, setInvitando] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
 
   async function handleInvitar() {
     setInvitando('loading')
     try {
-      const res = await fetch('/api/invitaciones', { method: 'POST' })
+      const res = await fetch('/api/invitaciones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
       const data = await res.json()
       if (data.url) {
         await navigator.clipboard.writeText(data.url)
@@ -45,14 +50,27 @@ export default function ClientesPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setLoading(false); return }
-      const { data } = await supabase
-        .from('clientes')
-        .select('*, profile:profiles!profile_id(nombre, apellidos, email)')
-        .eq('coach_id', user.id)
-        .order('created_at', { ascending: false })
-      setClientes(data ?? [])
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError) console.error('[clientes] Error auth.getUser:', userError)
+        if (!user) { console.warn('[clientes] No hay usuario autenticado'); setLoading(false); return }
+
+        const { data, error } = await supabase
+          .from('clientes')
+          .select('id, activo, objetivo, nivel, peso_inicial, fecha_proxima_revision, revisado_por_coach, profile:profiles!profile_id(nombre, apellidos, email)')
+          .eq('coach_id', user.id)
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          console.error('[clientes] Error en query clientes:', error.message, error.details, error.hint)
+        } else {
+          console.log(`[clientes] ${data?.length ?? 0} clientes cargados para coach ${user.id}`)
+        }
+
+        setClientes((data ?? []).map(c => ({ ...c, profile: Array.isArray(c.profile) ? c.profile[0] : c.profile })))
+      } catch (e) {
+        console.error('[clientes] Excepción inesperada:', e)
+      }
       setLoading(false)
     }
     load()
@@ -145,6 +163,9 @@ export default function ClientesPage() {
                     <span className={`badge ${c.activo ? 'badge-teal' : 'badge-gray'}`}>
                       {c.activo ? 'Activo' : 'Inactivo'}
                     </span>
+                    {c.revisado_por_coach === false && (
+                      <span className="badge" style={{ background: 'var(--primary)', color: 'white' }}>Nuevo</span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-400 truncate">{c.profile?.email}</p>
                   {c.fecha_proxima_revision && (

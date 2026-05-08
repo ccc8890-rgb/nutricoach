@@ -3,16 +3,16 @@ import { createApiSupabase } from '@/lib/supabase-server'
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const supabase = await createApiSupabase(req)
+    const supabase = createApiSupabase(req)
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const { id } = params
     const body = await req.json()
     const { estado } = body
 

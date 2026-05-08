@@ -20,7 +20,8 @@ import {
   Apple,
   Sandwich,
   Calendar,
-  Inbox,
+  BrainCircuit,
+  FlaskConical,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -30,11 +31,14 @@ const NAV_ITEMS = [
   { href: '/respuestas', label: 'Consulta', icon: MessageSquareReply },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
+  { href: '/conocimiento', label: 'Conocimiento', icon: BrainCircuit },
+  { href: '/ia-test', label: 'Probador IA', icon: FlaskConical },
 ]
 
 const ENTRENOS_SUBITEMS = [
   { href: '/entrenos', label: 'Planes', icon: Dumbbell },
   { href: '/entrenos/plantillas', label: 'Planificación', icon: Calendar },
+  { href: '/entrenos/generar-ia', label: 'Generar con IA', icon: BrainCircuit },
 ]
 
 const NUTRICION_SUBITEMS = [
@@ -42,7 +46,6 @@ const NUTRICION_SUBITEMS = [
   { href: '/dietas', label: 'Dietas activas', icon: Apple },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Sandwich },
   { href: '/recetas', label: 'Recetario', icon: BookOpen },
-  { href: '/recetas/cola', label: 'Cola revisión', icon: Inbox },
 ]
 
 export default function Sidebar() {

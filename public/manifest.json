@@ -1,0 +1,24 @@
+{
+    "name": "NutriCoach — Dev",
+    "short_name": "NutriCoach",
+    "description": "Tu plan nutricional, check-ins y progreso desde cualquier lugar",
+    "start_url": "/",
+    "display": "browser",
+    "background_color": "#ffffff",
+    "theme_color": "#1C1C1E",
+    "icons": [
+        {
+            "src": "/icon-192.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/icon-512.svg",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ],
+    "lang": "es"
+}

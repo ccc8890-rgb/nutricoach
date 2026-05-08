@@ -128,6 +128,7 @@ create table public.planes_nutricion (
   carbohidratos_objetivo numeric(6,2),
   grasas_objetivo numeric(6,2),
   activo boolean default true,
+  generado_por_ia boolean default false,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -343,11 +344,354 @@ create policy "Coach can manage seguimiento" on public.seguimiento_peso
   );
 
 -- ============================================================
+-- TABLA: recetas (base de datos de recetas del coach)
+-- ============================================================
+create table public.recetas (
+  id uuid default uuid_generate_v4() primary key,
+  coach_id uuid references public.profiles(id) on delete cascade,
+  nombre text not null,
+  categoria text check (categoria in ('Desayuno', 'Almuerzo', 'Comida', 'Merienda', 'Cena', 'Snack', 'Postre', 'Batch')),
+  tipo_plato text,
+  kcal_por_porcion numeric(7,2),
+  proteinas_por_porcion numeric(6,2),
+  carbohidratos_por_porcion numeric(6,2),
+  grasas_por_porcion numeric(6,2),
+  ingredientes text,
+  intolerancias text,
+  pasos text,
+  url text,
+  activa boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.recetas enable row level security;
+
+create policy "Coach can manage own recetas" on public.recetas
+  for all using (coach_id = auth.uid());
+
+create policy "Anyone can read recetas" on public.recetas
+  for select using (true);
+
+-- ============================================================
+-- TABLA: plantillas_dietas (plantillas de dieta predefinidas)
+-- ============================================================
+create table public.plantillas_dietas (
+  id uuid default uuid_generate_v4() primary key,
+  coach_id uuid references public.profiles(id) on delete cascade not null,
+  nombre text not null,
+  descripcion text,
+  tipo text default 'normal' check (tipo in ('normal', 'carga', 'suplementos')),
+  kcal_objetivo numeric(7,2),
+  proteinas_objetivo numeric(6,2),
+  carbohidratos_objetivo numeric(6,2),
+  grasas_objetivo numeric(6,2),
+  activo boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.plantillas_dietas enable row level security;
+
+create policy "Coach can manage plantillas_dietas" on public.plantillas_dietas
+  for all using (coach_id = auth.uid());
+
+-- ============================================================
+-- TABLA: cuestionarios (diseñados por el coach)
+-- ============================================================
+create table public.cuestionarios (
+  id uuid default uuid_generate_v4() primary key,
+  coach_id uuid references public.profiles(id) on delete cascade not null,
+  titulo text not null,
+  descripcion text,
+  preguntas jsonb not null default '[]'::jsonb,
+  activo boolean default true,
+  codigo_publico text unique not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.cuestionarios enable row level security;
+
+create policy "Coach can manage cuestionarios" on public.cuestionarios
+  for all using (coach_id = auth.uid());
+
+create policy "Anyone can read active cuestionarios by codigo" on public.cuestionarios
+  for select using (activo = true);
+
+-- ============================================================
+-- TABLA: respuestas_clientes (respuestas de clientes a cuestionarios)
+-- ============================================================
+create table public.respuestas_clientes (
+  id uuid default uuid_generate_v4() primary key,
+  cuestionario_id uuid references public.cuestionarios(id) on delete cascade not null,
+  coach_id uuid references public.profiles(id) on delete cascade not null,
+  respuestas jsonb not null default '{}'::jsonb,
+  estado text not null default 'nueva' check (estado in ('nueva', 'procesando', 'dieta_lista', 'dieta_aprobada', 'dieta_rechazada')),
+  nombre_cliente text,
+  email_cliente text,
+  plan_id uuid references public.planes_nutricion(id) on delete set null,
+  codigo_publico text,
+  leida boolean default false,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.respuestas_clientes enable row level security;
+
+create policy "Coach can manage respuestas_clientes" on public.respuestas_clientes
+  for all using (coach_id = auth.uid());
+
+create policy "Anyone can insert respuestas_clientes" on public.respuestas_clientes
+  for insert with check (true);
+
+-- ============================================================
+-- MODIFICACIÓN: añadir codigo_publico a planes_nutricion
+-- ============================================================
+alter table public.planes_nutricion
+  add column if not exists codigo_publico text unique;
+
+-- ============================================================
+-- MODIFICACIÓN: añadir generado_por_ia a planes_nutricion
+-- ============================================================
+alter table public.planes_nutricion
+  add column if not exists generado_por_ia boolean default false;
+
+-- ============================================================
+-- MODIFICACIÓN: añadir fecha_proxima_revision a clientes
+-- ============================================================
+alter table public.clientes
+  add column if not exists fecha_proxima_revision date;
+
+-- ============================================================
+-- TABLA: plantillas_entrenamiento (plantillas predefinidas)
+-- ============================================================
+create table if not exists public.plantillas_entrenamiento (
+  id uuid default uuid_generate_v4() primary key,
+  coach_id uuid references public.profiles(id) on delete cascade not null,
+  nombre text not null,
+  descripcion text,
+  tipo text check (tipo in ('gimnasio', 'cardio', 'mixto')),
+  duracion_semanas integer default 4,
+  nivel text check (nivel in ('principiante', 'intermedio', 'avanzado')),
+  objetivo text check (objetivo in ('hipertrofia', 'fuerza', 'perdida_grasa', 'cardio', 'tonificacion', 'rendimiento')),
+  dias_por_semana integer,
+  activo boolean default true,
+  progresion jsonb default '[]'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.plantillas_entrenamiento enable row level security;
+
+create policy "Coach can manage plantillas_entrenamiento" on public.plantillas_entrenamiento
+  for all using (coach_id = auth.uid());
+
+-- ============================================================
+-- TABLA: plantilla_sesiones (sesiones dentro de plantilla)
+-- ============================================================
+create table if not exists public.plantilla_sesiones (
+  id uuid default uuid_generate_v4() primary key,
+  plantilla_id uuid references public.plantillas_entrenamiento(id) on delete cascade not null,
+  nombre text not null,
+  dia_semana text,
+  orden integer default 0,
+  notas text,
+  created_at timestamptz default now()
+);
+
+alter table public.plantilla_sesiones enable row level security;
+
+create policy "Coach can manage plantilla_sesiones" on public.plantilla_sesiones
+  for all using (
+    exists (select 1 from public.plantillas_entrenamiento where id = plantilla_id and coach_id = auth.uid())
+  );
+
+-- ============================================================
+-- TABLA: plantilla_sesion_ejercicios
+-- ============================================================
+create table if not exists public.plantilla_sesion_ejercicios (
+  id uuid default uuid_generate_v4() primary key,
+  sesion_id uuid references public.plantilla_sesiones(id) on delete cascade not null,
+  ejercicio_id uuid references public.ejercicios(id) on delete restrict,
+  series integer,
+  repeticiones text,
+  descanso_segundos integer,
+  peso_sugerido text,
+  rpe text,
+  notas text,
+  orden integer default 0,
+  created_at timestamptz default now()
+);
+
+alter table public.plantilla_sesion_ejercicios enable row level security;
+
+create policy "Coach can manage plantilla_sesion_ejercicios" on public.plantilla_sesion_ejercicios
+  for all using (
+    exists (
+      select 1 from public.plantilla_sesiones ps
+      join public.plantillas_entrenamiento pe on pe.id = ps.plantilla_id
+      where ps.id = sesion_id and pe.coach_id = auth.uid()
+    )
+  );
+
+-- ============================================================
 -- INDEXES para performance
 -- ============================================================
-create index idx_clientes_coach on public.clientes(coach_id);
-create index idx_planes_nutricion_cliente on public.planes_nutricion(cliente_id);
-create index idx_planes_entrenamiento_cliente on public.planes_entrenamiento(cliente_id);
-create index idx_alimentos_nombre on public.alimentos(nombre);
-create index idx_comidas_plan on public.comidas(plan_id);
-create index idx_sesiones_plan on public.sesiones_entrenamiento(plan_id);
+create index if not exists idx_clientes_coach on public.clientes(coach_id);
+create index if not exists idx_planes_nutricion_cliente on public.planes_nutricion(cliente_id);
+create index if not exists idx_planes_entrenamiento_cliente on public.planes_entrenamiento(cliente_id);
+create index if not exists idx_alimentos_nombre on public.alimentos(nombre);
+create index if not exists idx_comidas_plan on public.comidas(plan_id);
+create index if not exists idx_sesiones_plan on public.sesiones_entrenamiento(plan_id);
+create index if not exists idx_cuestionarios_codigo on public.cuestionarios(codigo_publico);
+create index if not exists idx_respuestas_cuestionario on public.respuestas_clientes(cuestionario_id);
+create index if not exists idx_respuestas_estado on public.respuestas_clientes(estado);
+create index if not exists idx_plantilla_sesiones_plantilla on public.plantilla_sesiones(plantilla_id);
+create index if not exists idx_plantilla_sesion_ejercicios_sesion on public.plantilla_sesion_ejercicios(sesion_id);
+
+-- ============================================================
+-- TABLA: checkins (check-ins semanales del cliente)
+-- ============================================================
+create table if not exists public.checkins (
+  id uuid default gen_random_uuid() primary key,
+  cliente_id uuid references public.clientes(id) on delete cascade not null,
+  fecha date not null default current_date,
+  peso numeric(5,2),
+  adherencia integer check (adherencia between 1 and 10),
+  energia integer check (energia between 1 and 10),
+  sueno integer check (sueno between 1 and 10),
+  notas text,
+  sugerencia_ia text,
+  created_at timestamptz default now()
+);
+
+alter table public.checkins enable row level security;
+
+create policy "Coach can manage checkins" on public.checkins
+  for all using (
+    exists (
+      select 1 from public.clientes c
+      where c.id = cliente_id and c.coach_id = auth.uid()
+    )
+  );
+
+create policy "Cliente can manage own checkins" on public.checkins
+  for all using (
+    exists (
+      select 1 from public.clientes c
+      where c.id = cliente_id and c.profile_id = auth.uid()
+    )
+  );
+
+create policy "Anyone with codigo can insert checkins" on public.checkins
+  for insert with check (true);
+
+create index if not exists idx_checkins_cliente on public.checkins(cliente_id);
+
+-- ============================================================
+-- TABLA: notas_coach (notas del coach visibles para el cliente)
+-- ============================================================
+create table if not exists public.notas_coach (
+  id uuid default gen_random_uuid() primary key,
+  cliente_id uuid references public.clientes(id) on delete cascade not null,
+  coach_id uuid references public.profiles(id),
+  mensaje text not null,
+  created_at timestamptz default now()
+);
+
+alter table public.notas_coach enable row level security;
+
+create policy "Coach can manage notas_coach" on public.notas_coach
+  for all using (
+    exists (
+      select 1 from public.clientes c
+      where c.id = cliente_id and c.coach_id = auth.uid()
+    )
+  );
+
+create policy "Cliente can view own notas_coach" on public.notas_coach
+  for select using (
+    exists (
+      select 1 from public.clientes c
+      where c.id = cliente_id and c.profile_id = auth.uid()
+    )
+  );
+
+create policy "Anyone with codigo can view notas_coach" on public.notas_coach
+  for select using (true);
+
+create index if not exists idx_notas_coach_cliente on public.notas_coach(cliente_id);
+
+-- ============================================================
+-- TABLA: registros_ia (historial de conversaciones con DeepSeek)
+-- ============================================================
+create table public.registros_ia (
+  id uuid default uuid_generate_v4() primary key,
+  coach_id uuid references public.profiles(id) on delete cascade not null,
+  cliente_id uuid references public.clientes(id) on delete cascade not null,
+  tipo text not null check (tipo in ('dieta', 'informe_semanal', 'ajuste_macros', 'recomendacion')),
+  prompt text not null,
+  respuesta_json jsonb not null,
+  modelo text default 'deepseek-v3',
+  tokens_usados integer,
+  plan_id uuid references public.planes_nutricion(id) on delete set null,
+  created_at timestamptz default now()
+);
+
+alter table public.registros_ia enable row level security;
+
+create policy "Coach can manage registros_ia" on public.registros_ia
+  for all using (coach_id = auth.uid());
+
+create index if not exists idx_registros_ia_cliente on public.registros_ia(cliente_id);
+create index if not exists idx_registros_ia_coach on public.registros_ia(coach_id);
+create index if not exists idx_registros_ia_tipo on public.registros_ia(tipo);
+
+-- ============================================================
+-- TABLA: protocolos_competicion (carga + suplementación)
+-- ============================================================
+create table public.protocolos_competicion (
+  id uuid default uuid_generate_v4() primary key,
+  cliente_id uuid references public.clientes(id) on delete cascade not null,
+  coach_id uuid references public.profiles(id) on delete cascade not null,
+  nombre text not null,
+  deporte text,
+  fecha_competicion date,
+  peso_inicial numeric(5,2),
+  peso_objetivo numeric(5,2),
+  -- Fase de carga: 3 fases clásicas
+  carga_dias_previos integer default 3,
+  carga_carbs_kg numeric(5,2) default 8,      -- g/kg/día en carga
+  carga_proteinas_kg numeric(5,2) default 1.6,
+  carga_grasas_kg numeric(5,2) default 0.6,
+  carga_inicio date,                            -- cuándo empieza la carga
+  -- Suplementación durante carrera
+  geles_marca text,
+  geles_carbs_por_gel numeric(5,2) default 25, -- g carbohidratos por gel
+  geles_cada_minutos integer default 30,        -- cada cuántos minutos tomar gel
+  electrolitos_marca text,
+  electrolitos_cada_minutos integer default 60,
+  cafeina_mg integer,                           -- mg cafeína opcional
+  hidratacion_ml_cada_15min integer default 150,
+  -- Notas
+  notas_previa text,
+  notas_durante text,
+  notas_post text,
+  activo boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.protocolos_competicion enable row level security;
+
+create policy "Coach can manage protocolos_competicion" on public.protocolos_competicion
+  for all using (coach_id = auth.uid());
+
+create policy "Cliente can view own protocolos" on public.protocolos_competicion
+  for select using (
+    exists (select 1 from public.clientes where id = cliente_id and profile_id = auth.uid())
+  );
+
+create index if not exists idx_protocolos_cliente on public.protocolos_competicion(cliente_id);
+create index if not exists idx_protocolos_coach on public.protocolos_competicion(coach_id);

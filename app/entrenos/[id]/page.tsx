@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, GripVertical } from 'lucide-react'
 import { DIAS_SEMANA } from '@/lib/utils'
+import { PlanEntrenamiento, Ejercicio } from '@/types'
 
 interface EjercicioEnSesion {
   id: string
@@ -29,14 +30,14 @@ interface SesionLocal {
 }
 
 export default function EditarEntrenoPage() {
-  const { id } = useParams()
-  const [plan, setPlan] = useState<any>(null)
+  const { id } = useParams<{ id: string }>()
+  const [plan, setPlan] = useState<PlanEntrenamiento | null>(null)
   const [sesiones, setSesiones] = useState<SesionLocal[]>([])
   const [loading, setLoading] = useState(true)
 
   const [busquedaAbierta, setBusquedaAbierta] = useState<string | null>(null)
   const [queryEjercicio, setQueryEjercicio] = useState('')
-  const [resultados, setResultados] = useState<any[]>([])
+  const [resultados, setResultados] = useState<Ejercicio[]>([])
 
   useEffect(() => { loadPlan() }, [id])
 
@@ -46,10 +47,10 @@ export default function EditarEntrenoPage() {
       supabase.from('sesiones_entrenamiento').select('*, ejercicios:sesion_ejercicios(*, ejercicio:ejercicios(*))').eq('plan_id', id).order('orden'),
     ])
     setPlan(planRes.data)
-    setSesiones((sesionesRes.data ?? []).map((s: any) => ({
+    setSesiones((sesionesRes.data ?? []).map(s => ({
       ...s,
       expandida: true,
-      ejercicios: (s.ejercicios ?? []).sort((a: any, b: any) => a.orden - b.orden)
+      ejercicios: ((s as { ejercicios: SesionLocal['ejercicios'] }).ejercicios ?? []).sort((a, b) => a.orden - b.orden)
     })))
     setLoading(false)
   }
@@ -80,7 +81,7 @@ export default function EditarEntrenoPage() {
     await supabase.from('sesiones_entrenamiento').update({ [field]: value }).eq('id', sesionId)
   }
 
-  async function añadirEjercicio(sesionId: string, ejercicio: any) {
+  async function añadirEjercicio(sesionId: string, ejercicio: Ejercicio) {
     const sesion = sesiones.find(s => s.id === sesionId)!
     const { data } = await supabase.from('sesion_ejercicios').insert({
       sesion_id: sesionId, ejercicio_id: ejercicio.id,
@@ -98,7 +99,7 @@ export default function EditarEntrenoPage() {
     setResultados([])
   }
 
-  async function actualizarEjercicio(sesionId: string, ejId: string, field: string, value: any) {
+  async function actualizarEjercicio(sesionId: string, ejId: string, field: string, value: string | number) {
     setSesiones(prev => prev.map(s => s.id === sesionId
       ? { ...s, ejercicios: s.ejercicios.map(e => e.id === ejId ? { ...e, [field]: value } : e) }
       : s

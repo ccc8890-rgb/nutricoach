@@ -1,118 +1,846 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════
+   NutriCoach — Design System v3 (Apple Gray)
+   ═══════════════════════════════════════════ */
+
 :root {
-  --primary: #16a34a;
-  --primary-dark: #15803d;
-  --primary-light: #86efac;
-  --bg: #f9fafb;
-  --surface: #ffffff;
-  --border: #e5e7eb;
-  --text: #111827;
-  --text-muted: #6b7280;
+  /* Primary — Near Black (iOS label) */
+  --primary: #1C1C1E;
+  --primary-dark: #000000;
+  --primary-light: #3A3A3C;
+  --primary-bg: #F2F2F7;
+  --primary-ring: rgba(0, 0, 0, 0.1);
+
+  /* Neutral — iOS Gray Scale */
+  --bg: #F2F2F7;
+  --surface: #FFFFFF;
+  --border: #E5E5EA;
+  --text: #1C1C1E;
+  --text-secondary: #48484A;
+  --text-muted: #8E8E93;
+
+  /* Funcional — Macros (iOS system colors) */
+  --macro-protein: #FF3B30;
+  --macro-carbs: #FF9500;
+  --macro-fat: #AF52DE;
+  --macro-calories: #007AFF;
+
+  /* Estados (iOS system colors) */
+  --success: #34C759;
+  --success-bg: #F0FFF4;
+  --warning: #FF9500;
+  --warning-bg: #FFF8EC;
+  --error: #FF3B30;
+  --error-bg: #FFF1F0;
+  --info: #007AFF;
+  --info-bg: #EFF6FF;
+}
+
+/* ═══════════════════════════════════════════
+   TEMA OSCURO
+   ═══════════════════════════════════════════ */
+.dark {
+  /* Primary — near white */
+  --primary: #F2F2F7;
+  --primary-dark: #FFFFFF;
+  --primary-light: #E5E5EA;
+  --primary-bg: rgba(255, 255, 255, 0.08);
+  --primary-ring: rgba(255, 255, 255, 0.12);
+
+  /* Neutral — iOS dark mode */
+  --bg: #000000;
+  --surface: #1C1C1E;
+  --border: #38383A;
+  --text: #FFFFFF;
+  --text-secondary: #9A9A9E;
+  --text-muted: #636366;
+
+  /* Estados oscuros */
+  --success-bg: rgba(52, 199, 89, 0.12);
+  --warning-bg: rgba(255, 149, 0, 0.12);
+  --error-bg: rgba(255, 59, 48, 0.12);
+  --info-bg: rgba(0, 122, 255, 0.12);
+
+  /* Tailwind overrides */
+  --tw-text-gray-50: #1C1C1E;
+  --tw-text-gray-100: #2C2C2E;
+  --tw-text-gray-300: #636366;
+  --tw-text-gray-400: #8E8E93;
+  --tw-text-gray-500: #AEAEB2;
+  --tw-text-gray-600: #C7C7CC;
+  --tw-text-gray-700: #E5E5EA;
+  --tw-text-gray-800: #F2F2F7;
+  --tw-text-gray-900: #FFFFFF;
+
+  --tw-bg-white: var(--surface);
+  --tw-bg-gray-50: #0A0A0A;
+  --tw-bg-gray-100: #1C1C1E;
+  --tw-bg-gray-200: #2C2C2E;
+  --tw-bg-gray-300: #3A3A3C;
+  --tw-bg-gray-400: #48484A;
+
+  --tw-border-gray-100: var(--border);
+  --tw-border-gray-200: var(--border);
+  --tw-border-gray-300: #48484A;
+}
+
+.dark .text-gray-900 { color: var(--tw-text-gray-900); }
+.dark .text-gray-800 { color: var(--tw-text-gray-800); }
+.dark .text-gray-700 { color: var(--tw-text-gray-700); }
+.dark .text-gray-600 { color: var(--tw-text-gray-600); }
+.dark .text-gray-500 { color: var(--tw-text-gray-500); }
+.dark .text-gray-400 { color: var(--tw-text-gray-400); }
+.dark .text-gray-300 { color: var(--tw-text-gray-300); }
+.dark .text-gray-100 { color: var(--tw-text-gray-100); }
+.dark .text-gray-50 { color: var(--tw-text-gray-50); }
+.dark .bg-white { background: var(--tw-bg-white); }
+.dark .bg-gray-50 { background: var(--tw-bg-gray-50); }
+.dark .bg-gray-100 { background: var(--tw-bg-gray-100); }
+.dark .bg-gray-200 { background: var(--tw-bg-gray-200); }
+.dark .bg-gray-300 { background: var(--tw-bg-gray-300); }
+.dark .bg-gray-400 { background: var(--tw-bg-gray-400); }
+.dark .border-gray-100 { border-color: var(--tw-border-gray-100); }
+.dark .border-gray-200 { border-color: var(--tw-border-gray-200); }
+.dark .border-gray-300 { border-color: var(--tw-border-gray-300); }
+
+
+/* ═══════════════════════════════════════════
+   Badges — light mode
+   ═══════════════════════════════════════════ */
+.badge-amber {
+  background: #FFF8EC;
+  color: #C2810A;
+}
+
+.badge-blue {
+  background: #EFF6FF;
+  color: #1D6AE5;
+}
+
+.badge-green {
+  background: #F0FFF4;
+  color: #1A8C3C;
+}
+
+.badge-teal {
+  background: #F2F2F7;
+  color: #1C1C1E;
+}
+
+.badge-red {
+  background: #FFF1F0;
+  color: #D70015;
+}
+
+/* Badges dark mode */
+.dark .badge-gray {
+  background: rgba(255, 255, 255, 0.08);
+  color: #AEAEB2;
+}
+
+.dark .badge-amber {
+  background: rgba(255, 149, 0, 0.12);
+  color: #FF9F0A;
+}
+
+.dark .badge-teal {
+  background: rgba(255, 255, 255, 0.08);
+  color: #E5E5EA;
+}
+
+.dark .badge-blue {
+  background: rgba(0, 122, 255, 0.12);
+  color: #409CFF;
+}
+
+.dark .badge-purple {
+  background: rgba(175, 82, 222, 0.12);
+  color: #DA8FFF;
+}
+
+.dark .badge-green {
+  background: rgba(52, 199, 89, 0.12);
+  color: #32D74B;
+}
+
+.dark .badge-orange {
+  background: rgba(255, 149, 0, 0.12);
+  color: #FF9F0A;
+}
+
+.dark .badge-red {
+  background: rgba(255, 59, 48, 0.12);
+  color: #FF453A;
+}
+
+/* Botones secundarios en dark */
+.dark .btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.dark .btn-secondary:hover {
+  background: #2C2C2E;
+  border-color: #48484A;
+}
+
+.dark .btn-ghost {
+  color: var(--text-secondary);
+}
+
+.dark .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+/* Inputs en dark */
+.dark .input {
+  background: #2C2C2E;
+  color: var(--text);
+}
+
+.dark .input::placeholder {
+  color: #636366;
+}
+
+/* Macro pills en dark */
+.dark .macro-pill {
+  background: #2C2C2E;
+}
+
+.dark .macro-pill-cal {
+  border-color: rgba(0, 122, 255, 0.25);
+  background: rgba(0, 122, 255, 0.08);
+}
+
+.dark .macro-pill-protein {
+  border-color: rgba(255, 59, 48, 0.25);
+  background: rgba(255, 59, 48, 0.08);
+}
+
+.dark .macro-pill-carbs {
+  border-color: rgba(255, 149, 0, 0.25);
+  background: rgba(255, 149, 0, 0.08);
+}
+
+.dark .macro-pill-fat {
+  border-color: rgba(175, 82, 222, 0.25);
+  background: rgba(175, 82, 222, 0.08);
+}
+
+/* Tablas en dark */
+.dark table th {
+  background: #1C1C1E;
+}
+
+.dark table td {
+  border-bottom-color: #2C2C2E;
+}
+
+.dark table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Skeleton en dark */
+.dark .skeleton {
+  background: linear-gradient(90deg, #1C1C1E 25%, #2C2C2E 50%, #1C1C1E 75%);
+}
+
+/* Card hover en dark */
+.dark .card-hoverable:hover {
+  border-color: #48484A;
 }
 
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
+/* ═══════════════════════════════════════════
+   CARD
+   ═══════════════════════════════════════════ */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.card:hover {
+  border-color: #C7C7CC;
+}
+
+.card-hoverable {
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.card-hoverable:hover {
+  border-color: #AEAEB2;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card-hoverable:hover {
+    transform: translateY(-2px);
+  }
+  .card-hoverable:active {
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   BOTONES
+   ═══════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .btn-primary {
-  background: var(--primary);
+  composes: btn;
+  background: #1C1C1E;
   color: white;
-  padding: 0.625rem 1.25rem;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: background 0.15s;
-  cursor: pointer;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
 }
-.btn-primary:hover { background: var(--primary-dark); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary:hover:not(:disabled) {
+  background: #000000;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
 
 .btn-secondary {
+  composes: btn;
   background: white;
   color: var(--text);
-  padding: 0.625rem 1.25rem;
-  border-radius: 8px;
-  font-weight: 500;
-  border: 1px solid var(--border);
-  transition: background 0.15s;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+  border-color: var(--border);
 }
-.btn-secondary:hover { background: #f3f4f6; }
+
+.btn-secondary:hover:not(:disabled) {
+  background: #F2F2F7;
+  border-color: #C7C7CC;
+}
+
+.btn-ghost {
+  composes: btn;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: #F2F2F7;
+  color: var(--text);
+}
 
 .btn-danger {
-  background: #fee2e2;
-  color: #dc2626;
-  padding: 0.5rem 1rem;
+  composes: btn;
+  background: #FFF1F0;
+  color: #FF3B30;
+  border-color: #FFCDC9;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #FFE5E3;
+  border-color: #FFB3AE;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
   border-radius: 8px;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 12px;
+}
+
+/* ═══════════════════════════════════════════
+   INPUTS
+   ═══════════════════════════════════════════ */
+@layer components {
+  .input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: white;
+    color: var(--text);
+  }
+
+  .input:focus {
+    border-color: #8E8E93;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+  }
+
+  .input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .input-error {
+    border-color: #FF3B30;
+  }
+
+  .input-error:focus {
+    box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.12);
+  }
+
+  select.input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238E8E93' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.25rem;
+    padding-right: 2.5rem;
+  }
+
+  textarea.input {
+    min-height: 100px;
+    resize: vertical;
+  }
+}
+
+/* Search inputs: separar el texto de la lupa */
+.search-input {
+  padding-left: 2.5rem !important;
+}
+
+label {
+  display: block;
+  font-size: 0.8125rem;
   font-weight: 500;
-  border: none;
-  cursor: pointer;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
 }
-.btn-danger:hover { background: #fecaca; }
 
-.input {
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.15s;
-  background: white;
-}
-.input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
-
-label { font-size: 0.875rem; font-weight: 500; color: #374151; }
-
+/* ═══════════════════════════════════════════
+   BADGES / PILLS
+   ═══════════════════════════════════════════ */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.65rem;
+  padding: 0.175rem 0.65rem;
   border-radius: 9999px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.25rem;
 }
-.badge-green { background: #dcfce7; color: #16a34a; }
-.badge-blue { background: #dbeafe; color: #2563eb; }
-.badge-purple { background: #ede9fe; color: #7c3aed; }
-.badge-orange { background: #ffedd5; color: #ea580c; }
-.badge-gray { background: #f3f4f6; color: #6b7280; }
 
+.badge-green {
+  background: #F0FFF4;
+  color: #1A8C3C;
+}
+
+.badge-blue {
+  background: #EFF6FF;
+  color: #1D6AE5;
+}
+
+.badge-purple {
+  background: #F5EDFF;
+  color: #7C3AED;
+}
+
+.badge-orange {
+  background: #FFF8EC;
+  color: #C2810A;
+}
+
+.badge-gray {
+  background: #F2F2F7;
+  color: #48484A;
+}
+
+.badge-red {
+  background: #FFF1F0;
+  color: #D70015;
+}
+
+.badge-teal {
+  background: #F2F2F7;
+  color: #1C1C1E;
+}
+
+/* ═══════════════════════════════════════════
+   MACRO PILLS
+   ═══════════════════════════════════════════ */
 .macro-pill {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0.5rem 0.75rem;
   border-radius: 10px;
-  min-width: 70px;
+  min-width: 72px;
+  border: 1px solid transparent;
+  background: #F2F2F7;
 }
 
+.macro-pill-cal {
+  border-color: #BFDBFE;
+  background: #EFF6FF;
+}
+
+.macro-pill-protein {
+  border-color: #FFCDC9;
+  background: #FFF1F0;
+}
+
+.macro-pill-carbs {
+  border-color: #FFE4A0;
+  background: #FFF8EC;
+}
+
+.macro-pill-fat {
+  border-color: #E9C8FF;
+  background: #F5EDFF;
+}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════ */
 .sidebar-link {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.6rem 0.875rem;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.9rem;
-  color: #374151;
+  font-weight: 500;
+  color: var(--text-secondary);
   text-decoration: none;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
 }
-.sidebar-link:hover { background: #f0fdf4; color: #16a34a; }
-.sidebar-link.active { background: #dcfce7; color: #16a34a; font-weight: 600; }
+
+.sidebar-link:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text);
+}
+
+.sidebar-link.active {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════
+   TABLAS
+   ═══════════════════════════════════════════ */
+.table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  background: #F2F2F7;
+  border-bottom: 1px solid var(--border);
+}
+
+table td {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #F2F2F7;
+}
+
+table tr:last-child td {
+  border-bottom: none;
+}
+
+table tr:hover td {
+  background: #FAFAFA;
+}
+
+/* ═══════════════════════════════════════════
+   SKELETON LOADING
+   ═══════════════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(90deg, #F2F2F7 25%, #E5E5EA 50%, #F2F2F7 75%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════
+   TEMA OSCURO — Overrides de clases
+   ═══════════════════════════════════════════ */
+
+/* Sidebar */
+.dark .sidebar-link {
+  color: var(--text-secondary);
+}
+
+.dark .sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.dark .sidebar-link.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+}
+
+/* Cards */
+.dark .card:hover {
+  border-color: #48484A;
+}
+
+/* Badges dark mode (full set) */
+.dark .badge-green {
+  background: rgba(52, 199, 89, 0.12);
+  color: #32D74B;
+}
+
+.dark .badge-blue {
+  background: rgba(0, 122, 255, 0.12);
+  color: #409CFF;
+}
+
+.dark .badge-purple {
+  background: rgba(175, 82, 222, 0.12);
+  color: #DA8FFF;
+}
+
+.dark .badge-orange {
+  background: rgba(255, 149, 0, 0.12);
+  color: #FF9F0A;
+}
+
+.dark .badge-gray {
+  background: rgba(255, 255, 255, 0.08);
+  color: #AEAEB2;
+}
+
+.dark .badge-red {
+  background: rgba(255, 59, 48, 0.12);
+  color: #FF453A;
+}
+
+.dark .badge-teal {
+  background: rgba(255, 255, 255, 0.08);
+  color: #E5E5EA;
+}
+
+/* Macro pills dark mode */
+.dark .macro-pill {
+  background: #2C2C2E;
+  border-color: #3A3A3C;
+}
+
+.dark .macro-pill-cal {
+  border-color: rgba(0, 122, 255, 0.25);
+  background: rgba(0, 122, 255, 0.08);
+}
+
+.dark .macro-pill-protein {
+  border-color: rgba(255, 59, 48, 0.25);
+  background: rgba(255, 59, 48, 0.08);
+}
+
+.dark .macro-pill-carbs {
+  border-color: rgba(255, 149, 0, 0.25);
+  background: rgba(255, 149, 0, 0.08);
+}
+
+.dark .macro-pill-fat {
+  border-color: rgba(175, 82, 222, 0.25);
+  background: rgba(175, 82, 222, 0.08);
+}
+
+/* Inputs dark mode */
+.dark .input {
+  background: #2C2C2E;
+  color: var(--text);
+  border-color: #3A3A3C;
+}
+
+.dark .input:focus {
+  border-color: #8E8E93;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+.dark select.input {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23636366' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* Botones dark mode */
+.dark .btn-primary {
+  background: #F2F2F7;
+  color: #1C1C1E;
+}
+
+.dark .btn-primary:hover:not(:disabled) {
+  background: #FFFFFF;
+}
+
+.dark .btn-secondary {
+  background: #2C2C2E;
+  color: var(--text);
+  border-color: #3A3A3C;
+}
+
+.dark .btn-secondary:hover:not(:disabled) {
+  background: #3A3A3C;
+  border-color: #48484A;
+}
+
+.dark .btn-ghost {
+  color: var(--text-secondary);
+}
+
+.dark .btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.dark .btn-danger {
+  background: rgba(255, 59, 48, 0.12);
+  border-color: rgba(255, 59, 48, 0.25);
+  color: #FF453A;
+}
+
+.dark .btn-danger:hover:not(:disabled) {
+  background: rgba(255, 59, 48, 0.2);
+  border-color: rgba(255, 59, 48, 0.35);
+}
+
+/* Tablas dark mode */
+.dark .table-container {
+  border-color: #38383A;
+}
+
+.dark table th {
+  background: #1C1C1E;
+  color: var(--text-muted);
+  border-bottom-color: #38383A;
+}
+
+.dark table td {
+  border-bottom-color: #2C2C2E;
+}
+
+.dark table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Skeleton dark mode */
+.dark .skeleton {
+  background: linear-gradient(90deg, #1C1C1E 25%, #2C2C2E 50%, #1C1C1E 75%);
+}
+
+/* Labels dark mode */
+.dark label {
+  color: var(--text-secondary);
+}
+
+/* ═══════════════════════════════════════════
+   ANIMACIONES
+   ═══════════════════════════════════════════ */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out;
+}
+
+/* ═══════════════════════════════════════════
+   REDUCED MOTION — Accesibilidad
+   ═══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up {
+    animation: none;
+  }
+  .card-hoverable:hover {
+    transform: none;
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   PRINT STYLES — Plan nutricional PDF
+   ═══════════════════════════════════════════ */
+@media print {
+  body * { visibility: hidden; }
+
+  .print-area,
+  .print-area * { visibility: visible; }
+
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .print-area button,
+  .print-area .btn,
+  .no-print { display: none !important; }
+
+  @page { margin: 1.5cm; size: A4; }
+}

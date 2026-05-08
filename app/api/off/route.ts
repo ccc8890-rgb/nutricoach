@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 interface OFFProduct {
+  code?: string
   product_name: string
   nutriments: {
     'energy-kcal_100g'?: number
@@ -50,6 +51,7 @@ export async function GET(req: NextRequest) {
         categoria: 'Supermercado',
         imagen: p.image_front_small_url ?? null,
         _fuente: 'off' as const,
+        codigo_barras: p.code ?? null,
       }))
 
     return NextResponse.json(normalizado.slice(0, 12))

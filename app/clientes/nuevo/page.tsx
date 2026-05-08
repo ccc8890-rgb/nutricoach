@@ -38,8 +38,8 @@ export default function NuevoClientePage() {
       if (!res.ok) throw new Error(json.error ?? 'Error al crear el cliente')
 
       router.push('/clientes')
-    } catch (err: any) {
-      setError(err.message ?? 'Error al crear el cliente')
+    } catch (err: unknown) {
+      setError((err as { message?: string })?.message ?? 'Error al crear el cliente')
     } finally {
       setLoading(false)
     }

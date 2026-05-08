@@ -1,0 +1,270 @@
+'use client'
+
+import { useEffect, useState, useCallback } from 'react'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Bell, Flame, MessageSquareText, History } from 'lucide-react'
+import MiPlan from './MiPlan'
+import CheckInForm from './CheckInForm'
+import ProgresoCharts from './ProgresoCharts'
+import NotasCoach from './NotasCoach'
+import HistorialCheckins from './HistorialCheckins'
+import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach } from '@/types'
+
+interface DashboardData {
+    plan: PlanNutricion
+    cliente: Pick<Cliente, 'id' | 'peso_inicial' | 'objetivo'> & { nombre?: string; fecha_proxima_revision?: string }
+    entreno: PlanEntrenamiento | null
+    checkins: CheckIn[]
+    peso: SeguimientoPeso[]
+    notas: NotaCoach[]
+}
+
+interface DashboardClienteProps {
+    codigo: string
+}
+
+type Tab = 'plan' | 'checkin' | 'progreso' | 'historial'
+
+const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
+    { key: 'plan', label: 'Mi plan', icon: UtensilsCrossed },
+    { key: 'checkin', label: 'Check-in', icon: ClipboardCheck },
+    { key: 'historial', label: 'Historial', icon: History },
+    { key: 'progreso', label: 'Progreso', icon: BarChart3 },
+]
+
+/* ── Helper: calcular racha ── */
+function calcularRacha(checkins: CheckIn[]): number {
+    if (checkins.length === 0) return 0
+    const sorted = [...checkins]
+        .map(c => new Date(c.fecha))
+        .sort((a, b) => b.getTime() - a.getTime())
+
+    let racha = 1
+    const hoy = new Date()
+    hoy.setHours(0, 0, 0, 0)
+    const diffHoy = Math.floor((hoy.getTime() - sorted[0].getTime()) / (1000 * 60 * 60 * 24))
+    if (diffHoy > 2) return 0
+
+    for (let i = 1; i < sorted.length; i++) {
+        const diff = Math.floor((sorted[i - 1].getTime() - sorted[i].getTime()) / (1000 * 60 * 60 * 24))
+        if (diff === 1) racha++
+        else break
+    }
+    return racha
+}
+
+export default function DashboardCliente({ codigo }: DashboardClienteProps) {
+    const [data, setData] = useState<DashboardData | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [tab, setTab] = useState<Tab>('plan')
+    const [notasNoLeidas, setNotasNoLeidas] = useState(0)
+    const [notasVistas, setNotasVistas] = useState<string[]>([])
+
+    const loadData = useCallback(async () => {
+        try {
+            const res = await fetch(`/api/cliente/${codigo}/dashboard`)
+            if (!res.ok) {
+                const err = await res.json()
+                setError(err.error || 'Error al cargar')
+                setLoading(false)
+                return
+            }
+            const json = await res.json()
+            setData(json)
+
+            // Detectar notas nuevas (no vistas)
+            if (json.notas?.length > 0) {
+                const nuevas = json.notas.filter((n: NotaCoach) => !notasVistas.includes(n.id))
+                setNotasNoLeidas(nuevas.length)
+            }
+
+            setLoading(false)
+        } catch {
+            setError('Error de conexión')
+            setLoading(false)
+        }
+    }, [codigo, notasVistas])
+
+    useEffect(() => {
+        loadData()
+    }, [loadData])
+
+    // Marcar notas como leídas al visitar la pestaña de progreso (donde se muestran)
+    useEffect(() => {
+        if (tab === 'progreso' && data?.notas) {
+            const ids = data.notas.map(n => n.id)
+            setNotasVistas(prev => {
+                const nuevas = ids.filter(id => !prev.includes(id))
+                if (nuevas.length > 0) {
+                    setNotasNoLeidas(0)
+                    return [...prev, ...nuevas]
+                }
+                return prev
+            })
+        }
+    }, [tab, data?.notas])
+
+    const racha = data ? calcularRacha(data.checkins ?? []) : 0
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+                <Loader2 size={28} className="animate-spin" style={{ color: '#0D9488' }} />
+            </div>
+        )
+    }
+
+    if (error || !data) {
+        return (
+            <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+                <div className="max-w-md w-full mx-4 text-center">
+                    <div className="card p-12">
+                        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#FEF2F2' }}>
+                            <span className="text-3xl">😕</span>
+                        </div>
+                        <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Plan no disponible</h1>
+                        <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+                            {error || 'Este plan no existe o ha sido desactivado por tu coach'}
+                        </p>
+                        <p className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>
+                            Si crees que es un error, contacta con tu coach.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Último check-in para vista previa
+    const ultimoCheckin = data.checkins?.[0]
+    const diasDesdeUltimoCheckin = ultimoCheckin
+        ? Math.floor((new Date().getTime() - new Date(ultimoCheckin.fecha).getTime()) / (1000 * 60 * 60 * 24))
+        : null
+
+    return (
+        <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+            {/* Header con gradiente teal */}
+            <div style={{ background: 'linear-gradient(135deg, #0D9488, #14B8A6)' }}>
+                <div className="max-w-2xl mx-auto px-4 py-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-teal-100 text-sm font-medium mb-1">
+                                {data.cliente?.nombre ? `👋 ¡Hola, ${data.cliente.nombre}!` : '🍽️ Tu plan personalizado'}
+                            </p>
+                            <h1 className="text-2xl font-bold text-white">{data.plan.nombre}</h1>
+                            {data.plan.descripcion && (
+                                <p className="text-teal-100 mt-1 text-sm">{data.plan.descripcion}</p>
+                            )}
+                        </div>
+
+                        {/* Indicador de racha y notas no leídas */}
+                        <div className="flex items-center gap-2">
+                            {racha > 0 && (
+                                <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium"
+                                    style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
+                                    <Flame size={14} />
+                                    <span>{racha}</span>
+                                </div>
+                            )}
+                            {notasNoLeidas > 0 && (
+                                <div className="relative">
+                                    <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium"
+                                        style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
+                                        <MessageSquareText size={14} />
+                                        <span>Nuevas</span>
+                                    </div>
+                                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-bold">
+                                        {notasNoLeidas}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Badges informativos */}
+                    <div className="flex flex-wrap gap-2 mt-3">
+                        {data.cliente?.fecha_proxima_revision && (
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                                style={{ background: 'rgba(255,255,255,0.15)', color: 'white' }}>
+                                📅 Revisión: {new Date(data.cliente.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+                            </div>
+                        )}
+                        {ultimoCheckin && diasDesdeUltimoCheckin !== null && (
+                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${diasDesdeUltimoCheckin <= 2 ? 'bg-green-500/20 text-green-100' : 'bg-amber-500/20 text-amber-100'}`}
+                                style={{ background: diasDesdeUltimoCheckin <= 2 ? 'rgba(34,197,94,0.2)' : 'rgba(251,191,36,0.2)', color: 'white' }}>
+                                <ClipboardCheck size={12} />
+                                {diasDesdeUltimoCheckin === 0 ? 'Check-in hoy' :
+                                    diasDesdeUltimoCheckin === 1 ? 'Ayer' :
+                                        `${diasDesdeUltimoCheckin} días sin check-in`}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <div className="max-w-2xl mx-auto flex">
+                    {TABS.map(({ key, label, icon: Icon }) => (
+                        <button
+                            key={key}
+                            onClick={() => setTab(key)}
+                            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium border-b-2 transition-colors ${tab === key
+                                ? 'border-teal-500 text-teal-600'
+                                : 'border-transparent hover:text-gray-700'
+                                }`}
+                            style={{ color: tab === key ? '#0D9488' : 'var(--text-secondary)' }}
+                        >
+                            <Icon size={16} />
+                            {label}
+                            {key === 'progreso' && notasNoLeidas > 0 && (
+                                <span className="w-2 h-2 bg-red-500 rounded-full" />
+                            )}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Contenido */}
+            <div className="max-w-2xl mx-auto p-4 space-y-4">
+                {tab === 'plan' && (
+                    <MiPlan
+                        codigo={codigo}
+                        plan={data.plan}
+                        entreno={data.entreno}
+                    />
+                )}
+
+                {tab === 'checkin' && (
+                    <CheckInForm
+                        codigo={codigo}
+                        onCheckinCreado={loadData}
+                        ultimoCheckin={ultimoCheckin}
+                    />
+                )}
+
+                {tab === 'historial' && (
+                    <HistorialCheckins codigo={codigo} />
+                )}
+
+                {tab === 'progreso' && (
+                    <ProgresoCharts
+                        checkins={data.checkins}
+                        peso={data.peso}
+                        pesoInicial={data.cliente?.peso_inicial}
+                        objetivo={data.cliente?.objetivo}
+                    />
+                )}
+            </div>
+
+            {/* Footer con notas del coach */}
+            <div className="max-w-2xl mx-auto px-4 pb-8">
+                <NotasCoach codigo={codigo} />
+                <p className="text-xs text-center mt-6" style={{ color: 'var(--text-muted)' }}>
+                    Plan creado por Casanova Nutrition ·{' '}
+                    {new Date(data.plan.created_at).toLocaleDateString('es-ES')}
+                </p>
+            </div>
+        </div>
+    )
+}

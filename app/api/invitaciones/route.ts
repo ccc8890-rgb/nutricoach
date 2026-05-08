@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Solo los coaches pueden invitar' }, { status: 403 })
     }
 
-    const body = await req.json()
+    const body = await req.json().catch(() => ({}))
     const { email } = body
 
     const { data, error } = await supabase
