@@ -25,6 +25,8 @@ import {
   Sparkles,
   Menu,
   X,
+  Store,
+  Bot,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -49,6 +51,8 @@ const NUTRICION_SUBITEMS = [
   { href: '/dietas', label: 'Dietas activas', icon: Apple },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Sandwich },
   { href: '/recetas', label: 'Recetario', icon: BookOpen },
+  { href: '/precios', label: 'Precios', icon: Store },
+  { href: '/precios/scraping', label: 'Scraping', icon: Bot },
 ]
 
 export default function Sidebar() {
