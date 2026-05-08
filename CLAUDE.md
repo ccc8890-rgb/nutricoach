@@ -7,6 +7,95 @@ s# Proyecto: NutriCoach (Human Lab)
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 
+---
+
+## 📸 Sistema de Imágenes — Flujo completo (08-05-2026)
+
+### Filosofía
+Las imágenes NO deben parecer generadas por IA ni copiadas de otra web.
+El objetivo es que parezcan fotos tomadas por Carlos: luz natural, cocina mediterránea,
+cámara mirrorless personal (Sony A6700), imperfecciones naturales, variedad entre recetas.
+
+**Lo que NO se quiere:** estilo editorial Ottolenghi, Hasselblad, studio lighting, professional cookbook.
+**Lo que SÍ se quiere:** foto casual de blog personal, luz de ventana, mesa de casa, plato simple, honest.
+
+### Flujo automático (al scrape de una receta nueva)
+
+```
+Usuario pega URL en /recetas/nueva
+  → /api/scrape-receta extrae la receta (JSON-LD o DeepSeek)
+  → Si el JSON-LD ya trae imagen → se usa directamente
+  → Si NO hay imagen → fire-and-forget a /api/capturar-imagen-receta (background, no bloquea)
+       ↓
+/api/capturar-imagen-receta:
+  1. agent-browser accessibility <url_origen>
+     → lee el árbol de accesibilidad de la página fuente
+     → extrae URLs de imágenes (.jpg .png .webp) del árbol
+     → descarga la más grande (>15KB) — la foto REAL de la receta
+  2. Si hay imagen real + REPLICATE_API_KEY configurada:
+     → Flux Pro img2img con strength=0.2 (solo cambia el 20%)
+     → Prompt: "casual home food photo, Sony mirrorless, Mediterranean afternoon light..."
+     → seed aleatorio → cada receta tiene resultado diferente
+  3. Sube a Supabase Storage bucket 'recetas-imagenes' → receta_id/auto_timestamp.webp
+  4. UPDATE recetas SET imagen_url = <url_publica> WHERE id = receta_id
+```
+
+### Script bulk — para rellenar recetas existentes
+
+```bash
+# Procesar solo recetas SIN imagen (modo por defecto)
+node scripts/scrapear-imagenes-recetas.mjs
+
+# Procesar TODAS las recetas aprobadas (sin borrar las que ya tienen imagen)
+node scripts/scrapear-imagenes-recetas.mjs --todas
+
+# BORRAR imagen_url de todas las recetas y regenerar desde cero
+node scripts/scrapear-imagenes-recetas.mjs --reset
+
+# Reconstruir panel HTML desde imágenes ya descargadas en disco
+node scripts/scrapear-imagenes-recetas.mjs --rebuild
+```
+
+### Orden de métodos en el script bulk
+
+| Prioridad | Método | Descripción |
+|-----------|--------|-------------|
+| 0 (primero) | `agent_browser` | Captura imagen REAL de la página fuente via agent-browser. Si la obtiene, salta Flux. |
+| 1 (fallback) | `flux_txt2img` | Genera desde cero con prompt casero si no hay imagen real. strength=0.2, seed random. |
+| — (legacy) | `playwright` / `bing_images` | Métodos anteriores, mantenidos como fallback manual en el panel. |
+
+### Resultado del script
+
+Genera `salidas/revision-imagenes/revision.html` — panel HTML interactivo donde:
+- Se ven todas las imágenes candidatas por receta
+- Se aprueba la mejor con un clic
+- Botón "Auto-seleccionar mejores" usa el orden de prioridad de la tabla
+- Botón "Subir aprobadas" → llama `/api/subir-imagen-receta` y actualiza Supabase
+
+### Variables de entorno necesarias
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...        # .env.local
+SUPABASE_SERVICE_ROLE_KEY=...       # .env.local
+REPLICATE_API_KEY=...               # .env.local — opcional, sin él solo usa imagen real directa
+```
+
+### Cuándo ejecutar --reset
+
+Ejecutar `--reset` cuando:
+- Las imágenes actuales parecen demasiado IA/estudio y se quieren rehacer
+- Se cambió el prompt de estilo y se quiere aplicar a todas
+- Hay imágenes copiadas de otras webs y se quiere sustituir por versión propia
+
+El `--reset` solo limpia `imagen_url` en Supabase (pone NULL). No borra archivos de Storage.
+Después de `--reset`, el script procesa todas las recetas y genera el panel de revisión.
+
+### Bucket de Storage
+
+Bucket: `recetas-imagenes` (público, debe crearse en Supabase si no existe)
+Path: `{receta_id}/auto_{timestamp}.webp`
+Para crear el bucket: Supabase Dashboard → Storage → New bucket → "recetas-imagenes" → Public.
+
 ## Estado Actual (08-05-2026 — Sesión 6)
 - **0 errores TypeScript** ✅ — build verificado con `npx next build`
 - **0 `any` en states** ✅ — todos los `useState<any>` reemplazados por interfaces concretas
