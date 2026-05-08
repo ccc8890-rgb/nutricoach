@@ -3,14 +3,15 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
+    const { token } = await params
     const supabase = createServiceSupabase()
     const { data, error } = await supabase
       .from('invitaciones')
       .select('token, usado, expires_at, email')
-      .eq('token', params.token)
+      .eq('token', token)
       .single()
 
     if (error || !data) {

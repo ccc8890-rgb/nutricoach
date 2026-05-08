@@ -4,19 +4,19 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { UtensilsCrossed, Dumbbell, Weight, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
-import type { Macros } from '@/types'
+import type { Macros, Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, Comida, SesionEntrenamiento, SesionEjercicio, SeguimientoPeso } from '@/types'
 
 export default function PortalClientePage() {
   const router = useRouter()
-  const [profile, setProfile] = useState<any>(null)
-  const [cliente, setCliente] = useState<any>(null)
-  const [dieta, setDieta] = useState<any>(null)
-  const [entreno, setEntreno] = useState<any>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [cliente, setCliente] = useState<Cliente | null>(null)
+  const [dieta, setDieta] = useState<PlanNutricion | null>(null)
+  const [entreno, setEntreno] = useState<PlanEntrenamiento | null>(null)
   const [tab, setTab] = useState<'dieta' | 'entreno' | 'progreso'>('dieta')
   const [peso, setPeso] = useState('')
   const [notaPeso, setNotaPeso] = useState('')
   const [guardandoPeso, setGuardandoPeso] = useState(false)
-  const [historialPeso, setHistorialPeso] = useState<any[]>([])
+  const [historialPeso, setHistorialPeso] = useState<SeguimientoPeso[]>([])
   const [expandidas, setExpandidas] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
 
@@ -27,10 +27,10 @@ export default function PortalClientePage() {
 
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (prof?.role === 'coach') { window.location.href = '/dashboard'; return }
-      setProfile(prof)
+      setProfile(prof as Profile)
 
       const { data: cli } = await supabase.from('clientes').select('*').eq('profile_id', user.id).single()
-      setCliente(cli)
+      setCliente(cli as Cliente)
 
       if (cli) {
         const [dietaRes, entrenoRes, histRes] = await Promise.all([
@@ -39,25 +39,24 @@ export default function PortalClientePage() {
           supabase.from('seguimiento_peso').select('*').eq('cliente_id', cli.id).order('fecha', { ascending: false }).limit(15),
         ])
         if (dietaRes.data) {
-          const comidasOrdenadas = (dietaRes.data.comidas ?? []).sort((a: any, b: any) => a.orden - b.orden)
-          setDieta({ ...dietaRes.data, comidas: comidasOrdenadas })
-          // Expandir todas las comidas por defecto
+          const comidasOrdenadas = ((dietaRes.data as PlanNutricion).comidas ?? []).sort((a, b) => a.orden - b.orden)
+          setDieta({ ...dietaRes.data as PlanNutricion, comidas: comidasOrdenadas })
           const exp: Record<string, boolean> = {}
-          comidasOrdenadas.forEach((c: any) => { exp[c.id] = true })
+          comidasOrdenadas.forEach(c => { exp[c.id] = true })
           setExpandidas(exp)
         }
         if (entrenoRes.data) {
-          const sesionesOrdenadas = (entrenoRes.data.sesiones ?? []).sort((a: any, b: any) => a.orden - b.orden)
-          setEntreno({ ...entrenoRes.data, sesiones: sesionesOrdenadas })
+          const sesionesOrdenadas = ((entrenoRes.data as PlanEntrenamiento).sesiones ?? []).sort((a, b) => a.orden - b.orden)
+          setEntreno({ ...entrenoRes.data as PlanEntrenamiento, sesiones: sesionesOrdenadas })
         }
-        setHistorialPeso(histRes.data ?? [])
+        setHistorialPeso(histRes.data as SeguimientoPeso[] ?? [])
       }
       setLoading(false)
     }
     load()
   }, [router])
 
-  function calcMacrosComida(alimentos: any[]): Macros {
+  function calcMacrosComida(alimentos: ComidaAlimento[]): Macros {
     return sumarMacros((alimentos ?? []).map(a =>
       calcularMacrosPorCantidad(a.alimento?.calorias ?? 0, a.alimento?.proteinas ?? 0, a.alimento?.carbohidratos ?? 0, a.alimento?.grasas ?? 0, a.alimento?.fibra ?? 0, a.cantidad_gramos)
     ))
@@ -89,7 +88,7 @@ export default function PortalClientePage() {
     </div>
   )
 
-  const totalDia = dieta ? sumarMacros((dieta.comidas ?? []).map((c: any) => calcMacrosComida(c.alimentos ?? []))) : null
+  const totalDia = dieta ? sumarMacros((dieta.comidas ?? []).map(c => calcMacrosComida(c.alimentos ?? []))) : null
 
   return (
     <div className="min-h-screen" style={{ background: '#f9fafb' }}>
@@ -119,10 +118,9 @@ export default function PortalClientePage() {
             { key: 'entreno', label: 'Mi entreno', icon: Dumbbell },
             { key: 'progreso', label: 'Progreso', icon: Weight },
           ].map(({ key, label, icon: Icon }) => (
-            <button key={key} onClick={() => setTab(key as any)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium border-b-2 transition-colors ${
-                tab === key ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}>
+            <button key={key} onClick={() => setTab(key as 'dieta' | 'entreno' | 'progreso')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium border-b-2 transition-colors ${tab === key ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}>
               <Icon size={16} /> {label}
             </button>
           ))}
@@ -156,7 +154,7 @@ export default function PortalClientePage() {
 
               {/* Comidas */}
               <div className="flex flex-col gap-3">
-                {(dieta.comidas ?? []).map((comida: any) => {
+                {(dieta.comidas ?? []).map(comida => {
                   const macros = calcMacrosComida(comida.alimentos ?? [])
                   const expanded = expandidas[comida.id]
                   return (
@@ -176,7 +174,7 @@ export default function PortalClientePage() {
                       {expanded && (comida.alimentos ?? []).length > 0 && (
                         <div className="mt-3 border-t border-gray-50 pt-3">
                           <div className="flex flex-col gap-2">
-                            {(comida.alimentos ?? []).map((af: any) => {
+                            {(comida.alimentos ?? []).map(af => {
                               const m = calcularMacrosPorCantidad(af.alimento?.calorias ?? 0, af.alimento?.proteinas ?? 0, af.alimento?.carbohidratos ?? 0, af.alimento?.grasas ?? 0, af.alimento?.fibra ?? 0, af.cantidad_gramos)
                               return (
                                 <div key={af.id} className="flex items-center justify-between py-1.5">
@@ -224,7 +222,7 @@ export default function PortalClientePage() {
               </div>
 
               <div className="flex flex-col gap-3">
-                {(entreno.sesiones ?? []).map((sesion: any) => (
+                {(entreno.sesiones ?? []).map(sesion => (
                   <div key={sesion.id} className="card">
                     <div className="flex items-center justify-between mb-3">
                       <div>
@@ -235,7 +233,7 @@ export default function PortalClientePage() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      {(sesion.ejercicios ?? []).sort((a: any, b: any) => a.orden - b.orden).map((ej: any, idx: number) => (
+                      {(sesion.ejercicios ?? []).sort((a, b) => a.orden - b.orden).map((ej, idx: number) => (
                         <div key={ej.id} className="flex items-start gap-3 p-2.5 bg-gray-50 rounded-lg">
                           <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
                             {idx + 1}
