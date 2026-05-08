@@ -11,7 +11,7 @@ interface Props {
 
 const ESTADO_ICON: Record<string, { icon: typeof Smile; color: string; bg: string; label: string }> = {
     positivo: { icon: Smile, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', label: 'Positivo' },
-    neutro: { icon: Meh, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20', label: 'Neutro' },
+    neutro: { icon: Meh, color: 'text-[#8E8E93]', bg: 'bg-[#F2F2F4] dark:bg-[#A1A1A6]/20', label: 'Neutro' },
     atencion: { icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20', label: 'Requiere atención' },
 }
 
@@ -172,7 +172,7 @@ export default function InformeSemanal({ clienteId }: Props) {
                         </div>
                         <div className="p-3 rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800/30">
                             <div className="flex items-center gap-2 mb-1.5">
-                                <Smile size={14} className="text-amber-500" />
+                                <Smile size={14} style={{ color: '#A1A1A6' }} />
                                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Energía</span>
                             </div>
                             <p className="text-sm text-gray-700 dark:text-gray-300">{informe.energia}</p>

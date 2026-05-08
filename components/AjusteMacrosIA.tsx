@@ -97,9 +97,9 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
         if (Math.abs(diff) < 5) return 'text-gray-800 dark:text-gray-200'
         // Para kcal, incremento es positivo si baja peso; para macros depende
         if (label === 'kcal') {
-            return diff > 0 ? 'text-amber-600' : 'text-green-600'
+            return diff > 0 ? 'text-[#8E8E93]' : 'text-green-600'
         }
-        return diff > 0 ? 'text-green-600' : 'text-amber-600'
+        return diff > 0 ? 'text-green-600' : 'text-[#8E8E93]'
     }
 
     return (

@@ -10,7 +10,7 @@ const DISCIPLINA_COLORS: Record<string, string> = {
   hyrox: '#7C3AED',
   running: '#059669',
   ciclismo: '#2563EB',
-  triatlon: '#D97706',
+  triatlon: '#8E8E93',
   hibrido: '#DC2626',
   fuerza: '#374151',
   recuperacion: '#0891B2',

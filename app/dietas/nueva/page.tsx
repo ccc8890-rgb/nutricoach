@@ -109,15 +109,15 @@ function NuevaDietaForm() {
       <div className="flex items-center gap-3 mb-8">
         <Link href="/dietas" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Nuevo plan de dieta</h1>
-          <p className="text-gray-500 text-sm">Define los objetivos y luego añade los alimentos</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Nuevo plan de dieta</h1>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Define los objetivos y luego añade los alimentos</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Información general */}
         <div className="card">
-          <h2 className="font-semibold text-gray-800 mb-4">Información general</h2>
+          <h2 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>Información general</h2>
           <div className="flex flex-col gap-4">
             <div>
               <label className="block mb-1.5">Cliente</label>
@@ -141,17 +141,17 @@ function NuevaDietaForm() {
 
         {/* Calculadora TMB — solo si el cliente tiene datos */}
         {puedeCalcular && (
-          <div className="card border border-green-200 bg-green-50">
+          <div className="card" style={{ borderColor: '#86efac', backgroundColor: '#f0fdf4' }}>
             <div className="flex items-center gap-2 mb-3">
-              <Zap size={16} className="text-green-600" />
-              <h2 className="font-semibold text-green-800">Calcular con TMB (Mifflin-St Jeor)</h2>
+              <Zap size={16} style={{ color: '#16a34a' }} />
+              <h2 className="font-semibold" style={{ color: '#166534' }}>Calcular con TMB (Mifflin-St Jeor)</h2>
             </div>
-            <p className="text-sm text-green-700 mb-4">
+            <p className="text-sm mb-4" style={{ color: '#15803d' }}>
               {clienteSeleccionado?.profile?.nombre} · {clienteSeleccionado?.peso_inicial}kg · {clienteSeleccionado?.altura}cm · {clienteSeleccionado?.edad} años · objetivo: {clienteSeleccionado?.objetivo?.replace('_', ' ')}
             </p>
             <div className="flex gap-3 items-end">
               <div className="flex-1">
-                <label className="block mb-1.5 text-sm text-green-800">Nivel de actividad</label>
+                <label className="block mb-1.5 text-sm" style={{ color: '#166534' }}>Nivel de actividad</label>
                 <select className="input" value={actividad} onChange={e => setActividad(e.target.value as NivelActividad)}>
                   {(Object.entries(NIVEL_ACTIVIDAD_LABELS) as [NivelActividad, string][]).map(([k, v]) => (
                     <option key={k} value={k}>{v}</option>

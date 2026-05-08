@@ -52,15 +52,15 @@ export default function NuevoClientePage() {
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Nuevo cliente</h1>
-          <p className="text-gray-500 text-sm">Crea el perfil de tu nuevo cliente</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Nuevo cliente</h1>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Crea el perfil de tu nuevo cliente</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Datos de acceso */}
         <div className="card">
-          <h2 className="font-semibold text-gray-800 mb-4">Datos de acceso</h2>
+          <h2 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>Datos de acceso</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1.5">Nombre *</label>
@@ -83,7 +83,7 @@ export default function NuevoClientePage() {
 
         {/* Datos físicos */}
         <div className="card">
-          <h2 className="font-semibold text-gray-800 mb-4">Datos físicos y objetivo</h2>
+          <h2 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>Datos físicos y objetivo</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1.5">Objetivo</label>
@@ -131,7 +131,7 @@ export default function NuevoClientePage() {
 
         {/* Notas */}
         <div className="card">
-          <h2 className="font-semibold text-gray-800 mb-4">Información adicional</h2>
+          <h2 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>Información adicional</h2>
           <div className="flex flex-col gap-4">
             <div>
               <label className="block mb-1.5">Restricciones alimentarias / Alergias</label>
@@ -145,7 +145,7 @@ export default function NuevoClientePage() {
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>
+          <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: 'var(--error-bg)', border: '1px solid var(--error)', color: 'var(--error)' }}>{error}</div>
         )}
 
         <div className="flex gap-3 justify-end">

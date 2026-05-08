@@ -33,7 +33,7 @@ interface HistorialEntry {
 
 const ESTADO_IA_LABELS: Record<string, { label: string; color: string; bg: string }> = {
     nueva: { label: 'Respuesta nueva', color: '#3B82F6', bg: '#EFF6FF' },
-    procesando: { label: 'Generando dieta…', color: '#F59E0B', bg: '#FFFBEB' },
+    procesando: { label: 'Generando dieta…', color: '#A1A1A6', bg: 'rgba(161,161,166,0.08)' },
     dieta_lista: { label: 'Dieta generada', color: '#0D9488', bg: '#F0FDFA' },
     dieta_aprobada: { label: 'Dieta aprobada', color: '#10B981', bg: '#ECFDF5' },
     dieta_rechazada: { label: 'Dieta rechazada', color: '#EF4444', bg: '#FEF2F2' },
@@ -151,7 +151,7 @@ export default function HistorialDietasIA({ clienteId }: Props) {
                                                 )}
                                                 {entry.plan.carbohidratos_objetivo && (
                                                     <span className="flex items-center gap-1">
-                                                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#F59E0B' }} />
+                                                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#A1A1A6' }} />
                                                         C:{entry.plan.carbohidratos_objetivo}g
                                                     </span>
                                                 )}

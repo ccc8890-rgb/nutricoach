@@ -39,7 +39,7 @@ const OBJETIVO_COLOR: Record<string, string> = {
 
 const NIVEL_COLOR: Record<string, string> = {
     principiante: 'text-green-600 bg-green-50',
-    intermedio: 'text-amber-600 bg-amber-50',
+    intermedio: 'text-[#8E8E93] bg-[#F2F2F4]',
     avanzado: 'text-red-600 bg-red-50',
 }
 
@@ -205,18 +205,18 @@ export default function PlantillasEntrenoPage() {
                                 </p>
                                 <div className="flex flex-col gap-1.5 max-h-[200px] overflow-y-auto pr-1">
                                     {p.progresion.map((sem: ProgresionPlantilla) => (
-                                        <div key={sem.semana} className="bg-amber-50 border border-amber-100 rounded-lg p-2.5">
+                                        <div key={sem.semana} className="bg-[#F2F2F4] border border-[#D1D1D6] rounded-lg p-2.5">
                                             <div className="flex items-center justify-between mb-1">
-                                                <p className="text-xs font-bold text-amber-800">Semana {sem.semana} · {sem.titulo}</p>
-                                                <span className="text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">
+                                                <p className="text-xs font-bold text-[#48484A]">Semana {sem.semana} · {sem.titulo}</p>
+                                                <span className="text-[10px] font-medium text-[#8E8E93] bg-[#E5E5EA] px-1.5 py-0.5 rounded">
                                                     {sem.descripcion?.match(/RPE [\d-]+\/10/)?.[0] || ''}
                                                 </span>
                                             </div>
-                                            <p className="text-[11px] text-amber-700 leading-relaxed">{sem.descripcion}</p>
+                                            <p className="text-[11px] text-[#636366] leading-relaxed">{sem.descripcion}</p>
                                             {sem.ajustes && sem.ajustes.length > 0 && (
                                                 <div className="mt-1 flex flex-col gap-0.5">
                                                     {sem.ajustes.map((a: string, i: number) => (
-                                                        <p key={i} className="text-[10px] text-amber-600 pl-2 border-l-2 border-amber-300">{a}</p>
+                                                        <p key={i} className="text-[10px] text-[#8E8E93] pl-2 border-l-2 border-[#C7C7CC]">{a}</p>
                                                     ))}
                                                 </div>
                                             )}

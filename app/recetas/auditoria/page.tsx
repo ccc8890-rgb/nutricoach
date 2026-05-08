@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowLeft, AlertTriangle, Check, ChevronUp, ChevronDown } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
 
 // Ingredientes que son normales en pequeñas cantidades
 const ESPECIAS = new Set([
@@ -20,12 +21,23 @@ function esEspecia(nombre: string) {
 }
 
 function esSospechoso(nombre: string, cantidad: number) {
-  if (cantidad <= 0) return false
+  if (cantidad < 0) return false
+  if (cantidad === 0) return true // al gusto / sin pesar
   if (esEspecia(nombre)) return cantidad > 30
   return cantidad < 5
 }
 
-type Fila = {
+// ─── Tipado fuerte para la respuesta de Supabase ───
+// NOTA: Supabase join devuelve arrays (no objetos), por eso el casteo con [0]
+interface IngredienteRow {
+  id: string
+  cantidad_gramos: number | null
+  nombre_libre: string | null
+  alimento: { nombre: string }[] | null
+  receta: { id: string; nombre: string; coach_id: string }[] | null
+}
+
+interface Fila {
   ing_id: string
   receta_id: string
   receta_nombre: string
@@ -37,6 +49,7 @@ type Fila = {
 type Orden = 'cantidad_asc' | 'cantidad_desc' | 'receta'
 
 export default function AuditoriaIngredientesPage() {
+  const { addToast } = useToast()
   const [filas, setFilas] = useState<Fila[]>([])
   const [loading, setLoading] = useState(true)
   const [orden, setOrden] = useState<Orden>('cantidad_asc')
@@ -57,15 +70,15 @@ export default function AuditoriaIngredientesPage() {
 
       if (!data) { setLoading(false); return }
 
-      const filtradas: Fila[] = data
-        .filter((row: any) => row.receta && row.receta.coach_id === user.id)
-        .map((row: any) => {
-          const nombre = row.nombre_libre || row.alimento?.nombre || '(sin nombre)'
+      const filtradas: Fila[] = (data as unknown as IngredienteRow[])
+        .filter(row => row.receta && row.receta[0] && row.receta[0].coach_id === user.id)
+        .map(row => {
+          const nombre = row.nombre_libre || (row.alimento?.[0]?.nombre) || '(sin nombre)'
           const cantidad = row.cantidad_gramos ?? 0
           return {
             ing_id: row.id,
-            receta_id: row.receta.id,
-            receta_nombre: row.receta.nombre,
+            receta_id: row.receta![0]!.id,
+            receta_nombre: row.receta![0]!.nombre,
             nombre,
             cantidad_gramos: cantidad,
             sospechoso: esSospechoso(nombre, cantidad),
@@ -83,7 +96,13 @@ export default function AuditoriaIngredientesPage() {
     if (nueva === undefined) return
     setGuardando(prev => new Set(prev).add(ing_id))
 
-    await supabase.from('receta_ingredientes').update({ cantidad_gramos: nueva }).eq('id', ing_id)
+    const { error } = await supabase.from('receta_ingredientes').update({ cantidad_gramos: nueva }).eq('id', ing_id)
+
+    if (error) {
+      addToast({ type: 'error', title: 'Error', message: 'No se pudo guardar: ' + error.message })
+      setGuardando(prev => { const n = new Set(prev); n.delete(ing_id); return n })
+      return
+    }
 
     setFilas(prev => prev.map(f => f.ing_id === ing_id
       ? { ...f, cantidad_gramos: nueva, sospechoso: esSospechoso(f.nombre, nueva) }
@@ -186,11 +205,11 @@ export default function AuditoriaIngredientesPage() {
                   <tr key={fila.ing_id}
                     style={{
                       borderBottom: idx < visibles.length - 1 ? '1px solid var(--border)' : 'none',
-                      background: fila.sospechoso ? '#FFFBEB' : 'var(--bg)',
+                      background: fila.sospechoso ? 'var(--accent-bg)' : 'var(--bg)',
                     }}>
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        {fila.sospechoso && <AlertTriangle size={12} style={{ color: '#D97706', flexShrink: 0 }} />}
+                        {fila.sospechoso && <AlertTriangle size={12} style={{ color: '#8E8E93', flexShrink: 0 }} />}
                         <span style={{ color: 'var(--text)' }}>{fila.nombre}</span>
                       </div>
                     </td>

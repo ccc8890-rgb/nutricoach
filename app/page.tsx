@@ -40,19 +40,40 @@ export default async function HomePage() {
     )
   }
 
-  // Sin sesión → landing estática
+  // Sin sesión → landing estática aesthetic
   return (
     <div className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'linear-gradient(135deg, #F2F2F7 0%, #E5E5EA 50%, #F8FAFC 100%)' }}>
-      <div className="w-full max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 text-2xl font-bold text-white"
-          style={{ background: 'linear-gradient(135deg, #1C1C1E, #3A3A3C)' }}>
-          CN
+      style={{
+        background: 'linear-gradient(160deg, #F7F7F9 0%, #EDEDF0 50%, #F2F2F4 100%)',
+      }}>
+      <div className="w-full max-w-md text-center animate-fade-in">
+        {/* Logo con sombra aesthetic */}
+        <div className="relative inline-flex mb-5">
+          <div
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl text-2xl font-bold"
+            style={{
+              background: 'linear-gradient(135deg, #2C2C2E, #3A3A3C)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 16px rgba(44, 44, 46, 0.15)',
+            }}>
+            CN
+          </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">Casanova Nutrition</h1>
-        <p className="text-gray-500 mb-8">Plataforma profesional de coaching nutricional</p>
-        <Link href="/login" className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-white font-semibold text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-          style={{ background: 'linear-gradient(135deg, #1C1C1E, #3A3A3C)' }}>
+        <h1 className="text-3xl font-bold tracking-tight mb-2"
+          style={{ color: 'var(--text)' }}>
+          Casanova Nutrition
+        </h1>
+        <p className="mb-8" style={{ color: 'var(--text-secondary)' }}>
+          Plataforma profesional de coaching nutricional
+        </p>
+        <Link
+          href="/login"
+          className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200"
+          style={{
+            background: 'linear-gradient(135deg, #2C2C2E, #3A3A3C)',
+            color: '#FFFFFF',
+            boxShadow: '0 2px 8px rgba(44, 44, 46, 0.2)',
+          }}>
           Iniciar sesión
         </Link>
       </div>

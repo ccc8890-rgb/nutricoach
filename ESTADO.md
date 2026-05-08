@@ -1,4 +1,4 @@
-# ESTADO NutriCoach — 06-05-2026 (Sesión 5)
+# ESTADO NutriCoach — 08-05-2026 (Sesión 6)
 
 > Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar.
 
@@ -6,10 +6,10 @@
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase activa:** Knowledge base científica + generador IA de entrenos + registro cliente OAuth/magic link
+**Fase activa:** Onboarding autónomo verificado + pruebas end-to-end
 
 **Servidor local:** `http://localhost:3000`
-**Login coach:** `ccc8890@gmail.com` / `Coach0jXQbzIp3M!2026`
+**Login coach:** `ccc8890@gmail.com` / `Coach2026!` 🔴 Contraseña actualizada
 
 ---
 
@@ -89,9 +89,27 @@ Tres rutas API importaban [`@/lib/supabase`](nutricoach/lib/supabase.ts) (client
 
 ---
 
+## ✅ COMPLETADO HOY (08-05-2026) — Sesión 6
+
+### 🟢 Flujo onboarding end-to-end verificado ✅
+
+| Paso | Endpoint | Estado | Tiempo |
+|------|----------|--------|--------|
+| 1 | `POST /api/auth/callback` — Sincronizar sesión coach | ✅ 200 | 120ms |
+| 2 | `POST /api/invitaciones` — Crear invitación | ✅ 200 | 676ms |
+| 3 | `GET /api/invitaciones/[token]` — Verificar token (público) | ✅ 200 (valido: true) | 653ms |
+| 4 | `POST /api/registro-invitacion` — Registrar cliente con contraseña | ✅ 200 (ok: true) | 544ms |
+| 5 | Verificación BD: token marcado `usado: true` | ✅ | — |
+| 6 | Verificación BD: cliente creado con `revisado_por_coach: false` | ✅ | — |
+| 7 | Verificación BD: profile creado con `role: 'cliente'` | ✅ | — |
+
+**Contraseña coach actualizada:** `ccc8890@gmail.com` / `Coach2026!` (la anterior expiró)
+
+---
+
 ## ⏳ PENDIENTES — Próxima sesión
 
-### 🟠 Probar flujos end-to-end
+### 🟠 Probar flujos end-to-end restantes
 1. **Probar flujo completo recetas**: `/recetas/nueva` → pegar URL → cola → aprobar → aparece en recetario
 2. **Probar flujo completo DeepSeek**: cuestionario → respuesta → generar dieta IA (ahora con contexto científico ✅) → aprobar → portal cliente
 3. **Probar que `descripcion_porcion` se rellena correctamente** en recetas scrapeadas nuevas
@@ -330,6 +348,6 @@ Al iniciar la siguiente sesión, leer este documento desde el principio. Puntos 
 
 ---
 
-**Última actualización:** 05-05-2026 (Sesión 4 — tipado completo + catch blocks con feedback + documentación de lecciones)
+**Última actualización:** 08-05-2026 (Sesión 6 — onboarding end-to-end verificado ✅)
 **Sesión:** Roo (code mode)
-**Próxima sesión:** Probar flujos end-to-end, testear PWA, testear portal cliente público, revisar API routes con `(err: any)` (bajo riesgo)
+**Próxima sesión:** Probar flujo recetas end-to-end, probar DeepSeek con contexto científico, features menores

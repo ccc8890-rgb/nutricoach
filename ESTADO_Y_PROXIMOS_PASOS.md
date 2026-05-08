@@ -265,28 +265,76 @@
 | 17 | **OAuth callback redirige a `/portal` (no existe)** | [`auth/callback/page.tsx:61`](nutricoach/app/auth/callback/page.tsx:61) | ✅ Cambiado a `/cliente` |
 | 18 | **OAuth callback no sincroniza sesión con cookies SSR** | [`auth/callback/page.tsx:33-46`](nutricoach/app/auth/callback/page.tsx:33) | ✅ Añadido POST a `/api/auth/callback` con tokens |
 
+### ✅ COMPLETADO EN SESIÓN 08-05-2026
+
+#### 🟢 Flujo Onboarding End-to-End verificado via API ✅
+
+| Paso | Endpoint | Resultado |
+|------|----------|-----------|
+| 1. Login coach | `POST /auth/v1/token` con `ccc8890@gmail.com` / `Coach2026!` | ✅ Sesión obtenida |
+| 2. Sync sesión | `POST /api/auth/callback` con access_token + refresh_token | ✅ 200 |
+| 3. Crear invitación | `POST /api/invitaciones` (autenticado) | ✅ 200 → URL generada |
+| 4. Verificar token | `GET /api/invitaciones/[token]` (público) | ✅ 200, `valido: true` |
+| 5. Registrar cliente | `POST /api/registro-invitacion` con contraseña | ✅ 200, `ok: true` |
+| 6. Verificar BD | Invitación `usado: true` | ✅ |
+| 7. Verificar BD | Cliente con `revisado_por_coach: false` | ✅ |
+| 8. Verificar BD | Profile con `role: 'cliente'` | ✅ |
+
+**Nota:** No se pudo probar OAuth Google desde CLI (requiere navegador), pero el código está correcto y el modo `vincular` en `registro-invitacion/route.ts` está implementado.
+
+**Contraseña coach actualizada:** `Coach2026!` (la anterior expiró entre sesiones)
+
+### ✅ COMPLETADO EN SESIÓN 08-05-2026 (tarde) — FASE 9 + Migración Graphite
+
+#### 🆕 FASE 9 — Dashboard Premium
+- [x] **MiniSparkline.tsx** — Componente SVG inline para sparklines en stat cards (sin dependencias)
+- [x] **Stat cards con sparklines** — Cada STAT_CARD tiene `trend: number[]` renderizado como sparkline
+- [x] **Sparkles animado** — Icono `<Sparkles />` en header con `animate-spin-slow`
+- [x] **Hover lift + glow** — Clase `card-hoverable` en chart cards con `translateY(-2px)` + glow
+
+#### 🆕 FASE 9 — Sidebar Refinada
+- [x] **Active state**: Barra vertical graphite (`w-1 h-5 rounded-full`) con `box-shadow: 0 0 6px var(--accent-glow)`
+- [x] **Logo CN**: Gradiente + `animate-breathe` (glow pulse 0→40→60px)
+- [x] **Mobile compact**: Hamburguesa + overlay + slide con `translate-x` + cierre al navegar
+- [x] **Hydration fix**: Patrón `mounted + useEffect` para evitar hydration mismatch
+
+#### 🎨 Migración Ámbar → Graphite Apple Pro
+- [x] **CSS variables**: `--accent: #A1A1A6` (antes #F59E0B), dark + light themes actualizados
+- [x] **17 referencias hex** (#F59E0B, #D97706) en 11 archivos → graphite equivalents
+- [x] **~40 clases Tailwind amber** en 10 archivos → graphite colors
+- [x] **6 comentarios** con "ámbar" → "graphite"
+- [x] **1 residuo** `.macro-pill-carbs border-color: rgba(245,158,11,0.3)` → `var(--border-accent)`
+- [x] **Verificación**: `grep -r "F59E0B\|D97706\|text-amber\|bg-amber\|border-amber\|rgba(245,158,11"` → ✅ 0 resultados
+
+#### 🐛 Bugs corregidos
+| # | Bug | Fix |
+|---|-----|-----|
+| 19 | **Hydration mismatch** en Sidebar (hamburguesa mobile) | Patrón `mounted + useEffect` |
+| 20 | **Caché chunks obsoletos** — `Check` icon de lucide-react | `rm -rf .next` + hard reload |
+| 21 | **Caché chunks obsoletos** — `Menu` icon de lucide-react | Mismo fix que #20 |
+
+#### 📄 Documentación
+- [x] [`salidas/08-05-2026_AUDITORIA_FASE9_GRAPHITE.md`](./salidas/08-05-2026_AUDITORIA_FASE9_GRAPHITE.md) — Auditoría completa de la sesión
+
 ### ⏳ PENDIENTE — Próxima sesión
 
-#### Paso 0 — Arrancar (si el servidor no responde)
+#### Paso 0 — Arrancar
 ```bash
-cd ~/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach
+cd ~/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach-ui
 lsof -ti:3000 | xargs kill -9 2>/dev/null; npm run dev
 ```
 
-#### Paso 1 — Probar flujo completo de onboarding end-to-end ⬅️ SIGUIENTE
-1. Iniciar sesión como coach en `http://localhost:3000/login`
-2. Ir a `/clientes` y hacer clic en "Invitar" → se copia URL al portapapeles
-3. Abrir URL en incógnito → verificar que aparece página de registro con token válido
-4. Probar registro con Google OAuth (o con contraseña como fallback)
-5. Verificar que redirige a `/cliente` (portal)
-6. Volver a `/clientes` como coach → verificar badge "Nuevo" en el cliente
-7. Hacer clic en el cliente → verificar que badge desaparece (`revisado_por_coach: true`)
+#### Paso 1 — Probar flujo recetas end-to-end ⬅️ SIGUIENTE
+1. Ir a `/recetas/nueva` → pegar URL de receta → verificar scraper
+2. Ir a `/recetas/cola` → aprobar/descartar
+3. Verificar que aparece en recetario aprobado
 
-#### Paso 2 — Probar flujo DeepSeek con contexto científico (15 min)
+#### Paso 2 — Probar flujo DeepSeek con contexto científico
 1. Generar dieta con IA → verificar logs de `fetchKnowledgeContext()` en consola
 2. Verificar que los artículos científicos relevantes aparecen en el prompt de DeepSeek
 
 #### Paso 3 — Tareas técnicas pendientes
+- [ ] Verificar build completo: `npx next build`
 - [ ] Verificar que el script `fix-orphan-ingredients-v2.ts` corrige ingredientes huérfanos (si los hay)
 - [ ] Actualizar `supabase_schema.sql` con las nuevas tablas: `invitaciones`, `knowledge_base`, `protocolos_competicion`, `registros_ia`
 - [ ] Documentar API `/api/conocimiento/scrape` en el README

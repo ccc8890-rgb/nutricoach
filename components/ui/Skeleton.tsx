@@ -14,7 +14,7 @@ interface SkeletonProps {
 function SkeletonBase({ className = '', style }: SkeletonProps) {
     return (
         <div
-            className={`animate-pulse rounded-lg bg-gray-200 ${className}`}
+            className={`skeleton ${className}`}
             style={{ animationDuration: '1.5s', ...style }}
         />
     )
@@ -53,7 +53,7 @@ export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
     return (
         <div className="card !p-4 space-y-3">
             {/* Header */}
-            <div className="flex gap-4 pb-2 border-b border-gray-100">
+            <div className="flex gap-4 pb-2 border-b" style={{ borderColor: 'var(--border-light)' }}>
                 {Array.from({ length: cols }).map((_, i) => (
                     <SkeletonBase key={i} className="h-3 flex-1" />
                 ))}
@@ -96,7 +96,7 @@ export function SkeletonChart({ height = 200 }: { height?: number }) {
 export function SkeletonTimeline({ items = 3 }: { items?: number }) {
     return (
         <div className="space-y-4 relative">
-            <div className="absolute left-[19px] top-0 bottom-0 w-0.5 bg-gray-100" />
+            <div className="absolute left-[19px] top-0 bottom-0 w-0.5" style={{ background: 'var(--border-light)' }} />
             {Array.from({ length: items }).map((_, i) => (
                 <div key={i} className="relative pl-10">
                     <SkeletonBase className="absolute left-[13px] top-[18px] w-[13px] h-[13px] rounded-full" />

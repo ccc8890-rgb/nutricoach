@@ -132,20 +132,23 @@ export default function CuestionarioCreador({ preguntasIniciales = [], onGuardar
             {preguntas.map((pregunta, index) => (
                 <div
                     key={pregunta.id}
-                    className="card animate-fade-in"
+                    className="card"
                     style={{ animationDelay: `${index * 0.05}s` }}
                 >
                     {/* Cabecera de la pregunta */}
                     <div className="flex items-center gap-2 mb-3">
-                        <GripVertical size={16} className="text-gray-400 cursor-grab" />
-                        <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                        <GripVertical size={16} style={{ color: 'var(--text-muted)' }} className="cursor-grab" />
+                        <span className="text-xs font-medium px-2 py-0.5 rounded" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--bg)' }}>
                             #{index + 1}
                         </span>
                         <div className="flex-1" />
                         <button
                             onClick={() => moverPregunta(pregunta.id, 'arriba')}
                             disabled={index === 0}
-                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                            className="p-1 disabled:opacity-30"
+                            style={{ color: 'var(--text-muted)' }}
+                            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
                             title="Mover arriba"
                         >
                             <ArrowUp size={14} />
@@ -153,14 +156,20 @@ export default function CuestionarioCreador({ preguntasIniciales = [], onGuardar
                         <button
                             onClick={() => moverPregunta(pregunta.id, 'abajo')}
                             disabled={index === preguntas.length - 1}
-                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                            className="p-1 disabled:opacity-30"
+                            style={{ color: 'var(--text-muted)' }}
+                            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
                             title="Mover abajo"
                         >
                             <ArrowDown size={14} />
                         </button>
                         <button
                             onClick={() => eliminarPregunta(pregunta.id)}
-                            className="p-1 text-red-400 hover:text-red-600"
+                            className="p-1"
+                            style={{ color: '#F87171' }}
+                            onMouseEnter={e => { e.currentTarget.style.color = '#EF4444' }}
+                            onMouseLeave={e => { e.currentTarget.style.color = '#F87171' }}
                             title="Eliminar pregunta"
                         >
                             <Trash2 size={14} />
@@ -238,7 +247,10 @@ export default function CuestionarioCreador({ preguntasIniciales = [], onGuardar
                             ))}
                             <button
                                 onClick={() => agregarOpcion(pregunta.id)}
-                                className="text-xs text-teal-600 hover:text-teal-700 flex items-center gap-1 mt-1 font-medium"
+                                className="text-xs flex items-center gap-1 mt-1 font-medium"
+                                style={{ color: 'var(--text-secondary)' }}
+                                onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)' }}
+                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
                             >
                                 <Plus size={12} /> Añadir opción
                             </button>
@@ -246,12 +258,13 @@ export default function CuestionarioCreador({ preguntasIniciales = [], onGuardar
                     )}
 
                     {/* Requerida */}
-                    <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+                    <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
                         <input
                             type="checkbox"
                             checked={pregunta.requerida}
                             onChange={e => actualizarPregunta(pregunta.id, 'requerida', e.target.checked)}
-                            className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                            className="rounded"
+                            style={{ borderColor: 'var(--border)' }}
                         />
                         Obligatoria
                     </label>
@@ -262,7 +275,10 @@ export default function CuestionarioCreador({ preguntasIniciales = [], onGuardar
             <div className="flex items-center gap-3">
                 <button
                     onClick={agregarPregunta}
-                    className="btn btn-ghost btn-sm text-teal-600 hover:text-teal-700"
+                    className="btn btn-ghost btn-sm"
+                    style={{ color: 'var(--text-secondary)' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)' }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
                 >
                     <Plus size={16} /> Añadir pregunta
                 </button>
@@ -277,7 +293,7 @@ export default function CuestionarioCreador({ preguntasIniciales = [], onGuardar
             </div>
 
             {preguntas.every(p => !p.titulo.trim()) && (
-                <p className="text-xs text-amber-600">Añade al menos una pregunta con título para guardar.</p>
+                <p className="text-xs" style={{ color: '#8E8E93' }}>Añade al menos una pregunta con título para guardar.</p>
             )}
         </div>
     )

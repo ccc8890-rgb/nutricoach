@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   LayoutDashboard,
@@ -22,6 +22,9 @@ import {
   Calendar,
   BrainCircuit,
   FlaskConical,
+  Sparkles,
+  Menu,
+  X,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -53,6 +56,10 @@ export default function Sidebar() {
   const router = useRouter()
   const { noLeidas } = useNotificaciones()
   const { theme, toggleTheme } = useTheme()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Cerrar mobile al navegar
+  useEffect(() => { setMobileOpen(false) }, [pathname])
 
   const nutricionActiva = NUTRICION_SUBITEMS.some(
     s => pathname === s.href || pathname.startsWith(s.href + '/')
@@ -69,26 +76,42 @@ export default function Sidebar() {
     router.push('/login')
   }
 
-  return (
-    <aside className="w-60 min-h-screen flex flex-col border-r bg-white border-gray-200">
-      {/* Logo — diseño teal */}
-      <div className="p-5 border-b border-gray-200">
+  const sidebarContent = (
+    <>
+      {/* Logo — glass premium con acento graphite + breathing glow */}
+      <div
+        className="flex-shrink-0 p-5 border-b"
+        style={{ borderColor: 'var(--glass-border)' }}
+      >
         <div className="flex items-center gap-3">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-bold text-white"
-            style={{ background: 'linear-gradient(135deg, #0D9488, #14B8A6)' }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-base font-bold tracking-tight animate-breathe"
+            style={{
+              background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
+              color: '#1C1C1E',
+            }}
           >
             CN
           </div>
           <div>
-            <p className="font-bold text-gray-900 leading-tight text-[15px]">Casanova Nutrition</p>
-            <p className="text-[11px] font-medium text-gray-400">Panel de coach</p>
+            <p
+              className="font-bold leading-tight text-[15px]"
+              style={{ color: 'var(--text)' }}
+            >
+              Casanova
+            </p>
+            <p
+              className="text-[11px] font-medium"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Panel de coach
+            </p>
           </div>
         </div>
       </div>
 
       {/* Navegación */}
-      <nav className="flex-1 p-3 flex flex-col gap-0.5">
+      <nav className="flex-1 p-3 flex flex-col gap-0.5 overflow-y-auto">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href || pathname.startsWith(href + '/')
           return (
@@ -96,16 +119,26 @@ export default function Sidebar() {
               key={href}
               href={href}
               className={`sidebar-link ${isActive ? 'active' : ''}`}
+              style={isActive ? { position: 'relative', overflow: 'visible' } : {}}
             >
+              {isActive && (
+                <span
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full"
+                  style={{ background: 'var(--accent)', boxShadow: '0 0 6px var(--accent-glow)' }}
+                />
+              )}
               <Icon size={18} strokeWidth={isActive ? 2.5 : 1.8} />
               <span>{label}</span>
               {href === '/respuestas' && noLeidas > 0 && (
-                <span className="ml-auto text-[11px] font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center bg-red-500">
+                <span
+                  className="ml-auto text-[11px] font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
+                  style={{ background: 'var(--error)' }}
+                >
                   {noLeidas > 99 ? '99+' : noLeidas}
                 </span>
               )}
               {isActive && href !== '/respuestas' && (
-                <ChevronRight size={14} className="ml-auto text-[var(--primary)]" />
+                <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--accent)' }} />
               )}
             </Link>
           )
@@ -116,18 +149,28 @@ export default function Sidebar() {
           <button
             onClick={() => setEntrenosExpandido(!entrenosExpandido)}
             className={`sidebar-link w-full ${entrenosActiva ? 'active' : ''}`}
+            style={entrenosActiva ? { position: 'relative', overflow: 'visible' } : {}}
           >
+            {entrenosActiva && (
+              <span
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full"
+                style={{ background: 'var(--accent)', boxShadow: '0 0 6px var(--accent-glow)' }}
+              />
+            )}
             <Dumbbell size={18} strokeWidth={entrenosActiva ? 2.5 : 1.8} />
             <span>Entrenos</span>
             {entrenosExpandido ? (
-              <ChevronDown size={14} className="ml-auto text-[var(--primary)]" />
+              <ChevronDown size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
             ) : (
-              <ChevronRight size={14} className="ml-auto text-gray-300" />
+              <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
             )}
           </button>
 
           {entrenosExpandido && (
-            <div className="ml-2 mt-0.5 border-l-2 pl-2 space-y-0.5 border-gray-200">
+            <div
+              className="ml-3 mt-0.5 border-l pl-3 space-y-0.5"
+              style={{ borderColor: 'var(--border)' }}
+            >
               {ENTRENOS_SUBITEMS.map(({ href, label, icon: Icon }) => {
                 const isSubActive = pathname === href || pathname.startsWith(href + '/')
                 return (
@@ -135,11 +178,18 @@ export default function Sidebar() {
                     key={href}
                     href={href}
                     className={`sidebar-link ${isSubActive ? 'active' : ''}`}
+                    style={isSubActive ? { position: 'relative', overflow: 'visible' } : {}}
                   >
+                    {isSubActive && (
+                      <span
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full"
+                        style={{ background: 'var(--accent)', boxShadow: '0 0 6px var(--accent-glow)' }}
+                      />
+                    )}
                     <Icon size={16} strokeWidth={isSubActive ? 2.5 : 1.8} />
                     <span>{label}</span>
                     {isSubActive && (
-                      <ChevronRight size={14} className="ml-auto text-[var(--primary)]" />
+                      <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--accent)' }} />
                     )}
                   </Link>
                 )
@@ -153,18 +203,28 @@ export default function Sidebar() {
           <button
             onClick={() => setNutricionExpandido(!nutricionExpandido)}
             className={`sidebar-link w-full ${nutricionActiva ? 'active' : ''}`}
+            style={nutricionActiva ? { position: 'relative', overflow: 'visible' } : {}}
           >
+            {nutricionActiva && (
+              <span
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full"
+                style={{ background: 'var(--accent)', boxShadow: '0 0 6px var(--accent-glow)' }}
+              />
+            )}
             <UtensilsCrossed size={18} strokeWidth={nutricionActiva ? 2.5 : 1.8} />
             <span>Nutrición</span>
             {nutricionExpandido ? (
-              <ChevronDown size={14} className="ml-auto text-[var(--primary)]" />
+              <ChevronDown size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
             ) : (
-              <ChevronRight size={14} className="ml-auto text-gray-300" />
+              <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
             )}
           </button>
 
           {nutricionExpandido && (
-            <div className="ml-2 mt-0.5 border-l-2 pl-2 space-y-0.5 border-gray-200">
+            <div
+              className="ml-3 mt-0.5 border-l pl-3 space-y-0.5"
+              style={{ borderColor: 'var(--border)' }}
+            >
               {NUTRICION_SUBITEMS.map(({ href, label, icon: Icon }) => {
                 const isSubActive = pathname === href || pathname.startsWith(href + '/')
                 return (
@@ -172,11 +232,18 @@ export default function Sidebar() {
                     key={href}
                     href={href}
                     className={`sidebar-link ${isSubActive ? 'active' : ''}`}
+                    style={isSubActive ? { position: 'relative', overflow: 'visible' } : {}}
                   >
+                    {isSubActive && (
+                      <span
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full"
+                        style={{ background: 'var(--accent)', boxShadow: '0 0 6px var(--accent-glow)' }}
+                      />
+                    )}
                     <Icon size={16} strokeWidth={isSubActive ? 2.5 : 1.8} />
                     <span>{label}</span>
                     {isSubActive && (
-                      <ChevronRight size={14} className="ml-auto text-[var(--primary)]" />
+                      <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--accent)' }} />
                     )}
                   </Link>
                 )
@@ -186,11 +253,15 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      {/* Theme toggle + Logout */}
-      <div className="p-3 border-t space-y-1 border-gray-200">
+      {/* Theme toggle + Logout — glass bottom */}
+      <div
+        className="flex-shrink-0 p-3 border-t space-y-1"
+        style={{ borderColor: 'var(--glass-border)' }}
+      >
         <button
           onClick={toggleTheme}
-          className="sidebar-link w-full text-gray-400"
+          className="sidebar-link w-full"
+          style={{ color: 'var(--text-muted)' }}
           title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
         >
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -198,12 +269,63 @@ export default function Sidebar() {
         </button>
         <button
           onClick={handleLogout}
-          className="sidebar-link w-full hover:bg-red-50 hover:text-red-600 text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+          className="sidebar-link w-full"
+          style={{ color: 'var(--text-muted)' }}
         >
           <LogOut size={18} />
           <span>Cerrar sesión</span>
         </button>
       </div>
-    </aside>
+    </>
+  )
+
+  // Para evitar hydration mismatch, el botón hamburguesa y overlay
+  // se renderizan con suppressHydrationWarning hasta que el cliente tome control
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  return (
+    <>
+      {/* Botón hamburguesa — visible solo en mobile */}
+      {mounted && (
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
+          style={{
+            background: mobileOpen ? 'var(--surface)' : 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          {mobileOpen ? <X size={18} style={{ color: 'var(--text)' }} /> : <Menu size={18} style={{ color: 'var(--text)' }} />}
+        </button>
+      )}
+
+      {/* Overlay para mobile */}
+      {mounted && mobileOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar desktop (siempre visible) + mobile (toggle) */}
+      <aside
+        className={`
+          relative w-64 min-h-screen flex flex-col border-r overflow-hidden
+          transition-transform duration-300 ease-out
+          max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-40
+          ${mounted && mobileOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}
+        `}
+        style={{
+          background: 'var(--glass-bg)',
+          borderColor: 'var(--glass-border)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+        }}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   )
 }
