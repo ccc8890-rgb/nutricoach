@@ -433,6 +433,8 @@ export interface Supermercado {
   color?: string
   activo: boolean
   created_at: string
+  /** Indica si hay un módulo scraper implementado para este supermercado */
+  tiene_scraper?: boolean
 }
 
 export interface ProductoSupermercado {

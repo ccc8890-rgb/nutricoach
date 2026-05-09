@@ -25,6 +25,9 @@ const SCRAPERS: Record<string, () => Promise<{
     eroski: scrapearEroski,
 }
 
+/** Slugs de supermercados que tienen scraper implementado */
+export const SLUGS_SCRAPERS_DISPONIBLES: string[] = Object.keys(SCRAPERS)
+
 /**
  * Orquestrador principal de scraping.
  * 1. Scrapea productos del supermercado seleccionado
