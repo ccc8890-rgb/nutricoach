@@ -1,4 +1,4 @@
-s# Proyecto: NutriCoach (Human Lab)
+# Proyecto: NutriCoach (Human Lab)
 
 ## Comandos y Scripts Importantes
 - **Ejecutar en desarrollo:** `npm run dev` (dentro de `nutricoach/`)
@@ -88,6 +88,193 @@ Archivo: [`scripts/enriquecer-alimentos.mjs`](nutricoach-modulos/scripts/enrique
 
 ### No comestibles eliminados (27 productos)
 Cosmética facial/corporal (sérums, tónicos, cremas reductoras), productos de limpieza (sosa cáustica, spray desinfectante, trampas), accesorios (vaso mediano, velas), snacks de mascotas, etc.
+
+## 🆕 Sistema de Precios Automáticos — Scraping Multi-supermercado (09-05-2026)
+
+### Estado actual
+- **7 scrapers implementados:** mercadona, carrefour, dia, alcampo, consum, lidl, eroski
+- **2 motores de scraping:** [`motor-http.ts`](nutricoach-modulos/lib/scraping/motores/motor-http.ts) (fetch + JSON/HTML) y [`motor-playwright.ts`](nutricoach-modulos/lib/scraping/motores/motor-playwright.ts) (headless browser para Lidl)
+- **Scraping Mercadona completado** ✅ — 4.342 productos comestibles extraídos de la API oficial
+- **Build verificado** ✅ — `npx next build` compila sin errores (73 páginas, 0 TypeScript errors)
+- **Arquitectura documentada** en [`plans/PRECIOS_AUTOMATICOS_ARQUITECTURA.md`](plans/PRECIOS_AUTOMATICOS_ARQUITECTURA.md)
+
+### Bugs corregidos (auditoría 09-05-2026)
+
+#### 1. Bug en `normalizador.ts` — query `.or()` mal construida
+**Archivo:** [`lib/scraping/normalizador.ts`](nutricoach-modulos/lib/scraping/normalizador.ts:66)
+- **Problema:** La segunda condición estaba invertida: `${nombreLimpio}.ilike.%nombre%` buscaba el literal "nombre" en la columna del ingrediente, en vez de buscar el nombre del ingrediente en la columna "nombre".
+- **Fix:** Se cambió a `nombre.ilike.%${nombreLimpio}%,nombre.ilike.${nombreLimpio}%` para búsqueda bidireccional correcta (contains + startsWith).
+- **Síntoma:** El matching de productos escrapeados contra alimentos de la BD fallaba frecuentemente.
+
+#### 2. `SLUGS_SCRAPERS_DISPONIBLES` no exportado
+**Archivo:** [`lib/scraping/index.ts`](nutricoach-modulos/lib/scraping/index.ts)
+- **Problema:** No existía una forma dinámica de saber qué scrapers están implementados.
+- **Fix:** Se añadió `export const SLUGS_SCRAPERS_DISPONIBLES: string[] = Object.keys(SCRAPERS)`.
+- **Impacto:** Ahora la API y el UI pueden listar scrapers disponibles sin hardcodear.
+
+#### 3. `motor-playwright.ts` no existía
+**Archivo:** [`lib/scraping/motores/motor-playwright.ts`](nutricoach-modulos/lib/scraping/motores/motor-playwright.ts) (CREADO)
+- **Problema:** El scraper de Lidl y la arquitectura referenciaban un motor Playwright que nunca se implementó.
+- **Fix:** Se creó el motor completo con `chromium.launch()`, extracción por selectores CSS, rate limiting, y fallback a texto plano.
+
+#### 4. `tiene_scraper` hardcodeado en API y UI
+- **API** [`app/api/precios/supermercados/route.ts`](nutricoach-modulos/app/api/precios/supermercados/route.ts): Ahora enriquece cada supermercado con `tiene_scraper: boolean` basado en `SLUGS_SCRAPERS_DISPONIBLES`.
+- **UI** [`components/PanelScraping.tsx`](nutricoach-modulos/components/PanelScraping.tsx): Eliminado `const scrapersDisponibles = ['mercadona']` hardcoded, ahora usa `sm.tiene_scraper === true`.
+- **Types** [`types/index.ts`](nutricoach-modulos/types/index.ts): Añadido campo opcional `tiene_scraper?: boolean` a la interfaz `Supermercado`.
+
+#### 5. Scraping Mercadona — logging mejorado
+**Archivo:** [`lib/scraping/supermercados/mercadona.ts`](nutricoach-modulos/lib/scraping/supermercados/mercadona.ts)
+- Cambiado intervalo de logging de cada 10 a cada 5 subcategorías para mejor visibilidad de progreso.
+
+## 🆕 Productos vs Alimentos — Múltiples productos por alimento (09-05-2026 — Sesión 8)
+
+### El problema
+Un mismo alimento (ej: "Pechuga de pollo") aparece en múltiples supermercados con precios, marcas y formatos distintos. El modelo anterior solo permitía UN producto por (supermercado, alimento) — al re-escapar, sobreescribía el precio anterior con el nuevo, perdiendo la competencia entre productos del mismo supermercado.
+
+### Solución implementada
+Cambio de modelo: **un alimento puede tener N productos en cada supermercado**. El scraper hace upsert por URL de producto (no por alimento_id). Se añaden vistas que priorizan el producto preferido (marcado por el coach) o el más barato.
+
+### Diseño completo
+Documentado en [`plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`](plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md) — incluye mockups, modelo de datos, flujo del scraper, API specs y UI design.
+
+### SQL Migration (`supabase_productos_vs_alimentos.sql`) — **ejecutada en Supabase** ✅
+8 cambios en [`supabase_productos_vs_alimentos.sql`](nutricoach-modulos/supabase_productos_vs_alimentos.sql):
+1. **DROP** constraint UNIQUE `(supermercado_id, alimento_id)` en `productos_supermercado`
+2. **ADD** columnas: `nombre_original text`, `marca text`, `preferido boolean default false`
+3. **CREATE** partial UNIQUE index `idx_productos_supermercado_url_unique` on `(supermercado_id, url_producto)` WHERE `url_producto is not null`
+4. **CREATE** index `idx_productos_mejor_precio` on `(alimento_id, precio_por_kg asc)`
+5. **CREATE** index `idx_productos_preferido` on `(alimento_id, supermercado_id)` WHERE `preferido = true`
+6. **CREATE OR REPLACE VIEW** `mejores_precios_por_alimento` — mejor precio por (alimento, supermercado), priorizando preferido
+7. **CREATE OR REPLACE VIEW** `top_precios_escandallo` — top-3 más baratos global por alimento (ranking)
+8. **ALTER VIEW** `precios_actuales` — actualizada con nuevas columnas
+
+### Tipos TypeScript actualizados
+[`types/index.ts`](nutricoach-modulos/types/index.ts:498) — Añadidas 3 interfaces:
+- `ProductoSupermercadoDetalle` — producto con join a supermercado y alimento
+- `OpcionEscandallo` — un alimento dentro de un escandallo con sus alternativas
+- `EscandalloPlan` — plan completo con precio_total, ahorro_potencial, alimentos[]
+
+### Scraper — upsert por URL
+[`lib/scraping/index.ts`](nutricoach-modulos/lib/scraping/index.ts:98) — Cambio de lógica:
+- **Antes:** `onConflict: 'supermercado_id, alimento_id'` → sobreescribía el mismo producto
+- **Ahora:** Si hay `url_producto` → upsert por `(supermercado_id, url_producto)` usando raw query con `ON CONFLICT ... WHERE url_producto IS NOT NULL DO UPDATE`. Si no hay URL → insert directo.
+- Añadidos campos: `nombre_original: raw.nombre`, `marca: raw.marca || null`
+
+### Librería de precios actualizada
+[`lib/precios-supermercado.ts`](nutricoach-modulos/lib/precios-supermercado.ts):
+- `obtenerPreciosAlimento()`, `obtenerPreciosPorSupermercado()`, `obtenerTodosLosPrecios()` — ahora usan la vista `mejores_precios_por_alimento`
+- `guardarPrecio()` — upsert por `(supermercado_id, url_producto)` con manejo de conflictos
+- `marcarProductoPreferido()` (NUEVA) — marca un producto como preferido y desmarca los demás del mismo (alimento, supermercado)
+- `calcularCostePlan()` — usa `mejores_precios_por_alimento` view (en vez de `precios_actuales`)
+- `calcularEscandalloConAlternativas()` (NUEVA) — devuelve `EscandalloPlan` con alternativas por alimento y `ahorro_potencial`
+
+### API Routes (3 nuevas)
+
+1. **`GET /api/precios/alimento/[id]/productos`** ([`app/api/precios/alimento/[id]/productos/route.ts`](nutricoach-modulos/app/api/precios/alimento/[id]/productos/route.ts))
+   - Todos los productos de un alimento, ordenados por supermercado y precio
+   - Auth: cualquier usuario autenticado
+   - Formato respuesta plano: `{ productos: ProductoOption[] }`
+
+2. **`POST /api/precios/productos/[id]/preferir`** ([`app/api/precios/productos/[id]/preferir/route.ts`](nutricoach-modulos/app/api/precios/productos/[id]/preferir/route.ts))
+   - Marca un producto como preferido. Desmarca otros del mismo (alimento, supermercado)
+   - Auth: solo coach (403 si no)
+   - Respuesta: `{ success, producto_id, alimento_id, supermercado_id, preferido }`
+
+3. **`GET /api/precios/escandallo/detalle`** ([`app/api/precios/escandallo/detalle/route.ts`](nutricoach-modulos/app/api/precios/escandallo/detalle/route.ts))
+   - Escandallo detallado con alternativas por alimento
+   - Query params: `cliente_id` (req), `supermercado_id` (opcional)
+   - Devuelve `EscandalloPlan` con `ahorro_potencial`
+
+### Componente UI
+[`components/SelectorProducto.tsx`](nutricoach-modulos/components/SelectorProducto.tsx) — Componente cliente (~260 líneas):
+- Props: `alimentoId`, `alimentoNombre`, `cantidadGramos`, `supermercadoActivoId`, `onSeleccionCambiada`, `precioActualKg`, `mostrarCoste`
+- Fetch automático de productos del alimento vía API en `useEffect`
+- Auto-selección: preferido → más barato del super activo → primer producto
+- Panel expandible con productos agrupados por supermercado
+- Cada producto: nombre_original, marca, precio_por_kg, botón "⭐ Preferido"
+- Footer: resumen de productos totales, preferidos, gramos/semana
+- Accesibilidad: tabIndex, role="button", aria-label, onKeyDown
+
+### Escandallo page — Vista detallada
+[`app/precios/escandallo/page.tsx`](nutricoach-modulos/app/precios/escandallo/page.tsx):
+- Nuevo botón toggle: "🔬 Vista detallada" / "🔍 Vista simple"
+- **Vista detallada**: alimentos únicos extraídos del plan (deduplicados con cantidades sumadas), cada uno con `SelectorProducto` para elegir alternativa
+- **Vista simple**: desglose original comida por comida (sin cambios, legacy)
+- Panel colapsable `<details>` con per-comida breakdown
+- Funciones helper: `extraerAlimentos()` (plana), `extraerAlimentosUnicos()` (deduplicada+sumada)
+
+### Test end-to-end
+[`scripts/test-pipeline-precios.ts`](nutricoach-modulos/scripts/test-pipeline-precios.ts):
+- **100% pass** — 4.623 productos insertados en 55.5 segundos
+- Verifica: auth, scraping Mercadona, upsert correcto, vista `mejores_precios_por_alimento`
+- Usa `createServiceSupabase()` para no depender de sesión
+
+### Bugs corregidos en esta sesión
+
+#### 1. Parámetro `€` ilegal en TypeScript
+**Archivo:** [`components/SelectorProducto.tsx`](nutricoach-modulos/components/SelectorProducto.tsx)
+- **Problema:** `function formatearPrecio(€: number)` — TypeScript rechaza `€` como nombre de parámetro ("Invalid character")
+- **Fix:** Cambiado a `function formatearPrecio(euros: number)`
+
+#### 2. Variable `a` como `string | undefined` en `calcularEscandalloConAlternativas()`
+**Archivo:** [`lib/precios-supermercado.ts`](nutricoach-modulos/lib/precios-supermercado.ts:280)
+- **Problema:** `a.id` tipado como `string | undefined` al iterar `comidas_alimentos`. Tras extraer `const a = ca.alimento`, TypeScript no infería que `a` es no-null tras el guard `if (!a) continue`.
+- **Fix:** Extraer variables locales `alimentoId`, `alimentoNombre`, `categoria` después del guard y usarlas en vez de `a.id`/`a.nombre` en el resto del bloque.
+
+### Estado del build
+- ✅ **Build verificado:** `npx next build` — **0 errores TypeScript**, 73 páginas
+- ✅ **Migración SQL ejecutada:** `supabase_productos_vs_alimentos.sql` aplicado en Supabase
+- ✅ **Test end-to-end:** `scripts/test-pipeline-precios.ts` — 100% pass, 4.623 productos en 55.5s
+- ✅ **Plan de diseño documentado:** `plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`
+
+### Pendiente para próxima sesión
+- [ ] Scrapers pendientes: aldi, el-corte-ingles, hipercor, bonpreu, esclat
+- [ ] Ejecutar re-scraper de Mercadona para probar el pipeline multi-producto en producción
+- [ ] Actualizar PanelScraping para mostrar múltiples productos por alimento con nombre_original y marca
+- [ ] Dashboard de rentabilidad/ahorro con la vista `top_precios_escandallo`
+- [ ] Automatización con Vercel Cron Jobs (plan Pro)
+- [ ] Refinar normalizador para subir el ~24% de match exacto (más sinónimos)
+- [ ] Histórico de precios y tendencias (gráficos, alertas)
+- [ ] Actualizar ruta vieja `GET /api/precios/alimento` para usar nueva vista
+- [ ] Onboarding: cuestionario inicial post-registro, email de bienvenida automático
+- [ ] Imágenes de recetas: borrar actuales y rehacer con estilo casero
+
+## 🧠 Lecciones aprendidas (09-05-2026 — Productos vs Alimentos)
+
+### 1. `€` no es válido como nombre de parámetro en TypeScript
+- TypeScript (y JavaScript) no permiten `€` como identificador de parámetro.
+- Usar `euros` en su lugar.
+- El error se manifiesta como `"Invalid character"` en tiempo de compilación.
+
+### 2. TypeScript no inferencia null tras guard clause con destructuring
+```typescript
+const a = ca.alimento;        // a: Alimento | null
+if (!a) continue;             // a ahora es Alimento (no null)
+// a.id puede seguir siendo string | undefined si Alimento tiene id? opcional
+```
+- Aunque el guard clause elimina `null`, campos opcionales del tipo siguen siendo `| undefined`.
+- **Solución:** Extraer variables locales con non-null assertion o validar por separado.
+
+### 3. Next.js 16.2.4 + App Router: `params` como Promise
+- En Next.js 16, `params` en rutas dinámicas es `Promise<{ id: string }>`, no el objeto directo.
+- Patrón correcto:
+```typescript
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+}
+```
+
+### 4. Partial UNIQUE index vs ON CONFLICT en Supabase JS
+- Supabase `.upsert()` con `onConflict` requiere que el conflicto sea sobre un unique constraint/index.
+- Los partial unique indexes (con `WHERE`) **no funcionan** con `onConflict` del cliente JS de Supabase — solo funcionan constraints completos.
+- **Solución:** Usar query raw con `ON CONFLICT (supermercado_id, url_producto) WHERE url_producto IS NOT NULL DO UPDATE SET ...` o definir el constraint sin `WHERE` si es posible.
+
+### 5. Vista vs tabla para mejores precios
+- Usar `DISTINCT ON (...)` con `ORDER BY CASE WHEN preferido THEN 0 ELSE 1 END, precio_por_kg ASC` garantiza que el producto preferido aparezca primero, y si no hay preferido, el más barato.
+- Las vistas en PostgreSQL se actualizan automáticamente cuando cambian los datos subyacentes.
 
 ## 🧠 Lecciones aprendidas (07-05-2026 — Auditoría de bugs)
 
