@@ -89,15 +89,26 @@ export async function buscarAlimento(
  * Útil para productos que no están en tu BD pero aparecen en el supermercado.
  * @param supabase - Cliente Supabase (browser o service_role según contexto)
  */
+/**
+ * Crea un alimento si no existe.
+ * - esGenerico=true: alimento sin marca clara (fruta, carne, verdura genérica)
+ * - esGenerico=false: producto de marca o procesado
+ */
 export async function crearAlimentoSiNoExiste(
     nombre: string,
     supabase: SupabaseClient,
-    categoria?: string
+    categoria?: string,
+    esGenerico?: boolean
 ): Promise<string | null> {
     const nombreLimpio = limpiarNombre(nombre)
     if (!nombreLimpio || nombreLimpio.length < 2) return null
 
-    // La tabla alimentos tiene NOT NULL en calorias, proteinas, carbohidratos, grasas
+    // Inferir si es genérico por el nombre si no se especifica
+    const MARCAS_CONOCIDAS = ['hacendado', 'carrefour', 'milbona', 'bosque verde', 'deliplus', 'lidl', 'aldi', 'dia']
+    const nombreLower = nombreLimpio.toLowerCase()
+    const tieneMarco = MARCAS_CONOCIDAS.some(m => nombreLower.includes(m))
+    const inferidoGenerico = esGenerico ?? !tieneMarco
+
     const { data, error } = await supabase
         .from('alimentos')
         .insert({
@@ -107,6 +118,7 @@ export async function crearAlimentoSiNoExiste(
             proteinas: 0,
             carbohidratos: 0,
             grasas: 0,
+            es_generico: inferidoGenerico,
         })
         .select('id')
         .single()
@@ -116,6 +128,6 @@ export async function crearAlimentoSiNoExiste(
         return null
     }
 
-    console.log(`[Normalizador] Alimento creado: "${nombreLimpio}" (${data.id})`)
+    console.log(`[Normalizador] Alimento creado: "${nombreLimpio}" (genérico: ${inferidoGenerico}, ${data.id})`)
     return data.id
 }
