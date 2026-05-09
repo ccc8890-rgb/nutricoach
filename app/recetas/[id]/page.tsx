@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, Brain, AlertTriangle, Clock, Users, ChevronLeft } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, Brain, AlertTriangle, Clock, Users, ChevronLeft, Euro } from 'lucide-react'
+import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
@@ -547,6 +548,19 @@ export default function DetalleRecetaPage() {
             </div>
           </FadeIn>
         )}
+
+        {/* ═══════ ESCANDALLO DE COSTES ═══════ */}
+        <FadeIn delay={0.42}>
+          <div
+            className="rounded-2xl p-5 mb-6"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          >
+            <h2 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
+              <Euro size={15} /> Coste de la receta
+            </h2>
+            <EscandalloReceta recetaId={id as string} />
+          </div>
+        </FadeIn>
 
         {/* ═══════ FOOTER ═══════ */}
         <FadeIn delay={0.45}>

@@ -1,199 +1,260 @@
+// components/ListaCompra.tsx
 'use client'
 
-import { useState } from 'react'
-import { ShoppingCart, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react'
-import { generarListaCompra, type GrupoListaCompra } from '@/lib/utils'
-
-const CATEGORIA_EMOJIS: Record<string, string> = {
-    'Verduras': '🥦',
-    'Hortalizas': '🥬',
-    'Frutas': '🍎',
-    'Carnes': '🥩',
-    'Pescados': '🐟',
-    'Mariscos': '🦐',
-    'Huevos': '🥚',
-    'Lácteos': '🥛',
-    'Lacteos': '🥛',
-    'Legumbres': '🫘',
-    'Cereales': '🌾',
-    'Frutos secos': '🥜',
-    'Semillas': '🌰',
-    'Aceites': '🫒',
-    'Grasas': '🫒',
-    'Especias': '🌶️',
-    'Condimentos': '🧂',
-    'Salsas': '🥫',
-    'Bebidas': '🧃',
-    'Infusiones': '🍵',
-    'Suplementos': '💊',
-    'Congelados': '❄️',
-    'Conservas': '🥫',
-    'Pan': '🍞',
-    'Pastas': '🍝',
-    'Arroces': '🍚',
-    'Otros': '📦',
-}
-
-function emojiCategoria(cat: string): string {
-    return CATEGORIA_EMOJIS[cat] ?? CATEGORIA_EMOJIS[cat.toLowerCase()] ?? '📦'
-}
+import { useState, useEffect, useCallback } from 'react'
+import { ShoppingCart, Copy, Check, Store, Loader2 } from 'lucide-react'
+import ItemConPrecios from './lista-compra/ItemConPrecios'
+import type { ListaCompraSemanal, PrecioOpcion, ResumenSupermercado } from '@/types'
 
 interface ListaCompraProps {
-    comidas: { alimentos?: { alimento?: { id?: string; nombre?: string; categoria?: string }; cantidad_gramos?: number }[] }[]
-    /** Opcional: nombre del plan para mostrar en el encabezado */
+    planId: string
+    clienteId: string
+    semanaInicio?: string   // YYYY-MM-DD, opcional — usa el lunes actual si se omite
     nombrePlan?: string
+    /** 'coach' | 'cliente' — determina seleccionado_por al guardar */
+    rol?: 'coach' | 'cliente'
 }
 
-export default function ListaCompra({ comidas, nombrePlan }: ListaCompraProps) {
+function getLunesActual(): string {
+    const hoy = new Date()
+    const dia = hoy.getDay()
+    const diff = dia === 0 ? -6 : 1 - dia
+    const lunes = new Date(hoy)
+    lunes.setDate(hoy.getDate() + diff)
+    return lunes.toISOString().split('T')[0]
+}
+
+function formatearEuro(n: number) { return `${n.toFixed(2)} €` }
+
+export default function ListaCompra({ planId, clienteId, semanaInicio, nombrePlan, rol = 'cliente' }: ListaCompraProps) {
+    const semana = semanaInicio || getLunesActual()
     const [abierto, setAbierto] = useState(false)
+    const [datos, setDatos] = useState<ListaCompraSemanal | null>(null)
+    const [cargando, setCargando] = useState(false)
+    const [guardando, setGuardando] = useState<string | null>(null) // alimento_id en proceso
     const [copiado, setCopiado] = useState(false)
-    const [expandidas, setExpandidas] = useState<Record<string, boolean>>({})
+    const [error, setError] = useState('')
 
-    function grupos(): GrupoListaCompra[] {
-        return generarListaCompra(comidas)
-    }
-
-    const toggleCategoria = (cat: string) => {
-        setExpandidas(prev => ({ ...prev, [cat]: !prev[cat] }))
-    }
-
-    const copiarLista = async () => {
-        const gs = grupos()
-        const lineas: string[] = [`🛒 LISTA DE LA COMPRA${nombrePlan ? ` — ${nombrePlan}` : ''}`]
-        for (const grupo of gs) {
-            lineas.push(`\n${emojiCategoria(grupo.categoria)} ${grupo.categoria.toUpperCase()}`)
-            for (const item of grupo.items) {
-                lineas.push(`  • ${item.nombre} — ${formatearGramos(item.gramos_totales)}`)
-            }
+    const cargar = useCallback(async () => {
+        if (!planId) return
+        setCargando(true)
+        setError('')
+        try {
+            const res = await fetch(`/api/lista-compra/semanal?plan_id=${planId}&semana_inicio=${semana}`)
+            const json = await res.json()
+            if (!res.ok) setError(json.error || 'Error al cargar lista')
+            else setDatos(json)
+        } catch {
+            setError('Error de red')
+        } finally {
+            setCargando(false)
         }
+    }, [planId, semana])
+
+    useEffect(() => {
+        if (abierto && !datos) cargar()
+    }, [abierto, datos, cargar])
+
+    async function handleSeleccionar(alimentoId: string, opcion: PrecioOpcion) {
+        setGuardando(alimentoId)
+        try {
+            await fetch('/api/lista-compra/selecciones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cliente_id: clienteId,
+                    plan_id: planId,
+                    alimento_id: alimentoId,
+                    supermercado_id: opcion.supermercado_id,
+                    precio_por_kg: opcion.precio_por_kg,
+                    url_producto: opcion.url_producto,
+                    semana_inicio: semana,
+                    seleccionado_por: rol,
+                }),
+            })
+            // Actualizar local sin refetch completo
+            setDatos(prev => {
+                if (!prev) return prev
+                const ingredientes = prev.ingredientes.map(ing => {
+                    if (ing.alimento_id !== alimentoId) return ing
+                    return {
+                        ...ing,
+                        seleccion: {
+                            cliente_id: clienteId,
+                            plan_id: planId,
+                            alimento_id: alimentoId,
+                            supermercado_id: opcion.supermercado_id,
+                            producto_nombre: opcion.supermercado_nombre,
+                            precio_por_kg: opcion.precio_por_kg,
+                            url_producto: opcion.url_producto,
+                            semana_inicio: semana,
+                            seleccionado_por: rol,
+                        },
+                    }
+                })
+                // Recalcular coste total
+                let costeTotal = 0
+                for (const ing of ingredientes) {
+                    const p = ing.seleccion
+                        ? ing.precios.find(px => px.supermercado_id === ing.seleccion?.supermercado_id)
+                        : ing.precios[0]
+                    if (p) costeTotal += p.coste_euros
+                }
+                return { ...prev, ingredientes, coste_total: Math.round(costeTotal * 100) / 100 }
+            })
+        } catch {
+            // silencioso — la selección fallará en silencio pero la UI sigue funcionando
+        } finally {
+            setGuardando(null)
+        }
+    }
+
+    async function copiarLista() {
+        if (!datos) return
+        const lineas = [`🛒 LISTA DE LA COMPRA${nombrePlan ? ` — ${nombrePlan}` : ''}`]
+        for (const ing of datos.ingredientes) {
+            const g = ing.cantidad_gramos_total
+            const texto = g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${Math.round(g)} g`
+            const super_ = ing.seleccion?.supermercado_id
+                ? ing.precios.find(p => p.supermercado_id === ing.seleccion?.supermercado_id)
+                : ing.precios[0]
+            const precio = super_ ? ` — ${super_.coste_euros.toFixed(2)} € (${super_.supermercado_nombre})` : ''
+            lineas.push(`  • ${ing.alimento_nombre} — ${texto}${precio}`)
+        }
+        if (datos.coste_total > 0) lineas.push(`\n💰 Total estimado: ${formatearEuro(datos.coste_total)}`)
         try {
             await navigator.clipboard.writeText(lineas.join('\n'))
             setCopiado(true)
             setTimeout(() => setCopiado(false), 2000)
-        } catch {
-            // fallback silencioso
-        }
+        } catch { /* fallback silencioso */ }
     }
 
-    const gs = grupos()
-    const totalItems = gs.reduce((sum, g) => sum + g.items.length, 0)
+    const totalItems = datos?.ingredientes.length ?? 0
 
     return (
         <div className="card overflow-hidden">
-            {/* Header clickable */}
+            {/* Header */}
             <button
                 onClick={() => setAbierto(!abierto)}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                className="w-full flex items-center justify-between p-4 hover:bg-black/5 transition-colors"
             >
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#F0FDF4' }}>
                         <ShoppingCart size={20} style={{ color: '#16A34A' }} />
                     </div>
                     <div className="text-left">
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">Lista de la compra</p>
-                        <p className="text-xs text-gray-400">
+                        <p className="font-semibold" style={{ color: 'var(--text)' }}>Lista de la compra</p>
+                        <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
                             {totalItems > 0
-                                ? `${totalItems} producto${totalItems !== 1 ? 's' : ''} en ${gs.length} categoría${gs.length !== 1 ? 's' : ''}`
-                                : 'Sin alimentos en el plan'}
+                                ? `${totalItems} producto${totalItems !== 1 ? 's' : ''}`
+                                : 'Cargando...'}
+                            {datos && datos.coste_total > 0 && (
+                                <span className="ml-2 font-semibold" style={{ color: '#16A34A' }}>
+                                    · {formatearEuro(datos.coste_total)}
+                                </span>
+                            )}
                         </p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    {totalItems > 0 && (
-                        <span className="badge badge-green text-xs font-semibold">{totalItems}</span>
+                    {datos && (
+                        <button
+                            onClick={e => { e.stopPropagation(); copiarLista() }}
+                            className="p-2 rounded-lg transition-colors"
+                            style={{ background: 'var(--surface)' }}
+                            title="Copiar lista"
+                        >
+                            {copiado ? <Check size={16} style={{ color: '#16a34a' }} /> : <Copy size={16} style={{ color: 'var(--muted-foreground)' }} />}
+                        </button>
                     )}
-                    {abierto ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+                    <span style={{ color: 'var(--muted-foreground)' }}>{abierto ? '▲' : '▼'}</span>
                 </div>
             </button>
 
-            {/* Contenido desplegable */}
+            {/* Cuerpo */}
             {abierto && (
-                <div className="border-t border-gray-100 dark:border-gray-700">
-                    {gs.length === 0 ? (
-                        <div className="p-8 text-center">
-                            <ShoppingCart size={40} className="mx-auto text-gray-200 dark:text-gray-700 mb-3" />
-                            <p className="text-sm text-gray-400">No hay alimentos en el plan</p>
-                            <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">Añade comidas con alimentos para generar la lista</p>
+                <div className="px-4 pb-4 space-y-5" style={{ borderTop: '1px solid var(--border)' }}>
+
+                    {cargando && (
+                        <div className="flex items-center justify-center py-8 gap-2" style={{ color: 'var(--muted-foreground)' }}>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <span className="text-sm">Cargando ingredientes y precios...</span>
                         </div>
-                    ) : (
-                        <div className="p-4 space-y-4">
-                            {/* Botón copiar */}
-                            <button
-                                onClick={copiarLista}
-                                className="btn-secondary w-full flex items-center justify-center gap-2 py-2.5 text-sm"
-                            >
-                                {copiado ? (
-                                    <>
-                                        <Check size={16} className="text-green-600" />
-                                        <span className="text-green-600">¡Copiado!</span>
-                                    </>
+                    )}
+
+                    {error && (
+                        <div className="p-3 rounded-xl text-sm" style={{ background: '#fef2f2', color: '#dc2626' }}>
+                            ❌ {error}
+                        </div>
+                    )}
+
+                    {datos && !cargando && (
+                        <>
+                            {/* Lista de ingredientes */}
+                            <div className="pt-3 space-y-2">
+                                {datos.ingredientes.length === 0 ? (
+                                    <p className="text-sm text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
+                                        Este plan no tiene ingredientes.
+                                    </p>
                                 ) : (
-                                    <>
-                                        <Copy size={16} />
-                                        <span>Copiar lista al portapapeles</span>
-                                    </>
+                                    datos.ingredientes.map(ing => (
+                                        <ItemConPrecios
+                                            key={ing.alimento_id}
+                                            ingrediente={ing}
+                                            onSeleccionar={handleSeleccionar}
+                                            guardando={guardando === ing.alimento_id}
+                                        />
+                                    ))
                                 )}
-                            </button>
+                            </div>
 
-                            {/* Grupos por categoría */}
-                            {gs.map(grupo => {
-                                const expanded = expandidas[grupo.categoria] !== false // por defecto expandido
-                                return (
-                                    <div key={grupo.categoria} className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden">
-                                        <button
-                                            onClick={() => toggleCategoria(grupo.categoria)}
-                                            className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                                            style={{ background: '#FAFAFA' }}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-lg">{emojiCategoria(grupo.categoria)}</span>
-                                                <span className="font-semibold text-sm text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-                                                    {grupo.categoria}
+                            {/* Resumen por supermercado */}
+                            {datos.resumen_por_supermercado.length > 0 && (
+                                <div className="rounded-xl p-4 space-y-3" style={{ background: 'var(--surface)' }}>
+                                    <div className="flex items-center gap-2">
+                                        <Store className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
+                                        <h4 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                                            Resumen por supermercado
+                                        </h4>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {datos.resumen_por_supermercado.map((r: ResumenSupermercado) => (
+                                            <div key={r.supermercado_id} className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <div
+                                                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                                                        style={{ background: r.supermercado_color || '#9ca3af' }}
+                                                    />
+                                                    <span className="text-sm truncate" style={{ color: 'var(--text)' }}>
+                                                        {r.supermercado_nombre}
+                                                    </span>
+                                                    <span className="text-xs truncate hidden sm:block" style={{ color: 'var(--muted-foreground)' }}>
+                                                        ({r.ingredientes.slice(0, 3).join(', ')}{r.ingredientes.length > 3 ? `... +${r.ingredientes.length - 3}` : ''})
+                                                    </span>
+                                                </div>
+                                                <span className="text-sm font-bold shrink-0 ml-2" style={{ color: 'var(--text)' }}>
+                                                    {formatearEuro(r.coste_total)}
                                                 </span>
-                                                <span className="badge badge-gray text-[10px] ml-1">{grupo.items.length}</span>
                                             </div>
-                                            {expanded ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
-                                        </button>
-
-                                        {expanded && (
-                                            <div className="divide-y divide-gray-50 dark:divide-gray-800">
-                                                {grupo.items.map(item => (
-                                                    <div key={item.alimento_id} className="flex items-center justify-between px-4 py-2.5">
-                                                        <div className="flex items-center gap-2 min-w-0">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer flex-shrink-0"
-                                                                onChange={e => {
-                                                                    const label = e.target.closest('label')
-                                                                    if (label) label.classList.toggle('line-through')
-                                                                    if (label) label.classList.toggle('text-gray-400')
-                                                                }}
-                                                            />
-                                                            <span className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                                                                {item.nombre}
-                                                            </span>
-                                                        </div>
-                                                        <span className="text-sm font-semibold text-green-700 dark:text-green-400 ml-3 flex-shrink-0">
-                                                            {formatearGramos(item.gramos_totales)}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+                                        <div className="flex justify-between">
+                                            <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Total estimado</span>
+                                            <span className="text-sm font-bold" style={{ color: '#16a34a' }}>{formatearEuro(datos.coste_total)}</span>
+                                        </div>
+                                        {datos.coste_total_mas_caro > datos.coste_total && (
+                                            <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
+                                                Ahorro vs. comprar todo en el super más caro: {formatearEuro(datos.coste_total_mas_caro - datos.coste_total)}
+                                            </p>
                                         )}
                                     </div>
-                                )
-                            })}
-                        </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             )}
         </div>
     )
-}
-
-function formatearGramos(g: number): string {
-    if (g >= 1000) {
-        return `${(g / 1000).toFixed(1)} kg`
-    }
-    return `${Math.round(g)} g`
 }

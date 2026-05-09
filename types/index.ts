@@ -420,3 +420,375 @@ export interface DashboardPortalResponse {
   peso: SeguimientoPeso[]
   notas: NotaCoach[]
 }
+
+// ============================================================
+// Tipos para Módulo de Precios de Supermercado
+// ============================================================
+
+export interface Supermercado {
+  id: string
+  nombre: string
+  slug: string
+  logo_url?: string
+  color?: string
+  activo: boolean
+  created_at: string
+  /** Indica si hay un módulo scraper implementado para este supermercado */
+  tiene_scraper?: boolean
+}
+
+export interface ProductoSupermercado {
+  id: string
+  supermercado_id: string
+  alimento_id: string
+  precio_por_kg: number
+  precio_unidad?: number
+  unidad: string
+  url_producto?: string
+  fecha_precio: string
+  notas?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PrecioActual extends ProductoSupermercado {
+  supermercado_nombre: string
+  supermercado_slug: string
+  supermercado_color?: string
+  alimento_nombre: string
+  alimento_categoria: string
+}
+
+export interface CosteAlimento {
+  alimento_id: string
+  alimento_nombre: string
+  categoria: string
+  cantidad_total_gramos: number
+  precio_por_kg: number
+  coste_total_euros: number
+  recetas_json?: { comida_nombre: string; gramos: number }[]
+}
+
+export interface CosteComida {
+  alimento_id: string
+  alimento_nombre: string
+  cantidad_gramos: number
+  precio_por_kg: number
+  coste_euros: number
+}
+
+export interface CostePorReceta {
+  comida_nombre: string
+  coste_total: number
+  alimentos: CosteComida[]
+}
+
+export interface ResumenCostesPlan {
+  supermercado_seleccionado: string | null
+  precio_total: number
+  alimentos: CosteAlimento[]
+  coste_por_comida: CostePorReceta[]
+}
+
+// ============================================================
+// Tipos para Productos vs Alimentos (multi-precio)
+// ============================================================
+
+/** Producto detallado de supermercado (con info del supermercado) */
+export interface ProductoSupermercadoDetalle {
+  id: string
+  supermercado_id: string
+  supermercado_nombre: string
+  supermercado_slug: string
+  supermercado_color?: string
+  alimento_id: string
+  alimento_nombre: string
+  nombre_original?: string          // nombre real del producto en tienda
+  marca?: string
+  precio_por_kg: number
+  precio_unidad?: number
+  url_producto?: string
+  preferido: boolean
+  fecha_precio: string
+}
+
+/** Una opción dentro del escandallo (alimento + producto seleccionado + alternativas) */
+export interface OpcionEscandallo {
+  alimento_id: string
+  alimento_nombre: string
+  categoria: string
+  cantidad_gramos: number
+  producto_seleccionado: {
+    id: string
+    nombre_original?: string
+    supermercado_nombre: string
+    precio_por_kg: number
+  }
+  coste_euros: number
+  alternativas: {
+    id: string
+    supermercado_nombre: string
+    precio_por_kg: number
+    es_preferido: boolean
+  }[]
+}
+
+/** Resultado completo del cálculo de escandallo con multi-precio */
+export interface EscandalloPlan {
+  precio_total: number
+  supermercado_base?: string        // supermercado del preferido mayoritario
+  alimentos: OpcionEscandallo[]
+  ahorro_potencial: number          // lo que se ahorraría yendo al más barato
+}
+
+// ============================================================
+// Tipos para Scraping Automático de Precios (Fase 1)
+// ============================================================
+
+/** Producto scrapeado de un supermercado, ya normalizado */
+export interface ProductoScraped {
+  nombre: string
+  nombre_normalizado: string
+  precio_actual: number
+  precio_por_kg?: number
+  unidad?: string
+  url_producto: string
+  imagen_url?: string
+  marca?: string
+  cantidad?: string
+  disponible: boolean
+}
+
+/** Resultado completo de una operación de scraping */
+export interface ResultadoScraping {
+  supermercado_id: string
+  supermercado_nombre: string
+  productos: ProductoScraped[]
+  fecha_scraping: string
+  duracion_ms: number
+  errores: string[]
+  total_procesados: number
+  nuevos_productos: number
+  actualizados: number
+  no_encontrados: number
+}
+
+/** Precio histórico para tendencias */
+export interface PrecioHistorico {
+  id: string
+  supermercado_id: string
+  supermercado_nombre?: string
+  alimento_id: string | null
+  alimento_nombre?: string
+  nombre_producto?: string
+  precio_por_kg: number
+  precio_unidad?: number
+  unidad: string
+  url_producto?: string
+  fecha_precio: string
+  fuente: 'manual' | 'scraping_http' | 'scraping_playwright' | 'apify'
+  metadatos?: Record<string, unknown>
+  created_at: string
+}
+
+/** Tendencia de precio de un alimento en un supermercado */
+export interface TendenciaPrecio {
+  alimento_id: string
+  alimento_nombre: string
+  supermercado_id: string
+  supermercado_nombre: string
+  precio_inicial: number
+  precio_actual: number
+  variacion_porcentual: number
+  periodo: '30d' | '90d' | '1y'
+  puntos: { fecha: string; precio: number }[]
+}
+
+/** Producto externo (suplementos, Amazon, MyProtein, etc.) */
+export interface ProductoExterno {
+  id: string
+  coach_id: string
+  nombre: string
+  marca?: string
+  categoria: 'suplementos' | 'ropa' | 'equipamiento' | 'otros'
+  precio: number
+  moneda: string
+  cantidad?: number
+  unidad_medida?: string
+  url_producto?: string
+  tienda?: string
+  fecha_precio: string
+  created_at: string
+  updated_at: string
+}
+
+/** Comparativa de precios entre supermercados para una cesta */
+export interface ComparativaSupermercados {
+  supermercados: {
+    id: string
+    nombre: string
+    color: string
+    precio_total: number
+    dif_respecto_barato: number
+    es_mas_barato: boolean
+  }[]
+  ahorro_mensual: number
+  ahorro_anual: number
+  recomendado: string
+  desglose: {
+    alimento_id: string
+    alimento_nombre: string
+    precios: { supermercado_id: string; precio: number }[]
+    mas_barato: string
+  }[]
+}
+
+/** Proyección de ahorro entre dos supermercados */
+export interface ProyeccionAhorro {
+  semanal: number
+  mensual: number
+  anual: number
+  supermercado_base: string
+  supermercado_comparado: string
+  diferencia_porcentual: number
+}
+
+// ── Enriquecimiento Nutricional IA ────────────────────────────
+
+export interface CategoriaIA {
+  id: string
+  nombre: string
+  descripcion: string | null
+  grupo_alimenticio: string
+  prioridad: number
+}
+
+export interface AlimentoPendienteEnriquecer {
+  id: string
+  nombre: string
+  categoria: string | null
+  calorias: number | null
+  proteinas: number | null
+  carbohidratos: number | null
+  grasas: number | null
+  estado_enriquecimiento: 'pendiente' | 'procesando' | 'completado' | 'error' | null
+  error_ia: string | null
+  ultimo_intento: string | null
+  num_precios: number
+  supermercados: string | null
+}
+
+export interface ResultadoEnriquecimiento {
+  alimento_id: string
+  nombre: string
+  categoria_ia: string
+  calorias: number
+  proteinas: number
+  carbohidratos: number
+  grasas: number
+  fibra: number | null
+  confianza: 'alta' | 'media' | 'baja'
+  explicacion?: string
+}
+
+export interface EscandalloReceta {
+  id: string
+  receta_id: string
+  supermercado_id: string
+  coste_total: number
+  coste_por_porcion: number | null
+  desglose: EscandalloItem[]
+  fecha_calculo: string
+}
+
+export interface EscandalloItem {
+  ingrediente: string
+  cantidad_gramos: number
+  precio_por_kg: number
+  coste: number
+}
+
+export interface EscandalloCliente {
+  cliente_id: string
+  cliente_nombre: string
+  plan_id: string
+  plan_nombre: string
+  supermercado_id: string
+  supermercado_nombre: string
+  coste_semanal: number
+  coste_por_porcion: number | null
+  coste_mensual_estimado: number
+  coste_anual_estimado: number
+  fecha_calculo: string
+}
+
+export interface StatsEnriquecimiento {
+  total_pendientes: number
+  total_completados: number
+  total_errores: number
+  total_alimentos_en_db: number
+  supermercados_con_precios: number
+  productos_con_precio: number
+}
+
+// ============================================================
+// Tipos para Lista de la Compra Semanal con Precios
+// ============================================================
+
+/** Precio de un alimento en un supermercado concreto */
+export interface PrecioOpcion {
+  supermercado_id: string
+  supermercado_nombre: string
+  supermercado_slug: string
+  supermercado_color?: string
+  precio_por_kg: number
+  coste_euros: number      // precio_por_kg * (cantidad_gramos / 1000)
+  url_producto?: string
+  es_mas_barato: boolean
+}
+
+/** Un ingrediente de la lista semanal con sus opciones de precio */
+export interface IngredienteSemanal {
+  alimento_id: string
+  alimento_nombre: string
+  categoria: string
+  es_generico: boolean
+  cantidad_gramos_total: number   // suma de todas las recetas de la semana
+  recetas_origen: string[]        // nombres de comidas que lo incluyen
+  precios: PrecioOpcion[]         // vacío si no hay precios en ningún super
+  seleccion: SeleccionListaCompra | null  // null si no ha seleccionado aún
+}
+
+/** Selección guardada de un cliente para un ingrediente */
+export interface SeleccionListaCompra {
+  id?: string
+  cliente_id: string
+  plan_id: string
+  alimento_id: string
+  supermercado_id: string | null
+  supermercado_nombre?: string
+  producto_nombre?: string
+  precio_por_kg?: number
+  url_producto?: string
+  semana_inicio: string           // formato YYYY-MM-DD (lunes)
+  seleccionado_por: 'coach' | 'cliente'
+}
+
+/** Resumen por supermercado para el bloque final de la lista */
+export interface ResumenSupermercado {
+  supermercado_id: string
+  supermercado_nombre: string
+  supermercado_color?: string
+  ingredientes: string[]          // nombres de los alimentos asignados
+  coste_total: number
+}
+
+/** Respuesta completa de GET /api/lista-compra/semanal */
+export interface ListaCompraSemanal {
+  plan_id: string
+  semana_inicio: string
+  ingredientes: IngredienteSemanal[]
+  resumen_por_supermercado: ResumenSupermercado[]
+  coste_total: number
+  coste_total_mas_caro: number    // si compraras todo en el super más caro
+}
