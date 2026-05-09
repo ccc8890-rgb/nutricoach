@@ -30,6 +30,7 @@ interface Comida {
 
 interface PlanData {
     id: string
+    cliente_id: string
     nombre: string
     descripcion?: string
     comidas?: Comida[]
@@ -123,7 +124,7 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
             </div>
 
             {/* ─── Lista de la Compra ─── */}
-            <ListaCompra comidas={plan.comidas ?? []} nombrePlan={plan.nombre} />
+            <ListaCompra planId={plan.id} clienteId={plan.cliente_id} nombrePlan={plan.nombre} rol="cliente" />
 
             {/* Comidas */}
             <div className="space-y-3">
