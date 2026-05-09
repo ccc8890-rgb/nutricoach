@@ -1,8 +1,29 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { normalizarProducto, buscarAlimento, crearAlimentoSiNoExiste } from './normalizador'
 import { scrapearMercadona } from './supermercados/mercadona'
+import { scrapearCarrefour } from './supermercados/carrefour'
+import { scrapearDia } from './supermercados/dia'
+import { scrapearAlcampo } from './supermercados/alcampo'
+import { scrapearConsum } from './supermercados/consum'
+import { scrapearLidl } from './supermercados/lidl'
+import { scrapearEroski } from './supermercados/eroski'
 import type { ResultadoScraping } from '@/types'
 import type { ProductoRaw } from './types'
+
+/** Mapa de slug → función scraper */
+const SCRAPERS: Record<string, () => Promise<{
+    productos: ProductoRaw[]
+    errores: string[]
+    duracion_ms: number
+}>> = {
+    mercadona: scrapearMercadona,
+    carrefour: scrapearCarrefour,
+    dia: scrapearDia,
+    alcampo: scrapearAlcampo,
+    consum: scrapearConsum,
+    lidl: scrapearLidl,
+    eroski: scrapearEroski,
+}
 
 /**
  * Orquestrador principal de scraping.
@@ -25,28 +46,27 @@ export async function scrapearSupermercado(
 
     try {
         // 1. Ejecutar scraper según el supermercado
-        switch (supermercadoSlug) {
-            case 'mercadona': {
-                const result = await scrapearMercadona()
-                productosRaw = result.productos
-                errores.push(...result.errores)
-                break
+        const scraperFn = SCRAPERS[supermercadoSlug]
+
+        if (!scraperFn) {
+            errores.push(`Supermercado "${supermercadoSlug}" no tiene scraper implementado aún`)
+            return {
+                supermercado_id: supermercadoId,
+                supermercado_nombre: supermercadoSlug,
+                productos: [],
+                fecha_scraping: new Date().toISOString(),
+                duracion_ms: Date.now() - inicio,
+                errores,
+                total_procesados: 0,
+                nuevos_productos: 0,
+                actualizados: 0,
+                no_encontrados: 0,
             }
-            default:
-                errores.push(`Supermercado "${supermercadoSlug}" no tiene scraper implementado aún`)
-                return {
-                    supermercado_id: supermercadoId,
-                    supermercado_nombre: supermercadoSlug,
-                    productos: [],
-                    fecha_scraping: new Date().toISOString(),
-                    duracion_ms: Date.now() - inicio,
-                    errores,
-                    total_procesados: 0,
-                    nuevos_productos: 0,
-                    actualizados: 0,
-                    no_encontrados: 0,
-                }
         }
+
+        const result = await scraperFn()
+        productosRaw = result.productos
+        errores.push(...result.errores)
 
         // 2. Procesar cada producto: normalizar + guardar
         const productosFinales: ResultadoScraping['productos'] = []
@@ -192,7 +212,7 @@ export async function scrapearTodosLosSupermercados(
 
     for (const sm of supermercados) {
         // Solo ejecutar scraper si tenemos implementación para ese slug
-        const scrapersDisponibles = ['mercadona']
+        const scrapersDisponibles = Object.keys(SCRAPERS)
         if (!scrapersDisponibles.includes(sm.slug)) continue
 
         const resultado = await scrapearSupermercado(sm.id, sm.slug, supabase)
