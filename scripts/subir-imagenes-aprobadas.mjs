@@ -63,6 +63,35 @@ function priIdx(metodo) {
     return i === -1 ? 999 : i
 }
 
+// Normaliza un string para comparación: minúsculas, sin acentos, guiones → espacio, espacios colapsados
+function norm(s) {
+    return s.toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+}
+
+// Encuentra la mejor receta para un slug usando solapamiento de palabras
+function mejorMatch(slug, todasRecetas) {
+    const slugWords = norm(slug).split(' ').filter(w => w.length > 2)
+    let bestReceta = null
+    let bestScore = 0
+
+    for (const r of todasRecetas) {
+        const nameNorm = norm(r.nombre)
+        const matchCount = slugWords.filter(w => nameNorm.includes(w)).length
+        const score = matchCount / Math.max(slugWords.length, 1)
+        if (score > bestScore) {
+            bestScore = score
+            bestReceta = r
+        }
+    }
+
+    // Umbral mínimo: al menos la mitad de las palabras del slug deben coincidir
+    return bestScore >= 0.5 ? bestReceta : null
+}
+
 async function main() {
     if (!existsSync(SALIDA_DIR)) {
         console.error(`❌ No existe ${SALIDA_DIR}. Ejecuta primero el script de imágenes.`)
@@ -77,6 +106,16 @@ async function main() {
 
     console.log(`\n📦 ${files.length} imágenes en disco`)
     if (DRY_RUN) console.log('   (modo dry-run — no se subirá nada)\n')
+
+    // Cargar TODAS las recetas de BD una sola vez para matching offline
+    const { data: todasRecetas, error: loadError } = await supabase
+        .from('recetas')
+        .select('id, nombre, imagen_url')
+    if (loadError || !todasRecetas) {
+        console.error(`❌ Error cargando recetas: ${loadError?.message}`)
+        process.exit(1)
+    }
+    console.log(`🗄️  ${todasRecetas.length} recetas cargadas de BD\n`)
 
     // Agrupar por receta: { slug → [{ metodo, filename }] }
     const grupos = {}
@@ -101,23 +140,17 @@ async function main() {
     let saltadas = 0
 
     for (const { slug, mejor } of mejores) {
-        const nombreBuscar = slug.replace(/-/g, ' ')
+        // Matching fuzzy offline: normaliza slug y nombre, compara por palabras
+        const candidata = mejorMatch(slug, todasRecetas)
 
-        // Buscar receta en BD por nombre aproximado
-        const { data: recetas } = await supabase
-            .from('recetas')
-            .select('id, nombre, imagen_url')
-            .ilike('nombre', `%${nombreBuscar.slice(0, 20)}%`)
-            .limit(3)
-
-        if (!recetas || recetas.length === 0) {
+        if (!candidata) {
             console.log(`  ⚠️  Sin match en BD: ${slug}`)
             saltadas++
             continue
         }
 
-        // Tomar la receta sin imagen, o la primera si todas tienen
-        const receta = recetas.find(r => !r.imagen_url) || recetas[0]
+        // Preferir la receta sin imagen; si ya tiene, saltar (salvo --forzar)
+        const receta = candidata
 
         if (receta.imagen_url && !DRY_RUN && !FORZAR) {
             console.log(`  ⏭️  Ya tiene imagen: ${receta.nombre}`)
