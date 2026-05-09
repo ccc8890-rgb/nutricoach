@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         // 2. Obtener todas las comidas del plan con sus alimentos
         const { data: comidas } = await srv
             .from('comidas')
-            .select('nombre, comidas_alimentos(cantidad_gramos, alimentos(id, nombre, categoria, es_generico))')
+            .select('nombre, comida_alimentos(cantidad_gramos, alimentos(id, nombre, categoria, es_generico))')
             .eq('plan_id', planId)
 
         if (!comidas || comidas.length === 0) {
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
         }>()
 
         for (const comida of comidas) {
-            for (const ca of (comida.comidas_alimentos || []) as any[]) {
+            for (const ca of (comida.comida_alimentos || []) as any[]) {
                 const a = ca.alimentos
                 if (!a) continue
                 const existing = mapaAlimentos.get(a.id)
