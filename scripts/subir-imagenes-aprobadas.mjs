@@ -51,8 +51,12 @@ const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
 const DRY_RUN = process.argv.includes('--dry-run')
 const FORZAR = process.argv.includes('--forzar')
 
-// Prioridad de métodos: cuanto menor índice, mejor
-const PRIORIDAD = ['flux_img2img', 'og_image', 'agent_browser', 'playwright', 'bing_images', 'flux_txt2img']
+// Prioridad de métodos: cuanto menor índice, mejor (actualizado 09-05-2026)
+// og_image    → foto real de Instagram/TikTok (mejor siempre)
+// flux_img2img → foto real refinada con OpenAI gpt-image-1.5 (nombre legacy de Replicate)
+// ai_gen       → imagen IA generada desde cero con OpenAI gpt-image-1.5 (para recetas sin URL)
+// resto        → métodos legacy
+const PRIORIDAD = ['og_image', 'flux_img2img', 'ai_gen', 'agent_browser', 'playwright', 'bing_images', 'flux_txt2img']
 
 function priIdx(metodo) {
     const i = PRIORIDAD.indexOf(metodo)
@@ -65,7 +69,7 @@ async function main() {
         process.exit(1)
     }
 
-    const files = readdirSync(SALIDA_DIR).filter(f => f.endsWith('.webp'))
+    const files = readdirSync(SALIDA_DIR).filter(f => f.endsWith('.webp') || f.endsWith('.jpg') || f.endsWith('.jpeg'))
     if (files.length === 0) {
         console.log('❌ No hay imágenes en el directorio de salida')
         return
@@ -77,7 +81,7 @@ async function main() {
     // Agrupar por receta: { slug → [{ metodo, filename }] }
     const grupos = {}
     for (const f of files) {
-        const match = f.match(/^([a-z0-9_]+)--(.+)\.webp$/)
+        const match = f.match(/^([a-z0-9_]+)--(.+)\.(webp|jpg|jpeg)$/)
         if (!match) continue
         const [, metodo, slug] = match
         if (!grupos[slug]) grupos[slug] = []

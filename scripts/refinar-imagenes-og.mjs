@@ -74,11 +74,12 @@ async function gptImageEdit(imageBuffer, prompt, filename) {
     const form = new FormData()
     const blob = new Blob([imageBuffer], { type: 'image/webp' })
     form.append('image', blob, filename.replace('.webp', '.png'))
-    form.append('model', 'gpt-image-1')
+    form.append('model', 'gpt-image-1.5')       // 09-05-2026: actualizado desde gpt-image-1
     form.append('prompt', prompt)
     form.append('n', '1')
     form.append('size', '1024x1024')
-    form.append('quality', 'medium')  // low=$0.011 | medium=$0.042 | high=$0.167
+    form.append('quality', 'medium')            // low=$0.009 | medium=$0.034 | high=$0.133
+    form.append('input_fidelity', 'high')       // preserva composición y colores originales
 
     const res = await fetch('https://api.openai.com/v1/images/edits', {
         method: 'POST',
@@ -161,9 +162,9 @@ async function main() {
         if (archivos.length === 0) archivos = todosOgFiles.slice(0, 5)
     }
 
-    const costeEstimado = (archivos.length * 0.042).toFixed(2)
-    console.log(`\n🎨 GPT-4o imagen — refinando ${archivos.length} fotos`)
-    console.log(`   Coste estimado: ~$${costeEstimado} (medium quality $0.042/img)`)
+    const costeEstimado = (archivos.length * 0.034).toFixed(2)
+    console.log(`\n🎨 gpt-image-1.5 — refinando ${archivos.length} fotos`)
+    console.log(`   Coste estimado: ~$${costeEstimado} (gpt-image-1.5 medium $0.034/img)`)
     console.log(`   Salida: flux_img2img--*.webp\n`)
 
     let ok = 0, errores = 0
@@ -174,6 +175,13 @@ async function main() {
         const outputFilename = filename.replace('og_image--', 'flux_img2img--')
 
         console.log(`[${i + 1}/${archivos.length}] ${nombre}`)
+
+        // Saltar si ya existe la versión refinada
+        if (existsSync(join(SALIDA_DIR, outputFilename))) {
+            console.log(`   ⏭️  Ya refinada, saltando\n`)
+            ok++
+            continue
+        }
 
         try {
             const inputBuffer = readFileSync(join(SALIDA_DIR, filename))
@@ -198,7 +206,7 @@ async function main() {
     console.log(`═══════════════════════════`)
     console.log(`  ✅ Refinadas:  ${ok}`)
     console.log(`  ❌ Errores:    ${errores}`)
-    console.log(`  💰 Coste real: ~$${(ok * 0.042).toFixed(2)}`)
+    console.log(`  💰 Coste real: ~$${(ok * 0.034).toFixed(2)}`)
     console.log(`\n  ➡️  Siguiente: node scripts/subir-imagenes-aprobadas.mjs\n`)
 }
 

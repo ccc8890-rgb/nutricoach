@@ -118,3 +118,30 @@ Carlos quiere ver en la ficha de receta:
 | `node scripts/scrapear-imagenes-recetas.mjs --todas` | Scraping fotos reales |
 | `node scripts/subir-imagenes-aprobadas.mjs` | Subir mejores fotos a Supabase |
 | `node scripts/subir-imagenes-aprobadas.mjs --forzar` | Sobreescribir imágenes existentes |
+
+---
+
+## 🎯 Features pendientes — backlog
+
+### GoalRings — anillos de progreso diario (inspirado en Apple Watch)
+**Dónde:** vista de seguimiento diario del cliente (`app/portal-cliente/` o `app/dietas/[id]/seguimiento/`)
+**Concepto:** 4 anillos concéntricos SVG animados, uno por macro:
+- kcal (amarillo dorado) · prot (verde) · carbs (azul) · grasas (naranja)
+- `progress = consumido / objetivo` → rellena el arco
+- `< 100%` → color del macro
+- `= 100%` → anillo cerrado, pulso de animación
+- `> 100%` → exceso en rojo sobre el cierre del anillo
+**Base:** extender `components/MacroRing.tsx` o crear `components/GoalRings.tsx`
+**Input:** `{ objetivo: { kcal, prot, carbs, grasas }, consumido: { kcal, prot, carbs, grasas } }`
+**Prioridad:** alta — es el núcleo visual del seguimiento de dietas
+
+### Sub-app Recetario (PWA independiente)
+**Concepto:** versión standalone del recetario para compartir con clientes, amigos o vender
+**Distribución sugerida:** PWA primero (€0, días), App Store después si hay tracción ($99/año Apple)
+**Base técnica:** mismo Supabase, subdomain diferente, solo módulo recetas
+**Monetización posible:** pago único $2.99-4.99, o gratis como lead gen para coaching
+
+### Video en recetas (URL → thumbnail + link)
+**Concepto:** guardar url_origen ya existente + mostrar thumbnail con botón "Ver vídeo"
+**Coste:** €0 — no self-host, solo link al original
+**Extensión futura:** screenshots de pasos clave con ffmpeg + yt-dlp
