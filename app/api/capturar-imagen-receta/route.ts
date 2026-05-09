@@ -61,21 +61,27 @@ function buildAntiPlagiarismPrompt(nombre: string, categoria: string | null): st
 // ──────────────────────────────────────────────
 function captureImageWithAgentBrowser(sourceUrl: string): Buffer | null {
   try {
-    const tree = execSync(
-      `agent-browser accessibility ${JSON.stringify(sourceUrl)}`,
-      {
-        timeout: 30000,
-        encoding: 'utf8',
-        env: { ...process.env, PATH: `/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${process.env.PATH ?? ''}` },
-      }
+    const env = { ...process.env, PATH: `/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:${process.env.PATH ?? ''}` }
+
+    const result = execSync(
+      `agent-browser open ${JSON.stringify(sourceUrl)} && agent-browser eval "JSON.stringify(Array.from(document.querySelectorAll('img')).filter(img=>img.naturalWidth>100).sort((a,b)=>(b.naturalWidth*b.naturalHeight)-(a.naturalWidth*a.naturalHeight)).slice(0,10).map(img=>img.src))"`,
+      { timeout: 35000, encoding: 'utf8', env }
     )
 
-    // Extract image URLs from accessibility tree
-    const imgRegex = /https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp)(?:\?[^\s"'<>]*)?/gi
-    const urls = [...new Set([...(tree.matchAll(imgRegex) as any)].map((m: any) => m[0]))]
+    // Extract image URLs from eval result
+    let urls: string[] = []
+    try {
+      const match = result.match(/\[[\s\S]*?\]/)
+      if (match) urls = (JSON.parse(match[0]) as string[]).filter(u => typeof u === 'string' && u.startsWith('http'))
+    } catch { /* fallback regex */ }
 
-    // Download the largest image (most likely the recipe photo)
-    for (const imgUrl of urls.slice(0, 15)) {
+    if (urls.length === 0) {
+      const imgRegex = /https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp)(?:\?[^\s"'<>]*)?/gi
+      urls = [...new Set([...(result.matchAll(imgRegex) as any)].map((m: any) => m[0]))]
+    }
+
+    // Download the largest image
+    for (const imgUrl of urls.slice(0, 10)) {
       try {
         const response = execSync(
           `curl -sL --max-time 10 --max-filesize 5000000 "${imgUrl}" -o -`,
@@ -196,12 +202,12 @@ export async function POST(req: NextRequest) {
     if (imageBuffer) {
       const path = `${receta_id}/auto_${Date.now()}.webp`
       const { error: uploadError } = await supabaseService.storage
-        .from('recetas-imagenes')
+        .from('recetas')
         .upload(path, imageBuffer, { contentType: 'image/webp', upsert: true })
 
       if (!uploadError) {
         const { data: { publicUrl } } = supabaseService.storage
-          .from('recetas-imagenes')
+          .from('recetas')
           .getPublicUrl(path)
         finalImageUrl = publicUrl
       }

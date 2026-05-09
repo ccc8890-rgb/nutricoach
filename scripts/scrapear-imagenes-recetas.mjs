@@ -105,27 +105,68 @@ function guardarBuffer(buffer, nombre, metodo) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  MÉTODO 0: agent-browser (imagen real de la fuente)
+//  MÉTODO 0a: yt-dlp thumbnail (Instagram, TikTok)
+//  Funciona sin login — extrae thumbnail real del post
 // ═══════════════════════════════════════════════════════
 
-async function capturarConAgentBrowser(url) {
+const YTDLP_PATH = '/Users/carloscasanova/Desktop/Carlos/CLAUDE/Content-Radar/.venv/bin/yt-dlp'
+
+async function extraerConYtDlp(url) {
+    if (!url || !url.startsWith('http')) return null
     try {
         const { execSync } = await import('child_process')
-        const tree = execSync(
-            `agent-browser accessibility ${JSON.stringify(url)}`,
-            {
-                timeout: 30000,
-                encoding: 'utf8',
-                env: { ...process.env, PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + (process.env.PATH || '') }
-            }
+        // Usar cookies de Chrome para saltarse rate limits de Instagram
+        const thumbnailUrl = execSync(
+            `${YTDLP_PATH} --get-thumbnail --no-warnings --no-playlist --cookies-from-browser chrome ${JSON.stringify(url)} 2>/dev/null`,
+            { timeout: 30000, encoding: 'utf8' }
+        ).trim()
+
+        if (!thumbnailUrl || !thumbnailUrl.startsWith('http')) return null
+
+        const buf = await descargarBuffer(thumbnailUrl, 20000)
+        if (buf && buf.length > 10000) {
+            return { buffer: buf, url: thumbnailUrl, fuente: 'og_image' }
+        }
+        return null
+    } catch {
+        return null
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  MÉTODO 0b: og:image via curl (webs genéricas)
+//  Para URLs que no son Instagram ni TikTok
+// ═══════════════════════════════════════════════════════
+
+const UA_POOL = [
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+    'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/124.0.6367.88 Mobile/15E148 Safari/604.1',
+]
+let uaIdx = 0
+
+async function extraerOgImage(url) {
+    if (!url || !url.startsWith('http')) return null
+    try {
+        const { execSync } = await import('child_process')
+        const ua = UA_POOL[uaIdx % UA_POOL.length]
+        uaIdx++
+
+        const html = execSync(
+            `curl -sL --max-time 15 -A ${JSON.stringify(ua)} ${JSON.stringify(url)}`,
+            { timeout: 20000, encoding: 'utf8', maxBuffer: 5 * 1024 * 1024 }
         )
-        const imgRegex = /https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp)(?:\?[^\s"'<>]*)?/gi
-        const urls = [...new Set([...tree.matchAll(imgRegex)].map(m => m[0]))]
-        for (const imgUrl of urls.slice(0, 15)) {
-            const buf = await descargarBuffer(imgUrl)
-            if (buf && buf.length > 15000) {
-                return { buffer: buf, url: imgUrl, fuente: 'agent_browser' }
-            }
+
+        const match = html.match(/og:image[^>]*content=["']([^"']+)["']/) ||
+                      html.match(/content=["']([^"']+)["'][^>]*og:image/)
+        if (!match) return null
+
+        const imgUrl = match[1].replace(/&amp;/g, '&')
+        if (!imgUrl.startsWith('http')) return null
+
+        const buf = await descargarBuffer(imgUrl, 20000)
+        if (buf && buf.length > 10000) {
+            return { buffer: buf, url: imgUrl, fuente: 'og_image' }
         }
         return null
     } catch {
@@ -687,7 +728,7 @@ function seleccionarMejores() {
         if (cards.length === 0) return;
 
         // Orden de preferencia
-        const orden = ['agent_browser', 'playwright', 'bing_images', 'oembed', 'flux_img2img', 'flux_txt2img'];
+        const orden = ['flux_img2img', 'og_image', 'agent_browser', 'playwright', 'bing_images', 'oembed', 'flux_txt2img'];
 
         for (const metodo of orden) {
             const card = Array.from(cards).find(c => c.dataset.metodo === metodo && !c.classList.contains('error'));
@@ -822,7 +863,7 @@ async function rebuildPanel() {
             estado_actual: r.imagen_url ? 'tiene imagen' : 'sin imagen',
             ingredientes: (ings || []).map(i => i.nombre_libre).filter(Boolean),
             imagenes: grupos[nombreSlug].sort((a, b) => {
-                const orden = ['playwright', 'bing_images', 'oembed', 'flux_img2img', 'flux_txt2img']
+                const orden = ['flux_img2img', 'og_image', 'agent_browser', 'playwright', 'bing_images', 'oembed', 'flux_txt2img']
                 return orden.indexOf(a.metodo) - orden.indexOf(b.metodo)
             }),
         })
@@ -962,23 +1003,45 @@ Uso:
 
             console.log(`  [${idxGlobal + 1}/${total}] ${r.nombre}`)
 
-            // Método 0: agent-browser (imagen real de la fuente)
+            // Método 0: extraer imagen REAL de la fuente
             let imagenBase = null
-            if (r.url_origen) {
-                console.log(`     📸 agent-browser capturando imagen real...`)
-                imagenBase = await capturarConAgentBrowser(r.url_origen)
-                if (imagenBase) {
-                    console.log(`     ✅ Imagen real capturada (${(imagenBase.buffer.length / 1024).toFixed(0)}KB)`)
-                    const filename = guardarBuffer(imagenBase.buffer, r.nombre, 'agent_browser')
-                    resultados.push({ id: r.id, nombre: r.nombre, categoria: r.categoria, url_origen: r.url_origen, estado_actual: r.imagen_url ? 'tiene imagen' : 'sin imagen', ingredientes: r.ingredientes, imagenes: [{ metodo: 'agent_browser', path: filename, tamano: imagenBase.buffer.length }] })
-                    // Saltar generación Flux si ya tenemos imagen real
-                    continue
+            if (r.url_origen && r.url_origen.startsWith('http')) {
+                const esInstagram = r.url_origen.includes('instagram.com')
+                const esTikTok = r.url_origen.includes('tiktok.com')
+
+                if (esInstagram || esTikTok) {
+                    console.log(`     📸 yt-dlp thumbnail (${esInstagram ? 'Instagram' : 'TikTok'})...`)
+                    imagenBase = await extraerConYtDlp(r.url_origen)
+                    if (imagenBase) {
+                        console.log(`     ✅ Thumbnail real (${(imagenBase.buffer.length / 1024).toFixed(0)}KB)`)
+                        // Pausa entre requests Instagram para no saturar
+                        await new Promise(r => setTimeout(r, 3000))
+                    }
+                } else {
+                    console.log(`     📸 Extrayendo og:image...`)
+                    imagenBase = await extraerOgImage(r.url_origen)
+                    if (imagenBase) {
+                        console.log(`     ✅ Imagen og obtenida (${(imagenBase.buffer.length / 1024).toFixed(0)}KB)`)
+                    }
+                }
+
+                if (!imagenBase) {
+                    await new Promise(r => setTimeout(r, 2000))
                 }
             }
 
-            // Flux Pro con prompts caseros (sin Playwright, sin Bing)
+            // Si tenemos imagen real → guardar directamente (es la foto auténtica de la receta)
+            // La conversión a WebP + CDN propio ya la diferencia suficientemente
+            if (imagenBase) {
+                const filename = guardarBuffer(imagenBase.buffer, r.nombre, 'og_image')
+                resultados.push({ id: r.id, nombre: r.nombre, categoria: r.categoria, url_origen: r.url_origen, estado_actual: r.imagen_url ? 'tiene imagen' : 'sin imagen', ingredientes: r.ingredientes, imagenes: [{ metodo: 'og_image', path: filename, tamano: imagenBase.buffer.length }] })
+                console.log(`     ✅ Imagen original guardada (${(imagenBase.buffer.length / 1024).toFixed(0)}KB)`)
+                continue
+            }
+
+            // Fallback: txt2img casero si no hay imagen real
             const prompt = construirPromptCasero(r.nombre, r.categoria, r.ingredientes)
-            console.log(`     🎨 Flux Pro generando...`)
+            console.log(`     🎨 Flux txt2img (sin imagen real disponible)...`)
 
             const fluxUrl = await generarConFlux(prompt, null, 0.2)
             if (fluxUrl) {
