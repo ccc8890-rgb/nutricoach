@@ -38,6 +38,8 @@ export interface ProductoRaw {
     marca?: string
     cantidad?: string
     disponible: boolean
+    /** Categoría/subcategoría de producto (para filtrar comestibles vs no comestibles) */
+    categoria?: string
 }
 
 /** Resultado de una petición de scraping */

@@ -599,3 +599,81 @@ export interface ProyeccionAhorro {
   supermercado_comparado: string
   diferencia_porcentual: number
 }
+
+// ── Enriquecimiento Nutricional IA ────────────────────────────
+
+export interface CategoriaIA {
+  id: string
+  nombre: string
+  descripcion: string | null
+  grupo_alimenticio: string
+  prioridad: number
+}
+
+export interface AlimentoPendienteEnriquecer {
+  id: string
+  nombre: string
+  categoria: string | null
+  calorias: number | null
+  proteinas: number | null
+  carbohidratos: number | null
+  grasas: number | null
+  estado_enriquecimiento: 'pendiente' | 'procesando' | 'completado' | 'error' | null
+  error_ia: string | null
+  ultimo_intento: string | null
+  num_precios: number
+  supermercados: string | null
+}
+
+export interface ResultadoEnriquecimiento {
+  alimento_id: string
+  nombre: string
+  categoria_ia: string
+  calorias: number
+  proteinas: number
+  carbohidratos: number
+  grasas: number
+  fibra: number | null
+  confianza: 'alta' | 'media' | 'baja'
+  explicacion?: string
+}
+
+export interface EscandalloReceta {
+  id: string
+  receta_id: string
+  supermercado_id: string
+  coste_total: number
+  coste_por_porcion: number | null
+  desglose: EscandalloItem[]
+  fecha_calculo: string
+}
+
+export interface EscandalloItem {
+  ingrediente: string
+  cantidad_gramos: number
+  precio_por_kg: number
+  coste: number
+}
+
+export interface EscandalloCliente {
+  cliente_id: string
+  cliente_nombre: string
+  plan_id: string
+  plan_nombre: string
+  supermercado_id: string
+  supermercado_nombre: string
+  coste_semanal: number
+  coste_por_porcion: number | null
+  coste_mensual_estimado: number
+  coste_anual_estimado: number
+  fecha_calculo: string
+}
+
+export interface StatsEnriquecimiento {
+  total_pendientes: number
+  total_completados: number
+  total_errores: number
+  total_alimentos_en_db: number
+  supermercados_con_precios: number
+  productos_con_precio: number
+}

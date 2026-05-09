@@ -96,9 +96,17 @@ export async function crearAlimentoSiNoExiste(
     const nombreLimpio = limpiarNombre(nombre)
     if (!nombreLimpio || nombreLimpio.length < 2) return null
 
+    // La tabla alimentos tiene NOT NULL en calorias, proteinas, carbohidratos, grasas
     const { data, error } = await supabase
         .from('alimentos')
-        .insert({ nombre: nombreLimpio, categoria: categoria || 'Otros' })
+        .insert({
+            nombre: nombreLimpio,
+            categoria: categoria || 'Supermercado',
+            calorias: 0,
+            proteinas: 0,
+            carbohidratos: 0,
+            grasas: 0,
+        })
         .select('id')
         .single()
 
@@ -107,5 +115,6 @@ export async function crearAlimentoSiNoExiste(
         return null
     }
 
+    console.log(`[Normalizador] Alimento creado: "${nombreLimpio}" (${data.id})`)
     return data.id
 }
