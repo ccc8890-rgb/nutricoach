@@ -1,4 +1,4 @@
-s# Proyecto: NutriCoach (Human Lab)
+# Proyecto: NutriCoach (Human Lab)
 
 ## Comandos y Scripts Importantes
 - **Ejecutar en desarrollo:** `npm run dev` (dentro de `nutricoach/`)
@@ -9,92 +9,112 @@ s# Proyecto: NutriCoach (Human Lab)
 
 ---
 
-## 📸 Sistema de Imágenes — Flujo completo (08-05-2026)
+## 📸 Sistema de Imágenes — Flujo completo (verificado 08-05-2026)
 
 ### Filosofía
-Las imágenes NO deben parecer generadas por IA ni copiadas de otra web.
-El objetivo es que parezcan fotos tomadas por Carlos: luz natural, cocina mediterránea,
-cámara mirrorless personal (Sony A6700), imperfecciones naturales, variedad entre recetas.
+**Queremos la foto REAL de la receta original**, no IA generativa.
+Carlos publica recetas de Instagram/TikTok. La foto real del post es la mejor imagen posible — es auténtica, coincide con la receta y parece hecha por un humano. La IA solo es fallback cuando no hay URL fuente.
 
-**Lo que NO se quiere:** estilo editorial Ottolenghi, Hasselblad, studio lighting, professional cookbook.
-**Lo que SÍ se quiere:** foto casual de blog personal, luz de ventana, mesa de casa, plato simple, honest.
+**Lo que NO se quiere:** imágenes IA que parezcan bonitas pero no coincidan con la receta.
+**Lo que SÍ se quiere:** la foto real del post de Instagram/TikTok donde Carlos vio la receta.
 
-### Flujo automático (al scrape de una receta nueva)
+### Cómo funciona el script bulk
 
-```
-Usuario pega URL en /recetas/nueva
-  → /api/scrape-receta extrae la receta (JSON-LD o DeepSeek)
-  → Si el JSON-LD ya trae imagen → se usa directamente
-  → Si NO hay imagen → fire-and-forget a /api/capturar-imagen-receta (background, no bloquea)
-       ↓
-/api/capturar-imagen-receta:
-  1. agent-browser accessibility <url_origen>
-     → lee el árbol de accesibilidad de la página fuente
-     → extrae URLs de imágenes (.jpg .png .webp) del árbol
-     → descarga la más grande (>15KB) — la foto REAL de la receta
-  2. Si hay imagen real + REPLICATE_API_KEY configurada:
-     → Flux Pro img2img con strength=0.2 (solo cambia el 20%)
-     → Prompt: "casual home food photo, Sony mirrorless, Mediterranean afternoon light..."
-     → seed aleatorio → cada receta tiene resultado diferente
-  3. Sube a Supabase Storage bucket 'recetas-imagenes' → receta_id/auto_timestamp.webp
-  4. UPDATE recetas SET imagen_url = <url_publica> WHERE id = receta_id
-```
+**Archivo:** `scripts/scrapear-imagenes-recetas.mjs`
 
-### Script bulk — para rellenar recetas existentes
+Para cada receta, intenta en orden:
+
+1. **Instagram / TikTok** → `yt-dlp --cookies-from-browser chrome` extrae el thumbnail real del post sin descargar el vídeo. Funciona siempre que Carlos esté logueado en Chrome.
+2. **Otras URLs web** → `curl` con user-agent móvil extrae `og:image` del HTML.
+3. **Fallback (sin URL)** → Flux Pro txt2img con prompt estilo casero. Requiere crédito en Replicate (~$0.05/imagen).
+
+Las imágenes se guardan en `salidas/revision-imagenes/` como `{metodo}--{nombre-receta}.webp`.
+
+### Comandos — flujo en dos pasos
 
 ```bash
-# Procesar solo recetas SIN imagen (modo por defecto)
-node scripts/scrapear-imagenes-recetas.mjs
+# Desde dentro de nutricoach/
 
-# Procesar TODAS las recetas aprobadas (sin borrar las que ya tienen imagen)
-node scripts/scrapear-imagenes-recetas.mjs --todas
+# PASO 1 — Generar imágenes localmente
+node scripts/scrapear-imagenes-recetas.mjs           # solo recetas SIN imagen
+node scripts/scrapear-imagenes-recetas.mjs --todas   # todas las recetas (sin borrar URLs)
+node scripts/scrapear-imagenes-recetas.mjs --reset   # borra imagen_url en BD y regenera todo
+node scripts/scrapear-imagenes-recetas.mjs --rebuild # solo reconstruye panel HTML desde imágenes en disco
 
-# BORRAR imagen_url de todas las recetas y regenerar desde cero
-node scripts/scrapear-imagenes-recetas.mjs --reset
-
-# Reconstruir panel HTML desde imágenes ya descargadas en disco
-node scripts/scrapear-imagenes-recetas.mjs --rebuild
+# PASO 2 — Subir a Supabase y actualizar imagen_url en BD
+node scripts/subir-imagenes-aprobadas.mjs            # sube la mejor imagen por receta
+node scripts/subir-imagenes-aprobadas.mjs --dry-run  # simula sin subir nada (para verificar)
 ```
 
-### Orden de métodos en el script bulk
+**Flujo típico para regenerar todas:**
+```bash
+node scripts/scrapear-imagenes-recetas.mjs --reset
+node scripts/subir-imagenes-aprobadas.mjs
+```
 
-| Prioridad | Método | Descripción |
-|-----------|--------|-------------|
-| 0 (primero) | `agent_browser` | Captura imagen REAL de la página fuente via agent-browser. Si la obtiene, salta Flux. |
-| 1 (fallback) | `flux_txt2img` | Genera desde cero con prompt casero si no hay imagen real. strength=0.2, seed random. |
-| — (legacy) | `playwright` / `bing_images` | Métodos anteriores, mantenidos como fallback manual en el panel. |
+### Prioridad de métodos (en subida, de mejor a peor)
 
-### Resultado del script
+| Prioridad | Método (nombre del fichero) | Qué es |
+|-----------|----------------------------|--------|
+| 1 (mejor) | `og_image` | Foto REAL del post de Instagram/TikTok/web vía yt-dlp o curl |
+| 2 | `flux_img2img` | Legado — img2img de Flux Pro. Produce artefactos con strength bajo, no usar |
+| 3 | `agent_browser` | Legado — agent-browser CDP. Más lento, reemplazado por yt-dlp |
+| 4 | `playwright` | Legado |
+| 5 | `bing_images` | Legado |
+| 6 (peor) | `flux_txt2img` | IA desde cero. Solo para recetas sin URL de fuente |
 
-Genera `salidas/revision-imagenes/revision.html` — panel HTML interactivo donde:
-- Se ven todas las imágenes candidatas por receta
-- Se aprueba la mejor con un clic
-- Botón "Auto-seleccionar mejores" usa el orden de prioridad de la tabla
-- Botón "Subir aprobadas" → llama `/api/subir-imagen-receta` y actualiza Supabase
+### ⚠️ Lecciones aprendidas (no repetir estos errores)
+
+**yt-dlp y Chrome cookies:**
+- Ruta de yt-dlp: `/Users/carloscasanova/Desktop/Carlos/CLAUDE/Content-Radar/.venv/bin/yt-dlp`
+- Usar siempre `--cookies-from-browser chrome` para Instagram (sin esto, rate limit en pocas llamadas)
+- Safari da error de permisos: `Operation not permitted` — usar Chrome
+- El comando correcto: `yt-dlp --get-thumbnail --no-warnings --no-playlist --cookies-from-browser chrome "URL"`
+
+**Flux img2img con strength muy bajo (≤0.1):**
+- Con strength=0.07 o 0.1, Flux Pro genera artefactos graves (imágenes duplicadas, colages)
+- Abandonado — la foto real directa (og_image) es mejor que cualquier img2img
+
+**agent-browser:**
+- El comando correcto es `agent-browser open <url> && agent-browser eval "..."` (NO `agent-browser accessibility`)
+- Reemplazado por yt-dlp para Instagram/TikTok, que es más rápido y fiable
+
+**Replicate / Flux txt2img:**
+- Coste: ~$0.05 por imagen
+- 133 recetas sin URL = ~$6.65 → asegurarse de tener crédito antes de lanzar batch completo
+- Si el crédito se agota, las recetas sin URL quedan sin imagen (no bloquea las de Instagram)
+- Recargar en: replicate.com → billing
+
+**Panel HTML (revision.html):**
+- Solo visual. Al abrirse con `file://`, el navegador bloquea `fetch()` a archivos locales
+- No se puede subir desde el panel — siempre usar `subir-imagenes-aprobadas.mjs`
+
+**--reset flag:**
+- Solo borra `imagen_url` en Supabase donde `estado = 'aprobada'`
+- NO borra archivos en Storage ni los .webp locales en `salidas/revision-imagenes/`
+
+### Distribución de recetas (a 08-05-2026)
+
+| Tipo URL | Cantidad | Método usado |
+|----------|----------|-------------|
+| Instagram | 58 | yt-dlp + Chrome cookies |
+| TikTok | 2 | yt-dlp + Chrome cookies |
+| Web genérica | 1 | curl og:image |
+| Sin URL | ~72 | Flux txt2img (fallback) |
+| **Total** | **133** | |
 
 ### Variables de entorno necesarias
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=...        # .env.local
 SUPABASE_SERVICE_ROLE_KEY=...       # .env.local
-REPLICATE_API_KEY=...               # .env.local — opcional, sin él solo usa imagen real directa
+REPLICATE_API_KEY=...               # .env.local — solo para fallback Flux txt2img
 ```
-
-### Cuándo ejecutar --reset
-
-Ejecutar `--reset` cuando:
-- Las imágenes actuales parecen demasiado IA/estudio y se quieren rehacer
-- Se cambió el prompt de estilo y se quiere aplicar a todas
-- Hay imágenes copiadas de otras webs y se quiere sustituir por versión propia
-
-El `--reset` solo limpia `imagen_url` en Supabase (pone NULL). No borra archivos de Storage.
-Después de `--reset`, el script procesa todas las recetas y genera el panel de revisión.
 
 ### Bucket de Storage
 
-Bucket: `recetas-imagenes` (público, debe crearse en Supabase si no existe)
+Bucket: `recetas` (público)
 Path: `{receta_id}/auto_{timestamp}.webp`
-Para crear el bucket: Supabase Dashboard → Storage → New bucket → "recetas-imagenes" → Public.
 
 ## Estado Actual (08-05-2026 — Sesión 6)
 - **0 errores TypeScript** ✅ — build verificado con `npx next build`
