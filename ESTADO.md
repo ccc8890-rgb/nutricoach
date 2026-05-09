@@ -6,7 +6,76 @@
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase activa:** Sistema de imágenes + perfilamiento de recetas con IA
+**Fase activa:** Módulo de escandallo + lista de la compra — construcción completada, pendiente pruebas en UI
+
+---
+
+## ✅ COMPLETADO HOY (09-05-2026) — Sesión 7
+
+### 🧹 Limpieza de BD — no comestibles Mercadona
+- **156 no-comestibles eliminados** de la tabla `alimentos` (champús, bastoncillos, cremas, artículos bebé, productos limpieza, etc.)
+- Script de auditoría reutilizable: `scripts/auditar-limpiar-mercadona.mjs`
+  - Modo solo lectura: `node scripts/auditar-limpiar-mercadona.mjs`
+  - Modo borrado: `node scripts/auditar-limpiar-mercadona.mjs --delete`
+  - Modo exportar: `node scripts/auditar-limpiar-mercadona.mjs --export`
+- BD resultante: **688 alimentos con macros** ✅ + **67 sin macros** (pendiente DeepSeek)
+- Exportados a `salidas/2026-05-09_no-comestibles-mercadona.json` y `salidas/2026-05-09_comestibles-sin-macros-mercadona.json`
+
+### 💰 Módulo de escandallo + lista de la compra (NUEVO)
+
+#### API routes creadas
+| Ruta | Función |
+|------|---------|
+| `GET /api/precios/escandallo/receta?id=[id]` | Coste desglosado de una receta por ingrediente con comparativa entre supermercados |
+| `GET /api/compra?recetas=...&periodo=semanal` | Genera lista de la compra agrupada por supermercado con costes |
+
+#### Componentes creados
+| Archivo | Función |
+|---------|---------|
+| `components/EscandalloReceta.tsx` | Tab de coste en detalle de receta — comparativa supermercados + precio expandible por ingrediente |
+| `app/compra/page.tsx` | Página lista de la compra: selecciona recetas/cliente + período + super → genera lista con costes |
+
+#### Integraciones
+- Tab "Coste de la receta" añadido al final de cada página `/recetas/[id]`
+- Enlace "Lista de la compra" añadido al sidebar
+- `EscandalloReceta` ya estaba en commit anterior; hoy se integró en la receta
+
+---
+
+## ⚠️ CONFLICTOS DE MERGE DETECTADOS
+
+No se ha hecho merge automático porque los siguientes archivos aparecen en múltiples ramas:
+
+| Archivo | main | feature/ui-estetica | feature/modulos |
+|---------|------|---------------------|-----------------|
+| `CLAUDE.md` | ✅ | ✅ | ✅ |
+| `app/api/scrape-receta/route.ts` | — | ✅ | ✅ |
+| `app/api/capturar-imagen-receta/route.ts` | ✅ | ✅ | — |
+
+**Acción necesaria mañana:** Resolver manualmente o hacer merge interactivo. Empezar por `feature/ui-estetica → main` (solo 4 archivos).
+
+---
+
+## 🔜 PENDIENTE MAÑANA
+
+1. **Probar en UI** el escandallo de receta (`/recetas/[id]` → sección "Coste")
+2. **Probar** la lista de la compra (`/compra`) — seleccionar recetas, generar, verificar costes
+3. **Enriquecer 67 alimentos sin macros**: `node scripts/enriquecer-alimentos.mjs --limite=70`
+4. **Merge de ramas** con cuidado: resolver conflictos en CLAUDE.md y scrape-receta route
+5. Scrapers de otros supermercados (Carrefour, Lidl, Consum) para comparativa real de precios
+6. Backfill de recetas: `npx tsx scripts/backfill-recetas.ts`
+
+---
+
+## 🔐 AUDITORÍA DE SEGURIDAD (09-05-2026)
+| Check | Estado |
+|-------|--------|
+| Nuevos endpoints auth-protected | ✅ — `/api/precios/escandallo/receta` y `/api/compra` verifican `auth.getUser()` |
+| Sin claves en código | ✅ |
+| Service role solo en server-side | ✅ — `createServiceSupabase()` solo en API routes |
+| Página `/compra` sin datos sensibles | ✅ — solo agrega cantidades y costes |
+
+---
 
 **Servidor local:** `http://localhost:3000`
 **Login coach:** `ccc8890@gmail.com` / `Coach2026!`
