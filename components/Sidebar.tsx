@@ -30,6 +30,7 @@ import {
   Store,
   Bot,
   ShoppingCart,
+  Clock,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -54,6 +55,7 @@ const NUTRICION_SUBITEMS = [
   { href: '/dietas', label: 'Dietas activas', icon: Apple },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Sandwich },
   { href: '/recetas', label: 'Recetario', icon: BookOpen },
+  { href: '/recetas/cola', label: 'Pendientes', icon: Clock },
   { href: '/precios', label: 'Precios', icon: Store },
   { href: '/precios/scraping', label: 'Scraping', icon: Bot },
   { href: '/precios/enriquecer', label: 'Enriquecer IA', icon: Sparkles },
@@ -68,9 +70,18 @@ export default function Sidebar() {
   const { noLeidas } = useNotificaciones()
   const { theme, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [recetasPendientes, setRecetasPendientes] = useState(0)
 
   // Cerrar mobile al navegar
   useEffect(() => { setMobileOpen(false) }, [pathname])
+
+  useEffect(() => {
+    supabase
+      .from('recetas')
+      .select('id', { count: 'exact', head: true })
+      .eq('estado', 'en_revision')
+      .then(({ count }) => { if (count) setRecetasPendientes(count) })
+  }, [])
 
   const nutricionActiva = NUTRICION_SUBITEMS.some(
     s => pathname === s.href || pathname.startsWith(s.href + '/')
@@ -238,6 +249,7 @@ export default function Sidebar() {
             >
               {NUTRICION_SUBITEMS.map(({ href, label, icon: Icon }) => {
                 const isSubActive = pathname === href || pathname.startsWith(href + '/')
+                const showBadge = href === '/recetas/cola' && recetasPendientes > 0
                 return (
                   <Link
                     key={href}
@@ -253,7 +265,15 @@ export default function Sidebar() {
                     )}
                     <Icon size={16} strokeWidth={isSubActive ? 2.5 : 1.8} />
                     <span>{label}</span>
-                    {isSubActive && (
+                    {showBadge && (
+                      <span
+                        className="ml-auto text-[11px] font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
+                        style={{ background: 'var(--error)' }}
+                      >
+                        {recetasPendientes > 99 ? '99+' : recetasPendientes}
+                      </span>
+                    )}
+                    {isSubActive && !showBadge && (
                       <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--accent)' }} />
                     )}
                   </Link>
