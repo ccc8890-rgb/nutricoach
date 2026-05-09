@@ -491,6 +491,57 @@ export interface ResumenCostesPlan {
 }
 
 // ============================================================
+// Tipos para Productos vs Alimentos (multi-precio)
+// ============================================================
+
+/** Producto detallado de supermercado (con info del supermercado) */
+export interface ProductoSupermercadoDetalle {
+  id: string
+  supermercado_id: string
+  supermercado_nombre: string
+  supermercado_slug: string
+  supermercado_color?: string
+  alimento_id: string
+  alimento_nombre: string
+  nombre_original?: string          // nombre real del producto en tienda
+  marca?: string
+  precio_por_kg: number
+  precio_unidad?: number
+  url_producto?: string
+  preferido: boolean
+  fecha_precio: string
+}
+
+/** Una opción dentro del escandallo (alimento + producto seleccionado + alternativas) */
+export interface OpcionEscandallo {
+  alimento_id: string
+  alimento_nombre: string
+  categoria: string
+  cantidad_gramos: number
+  producto_seleccionado: {
+    id: string
+    nombre_original?: string
+    supermercado_nombre: string
+    precio_por_kg: number
+  }
+  coste_euros: number
+  alternativas: {
+    id: string
+    supermercado_nombre: string
+    precio_por_kg: number
+    es_preferido: boolean
+  }[]
+}
+
+/** Resultado completo del cálculo de escandallo con multi-precio */
+export interface EscandalloPlan {
+  precio_total: number
+  supermercado_base?: string        // supermercado del preferido mayoritario
+  alimentos: OpcionEscandallo[]
+  ahorro_potencial: number          // lo que se ahorraría yendo al más barato
+}
+
+// ============================================================
 // Tipos para Scraping Automático de Precios (Fase 1)
 // ============================================================
 
@@ -678,4 +729,66 @@ export interface StatsEnriquecimiento {
   total_alimentos_en_db: number
   supermercados_con_precios: number
   productos_con_precio: number
+}
+
+// ============================================================
+// Tipos para Lista de la Compra Semanal con Precios
+// ============================================================
+
+/** Precio de un alimento en un supermercado concreto */
+export interface PrecioOpcion {
+  supermercado_id: string
+  supermercado_nombre: string
+  supermercado_slug: string
+  supermercado_color?: string
+  precio_por_kg: number
+  coste_euros: number      // precio_por_kg * (cantidad_gramos / 1000)
+  url_producto?: string
+  es_mas_barato: boolean
+}
+
+/** Un ingrediente de la lista semanal con sus opciones de precio */
+export interface IngredienteSemanal {
+  alimento_id: string
+  alimento_nombre: string
+  categoria: string
+  es_generico: boolean
+  cantidad_gramos_total: number   // suma de todas las recetas de la semana
+  recetas_origen: string[]        // nombres de comidas que lo incluyen
+  precios: PrecioOpcion[]         // vacío si no hay precios en ningún super
+  seleccion: SeleccionListaCompra | null  // null si no ha seleccionado aún
+}
+
+/** Selección guardada de un cliente para un ingrediente */
+export interface SeleccionListaCompra {
+  id?: string
+  cliente_id: string
+  plan_id: string
+  alimento_id: string
+  supermercado_id: string | null
+  supermercado_nombre?: string
+  producto_nombre?: string
+  precio_por_kg?: number
+  url_producto?: string
+  semana_inicio: string           // formato YYYY-MM-DD (lunes)
+  seleccionado_por: 'coach' | 'cliente'
+}
+
+/** Resumen por supermercado para el bloque final de la lista */
+export interface ResumenSupermercado {
+  supermercado_id: string
+  supermercado_nombre: string
+  supermercado_color?: string
+  ingredientes: string[]          // nombres de los alimentos asignados
+  coste_total: number
+}
+
+/** Respuesta completa de GET /api/lista-compra/semanal */
+export interface ListaCompraSemanal {
+  plan_id: string
+  semana_inicio: string
+  ingredientes: IngredienteSemanal[]
+  resumen_por_supermercado: ResumenSupermercado[]
+  coste_total: number
+  coste_total_mas_caro: number    // si compraras todo en el super más caro
 }
