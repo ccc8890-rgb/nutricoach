@@ -161,6 +161,24 @@ export default function DetalleRecetaPage() {
     return null
   })()
 
+  const pesoTotal = ingredientes.reduce((s, i) => s + (i.cantidad_gramos ?? 0), 0)
+  const pesoPorPorcion = pesoTotal > 0 ? Math.round(pesoTotal / (receta.porciones ?? 1)) : null
+
+  const macrosPor100g = (() => {
+    if (pesoTotal <= 0 || !macrosPorPorcion) return null
+    const porciones = receta.porciones ?? 1
+    const totalKcal = macrosPorPorcion.kcal * porciones
+    const totalProt = macrosPorPorcion.proteinas * porciones
+    const totalCarbs = macrosPorPorcion.carbohidratos * porciones
+    const totalGrasa = macrosPorPorcion.grasas * porciones
+    return {
+      kcal: Math.round((totalKcal / pesoTotal) * 100),
+      proteinas: Math.round((totalProt / pesoTotal) * 100 * 10) / 10,
+      carbohidratos: Math.round((totalCarbs / pesoTotal) * 100 * 10) / 10,
+      grasas: Math.round((totalGrasa / pesoTotal) * 100 * 10) / 10,
+    }
+  })()
+
   const tiempoTotal = (receta.tiempo_prep_min ?? 0) + (receta.tiempo_coccion_min ?? 0)
   const intolerancias = receta.intolerancias ?? []
 
@@ -343,54 +361,88 @@ export default function DetalleRecetaPage() {
             </div>
 
             {/* Stats detalle */}
-            <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
-              {tiempoTotal > 0 && (
-                <div className="flex flex-col items-center sm:items-start">
-                  <div className="flex items-center gap-1.5 text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
-                    <Clock size={13} /> Tiempo total
+            <div className="flex-1 flex flex-col gap-3 w-full">
+
+              {/* Fila 1 — Tiempo y porciones */}
+              <div className="flex flex-wrap gap-4">
+                {tiempoTotal > 0 && (
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5 text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>
+                      <Clock size={12} /> Tiempo
+                    </div>
+                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{tiempoTotal} min</span>
                   </div>
-                  <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{tiempoTotal} min</span>
-                </div>
-              )}
-              {receta.porciones && (
-                <div className="flex flex-col items-center sm:items-start">
-                  <div className="flex items-center gap-1.5 text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
-                    <Users size={13} /> Porciones
+                )}
+                {receta.porciones && (
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5 text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>
+                      <Users size={12} /> Porciones
+                    </div>
+                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>
+                      {receta.porciones}{receta.descripcion_porcion ? ` · ${receta.descripcion_porcion}` : ''}
+                    </span>
+                    {pesoPorPorcion && (
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>~{pesoPorPorcion}g / porción</span>
+                    )}
                   </div>
-                  <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>
-                    {receta.porciones} {receta.descripcion_porcion ? `· ${receta.descripcion_porcion}` : ''}
-                  </span>
-                </div>
-              )}
+                )}
+              </div>
+
+              {/* Fila 2 — Macros por porción en una sola fila */}
               {macrosPorPorcion && (
-                <>
-                  <div className="flex flex-col items-center sm:items-start">
-                    <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Proteína / porción</span>
-                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--macro-protein)' }}>
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
+                    <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>kcal</span>
+                    <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-calories)' }}>
+                      {Math.round(macrosPorPorcion.kcal)}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
+                    <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>prot</span>
+                    <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-protein)' }}>
                       {Math.round(macrosPorPorcion.proteinas)}g
                     </span>
                   </div>
-                  <div className="flex flex-col items-center sm:items-start">
-                    <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Carbos / porción</span>
-                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--macro-carbs)' }}>
+                  <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
+                    <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>carbs</span>
+                    <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-carbs)' }}>
                       {Math.round(macrosPorPorcion.carbohidratos)}g
                     </span>
                   </div>
-                  <div className="flex flex-col items-center sm:items-start">
-                    <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Grasas / porción</span>
-                    <span className="text-lg font-bold tabular-nums" style={{ color: 'var(--macro-fat)' }}>
+                  <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
+                    <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>grasas</span>
+                    <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-fat)' }}>
                       {Math.round(macrosPorPorcion.grasas)}g
                     </span>
                   </div>
-                </>
-              )}
-              {r.url_origen && (
-                <div className="flex items-center sm:col-span-4 mt-1">
-                  <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs hover:underline" style={{ color: 'var(--info)' }}>
-                    <ExternalLink size={12} /> Fuente original
-                  </a>
                 </div>
+              )}
+
+              {/* Fila 3 — Por 100g */}
+              {macrosPor100g && (
+                <div className="flex gap-3 flex-wrap">
+                  <span className="text-xs self-center" style={{ color: 'var(--text-muted)' }}>/ 100g</span>
+                  <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="font-semibold" style={{ color: 'var(--macro-calories)' }}>{macrosPor100g.kcal}</span> kcal
+                  </span>
+                  <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="font-semibold" style={{ color: 'var(--macro-protein)' }}>{macrosPor100g.proteinas}g</span> P
+                  </span>
+                  <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="font-semibold" style={{ color: 'var(--macro-carbs)' }}>{macrosPor100g.carbohidratos}g</span> C
+                  </span>
+                  <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="font-semibold" style={{ color: 'var(--macro-fat)' }}>{macrosPor100g.grasas}g</span> G
+                  </span>
+                </div>
+              )}
+
+              {/* Fuente */}
+              {r.url_origen && (
+                <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs hover:underline w-fit" style={{ color: 'var(--info)' }}>
+                  <ExternalLink size={12} /> Fuente original
+                </a>
               )}
             </div>
           </div>

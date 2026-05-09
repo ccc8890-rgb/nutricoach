@@ -45,11 +45,11 @@
   --glass-border: rgba(44, 44, 46, 0.6);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 
-  /* ── Macronutrientes (Apple System Colors) ── */
-  --macro-protein: #FF453A;
-  --macro-carbs: #A1A1A6;
-  --macro-fat: #007AFF;
-  --macro-calories: #FF9F0A;
+  /* ── Macronutrientes (pastel) ── */
+  --macro-protein: #52B788;
+  --macro-carbs: #74B9E0;
+  --macro-fat: #F4A261;
+  --macro-calories: #E8C547;
 
   /* ── Estados (Apple System Colors) ── */
   --success: #30D158;
@@ -116,11 +116,11 @@
   --glass-border: rgba(209, 209, 214, 0.6);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
 
-  /* ── Macronutrientes ── */
-  --macro-protein: #FF3B30;
-  --macro-carbs: #8E8E93;
-  --macro-fat: #007AFF;
-  --macro-calories: #FF9500;
+  /* ── Macronutrientes (pastel) ── */
+  --macro-protein: #2D9E6B;
+  --macro-carbs: #4A9FCC;
+  --macro-fat: #E07C3A;
+  --macro-calories: #B8960E;
 
   /* ── Estados ── */
   --success: #34C759;
