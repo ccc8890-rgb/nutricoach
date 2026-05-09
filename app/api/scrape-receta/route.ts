@@ -788,7 +788,11 @@ export async function POST(req: NextRequest) {
     } else {
       const fetchResponse = await fetch(url, {
         signal: AbortSignal.timeout(15000),
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; NutriCoachBot/1.0)' },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        },
       })
       html = await fetchResponse.text()
     }
@@ -848,6 +852,34 @@ export async function POST(req: NextRequest) {
         if (extracted) break
       } catch {
         // ignore invalid JSON-LD blocks
+      }
+    }
+
+    // ── Strategy A.5: enriquecer con IA si JSON-LD incompleto ──
+    // Muchos blogs tienen JSON-LD con nombre pero instrucciones vacías o
+    // ingredientes sin cantidades. En ese caso llamamos a Gemini para completar
+    // y mergeamos conservando los campos estructurales del JSON-LD (tiempo, porciones…)
+    if (extracted?.nombre && fuenteTipo === 'web') {
+      const sinInstrucciones = !extracted.instrucciones || extracted.instrucciones.trim().length < 30
+      const sinCantidades = (extracted.ingredientes || []).every((i: any) => i.cantidad === null)
+      if (sinInstrucciones || sinCantidades) {
+        try {
+          const enriched = await callGeminiExtraction(html)
+          extracted = {
+            ...enriched,
+            // Preservar campos estructurales del JSON-LD si los tiene
+            nombre: extracted.nombre || enriched.nombre,
+            porciones: extracted.porciones ?? enriched.porciones,
+            tiempo_prep_min: extracted.tiempo_prep_min ?? enriched.tiempo_prep_min,
+            tiempo_coccion_min: extracted.tiempo_coccion_min ?? enriched.tiempo_coccion_min,
+            imagen_url: extracted.imagen_url || enriched.imagen_url,
+            categoria: extracted.categoria || enriched.categoria,
+            tipo_coccion: extracted.tipo_coccion || enriched.tipo_coccion,
+            autor_original: extracted.autor_original || enriched.autor_original,
+          }
+        } catch {
+          // Si falla el enriquecimiento, continuar con lo que tenemos del JSON-LD
+        }
       }
     }
 
