@@ -7,7 +7,7 @@ s# Proyecto: NutriCoach (Human Lab)
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 
-## Estado Actual (08-05-2026 — Sesión 6)
+## Estado Actual (09-05-2026 — Sesión 7)
 - **0 errores TypeScript** ✅ — build verificado con `npx next build`
 - **0 `any` en states** ✅ — todos los `useState<any>` reemplazados por interfaces concretas
 - **0 `useParams()` sin generic** ✅ — todas las 7 páginas usan `useParams<{ id: string }>()`
@@ -18,6 +18,10 @@ s# Proyecto: NutriCoach (Human Lab)
 - **Knowledge base:** 48 fichas (18 + 30 estudios científicos con DOI)
 - **Base de datos:** Schema v2 recetas ✅, micronutrientes en 267 alimentos ✅
 - **Onboarding autónomo de clientes:** ✅ — tabla `invitaciones` + flujo completo (ver abajo)
+- **Enriquecimiento nutricional con DeepSeek completado** ✅ — 801/1026 alimentos con macros (78.1%)
+- **Scraping Mercadona completado** ✅ — 4.342 productos comestibles extraídos, 1.026 alimentos activos en BD
+- **Migración SQL de enriquecimiento ejecutada** ✅ — 3 tablas, 2 views, 2 funciones, 25 categorías seed
+- **Bug corregido:** `updated_at` no existe en `alimentos` → UPDATE fallaba silenciosamente (los primeros 4 pases no guardaron datos)
 
 ## 🆕 Onboarding autónomo (06-05-2026)
 
@@ -53,6 +57,37 @@ s# Proyecto: NutriCoach (Human Lab)
 - ⏳ Email de bienvenida automático con link al portal
 
 **⚠️ Contraseña coach actualizada:** `Coach2026!` (la anterior expiró)
+
+## 🆕 Enriquecimiento nutricional con DeepSeek (09-05-2026)
+
+### Estado final
+- **Total alimentos en BD:** 1.026 (se eliminaron 27 no comestibles + los 53 originales quedaron enriquecidos)
+- **Con macros completos (>0 kcal):** 801 (78.1%)
+- **Sin macros (0 kcal):** 225 — mayoría son nutricionalmente correctos (carnes con 0 carbohidratos, aceites con 0 proteínas, bebidas alcohólicas)
+- **Cola de enriquecimiento:** 277 completados, **0 pendientes** ✅
+
+### Migración SQL ejecutada
+Archivo: [`supabase_enriquecimiento_nutricional.sql`](nutricoach-modulos/supabase_enriquecimiento_nutricional.sql)
+- 1 tabla: `alimentos_enriquecimiento_cola` (id, alimento_id, estado, resultado_json, created_at, updated_at)
+- 1 tabla: `categorias_ia` (25 categorías nutricionales predefinidas)
+- 1 vista: `alimentos_pendientes_enriquecer` — alimentos donde ANY macro = 0 o NULL
+- 1 vista: `escandallo_reciente` — últimos 100 alimentos enriquecidos con stats
+- 2 funciones RPC:
+  - `añadir_a_cola_enriquecimiento()` — inserta alimentos sin macros en cola
+  - `actualizar_alimento_con_ia()` — actualiza alimento + marca completado en cola
+
+### Bug crítico corregido
+La función `actualizar_alimento_con_ia()` original incluía `updated_at = now()` en el UPDATE de `alimentos`, pero la tabla `alimentos` NO tiene columna `updated_at` (solo `created_at` y `micros_actualizados_en`). Esto causaba que el UPDATE fallara silenciosamente (0 filas afectadas) mientras el registro en `alimentos_enriquecimiento_cola` se marcaba como `completado`. Los primeros 4 pases (~1.000 llamadas a DeepSeek) no guardaron ningún dato. Se corrigió eliminando `updated_at` del UPDATE.
+
+### Script de enriquecimiento
+Archivo: [`scripts/enriquecer-alimentos.mjs`](nutricoach-modulos/scripts/enriquecer-alimentos.mjs)
+- Usa `@ai-sdk/deepseek` + `generateText()` de Vercel AI SDK v6
+- Procesa en lotes de 25 alimentos, con 3 reintentos y backoff exponencial
+- Prompt basado en tabla BEDCA española con 25 categorías nutricionales
+- Uso: `node scripts/enriquecer-alimentos.mjs --limite=N`
+
+### No comestibles eliminados (27 productos)
+Cosmética facial/corporal (sérums, tónicos, cremas reductoras), productos de limpieza (sosa cáustica, spray desinfectante, trampas), accesorios (vaso mediano, velas), snacks de mascotas, etc.
 
 ## 🧠 Lecciones aprendidas (07-05-2026 — Auditoría de bugs)
 

@@ -23,6 +23,8 @@ import {
   BrainCircuit,
   FlaskConical,
   Sparkles,
+  Scan,
+  Receipt,
   Menu,
   X,
   Store,
@@ -53,6 +55,9 @@ const NUTRICION_SUBITEMS = [
   { href: '/recetas', label: 'Recetario', icon: BookOpen },
   { href: '/precios', label: 'Precios', icon: Store },
   { href: '/precios/scraping', label: 'Scraping', icon: Bot },
+  { href: '/precios/enriquecer', label: 'Enriquecer IA', icon: Sparkles },
+  { href: '/precios/browser-agent', label: 'Browser Agent', icon: Scan },
+  { href: '/precios/escandallo', label: 'Escandallo', icon: Receipt },
 ]
 
 export default function Sidebar() {
