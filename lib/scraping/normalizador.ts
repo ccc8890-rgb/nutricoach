@@ -59,11 +59,12 @@ export async function buscarAlimento(
         return { alimento_id: exacto.id, confianza: 'exacta' }
     }
 
-    // 2. Intentar contains
+    // 2. Intentar contains (búsqueda bidireccional: que el nombre del alimento contenga
+    //    el nombre buscado, o viceversa)
     const { data: contains } = await supabase
         .from('alimentos')
         .select('id, nombre')
-        .or(`nombre.ilike.%${nombreLimpio}%,${nombreLimpio}.ilike.%nombre%`)
+        .or(`nombre.ilike.%${nombreLimpio}%,nombre.ilike.${nombreLimpio}%`)
         .limit(1)
         .maybeSingle()
 

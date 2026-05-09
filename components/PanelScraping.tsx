@@ -143,8 +143,6 @@ export default function PanelScraping() {
         return supermercados.find(s => s.id === id)?.color || '#16A34A'
     }
 
-    const scrapersDisponibles = ['mercadona']
-
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -228,7 +226,7 @@ export default function PanelScraping() {
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {supermercados.map(sm => {
-                            const tieneScraper = scrapersDisponibles.includes(sm.slug)
+                            const tieneScraper = sm.tiene_scraper === true
                             return (
                                 <div
                                     key={sm.id}
