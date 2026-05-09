@@ -826,7 +826,7 @@ export default function EditarDietaPage() {
         {/* ─── Lista de la Compra ─── */}
         <div className="mt-4">
           <ErrorBoundary>
-            <ListaCompra comidas={comidas} nombrePlan={plan?.nombre} />
+            <ListaCompra planId={id} clienteId={plan?.cliente_id ?? ''} nombrePlan={plan?.nombre} rol="coach" />
           </ErrorBoundary>
         </div>
       </div>
