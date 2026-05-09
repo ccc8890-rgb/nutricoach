@@ -95,20 +95,39 @@ export async function scrapearSupermercado(
             }
 
             // Guardar en productos_supermercado (solo si tenemos alimento_id)
+            // NOTA: Ahora se permite múltiples productos por (supermercado_id, alimento_id).
+            // El UNIQUE es por (supermercado_id, url_producto). Si el mismo URL ya existe,
+            // se actualiza el precio. Si es un URL nuevo, se inserta como nuevo producto.
             if (alimentoId) {
-                const { error: upsertError } = await supabase
-                    .from('productos_supermercado')
-                    .upsert({
-                        supermercado_id: supermercadoId,
-                        alimento_id: alimentoId,
-                        precio_por_kg: raw.precio_por_kg || raw.precio_actual,
-                        precio_unidad: raw.precio_actual !== (raw.precio_por_kg || raw.precio_actual) ? raw.precio_actual : null,
-                        unidad: raw.unidad || 'kg',
-                        url_producto: raw.url_producto,
-                        fecha_precio: new Date().toISOString().split('T')[0],
-                    }, {
-                        onConflict: 'supermercado_id, alimento_id',
-                    })
+                const nuevoProducto = {
+                    supermercado_id: supermercadoId,
+                    alimento_id: alimentoId,
+                    nombre_original: raw.nombre,
+                    marca: raw.marca || null,
+                    precio_por_kg: raw.precio_por_kg || raw.precio_actual,
+                    precio_unidad: raw.precio_actual !== (raw.precio_por_kg || raw.precio_actual) ? raw.precio_actual : null,
+                    unidad: raw.unidad || 'kg',
+                    url_producto: raw.url_producto || null,
+                    fecha_precio: new Date().toISOString().split('T')[0],
+                }
+
+                // Si tiene URL, usar upsert por URL; si no, insert directo
+                let upsertError
+                if (raw.url_producto) {
+                    const { error } = await supabase
+                        .from('productos_supermercado')
+                        .upsert(nuevoProducto, {
+                            onConflict: 'supermercado_id, url_producto',
+                            ignoreDuplicates: false,
+                        })
+                    upsertError = error
+                } else {
+                    // Sin URL → insert (puede crear duplicados, pero es raro)
+                    const { error } = await supabase
+                        .from('productos_supermercado')
+                        .insert(nuevoProducto)
+                    upsertError = error
+                }
 
                 if (upsertError) {
                     errores.push(`Error al guardar ${nombreNormalizado}: ${upsertError.message}`)
