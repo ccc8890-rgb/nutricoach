@@ -26,7 +26,7 @@ Para cada receta, intenta en orden:
 
 1. **Instagram / TikTok** → `yt-dlp --cookies-from-browser chrome` extrae el thumbnail real del post sin descargar el vídeo. Funciona siempre que Carlos esté logueado en Chrome.
 2. **Otras URLs web** → `curl` con user-agent móvil extrae `og:image` del HTML.
-3. **Fallback (sin URL)** → Flux Pro txt2img con prompt estilo casero. Requiere crédito en Replicate (~$0.05/imagen).
+3. **Fallback (sin URL)** → GPT-4o image generation vía OpenAI API. (**Replicate sin crédito desde 09-05-2026 — no usar hasta recargar.**)
 
 Las imágenes se guardan en `salidas/revision-imagenes/` como `{metodo}--{nombre-receta}.webp`.
 
@@ -57,11 +57,16 @@ node scripts/subir-imagenes-aprobadas.mjs
 | Prioridad | Método (nombre del fichero) | Qué es |
 |-----------|----------------------------|--------|
 | 1 (mejor) | `og_image` | Foto REAL del post de Instagram/TikTok/web vía yt-dlp o curl |
-| 2 | `flux_img2img` | Legado — img2img de Flux Pro. Produce artefactos con strength bajo, no usar |
-| 3 | `agent_browser` | Legado — agent-browser CDP. Más lento, reemplazado por yt-dlp |
-| 4 | `playwright` | Legado |
-| 5 | `bing_images` | Legado |
-| 6 (peor) | `flux_txt2img` | IA desde cero. Solo para recetas sin URL de fuente |
+| 2 | `gpt4o_gen` | Fallback IA — GPT-4o image generation vía OpenAI API ($10 cargados 09-05-2026) |
+| 3 | `flux_img2img` | ❌ Legado — Replicate sin crédito desde 09-05-2026. No usar. |
+| 4 | `flux_txt2img` | ❌ Legado — Replicate sin crédito desde 09-05-2026. No usar. |
+| 5 | `agent_browser` | Legado — reemplazado por yt-dlp para IG/TikTok |
+| 6 | `playwright` | Legado — usar solo si agent-browser no puede |
+| 7 | `bing_images` | Legado |
+
+**APIs de imágenes (09-05-2026):**
+- ✅ **OpenAI** — $10 disponibles. Usar `gpt-4o` para generación/refinado.
+- ❌ **Replicate** — sin crédito. No proponer Flux hasta que Carlos confirme recarga.
 
 ### ⚠️ Lecciones aprendidas (no repetir estos errores)
 
