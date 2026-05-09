@@ -177,9 +177,9 @@ export async function scrapearMercadona(): Promise<{
                 console.warn(`[Mercadona] Subcategoría ${subId}: ${msg}`)
             }
 
-            // Progreso cada 10 subcategorías
-            if (i > 0 && i % 10 === 0) {
-                console.log(`[Mercadona] ${i}/${subIds.length} subcategorías — ${productos.length} productos hasta ahora`)
+            // Progreso cada 5 subcategorías
+            if (i > 0 && i % 5 === 0) {
+                console.log(`[Mercadona] ${i}/${subIds.length} subcategorías — ${productos.length} productos`)
             }
         }
 
