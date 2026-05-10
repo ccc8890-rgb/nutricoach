@@ -274,6 +274,7 @@ Añadir `url_imagen` tanto en el INSERT como en el UPDATE params.
 
 ## FALLO #12 — Cloudflare: fetch recibe HTML en vez de JSON (no es error del scraper)
 
+
 ### Síntoma
 Carrefour, Día devolvían HTML/403 en vez de JSON. No era que la API hubiera cambiado — era Cloudflare bloqueando el scraper HTTP.
 
@@ -293,6 +294,86 @@ Migrar los 3 scrapers (Carrefour, Día, Eroski) + Lidl a Playwright con `chromiu
 | [`lib/scraping/supermercados/dia.ts`](lib/scraping/supermercados/dia.ts) | Rewrite completo a Playwright |
 | [`lib/scraping/supermercados/eroski.ts`](lib/scraping/supermercados/eroski.ts) | Rewrite completo a Playwright |
 | [`lib/scraping/supermercados/lidl.ts`](lib/scraping/supermercados/lidl.ts) | Refactor a Playwright + nuevos selectores |
+
+---
+
+## FALLO #13 — Comando rm accidental: todos los ai_gen borrados
+
+### Síntoma
+Al ejecutar `find nutricoach/salidas/revision-imagenes/ -name "ai_gen--*.jpg" -exec ...` para borrar solo los archivos generados el 10 de mayo, se borraron **todos los 75 archivos** `ai_gen--*.jpg`, incluyendo 18 que el usuario había aprobado el día anterior (9 de mayo).
+
+### Causa raíz
+El comando usaba `stat -f "%Sm"` para obtener la fecha de modificación y comparaba el día del mes con `date "+%d"`. Dado que hoy (10 de mayo) es el mismo día del mes que ayer (9 de mayo) - ambos son "10" en el formato `%d` - la comparación `[ "$day" = "$today" ]` evaluaba como true para TODOS los archivos, no solo los del 10 de mayo.
+
+```bash
+# Comando erróneo:
+stat -f "%Sm" -t "%d" archivo.jpg  # devuelve "10" tanto para 09-May como 10-May
+```
+
+### Solución aplicada
+Ninguna — los archivos ya estaban borrados. Se regeneraron 16 nuevos con el image edit.
+
+### Cómo evitar en el futuro
+- Usar `%Y` (año completo) + `%j` (día del año) en vez de `%d` (día del mes) para evitar ambigüedad entre meses
+- Mejor aún: comparar timestamps Unix con `stat -f "%m"` contra una fecha límite en segundos
+- O usar `find -newer` con un archivo temporal creado con `touch -t`
+- **Siempre** probar el filtro con `echo` antes de ejecutar `rm`
+- Tener un backup o al menos confirmar la lista de archivos a borrar con `-exec echo {} \;` primero
+
+---
+
+## FALLO #14 — OpenAI billing hard limit no propaga cambios
+
+### Síntoma
+OpenAI devolvía `billing_hard_limit_reached` (`status: 429` con código `billing_hard_limit_reached`) en todas las llamadas a `POST /v1/images/edits`. Aunque el usuario aumentó manualmente el límite en el dashboard de OpenAI de ~$10 → $30 → $100, el error persistió durante toda la sesión (8 intentos en ~2 horas).
+
+### Diagnóstico
+El `billing_hard_limit_reached` es un límite separado del `monthly spending limit`. OpenAI tiene dos mecanismos de limitación:
+
+1. **Monthly spending limit**: controlable desde el dashboard → afecta a cuentas de pago por uso
+2. **Billing hard limit**: es un límite duro (hard cap) que OpenAI impone automáticamente cuando se detecta un pico de gasto inusual o cuando se cambia el spending limit recientemente
+
+El mensaje de error exacto es:
+```json
+{
+  "error": {
+    "message": "Billing hard limit has been reached",
+    "type": "insufficient_quota",
+    "code": "billing_hard_limit_reached"
+  }
+}
+```
+
+### Solución aplicada
+No se pudo resolver durante la sesión. Se intentaron 8 ejecuciones separadas por ~15 minutos cada una después de que el usuario confirmara haber aumentado el límite en el dashboard. Ninguna funcionó.
+
+### Recomendación
+- El hard limit suele propagarse en 5-30 minutos, pero en algunos casos puede tardar varias horas
+- Verificar en `https://platform.openai.com/account/billing/limits` que tanto el "Monthly spending limit" como el "Hard limit" estén actualizados
+- Si el problema persiste tras >1 hora, contactar con soporte de OpenAI
+- Alternativa: usar otro proveedor (Replicate, Stability AI) para las imágenes restantes
+- El script `regenerar-flux-masivo.mjs` ya implementa reintentos con backoff exponencial y continuará automáticamente donde se quedó (skip existentes)
+
+---
+
+## FALLO #15 — Directorio de salida incorrecto para subir-imagenes-aprobadas.mjs
+
+### Síntoma
+Después de generar imágenes con `regenerar-flux-masivo.mjs`, el script `subir-imagenes-aprobadas.mjs` no encontraba los archivos para subir a Supabase.
+
+### Causa raíz
+`regenerar-flux-masivo.mjs` escribe las imágenes en `nutricoach/salidas/revision-imagenes/`, pero `subir-imagenes-aprobadas.mjs` lee de `nutricoach-modulos/salidas/revision-imagenes/`. Son dos directorios diferentes dentro del mismo repositorio (worktrees).
+
+### Solución aplicada
+Copiar manualmente los archivos entre directorios:
+```bash
+cp -n nutricoach/salidas/revision-imagenes/ai_gen--*.jpg nutricoach-modulos/salidas/revision-imagenes/
+```
+
+### Cómo evitar en el futuro
+- Unificar la constante `SALIDA_DIR` en ambos scripts para que apunten al mismo directorio
+- O modificar `subir-imagenes-aprobadas.mjs` para que también busque en `nutricoach/salidas/revision-imagenes/`
+- Mejor: que ambos scripts usen una ruta relativa a la raíz del proyecto, no al worktree
 
 ---
 
