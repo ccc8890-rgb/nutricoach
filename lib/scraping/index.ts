@@ -1,8 +1,17 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { normalizarProducto, buscarAlimento, crearAlimentoSiNoExiste } from './normalizador'
 import { scrapearMercadona } from './supermercados/mercadona'
+import { scrapearCarrefour } from './supermercados/carrefour'
+import { scrapearDia } from './supermercados/dia'
+import { scrapearAlcampo } from './supermercados/alcampo'
+import { scrapearConsum } from './supermercados/consum'
+import { scrapearLidl } from './supermercados/lidl'
+import { scrapearEroski } from './supermercados/eroski'
+import type { ResultadoScraping } from '@/types'
+import type { ProductoRaw } from './types'
 
-// Palabras clave que identifican productos NO comestibles para humanos
+// ── Filtro de productos no comestibles ──────────────────────────
+
 const NO_COMESTIBLE_KEYWORDS = [
     // Higiene personal
     'champú', 'champu', 'acondicionador', 'mascarilla capilar', 'sérum capilar',
@@ -39,14 +48,6 @@ function esNoComestible(nombre: string): boolean {
     const lower = nombre.toLowerCase()
     return NO_COMESTIBLE_KEYWORDS.some(kw => lower.includes(kw))
 }
-import { scrapearCarrefour } from './supermercados/carrefour'
-import { scrapearDia } from './supermercados/dia'
-import { scrapearAlcampo } from './supermercados/alcampo'
-import { scrapearConsum } from './supermercados/consum'
-import { scrapearLidl } from './supermercados/lidl'
-import { scrapearEroski } from './supermercados/eroski'
-import type { ResultadoScraping } from '@/types'
-import type { ProductoRaw } from './types'
 
 /** Mapa de slug → función scraper */
 const SCRAPERS: Record<string, () => Promise<{
@@ -146,48 +147,32 @@ export async function scrapearSupermercado(
                 const fechaHoy = new Date().toISOString().split('T')[0]
 
                 let upsertError
-                if (raw.url_producto) {
-                    // Partial unique index (url_producto IS NOT NULL) no funciona con
-                    // .upsert() del cliente JS — usar check→update/insert manual
-                    const { data: existente } = await supabase
-                        .from('productos_supermercado')
-                        .select('id')
-                        .eq('supermercado_id', supermercadoId)
-                        .eq('url_producto', raw.url_producto)
-                        .maybeSingle()
 
-                    if (existente) {
-                        const { error } = await supabase
-                            .from('productos_supermercado')
-                            .update({
-                                alimento_id: alimentoId,
-                                nombre_original: raw.nombre,
-                                marca: raw.marca || null,
-                                precio_por_kg: precioKg,
-                                precio_unidad: precioUnidad,
-                                unidad: raw.unidad || 'kg',
-                                fecha_precio: fechaHoy,
-                            })
-                            .eq('id', existente.id)
-                        upsertError = error
-                    } else {
-                        const { error } = await supabase
-                            .from('productos_supermercado')
-                            .insert({
-                                supermercado_id: supermercadoId,
-                                alimento_id: alimentoId,
-                                nombre_original: raw.nombre,
-                                marca: raw.marca || null,
-                                precio_por_kg: precioKg,
-                                precio_unidad: precioUnidad,
-                                unidad: raw.unidad || 'kg',
-                                url_producto: raw.url_producto,
-                                fecha_precio: fechaHoy,
-                            })
-                        upsertError = error
-                    }
+                // Upsert por (supermercado_id, nombre_original) — sin importar si tiene URL o no
+                const { data: existente } = await supabase
+                    .from('productos_supermercado')
+                    .select('id')
+                    .eq('supermercado_id', supermercadoId)
+                    .eq('nombre_original', raw.nombre)
+                    .maybeSingle()
+
+                if (existente) {
+                    const { error } = await supabase
+                        .from('productos_supermercado')
+                        .update({
+                            alimento_id: alimentoId,
+                            nombre_original: raw.nombre,
+                            marca: raw.marca || null,
+                            precio_por_kg: precioKg,
+                            precio_unidad: precioUnidad,
+                            unidad: raw.unidad || 'kg',
+                            url_producto: raw.url_producto || null,
+                            url_imagen: raw.imagen_url || null,
+                            fecha_precio: fechaHoy,
+                        })
+                        .eq('id', existente.id)
+                    upsertError = error
                 } else {
-                    // Sin URL → insert directo (sin deduplicación)
                     const { error } = await supabase
                         .from('productos_supermercado')
                         .insert({
@@ -198,7 +183,8 @@ export async function scrapearSupermercado(
                             precio_por_kg: precioKg,
                             precio_unidad: precioUnidad,
                             unidad: raw.unidad || 'kg',
-                            url_producto: null,
+                            url_producto: raw.url_producto || null,
+                            url_imagen: raw.imagen_url || null,
                             fecha_precio: fechaHoy,
                         })
                     upsertError = error

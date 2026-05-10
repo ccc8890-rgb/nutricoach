@@ -1,8 +1,13 @@
 /**
  * consum.ts — Scraper para Consum España
  *
- * Consum tiene API REST.
- * API base: https://tienda.consum.es/
+ * Consum migró a SPA Angular en 2025.
+ * API REST funcional descubierta en tienda.consum.es:
+ *   - Categorías: GET /api/rest/V1.0/shopping/category/menu
+ *   - Productos:  GET /api/rest/V1.0/catalog/product?categories={id}&limit=100&orderById=7
+ *   - Producto:   GET /api/rest/V1.0/catalog/product/code/{code}
+ *
+ * La API devuelve árbol completo de categorías con subcategorías.
  */
 
 import type { ScrapingConfig } from '../types'
@@ -16,34 +21,61 @@ export const configConsum: ScrapingConfig = {
     },
     metodo: 'api_http',
     url_base: 'https://tienda.consum.es',
-    categorias_endpoint: '/api/rest/v1/categories',
+    categorias_endpoint: '/api/rest/V1.0/shopping/category/menu',
     headers: {
         Accept: 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept-Language': 'es-ES,es;q=0.9',
     },
-    rate_limit_ms: 400,
+    rate_limit_ms: 300,
     timeout_ms: 15000,
 }
 
-/* ─── Interfaces ─── */
+/* ─── Interfaces de la API real ─── */
 
 interface ConsumCategory {
-    id: string
+    id: number
+    nombre: string
     name: string
+    iconUrl?: string
+    type: number
+    level: number
     subcategories?: ConsumCategory[]
 }
 
+interface ConsumProductResponse {
+    totalCount: number
+    totalRecipeCount: number
+    hasMore: boolean
+    products: ConsumProduct[]
+}
+
 interface ConsumProduct {
-    id: string
-    name: string
-    price: number
-    unitPrice?: number
-    referencePrice?: string
-    image: string
-    url: string
-    brand?: string
-    packaging?: string
-    available: boolean
+    id: number
+    productType: number
+    code: string
+    ean: string
+    type: string
+    productData: {
+        name: string
+        brand?: { id: string; name: string }
+        url: string
+        imageURL?: string
+        description?: string
+        availability?: string
+    }
+    priceData?: {
+        prices: {
+            id: string
+            value: {
+                centAmount: number
+                centUnitAmount?: number
+            }
+        }[]
+        unitPriceUnitType?: string
+        priceUnitType?: string
+    }
+    media?: { url: string; type: string }[]
 }
 
 /* ─── Fetch helper ─── */
@@ -51,7 +83,10 @@ interface ConsumProduct {
 async function fetchJSON<T>(url: string, timeoutMs: number): Promise<T> {
     const res = await fetch(url, {
         signal: AbortSignal.timeout(timeoutMs),
-        headers: configConsum.headers,
+        headers: {
+            ...configConsum.headers,
+            Accept: 'application/json',
+        },
     })
     if (!res.ok) {
         throw new Error(`Consum HTTP ${res.status} en ${url}`)
@@ -61,17 +96,55 @@ async function fetchJSON<T>(url: string, timeoutMs: number): Promise<T> {
 
 /* ─── Mapeo ─── */
 
-function mapearProducto(p: ConsumProduct): ProductoRaw {
+function mapearProducto(p: ConsumProduct, categoria?: string): ProductoRaw {
+    const d = p.productData || {}
+    const pd = p.priceData
+
+    // Extraer precio actual del priceData
+    // ⚠️ Los valores vienen en céntimos (centAmount, centUnitAmount).
+    //    Dividimos entre 100 para obtener precio en euros.
+    let precioActual = 0
+    let precioKg: number | undefined
+
+    if (pd?.prices?.length) {
+        const price = pd.prices.find(p => p.id === 'PRICE')
+        if (price?.value?.centAmount) {
+            precioActual = price.value.centAmount / 100
+        }
+        // unitPrice (precio por kg) a veces viene en centUnitAmount
+        const unitPrice = pd.prices.find(p => p.id === 'UNIT_PRICE' || p.id === 'PRICE')
+        if (unitPrice?.value?.centUnitAmount && unitPrice.value.centUnitAmount !== price?.value?.centAmount) {
+            precioKg = unitPrice.value.centUnitAmount / 100
+        }
+        // Si no hay unit price separado y tenemos unitPriceUnitType, usar precioActual como precioKg
+        if (!precioKg && pd.unitPriceUnitType) {
+            precioKg = precioActual
+        }
+    }
+
+    const url = d.url?.startsWith('http') ? d.url : undefined
+    const imagen = d.imageURL?.startsWith('http') ? d.imageURL : undefined
+    const marca = d.brand?.name || 'Consum'
+    const disponible = d.availability !== '0'
+
+    // Extraer cantidad de la descripción (ej: "Arroz Largo 1 Kg")
+    let cantidad = d.description || ''
+    // Si no hay descripción, intentar del unitPriceUnitType
+    if (!cantidad && pd?.unitPriceUnitType) {
+        cantidad = pd.unitPriceUnitType
+    }
+
     return {
-        nombre: p.name,
-        precio_actual: p.price,
-        precio_por_kg: p.unitPrice || (p.referencePrice ? parseFloat(p.referencePrice.replace(',', '.')) : undefined),
+        nombre: d.name || '',
+        precio_actual: precioActual,
+        precio_por_kg: precioKg,
         unidad: 'kg',
-        url_producto: p.url.startsWith('http') ? p.url : `https://tienda.consum.es${p.url}`,
-        imagen_url: p.image?.startsWith('http') ? p.image : undefined,
-        marca: p.brand || 'Consum',
-        cantidad: p.packaging,
-        disponible: p.available,
+        url_producto: url || '',
+        imagen_url: imagen,
+        marca,
+        cantidad,
+        disponible,
+        categoria,
     }
 }
 
@@ -87,38 +160,41 @@ export async function scrapearConsum(): Promise<{
     const productos: ProductoRaw[] = []
 
     try {
-        console.log('[Consum] Obteniendo categorías...')
+        console.log('[Consum] Obteniendo árbol de categorías...')
         const catsRaw = await fetchJSON<ConsumCategory[]>(
             `${configConsum.url_base}${configConsum.categorias_endpoint}`,
             configConsum.timeout_ms
         )
         const categorias = Array.isArray(catsRaw) ? catsRaw : []
+        console.log(`[Consum] ${categorias.length} categorías principales`)
 
-        const leafCats: { id: string; name: string }[] = []
-        const extractSubs = (cats: ConsumCategory[]) => {
+        // Extraer categorías hoja (sin subcategorías)
+        const leafCats: { id: number; name: string }[] = []
+        const extractLeaves = (cats: ConsumCategory[]) => {
             for (const c of cats) {
                 if (c.subcategories && c.subcategories.length > 0) {
-                    extractSubs(c.subcategories)
+                    extractLeaves(c.subcategories)
                 } else {
                     leafCats.push({ id: c.id, name: c.name })
                 }
             }
         }
-        extractSubs(categorias)
+        extractLeaves(categorias)
         console.log(`[Consum] ${leafCats.length} categorías hoja`)
 
+        // Procesar cada categoría hoja
         for (let i = 0; i < leafCats.length; i++) {
             const cat = leafCats[i]
             await new Promise(r => setTimeout(r, configConsum.rate_limit_ms))
 
             try {
-                const prods = await fetchJSON<ConsumProduct[]>(
-                    `${configConsum.url_base}/api/rest/v1/categories/${cat.id}/products?pageSize=100`,
+                const result = await fetchJSON<ConsumProductResponse>(
+                    `${configConsum.url_base}/api/rest/V1.0/catalog/product?limit=100&orderById=7&categories=${cat.id}`,
                     configConsum.timeout_ms
                 )
-                const prodsList = Array.isArray(prods) ? prods : []
-                for (const p of prodsList) {
-                    productos.push(mapearProducto(p))
+                const prods = result.products || []
+                for (const p of prods) {
+                    productos.push(mapearProducto(p, cat.name))
                 }
             } catch (err) {
                 const msg = err instanceof Error ? err.message : String(err)
@@ -126,7 +202,7 @@ export async function scrapearConsum(): Promise<{
             }
 
             if (i > 0 && i % 10 === 0) {
-                console.log(`[Consum] ${i}/${leafCats.length} — ${productos.length} productos`)
+                console.log(`[Consum] ${i}/${leafCats.length} categorías — ${productos.length} productos`)
             }
         }
 

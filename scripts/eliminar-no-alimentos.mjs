@@ -26,11 +26,13 @@ const NO_ALIMENTOS_KEYWORDS = [
   'corrector fluido', 'corrector mate', 'antiarrugas', 'reafirmante',
   'biberón', 'chupete', 'tetina', 'cepillo limpiabiberón',
   'desodorante', 'antitranspirante', 'agua facial',
-  'acondicionador', 'champú', 'champu', 'gel de ducha', 'gel de afeitar', 'espuma de afeitar',
+  'acondicionador', 'champú', 'champu', 'gel de ducha', 'gel de baño', 'gel de afeitar', 'espuma de afeitar',
   'loción corporal', 'aceite corporal', 'crema corporal', 'sorbete corporal', 'manteca corporal',
   'crema reductora', 'anticelulítico', 'tratamiento reductor', 'tratamiento para uñas',
   'laca de uñas', 'rizador de pestañas', 'máscara de pestañas', 'delineador de ojos', 'colorete',
-  'parches para ojos', 'jabón de manos', 'pasta de dientes',
+  'parches para ojos', 'parches faciales', 'tiras faciales',
+  'tónico facial', 'perlas faciales', 'sérum reductor', 'sérum reafirmante',
+  'jabón de manos', 'pasta de dientes',
   'tampones', 'compresas', 'preservativo', 'preservativos',
   // Accesorios / hogar
   'mascarillas quirúrgicas', 'guantes de látex', 'protector cama', 'protectores para los oídos', 'pulsera de citronela',
@@ -54,11 +56,27 @@ const KEEP_KEYWORDS = [
   'jabón con glicerina'
 ]
 
+async function fetchAllCalorias0() {
+  const todos = []
+  let from = 0
+  const pageSize = 1000
+  while (true) {
+    const { data, error } = await supabase
+      .from('alimentos')
+      .select('id, nombre')
+      .eq('calorias', 0)
+      .range(from, from + pageSize - 1)
+    if (error) return { data: null, error }
+    if (!data || data.length === 0) break
+    todos.push(...data)
+    if (data.length < pageSize) break
+    from += pageSize
+  }
+  return { data: todos, error: null }
+}
+
 async function main() {
-  const { data: alimentos, error: fetchError } = await supabase
-    .from('alimentos')
-    .select('id, nombre')
-    .eq('calorias', 0)
+  const { data: alimentos, error: fetchError } = await fetchAllCalorias0()
 
   if (fetchError) {
     console.error('Error fetch:', fetchError.message)
