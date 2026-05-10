@@ -169,6 +169,90 @@ function extractImageUrl(image: unknown): string | null {
 }
 
 // ──────────────────────────────────────────────
+// Helper: strip HTML to plain text for AI extraction
+// ──────────────────────────────────────────────
+function extractTextFromHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<nav[\s\S]*?<\/nav>/gi, ' ')
+    .replace(/<header[\s\S]*?<\/header>/gi, ' ')
+    .replace(/<footer[\s\S]*?<\/footer>/gi, ' ')
+    .replace(/<aside[\s\S]*?<\/aside>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+// ──────────────────────────────────────────────
+// Helper: parse raw ingredient string from JSON-LD
+// ──────────────────────────────────────────────
+const UNIDADES_CONOCIDAS = new Set([
+  'g', 'gr', 'gramos', 'kg', 'ml', 'l', 'litros',
+  'cucharada', 'cucharadas', 'cucharadita', 'cucharaditas',
+  'taza', 'tazas', 'lata', 'latas', 'puñado',
+  'diente', 'dientes', 'hoja', 'hojas', 'rama', 'ramas',
+  'rodaja', 'rodajas', 'loncha', 'lonchas', 'rebanada', 'rebanadas',
+  'unidad', 'unidades', 'sobre', 'sobres', 'brick',
+])
+
+function parseIngredienteRaw(raw: string): { nombre: string; cantidad: number | null; unidad: string | null } {
+  const str = raw.trim()
+  // Match: optional number, optional unit, optional "de/para/con", rest
+  const match = str.match(/^([\d.,]+(?:\/[\d]+)?|½|¼|¾)?\s*([a-záéíóúüñA-ZÁÉÍÓÚÜÑ]{1,20})?\s*(?:de\s+|para\s+|con\s+)?(.+)$/i)
+  if (!match) return { nombre: str, cantidad: null, unidad: null }
+
+  const [, cantStr, maybeUnit, rest] = match
+
+  let cantidad: number | null = null
+  if (cantStr) {
+    if (cantStr === '½') cantidad = 0.5
+    else if (cantStr === '¼') cantidad = 0.25
+    else if (cantStr === '¾') cantidad = 0.75
+    else if (cantStr.includes('/')) {
+      const [n, d] = cantStr.split('/')
+      cantidad = parseFloat(n) / parseFloat(d)
+    } else {
+      cantidad = parseFloat(cantStr.replace(',', '.'))
+    }
+    if (isNaN(cantidad as number)) cantidad = null
+  }
+
+  const unitLower = maybeUnit?.toLowerCase() ?? ''
+  const esUnidad = UNIDADES_CONOCIDAS.has(unitLower)
+
+  let nombre: string
+  let unidad: string | null
+
+  if (esUnidad) {
+    unidad = maybeUnit!
+    nombre = (rest ?? '').trim()
+  } else {
+    unidad = null
+    nombre = ((maybeUnit ?? '') + ' ' + (rest ?? '')).trim()
+  }
+
+  // Remove trailing descriptors
+  nombre = nombre
+    .replace(/\s+(grande|pequeño|pequeña|maduro|madura|fresco|fresca|crudo|cruda|picado|picada|cortado|cortada|troceado|troceada|al gusto|limpio|limpia)\b.*/i, '')
+    .trim()
+
+  return { nombre: nombre || str, cantidad, unidad }
+}
+
+// ──────────────────────────────────────────────
 // Helper: call Gemini Flash API
 // ──────────────────────────────────────────────
 async function callGeminiExtraction(html: string): Promise<any> {
@@ -177,7 +261,8 @@ async function callGeminiExtraction(html: string): Promise<any> {
     throw new Error('GEMINI_API_KEY not configured')
   }
 
-  const prompt = `Extrae la receta de este HTML y devuelve SOLO un JSON con esta estructura exacta. IMPORTANTE: Traduce TODO a español aunque el HTML esté en otro idioma.
+  const texto = extractTextFromHtml(html).substring(0, 15000)
+  const prompt = `Extrae la receta de este texto web y devuelve SOLO un JSON con esta estructura exacta. IMPORTANTE: Traduce TODO a español aunque el texto esté en otro idioma.
 {
   nombre: string,
   descripcion: string | null,
@@ -189,13 +274,13 @@ async function callGeminiExtraction(html: string): Promise<any> {
   tiempo_prep_min: number | null,
   tiempo_coccion_min: number | null,
   ingredientes: Array<{ nombre: string (el nombre CANÓNICO del alimento en español, SOLO el ingrediente base sin cantidades ni descriptores. Ej: "Aguacate" no "1 aguacate maduro"; "Harina de avena" no "1 taza de harina de avena"; "Pechuga de pollo" no "500g de pechugas de pollo"; "Arroz" no "arroz blanco cocido". Usa la primera letra mayúscula.), cantidad: number | null, unidad: string | null }>,
-  instrucciones: string | null (EN ESPAÑOL, cada paso en una línea separada empezando por "1. ", "2. ", etc. Ej: "1. Mezcla la harina con los huevos.\n2. Añade la leche y remueve.\n3. Hornea 20 minutos."),
+  instrucciones: string | null (EN ESPAÑOL, SOLO los pasos de preparación de la receta, cada paso en una línea separada empezando por "1. ", "2. ", etc. NO incluyas ningún otro texto de la página. Ej: "1. Mezcla la harina con los huevos.\n2. Añade la leche y remueve.\n3. Hornea 20 minutos."),
   consejos: string | null,
   imagen_url: string | null,
   autor_original: string | null
 }
 El campo descripcion_porcion describe qué es físicamente 1 porción. Ejemplos: "1 galleta", "2 tacos", "1 rebanada", "1 bol", "1 donut", "1 porción de tarta". Infierelo del nombre de la receta, el yield y las instrucciones. Si no está claro, pon null.
-HTML: ${html.substring(0, 15000)}`
+TEXTO WEB: ${texto}`
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`
   const response = await fetch(url, {
@@ -236,7 +321,8 @@ async function callDeepSeekExtraction(html: string): Promise<any> {
   const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY
   if (!DEEPSEEK_KEY) throw new Error('DEEPSEEK_API_KEY not configured')
 
-  const prompt = `Extrae la receta de este HTML y devuelve SOLO un JSON con esta estructura exacta. IMPORTANTE: Traduce TODO a español aunque el HTML esté en otro idioma.
+  const texto = extractTextFromHtml(html).substring(0, 15000)
+  const prompt = `Extrae la receta de este texto web y devuelve SOLO un JSON con esta estructura exacta. IMPORTANTE: Traduce TODO a español aunque el texto esté en otro idioma.
 {
   nombre: string,
   descripcion: string | null,
@@ -248,13 +334,13 @@ async function callDeepSeekExtraction(html: string): Promise<any> {
   tiempo_prep_min: number | null,
   tiempo_coccion_min: number | null,
   ingredientes: Array<{ nombre: string (el nombre CANÓNICO del alimento en español, SOLO el ingrediente base sin cantidades ni descriptores. Ej: "Aguacate" no "1 aguacate maduro"; "Harina de avena" no "1 taza de harina de avena"; "Pechuga de pollo" no "500g de pechugas de pollo"; "Arroz" no "arroz blanco cocido". Usa la primera letra mayúscula.), cantidad: number | null, unidad: string | null }>,
-  instrucciones: string | null (EN ESPAÑOL, cada paso en una línea separada empezando por "1. ", "2. ", etc. Ej: "1. Mezcla la harina con los huevos.\n2. Añade la leche y remueve.\n3. Hornea 20 minutos."),
+  instrucciones: string | null (EN ESPAÑOL, SOLO los pasos de preparación de la receta, cada paso en una línea separada empezando por "1. ", "2. ", etc. NO incluyas ningún otro texto de la página. Ej: "1. Mezcla la harina con los huevos.\n2. Añade la leche y remueve.\n3. Hornea 20 minutos."),
   consejos: string | null,
   imagen_url: string | null,
   autor_original: string | null
 }
 El campo descripcion_porcion describe qué es físicamente 1 porción. Ejemplos: "1 galleta", "2 tacos", "1 rebanada", "1 bol", "1 donut", "1 porción de tarta". Infierelo del nombre de la receta, el yield y las instrucciones. Si no está claro, pon null.
-HTML: ${html.substring(0, 15000)}`
+TEXTO WEB: ${texto}`
 
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
@@ -808,10 +894,19 @@ export async function POST(req: NextRequest) {
           if (item['@type'] === 'Recipe' && item.name) {
             // Build extracted object
             const instructions: string[] = []
-            if (Array.isArray(item.recipeInstructions)) {
+            if (typeof item.recipeInstructions === 'string') {
+              // Some sites store all steps as a single string
+              instructions.push(item.recipeInstructions)
+            } else if (Array.isArray(item.recipeInstructions)) {
               for (const step of item.recipeInstructions) {
                 if (typeof step === 'string') {
                   instructions.push(step)
+                } else if (step?.['@type'] === 'HowToSection' && Array.isArray(step.itemListElement)) {
+                  // Handle nested HowToSection
+                  for (const subStep of step.itemListElement) {
+                    if (subStep?.text) instructions.push(subStep.text)
+                    else if (subStep?.name) instructions.push(subStep.name)
+                  }
                 } else if (step?.text) {
                   instructions.push(step.text)
                 } else if (step?.name) {
@@ -834,11 +929,10 @@ export async function POST(req: NextRequest) {
               ...(!item.prepTime && !item.cookTime && item.totalTime
                 ? { tiempo_prep_min: parseISODurationToMinutes(item.totalTime) }
                 : {}),
-              ingredientes: (item.recipeIngredient || []).map((ing: string) => ({
-                nombre: ing,
-                cantidad: null,
-                unidad: null,
-              })),
+              ingredientes: (item.recipeIngredient || []).map((ing: string) => {
+                const parsed = parseIngredienteRaw(ing)
+                return { nombre: parsed.nombre, cantidad: parsed.cantidad, unidad: parsed.unidad }
+              }),
               instrucciones: instructions.length > 0
                 ? instructions.map((s, i) => `${i + 1}. ${s}`).join('\n')
                 : null,

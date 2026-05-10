@@ -7,119 +7,20 @@
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 
----
+## Estado Actual (10-05-2026 — Sesión 8)
 
-## 📸 Sistema de Imágenes — Flujo completo (verificado 08-05-2026)
+### Fixes sesión 8
+- ✅ **Scraper recetas** (`app/api/scrape-receta/route.ts`): HTML limpiado antes de mandar a Gemini/DeepSeek → instrucciones ya no traen "copia y pega" del artículo
+- ✅ **parseIngredienteRaw()**: ingredientes JSON-LD ("500g de arroz bomba") parseados a nombre+cantidad+unidad
+- ✅ **HowToSection** en JSON-LD: soportado para sitios con instrucciones en secciones anidadas
+- ✅ **esNoComestible()** en `lib/scraping/index.ts`: filtra higiene, limpieza, mascotas antes de guardar en BD
+- ✅ **Fix upsert precios**: partial unique index incompatible con cliente JS → reemplazado por check→update/insert
+- ✅ **Mercadona re-scrapeado** (en curso al cerrar sesión) — con fix de upsert activo
+- ✅ **BD limpia**: 0 no-comestibles, script `eliminar-no-alimentos.mjs` con keywords ampliadas
+- ✅ **Lista de la compra funcional**: ItemConPrecios con €/kg en fila colapsada, selección por supermercado
 
-### Filosofía
-**Queremos la foto REAL de la receta original**, no IA generativa.
-Carlos publica recetas de Instagram/TikTok. La foto real del post es la mejor imagen posible — es auténtica, coincide con la receta y parece hecha por un humano. La IA solo es fallback cuando no hay URL fuente.
-
-**Lo que NO se quiere:** imágenes IA que parezcan bonitas pero no coincidan con la receta.
-**Lo que SÍ se quiere:** la foto real del post de Instagram/TikTok donde Carlos vio la receta.
-
-### Cómo funciona el script bulk
-
-**Archivo:** `scripts/scrapear-imagenes-recetas.mjs`
-
-Para cada receta, intenta en orden:
-
-1. **Instagram / TikTok** → `yt-dlp --cookies-from-browser chrome` extrae el thumbnail real del post sin descargar el vídeo. Funciona siempre que Carlos esté logueado en Chrome.
-2. **Otras URLs web** → `curl` con user-agent móvil extrae `og:image` del HTML.
-3. **Fallback (sin URL)** → GPT-4o image generation vía OpenAI API. (**Replicate sin crédito desde 09-05-2026 — no usar hasta recargar.**)
-
-Las imágenes se guardan en `salidas/revision-imagenes/` como `{metodo}--{nombre-receta}.webp`.
-
-### Comandos — flujo en dos pasos
-
-```bash
-# Desde dentro de nutricoach/
-
-# PASO 1 — Generar imágenes localmente
-node scripts/scrapear-imagenes-recetas.mjs           # solo recetas SIN imagen
-node scripts/scrapear-imagenes-recetas.mjs --todas   # todas las recetas (sin borrar URLs)
-node scripts/scrapear-imagenes-recetas.mjs --reset   # borra imagen_url en BD y regenera todo
-node scripts/scrapear-imagenes-recetas.mjs --rebuild # solo reconstruye panel HTML desde imágenes en disco
-
-# PASO 2 — Subir a Supabase y actualizar imagen_url en BD
-node scripts/subir-imagenes-aprobadas.mjs            # sube la mejor imagen por receta
-node scripts/subir-imagenes-aprobadas.mjs --dry-run  # simula sin subir nada (para verificar)
-```
-
-**Flujo típico para regenerar todas:**
-```bash
-node scripts/scrapear-imagenes-recetas.mjs --reset
-node scripts/subir-imagenes-aprobadas.mjs
-```
-
-### Prioridad de métodos (en subida, de mejor a peor)
-
-| Prioridad | Método (nombre del fichero) | Qué es |
-|-----------|----------------------------|--------|
-| 1 (mejor) | `og_image` | Foto REAL del post de Instagram/TikTok/web vía yt-dlp o curl |
-| 2 | `gpt4o_gen` | Fallback IA — GPT-4o image generation vía OpenAI API ($10 cargados 09-05-2026) |
-| 3 | `flux_img2img` | ❌ Legado — Replicate sin crédito desde 09-05-2026. No usar. |
-| 4 | `flux_txt2img` | ❌ Legado — Replicate sin crédito desde 09-05-2026. No usar. |
-| 5 | `agent_browser` | Legado — reemplazado por yt-dlp para IG/TikTok |
-| 6 | `playwright` | Legado — usar solo si agent-browser no puede |
-| 7 | `bing_images` | Legado |
-
-**APIs de imágenes (09-05-2026):**
-- ✅ **OpenAI** — $10 disponibles. Usar `gpt-4o` para generación/refinado.
-- ❌ **Replicate** — sin crédito. No proponer Flux hasta que Carlos confirme recarga.
-
-### ⚠️ Lecciones aprendidas (no repetir estos errores)
-
-**yt-dlp y Chrome cookies:**
-- Ruta de yt-dlp: `/Users/carloscasanova/Desktop/Carlos/CLAUDE/Content-Radar/.venv/bin/yt-dlp`
-- Usar siempre `--cookies-from-browser chrome` para Instagram (sin esto, rate limit en pocas llamadas)
-- Safari da error de permisos: `Operation not permitted` — usar Chrome
-- El comando correcto: `yt-dlp --get-thumbnail --no-warnings --no-playlist --cookies-from-browser chrome "URL"`
-
-**Flux img2img con strength muy bajo (<=0.1):**
-- Con strength=0.07 o 0.1, Flux Pro genera artefactos graves (imágenes duplicadas, colages)
-- Abandonado — la foto real directa (og_image) es mejor que cualquier img2img
-
-**agent-browser:**
-- El comando correcto es `agent-browser open <url> && agent-browser eval "..."` (NO `agent-browser accessibility`)
-- Reemplazado por yt-dlp para Instagram/TikTok, que es más rápido y fiable
-
-**Replicate / Flux txt2img:**
-- Coste: ~$0.05 por imagen
-- 133 recetas sin URL = ~$6.65 → asegurarse de tener crédito antes de lanzar batch completo
-- Si el crédito se agota, las recetas sin URL quedan sin imagen (no bloquea las de Instagram)
-- Recargar en: replicate.com → billing
-
-**Panel HTML (revision.html):**
-- Solo visual. Al abrirse con `file://`, el navegador bloquea `fetch()` a archivos locales
-- No se puede subir desde el panel — siempre usar `subir-imagenes-aprobadas.mjs`
-
-**--reset flag:**
-- Solo borra `imagen_url` en Supabase donde `estado = 'aprobada'`
-- NO borra archivos en Storage ni los .webp locales en `salidas/revision-imagenes/`
-
-### Distribución de recetas (a 08-05-2026)
-
-| Tipo URL | Cantidad | Método usado |
-|----------|----------|-------------|
-| Instagram | 58 | yt-dlp + Chrome cookies |
-| TikTok | 2 | yt-dlp + Chrome cookies |
-| Web genérica | 1 | curl og:image |
-| Sin URL | ~72 | Flux txt2img (fallback) |
-| **Total** | **133** | |
-
-### Variables de entorno necesarias
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=...        # .env.local
-SUPABASE_SERVICE_ROLE_KEY=...       # .env.local
-REPLICATE_API_KEY=...               # .env.local — solo para fallback Flux txt2img
-```
-
-### Bucket de Storage
-
-Bucket: `recetas` (público)
-Path: `{receta_id}/auto_{timestamp}.webp`
+### Plan para próximos días (DeepSeek/Roo Code)
+Ver `docs/PLAN_DEEPSEEK_10-05-2026.md` — tareas ordenadas por prioridad con comandos exactos.
 
 ## Estado Actual (09-05-2026 — Sesión 7)
 - **0 errores TypeScript** ✅ — build verificado con `npx next build`

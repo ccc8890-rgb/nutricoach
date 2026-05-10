@@ -58,7 +58,7 @@ export default function ItemConPrecios({ ingrediente, onSeleccionar, guardando }
                                     {precioActivo.supermercado_nombre}
                                 </span>
                                 <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                                    {precioActivo.coste_euros.toFixed(2)} €
+                                    {precioActivo.precio_por_kg.toFixed(2)} €/kg · {precioActivo.coste_euros.toFixed(2)} €
                                 </span>
                                 {seleccion && (
                                     <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: '#f0fdf4', color: '#15803d' }}>
