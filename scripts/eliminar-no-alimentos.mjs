@@ -16,19 +16,35 @@ const supabase = createClient(
 )
 
 const NO_ALIMENTOS_KEYWORDS = [
+  // Limpieza hogar
   'limpieza', 'bayeta', 'fregona', 'escoba', 'cubo con ruedas', 'mopa', 'rasqueta', 'desatascador', 'desinfectante',
-  'maquillaje', 'corrector', 'deliplus', 'rimmel', 'polvo suelto', 'perlas faciales', 'serum',
   'lejía', 'cloro', 'alcohol 96', 'lavaparabrisas', 'bolsas basura', 'bolsas de basura', 'bolsas congelación',
+  'multiusos ph neutro', 'pastillas desinfectantes', 'recambio mopa', 'disuelve manchas', '70% alcohol',
+  'limpiagafas', 'cera multisuperficies', 'pastillas enciende',
+  // Higiene personal
+  'maquillaje', 'corrector', 'deliplus', 'rimmel', 'polvo suelto', 'perlas faciales', 'serum',
+  'corrector fluido', 'corrector mate', 'antiarrugas', 'reafirmante',
+  'biberón', 'chupete', 'tetina', 'cepillo limpiabiberón',
+  'desodorante', 'antitranspirante', 'agua facial',
+  'acondicionador', 'champú', 'champu', 'gel de ducha', 'gel de baño', 'gel de afeitar', 'espuma de afeitar',
+  'loción corporal', 'aceite corporal', 'crema corporal', 'sorbete corporal', 'manteca corporal',
+  'crema reductora', 'anticelulítico', 'tratamiento reductor', 'tratamiento para uñas',
+  'laca de uñas', 'rizador de pestañas', 'máscara de pestañas', 'delineador de ojos', 'colorete',
+  'parches para ojos', 'parches faciales', 'tiras faciales',
+  'tónico facial', 'perlas faciales', 'sérum reductor', 'sérum reafirmante',
+  'jabón de manos', 'pasta de dientes',
+  'tampones', 'compresas', 'preservativo', 'preservativos',
+  // Accesorios / hogar
   'mascarillas quirúrgicas', 'guantes de látex', 'protector cama', 'protectores para los oídos', 'pulsera de citronela',
   'sacapuntas', 'palo extensible', 'gamuzas', 'esponja de calzado', 'papel hogar', 'plato llano biodegradable',
   'posavajillas', 'pajitas', 'palillos redondos', 'recipiente de plástico', 'bandeja de cartón', 'molde de papel',
-  'bandas adhesivas', 'cubo de hielo', 'cubos de hielo',
+  'bandas adhesivas', 'cubo de hielo', 'cubos de hielo', 'estropajo', 'borrador mágico',
+  // Mascotas / otros
   'gato adulto', 'caninos', 'delikuit', 'nuske', 'mascotas', 'animales',
+  // Medicamentos / suplementos no alimentarios
   'kit analizador', 'roll-on alivio', 'lágrimas hidratantes', 'laxforte', 'cápsulas colagen', 'laxante',
-  'pastillas enciende', 'cuquis', 'kit esencial', 'disuelve manchas', '70% alcohol',
-  'multiusos ph neutro', 'pastillas desinfectantes', 'recambio mopa', 'cápsulas lax',
-  'comprimidos vitaminas', 'tónico', 'crema', 'corrector fluido', 'corrector mate',
-  'gel', 'hidratantes', 'topé', 'antiarrugas', 'reafirmante', 'concentrado',
+  'cuquis', 'kit esencial', 'cápsulas lax', 'comprimidos vitaminas',
+  // Marcas / referencias
   '3 brujas', 'yak', 'royal', 'aquachek', 'bosque verde', 'khanya', 'moldex',
   'higiene personal', 'cuidado personal', 'hogar', 'limpieza del hogar'
 ]
@@ -40,11 +56,27 @@ const KEEP_KEYWORDS = [
   'jabón con glicerina'
 ]
 
+async function fetchAllCalorias0() {
+  const todos = []
+  let from = 0
+  const pageSize = 1000
+  while (true) {
+    const { data, error } = await supabase
+      .from('alimentos')
+      .select('id, nombre')
+      .eq('calorias', 0)
+      .range(from, from + pageSize - 1)
+    if (error) return { data: null, error }
+    if (!data || data.length === 0) break
+    todos.push(...data)
+    if (data.length < pageSize) break
+    from += pageSize
+  }
+  return { data: todos, error: null }
+}
+
 async function main() {
-  const { data: alimentos, error: fetchError } = await supabase
-    .from('alimentos')
-    .select('id, nombre')
-    .eq('calorias', 0)
+  const { data: alimentos, error: fetchError } = await fetchAllCalorias0()
 
   if (fetchError) {
     console.error('Error fetch:', fetchError.message)
