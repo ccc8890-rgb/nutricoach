@@ -1,0 +1,19 @@
+# Dependencies (Vercel las instala)
+node_modules
+
+# Build output (Vercel hace su propio build)
+.next
+out
+build
+
+# Generated outputs locales
+salidas
+ExportBlock-*
+
+# IDE / temp
+.claude
+.aider*
+
+# Env files (se configuran en Vercel dashboard)
+.env*
+!.env.example
