@@ -51,6 +51,19 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: false },
 })
 
+// ── Global error handlers (evitan muerte silenciosa) ──────────
+
+process.on('unhandledRejection', (reason) => {
+    const msg = reason instanceof Error ? reason.stack || reason.message : String(reason)
+    process.stderr.write(`\n❌ UNHANDLED REJECTION: ${msg}\n`)
+    process.exit(1)
+})
+
+process.on('uncaughtException', (err) => {
+    process.stderr.write(`\n❌ UNCAUGHT EXCEPTION: ${err.stack || err.message}\n`)
+    process.exit(1)
+})
+
 const RATE_LIMIT_MS = 200   // Default entre llamadas
 const TIMEOUT_MS = 8000     // Timeout por petición (8s, Cloudflare bloquea rápido)
 
@@ -68,8 +81,12 @@ async function fetchJSON(url, headers = {}) {
                 ...headers,
             },
         })
-        if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`)
         const contentType = res.headers.get('content-type') || ''
+        // Cloudflare detect: 403, 429, or HTML content-type on JSON endpoint
+        if (res.status === 403 || res.status === 429) {
+            throw new Error(`CLOUDFLARE/BLOQUEO: HTTP ${res.status} en ${url}`)
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`)
         if (contentType.includes('text/html')) {
             throw new Error(`CLOUDFLARE: recibido HTML en vez de JSON (${url})`)
         }
@@ -189,98 +206,118 @@ function esComestible(categoria) {
 // ── Normalización de nombre ───────────────────────────────────
 
 function limpiarNombre(nombre) {
-    let limpio = nombre
-    limpio = limpio.replace(/\([^)]*\)/g, '')
-    limpio = limpio.replace(/\d+\s*(kg|g|ml|l|litro|unidad(?:es)?|pack|ud|uds|unid|pieza(?:s)?)/gi, '')
-    limpio = limpio.replace(/^(Hacendado|Bosque Verde|Deliplus|Carrefour|Carrefour Bio|Carrefour Discount|Milbona|Cien|Lidl|Bellsola)\s*/i, '')
-    limpio = limpio.replace(/\s*(Hacendado|Bosque Verde|Deliplus|Carrefour|Carrefour Bio|Carrefour Discount|Milbona|Cien|Lidl|Bellsola)$/i, '')
-    limpio = limpio.replace(/\b(para\s+)?(freír|asar|cocinar|horno|plancha|vapor|microondas|troceado|fileteado|cortado|entero|natural|ecológico|tradicional)\b/gi, '')
-    limpio = limpio.replace(/\s+/g, ' ').trim()
-    return limpio
+    try {
+        if (typeof nombre !== 'string' || !nombre) return ''
+        let limpio = nombre
+        limpio = limpio.replace(/\([^)]*\)/g, '')
+        limpio = limpio.replace(/\d+\s*(kg|g|ml|l|litro|unidad(?:es)?|pack|ud|uds|unid|pieza(?:s)?)/gi, '')
+        limpio = limpio.replace(/^(Hacendado|Bosque Verde|Deliplus|Carrefour|Carrefour Bio|Carrefour Discount|Milbona|Cien|Lidl|Bellsola)\s*/i, '')
+        limpio = limpio.replace(/\s*(Hacendado|Bosque Verde|Deliplus|Carrefour|Carrefour Bio|Carrefour Discount|Milbona|Cien|Lidl|Bellsola)$/i, '')
+        limpio = limpio.replace(/\b(para\s+)?(freír|asar|cocinar|horno|plancha|vapor|microondas|troceado|fileteado|cortado|entero|natural|ecológico|tradicional)\b/gi, '')
+        limpio = limpio.replace(/\s+/g, ' ').trim()
+        return limpio
+    } catch {
+        return nombre || ''
+    }
 }
 
 // ─── Buscar o crear alimento ──────────────────────────────────
 
 async function buscarOMCrearAlimento(nombreLimpio, categoria) {
-    if (!nombreLimpio || nombreLimpio.length < 2) return null
+    try {
+        if (!nombreLimpio || nombreLimpio.length < 2) return null
 
-    const { data: exacto } = await supabase
-        .from('alimentos')
-        .select('id')
-        .ilike('nombre', nombreLimpio)
-        .maybeSingle()
-    if (exacto) return exacto.id
+        const { data: exacto } = await supabase
+            .from('alimentos')
+            .select('id')
+            .ilike('nombre', nombreLimpio)
+            .maybeSingle()
+        if (exacto) return exacto.id
 
-    const { data: contains } = await supabase
-        .from('alimentos')
-        .select('id')
-        .or(`nombre.ilike.%${nombreLimpio}%,nombre.ilike.${nombreLimpio}%`)
-        .limit(1)
-        .maybeSingle()
-    if (contains) return contains.id
+        const { data: contains } = await supabase
+            .from('alimentos')
+            .select('id')
+            .or(`nombre.ilike.%${nombreLimpio}%,nombre.ilike.${nombreLimpio}%`)
+            .limit(1)
+            .maybeSingle()
+        if (contains) return contains.id
 
-    const { data: nuevo, error } = await supabase
-        .from('alimentos')
-        .insert({
-            nombre: nombreLimpio,
-            categoria: categoria || 'Supermercado',
-            calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0,
-        })
-        .select('id')
-        .single()
+        const { data: nuevo, error } = await supabase
+            .from('alimentos')
+            .insert({
+                nombre: nombreLimpio,
+                categoria: categoria || 'Supermercado',
+                calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0,
+            })
+            .select('id')
+            .single()
 
-    if (error) {
-        process.stderr.write(`  ⚠️  No se pudo crear alimento "${nombreLimpio}": ${error.message}\n`)
+        if (error) {
+            process.stderr.write(`  ⚠️  No se pudo crear alimento "${nombreLimpio}": ${error.message}\n`)
+            return null
+        }
+        return nuevo.id
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        process.stderr.write(`  ⚠️  Excepción en buscarOMCrearAlimento("${nombreLimpio}"): ${msg}\n`)
         return null
     }
-    return nuevo.id
 }
 
 // ─── Upsert y guardado ────────────────────────────────────────
 
 async function upsertProducto(supermercadoId, producto) {
-    const { data: existente } = await supabase
-        .from('productos_supermercado')
-        .select('id, alimento_id')
-        .eq('supermercado_id', supermercadoId)
-        .eq('nombre_original', producto.nombre)
-        .maybeSingle()
+    try {
+        if (!producto || !producto.nombre) {
+            return { error: 'Producto sin nombre', accion: 'saltado' }
+        }
 
-    const payload = {
-        supermercado_id: supermercadoId,
-        nombre_original: producto.nombre,
-        precio_por_kg: producto.precio_por_kg ?? producto.precio_actual,
-        precio_unidad: producto.precio_actual !== (producto.precio_por_kg ?? producto.precio_actual)
-            ? producto.precio_actual : null,
-        unidad: producto.unidad || 'kg',
-        url_producto: producto.url_producto || null,
-        marca: producto.marca || null,
-        fecha_precio: new Date().toISOString().split('T')[0],
-    }
-
-    if (existente) {
-        const { error } = await supabase
+        const { data: existente } = await supabase
             .from('productos_supermercado')
-            .update(payload)
-            .eq('id', existente.id)
+            .select('id, alimento_id')
+            .eq('supermercado_id', supermercadoId)
+            .eq('nombre_original', producto.nombre)
+            .maybeSingle()
+
+        const payload = {
+            supermercado_id: supermercadoId,
+            nombre_original: producto.nombre,
+            precio_por_kg: producto.precio_por_kg ?? producto.precio_actual,
+            precio_unidad: producto.precio_actual !== (producto.precio_por_kg ?? producto.precio_actual)
+                ? producto.precio_actual : null,
+            unidad: producto.unidad || 'kg',
+            url_producto: producto.url_producto || null,
+            marca: producto.marca || null,
+            fecha_precio: new Date().toISOString().split('T')[0],
+        }
+
+        if (existente) {
+            const { error } = await supabase
+                .from('productos_supermercado')
+                .update(payload)
+                .eq('id', existente.id)
+            if (error) return { error: error.message }
+            return { id: existente.id, alimento_id: existente.alimento_id, accion: 'actualizado' }
+        }
+
+        const nombreLimpio = limpiarNombre(producto.nombre)
+        const alimentoId = await buscarOMCrearAlimento(nombreLimpio, producto.categoria)
+
+        if (!alimentoId) return { error: 'No se pudo determinar/crear alimento', accion: 'saltado' }
+
+        payload.alimento_id = alimentoId
+        const { data, error } = await supabase
+            .from('productos_supermercado')
+            .insert(payload)
+            .select('id, alimento_id')
+            .single()
+
         if (error) return { error: error.message }
-        return { id: existente.id, alimento_id: existente.alimento_id, accion: 'actualizado' }
+        return { id: data.id, alimento_id: data.alimento_id, accion: 'nuevo' }
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        return { error: `upsertProducto exception: ${msg}`, accion: 'saltado' }
     }
-
-    const nombreLimpio = limpiarNombre(producto.nombre)
-    const alimentoId = await buscarOMCrearAlimento(nombreLimpio, producto.categoria)
-
-    if (!alimentoId) return { error: 'No se pudo determinar/crear alimento', accion: 'saltado' }
-
-    payload.alimento_id = alimentoId
-    const { data, error } = await supabase
-        .from('productos_supermercado')
-        .insert(payload)
-        .select('id, alimento_id')
-        .single()
-
-    if (error) return { error: error.message }
-    return { id: data.id, alimento_id: data.alimento_id, accion: 'nuevo' }
 }
 
 async function registrarHistorico(supermercadoId, producto, alimentoId) {
@@ -367,498 +404,951 @@ async function scrapearMercadona() {
     return { productos, errores, duracion_ms: Date.now() - inicio }
 }
 
-// ── CARREFOUR ──────────────────────────────────────────────────
-
-const CARREFOUR_BASE = 'https://www.carrefour.es'
-const CARREFOUR_HEADERS = {
-    Accept: 'application/json',
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Accept-Language': 'es-ES,es;q=0.9',
-}
+// ── CARREFOUR (Playwright) ─────────────────────────────────────
 
 async function scrapearCarrefour() {
     const inicio = Date.now()
     const errores = []
     const productos = []
+    let browser
 
-    console.log('[Carrefour] ⏳ Obteniendo categorías...')
-
-    // Probar primera request para detectar Cloudflare rápido
-    let cloudflareDetected = false
     try {
-        const raw = await fetchJSON(`${CARREFOUR_BASE}/api/categories/v1/`, CARREFOUR_HEADERS)
-        const categorias = raw.data || []
+        console.log('[Carrefour] Lanzando navegador Playwright...')
+        const { chromium } = await import('playwright')
+        browser = await chromium.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        })
 
-        if (categorias.length > 0) {
-            const subCats = []
-            for (const cat of categorias) {
-                if (cat.subcategories) {
-                    for (const sub of cat.subcategories) {
-                        if (sub.productCount && sub.productCount > 0) subCats.push(sub)
-                    }
-                }
-            }
-            console.log(`[Carrefour] 🔍 ${subCats.length} subcategorías\n`)
+        const context = await browser.newContext({
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            viewport: { width: 1920, height: 1080 },
+            locale: 'es-ES',
+            extraHTTPHeaders: { 'Accept-Language': 'es-ES,es;q=0.9' },
+        })
 
-            for (let i = 0; i < subCats.length; i++) {
-                await delay(500)
-                try {
-                    const prodsRaw = await fetchJSON(
-                        `${CARREFOUR_BASE}/api/products/v1/category/${subCats[i].id}?pageSize=100`,
-                        CARREFOUR_HEADERS
-                    )
-                    const prods = prodsRaw.data || []
-                    for (const p of prods) {
-                        const precioKg = p.pricePerKg || (p.referencePrice
-                            ? parseFloat(String(p.referencePrice).replace(',', '.')) : undefined)
-                        productos.push({
-                            nombre: p.displayName || p.name || '',
-                            precio_actual: p.price || 0,
-                            precio_por_kg: precioKg,
-                            unidad: 'kg',
-                            url_producto: p.url?.startsWith('http') ? p.url : `https://www.carrefour.es${p.url || ''}`,
-                            imagen_url: p.image?.startsWith('http') ? p.image : undefined,
-                            marca: p.brand || 'Carrefour',
-                            cantidad: p.packaging || '',
-                            disponible: p.available !== false,
-                            categoria: subCats[i].name || '',
-                        })
-                    }
-                } catch (err) {
-                    const msg = err instanceof Error ? err.message : String(err)
-                    if (msg.includes('CLOUDFLARE')) {
-                        cloudflareDetected = true
-                        errores.push(`[Carrefour] Cloudflare bloquea — saltando`)
-                        console.warn(`[Carrefour] ⛔ Cloudflare detectado en subcategoría — abortando`)
-                        break
-                    }
-                    errores.push(`Error cat ${subCats[i].name}: ${msg}`)
-                }
-                if (cloudflareDetected) break
-                if (i > 0 && i % 5 === 0) console.log(`  📊 ${i}/${subCats.length} cats · ${productos.length} prods`)
-            }
+        const page = await context.newPage()
+
+        // ── 1. Navegar a supermercado ──
+        console.log('[Carrefour] Navegando a supermercado...')
+        try {
+            await page.goto('https://www.carrefour.es/supermercado/c/alimentacion', {
+                waitUntil: 'networkidle',
+                timeout: 45000,
+            })
+            console.log('[Carrefour] Página cargada:', await page.title())
+        } catch {
+            console.warn('[Carrefour] Timeout en carga inicial, continuando...')
         }
-    } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        cloudflareDetected = msg.includes('CLOUDFLARE')
-        if (!cloudflareDetected) {
-            console.warn('[Carrefour] Fallback: búsqueda por términos')
-        }
-    }
+        await page.waitForTimeout(3000)
 
-    // Si Cloudflare bloqueó o categorías fallaron, intentar fallback search
-    if (!cloudflareDetected && productos.length === 0) {
-        const CATS = [
-            'leche', 'huevos', 'pan', 'arroz', 'pasta', 'aceite oliva',
-            'legumbres', 'lentejas', 'garbanzos',
-            'atún', 'salmón', 'pollo', 'ternera', 'cerdo',
-            'jamón serrano', 'queso', 'yogurt', 'mantequilla',
-            'tomate frito', 'salsa', 'mayonesa', 'mostaza', 'ketchup',
-            'fruta fresca', 'manzana', 'plátano', 'naranja',
-            'verdura', 'lechuga', 'tomate', 'cebolla', 'patata', 'zanahoria',
-            'agua mineral', 'refresco', 'zumo', 'cerveza', 'vino',
-            'café', 'té', 'galletas', 'cereales', 'avena',
-            'miel', 'mermelada', 'chocolate',
-            'frutos secos', 'almendras', 'nueces',
-            'harina', 'azúcar', 'sal', 'vinagre', 'especia',
-            'conserva', 'aceituna', 'encurtido',
-            'congelados', 'pan molde', 'pan tostado',
-            'fiambre pavo', 'salchicha',
-        ]
-        for (let i = 0; i < CATS.length; i++) {
-            await delay(500)
-            try {
-                const sr = await fetchJSON(
-                    `${CARREFOUR_BASE}/api/search/v1/?q=${encodeURIComponent(CATS[i])}&pageSize=50`,
-                    CARREFOUR_HEADERS
+        // ── 2. Intentar extraer categorías del DOM ──
+        console.log('[Carrefour] Extrayendo categorías del DOM...')
+        let categorias = []
+
+        try {
+            categorias = await page.evaluate(() => {
+                const links = []
+                const seen = new Set()
+                const anchors = document.querySelectorAll(
+                    'a[href*="/supermercado/c/"], ' +
+                    'a[href*="/category/"], ' +
+                    '.nav-link[href*="alimentacion"], ' +
+                    '.menu-item a[href*="/c/"], ' +
+                    'nav a[href*="/supermercado"]'
                 )
-                const prods = sr.data || []
-                for (const p of prods) {
-                    const precioKg = p.pricePerKg || (p.referencePrice
-                        ? parseFloat(String(p.referencePrice).replace(',', '.')) : undefined)
-                    productos.push({
-                        nombre: p.displayName || p.name || '',
-                        precio_actual: p.price || 0,
-                        precio_por_kg: precioKg,
-                        unidad: 'kg',
-                        url_producto: p.url?.startsWith('http') ? p.url : `https://www.carrefour.es${p.url || ''}`,
-                        imagen_url: p.image?.startsWith('http') ? p.image : undefined,
-                        marca: p.brand || 'Carrefour',
-                        cantidad: p.packaging || '',
-                        disponible: p.available !== false,
-                        categoria: CATS[i],
+                anchors.forEach(a => {
+                    const href = a.href?.trim()
+                    const text = a.textContent?.trim()
+                    if (href && text && !seen.has(href) && !href.includes('#') && text.length > 2) {
+                        seen.add(href)
+                        links.push({ url: href, name: text })
+                    }
+                })
+                return links
+            })
+        } catch (err) {
+            console.warn('[Carrefour] Error extrayendo categorías:', err.message)
+        }
+
+        console.log(`[Carrefour] ${categorias.length} categorías encontradas en DOM`)
+
+        // ── 3. Si no hay categorías, usar predefinidas ──
+        if (categorias.length === 0) {
+            console.log('[Carrefour] Usando categorías predefinidas...')
+            const CATS_PREDEFINIDAS = [
+                'https://www.carrefour.es/supermercado/c/alimentacion',
+                'https://www.carrefour.es/supermercado/c/bebidas',
+                'https://www.carrefour.es/supermercado/c/frescos/carnicos',
+                'https://www.carrefour.es/supermercado/c/frescos/pescados-marisco',
+                'https://www.carrefour.es/supermercado/c/frescos/frutas-verduras',
+                'https://www.carrefour.es/supermercado/c/lacteos-huevos',
+                'https://www.carrefour.es/supermercado/c/panaderia-pasteleria',
+                'https://www.carrefour.es/supermercado/c/congelados',
+                'https://www.carrefour.es/supermercado/c/despensa',
+                'https://www.carrefour.es/supermercado/c/aceite-especias-salsas',
+                'https://www.carrefour.es/supermercado/c/conservas',
+                'https://www.carrefour.es/supermercado/c/legumbres',
+                'https://www.carrefour.es/supermercado/c/arroz-pasta',
+            ]
+            categorias = CATS_PREDEFINIDAS.map(url => ({ url, name: url.split('/c/').pop()?.replace(/-/g, ' ') || url }))
+        }
+
+        // ── 4. Scrapear productos de cada categoría ──
+        const maxCats = Math.min(categorias.length, 20)
+
+        for (let i = 0; i < maxCats; i++) {
+            const cat = categorias[i]
+            console.log(`[Carrefour] Categoría ${i + 1}/${maxCats}: ${cat.name}`)
+            await delay(1500)
+
+            try {
+                await page.goto(cat.url, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => { })
+                await page.waitForTimeout(3000)
+
+                // Scroll para trigger lazy loading
+                await page.evaluate(async () => {
+                    for (let s = 0; s < document.body.scrollHeight; s += 500) {
+                        window.scrollTo(0, s)
+                        await new Promise(r => setTimeout(r, 500))
+                    }
+                })
+                await page.waitForTimeout(1000)
+
+                const prods = await page.evaluate((catName) => {
+                    const items = []
+                    const cards = document.querySelectorAll(
+                        'article[data-product], ' +
+                        '.product-card, ' +
+                        '.product-item, ' +
+                        '[data-testid*="product"], ' +
+                        '.grid-item, ' +
+                        'li[class*="product"]'
+                    )
+                    cards.forEach(card => {
+                        const nombreEl = card.querySelector(
+                            '[data-product-name], ' +
+                            '.product-card__title, ' +
+                            '.product-name, h3, h2, [class*="title"], [class*="name"]'
+                        )
+                        const precioEl = card.querySelector(
+                            '[data-product-price], ' +
+                            '.product-card__price, ' +
+                            '.price, [class*="price"], ' +
+                            '.current-price, .offer-price'
+                        )
+                        const precioKgEl = card.querySelector(
+                            '.product-card__unit-price, ' +
+                            '.unit-price, [class*="unit"], ' +
+                            '.price-per-unit, .reference-price'
+                        )
+                        const urlEl = card.querySelector('a[href]')
+                        const imgEl = card.querySelector('img')
+                        const marcaEl = card.querySelector('[data-brand], .brand, .product-brand, [class*="brand"]')
+                        const cantidadEl = card.querySelector('[data-quantity], .quantity, .packaging, [class*="quantity"], [class*="weight"]')
+
+                        const nombre = nombreEl?.textContent?.trim() || ''
+                        const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0'
+                        const precio = parseFloat(precioTexto) || 0
+                        const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || ''
+                        const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined
+
+                        let href = urlEl?.href || ''
+                        if (href && !href.startsWith('http')) href = `https://www.carrefour.es${href}`
+
+                        if (nombre && precio > 0) {
+                            items.push({
+                                nombre,
+                                precio_actual: precio,
+                                precio_por_kg: precioKg,
+                                unidad: 'kg',
+                                url_producto: href || '',
+                                imagen_url: imgEl?.src || '',
+                                marca: marcaEl?.textContent?.trim() || 'Carrefour',
+                                cantidad: cantidadEl?.textContent?.trim() || '',
+                                disponible: true,
+                                categoria: catName,
+                            })
+                        }
                     })
-                }
+                    return items
+                }, cat.name)
+
+                for (const p of prods) productos.push(p)
+                console.log(`[Carrefour]   → ${prods.length} productos`)
             } catch (err) {
                 const msg = err instanceof Error ? err.message : String(err)
-                if (msg.includes('CLOUDFLARE')) {
-                    errores.push(`[Carrefour] Cloudflare bloquea búsquedas — saltando`)
-                    console.warn(`[Carrefour] ⛔ Cloudflare en búsqueda — abortando`)
-                    break
-                }
-                errores.push(`Error búsqueda "${CATS[i]}": ${msg}`)
+                errores.push(`Error en categoría ${cat.name}: ${msg}`)
+                console.warn(`[Carrefour]   ❌ ${msg}`)
             }
-            if (i > 0 && i % 10 === 0) console.log(`  📊 ${i}/${CATS.length} búsquedas · ${productos.length} prods`)
         }
+
+        console.log(`[Carrefour] ${productos.length} productos totales`)
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        errores.push(`Error general: ${msg}`)
+        console.error('[Carrefour] Error:', msg)
+    } finally {
+        if (browser) await browser.close()
     }
 
-    if (cloudflareDetected) {
-        console.warn(`\n[Carrefour] ⛔ Saltado por bloqueo Cloudflare`)
-    }
-    console.log(`[Carrefour] 📦 ${productos.length} productos · ${errores.length} errores`)
     return { productos, errores, duracion_ms: Date.now() - inicio }
 }
 
-// ── DÍA ────────────────────────────────────────────────────────
-
-const DIA_BASE = 'https://www.dia.es'
-const DIA_HEADERS = { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' }
+// ── DÍA (Playwright) ───────────────────────────────────────────
 
 async function scrapearDia() {
     const inicio = Date.now()
     const errores = []
     const productos = []
+    let browser
 
-    console.log('[Día] ⏳ Obteniendo categorías...')
     try {
-        const raw = await fetchJSON(`${DIA_BASE}/api/categories/v1/`, DIA_HEADERS)
-        const cats = raw.items || []
-        const leafCats = []
-        const extract = (list) => {
-            for (const c of list) {
-                if (c.children && c.children.length > 0) extract(c.children)
-                else leafCats.push({ id: c.id, name: c.name })
-            }
-        }
-        extract(cats)
-        console.log(`[Día] 🔍 ${leafCats.length} categorías hoja\n`)
+        console.log('[Día] Lanzando navegador Playwright...')
+        const { chromium } = await import('playwright')
+        browser = await chromium.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        })
 
-        for (let i = 0; i < leafCats.length; i++) {
-            await delay(RATE_LIMIT_MS)
-            try {
-                const prodsRaw = await fetchJSON(
-                    `${DIA_BASE}/api/products/v1/category/${leafCats[i].id}?pageSize=50`,
-                    DIA_HEADERS
-                )
-                const prods = prodsRaw.items || []
-                for (const p of prods) {
-                    let precioKg
-                    if (p.pricePerKg) {
-                        const m = String(p.pricePerKg).match(/([\d,]+)/)
-                        if (m) precioKg = parseFloat(m[1].replace(',', '.'))
+        const context = await browser.newContext({
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            viewport: { width: 1920, height: 1080 },
+            locale: 'es-ES',
+        })
+
+        const page = await context.newPage()
+
+        // ── 1. Obtener categorías ──
+        console.log('[Día] Obteniendo categorías...')
+        let categorias = []
+
+        try {
+            await page.goto('https://www.dia.es/compra-online/', {
+                waitUntil: 'networkidle',
+                timeout: 30000,
+            }).catch(() => { })
+            await page.waitForTimeout(3000)
+
+            categorias = await page.evaluate(() => {
+                const links = []
+                const seen = new Set()
+                const anchors = document.querySelectorAll('a[href*="/compra-online/"]:not([href*="login"]):not([href*="carrito"])')
+                anchors.forEach(a => {
+                    const href = a.href?.trim()
+                    const text = a.textContent?.trim()
+                    if (href && text && !seen.has(href) && text.length > 3 && href.includes('/c/')) {
+                        seen.add(href)
+                        links.push({ url: href, name: text })
                     }
-                    productos.push({
-                        nombre: p.name,
-                        precio_actual: p.price,
-                        precio_por_kg: precioKg,
-                        unidad: 'kg',
-                        url_producto: p.url?.startsWith('http') ? p.url : `https://www.dia.es${p.url || ''}`,
-                        imagen_url: p.image?.startsWith('http') ? p.image : undefined,
-                        marca: p.brand || 'Día',
-                        cantidad: p.packaging || '',
-                        disponible: p.available !== false,
-                        categoria: leafCats[i].name,
-                    })
-                }
-            } catch (err) {
-                errores.push(`Error cat ${leafCats[i].name}: ${err.message}`)
+                })
+                return links
+            })
+        } catch { }
+
+        console.log(`[Día] ${categorias.length} categorías encontradas`)
+
+        // Fallback: categorías predefinidas
+        if (categorias.length === 0) {
+            console.log('[Día] Usando categorías predefinidas...')
+            const CATS_PREDEFINIDAS = [
+                'https://www.dia.es/compra-online/alimentacion/c/AL00',
+                'https://www.dia.es/compra-online/leches-y-postres/c/AL01',
+                'https://www.dia.es/compra-online/huevos/c/AL02',
+                'https://www.dia.es/compra-online/aceite/c/AL03',
+                'https://www.dia.es/compra-online/arroz-pasta-legumbres/c/AL04',
+                'https://www.dia.es/compra-online/pan-panaderia/c/AL05',
+                'https://www.dia.es/compra-online/cereales-y-galletas/c/AL06',
+                'https://www.dia.es/compra-online/chocolates-y-dulces/c/AL07',
+                'https://www.dia.es/compra-online/conservas/c/AL08',
+                'https://www.dia.es/compra-online/congelados/c/AL09',
+                'https://www.dia.es/compra-online/bebidas/c/AL10',
+                'https://www.dia.es/compra-online/salsas-especias/c/AL11',
+                'https://www.dia.es/compra-online/frutos-secos/c/AL12',
+            ]
+            for (const url of CATS_PREDEFINIDAS) {
+                categorias.push({ url, name: url.split('/c/').pop()?.replace(/-/g, ' ') || url })
             }
-            if (i > 0 && i % 10 === 0) console.log(`  📊 ${i}/${leafCats.length} cats · ${productos.length} prods`)
         }
+
+        // ── 2. Scrapear cada categoría ──
+        const maxCats = Math.min(categorias.length, 15)
+
+        for (let i = 0; i < maxCats; i++) {
+            const cat = categorias[i]
+            console.log(`[Día] Categoría ${i + 1}/${maxCats}: ${cat.name}`)
+            await delay(1000)
+
+            try {
+                await page.goto(cat.url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => { })
+                await page.waitForTimeout(3000)
+
+                // Scroll para lazy loading
+                await page.evaluate(async () => {
+                    for (let s = 0; s < document.body.scrollHeight; s += 500) {
+                        window.scrollTo(0, s)
+                        await new Promise(r => setTimeout(r, 400))
+                    }
+                })
+                await page.waitForTimeout(1000)
+
+                const prods = await page.evaluate((catName) => {
+                    const items = []
+                    const cards = document.querySelectorAll(
+                        'article[data-product], ' +
+                        '[class*="product-card"], [class*="product-item"], ' +
+                        'li[class*="product"], [data-testid*="product"], ' +
+                        '.product-grid [class*="item"]'
+                    )
+                    cards.forEach(card => {
+                        const nombreEl = card.querySelector(
+                            '[class*="product-name"], [class*="product-title"], ' +
+                            '[class*="name"], h3, h2, [class*="brand"] + [class*="name"]'
+                        )
+                        const precioEl = card.querySelector(
+                            '[class*="price"], .current-price, .offer-price, ' +
+                            '[data-price], [class*="precio"]'
+                        )
+                        const precioKgEl = card.querySelector(
+                            '[class*="unit-price"], [class*="price-per-kg"], ' +
+                            '[class*="base-price"], [class*="reference"]'
+                        )
+                        const urlEl = card.querySelector('a[href]')
+                        const imgEl = card.querySelector('img')
+                        const marcaEl = card.querySelector('[class*="brand"], [data-brand], [class*="marca"]')
+                        const cantidadEl = card.querySelector(
+                            '[class*="quantity"], [class*="weight"], [class*="amount"], ' +
+                            '[data-quantity], [class*="packaging"]'
+                        )
+
+                        const nombre = nombreEl?.textContent?.trim() || ''
+                        const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0'
+                        const precio = parseFloat(precioTexto) || 0
+                        const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || ''
+                        const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined
+
+                        let href = urlEl?.href || ''
+                        if (href && !href.startsWith('http')) href = `https://www.dia.es${href}`
+
+                        if (nombre && precio > 0) {
+                            items.push({
+                                nombre,
+                                precio_actual: precio,
+                                precio_por_kg: precioKg,
+                                unidad: 'kg',
+                                url_producto: href,
+                                imagen_url: imgEl?.src || '',
+                                marca: marcaEl?.textContent?.trim() || 'Día',
+                                cantidad: cantidadEl?.textContent?.trim() || undefined,
+                                disponible: true,
+                                categoria: catName,
+                            })
+                        }
+                    })
+                    return items
+                }, cat.name)
+
+                for (const p of prods) productos.push(p)
+                console.log(`[Día]   → ${prods.length} productos`)
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err)
+                errores.push(`Error en categoría ${cat.name}: ${msg}`)
+                console.warn(`[Día]   ❌ ${msg}`)
+            }
+        }
+
+        console.log(`[Día] ${productos.length} productos totales`)
     } catch (err) {
-        errores.push(`Error general: ${err.message}`)
-        console.error('[Día] Error:', err.message)
+        const msg = err instanceof Error ? err.message : String(err)
+        errores.push(`Error general: ${msg}`)
+        console.error('[Día] Error:', msg)
+    } finally {
+        if (browser) await browser.close()
     }
-    console.log(`\n[Día] 📦 ${productos.length} productos`)
+
     return { productos, errores, duracion_ms: Date.now() - inicio }
 }
 
-// ── AL CAMPO ───────────────────────────────────────────────────
+// ── AL CAMPO (API compraonline.alcampo.es) ─────────────────────
 
-const ALCAMPO_BASE = 'https://www.alcampo.es'
-const ALCAMPO_HEADERS = { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' }
+const ALCAMPO_BASE = 'https://www.compraonline.alcampo.es'
+const ALCAMPO_HEADERS = {
+    Accept: 'application/json',
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept-Language': 'es-ES,es;q=0.9',
+}
+
+async function fetchAlcampoJSON(url) {
+    const res = await fetch(url, {
+        signal: AbortSignal.timeout(15000),
+        headers: ALCAMPO_HEADERS,
+    })
+    if (!res.ok) throw new Error(`Alcampo HTTP ${res.status} en ${url}`)
+    return res.json()
+}
+
+const CATEGORIAS_ALCAMPO = [
+    'leche', 'huevos', 'pan', 'arroz', 'pasta', 'aceite oliva',
+    'legumbres', 'lentejas', 'garbanzos', 'judías',
+    'arroz integral', 'quinoa',
+    'atún', 'salmón', 'merluza', 'pollo', 'ternera', 'cerdo',
+    'jamón serrano', 'jamón ibérico', 'lomo embutido', 'chorizo',
+    'queso', 'yogur', 'mantequilla', 'nata',
+    'tomate frito', 'salsa',
+    'fruta fresca', 'manzana', 'plátano', 'naranja',
+    'verdura', 'lechuga', 'tomate', 'cebolla', 'ajo', 'patata',
+    'brócoli', 'coliflor', 'espinacas',
+    'agua mineral', 'refresco', 'zumo', 'cerveza', 'vino',
+    'café', 'té', 'infusiones', 'cacao',
+    'galletas', 'cereales', 'avena', 'muesli',
+    'miel', 'mermelada',
+    'frutos secos', 'almendras', 'nueces',
+    'chocolate',
+    'harina', 'azúcar', 'sal', 'vinagre', 'especia',
+    'caldo', 'sopa',
+    'conserva', 'aceituna',
+    'congelados',
+    'pan molde', 'pan tostado',
+    'fiambre pavo', 'fiambre pollo',
+]
 
 async function scrapearAlcampo() {
     const inicio = Date.now()
     const errores = []
     const productos = []
+    const vistos = new Set()
 
-    console.log('[Alcampo] ⏳ Obteniendo categorías...')
     try {
-        const raw = await fetchJSON(`${ALCAMPO_BASE}/api/rest/v1/categories`, ALCAMPO_HEADERS)
-        const cats = raw.data || []
-        const leafCats = []
-        const extract = (list) => {
-            for (const c of list) {
-                if (c.subcategories && c.subcategories.length > 0) extract(c.subcategories)
-                else leafCats.push({ id: c.id, name: c.name })
-            }
-        }
-        extract(cats)
-        console.log(`[Alcampo] 🔍 ${leafCats.length} categorías hoja\n`)
+        // 1. Obtener página principal para extraer regionId
+        console.log('[Alcampo] Obteniendo página principal...')
+        const homeRes = await fetch(ALCAMPO_BASE, {
+            signal: AbortSignal.timeout(15000),
+            headers: ALCAMPO_HEADERS,
+        })
+        const homeHtml = await homeRes.text()
+        const regionMatch = homeHtml.match(/regionId[=:]["']?([a-f0-9-]{36})/i)
+        const regionId = regionMatch?.[1] || 'ac90d761-9d58-4918-a37d-dd14e1ce384a'
+        console.log(`[Alcampo] Region ID: ${regionId}`)
 
-        for (let i = 0; i < leafCats.length; i++) {
-            await delay(RATE_LIMIT_MS)
+        // 2. Obtener sugerencias de búsqueda
+        console.log('[Alcampo] Obteniendo sugerencias de búsqueda...')
+        let sugerencias = []
+        try {
+            sugerencias = await fetchAlcampoJSON(
+                `${ALCAMPO_BASE}/api/search/v1/suggestions/primary?searchTerm=&limit=50&regionId=${regionId}`
+            )
+        } catch { }
+        console.log(`[Alcampo] ${sugerencias.length || 0} sugerencias`)
+
+        // 3. Buscar productos por categorías
+        const terminos = [...new Set([...CATEGORIAS_ALCAMPO, ...(Array.isArray(sugerencias) ? sugerencias : [])])]
+        console.log(`[Alcampo] Buscando en ${terminos.length} términos...`)
+
+        for (let i = 0; i < terminos.length; i++) {
+            const term = terminos[i]
+            await delay(500)
+
             try {
-                const prodsRaw = await fetchJSON(
-                    `${ALCAMPO_BASE}/api/rest/v1/categories/${leafCats[i].id}/products?pageSize=100`,
-                    ALCAMPO_HEADERS
+                const result = await fetchAlcampoJSON(
+                    `${ALCAMPO_BASE}/api/webproductpagews/v5/product-pages?decoratedOnly=true&limit=50&searchTerm=${encodeURIComponent(term)}&tag=web`
                 )
-                const prods = prodsRaw.data || []
-                for (const p of prods) {
-                    const precioKg = p.pricePerKg || (p.referencePrice
-                        ? parseFloat(String(p.referencePrice).replace(',', '.')) : undefined)
-                    productos.push({
-                        nombre: p.name,
-                        precio_actual: p.price,
-                        precio_por_kg: precioKg,
-                        unidad: 'kg',
-                        url_producto: p.url?.startsWith('http') ? p.url : `https://www.alcampo.es${p.url || ''}`,
-                        imagen_url: p.image?.startsWith('http') ? p.image : undefined,
-                        marca: p.brand || 'Alcampo',
-                        cantidad: p.packaging || '',
-                        disponible: p.available !== false,
-                        categoria: leafCats[i].name,
-                    })
+                const groups = result.productGroups || []
+                for (const group of groups) {
+                    const prods = group.products || []
+                    for (const page of prods) {
+                        const p = page.product
+                        if (!p?.name) continue
+                        const key = p.productId || p.name
+                        if (vistos.has(key)) continue
+                        vistos.add(key)
+                        productos.push({
+                            nombre: p.name || '',
+                            precio_actual: p.price || 0,
+                            precio_por_kg: p.pricePerKg,
+                            unidad: p.unit || 'kg',
+                            url_producto: p.url || '',
+                            imagen_url: p.imageUrl || undefined,
+                            marca: p.brand || 'Alcampo',
+                            cantidad: p.packaging || undefined,
+                            disponible: p.available !== false,
+                            categoria: term,
+                        })
+                    }
                 }
             } catch (err) {
-                errores.push(`Error cat ${leafCats[i].name}: ${err.message}`)
+                const msg = err instanceof Error ? err.message : String(err)
+                errores.push(`Error búsqueda "${term}": ${msg}`)
             }
-            if (i > 0 && i % 10 === 0) console.log(`  📊 ${i}/${leafCats.length} cats · ${productos.length} prods`)
+
+            if (i > 0 && i % 10 === 0) {
+                console.log(`[Alcampo] ${i}/${terminos.length} búsquedas — ${productos.length} productos`)
+            }
         }
+
+        console.log(`[Alcampo] ${productos.length} productos totales (${vistos.size} únicos)`)
     } catch (err) {
-        errores.push(`Error general: ${err.message}`)
-        console.error('[Alcampo] Error:', err.message)
+        const msg = err instanceof Error ? err.message : String(err)
+        errores.push(`Error general: ${msg}`)
+        console.error('[Alcampo] Error:', msg)
     }
-    console.log(`\n[Alcampo] 📦 ${productos.length} productos`)
+
     return { productos, errores, duracion_ms: Date.now() - inicio }
 }
 
-// ── CONSUM ─────────────────────────────────────────────────────
+// ── CONSUM (API V1.0 corregida) ────────────────────────────────
 
 const CONSUM_BASE = 'https://tienda.consum.es'
-const CONSUM_HEADERS = { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' }
+const CONSUM_HEADERS = {
+    Accept: 'application/json',
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept-Language': 'es-ES,es;q=0.9',
+}
+
+async function fetchConsumJSON(url) {
+    const res = await fetch(url, {
+        signal: AbortSignal.timeout(15000),
+        headers: { ...CONSUM_HEADERS, Accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error(`Consum HTTP ${res.status} en ${url}`)
+    return res.json()
+}
+
+function mapearProductoConsum(p, categoria) {
+    const d = p.productData || {}
+    const pd = p.priceData
+    let precioActual = 0
+    let precioKg
+
+    if (pd?.prices?.length) {
+        const price = pd.prices.find(p2 => p2.id === 'PRICE')
+        if (price?.value?.centAmount) {
+            precioActual = price.value.centAmount / 100
+        }
+        const unitPrice = pd.prices.find(p2 => p2.id === 'UNIT_PRICE' || p2.id === 'PRICE')
+        if (unitPrice?.value?.centUnitAmount && unitPrice.value.centUnitAmount !== price?.value?.centAmount) {
+            precioKg = unitPrice.value.centUnitAmount / 100
+        }
+        if (!precioKg && pd.unitPriceUnitType) {
+            precioKg = precioActual
+        }
+    }
+
+    const url = d.url?.startsWith('http') ? d.url : undefined
+    const imagen = d.imageURL?.startsWith('http') ? d.imageURL : undefined
+    let cantidad = d.description || ''
+    if (!cantidad && pd?.unitPriceUnitType) cantidad = pd.unitPriceUnitType
+
+    return {
+        nombre: d.name || '',
+        precio_actual: precioActual,
+        precio_por_kg: precioKg,
+        unidad: 'kg',
+        url_producto: url || '',
+        imagen_url: imagen,
+        marca: d.brand?.name || 'Consum',
+        cantidad,
+        disponible: d.availability !== '0',
+        categoria,
+    }
+}
 
 async function scrapearConsum() {
     const inicio = Date.now()
     const errores = []
     const productos = []
 
-    console.log('[Consum] ⏳ Obteniendo categorías...')
     try {
-        const raw = await fetchJSON(`${CONSUM_BASE}/api/rest/v1/categories`, CONSUM_HEADERS)
-        const cats = Array.isArray(raw) ? raw : []
+        console.log('[Consum] Obteniendo árbol de categorías...')
+        const catsRaw = await fetchConsumJSON(`${CONSUM_BASE}/api/rest/V1.0/shopping/category/menu`)
+        const categorias = Array.isArray(catsRaw) ? catsRaw : []
+        console.log(`[Consum] ${categorias.length} categorías principales`)
+
+        // Extraer categorías hoja
         const leafCats = []
-        const extract = (list) => {
-            for (const c of list) {
-                if (c.subcategories && c.subcategories.length > 0) extract(c.subcategories)
-                else leafCats.push({ id: c.id, name: c.name })
+        const extractLeaves = (cats) => {
+            for (const c of cats) {
+                if (c.subcategories && c.subcategories.length > 0) extractLeaves(c.subcategories)
+                else leafCats.push({ id: c.id, name: c.name || c.nombre })
             }
         }
-        extract(cats)
-        console.log(`[Consum] 🔍 ${leafCats.length} categorías hoja\n`)
+        extractLeaves(categorias)
+        console.log(`[Consum] ${leafCats.length} categorías hoja`)
 
         for (let i = 0; i < leafCats.length; i++) {
-            await delay(RATE_LIMIT_MS)
+            const cat = leafCats[i]
+            await delay(300)
+
             try {
-                const prods = await fetchJSON(
-                    `${CONSUM_BASE}/api/rest/v1/categories/${leafCats[i].id}/products?pageSize=100`,
-                    CONSUM_HEADERS
+                const result = await fetchConsumJSON(
+                    `${CONSUM_BASE}/api/rest/V1.0/catalog/product?limit=100&orderById=7&categories=${cat.id}`
                 )
-                const prodsList = Array.isArray(prods) ? prods : []
-                for (const p of prodsList) {
-                    const precioKg = p.unitPrice || (p.referencePrice
-                        ? parseFloat(String(p.referencePrice).replace(',', '.')) : undefined)
-                    productos.push({
-                        nombre: p.name,
-                        precio_actual: p.price,
-                        precio_por_kg: precioKg,
-                        unidad: 'kg',
-                        url_producto: p.url?.startsWith('http') ? p.url : `https://tienda.consum.es${p.url || ''}`,
-                        imagen_url: p.image?.startsWith('http') ? p.image : undefined,
-                        marca: p.brand || 'Consum',
-                        cantidad: p.packaging || '',
-                        disponible: p.available !== false,
-                        categoria: leafCats[i].name,
-                    })
+                const prods = result.products || []
+                for (const p of prods) {
+                    productos.push(mapearProductoConsum(p, cat.name))
                 }
             } catch (err) {
-                errores.push(`Error cat ${leafCats[i].name}: ${err.message}`)
+                const msg = err instanceof Error ? err.message : String(err)
+                errores.push(`Error categoría ${cat.name}: ${msg}`)
             }
-            if (i > 0 && i % 10 === 0) console.log(`  📊 ${i}/${leafCats.length} cats · ${productos.length} prods`)
+
+            if (i > 0 && i % 10 === 0) {
+                console.log(`[Consum] ${i}/${leafCats.length} categorías — ${productos.length} productos`)
+            }
         }
+
+        console.log(`[Consum] ${productos.length} productos totales`)
     } catch (err) {
-        errores.push(`Error general: ${err.message}`)
-        console.error('[Consum] Error:', err.message)
+        const msg = err instanceof Error ? err.message : String(err)
+        errores.push(`Error general: ${msg}`)
+        console.error('[Consum] Error:', msg)
     }
-    console.log(`\n[Consum] 📦 ${productos.length} productos`)
+
     return { productos, errores, duracion_ms: Date.now() - inicio }
 }
 
-// ── EROSKI ─────────────────────────────────────────────────────
-
-const EROSKI_BASE = 'https://supermercado.eroski.es'
-const EROSKI_HEADERS = { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' }
+// ── EROSKI (Playwright) ────────────────────────────────────────
 
 async function scrapearEroski() {
     const inicio = Date.now()
     const errores = []
     const productos = []
+    let browser
 
-    console.log('[Eroski] ⏳ Obteniendo categorías...')
     try {
-        const raw = await fetchJSON(`${EROSKI_BASE}/api/categories`, EROSKI_HEADERS)
-        const cats = Array.isArray(raw) ? raw : []
-        const leafCats = []
-        const extract = (list) => {
-            for (const c of list) {
-                if (c.subcategories && c.subcategories.length > 0) extract(c.subcategories)
-                else leafCats.push({ id: c.id, name: c.name })
-            }
-        }
-        extract(cats)
-        console.log(`[Eroski] 🔍 ${leafCats.length} categorías hoja\n`)
+        console.log('[Eroski] Lanzando navegador Playwright...')
+        const { chromium } = await import('playwright')
+        browser = await chromium.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        })
 
-        for (let i = 0; i < leafCats.length; i++) {
-            await delay(RATE_LIMIT_MS)
-            try {
-                const prods = await fetchJSON(
-                    `${EROSKI_BASE}/api/categories/${leafCats[i].id}/products?pageSize=100`,
-                    EROSKI_HEADERS
+        const context = await browser.newContext({
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            viewport: { width: 1920, height: 1080 },
+            locale: 'es-ES',
+        })
+
+        const page = await context.newPage()
+
+        // ── 1. Obtener categorías ──
+        console.log('[Eroski] Obteniendo categorías...')
+        let categorias = []
+
+        try {
+            await page.goto('https://supermercado.eroski.es/es/', {
+                waitUntil: 'networkidle',
+                timeout: 30000,
+            }).catch(() => { })
+            await page.waitForTimeout(3000)
+
+            categorias = await page.evaluate(() => {
+                const links = []
+                const seen = new Set()
+                const anchors = document.querySelectorAll(
+                    'a[href*="/es/c/"], nav a[href*="/categoria"], ' +
+                    '.menu-item a[href*="/c/"], [class*="category"] a[href], ' +
+                    'a[href*="Alimentacion"], a[href*="alimentacion"]'
                 )
-                const prodsList = Array.isArray(prods) ? prods : []
-                for (const p of prodsList) {
-                    const precioKg = p.unitPrice || (p.referencePrice
-                        ? parseFloat(String(p.referencePrice).replace(',', '.')) : undefined)
-                    productos.push({
-                        nombre: p.name,
-                        precio_actual: p.price,
-                        precio_por_kg: precioKg,
-                        unidad: 'kg',
-                        url_producto: p.url?.startsWith('http') ? p.url : `https://supermercado.eroski.es${p.url || ''}`,
-                        imagen_url: p.image?.startsWith('http') ? p.image : undefined,
-                        marca: p.brand || 'Eroski',
-                        cantidad: p.packaging || '',
-                        disponible: p.available !== false,
-                        categoria: leafCats[i].name,
-                    })
-                }
-            } catch (err) {
-                errores.push(`Error cat ${leafCats[i].name}: ${err.message}`)
+                anchors.forEach(a => {
+                    const href = a.href?.trim()
+                    const text = a.textContent?.trim()
+                    if (href && text && !seen.has(href) && text.length > 3 && !href.includes('#')) {
+                        seen.add(href)
+                        links.push({ url: href, name: text })
+                    }
+                })
+                return links
+            })
+        } catch { }
+
+        console.log(`[Eroski] ${categorias.length} categorías encontradas`)
+
+        // Fallback: categorías predefinidas
+        if (categorias.length === 0) {
+            console.log('[Eroski] Usando categorías predefinidas...')
+            const CATS_PREDEFINIDAS = [
+                'https://supermercado.eroski.es/es/c/Alimentacion-y-bebidas/',
+                'https://supermercado.eroski.es/es/c/Carniceria/',
+                'https://supermercado.eroski.es/es/c/Pescaderia/',
+                'https://supermercado.eroski.es/es/c/Frutas-y-verduras/',
+                'https://supermercado.eroski.es/es/c/Lacteos-y-huevos/',
+                'https://supermercado.eroski.es/es/c/Congelados/',
+                'https://supermercado.eroski.es/es/c/Panaderia/',
+                'https://supermercado.eroski.es/es/c/Despensa/',
+                'https://supermercado.eroski.es/es/c/Bebidas/',
+            ]
+            for (const url of CATS_PREDEFINIDAS) {
+                categorias.push({ url, name: url.split('/c/').pop()?.replace(/-/g, ' ')?.replace(/\//g, '') || url })
             }
-            if (i > 0 && i % 10 === 0) console.log(`  📊 ${i}/${leafCats.length} cats · ${productos.length} prods`)
         }
+
+        // ── 2. Scrapear cada categoría ──
+        const maxCats = Math.min(categorias.length, 12)
+
+        for (let i = 0; i < maxCats; i++) {
+            const cat = categorias[i]
+            console.log(`[Eroski] Categoría ${i + 1}/${maxCats}: ${cat.name}`)
+            await delay(800)
+
+            try {
+                await page.goto(cat.url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => { })
+                await page.waitForTimeout(3000)
+
+                // Scroll para lazy loading
+                await page.evaluate(async () => {
+                    for (let s = 0; s < document.body.scrollHeight; s += 500) {
+                        window.scrollTo(0, s)
+                        await new Promise(r => setTimeout(r, 400))
+                    }
+                })
+                await page.waitForTimeout(1000)
+
+                const prods = await page.evaluate((catName) => {
+                    const items = []
+                    const cards = document.querySelectorAll(
+                        '[class*="product-card"], [class*="product-item"], ' +
+                        '[class*="product"], li[class*="product"], ' +
+                        '.grid-item, article'
+                    )
+                    cards.forEach(card => {
+                        const nombreEl = card.querySelector(
+                            '[class*="product-name"], [class*="product-title"], ' +
+                            '[class*="name"], h3, h2, [class*="title"]'
+                        )
+                        const precioEl = card.querySelector(
+                            '[class*="price"], .current-price, [class*="precio"], ' +
+                            '[data-price], [class*="offer"]'
+                        )
+                        const precioKgEl = card.querySelector(
+                            '[class*="unit-price"], [class*="price-per"], ' +
+                            '[class*="base-price"], [class*="reference"]'
+                        )
+                        const urlEl = card.querySelector('a[href]')
+                        const imgEl = card.querySelector('img')
+                        const marcaEl = card.querySelector('[class*="brand"], [data-brand], [class*="marca"]')
+                        const cantidadEl = card.querySelector(
+                            '[class*="quantity"], [class*="weight"], [class*="packaging"], ' +
+                            '[data-quantity], [class*="amount"]'
+                        )
+
+                        const nombre = nombreEl?.textContent?.trim() || ''
+                        const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0'
+                        const precio = parseFloat(precioTexto) || 0
+                        const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || ''
+                        const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined
+
+                        let href = urlEl?.href || ''
+                        if (href && !href.startsWith('http')) href = `https://supermercado.eroski.es${href}`
+
+                        if (nombre && precio > 0) {
+                            items.push({
+                                nombre,
+                                precio_actual: precio,
+                                precio_por_kg: precioKg,
+                                unidad: 'kg',
+                                url_producto: href,
+                                imagen_url: imgEl?.src || '',
+                                marca: marcaEl?.textContent?.trim() || 'Eroski',
+                                cantidad: cantidadEl?.textContent?.trim() || undefined,
+                                disponible: true,
+                                categoria: catName,
+                            })
+                        }
+                    })
+                    return items
+                }, cat.name)
+
+                for (const p of prods) productos.push(p)
+                console.log(`[Eroski]   → ${prods.length} productos`)
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err)
+                errores.push(`Error en categoría ${cat.name}: ${msg}`)
+                console.warn(`[Eroski]   ❌ ${msg}`)
+            }
+        }
+
+        console.log(`[Eroski] ${productos.length} productos totales`)
     } catch (err) {
-        errores.push(`Error general: ${err.message}`)
-        console.error('[Eroski] Error:', err.message)
+        const msg = err instanceof Error ? err.message : String(err)
+        errores.push(`Error general: ${msg}`)
+        console.error('[Eroski] Error:', msg)
+    } finally {
+        if (browser) await browser.close()
     }
-    console.log(`\n[Eroski] 📦 ${productos.length} productos`)
+
     return { productos, errores, duracion_ms: Date.now() - inicio }
 }
 
-// ── LIDL (Playwright) ──────────────────────────────────────────
+// ── LIDL (Playwright mejorado) ─────────────────────────────────
 
 async function scrapearLidl() {
     const inicio = Date.now()
     const errores = []
     const productos = []
-
-    let playwright
-    try {
-        playwright = await import('playwright')
-    } catch {
-        errores.push('Playwright no está instalado. Ejecuta: npm install playwright && npx playwright install chromium')
-        console.warn('[Lidl] ⚠️  Playwright no disponible, saltando')
-        return { productos, errores, duracion_ms: Date.now() - inicio }
-    }
-
-    console.log('[Lidl] ⏳ Lanzando navegador...')
     let browser
+
     try {
-        browser = await playwright.chromium.launch({
+        console.log('[Lidl] Lanzando navegador Playwright...')
+        const { chromium } = await import('playwright')
+        browser = await chromium.launch({
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         })
+
         const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
             viewport: { width: 1920, height: 1080 },
             locale: 'es-ES',
         })
+
         const page = await context.newPage()
 
-        console.log('[Lidl] Navegando a alimentación...')
-        await page.goto('https://www.lidl.es/c/alimentacion', {
-            waitUntil: 'networkidle',
-            timeout: 30000,
-        })
+        // ── 1. Obtener categorías de alimentación ──
+        console.log('[Lidl] Obteniendo categorías de alimentación...')
+        let categorias = []
 
-        const categorias = await page.evaluate(() => {
-            const links = document.querySelectorAll('a[data-category]')
-            return Array.from(links).map(a => ({
-                url: a.href,
-                name: a.textContent?.trim() || '',
-            }))
-        })
+        try {
+            await page.goto('https://www.lidl.es/c/alimentacion', {
+                waitUntil: 'networkidle',
+                timeout: 30000,
+            }).catch(() => { })
+            await page.waitForTimeout(3000)
 
-        console.log(`[Lidl] 🔍 ${categorias.length} categorías\n`)
-        const catsToScrape = categorias.length > 0
-            ? categorias : [{ url: 'https://www.lidl.es/c/alimentacion', name: 'Alimentación' }]
-        const maxCats = Math.min(catsToScrape.length, 10)
+            categorias = await page.evaluate(() => {
+                const links = []
+                const seen = new Set()
+                const anchors = document.querySelectorAll(
+                    'a[href*="/c/"], a[data-category], ' +
+                    'nav a[href*="categoria"], [class*="category"] a[href], ' +
+                    '.nav-item a[href*="/c/"]'
+                )
+                anchors.forEach(a => {
+                    const href = a.href?.trim()
+                    const text = a.textContent?.trim()
+                    if (href && text && !seen.has(href) && text.length > 3 && href.includes('/c/') && !href.includes('#')) {
+                        seen.add(href)
+                        links.push({ url: href, name: text })
+                    }
+                })
+                return links
+            })
+        } catch { }
+
+        console.log(`[Lidl] ${categorias.length} categorías encontradas`)
+
+        // Fallback: categorías predefinidas
+        if (categorias.length === 0) {
+            console.log('[Lidl] Usando categorías predefinidas...')
+            const CATS_PREDEFINIDAS = [
+                'https://www.lidl.es/c/alimentacion',
+                'https://www.lidl.es/c/frutas-y-verduras',
+                'https://www.lidl.es/c/carnes-y-aves',
+                'https://www.lidl.es/c/pescados-y-mariscos',
+                'https://www.lidl.es/c/lacteos-y-huevos',
+                'https://www.lidl.es/c/panaderia-y-pasteleria',
+                'https://www.lidl.es/c/despensa',
+                'https://www.lidl.es/c/congelados',
+                'https://www.lidl.es/c/bebidas',
+            ]
+            for (const url of CATS_PREDEFINIDAS) {
+                categorias.push({ url, name: url.split('/c/').pop()?.replace(/-/g, ' ') || url })
+            }
+        }
+
+        // ── 2. Scrapear cada categoría ──
+        const maxCats = Math.min(categorias.length, 10)
 
         for (let i = 0; i < maxCats; i++) {
-            await delay(1000)
+            const cat = categorias[i]
+            console.log(`[Lidl] Categoría ${i + 1}/${maxCats}: ${cat.name}`)
+            await delay(1500)
+
             try {
-                await page.goto(catsToScrape[i].url, { waitUntil: 'networkidle', timeout: 30000 })
-                await page.waitForSelector('article[data-product]', { timeout: 10000 }).catch(() => { })
+                await page.goto(cat.url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => { })
+                await page.waitForTimeout(3000)
 
-                const prods = await page.evaluate(() => {
-                    const items = document.querySelectorAll('article[data-product]')
-                    return Array.from(items).map(item => ({
-                        nombre: (item.querySelector('[data-product-name], .product__title')?.textContent || '').trim(),
-                        precio: parseFloat(
-                            (item.querySelector('[data-product-price], .product__price')?.textContent || '0')
-                                .replace(/[^\d,]/g, '').replace(',', '.') || '0'
-                        ),
-                        precioPorKg: (() => {
-                            const el = item.querySelector('.product__base-price')
-                            if (!el?.textContent) return undefined
-                            const m = el.textContent.replace(/[^\d,]/g, '').replace(',', '.')
-                            return m ? parseFloat(m) : undefined
-                        })(),
-                        url: item.querySelector('a.product__link')?.href || '',
-                        imagen: item.querySelector('img.product__image')?.src || '',
-                        cantidad: (item.querySelector('.product__quantity')?.textContent || '').trim(),
-                    }))
-                })
-
-                for (const p of prods) {
-                    if (p.nombre && p.precio > 0) {
-                        productos.push({
-                            nombre: p.nombre,
-                            precio_actual: p.precio,
-                            precio_por_kg: p.precioPorKg,
-                            unidad: 'kg',
-                            url_producto: p.url,
-                            imagen_url: p.imagen || undefined,
-                            marca: 'Lidl',
-                            cantidad: p.cantidad || undefined,
-                            disponible: true,
-                            categoria: catsToScrape[i].name,
-                        })
+                // Scroll para lazy loading
+                await page.evaluate(async () => {
+                    for (let s = 0; s < document.body.scrollHeight; s += 500) {
+                        window.scrollTo(0, s)
+                        await new Promise(r => setTimeout(r, 500))
                     }
-                }
+                })
+                await page.waitForTimeout(1000)
+
+                const prods = await page.evaluate((catName) => {
+                    const items = []
+                    const cards = document.querySelectorAll(
+                        'article[data-product], [class*="product-card"], ' +
+                        '[class*="product-item"], [class*="product"], ' +
+                        '[data-testid*="product"], .grid-item, li[class*="product"]'
+                    )
+                    cards.forEach(card => {
+                        const nombreEl = card.querySelector(
+                            '[data-product-name], [class*="product-name"], ' +
+                            '[class*="product-title"], [class*="name"], ' +
+                            'h3, h2, [class*="title"]'
+                        )
+                        const precioEl = card.querySelector(
+                            '[data-product-price], [class*="price"], ' +
+                            '.current-price, [class*="precio"], .price'
+                        )
+                        const precioKgEl = card.querySelector(
+                            '[class*="base-price"], [class*="unit-price"], ' +
+                            '[class*="price-per"], [class*="reference"]'
+                        )
+                        const urlEl = card.querySelector('a[href]')
+                        const imgEl = card.querySelector('img')
+                        const cantidadEl = card.querySelector(
+                            '[class*="quantity"], [class*="weight"], [class*="packaging"], ' +
+                            '[data-quantity], [class*="amount"]'
+                        )
+
+                        const nombre = nombreEl?.textContent?.trim() || ''
+                        const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0'
+                        const precio = parseFloat(precioTexto) || 0
+                        const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || ''
+                        const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined
+
+                        let href = urlEl?.href || ''
+                        if (href && !href.startsWith('http')) href = `https://www.lidl.es${href}`
+
+                        if (nombre && precio > 0) {
+                            items.push({
+                                nombre,
+                                precio_actual: precio,
+                                precio_por_kg: precioKg,
+                                unidad: 'kg',
+                                url_producto: href,
+                                imagen_url: imgEl?.src || '',
+                                marca: 'Lidl',
+                                cantidad: cantidadEl?.textContent?.trim() || undefined,
+                                disponible: true,
+                                categoria: catName,
+                            })
+                        }
+                    })
+                    return items
+                }, cat.name)
+
+                for (const p of prods) productos.push(p)
+                console.log(`[Lidl]   → ${prods.length} productos`)
             } catch (err) {
-                errores.push(`Error cat ${catsToScrape[i].name}: ${err.message}`)
+                const msg = err instanceof Error ? err.message : String(err)
+                errores.push(`Error en categoría ${cat.name}: ${msg}`)
+                console.warn(`[Lidl]   ❌ ${msg}`)
             }
-            console.log(`  📊 ${i + 1}/${maxCats} cats · ${productos.length} prods`)
         }
+
+        console.log(`[Lidl] ${productos.length} productos totales`)
     } catch (err) {
-        errores.push(`Error general: ${err.message}`)
-        console.error('[Lidl] Error:', err.message)
+        const msg = err instanceof Error ? err.message : String(err)
+        errores.push(`Error general: ${msg}`)
+        console.error('[Lidl] Error:', msg)
     } finally {
         if (browser) await browser.close()
     }
-    console.log(`\n[Lidl] 📦 ${productos.length} productos`)
+
     return { productos, errores, duracion_ms: Date.now() - inicio }
 }
 
@@ -903,21 +1393,31 @@ async function procesarSupermercado(slug, scrapeFn, supermercados) {
     let nuevos = 0, actualizados = 0, errores = 0, sinAlimento = 0
 
     for (let i = 0; i < comestibles.length; i++) {
-        const prod = comestibles[i]
-        const result = await upsertProducto(sm.id, prod)
+        try {
+            const prod = comestibles[i]
+            const result = await upsertProducto(sm.id, prod)
 
-        if (result.error) {
+            if (result.error) {
+                if (result.accion !== 'saltado') {
+                    process.stderr.write(`   ⚠️  [${i}] "${prod?.nombre || '??'}": ${result.error}\n`)
+                }
+                errores++
+                continue
+            }
+            if (result.accion === 'nuevo') nuevos++
+            else if (result.accion === 'actualizado') actualizados++
+            if (result.alimento_id) await registrarHistorico(sm.id, prod, result.alimento_id)
+            else sinAlimento++
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            const nombre = comestibles[i]?.nombre || '??'
+            process.stderr.write(`   ❌ [${i}] "${nombre}": EXCEPCIÓN en bucle: ${msg}\n`)
             errores++
-            continue
         }
-        if (result.accion === 'nuevo') nuevos++
-        else if (result.accion === 'actualizado') actualizados++
-        if (result.alimento_id) await registrarHistorico(sm.id, prod, result.alimento_id)
-        else sinAlimento++
 
-        if (i > 0 && i % 500 === 0) {
-            const pct = ((i / comestibles.length) * 100).toFixed(1)
-            console.log(`   📊 ${i}/${comestibles.length} (${pct}%) · nuevos: ${nuevos} · act: ${actualizados}`)
+        if ((i + 1) % 250 === 0) {
+            const pct = (((i + 1) / comestibles.length) * 100).toFixed(1)
+            console.log(`   📊 ${i + 1}/${comestibles.length} (${pct}%) · +${nuevos} · ~${actualizados} · err:${errores}`)
         }
     }
 
