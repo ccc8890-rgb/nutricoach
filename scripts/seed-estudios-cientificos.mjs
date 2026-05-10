@@ -5,10 +5,16 @@
  * USO: node scripts/seed-estudios-cientificos.mjs
  *
  * Fuentes: PubMed, BJSM, JSCR, MSSE, IJSNM, AJCN, ISSN, Springer
+ *
+ * REQUISITO: Las variables SUPABASE_SERVICE_ROLE_KEY y NEXT_PUBLIC_SUPABASE_URL
+ * deben estar definidas en .env.local
  */
 
-const SERVICE_KEY = 'SUPABASE_SERVICE_ROLE_JWT_REVOCADO'
-const SUPABASE_URL = 'https://hopeqzwzmlrpktoeygxz.supabase.co'
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+if (!SERVICE_KEY) throw new Error('Falta SUPABASE_SERVICE_ROLE_KEY en .env.local')
+if (!SUPABASE_URL) throw new Error('Falta NEXT_PUBLIC_SUPABASE_URL en .env.local')
 
 const HEADERS = {
     'Content-Type': 'application/json',
