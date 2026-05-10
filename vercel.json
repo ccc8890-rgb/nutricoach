@@ -1,5 +1,0 @@
-{
-  "buildCommand": "npx next build",
-  "installCommand": "npm install --no-optional --ignore-scripts",
-  "framework": "nextjs"
-}
