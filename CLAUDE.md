@@ -7,20 +7,27 @@
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 
-## Estado Actual (10-05-2026 — Sesión 8)
+## Estado Actual (10-05-2026 — Sesión 8 — Clausurada)
 
-### Fixes sesión 8
+### Fixes sesión 8 (Roo Code — Sesión 2 de la rama)
 - ✅ **Scraper recetas** (`app/api/scrape-receta/route.ts`): HTML limpiado antes de mandar a Gemini/DeepSeek → instrucciones ya no traen "copia y pega" del artículo
 - ✅ **parseIngredienteRaw()**: ingredientes JSON-LD ("500g de arroz bomba") parseados a nombre+cantidad+unidad
 - ✅ **HowToSection** en JSON-LD: soportado para sitios con instrucciones en secciones anidadas
 - ✅ **esNoComestible()** en `lib/scraping/index.ts`: filtra higiene, limpieza, mascotas antes de guardar en BD
 - ✅ **Fix upsert precios**: partial unique index incompatible con cliente JS → reemplazado por check→update/insert
-- ✅ **Mercadona re-scrapeado** (en curso al cerrar sesión) — con fix de upsert activo
+- ✅ **Mercadona re-scrapeado** — 3.752 productos, 814 duplicados por URL (ok)
 - ✅ **BD limpia**: 0 no-comestibles, script `eliminar-no-alimentos.mjs` con keywords ampliadas
 - ✅ **Lista de la compra funcional**: ItemConPrecios con €/kg en fila colapsada, selección por supermercado
+- ✅ **Migración SQL lista_compra** ejecutada en Supabase vía `supabase db query --linked`
+- ✅ **Backfill recetas**: 2/2 completado
+- ✅ **Scrapers reparados (6)**: Consum (API real), Alcampo (API Ocado), Carrefour (Playwright), Día (Playwright), Eroski (Playwright), Lidl (Playwright mejorado)
+- ✅ **Enriquecer 70 alimentos sin macros**: 70/70 procesado
+- ✅ **Merge feature/modulos → main** (`4973187`) — build exitoso, worktrees sincronizados
+- ✅ **Perfilado DeepSeek 135/135 recetas** — 0 sin instrucciones, 0 sin kcal
 
-### Plan para próximos días (DeepSeek/Roo Code)
-Ver `docs/PLAN_DEEPSEEK_10-05-2026.md` — tareas ordenadas por prioridad con comandos exactos.
+### Lo que sigue
+**Prioridad máxima:** Despliegue en Vercel (subir a GitHub + vercel deploy + configurar Supabase Auth)
+**Backlog:** Refinar imágenes GPT-4o, limpiar flux_txt2img, macros/100g en ficha receta
 
 ## Estado Actual (09-05-2026 — Sesión 7)
 - **0 errores TypeScript** ✅ — build verificado con `npx next build`
