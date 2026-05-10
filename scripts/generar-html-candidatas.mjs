@@ -5,96 +5,98 @@ import { resolve } from 'path'
 // Load env
 const envPath = resolve(process.cwd(), '.env.local')
 for (const line of readFileSync(envPath, 'utf-8').split('\n')) {
-    const t = line.trim()
-    if (!t || t.startsWith('#')) continue
-    const eq = t.indexOf('=')
-    if (eq === -1) continue
-    const k = t.slice(0, eq).trim()
-    const v = t.slice(eq + 1).trim().replace(/^["']|["']$/g, '')
-    if (!process.env[k]) process.env[k] = v
+  const t = line.trim()
+  if (!t || t.startsWith('#')) continue
+  const eq = t.indexOf('=')
+  if (eq === -1) continue
+  const k = t.slice(0, eq).trim()
+  const v = t.slice(eq + 1).trim().replace(/^["']|["']$/g, '')
+  if (!process.env[k]) process.env[k] = v
 }
 
 const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false } }
 )
 
 function nombreToSlug(n) {
-    return n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  return n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
 function fuzzyMatch(slug, nombre) {
-    const sw = new Set(slug.split('-').filter(w => w.length > 2))
-    const ws = nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').split(/\s+/).filter(w => w.length > 2)
-    const nw = new Set(ws)
-    if (sw.size === 0 || nw.size === 0) return 0
-    let ov = 0
-    for (const w of sw) {
-        if (nw.has(w)) { ov++; continue }
-        for (const n of nw) { if (n.startsWith(w) || w.startsWith(n)) { ov++; break } }
-    }
-    return ov / Math.max(sw.size, nw.size)
+  const sw = new Set(slug.split('-').filter(w => w.length > 2))
+  const ws = nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').split(/\s+/).filter(w => w.length > 2)
+  const nw = new Set(ws)
+  if (sw.size === 0 || nw.size === 0) return 0
+  let ov = 0
+  for (const w of sw) {
+    if (nw.has(w)) { ov++; continue }
+    for (const n of nw) { if (n.startsWith(w) || w.startsWith(n)) { ov++; break } }
+  }
+  return ov / Math.max(sw.size, nw.size)
 }
 
 const PRIORIDAD = ['og_image', 'flux_img2img', 'ai_gen', 'flux_txt2img']
 
 async function main() {
-    const salidaDir = '/Users/carloscasanova/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach/salidas/revision-imagenes'
-    const archivos = readdirSync(salidaDir)
+  const salidaDir = '/Users/carloscasanova/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach/salidas/revision-imagenes'
+  const archivos = readdirSync(salidaDir)
 
-    // Group files by slug
-    const porSlug = {}
-    for (const f of archivos) {
-        for (const metodo of PRIORIDAD) {
-            const prefix = metodo + '--'
-            if (!f.startsWith(prefix)) continue
-            const slug = f.slice(prefix.length).replace(/\.(webp|jpg|png|jpeg)$/, '')
-            if (!porSlug[slug]) porSlug[slug] = []
-            const buf = readFileSync(resolve(salidaDir, f))
-            const mime = f.match(/\.(jpg|jpeg)$/) ? 'image/jpeg' : 'image/webp'
-            porSlug[slug].push({ metodo, archivo: f, b64: buf.toString('base64'), mime })
-            break
-        }
+  // Group files by slug
+  const porSlug = {}
+  for (const f of archivos) {
+    for (const metodo of PRIORIDAD) {
+      const prefix = metodo + '--'
+      if (!f.startsWith(prefix)) continue
+      // Normalizar slug del filename: eliminar acentos para que coincida con nombreToSlug()
+      const rawSlug = f.slice(prefix.length).replace(/\.(webp|jpg|png|jpeg)$/, '')
+      const slug = rawSlug.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      if (!porSlug[slug]) porSlug[slug] = []
+      const buf = readFileSync(resolve(salidaDir, f))
+      const mime = f.match(/\.(jpg|jpeg)$/) ? 'image/jpeg' : 'image/webp'
+      porSlug[slug].push({ metodo, archivo: f, b64: buf.toString('base64'), mime })
+      break
     }
+  }
 
-    const { data: recetas } = await supabase.from('recetas').select('id, nombre, url_origen, imagen_url').order('nombre')
+  const { data: recetas } = await supabase.from('recetas').select('id, nombre, url_origen, imagen_url').order('nombre')
 
-    const cards = []
-    for (const r of recetas) {
-        const slug = nombreToSlug(r.nombre)
-        let bestSlug = slug
-        let bestFiles = porSlug[slug] || []
-        if (bestFiles.length === 0) {
-            let bestScore = 0
-            for (const s of Object.keys(porSlug)) {
-                const score = fuzzyMatch(s, r.nombre)
-                if (score > bestScore) { bestScore = score; bestSlug = s }
-            }
-            if (bestScore >= 0.5) bestFiles = porSlug[bestSlug] || []
-        }
-        bestFiles.sort((a, b) => PRIORIDAD.indexOf(a.metodo) - PRIORIDAD.indexOf(b.metodo))
-        const mejor = bestFiles.length > 0 ? bestFiles[0] : null
-        const estado = mejor && mejor.metodo === 'flux_txt2img' ? 'regen' : 'ok'
-
-        cards.push({
-            idx: cards.length,
-            nombre: r.nombre,
-            estado,
-            metodo: mejor ? mejor.metodo : 'bd',
-            total: bestFiles.length,
-            imgSrc: mejor ? (`data:${mejor.mime};base64,${mejor.b64}`) : (r.imagenUrl || '')
-        })
+  const cards = []
+  for (const r of recetas) {
+    const slug = nombreToSlug(r.nombre)
+    let bestSlug = slug
+    let bestFiles = porSlug[slug] || []
+    if (bestFiles.length === 0) {
+      let bestScore = 0
+      for (const s of Object.keys(porSlug)) {
+        const score = fuzzyMatch(s, r.nombre)
+        if (score > bestScore) { bestScore = score; bestSlug = s }
+      }
+      if (bestScore >= 0.5) bestFiles = porSlug[bestSlug] || []
     }
+    bestFiles.sort((a, b) => PRIORIDAD.indexOf(a.metodo) - PRIORIDAD.indexOf(b.metodo))
+    const mejor = bestFiles.length > 0 ? bestFiles[0] : null
+    const estado = mejor && mejor.metodo === 'flux_txt2img' ? 'regen' : 'ok'
 
-    // Escape single quotes for JS
-    const esc = s => s.replace(/'/g, "\\'")
+    cards.push({
+      idx: cards.length,
+      nombre: r.nombre,
+      estado,
+      metodo: mejor ? mejor.metodo : 'bd',
+      total: bestFiles.length,
+      imgSrc: mejor ? (`data:${mejor.mime};base64,${mejor.b64}`) : (r.imagenUrl || '')
+    })
+  }
 
-    const items = cards.map(c =>
-        `{i:${c.idx},n:'${esc(c.nombre)}',e:'${c.estado}',m:'${c.metodo}',t:${c.total},s:'${c.imgSrc}'}`
-    ).join(',\n')
+  // Escape single quotes for JS
+  const esc = s => s.replace(/'/g, "\\'")
 
-    const html = `<!DOCTYPE html>
+  const items = cards.map(c =>
+    `{i:${c.idx},n:'${esc(c.nombre)}',e:'${c.estado}',m:'${c.metodo}',t:${c.total},s:'${c.imgSrc}'}`
+  ).join(',\n')
+
+  const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -229,12 +231,12 @@ render('all');
 </body>
 </html>`
 
-    const out = '/Users/carloscasanova/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach/salidas/revision-imagenes/candidatas.html'
-    writeFileSync(out, html)
-    const sizeKB = (html.length / 1024).toFixed(0)
-    console.log(`✅ candidatas.html (${sizeKB}KB) — ${cards.length} recetas`)
-    console.log(`   OK: ${cards.filter(c => c.estado === 'ok').length}`)
-    console.log(`   Regenerar: ${cards.filter(c => c.estado === 'regen').length} (~$${(cards.filter(c => c.estado === 'regen').length * 0.034).toFixed(2)})`)
+  const out = '/Users/carloscasanova/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach/salidas/revision-imagenes/candidatas.html'
+  writeFileSync(out, html)
+  const sizeKB = (html.length / 1024).toFixed(0)
+  console.log(`✅ candidatas.html (${sizeKB}KB) — ${cards.length} recetas`)
+  console.log(`   OK: ${cards.filter(c => c.estado === 'ok').length}`)
+  console.log(`   Regenerar: ${cards.filter(c => c.estado === 'regen').length} (~$${(cards.filter(c => c.estado === 'regen').length * 0.034).toFixed(2)})`)
 }
 
 main().catch(e => { console.error(e); process.exit(1) })
