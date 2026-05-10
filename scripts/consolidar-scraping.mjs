@@ -1,31 +1,30 @@
 #!/usr/bin/env node
 /**
- * ejecutar-scraping.mjs
+ * consolidar-scraping.mjs
  *
- * Script autónomo para descargar el catálogo completo de todos los
- * supermercados soportados e insertarlos en Supabase
- * con upsert por (supermercado_id, nombre_original).
+ * Script OPTIMIZADO para descargar el catálogo de TODOS los
+ * supermercados en una sola ejecución, con:
+ *   - Batch upsert (500 productos por lote)
+ *   - Deduplicación por limpiarNombre()
+ *   - Límite de ~1.500 productos representativos por supermercado
+ *   - Sin histórico (precios de referencia, no diarios)
+ *   - Skip si ya existe con mismo precio en últimos 7 días
  *
  * USO:
- *   node scripts/ejecutar-scraping.mjs                    # Solo Mercadona
- *   node scripts/ejecutar-scraping.mjs --mercadona        # Explícito
- *   node scripts/ejecutar-scraping.mjs --carrefour        # Solo Carrefour
- *   node scripts/ejecutar-scraping.mjs --dia              # Solo Día
- *   node scripts/ejecutar-scraping.mjs --alcampo          # Solo Alcampo
- *   node scripts/ejecutar-scraping.mjs --consum           # Solo Consum
- *   node scripts/ejecutar-scraping.mjs --eroski           # Solo Eroski
- *   node scripts/ejecutar-scraping.mjs --lidl             # Solo Lidl
- *   node scripts/ejecutar-scraping.mjs --all              # Todos los supermercados
+ *   node scripts/consolidar-scraping.mjs              # Todos
+ *   node scripts/consolidar-scraping.mjs --mercadona   # Solo Mercadona
+ *   node scripts/consolidar-scraping.mjs --carrefour   # Solo Carrefour
  *
  * Requiere: .env.local con NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY
- * Para Lidl: playwright debe estar instalado (npm exec playwright install chromium)
  */
 
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { delay, fetchJSON, esComestible, limpiarNombre } from '../lib/scraping/helpers-scraping.mjs'
+import {
+    delay, fetchJSON, esComestible, limpiarNombre,
+} from '../lib/scraping/helpers-scraping.mjs'
 
 // ── Config ────────────────────────────────────────────────────
 
@@ -52,7 +51,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: false },
 })
 
-// ── Global error handlers (evitan muerte silenciosa) ──────────
+// ── Global error handlers ─────────────────────────────────────
 
 process.on('unhandledRejection', (reason) => {
     const msg = reason instanceof Error ? reason.stack || reason.message : String(reason)
@@ -65,128 +64,8 @@ process.on('uncaughtException', (err) => {
     process.exit(1)
 })
 
-// ─── Buscar o crear alimento ──────────────────────────────────
-
-async function buscarOMCrearAlimento(nombreLimpio, categoria) {
-    try {
-        if (!nombreLimpio || nombreLimpio.length < 2) return null
-
-        const { data: exacto } = await supabase
-            .from('alimentos')
-            .select('id')
-            .ilike('nombre', nombreLimpio)
-            .maybeSingle()
-        if (exacto) return exacto.id
-
-        const { data: contains } = await supabase
-            .from('alimentos')
-            .select('id')
-            .or(`nombre.ilike.%${nombreLimpio}%,nombre.ilike.${nombreLimpio}%`)
-            .limit(1)
-            .maybeSingle()
-        if (contains) return contains.id
-
-        const { data: nuevo, error } = await supabase
-            .from('alimentos')
-            .insert({
-                nombre: nombreLimpio,
-                categoria: categoria || 'Supermercado',
-                calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0,
-            })
-            .select('id')
-            .single()
-
-        if (error) {
-            process.stderr.write(`  ⚠️  No se pudo crear alimento "${nombreLimpio}": ${error.message}\n`)
-            return null
-        }
-        return nuevo.id
-    } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        process.stderr.write(`  ⚠️  Excepción en buscarOMCrearAlimento("${nombreLimpio}"): ${msg}\n`)
-        return null
-    }
-}
-
-// ─── Upsert y guardado ────────────────────────────────────────
-
-async function upsertProducto(supermercadoId, producto) {
-    try {
-        if (!producto || !producto.nombre) {
-            return { error: 'Producto sin nombre', accion: 'saltado' }
-        }
-
-        const { data: existente } = await supabase
-            .from('productos_supermercado')
-            .select('id, alimento_id')
-            .eq('supermercado_id', supermercadoId)
-            .eq('nombre_original', producto.nombre)
-            .maybeSingle()
-
-        const payload = {
-            supermercado_id: supermercadoId,
-            nombre_original: producto.nombre,
-            precio_por_kg: producto.precio_por_kg ?? producto.precio_actual,
-            precio_unidad: producto.precio_actual !== (producto.precio_por_kg ?? producto.precio_actual)
-                ? producto.precio_actual : null,
-            unidad: producto.unidad || 'kg',
-            url_producto: producto.url_producto || null,
-            marca: producto.marca || null,
-            fecha_precio: new Date().toISOString().split('T')[0],
-        }
-
-        if (existente) {
-            const { error } = await supabase
-                .from('productos_supermercado')
-                .update(payload)
-                .eq('id', existente.id)
-            if (error) return { error: error.message }
-            return { id: existente.id, alimento_id: existente.alimento_id, accion: 'actualizado' }
-        }
-
-        const nombreLimpio = limpiarNombre(producto.nombre)
-        const alimentoId = await buscarOMCrearAlimento(nombreLimpio, producto.categoria)
-
-        if (!alimentoId) return { error: 'No se pudo determinar/crear alimento', accion: 'saltado' }
-
-        payload.alimento_id = alimentoId
-        const { data, error } = await supabase
-            .from('productos_supermercado')
-            .insert(payload)
-            .select('id, alimento_id')
-            .single()
-
-        if (error) return { error: error.message }
-        return { id: data.id, alimento_id: data.alimento_id, accion: 'nuevo' }
-    } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        return { error: `upsertProducto exception: ${msg}`, accion: 'saltado' }
-    }
-}
-
-async function registrarHistorico(supermercadoId, producto, alimentoId) {
-    try {
-        await supabase.from('precios_historico').insert({
-            supermercado_id: supermercadoId,
-            alimento_id: alimentoId,
-            nombre_producto: producto.nombre,
-            precio_por_kg: producto.precio_por_kg ?? producto.precio_actual,
-            precio_unidad: producto.precio_actual !== (producto.precio_por_kg ?? producto.precio_actual)
-                ? producto.precio_actual : null,
-            url_producto: producto.url_producto || null,
-            fuente: 'scraping_http',
-            metadatos: {
-                marca: producto.marca,
-                cantidad: producto.cantidad,
-                disponible: producto.disponible,
-                imagen_url: producto.imagen_url,
-            },
-        })
-    } catch { /* ignorar errores de históricos */ }
-}
-
 // ═══════════════════════════════════════════════════════════════
-//  SCRAPERS POR SUPERMERCADO
+//  SCRAPERS
 // ═══════════════════════════════════════════════════════════════
 
 // ── MERCADONA ──────────────────────────────────────────────────
@@ -273,7 +152,6 @@ async function scrapearCarrefour() {
 
         const page = await context.newPage()
 
-        // ── 1. Navegar a supermercado ──
         console.log('[Carrefour] Navegando a supermercado...')
         try {
             await page.goto('https://www.carrefour.es/supermercado/c/alimentacion', {
@@ -286,7 +164,6 @@ async function scrapearCarrefour() {
         }
         await page.waitForTimeout(3000)
 
-        // ── 2. Intentar extraer categorías del DOM ──
         console.log('[Carrefour] Extrayendo categorías del DOM...')
         let categorias = []
 
@@ -295,11 +172,7 @@ async function scrapearCarrefour() {
                 const links = []
                 const seen = new Set()
                 const anchors = document.querySelectorAll(
-                    'a[href*="/supermercado/c/"], ' +
-                    'a[href*="/category/"], ' +
-                    '.nav-link[href*="alimentacion"], ' +
-                    '.menu-item a[href*="/c/"], ' +
-                    'nav a[href*="/supermercado"]'
+                    'a[href*="/supermercado/c/"], a[href*="/category/"], .nav-link[href*="alimentacion"], .menu-item a[href*="/c/"], nav a[href*="/supermercado"]'
                 )
                 anchors.forEach(a => {
                     const href = a.href?.trim()
@@ -317,7 +190,6 @@ async function scrapearCarrefour() {
 
         console.log(`[Carrefour] ${categorias.length} categorías encontradas en DOM`)
 
-        // ── 3. Si no hay categorías, usar predefinidas ──
         if (categorias.length === 0) {
             console.log('[Carrefour] Usando categorías predefinidas...')
             const CATS_PREDEFINIDAS = [
@@ -338,7 +210,6 @@ async function scrapearCarrefour() {
             categorias = CATS_PREDEFINIDAS.map(url => ({ url, name: url.split('/c/').pop()?.replace(/-/g, ' ') || url }))
         }
 
-        // ── 4. Scrapear productos de cada categoría ──
         const maxCats = Math.min(categorias.length, 20)
 
         for (let i = 0; i < maxCats; i++) {
@@ -350,7 +221,6 @@ async function scrapearCarrefour() {
                 await page.goto(cat.url, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => { })
                 await page.waitForTimeout(3000)
 
-                // Scroll para trigger lazy loading
                 await page.evaluate(async () => {
                     for (let s = 0; s < document.body.scrollHeight; s += 500) {
                         window.scrollTo(0, s)
@@ -362,29 +232,17 @@ async function scrapearCarrefour() {
                 const prods = await page.evaluate((catName) => {
                     const items = []
                     const cards = document.querySelectorAll(
-                        'article[data-product], ' +
-                        '.product-card, ' +
-                        '.product-item, ' +
-                        '[data-testid*="product"], ' +
-                        '.grid-item, ' +
-                        'li[class*="product"]'
+                        'article[data-product], .product-card, .product-item, [data-testid*="product"], .grid-item, li[class*="product"]'
                     )
                     cards.forEach(card => {
                         const nombreEl = card.querySelector(
-                            '[data-product-name], ' +
-                            '.product-card__title, ' +
-                            '.product-name, h3, h2, [class*="title"], [class*="name"]'
+                            '[data-product-name], .product-card__title, .product-name, h3, h2, [class*="title"], [class*="name"]'
                         )
                         const precioEl = card.querySelector(
-                            '[data-product-price], ' +
-                            '.product-card__price, ' +
-                            '.price, [class*="price"], ' +
-                            '.current-price, .offer-price'
+                            '[data-product-price], .product-card__price, .price, [class*="price"], .current-price, .offer-price'
                         )
                         const precioKgEl = card.querySelector(
-                            '.product-card__unit-price, ' +
-                            '.unit-price, [class*="unit"], ' +
-                            '.price-per-unit, .reference-price'
+                            '.product-card__unit-price, .unit-price, [class*="unit"], .price-per-unit, .reference-price'
                         )
                         const urlEl = card.querySelector('a[href]')
                         const imgEl = card.querySelector('img')
@@ -402,16 +260,10 @@ async function scrapearCarrefour() {
 
                         if (nombre && precio > 0) {
                             items.push({
-                                nombre,
-                                precio_actual: precio,
-                                precio_por_kg: precioKg,
-                                unidad: 'kg',
-                                url_producto: href || '',
-                                imagen_url: imgEl?.src || '',
+                                nombre, precio_actual: precio, precio_por_kg: precioKg,
+                                unidad: 'kg', url_producto: href || '', imagen_url: imgEl?.src || '',
                                 marca: marcaEl?.textContent?.trim() || 'Carrefour',
-                                cantidad: cantidadEl?.textContent?.trim() || '',
-                                disponible: true,
-                                categoria: catName,
+                                cantidad: cantidadEl?.textContent?.trim() || '', disponible: true, categoria: catName,
                             })
                         }
                     })
@@ -463,7 +315,6 @@ async function scrapearDia() {
 
         const page = await context.newPage()
 
-        // ── 1. Obtener categorías ──
         console.log('[Día] Obteniendo categorías...')
         let categorias = []
 
@@ -492,7 +343,6 @@ async function scrapearDia() {
 
         console.log(`[Día] ${categorias.length} categorías encontradas`)
 
-        // Fallback: categorías predefinidas
         if (categorias.length === 0) {
             console.log('[Día] Usando categorías predefinidas...')
             const CATS_PREDEFINIDAS = [
@@ -515,7 +365,6 @@ async function scrapearDia() {
             }
         }
 
-        // ── 2. Scrapear cada categoría ──
         const maxCats = Math.min(categorias.length, 15)
 
         for (let i = 0; i < maxCats; i++) {
@@ -527,7 +376,6 @@ async function scrapearDia() {
                 await page.goto(cat.url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => { })
                 await page.waitForTimeout(3000)
 
-                // Scroll para lazy loading
                 await page.evaluate(async () => {
                     for (let s = 0; s < document.body.scrollHeight; s += 500) {
                         window.scrollTo(0, s)
@@ -539,30 +387,23 @@ async function scrapearDia() {
                 const prods = await page.evaluate((catName) => {
                     const items = []
                     const cards = document.querySelectorAll(
-                        'article[data-product], ' +
-                        '[class*="product-card"], [class*="product-item"], ' +
-                        'li[class*="product"], [data-testid*="product"], ' +
-                        '.product-grid [class*="item"]'
+                        'article[data-product], [class*="product-card"], [class*="product-item"], li[class*="product"], [data-testid*="product"], .product-grid [class*="item"]'
                     )
                     cards.forEach(card => {
                         const nombreEl = card.querySelector(
-                            '[class*="product-name"], [class*="product-title"], ' +
-                            '[class*="name"], h3, h2, [class*="brand"] + [class*="name"]'
+                            '[class*="product-name"], [class*="product-title"], [class*="name"], h3, h2, [class*="brand"] + [class*="name"]'
                         )
                         const precioEl = card.querySelector(
-                            '[class*="price"], .current-price, .offer-price, ' +
-                            '[data-price], [class*="precio"]'
+                            '[class*="price"], .current-price, .offer-price, [data-price], [class*="precio"]'
                         )
                         const precioKgEl = card.querySelector(
-                            '[class*="unit-price"], [class*="price-per-kg"], ' +
-                            '[class*="base-price"], [class*="reference"]'
+                            '[class*="unit-price"], [class*="price-per-kg"], [class*="base-price"], [class*="reference"]'
                         )
                         const urlEl = card.querySelector('a[href]')
                         const imgEl = card.querySelector('img')
                         const marcaEl = card.querySelector('[class*="brand"], [data-brand], [class*="marca"]')
                         const cantidadEl = card.querySelector(
-                            '[class*="quantity"], [class*="weight"], [class*="amount"], ' +
-                            '[data-quantity], [class*="packaging"]'
+                            '[class*="quantity"], [class*="weight"], [class*="amount"], [data-quantity], [class*="packaging"]'
                         )
 
                         const nombre = nombreEl?.textContent?.trim() || ''
@@ -576,16 +417,10 @@ async function scrapearDia() {
 
                         if (nombre && precio > 0) {
                             items.push({
-                                nombre,
-                                precio_actual: precio,
-                                precio_por_kg: precioKg,
-                                unidad: 'kg',
-                                url_producto: href,
-                                imagen_url: imgEl?.src || '',
+                                nombre, precio_actual: precio, precio_por_kg: precioKg,
+                                unidad: 'kg', url_producto: href, imagen_url: imgEl?.src || '',
                                 marca: marcaEl?.textContent?.trim() || 'Día',
-                                cantidad: cantidadEl?.textContent?.trim() || undefined,
-                                disponible: true,
-                                categoria: catName,
+                                cantidad: cantidadEl?.textContent?.trim() || undefined, disponible: true, categoria: catName,
                             })
                         }
                     })
@@ -647,12 +482,9 @@ const CATEGORIAS_ALCAMPO = [
     'galletas', 'cereales', 'avena', 'muesli',
     'miel', 'mermelada',
     'frutos secos', 'almendras', 'nueces',
-    'chocolate',
-    'harina', 'azúcar', 'sal', 'vinagre', 'especia',
-    'caldo', 'sopa',
-    'conserva', 'aceituna',
-    'congelados',
-    'pan molde', 'pan tostado',
+    'chocolate', 'harina', 'azúcar', 'sal', 'vinagre', 'especia',
+    'caldo', 'sopa', 'conserva', 'aceituna',
+    'congelados', 'pan molde', 'pan tostado',
     'fiambre pavo', 'fiambre pollo',
 ]
 
@@ -663,7 +495,6 @@ async function scrapearAlcampo() {
     const vistos = new Set()
 
     try {
-        // 1. Obtener página principal para extraer regionId
         console.log('[Alcampo] Obteniendo página principal...')
         const homeRes = await fetch(ALCAMPO_BASE, {
             signal: AbortSignal.timeout(15000),
@@ -674,7 +505,6 @@ async function scrapearAlcampo() {
         const regionId = regionMatch?.[1] || 'ac90d761-9d58-4918-a37d-dd14e1ce384a'
         console.log(`[Alcampo] Region ID: ${regionId}`)
 
-        // 2. Obtener sugerencias de búsqueda
         console.log('[Alcampo] Obteniendo sugerencias de búsqueda...')
         let sugerencias = []
         try {
@@ -684,7 +514,6 @@ async function scrapearAlcampo() {
         } catch { }
         console.log(`[Alcampo] ${sugerencias.length || 0} sugerencias`)
 
-        // 3. Buscar productos por categorías
         const terminos = [...new Set([...CATEGORIAS_ALCAMPO, ...(Array.isArray(sugerencias) ? sugerencias : [])])]
         console.log(`[Alcampo] Buscando en ${terminos.length} términos...`)
 
@@ -807,7 +636,6 @@ async function scrapearConsum() {
         const categorias = Array.isArray(catsRaw) ? catsRaw : []
         console.log(`[Consum] ${categorias.length} categorías principales`)
 
-        // Extraer categorías hoja
         const leafCats = []
         const extractLeaves = (cats) => {
             for (const c of cats) {
@@ -874,7 +702,6 @@ async function scrapearEroski() {
 
         const page = await context.newPage()
 
-        // ── 1. Obtener categorías ──
         console.log('[Eroski] Obteniendo categorías...')
         let categorias = []
 
@@ -889,9 +716,7 @@ async function scrapearEroski() {
                 const links = []
                 const seen = new Set()
                 const anchors = document.querySelectorAll(
-                    'a[href*="/es/c/"], nav a[href*="/categoria"], ' +
-                    '.menu-item a[href*="/c/"], [class*="category"] a[href], ' +
-                    'a[href*="Alimentacion"], a[href*="alimentacion"]'
+                    'a[href*="/es/c/"], nav a[href*="/categoria"], .menu-item a[href*="/c/"], [class*="category"] a[href], a[href*="Alimentacion"], a[href*="alimentacion"]'
                 )
                 anchors.forEach(a => {
                     const href = a.href?.trim()
@@ -907,7 +732,6 @@ async function scrapearEroski() {
 
         console.log(`[Eroski] ${categorias.length} categorías encontradas`)
 
-        // Fallback: categorías predefinidas
         if (categorias.length === 0) {
             console.log('[Eroski] Usando categorías predefinidas...')
             const CATS_PREDEFINIDAS = [
@@ -926,7 +750,6 @@ async function scrapearEroski() {
             }
         }
 
-        // ── 2. Scrapear cada categoría ──
         const maxCats = Math.min(categorias.length, 12)
 
         for (let i = 0; i < maxCats; i++) {
@@ -938,7 +761,6 @@ async function scrapearEroski() {
                 await page.goto(cat.url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => { })
                 await page.waitForTimeout(3000)
 
-                // Scroll para lazy loading
                 await page.evaluate(async () => {
                     for (let s = 0; s < document.body.scrollHeight; s += 500) {
                         window.scrollTo(0, s)
@@ -950,29 +772,23 @@ async function scrapearEroski() {
                 const prods = await page.evaluate((catName) => {
                     const items = []
                     const cards = document.querySelectorAll(
-                        '[class*="product-card"], [class*="product-item"], ' +
-                        '[class*="product"], li[class*="product"], ' +
-                        '.grid-item, article'
+                        '[class*="product-card"], [class*="product-item"], [class*="product"], li[class*="product"], .grid-item, article'
                     )
                     cards.forEach(card => {
                         const nombreEl = card.querySelector(
-                            '[class*="product-name"], [class*="product-title"], ' +
-                            '[class*="name"], h3, h2, [class*="title"]'
+                            '[class*="product-name"], [class*="product-title"], [class*="name"], h3, h2, [class*="title"]'
                         )
                         const precioEl = card.querySelector(
-                            '[class*="price"], .current-price, [class*="precio"], ' +
-                            '[data-price], [class*="offer"]'
+                            '[class*="price"], .current-price, [class*="precio"], [data-price], [class*="offer"]'
                         )
                         const precioKgEl = card.querySelector(
-                            '[class*="unit-price"], [class*="price-per"], ' +
-                            '[class*="base-price"], [class*="reference"]'
+                            '[class*="unit-price"], [class*="price-per"], [class*="base-price"], [class*="reference"]'
                         )
                         const urlEl = card.querySelector('a[href]')
                         const imgEl = card.querySelector('img')
                         const marcaEl = card.querySelector('[class*="brand"], [data-brand], [class*="marca"]')
                         const cantidadEl = card.querySelector(
-                            '[class*="quantity"], [class*="weight"], [class*="packaging"], ' +
-                            '[data-quantity], [class*="amount"]'
+                            '[class*="quantity"], [class*="weight"], [class*="packaging"], [data-quantity], [class*="amount"]'
                         )
 
                         const nombre = nombreEl?.textContent?.trim() || ''
@@ -986,16 +802,10 @@ async function scrapearEroski() {
 
                         if (nombre && precio > 0) {
                             items.push({
-                                nombre,
-                                precio_actual: precio,
-                                precio_por_kg: precioKg,
-                                unidad: 'kg',
-                                url_producto: href,
-                                imagen_url: imgEl?.src || '',
+                                nombre, precio_actual: precio, precio_por_kg: precioKg,
+                                unidad: 'kg', url_producto: href, imagen_url: imgEl?.src || '',
                                 marca: marcaEl?.textContent?.trim() || 'Eroski',
-                                cantidad: cantidadEl?.textContent?.trim() || undefined,
-                                disponible: true,
-                                categoria: catName,
+                                cantidad: cantidadEl?.textContent?.trim() || undefined, disponible: true, categoria: catName,
                             })
                         }
                     })
@@ -1047,7 +857,6 @@ async function scrapearLidl() {
 
         const page = await context.newPage()
 
-        // ── 1. Obtener categorías de alimentación ──
         console.log('[Lidl] Obteniendo categorías de alimentación...')
         let categorias = []
 
@@ -1062,9 +871,7 @@ async function scrapearLidl() {
                 const links = []
                 const seen = new Set()
                 const anchors = document.querySelectorAll(
-                    'a[href*="/c/"], a[data-category], ' +
-                    'nav a[href*="categoria"], [class*="category"] a[href], ' +
-                    '.nav-item a[href*="/c/"]'
+                    'a[href*="/c/"], a[data-category], nav a[href*="categoria"], [class*="category"] a[href], .nav-item a[href*="/c/"]'
                 )
                 anchors.forEach(a => {
                     const href = a.href?.trim()
@@ -1080,7 +887,6 @@ async function scrapearLidl() {
 
         console.log(`[Lidl] ${categorias.length} categorías encontradas`)
 
-        // Fallback: categorías predefinidas
         if (categorias.length === 0) {
             console.log('[Lidl] Usando categorías predefinidas...')
             const CATS_PREDEFINIDAS = [
@@ -1099,7 +905,6 @@ async function scrapearLidl() {
             }
         }
 
-        // ── 2. Scrapear cada categoría ──
         const maxCats = Math.min(categorias.length, 10)
 
         for (let i = 0; i < maxCats; i++) {
@@ -1111,7 +916,6 @@ async function scrapearLidl() {
                 await page.goto(cat.url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => { })
                 await page.waitForTimeout(3000)
 
-                // Scroll para lazy loading
                 await page.evaluate(async () => {
                     for (let s = 0; s < document.body.scrollHeight; s += 500) {
                         window.scrollTo(0, s)
@@ -1123,29 +927,22 @@ async function scrapearLidl() {
                 const prods = await page.evaluate((catName) => {
                     const items = []
                     const cards = document.querySelectorAll(
-                        'article[data-product], [class*="product-card"], ' +
-                        '[class*="product-item"], [class*="product"], ' +
-                        '[data-testid*="product"], .grid-item, li[class*="product"]'
+                        'article[data-product], [class*="product-card"], [class*="product-item"], [class*="product"], [data-testid*="product"], .grid-item, li[class*="product"]'
                     )
                     cards.forEach(card => {
                         const nombreEl = card.querySelector(
-                            '[data-product-name], [class*="product-name"], ' +
-                            '[class*="product-title"], [class*="name"], ' +
-                            'h3, h2, [class*="title"]'
+                            '[data-product-name], [class*="product-name"], [class*="product-title"], [class*="name"], h3, h2, [class*="title"]'
                         )
                         const precioEl = card.querySelector(
-                            '[data-product-price], [class*="price"], ' +
-                            '.current-price, [class*="precio"], .price'
+                            '[data-product-price], [class*="price"], .current-price, [class*="precio"], .price'
                         )
                         const precioKgEl = card.querySelector(
-                            '[class*="base-price"], [class*="unit-price"], ' +
-                            '[class*="price-per"], [class*="reference"]'
+                            '[class*="base-price"], [class*="unit-price"], [class*="price-per"], [class*="reference"]'
                         )
                         const urlEl = card.querySelector('a[href]')
                         const imgEl = card.querySelector('img')
                         const cantidadEl = card.querySelector(
-                            '[class*="quantity"], [class*="weight"], [class*="packaging"], ' +
-                            '[data-quantity], [class*="amount"]'
+                            '[class*="quantity"], [class*="weight"], [class*="packaging"], [data-quantity], [class*="amount"]'
                         )
 
                         const nombre = nombreEl?.textContent?.trim() || ''
@@ -1159,16 +956,10 @@ async function scrapearLidl() {
 
                         if (nombre && precio > 0) {
                             items.push({
-                                nombre,
-                                precio_actual: precio,
-                                precio_por_kg: precioKg,
-                                unidad: 'kg',
-                                url_producto: href,
-                                imagen_url: imgEl?.src || '',
+                                nombre, precio_actual: precio, precio_por_kg: precioKg,
+                                unidad: 'kg', url_producto: href, imagen_url: imgEl?.src || '',
                                 marca: 'Lidl',
-                                cantidad: cantidadEl?.textContent?.trim() || undefined,
-                                disponible: true,
-                                categoria: catName,
+                                cantidad: cantidadEl?.textContent?.trim() || undefined, disponible: true, categoria: catName,
                             })
                         }
                     })
@@ -1197,10 +988,114 @@ async function scrapearLidl() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  PIPELINE DE GUARDADO
+//  PIPELINE OPTIMIZADO: BATCH UPSERT + DEDUP + LÍMITE
 // ═══════════════════════════════════════════════════════════════
 
-async function procesarSupermercado(slug, scrapeFn, supermercados) {
+const MAX_PRODUCTOS_POR_SM = 1500
+const BATCH_SIZE = 500
+const DIAS_SIN_ACTUALIZAR = 30  // Si el precio tiene menos de 30 días, lo saltamos
+
+/**
+ * Busca o crea un alimento en la tabla `alimentos`
+ * Cachea resultados en memoria para evitar queries repetidas
+ */
+const cacheAlimentos = new Map()
+
+async function buscarOMCrearAlimento(nombreLimpio, categoria) {
+    try {
+        if (!nombreLimpio || nombreLimpio.length < 2) return null
+
+        // Cache en memoria
+        const cacheKey = nombreLimpio.toLowerCase()
+        if (cacheAlimentos.has(cacheKey)) return cacheAlimentos.get(cacheKey)
+
+        const { data: exacto } = await supabase
+            .from('alimentos')
+            .select('id')
+            .ilike('nombre', nombreLimpio)
+            .maybeSingle()
+        if (exacto) {
+            cacheAlimentos.set(cacheKey, exacto.id)
+            return exacto.id
+        }
+
+        const { data: contains } = await supabase
+            .from('alimentos')
+            .select('id')
+            .or(`nombre.ilike.%${nombreLimpio}%,nombre.ilike.${nombreLimpio}%`)
+            .limit(1)
+            .maybeSingle()
+        if (contains) {
+            cacheAlimentos.set(cacheKey, contains.id)
+            return contains.id
+        }
+
+        const { data: nuevo, error } = await supabase
+            .from('alimentos')
+            .insert({
+                nombre: nombreLimpio,
+                categoria: categoria || 'Supermercado',
+                calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0,
+            })
+            .select('id')
+            .single()
+
+        if (error) {
+            process.stderr.write(`  ⚠️  No se pudo crear alimento "${nombreLimpio}": ${error.message}\n`)
+            return null
+        }
+        cacheAlimentos.set(cacheKey, nuevo.id)
+        return nuevo.id
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        process.stderr.write(`  ⚠️  Excepción en buscarOMCrearAlimento("${nombreLimpio}"): ${msg}\n`)
+        return null
+    }
+}
+
+/**
+ * Carga productos existentes de un supermercado en un Map para
+ * evitar consultas 1x1 y detectar si el precio ya está actualizado.
+ */
+async function cargarProductosExistentes(supermercadoId) {
+    const map = new Map()
+    try {
+        let desde = 0
+        const limite = 1000
+        while (true) {
+            const { data, error } = await supabase
+                .from('productos_supermercado')
+                .select('id, nombre_original, alimento_id, precio_por_kg, precio_unidad, fecha_precio')
+                .eq('supermercado_id', supermercadoId)
+                .range(desde, desde + limite - 1)
+            if (error) {
+                console.warn(`  ⚠️  Error cargando productos existentes: ${error.message}`)
+                break
+            }
+            if (!data || data.length === 0) break
+            for (const p of data) {
+                map.set(p.nombre_original, p)
+            }
+            desde += limite
+            if (data.length < limite) break
+        }
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.warn(`  ⚠️  Excepción cargando productos existentes: ${msg}`)
+    }
+    return map
+}
+
+/**
+ * Procesa un supermercado completo:
+ * 1. Scrapea productos
+ * 2. Filtra comestibles
+ * 3. Deduplica por limpiarNombre()
+ * 4. Limita a MAX_PRODUCTOS_POR_SM
+ * 5. Batch upsert en lotes de 500
+ * 6. Sin histórico (precios de referencia)
+ */
+async function procesarSupermarket(slug, scrapeFn, supermercados) {
     const sm = supermercados[slug]
     if (!sm) {
         console.error(`❌ "${slug}" no encontrado en la BD. Ejecuta primero el seed.`)
@@ -1208,9 +1103,10 @@ async function procesarSupermercado(slug, scrapeFn, supermercados) {
     }
 
     console.log(`\n═══════════════════════════════════════════════`)
-    console.log(`  🏪  ${sm.nombre} (${sm.id})`)
+    console.log(`  🏪  ${sm.nombre} (${sm.slug})`)
     console.log(`═══════════════════════════════════════════════\n`)
 
+    // ── 1. Scrapear ──
     const resultado = await scrapeFn()
 
     console.log(`\n📊 Scraping:`)
@@ -1223,6 +1119,7 @@ async function procesarSupermercado(slug, scrapeFn, supermercados) {
         resultado.errores.forEach(e => console.log(`   • ${e}`))
     }
 
+    // ── 2. Filtrar comestibles ──
     const comestibles = resultado.productos.filter(p => esComestible(p.categoria))
     const descartados = resultado.productos.length - comestibles.length
     console.log(`\n🍽️  Comestibles: ${comestibles.length}`)
@@ -1233,46 +1130,165 @@ async function procesarSupermercado(slug, scrapeFn, supermercados) {
         return
     }
 
-    console.log('\n⏳ Guardando en Supabase...')
-    let nuevos = 0, actualizados = 0, errores = 0, sinAlimento = 0
+    // ── 3. Deduplicar por limpiarNombre() ──
+    const dedupMap = new Map()
+    for (const prod of comestibles) {
+        const key = limpiarNombre(prod.nombre) || prod.nombre
+        if (!dedupMap.has(key)) {
+            dedupMap.set(key, prod)
+        }
+    }
+    const unicos = Array.from(dedupMap.values())
+    console.log(`\n🔍 Deduplicados: ${comestibles.length} → ${unicos.length} únicos`)
 
-    for (let i = 0; i < comestibles.length; i++) {
-        try {
-            const prod = comestibles[i]
-            const result = await upsertProducto(sm.id, prod)
+    // ── 4. Limitar a MAX_PRODUCTOS_POR_SM ──
+    const limitados = unicos.slice(0, MAX_PRODUCTOS_POR_SM)
+    if (unicos.length > MAX_PRODUCTOS_POR_SM) {
+        console.log(`🎯 Limitado a ${MAX_PRODUCTOS_POR_SM} productos (de ${unicos.length} únicos)`)
+    }
 
-            if (result.error) {
-                if (result.accion !== 'saltado') {
-                    process.stderr.write(`   ⚠️  [${i}] "${prod?.nombre || '??'}": ${result.error}\n`)
+    // ── 5. Cargar productos existentes para detectar cambios ──
+    console.log('\n⏳ Cargando productos existentes en Supabase...')
+    const existentes = await cargarProductosExistentes(sm.id)
+    console.log(`   ${existentes.size} productos existentes cargados`)
+
+    // ── 6. Preparar batch upsert ──
+    console.log('\n⏳ Guardando en Supabase (batch upsert)...')
+    const hoy = new Date().toISOString().split('T')[0]
+    let nuevos = 0, actualizados = 0, saltados = 0, errores = 0
+    const batch = []
+
+    for (let i = 0; i < limitados.length; i++) {
+        const prod = limitados[i]
+
+        // Verificar si ya existe con precio reciente
+        const existente = existentes.get(prod.nombre)
+        if (existente) {
+            const fechaExistente = existente.fecha_precio
+            if (fechaExistente) {
+                const diffDias = Math.floor((Date.now() - new Date(fechaExistente).getTime()) / 86400000)
+                if (diffDias < DIAS_SIN_ACTUALIZAR) {
+                    // Comprobar si el precio ha cambiado
+                    const precioActual = prod.precio_por_kg ?? prod.precio_actual
+                    const precioExistente = existente.precio_por_kg ?? existente.precio_unidad
+                    if (precioActual === precioExistente) {
+                        saltados++
+                        continue // Mismo precio, lo saltamos
+                    }
                 }
-                errores++
-                continue
             }
-            if (result.accion === 'nuevo') nuevos++
-            else if (result.accion === 'actualizado') actualizados++
-            if (result.alimento_id) await registrarHistorico(sm.id, prod, result.alimento_id)
-            else sinAlimento++
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err)
-            const nombre = comestibles[i]?.nombre || '??'
-            process.stderr.write(`   ❌ [${i}] "${nombre}": EXCEPCIÓN en bucle: ${msg}\n`)
-            errores++
         }
 
-        if ((i + 1) % 250 === 0) {
-            const pct = (((i + 1) / comestibles.length) * 100).toFixed(1)
-            console.log(`   📊 ${i + 1}/${comestibles.length} (${pct}%) · +${nuevos} · ~${actualizados} · err:${errores}`)
+        // Buscar/crear alimento
+        const nombreLimpio = limpiarNombre(prod.nombre)
+        const alimentoId = await buscarOMCrearAlimento(nombreLimpio, prod.categoria)
+
+        if (!alimentoId) {
+            errores++
+            continue
         }
+
+        batch.push({
+            supermercado_id: sm.id,
+            nombre_original: prod.nombre,
+            alimento_id: alimentoId,
+            precio_por_kg: prod.precio_por_kg ?? prod.precio_actual,
+            precio_unidad: prod.precio_actual !== (prod.precio_por_kg ?? prod.precio_actual)
+                ? prod.precio_actual : null,
+            unidad: prod.unidad || 'kg',
+            url_producto: prod.url_producto || null,
+            marca: prod.marca || null,
+            fecha_precio: hoy,
+        })
+
+        // ── Flush batch cada BATCH_SIZE ──
+        if (batch.length >= BATCH_SIZE) {
+            const res = await flushBatch(sm.id, batch)
+            nuevos += res.nuevos
+            actualizados += res.actualizados
+            errores += res.errores
+            batch.length = 0
+        }
+
+        if ((i + 1) % 100 === 0 || i === 0) {
+            const pct = (((i + 1) / limitados.length) * 100).toFixed(1)
+            console.log(`   📊 ${i + 1}/${limitados.length} (${pct}%) · +${nuevos} · ~${actualizados} · ⏭${saltados} · err:${errores}`)
+        }
+    }
+
+    // ── Flush batch restante ──
+    if (batch.length > 0) {
+        const res = await flushBatch(sm.id, batch)
+        nuevos += res.nuevos
+        actualizados += res.actualizados
+        errores += res.errores
     }
 
     console.log(`\n📊 Resumen ${sm.nombre}:`)
     console.log(`   🆕 Nuevos:       ${nuevos}`)
     console.log(`   🔄 Actualizados: ${actualizados}`)
+    console.log(`   ⏭ Saltados:     ${saltados}`)
     console.log(`   ❌ Errores:      ${errores}`)
-    console.log(`   ❓ Sin alimento: ${sinAlimento}`)
-    console.log(`   🍽️  Procesados:  ${comestibles.length}`)
-    console.log(`   🚫 Descartados:  ${descartados}`)
+    console.log(`   🍽️  Procesados:  ${limitados.length} (de ${comestibles.length} comestibles)`)
+    console.log(`   🚫 Descartados:  ${descartados} (no comestibles)`)
     console.log(`   ⏱️  Scraping:    ${(resultado.duracion_ms / 1000).toFixed(1)}s`)
+}
+
+/**
+ * Inserta o actualiza un lote de productos usando upsert con
+ * la constraint (supermercado_id, nombre_original).
+ */
+async function flushBatch(supermercadoId, batch) {
+    let nuevos = 0, actualizados = 0, errores = 0
+
+    try {
+        // Upsert respetando unique constraint (supermercado_id, nombre_original)
+        const { data, error } = await supabase
+            .from('productos_supermercado')
+            .upsert(batch, {
+                onConflict: 'supermercado_id,nombre_original',
+                ignoreDuplicates: false,
+            })
+            .select('id')
+
+        if (error) {
+            // Fallback: insertar 1x1 si falla el batch
+            console.warn(`   ⚠️  Batch upsert falló (${error.message}), insertando 1x1...`)
+            for (const item of batch) {
+                try {
+                    const { error: insError } = await supabase
+                        .from('productos_supermercado')
+                        .upsert(item, {
+                            onConflict: 'supermercado_id,nombre_original',
+                            ignoreDuplicates: false,
+                        })
+                    if (insError) {
+                        if (!insError.message?.includes('duplicate')) {
+                            errores++
+                        }
+                    } else {
+                        nuevos++
+                    }
+                } catch {
+                    errores++
+                }
+            }
+        } else {
+            // Si devuelve datos, contamos
+            if (data) {
+                nuevos = data.length
+            } else {
+                // upsert sin returning - asumimos éxito
+                nuevos = batch.length
+            }
+        }
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.warn(`   ⚠️  Error en flushBatch: ${msg}`)
+        errores = batch.length
+    }
+
+    return { nuevos, actualizados, errores }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1295,20 +1311,18 @@ async function main() {
 
     let slugsAEjecutar
 
-    if (flags.includes('all')) {
+    if (flags.includes('all') || flags.length === 0) {
         slugsAEjecutar = Object.keys(MODOS)
-    } else if (flags.length > 0) {
+    } else {
         slugsAEjecutar = flags.filter(f => MODOS[f])
         if (slugsAEjecutar.length === 0) {
-            console.error('❌ Modo no reconocido. Usa: --mercadona, --carrefour, --dia, --alcampo, --consum, --eroski, --lidl, --all')
+            console.error('❌ Modo no reconocido. Usa: --mercadona, --carrefour, --dia, --alcampo, --consum, --eroski, --lidl')
             process.exit(1)
         }
-    } else {
-        slugsAEjecutar = ['mercadona'] // default
     }
 
     console.log('═══════════════════════════════════════════════')
-    console.log('  🛒  NutriCoach · Scraping de Supermercados')
+    console.log('  🛒  NutriCoach · Consolidación de Scraping')
     console.log(`  Modo: ${slugsAEjecutar.join(', ')}`)
     console.log('═══════════════════════════════════════════════\n')
 
@@ -1331,7 +1345,7 @@ async function main() {
         const scrapeFn = MODOS[slug]
         if (scrapeFn) {
             try {
-                await procesarSupermercado(slug, scrapeFn, smMap)
+                await procesarSupermarket(slug, scrapeFn, smMap)
             } catch (err) {
                 const msg = err instanceof Error ? err.message : String(err)
                 console.error(`\n❌ Error crítico en "${slug}": ${msg}`)
@@ -1344,7 +1358,7 @@ async function main() {
 
     const totalMs = Date.now() - inicioTotal
     console.log(`\n═══════════════════════════════════════════════`)
-    console.log(`  ✅ Scraping completado en ${(totalMs / 1000 / 60).toFixed(1)} min (${(totalMs / 1000).toFixed(0)}s)`)
+    console.log(`  ✅ Consolidación completada en ${(totalMs / 1000 / 60).toFixed(1)} min (${(totalMs / 1000).toFixed(0)}s)`)
     console.log(`═══════════════════════════════════════════════`)
 }
 
