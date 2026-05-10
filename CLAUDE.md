@@ -7,6 +7,21 @@
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 
+## Estado Actual (10-05-2026 — Sesión 8)
+
+### Fixes sesión 8
+- ✅ **Scraper recetas** (`app/api/scrape-receta/route.ts`): HTML limpiado antes de mandar a Gemini/DeepSeek → instrucciones ya no traen "copia y pega" del artículo
+- ✅ **parseIngredienteRaw()**: ingredientes JSON-LD ("500g de arroz bomba") parseados a nombre+cantidad+unidad
+- ✅ **HowToSection** en JSON-LD: soportado para sitios con instrucciones en secciones anidadas
+- ✅ **esNoComestible()** en `lib/scraping/index.ts`: filtra higiene, limpieza, mascotas antes de guardar en BD
+- ✅ **Fix upsert precios**: partial unique index incompatible con cliente JS → reemplazado por check→update/insert
+- ✅ **Mercadona re-scrapeado** (en curso al cerrar sesión) — con fix de upsert activo
+- ✅ **BD limpia**: 0 no-comestibles, script `eliminar-no-alimentos.mjs` con keywords ampliadas
+- ✅ **Lista de la compra funcional**: ItemConPrecios con €/kg en fila colapsada, selección por supermercado
+
+### Plan para próximos días (DeepSeek/Roo Code)
+Ver `docs/PLAN_DEEPSEEK_10-05-2026.md` — tareas ordenadas por prioridad con comandos exactos.
+
 ## Estado Actual (09-05-2026 — Sesión 7)
 - **0 errores TypeScript** ✅ — build verificado con `npx next build`
 - **0 `any` en states** ✅ — todos los `useState<any>` reemplazados por interfaces concretas
