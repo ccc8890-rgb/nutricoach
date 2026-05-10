@@ -220,6 +220,41 @@ const SCRAPERS = {
 
 ---
 
+## Auditoría de bugs (10-05-2026) — 8 bugs corregidos
+
+Ver [`docs/scraping-lecciones-aprendidas.md`](docs/scraping-lecciones-aprendidas.md) para el detalle completo.
+
+### 🔴 Críticos
+| Bug | Fix |
+|-----|-----|
+| Precios 100× en Consum (`centAmount` sin /100) | `consum.ts:112,117` — dividir centAmount/centUnitAmount entre 100 |
+| Código entre imports en index.ts | `index.ts:4` — mover esNoComestible() tras todos los imports |
+
+### 🟧 Altos
+| Bug | Fix |
+|-----|-----|
+| Duplicados en re-ejecución (sin URL no había upsert) | `index.ts:152` — upsert por (supermercado_id, nombre_original) siempre |
+| `url_imagen` nunca persistido en BD | `index.ts:171,180` — añadir campo en insert y update |
+| Null crash Día (`p.url.startsWith`) | `dia.ts:85` — optional chaining `p.url?.` (versión antigua, ahora migrado a Playwright) |
+| Null crash Eroski (mismo problema) | `eroski.ts:72` — optional chaining (versión antigua, ahora migrado a Playwright) |
+
+### 🟡 Medios
+| Bug | Fix |
+|-----|-----|
+| `Set.has()` no captura variantes ("Champú cabello graso") | `ejecutar-scraping.mjs:168` — cambiar a `Array.some()` + `includes()` |
+| Import `scrapearCarrefour` perdido al reorganizar | `index.ts:4` — reinsertar |
+
+---
+
+## Documentos de referencia
+
+| Documento | Descripción |
+|-----------|-------------|
+| [`docs/scraping-lecciones-aprendidas.md`](docs/scraping-lecciones-aprendidas.md) | 10 reglas para no repetir bugs en scraping |
+| Este plan | Plan de trabajo y estado del proyecto |
+
+---
+
 ## Comandos útiles
 
 ```bash
@@ -234,10 +269,22 @@ node scripts/eliminar-no-alimentos.mjs --dry-run   # revisar primero
 node scripts/eliminar-no-alimentos.mjs              # ejecutar
 
 # Verificar TypeScript
-npx tsc --noEmit
+npx tsc --noEmit --pretty
 
 # Build completo
 npx next build
+
+# Ejecutar scraping autónomo (todos los supermercados)
+node scripts/ejecutar-scraping.mjs --all
+
+# Solo Mercadona (default)
+node scripts/ejecutar-scraping.mjs
+
+# Solo un supermercado específico
+node scripts/ejecutar-scraping.mjs --carrefour
+
+# Scraping via API (desde el dashboard)
+# Ir a /precios/scraping en el navegador
 ```
 
 ---
