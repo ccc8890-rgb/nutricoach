@@ -2,32 +2,48 @@
 
 > Ejecutar con DeepSeek V3 en Roo Code (modo Ejecución).
 > Worktree activo: `nutricoach-modulos/` · Rama: `feature/modulos`
-> Servidor dev: `npm run dev` dentro de `nutricoach-modulos/`
+> Servidor dev: `npm run dev` dentro de `nutricoach/` (rama main, no modulos)
 
 ---
 
-## TAREA 1 — Revisar resultado de Mercadona (cuando termine el scraper)
+## TAREA 0 — Acciones previas (Carlos hace esto manualmente)
 
-El scraper de Mercadona se lanzó el 10-05-2026 en background (task `b272yxy3g`).
-Se cancelará si no terminó. Relanzar si es necesario:
-
+### 0a — Reiniciar dev server
 ```bash
-cd /Users/carloscasanova/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach-modulos
-npx tsx scripts/scrapear-supermercados.ts mercadona
+# Matar el servidor si está corriendo (Ctrl+C), luego:
+cd /Users/carloscasanova/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach
+npm run dev
 ```
+Necesario para que `GEMINI_API_KEY` (añadida al `.env.local` el 10-05-2026) entre en efecto.
 
-**Esperado:** 4.623 productos, 0 errores, precios guardados en `productos_supermercado`.
+### 0b — Verificar Strategy A.5 con URL real
+Pegar esta URL en `/recetas/nueva`:
+```
+https://recetasdecocina.elmundo.es/2023/06/arroz-del-senyoret-receta-valenciana.html
+```
+**Esperado:** receta con instrucciones en pasos numerados (no un bloque de texto sin estructurar).
+Si sigue fallando → revisar los logs del servidor y reportar el error.
 
-**Verificar en Supabase (SQL Editor):**
+### 0c — Borrar duplicados senyoret en Supabase
+En el SQL Editor de Supabase (proyecto `hopeqzwzmlrpktoeygxz`):
 ```sql
-SELECT COUNT(*) FROM productos_supermercado
-WHERE supermercado_id = (SELECT id FROM supermercados WHERE slug='mercadona');
-
-SELECT COUNT(*) FROM precios_actuales
-WHERE supermercado_slug = 'mercadona';
+DELETE FROM recetas WHERE nombre ILIKE '%senyoret%' AND instrucciones IS NULL;
 ```
+Debería borrar 2 entradas antiguas con instrucciones null.
 
-Si `precios_actuales` devuelve ~800+ filas → OK.
+---
+
+## TAREA 1 — Estado actual de Mercadona ✅ COMPLETADO
+
+Mercadona re-scrapeado el 10-05-2026:
+- **3.050 nuevos + 456 actualizados = 3.752 productos** en `productos_supermercado`
+- 814 duplicados ignorados por constraint URL (no es error)
+
+**Verificar en Supabase (SQL Editor) si hay dudas:**
+```sql
+SELECT COUNT(*) FROM productos_supermercado;
+-- Esperado: ~3.752
+```
 
 ---
 
