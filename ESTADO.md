@@ -1,3 +1,89 @@
+# ESTADO NutriCoach — 10-05-2026 (Sesión 8)
+
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar.
+
+---
+
+## 📍 DÓNDE ESTAMOS
+
+**Fase activa:** Scraping multi-supermercado + pipeline de recetas completo
+
+---
+
+## ✅ COMPLETADO HOY (10-05-2026) — Sesión 8
+
+### 🔑 Fix crítico — GEMINI_API_KEY en .env.local
+- La clave `GEMINI_API_KEY` existía en `~/.zshrc` pero NO en `nutricoach/.env.local`
+- Esto hacía que Strategy A.5 (enriquecimiento Gemini para JSON-LD incompleto) fallara silenciosamente
+- **Fix aplicado:** clave añadida al final de `nutricoach/.env.local`
+- **ACCIÓN PENDIENTE:** Reiniciar `npm run dev` para que la variable entre en efecto
+
+### 🌐 Fix scraping de recetas — `scrape-receta/route.ts`
+- **User-Agent** cambiado de `NutriCoachBot/1.0` a Chrome real + headers Accept → evita bloqueo de sitios como elmundo.es
+- **Strategy A.5** añadida: si JSON-LD tiene instrucciones vacías o ingredientes sin cantidades, Gemini las completa antes de guardar
+- Commiteado en main: `5acc36f`
+
+### 📦 Mercadona re-scraping completado
+- 3.050 nuevos + 456 actualizados = **3.752 productos** en `productos_supermercado`
+- 814 duplicados (constraint único por URL) — no es error, son productos Mercadona que mapeaban al mismo alimento_id
+- Tiempo: 25.4 min
+
+---
+
+## ⚠️ PRIMERA ACCIÓN AL ARRANCAR MAÑANA
+
+```bash
+# En la carpeta nutricoach/, matar el server si está corriendo (Ctrl+C) y:
+cd /Users/carloscasanova/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach
+npm run dev
+```
+
+Luego verificar que Strategy A.5 funciona pegando esta URL en `/recetas/nueva`:
+```
+https://recetasdecocina.elmundo.es/2023/06/arroz-del-senyoret-receta-valenciana.html
+```
+Esperado: receta con instrucciones detalladas (no null).
+
+También borrar las 2 entradas senyoret huérfanas de la BD:
+```sql
+DELETE FROM recetas WHERE nombre ILIKE '%senyoret%' AND instrucciones IS NULL;
+```
+
+---
+
+## ⚠️ CONFLICTOS DE MERGE DETECTADOS
+
+Los worktrees `feature/ui-estetica` y `feature/modulos` tienen archivos en común que difieren de main. No se ha hecho merge automático.
+
+**Archivos con conflicto potencial:**
+- `CLAUDE.md`, `ESTADO.md` (ambas ramas)
+- `app/globals.css` (ambas ramas)
+- `app/api/scrape-receta/route.ts` (feature/modulos)
+- `app/api/capturar-imagen-receta/route.ts` (feature/ui-estetica)
+- `components/Sidebar.tsx`, `components/premium/StepByStep.tsx` (feature/modulos)
+
+**Resolver manualmente antes del próximo merge:**
+```bash
+git -C nutricoach diff main..feature/modulos -- app/globals.css
+git -C nutricoach diff main..feature/ui-estetica -- app/globals.css
+# Decidir cuál versión conservar por archivo
+```
+
+---
+
+## 🔜 PENDIENTE (en orden de prioridad)
+
+Ver plan detallado para DeepSeek: `nutricoach-modulos/docs/PLAN_DEEPSEEK_10-05-2026.md`
+
+1. **Verificar fix GEMINI** — reiniciar dev server, probar URL senyoret
+2. **Borrar recetas senyoret duplicadas** con `instrucciones IS NULL` en Supabase
+3. **Resolver conflictos de merge** entre ramas antes de próximo PR
+4. **Carrefour scraping** — 403 bloqueado, usar Playwright o buscar API alternativa
+5. **Backfill recetas** — `npx tsx scripts/backfill-recetas.ts`
+6. **Perfilar recetas restantes** — quedan ~42 de 133
+
+---
+
 # ESTADO NutriCoach — 09-05-2026 (Sesión 7)
 
 > Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar.
