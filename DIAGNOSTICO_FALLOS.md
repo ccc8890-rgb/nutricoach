@@ -190,6 +190,112 @@ Safari cachea agresivamente los Service Workers. Si el SW cambia de contenido pe
 
 ---
 
+## FALLO #8 — Consum: precio en centAmount sin dividir entre 100
+
+### Síntoma
+Precios 100× más altos (ej: 5€ → 500€). El scraper leía `priceData.prices[0].value.centAmount` como precio final sin dividir entre 100.
+
+### Causa raíz
+La API de Consum devuelve precios en **céntimos** (`centAmount` = 500 para 5.00€). El scraper original trataba `centAmount` como si fuera el precio en euros.
+
+### Solución aplicada
+Dividir `centAmount` entre 100 y `centUnitAmount` entre 100 para precio/unidad:
+```typescript
+// consum.ts:112,117
+precio: p.priceData?.prices?.[0]?.value?.centAmount
+    ? p.priceData.prices[0].value.centAmount / 100
+    : undefined,
+precio_unidad: p.priceData?.prices?.[0]?.unitValue?.centUnitAmount
+    ? p.priceData.prices[0].unitValue.centUnitAmount / 100
+    : undefined,
+```
+
+### Archivos afectados
+| Archivo | Cambio |
+|---------|--------|
+| [`lib/scraping/supermercados/consum.ts`](lib/scraping/supermercados/consum.ts:112) | Dividir centAmount entre 100 |
+| [`lib/scraping/supermercados/consum.ts`](lib/scraping/supermercados/consum.ts:117) | Dividir centUnitAmount entre 100 |
+
+---
+
+## FALLO #9 — Código ejecutable entre imports en index.ts
+
+### Síntoma
+`ReferenceError: Cannot access 'esNoComestible' before initialization`. La comprobación de funciones auxiliares se ejecutaba antes de que los imports terminaran.
+
+### Causa raíz
+En [`lib/scraping/index.ts`](lib/scraping/index.ts:4), la función `esNoComestible()` estaba definida entre `import` statements y antes de otras funciones que también se definían inline.
+
+### Solución aplicada
+Mover toda la función `esNoComestible()` y `NO_COMESTIBLE_KEYWORDS` DESPUÉS de todos los imports y antes de las funciones que las usan.
+
+### Archivos afectados
+| Archivo | Cambio |
+|---------|--------|
+| [`lib/scraping/index.ts`](lib/scraping/index.ts:4) | Reordenar: imports → constantes → funciones helper → scrapeo |
+
+---
+
+## FALLO #10 — Duplicados en re-ejecución del scraper (sin URL no había upsert)
+
+### Síntoma
+Al re-ejecutar un scraper, algunos productos se insertaban como duplicados en vez de actualizarse. Los que tenían `url_producto` se actualizaban bien (constraint UNIQUE), pero los que no tenían URL se duplicaban.
+
+### Causa raíz
+El upsert solo usaba `(supermercado_id, url_producto)` como merge key. Productos sin URL (`url_producto IS NULL`) no tenían match, así que el ON CONFLICT no funcionaba.
+
+### Solución aplicada
+Añadir upsert por `(supermercado_id, nombre_original)` además del de URL. Productos sin URL se actualizan por nombre.
+
+### Archivos afectados
+| Archivo | Cambio |
+|---------|--------|
+| [`lib/scraping/index.ts`](lib/scraping/index.ts:152) | Añadir upsert por (supermercado_id, nombre_original) |
+
+---
+
+## FALLO #11 — `url_imagen` nunca se persistía en BD
+
+### Síntoma
+Aunque los scrapers extraían `url_imagen` de los productos, este campo nunca se escribía en la BD. Las imágenes de producto aparecían siempre como null.
+
+### Causa raíz
+El INSERT/UPDATE en `index.ts` incluía 10 campos pero omitía `url_imagen`.
+
+### Solución aplicada
+Añadir `url_imagen` tanto en el INSERT como en el UPDATE params.
+
+### Archivos afectados
+| Archivo | Cambio |
+|---------|--------|
+| [`lib/scraping/index.ts`](lib/scraping/index.ts:171,180) | Añadir campo url_imagen en insert y update |
+
+---
+
+## FALLO #12 — Cloudflare: fetch recibe HTML en vez de JSON (no es error del scraper)
+
+### Síntoma
+Carrefour, Día devolvían HTML/403 en vez de JSON. No era que la API hubiera cambiado — era Cloudflare bloqueando el scraper HTTP.
+
+### Diagnóstico
+Se creó [`scripts/find-scraper-apis.ts`](scripts/find-scraper-apis.ts) con Playwright para interceptar peticiones reales del navegador:
+- **Carrefour:** Todas las API calls responden HTML → solo funcionan con navegador real
+- **Día:** Access Denied en fetch directo
+- **Eroski:** Apache Tapestry — no tiene REST API en absoluto
+
+### Solución aplicada
+Migrar los 3 scrapers (Carrefour, Día, Eroski) + Lidl a Playwright con `chromium.launch()`. El navegador real omite Cloudflare.
+
+### Archivos afectados
+| Archivo | Cambio |
+|---------|--------|
+| [`lib/scraping/supermercados/carrefour.ts`](lib/scraping/supermercados/carrefour.ts) | Rewrite completo a Playwright |
+| [`lib/scraping/supermercados/dia.ts`](lib/scraping/supermercados/dia.ts) | Rewrite completo a Playwright |
+| [`lib/scraping/supermercados/eroski.ts`](lib/scraping/supermercados/eroski.ts) | Rewrite completo a Playwright |
+| [`lib/scraping/supermercados/lidl.ts`](lib/scraping/supermercados/lidl.ts) | Refactor a Playwright + nuevos selectores |
+
+---
+
 ## CHECKLIST DE VERIFICACIÓN
 
 Antes de cada deploy, verificar:

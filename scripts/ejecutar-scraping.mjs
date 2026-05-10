@@ -52,21 +52,31 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 })
 
 const RATE_LIMIT_MS = 200   // Default entre llamadas
-const TIMEOUT_MS = 15000    // Timeout por petición
+const TIMEOUT_MS = 8000     // Timeout por petición (8s, Cloudflare bloquea rápido)
 
 // ── Helpers ───────────────────────────────────────────────────
 
 async function fetchJSON(url, headers = {}) {
-    const res = await fetch(url, {
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-            Accept: 'application/json',
-            ...headers,
-        },
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`)
-    return res.json()
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+    try {
+        const res = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                Accept: 'application/json',
+                ...headers,
+            },
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`)
+        const contentType = res.headers.get('content-type') || ''
+        if (contentType.includes('text/html')) {
+            throw new Error(`CLOUDFLARE: recibido HTML en vez de JSON (${url})`)
+        }
+        return res.json()
+    } finally {
+        clearTimeout(timer)
+    }
 }
 
 function delay(ms) {
@@ -372,59 +382,72 @@ async function scrapearCarrefour() {
     const productos = []
 
     console.log('[Carrefour] ⏳ Obteniendo categorías...')
-    let categorias = []
 
+    // Probar primera request para detectar Cloudflare rápido
+    let cloudflareDetected = false
     try {
         const raw = await fetchJSON(`${CARREFOUR_BASE}/api/categories/v1/`, CARREFOUR_HEADERS)
-        categorias = raw.data || []
+        const categorias = raw.data || []
+
+        if (categorias.length > 0) {
+            const subCats = []
+            for (const cat of categorias) {
+                if (cat.subcategories) {
+                    for (const sub of cat.subcategories) {
+                        if (sub.productCount && sub.productCount > 0) subCats.push(sub)
+                    }
+                }
+            }
+            console.log(`[Carrefour] 🔍 ${subCats.length} subcategorías\n`)
+
+            for (let i = 0; i < subCats.length; i++) {
+                await delay(500)
+                try {
+                    const prodsRaw = await fetchJSON(
+                        `${CARREFOUR_BASE}/api/products/v1/category/${subCats[i].id}?pageSize=100`,
+                        CARREFOUR_HEADERS
+                    )
+                    const prods = prodsRaw.data || []
+                    for (const p of prods) {
+                        const precioKg = p.pricePerKg || (p.referencePrice
+                            ? parseFloat(String(p.referencePrice).replace(',', '.')) : undefined)
+                        productos.push({
+                            nombre: p.displayName || p.name || '',
+                            precio_actual: p.price || 0,
+                            precio_por_kg: precioKg,
+                            unidad: 'kg',
+                            url_producto: p.url?.startsWith('http') ? p.url : `https://www.carrefour.es${p.url || ''}`,
+                            imagen_url: p.image?.startsWith('http') ? p.image : undefined,
+                            marca: p.brand || 'Carrefour',
+                            cantidad: p.packaging || '',
+                            disponible: p.available !== false,
+                            categoria: subCats[i].name || '',
+                        })
+                    }
+                } catch (err) {
+                    const msg = err instanceof Error ? err.message : String(err)
+                    if (msg.includes('CLOUDFLARE')) {
+                        cloudflareDetected = true
+                        errores.push(`[Carrefour] Cloudflare bloquea — saltando`)
+                        console.warn(`[Carrefour] ⛔ Cloudflare detectado en subcategoría — abortando`)
+                        break
+                    }
+                    errores.push(`Error cat ${subCats[i].name}: ${msg}`)
+                }
+                if (cloudflareDetected) break
+                if (i > 0 && i % 5 === 0) console.log(`  📊 ${i}/${subCats.length} cats · ${productos.length} prods`)
+            }
+        }
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
-        errores.push(`Error categorías: ${msg}`)
-        console.warn('[Carrefour] Fallback: búsqueda por términos')
+        cloudflareDetected = msg.includes('CLOUDFLARE')
+        if (!cloudflareDetected) {
+            console.warn('[Carrefour] Fallback: búsqueda por términos')
+        }
     }
 
-    if (categorias.length > 0) {
-        const subCats = []
-        for (const cat of categorias) {
-            if (cat.subcategories) {
-                for (const sub of cat.subcategories) {
-                    if (sub.productCount && sub.productCount > 0) subCats.push(sub)
-                }
-            }
-        }
-        console.log(`[Carrefour] 🔍 ${subCats.length} subcategorías\n`)
-
-        for (let i = 0; i < subCats.length; i++) {
-            await delay(500)
-            try {
-                const prodsRaw = await fetchJSON(
-                    `${CARREFOUR_BASE}/api/products/v1/category/${subCats[i].id}?pageSize=100`,
-                    CARREFOUR_HEADERS
-                )
-                const prods = prodsRaw.data || []
-                for (const p of prods) {
-                    const precioKg = p.pricePerKg || (p.referencePrice
-                        ? parseFloat(String(p.referencePrice).replace(',', '.')) : undefined)
-                    productos.push({
-                        nombre: p.displayName || p.name || '',
-                        precio_actual: p.price || 0,
-                        precio_por_kg: precioKg,
-                        unidad: 'kg',
-                        url_producto: p.url?.startsWith('http') ? p.url : `https://www.carrefour.es${p.url || ''}`,
-                        imagen_url: p.image?.startsWith('http') ? p.image : undefined,
-                        marca: p.brand || 'Carrefour',
-                        cantidad: p.packaging || '',
-                        disponible: p.available !== false,
-                        categoria: subCats[i].name || '',
-                    })
-                }
-            } catch (err) {
-                errores.push(`Error cat ${subCats[i].name}: ${err.message}`)
-            }
-            if (i > 0 && i % 5 === 0) console.log(`  📊 ${i}/${subCats.length} cats · ${productos.length} prods`)
-        }
-    } else {
-        // Fallback search
+    // Si Cloudflare bloqueó o categorías fallaron, intentar fallback search
+    if (!cloudflareDetected && productos.length === 0) {
         const CATS = [
             'leche', 'huevos', 'pan', 'arroz', 'pasta', 'aceite oliva',
             'legumbres', 'lentejas', 'garbanzos',
@@ -467,12 +490,22 @@ async function scrapearCarrefour() {
                     })
                 }
             } catch (err) {
-                errores.push(`Error búsqueda "${CATS[i]}": ${err.message}`)
+                const msg = err instanceof Error ? err.message : String(err)
+                if (msg.includes('CLOUDFLARE')) {
+                    errores.push(`[Carrefour] Cloudflare bloquea búsquedas — saltando`)
+                    console.warn(`[Carrefour] ⛔ Cloudflare en búsqueda — abortando`)
+                    break
+                }
+                errores.push(`Error búsqueda "${CATS[i]}": ${msg}`)
             }
             if (i > 0 && i % 10 === 0) console.log(`  📊 ${i}/${CATS.length} búsquedas · ${productos.length} prods`)
         }
     }
-    console.log(`\n[Carrefour] 📦 ${productos.length} productos`)
+
+    if (cloudflareDetected) {
+        console.warn(`\n[Carrefour] ⛔ Saltado por bloqueo Cloudflare`)
+    }
+    console.log(`[Carrefour] 📦 ${productos.length} productos · ${errores.length} errores`)
     return { productos, errores, duracion_ms: Date.now() - inicio }
 }
 
@@ -953,7 +986,13 @@ async function main() {
     for (const slug of slugsAEjecutar) {
         const scrapeFn = MODOS[slug]
         if (scrapeFn) {
-            await procesarSupermercado(slug, scrapeFn, smMap)
+            try {
+                await procesarSupermercado(slug, scrapeFn, smMap)
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err)
+                console.error(`\n❌ Error crítico en "${slug}": ${msg}`)
+                console.warn(`   ⏩ Continuando con el siguiente supermercado...\n`)
+            }
         } else {
             console.warn(`⚠️  No hay scraper para "${slug}"`)
         }
