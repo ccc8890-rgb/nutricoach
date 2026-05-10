@@ -7,7 +7,7 @@
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 
-## Estado Actual (10-05-2026 — Sesión 8 — Clausurada)
+## Estado Actual (10-05-2026 — Sesión 8 + Sesión extra de imágenes)
 
 ### Fixes sesión 8 (Roo Code — Sesión 2 de la rama)
 - ✅ **Scraper recetas** (`app/api/scrape-receta/route.ts`): HTML limpiado antes de mandar a Gemini/DeepSeek → instrucciones ya no traen "copia y pega" del artículo
@@ -25,9 +25,36 @@
 - ✅ **Merge feature/modulos → main** (`4973187`) — build exitoso, worktrees sincronizados
 - ✅ **Perfilado DeepSeek 135/135 recetas** — 0 sin instrucciones, 0 sin kcal
 
+### Sesión extra — Refinamiento imágenes flux_txt2img con GPT-4o (10-05-2026)
+
+**Objetivo:** Regenerar 122 imágenes `flux_txt2img` con GPT-4o (no gustaba estilo Flux Pro).
+
+#### Intentos
+1. **txt2img desde cero**: 58 generadas → estilo "bodegón" ❌ (no gustó)
+2. **image edit desde flux_txt2img**: Cambio a `POST /v1/images/edits` con `input_fidelity:high`. **15 generadas** → OpenAI bloqueó con `billing_hard_limit_reached`
+3. **8 intentos** de continuar tras aumentar límite $10→$30→$100 → OpenAI no propagó el cambio
+
+#### Logros
+- ✅ **16 imágenes ai_gen** subidas a Supabase Storage con `imagen_url` actualizada en BD
+- ✅ **Script `regenerar-flux-masivo.mjs`**: GPT-4o image edit con 3 reintentos y backoff
+- ✅ **Script `analizar-urls-pendientes.mjs`**: 72 pendientes → 37 con url_origen (34 og_image), 35 sin
+- ✅ **Script `generar-html-candidatas.mjs`**: HTML de revisión visual
+- ✅ **Bug billing documentado** en DIAGNOSTICO_FALLOS.md (#14)
+- ✅ **Bug rm accidental documentado** en DIAGNOSTICO_FALLOS.md (#13)
+- ✅ **Bug directorio salida documentado** en DIAGNOSTICO_FALLOS.md (#15)
+
+#### Scripts nuevos
+| Script | Función |
+|--------|---------|
+| `node scripts/regenerar-flux-masivo.mjs --genera` | GPT-4o image edit desde flux_txt2img (skip existentes) |
+| `node scripts/regenerar-flux-masivo.mjs --candidatas` | Generar HTML de revisión visual |
+| `node scripts/analizar-urls-pendientes.mjs` | Analizar url_origen de recetas pendientes |
+
 ### Lo que sigue
-**Prioridad máxima:** Despliegue en Vercel (subir a GitHub + vercel deploy + configurar Supabase Auth)
-**Backlog:** Refinar imágenes GPT-4o, limpiar flux_txt2img, macros/100g en ficha receta
+**Prioridad 1:** Continuar image edit → `node scripts/regenerar-flux-masivo.mjs --genera` (cuando OpenAI billing deje de bloquear)
+**Prioridad 2:** `cp -n` imágenes entre directorios + `node scripts/subir-imagenes-aprobadas.mjs --forzar`
+**Prioridad 3:** Despliegue en Vercel (subir a GitHub + vercel deploy + configurar Supabase Auth)
+**Backlog:** macros/100g en ficha receta, limpiar flux_txt2img de Supabase
 
 ## Estado Actual (09-05-2026 — Sesión 7)
 - **0 errores TypeScript** ✅ — build verificado con `npx next build`
