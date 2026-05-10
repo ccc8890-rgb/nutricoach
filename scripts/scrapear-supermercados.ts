@@ -3,7 +3,6 @@
 // Sin args: ejecuta todos los disponibles (mercadona, carrefour, consum, lidl, alcampo, dia, eroski)
 // Con args: solo los slugs indicados, ej: npx tsx scripts/scrapear-supermercados.ts carrefour lidl
 
-import 'dotenv/config'
 import * as fs from 'fs'
 import * as path from 'path'
 import { createClient } from '@supabase/supabase-js'
