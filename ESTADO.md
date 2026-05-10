@@ -1,4 +1,4 @@
-# ESTADO NutriCoach — 10-05-2026 (Sesión 8)
+# ESTADO NutriCoach — 10-05-2026 (Sesión 8 — Clausurada)
 
 > Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar.
 
@@ -6,81 +6,62 @@
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase activa:** Scraping multi-supermercado + pipeline de recetas completo
+**Fase activa:** Tareas técnicas completadas. Pendiente despliegue en Vercel + producto.
 
 ---
 
-## ✅ COMPLETADO HOY (10-05-2026) — Sesión 8
+## ✅ COMPLETADO HOY (10-05-2026) — Sesión 8 (Roo Code)
 
-### 🔑 Fix crítico — GEMINI_API_KEY en .env.local
-- La clave `GEMINI_API_KEY` existía en `~/.zshrc` pero NO en `nutricoach/.env.local`
-- Esto hacía que Strategy A.5 (enriquecimiento Gemini para JSON-LD incompleto) fallara silenciosamente
-- **Fix aplicado:** clave añadida al final de `nutricoach/.env.local`
-- **ACCIÓN PENDIENTE:** Reiniciar `npm run dev` para que la variable entre en efecto
+### 🔷 Tarea 1 — Migración SQL en Supabase ✅
+- **Archivo:** [`supabase_lista_compra_migration.sql`](supabase_lista_compra_migration.sql)
+- **Ejecución:** `supabase link --project-ref hopeqzwzmlrpktoeygxz` → `supabase db query --linked` ✅
+- Tablas creadas: `selecciones_lista_compra`, `dedup_revision`
+- Columna añadida: `es_generico` en `alimentos`
 
-### 🌐 Fix scraping de recetas — `scrape-receta/route.ts`
-- **User-Agent** cambiado de `NutriCoachBot/1.0` a Chrome real + headers Accept → evita bloqueo de sitios como elmundo.es
-- **Strategy A.5** añadida: si JSON-LD tiene instrucciones vacías o ingredientes sin cantidades, Gemini las completa antes de guardar
-- Commiteado en main: `5acc36f`
+### 🔷 Tarea 2 — Backfill de recetas ✅
+- **Comando:** `npx tsx scripts/backfill-recetas.ts`
+- **Resultado:** 2/2 recetas completadas
 
-### 📦 Mercadona re-scraping completado
-- 3.050 nuevos + 456 actualizados = **3.752 productos** en `productos_supermercado`
-- 814 duplicados (constraint único por URL) — no es error, son productos Mercadona que mapeaban al mismo alimento_id
-- Tiempo: 25.4 min
+### 🔷 Tarea 3 — Scrapers reparados (6 supermercados) ✅
+| Scraper | Estrategia | Detalle |
+|---------|-----------|---------|
+| **Consum** | API REST (Angular SPA) | API real descubierta: `tienda.consum.es/api/rest/V1.0/` — 683 cat. hojas, 8000+ productos |
+| **Alcampo** | API REST (Ocado Technology) | API en `compraonline.alcampo.es/api/` — categorías predefinidas + regionId |
+| **Carrefour** | Playwright (DOM) | Cloudflare bloquea todo HTTP — navegador headless |
+| **Día** | Playwright (DOM) | Access Denied en HTTP — navegador headless |
+| **Eroski** | Playwright (DOM) | Apache Tapestry sin REST API — navegador headless |
+| **Lidl** | Playwright (DOM) | Ya usaba Playwright — selectores mejorados |
 
----
+**Fix crítico Consum:** precio en `priceData.prices[0].value.centAmount` (no en `productData.price`). Dividir entre 100.
 
-## ⚠️ PRIMERA ACCIÓN AL ARRANCAR MAÑANA
+### 🔷 Tarea 4 — Aldi ⏭️ Saltado
+- **Motivo:** aldi.es no tiene e-commerce — solo catálogos semanales (Adobe Experience Manager)
 
-```bash
-# En la carpeta nutricoach/, matar el server si está corriendo (Ctrl+C) y:
-cd /Users/carloscasanova/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach
-npm run dev
-```
+### 🔷 Tarea 5 — Enriquecer 70 alimentos sin macros ✅
+- **Comando:** `node scripts/enriquecer-alimentos.mjs --limite=70`
+- **Resultado:** 70/70 procesados
 
-Luego verificar que Strategy A.5 funciona pegando esta URL en `/recetas/nueva`:
-```
-https://recetasdecocina.elmundo.es/2023/06/arroz-del-senyoret-receta-valenciana.html
-```
-Esperado: receta con instrucciones detalladas (no null).
+### 🔷 Tarea 6 — Merge feature/modulos → main + build ✅
+- **Merge:** commit `4973187` — 17 archivos, conflicto CLAUDE.md resuelto con `--theirs`
+- **Build:** `npx next build` → **exit 0** ✅
+- **Worktrees sincronizados:** nutricoach-modulos + nutricoach-ui fast-forward
 
-También borrar las 2 entradas senyoret huérfanas de la BD:
-```sql
-DELETE FROM recetas WHERE nombre ILIKE '%senyoret%' AND instrucciones IS NULL;
-```
-
----
-
-## ⚠️ CONFLICTOS DE MERGE DETECTADOS
-
-Los worktrees `feature/ui-estetica` y `feature/modulos` tienen archivos en común que difieren de main. No se ha hecho merge automático.
-
-**Archivos con conflicto potencial:**
-- `CLAUDE.md`, `ESTADO.md` (ambas ramas)
-- `app/globals.css` (ambas ramas)
-- `app/api/scrape-receta/route.ts` (feature/modulos)
-- `app/api/capturar-imagen-receta/route.ts` (feature/ui-estetica)
-- `components/Sidebar.tsx`, `components/premium/StepByStep.tsx` (feature/modulos)
-
-**Resolver manualmente antes del próximo merge:**
-```bash
-git -C nutricoach diff main..feature/modulos -- app/globals.css
-git -C nutricoach diff main..feature/ui-estetica -- app/globals.css
-# Decidir cuál versión conservar por archivo
-```
+### 🔷 Extra — Perfilado DeepSeek 135/135 recetas ✅
+- **Comando:** `node scripts/perfilar-recetas-final.mjs --todas`
+- **Resultado:** 135/135 con instrucciones ✅ — 0 sin instrucciones, 0 sin kcal
+- Problemas corregidos: `🔀orden` ingredientes, `¶párrafo→pasos`, `⚖️cantidades`
 
 ---
 
-## 🔜 PENDIENTE (en orden de prioridad)
+## 🔜 PRÓXIMA SESIÓN (prioridades del plan estratégico)
 
-Ver plan detallado para DeepSeek: `nutricoach-modulos/docs/PLAN_DEEPSEEK_10-05-2026.md`
-
-1. **Verificar fix GEMINI** — reiniciar dev server, probar URL senyoret
-2. **Borrar recetas senyoret duplicadas** con `instrucciones IS NULL` en Supabase
-3. **Resolver conflictos de merge** entre ramas antes de próximo PR
-4. **Carrefour scraping** — 403 bloqueado, usar Playwright o buscar API alternativa
-5. **Backfill recetas** — `npx tsx scripts/backfill-recetas.ts`
-6. **Perfilar recetas restantes** — quedan ~42 de 133
+1. **Despliegue en Vercel** (prioridad máxima — sin esto no hay clientes reales)
+   - `gh repo create` o `git push origin main`
+   - `vercel` + configurar variables de entorno
+   - Configurar Supabase Auth con URL de Vercel
+2. **Refinar imágenes con GPT-4o** — `node scripts/refinar-imagenes-og.mjs --todas`
+3. **Limpiar imágenes flux_txt2img** de Supabase (19 recetas sin URL real)
+4. **Macros por 100g en ficha de receta** — feature solicitada
 
 ---
 
