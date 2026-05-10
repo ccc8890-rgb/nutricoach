@@ -1,4 +1,4 @@
-# ESTADO NutriCoach — 10-05-2026 (Sesión 8 — Sesión extra de imágenes)
+# ESTADO NutriCoach — 11-05-2026 (Sesión 8 — Sesión extra de imágenes COMPLETADA)
 
 > Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar.
 
@@ -6,51 +6,39 @@
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase activa:** Refinamiento de imágenes flux_txt2img con GPT-4o image edit. Pendiente: completar ~59 recetas restantes (bloqueado por billing de OpenAI), luego subir a Supabase.
+**Fase:** Imágenes de recetas completada. **135/135 recetas con imagen_url** en Supabase Storage + BD. Pendiente: despliegue en Vercel.
 
 ---
 
-## ✅ COMPLETADO HOY (10-05-2026) — Sesión extra de imágenes
+## ✅ COMPLETADO (10-05-2026) — Sesión extra de imágenes
 
-### 🔷 Refinamiento de imágenes flux_txt2img con GPT-4o
+### 🔷 Refinamiento masivo flux_txt2img → ai_gen con GPT-4o ✅
 
-**Objetivo:** Regenerar las 122 imágenes `flux_txt2img--*.webp` que no gustaban (estilo Flux Pro) con GPT-4o.
+**Problema resuelto:** Crédito OpenAI agotado (no hard limit). Usuario recargó y se completó la generación.
 
-#### 1er intento — txt2img (desde cero) ❌
-- Generadas 58 imágenes con `POST /v1/images/generations` model `gpt-image-1.5`
-- El prompt creaba estilo "bodegón de estudio" — **no gustó al usuario**
-- Coste: ~$0.034/img → ~$1.97
+#### Resultados finales
+| Fase | Resultado |
+|------|-----------|
+| `regenerar-flux-masivo.mjs --genera` (59 pendientes) | ✅ **59/59 generadas** (~$2.00, ~3s entre cada una) |
+| 2 errores OpenAI 520 temporales | ✅ Recuperados automáticamente |
+| Copia a nutricoach-modulos/ | ✅ 62 archivos ai_gen--*.jpg |
+| Subida a Supabase Storage + BD | ✅ **63 imágenes** (62 ai_gen + 1 og_image), 135/135 con imagen_url |
+| Fix bug acentos en candidatas.html | ✅ Slugs con tildes ahora matchean correctamente |
 
-#### 2o intento — image edit (desde flux_txt2img) ✅ (parcial)
-- Cambio a `POST /v1/images/edits` con `input_fidelity: 'high'`
-- Toma la imagen `flux_txt2img--*.webp` como base y la refina con prompt minimalista
-- **13 generadas** → bloqueo por `billing_hard_limit_reached` de OpenAI
-- **3er intento**: 2 más generadas (total 15) → OpenAI seguía bloqueando
-- **8 intentos totales**: aumentado límite de ~$10 → $30 → $100, cambio no propagado
-
-#### Subida a Supabase Storage ✅
-- **16 imágenes ai_gen** subidas a Supabase Storage con `imagen_url` actualizada en BD
-- Script: `node scripts/subir-imagenes-aprobadas.mjs --forzar`
-
-#### Análisis de pendientes 📊
-- **72 recetas pendientes** de generar
-  - **37 con url_origen** (Instagram) → 34 ya tienen og_image descargada
-  - **35 sin url_origen** → seguirán usando flux_txt2img como base
-  - **3 sin og_image** (Gofres proteicos, Pollo sees burger, Tarta chocolate 3 ing.)
+#### Estado BD imágenes
+- **62** archivos `ai_gen--*.jpg` en disco (generados por GPT-4o)
+- **56** `og_image--*.webp` (fotos reales Instagram)
+- **56** `flux_img2img--*.webp` (refinadas con Replicate)
+- **122** `flux_txt2img--*.webp` (originales, reemplazadas por ai_gen)
 
 ---
 
 ## 🔜 PRÓXIMA SESIÓN (prioridades)
 
-1. **Continuar image edit**: `node scripts/regenerar-flux-masivo.mjs --genera` (cuando OpenAI billing deje de bloquear)
-2. **Copiar imágenes y subir**:
-   ```bash
-   cp -n nutricoach/salidas/revision-imagenes/ai_gen--*.jpg nutricoach-modulos/salidas/revision-imagenes/
-   node scripts/subir-imagenes-aprobadas.mjs --forzar
-   ```
-3. **Si no gusta image edit desde flux_txt2img**: probar image edit desde og_image (como Claude ayer)
-4. **Despliegue en Vercel** (prioridad máxima — sin esto no hay clientes reales)
-5. **Macros por 100g en ficha de receta** — feature solicitada
+1. **Revisar imágenes en el recetario** (usuario lo hará con calma)
+2. **Regenerar 14 recetas que aún tienen flux_txt2img**: ejecutar `node scripts/regenerar-flux-masivo.mjs --genera` (se saltará las existentes)
+3. **Despliegue en Vercel** (prioridad máxima — sin esto no hay clientes reales)
+4. **Macros por 100g en ficha de receta** — feature solicitada
 
 ---
 
