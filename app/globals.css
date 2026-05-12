@@ -771,9 +771,76 @@ table tr:hover td {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   RESPONSIVE MOBILE
+   RESPONSIVE MOBILE — iPhone optimizado
    ═══════════════════════════════════════════════════════════════ */
+
+/* ── iPhone SE / small devices (< 376px) ── */
+@media (max-width: 375px) {
+  :root {
+    --header-height: 48px;
+  }
+
+  .p-8,
+  .p-6 {
+    padding: 0.75rem !important;
+  }
+
+  .card {
+    padding: 0.75rem;
+    border-radius: 12px;
+  }
+
+  header h1 {
+    font-size: 1.125rem !important;
+  }
+
+  header p {
+    font-size: 0.6875rem !important;
+  }
+
+  .grid {
+    gap: 0.625rem !important;
+  }
+
+  .btn {
+    min-height: 40px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .btn-sm {
+    min-height: 34px;
+    padding: 0.3125rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* ── iPhone estándar (376px - 430px) ── */
+@media (min-width: 376px) and (max-width: 430px) {
+  :root {
+    --header-height: 52px;
+  }
+
+  .p-8 {
+    padding: 1rem !important;
+  }
+
+  .p-6 {
+    padding: 0.875rem !important;
+  }
+
+  header h1 {
+    font-size: 1.25rem !important;
+  }
+
+  header p {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* ── Todos los dispositivos móviles (< 768px) ── */
 @media (max-width: 767px) {
+  /* Touch targets Apple HIG */
   .btn {
     min-height: 44px;
     padding: 0.625rem 1rem;
@@ -789,6 +856,7 @@ table tr:hover td {
     padding: 0.5rem 0.75rem;
   }
 
+  /* Previene zoom automático en iOS */
   input,
   select,
   textarea,
@@ -801,18 +869,19 @@ table tr:hover td {
     min-height: 44px;
   }
 
-  .p-8 {
-    padding: 1rem !important;
-  }
-
-  .p-6 {
-    padding: 0.875rem !important;
-  }
-
-  .card {
+  /* Card refinements */
+  .card,
+  .card-glass {
     padding: 1rem;
+    border-radius: 12px;
   }
 
+  .card-glass {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Headers */
   header h1 {
     font-size: 1.25rem !important;
   }
@@ -821,23 +890,36 @@ table tr:hover td {
     font-size: 0.75rem !important;
   }
 
+  /* Layout helpers */
   .hide-mobile {
     display: none !important;
   }
 
+  .show-mobile {
+    display: flex !important;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Tablas con scroll horizontal nativo */
   .table-container {
     margin-left: -1rem;
     margin-right: -1rem;
     border-radius: 0;
     border-left: none;
     border-right: none;
+    -webkit-overflow-scrolling: touch;
   }
 
+  /* Badges más compactos */
   .badge {
     padding: 0.125rem 0.5rem;
     font-size: 0.6875rem;
   }
 
+  /* Iconos ligeramente más pequeños para no saturar */
   .lucide {
     width: 16px !important;
     height: 16px !important;
@@ -848,30 +930,196 @@ table tr:hover td {
     padding: 0.375rem 0.5rem;
   }
 
+  /* Safe areas — Apple iPhone notch + home indicator */
   .pb-safe {
     padding-bottom: calc(1rem + var(--safe-bottom));
   }
 
   .pt-safe {
-    padding-top: calc(env(safe-area-inset-top, 0px));
+    padding-top: calc(var(--safe-top));
+  }
+
+  .px-safe {
+    padding-left: calc(1rem + var(--safe-left));
+    padding-right: calc(1rem + var(--safe-right));
+  }
+
+  /* Bottom padding extra para navegación inferior fija */
+  .pb-nav-safe {
+    padding-bottom: calc(4rem + var(--safe-bottom));
+  }
+
+  /* Scroll suave tipo iOS */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Overlay sheets */
+  .sheet-mobile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    border-radius: 16px 16px 0 0;
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Bottom navigation bar */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: auto;
+    padding-bottom: var(--safe-bottom);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+  }
+
+  .bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex: 1;
+    min-height: 44px;
+    padding: 6px 4px;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .bottom-nav-item.active {
+    color: var(--accent);
+  }
+
+  .bottom-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* FAB (Floating Action Button) */
+  .fab {
+    position: fixed;
+    bottom: calc(5rem + var(--safe-bottom));
+    right: 1rem;
+    z-index: 40;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    touch-action: manipulation;
+  }
+
+  .fab:active {
+    transform: scale(0.92);
+  }
+
+  /* Grid de 2 columnas en móvil se vuelve 1 */
+  .grid-cols-2:not(.keep-grid-2) {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stack horizontal en móvil */
+  .stack-mobile {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .stack-mobile > * {
+    width: 100% !important;
+  }
+
+  /* Ocultar scrollbar en iOS pero mantener funcionalidad */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Gap reducido en grids pequeños */
+  .gap-4 {
+    gap: 0.75rem !important;
+  }
+
+  .gap-6 {
+    gap: 1rem !important;
+  }
+
+  .gap-8 {
+    gap: 1.25rem !important;
+  }
+
+  /* Animaciones más sutiles en móvil (rendimiento) */
+  .card-hoverable:hover {
+    transform: none !important;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: none !important;
   }
 }
 
-@media (max-width: 380px) {
-
-  .p-8,
-  .p-6 {
-    padding: 0.75rem !important;
-  }
-
-  .card {
-    padding: 0.75rem;
-  }
-}
-
+/* ── Móvil landscape (como iPhone SE/8 en horizontal) ── */
 @media (max-height: 430px) and (orientation: landscape) {
   .sidebar-link {
     min-height: 36px;
     padding: 0.25rem 0.5rem;
+  }
+
+  .bottom-nav {
+    display: none !important;
+  }
+
+  .fab {
+    bottom: 1rem;
+    right: 0.75rem;
+    width: 44px;
+    height: 44px;
+  }
+
+  .pb-nav-safe {
+    padding-bottom: 1rem !important;
+  }
+}
+
+/* ── iPhone Pro Max / Plus (431px - 768px) ── */
+@media (min-width: 431px) and (max-width: 767px) {
+  .grid-cols-2:not(.keep-grid-2-mobile) {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── Prefiere reducir animaciones (accesibilidad iOS) ── */
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav {
+    transition: none;
+  }
+
+  .sheet-mobile {
+    transition: none;
+  }
+
+  .fab:active {
+    transform: none;
   }
 }

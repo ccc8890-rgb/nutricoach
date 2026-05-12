@@ -142,38 +142,38 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
         : null
 
     return (
-        <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+        <div className="min-h-screen pb-nav-safe" style={{ background: 'var(--bg)' }}>
             {/* Header con gradiente teal */}
             <div style={{ background: 'linear-gradient(135deg, #0D9488, #14B8A6)' }}>
-                <div className="max-w-2xl mx-auto px-4 py-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-teal-100 text-sm font-medium mb-1">
+                <div className="max-w-2xl mx-auto px-4 pt-safe pb-5 sm:py-6">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                            <p className="text-teal-100 text-xs sm:text-sm font-medium mb-1">
                                 {data.cliente?.nombre ? `👋 ¡Hola, ${data.cliente.nombre}!` : '🍽️ Tu plan personalizado'}
                             </p>
-                            <h1 className="text-2xl font-bold text-white">{data.plan.nombre}</h1>
+                            <h1 className="text-xl sm:text-2xl font-bold text-white truncate">{data.plan.nombre}</h1>
                             {data.plan.descripcion && (
-                                <p className="text-teal-100 mt-1 text-sm">{data.plan.descripcion}</p>
+                                <p className="text-teal-100 mt-1 text-xs sm:text-sm line-clamp-2">{data.plan.descripcion}</p>
                             )}
                         </div>
 
                         {/* Indicador de racha y notas no leídas */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                             {racha > 0 && (
-                                <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium"
+                                <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium"
                                     style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
-                                    <Flame size={14} />
+                                    <Flame size={12} />
                                     <span>{racha}</span>
                                 </div>
                             )}
                             {notasNoLeidas > 0 && (
                                 <div className="relative">
-                                    <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium"
+                                    <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium"
                                         style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
-                                        <MessageSquareText size={14} />
-                                        <span>Nuevas</span>
+                                        <MessageSquareText size={12} />
+                                        <span className="hidden sm:inline">Nuevas</span>
                                     </div>
-                                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center font-bold">
+                                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[8px] flex items-center justify-center font-bold">
                                         {notasNoLeidas}
                                     </span>
                                 </div>
@@ -182,43 +182,44 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                     </div>
 
                     {/* Badges informativos */}
-                    <div className="flex flex-wrap gap-2 mt-3">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
                         {data.cliente?.fecha_proxima_revision && (
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                            <div className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium"
                                 style={{ background: 'rgba(255,255,255,0.15)', color: 'white' }}>
-                                📅 Revisión: {new Date(data.cliente.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+                                📅 Revisión: {new Date(data.cliente.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                             </div>
                         )}
                         {ultimoCheckin && diasDesdeUltimoCheckin !== null && (
-                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${diasDesdeUltimoCheckin <= 2 ? 'bg-green-500/20 text-green-100' : ''}`}
+                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium`}
                                 style={{ background: diasDesdeUltimoCheckin <= 2 ? 'rgba(34,197,94,0.2)' : 'rgba(161,161,166,0.2)', color: 'white' }}>
-                                <ClipboardCheck size={12} />
+                                <ClipboardCheck size={10} className="sm:hidden" />
+                                <ClipboardCheck size={12} className="hidden sm:block" />
                                 {diasDesdeUltimoCheckin === 0 ? 'Check-in hoy' :
                                     diasDesdeUltimoCheckin === 1 ? 'Ayer' :
-                                        `${diasDesdeUltimoCheckin} días sin check-in`}
+                                        `${diasDesdeUltimoCheckin}d sin check-in`}
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Tabs */}
+            {/* Tabs — más compactos en mobile */}
             <div className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <div className="max-w-2xl mx-auto flex">
                     {TABS.map(({ key, label, icon: Icon }) => (
                         <button
                             key={key}
                             onClick={() => setTab(key)}
-                            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium border-b-2 transition-colors`}
+                            className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors`}
                             style={{
                                 color: tab === key ? 'var(--primary)' : 'var(--text-secondary)',
                                 borderBottomColor: tab === key ? 'var(--primary)' : 'transparent',
                             }}
                         >
-                            <Icon size={16} />
-                            {label}
+                            <Icon size={14} className="sm:size-4" />
+                            <span className="sm:inline">{label}</span>
                             {key === 'progreso' && notasNoLeidas > 0 && (
-                                <span className="w-2 h-2 bg-red-500 rounded-full" />
+                                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full" />
                             )}
                         </button>
                     ))}

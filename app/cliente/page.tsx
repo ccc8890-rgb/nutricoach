@@ -91,20 +91,20 @@ export default function PortalClientePage() {
   const totalDia = dieta ? sumarMacros((dieta.comidas ?? []).map(c => calcMacrosComida(c.alimentos ?? []))) : null
 
   return (
-    <div className="min-h-screen" style={{ background: '#f9fafb' }}>
+    <div className="min-h-screen pb-safe" style={{ background: '#f9fafb' }}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-4">
+      <div className="bg-white border-b border-gray-100 px-4 pt-safe pb-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm sm:text-base">
               {profile?.nombre?.[0]?.toUpperCase()}
             </div>
             <div>
-              <p className="font-semibold text-gray-900">{profile?.nombre}</p>
-              <p className="text-xs text-gray-400">Mi plan de coaching</p>
+              <p className="font-semibold text-gray-900 text-sm sm:text-base">{profile?.nombre}</p>
+              <p className="text-[10px] sm:text-xs text-gray-400">Mi plan de coaching</p>
             </div>
           </div>
-          <button onClick={handleLogout} className="text-gray-400 hover:text-gray-600">
+          <button onClick={handleLogout} className="text-gray-400 hover:text-gray-600 p-2 touch-manipulation">
             <LogOut size={18} />
           </button>
         </div>
@@ -114,20 +114,20 @@ export default function PortalClientePage() {
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-2xl mx-auto flex">
           {[
-            { key: 'dieta', label: 'Mi dieta', icon: UtensilsCrossed },
-            { key: 'entreno', label: 'Mi entreno', icon: Dumbbell },
+            { key: 'dieta', label: 'Dieta', icon: UtensilsCrossed },
+            { key: 'entreno', label: 'Entreno', icon: Dumbbell },
             { key: 'progreso', label: 'Progreso', icon: Weight },
           ].map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => setTab(key as 'dieta' | 'entreno' | 'progreso')}
-              className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium border-b-2 transition-colors ${tab === key ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors ${tab === key ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}>
-              <Icon size={16} /> {label}
+              <Icon size={14} className="sm:size-4" /> {label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto p-4">
+      <div className="max-w-2xl mx-auto p-4 pb-8">
         {/* TAB: DIETA */}
         {tab === 'dieta' && (
           dieta ? (

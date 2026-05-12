@@ -224,21 +224,23 @@ export default function DashboardPage() {
   return (
     <main className="flex-1 p-8 max-w-7xl">
       {/* Header — premium con glow y Sparkles animado */}
-      <header className="mb-8">
-        <div className="flex items-center justify-between">
+      <header className="mb-6 sm:mb-8">
+        <div className="flex items-start justify-between gap-3 stack-mobile sm:flex-row sm:items-center">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Dashboard</h1>
+              <h1 className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--text)' }}>Dashboard</h1>
               <Sparkles size={18} className="animate-spin-slow" style={{ color: 'var(--accent)' }} />
             </div>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Panel de control con analytics avanzados</p>
+            <p className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>Panel de control con analytics avanzados</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link href="/clientes/nuevo" className="btn btn-primary btn-sm">
-              + Nuevo cliente
+              <span className="hidden sm:inline">+ Nuevo cliente</span>
+              <span className="sm:hidden">+ Cliente</span>
             </Link>
             <Link href="/dietas/nueva" className="btn btn-ghost btn-sm">
-              + Nueva dieta
+              <span className="hidden sm:inline">+ Nueva dieta</span>
+              <span className="sm:hidden">+ Dieta</span>
             </Link>
           </div>
         </div>

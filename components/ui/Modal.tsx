@@ -53,7 +53,7 @@ export default function Modal({
     if (!visible) return null
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
             {/* Overlay */}
             <div
                 className={`absolute inset-0 transition-opacity duration-200 ${abierto ? 'opacity-100' : 'opacity-0'
@@ -62,18 +62,29 @@ export default function Modal({
                 onClick={onCerrar}
             />
 
-            {/* Modal */}
+            {/* Modal — full-screen en mobile, centered en desktop */}
             <div
-                className={`relative w-full max-w-md transition-all duration-200 ${abierto ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-2'
+                className={`relative w-full sm:max-w-md transition-all duration-200 ${abierto ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-2'
                     }`}
                 style={{
                     background: 'var(--surface)',
-                    borderRadius: '16px',
+                    borderRadius: '16px 16px 0 0',
                     boxShadow: 'var(--shadow-xl)',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
+                    WebkitOverflowScrolling: 'touch',
                 }}
             >
+                {/* Handle visual para iOS (solo mobile) */}
+                <div className="flex justify-center pt-2 pb-1 sm:hidden">
+                    <div
+                        className="w-9 h-1 rounded-full"
+                        style={{ background: 'var(--text-muted)', opacity: 0.3 }}
+                    />
+                </div>
+
                 {/* Header */}
-                <div className="flex items-start justify-between p-5 pb-3">
+                <div className="flex items-start justify-between px-5 pt-2 pb-3 sm:pt-5">
                     <div className="flex-1 pr-4">
                         <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>{titulo}</h2>
                         {descripcion && (
@@ -82,20 +93,23 @@ export default function Modal({
                     </div>
                     <button
                         onClick={onCerrar}
-                        className="transition-colors p-1 rounded-lg"
+                        className="transition-colors p-1.5 rounded-lg touch-manipulation"
                         style={{ color: 'var(--text-muted)' }}
                     >
-                        <X size={18} />
+                        <X size={20} />
                     </button>
                 </div>
 
                 {/* Content */}
                 {children && <div className="px-5 pb-3">{children}</div>}
 
-                {/* Footer */}
+                {/* Footer — sticky en mobile */}
                 {(accion || accionSecundaria) && (
-                    <div className="flex items-center justify-end gap-2 p-5 pt-3 border-t"
-                        style={{ borderColor: 'var(--border-light)' }}>
+                    <div className="flex items-center justify-end gap-2 p-5 pt-3 border-t sticky bottom-0"
+                        style={{
+                            borderColor: 'var(--border-light)',
+                            background: 'var(--surface)',
+                        }}>
                         {accionSecundaria && (
                             <button
                                 onClick={accionSecundaria.onClick}

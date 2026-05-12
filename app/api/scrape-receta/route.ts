@@ -342,10 +342,11 @@ async function callDeepSeekExtraction(html: string): Promise<any> {
 El campo descripcion_porcion describe qué es físicamente 1 porción. Ejemplos: "1 galleta", "2 tacos", "1 rebanada", "1 bol", "1 donut", "1 porción de tarta". Infierelo del nombre de la receta, el yield y las instrucciones. Si no está claro, pon null.
 TEXTO WEB: ${texto}`
 
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_KEY}` },
-    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], temperature: 0.1 }),
+    body: JSON.stringify({ model: DEEPSEEK_MODEL, messages: [{ role: 'user', content: prompt }], temperature: 0.1 }),
   })
 
   if (!response.ok) {
@@ -795,11 +796,12 @@ async function extractRecipeFromSocial(url: string, fuenteTipo: string): Promise
 }
 Árbol: ${tree.substring(0, 10000)}`
 
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEEPSEEK_KEY}` },
     body: JSON.stringify({
-      model: 'deepseek-chat',
+      model: DEEPSEEK_MODEL,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
     }),
@@ -1056,11 +1058,22 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Post-procesar texto ──
-    // Capitalizar ingredientes
-    const capitalizedIngredients = parsedIngredients.map((ing: ParsedIngredient) => ({
-      ...ing,
-      nombre: ing.nombre.charAt(0).toUpperCase() + ing.nombre.slice(1),
-    }))
+    // Propagar alimento_id a parsedIngredients (matchedIngredients ya lo tiene)
+    const matchedMap = new Map<string, typeof matchedIngredients[0]>()
+    for (const mi of matchedIngredients) {
+      matchedMap.set(mi.nombre_libre, mi)
+    }
+
+    // Capitalizar ingredientes + añadir alimento_id
+    const capitalizedIngredients = parsedIngredients.map((ing: ParsedIngredient) => {
+      const match = matchedMap.get(ing.nombre)
+      return {
+        ...ing,
+        nombre: ing.nombre.charAt(0).toUpperCase() + ing.nombre.slice(1),
+        alimento_id: match?.alimento_id ?? null,
+        es_opcional: match?.es_opcional ?? false,
+      }
+    })
 
     // Formatear instrucciones: si no tiene "1. " al inicio, auto-numerar por líneas
     let instruccionesFinal: string | null = extracted.instrucciones ?? null
@@ -1125,24 +1138,68 @@ export async function POST(req: NextRequest) {
 
       if (ingError) {
         console.error('Error inserting receta_ingredientes:', ingError)
-        // We still return success with the receta URL, but log the error
+      }
+    }
+
+    // ── Recalcular macros de la receta desde ingredientes vinculados ──
+    if (matchedIngredients.length > 0) {
+      try {
+        // Obtener macros de los alimentos vinculados
+        const idsAlimentos = [...new Set(matchedIngredients.map(i => i.alimento_id).filter(Boolean))] as string[]
+        if (idsAlimentos.length > 0) {
+          const { data: alimentosData } = await supabaseService
+            .from('alimentos')
+            .select('id, calorias, proteinas, carbohidratos, grasas, fibra')
+            .in('id', idsAlimentos)
+
+          if (alimentosData?.length) {
+            const alimentoMap = Object.fromEntries(alimentosData.map(a => [a.id, a]))
+            const porciones = extracted.porciones ?? 1
+
+            let totalKcal = 0, totalProt = 0, totalCarbs = 0, totalGrasas = 0, totalFibra = 0
+
+            for (const ing of matchedIngredients) {
+              if (!ing.alimento_id || !alimentoMap[ing.alimento_id]) continue
+              const a = alimentoMap[ing.alimento_id]
+              const factor = (ing.cantidad_gramos || 0) / 100
+              totalKcal += (a.calorias || 0) * factor
+              totalProt += (a.proteinas || 0) * factor
+              totalCarbs += (a.carbohidratos || 0) * factor
+              totalGrasas += (a.grasas || 0) * factor
+              totalFibra += (a.fibra || 0) * factor
+            }
+
+            await supabaseService
+              .from('recetas')
+              .update({
+                kcal: Math.round((totalKcal / porciones) * 100) / 100,
+                proteinas: Math.round((totalProt / porciones) * 100) / 100,
+                carbohidratos: Math.round((totalCarbs / porciones) * 100) / 100,
+                grasas: Math.round((totalGrasas / porciones) * 100) / 100,
+                fibra: Math.round((totalFibra / porciones) * 100) / 100,
+              })
+              .eq('id', receta.id)
+          }
+        }
+      } catch (macroErr) {
+        console.error('Error calculando macros para receta:', macroErr)
       }
     }
 
     // ── Captura de imagen en background si no hay imagen_url ──
     if (!imagenFinal) {
-        // Fire and forget — no bloqueamos la respuesta
-        fetch(req.nextUrl.origin + '/api/capturar-imagen-receta', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Cookie': req.headers.get('cookie') ?? '' },
-            body: JSON.stringify({
-                receta_id: receta.id,
-                url_origen: url,
-                nombre: extracted.nombre,
-                ingredientes: (extracted.ingredientes ?? []).slice(0, 6).map((i: any) => typeof i === 'string' ? i : i.nombre),
-                categoria: extracted.categoria ?? null,
-            }),
-        }).catch(() => { /* background task, ignorar errores */ })
+      // Fire and forget — no bloqueamos la respuesta
+      fetch(req.nextUrl.origin + '/api/capturar-imagen-receta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': req.headers.get('cookie') ?? '' },
+        body: JSON.stringify({
+          receta_id: receta.id,
+          url_origen: url,
+          nombre: extracted.nombre,
+          ingredientes: (extracted.ingredientes ?? []).slice(0, 6).map((i: any) => typeof i === 'string' ? i : i.nombre),
+          categoria: extracted.categoria ?? null,
+        }),
+      }).catch(() => { /* background task, ignorar errores */ })
     }
 
     // ── Return ──

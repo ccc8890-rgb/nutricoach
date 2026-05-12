@@ -48,7 +48,7 @@ const supabase = createClient(
 )
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions'
-const DEEPSEEK_MODEL = 'deepseek-chat'
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
 const DRY_RUN = process.argv.includes('--dry-run')
 const TODAS = process.argv.includes('--todas')
 const slugIdx = process.argv.indexOf('--slug')
@@ -256,13 +256,7 @@ async function actualizarReceta(receta, parsed, ingredientesOriginales) {
             .limit(2000)
 
         const payloads = ingCorregidos.map((ing, idx) => {
-            const nombreNorm = ing.nombre.toLowerCase().trim()
-            const match = alimentos?.find(a =>
-                a.nombre.toLowerCase().trim() === nombreNorm ||
-                a.nombre.toLowerCase().includes(nombreNorm) ||
-                nombreNorm.includes(a.nombre.toLowerCase())
-            )
-
+            const match = buscarAlimento(ing.nombre, alimentos)
             return {
                 receta_id: receta.id,
                 nombre_libre: ing.nombre,
@@ -275,6 +269,70 @@ async function actualizarReceta(receta, parsed, ingredientesOriginales) {
         const { error: insertError } = await supabase.from('receta_ingredientes').insert(payloads)
         if (insertError) throw new Error(`Insert ingredientes: ${insertError.message}`)
     }
+}
+
+// ── Matching inteligente de ingredientes ───────────────────────────────────────
+// Busca el mejor alimento candidato para un ingrediente dado.
+// Usa comparación de palabras COMPLETAS (no substrings) para evitar falsos
+// positivos como:
+//   - "nachos sin sal" → "Sal"       ❌  (detecta "sin" como negación)
+//   - "pan" → "Panceta"              ❌  ("pan" no es palabra completa en "panceta")
+//   - "ajo en polvo" → "Ajo crudo"   ❌  ("polvo" no es palabra de "ajo crudo")
+// Además normaliza acentos para que "café" matchee con "Cafe".
+function normalizar(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+function palabrasCompletas(str) {
+    return normalizar(str.toLowerCase())
+        .split(/[\s,()\/\-]+/)
+        .filter(p => p.length >= 2) // mínimo 2 chars (filtra "a", "y", "e", "o")
+}
+
+function buscarAlimento(nombreIngrediente, alimentos) {
+    if (!alimentos?.length) return null
+
+    const norm = normalizar(nombreIngrediente.toLowerCase().trim())
+    const palabrasIng = palabrasCompletas(nombreIngrediente)
+
+    // Detectar palabras negadas (precedidas de "sin")
+    const negados = new Set()
+    for (let i = 0; i < palabrasIng.length - 1; i++) {
+        if (palabrasIng[i] === 'sin') negados.add(palabrasIng[i + 1])
+    }
+
+    return alimentos.find(a => {
+        const nombreA = normalizar(a.nombre.toLowerCase().trim())
+        const palabrasA = palabrasCompletas(a.nombre)
+
+        // 1. Match exacto (caso ideal)
+        if (nombreA === norm) return true
+
+        // 2. Forward: todas las palabras del ingrediente aparecen como
+        //    palabras COMPLETAS en el alimento.
+        //    Ej: "arroz" → "Arroz integral" ✅  ("arroz" es palabra completa)
+        //    Ej: "pan" → "Panceta" ❌  ("pan" no es palabra completa en "panceta")
+        if (palabrasIng.length > 0) {
+            const todasOk = palabrasIng.every(p =>
+                palabrasA.some(pa => pa === p)
+            )
+            if (todasOk) return true
+        }
+
+        // 3. Reverse: todas las palabras del alimento aparecen como palabras
+        //    COMPLETAS en el ingrediente, salvo las negadas por "sin".
+        //    Ej: "nachos sin sal" → "Sal" ❌  ("sal" negado por "sin")
+        //    Ej: "sal" → "Sal" ✅  (no hay "sin", match exacto ya cubierto)
+        if (palabrasA.length > 0) {
+            const todasOk = palabrasA.every(p => {
+                if (negados.has(p)) return false
+                return palabrasIng.some(pi => pi === p)
+            })
+            if (todasOk) return true
+        }
+
+        return false
+    })
 }
 
 // ── MAIN ──────────────────────────────────────────────────────────────────────

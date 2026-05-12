@@ -55,16 +55,16 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4"
+      className="min-h-screen flex items-center justify-center px-4 pb-nav-safe"
       style={{
         background: 'var(--bg)',
       }}
     >
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo — premium con glow graphite */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 text-2xl font-bold tracking-tight"
+            className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl mb-3 sm:mb-4 text-xl sm:text-2xl font-bold tracking-tight"
             style={{
               background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
               color: '#1C1C1E',
@@ -74,26 +74,26 @@ export default function LoginPage() {
             CN
           </div>
           <h1
-            className="text-3xl font-bold tracking-tight"
+            className="text-2xl sm:text-3xl font-bold tracking-tight"
             style={{ color: 'var(--text)' }}
           >
             Casanova Nutrition
           </h1>
-          <p className="mt-1.5" style={{ color: 'var(--text-secondary)' }}>
+          <p className="mt-1 text-sm sm:text-base" style={{ color: 'var(--text-secondary)' }}>
             Tu plataforma de coaching nutricional
           </p>
         </div>
 
         {/* Card de login — glass premium */}
         <div className="card-glass">
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-5 sm:mb-6">
             <Sparkles size={16} style={{ color: 'var(--accent)' }} />
-            <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>
+            <h2 className="text-base sm:text-lg font-bold" style={{ color: 'var(--text)' }}>
               Iniciar sesión
             </h2>
           </div>
 
-          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+          <form onSubmit={handleLogin} className="flex flex-col gap-4 sm:gap-5">
             <div>
               <label htmlFor="email">Email</label>
               <input

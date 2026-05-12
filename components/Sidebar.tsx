@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   LayoutDashboard,
@@ -31,6 +31,7 @@ import {
   Bot,
   ShoppingCart,
   Clock,
+  ChevronUp,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -42,6 +43,15 @@ const NAV_ITEMS = [
   { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
   { href: '/conocimiento', label: 'Conocimiento', icon: BrainCircuit },
   { href: '/ia-test', label: 'Probador IA', icon: FlaskConical },
+]
+
+// Items para bottom tab bar (solo los principales)
+const BOTTOM_TAB_ITEMS = [
+  { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard },
+  { href: '/respuestas', label: 'Consulta', icon: MessageSquareReply },
+  { href: '/clientes', label: 'Clientes', icon: Users },
+  { href: '/dietas/plantillas', label: 'Dietas', icon: Apple },
+  { href: '/recetas', label: 'Recetas', icon: BookOpen },
 ]
 
 const ENTRENOS_SUBITEMS = [
@@ -71,9 +81,12 @@ export default function Sidebar() {
   const { theme, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [recetasPendientes, setRecetasPendientes] = useState(0)
+  const [menuAbierto, setMenuAbierto] = useState<'entrenos' | 'nutricion' | null>(null)
+
+  const sheetRef = useRef<HTMLDivElement>(null)
 
   // Cerrar mobile al navegar
-  useEffect(() => { setMobileOpen(false) }, [pathname])
+  useEffect(() => { setMobileOpen(false); setMenuAbierto(null) }, [pathname])
 
   useEffect(() => {
     supabase
@@ -97,6 +110,17 @@ export default function Sidebar() {
     await supabase.auth.signOut()
     router.push('/login')
   }
+
+  // Cerrar sheet al hacer clic fuera
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (sheetRef.current && !sheetRef.current.contains(e.target as Node) && menuAbierto) {
+        setMenuAbierto(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuAbierto])
 
   const sidebarContent = (
     <>
@@ -310,14 +334,17 @@ export default function Sidebar() {
     </>
   )
 
-  // Para evitar hydration mismatch, el botón hamburguesa y overlay
-  // se renderizan con suppressHydrationWarning hasta que el cliente tome control
+  // Para evitar hydration mismatch
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
   return (
     <>
-      {/* Botón hamburguesa — visible solo en mobile */}
+      {/* ════════════════════════════════════ */}
+      {/* DESKTOP: Botón hamburguesa + sidebar */}
+      {/* ════════════════════════════════════ */}
+
+      {/* Botón hamburguesa — visible solo en mobile (para drawer) */}
       {mounted && (
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -332,7 +359,7 @@ export default function Sidebar() {
         </button>
       )}
 
-      {/* Overlay para mobile */}
+      {/* Overlay para mobile drawer */}
       {mounted && mobileOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
@@ -340,7 +367,7 @@ export default function Sidebar() {
         />
       )}
 
-      {/* Sidebar desktop (siempre visible) + mobile (toggle) */}
+      {/* Sidebar desktop (siempre visible) + mobile drawer */}
       <aside
         className={`
           relative w-64 min-h-screen flex flex-col border-r overflow-hidden
@@ -357,6 +384,192 @@ export default function Sidebar() {
       >
         {sidebarContent}
       </aside>
+
+      {/* ════════════════════════════════════ */}
+      {/* MOBILE: Bottom Tab Bar (iOS-style)  */}
+      {/* ════════════════════════════════════ */}
+
+      {mounted && (
+        <nav className="bottom-nav lg:hidden">
+          <div className="flex items-stretch">
+            {BOTTOM_TAB_ITEMS.map(({ href, label, icon: Icon }) => {
+              const isActive = pathname === href || pathname.startsWith(href + '/')
+              const showNotifBadge = href === '/respuestas' && noLeidas > 0
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`bottom-nav-item ${isActive ? 'active' : ''}`}
+                >
+                  <div className="relative">
+                    <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+                    {showNotifBadge && (
+                      <span
+                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center"
+                        style={{ background: 'var(--error)', color: 'white' }}
+                      >
+                        {noLeidas > 9 ? '9+' : noLeidas}
+                      </span>
+                    )}
+                  </div>
+                  <span>{label}</span>
+                </Link>
+              )
+            })}
+
+            {/* Botón "Más" — abre bottom sheet con resto de navegación */}
+            <button
+              onClick={() => setMenuAbierto(menuAbierto === 'nutricion' ? null : 'nutricion')}
+              className={`bottom-nav-item ${menuAbierto ? 'active' : ''}`}
+            >
+              <UtensilsCrossed size={20} strokeWidth={menuAbierto ? 2.5 : 1.8} />
+              <span>Más</span>
+            </button>
+          </div>
+        </nav>
+      )}
+
+      {/* ════════════════════════════════════ */}
+      {/* MOBILE: Bottom Sheet (iOS-style)    */}
+      {/* ════════════════════════════════════ */}
+
+      {/* Overlay del sheet */}
+      {mounted && menuAbierto && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          onClick={() => setMenuAbierto(null)}
+        />
+      )}
+
+      {/* Sheet */}
+      {mounted && menuAbierto && (
+        <div
+          ref={sheetRef}
+          className="sheet-mobile lg:hidden animate-slide-up"
+          style={{ background: 'var(--surface)' }}
+        >
+          {/* Handle visual */}
+          <div className="flex justify-center pt-2 pb-1">
+            <div
+              className="w-9 h-1 rounded-full"
+              style={{ background: 'var(--text-muted)', opacity: 0.3 }}
+            />
+          </div>
+
+          <div className="px-4 pb-6 space-y-4 overflow-y-auto max-h-[70vh]">
+            {/* Sección Nutrición */}
+            <div>
+              <p
+                className="text-xs font-semibold uppercase tracking-wider px-3 py-2"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Nutrición
+              </p>
+              <div className="space-y-0.5">
+                {NUTRICION_SUBITEMS.map(({ href, label, icon: Icon }) => {
+                  const isActive = pathname === href || pathname.startsWith(href + '/')
+                  const showBadge = href === '/recetas/cola' && recetasPendientes > 0
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`sidebar-link ${isActive ? 'active' : ''}`}
+                      onClick={() => setMenuAbierto(null)}
+                    >
+                      <Icon size={18} strokeWidth={isActive ? 2.5 : 1.8} />
+                      <span className="flex-1">{label}</span>
+                      {showBadge && (
+                        <span
+                          className="text-[11px] font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
+                          style={{ background: 'var(--error)' }}
+                        >
+                          {recetasPendientes > 99 ? '99+' : recetasPendientes}
+                        </span>
+                      )}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Sección Entrenos */}
+            <div>
+              <p
+                className="text-xs font-semibold uppercase tracking-wider px-3 py-2"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Entrenos
+              </p>
+              <div className="space-y-0.5">
+                {ENTRENOS_SUBITEMS.concat({ href: '/entrenos/plantillas', label: 'Planificación', icon: Calendar }).map(({ href, label, icon: Icon }) => {
+                  const isActive = pathname === href || pathname.startsWith(href + '/')
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`sidebar-link ${isActive ? 'active' : ''}`}
+                      onClick={() => setMenuAbierto(null)}
+                    >
+                      <Icon size={18} strokeWidth={isActive ? 2.5 : 1.8} />
+                      <span>{label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Cuestionarios, Conocimiento, IA Test */}
+            <div>
+              <p
+                className="text-xs font-semibold uppercase tracking-wider px-3 py-2"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Herramientas
+              </p>
+              <div className="space-y-0.5">
+                {[
+                  { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
+                  { href: '/conocimiento', label: 'Conocimiento', icon: BrainCircuit },
+                  { href: '/ia-test', label: 'Probador IA', icon: FlaskConical },
+                ].map(({ href, label, icon: Icon }) => {
+                  const isActive = pathname === href || pathname.startsWith(href + '/')
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`sidebar-link ${isActive ? 'active' : ''}`}
+                      onClick={() => setMenuAbierto(null)}
+                    >
+                      <Icon size={18} strokeWidth={isActive ? 2.5 : 1.8} />
+                      <span>{label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Acciones: Tema + Cerrar sesión */}
+            <div className="pt-2 space-y-1 border-t" style={{ borderColor: 'var(--border-light)' }}>
+              <button
+                onClick={() => { toggleTheme(); setMenuAbierto(null) }}
+                className="sidebar-link w-full"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                <span>{theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
+              </button>
+              <button
+                onClick={() => { handleLogout(); setMenuAbierto(null) }}
+                className="sidebar-link w-full"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                <LogOut size={18} />
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

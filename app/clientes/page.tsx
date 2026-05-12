@@ -84,28 +84,28 @@ export default function ClientesPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
-      <header className="flex items-center justify-between mb-8">
+      <header className="flex items-start justify-between gap-3 mb-6 stack-mobile sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Clientes</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{clientes.length} clientes en total</p>
+          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--text)' }}>Clientes</h1>
+          <p className="text-xs sm:text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{clientes.length} clientes en total</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleInvitar}
-            className="btn btn-secondary"
+            className="btn btn-secondary btn-sm"
             disabled={invitando === 'loading'}
           >
             {invitando === 'loading' ? (
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 size={14} className="animate-spin" />
             ) : invitando === 'done' ? (
-              <Check size={16} />
+              <Check size={14} />
             ) : (
-              <Link2 size={16} />
+              <Link2 size={14} />
             )}
-            {invitando === 'done' ? 'Copiado' : 'Invitar'}
+            <span className="hidden sm:inline">{invitando === 'done' ? 'Copiado' : 'Invitar'}</span>
           </button>
-          <Link href="/clientes/nuevo" className="btn btn-primary">
-            <Plus size={16} /> Nuevo cliente
+          <Link href="/clientes/nuevo" className="btn btn-primary btn-sm">
+            <Plus size={14} /> <span className="hidden sm:inline">Nuevo</span><span className="sm:hidden">Nuevo</span>
           </Link>
         </div>
       </header>

@@ -40,7 +40,7 @@ async function llamarDeepSeek(messages: DeepSeekMessage[], temp = 0.3): Promise<
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_API_KEY}` },
         body: JSON.stringify({
-            model: 'deepseek-chat',
+            model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro',
             messages,
             temperature: temp,
             max_tokens: 2000,

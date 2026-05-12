@@ -37,7 +37,7 @@ if (!DEEPSEEK_API_KEY || !SUPABASE_URL || !SERVICE_KEY) {
 // ── Parsear args ─────────────────────────────────────────────────
 const args = process.argv.slice(2)
 const LIMITE = parseInt(args.find(a => a.startsWith('--limite'))?.split('=')[1] || '500', 10)
-const MODELO = 'deepseek-chat'
+const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
 const TEMPERATURA = 0.1
 const LOTES_POR_VEZ = 25
 const MAX_INTENTOS = 3
