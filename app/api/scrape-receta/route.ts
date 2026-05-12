@@ -73,6 +73,9 @@ const ESPECIA_KEYWORDS = [
   'nuez moscada', 'jengibre', 'cúrcuma', 'curcuma', 'curry',
   'ajo en polvo', 'cebolla en polvo', 'albahaca', 'eneldo',
   'mostaza', 'vinagre', 'salsa', 'kétchup', 'ketchup', 'tabasco',
+  'glutamato', 'levadura', 'bicarbonato', 'impulsor', 'gasificante',
+  'clavo', 'anís', 'anis', 'vainilla', 'esencia', 'colorante',
+  'edulcorante', 'stevia',
 ]
 
 // Ingredientes con keywords que también tienen defaults bajos
@@ -110,9 +113,20 @@ function parseCantidadAGramos(
   if (cantidad === null || cantidad === undefined) {
     // Especias / condimentos → 5g (una cucharadita o pizca)
     if (ESPECIA_LIKE(nombre)) return 5
-    // Ingredientes líquidos (aceite, vinagre, salsa) → 15g (una cucharada)
-    if (/aceite|vinagre|salsa|sirope/i.test(nombre)) return 15
+    // Líquidos (aceite, vinagre, salsa, sirope, nata, vino, cerveza, leche) → 15g (una cucharada)
+    if (/aceite|vinagre|salsa|sirope|nata|vino|cerveza|leche[^g]|caldo|fondo/i.test(nombre)) return 15
+    // Carnes / pescados / huevos → 150g (ración individual estándar)
+    if (/pollo|ternera|cerdo|pescado|salmón|salmon|merluza|atún|tuna|trucha|dorada|lubina/i.test(nombre)) return 150
+    if (/huevo|huevos/i.test(nombre)) return 150
+    // Cereales / legumbres crudos → 80g (ración individual)
+    if (/arroz|pasta|quinoa|cuscús|cuscus|lenteja|garbanzo|alubia|judía|judias|avena|pan|copos/i.test(nombre)) return 80
     // Frutas / verduras enteras → 100g (media pieza pequeña)
+    if (/manzana|pera|plátano|platano|naranja|kiwi|higo|higos|ciruela/i.test(nombre)) return 100
+    // Frutos secos / semillas → 30g (puñado estándar)
+    if (/almendra|nuez|nueces|anacardo|cacahuete|pipas|semilla|pistacho|avellana/i.test(nombre)) return 30
+    // Condimentos / salsas espesas → 20g
+    if (/mostaza|kétchup|ketchup|mayonesa|miel|sirope/i.test(nombre)) return 20
+    // Por defecto → 100g
     return 100
   }
 
@@ -416,6 +430,40 @@ const RESTRICTIVE_WORDS = new Set([
   'ahumado', 'ahumada', 'tostada', 'tostado', 'tostadas',
 ])
 
+// Palabras de marca/producto — penalizan fuerte en el scoring
+const BRAND_WORDS = new Set([
+  'hacendado', 'nestle', 'nestlé', 'valor', 'mercadona', 'dia', 'carrefour',
+  'coca', 'cola', 'monster', 'bebida', 'refresco', 'cerveza', 'vino',
+  'spaghetti', 'papilla', 'rosquillas', 'molinillo', 'sirope',
+  'barrita', 'barritas', 'snack', 'snacks', 'deluxe',
+  'cereal', 'cereales', 'chocolate',
+])
+
+// Palabras de productos NO comestibles para humanos — descarte inmediato
+const NON_FOOD_WORDS = new Set([
+  // Limpieza hogar
+  'limpieza', 'bayeta', 'fregona', 'escoba', 'mopa', 'rasqueta',
+  'desatascador', 'desinfectante', 'lejía', 'lejia', 'cloro',
+  'lavaparabrisas', 'bolsas', 'multiusos', 'estropajo', 'suavizante',
+  'detergente', 'lavavajillas', 'limpia', 'fregasuelos', 'ambientador',
+  'alcohol',
+  // Higiene personal
+  'champú', 'champu', 'acondicionador', 'gel', 'desodorante',
+  'antitranspirante', 'jabón', 'pasta de dientes', 'dentífrico',
+  'maquillaje', 'corrector', 'deliplus', 'rimmel', 'laca',
+  'crema corporal', 'loción', 'aceite corporal', 'manteca corporal',
+  'tónico facial', 'sérum', 'serum', 'mascarilla facial',
+  'tampones', 'compresas', 'preservativo', 'biberón', 'chupete',
+  'cepillo', 'afeitar', 'espuma',
+  // Mascotas
+  'gato adulto', 'caninos', 'perro', 'mascotas', 'animales', 'pienso',
+  // Medicamentos / suplementos no alimentarios
+  'laxante', 'cápsulas', 'comprimidos', 'minoxidil',
+  'kit', 'analizador',
+  // Categorías no comestibles
+  'cuidado personal', 'higiene personal', 'hogar', 'limpieza del hogar',
+])
+
 const DISH_WORDS = new Set([
   'bowl', 'mousse', 'tortilla', 'muffin', 'brownie', 'burger',
   'galleta', 'galletas', 'tarta', 'bizcocho', 'donut', 'gofre',
@@ -497,90 +545,106 @@ async function buscarAlimento(supabaseService: any, token: string): Promise<any[
 }
 
 // ──────────────────────────────────────────────
-// Sistema de puntuación (todo normalizado por acentos)
+// Sistema de puntuación (0-100, normalizado por acentos)
+// Basado en el algoritmo de rematch-ingredientes.mjs
 // ──────────────────────────────────────────────
+
+function palabrasCompletas(str: string): string[] {
+  return norm(str.toLowerCase())
+    .split(/[\s,()\/\-]+/)
+    .filter(p => p.length >= 2)
+}
 
 function puntuarCandidato(
   candidato: string,
-  tokensBuscar: string[],
+  _tokensBuscar: string[],
   consultaOriginal: string
 ): { total: number; palabrasRestrictivas: number; tokensMatchCount: number } {
   const aNorm = norm(candidato)
   const queryNorm = norm(consultaOriginal)
-  const queryLower = consultaOriginal.toLowerCase().trim()
-  const palabrasConsulta = queryLower.split(/\s+/).filter(p => p.length > 0 && !CONNECTORS.has(p))
 
-  const tokensNorm = tokensBuscar.map(t => norm(t))
-
-  let baseScore = 0
-  let penalizacionFaltantes = 0
-  let tokensMatchCount = 0
-
-  for (let i = 0; i < tokensBuscar.length; i++) {
-    const tNorm = tokensNorm[i]
-    const tOrig = tokensBuscar[i]
-    if (aNorm.includes(tNorm)) {
-      baseScore += 10
-      tokensMatchCount++
-    } else {
-      if (PREP_WORDS.has(tOrig)) {
-        penalizacionFaltantes += 2
-      } else {
-        penalizacionFaltantes += 8
-      }
-    }
-  }
-
+  // Detectar si el candidato contiene palabras NO comestibles → descarte inmediato
   const palabrasCandidato = aNorm.split(/[\s()]+/).filter(p => p.length > 0 && !CONNECTORS.has(p))
-  let penalizacionExtra = 0
-  let sustantivasExtra = 0
-  let palabrasRestrictivas = 0
-
   for (const pc of palabrasCandidato) {
-    if (pc.length <= 2) continue
-    if (palabraEnConsulta(pc, palabrasConsulta.map(norm))) continue
+    if (NON_FOOD_WORDS.has(pc)) {
+      return { total: -999, palabrasRestrictivas: 0, tokensMatchCount: 0 }
+    }
+  }
 
-    if (DISH_WORDS.has(pc)) {
-      penalizacionExtra += 12
-      sustantivasExtra++
-    } else if (PREP_WORDS.has(pc)) {
-      penalizacionExtra += 2
-      if (RESTRICTIVE_WORDS.has(pc)) {
-        penalizacionExtra += 5
-        palabrasRestrictivas++
-      }
-    } else if (esSustantiva(pc)) {
-      penalizacionExtra += 10
-      sustantivasExtra++
+  const palabrasIng = palabrasCompletas(consultaOriginal)
+  const palabrasFood = palabrasCompletas(candidato)
+
+  if (palabrasIng.length === 0) return { total: 0, palabrasRestrictivas: 0, tokensMatchCount: 0 }
+
+  const ingSet = new Set(palabrasIng)
+  const foodSet = new Set(palabrasFood)
+
+  // Palabras exclusivas de cada lado (usando variantes)
+  const soloIng = palabrasIng.filter(p => {
+    for (const fp of palabrasFood) if (sonVariantes(p, fp)) return false
+    return true
+  })
+  const soloFood = palabrasFood.filter(p => {
+    for (const ip of palabrasIng) if (sonVariantes(ip, p)) return false
+    return true
+  })
+
+  const forwardOk = soloIng.length === 0
+  const reverseOk = soloFood.length === 0
+
+  // Si ni forward ni reverse → no hay match
+  if (!forwardOk && !reverseOk) return { total: 0, palabrasRestrictivas: 0, tokensMatchCount: 0 }
+
+  // Clasificar tipo de match
+  const esBidireccional = forwardOk && reverseOk
+  const esReverseOnly = reverseOk && !forwardOk
+  const esForwardOnly = forwardOk && !reverseOk
+
+  let score = 0
+
+  if (esBidireccional) {
+    if (soloIng.length === 0 && soloFood.length === 0) score = 100 // exacto
+    else score = 95 // mismo conjunto de palabras
+  } else if (esReverseOnly) {
+    // food ⊂ ingredient — seguro
+    score = 85
+  } else if (esForwardOnly) {
+    // ingredient ⊂ food — riesgoso (food tiene palabras extra)
+    if (palabrasIng.length === 1 && soloFood.length >= 2) {
+      // Una palabra del ing coincide con food que tiene 2+ extras
+      const numMarca = soloFood.filter(p => BRAND_WORDS.has(p)).length
+      const numDesc = soloFood.filter(p => PREP_WORDS.has(p)).length
+      if (numMarca > 0) score = 40
+      else if (numDesc >= soloFood.length) score = 80
+      else score = 60
     } else {
-      penalizacionExtra += 3
+      const numMarca = soloFood.filter(p => BRAND_WORDS.has(p) || DISH_WORDS.has(p)).length
+      if (numMarca > 0) score = Math.max(30, 70 - numMarca * 15)
+      else score = Math.max(50, 80 - soloFood.length * 5)
     }
   }
 
-  if (aNorm.includes('(') && !queryNorm.includes('(')) {
-    penalizacionExtra += 2
-  }
+  // Penalizaciones generales
+  const marcaEnFood = palabrasFood.filter(p => BRAND_WORDS.has(p)).length
+  score -= marcaEnFood * 20
 
-  const queryRoot = singularizar(queryNorm)
-  if (queryRoot.length > 3 && aNorm.includes(queryRoot)) {
-    baseScore += 3
-    if (palabrasCandidato.length > 0) {
-      const mainWord = palabrasCandidato[0]
-      if (mainWord === queryRoot || queryRoot.includes(mainWord) || mainWord.includes(queryRoot)) {
-        baseScore += 5
-      }
+  const dishEnFood = palabrasFood.filter(p => DISH_WORDS.has(p)).length
+  score -= dishEnFood * 10
+
+  // Bonus por nombre corto (más genérico = mejor)
+  if (palabrasFood.length <= 2) score += 5
+  if (palabrasFood.length === 1) score += 5
+
+  // Contar tokens match para el sort
+  let tokensMatchCount = 0
+  for (const ip of palabrasIng) {
+    for (const fp of palabrasFood) {
+      if (sonVariantes(ip, fp)) { tokensMatchCount++; break }
     }
   }
 
-  if (sustantivasExtra > 1) {
-    penalizacionExtra += sustantivasExtra * 5
-  }
-
-  return {
-    total: baseScore - penalizacionFaltantes - penalizacionExtra,
-    palabrasRestrictivas,
-    tokensMatchCount
-  }
+  const finalScore = Math.max(0, Math.min(100, score))
+  return { total: finalScore, palabrasRestrictivas: 0, tokensMatchCount }
 }
 
 // ──────────────────────────────────────────────

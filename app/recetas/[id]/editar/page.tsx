@@ -263,7 +263,7 @@ export default function EditarRecetaPage() {
 
     return (
         <>
-            <BackButton href={`/recetas/${params.id}`} />
+            <BackButton href={`/recetas/${id}`} />
             <PageTransition>
                 <div className="p-6 max-w-3xl mx-auto pb-safe">
                     <div className="flex items-center gap-3 mb-8">
