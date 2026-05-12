@@ -344,11 +344,11 @@ export default function Sidebar() {
       {/* DESKTOP: Botón hamburguesa + sidebar */}
       {/* ════════════════════════════════════ */}
 
-      {/* Botón hamburguesa — visible solo en mobile (para drawer) */}
+      {/* Botón menú — visible solo en mobile, a la derecha para no solapar botón volver */}
       {mounted && (
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
+          className="fixed top-4 right-4 z-50 lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
           style={{
             background: mobileOpen ? 'var(--surface)' : 'var(--glass-bg)',
             border: '1px solid var(--glass-border)',
