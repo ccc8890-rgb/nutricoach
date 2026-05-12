@@ -58,12 +58,9 @@ function buildPrompt(nombreReceta) {
 Por favor, edita la imagen de esta manera:
 1. Elimina cualquier texto superpuesto, título, subtítulo, watermark, logo, hashtag o información nutricional que aparezca encima de la comida.
 2. Si hay personas, manos o dedos visibles, elimínalos. Deja solo el plato y la comida.
-3. Mantén exactamente la misma composición y los mismos alimentos del plato original.
-4. Ajusta la iluminación para que parezca luz natural de tarde entrando por una ventana de cocina mediterránea, cálida y suave.
-5. El fondo debe ser una mesa de madera o encimera de cocina casera y sencilla, mismo estilo en todas las fotos.
-6. Estilo: foto personal de blog de cocina, Sony mirrorless, composición ligeramente imperfecta, auténtica.
+3. Mantén EXACTAMENTE la misma composición, los mismos alimentos, el mismo fondo, la misma iluminación y el mismo emplatado de la imagen original. NO cambies el fondo ni la iluminación ni la mesa ni el entorno, NI añadas objetos nuevos.
 
-El resultado debe ser la misma comida que en la imagen original, pero en un entorno de cocina casera consistente y sin ningún texto ni personas.`
+El resultado debe ser idéntica a la imagen original, solo que sin texto, sin marcas de agua y sin personas.`
 }
 
 // ──────────────────────────────────────────────

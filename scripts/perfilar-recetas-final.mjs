@@ -48,7 +48,7 @@ const supabase = createClient(
 )
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions'
-const DEEPSEEK_MODEL = 'deepseek-chat'
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
 const DRY_RUN = process.argv.includes('--dry-run')
 const TODAS = process.argv.includes('--todas')
 const slugIdx = process.argv.indexOf('--slug')

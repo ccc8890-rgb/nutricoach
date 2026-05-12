@@ -51,12 +51,12 @@ const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
 const DRY_RUN = process.argv.includes('--dry-run')
 const FORZAR = process.argv.includes('--forzar')
 
-// Prioridad de métodos: cuanto menor índice, mejor (actualizado 09-05-2026)
-// og_image    → foto real de Instagram/TikTok (mejor siempre)
-// flux_img2img → foto real refinada con OpenAI gpt-image-1.5 (nombre legacy de Replicate)
+// Prioridad de métodos: cuanto menor índice, mejor (actualizado 11-05-2026)
+// flux_img2img → foto real PROCESADA por Claude/OpenAI (sin texto, sin personas, perfilada) ← MEJOR
+// og_image    → foto real de Instagram/TikTok sin procesar
 // ai_gen       → imagen IA generada desde cero con OpenAI gpt-image-1.5 (para recetas sin URL)
 // resto        → métodos legacy
-const PRIORIDAD = ['og_image', 'flux_img2img', 'ai_gen', 'agent_browser', 'playwright', 'bing_images', 'flux_txt2img']
+const PRIORIDAD = ['flux_img2img', 'og_image', 'ai_gen', 'agent_browser', 'playwright', 'bing_images', 'flux_txt2img']
 
 function priIdx(metodo) {
     const i = PRIORIDAD.indexOf(metodo)

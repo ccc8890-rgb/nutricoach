@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase } from '@/lib/supabase-server'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
 
 async function fetchUrl(url: string): Promise<string> {
   const res = await fetch(url, {

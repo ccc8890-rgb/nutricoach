@@ -342,10 +342,11 @@ async function callDeepSeekExtraction(html: string): Promise<any> {
 El campo descripcion_porcion describe qué es físicamente 1 porción. Ejemplos: "1 galleta", "2 tacos", "1 rebanada", "1 bol", "1 donut", "1 porción de tarta". Infierelo del nombre de la receta, el yield y las instrucciones. Si no está claro, pon null.
 TEXTO WEB: ${texto}`
 
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_KEY}` },
-    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], temperature: 0.1 }),
+    body: JSON.stringify({ model: DEEPSEEK_MODEL, messages: [{ role: 'user', content: prompt }], temperature: 0.1 }),
   })
 
   if (!response.ok) {
@@ -795,11 +796,12 @@ async function extractRecipeFromSocial(url: string, fuenteTipo: string): Promise
 }
 Árbol: ${tree.substring(0, 10000)}`
 
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEEPSEEK_KEY}` },
     body: JSON.stringify({
-      model: 'deepseek-chat',
+      model: DEEPSEEK_MODEL,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
     }),
@@ -1131,18 +1133,18 @@ export async function POST(req: NextRequest) {
 
     // ── Captura de imagen en background si no hay imagen_url ──
     if (!imagenFinal) {
-        // Fire and forget — no bloqueamos la respuesta
-        fetch(req.nextUrl.origin + '/api/capturar-imagen-receta', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Cookie': req.headers.get('cookie') ?? '' },
-            body: JSON.stringify({
-                receta_id: receta.id,
-                url_origen: url,
-                nombre: extracted.nombre,
-                ingredientes: (extracted.ingredientes ?? []).slice(0, 6).map((i: any) => typeof i === 'string' ? i : i.nombre),
-                categoria: extracted.categoria ?? null,
-            }),
-        }).catch(() => { /* background task, ignorar errores */ })
+      // Fire and forget — no bloqueamos la respuesta
+      fetch(req.nextUrl.origin + '/api/capturar-imagen-receta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': req.headers.get('cookie') ?? '' },
+        body: JSON.stringify({
+          receta_id: receta.id,
+          url_origen: url,
+          nombre: extracted.nombre,
+          ingredientes: (extracted.ingredientes ?? []).slice(0, 6).map((i: any) => typeof i === 'string' ? i : i.nombre),
+          categoria: extracted.categoria ?? null,
+        }),
+      }).catch(() => { /* background task, ignorar errores */ })
     }
 
     // ── Return ──
