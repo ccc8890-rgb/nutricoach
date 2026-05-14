@@ -277,6 +277,7 @@ Documentado en [`plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`](plans/DISENO_PRODUCTOS
 - ✅ **Plan de diseño documentado:** `plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`
 
 ### Pendiente para próxima sesión
+- [ ] **ACTUALIZAR selectores DOM** de Carrefour, Lidl, Día para que encuentren productos (los actuales no matchean las webs)
 - [ ] Scrapers pendientes: aldi, el-corte-ingles, hipercor, bonpreu, esclat
 - [ ] Ejecutar re-scraper de Mercadona para probar el pipeline multi-producto en producción
 - [ ] Actualizar PanelScraping para mostrar múltiples productos por alimento con nombre_original y marca
@@ -287,6 +288,72 @@ Documentado en [`plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`](plans/DISENO_PRODUCTOS
 - [ ] Actualizar ruta vieja `GET /api/precios/alimento` para usar nueva vista
 - [ ] Onboarding: cuestionario inicial post-registro, email de bienvenida automático
 - [ ] Imágenes de recetas: borrar actuales y rehacer con estilo casero
+
+## 🆕 Scrapers: fix `__name is not defined` + ejecución (14-05-2026 — Sesión 9)
+
+### Problema: `ReferenceError: __name is not defined` en scrapers Playwright
+
+**Causa raíz:** El compilador `tsx` (usado por `npx tsx scripts/scrapear-supermercados.ts`) añade un helper `__name()` a funciones flecha/nombradas compiladas. Cuando Playwright serializa estas funciones vía `page.evaluate(() => { ... })`, el código serializado referencia `__name`, que no existe en el contexto del navegador.
+
+**Fix aplicado a 3 scrapers (Carrefour, Lidl, Día):**
+- Convertir `page.evaluate(() => { ... })` → `page.evaluate(\`string IIFE\`)`
+- Las IIFE en string no pasan por `tsx`, se serializan como texto plano
+- Añadir generic type `<T>()` a `page.evaluate<T>()` para type-safety
+
+### Archivos modificados
+
+1. [`lib/scraping/supermercados/carrefour.ts`](nutricoach-modulos/lib/scraping/supermercados/carrefour.ts) — 3 calls convertidas a string IIFE + generic `<ProductoRaw[]>` ✅
+2. [`lib/scraping/supermercados/lidl.ts`](nutricoach-modulos/lib/scraping/supermercados/lidl.ts) — 3 calls convertidas a string IIFE + generic types ✅
+3. [`lib/scraping/supermercados/dia.ts`](nutricoach-modulos/lib/scraping/supermercados/dia.ts) — 3 calls convertidas a string IIFE + generic types ✅
+
+### Resultados de ejecución
+
+| Supermercado | Productos | Técnica | Estado |
+|---|---|---|---|
+| **Alcampo** | **50 únicos** | API HTTP (Ocado) | ✅ Sin fix necesario |
+| **Lidl** | **0** | Playwright DOM | ⚠️ Fix __name ok, selectores desactualizados |
+| **Día** | **0** | Playwright DOM | ⚠️ Fix __name ok, selectores desactualizados + Access Denied |
+| **Carrefour** | **0→54** | Playwright DOM → Homepage | ✅ Fix __name ok, selectores actualizados |
+
+### Diagnóstico DOM (14-05-2026)
+
+#### Carrefour — Fix aplicado ✅ (54 productos)
+- **Problema original:** El scraper navegaba a cada categoría individual (ej: `/supermercado/frescos/cat20002/c`), pero Cloudflare bloqueaba las navegaciones 2ª, 3ª, 4ª.
+- **Problema selectores original:** Buscaba `.product-card__title-link` (no existe), `.product-card__price` (clase real es `.product-card__prices`), `.product-card__price-per-unit` (clase real es `[class*="price-per-unit"]`).
+- **Solución:** Extraer productos directamente del homepage `/supermercado`, que carga TODAS las categorías mezcladas. En homepage hay ~444 `.product-card__parent` con atributos `app_price`, `app_price_per_unit`, `catalog`.
+- **Selectores actuales del homepage funcionales:**
+  - Contenedor: `.product-card__parent` (444 elementos en homepage, 29 en categoria Frescos)
+  - Título: `h2.product-card__title`
+  - Precio: atributo `app_price` en el parent, fallback `.product-card__prices`
+  - Precio/kg: atributo `app_price_per_unit`, fallback `[class*="price-per-unit"]`
+  - Imagen: `img` dentro del card (data-src o src)
+  - URL: `a[href*="/supermercado/"]` dentro del card
+  - Filtro comida: `catalog="food"` en el parent
+- **Cloudflare:** Solo la homepage y la primera navegación a categoría pasan. El fix de extraer desde homepage evita el problema completamente.
+- **Archivo:** [`lib/scraping/supermercados/carrefour.ts`](nutricoach-modulos/lib/scraping/supermercados/carrefour.ts)
+- **Nuevas funciones:** `extraerProductosHomepage()` y `extraerProductosDOM()` (reemplazan `scrapearProductosCategoria()`)
+- **Resultado:** 54 productos extraídos ✅
+
+#### Lidl — Web rediseñada ❌ (no lista productos)
+- **URLs de categoría cambiaron:** De `/c/alimentacion` a `/c/alimentacion/s10068374` (formato con ID numérico)
+- **Problema principal:** Las páginas de categoría ya NO listan productos. Al navegar a `/c/alimentacion/s10068374` redirige a folletos (`/c/descubre-nuevas-ofertas-cada-semana-folletos-lidl/s10087402`).
+- **Subcategorías probadas:** `/c/frutas-y-verduras/s10068375`, `/c/carnes-y-aves/s10068376`, `/c/lacteos-y-huevos/s10068378` — todas cargan sin contenedores de producto, solo navegación y footer.
+- **Causa probable:** Lidl movió su tienda online a un modelo "folletos semanales" donde los productos solo aparecen temporalmente. La experiencia de compra ahora redirige a la web de folletos, no a un catálogo permanente. También podría detectar Playwright headless y ocultar productos.
+- **Elementos detectados en homepage:** 142 elementos con `[class*="product"]`, pero son genéricos (no contienen precios). La clase de producto es `ods-product` / `ods-price`.
+- **Estado:** No scrapeable actualmente con la estrategia actual. Requeriría investigar si hay API interna o si renderiza productos solo para usuarios logueados.
+
+#### Día — Access Denied 🔒
+- **Playwright headless:** Bloqueado completamente por el WAF de Día. Recibe página "Access Denied" con 0KB de contenido útil.
+- **Estado:** No scrapeable con Playwright headless. Posibles alternativas: (1) modo no-headless, (2) `--disable-blink-features=AutomationControlled`, (3) usar puppeteer-extra con stealth plugin, (4) API HTTP si existe.
+
+### Estado actual del scraping (14-05-2026)
+
+- **Mercadona**: ~4.342 productos ✅ (API oficial)
+- **Consum**: ~191 productos ✅ (API interna)
+- **Alcampo**: ~50 productos ✅ (API Ocado HTTP)
+- **Carrefour**: ~54 productos ✅ (Playwright homepage — fix aplicado)
+- **Lidl**: ❌ (web rediseñada, no lista productos en categorías)
+- **Día**: ❌ (WAF bloquea headless)
 
 ## 🧠 Lecciones aprendidas (09-05-2026 — Productos vs Alimentos)
 
