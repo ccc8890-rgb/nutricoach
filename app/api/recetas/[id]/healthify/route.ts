@@ -44,31 +44,53 @@ function normalizar(s: string) {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
+type AlimentoRow = { id: string; nombre: string; calorias: number; proteinas: number; carbohidratos: number; grasas: number }
+
 async function matchIngrediente(nombreLibre: string, supabase: ReturnType<typeof createServiceSupabase>) {
   const n = normalizar(nombreLibre)
   const palabras = n.split(' ').filter((w: string) => w.length > 2)
 
+  // Nivel 1: exact ilike
   const { data: exacto } = await supabase.from('alimentos').select('id, nombre, calorias, proteinas, carbohidratos, grasas')
     .ilike('nombre', nombreLibre).gt('calorias', 0).limit(1)
   if (exacto?.length) return exacto[0]
 
-  for (const palabra of palabras) {
-    const { data } = await supabase.from('alimentos').select('id, nombre, calorias, proteinas, carbohidratos, grasas')
-      .ilike('nombre', `${palabra}%`).gt('calorias', 0).order('calorias', { ascending: false }).limit(3)
-    if (data?.length) {
-      const scored = data.map((a: {id: string; nombre: string; calorias: number; proteinas: number; carbohidratos: number; grasas: number}) => {
-        const an = normalizar(a.nombre).split(' ')
-        const match = palabras.filter((w: string) => an.some((aw: string) => aw.startsWith(w) || w.startsWith(aw))).length
-        return { ...a, score: match }
-      }).sort((a: {score: number}, b: {score: number}) => b.score - a.score)
-      if (scored[0].score > 0) return scored[0]
-    }
-  }
+  // Nivel 2: startsWith — acumula candidatos de TODAS las palabras antes de elegir
+  // Tiebreaker: más palabras en común > nombre más corto (genérico gana sobre específico)
+  const vistos = new Set<string>()
+  const candidatos: Array<AlimentoRow & { score: number }> = []
 
   for (const palabra of palabras) {
     const { data } = await supabase.from('alimentos').select('id, nombre, calorias, proteinas, carbohidratos, grasas')
-      .ilike('nombre', `%${palabra}%`).gt('calorias', 0).limit(1)
-    if (data?.length) return data[0]
+      .ilike('nombre', `${palabra}%`).gt('calorias', 0).order('calorias', { ascending: false }).limit(5)
+    for (const a of (data || [])) {
+      if (vistos.has(a.id)) continue
+      vistos.add(a.id)
+      const an = normalizar(a.nombre).split(' ')
+      const score = palabras.filter((w: string) => an.some((aw: string) => aw.startsWith(w) || w.startsWith(aw))).length
+      candidatos.push({ ...a, score })
+    }
+  }
+
+  if (candidatos.length) {
+    // Ordenar: más coincidencias primero, en empate el nombre más corto gana
+    candidatos.sort((a, b) => b.score - a.score || a.nombre.length - b.nombre.length)
+    if (candidatos[0].score > 0) return candidatos[0]
+  }
+
+  // Nivel 3: contains (fallback)
+  for (const palabra of palabras) {
+    const { data } = await supabase.from('alimentos').select('id, nombre, calorias, proteinas, carbohidratos, grasas')
+      .ilike('nombre', `%${palabra}%`).gt('calorias', 0).order('nombre', { ascending: true }).limit(3)
+    if (data?.length) {
+      // Elegir el que más palabras comparte
+      const scored = data.map((a: AlimentoRow) => {
+        const an = normalizar(a.nombre).split(' ')
+        const score = palabras.filter((w: string) => an.includes(w)).length
+        return { ...a, score }
+      }).sort((a, b) => b.score - a.score || a.nombre.length - b.nombre.length)
+      if (scored[0]) return scored[0]
+    }
   }
 
   return null
