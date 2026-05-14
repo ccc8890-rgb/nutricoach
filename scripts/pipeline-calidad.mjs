@@ -164,16 +164,22 @@ async function fase1_qualityCheck(recetas) {
 // Patrones: [regex_nombre_libre, alimento_id_correcto, nombre_correcto]
 // Añadir aquí cuando se detecte un patrón sistemático
 const MATCH_FIXES = [
-    // Aceites y condimentos que se confunden
+    // Sal → matchea "Salsa pesto", "Salsa de tomate", etc. por prefijo
     [/^sal$/i,           '0adc820b-8ec6-4888-8c75-91e916531f60', 'Sal'],
     [/^agua$/i,          'c125af5a-afe3-4ffc-a9d5-185817b6a9db', 'Agua'],
-    // Chocolate que matchea a cereales
+    // Chocolate → matchea cereales de chocolate
     [/^chocolate negro/i, 'ccedb95e-bd69-4b1f-a940-3b5909db3a3d', 'Chocolate negro 85% cacao'],
     [/^chocolate$/i,      'ccedb95e-bd69-4b1f-a940-3b5909db3a3d', 'Chocolate negro 85% cacao'],
-    // Miel que matchea a salsas
+    // Miel → matchea salsas con miel
     [/^miel$/i,          '8619b09f-af3a-4ec4-a11c-f8eace75e90f', 'Miel'],
-    // Calabaza que matchea a pipas
+    // Calabaza → matchea pipas de calabaza
     [/^calabaza$/i,      'cfd9ca77-0710-4f2b-bae1-0219fe9de85c', 'Calabaza'],
+    // Zumo de limón → matchea "Zumo maracuyá y chía" u otros zumos por prefijo "zumo"
+    [/^zumo de lim/i,   '60ad001e-bb47-44ba-a48f-c8afe9a2e6f2', 'Limón'],
+    [/^jugo de lim/i,   '60ad001e-bb47-44ba-a48f-c8afe9a2e6f2', 'Limón'],
+    // Spray de aceite → matchea "Aceite de Aguacate Cristal" u otros aceites de supermercado
+    [/^spray.*aceite/i, 'bf392211-3527-4c7d-98a5-a2fc0bda8270', 'Aceite de oliva'],
+    [/^aceite en spray/i,'bf392211-3527-4c7d-98a5-a2fc0bda8270', 'Aceite de oliva'],
 ]
 
 // IDs de alimentos que son SOSPECHOSOS como resultado de match (productos muy procesados)
