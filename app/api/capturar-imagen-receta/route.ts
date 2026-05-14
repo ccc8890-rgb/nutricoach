@@ -101,60 +101,59 @@ function captureImageWithAgentBrowser(sourceUrl: string): Buffer | null {
 }
 
 // ──────────────────────────────────────────────
-// Flux img2img — transformación suave (anti-plagio)
+// OpenAI GPT-image-1.5 edit — limpieza + homogeneización
 // ──────────────────────────────────────────────
-async function applyFluxImgToImg(
+async function applyOpenAIImageEdit(
   imageBuffer: Buffer,
-  prompt: string,
-  strength = 0.2
-): Promise<string | null> {
-  const API_KEY = process.env.REPLICATE_API_KEY
-  if (!API_KEY) return null
+  nombre: string,
+  categoria: string | null
+): Promise<Buffer | null> {
+  const OPENAI_KEY = process.env.OPENAI_API_KEY
+  if (!OPENAI_KEY) return null
 
   try {
-    const dataUri = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`
+    const style = getHomeStyle(categoria)
+    const prompt = [
+      `Clean up this food photo of "${nombre}":`,
+      '1. Remove all overlaid text, calorie labels, hashtags, TikTok/Instagram watermarks.',
+      '2. Remove any hands or people visible. Keep only the dish.',
+      '3. Keep the exact same food composition and plating.',
+      `4. Adjust to: ${style}.`,
+      'Result: same food, clean home kitchen look, no text, no watermarks. Photorealistic.',
+    ].join(' ')
 
-    const createRes = await fetch('https://api.replicate.com/v1/predictions', {
+    const form = new FormData()
+    form.append('image', new Blob([imageBuffer.buffer as ArrayBuffer], { type: 'image/jpeg' }), 'image.jpg')
+    form.append('model', 'gpt-image-1.5')
+    form.append('prompt', prompt)
+    form.append('n', '1')
+    form.append('size', '1024x1024')
+    form.append('quality', 'medium')
+
+    const res = await fetch('https://api.openai.com/v1/images/edits', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        version: 'black-forest-labs/flux-pro',
-        input: {
-          image: dataUri,
-          prompt,
-          strength,          // 0.2 = cambio sutil, mantiene composición original
-          aspect_ratio: '1:1',
-          output_format: 'webp',
-          safety_tolerance: 2,
-          seed: Math.floor(Math.random() * 999999), // variedad entre imágenes
-        },
-      }),
-      signal: AbortSignal.timeout(10000),
+      headers: { Authorization: `Bearer ${OPENAI_KEY}` },
+      body: form,
+      signal: AbortSignal.timeout(120000),
     })
 
-    if (!createRes.ok) return null
-    const prediction = await createRes.json()
-    const pollUrl: string = prediction.urls?.get
-    if (!pollUrl) return null
-
-    // Poll hasta succeeded (máx 60s)
-    const deadline = Date.now() + 60000
-    while (Date.now() < deadline) {
-      await new Promise(r => setTimeout(r, 2500))
-      const poll = await fetch(pollUrl, {
-        headers: { Authorization: `Bearer ${API_KEY}` },
-        signal: AbortSignal.timeout(8000),
-      })
-      if (!poll.ok) break
-      const status = await poll.json()
-      if (status.status === 'succeeded') {
-        const output = status.output
-        return Array.isArray(output) ? output[0] : (typeof output === 'string' ? output : null)
-      }
-      if (status.status === 'failed') break
+    if (!res.ok) {
+      const err = await res.text()
+      console.error('OpenAI image edit error:', res.status, err.slice(0, 200))
+      return null
     }
-  } catch {
-    // Replicate error — fallback to direct image
+
+    const data = await res.json() as { data?: { b64_json?: string; url?: string }[] }
+    const b64 = data.data?.[0]?.b64_json
+    if (b64) return Buffer.from(b64, 'base64')
+
+    const url = data.data?.[0]?.url
+    if (url) {
+      const imgRes = await fetch(url, { signal: AbortSignal.timeout(30000) })
+      return Buffer.from(await imgRes.arrayBuffer())
+    }
+  } catch (err) {
+    console.error('OpenAI image edit exception:', err)
   }
   return null
 }
@@ -179,23 +178,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'receta_id y nombre son obligatorios' }, { status: 400 })
     }
 
-    // ── 1. Capturar imagen real de la fuente ──
+    // ── 1. Capturar imagen real de la fuente con agent-browser ──
     let imageBuffer: Buffer | null = url_origen ? captureImageWithAgentBrowser(url_origen) : null
 
-    // ── 2. Flux img2img suave (anti-plagio + estilo personal) ──
+    // ── 2. OpenAI GPT-image-1.5 edit — limpieza + homogeneización ──
     let finalImageUrl: string | null = null
     if (imageBuffer) {
-      const prompt = buildAntiPlagiarismPrompt(nombre, categoria ?? null)
-      const fluxUrl = await applyFluxImgToImg(imageBuffer, prompt, 0.2)
-
-      if (fluxUrl) {
-        // Descargar resultado de Flux y usar ese buffer para Storage
-        const fluxRes = await fetch(fluxUrl, { signal: AbortSignal.timeout(15000) })
-        if (fluxRes.ok) {
-          imageBuffer = Buffer.from(await fluxRes.arrayBuffer())
-        }
-        finalImageUrl = fluxUrl // fallback si falla el upload
-      }
+      const refined = await applyOpenAIImageEdit(imageBuffer, nombre, categoria ?? null)
+      if (refined) imageBuffer = refined
     }
 
     // ── 3. Subir a Supabase Storage ──
