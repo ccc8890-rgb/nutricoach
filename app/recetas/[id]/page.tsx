@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
-import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, Brain, AlertTriangle, Clock, Users, ChevronLeft, Euro } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, Brain, AlertTriangle, Clock, Users, ChevronLeft, Euro, Sparkles, ArrowRight } from 'lucide-react'
 import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -42,6 +42,7 @@ interface RecetaDetalle {
   estado?: string
   intolerancias?: string[]
   coach_id?: string
+  receta_original_id?: string | null
   created_at: string
 }
 
@@ -86,6 +87,11 @@ export default function DetalleRecetaPage() {
   const [borrando, setBorrando] = useState(false)
   const [accionando, setAccionando] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
+  const [versionFit, setVersionFit] = useState<{ id: string; nombre: string; kcal: number | null } | null>(null)
+  const [recetaOriginalNombre, setRecetaOriginalNombre] = useState<string | null>(null)
+  const [generandoFit, setGenerandoFit] = useState(false)
+  const [specs, setSpecs] = useState('')
+  const [showSpecs, setShowSpecs] = useState(false)
 
   async function handleEstado(nuevoEstado: 'aprobada' | 'descartada') {
     setAccionando(true)
@@ -104,12 +110,45 @@ export default function DetalleRecetaPage() {
         supabase.from('recetas').select('*').eq('id', id).single(),
         supabase.from('receta_ingredientes').select('*, alimento:alimentos(*)').eq('receta_id', id).order('cantidad_gramos', { ascending: false }),
       ])
-      setReceta(recetaRes.data)
+      const r = recetaRes.data as RecetaDetalle | null
+      setReceta(r)
       setIngredientes(ingRes.data ?? [])
       setLoading(false)
+
+      if (r) {
+        // Buscar versión fit de esta receta (si esta es la original)
+        const { data: fit } = await supabase.from('recetas')
+          .select('id, nombre, kcal').eq('receta_original_id', id).eq('estado', 'aprobada').maybeSingle()
+        if (fit) setVersionFit(fit as { id: string; nombre: string; kcal: number | null })
+
+        // Si esta receta es una versión fit, cargar nombre del original
+        if (r.receta_original_id) {
+          const { data: orig } = await supabase.from('recetas')
+            .select('nombre').eq('id', r.receta_original_id).single()
+          if (orig) setRecetaOriginalNombre(orig.nombre)
+        }
+      }
     }
     load()
   }, [id])
+
+  async function crearVersionFit() {
+    setGenerandoFit(true)
+    try {
+      const res = await fetch(`/api/recetas/${id}/healthify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ specs }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Error generando versión fit')
+      router.push(`/recetas/${data.id}`)
+    } catch (err) {
+      console.error(err)
+      alert('Error al generar versión fit. Inténtalo de nuevo.')
+      setGenerandoFit(false)
+    }
+  }
 
   async function borrar() {
     if (!confirm('¿Borrar esta receta? Esta acción no se puede deshacer.')) return
@@ -392,40 +431,64 @@ export default function DetalleRecetaPage() {
                   )}
                 </div>
 
-                {/* Fila 2 — Macros por porción en una sola fila */}
+                {/* Fila 2 — Macros por porción */}
                 {macrosPorPorcion && (
-                  <div className="flex flex-wrap gap-3">
-                    <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
-                      <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>kcal</span>
-                      <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-calories)' }}>
-                        {Math.round(macrosPorPorcion.kcal)}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
-                      <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>prot</span>
-                      <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-protein)' }}>
-                        {Math.round(macrosPorPorcion.proteinas)}g
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
-                      <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>carbs</span>
-                      <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-carbs)' }}>
-                        {Math.round(macrosPorPorcion.carbohidratos)}g
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
-                      <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>grasas</span>
-                      <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-fat)' }}>
-                        {Math.round(macrosPorPorcion.grasas)}g
-                      </span>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                      Por porción{receta.porciones && receta.porciones > 1 ? ` (1 de ${receta.porciones})` : ''}
+                    </span>
+                    <div className="flex flex-wrap gap-3">
+                      <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
+                        <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>kcal</span>
+                        <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-calories)' }}>
+                          {Math.round(macrosPorPorcion.kcal)}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
+                        <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>prot</span>
+                        <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-protein)' }}>
+                          {Math.round(macrosPorPorcion.proteinas)}g
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
+                        <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>carbs</span>
+                        <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-carbs)' }}>
+                          {Math.round(macrosPorPorcion.carbohidratos)}g
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--bg-subtle)', minWidth: 56 }}>
+                        <span className="text-xs mb-0.5" style={{ color: 'var(--text-muted)' }}>grasas</span>
+                        <span className="text-base font-bold tabular-nums" style={{ color: 'var(--macro-fat)' }}>
+                          {Math.round(macrosPorPorcion.grasas)}g
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* Fila 3 — Por 100g */}
+                {/* Fila 3 — Totales receta completa (si hay más de 1 porción) */}
+                {macrosPorPorcion && receta.porciones && receta.porciones > 1 && (
+                  <div className="flex gap-3 flex-wrap items-center">
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Receta completa</span>
+                    <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                      <span className="font-semibold" style={{ color: 'var(--macro-calories)' }}>{Math.round(macrosPorPorcion.kcal * receta.porciones)}</span> kcal
+                    </span>
+                    <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                      <span className="font-semibold" style={{ color: 'var(--macro-protein)' }}>{Math.round(macrosPorPorcion.proteinas * receta.porciones)}g</span> P
+                    </span>
+                    <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                      <span className="font-semibold" style={{ color: 'var(--macro-carbs)' }}>{Math.round(macrosPorPorcion.carbohidratos * receta.porciones)}g</span> C
+                    </span>
+                    <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+                      <span className="font-semibold" style={{ color: 'var(--macro-fat)' }}>{Math.round(macrosPorPorcion.grasas * receta.porciones)}g</span> G
+                    </span>
+                  </div>
+                )}
+
+                {/* Fila 4 — Por 100g */}
                 {macrosPor100g && (
-                  <div className="flex gap-3 flex-wrap">
-                    <span className="text-xs self-center" style={{ color: 'var(--text-muted)' }}>/ 100g</span>
+                  <div className="flex gap-3 flex-wrap items-center">
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>/ 100g</span>
                     <span className="text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>
                       <span className="font-semibold" style={{ color: 'var(--macro-calories)' }}>{macrosPor100g.kcal}</span> kcal
                     </span>
@@ -551,6 +614,80 @@ export default function DetalleRecetaPage() {
               </div>
             </FadeIn>
           )}
+
+          {/* ═══════ VERSIÓN FIT ═══════ */}
+          <FadeIn delay={0.41}>
+            {/* Esta receta ES una versión fit → mostrar enlace al original */}
+            {receta.receta_original_id && recetaOriginalNombre && (
+              <div className="mb-6 flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ background: 'var(--accent-bg)', border: '1px solid var(--accent-ring)' }}>
+                <Sparkles size={16} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Versión fit de</span>
+                <Link href={`/recetas/${receta.receta_original_id}`} className="text-sm font-semibold flex items-center gap-1 hover:underline" style={{ color: 'var(--accent)' }}>
+                  {recetaOriginalNombre} <ArrowRight size={13} />
+                </Link>
+              </div>
+            )}
+
+            {/* Existe versión fit de esta receta → mostrar card con enlace */}
+            {!receta.receta_original_id && versionFit && (
+              <Link href={`/recetas/${versionFit.id}`}
+                className="mb-6 flex items-center justify-between gap-4 px-5 py-4 rounded-2xl transition-all duration-200 hover:-translate-y-0.5 block"
+                style={{ background: 'var(--accent-bg)', border: '1px solid var(--accent-ring)', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}
+              >
+                <div className="flex items-center gap-3">
+                  <Sparkles size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: 'var(--accent)' }}>Versión fit disponible</p>
+                    <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>{versionFit.nombre}</p>
+                    {versionFit.kcal && macrosPorPorcion && (
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        {Math.round(versionFit.kcal)} kcal/p. · {macrosPorPorcion.kcal > 0 ? `${Math.round(((macrosPorPorcion.kcal - versionFit.kcal) / macrosPorPorcion.kcal) * 100)}% menos kcal` : ''}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <ArrowRight size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+              </Link>
+            )}
+
+            {/* No hay versión fit y esta no ES una versión fit → mostrar botón crear */}
+            {!receta.receta_original_id && !versionFit && (
+              <div className="mb-6 rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+                <button
+                  onClick={() => setShowSpecs(s => !s)}
+                  className="w-full flex items-center gap-3 px-5 py-4 transition-all duration-200 text-left"
+                  style={{ background: 'var(--surface)' }}
+                >
+                  <Sparkles size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  <span className="text-sm font-medium flex-1" style={{ color: 'var(--text-secondary)' }}>Crear versión fit de esta receta</span>
+                  <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>IA</span>
+                </button>
+                {showSpecs && (
+                  <div className="px-5 pb-5 pt-3" style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)' }}>
+                    <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+                      Especificaciones opcionales — DeepSeek generará una versión fit siguiendo las reglas de healthificación.
+                    </p>
+                    <textarea
+                      value={specs}
+                      onChange={e => setSpecs(e.target.value)}
+                      placeholder="Ej: usar Air Fryer, salsa a base de yogur griego, reducir azúcar…"
+                      className="w-full rounded-xl px-3 py-2.5 text-sm resize-none"
+                      rows={2}
+                      style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border)', color: 'var(--text)', outline: 'none' }}
+                    />
+                    <button
+                      onClick={crearVersionFit}
+                      disabled={generandoFit}
+                      className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 disabled:opacity-60"
+                      style={{ background: generandoFit ? 'var(--text-muted)' : 'var(--accent)' }}
+                    >
+                      {generandoFit ? <><Loader2 size={14} className="animate-spin" /> Generando versión fit…</> : <><Sparkles size={14} /> Generar versión fit</>}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </FadeIn>
 
           {/* ═══════ ESCANDALLO DE COSTES ═══════ */}
           <FadeIn delay={0.42}>

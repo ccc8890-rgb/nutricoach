@@ -38,7 +38,7 @@ export async function PATCH(
 
     const { error: updateError } = await supabase
       .from('recetas')
-      .update({ estado, updated_at: new Date().toISOString() })
+      .update({ estado })
       .eq('id', id)
 
     if (updateError) {

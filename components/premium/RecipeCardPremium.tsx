@@ -119,7 +119,7 @@ export function RecipeCardPremium({
                 </h3>
 
                 {/* Stats row */}
-                <div className="flex items-center gap-3 text-[11px] text-white/80">
+                <div className="flex items-center gap-3 text-[11px] text-white/80 flex-wrap">
                     {tiempoTotal !== undefined && tiempoTotal > 0 && (
                         <span className="flex items-center gap-1">
                             <Clock size={12} />
@@ -129,23 +129,23 @@ export function RecipeCardPremium({
                     {porciones !== undefined && porciones > 0 && (
                         <span className="flex items-center gap-1">
                             <Users size={12} />
-                            {porciones}
+                            {porciones} p.
                         </span>
                     )}
                     {kcal !== null && kcal !== undefined && kcal > 0 && (
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1 font-semibold text-white">
                             <Flame size={12} />
-                            {Math.round(kcal)} kcal
+                            {Math.round(kcal)} kcal/p.
                         </span>
                     )}
                 </div>
 
-                {/* Macro bars — aparecen con hover via Tailwind group */}
+                {/* Macros por porción — siempre visibles */}
                 {hasMacros && (
-                    <div className="flex gap-2 mt-2">
-                        <MacroMini value={proteinas} max={50} color="var(--macro-protein)" label="P" delay={0} />
-                        <MacroMini value={carbohidratos} max={80} color="var(--macro-carbs)" label="C" delay={0.05} />
-                        <MacroMini value={grasas} max={30} color="var(--macro-fat)" label="G" delay={0.1} />
+                    <div className="flex gap-2 mt-1.5">
+                        <MacroMini value={proteinas} max={60} color="var(--macro-protein)" label="P" />
+                        <MacroMini value={carbohidratos} max={100} color="var(--macro-carbs)" label="C" />
+                        <MacroMini value={grasas} max={40} color="var(--macro-fat)" label="G" />
                     </div>
                 )}
             </div>
@@ -153,25 +153,21 @@ export function RecipeCardPremium({
     )
 }
 
-/** Mini barra de progreso para macros — animada con group hover */
-function MacroMini({ value, max, color, label, delay }: { value: number; max: number; color: string; label: string; delay: number }) {
+/** Mini macro badge — siempre visible, muestra valor en gramos */
+function MacroMini({ value, max, color, label }: { value: number; max: number; color: string; label: string }) {
     const pct = Math.min((value / max) * 100, 100)
     return (
-        <div
-            className="opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
-            style={{ transitionDelay: `${delay}s` }}
-        >
-            <div className="flex items-center gap-1">
-                <span className="text-[10px] font-semibold text-white/70">{label}</span>
+        <div className="flex items-center gap-1">
+            <span className="text-[10px] font-semibold" style={{ color }}>{label}</span>
+            <span className="text-[10px] text-white/80">{Math.round(value)}g</span>
+            <div
+                className="h-1 rounded-full overflow-hidden"
+                style={{ width: 24, background: 'rgba(255,255,255,0.15)' }}
+            >
                 <div
-                    className="h-1 rounded-full overflow-hidden"
-                    style={{ width: 32, background: 'rgba(255,255,255,0.15)' }}
-                >
-                    <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${pct}%`, background: color, boxShadow: `0 0 6px ${color}` }}
-                    />
-                </div>
+                    className="h-full rounded-full"
+                    style={{ width: `${pct}%`, background: color }}
+                />
             </div>
         </div>
     )
