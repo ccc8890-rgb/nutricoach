@@ -1,46 +1,68 @@
-# ESTADO NutriCoach — 11-05-2026 (Sesión 8 — Sesión extra de imágenes COMPLETADA)
+# ESTADO NutriCoach — 13-05-2026 (Sesión 11 — PWA/Offline + Bugs + Precios básicos COMPLETADO)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar.
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (13-05-2026).
 
 ---
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Imágenes de recetas completada. **135/135 recetas con imagen_url** en Supabase Storage + BD. Pendiente: despliegue en Vercel.
+**Fase:** Sesión 11 completada. SelectorComparativa integrado. PWA/offline activado (SW v2 + manifest standalone). Seed de precios + reconciliación de vinculación creado. **Bug crítico corregido:** `comidas_alimentos` → `comida_alimentos` (10 referencias en 4 API routes). Build verificado ✅.
 
 ---
 
-## ✅ COMPLETADO (10-05-2026) — Sesión extra de imágenes
+## ✅ COMPLETADO (13-05-2026) — Sesión 11 — PWA/Offline + Bug Fix + Precios
 
-### 🔷 Refinamiento masivo flux_txt2img → ai_gen con GPT-4o ✅
+### 🔷 SelectorComparativa ✅
+- **`SelectorComparativa.tsx`** creado e integrado en `ListaCompra.tsx`
+  - Ranking visual 🥇 más barato → más caro con badges, ahorro potencial
+  - Botón "Seleccionar [Supermercado] para todos los alimentos" con aplicación masiva
+  - Detección de supermercado más usado como referencia
 
-**Problema resuelto:** Crédito OpenAI agotado (no hard limit). Usuario recargó y se completó la generación.
+### 🔷 PWA / Offline ✅
+| Componente | Antes | Después |
+|-----------|-------|---------|
+| `sw.js` | v1 (nunca registrado) | v2 con caching estratégico: static assets, API routes, pages |
+| `manifest.json` | `display: "browser"` | `display: "standalone"`, nombre "Casanova Nutrition", iconos maskable |
+| `layout.tsx` | Sin registro SW | Script `afterInteractive` registrando `/sw.js` |
 
-#### Resultados finales
-| Fase | Resultado |
-|------|-----------|
-| `regenerar-flux-masivo.mjs --genera` (59 pendientes) | ✅ **59/59 generadas** (~$2.00, ~3s entre cada una) |
-| 2 errores OpenAI 520 temporales | ✅ Recuperados automáticamente |
-| Copia a nutricoach-modulos/ | ✅ 62 archivos ai_gen--*.jpg |
-| Subida a Supabase Storage + BD | ✅ **63 imágenes** (62 ai_gen + 1 og_image), 135/135 con imagen_url |
-| Fix bug acentos en candidatas.html | ✅ Slugs con tildes ahora matchean correctamente |
+Estrategia de caché SW v2:
+- **Cache first:** `/recetas`, `/login`, assets estáticos, `/api/recetas`, `/api/alimentos`
+- **Network first (fallback cache):** resto de API routes
+- **Fallback:** navegación → `/`
 
-#### Estado BD imágenes
-- **62** archivos `ai_gen--*.jpg` en disco (generados por GPT-4o)
-- **56** `og_image--*.webp` (fotos reales Instagram)
-- **56** `flux_img2img--*.webp` (refinadas con Replicate)
-- **122** `flux_txt2img--*.webp` (originales, reemplazadas por ai_gen)
+### 🔷 Seed Precios + Reconciliación ✅
+| Archivo | Propósito |
+|---------|-----------|
+| `seed_precios_supermercado.sql` | 20+ alimentos básicos (carnes, pescados, huevos, lácteos) con precios realistas en Mercadona, Carrefour, Consum, Lidl, Día, Alcampo, Eroski |
+| `supabase_reconciliacion_vinculacion.sql` | Detecta duplicados genéricos creados por scraping, los re-vincula a alimentos semilla con 5-level matching, y elimina huérfanos |
+
+### 🔷 Bug crítico corregido: `comidas_alimentos` → `comida_alimentos` ✅
+**Problema:** 4 API routes usaban `comidas_alimentos` (plural) pero la tabla real en Supabase es `comida_alimentos` (singular). Causaba 500 en todas las rutas de precios.
+
+| Archivo | Referencias corregidas |
+|---------|----------------------|
+| `app/api/precios/ahorro/route.ts` | 2 (`.select()` + property access) |
+| `app/api/precios/ahorro/proyeccion/route.ts` | 2 (`.select()` + property access) |
+| `app/api/precios/escandallo/route.ts` | 4 (2× `.select()` + 2× property access) |
+| `app/api/precios/escandallo/detalle/route.ts` | 2 (`.select()` + property access) |
+| **Total** | **10 referencias corregidas en 4 archivos** |
+
+#### Build
+- `npx tsc --noEmit` → ✅ exit 0 sin errores
+- `grep -r comidas_alimentos --include="*.ts"` → 0 resultados (ninguna referencia residual)
 
 ---
 
 ## 🔜 PRÓXIMA SESIÓN (prioridades)
 
-1. **Revisar imágenes en el recetario** (usuario lo hará con calma)
-2. **Regenerar 14 recetas que aún tienen flux_txt2img**: ejecutar `node scripts/regenerar-flux-masivo.mjs --genera` (se saltará las existentes)
-3. **Despliegue en Vercel** (prioridad máxima — sin esto no hay clientes reales)
-4. **Macros por 100g en ficha de receta** — feature solicitada
+1. **Probar el Dashboard de Rentabilidad en vivo** — seleccionar cliente con precios y verificar que los datos se renderizan
+2. **Validar que las proyecciones de ahorro funcionan** — probar con Mercadona vs Lidl
+3. **Histórico y Tendencias** — Mostrar evolución de precios en el tiempo (si hay datos históricos)
+4. **Relanzar lote restante Content Radar** (los ~50 items que quedaron por SSL timeout)
+5. **Despliegue en Vercel**
 
 ---
+
 
 # ESTADO NutriCoach — 10-05-2026 (Sesión 8 — Clausurada)
 

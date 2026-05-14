@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
             // Obtener comidas del plan
             const { data: comidas } = await serviceRole
                 .from('comidas')
-                .select('*, comidas_alimentos(*, alimentos(*))')
+                .select('*, comida_alimentos(*, alimentos(*))')
                 .eq('plan_id', plan.id)
 
             if (!comidas || comidas.length === 0) {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
             // Construir estructura para calcularCostePlan (solo 2 args: comidas, supermercadoId)
             const comidasData = comidas.map((c: any) => ({
                 nombre: c.nombre,
-                alimentos: (c.comidas_alimentos || []).map((ca: any) => ({
+                alimentos: (c.comida_alimentos || []).map((ca: any) => ({
                     alimento: {
                         id: ca.alimento_id,
                         nombre: ca.alimentos?.nombre || '',
@@ -86,14 +86,14 @@ export async function GET(request: NextRequest) {
             // Obtener comidas del plan
             const { data: comidas } = await serviceRole
                 .from('comidas')
-                .select('*, comidas_alimentos(*, alimentos(*))')
+                .select('*, comida_alimentos(*, alimentos(*))')
                 .eq('plan_id', planActivo.id)
 
             if (!comidas || comidas.length === 0) continue
 
             const comidasData = comidas.map((c: any) => ({
                 nombre: c.nombre,
-                alimentos: (c.comidas_alimentos || []).map((ca: any) => ({
+                alimentos: (c.comida_alimentos || []).map((ca: any) => ({
                     alimento: {
                         id: ca.alimento_id,
                         nombre: ca.alimentos?.nombre || '',

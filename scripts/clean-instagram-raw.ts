@@ -40,7 +40,7 @@ async function llamarDeepSeek(messages: DeepSeekMessage[], temp = 0.3): Promise<
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_API_KEY}` },
         body: JSON.stringify({
-            model: 'deepseek-chat',
+            model: process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro',
             messages,
             temperature: temp,
             max_tokens: 2000,
@@ -228,11 +228,11 @@ Porciones: ${receta.porciones || 1}`
             }
 
             await supabase.from('recetas').update({
-                kcal: Math.round(totalKcal * 100) / 100,
-                proteinas: Math.round(totalP * 100) / 100,
-                carbohidratos: Math.round(totalC * 100) / 100,
-                grasas: Math.round(totalG * 100) / 100,
-                fibra: Math.round(totalFibra * 100) / 100,
+                kcal: Math.round((totalKcal / porciones) * 100) / 100,
+                proteinas: Math.round((totalP / porciones) * 100) / 100,
+                carbohidratos: Math.round((totalC / porciones) * 100) / 100,
+                grasas: Math.round((totalG / porciones) * 100) / 100,
+                fibra: Math.round((totalFibra / porciones) * 100) / 100,
             }).eq('id', receta.id)
 
             console.log(`  ✅ ${Math.round(totalKcal)} kcal total, ${Math.round(totalKcal / porciones)} kcal/porción (${matched}/${json.ingredientes?.length || 0} matched, ${autoCreados} auto-creados)`)

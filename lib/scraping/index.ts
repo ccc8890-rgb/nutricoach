@@ -7,6 +7,10 @@ import { scrapearAlcampo } from './supermercados/alcampo'
 import { scrapearConsum } from './supermercados/consum'
 import { scrapearLidl } from './supermercados/lidl'
 import { scrapearEroski } from './supermercados/eroski'
+import { scrapearElCorteIngles } from './supermercados/el-corte-ingles'
+import { scrapearHipercor } from './supermercados/hipercor'
+import { scrapearBonpreu } from './supermercados/bonpreu'
+import { scrapearEsclat } from './supermercados/esclat'
 import type { ResultadoScraping } from '@/types'
 import type { ProductoRaw } from './types'
 
@@ -62,6 +66,10 @@ const SCRAPERS: Record<string, () => Promise<{
     consum: scrapearConsum,
     lidl: scrapearLidl,
     eroski: scrapearEroski,
+    'el-corte-ingles': scrapearElCorteIngles,
+    hipercor: scrapearHipercor,
+    bonpreu: scrapearBonpreu,
+    esclat: scrapearEsclat,
 }
 
 /** Slugs de supermercados que tienen scraper implementado */

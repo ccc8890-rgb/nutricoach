@@ -31,6 +31,7 @@ import {
   Bot,
   ShoppingCart,
   Clock,
+  TrendingUp,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -61,6 +62,7 @@ const NUTRICION_SUBITEMS = [
   { href: '/precios/enriquecer', label: 'Enriquecer IA', icon: Sparkles },
   { href: '/precios/browser-agent', label: 'Browser Agent', icon: Scan },
   { href: '/precios/escandallo', label: 'Escandallo', icon: Receipt },
+  { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: TrendingUp },
   { href: '/compra', label: 'Lista de la compra', icon: ShoppingCart },
 ]
 

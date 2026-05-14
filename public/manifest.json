@@ -1,24 +1,30 @@
 {
-    "name": "NutriCoach — Dev",
-    "short_name": "NutriCoach",
-    "description": "Tu plan nutricional, check-ins y progreso desde cualquier lugar",
+    "name": "Casanova Nutrition",
+    "short_name": "CN Coach",
+    "description": "Recetario, lista de la compra y planes nutricionales sin conexión",
     "start_url": "/",
-    "display": "browser",
-    "background_color": "#ffffff",
+    "display": "standalone",
+    "background_color": "#FAFAFA",
     "theme_color": "#1C1C1E",
     "icons": [
         {
             "src": "/icon-192.svg",
             "sizes": "192x192",
             "type": "image/svg+xml",
-            "purpose": "any"
+            "purpose": "any maskable"
         },
         {
             "src": "/icon-512.svg",
             "sizes": "512x512",
             "type": "image/svg+xml",
-            "purpose": "any"
+            "purpose": "any maskable"
         }
     ],
-    "lang": "es"
+    "lang": "es",
+    "categories": [
+        "health",
+        "fitness",
+        "food"
+    ],
+    "orientation": "any"
 }

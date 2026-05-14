@@ -342,10 +342,11 @@ async function callDeepSeekExtraction(html: string): Promise<any> {
 El campo descripcion_porcion describe qué es físicamente 1 porción. Ejemplos: "1 galleta", "2 tacos", "1 rebanada", "1 bol", "1 donut", "1 porción de tarta". Infierelo del nombre de la receta, el yield y las instrucciones. Si no está claro, pon null.
 TEXTO WEB: ${texto}`
 
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_KEY}` },
-    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: prompt }], temperature: 0.1 }),
+    body: JSON.stringify({ model: DEEPSEEK_MODEL, messages: [{ role: 'user', content: prompt }], temperature: 0.1 }),
   })
 
   if (!response.ok) {
@@ -759,20 +760,86 @@ async function autoCrearAlimento(
 }
 
 // ──────────────────────────────────────────────
-// agent-browser: accesibilidad y extracción de recetas sociales
+// agent-browser: herramientas de scraping headless
 // ──────────────────────────────────────────────
-async function agentBrowserAccessibility(url: string): Promise<string> {
-  const { stdout } = await execAsync(
-    `agent-browser accessibility "${url.replace(/"/g, '\\"')}"`,
-    { timeout: 30000 }
-  )
+
+/**
+ * Abre una URL con agent-browser (el browser queda como proceso daemon).
+ */
+async function agentBrowserOpen(url: string): Promise<void> {
+  await execAsync(`agent-browser open "${url.replace(/"/g, '\\"')}" 2>&1`, { timeout: 30000 })
+}
+
+/**
+ * Obtiene el árbol de accesibilidad con refs (@e1…@eN) vía snapshot -c.
+ * Requiere agent-browser open previo.
+ */
+async function agentBrowserSnapshot(): Promise<string> {
+  const { stdout } = await execAsync(`agent-browser snapshot -c 2>&1`, { timeout: 15000 })
   return stdout
 }
 
+/**
+ * Ejecuta JavaScript arbitrario en el contexto del browser abierto.
+ * Requiere agent-browser open previo.
+ */
+async function agentBrowserEval(js: string): Promise<string> {
+  const { stdout } = await execAsync(`agent-browser eval ${JSON.stringify(js)} 2>&1`, { timeout: 15000 })
+  return stdout
+}
+
+/**
+ * Cierra el browser daemon.
+ */
+async function agentBrowserClose(): Promise<void> {
+  await execAsync(`agent-browser close 2>&1`, { timeout: 10000 }).catch(() => {
+    // si ya estaba cerrado, ignoramos el error
+  })
+}
+
+/**
+ * Extrae JSON-LD (schema.org Recipe) de una URL usando agent-browser eval.
+ * Devuelve el primer Recipe encontrado o null.
+ */
+async function agentBrowserExtractJSONLD(url: string): Promise<any | null> {
+  const js = `JSON.stringify(Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map(s => s.textContent).slice(0, 3))`
+  try {
+    await agentBrowserOpen(url)
+    const raw = await agentBrowserEval(js)
+    await agentBrowserClose()
+
+    if (!raw || raw === '""' || raw === '[]') return null
+
+    const parsed: string[] = JSON.parse(raw)
+    for (const text of parsed) {
+      try {
+        const data = JSON.parse(text)
+        const items = Array.isArray(data) ? data : [data]
+        for (const item of items) {
+          if (item['@type'] === 'Recipe' && item.name) {
+            return item
+          }
+        }
+      } catch {
+        continue
+      }
+    }
+    return null
+  } catch {
+    await agentBrowserClose().catch(() => { })
+    return null
+  }
+}
+
 async function extractRecipeFromSocial(url: string, fuenteTipo: string): Promise<any> {
-  const tree = await agentBrowserAccessibility(url)
+  // Paso 1: abrir URL con agent-browser y obtener snapshot del árbol de accesibilidad
+  await agentBrowserOpen(url)
+  const tree = await agentBrowserSnapshot()
+  await agentBrowserClose()
+
   if (!tree.trim()) throw new Error('agent-browser: árbol de accesibilidad vacío')
 
+  // Paso 2: enviar el árbol de accesibilidad a DeepSeek para que extraiga la receta
   const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY
   if (!DEEPSEEK_KEY) throw new Error('DEEPSEEK_API_KEY not configured')
 
@@ -795,11 +862,12 @@ async function extractRecipeFromSocial(url: string, fuenteTipo: string): Promise
 }
 Árbol: ${tree.substring(0, 10000)}`
 
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEEPSEEK_KEY}` },
     body: JSON.stringify({
-      model: 'deepseek-chat',
+      model: DEEPSEEK_MODEL,
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
     }),
@@ -814,6 +882,56 @@ async function extractRecipeFromSocial(url: string, fuenteTipo: string): Promise
   else if (cleaned.startsWith('```')) cleaned = cleaned.slice(3)
   if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3)
   return JSON.parse(cleaned.trim())
+}
+
+// ──────────────────────────────────────────────
+// Helper: construye objeto extracted a partir de un schema.org Recipe JSON-LD
+// ──────────────────────────────────────────────
+function buildExtractedFromJSONLD(item: any): any {
+  const instructions: string[] = []
+  if (typeof item.recipeInstructions === 'string') {
+    instructions.push(item.recipeInstructions)
+  } else if (Array.isArray(item.recipeInstructions)) {
+    for (const step of item.recipeInstructions) {
+      if (typeof step === 'string') {
+        instructions.push(step)
+      } else if (step?.['@type'] === 'HowToSection' && Array.isArray(step.itemListElement)) {
+        for (const subStep of step.itemListElement) {
+          if (subStep?.text) instructions.push(subStep.text)
+          else if (subStep?.name) instructions.push(subStep.name)
+        }
+      } else if (step?.text) {
+        instructions.push(step.text)
+      } else if (step?.name) {
+        instructions.push(step.name)
+      }
+    }
+  }
+
+  return {
+    nombre: item.name,
+    descripcion: item.description || null,
+    categoria: mapCategory(item.recipeCategory),
+    tipo_coccion: mapCookingMethod(item.cookingMethod),
+    dificultad: null,
+    porciones: extractYieldNumber(item.recipeYield),
+    descripcion_porcion: inferDescripcionPorcion(typeof item.recipeYield === 'string' ? item.recipeYield : null),
+    tiempo_prep_min: parseISODurationToMinutes(item.prepTime),
+    tiempo_coccion_min: parseISODurationToMinutes(item.cookTime),
+    ...(!item.prepTime && !item.cookTime && item.totalTime
+      ? { tiempo_prep_min: parseISODurationToMinutes(item.totalTime) }
+      : {}),
+    ingredientes: (item.recipeIngredient || []).map((ing: string) => {
+      const parsed = parseIngredienteRaw(ing)
+      return { nombre: parsed.nombre, cantidad: parsed.cantidad, unidad: parsed.unidad }
+    }),
+    instrucciones: instructions.length > 0
+      ? instructions.map((s, i) => `${i + 1}. ${s}`).join('\n')
+      : null,
+    consejos: null,
+    imagen_url: extractImageUrl(item.image),
+    autor_original: item.author?.name || null,
+  }
 }
 
 // ──────────────────────────────────────────────
@@ -883,69 +1001,36 @@ export async function POST(req: NextRequest) {
       html = await fetchResponse.text()
     }
 
-    // ── Strategy A: JSON-LD (solo web) ──
-    const jsonLdRegex = /<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
-    let match: RegExpExecArray | null
-    while ((match = jsonLdRegex.exec(html)) !== null) {
-      try {
-        const parsed = JSON.parse(match[1])
-        const items = Array.isArray(parsed) ? parsed : [parsed]
-        for (const item of items) {
-          if (item['@type'] === 'Recipe' && item.name) {
-            // Build extracted object
-            const instructions: string[] = []
-            if (typeof item.recipeInstructions === 'string') {
-              // Some sites store all steps as a single string
-              instructions.push(item.recipeInstructions)
-            } else if (Array.isArray(item.recipeInstructions)) {
-              for (const step of item.recipeInstructions) {
-                if (typeof step === 'string') {
-                  instructions.push(step)
-                } else if (step?.['@type'] === 'HowToSection' && Array.isArray(step.itemListElement)) {
-                  // Handle nested HowToSection
-                  for (const subStep of step.itemListElement) {
-                    if (subStep?.text) instructions.push(subStep.text)
-                    else if (subStep?.name) instructions.push(subStep.name)
-                  }
-                } else if (step?.text) {
-                  instructions.push(step.text)
-                } else if (step?.name) {
-                  instructions.push(step.name)
-                }
-              }
+    // ── Strategy A: JSON-LD desde HTML (solo web) ──
+    if (fuenteTipo === 'web') {
+      const jsonLdRegex = /<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+      let match: RegExpExecArray | null
+      while ((match = jsonLdRegex.exec(html)) !== null) {
+        try {
+          const parsed = JSON.parse(match[1])
+          const items = Array.isArray(parsed) ? parsed : [parsed]
+          for (const item of items) {
+            if (item['@type'] === 'Recipe' && item.name) {
+              extracted = buildExtractedFromJSONLD(item)
+              break
             }
-
-            extracted = {
-              nombre: item.name,
-              descripcion: item.description || null,
-              categoria: mapCategory(item.recipeCategory),
-              tipo_coccion: mapCookingMethod(item.cookingMethod),
-              dificultad: null, // not in schema.org
-              porciones: extractYieldNumber(item.recipeYield),
-              descripcion_porcion: inferDescripcionPorcion(typeof item.recipeYield === 'string' ? item.recipeYield : null),
-              tiempo_prep_min: parseISODurationToMinutes(item.prepTime),
-              tiempo_coccion_min: parseISODurationToMinutes(item.cookTime),
-              // fallback to totalTime if both missing
-              ...(!item.prepTime && !item.cookTime && item.totalTime
-                ? { tiempo_prep_min: parseISODurationToMinutes(item.totalTime) }
-                : {}),
-              ingredientes: (item.recipeIngredient || []).map((ing: string) => {
-                const parsed = parseIngredienteRaw(ing)
-                return { nombre: parsed.nombre, cantidad: parsed.cantidad, unidad: parsed.unidad }
-              }),
-              instrucciones: instructions.length > 0
-                ? instructions.map((s, i) => `${i + 1}. ${s}`).join('\n')
-                : null,
-              consejos: null,
-              imagen_url: extractImageUrl(item.image),
-              autor_original: item.author?.name || null,
-            }
-            break
           }
+          if (extracted) break
+        } catch {
+          // ignore invalid JSON-LD blocks
         }
-        if (extracted) break
-      } catch {
-        // ignore invalid JSON-LD blocks
+      }
+
+      // ── Strategy A.2: JSON-LD vía agent-browser eval (para JS SPAs que inyectan JSON-LD dinámicamente) ──
+      if (!extracted?.nombre) {
+        try {
+          const jsonldItem = await agentBrowserExtractJSONLD(url)
+          if (jsonldItem) {
+            extracted = buildExtractedFromJSONLD(jsonldItem)
+          }
+        } catch {
+          // si falla agent-browser, continuamos con las estrategias siguientes
+        }
       }
     }
 
@@ -1056,11 +1141,20 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Post-procesar texto ──
-    // Capitalizar ingredientes
-    const capitalizedIngredients = parsedIngredients.map((ing: ParsedIngredient) => ({
-      ...ing,
-      nombre: ing.nombre.charAt(0).toUpperCase() + ing.nombre.slice(1),
-    }))
+    // Capitalizar ingredientes + propagar alimento_id desde matchedIngredients
+    const matchedMap = new Map<string, (typeof matchedIngredients)[0]>()
+    for (const mi of matchedIngredients) {
+      matchedMap.set(mi.nombre_libre, mi)
+    }
+    const capitalizedIngredients = parsedIngredients.map((ing: ParsedIngredient) => {
+      const match = matchedMap.get(ing.nombre)
+      return {
+        ...ing,
+        nombre: ing.nombre.charAt(0).toUpperCase() + ing.nombre.slice(1),
+        alimento_id: match?.alimento_id ?? null,
+        es_opcional: match?.es_opcional ?? false,
+      }
+    })
 
     // Formatear instrucciones: si no tiene "1. " al inicio, auto-numerar por líneas
     let instruccionesFinal: string | null = extracted.instrucciones ?? null
@@ -1131,18 +1225,18 @@ export async function POST(req: NextRequest) {
 
     // ── Captura de imagen en background si no hay imagen_url ──
     if (!imagenFinal) {
-        // Fire and forget — no bloqueamos la respuesta
-        fetch(req.nextUrl.origin + '/api/capturar-imagen-receta', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Cookie': req.headers.get('cookie') ?? '' },
-            body: JSON.stringify({
-                receta_id: receta.id,
-                url_origen: url,
-                nombre: extracted.nombre,
-                ingredientes: (extracted.ingredientes ?? []).slice(0, 6).map((i: any) => typeof i === 'string' ? i : i.nombre),
-                categoria: extracted.categoria ?? null,
-            }),
-        }).catch(() => { /* background task, ignorar errores */ })
+      // Fire and forget — no bloqueamos la respuesta
+      fetch(req.nextUrl.origin + '/api/capturar-imagen-receta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': req.headers.get('cookie') ?? '' },
+        body: JSON.stringify({
+          receta_id: receta.id,
+          url_origen: url,
+          nombre: extracted.nombre,
+          ingredientes: (extracted.ingredientes ?? []).slice(0, 6).map((i: any) => typeof i === 'string' ? i : i.nombre),
+          categoria: extracted.categoria ?? null,
+        }),
+      }).catch(() => { /* background task, ignorar errores */ })
     }
 
     // ── Return ──

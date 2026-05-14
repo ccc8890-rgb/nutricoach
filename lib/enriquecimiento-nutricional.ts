@@ -18,7 +18,7 @@ import type { ResultadoEnriquecimiento, AlimentoPendienteEnriquecer } from '@/ty
 
 // ── Configuración ─────────────────────────────────────────────
 
-const MODELO = 'deepseek-chat'
+const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
 const TEMPERATURA = 0.1
 const LOTES_POR_VEZ = 25 // nº de alimentos por llamada a DeepSeek
 const MAX_INTENTOS = 3
