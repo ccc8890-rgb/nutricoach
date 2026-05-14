@@ -13,13 +13,24 @@ export async function GET(request: NextRequest) {
         const custom = searchParams.get('custom') // 'true' | 'false' | null
         const fuente = searchParams.get('fuente') ?? '' // 'ia' | 'bedca' | etc.
 
-        let query = supabase.from('alimentos').select('*').order('nombre')
+        let query = supabase.from('alimentos').select('*')
 
-        if (q) query = query.ilike('nombre', `%${q}%`)
+        if (q) {
+            query = query.ilike('nombre', `%${q}%`)
+        }
+
         if (categoria) query = query.eq('categoria', categoria)
         if (custom === 'true') query = query.eq('custom', true)
         else if (custom === 'false') query = query.eq('custom', false)
         if (fuente) query = query.eq('fuente', fuente)
+
+        // Orden: primero los que tienen calorias > 0 (tienen datos nutricionales),
+        // luego el resto. Así el buscador del editor muestra primero alimentos con macros.
+        query = query.order('calorias', { ascending: false, nullsFirst: false })
+        query = query.order('nombre', { ascending: true })
+
+        // Limitar a 50 resultados para no saturar
+        query = query.limit(50)
 
         const { data, error } = await query
         if (error) return NextResponse.json({ error: error.message }, { status: 400 })

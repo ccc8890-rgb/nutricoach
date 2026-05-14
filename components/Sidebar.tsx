@@ -399,176 +399,57 @@ export default function Sidebar() {
                 <Link
                   key={href}
                   href={href}
-                  className={`bottom-nav-item ${isActive ? 'active' : ''}`}
+                  className="bottom-nav-item"
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px 0',
+                    gap: 2,
+                    textDecoration: 'none',
+                    WebkitTapHighlightColor: 'transparent',
+                    position: 'relative',
+                  }}
                 >
-                  <div className="relative">
-                    <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+                  <div style={{ position: 'relative' }}>
+                    <Icon
+                      size={24}
+                      strokeWidth={isActive ? 2.5 : 1.6}
+                      style={{
+                        color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+                        transition: 'color 0.15s ease',
+                      }}
+                    />
                     {showNotifBadge && (
                       <span
-                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center"
-                        style={{ background: 'var(--error)', color: 'white' }}
-                      >
-                        {noLeidas > 9 ? '9+' : noLeidas}
-                      </span>
+                        className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+                        style={{ background: 'var(--error)' }}
+                      />
                     )}
                   </div>
-                  <span>{label}</span>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: isActive ? 600 : 400,
+                      color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+                      transition: 'color 0.15s ease',
+                    }}
+                  >
+                    {label}
+                  </span>
+                  {isActive && (
+                    <span
+                      className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
+                      style={{ background: 'var(--accent)' }}
+                    />
+                  )}
                 </Link>
               )
             })}
-
-            {/* Botón "Más" — abre bottom sheet con resto de navegación */}
-            <button
-              onClick={() => setMenuAbierto(menuAbierto === 'nutricion' ? null : 'nutricion')}
-              className={`bottom-nav-item ${menuAbierto ? 'active' : ''}`}
-            >
-              <UtensilsCrossed size={20} strokeWidth={menuAbierto ? 2.5 : 1.8} />
-              <span>Más</span>
-            </button>
           </div>
         </nav>
-      )}
-
-      {/* ════════════════════════════════════ */}
-      {/* MOBILE: Bottom Sheet (iOS-style)    */}
-      {/* ════════════════════════════════════ */}
-
-      {/* Overlay del sheet */}
-      {mounted && menuAbierto && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
-          onClick={() => setMenuAbierto(null)}
-        />
-      )}
-
-      {/* Sheet */}
-      {mounted && menuAbierto && (
-        <div
-          ref={sheetRef}
-          className="sheet-mobile lg:hidden animate-slide-up"
-          style={{ background: 'var(--surface)' }}
-        >
-          {/* Handle visual */}
-          <div className="flex justify-center pt-2 pb-1">
-            <div
-              className="w-9 h-1 rounded-full"
-              style={{ background: 'var(--text-muted)', opacity: 0.3 }}
-            />
-          </div>
-
-          <div className="px-4 pb-6 space-y-4 overflow-y-auto max-h-[70vh]">
-            {/* Sección Nutrición */}
-            <div>
-              <p
-                className="text-xs font-semibold uppercase tracking-wider px-3 py-2"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                Nutrición
-              </p>
-              <div className="space-y-0.5">
-                {NUTRICION_SUBITEMS.map(({ href, label, icon: Icon }) => {
-                  const isActive = pathname === href || pathname.startsWith(href + '/')
-                  const showBadge = href === '/recetas/cola' && recetasPendientes > 0
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`sidebar-link ${isActive ? 'active' : ''}`}
-                      onClick={() => setMenuAbierto(null)}
-                    >
-                      <Icon size={18} strokeWidth={isActive ? 2.5 : 1.8} />
-                      <span className="flex-1">{label}</span>
-                      {showBadge && (
-                        <span
-                          className="text-[11px] font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
-                          style={{ background: 'var(--error)' }}
-                        >
-                          {recetasPendientes > 99 ? '99+' : recetasPendientes}
-                        </span>
-                      )}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Sección Entrenos */}
-            <div>
-              <p
-                className="text-xs font-semibold uppercase tracking-wider px-3 py-2"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                Entrenos
-              </p>
-              <div className="space-y-0.5">
-                {ENTRENOS_SUBITEMS.concat({ href: '/entrenos/plantillas', label: 'Planificación', icon: Calendar }).map(({ href, label, icon: Icon }) => {
-                  const isActive = pathname === href || pathname.startsWith(href + '/')
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`sidebar-link ${isActive ? 'active' : ''}`}
-                      onClick={() => setMenuAbierto(null)}
-                    >
-                      <Icon size={18} strokeWidth={isActive ? 2.5 : 1.8} />
-                      <span>{label}</span>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Cuestionarios, Conocimiento, IA Test */}
-            <div>
-              <p
-                className="text-xs font-semibold uppercase tracking-wider px-3 py-2"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                Herramientas
-              </p>
-              <div className="space-y-0.5">
-                {[
-                  { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
-                  { href: '/conocimiento', label: 'Conocimiento', icon: BrainCircuit },
-                  { href: '/ia-test', label: 'Probador IA', icon: FlaskConical },
-                ].map(({ href, label, icon: Icon }) => {
-                  const isActive = pathname === href || pathname.startsWith(href + '/')
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`sidebar-link ${isActive ? 'active' : ''}`}
-                      onClick={() => setMenuAbierto(null)}
-                    >
-                      <Icon size={18} strokeWidth={isActive ? 2.5 : 1.8} />
-                      <span>{label}</span>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Acciones: Tema + Cerrar sesión */}
-            <div className="pt-2 space-y-1 border-t" style={{ borderColor: 'var(--border-light)' }}>
-              <button
-                onClick={() => { toggleTheme(); setMenuAbierto(null) }}
-                className="sidebar-link w-full"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                <span>{theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
-              </button>
-              <button
-                onClick={() => { handleLogout(); setMenuAbierto(null) }}
-                className="sidebar-link w-full"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                <LogOut size={18} />
-                <span>Cerrar sesión</span>
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </>
   )

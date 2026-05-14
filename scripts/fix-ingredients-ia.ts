@@ -386,11 +386,11 @@ Responde SOLO con un array JSON. Cada elemento debe tener esta estructura:
 
         const porciones = receta.porciones || 1
         await supabase.from('recetas').update({
-            kcal: Math.round(totalKcal * 100) / 100,
-            proteinas: Math.round(totalP * 100) / 100,
-            carbohidratos: Math.round(totalC * 100) / 100,
-            grasas: Math.round(totalG * 100) / 100,
-            fibra: Math.round(totalFibra * 100) / 100,
+            kcal: Math.round((totalKcal / porciones) * 100) / 100,
+            proteinas: Math.round((totalP / porciones) * 100) / 100,
+            carbohidratos: Math.round((totalC / porciones) * 100) / 100,
+            grasas: Math.round((totalG / porciones) * 100) / 100,
+            fibra: Math.round((totalFibra / porciones) * 100) / 100,
             kcal_por_porcion: Math.round((totalKcal / porciones) * 100) / 100,
             proteinas_por_porcion: Math.round((totalP / porciones) * 100) / 100,
             carbohidratos_por_porcion: Math.round((totalC / porciones) * 100) / 100,

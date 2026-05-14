@@ -1,7 +1,7 @@
 # DIAGNÓSTICO DE FALLOS — NutriCoach
 
 > Documento de trazabilidad de errores, causas raíz y soluciones aplicadas.
-> Creado: 2026-05-07 | Última revisión: 2026-05-07
+> Creado: 2026-05-07 | Última revisión: 2026-05-12
 
 ---
 
@@ -374,6 +374,196 @@ cp -n nutricoach/salidas/revision-imagenes/ai_gen--*.jpg nutricoach-modulos/sali
 - Unificar la constante `SALIDA_DIR` en ambos scripts para que apunten al mismo directorio
 - O modificar `subir-imagenes-aprobadas.mjs` para que también busque en `nutricoach/salidas/revision-imagenes/`
 - Mejor: que ambos scripts usen una ruta relativa a la raíz del proyecto, no al worktree
+
+---
+
+---
+
+## FALLO #16 — Paginación: Supabase 416 "Requested range not satisfiable"
+
+### Síntoma
+En `fetchAll()` de `_scripts/`, al hacer paginación con `Range` header, Supabase devuelve `416 Requested range not satisfiable` cuando el offset supera el número de filas disponibles. Esto cortaba la paginación antes de tiempo o lanzaba excepción.
+
+### Causa raíz
+Supabase no devuelve un array vacío cuando offset > count — devuelve error 416. El bucle `while` seguía incrementando el offset hasta que fallaba.
+
+### Solución aplicada
+```javascript
+// Antes: while loop sin control de 416
+let allData = []
+let offset = 0
+while (true) {
+  const res = await fetch(url + `&offset=${offset}`)
+  const data = await res.json()
+  if (data.length === 0) break
+  allData.push(...data)
+  offset += limit
+}
+
+// Después: check explícito de 416
+let allData = []
+let offset = 0
+while (true) {
+  const res = await fetch(url + `&offset=${offset}`, { headers: { Range: `${offset}-${offset + limit - 1}` } })
+  if (res.status === 416) break  // ← fix crítico
+  const data = await res.json()
+  if (!data || data.length === 0) break
+  allData.push(...data)
+  offset += limit
+}
+```
+
+### Archivos afectados
+| Archivo | Cambio |
+|---------|--------|
+| `_scripts/fetchAll` (varios scripts) | Añadir `if (res.status === 416) break` |
+
+### Cómo evitar en el futuro
+- Siempre manejar `416` como fin de datos en cualquier paginación con Supabase REST API
+- Alternativa: usar `.range(from, to)` del SDK, que no lanza 416
+
+---
+
+## FALLO #17 — Variable `URL` conflictúa con constructor global de JavaScript
+
+### Síntoma
+Error tipo `TypeError: URL is not a constructor` o comportamiento inesperado al usar `new URL(...)` después de declarar `const URL = process.env...`.
+
+### Causa raíz
+```javascript
+const URL = process.env.NEXT_PUBLIC_SUPABASE_URL  // ← sobreescribe URL global
+const apiUrl = new URL('/rest/v1/recetas', URL)    // ← TypeError: URL is not a constructor
+```
+`URL` es un constructor global de JavaScript (`new URL(href, base)`). Al declarar una variable `const URL`, se sombrea el global y deja de estar disponible.
+
+### Solución aplicada
+Renombrar la variable a `SB` en todos los scripts:
+```javascript
+const SB = process.env.NEXT_PUBLIC_SUPABASE_URL
+```
+
+### Archivos afectados
+| Archivo | Cambio |
+|---------|--------|
+| `nutricoach/scripts/fix-macros-faltantes.mjs` | `URL` → `SB` |
+| `nutricoach/scripts/asignar-metadatos-recetas.mjs` | `URL` → `SB` |
+| Todos los scripts nuevos que usen fetch directo | Usar `SB` en vez de `URL` |
+
+### Cómo evitar en el futuro
+- **NUNCA** usar `URL`, `name`, `status`, `event`, `top`, `self` como nombre de variable
+- Preferir nombres como `SB_URL`, `API_BASE`, o `SUPABASE_URL`
+- Ejecutar el script con `node --check` después de escribirlo para detectar estos errores antes de ejecutar
+
+---
+
+## FALLO #18 — `grasa` vs `grasas` — typo en nombre de variable
+
+### Síntoma
+`ReferenceError: grasa is not defined` al ejecutar `asignar-metadatos-recetas.mjs`.
+
+### Causa raíz
+```javascript
+// El array se llamaba `grasas` (plural)
+const { grasas, proteinas, carbohidratos } = macros
+
+// Pero se referenciaba como `grasa` (singular)
+if (grasa > 30) { ... }
+```
+
+### Solución aplicada
+Cambiar `grasa` por `grasas` en la línea del condicional.
+
+### Archivos afectados
+| Archivo | Línea | Cambio |
+|---------|-------|--------|
+| [`asignar-metadatos-recetas.mjs`](nutricoach/scripts/asignar-metadatos-recetas.mjs:147) | 147 | `grasa` → `grasas` |
+
+### Cómo evitar en el futuro
+- Ejecutar `node --check script.mjs` antes de ejecutar (detecta ReferenceError en tiempo de análisis)
+- Ser consistente con plural/singular en nombres de variables
+- Usar destructuring con nombres cortos pero consistentes: `{ p: proteinas, g: grasas, c: carbohidratos }`
+
+---
+
+## FALLO #19 — Ejecutar pipeline sin consultar preferencias del usuario
+
+### Síntoma
+Se ejecutó `rellenar-fotos-unsplash.mjs --dry-run` para 74 recetas sin preguntar primero si el usuario quería usar Unsplash. El script llevaba ~3 minutos ejecutándose cuando el usuario dijo "no saques de unsplash". Hubo que matar el proceso, pero el terminal siguió activo.
+
+### Causa raíz
+Se asumió que Unsplash era aceptable porque la API key existía en `.env.local` y el script estaba diseñado para eso. No se preguntó primero.
+
+### Coste
+- ~3 minutos de tiempo perdido
+- Consumo de cuota de API de Unsplash (~74 requests)
+- El terminal quedó con un proceso zombie que siguió imprimiendo output
+
+### Solución aplicada
+Matar el proceso con `kill %1`. El terminal siguió mostrando output residual del proceso hijo.
+
+### Cómo evitar en el futuro
+1. **Siempre preguntar antes de ejecutar pipelines que consumen APIs externas**: "¿Quieres que busque fotos de estas recetas en Unsplash, o prefieres otro método?"
+2. **Usar `--dry-run` rápido primero**: Este script no tenía límite de tiempo por request, así que 74 recetas × ~3s = ~3.5 minutos. Podría haberse limitado a 5 recetas para validar.
+3. **Verificar que los procesos se detienen**: `kill %1` no siempre mata procesos hijos. Usar `kill -- -$(ps -o pgid= -p <pid>)` para matar el grupo de procesos.
+
+---
+
+## FALLO #20 — OpenAI billing hard limit bloqueó regeneración de imágenes
+
+### Síntoma (ref. FALLO #14)
+OpenAI devolvía `billing_hard_limit_reached` al intentar generar imágenes con GPT-4o image edit. Bloqueó toda la generación de imágenes por IA.
+
+### Lección aprendida (nueva)
+A raíz de que el usuario rechazó Unsplash como fuente de imágenes, y OpenAI sigue bloqueado, se necesita un **plan B para imágenes**:
+- **Opción A**: Scrapear `url_origen` de las recetas (muchas tienen Instagram/TikTok/webs) para obtener la imagen real
+- **Opción B**: Usar Replicate (Flux Pro) — API key disponible en `.env.local`
+- **Opción C**: Generar imágenes localmente o con otro proveedor
+
+### Cómo evitar en el futuro
+- Tener siempre un plan B para generación de imágenes antes de empezar
+- Verificar el estado de la API de OpenAI (`billing_hard_limit`) antes de iniciar un pipeline de imágenes
+- Considerar que las imágenes de Unsplash NO son aceptables — no invertir tiempo en ese pipeline
+
+---
+
+## FALLO #21 — CRÍTICO: `fix-macros-faltantes.mjs` guardaba macros TOTALES en columnas POR PORCIÓN
+
+### Síntoma
+Tras ejecutar `fix-macros-faltantes.mjs --apply`, el audit mostraba valores disparatados en recetas que contenían alimentos enriquecidos. Por ejemplo: "Adobos de pollo: BD=1618 kcal | Esperado=373 kcal (334% diff)". Esto sugería que los macros no se habían corregido, cuando en realidad se habían **empeorado**.
+
+### Causa raíz
+1. El script `fix-macros-faltantes.mjs` calculaba `kcal`, `proteinas`, `carbohidratos`, `grasas`, `fibra` como la **suma total** de todos los ingredientes de la receta (macros totales).
+2. Pero el schema [`recetas_schema.sql`](nutricoach/recetas_schema.sql:28) especifica: `-- Macros por porción (calculados automáticamente de ingredientes)` — estos campos almacenan valores **por porción**, no totales.
+3. El script `auditoria-completa-recetario.mjs` en línea 188 hace `Math.round(totalKcal / porciones)` para calcular el valor esperado por porción, por lo que comparaba per-portion contra total — de ahí las diferencias enormes.
+4. El script `fix-recetas-completo.mjs` (FASE 3) sí tenía la división por porciones correcta desde el principio (línea 501-507), pero los datos ya habían sido corrompidos por `fix-macros-faltantes.mjs`.
+
+### Solución aplicada
+1. **Añadir división por porciones** en `fix-macros-faltantes.mjs` línea ~296-322:
+   ```javascript
+   const porciones = receta?.porciones || 1
+   const kcalPorcion = kcal / porciones
+   const pPorcion = p / porciones
+   const gPorcion = g / porciones
+   const cPorcion = c / porciones
+   const fPorcion = f / porciones
+   await patch('recetas', rid, {
+       kcal: Math.round(kcalPorcion * 10) / 10,
+       proteinas: Math.round(pPorcion * 10) / 10,
+       ...
+   })
+   ```
+2. **Re-ejecutar `fix-recetas-completo.mjs --fase 3`**: Este script ya tenía la división correcta. Recalculó las 227 recetas, sobrescribiendo los datos corruptos con valores correctos (88 recetas cambiaron realmente).
+
+### Archivos afectados
+| Archivo | Cambio |
+|---------|--------|
+| [`scripts/fix-macros-faltantes.mjs`](nutricoach/scripts/fix-macros-faltantes.mjs:296) | Añadida división por `porciones` antes de guardar |
+
+### Cómo evitar en el futuro
+- **Siempre verificar el schema** antes de escribir valores en columnas numéricas. Las columnas `kcal`, `proteinas`, `carbohidratos`, `grasas`, `fibra` en `recetas` son **por porción**.
+- **Contrastar con un script existente** que ya funcione correctamente (`fix-recetas-completo.mjs` FASE 3) antes de crear uno nuevo que modifique las mismas columnas.
+- **Ejecutar dry-run y revisar valores**: Si el dry-run muestra valores que parecen excesivos para una porción (ej. 1618 kcal), es señal de alerta.
+- **Añadir test de cordura** en el script: si `kcal / porciones > 1000`, loguear warning.
 
 ---
 

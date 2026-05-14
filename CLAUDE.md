@@ -1,11 +1,284 @@
 # Proyecto: NutriCoach (Human Lab)
 
+## 🧪 agent-browser — Investigación e integración (Sesión 12)
+
+### Resumen
+Instalación y prueba de `agent-browser` (Vercel Labs) como alternativa ligera a Playwright para scraping de recetas. Se arregló `agentBrowserAccessibility()` que usaba un comando obsoleto y se añadió extracción JSON-LD vía `eval`.
+
+### Instalación
+```bash
+npm install -g agent-browser    # ~7MB, 1s
+agent-browser install           # descarga Chrome for Testing (~169MB)
+```
+
+### Comandos útiles
+| Comando | Descripción |
+|---------|-------------|
+| `agent-browser open <url>` | Abre URL (browser como daemon) |
+| `agent-browser snapshot -c` | Árbol de accesibilidad condensado con refs (@eN) |
+| `agent-browser snapshot -i` | Solo elementos interactivos |
+| `agent-browser eval <js>` | Ejecuta JS en contexto del browser |
+| `agent-browser screenshot [--annotate]` | Screenshot con etiquetas numeradas opcionales |
+| `agent-browser close` | Cierra el browser daemon |
+
+### Limitaciones detectadas
+- **Instagram/TikTok**: Bloquean el acceso sin sesión (mismo problema que Playwright)
+- **`agent-browser accessibility`**: Comando eliminado en la versión instalada (v148). Reemplazo: `snapshot -c`
+
+### Archivos modificados
+
+#### `nutricoach/app/api/scrape-receta/route.ts`
+- **`agentBrowserAccessibility()`** → Eliminada. Reemplazada por 4 funciones modulares:
+  - `agentBrowserOpen(url)` — abre URL
+  - `agentBrowserSnapshot()` — obtiene árbol de accesibilidad (snapshot -c)
+  - `agentBrowserEval(js)` — ejecuta JS en browser
+  - `agentBrowserClose()` — cierra browser
+- **`agentBrowserExtractJSONLD(url)`** — nueva: abre URL, ejecuta `eval` para extraer JSON-LD schema.org Recipe, cierra browser. Devuelve el item Recipe o null.
+- **`buildExtractedFromJSONLD(item)`** — extraída de Strategy A como función reutilizable que convierte un schema.org Recipe en el formato `extracted` que espera el POST handler.
+- **`extractRecipeFromSocial()`** — arreglada: ahora usa `agentBrowserOpen` + `agentBrowserSnapshot` + `agentBrowserClose` en lugar del comando `accessibility` inexistente.
+- **Strategy A** — refactorizada para usar `buildExtractedFromJSONLD()`. Se añadió **Strategy A.2**: si el HTML no contiene JSON-LD, intenta extraerlo vía `agentBrowserExtractJSONLD(url)`. Esto cubre SPAs que inyectan JSON-LD dinámicamente con JavaScript.
+
+#### `nutricoach-modulos/app/api/scrape-receta/route.ts`
+- Mismos cambios que en `nutricoach` (worktree sincronizado).
+
+### Build
+✅ `nutricoach` — `tsc --noEmit` sin errores
+✅ `nutricoach-modulos` — `tsc --noEmit` sin errores
+
+---
+
+## 🔀 Merge de Worktrees — 14-05-2026 (Sesión 11)
+
+### Resumen
+Merge manual de `nutricoach-modulos` (feature/modulos) y `nutricoach-ui` (feature/ui-estetica) a `nutricoach` (main). Estrategia: copia archivo por archivo sin usar `git merge`, para tener control granular de cada cambio.
+
+### Archivos copiados de nutricoach-ui (feature/ui-estetica)
+
+| Archivo | Cambio |
+|---------|--------|
+| [`app/layout.tsx`](nutricoach/app/layout.tsx) | PWA Viewport (themeColor, userScalable, viewportFit), appleWebApp metadata, estilos body |
+| [`next.config.ts`](nutricoach/next.config.ts) | Service-Worker-Allowed header, Cache-Control para manifest.json |
+| [`components/Sidebar.tsx`](nutricoach/components/Sidebar.tsx) | Bottom tab bar iOS-style (5 tabs), sheetRef click-outside, hamburguesa a right-4, submenús desplegables |
+| [`app/globals.css`](nutricoach/app/globals.css) | Design System v6 (Graphite Apple Pro), dark/light mode, glass cards, macro ring, breakpoints iPhone SE/standard, bottom nav iOS, skeletons, toggles, tooltips |
+| [`app/api/scrape-receta/route.ts`](nutricoach/app/api/scrape-receta/route.ts) | Versión más completa con BRAND_WORDS, NON_FOOD_WORDS, scoring mejorado, enrichment Gemini, auto-crear alimentos con DeepSeek, fix `matchedMap` |
+
+### Archivos copiados de nutricoach-modulos (feature/modulos)
+
+| Archivo | Cambio |
+|---------|--------|
+| [`package.json`](nutricoach/package.json) | `lightningcss-darwin-arm64` movido de optionalDependencies a dependencies; añadido `resend` |
+
+### Scripts verificados (sin cambios necesarios)
+
+| Script | Estado |
+|--------|--------|
+| [`scripts/perfilar-recetas-final.mjs`](nutricoach/scripts/perfilar-recetas-final.mjs) | Idéntico en los 3 proyectos (438 líneas) ✅ |
+| [`scripts/refinar-imagenes-og.mjs`](nutricoach/scripts/refinar-imagenes-og.mjs) | Main ya tenía versión más reciente (prompt conservador). Sin copia necesaria ✅ |
+| [`scripts/subir-imagenes-aprobadas.mjs`](nutricoach/scripts/subir-imagenes-aprobadas.mjs) | Main ya tenía PRIORIDAD actualizada (flux_img2img > og_image). Sin copia necesaria ✅ |
+
+### Archivos idénticos verificados (sin cambios)
+
+| Archivo | Notas |
+|---------|-------|
+| [`lib/deepseek.ts`](nutricoach/lib/deepseek.ts) | `deepseek-v4-pro` como default en los 3 |
+| [`lib/browser-agent.ts`](nutricoach/lib/browser-agent.ts) | Idéntico en los 3 |
+| [`lib/supabase.ts`](nutricoach/lib/supabase.ts) | Idéntico en los 3 |
+| [`lib/recetas-constants.ts`](nutricoach/lib/recetas-constants.ts) | Idéntico en los 3 (79 líneas) |
+| [`types/index.ts`](nutricoach/types/index.ts) | 795 vs 796 líneas (solo trailing newline) |
+| [`lib/supabase-server.ts`](nutricoach/lib/supabase-server.ts) | Idéntico en los 3 |
+
+Todos los demás archivos compartidos en `lib/`, `components/`, `app/` (no listados arriba) también fueron verificados idénticos.
+
+### Build de verificación
+- ✅ `npx next build` exitoso — 0 errores, 0 warnings
+- ✅ Prerenderizado estático + server-rendered on demand
+
+### Notas importantes
+- Los archivos extra de `nutricoach-modulos` (módulos de precios, scraping, componentes exclusivos) **no** se copiaron a main, tal como solicitó el usuario, porque ya están disponibles desde su directorio `nutricoach-modulos/` como worktree.
+- A partir de ahora, **todo el trabajo converge en `nutricoach/`** (main). Los worktrees `nutricoach-ui/` y `nutricoach-modulos/` quedan como snapshot histórico.
+
 ## Comandos y Scripts Importantes
 - **Ejecutar en desarrollo:** `npm run dev` (dentro de `nutricoach/`)
 - **Build (verificar errores TS):** `npx next build` (dentro de `nutricoach/`)
 - **Migración de esquema antiguo a nuevo de recetas:** `node scripts/migrar-recetas.mjs`
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
+
+## Estado Actual (14-05-2026 — Sesión 11: Auditoría completa recetario + Fix masivo macros)
+
+### Resumen sesión
+- ✅ **Auditoría completa del recetario**: 227 recetas — 71 sin problemas, 156 con problemas detectados
+- ✅ **35 alimentos con kcal=0 enriquecidos**: chocolate 85% (590kcal), pipas calabaza (550kcal), salsas, especias, etc.
+- ✅ **CRITICAL BUG FIX**: [`fix-macros-faltantes.mjs`](nutricoach/scripts/fix-macros-faltantes.mjs) guardaba macros TOTALES en columnas POR PORCIÓN. Añadida división por `receta.porciones`.
+- ✅ **227 recetas recalculadas** con [`fix-recetas-completo.mjs --fase 3`](nutricoach/scripts/fix-recetas-completo.mjs): 88 con cambios reales, 0 errores
+- ✅ **Auditoría post-fix guardada** en [`salidas/auditoria-recetario-2026-05-14.md`](salidas/auditoria-recetario-2026-05-14.md)
+- ✅ **Metadatos ya estandarizados**: 0 cambios necesarios (categorías, tipo_coccion, dificultad OK)
+- ✅ **Bug documentado** en [`DIAGNOSTICO_FALLOS.md`](nutricoach/DIAGNOSTICO_FALLOS.md) como FALLO #21
+
+### Scripts creados/modificados en esta sesión
+| Script | Cambio |
+|--------|--------|
+| [`scripts/fix-macros-faltantes.mjs`](nutricoach/scripts/fix-macros-faltantes.mjs) | Añadidas ~20 reglas de matching + fix división por porciones |
+
+### Diagnóstico BD (14-05-2026)
+- **227 recetas**: 71 sin problemas, 156 con problemas
+- **170 (75%) sin intolerancias** — no auto-fixable sin IA
+- **115 (51%) con >10% diff macros** — datos de ingredientes incorrectos (cantidades, match alimentos)
+- **91 con kcal_100g discrepante**, **153 con peso_total_g incorrecto**
+- **3 sin tiempos** de preparación/cocción
+- **0% problemas estructurales**: ingredientes, instrucciones, categorías, tipo_coccion, dificultad — todo OK
+
+---
+
+## 🔍 BUGS ENCONTRADOS Y FIXES APLICADOS — 13-05-2026
+
+### 🐛 BUG #1 — CRÍTICO: `matchedIngredients` nunca se usaba para INSERT
+
+**Archivo:** [`app/api/scrape-receta/route.ts`](nutricoach/app/api/scrape-receta/route.ts:1090-1140)
+
+**Problema:** El array `matchedIngredients` se construía correctamente con `alimento_id` obtenido del algoritmo de matching (línea ~1107). Pero luego se construía `capitalizedIngredients` desde `parsedIngredients` (sin `alimento_id`), y ese era el array que se insertaba en `receta_ingredientes`. El array `matchedIngredients` con los IDs correctos **nunca se usaba**.
+
+**Flujo bug:**
+1. `parsedIngredients` se crea desde `extracted.ingredientes` — sin `alimento_id` ❌
+2. `matchedIngredients` se construye desde `parsedIngredients` + resultado de `matchIngredient()` — TIENE `alimento_id` ✅
+3. `capitalizedIngredients` se construye desde `parsedIngredients` (OLVIDANDO `matchedIngredients`) — sin `alimento_id` ❌
+4. `ingredientsToInsert` se construye desde `capitalizedIngredients` — `alimento_id` siempre `undefined` ❌
+5. En BD: `receta_ingredientes.alimento_id = null` para TODAS las recetas nuevas ❌
+
+**Fix (código actual):**
+```typescript
+// Desde matchedIngredients (TIENE alimento_id), NO desde parsedIngredients
+const capitalizedIngredients = matchedIngredients.map((ing) => ({
+  receta_id: receta?.id ?? '',
+  alimento_id: ing.alimento_id,  // ← CORRECTO
+  nombre_libre: ing.nombre_libre.charAt(0).toUpperCase() + ing.nombre_libre.slice(1),
+  cantidad_gramos: ing.cantidad_gramos,
+  cantidad_original: ing.cantidad_original,
+  unidad_display: ing.unidad_display,
+  orden: ing.orden,
+  es_opcional: ing.es_opcional,
+}))
+```
+
+**Impacto:** Cualquier receta scrapeada NUEVA perdía la vinculación con `alimentos`. Las 8 recetas problemáticas ya estaban corregidas por scripts anteriores, así que el bug era latente (no roto visiblemente, pero roto para futuros scrapes).
+
+### 🐛 BUG #2 — `startsWith` no priorizaba alimentos con macros
+
+**Archivo:** [`app/api/scrape-receta/route.ts`](nutricoach/app/api/scrape-receta/route.ts:628-649)
+
+**Problema:** La query `ilike('nombre', q + '%')` devolvía coincidencias pero sin preferencia por aquellas con datos nutricionales. Por ejemplo, "Cebolla morada" podía matchear "Cebolla Morada Malla" (producto de supermercado con kcal=0) en vez de "Cebolla morada" (alimento base con macros).
+
+**Fix:**
+- `buscarAlimento()` ahora selecciona también `calorias` (`.select('id, nombre, calorias')`)
+- El bloque `startsWith` ahora filtra primero por `calorias > 0`
+- Entre varios con macros, elige el de nombre más corto (más genérico)
+- Si todos tienen kcal=0, elige el primero alfabético
+
+### 🐛 BUG #3 — Sin limpieza de paréntesis en nombre de ingrediente
+
+**Archivo:** [`app/api/scrape-receta/route.ts`](nutricoach/app/api/scrape-receta/route.ts:594-599)
+
+**Problema:** Ingredientes como "Cebolla morada (para salsa)" no se limpiaban antes del matching. El paréntesis descriptivo interfería con la búsqueda en BD.
+
+**Fix:** Función `limpiarNombreIngrediente()` que elimina `(.*?)` y colapsa espacios.
+
+### 🐛 BUG #4 — API búsqueda sin orden ni límite
+
+**Archivo:** [`app/api/alimentos/route.ts`](nutricoach/app/api/alimentos/route.ts)
+
+**Problema:** La búsqueda de alimentos en el editor de recetas devolvía resultados sin ordenar. Con 86% de alimentos con kcal=0, los primeros resultados solían ser productos de supermercado sin macros.
+
+**Fix:** Añadido `.order('calorias', { ascending: false }).limit(50)` para que los alimentos con datos nutricionales aparezcan primero.
+
+### 🐛 BUG #5 — Algoritmo de matching devolvía falsos positivos
+
+**Archivo:** [`app/api/scrape-receta/route.ts`](nutricoach/app/api/scrape-receta/route.ts:713-732)
+
+**Problema:** El scoring multi-token no penalizaba suficientemente los candidatos con palabras extra sustantivas. "Harina" matcheaba "Harina de coco" (kcal=0) en vez de "Harina de trigo" (kcal=339).
+
+**Fix:** Añadida penalización `tienePalabrasExtra` cuando el candidato tiene palabras extra sustantivas y NO empieza por la consulta. Además, si el primero es penalizado, se prueba el segundo candidato como fallback.
+
+---
+
+## 🔍 CAUSAS RAÍZ — Por qué fallaron las 8 recetas
+
+### CAUSA #1 — Instagram no tiene cantidades estructuradas
+- **7 de 8 recetas** vienen de Instagram (fuente_tipo: 'instagram')
+- El árbol de accesibilidad de Instagram NO contiene cantidades estructuradas
+- DeepSeek extrae nombres de ingredientes correctamente, pero todas las cantidades son `null`
+- `parseCantidadAGramos()` con `cantidad=null` y `unidad=null` → default 100g
+- **No es un bug, es una limitación de la fuente.** Mitigación: segunda llamada a IA para estimar cantidades desde el texto del post, o alerta UI pidiendo ajuste manual.
+
+### CAUSA #2 — Bug estructural (Bug #1 arriba)
+- Aunque el matching encontrara el `alimento_id` correcto, nunca se guardaba en BD
+- Este bug afectaba a TODAS las recetas nuevas, no solo Instagram
+
+### CAUSA #3 — 86% de la BD con macros=0
+- Los productos de supermercado (Mercadona, etc.) se insertan sin macros
+- El matching no podía distinguir entre "Harina de trigo" (buen match) y "Harina de coco" (mal match, kcal=0)
+- Soluciones pendientes: enriquecer productos faltantes, o añadir flag `es_producto` a los alimentos de supermercado
+
+### CAUSA #4 — Algoritmo de matching sin prioridad startsWith
+- Antes del Fix 2, no existía el bloque `startsWith` (1c)
+- "Harina" podía matchear cualquier alimento que contuviera "harina" en cualquier posición
+
+---
+
+## ✅ ACIERTOS (Sesión 10)
+1. **Diagnóstico BD masivo antes de tocar código**: Consultas Supabase revelaron que 7/8 recetas son Instagram, todas con `cantidad_original: null` — información clave para entender el problema real.
+2. **Scripts con `--dry-run`**: El Fix 3 se probó primero en seco para ver los 13 re-matches antes de aplicar.
+3. **No parchear receta por receta**: En vez de corregir las 8 recetas individualmente, se arregló el flujo completo (buscador + matching + INSERT).
+4. **Build de verificación antes de deploy**: `npx next build` confirmó 0 errores antes de subir a Vercel.
+5. **Sincronizar worktrees**: Ambos worktrees (nutricoach + nutricoach-ui) recibieron los mismos fixes.
+
+## ❌ ERRORES (Sesión 10)
+1. **No revisar el flujo completo del INSERT antes**: El Bug #1 (matchedIngredients no usado) estuvo presente desde la creación del scraper. Se necesitó una auditoría profunda del código para descubrirlo — debería haberse revisado al implementar el scraper original.
+2. **Asumir que buscador mostraba los mismos resultados que el algoritmo**: El buscador de alimentos (editor UI) y el algoritmo de matching (scrape) usan lógica diferente. No sincronizarlos llevó a confusión.
+
+## ⚡ REGLAS NUEVAS PARA PRÓXIMAS SESIONES
+1. **TODO nuevo scrape debe verificar `alimento_id` en BD**: Después de scrapear una receta, ejecutar una consulta para confirmar que `receta_ingredientes.alimento_id` no es null.
+2. **Siempre verificar qué array se usa para el INSERT**: Si hay dos arrays (parsedIngredients vs matchedIngredients), verificar cuál se usa realmente. El array con los datos correctos debe ser el que alimenta la escritura.
+3. **`buscarAlimento()` debe incluir `calorias` siempre**: El campo `calorias` es crítico para decidir entre múltiples matches. Nunca seleccionar solo `id, nombre`.
+4. **Priorizar `startsWith` sobre `contains`**: Cuando la query coincide con el inicio del nombre del alimento, es un match más fiable que una coincidencia parcial en medio del nombre.
+5. **Limpiar nombres de ingredientes antes de matchear**: Quitar paréntesis, notas, y descripciones secundarias que no forman parte del nombre del alimento.
+6. **Instagram = sin cantidades**: Asumir que cualquier receta de Instagram tendrá `cantidad_original: null` para todos los ingredientes. Añadir advertencia en UI o flujo de post-procesado.
+7. **Mantener sincronizados los worktrees**: Cuando se modifica la lógica de matching en `nutricoach/`, aplicar el mismo cambio en `nutricoach-ui/` inmediatamente.
+
+---
+
+## Estado Actual (12-05-2026 — Sesión 9: Macros faltantes + Metadatos + Diagnóstico)
+
+### Resumen sesión
+- ✅ **Diagnóstico completo**: 227 recetas, 100% match rate, 0 sin kcal, 0 sin instrucciones, 0 sin porciones
+- ✅ **FIX 7 — Macros faltantes**: Ejecutado `fix-macros-faltantes.mjs --apply` → 78 alimentos con macros estimados, 99 recetas recalculadas, 0 errores
+- ✅ **FIX 8 — Build + Deploy post-macros**: Exitoso en nutricoach-delta.vercel.app
+- ✅ **FIX 9+10 — Metadatos**: Ejecutado `asignar-metadatos-recetas.mjs --apply` → 227/227 con categoría, tipo_cocción, dificultad, tipo_plato
+- ✅ **FIX 11 — Build + Deploy post-metadatos**: Exitoso en nutricoach-delta.vercel.app
+- ⏳ **FIX 12 — Imágenes**: 74 recetas sin imagen (32.6%). Infraestructura investigada: 12 scripts existentes. Carlos prefiere NO Unsplash. Pendiente decidir pipeline alternativo (scrape url_origen / IA generativa)
+- ⏳ **FIX 13 — Revisión casos raros**: "Receta sin título" (30g, 717kcal/100g) y "Donuts caseros esponjosos" (13.266 kcal, 1.075g grasa) pendientes
+- ⏳ **FIX 14 — Build + Deploy final**: Pendiente tras imágenes y revisiones
+
+### Scripts creados en esta sesión
+| Script | Localización | Estado |
+|--------|-------------|--------|
+| [`fix-macros-faltantes.mjs`](nutricoach/scripts/fix-macros-faltantes.mjs) | nutricoach/scripts/ | ✅ Ejecutado con --apply |
+| [`asignar-metadatos-recetas.mjs`](nutricoach/scripts/asignar-metadatos-recetas.mjs) | nutricoach/scripts/ | ✅ Ejecutado con --apply |
+
+### Diagnóstico final recetas (12-05-2026)
+- **227 recetas** en BD (226 aprobadas, 1 descartada)
+- **1.618 ingredientes vinculados** — 100% match rate ✅
+- **0 recetas sin kcal** ✅
+- **0 recetas sin instrucciones** ✅
+- **0 recetas sin porciones** ✅
+- **74 sin imagen** (32.6%) ⏳
+- **Categorías**: 227/227 completas ✅
+- **Tipo cocción**: 227/227 completos ✅
+- **Dificultad**: 227/227 completa ✅
+- **Tipo plato**: 227/227 completo ✅
+
+### Variables de entorno (.env.local)
+- `UNSPLASH_ACCESS_KEY` disponible pero no se usará por decisión de Carlos
+- `REPLICATE_API_KEY`, `OPENAI_API_KEY`, `APIFY_API_KEY` disponibles para pipelines alternativos
 
 ## Estado Actual (10-05-2026 — Sesión 8 + Sesión extra de imágenes)
 
@@ -461,3 +734,28 @@ Git marca conflictos con `<<<<<<< HEAD` / `>>>>>>> feature/rama`. Pasos:
 3. `git add [archivo]` → `git commit`
 
 La mejor forma de evitar conflictos: respetar la tabla de archivos de cada worktree.
+
+---
+
+## 🧠 LECCIONES APRENDIDAS — Aciertos y Errores (Sesión 9, 12-05-2026)
+
+### ✅ ACIERTOS
+1. **Diagnóstico completo antes de tocar nada**: Ejecutar `diagnostico-completo.mjs` primero dio visibilidad del estado real (227 recetas, 1.618 ingredientes, match rate 100%) antes de decidir qué priorizar.
+2. **Estimación de macros por reglas locales**: En vez de llamar a una IA para cada alimento (costoso y lento), se crearon ~70 reglas `MACROS_POR_NOMBRE` con datos reales de BEDCA. Rápido, gratuito, y 0 errores en 78 alimentos.
+3. **`--dry-run` en scripts de modificación masiva**: Los scripts nuevos incluían modo dry-run para ver qué se iba a cambiar antes de aplicar. Esto evitó sorpresas.
+4. **Dos pases para metadatos**: Primero inferencia por reglas (202 recetas), luego segundo pase manual para los 33 remanentes. Mucho más control que un solo pase masivo.
+
+### ❌ ERRORES
+1. **Ejecutar pipeline de Unsplash sin preguntar** (FALLO #19): Se lanzó `rellenar-fotos-unsplash.mjs --dry-run` para 74 recetas sin consultar. El usuario dijo "no saques de unsplash" cuando ya llevaba 3 minutos. Se perdió tiempo y cuota de API.
+2. **`URL` como nombre de variable** (FALLO #17): Varios scripts nuevos usaban `const URL = process.env...` que sombrea el constructor global `URL`. Error detectado en ejecución. Fix: renombrar a `SB`.
+3. **`grasa` vs `grasas`** (FALLO #18): Typo en nombre de variable. Error detectado en ejecución. Fix: `grasa` → `grasas`.
+4. **No verificar 416 en paginación** (FALLO #16): Supabase devuelve 416 cuando offset > total rows. Scripts que usaban paginación sin manejar este código fallaban silenciosamente.
+
+### ⚡ REGLAS PARA PRÓXIMAS SESIONES
+1. **Preguntar siempre antes de consumir APIs externas**: Unsplash, OpenAI, Replicate, etc. — nunca asumir que está bien.
+2. **Probar scripts con `node --check`** antes de ejecutar: detecta ReferenceError y typos en variables.
+3. **Usar `--limit N` pequeño primero**: Para scripts que iteran sobre muchas recetas, probar con 3-5 primero.
+4. **NUNCA usar `URL` como nombre de variable**: Usar `SB`, `API_URL`, `SUPABASE_URL`.
+5. **Manejar 416 en toda paginación con Supabase REST API**: El SDK no da este error, pero el fetch directo sí.
+6. **Siempre tener plan B para imágenes**: Unsplash no es aceptable. OpenAI puede estar bloqueado. Tener alternativas preparadas.
+7. **Documentar en CALIENTE**: Los fallos se documentan en DIAGNOSTICO_FALLOS.md inmediatamente después de ocurrir, no al final de la sesión.

@@ -316,6 +316,36 @@
 #### 📄 Documentación
 - [x] [`salidas/08-05-2026_AUDITORIA_FASE9_GRAPHITE.md`](./salidas/08-05-2026_AUDITORIA_FASE9_GRAPHITE.md) — Auditoría completa de la sesión
 
+### ✅ COMPLETADO EN SESIÓN 14-05-2026 — Auditoría y corrección masiva del recetario
+
+#### 🔍 Diagnóstico inicial
+- [x] Auditoría completa ejecutada: 227 recetas, 71 sin problemas, 156 con problemas
+- [x] Detección de **35 alimentos con kcal=0** que afectaban recetas (26 sin regla de matching)
+- [x] Detectado CRITICAL BUG: [`fix-macros-faltantes.mjs`](nutricoach/scripts/fix-macros-faltantes.mjs) guardaba macros TOTALES en columnas POR PORCIÓN
+
+#### 🍎 Enriquecimiento de 35 alimentos con macros=0
+- [x] Añadidas ~20 reglas de matching en [`fix-macros-faltantes.mjs`](nutricoach/scripts/fix-macros-faltantes.mjs) cubriendo:
+  - Chocolate 85% (590kcal), Chocolate 72% con almendras (550kcal)
+  - Pipas de calabaza (550kcal), Pepinillos (15kcal)
+  - Salsas: Thai Chili (200kcal), César (450kcal), Miel Mostaza (120kcal), Worcestershire (70kcal)
+  - Cebolla frita crujiente (500kcal), Snack maíz Stars (500kcal)
+  - Helado vegetal chocolate (200kcal), Café con leche light (35kcal)
+  - Cacahuete proteínas desgrasado (400kcal, 70g proteína), Pimentón dulce (280kcal)
+  - Zero-calorie items: sal, bicarbonato, agua, edulcorante, especias, hojas laurel
+- [x] Dry-run: 35/35 alimentos OK, 0 sin regla ✅
+- [x] `--apply`: 35 alimentos actualizados, 114 recetas recalculadas, 0 errores
+
+#### 🐛 Fix CRITICAL BUG — División por porciones
+- [x] Añadida división por `receta.porciones || 1` en línea 296 de [`fix-macros-faltantes.mjs`](nutricoach/scripts/fix-macros-faltantes.mjs)
+- [x] Documentado en [`DIAGNOSTICO_FALLOS.md`](nutricoach/DIAGNOSTICO_FALLOS.md) como FALLO #21
+
+#### 🔄 Recalculo masivo de todas las recetas
+- [x] Ejecutado [`fix-recetas-completo.mjs --fase 3`](nutricoach/scripts/fix-recetas-completo.mjs): 227 recetas recalculadas, 88 con cambios reales, 0 errores en 23 batches
+
+#### 🏁 Auditoría final post-fixes
+- [x] [`salidas/auditoria-recetario-2026-05-14.md`](salidas/auditoria-recetario-2026-05-14.md) generada con resultados definitivos
+- [x] Metadatos (categorías, tipo_coccion, dificultad) ya estaban estandarizados — 0 cambios necesarios
+
 ### ⏳ PENDIENTE — Próxima sesión
 
 #### Paso 0 — Arrancar

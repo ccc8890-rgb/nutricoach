@@ -200,11 +200,11 @@ function extractTextFromHtml(html: string): string {
     .replace(/<\/h[1-6]>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, "'")
     .replace(/[ \t]{2,}/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
@@ -528,7 +528,7 @@ function palabraEnConsulta(palabraCandidato: string, palabrasConsulta: string[])
 async function buscarAlimento(supabaseService: any, token: string): Promise<any[]> {
   const { data: direct } = await supabaseService
     .from('alimentos')
-    .select('id, nombre')
+    .select('id, nombre, calorias')
     .ilike('nombre', '%' + token + '%')
   if (direct && direct.length > 0) return direct
 
@@ -538,7 +538,7 @@ async function buscarAlimento(supabaseService: any, token: string): Promise<any[
   const conditions = variantes.map(v => `nombre.ilike.%${v}%`)
   const { data: conAcentos } = await supabaseService
     .from('alimentos')
-    .select('id, nombre')
+    .select('id, nombre, calorias')
     .or(conditions.join(','))
 
   return conAcentos || []
@@ -548,6 +548,13 @@ async function buscarAlimento(supabaseService: any, token: string): Promise<any[
 // Sistema de puntuación (0-100, normalizado por acentos)
 // Basado en el algoritmo de rematch-ingredientes.mjs
 // ──────────────────────────────────────────────
+
+function limpiarNombreIngrediente(nombre: string): string {
+  return nombre
+    .replace(/\(.*?\)/g, '')   // eliminar (notas)
+    .replace(/\s+/g, ' ')      // colapsar espacios
+    .trim()
+}
 
 function palabrasCompletas(str: string): string[] {
   return norm(str.toLowerCase())
@@ -654,7 +661,11 @@ async function matchIngredient(
   supabaseService: any,
   nombre: string
 ): Promise<{ id: string; nombre: string } | null> {
-  const q = nombre.toLowerCase().trim()
+  // Limpiar el nombre: quitar paréntesis descriptivos
+  const nombreLimpio = limpiarNombreIngrediente(nombre)
+  const q = nombreLimpio.toLowerCase().trim()
+
+  if (!q) return null
 
   // ── 1. MATCH EXACTO ──
   const { data: exact } = await supabaseService
@@ -671,6 +682,29 @@ async function matchIngredient(
       .select('id, nombre')
       .ilike('nombre', singular)
     if (exSing?.length) return exSing[0]
+  }
+
+  // ── 1c. PREFERIR STARTS-WITH ──
+  // "Harina" → "Harina de trigo" (starts-with) mejor que "Harina de coco" (contains)
+  // Si solo hay un starts-with con macros, devolverlo directamente
+  // Si hay múltiples, preferir el que tenga calorias > 0
+  const { data: startsWith } = await supabaseService
+    .from('alimentos')
+    .select('id, nombre, calorias')
+    .ilike('nombre', q + '%')
+  if (startsWith?.length === 1) return startsWith[0]
+  if (startsWith && startsWith.length > 1) {
+    // Preferir el que tenga macros (calorias > 0)
+    const conMacros = startsWith.filter((a: any) => (a.calorias ?? 0) > 0)
+    if (conMacros.length === 1) return conMacros[0]
+    if (conMacros.length > 1) {
+      // Entre varios con macros, el de nombre más corto (más genérico)
+      conMacros.sort((a: any, b: any) => a.nombre.length - b.nombre.length)
+      return conMacros[0]
+    }
+    // Si todos tienen kcal=0, el primero alfabético
+    startsWith.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre))
+    return startsWith[0]
   }
 
   // ── 2. MULTI-TOKEN SCORING ──
@@ -723,6 +757,7 @@ async function matchIngredient(
     }
 
     const aMejorNorm = norm(mejor.nombre)
+    const qNorm = norm(q)
     const tokensNorm = tokensBuscar.map(t => norm(t))
     const tokensMatchCount = tokensNorm.filter(t => aMejorNorm.includes(t)).length
     const extra = contarExtraSustantivas(mejor.nombre)
@@ -731,12 +766,28 @@ async function matchIngredient(
       .filter(p => p.length > 0 && !CONNECTORS.has(p) && !PREP_WORDS.has(p))
     const toleranciaExtra = palabrasSustantivasConsulta.length <= 1 ? 0 : 1
 
-    if (mejor.total > 0 && extra <= toleranciaExtra) {
+    // Penalización: palabras extra sustantivas en el candidato que no están en la consulta
+    // y el candidato NO empieza por la consulta (ej: "Harina de coco" para buscar "Harina")
+    const esStartsWith = aMejorNorm.startsWith(qNorm)
+    const tienePalabrasExtra = extra > toleranciaExtra && !esStartsWith
+
+    if (!tienePalabrasExtra && mejor.total > 0 && extra <= toleranciaExtra) {
       return mejor
     }
 
-    if (extra === 0 && tokensMatchCount >= 1) {
+    if (!tienePalabrasExtra && extra === 0 && tokensMatchCount >= 1) {
       return mejor
+    }
+
+    // Fallback: si el primero fue penalizado pero hay otro mejor, probarlo
+    if (tienePalabrasExtra && scored.length > 1) {
+      const segundo = scored[1]
+      const segundoNorm = norm(segundo.nombre)
+      const extraSegundo = contarExtraSustantivas(segundo.nombre)
+      const segundoEsStartsWith = segundoNorm.startsWith(qNorm)
+      if ((segundoEsStartsWith || extraSegundo <= toleranciaExtra) && segundo.total > 0) {
+        return segundo
+      }
     }
   }
 
@@ -824,20 +875,86 @@ async function autoCrearAlimento(
 }
 
 // ──────────────────────────────────────────────
-// agent-browser: accesibilidad y extracción de recetas sociales
+// agent-browser: herramientas de scraping headless
 // ──────────────────────────────────────────────
-async function agentBrowserAccessibility(url: string): Promise<string> {
-  const { stdout } = await execAsync(
-    `agent-browser accessibility "${url.replace(/"/g, '\\"')}"`,
-    { timeout: 30000 }
-  )
+
+/**
+ * Abre una URL con agent-browser (el browser queda como proceso daemon).
+ */
+async function agentBrowserOpen(url: string): Promise<void> {
+  await execAsync(`agent-browser open "${url.replace(/"/g, '\\"')}" 2>&1`, { timeout: 30000 })
+}
+
+/**
+ * Obtiene el árbol de accesibilidad con refs (@e1…@eN) vía snapshot -c.
+ * Requiere agent-browser open previo.
+ */
+async function agentBrowserSnapshot(): Promise<string> {
+  const { stdout } = await execAsync(`agent-browser snapshot -c 2>&1`, { timeout: 15000 })
   return stdout
 }
 
+/**
+ * Ejecuta JavaScript arbitrario en el contexto del browser abierto.
+ * Requiere agent-browser open previo.
+ */
+async function agentBrowserEval(js: string): Promise<string> {
+  const { stdout } = await execAsync(`agent-browser eval ${JSON.stringify(js)} 2>&1`, { timeout: 15000 })
+  return stdout
+}
+
+/**
+ * Cierra el browser daemon.
+ */
+async function agentBrowserClose(): Promise<void> {
+  await execAsync(`agent-browser close 2>&1`, { timeout: 10000 }).catch(() => {
+    // si ya estaba cerrado, ignoramos el error
+  })
+}
+
+/**
+ * Extrae JSON-LD (schema.org Recipe) de una URL usando agent-browser eval.
+ * Devuelve el primer Recipe encontrado o null.
+ */
+async function agentBrowserExtractJSONLD(url: string): Promise<any | null> {
+  const js = `JSON.stringify(Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map(s => s.textContent).slice(0, 3))`
+  try {
+    await agentBrowserOpen(url)
+    const raw = await agentBrowserEval(js)
+    await agentBrowserClose()
+
+    if (!raw || raw === '""' || raw === '[]') return null
+
+    const parsed: string[] = JSON.parse(raw)
+    for (const text of parsed) {
+      try {
+        const data = JSON.parse(text)
+        const items = Array.isArray(data) ? data : [data]
+        for (const item of items) {
+          if (item['@type'] === 'Recipe' && item.name) {
+            return item
+          }
+        }
+      } catch {
+        continue
+      }
+    }
+    return null
+  } catch {
+    await agentBrowserClose().catch(() => { })
+    return null
+  }
+}
+
 async function extractRecipeFromSocial(url: string, fuenteTipo: string): Promise<any> {
-  const tree = await agentBrowserAccessibility(url)
+  // Paso 1: abrir URL con agent-browser y obtener snapshot del árbol de accesibilidad
+  await agentBrowserOpen(url)
+  const tree = await agentBrowserSnapshot()
+  await agentBrowserClose()
+
   if (!tree.trim()) throw new Error('agent-browser: árbol de accesibilidad vacío')
 
+  // Paso 2: enviar el árbol de accesibilidad a DeepSeek para que extraiga la receta
   const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY
   if (!DEEPSEEK_KEY) throw new Error('DEEPSEEK_API_KEY not configured')
 
@@ -880,6 +997,56 @@ async function extractRecipeFromSocial(url: string, fuenteTipo: string): Promise
   else if (cleaned.startsWith('```')) cleaned = cleaned.slice(3)
   if (cleaned.endsWith('```')) cleaned = cleaned.slice(0, -3)
   return JSON.parse(cleaned.trim())
+}
+
+// ──────────────────────────────────────────────
+// Helper: construye objeto extracted a partir de un schema.org Recipe JSON-LD
+// ──────────────────────────────────────────────
+function buildExtractedFromJSONLD(item: any): any {
+  const instructions: string[] = []
+  if (typeof item.recipeInstructions === 'string') {
+    instructions.push(item.recipeInstructions)
+  } else if (Array.isArray(item.recipeInstructions)) {
+    for (const step of item.recipeInstructions) {
+      if (typeof step === 'string') {
+        instructions.push(step)
+      } else if (step?.['@type'] === 'HowToSection' && Array.isArray(step.itemListElement)) {
+        for (const subStep of step.itemListElement) {
+          if (subStep?.text) instructions.push(subStep.text)
+          else if (subStep?.name) instructions.push(subStep.name)
+        }
+      } else if (step?.text) {
+        instructions.push(step.text)
+      } else if (step?.name) {
+        instructions.push(step.name)
+      }
+    }
+  }
+
+  return {
+    nombre: item.name,
+    descripcion: item.description || null,
+    categoria: mapCategory(item.recipeCategory),
+    tipo_coccion: mapCookingMethod(item.cookingMethod),
+    dificultad: null,
+    porciones: extractYieldNumber(item.recipeYield),
+    descripcion_porcion: inferDescripcionPorcion(typeof item.recipeYield === 'string' ? item.recipeYield : null),
+    tiempo_prep_min: parseISODurationToMinutes(item.prepTime),
+    tiempo_coccion_min: parseISODurationToMinutes(item.cookTime),
+    ...(!item.prepTime && !item.cookTime && item.totalTime
+      ? { tiempo_prep_min: parseISODurationToMinutes(item.totalTime) }
+      : {}),
+    ingredientes: (item.recipeIngredient || []).map((ing: string) => {
+      const parsed = parseIngredienteRaw(ing)
+      return { nombre: parsed.nombre, cantidad: parsed.cantidad, unidad: parsed.unidad }
+    }),
+    instrucciones: instructions.length > 0
+      ? instructions.map((s, i) => `${i + 1}. ${s}`).join('\n')
+      : null,
+    consejos: null,
+    imagen_url: extractImageUrl(item.image),
+    autor_original: item.author?.name || null,
+  }
 }
 
 // ──────────────────────────────────────────────
@@ -949,69 +1116,36 @@ export async function POST(req: NextRequest) {
       html = await fetchResponse.text()
     }
 
-    // ── Strategy A: JSON-LD (solo web) ──
-    const jsonLdRegex = /<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
-    let match: RegExpExecArray | null
-    while ((match = jsonLdRegex.exec(html)) !== null) {
-      try {
-        const parsed = JSON.parse(match[1])
-        const items = Array.isArray(parsed) ? parsed : [parsed]
-        for (const item of items) {
-          if (item['@type'] === 'Recipe' && item.name) {
-            // Build extracted object
-            const instructions: string[] = []
-            if (typeof item.recipeInstructions === 'string') {
-              // Some sites store all steps as a single string
-              instructions.push(item.recipeInstructions)
-            } else if (Array.isArray(item.recipeInstructions)) {
-              for (const step of item.recipeInstructions) {
-                if (typeof step === 'string') {
-                  instructions.push(step)
-                } else if (step?.['@type'] === 'HowToSection' && Array.isArray(step.itemListElement)) {
-                  // Handle nested HowToSection
-                  for (const subStep of step.itemListElement) {
-                    if (subStep?.text) instructions.push(subStep.text)
-                    else if (subStep?.name) instructions.push(subStep.name)
-                  }
-                } else if (step?.text) {
-                  instructions.push(step.text)
-                } else if (step?.name) {
-                  instructions.push(step.name)
-                }
-              }
+    // ── Strategy A: JSON-LD desde HTML (solo web) ──
+    if (fuenteTipo === 'web') {
+      const jsonLdRegex = /<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+      let match: RegExpExecArray | null
+      while ((match = jsonLdRegex.exec(html)) !== null) {
+        try {
+          const parsed = JSON.parse(match[1])
+          const items = Array.isArray(parsed) ? parsed : [parsed]
+          for (const item of items) {
+            if (item['@type'] === 'Recipe' && item.name) {
+              extracted = buildExtractedFromJSONLD(item)
+              break
             }
-
-            extracted = {
-              nombre: item.name,
-              descripcion: item.description || null,
-              categoria: mapCategory(item.recipeCategory),
-              tipo_coccion: mapCookingMethod(item.cookingMethod),
-              dificultad: null, // not in schema.org
-              porciones: extractYieldNumber(item.recipeYield),
-              descripcion_porcion: inferDescripcionPorcion(typeof item.recipeYield === 'string' ? item.recipeYield : null),
-              tiempo_prep_min: parseISODurationToMinutes(item.prepTime),
-              tiempo_coccion_min: parseISODurationToMinutes(item.cookTime),
-              // fallback to totalTime if both missing
-              ...(!item.prepTime && !item.cookTime && item.totalTime
-                ? { tiempo_prep_min: parseISODurationToMinutes(item.totalTime) }
-                : {}),
-              ingredientes: (item.recipeIngredient || []).map((ing: string) => {
-                const parsed = parseIngredienteRaw(ing)
-                return { nombre: parsed.nombre, cantidad: parsed.cantidad, unidad: parsed.unidad }
-              }),
-              instrucciones: instructions.length > 0
-                ? instructions.map((s, i) => `${i + 1}. ${s}`).join('\n')
-                : null,
-              consejos: null,
-              imagen_url: extractImageUrl(item.image),
-              autor_original: item.author?.name || null,
-            }
-            break
           }
+          if (extracted) break
+        } catch {
+          // ignore invalid JSON-LD blocks
         }
-        if (extracted) break
-      } catch {
-        // ignore invalid JSON-LD blocks
+      }
+
+      // ── Strategy A.2: JSON-LD vía agent-browser eval (para JS SPAs que inyectan JSON-LD dinámicamente) ──
+      if (!extracted?.nombre) {
+        try {
+          const jsonldItem = await agentBrowserExtractJSONLD(url)
+          if (jsonldItem) {
+            extracted = buildExtractedFromJSONLD(jsonldItem)
+          }
+        } catch {
+          // si falla agent-browser, continuamos con las estrategias siguientes
+        }
       }
     }
 
