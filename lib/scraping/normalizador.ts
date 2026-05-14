@@ -1,27 +1,367 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-/** Pipeline de limpieza de nombres de productos */
-function limpiarNombre(nombre: string): string {
-    let limpio = nombre
+// ─── Constantes ────────────────────────────────────────────────────────────
 
-    // 1. Quitar contenido entre paréntesis (marcas, variantes)
+/** Marcas conocidas → se eliminan del inicio/final del nombre */
+const MARCAS = [
+    // Mercadona
+    'Hacendado', 'Bosque Verde', 'Deliplus', 'Bellsola',
+    // Carrefour
+    'Carrefour Bio', 'Carrefour Discount', 'Carrefour Classic', 'Carrefour Sensation',
+    'Carrefour Kids', 'Carrefour Baby', 'Carrefour',
+    // Lidl
+    'Milbona', 'Cien', 'Lidl', 'Alesto', 'Favorina', 'Sondey',
+    'Crownfield', 'Or Noir', 'Dulcinea', 'Parmareggio', 'Pizzella',
+    'Isoflakes', 'Erlen', 'Cien Nature', 'Spectrum', 'Bellarom',
+    'Mister Choc', 'Fit&Active', 'Freshona', 'Vemina', 'D’or',
+    // Día
+    'Día', 'Dia', 'Asdecom', 'Bonté', 'Junior', 'Dely', 'Chef Select',
+    // Alcampo
+    'Alcampo', 'Auchan', 'Bouquet d\'Or', 'Nuestra Cosecha', 'Nos Regions ont du Talent',
+    // ECI / Hipercor
+    'El Corte Inglés', 'El Corte Ingles', 'Hipercor', 'Senda', 'Aliada',
+    // Consum
+    'Consum', 'Konsum', 'Eroski', 'Basic',
+    // Bonpreu / Esclat
+    'Bonpreu', 'Esclat', 'Bonpreu Esclat',
+    // Otras marcas blancas/nacionales
+    'Gallo', 'Gallina Blanca', 'Knorr', 'Pescanova', 'Nestlé', 'Danone',
+    'Puleva', 'Central Lechera', 'Coca-Cola', 'Pepsi', 'Noel', 'Campofrío',
+    'ElPozo', 'Casa Tarradellas', 'La Cocinera', 'Findus', 'Pastas Gallo',
+    'Borges', 'Carbonell', 'La Española', 'Ybarra', 'SOS', 'Arroz SOS',
+    'ColaCao', 'Nesquik', 'Kellogg\'s', 'Chiquilin', 'Nutella', 'Nocilla',
+    'Lletges', 'Cacique',
+]
+
+/** Marcas a eliminar solo del inicio (evita falsos positpos en medio) */
+const MARCAS_INICIO = [
+    'Gallo', 'Pescanova', 'Danone', 'Puleva', 'Campofrío', 'ElPozo',
+    'ColaCao', 'Nesquik', 'Kellogg\'s', 'Borges', 'Carbonell', 'SOS',
+]
+
+/** Palabras de preparación/descripción que se eliminan */
+const DESCRIPTORES = [
+    // Preparación
+    'freír', 'freir', 'asar', 'cocinar', 'horno', 'plancha', 'vapor',
+    'microondas', 'sartén', 'sarten', 'parrilla', 'brasa',
+    // Corte/formato
+    'troceado', 'fileteado', 'cortado', 'loncheado', 'picado', 'rallado',
+    'laminado', 'machacado', 'triturado', 'molido', 'partido',
+    'deshuesado', 'desespinado', 'pelado', 'mondado', 'sin espina',
+    'sin piel', 'sin hueso', 'sin grasa', 'sin sal',
+    // Estado
+    'entero', 'natural', 'ecológico', 'ecologica', 'tradicional',
+    'congelado', 'fresco', 'fresca', 'refrigerado', 'envasado',
+    'ahumado', 'curado', 'madurado', 'rebozado', 'empanado',
+    'deshidratado', 'liofilizado', 'pasteurizado', 'esterilizado',
+    'refinado', 'hidrogenado', 'clarificado', 'batido',
+    'desnatado', 'semidesnatado', 'entero (leche)', 'deslactosado',
+    'sin lactosa', 'sin gluten', 'vegano', 'vegetal', 'light', 'zero',
+    '0%', '0,0%', 'bajo en grasa', 'sin azúcar', 'sin azucar',
+    'sin cafeína', 'descafeinado', 'suave', 'intenso',
+    // Calidad
+    'gourmet', 'deluxe', 'premium', 'selección', 'seleccion',
+    'artesano', 'artesana', 'casero', 'casera', 'extra', 'supremo',
+    'primera calidad', 'primera', 'segunda', 'tercera',
+    // Formato en inglés
+    'ready to eat', 'frozen', 'fresh', 'organic', 'bio', 'eco',
+    'whole', 'sliced', 'diced', 'ground', 'minced', 'smoked',
+    'skinless', 'boneless', 'low fat', 'fat free', 'sugar free',
+]
+
+/** Stop words a eliminar (no afectan la identidad del alimento) */
+const STOP_WORDS = /\b(de|del|la|las|los|el|en|con|sin|y|e|o|a|para|por|al|un|una|su|que)\b/gi
+
+/** Mapa de sinónimos: normaliza variaciones de nombres de alimentos */
+const SINONIMOS: Record<string, string> = {
+    // Yogur
+    'yogurt': 'yogur',
+    'yoghurt': 'yogur',
+    'yogures': 'yogur',
+    // Aceite
+    'aove': 'aceite de oliva virgen extra',
+    'aceite oliva virgen extra': 'aceite de oliva virgen extra',
+    'aceite oliva virgen': 'aceite de oliva virgen',
+    'aceite oliva': 'aceite de oliva',
+    'aceite girasol': 'aceite de girasol',
+    // Leche
+    'leche entera': 'leche entera',
+    'leche semidesnatada': 'leche semidesnatada',
+    'leche desnatada': 'leche desnatada',
+    'leche sin lactosa': 'leche sin lactosa',
+    'leche deslactosada': 'leche sin lactosa',
+    // Carne
+    'ternera': 'ternera',
+    'tenera': 'ternera',
+    'carne picada': 'carne picada',
+    'carne molida': 'carne picada',
+    'pollo': 'pollo',
+    'pollo entero': 'pollo',
+    'pechuga pollo': 'pechuga de pollo',
+    'pechuga de pollo': 'pechuga de pollo',
+    'muslo pollo': 'muslo de pollo',
+    'muslo de pollo': 'muslo de pollo',
+    'contramuslo': 'contramuslo de pollo',
+    'ala pollo': 'ala de pollo',
+    'ala de pollo': 'ala de pollo',
+    // Cerdo
+    'lomo cerdo': 'lomo de cerdo',
+    'lomo de cerdo': 'lomo de cerdo',
+    'solomillo cerdo': 'solomillo de cerdo',
+    'solomillo de cerdo': 'solomillo de cerdo',
+    // Pescado
+    'merluza': 'merluza',
+    'merluza del sur': 'merluza',
+    'merluza de alaska': 'merluza de alaska',
+    'bacalao': 'bacalao',
+    'bacalao salado': 'bacalao salado',
+    'bacalao desalado': 'bacalao',
+    'salmón': 'salmón',
+    'salmon': 'salmón',
+    'atún': 'atún',
+    'atun': 'atún',
+    'atún claro': 'atún',
+    'atún en aceite': 'atún',
+    'atún en aceite oliva': 'atún',
+    'atún en escabeche': 'atún en escabeche',
+    'atún natural': 'atún',
+    // Huevos
+    'huevos': 'huevo',
+    // Frutas
+    'plátano': 'plátano',
+    'platano': 'plátano',
+    'banana': 'plátano',
+    'fresas': 'fresa',
+    'fresón': 'fresa',
+    'fresones': 'fresa',
+    'arándanos': 'arándano',
+    'uvas': 'uva',
+    'manzanas': 'manzana',
+    'peras': 'pera',
+    'naranjas': 'naranja',
+    // Verduras / hortalizas
+    'tomates': 'tomate',
+    'tomate pera': 'tomate',
+    'tomate ensalada': 'tomate',
+    'tomate cherry': 'tomate cherry',
+    'tomates cherry': 'tomate cherry',
+    'cebollas': 'cebolla',
+    'patatas': 'patata',
+    'papas': 'patata',
+    'zanahorias': 'zanahoria',
+    'pimientos': 'pimiento',
+    'pimiento rojo': 'pimiento rojo',
+    'pimiento verde': 'pimiento verde',
+    'pimiento amarillo': 'pimiento amarillo',
+    'calabacín': 'calabacín',
+    'calabacin': 'calabacín',
+    'berenjena': 'berenjena',
+    'brócoli': 'brócoli',
+    'brocoli': 'brócoli',
+    'coliflor': 'coliflor',
+    'lechuga': 'lechuga',
+    'lechuga iceberg': 'lechuga',
+    'lechuga romana': 'lechuga',
+    'espinacas': 'espinaca',
+    'acelgas': 'acelga',
+    // Legumbres
+    'lentejas': 'lenteja',
+    'garbanzos': 'garbanzo',
+    'alubias': 'alubia',
+    'judías': 'judía',
+    'judias': 'judía',
+    'frijoles': 'alubia',
+    'porotos': 'alubia',
+    // Arroz
+    'arroz redondo': 'arroz',
+    'arroz bomba': 'arroz',
+    'arroz basmati': 'arroz basmati',
+    'arroz integral': 'arroz integral',
+    'arroz vaporizado': 'arroz',
+    'arroz largo': 'arroz',
+    // Pasta
+    'macarrones': 'macarrón',
+    'espaguetis': 'espagueti',
+    'spaghetti': 'espagueti',
+    'spaguetti': 'espagueti',
+    'fideos': 'fideo',
+    'tallarines': 'tallarín',
+    'lacitos': 'lacito',
+    'helicópteros': 'helicóptero',
+    // Lácteos
+    'queso curado': 'queso curado',
+    'queso semicurado': 'queso semicurado',
+    'queso tierno': 'queso tierno',
+    'queso fresco': 'queso fresco',
+    'queso rallado': 'queso rallado',
+    'queso en lonchas': 'queso lonchas',
+    'queso crema': 'queso crema',
+    'requesón': 'requesón',
+    'requeson': 'requesón',
+    'nata líquida': 'nata líquida',
+    'nata para montar': 'nata para montar',
+    'nata montar': 'nata para montar',
+    'crema de leche': 'nata líquida',
+    // Embutidos / fiambres
+    'jamón serrano': 'jamón serrano',
+    'jamon serrano': 'jamón serrano',
+    'jamón cocido': 'jamón cocido',
+    'jamon cocido': 'jamón cocido',
+    'jamon york': 'jamón cocido',
+    'jamón de york': 'jamón cocido',
+    'pechuga pavo': 'pechuga de pavo',
+    'pechuga de pavo': 'pechuga de pavo',
+    'salchichón': 'salchichón',
+    'salchichon': 'salchichón',
+    'chorizo': 'chorizo',
+    'lomo embuchado': 'lomo embuchado',
+    'lomo adobado': 'lomo adobado',
+    'mortadela': 'mortadela',
+    'fuet': 'fuet',
+    // Conservas
+    'atún claro en aceite oliva': 'atún en aceite de oliva',
+    'atun claro en aceite oliva': 'atún en aceite de oliva',
+    'sardinas en aceite': 'sardinas en aceite',
+    'sardinas en escabeche': 'sardinas en escabeche',
+    'mejillones en escabeche': 'mejillones en escabeche',
+    'mejillones al natural': 'mejillones al natural',
+    // Bebidas
+    'coca cola': 'cola',
+    'coca-cola': 'cola',
+    'cola light': 'cola light',
+    'cola zero': 'cola zero',
+    'cola zero azucar': 'cola zero',
+    'agua mineral': 'agua',
+    'agua con gas': 'agua con gas',
+    'cerveza': 'cerveza',
+    'cerveza sin alcohol': 'cerveza sin alcohol',
+    'vino tinto': 'vino tinto',
+    'vino blanco': 'vino blanco',
+    'vino rosado': 'vino rosado',
+    // Pan
+    'pan de molde': 'pan de molde',
+    'pan molde': 'pan de molde',
+    'pan integral': 'pan integral',
+    'pan blanco': 'pan',
+    'pan barra': 'pan',
+    'pan chapata': 'pan chapata',
+    'ciabatta': 'pan chapata',
+    'pan de pueblo': 'pan',
+    'pan rustico': 'pan rústico',
+}
+
+/** Caracteres acentuados → su equivalente sin acento */
+const ACENTOS: Record<string, string> = {
+    'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+    'à': 'a', 'è': 'e', 'ì': 'i', 'ò': 'o', 'ù': 'u',
+    'â': 'a', 'ê': 'e', 'î': 'i', 'ô': 'o', 'û': 'u',
+    'ä': 'a', 'ë': 'e', 'ï': 'i', 'ö': 'o', 'ü': 'u',
+    'ñ': 'n', 'ç': 'c',
+    'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+    'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
+    'Â': 'A', 'Ê': 'E', 'Î': 'I', 'Ô': 'O', 'Û': 'U',
+    'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
+    'Ñ': 'N', 'Ç': 'C',
+}
+
+// ─── Funciones de limpieza ─────────────────────────────────────────────────
+
+/** Elimina acentos y diacríticos */
+function quitarAcentos(texto: string): string {
+    return texto.replace(/[áéíóúàèìòùâêîôûäëïöüñçÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÄËÏÖÜÑÇ]/g, c => ACENTOS[c] || c)
+}
+
+/** Aplica el mapa de sinónimos sobre el nombre completo (prioriza coincidencias largas) */
+function aplicarSinonimos(nombre: string): string {
+    const lower = nombre.toLowerCase().trim()
+    // Intentar coincidencia exacta primero
+    if (SINONIMOS[lower]) return SINONIMOS[lower]
+    // Luego intentar substring comenzando por las más largas
+    const entries = Object.entries(SINONIMOS).sort((a, b) => b[0].length - a[0].length)
+    for (const [original, normalizado] of entries) {
+        // Reemplazar solo palabras completas, no substrings parciales
+        const regex = new RegExp(`\\b${escapeRegex(original)}\\b`, 'gi')
+        if (regex.test(lower)) {
+            return lower.replace(regex, normalizado)
+        }
+    }
+    return nombre
+}
+
+/** Escapa caracteres especiales para regex */
+function escapeRegex(texto: string): string {
+    return texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/** Elimina stop words del nombre */
+function quitarStopWords(nombre: string): string {
+    return nombre.replace(STOP_WORDS, '').replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * Pipeline completo de limpieza de nombres de productos.
+ * Orden: marcas → paréntesis → cantidades → descriptores → sinónimos → stop words → acentos → espacios
+ */
+function limpiarNombre(nombre: string): string {
+    let limpio = nombre.trim()
+
+    if (!limpio) return ''
+
+    // 1. Quitar marcas al inicio (lista exhaustiva)
+    for (const marca of MARCAS_INICIO) {
+        const regexIni = new RegExp(`^${escapeRegex(marca)}\\s+`, 'i')
+        limpio = limpio.replace(regexIni, '')
+    }
+
+    // 2. Quitar marcas al inicio/final (lista general)
+    for (const marca of MARCAS) {
+        const regexIni = new RegExp(`^${escapeRegex(marca)}\\s+`, 'i')
+        const regexFin = new RegExp(`\\s+${escapeRegex(marca)}$`, 'i')
+        limpio = limpio.replace(regexIni, '').replace(regexFin, '')
+    }
+
+    // 3. Quitar contenido entre paréntesis (marcas, variantes)
     limpio = limpio.replace(/\([^)]*\)/g, '')
 
-    // 2. Quitar cantidades y pesos (ej: "1 kg", "500 g", "6 unidades", "pack 3")
-    limpio = limpio.replace(/\d+\s*(kg|g|ml|l|litro|unidad(?:es)?|pack|ud|uds|unid|pieza(?:s)?)/gi, '')
+    // 4. Quitar cantidades y pesos (ej: "1 kg", "500 g", "6 unidades", "pack 3")
+    limpio = limpio.replace(/\d+\s*(kg|g|ml|l|litro|litros|unidad(?:es)?|pack|ud|uds|unid|pieza(?:s)?|cl|dl|mg|µg)/gi, '')
 
-    // 3. Quitar marcas comunes al inicio/final
-    limpio = limpio.replace(/^(Hacendado|Bosque Verde|Deliplus|Carrefour|Carrefour Bio|Carrefour Discount|Milbona|Cien|Lidl|Bellsola)\s*/i, '')
-    limpio = limpio.replace(/\s*(Hacendado|Bosque Verde|Deliplus|Carrefour|Carrefour Bio|Carrefour Discount|Milbona|Cien|Lidl|Bellsola)$/i, '')
+    // 5. Quitar "pack", "lote", "caja" con número
+    limpio = limpio.replace(/(pack|lote|caja|kit)\s*\d+/gi, '')
+    limpio = limpio.replace(/\d+\s*(pack|lote|caja|kit)/gi, '')
 
-    // 4. Quitar palabras clave de preparación
-    limpio = limpio.replace(/\b(para\s+)?(freír|asar|cocinar|horno|plancha|vapor|microondas|troceado|fileteado|cortado|entero|natural|ecológico|tradicional)\b/gi, '')
+    // 6. Quitar palabras descriptor
+    for (const desc of DESCRIPTORES) {
+        const regex = new RegExp(`\\b${escapeRegex(desc)}\\b`, 'gi')
+        limpio = limpio.replace(regex, '')
+    }
 
-    // 5. Normalizar espacios
+    // 7. Normalizar espacios (pre-sinónimos)
     limpio = limpio.replace(/\s+/g, ' ').trim()
+
+    // 8. Aplicar sinónimos
+    limpio = aplicarSinonimos(limpio)
+
+    // 9. Quitar stop words
+    limpio = quitarStopWords(limpio)
+
+    // 10. Quitar acentos
+    limpio = quitarAcentos(limpio)
+
+    // 11. Normalizar espacios final
+    limpio = limpio.replace(/\s+/g, ' ').trim()
+
+    // 12. Si después de todo queda vacío o muy corto, devolver el original limpio básico
+    if (limpio.length < 2) {
+        limpio = nombre.trim().toLowerCase()
+        limpio = quitarAcentos(limpio)
+        limpio = limpio.replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim()
+    }
 
     return limpio
 }
+
+// ─── API pública ───────────────────────────────────────────────────────────
 
 /** Normaliza un nombre de producto para buscar en la BD */
 export function normalizarProducto(nombre: string): string {
@@ -30,13 +370,17 @@ export function normalizarProducto(nombre: string): string {
 
 export interface MatchResult {
     alimento_id: string | null
-    confianza: 'exacta' | 'fuzzy' | 'no_encontrado'
+    confianza: 'exacta' | 'fuzzy' | 'parcial' | 'no_encontrado'
 }
 
 /**
  * Busca un alimento en la BD por nombre normalizado.
- * Primero intenta fuzzy matching local, luego llama a la función SQL.
- * @param supabase - Cliente Supabase (browser o service_role según contexto)
+ * Estrategia multi-nivel con prioridad:
+ *   1. Coincidencia exacta (ilike)
+ *   2. Coincidencia exacta sin acentos
+ *   3. Contiene bidireccional (que alimento contenga nombre, o viceversa)
+ *   4. Coincidencia por palabra clave (split de términos, match individual)
+ *   5. Fuzzy matching con pg_trgm (vía RPC match_alimento)
  */
 export async function buscarAlimento(
     nombre: string,
@@ -48,7 +392,7 @@ export async function buscarAlimento(
         return { alimento_id: null, confianza: 'no_encontrado' }
     }
 
-    // 1. Intentar exacto en local
+    // 1. Coincidencia exacta
     const { data: exacto } = await supabase
         .from('alimentos')
         .select('id')
@@ -59,20 +403,64 @@ export async function buscarAlimento(
         return { alimento_id: exacto.id, confianza: 'exacta' }
     }
 
-    // 2. Intentar contains (búsqueda bidireccional: que el nombre del alimento contenga
-    //    el nombre buscado, o viceversa)
+    // 2. Coincidencia exacta sin acentos (por si la BD tiene acentos distintos)
+    //    Buscamos primero un alimento que tenga el mismo nombre sin acentos
+    const { data: alimentos } = await supabase
+        .from('alimentos')
+        .select('id, nombre')
+        .limit(50)
+
+    if (alimentos && alimentos.length > 0) {
+        const nombreSinAcentos = quitarAcentos(nombreLimpio.toLowerCase())
+        for (const a of alimentos) {
+            if (quitarAcentos(a.nombre.toLowerCase()) === nombreSinAcentos) {
+                return { alimento_id: a.id, confianza: 'exacta' }
+            }
+        }
+    }
+
+    // 3. Contiene bidireccional
     const { data: contains } = await supabase
         .from('alimentos')
         .select('id, nombre')
         .or(`nombre.ilike.%${nombreLimpio}%,nombre.ilike.${nombreLimpio}%`)
-        .limit(1)
-        .maybeSingle()
+        .limit(5)
 
-    if (contains) {
-        return { alimento_id: contains.id, confianza: 'fuzzy' }
+    if (contains && contains.length > 0) {
+        // Elegir el más corto (suele ser el más genérico = mejor match)
+        const mejor = contains.sort((a, b) => a.nombre.length - b.nombre.length)[0]
+        return { alimento_id: mejor.id, confianza: 'fuzzy' }
     }
 
-    // 3. Fuzzy matching con la función SQL (pg_trgm)
+    // 4. Coincidencia por palabra clave
+    //    Divide el nombre en palabras y busca coincidencias individuales
+    const palabras = nombreLimpio.split(/\s+/).filter(p => p.length > 2)
+    if (palabras.length > 0) {
+        // Probar con la palabra más significativa (la más larga suele ser la clave)
+        const palabraClave = [...palabras].sort((a, b) => b.length - a.length)[0]
+        const { data: porPalabra } = await supabase
+            .from('alimentos')
+            .select('id, nombre')
+            .ilike('nombre', `%${palabraClave}%`)
+            .limit(5)
+
+        if (porPalabra && porPalabra.length > 0) {
+            // Filtrar: el nombre del alimento debe contener AL MENOS 2 palabras del producto buscado
+            const conMatch = porPalabra.filter(a => {
+                const palabrasAlimento = a.nombre.toLowerCase().split(/\s+/)
+                const coincidencias = palabras.filter((p: string) =>
+                    palabrasAlimento.some((pa: string) => pa.includes(p) || p.includes(pa))
+                )
+                return coincidencias.length >= 2 || coincidencias.length === palabras.length
+            })
+            if (conMatch.length > 0) {
+                const mejor = conMatch.sort((a, b) => a.nombre.length - b.nombre.length)[0]
+                return { alimento_id: mejor.id, confianza: 'parcial' }
+            }
+        }
+    }
+
+    // 5. Fuzzy matching con la función SQL (pg_trgm)
     const { data: fuzzyId } = await supabase.rpc('match_alimento', {
         p_nombre: nombreLimpio,
     })
@@ -81,18 +469,26 @@ export async function buscarAlimento(
         return { alimento_id: fuzzyId as string, confianza: 'fuzzy' }
     }
 
+    // 6. Último recurso: buscar por cualquier palabra individual
+    for (const palabra of palabras.sort((a, b) => b.length - a.length)) {
+        const { data: porPalabraUnica } = await supabase
+            .from('alimentos')
+            .select('id')
+            .ilike('nombre', `%${palabra}%`)
+            .limit(1)
+            .maybeSingle()
+
+        if (porPalabraUnica) {
+            return { alimento_id: porPalabraUnica.id, confianza: 'parcial' }
+        }
+    }
+
     return { alimento_id: null, confianza: 'no_encontrado' }
 }
 
 /**
  * Intenta crear un nuevo alimento si no existe.
  * Útil para productos que no están en tu BD pero aparecen en el supermercado.
- * @param supabase - Cliente Supabase (browser o service_role según contexto)
- */
-/**
- * Crea un alimento si no existe.
- * - esGenerico=true: alimento sin marca clara (fruta, carne, verdura genérica)
- * - esGenerico=false: producto de marca o procesado
  */
 export async function crearAlimentoSiNoExiste(
     nombre: string,
@@ -104,7 +500,11 @@ export async function crearAlimentoSiNoExiste(
     if (!nombreLimpio || nombreLimpio.length < 2) return null
 
     // Inferir si es genérico por el nombre si no se especifica
-    const MARCAS_CONOCIDAS = ['hacendado', 'carrefour', 'milbona', 'bosque verde', 'deliplus', 'lidl', 'aldi', 'dia']
+    const MARCAS_CONOCIDAS = [
+        'hacendado', 'carrefour', 'milbona', 'bosque verde', 'deliplus',
+        'lidl', 'aldi', 'dia', 'alcampo', 'auchan', 'el corte ingles',
+        'hipercor', 'bonpreu', 'esclat', 'eroski', 'consum', 'konsum',
+    ]
     const nombreLower = nombreLimpio.toLowerCase()
     const tieneMarco = MARCAS_CONOCIDAS.some(m => nombreLower.includes(m))
     const inferidoGenerico = esGenerico ?? !tieneMarco
@@ -124,6 +524,15 @@ export async function crearAlimentoSiNoExiste(
         .single()
 
     if (error) {
+        // Si el error es por duplicado (unique constraint), intentar buscar el existente
+        if (error.code === '23505') {
+            const { data: existente } = await supabase
+                .from('alimentos')
+                .select('id')
+                .ilike('nombre', nombreLimpio)
+                .maybeSingle()
+            if (existente) return existente.id
+        }
         console.error('[Normalizador] Error al crear alimento:', error.message)
         return null
     }

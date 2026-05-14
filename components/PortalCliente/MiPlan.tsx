@@ -90,8 +90,14 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
         ))
     }
 
-    function handleDescargarPDF() {
-        window.print()
+    async function handleDescargarPDF() {
+        setDescargando(true)
+        try {
+            // Abrir en nueva pestaña — el HTML renderizado se imprime con Ctrl+P
+            window.open(`/api/cliente/${codigo}/plan-pdf`, '_blank')
+        } finally {
+            setDescargando(false)
+        }
     }
 
     const totalDia = sumarMacros(
@@ -227,13 +233,14 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                 </div>
             )}
 
-            {/* Botón Imprimir / Guardar PDF */}
+            {/* Botón Descargar PDF mejorado (abre vista imprimible con logo + lista compra + entrenos) */}
             <button
                 onClick={handleDescargarPDF}
+                disabled={descargando}
                 className="btn btn-primary btn-lg w-full no-print"
             >
-                <Printer size={18} />
-                Imprimir / Guardar PDF
+                {descargando ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                {descargando ? 'Generando...' : 'Descargar plan en PDF'}
             </button>
         </div>
     )

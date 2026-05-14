@@ -58,7 +58,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </ToastProvider>
         </ThemeProvider>
-        {/* SW desactivado temporalmente en dev por incompatibilidad con Safari/Turbopack */}
+        <Script
+          id="register-sw"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                    console.log('[SW] Registrado correctamente:', reg.scope);
+                    reg.addEventListener('updatefound', function() {
+                      console.log('[SW] Nueva versión disponible, recarga para actualizar');
+                    });
+                  }).catch(function(err) {
+                    console.warn('[SW] Error al registrar:', err);
+                  });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   )

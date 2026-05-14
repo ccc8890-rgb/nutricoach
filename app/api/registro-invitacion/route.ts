@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase, createApiSupabase } from '@/lib/supabase-server'
+import { sendWelcomeEmail } from '@/lib/emails/welcome'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -63,6 +64,14 @@ export async function POST(req: NextRequest) {
       if (clienteError) {
         return NextResponse.json({ error: 'Error al crear el perfil de cliente' }, { status: 400 })
       }
+
+      // Enviar email de bienvenida
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+      sendWelcomeEmail({
+        to: user.email ?? email,
+        nombre: fullName ?? 'Cliente',
+        appUrl,
+      })
 
       return NextResponse.json({ ok: true })
     }
@@ -141,6 +150,14 @@ export async function POST(req: NextRequest) {
       await supabaseAdmin.auth.admin.deleteUser(profileId)
       return NextResponse.json({ error: 'Error al crear el perfil de cliente' }, { status: 400 })
     }
+
+    // Enviar email de bienvenida
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    sendWelcomeEmail({
+      to: email,
+      nombre: nombre,
+      appUrl,
+    })
 
     return NextResponse.json({ ok: true })
   } catch (err: any) {

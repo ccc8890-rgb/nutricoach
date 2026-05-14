@@ -632,6 +632,7 @@ export interface ComparativaSupermercados {
     dif_respecto_barato: number
     es_mas_barato: boolean
   }[]
+  ahorro_semanal: number
   ahorro_mensual: number
   ahorro_anual: number
   recomendado: string

@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ShoppingCart, Copy, Check, Store, Loader2 } from 'lucide-react'
 import ItemConPrecios from './lista-compra/ItemConPrecios'
+import SelectorComparativa from './lista-compra/SelectorComparativa'
 import type { ListaCompraSemanal, PrecioOpcion, ResumenSupermercado } from '@/types'
 
 interface ListaCompraProps {
@@ -32,6 +33,7 @@ export default function ListaCompra({ planId, clienteId, semanaInicio, nombrePla
     const [datos, setDatos] = useState<ListaCompraSemanal | null>(null)
     const [cargando, setCargando] = useState(false)
     const [guardando, setGuardando] = useState<string | null>(null) // alimento_id en proceso
+    const [aplicandoSuper, setAplicandoSuper] = useState<string | null>(null) // supermercado_id aplicándose masivamente
     const [copiado, setCopiado] = useState(false)
     const [error, setError] = useState('')
 
@@ -107,6 +109,21 @@ export default function ListaCompra({ planId, clienteId, semanaInicio, nombrePla
         } finally {
             setGuardando(null)
         }
+    }
+
+    /** Aplicar un supermercado a todos los alimentos de golpe */
+    async function handleAplicarSupermercado(supermercadoId: string) {
+        if (!datos) return
+        setAplicandoSuper(supermercadoId)
+        // Iterar secuencialmente para no saturar la API
+        for (const ing of datos.ingredientes) {
+            const opcion = ing.precios.find(p => p.supermercado_id === supermercadoId)
+            if (!opcion) continue
+            // Si ya está seleccionado este super, saltar
+            if (ing.seleccion?.supermercado_id === supermercadoId) continue
+            await handleSeleccionar(ing.alimento_id, opcion)
+        }
+        setAplicandoSuper(null)
     }
 
     async function copiarLista() {
@@ -190,6 +207,27 @@ export default function ListaCompra({ planId, clienteId, semanaInicio, nombrePla
 
                     {datos && !cargando && (
                         <>
+                            {/* Selector Comparativa — recomienda el supermercado más barato */}
+                            <SelectorComparativa
+                                ingredientes={datos.ingredientes}
+                                onAplicarSupermercado={handleAplicarSupermercado}
+                                supermercadoActual={(() => {
+                                    // Encontrar el supermercado más seleccionado actualmente
+                                    const frecuencia = new Map<string, number>()
+                                    for (const ing of datos.ingredientes) {
+                                        const smId = ing.seleccion?.supermercado_id
+                                        if (smId) frecuencia.set(smId, (frecuencia.get(smId) ?? 0) + 1)
+                                    }
+                                    let maxCount = 0
+                                    let maxId: string | null = null
+                                    for (const [id, count] of frecuencia) {
+                                        if (count > maxCount) { maxCount = count; maxId = id }
+                                    }
+                                    return maxId ?? undefined
+                                })()}
+                                aplicando={aplicandoSuper !== null}
+                            />
+
                             {/* Lista de ingredientes */}
                             <div className="pt-3 space-y-2">
                                 {datos.ingredientes.length === 0 ? (
