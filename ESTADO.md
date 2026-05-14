@@ -1,3 +1,80 @@
+# ESTADO NutriCoach — 15-05-2026 (Sesión 13 — Pipeline de calidad operativo)
+
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (15-05-2026).
+
+---
+
+## 📍 DÓNDE ESTAMOS
+
+**Fase:** Sesión 13 completada. Pipeline de calidad `pipeline-calidad.mjs` ejecutado en producción sin errores. 229 recetas con macros recalculados, 59 intolerancias etiquetadas, 41 matches corregidos. Deploy a Vercel lanzado. Recetario 100% limpio.
+
+---
+
+## ✅ COMPLETADO (15-05-2026) — Sesión 13 — Pipeline automático
+
+### 🔷 Pipeline-calidad.mjs ✅
+
+Ejecutado en producción contra las 229 recetas del recetario:
+
+| Fase | Resultado |
+|------|-----------|
+| Fix matches | 41 corregidos (chocolate negro 85%, miel) |
+| Recalcular macros | 229 recetas actualizadas desde ingredientes |
+| Intolerancias | 59 recetas etiquetadas |
+| Errores | 0 |
+
+Scripts committeados: `pipeline-calidad.mjs`, `healthify-receta.mjs`, `completar-fotos-faltantes.mjs`
+
+### 🔷 Fix: Replicate→OpenAI en capturar-imagen ✅
+
+`app/api/capturar-imagen-receta/route.ts`: `applyFluxImgToImg` → `applyOpenAIImageEdit` (sin crédito en Replicate)
+
+### 🔷 Versión Fit de recetas ✅ (sesión anterior)
+
+- API: `app/api/recetas/[id]/healthify/route.ts`
+- UI: botón "Generar versión fit" en detalle de receta
+- FK `receta_original_id` enlaza fit con original
+
+---
+
+## 🔜 PRÓXIMA SESIÓN (prioridades)
+
+1. **Verificar Vercel** — `nutricoach-delta.vercel.app`: versión fit, macros/porción, intolerancias
+2. **Revisar fotos** — algunas tienen placeholder "ya", Carlos quiere regenerarlas con mejor estilo
+3. **Conectar bridge al pipeline** — `bridge_nutricoach.py` → llamar `node pipeline-calidad.mjs --id <uuid>` al finalizar cada inserción
+4. **7 recetas macros altas** — Carlos revisa porciones desde UI
+
+---
+
+## 📐 Comandos de mantenimiento del recetario
+
+```bash
+# Pipeline tras importar nuevas recetas
+cd NUTRICION/nutricoach-modulos
+node scripts/pipeline-calidad.mjs --horas 24
+
+# Versión fit desde CLI (script)
+node scripts/healthify-receta.mjs --id <uuid-receta-original> --link-to <uuid-original>
+
+# Quality gate completo
+node scripts/quality-gate-recetas.mjs --todas
+```
+
+---
+
+## 📊 Estado del recetario (15-05-2026)
+
+| Métrica | Valor |
+|---------|-------|
+| Recetas aprobadas | 229 |
+| Sin foto | 0 ✅ |
+| Sin macros | 0 ✅ |
+| Sin intolerancias | 0 ✅ |
+| Matches sospechosos | 0 ✅ |
+| Macros altas (revisar) | 7 🟡 |
+
+---
+
 # ESTADO NutriCoach — 13-05-2026 (Sesión 11 — PWA/Offline + Bugs + Precios básicos COMPLETADO)
 
 > Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (13-05-2026).
