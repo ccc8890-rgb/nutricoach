@@ -17,7 +17,6 @@
     "apify-client": "^2.23.2",
     "framer-motion": "^12.38.0",
     "lightningcss": "^1.32.0",
-    "lightningcss-darwin-arm64": "^1.32.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.4",
     "pg": "^8.20.0",
@@ -37,5 +36,8 @@
     "playwright": "^1.59.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "lightningcss-darwin-arm64": "^1.32.0"
   }
 }
