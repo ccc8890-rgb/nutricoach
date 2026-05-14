@@ -71,7 +71,7 @@ export default function AuditoriaIngredientesPage() {
       if (!data) { setLoading(false); return }
 
       const filtradas: Fila[] = (data as unknown as IngredienteRow[])
-        .filter(row => row.receta && row.receta[0] && row.receta[0].coach_id === user.id)
+        .filter(row => row.receta && row.receta[0] && (row.receta[0].coach_id === user.id || row.receta[0].coach_id === null))
         .map(row => {
           const nombre = row.nombre_libre || (row.alimento?.[0]?.nombre) || '(sin nombre)'
           const cantidad = row.cantidad_gramos ?? 0

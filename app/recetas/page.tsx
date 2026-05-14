@@ -20,7 +20,7 @@ function BotonCola() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { setLoading(false); return }
       supabase.from('recetas').select('id', { count: 'exact', head: true })
-        .eq('coach_id', user.id).in('estado', ['borrador', 'en_revision'])
+        .or(`coach_id.eq.${user.id},coach_id.is.null`).in('estado', ['borrador', 'en_revision'])
         .then(({ count: c }) => { setCount(c ?? 0); setLoading(false) })
     })
   }, [])
@@ -91,7 +91,7 @@ export default function RecetasPage() {
         const { data, error } = await supabase
           .from('recetas')
           .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, created_at')
-          .eq('coach_id', user.id)
+          .or(`coach_id.eq.${user.id},coach_id.is.null`)
           .eq('estado', 'aprobada')
           .order('created_at', { ascending: false })
 

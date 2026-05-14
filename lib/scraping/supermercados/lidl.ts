@@ -149,29 +149,31 @@ async function obtenerCategoriasAlimentacion(
 
         await page.waitForTimeout(3000)
 
-        const cats = await page.evaluate(() => {
-            const links: { url: string; name: string }[] = []
-            const seen = new Set<string>()
+        const cats = await page.evaluate<{ url: string; name: string }[]>(`
+            (() => {
+                const links = [];
+                const seen = new Set();
 
-            const anchors = document.querySelectorAll<HTMLAnchorElement>(
-                'a[href*="/c/"], ' +
-                'a[data-category], ' +
-                'nav a[href*="categoria"], ' +
-                '[class*="category"] a[href], ' +
-                '.nav-item a[href*="/c/"]'
-            )
+                const anchors = document.querySelectorAll(
+                    'a[href*="/c/"], ' +
+                    'a[data-category], ' +
+                    'nav a[href*="categoria"], ' +
+                    '[class*="category"] a[href], ' +
+                    '.nav-item a[href*="/c/"]'
+                );
 
-            anchors.forEach(a => {
-                const href = a.href?.trim()
-                const text = a.textContent?.trim()
-                if (href && text && !seen.has(href) && text.length > 3 && href.includes('/c/') && !href.includes('#')) {
-                    seen.add(href)
-                    links.push({ url: href, name: text })
-                }
-            })
+                anchors.forEach(a => {
+                    const href = a.href?.trim();
+                    const text = a.textContent?.trim();
+                    if (href && text && !seen.has(href) && text.length > 3 && href.includes('/c/') && !href.includes('#')) {
+                        seen.add(href);
+                        links.push({ url: href, name: text });
+                    }
+                });
 
-            return links
-        })
+                return links;
+            })()
+        `)
 
         return cats
     } catch (err) {
@@ -195,82 +197,89 @@ async function scrapearCategoria(
     await page.waitForTimeout(3000)
 
     // Scroll para lazy loading
-    await page.evaluate(async () => {
-        const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
-        for (let i = 0; i < document.body.scrollHeight; i += 500) {
-            window.scrollTo(0, i)
-            await delay(500)
-        }
-    })
+    await page.evaluate(`
+        (async () => {
+            const delay = (ms) => new Promise(r => setTimeout(r, ms));
+            for (let i = 0; i < document.body.scrollHeight; i += 500) {
+                window.scrollTo(0, i);
+                await delay(500);
+            }
+        })()
+    `)
 
     await page.waitForTimeout(1000)
 
     // Extraer productos del DOM
-    const prods = await page.evaluate(() => {
-        const items: LidlProductExtraido[] = []
+    const prods = await page.evaluate<{
+        nombre: string; precio: number; precioPorKg?: number;
+        url: string; imagen: string; cantidad?: string
+    }[]>(`
+        (() => {
+            const items = [];
 
-        const cards = document.querySelectorAll<HTMLElement>(
-            'article[data-product], ' +
-            '[class*="product-card"], ' +
-            '[class*="product-item"], ' +
-            '[class*="product"], ' +
-            '[data-testid*="product"], ' +
-            '.grid-item, ' +
-            'li[class*="product"]'
-        )
+            const cards = document.querySelectorAll(
+                'article[data-product], ' +
+                '[class*="product-card"], ' +
+                '[class*="product-item"], ' +
+                '[class*="product"], ' +
+                '[data-testid*="product"], ' +
+                '.grid-item, ' +
+                'li[class*="product"]'
+            );
 
-        cards.forEach(card => {
-            const nombreEl = card.querySelector<HTMLElement>(
-                '[data-product-name], ' +
-                '[class*="product-name"], ' +
-                '[class*="product-title"], ' +
-                '[class*="name"], ' +
-                'h3, h2, [class*="title"]'
-            )
-            const precioEl = card.querySelector<HTMLElement>(
-                '[data-product-price], ' +
-                '[class*="price"], ' +
-                '.current-price, [class*="precio"], ' +
-                '.price'
-            )
-            const precioKgEl = card.querySelector<HTMLElement>(
-                '[class*="base-price"], ' +
-                '[class*="unit-price"], ' +
-                '[class*="price-per"], ' +
-                '[class*="reference"]'
-            )
-            const urlEl = card.querySelector<HTMLAnchorElement>('a[href]')
-            const imgEl = card.querySelector<HTMLImageElement>('img')
-            const cantidadEl = card.querySelector<HTMLElement>(
-                '[class*="quantity"], [class*="weight"], [class*="packaging"], ' +
-                '[data-quantity], [class*="amount"]'
-            )
+            cards.forEach(card => {
+                const nombreEl = card.querySelector(
+                    '[data-product-name], ' +
+                    '[class*="product-name"], ' +
+                    '[class*="product-title"], ' +
+                    '[class*="name"], ' +
+                    'h3, h2, [class*="title"]'
+                );
+                const precioEl = card.querySelector(
+                    '[data-product-price], ' +
+                    '[class*="price"], ' +
+                    '.current-price, [class*="precio"], ' +
+                    '.price'
+                );
+                const precioKgEl = card.querySelector(
+                    '[class*="base-price"], ' +
+                    '[class*="unit-price"], ' +
+                    '[class*="price-per"], ' +
+                    '[class*="reference"]'
+                );
+                const urlEl = card.querySelector('a[href]');
+                const imgEl = card.querySelector('img');
+                const cantidadEl = card.querySelector(
+                    '[class*="quantity"], [class*="weight"], [class*="packaging"], ' +
+                    '[data-quantity], [class*="amount"]'
+                );
 
-            const nombre = nombreEl?.textContent?.trim() || ''
-            const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0'
-            const precio = parseFloat(precioTexto) || 0
-            const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || ''
-            const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined
+                const nombre = nombreEl?.textContent?.trim() || '';
+                const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0';
+                const precio = parseFloat(precioTexto) || 0;
+                const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '';
+                const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined;
 
-            let href = urlEl?.href || ''
-            if (href && !href.startsWith('http')) {
-                href = `https://www.lidl.es${href}`
-            }
+                let href = urlEl?.href || '';
+                if (href && !href.startsWith('http')) {
+                    href = 'https://www.lidl.es' + href;
+                }
 
-            if (nombre && precio > 0) {
-                items.push({
-                    nombre,
-                    precio,
-                    precioPorKg: precioKg,
-                    url: href,
-                    imagen: imgEl?.src || '',
-                    cantidad: cantidadEl?.textContent?.trim() || undefined,
-                })
-            }
-        })
+                if (nombre && precio > 0) {
+                    items.push({
+                        nombre,
+                        precio,
+                        precioPorKg: precioKg,
+                        url: href,
+                        imagen: imgEl?.src || '',
+                        cantidad: cantidadEl?.textContent?.trim() || undefined,
+                    });
+                }
+            });
 
-        return items
-    })
+            return items;
+        })()
+    `)
 
     return prods
 }

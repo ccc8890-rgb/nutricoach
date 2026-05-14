@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
     Sparkles, Loader2, Check, AlertCircle, Database,
-    RefreshCw, ChevronDown, ChevronUp, Brain, Nut,
+    RefreshCw, ChevronDown, ChevronUp, Brain, Nut, StopCircle,
 } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import type { AlimentoPendienteEnriquecer } from '@/types'
@@ -25,6 +25,15 @@ interface ResultadoEjecucion {
     duracion_ms: number
 }
 
+interface ProgresoEnriquecimiento {
+    tipo: 'progreso'
+    procesados: number
+    total: number
+    actualizados: number
+    errores: number
+    porcentaje: number
+}
+
 export default function PanelEnriquecimiento() {
     const { addToast } = useToast()
     const [stats, setStats] = useState<StatsEnriquecimiento | null>(null)
@@ -34,6 +43,26 @@ export default function PanelEnriquecimiento() {
     const [expandido, setExpandido] = useState(false)
     const [limite, setLimite] = useState(50)
     const [resultado, setResultado] = useState<ResultadoEjecucion | null>(null)
+    const [progreso, setProgreso] = useState<ProgresoEnriquecimiento | null>(null)
+
+    const abortRef = useRef<AbortController | null>(null)
+    const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+    // Auto-refresh cada 30s cuando hay pendientes
+    useEffect(() => {
+        if (stats && stats.total_pendientes > 0 && !enriqueciendo) {
+            autoRefreshRef.current = setInterval(() => {
+                cargarStats()
+            }, 30000)
+        }
+
+        return () => {
+            if (autoRefreshRef.current) {
+                clearInterval(autoRefreshRef.current)
+                autoRefreshRef.current = null
+            }
+        }
+    }, [stats?.total_pendientes, enriqueciendo])
 
     useEffect(() => {
         cargarStats()
@@ -70,11 +99,17 @@ export default function PanelEnriquecimiento() {
     async function ejecutarEnriquecimiento() {
         setEnriqueciendo(true)
         setResultado(null)
+        setProgreso(null)
+
+        const abortController = new AbortController()
+        abortRef.current = abortController
+
         try {
             const res = await fetch('/api/precios/enriquecer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ limite }),
+                body: JSON.stringify({ limite, stream: true }),
+                signal: abortController.signal,
             })
 
             if (!res.ok) {
@@ -82,24 +117,72 @@ export default function PanelEnriquecimiento() {
                 throw new Error(err.error || 'Error al enriquecer')
             }
 
-            const data: ResultadoEjecucion = await res.json()
-            setResultado(data)
+            // ── Leer SSE stream ──
+            const reader = res.body?.getReader()
+            if (!reader) throw new Error('No se pudo obtener el stream de datos')
 
-            addToast({
-                type: data.errores.length > 0 ? 'warning' : 'success',
-                title: 'Enriquecimiento completado',
-                message: `${data.actualizados}/${data.total_pendientes} alimentos actualizados · ${data.errores.length} errores`,
-            })
+            const decoder = new TextDecoder()
+            let buffer = ''
 
-            // Recargar stats
-            await cargarStats()
-            if (pendientes.length > 0) await cargarPendientes()
+            while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+
+                buffer += decoder.decode(value, { stream: true })
+                const lines = buffer.split('\n')
+                buffer = lines.pop() || '' // guardar resto incompleto
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.slice(6))
+                            if (data.tipo === 'progreso') {
+                                setProgreso(data)
+                            } else if (data.tipo === 'completado') {
+                                const { tipo, ...resto } = data
+                                setResultado(resto as ResultadoEjecucion)
+                                addToast({
+                                    type: resto.errores?.length > 0 ? 'warning' : 'success',
+                                    title: 'Enriquecimiento completado',
+                                    message: `${resto.actualizados}/${resto.total_pendientes} alimentos actualizados · ${resto.errores?.length ?? 0} errores`,
+                                })
+                                // Recargar stats
+                                await cargarStats()
+                                if (pendientes.length > 0) await cargarPendientes()
+                            } else if (data.tipo === 'error') {
+                                throw new Error(data.error)
+                            }
+                        } catch (parseErr) {
+                            // Ignorar líneas malformadas
+                            if (parseErr instanceof Error && parseErr.message.startsWith('Error al enriquecer')) {
+                                throw parseErr
+                            }
+                        }
+                    }
+                }
+            }
         } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err)
-            addToast({ type: 'error', title: 'Error en enriquecimiento', message: msg })
+            if (err instanceof DOMException && err.name === 'AbortError') {
+                addToast({
+                    type: 'info',
+                    title: 'Cancelado',
+                    message: 'Enriquecimiento cancelado por el usuario',
+                })
+                // Recargar stats para reflejar cambios parciales
+                await cargarStats()
+            } else {
+                const msg = err instanceof Error ? err.message : String(err)
+                addToast({ type: 'error', title: 'Error en enriquecimiento', message: msg })
+            }
         } finally {
             setEnriqueciendo(false)
+            setProgreso(null)
+            abortRef.current = null
         }
+    }
+
+    function cancelarEnriquecimiento() {
+        abortRef.current?.abort()
     }
 
     function formatearMs(ms: number): string {
@@ -138,20 +221,70 @@ export default function PanelEnriquecimiento() {
                             <option value={200}>200</option>
                         </select>
                     </div>
-                    <button
-                        onClick={ejecutarEnriquecimiento}
-                        disabled={enriqueciendo || (stats?.total_pendientes ?? 0) === 0}
-                        className="btn-primary flex items-center gap-2 px-4 py-2"
-                    >
-                        {enriqueciendo ? (
-                            <Loader2 size={16} className="animate-spin" />
-                        ) : (
-                            <Sparkles size={16} />
-                        )}
-                        {enriqueciendo ? 'Enriqueciendo...' : 'Enriquecer con IA'}
-                    </button>
+
+                    {enriqueciendo ? (
+                        <button
+                            onClick={cancelarEnriquecimiento}
+                            className="btn-danger flex items-center gap-2 px-4 py-2"
+                        >
+                            <StopCircle size={16} />
+                            Cancelar
+                        </button>
+                    ) : (
+                        <button
+                            onClick={ejecutarEnriquecimiento}
+                            disabled={enriqueciendo || (stats?.total_pendientes ?? 0) === 0}
+                            className="btn-primary flex items-center gap-2 px-4 py-2"
+                        >
+                            {enriqueciendo ? (
+                                <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                                <Sparkles size={16} />
+                            )}
+                            Enriquecer con IA
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {/* Barra de progreso en vivo (SSE) */}
+            {enriqueciendo && progreso && (
+                <div className="card p-4 border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                            <Loader2 size={14} className="animate-spin" />
+                            Enriqueciendo...
+                        </span>
+                        <span className="text-xs font-medium text-blue-600">
+                            {progreso.porcentaje}%
+                        </span>
+                    </div>
+                    <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2.5 mb-3">
+                        <div
+                            className="bg-blue-600 dark:bg-blue-400 h-2.5 rounded-full transition-all duration-300"
+                            style={{ width: `${progreso.porcentaje}%` }}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div>
+                            <span className="font-medium text-blue-700 dark:text-blue-300">{progreso.procesados}</span>
+                            {' '}<span style={{ color: 'var(--text-muted)' }}>procesados</span>
+                        </div>
+                        <div>
+                            <span className="font-medium text-blue-700 dark:text-blue-300">{progreso.total}</span>
+                            {' '}<span style={{ color: 'var(--text-muted)' }}>total</span>
+                        </div>
+                        <div>
+                            <span className="font-medium text-green-600">{progreso.actualizados}</span>
+                            {' '}<span style={{ color: 'var(--text-muted)' }}>actualizados</span>
+                        </div>
+                        <div>
+                            <span className="font-medium text-red-500">{progreso.errores}</span>
+                            {' '}<span style={{ color: 'var(--text-muted)' }}>errores</span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Stats cards */}
             {cargando ? (
@@ -193,7 +326,7 @@ export default function PanelEnriquecimiento() {
             ) : null}
 
             {/* Resultado de ejecución */}
-            {resultado && (
+            {resultado && !enriqueciendo && (
                 <div className="card p-4 border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
                     <div className="flex items-center gap-2 mb-2">
                         <Check size={18} className="text-green-600" />

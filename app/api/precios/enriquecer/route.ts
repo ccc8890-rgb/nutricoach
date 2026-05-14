@@ -9,7 +9,8 @@ import {
 /**
  * POST /api/precios/enriquecer
  * Inicia el enriquecimiento nutricional por IA de los alimentos pendientes.
- * Body opcional: { limite?: number }
+ * Body opcional: { limite?: number, stream?: boolean }
+ * Si stream=true, devuelve SSE con progreso en tiempo real.
  */
 export async function POST(request: NextRequest) {
     try {
@@ -31,8 +32,55 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json().catch(() => ({}))
         const limite = body.limite ?? 100
+        const stream = body.stream === true
 
         const serviceSupabase = createServiceSupabase()
+
+        if (stream) {
+            // ── SSE: Progreso en tiempo real ──
+            const encoder = new TextEncoder()
+            const streamResult = new ReadableStream({
+                async start(controller) {
+                    try {
+                        const resultado = await ejecutarEnriquecimientoCompleto(
+                            serviceSupabase,
+                            limite,
+                            (procesados, total, actualizados, errores) => {
+                                const data = JSON.stringify({
+                                    tipo: 'progreso',
+                                    procesados,
+                                    total,
+                                    actualizados,
+                                    errores,
+                                    porcentaje: Math.round((procesados / total) * 100),
+                                })
+                                controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+                            }
+                        )
+
+                        // Enviar resultado final
+                        const finalData = JSON.stringify({ tipo: 'completado', ...resultado })
+                        controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
+                    } catch (err) {
+                        const msg = err instanceof Error ? err.message : String(err)
+                        const errorData = JSON.stringify({ tipo: 'error', error: msg })
+                        controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
+                    } finally {
+                        controller.close()
+                    }
+                },
+            })
+
+            return new NextResponse(streamResult, {
+                headers: {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive',
+                },
+            })
+        }
+
+        // ── Sin streaming: respuesta normal ──
         const resultado = await ejecutarEnriquecimientoCompleto(serviceSupabase, limite)
 
         return NextResponse.json(resultado)

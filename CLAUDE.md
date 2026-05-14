@@ -277,7 +277,9 @@ Documentado en [`plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`](plans/DISENO_PRODUCTOS
 - ✅ **Plan de diseño documentado:** `plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`
 
 ### Pendiente para próxima sesión
-- [ ] **ACTUALIZAR selectores DOM** de Carrefour, Lidl, Día para que encuentren productos (los actuales no matchean las webs)
+- [x] **ACTUALIZAR selectores DOM de Carrefour** — ✅ Fix aplicado: extracción desde homepage (54 productos, evita Cloudflare)
+- [x] **Diagnosticar Lidl** — ❌ Web rediseñada, no lista productos (modelo folletos)
+- [x] **Diagnosticar Día** — ❌ WAF impenetrable (4 estrategias headless probadas + APIs internas, todas bloqueadas)
 - [ ] Scrapers pendientes: aldi, el-corte-ingles, hipercor, bonpreu, esclat
 - [ ] Ejecutar re-scraper de Mercadona para probar el pipeline multi-producto en producción
 - [ ] Actualizar PanelScraping para mostrar múltiples productos por alimento con nombre_original y marca
@@ -342,9 +344,34 @@ Documentado en [`plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`](plans/DISENO_PRODUCTOS
 - **Elementos detectados en homepage:** 142 elementos con `[class*="product"]`, pero son genéricos (no contienen precios). La clase de producto es `ods-product` / `ods-price`.
 - **Estado:** No scrapeable actualmente con la estrategia actual. Requeriría investigar si hay API interna o si renderiza productos solo para usuarios logueados.
 
-#### Día — Access Denied 🔒
-- **Playwright headless:** Bloqueado completamente por el WAF de Día. Recibe página "Access Denied" con 0KB de contenido útil.
-- **Estado:** No scrapeable con Playwright headless. Posibles alternativas: (1) modo no-headless, (2) `--disable-blink-features=AutomationControlled`, (3) usar puppeteer-extra con stealth plugin, (4) API HTTP si existe.
+#### Día — WAF impenetrable ❌ (diagnóstico completo)
+- **Playwright headless (4 estrategias probadas):** TODAS bloqueadas con "Access Denied" (288 bytes).
+  - Headless normal (control) → ❌
+  - Headless + `--disable-blink-features=AutomationControlled` → ❌
+  - Headless + Stealth JS (navigator.webdriver, chrome.runtime, plugins, languages) → ❌
+  - Homepage first + stealth (como Carrefour) → ❌
+- **APIs HTTP directas con fetch:** Todas las rutas API internas (`/api/v2/home-back`, `/api/v1/search-back`, `/api/v1/search-insight`, etc.) devuelven 404 desde fetch — requieren cookies de sesión WAF.
+- **APIs internas descubiertas en HTML SPA:**
+  - `https://www.dia.es/api/v2/home-back`
+  - `https://www.dia.es/api/v1/search-back`
+  - `https://www.dia.es/api/v1/search-insight`
+  - `https://www.dia.es/api/v1/common-aggregator`
+  - `https://www.dia.es/api/v2/home-insight`
+  - `https://www.dia.es/api/v1/cart`
+  - `https://www.dia.es/api/v1/list-back`
+- **Datos SSR:** El HTML contiene un script de ~59KB con pageProps, pero está ofuscado (`pageProps: "undefined"` como string) — no hay datos de producto accesibles sin JS.
+- **Selectores en el HTML fetch (200 OK, 210KB SPA shell):**
+  - `search-product-card__active-price`: clase real para precios
+  - `search-product-card-kil`: clase real para precio/kg
+  - `data-test-id` como identificador principal de componentes
+  - `class*="product-card"`: 479 elementos
+- **Conclusión:** El WAF de Día opera a nivel de red/fingerprint TLS (no solo JS). Es el mismo WAF que bloquea incluso curl/fetch desde la misma IP. Bypass requeriría: proxy residencial, puppeteer-extra con stealth, o sesión real con cookies. **No viable actualmente.**
+- **Archivos de diagnóstico creados:**
+  - [`scripts/diagnosticar-dia.ts`](nutricoach-modulos/scripts/diagnosticar-dia.ts) — Prueba 4 estrategias anti-WAF (todas fallan)
+  - [`scripts/diagnosticar-dia-api.ts`](nutricoach-modulos/scripts/diagnosticar-dia-api.ts) — Busca APIs HTTP (14 endpoints, todos 404/block)
+  - [`scripts/diagnosticar-dia-html.ts`](nutricoach-modulos/scripts/diagnosticar-dia-html.ts) — Inspecciona HTML SPA (descubre selectores y APIs internas)
+  - [`scripts/diagnosticar-dia-api2.ts`](nutricoach-modulos/scripts/diagnosticar-dia-api2.ts) — Busca APIs en chunks JS (descubre servicios Kubernetes internos)
+  - [`scripts/diagnosticar-dia-api3.ts`](nutricoach-modulos/scripts/diagnosticar-dia-api3.ts) — Prueba endpoints reales + extrae SSR data (todo ofuscado)
 
 ### Estado actual del scraping (14-05-2026)
 
@@ -353,7 +380,7 @@ Documentado en [`plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`](plans/DISENO_PRODUCTOS
 - **Alcampo**: ~50 productos ✅ (API Ocado HTTP)
 - **Carrefour**: ~54 productos ✅ (Playwright homepage — fix aplicado)
 - **Lidl**: ❌ (web rediseñada, no lista productos en categorías)
-- **Día**: ❌ (WAF bloquea headless)
+- **Día**: ❌ (WAF bloquea headless, APIs requieren sesión WAF, SSR ofuscado)
 
 ## 🧠 Lecciones aprendidas (09-05-2026 — Productos vs Alimentos)
 

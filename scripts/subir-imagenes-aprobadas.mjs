@@ -160,7 +160,9 @@ async function main() {
 
         const filePath = join(SALIDA_DIR, mejor.filename)
         const buffer = readFileSync(filePath)
-        const storagePath = `${receta.id}/auto_${Date.now()}.webp`
+        const ext = mejor.filename.endsWith('.jpg') || mejor.filename.endsWith('.jpeg') ? 'jpg' : 'webp'
+        const contentType = ext === 'jpg' ? 'image/jpeg' : 'image/webp'
+        const storagePath = `${receta.id}/auto_${Date.now()}.${ext}`
 
         console.log(`  📤 ${receta.nombre} (${mejor.metodo}) → ${storagePath}`)
 
@@ -172,7 +174,7 @@ async function main() {
         // Subir a Storage
         const { error: uploadError } = await supabase.storage
             .from(BUCKET)
-            .upload(storagePath, buffer, { contentType: 'image/webp', upsert: true })
+            .upload(storagePath, buffer, { contentType, upsert: true })
 
         if (uploadError) {
             console.error(`     ❌ Upload error: ${uploadError.message}`)
