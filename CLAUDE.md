@@ -1,5 +1,97 @@
 # Proyecto: NutriCoach (Human Lab)
 
+---
+
+## 🔴 LEER SIEMPRE — Sistema de matching de ingredientes
+
+### Cómo funciona la visualización (crítico para diagnosticar)
+
+La app muestra **`alimentos.nombre`** (del join), NO `nombre_libre`.
+
+```
+receta_ingredientes.nombre_libre  = "Zumo de limón"   ← lo que DeepSeek generó
+receta_ingredientes.alimento_id   → alimentos.nombre  = "Zumo maracuyá y chía"  ← lo que ve el usuario
+```
+
+**Si un usuario ve un ingrediente raro en la app → el alimento_id está mal matcheado, no el nombre_libre.**
+
+### Cómo diagnosticar un match incorrecto
+
+```sql
+-- Ver qué ve el usuario vs qué guardó DeepSeek
+SELECT a.nombre AS "visible_en_app", ri.nombre_libre, ri.cantidad_gramos, ri.id AS ri_id
+FROM receta_ingredientes ri
+JOIN alimentos a ON a.id = ri.alimento_id
+WHERE ri.receta_id = '<uuid>'
+ORDER BY ri.orden;
+```
+
+### Cómo corregir un match incorrecto en BD
+
+```sql
+-- 1. Encontrar el alimento correcto
+SELECT id, nombre, calorias FROM alimentos
+WHERE nombre ILIKE '%limón%' AND calorias > 0 LIMIT 5;
+
+-- 2. Actualizar el alimento_id
+UPDATE receta_ingredientes SET alimento_id = '<id_correcto>'
+WHERE id = '<ri_id>';
+
+-- 3. Recalcular macros de la receta
+WITH macros AS (
+  SELECT
+    SUM(a.calorias      * ri.cantidad_gramos / 100) AS kcal_total,
+    SUM(a.proteinas     * ri.cantidad_gramos / 100) AS prot_total,
+    SUM(a.carbohidratos * ri.cantidad_gramos / 100) AS carbs_total,
+    SUM(a.grasas        * ri.cantidad_gramos / 100) AS grasas_total
+  FROM receta_ingredientes ri
+  JOIN alimentos a ON a.id = ri.alimento_id
+  WHERE ri.receta_id = '<uuid>'
+)
+UPDATE recetas SET
+  kcal          = ROUND((SELECT kcal_total   / porciones FROM macros), 1),
+  proteinas     = ROUND((SELECT prot_total   / porciones FROM macros), 1),
+  carbohidratos = ROUND((SELECT carbs_total  / porciones FROM macros), 1),
+  grasas        = ROUND((SELECT grasas_total / porciones FROM macros), 1)
+WHERE id = '<uuid>'
+RETURNING nombre, kcal, proteinas, carbohidratos, grasas;
+```
+
+### Cómo prevenir que vuelva a pasar
+
+**Opción A — MATCH_FIXES en pipeline** (patrón sistemático, ≥2 recetas afectadas):
+```javascript
+// En nutricoach-modulos/scripts/pipeline-calidad.mjs → array MATCH_FIXES
+[/^spray.*aceite/i, 'bf392211-3527-4c7d-98a5-a2fc0bda8270', 'Aceite de oliva'],
+```
+Luego ejecutar: `node scripts/pipeline-calidad.mjs --solo-fase 2` para corregir todas las recetas existentes.
+
+**Opción B — MATCH_FIXES en healthify** (para el endpoint de versión fit, `app/api/recetas/[id]/healthify/route.ts`):
+El algoritmo `matchIngrediente` ya acumula candidatos de todas las palabras y usa tiebreaker por longitud (nombre más corto = más genérico = preferido). Si sigue fallando, añadir el caso a MATCH_FIXES del pipeline.
+
+### MATCH_FIXES vigentes (15-05-2026)
+
+| Patrón | → Alimento correcto | Motivo |
+|--------|---------------------|--------|
+| `^sal$` | Sal (0 kcal) | "Sal" → "Salsa pesto" por prefijo |
+| `^agua$` | Agua (0 kcal) | "agua" → productos con agua en el nombre |
+| `^chocolate negro` | Chocolate negro 85% | "chocolate" → cereales de chocolate |
+| `^chocolate$` | Chocolate negro 85% | ídem |
+| `^miel$` | Miel (304 kcal) | "miel" → salsas con miel |
+| `^calabaza$` | Calabaza | "calabaza" → pipas de calabaza |
+| `^zumo de lim` | Limón (29 kcal) | "Zumo de limón" → "Zumo maracuyá y chía" |
+| `^jugo de lim` | Limón (29 kcal) | ídem variante "jugo" |
+| `^spray.*aceite` | Aceite de oliva (884 kcal) | "Spray de aceite" → "Aceite de Aguacate Cristal" |
+| `^aceite en spray` | Aceite de oliva (884 kcal) | ídem variante |
+
+### Regla del algoritmo matchIngrediente (healthify/route.ts)
+
+1. **Nivel 1** — ilike exacto sobre `nombre_libre` con `calorias > 0`
+2. **Nivel 2** — startsWith: busca en BD con CADA palabra >2 chars, **acumula todos los candidatos**, ordena por `(score DESC, nombre.length ASC)`. El nombre más corto gana en empate (genérico > específico de supermercado).
+3. **Nivel 3** — contains `%palabra%` con `calorias > 0` como fallback.
+
+---
+
 ## 🧪 agent-browser — Investigación e integración (Sesión 12)
 
 ### Resumen
