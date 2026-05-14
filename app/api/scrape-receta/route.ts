@@ -528,7 +528,7 @@ function palabraEnConsulta(palabraCandidato: string, palabrasConsulta: string[])
 async function buscarAlimento(supabaseService: any, token: string): Promise<any[]> {
   const { data: direct } = await supabaseService
     .from('alimentos')
-    .select('id, nombre')
+    .select('id, nombre, calorias')
     .ilike('nombre', '%' + token + '%')
   if (direct && direct.length > 0) return direct
 
@@ -538,7 +538,7 @@ async function buscarAlimento(supabaseService: any, token: string): Promise<any[
   const conditions = variantes.map(v => `nombre.ilike.%${v}%`)
   const { data: conAcentos } = await supabaseService
     .from('alimentos')
-    .select('id, nombre')
+    .select('id, nombre, calorias')
     .or(conditions.join(','))
 
   return conAcentos || []
@@ -548,6 +548,13 @@ async function buscarAlimento(supabaseService: any, token: string): Promise<any[
 // Sistema de puntuación (0-100, normalizado por acentos)
 // Basado en el algoritmo de rematch-ingredientes.mjs
 // ──────────────────────────────────────────────
+
+function limpiarNombreIngrediente(nombre: string): string {
+  return nombre
+    .replace(/\(.*?\)/g, '')   // eliminar (notas)
+    .replace(/\s+/g, ' ')      // colapsar espacios
+    .trim()
+}
 
 function palabrasCompletas(str: string): string[] {
   return norm(str.toLowerCase())
@@ -654,7 +661,11 @@ async function matchIngredient(
   supabaseService: any,
   nombre: string
 ): Promise<{ id: string; nombre: string } | null> {
-  const q = nombre.toLowerCase().trim()
+  // Limpiar el nombre: quitar paréntesis descriptivos
+  const nombreLimpio = limpiarNombreIngrediente(nombre)
+  const q = nombreLimpio.toLowerCase().trim()
+
+  if (!q) return null
 
   // ── 1. MATCH EXACTO ──
   const { data: exact } = await supabaseService
@@ -671,6 +682,29 @@ async function matchIngredient(
       .select('id, nombre')
       .ilike('nombre', singular)
     if (exSing?.length) return exSing[0]
+  }
+
+  // ── 1c. PREFERIR STARTS-WITH ──
+  // "Harina" → "Harina de trigo" (starts-with) mejor que "Harina de coco" (contains)
+  // Si solo hay un starts-with con macros, devolverlo directamente
+  // Si hay múltiples, preferir el que tenga calorias > 0
+  const { data: startsWith } = await supabaseService
+    .from('alimentos')
+    .select('id, nombre, calorias')
+    .ilike('nombre', q + '%')
+  if (startsWith?.length === 1) return startsWith[0]
+  if (startsWith && startsWith.length > 1) {
+    // Preferir el que tenga macros (calorias > 0)
+    const conMacros = startsWith.filter((a: any) => (a.calorias ?? 0) > 0)
+    if (conMacros.length === 1) return conMacros[0]
+    if (conMacros.length > 1) {
+      // Entre varios con macros, el de nombre más corto (más genérico)
+      conMacros.sort((a: any, b: any) => a.nombre.length - b.nombre.length)
+      return conMacros[0]
+    }
+    // Si todos tienen kcal=0, el primero alfabético
+    startsWith.sort((a: any, b: any) => a.nombre.localeCompare(b.nombre))
+    return startsWith[0]
   }
 
   // ── 2. MULTI-TOKEN SCORING ──
@@ -723,6 +757,7 @@ async function matchIngredient(
     }
 
     const aMejorNorm = norm(mejor.nombre)
+    const qNorm = norm(q)
     const tokensNorm = tokensBuscar.map(t => norm(t))
     const tokensMatchCount = tokensNorm.filter(t => aMejorNorm.includes(t)).length
     const extra = contarExtraSustantivas(mejor.nombre)
@@ -731,12 +766,28 @@ async function matchIngredient(
       .filter(p => p.length > 0 && !CONNECTORS.has(p) && !PREP_WORDS.has(p))
     const toleranciaExtra = palabrasSustantivasConsulta.length <= 1 ? 0 : 1
 
-    if (mejor.total > 0 && extra <= toleranciaExtra) {
+    // Penalización: palabras extra sustantivas en el candidato que no están en la consulta
+    // y el candidato NO empieza por la consulta (ej: "Harina de coco" para buscar "Harina")
+    const esStartsWith = aMejorNorm.startsWith(qNorm)
+    const tienePalabrasExtra = extra > toleranciaExtra && !esStartsWith
+
+    if (!tienePalabrasExtra && mejor.total > 0 && extra <= toleranciaExtra) {
       return mejor
     }
 
-    if (extra === 0 && tokensMatchCount >= 1) {
+    if (!tienePalabrasExtra && extra === 0 && tokensMatchCount >= 1) {
       return mejor
+    }
+
+    // Fallback: si el primero fue penalizado pero hay otro mejor, probarlo
+    if (tienePalabrasExtra && scored.length > 1) {
+      const segundo = scored[1]
+      const segundoNorm = norm(segundo.nombre)
+      const extraSegundo = contarExtraSustantivas(segundo.nombre)
+      const segundoEsStartsWith = segundoNorm.startsWith(qNorm)
+      if ((segundoEsStartsWith || extraSegundo <= toleranciaExtra) && segundo.total > 0) {
+        return segundo
+      }
     }
   }
 

@@ -74,20 +74,21 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-  total_kcal       numeric := 0;
-  total_proteinas  numeric := 0;
+  total_kcal         numeric := 0;
+  total_proteinas    numeric := 0;
   total_carbohidratos numeric := 0;
-  total_grasas     numeric := 0;
-  total_fibra      numeric := 0;
-  peso_total       numeric := 0;
-  porciones        numeric;
+  total_grasas       numeric := 0;
+  total_fibra        numeric := 0;
+  peso_total         numeric := 0;
+  v_porciones        numeric;
 BEGIN
   -- Obtener el número de porciones de la receta (por defecto 1 si es nulo)
-  SELECT COALESCE(porciones, 1) INTO porciones
+  SELECT COALESCE(porciones, 1) INTO v_porciones
   FROM public.recetas
   WHERE id = p_receta_id;
 
   -- Sumar contribuciones de cada ingrediente
+  -- LEFT JOIN para que ingredientes sin alimento_id no maten el cálculo
   SELECT
     COALESCE(SUM(a.calorias       / 100.0 * ri.cantidad_gramos), 0),
     COALESCE(SUM(a.proteinas      / 100.0 * ri.cantidad_gramos), 0),
@@ -103,24 +104,28 @@ BEGIN
     total_fibra,
     peso_total
   FROM public.receta_ingredientes ri
-  JOIN public.alimentos a ON a.id = ri.alimento_id
+  LEFT JOIN public.alimentos a ON a.id = ri.alimento_id
   WHERE ri.receta_id = p_receta_id;
 
   -- Actualizar la receta con los valores calculados
   UPDATE public.recetas
   SET
-    kcal             = CASE WHEN porciones > 0 THEN total_kcal / porciones ELSE 0 END,
-    proteinas        = CASE WHEN porciones > 0 THEN total_proteinas / porciones ELSE 0 END,
-    carbohidratos    = CASE WHEN porciones > 0 THEN total_carbohidratos / porciones ELSE 0 END,
-    grasas           = CASE WHEN porciones > 0 THEN total_grasas / porciones ELSE 0 END,
-    fibra            = CASE WHEN porciones > 0 THEN total_fibra / porciones ELSE 0 END,
-    kcal_100g        = CASE WHEN peso_total > 0 THEN total_kcal / peso_total * 100 ELSE NULL END,
-    proteinas_100g   = CASE WHEN peso_total > 0 THEN total_proteinas / peso_total * 100 ELSE NULL END,
-    carbohidratos_100g = CASE WHEN peso_total > 0 THEN total_carbohidratos / peso_total * 100 ELSE NULL END,
-    grasas_100g      = CASE WHEN peso_total > 0 THEN total_grasas / peso_total * 100 ELSE NULL END,
-    fibra_100g       = CASE WHEN peso_total > 0 THEN total_fibra / peso_total * 100 ELSE NULL END,
-    peso_total_g     = peso_total,
-    updated_at       = now()
+    kcal                = CASE WHEN v_porciones > 0 THEN total_kcal / v_porciones ELSE 0 END,
+    proteinas           = CASE WHEN v_porciones > 0 THEN total_proteinas / v_porciones ELSE 0 END,
+    carbohidratos       = CASE WHEN v_porciones > 0 THEN total_carbohidratos / v_porciones ELSE 0 END,
+    grasas              = CASE WHEN v_porciones > 0 THEN total_grasas / v_porciones ELSE 0 END,
+    fibra               = CASE WHEN v_porciones > 0 THEN total_fibra / v_porciones ELSE 0 END,
+    kcal_100g           = CASE WHEN peso_total > 0 THEN total_kcal / peso_total * 100 ELSE NULL END,
+    proteinas_100g      = CASE WHEN peso_total > 0 THEN total_proteinas / peso_total * 100 ELSE NULL END,
+    carbohidratos_100g  = CASE WHEN peso_total > 0 THEN total_carbohidratos / peso_total * 100 ELSE NULL END,
+    grasas_100g         = CASE WHEN peso_total > 0 THEN total_grasas / peso_total * 100 ELSE NULL END,
+    fibra_100g          = CASE WHEN peso_total > 0 THEN total_fibra / peso_total * 100 ELSE NULL END,
+    peso_total_g        = peso_total,
+    kcal_por_porcion    = CASE WHEN v_porciones > 0 THEN total_kcal / v_porciones ELSE 0 END,
+    proteinas_por_porcion = CASE WHEN v_porciones > 0 THEN total_proteinas / v_porciones ELSE 0 END,
+    carbohidratos_por_porcion = CASE WHEN v_porciones > 0 THEN total_carbohidratos / v_porciones ELSE 0 END,
+    grasas_por_porcion  = CASE WHEN v_porciones > 0 THEN total_grasas / v_porciones ELSE 0 END,
+    updated_at          = now()
   WHERE id = p_receta_id;
 END;
 $$;

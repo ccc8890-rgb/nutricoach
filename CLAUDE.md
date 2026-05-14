@@ -7,6 +7,102 @@
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 
+## Estado Actual (13-05-2026 — Sesión 10: Bug Matching Ingredientes + Scrape + Documentación Raíz)
+
+### Resumen sesión (aplicado también a nutricoach-ui)
+- ✅ **Fix 1 — API búsqueda alimentos**: [`app/api/alimentos/route.ts`](nutricoach/app/api/alimentos/route.ts) ordena por `calorias DESC`, limit 50
+- ✅ **Fix 2 — Matching algorithm**: [`app/api/scrape-receta/route.ts`](nutricoach/app/api/scrape-receta/route.ts) — `limpiarNombreIngrediente()`, prioridad `startsWith`, penalización palabras extra
+- ✅ **Fix 3 — 8 recetas corregidas**: 13 ingredientes re-matchetados, macros recalculadas
+- ✅ **Fix 4 — Bug estructural CRÍTICO**: `matchedIngredients` con `alimento_id` ahora se usa para INSERT. Aplicado a `nutricoach-ui/app/api/scrape-receta/route.ts` (este worktree)
+- ✅ **Deploy Vercel**: Fix 4 desplegado en nutricoach-delta.vercel.app
+- ✅ **Documentación completa**: Bugs, causas raíz, fixes y reglas en CLAUDE.md
+
+### Archivos modificados en nutricoach-ui
+| Archivo | Cambio |
+|---------|--------|
+| [`app/api/scrape-receta/route.ts`](nutricoach-ui/app/api/scrape-receta/route.ts) | Fix 2 + Fix 4: `buscarAlimento()` incluye `calorias`, `startsWith` prioriza macros, `capitalizedIngredients` desde `matchedIngredients`, `limpiarNombreIngrediente()` añadida |
+
+---
+
+## 🔍 BUGS ENCONTRADOS Y FIXES APLICADOS — 13-05-2026
+
+### 🐛 BUG #1 — CRÍTICO: `matchedIngredients` nunca se usaba para INSERT
+
+**Archivo:** [`app/api/scrape-receta/route.ts`](nutricoach-ui/app/api/scrape-receta/route.ts:1090-1140)
+
+**Problema:** El array `matchedIngredients` se construía correctamente con `alimento_id` obtenido del algoritmo de matching. Pero `capitalizedIngredients` se construía desde `parsedIngredients` (sin `alimento_id`), y ese era el array que se insertaba en `receta_ingredientes`.
+
+**Fix:**
+```typescript
+// AHORA: capitalizedIngredients se construye DESDE matchedIngredients
+const capitalizedIngredients = matchedIngredients.map((ing) => ({
+  receta_id: receta?.id ?? '',
+  alimento_id: ing.alimento_id,
+  nombre_libre: ing.nombre_libre.charAt(0).toUpperCase() + ing.nombre_libre.slice(1),
+  cantidad_gramos: ing.cantidad_gramos,
+  cantidad_original: ing.cantidad_original,
+  unidad_display: ing.unidad_display,
+  orden: ing.orden,
+  es_opcional: ing.es_opcional,
+}))
+```
+
+### 🐛 BUG #2 — `startsWith` no priorizaba alimentos con macros
+- `buscarAlimento()` ahora selecciona `calorias` (`.select('id, nombre, calorias')`)
+- El bloque `startsWith` filtra primero por `calorias > 0`
+- Entre varios con macros, elige el de nombre más corto (más genérico)
+
+### 🐛 BUG #3 — Sin limpieza de paréntesis en nombre de ingrediente
+- Nueva función `limpiarNombreIngrediente()` elimina `(.*?)` antes del matching
+
+### 🐛 BUG #4 — API búsqueda sin orden ni límite
+- Añadido `.order('calorias', { ascending: false }).limit(50)` en el buscador de alimentos
+
+### 🐛 BUG #5 — Algoritmo de matching devolvía falsos positivos
+- Penalización `tienePalabrasExtra` cuando el candidato tiene palabras extra sustantivas y NO empieza por la consulta
+- Fallback al segundo candidato si el primero es penalizado
+
+---
+
+## 🔍 CAUSAS RAÍZ — Por qué fallaron las 8 recetas
+
+### CAUSA #1 — Instagram no tiene cantidades estructuradas
+7 de 8 recetas son de Instagram. El árbol de accesibilidad NO contiene cantidades → DeepSeek devuelve `cantidad=null` → `parseCantidadAGramos()` default 100g.
+
+### CAUSA #2 — Bug estructural (Bug #1 arriba)
+Aunque el matching encontrara el `alimento_id` correcto, nunca se guardaba en BD.
+
+### CAUSA #3 — 86% de la BD con macros=0
+6.974/8.118 alimentos (85.9%) tienen calorias=0. Productos de supermercado sin macros.
+
+### CAUSA #4 — Sin prioridad startsWith
+"Harina" podía matchear cualquier alimento que contuviera "harina" en cualquier posición.
+
+---
+
+## ⚡ REGLAS NUEVAS
+1. TODO nuevo scrape debe verificar `alimento_id` en BD
+2. Siempre verificar qué array se usa para el INSERT
+3. `buscarAlimento()` debe incluir `calorias` siempre
+4. Priorizar `startsWith` sobre `contains`
+5. Limpiar nombres de ingredientes antes de matchear
+6. Instagram = sin cantidades (asumir siempre)
+7. Mantener sincronizados los worktrees
+
+---
+
+## Estado Actual (12-05-2026 — Sesión 9: Macros faltantes + Metadatos + Diagnóstico)
+
+### Resumen sesión
+- ✅ **Diagnóstico completo**: 227 recetas, 100% match rate, 0 sin kcal, 0 sin instrucciones, 0 sin porciones
+- ✅ **FIX 7 — Macros faltantes**: Ejecutado `fix-macros-faltantes.mjs --apply` → 78 alimentos con macros estimados, 99 recetas recalculadas
+- ✅ **FIX 8 — Build + Deploy post-macros**: Exitoso en nutricoach-delta.vercel.app
+- ✅ **FIX 9+10 — Metadatos**: 227/227 recetas con categoría, tipo_cocción, dificultad, tipo_plato
+- ✅ **FIX 11 — Build + Deploy post-metadatos**: Exitoso en nutricoach-delta.vercel.app
+- ⏳ **Imágenes**: 74 recetas sin imagen (32.6%). Carlos prefiere NO Unsplash. Pendiente decidir pipeline
+- ⏳ **Revisión casos raros**: "Receta sin título" y "Donuts caseros esponjosos" pendientes
+- ⏳ **Build + Deploy final**: Pendiente
+
 ## Estado Actual (10-05-2026 — Sesión 8 + Sesión extra de imágenes)
 
 ### Fixes sesión 8 (Roo Code — Sesión 2 de la rama)
@@ -461,3 +557,28 @@ Git marca conflictos con `<<<<<<< HEAD` / `>>>>>>> feature/rama`. Pasos:
 3. `git add [archivo]` → `git commit`
 
 La mejor forma de evitar conflictos: respetar la tabla de archivos de cada worktree.
+
+---
+
+## 🧠 LECCIONES APRENDIDAS — Aciertos y Errores (Sesión 9, 12-05-2026)
+
+### ✅ ACIERTOS
+1. **Diagnóstico completo antes de tocar nada**: Ejecutar `diagnostico-completo.mjs` primero dio visibilidad del estado real (227 recetas, 1.618 ingredientes, match rate 100%) antes de decidir qué priorizar.
+2. **Estimación de macros por reglas locales**: En vez de llamar a una IA para cada alimento (costoso y lento), se crearon ~70 reglas `MACROS_POR_NOMBRE` con datos reales de BEDCA. Rápido, gratuito, y 0 errores en 78 alimentos.
+3. **`--dry-run` en scripts de modificación masiva**: Los scripts nuevos incluían modo dry-run para ver qué se iba a cambiar antes de aplicar. Esto evitó sorpresas.
+4. **Dos pases para metadatos**: Primero inferencia por reglas (202 recetas), luego segundo pase manual para los 33 remanentes. Mucho más control que un solo pase masivo.
+
+### ❌ ERRORES
+1. **Ejecutar pipeline de Unsplash sin preguntar** (FALLO #19 en DIAGNOSTICO_FALLOS.md): Se lanzó `rellenar-fotos-unsplash.mjs --dry-run` para 74 recetas sin consultar. El usuario dijo "no saques de unsplash" cuando ya llevaba 3 minutos. Se perdió tiempo y cuota de API.
+2. **`URL` como nombre de variable** (FALLO #17): Varios scripts nuevos usaban `const URL = process.env...` que sombrea el constructor global `URL`. Error detectado en ejecución. Fix: renombrar a `SB`.
+3. **`grasa` vs `grasas`** (FALLO #18): Typo en nombre de variable. Error detectado en ejecución. Fix: `grasa` → `grasas`.
+4. **No verificar 416 en paginación** (FALLO #16): Supabase devuelve 416 cuando offset > total rows. Scripts que usaban paginación sin manejar este código fallaban silenciosamente.
+
+### ⚡ REGLAS PARA PRÓXIMAS SESIONES
+1. **Preguntar siempre antes de consumir APIs externas**: Unsplash, OpenAI, Replicate, etc. — nunca asumir que está bien.
+2. **Probar scripts con `node --check`** antes de ejecutar: detecta ReferenceError y typos en variables.
+3. **Usar `--limit N` pequeño primero**: Para scripts que iteran sobre muchas recetas, probar con 3-5 primero.
+4. **NUNCA usar `URL` como nombre de variable**: Usar `SB`, `API_URL`, `SUPABASE_URL`.
+5. **Manejar 416 en toda paginación con Supabase REST API**: El SDK no da este error, pero el fetch directo sí.
+6. **Siempre tener plan B para imágenes**: Unsplash no es aceptable. OpenAI puede estar bloqueado. Tener alternativas preparadas.
+7. **Documentar en CALIENTE**: Los fallos se documentan en DIAGNOSTICO_FALLOS.md inmediatamente después de ocurrir, no al final de la sesión.
