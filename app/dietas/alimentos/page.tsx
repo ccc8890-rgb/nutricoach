@@ -66,6 +66,25 @@ const NUTRI_LABELS = [
 
 const FORM_VACIO = { nombre: '', categoria: 'Supermercado', calorias: '', proteinas: '', carbohidratos: '', grasas: '', fibra: '' }
 
+// Perfil lipídico visible directamente en la card (cuando el alimento tiene datos)
+const LIPID_HIGHLIGHTS: { key: keyof Alimento; label: string; color: string }[] = [
+    { key: 'saturados_g', label: 'Sat', color: '#EF4444' },
+    { key: 'monoinsaturados_g', label: 'Mono', color: '#F97316' },
+    { key: 'poliinsaturados_g', label: 'Ω-3/6', color: '#3B82F6' },
+    { key: 'colesterol_mg', label: 'Colest', color: '#8B5CF6' },
+]
+
+// Vitaminas y minerales más relevantes clínicamente
+const MICRO_HIGHLIGHTS: { key: keyof Alimento; label: string; unit: string; color: string }[] = [
+    { key: 'vitamina_d_ug', label: 'Vit D', unit: 'µg', color: '#F59E0B' },
+    { key: 'vitamina_c_mg', label: 'Vit C', unit: 'mg', color: '#F97316' },
+    { key: 'vitamina_b12_ug', label: 'B12', unit: 'µg', color: '#10B981' },
+    { key: 'calcio_mg', label: 'Ca', unit: 'mg', color: '#6366F1' },
+    { key: 'hierro_mg', label: 'Fe', unit: 'mg', color: '#EF4444' },
+    { key: 'zinc_mg', label: 'Zn', unit: 'mg', color: '#8B5CF6' },
+    { key: 'magnesio_mg', label: 'Mg', unit: 'mg', color: '#06B6D4' },
+]
+
 // Configuración de badges de fuente
 // IMPORTANTE: 'curada' está excluido explícitamente — es el valor por defecto
 // y mostrarlo solo añade ruido visual. Solo mostramos badges cuando la fuente
@@ -114,7 +133,7 @@ const MICRO_GRUPOS: { titulo: string; campos: { key: keyof Alimento; label: stri
         campos: [
             { key: 'saturados_g', label: 'Saturadas', unit: 'g' },
             { key: 'monoinsaturados_g', label: 'Monoinsaturadas', unit: 'g' },
-            { key: 'poliinsaturados_g', label: 'Poliinsaturadas', unit: 'g' },
+            { key: 'poliinsaturados_g', label: 'Omega-3/6 (poliin.)', unit: 'g' },
             { key: 'colesterol_mg', label: 'Colesterol', unit: 'mg' },
         ],
     },
@@ -478,7 +497,48 @@ export default function AlimentosPage() {
                                                     })}
                                                 </div>
 
-                                                {/* Botón micronutrientes */}
+                                                {/* Perfil lipídico — visible directamente si hay datos */}
+                                                {LIPID_HIGHLIGHTS.some(h => (a[h.key] as number ?? 0) > 0) && (
+                                                    <div className="mt-2 pt-2 text-xs" style={{ borderTop: '1px solid var(--border)' }}>
+                                                        <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Perfil lipídico</p>
+                                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                                                            {LIPID_HIGHLIGHTS.map(h => {
+                                                                const val = a[h.key] as number | undefined
+                                                                if (!val || val === 0) return null
+                                                                const unit = h.key === 'colesterol_mg' ? 'mg' : 'g'
+                                                                return (
+                                                                    <span key={String(h.key)} className="flex items-center gap-1">
+                                                                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: h.color }} />
+                                                                        <span style={{ color: h.color }} className="font-medium">{h.label}</span>
+                                                                        <span style={{ color: 'var(--text-secondary)' }}>{val}{unit}</span>
+                                                                    </span>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Vitaminas y minerales clave — visible directamente si hay datos */}
+                                                {MICRO_HIGHLIGHTS.some(h => (a[h.key] as number ?? 0) > 0) && (
+                                                    <div className="mt-1.5 text-xs">
+                                                        <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Vitaminas y minerales</p>
+                                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                                                            {MICRO_HIGHLIGHTS.map(h => {
+                                                                const val = a[h.key] as number | undefined
+                                                                if (!val || val === 0) return null
+                                                                return (
+                                                                    <span key={String(h.key)} className="flex items-center gap-1">
+                                                                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: h.color }} />
+                                                                        <span style={{ color: h.color }} className="font-medium">{h.label}</span>
+                                                                        <span style={{ color: 'var(--text-secondary)' }}>{val}{h.unit}</span>
+                                                                    </span>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Botón acordeón — solo para el perfil completo (resto de vitaminas) */}
                                                 {tieneMicros(a) && (
                                                     <button
                                                         onClick={() => toggleMicro(a.id)}
@@ -488,7 +548,7 @@ export default function AlimentosPage() {
                                                         onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
                                                     >
                                                         {microAbierto.has(a.id) ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-                                                        Micronutrientes
+                                                        Perfil completo
                                                     </button>
                                                 )}
 

@@ -24,13 +24,17 @@ export async function GET(request: NextRequest) {
         else if (custom === 'false') query = query.eq('custom', false)
         if (fuente) query = query.eq('fuente', fuente)
 
-        // Orden: primero los que tienen calorias > 0 (tienen datos nutricionales),
-        // luego el resto. Así el buscador del editor muestra primero alimentos con macros.
-        query = query.order('calorias', { ascending: false, nullsFirst: false })
-        query = query.order('nombre', { ascending: true })
-
-        // Limitar a 50 resultados para no saturar
-        query = query.limit(50)
+        if (q) {
+            // Búsqueda: primero los que tienen datos nutricionales, límite 50
+            query = query.order('calorias', { ascending: false, nullsFirst: false })
+            query = query.order('nombre', { ascending: true })
+            query = query.limit(50)
+        } else {
+            // Navegación: ordenar alfabéticamente por categoría y nombre, sin límite restrictivo
+            query = query.order('categoria', { ascending: true })
+            query = query.order('nombre', { ascending: true })
+            query = query.limit(600)
+        }
 
         const { data, error } = await query
         if (error) return NextResponse.json({ error: error.message }, { status: 400 })
