@@ -5,12 +5,13 @@
  * Detecta y corrige problemas sin intervención manual.
  *
  * FASES (en orden):
- *   1. Quality check  — detecta problemas por categoría
- *   2. Fix matches    — corrige matches sospechosos conocidos
- *   3. Fix cantidades — DeepSeek estima gramos realistas (todo a 100g)
+ *   1. Quality check   — detecta problemas por categoría
+ *   2. Fix matches     — corrige matches sospechosos conocidos
+ *   3. Fix cantidades  — DeepSeek estima gramos realistas (todo a 100g)
+ *   3b. Fix condimentos — lookup determinista para sal/pimienta/especias a 100g
  *   4. Recalcular macros — desde ingredientes actualizados
- *   5. Intolerancias  — auto-detecta desde nombres de ingredientes
- *   6. Fotos          — genera imágenes faltantes con OpenAI
+ *   5. Intolerancias   — auto-detecta desde nombres de ingredientes
+ *   6. Fotos           — genera imágenes faltantes con OpenAI
  *
  * USO:
  *   node scripts/pipeline-calidad.mjs                  → todas las recetas aprobadas
@@ -63,7 +64,7 @@ const SOLO_ID   = getArg('--id')
 const SOLO_FASE = parseInt(getArg('--solo-fase') || '0', 10)
 
 // ── Contadores globales ───────────────────────────────────────────────────────
-const stats = { matches: 0, cantidades: 0, macros: 0, intolerancias: 0, fotos: 0, errores: 0 }
+const stats = { matches: 0, cantidades: 0, condimentos: 0, macros: 0, intolerancias: 0, fotos: 0, errores: 0 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function normalizar(s) {
@@ -186,9 +187,16 @@ const MATCH_FIXES = [
     [/^tomates? sec/i,  '954a260a-2a2b-45c1-810f-59d05987d5bd', 'Tomate seco'],
     // Yemas de huevo → matchea "Yemas muy Gruesas Frasco" (0 kcal) por prefijo "yema"
     [/^yemas? de huevo/i,'fd38e2b4-8579-482a-9caf-0d0ae21087df', 'Yema de huevo'],
+    // Cebolla roja/morada → matchea "Cebolla frita crujiente" (500 kcal!) por prefijo "cebolla"
+    [/^cebolla\s*(roja|morada)/i, '08637e90-5e34-4cb3-baa9-b63bbb168f97', 'Cebolla roja'],
+    // Miso → matchea "Vinagre de vino blanco" por heurística de palabras
+    [/^miso/i,           '8637e22c-259e-40df-ad22-3e466784ea90', 'Miso blanco'],
+    // Tortilla de harina/trigo/wrap → matchea "Huevos" porque en español "tortilla" = huevos
+    [/^tortilla\s*(de\s*)?(harina|trigo|wrap)/i, '4922ca42-8512-40b1-8b9d-ab0e19fe2ca9', 'Tortilla Trigo'],
+    [/^wrap\s*(de\s*)?(trigo|harina)/i,          '4922ca42-8512-40b1-8b9d-ab0e19fe2ca9', 'Tortilla Trigo'],
 ]
 
-// IDs de alimentos que son SOSPECHOSOS como resultado de match (productos muy procesados)
+// IDs de alimentos que son SOSPECHOSOS como resultado de match (productos muy procesados o matches claramente erróneos)
 const ALIMENTOS_SOSPECHOSOS_RE = [
     /cereales cubiertos/i,
     /bollería/i,
@@ -198,6 +206,8 @@ const ALIMENTOS_SOSPECHOSOS_RE = [
     /bocaditos/i,
     /papilla.*meses/i,
     /postre lácteo infantil/i,
+    /cebolla frita crujiente/i,   // matchea cuando nombre_libre dice "cebolla roja/morada" (500 kcal vs 40 kcal real)
+    /vinagre de vino blanco/i,    // matchea cuando nombre_libre dice "miso blanco" por la palabra "blanco"
 ]
 
 async function fase2_fixMatches(recetas) {
@@ -320,6 +330,142 @@ ${listaIng}`
 
         await new Promise(r => setTimeout(r, 1500))
     }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FASE 3B — FIX CONDIMENTOS A 100G (lookup determinista, sin IA)
+// ══════════════════════════════════════════════════════════════════════════════
+// Pares (keywords[], gramos_default) para condimentos comunes.
+// Se aplica solo cuando cantidad_gramos === 100, señal de que la extracción
+// del parser no encontró la cantidad real y puso el default de 100g.
+// Defaults representan la receta completa (todas las porciones juntas).
+const CONDIMENTO_DEFAULTS_100G = [
+    // Sal y variantes
+    { kw: ['sal marina', 'sal del himalaya', 'sal rosa', 'sal gorda', 'fleur de sel', 'sal en escamas', 'sal ahumada'], g: 5 },
+    { kw: ['sal'],                                                                         g: 5 },
+    // Pimienta
+    { kw: ['pimienta negra', 'pimienta blanca', 'pimienta rosa', 'pimienta verde'],       g: 2 },
+    { kw: ['pimienta'],                                                                    g: 2 },
+    // Pimentón / paprika
+    { kw: ['pimenton ahumado', 'pimenton picante', 'pimenton dulce', 'pimenton', 'paprika smoked', 'paprika'], g: 5 },
+    // Hierbas secas
+    { kw: ['oregano'],                                                                     g: 3 },
+    { kw: ['tomillo'],                                                                     g: 2 },
+    { kw: ['romero seco', 'romero'],                                                       g: 2 },
+    { kw: ['albahaca seca', 'albahaca'],                                                   g: 3 },
+    { kw: ['perejil seco'],                                                                g: 5 },
+    { kw: ['cilantro seco'],                                                               g: 5 },
+    { kw: ['eneldo seco', 'eneldo'],                                                       g: 3 },
+    { kw: ['estragón seco', 'estragon'],                                                   g: 2 },
+    { kw: ['laurel'],                                                                      g: 2 },
+    // Especias en polvo
+    { kw: ['comino molido', 'comino en polvo', 'comino'],                                  g: 3 },
+    { kw: ['curcuma', 'cúrcuma'],                                                          g: 3 },
+    { kw: ['curry en polvo', 'curry'],                                                     g: 5 },
+    { kw: ['canela en polvo', 'canela molida', 'canela'],                                  g: 5 },
+    { kw: ['jengibre en polvo', 'jengibre molido'],                                        g: 4 },
+    { kw: ['jengibre'],                                                                    g: 5 },
+    { kw: ['ajo en polvo', 'ajo molido'],                                                  g: 3 },
+    { kw: ['cebolla en polvo', 'cebolla molida'],                                          g: 5 },
+    { kw: ['cardamomo'],                                                                   g: 2 },
+    { kw: ['clavo'],                                                                       g: 2 },
+    { kw: ['anis estrellado', 'anis', 'anís'],                                             g: 3 },
+    { kw: ['nuez moscada'],                                                                g: 2 },
+    { kw: ['azafran', 'azafrán'],                                                          g: 1 },
+    { kw: ['cayena', 'chile flakes', 'hojuelas de chile', 'copos de chile', 'chile en polvo'], g: 2 },
+    { kw: ['mostaza en polvo'],                                                            g: 5 },
+    // Levaduras y gasificantes
+    { kw: ['bicarbonato sodico', 'bicarbonato'],                                           g: 5 },
+    { kw: ['levadura quimica', 'polvo de hornear', 'polvo hornear', 'royal'],              g: 8 },
+    // Extractos y esencias
+    { kw: ['extracto de vainilla', 'extracto vainilla', 'esencia de vainilla', 'esencia vainilla'], g: 5 },
+    { kw: ['esencia de almendra', 'aroma de almendra'],                                    g: 5 },
+    // Potenciadores
+    { kw: ['glutamato', 'glutamato monosodico', 'msg'],                                    g: 3 },
+    // Salsas y líquidos de condimentación (suelen ser 10-30g, no 100g)
+    { kw: ['salsa de soja', 'soja baja en sal', 'tamari'],                                 g: 20 },
+    { kw: ['vinagre de arroz', 'vinagre de manzana', 'vinagre de vino', 'vinagre balsámico', 'vinagre balsamico', 'vinagre'], g: 15 },
+    { kw: ['miso blanco', 'miso rojo', 'pasta de miso', 'miso'],                           g: 15 },
+    { kw: ['aceite de sesamo', 'aceite de sésamo', 'aceite de coco'],                      g: 10 },
+    { kw: ['aceite de aguacate'],                                                           g: 10 },
+    { kw: ['zumo de lima', 'jugo de lima', 'lima'],                                        g: 30 },
+    { kw: ['zumo de limon', 'jugo de limon'],                                              g: 20 },
+    { kw: ['miel'],                                                                        g: 15 },
+    { kw: ['sriracha', 'tabasco', 'salsa picante'],                                        g: 8 },
+    { kw: ['chipotle', 'chipotles en adobo'],                                              g: 25 },
+    { kw: ['tahini', 'tahín'],                                                             g: 20 },
+    { kw: ['mostaza'],                                                                     g: 10 },
+    { kw: ['ketchup'],                                                                     g: 20 },
+    { kw: ['salsa worcestershire', 'worcestershire'],                                      g: 10 },
+    { kw: ['pasta de curry', 'pasta curry'],                                               g: 20 },
+    { kw: ['concentrado de tomate', 'tomate concentrado'],                                 g: 15 },
+]
+
+function buscarCondimentoDefault(nombreLibre) {
+    const n = normalizar(nombreLibre)
+    for (const { kw, g } of CONDIMENTO_DEFAULTS_100G) {
+        for (const k of kw) {
+            const kN = normalizar(k)
+            if (kN.includes(' ')) {
+                // Keyword multi-palabra → comprobar como frase
+                if (n.includes(kN)) return g
+            } else {
+                // Keyword una sola palabra → el nombre debe EMPEZAR por ella
+                // (evita falsos positivos: "cacahuetes sin sal" no es sal,
+                //  "salsa de tomate" no es sal, "salmón" no es sal)
+                if (n === kN || n.startsWith(kN + ' ')) return g
+            }
+        }
+    }
+    return null
+}
+
+async function fase3b_fixCondimentos(recetas) {
+    const ids = recetas.map(r => r.id)
+    if (!ids.length) return
+
+    // Cargar todos los ingredientes a 100g exactos del lote actual
+    const { data: ings100, error } = await supabase
+        .from('receta_ingredientes')
+        .select('id, nombre_libre, receta_id')
+        .in('receta_id', ids)
+        .eq('cantidad_gramos', 100)
+
+    const candidatos = (ings100 || []).filter(ing => buscarCondimentoDefault(ing.nombre_libre) !== null)
+
+    if (!candidatos.length) {
+        console.log('\n🧂 FASE 3B — Fix condimentos a 100g: nada que corregir')
+        return
+    }
+
+    console.log(`\n🧂 FASE 3B — Fix condimentos a 100g (${candidatos.length} ingredientes)`)
+    if (error) { console.log(`   ⚠️  Error al cargar: ${error.message}`); return }
+
+    let corregidos = 0
+    for (const ing of candidatos) {
+        const defaultG = buscarCondimentoDefault(ing.nombre_libre)
+        const receta = recetas.find(r => r.id === ing.receta_id)
+        process.stdout.write(`   🧂 "${ing.nombre_libre}" → ${defaultG}g en "${receta?.nombre || '?'}" ... `)
+
+        if (!DRY_RUN) {
+            const { error: upErr } = await supabase
+                .from('receta_ingredientes')
+                .update({ cantidad_gramos: defaultG })
+                .eq('id', ing.id)
+            if (upErr) {
+                console.log(`❌ ${upErr.message}`)
+                stats.errores++
+            } else {
+                console.log('✅')
+                corregidos++
+            }
+        } else {
+            console.log('[dry-run]')
+        }
+    }
+
+    stats.condimentos += corregidos
+    console.log(`   Total corregidos: ${corregidos}`)
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -562,6 +708,7 @@ async function main() {
 
     if (correr(2)) await fase2_fixMatches(recetas)
     if (correr(3)) await fase3_fixCantidades(issues)
+    if (correr(3)) await fase3b_fixCondimentos(recetas)
     if (correr(4)) await fase4_recalcularMacros(recetas)
     if (correr(5)) await fase5_intolerancias(recetas)
     if (correr(6)) await fase6_fotos(recetas)
@@ -572,6 +719,7 @@ async function main() {
     console.log('╠═══════════════════════════════════════════════╣')
     console.log(`║   🔧 Matches corregidos:    ${String(stats.matches).padEnd(17)}║`)
     console.log(`║   ⚖️  Cantidades estimadas:  ${String(stats.cantidades).padEnd(17)}║`)
+    console.log(`║   🧂 Condimentos fijados:   ${String(stats.condimentos).padEnd(17)}║`)
     console.log(`║   🔢 Macros recalculados:   ${String(stats.macros).padEnd(17)}║`)
     console.log(`║   🌿 Intolerancias:         ${String(stats.intolerancias).padEnd(17)}║`)
     console.log(`║   📷 Fotos generadas:       ${String(stats.fotos).padEnd(17)}║`)
