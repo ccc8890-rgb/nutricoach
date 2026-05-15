@@ -180,6 +180,12 @@ const MATCH_FIXES = [
     // Spray de aceite → matchea "Aceite de Aguacate Cristal" u otros aceites de supermercado
     [/^spray.*aceite/i, 'bf392211-3527-4c7d-98a5-a2fc0bda8270', 'Aceite de oliva'],
     [/^aceite en spray/i,'bf392211-3527-4c7d-98a5-a2fc0bda8270', 'Aceite de oliva'],
+    // Ajo en polvo → matchea "Cebolla en polvo" por la palabra "polvo" en común
+    [/^ajo en polvo/i,  'bbece24a-301c-40fe-97d2-81fe63fca922', 'Ajo en polvo'],
+    // Tomates secos → matchea "Dátiles secos" por la palabra "secos" en común
+    [/^tomates? sec/i,  '954a260a-2a2b-45c1-810f-59d05987d5bd', 'Tomate seco'],
+    // Yemas de huevo → matchea "Yemas muy Gruesas Frasco" (0 kcal) por prefijo "yema"
+    [/^yemas? de huevo/i,'fd38e2b4-8579-482a-9caf-0d0ae21087df', 'Yema de huevo'],
 ]
 
 // IDs de alimentos que son SOSPECHOSOS como resultado de match (productos muy procesados)
