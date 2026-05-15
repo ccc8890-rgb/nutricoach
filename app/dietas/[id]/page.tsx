@@ -30,7 +30,7 @@ import ListaCompra from '@/components/ListaCompra'
 interface AlimentoEnComida {
   id: string
   cantidad_gramos: number
-  alimento: { id: string; nombre: string; calorias: number; proteinas: number; carbohidratos: number; grasas: number; fibra: number }
+  alimento: Alimento
 }
 
 interface ComidaLocal {
@@ -245,22 +245,7 @@ export default function EditarDietaPage() {
       if (data && ing.alimento) {
         setComidas(prev => prev.map(c =>
           c.id === comidaId
-            ? {
-              ...c,
-              alimentos: [...c.alimentos, {
-                id: data.id,
-                cantidad_gramos: ing.cantidad_gramos,
-                alimento: {
-                  id: ing.alimento!.id,
-                  nombre: ing.alimento!.nombre,
-                  calorias: ing.alimento!.calorias,
-                  proteinas: ing.alimento!.proteinas,
-                  carbohidratos: ing.alimento!.carbohidratos,
-                  grasas: ing.alimento!.grasas,
-                  fibra: ing.alimento!.fibra ?? 0,
-                },
-              }],
-            }
+            ? { ...c, alimentos: [...c.alimentos, { id: data.id, cantidad_gramos: ing.cantidad_gramos, alimento: ing.alimento! }] }
             : c
         ))
         insertados++
@@ -349,6 +334,42 @@ export default function EditarDietaPage() {
       calcularMacrosPorCantidad(a.alimento.calorias, a.alimento.proteinas, a.alimento.carbohidratos, a.alimento.grasas, a.alimento.fibra, a.cantidad_gramos)
     ))
   }
+
+  // IDR de referencia (adulto general, EFSA / RDA estándar)
+  const IDR: Record<string, { label: string; idr: number; unit: string; color: string }> = {
+    vitamina_d_ug:    { label: 'Vit D',  idr: 15,   unit: 'µg',  color: '#F59E0B' },
+    vitamina_c_mg:    { label: 'Vit C',  idr: 80,   unit: 'mg',  color: '#F97316' },
+    vitamina_b12_ug:  { label: 'B12',    idr: 2.4,  unit: 'µg',  color: '#10B981' },
+    vitamina_a_ug:    { label: 'Vit A',  idr: 800,  unit: 'µg',  color: '#6366F1' },
+    vitamina_e_mg:    { label: 'Vit E',  idr: 12,   unit: 'mg',  color: '#8B5CF6' },
+    calcio_mg:        { label: 'Calcio', idr: 1000, unit: 'mg',  color: '#3B82F6' },
+    hierro_mg:        { label: 'Hierro', idr: 14,   unit: 'mg',  color: '#EF4444' },
+    zinc_mg:          { label: 'Zinc',   idr: 10,   unit: 'mg',  color: '#A855F7' },
+    magnesio_mg:      { label: 'Magnesio', idr: 375, unit: 'mg', color: '#06B6D4' },
+    potasio_mg:       { label: 'Potasio', idr: 3500, unit: 'mg', color: '#22C55E' },
+    sodio_mg:         { label: 'Sodio',  idr: 2000, unit: 'mg',  color: '#F43F5E' },
+    poliinsaturados_g:{ label: 'Ω-3/6', idr: 2,    unit: 'g',   color: '#0EA5E9' },
+    saturados_g:      { label: 'Sat',   idr: 20,   unit: 'g',   color: '#EF4444' },
+  }
+
+  function calcMicrosTotales() {
+    const totales: Record<string, number> = {}
+    for (const comida of comidas) {
+      for (const a of comida.alimentos) {
+        const factor = a.cantidad_gramos / 100
+        for (const key of Object.keys(IDR)) {
+          const val = (a.alimento as unknown as Record<string, number>)[key]
+          if (val && val > 0) {
+            totales[key] = (totales[key] ?? 0) + val * factor
+          }
+        }
+      }
+    }
+    return totales
+  }
+
+  const microsTotales = calcMicrosTotales()
+  const tieneMicrosDieta = Object.values(microsTotales).some(v => v > 0)
 
   const totalDiaBase = sumarMacros(comidas.map(c => calcMacrosComida(c.alimentos)))
   const totalDia = {
@@ -455,6 +476,46 @@ export default function EditarDietaPage() {
             </div>
           )}
         </div>
+
+        {/* Panel micronutrientes */}
+        {tieneMicrosDieta && (
+          <div className="card mb-4 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+              Micronutrientes del plan · % IDR
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+              {Object.entries(IDR).map(([key, { label, idr, unit, color }]) => {
+                const val = microsTotales[key]
+                if (!val || val === 0) return null
+                const pct = Math.min((val / idr) * 100, 150)
+                const pctDisplay = Math.round((val / idr) * 100)
+                const barColor = pctDisplay >= 80 ? '#22C55E' : pctDisplay >= 50 ? '#F97316' : '#EF4444'
+                return (
+                  <div key={key}>
+                    <div className="flex items-center justify-between text-xs mb-0.5">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                        <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                      </span>
+                      <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                        {val.toFixed(1)}{unit} <span className="font-semibold" style={{ color: barColor }}>{pctDisplay}%</span>
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
+              IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
+            </p>
+          </div>
+        )}
 
         {/* Recalculadora de porciones */}
         <div className="card mb-4 flex items-center gap-3 py-3 px-4">
