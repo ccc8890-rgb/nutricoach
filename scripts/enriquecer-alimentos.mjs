@@ -91,16 +91,37 @@ async function enriquecerLote(alimentos) {
         maxOutputTokens: 4000,
     })
 
-    // Extraer JSON
-    const jsonMatch = text.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) {
-        const singleMatch = text.match(/\{[\s\S]*\}/)
-        if (!singleMatch) throw new Error(`No se pudo extraer JSON. Texto: ${text.slice(0, 500)}`)
-        return [JSON.parse(singleMatch[0])]
+    // Limpiar markdown code blocks antes de extraer JSON
+    const limpio = text
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .trim()
+
+    // Intentar parsear directamente primero
+    try {
+        const direct = JSON.parse(limpio)
+        return Array.isArray(direct) ? direct : [direct]
+    } catch { /* sigue con regex */ }
+
+    // Extraer primer array JSON válido del texto
+    const arrayMatch = limpio.match(/\[[\s\S]*?\](?=\s*$|\s*\n)/) || limpio.match(/\[[\s\S]*\]/)
+    if (arrayMatch) {
+        try {
+            const parsed = JSON.parse(arrayMatch[0])
+            return Array.isArray(parsed) ? parsed : [parsed]
+        } catch { /* sigue */ }
     }
 
-    const parsed = JSON.parse(jsonMatch[0])
-    return Array.isArray(parsed) ? parsed : [parsed]
+    // Extraer objetos JSON individuales y agruparlos
+    const objetos = []
+    const objRegex = /\{[^{}]*\}/g
+    let match
+    while ((match = objRegex.exec(limpio)) !== null) {
+        try { objetos.push(JSON.parse(match[0])) } catch { /* skip */ }
+    }
+    if (objetos.length > 0) return objetos
+
+    throw new Error(`No se pudo extraer JSON. Texto: ${text.slice(0, 300)}`)
 }
 
 // ── Obtener pendientes ────────────────────────────────────────────
