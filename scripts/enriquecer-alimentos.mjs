@@ -37,9 +37,9 @@ if (!DEEPSEEK_API_KEY || !SUPABASE_URL || !SERVICE_KEY) {
 // ── Parsear args ─────────────────────────────────────────────────
 const args = process.argv.slice(2)
 const LIMITE = parseInt(args.find(a => a.startsWith('--limite'))?.split('=')[1] || '500', 10)
-const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
+const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 const TEMPERATURA = 0.1
-const LOTES_POR_VEZ = 25
+const LOTES_POR_VEZ = 10
 const MAX_INTENTOS = 3
 
 // ── Inicializar ──────────────────────────────────────────────────
@@ -88,8 +88,12 @@ async function enriquecerLote(alimentos) {
         model: deepseek(MODELO),
         prompt,
         temperature: TEMPERATURA,
-        maxOutputTokens: 4000,
+        maxOutputTokens: 8000,
     })
+
+    if (!text || !text.trim()) {
+        throw new Error('Respuesta vacía del modelo')
+    }
 
     // Limpiar markdown code blocks antes de extraer JSON
     const limpio = text
@@ -103,21 +107,36 @@ async function enriquecerLote(alimentos) {
         return Array.isArray(direct) ? direct : [direct]
     } catch { /* sigue con regex */ }
 
-    // Extraer primer array JSON válido del texto
-    const arrayMatch = limpio.match(/\[[\s\S]*?\](?=\s*$|\s*\n)/) || limpio.match(/\[[\s\S]*\]/)
-    if (arrayMatch) {
+    // Buscar todos los arrays JSON posibles y probar cada uno (de mayor a menor)
+    const matches = []
+    let depth = 0, start = -1
+    for (let i = 0; i < limpio.length; i++) {
+        if (limpio[i] === '[') {
+            if (depth === 0) start = i
+            depth++
+        } else if (limpio[i] === ']') {
+            depth--
+            if (depth === 0 && start >= 0) {
+                matches.push(limpio.slice(start, i + 1))
+                start = -1
+            }
+        }
+    }
+    // Probar arrays de mayor a menor tamaño
+    matches.sort((a, b) => b.length - a.length)
+    for (const candidate of matches) {
         try {
-            const parsed = JSON.parse(arrayMatch[0])
-            return Array.isArray(parsed) ? parsed : [parsed]
+            const parsed = JSON.parse(candidate)
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed
         } catch { /* sigue */ }
     }
 
-    // Extraer objetos JSON individuales y agruparlos
+    // Extraer objetos JSON individuales como último recurso
     const objetos = []
     const objRegex = /\{[^{}]*\}/g
-    let match
-    while ((match = objRegex.exec(limpio)) !== null) {
-        try { objetos.push(JSON.parse(match[0])) } catch { /* skip */ }
+    let m
+    while ((m = objRegex.exec(limpio)) !== null) {
+        try { objetos.push(JSON.parse(m[0])) } catch { /* skip */ }
     }
     if (objetos.length > 0) return objetos
 

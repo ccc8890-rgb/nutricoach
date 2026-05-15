@@ -71,9 +71,16 @@ const SINONIMOS_VALIDOS = [
   // Tortilla francesa (2 huevos) → Huevos: la tortilla francesa ES huevos
   ['tortilla francesa', 'huevo'],
   ['tortilla francesa', 'huevos'],
-  // Zumo de lima → lima: el zumo contiene lima
+  // Lima ↔ Limón: intercambiables como ácido en cocina
+  ['lima', 'limon'],
   ['zumo de lima', 'lima'],
+  ['zumo de lima', 'limon'],
   ['zumo limon', 'limon'],
+  // Crema de chocolate con avellanas → nutella (producto de marca equivalente)
+  ['crema de chocolate con avellanas', 'nutella'],
+  ['crema chocolate avellana', 'nutella'],
+  // Tomates secos → tomate seco (variante con/sin "hacendado" o "en aceite")
+  ['tomates secos', 'tomate seco'],
 ]
 
 // ── Matches forzados (cualquier patrón normalizado → alimento válido) ─────────
@@ -117,12 +124,34 @@ const GENERICAS = new Set([
   'integral', 'light', 'zero', 'bajo', 'alto', 'sin', 'con', 'para',
 ])
 
+// Especias/condimentos secos — se comparan como PALABRAS COMPLETAS (no substring)
+// para evitar falsos positivos: "sal" ≠ "salmón", "sal" ≠ "salsa de soja"
 const ESPECIAS = new Set([
   'sal', 'pimienta', 'comino', 'canela', 'curcuma', 'pimenton', 'oregano',
   'tomillo', 'romero', 'jengibre', 'cardamomo', 'clavo', 'anis', 'vainilla',
   'perejil', 'cilantro', 'menta', 'albahaca', 'eneldo', 'estragon', 'laurel',
-  'cayena', 'paprika', 'azafran', 'nuez moscada', 'chile', 'curry',
+  'cayena', 'paprika', 'azafran', 'curry',
+  'ajo',   // 1-10g es cantidad normal de condimento
+  'chile', // chile seco/fresco: pequeñas cantidades son válidas como especia
 ])
+// Especias de múltiples palabras (se comparan como frase completa)
+const ESPECIAS_MULTI = ['nuez moscada', 'chile en polvo', 'pimiento rojo seco']
+
+// Si la PRIMERA palabra del ingrediente es un alimento no-especia, se ignora que
+// contenga palabras de especia como calificadores.
+// Ej: "yogur sabor vainilla" → primera="yogur" → NO especia
+// Ej: "salsa de soja baja en sal" → primera="salsa" → NO especia
+// Ej: "pimienta para salsa de hamburguesa" → primera="pimienta" → SÍ especia
+const NO_ESPECIA_PRIMERA_PALABRA = new Set([
+  'yogur', 'yogurt', 'kefir', 'leche', 'queso', 'proteina', 'batido',
+  'cereales', 'granola', 'barrita', 'helado', 'mousse',
+  'salsa', 'mantequilla', 'manteca', 'overnight',
+])
+
+// Palabras ancla de alimento complejo — si aparecen EN CUALQUIER LUGAR del nombre
+// indican que el ingrediente es un producto alimenticio, no una especia pura.
+// Ej: "Overnight Oats de Proteína y Vainilla" → contiene "oats" → no es especia aunque tenga "vainilla"
+const ANCLA_ALIMENTO = new Set(['oats', 'avena', 'proteina', 'protein'])
 
 function norm(s) {
   return s.toLowerCase()
@@ -132,7 +161,24 @@ function norm(s) {
 
 function esEspecia(nombre) {
   const n = norm(nombre)
-  return Array.from(ESPECIAS).some(e => n.includes(e))
+  const palabras = n.split(/\s+/)
+
+  // Primera palabra significativa → si identifica alimento no-especia, parar aquí
+  const primeraPalabra = palabras.find(w => w.length > 2) || ''
+  if (NO_ESPECIA_PRIMERA_PALABRA.has(primeraPalabra)) return false
+
+  // Palabras ancla de producto alimenticio complejo → si aparecen en cualquier posición, no es especia
+  if (palabras.some(p => ANCLA_ALIMENTO.has(p))) return false
+
+  // Caso especial: "sin sal" → "sal" actúa como calificador (= without salt), no como ingrediente.
+  // Ej: "cacahuetes sin sal", "anacardos sin sal", "mantequilla sin sal añadida"
+  const palabrasAnalizar = n.includes('sin sal') ? palabras.filter(p => p !== 'sal') : palabras
+
+  // Comprobar especias por word-boundary exacto
+  if (Array.from(ESPECIAS).some(e => palabrasAnalizar.includes(e))) return true
+  // Comprobar especias de múltiples palabras (frase)
+  if (ESPECIAS_MULTI.some(em => n.includes(em))) return true
+  return false
 }
 
 // ── Validaciones ─────────────────────────────────────────────────────────────
@@ -179,13 +225,69 @@ function checkMatchSospechoso(nombreLibre, nombreAlimento) {
   return null
 }
 
+// Potenciadores de sabor y condimentos muy concentrados con umbrales específicos
+// Se usan en cantidades de gramos, no de 100g → cualquier valor >threshold es sospechoso
+const CONDIMENTOS_FUERTES = [
+  { kw: ['glutamato', 'msg', 'potenciador'],   max: 8  },
+  { kw: ['tabasco', 'sriracha', 'hot sauce'],  max: 20 },
+  { kw: ['levadura nutricional'],               max: 30 },
+  { kw: ['polvo hornear', 'levadura quimica', 'bicarbonato'], max: 15 },
+  { kw: ['extracto vainilla', 'esencia'],       max: 10 },
+  { kw: ['colorante', 'tinte alimentario'],     max: 5  },
+]
+
 function checkCantidadSospechosa(nombre, gramos) {
   if (gramos === null || gramos === undefined) return `sin cantidad (null)`
   if (gramos <= 0) return `cantidad 0 o negativa (${gramos}g)`
-  if (esEspecia(nombre) && gramos > 30) return `especia con ${gramos}g (esperado <30g)`
-  if (!esEspecia(nombre) && gramos < 2 && gramos > 0) return `cantidad muy pequeña (${gramos}g)`
   if (gramos > 2000) return `cantidad absurda (${gramos}g)`
+  if (esEspecia(nombre)) {
+    const n = norm(nombre)
+    // Hierbas frescas (perejil fresco, cilantro fresco, albahaca fresca, etc.)
+    // tienen umbral más alto — pueden ser el ingrediente principal (chimichurri, pesto)
+    const esFresca = n.includes('fresc') || n.includes('natural') || n.includes('hoja') || n.includes('cebollino')
+    const maxEspecia = esFresca ? 300 : 30
+    if (gramos > maxEspecia) return `especia${esFresca ? ' fresca' : ''} con ${gramos}g (esperado <${maxEspecia}g)`
+  }
+  // Cantidades mínimas sospechosas — solo para alimentos sólidos/líquidos principales
+  // Se excluyen: polvos, flakes, rallados, extractos, sprays, especias (ya tienen umbral propio)
+  // También levaduras y gasificantes: bicarbonato 3-8g, levadura química 4-10g son cantidades normales
+  const n2 = norm(nombre)
+  const esFormatoMinimo = ['polvo', 'flakes', 'hojuelas', 'ralladu', 'rallad', 'extract',
+    'esencia', 'aroma', 'spray', 'gotas', 'sobre', 'sachet',
+    'bicarbonato', 'levadura quimica', 'levadura química', 'polvo hornear', 'polvo de hornear',
+    'edulcorante', 'stevia', 'eritritol', 'sucralosa',
+    'condimento', 'bagel',
+    'sazonador',   // mezcla de especias en sobre/bote → siempre pequeña cantidad
+    'concentrado', // concentrado de tomate/caldo → 1-15g es normal
+    'mezcla de especias',
+  ].some(k => n2.includes(k))
+  if (!esEspecia(nombre) && !esFormatoMinimo && gramos < 5 && gramos > 0) {
+    return `cantidad muy pequeña (${gramos}g — ¿error de extracción?)`
+  }
+
+  // Potenciadores de sabor con umbral específico muy bajo
+  const n = norm(nombre)
+  for (const { kw, max } of CONDIMENTOS_FUERTES) {
+    if (kw.some(k => n.includes(k)) && gramos > max) {
+      return `potenciador/condimento con ${gramos}g (esperado <${max}g)`
+    }
+  }
   return null
+}
+
+// Detectar ingredientes linkeados a alimentos con 0 kcal cuando la cantidad es significativa
+function checkAlimentoCeroKcal(nombreLibre, kcalAlimento, gramos) {
+  if (kcalAlimento > 0) return null
+  if (gramos <= 15) return null  // pequeña cantidad → condimento, ok
+  const n = norm(nombreLibre)
+  // Alimentos legítimamente sin calorías (o negligibles)
+  const CERO_KCAL_VALIDOS = [
+    'agua', 'sal', 'vinagre', 'gelatina', 'caldo', 'endulzante', 'stevia',
+    'eritritol', 'sucralosa', 'splenda', 'levadura quimica', 'polvo hornear',
+    'glutamato', 'especia', 'condimento',
+  ]
+  if (CERO_KCAL_VALIDOS.some(v => n.includes(v))) return null
+  return `alimento matcheado tiene 0 kcal (${gramos}g usados — posible match incorrecto)`
 }
 
 function checkMacrosSospechosas(kcal, tipo_plato) {
@@ -240,9 +342,14 @@ async function main() {
       recetaIssues.push({ tipo: 'foto', msg: 'Sin imagen' })
     }
 
-    // 2. Instrucciones vacías
-    if (!receta.instrucciones || receta.instrucciones.trim().length < 20) {
+    // 2. Instrucciones vacías o mal formateadas
+    const instr = receta.instrucciones?.trim() || ''
+    if (!instr || instr.length < 20) {
       recetaIssues.push({ tipo: 'instrucciones', msg: 'Instrucciones vacías o muy cortas' })
+    } else if (instr.length > 100 && !instr.includes('\n') && / \d+\. /.test(instr)) {
+      recetaIssues.push({ tipo: 'instrucciones', msg: 'Pasos concatenados sin saltos de línea (usar regexp_replace en SQL)' })
+    } else if (instr.length > 300 && (instr.match(/\n/g) || []).length < 2) {
+      recetaIssues.push({ tipo: 'instrucciones', msg: 'Instrucciones largas con muy pocos saltos (¿un solo bloque?)' })
     }
 
     // 3. Intolerancias sin etiquetar (array vacío)
@@ -265,16 +372,31 @@ async function main() {
     }
 
     // 6. Revisar cada ingrediente
+    const nombresLibresVistos = new Set()
     for (const ing of (receta.receta_ingredientes || [])) {
       const nombreLibre = ing.nombre_libre || ''
       const nombreAlimento = ing.alimentos?.nombre || ''
+      const kcalAlimento = ing.alimentos?.calorias ?? -1
       const gramos = ing.cantidad_gramos
 
-      // Match sospechoso
+      // Match sospechoso (word overlap)
       if (nombreAlimento) {
         const matchIssue = checkMatchSospechoso(nombreLibre, nombreAlimento)
         if (matchIssue) {
           recetaIssues.push({ tipo: 'match', msg: matchIssue })
+        }
+      }
+
+      // Sin alimento linkeado
+      if (!ing.alimentos) {
+        recetaIssues.push({ tipo: 'match', msg: `"${nombreLibre}": sin alimento_id (no matcheado)` })
+      }
+
+      // Alimento matcheado con 0 kcal y cantidad significativa
+      if (kcalAlimento === 0) {
+        const ceroIssue = checkAlimentoCeroKcal(nombreLibre, kcalAlimento, gramos)
+        if (ceroIssue) {
+          recetaIssues.push({ tipo: 'match', msg: `"${nombreLibre}" → "${nombreAlimento}": ${ceroIssue}` })
         }
       }
 
@@ -283,6 +405,29 @@ async function main() {
       if (cantidadIssue) {
         recetaIssues.push({ tipo: 'cantidad', msg: `"${nombreLibre}": ${cantidadIssue}` })
       }
+
+      // Ingrediente duplicado en la misma receta
+      const nLibreNorm = norm(nombreLibre)
+      if (nLibreNorm && nombresLibresVistos.has(nLibreNorm)) {
+        recetaIssues.push({ tipo: 'cantidad', msg: `"${nombreLibre}": ingrediente duplicado` })
+      }
+      nombresLibresVistos.add(nLibreNorm)
+    }
+
+    // 7. Porciones 0 o nulas
+    if (!receta.porciones || receta.porciones <= 0) {
+      recetaIssues.push({ tipo: 'macros', msg: `Porciones = ${receta.porciones} (inválido)` })
+    }
+
+    // 8. Macros sin calcular (todo 0)
+    if (receta.kcal === 0 || receta.kcal === null) {
+      recetaIssues.push({ tipo: 'macros', msg: 'kcal = 0 (macros sin calcular)' })
+    }
+
+    // 9. Todos los ingredientes a exactamente 100g (extracción defectuosa)
+    const ings = receta.receta_ingredientes || []
+    if (ings.length >= 3 && ings.every(i => i.cantidad_gramos === 100)) {
+      recetaIssues.push({ tipo: 'cantidad', msg: 'Todos los ingredientes a 100g exactos (cantidades no extraídas)' })
     }
 
     if (recetaIssues.length > 0) {
@@ -332,21 +477,41 @@ async function main() {
   }
 
   console.log(`\n${'─'.repeat(60)}`)
-  for (const r of issues) {
-    // Solo mostrar recetas con issues CRÍTICOS (match o macros absurdas)
-    const criticos = r.issues.filter(i => ['match', 'macros'].includes(i.tipo))
-    if (criticos.length === 0) continue
-
-    console.log(`\n⚠️  ${r.nombre} (${r.tipo_plato}, ${r.kcal} kcal)`)
-    criticos.forEach(i => console.log(`   [${i.tipo}] ${i.msg}`))
+  // Tipos críticos que requieren acción inmediata (bloquean la receta)
+  const TIPOS_CRITICOS = ['match', 'macros', 'cantidad', 'instrucciones']
+  const ICONOS = {
+    match: '🔗', macros: '🔢', foto: '🖼️', instrucciones: '📝',
+    cantidad: '⚖️', intolerancias: '🏷️', ingredientes: '🧩',
   }
 
-  // Sugerir añadir al bridge los matches problemáticos recurrentes
+  // Separar críticos de advertencias
+  const conCriticos = issues.filter(r => r.issues.some(i => TIPOS_CRITICOS.includes(i.tipo)))
+  const soloAvisos  = issues.filter(r => r.issues.every(i => !TIPOS_CRITICOS.includes(i.tipo)))
+
+  if (conCriticos.length > 0) {
+    console.log(`\n🚨 CRÍTICOS — Requieren acción antes de publicar (${conCriticos.length} recetas):`)
+    console.log('─'.repeat(60))
+    for (const r of conCriticos) {
+      const criticos = r.issues.filter(i => TIPOS_CRITICOS.includes(i.tipo))
+      console.log(`\n  ⚠️  ${r.nombre} (${r.tipo_plato || '—'}, ${r.kcal ?? 0} kcal)`)
+      criticos.forEach(i => console.log(`     ${ICONOS[i.tipo] || '❓'} [${i.tipo}] ${i.msg}`))
+    }
+  }
+
+  if (soloAvisos.length > 0) {
+    console.log(`\n💡 AVISOS — No bloquean pero conviene revisar (${soloAvisos.length} recetas):`)
+    console.log('─'.repeat(60))
+    for (const r of soloAvisos) {
+      console.log(`\n  ℹ️  ${r.nombre}`)
+      r.issues.forEach(i => console.log(`     ${ICONOS[i.tipo] || '❓'} [${i.tipo}] ${i.msg}`))
+    }
+  }
+
+  // Sugerir añadir al MATCH_FIXES del pipeline los matches problemáticos recurrentes
   const matchIssues = issues.flatMap(r =>
-    r.issues.filter(i => i.tipo === 'match').map(i => ({ receta: r.nombre, msg: i.msg }))
+    r.issues.filter(i => i.tipo === 'match' && i.msg.includes('→')).map(i => ({ receta: r.nombre, msg: i.msg }))
   )
   if (matchIssues.length > 0) {
-    // Extraer el patrón libre de cada match problemático (primera palabra significativa)
     const sugerencias = new Set()
     matchIssues.forEach(({ msg }) => {
       const m = msg.match(/"([^"]+)" →/)
@@ -356,13 +521,13 @@ async function main() {
       }
     })
     if (sugerencias.size > 0) {
-      console.log(`\n🔧 Añadir a _MATCHES_FORZADOS en bridge_nutricoach.py si son sistemáticos:`)
-      sugerencias.forEach(s => console.log(`   ("${s}", "<alimento_id>"),`))
+      console.log(`\n🔧 Candidatos para MATCH_FIXES en pipeline-calidad.mjs:`)
+      sugerencias.forEach(s => console.log(`   [/^${s}/i, '<alimento_id>', '<nombre>'],`))
     }
   }
 
   console.log(`\n${'─'.repeat(60)}`)
-  console.log(`\n💡 Para ver TODO (incluyendo fotos/intolerancias): node scripts/quality-gate-recetas.mjs --todas`)
+  console.log(`\n💡 Para ver TODO: node scripts/quality-gate-recetas.mjs --todas`)
   console.log(`   Para exportar JSON: node scripts/quality-gate-recetas.mjs --json`)
 }
 
