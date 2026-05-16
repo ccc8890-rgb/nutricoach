@@ -6,6 +6,21 @@
 - **Migración de esquema antiguo a nuevo de recetas:** `node scripts/migrar-recetas.mjs`
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
+- **Enriquecer alimentos:** `node scripts/enriquecer-alimentos.mjs --limite=N`
+
+## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo (16-05-2026)
+
+### Ejecución de enriquecimiento
+- **Lanzado**: `node scripts/enriquecer-alimentos.mjs --limite=500` desde nutricoach-modulos/
+- **Resultado**: +483 alimentos enriquecidos (de 671→1,154 completados en cola)
+- **Pendientes restantes**: 6,795 (vista `alimentos_pendientes_enriquecer`)
+- **Total alimentos en BD**: 8,522
+- **Métrica real**: La diferencia entre cola (1,154) y pendientes (6,795) = 7,949, pero el total es 8,522 → ~573 alimentos ya tenían algunos macros pero no aparecen en la vista porque no cumplen el criterio ANY macro = 0 o NULL
+- **Modelo usado**: `deepseek-chat`, lotes de 10, maxTokens 8000 → ~8s por lote, 0 errores
+
+### Pendiente
+- Quedan ~6,795 alimentos sin macros completos
+- Para procesar todos: ejecutar `node scripts/enriquecer-alimentos.mjs --limite=500` varias veces más
 
 ## ✅ SESIÓN 11 — Fix ingredientes Instagram + enriquecimiento (16-05-2026)
 
