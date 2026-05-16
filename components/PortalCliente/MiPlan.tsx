@@ -1,14 +1,17 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Printer, Dumbbell, Loader2 } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Printer, Dumbbell, Loader2, ArrowLeftRight, Sparkles } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import ListaCompra from '@/components/ListaCompra'
+import AlternativasModal from '@/components/personalizacion/AlternativasModal'
+import GenerarComidaModal from '@/components/personalizacion/GenerarComidaModal'
 
 interface AlimentoEnComida {
     id: string
+    alimento_id?: string
     cantidad_gramos: number
     alimento?: {
         nombre: string
@@ -69,10 +72,27 @@ interface MiPlanProps {
     entreno: EntrenoData | null
 }
 
+interface ModalAlternativasState {
+    afId: string
+    alimentoId: string
+    alimentoNombre: string
+    gramosOriginal: number
+    kcalPor100g: number
+    protPor100g: number
+}
+
+interface ModalGenerarState {
+    tipoComida: string
+    macrosObjetivo: { kcal: number; proteinas: number; carbohidratos: number; grasas: number }
+}
+
 export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>(
         Object.fromEntries((plan.comidas ?? []).map(c => [c.id, true]))
     )
+    const [planLocal, setPlanLocal] = useState<PlanData>(plan)
+    const [modalAlternativas, setModalAlternativas] = useState<ModalAlternativasState | null>(null)
+    const [modalGenerar, setModalGenerar] = useState<ModalGenerarState | null>(null)
     const [descargando, setDescargando] = useState(false)
     const printRef = useRef<HTMLDivElement>(null)
     const { addToast } = useToast()
@@ -93,15 +113,52 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
     async function handleDescargarPDF() {
         setDescargando(true)
         try {
-            // Abrir en nueva pestaña — el HTML renderizado se imprime con Ctrl+P
             window.open(`/api/cliente/${codigo}/plan-pdf`, '_blank')
         } finally {
             setDescargando(false)
         }
     }
 
+    function handleElegirAlternativa(
+        alternativa: { id: string; nombre: string; kcal: number; proteinas: number; carbohidratos: number; grasas: number; categoria: string | null },
+        gramosAlternativa: number
+    ) {
+        if (!modalAlternativas) return
+        const targetAfId = modalAlternativas.afId
+        setPlanLocal(prev => ({
+            ...prev,
+            comidas: (prev.comidas ?? []).map(comida => ({
+                ...comida,
+                alimentos: (comida.alimentos ?? []).map(af =>
+                    af.id === targetAfId
+                        ? {
+                            ...af,
+                            alimento_id: alternativa.id,
+                            cantidad_gramos: gramosAlternativa,
+                            alimento: {
+                                nombre: alternativa.nombre,
+                                calorias: alternativa.kcal,
+                                proteinas: alternativa.proteinas,
+                                carbohidratos: alternativa.carbohidratos,
+                                grasas: alternativa.grasas,
+                                fibra: 0,
+                            }
+                        }
+                        : af
+                )
+            }))
+        }))
+        setModalAlternativas(null)
+        addToast({ title: 'Alternativa seleccionada', type: 'success' })
+    }
+
+    function handleAceptarComida() {
+        setModalGenerar(null)
+        addToast({ title: '¡Comida guardada como preferencia!', type: 'success' })
+    }
+
     const totalDia = sumarMacros(
-        (plan.comidas ?? []).map(c => calcMacrosComida(c.alimentos ?? []))
+        (planLocal.comidas ?? []).map(c => calcMacrosComida(c.alimentos ?? []))
     )
 
     return (
@@ -130,11 +187,11 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
             </div>
 
             {/* ─── Lista de la Compra ─── */}
-            <ListaCompra planId={plan.id} clienteId={plan.cliente_id} nombrePlan={plan.nombre} rol="cliente" />
+            <ListaCompra planId={planLocal.id} clienteId={planLocal.cliente_id} nombrePlan={planLocal.nombre} rol="cliente" />
 
             {/* Comidas */}
             <div className="space-y-3">
-                {(plan.comidas ?? []).map(comida => {
+                {(planLocal.comidas ?? []).map(comida => {
                     const alimentos = comida.alimentos ?? []
                     const macros = calcMacrosComida(alimentos)
                     const expanded = expandidas[comida.id]
@@ -175,21 +232,60 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                                             af.cantidad_gramos
                                         )
                                         return (
-                                            <div key={af.id} className="flex items-center justify-between py-1.5">
-                                                <div>
-                                                    <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{af.alimento?.nombre}</p>
+                                            <div key={af.id} className="flex items-center justify-between gap-2 py-1.5">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{af.alimento?.nombre}</p>
                                                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{af.cantidad_gramos}g</p>
                                                 </div>
-                                                <div className="text-right text-xs" style={{ color: 'var(--text-secondary)' }}>
+                                                <div className="text-right text-xs flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>
                                                     <p className="font-semibold" style={{ color: 'var(--text)' }}>{m.calorias.toFixed(0)} kcal</p>
                                                     <p>P:{m.proteinas.toFixed(1)} C:{m.carbohidratos.toFixed(1)} G:{m.grasas.toFixed(1)}</p>
                                                 </div>
+                                                {af.alimento_id && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setModalAlternativas({
+                                                            afId: af.id,
+                                                            alimentoId: af.alimento_id!,
+                                                            alimentoNombre: af.alimento?.nombre ?? '',
+                                                            gramosOriginal: af.cantidad_gramos,
+                                                            kcalPor100g: af.alimento?.calorias ?? 0,
+                                                            protPor100g: af.alimento?.proteinas ?? 0,
+                                                        })}
+                                                        className="flex-shrink-0 p-1.5 rounded-lg transition-colors"
+                                                        style={{ color: 'var(--text-muted)' }}
+                                                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.backgroundColor = 'var(--bg)' }}
+                                                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent' }}
+                                                        title="Ver alternativas"
+                                                    >
+                                                        <ArrowLeftRight size={14} />
+                                                    </button>
+                                                )}
                                             </div>
                                         )
                                     })}
                                     <div className="pt-2 border-t text-right text-sm font-medium text-gray-700" style={{ borderColor: '#F1F5F9' }}>
                                         Total: {macros.calorias.toFixed(0)} kcal · P:{macros.proteinas.toFixed(1)}g · C:{macros.carbohidratos.toFixed(1)}g · G:{macros.grasas.toFixed(1)}g
                                     </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setModalGenerar({
+                                            tipoComida: comida.nombre,
+                                            macrosObjetivo: {
+                                                kcal: Math.round(macros.calorias),
+                                                proteinas: Math.round(macros.proteinas),
+                                                carbohidratos: Math.round(macros.carbohidratos),
+                                                grasas: Math.round(macros.grasas),
+                                            }
+                                        })}
+                                        className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors no-print"
+                                        style={{ color: 'var(--primary)' }}
+                                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary-bg)' }}
+                                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
+                                    >
+                                        <Sparkles size={13} />
+                                        Generar alternativa con IA
+                                    </button>
                                 </div>
                             )}
 
@@ -233,7 +329,7 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                 </div>
             )}
 
-            {/* Botón Descargar PDF mejorado (abre vista imprimible con logo + lista compra + entrenos) */}
+            {/* Botón Descargar PDF */}
             <button
                 onClick={handleDescargarPDF}
                 disabled={descargando}
@@ -242,6 +338,31 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                 {descargando ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
                 {descargando ? 'Generando...' : 'Descargar plan en PDF'}
             </button>
+
+            {/* Modal alternativas */}
+            {modalAlternativas && (
+                <AlternativasModal
+                    alimentoId={modalAlternativas.alimentoId}
+                    alimentoNombre={modalAlternativas.alimentoNombre}
+                    gramosOriginal={modalAlternativas.gramosOriginal}
+                    kcalPor100g={modalAlternativas.kcalPor100g}
+                    protPor100g={modalAlternativas.protPor100g}
+                    clienteId={planLocal.cliente_id}
+                    onElegir={handleElegirAlternativa}
+                    onCerrar={() => setModalAlternativas(null)}
+                />
+            )}
+
+            {/* Modal generar comida IA */}
+            {modalGenerar && (
+                <GenerarComidaModal
+                    clienteId={planLocal.cliente_id}
+                    tipoComida={modalGenerar.tipoComida}
+                    macrosObjetivo={modalGenerar.macrosObjetivo}
+                    onAceptar={handleAceptarComida}
+                    onCerrar={() => setModalGenerar(null)}
+                />
+            )}
         </div>
     )
 }

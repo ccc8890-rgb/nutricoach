@@ -1,3 +1,219 @@
+# ESTADO NutriCoach — 16-05-2026 (Sesión 15 — Dashboard + Lidl v4)
+
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (16-05-2026).
+> **Este archivo vive en `nutricoach/` (rama main).** El trabajo de scraping está en `nutricoach-modulos/` (rama feature/modulos).
+
+---
+
+## 📍 DÓNDE ESTAMOS
+
+**Fase:** Sesión 15 completada. Dashboard rediseñado y desplegado en Vercel. Lidl scraper reescrito en v4 híbrido (Playwright + gridboxes API): 126 alimentos con categoría verificada, 180 no-alimentos automáticamente descartados.
+
+---
+
+## ✅ COMPLETADO (16-05-2026) — Sesión 15
+
+### 🔷 Dashboard NutriCoach — Rediseño completo ✅
+
+**Archivo:** `app/dashboard/page.tsx` (commit `7422a5d` en main)
+
+Widgets ELIMINADOS (obsoletos, Carlos no los usa):
+- Tendencia de check-ins (LineChart)
+- Clientes con/sin dieta asignada (progress bar)
+- Dietas por cliente (StackedBar)
+- Top clientes más activos
+- Clientes sin actividad reciente
+- Clientes recientes
+
+Widgets AÑADIDOS:
+- **Quick Actions**: 4 chips (Nuevo cliente, Nueva dieta, Consultas, Recetario) — links directos
+- **Estado reactivo**: N sin dieta (rojo si >0) + N consultas pendientes (ámbar si >0) + "Todo al día" (verde cuando ambos 0)
+- **Próximas revisiones**: sección existente mejorada
+
+Cambios técnicos:
+- Iconos: `@phosphor-icons/react` con weight `fill`. `TrendUp` (NO `TrendingUp`). `React.ElementType` para el tipo del icono en StatCardConfig.
+- Limpieza de imports: eliminados todos los Lucide, `LineChart` dynamic, `FadeIn`/`StaggerList`, `StatCardPremium`
+
+### 🔷 Lidl scraper v4 — Híbrido Playwright + gridboxes API ✅
+
+**Archivo:** `nutricoach-modulos/lib/scraping/supermercados/lidl.ts` (commit `2b1fa57` en feature/modulos)
+
+**Arquitectura v4:**
+1. Playwright (4 lotes × 15 términos, browser nuevo por lote): busca por términos → extrae URLs → `extraerErpNumber()` → `erpMap`
+2. HTTP gridboxes API (`/p/api/gridboxes/ES/es?erpNumbers=...`) en lotes de 25: `price.price`, `category`, `brand.name`, `price.packaging.text`, `canonicalPath`
+3. Filtro: `category === "Food"` → alimento; `"Categorías/Hogar/..."` → descartado
+
+**Resultados reales (ejecutado 16-05-2026):**
+- 306 erpNumbers descubiertos → 126 alimentos (Food) / 180 descartados (59%)
+- 4 min total, 0 errores de scraping
+- Pipeline: 2 alimentos nuevos creados, 99 productos actualizados
+
+**Bug conocido (no bloqueante):** `duplicate key value violates unique constraint "productos_supermercado_supermercado_id_alimento_id_key"` — la migración que eliminó este constraint puede no estar aplicada en Supabase. Ver sección bugs más abajo.
+
+---
+
+## 🐛 BUGS CONOCIDOS — Auditoría 16-05-2026
+
+### BUG #1 — Constraint `(supermercado_id, alimento_id)` puede estar activo todavía
+
+**Archivo:** `nutricoach-modulos/lib/scraping/index.ts`
+**Síntoma:** `duplicate key value violates unique constraint "productos_supermercado_supermercado_id_alimento_id_key"` en batch insert de Lidl
+**Causa probable:** La SQL migration `supabase_productos_vs_alimentos.sql` que elimina el UNIQUE constraint puede no haberse aplicado correctamente en Supabase.
+**Verificación:**
+```sql
+SELECT constraint_name FROM information_schema.table_constraints
+WHERE table_name = 'productos_supermercado' AND constraint_type = 'UNIQUE';
+```
+Si aparece `productos_supermercado_supermercado_id_alimento_id_key` → re-aplicar la migración (sección DROP CONSTRAINT).
+**Impacto:** Algunos productos Lidl no se insertan cuando dos búsquedas distintas matchean el mismo alimento_id. No crítico pero reduce cobertura.
+
+### BUG #2 — `app/dashboard/page.tsx` divergente en feature/modulos y feature/ui-estetica
+
+**Contexto:** El dashboard fue rediseñado en `main` directamente (commit `7422a5d`). Sin embargo, `feature/modulos` y `feature/ui-estetica` tienen su propia versión antigua del dashboard. Al intentar mergear estas ramas a main, habrá conflicto en `app/dashboard/page.tsx`.
+**Solución para DeepSeek:** Al mergear `feature/modulos` → main, en el conflicto de `app/dashboard/page.tsx` conservar siempre la versión de `main` (la nueva, con Quick Actions). NO conservar la versión de feature/modulos ni feature/ui-estetica.
+**Comando:** `git checkout main -- app/dashboard/page.tsx` en el worktree durante el merge.
+
+---
+
+## 🔜 PRÓXIMA SESIÓN — Prioridades para DeepSeek
+
+### Prioridad 1 — Fix constraint Lidl (15 min)
+```sql
+-- Verificar:
+SELECT constraint_name FROM information_schema.table_constraints
+WHERE table_name = 'productos_supermercado' AND constraint_type = 'UNIQUE';
+
+-- Si existe el constraint antiguo, eliminarlo:
+ALTER TABLE productos_supermercado DROP CONSTRAINT IF EXISTS productos_supermercado_supermercado_id_alimento_id_key;
+```
+Después re-ejecutar: `env $(cat .env.local | grep -v '^#' | xargs) npx tsx scripts/scrapear-supermercados.ts lidl`
+
+### Prioridad 2 — Merge de worktrees a main (auditoría de conflictos)
+
+Los worktrees `feature/modulos` y `feature/ui-estetica` tienen 38+ archivos divergentes de main. Hay que mergearlos con cuidado:
+
+```bash
+# Desde nutricoach/ (main):
+git merge feature/modulos --no-ff
+# En conflictos:
+#   - app/dashboard/page.tsx → conservar MAIN
+#   - CLAUDE.md → combinar manualmente
+#   - Resto → evaluar caso por caso
+
+git merge feature/ui-estetica --no-ff
+# Misma estrategia
+```
+
+**Archivos que feature/modulos aporta que main NO tiene (no hay conflicto):**
+- `lib/scraping/supermercados/lidl.ts` (v4 híbrido)
+- `scripts/test-lidl-v4.ts`, `scripts/test-lidl-gridboxes.ts`
+- Todo el sistema de scraping y precios
+
+### Prioridad 3 — Fase 0: Limpieza de datos (`nutricoach-modulos/`)
+```bash
+cd nutricoach-modulos
+node scripts/eliminar-no-alimentos.mjs     # Eliminar no-comestibles de BD
+for i in 1 2 3 4 5; do node scripts/enriquecer-alimentos.mjs --limite=100; done
+```
+
+### Prioridad 4 — Fase 1: Onboarding automático
+Ver plan en `docs/superpowers/plans/2026-05-16-nutricoach-pro-master-plan.md`
+
+---
+
+## ⚠️ INSTRUCCIONES CRÍTICAS PARA DEEPSEEK
+
+> DeepSeek: Lee esto ANTES de tocar cualquier código.
+
+### 1. Sistema de worktrees — qué es qué
+
+```
+nutricoach/          → rama main          → App Next.js principal, UI, API routes
+nutricoach-ui/       → rama feature/ui-estetica → Backup de diseño (no tocar sin instrucciones)
+nutricoach-modulos/  → rama feature/modulos → Scripts de scraping, BD, módulos
+```
+
+Los 3 son el MISMO repositorio git. Trabaja SIEMPRE en el worktree que corresponde a la tarea. No toques archivos del worktree equivocado.
+
+### 2. Reglas de código obligatorias
+
+- **`page.evaluate()` en Playwright**: SIEMPRE usar string IIFE, NUNCA arrow functions. `tsx` añade `__name()` que no existe en el browser context.
+  ```typescript
+  // ❌ INCORRECTO (da ReferenceError: __name is not defined)
+  await page.evaluate(() => { ... })
+  // ✅ CORRECTO
+  await page.evaluate('(function() { ... })()')
+  ```
+- **Supabase RLS**: Catálogo público (alimentos, recetas) → `createServiceSupabase()`. Operaciones con auth → `createApiSupabase(request)`. Nunca mezclar.
+- **Next.js 16**: `params` en rutas dinámicas es `Promise<{ id: string }>`. Siempre `await params`.
+- **`URL` no es un nombre de variable válido**: Sombrea el constructor global. Usar `SB`, `API_URL`, `ENDPOINT`.
+
+### 3. Scraping — arquitectura vigente
+
+**Scrapers que funcionan:**
+| Supermercado | Método | Estado |
+|---|---|---|
+| Mercadona | API HTTP | ✅ |
+| Consum | API HTTP | ✅ |
+| Bonpreu/Esclat | Híbrido (PW sesión + HTTP datos) | ✅ |
+| Alcampo | API Ocado HTTP | ✅ |
+| Carrefour | Playwright homepage | ✅ |
+| Eroski | Playwright | ✅ |
+| **Lidl** | **Playwright erpNumbers + gridboxes API** | **✅ v4** |
+
+**Scrapers bloqueados (no trabajar en estos sin investigación previa):**
+- Día → WAF Cloudflare impenetrable
+- Hipercor/El Corte Inglés → Akamai bloqueado
+- Aldi → sin estrategia
+
+**Comando para ejecutar scraper:**
+```bash
+cd nutricoach-modulos
+env $(cat .env.local | grep -v '^#' | xargs) npx tsx scripts/scrapear-supermercados.ts [slug]
+```
+
+### 4. Recetario — pipeline de calidad
+
+```bash
+cd nutricoach-modulos
+node scripts/pipeline-calidad.mjs --horas 24    # tras importar recetas nuevas
+node scripts/pipeline-calidad.mjs --id <uuid>   # receta específica
+```
+
+**Nunca** modificar `receta_ingredientes` directamente sin pasar por `pipeline-calidad.mjs` — rompe los macros calculados.
+
+### 5. Variables de entorno
+
+Todas las operaciones necesitan el `.env.local` de `nutricoach-modulos/`. Cargar con:
+```bash
+env $(cat .env.local | grep -v '^#' | xargs) <comando>
+```
+
+---
+
+## 📊 Estado de la BD (16-05-2026)
+
+| Entidad | Cantidad | Estado |
+|---------|----------|--------|
+| Alimentos | ~12.174 | ✅ 100% enriquecidos con macros |
+| Recetas | 229 | ✅ 0 sin foto, 0 sin macros, 0 sin intolerancias |
+| Productos supermercado | ~7.920 | ✅ 8 supermercados activos |
+| Precios histórico | ~78.235 | ✅ Actualizados |
+
+**Distribución de productos por supermercado:**
+| Supermercado | Productos |
+|---|---|
+| Consum | ~4.765 |
+| Mercadona | ~2.895 |
+| Lidl | ~149 |
+| Alcampo | ~38 |
+| Carrefour | ~20 |
+| Bonpreu | ~21 |
+| Esclat | ~21 |
+| Eroski | ~11 |
+
+---
+
 # ESTADO NutriCoach — 15-05-2026 (Sesión 13 — Pipeline de calidad operativo)
 
 > Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (15-05-2026).

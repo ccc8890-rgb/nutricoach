@@ -739,10 +739,17 @@ export async function GET(
 - En [`login/page.tsx`](app/login/page.tsx) se importaba `useRouter` pero se usaba `window.location.href`.
 - **Regla:** Si usas `window.location.href` para redirigir, no necesitas `useRouter`/`useNavigate`.
 
-### 5. Patrón de catch blocks
-- 22/25 catch blocks muestran feedback al usuario vía `addToast` o `setError`.
-- 3 catch blocks solo hacen `console.error` sin feedback — aceptable solo si redirigen inmediatamente.
+### 5. Patrón de catch blocks — ACTUALIZADO 16-05-2026
+- ✅ 22/25 catch blocks existentes muestran feedback al usuario vía `addToast` o `setError`.
+- ✅ 3 catch blocks solo hacen `console.error` sin feedback — aceptable solo si redirigen inmediatamente.
+- ⚠️ **NUEVO: 21 `.catch(() => {})` silenciosos detectados** en producción (16-05-2026):
+  - Scrapers (lidl, bonpreu, el-corte-ingles, esclat, dia, hipercor, eroski) — `.catch(() => {})` en navegación
+  - Modales (AlternativasModal, GenerarComidaModal) — fetch a /api que traga errores
+  - Componentes (EscandalloReceta, compra/page.tsx) — carga de supermercados
+  - APIs (onboarding/perfil, generar-plan-inicial) — fetch secundario sin manejo
+  - **Riesgo:** Cualquier error en scraping o fetch de datos se traga sin logging. Usuario ve UI sin datos.
 - **Regla:** Todo catch block debe: (1) loggear el error, (2) mostrar feedback al usuario, (3) no tragar errores silenciosamente.
+- **Auditoría completa:** [`salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md`](salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md)
 
 ### 6. Cliente Supabase en cliente vs servidor
 - [`lib/supabase.ts`](lib/supabase.ts) usa `createClient` (cliente-side, para el navegador).
