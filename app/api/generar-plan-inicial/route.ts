@@ -82,7 +82,43 @@ export async function POST(request: NextRequest) {
   const estresAlto = (perfil?.nivel_estres ?? 0) >= 4
   const confianzaBaja = (perfil?.autoeficacia ?? 10) < 7
 
+  // ── Segment-specific prompt modules ────────────────────────────────────────
+  const segmento = onboarding.segmento || 'standard'
+  const isPerf = segmento === 'performance' || segmento === 'elite'
+  const isElite = segmento === 'elite'
+
+  const SEGMENTO_LABELS: Record<string, string> = {
+    standard: 'Esencial — pérdida de peso / salud general',
+    recomposicion: 'Avanzado — recomposición corporal / estética',
+    performance: 'Pro — atleta recreacional / semi-atleta',
+    elite: 'Élite — competición / físico élite',
+  }
+
+  const analisisBlock = perfil?.analisis_disponibles?.length
+    ? `\n═══ ANALÍTICA DISPONIBLE ═══\n${(perfil.analisis_disponibles as string[]).map((k: string) => `- ${k}: ${(perfil.analisis_valores as Record<string, string>)?.[k] ?? 'sin valor'}`).join('\n')}${perfil.notas_analisis ? `\n- Notas analítica: ${perfil.notas_analisis}` : ''}`
+    : ''
+
+  const composicionBlock = isPerf && (perfil?.composicion_grasa_pct || perfil?.composicion_masa_muscular_kg)
+    ? `\n═══ COMPOSICIÓN CORPORAL ═══\n${perfil.composicion_grasa_pct ? `- % Grasa actual: ${perfil.composicion_grasa_pct}% (${perfil.composicion_metodo || 'método no especificado'})` : ''}\n${perfil.composicion_masa_muscular_kg ? `- Masa muscular: ${perfil.composicion_masa_muscular_kg} kg` : ''}\n${perfil.composicion_objetivo_grasa_pct ? `- % Grasa objetivo: ${perfil.composicion_objetivo_grasa_pct}%` : ''}\n${isElite && perfil.peso_competicion ? `- Peso de competición: ${perfil.peso_competicion} kg` : ''}\n${isElite && perfil.vo2max ? `- VO2max medido: ${perfil.vo2max} ml/kg/min` : ''}`
+    : ''
+
+  const testsBlock = isElite && perfil?.tests_recomendados_pendientes?.length
+    ? `\n═══ PRUEBAS PENDIENTES DE REALIZAR ═══\n${(perfil.tests_recomendados_pendientes as string[]).join(', ')}\n(Cliente interesado en realizarlas — incluir referencia en hoja de ruta)`
+    : ''
+
+  const segmentoFlag = isElite
+    ? '⚡ CLIENTE ÉLITE: periodización por fases, ajustes semanales, nutrición peri-entreno avanzada, nada de plan genérico.'
+    : isPerf
+    ? '⚡ CLIENTE PERFORMANCE: nutrición peri-entreno crítica, timing de macros, recuperación prioritaria.'
+    : segmento === 'recomposicion'
+    ? '⚡ CLIENTE RECOMPOSICIÓN: déficit mínimo o recomp, proteína alta (≥2.2g/kg), timing alrededor del entreno.'
+    : ''
+
   const prompt = `Eres Carlos Casanova, dietista titulado. Genera un plan nutricional inicial altamente personalizado en JSON.
+
+═══ SEGMENTO DE CLIENTE ═══
+- Segmento: ${SEGMENTO_LABELS[segmento] || segmento}
+${segmentoFlag}
 
 ═══ DATOS FÍSICOS Y OBJETIVO ═══
 - Objetivo: ${onboarding.objetivo}
@@ -135,6 +171,7 @@ ${perfil?.razones_abandono?.length ? `- Razones de abandono anteriores: ${perfil
 - Relación con la comida: ${perfil?.relacion_comida || 'no especificada'}
 - Mentalidad "todo o nada": ${perfil?.todo_o_nada || 'no especificada'}
 ${perfil?.trigger_onboarding ? `- Motivación para buscar ayuda: ${perfil.trigger_onboarding}` : ''}
+${analisisBlock}${composicionBlock}${testsBlock}
 
 ═══ FLAGS DE PERSONALIZACIÓN CRÍTICOS ═══
 ${confianzaBaja ? '⚠️ CONFIANZA BAJA (<7): diseñar plan FLEXIBLE con margen del 20%, evitar restricciones duras.' : ''}

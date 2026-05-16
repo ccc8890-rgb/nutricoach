@@ -18,13 +18,14 @@ export async function GET(request: NextRequest) {
 
   const { data: onboarding } = await supabase
     .from('onboarding_responses')
-    .select('dias_entreno')
+    .select('dias_entreno, segmento')
     .eq('cliente_id', cliente.id)
     .single()
 
   return NextResponse.json({
     cliente_id: cliente.id,
     dias_entreno: onboarding?.dias_entreno ?? 0,
+    segmento: onboarding?.segmento ?? 'standard',
   })
 }
 
@@ -76,6 +77,16 @@ export async function POST(request: NextRequest) {
       fecha_competicion: body.fecha_competicion || null,
       tipo_competicion: body.tipo_competicion || null,
       nutricion_peri_entreno: body.nutricion_peri_entreno || null,
+      analisis_disponibles: body.analisis_disponibles ?? [],
+      analisis_valores: body.analisis_valores ?? {},
+      tests_recomendados_pendientes: body.tests_recomendados_pendientes ?? [],
+      composicion_metodo: body.composicion_metodo || null,
+      composicion_grasa_pct: body.composicion_grasa_pct || null,
+      composicion_masa_muscular_kg: body.composicion_masa_muscular_kg || null,
+      composicion_objetivo_grasa_pct: body.composicion_objetivo_grasa_pct || null,
+      peso_competicion: body.peso_competicion || null,
+      vo2max: body.vo2max || null,
+      notas_analisis: body.notas_analisis || null,
     }, { onConflict: 'cliente_id' })
 
   if (upsertError) {

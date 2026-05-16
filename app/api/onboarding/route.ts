@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json()
   const {
+    segmento,
     objetivo, peso, altura, edad, sexo,
     actividad_base, dias_entreno, tipo_entreno, duracion_sesion_min,
     restricciones, alimentos_no_gustan,
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
     .from('onboarding_responses')
     .upsert({
       cliente_id: cliente.id,
+      segmento: segmento || 'standard',
       objetivo,
       actividad_base,
       dias_entreno: dias_entreno ?? 3,

@@ -3,15 +3,17 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import OnboardingProgress from '@/components/onboarding/OnboardingProgress'
+import StepSegment, { type Segmento } from '@/components/onboarding/StepSegment'
 import StepGoal, { type Objetivo } from '@/components/onboarding/StepGoal'
 import StepBody, { type BodyData } from '@/components/onboarding/StepBody'
 import StepActivity, { type ActividadBase } from '@/components/onboarding/StepActivity'
 import StepRestrictions from '@/components/onboarding/StepRestrictions'
 import StepCooking, { type NivelCocina } from '@/components/onboarding/StepCooking'
 
-const STEP_LABELS = ['Objetivo', 'Cuerpo', 'Actividad', 'Dieta', 'Cocina']
+const STEP_LABELS = ['Perfil', 'Objetivo', 'Cuerpo', 'Actividad', 'Dieta', 'Cocina']
 
 interface FormState {
+  segmento: Segmento | ''
   objetivo: Objetivo | ''
   body: BodyData
   actividad: ActividadBase | ''
@@ -26,6 +28,7 @@ interface FormState {
 }
 
 const INITIAL: FormState = {
+  segmento: '',
   objetivo: '',
   body: { peso: 0, altura: 0, edad: 0, sexo: '' },
   actividad: '',
@@ -47,11 +50,12 @@ export default function OnboardingPage() {
   const [error, setError] = useState('')
 
   const puedeAvanzar = (): boolean => {
-    if (step === 0) return !!form.objetivo
-    if (step === 1) return form.body.peso > 0 && form.body.altura > 0 && form.body.edad > 0 && !!form.body.sexo
-    if (step === 2) return !!form.actividad
-    if (step === 3) return true
-    if (step === 4) return !!form.nivelCocina
+    if (step === 0) return !!form.segmento
+    if (step === 1) return !!form.objetivo
+    if (step === 2) return form.body.peso > 0 && form.body.altura > 0 && form.body.edad > 0 && !!form.body.sexo
+    if (step === 3) return !!form.actividad
+    if (step === 4) return true
+    if (step === 5) return !!form.nivelCocina
     return false
   }
 
@@ -63,6 +67,7 @@ export default function OnboardingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          segmento: form.segmento,
           objetivo: form.objetivo,
           peso: form.body.peso,
           altura: form.body.altura,
@@ -101,12 +106,15 @@ export default function OnboardingPage() {
 
           <div className="min-h-[380px]">
             {step === 0 && (
-              <StepGoal value={form.objetivo} onChange={v => setForm(f => ({ ...f, objetivo: v }))} />
+              <StepSegment value={form.segmento} onChange={v => setForm(f => ({ ...f, segmento: v }))} />
             )}
             {step === 1 && (
-              <StepBody value={form.body} onChange={v => setForm(f => ({ ...f, body: v }))} />
+              <StepGoal value={form.objetivo} onChange={v => setForm(f => ({ ...f, objetivo: v }))} />
             )}
             {step === 2 && (
+              <StepBody value={form.body} onChange={v => setForm(f => ({ ...f, body: v }))} />
+            )}
+            {step === 3 && (
               <StepActivity
                 actividad={form.actividad}
                 diasEntreno={form.diasEntreno}
@@ -118,7 +126,7 @@ export default function OnboardingPage() {
                 onDuracionChange={v => setForm(f => ({ ...f, duracionSesionMin: v }))}
               />
             )}
-            {step === 3 && (
+            {step === 4 && (
               <StepRestrictions
                 restricciones={form.restricciones}
                 alimentosNoGustan={form.alimentosNoGustan}
@@ -126,7 +134,7 @@ export default function OnboardingPage() {
                 onAlimentosNogustanChange={v => setForm(f => ({ ...f, alimentosNoGustan: v }))}
               />
             )}
-            {step === 4 && (
+            {step === 5 && (
               <StepCooking
                 nivelCocina={form.nivelCocina}
                 tiempoCocinaMin={form.tiempoCocinaMin}
@@ -154,7 +162,7 @@ export default function OnboardingPage() {
               Atrás
             </button>
 
-            {step < 4 ? (
+            {step < 5 ? (
               <button
                 type="button"
                 onClick={() => setStep(s => s + 1)}

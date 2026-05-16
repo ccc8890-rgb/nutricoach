@@ -10,6 +10,8 @@ import StepTiming from '@/components/onboarding/StepTiming'
 import StepSocial from '@/components/onboarding/StepSocial'
 import StepHealth from '@/components/onboarding/StepHealth'
 import StepSports from '@/components/onboarding/StepSports'
+import StepAnalisis from '@/components/onboarding/StepAnalisis'
+import type { Segmento } from '@/components/onboarding/StepSegment'
 
 interface FormState {
   // A
@@ -46,6 +48,17 @@ interface FormState {
   fechaCompeticion: string
   tipoCompeticion: string
   nutricionPeriEntreno: string
+  // H — Análisis
+  analisisDisponibles: string[]
+  analisisValores: Record<string, string>
+  testsPendientes: string[]
+  notasAnalisis: string
+  composicionMetodo: string
+  composicionGrasaPct: number
+  composicionMasaMuscularKg: number
+  composicionObjetivoGrasaPct: number
+  pesoCompeticion: number
+  vo2max: number
 }
 
 const INITIAL: FormState = {
@@ -57,24 +70,28 @@ const INITIAL: FormState = {
   conQuienCome: [], frecuenciaFuera: '', comidaTrampa: '',
   condicionesSalud: '', horasSueno: 7, calidadSueno: 0, nivelEstres: 0,
   descripcionSemana: '', fechaCompeticion: '', tipoCompeticion: '', nutricionPeriEntreno: '',
+  analisisDisponibles: [], analisisValores: {}, testsPendientes: [], notasAnalisis: '',
+  composicionMetodo: '', composicionGrasaPct: 0, composicionMasaMuscularKg: 0,
+  composicionObjetivoGrasaPct: 0, pesoCompeticion: 0, vo2max: 0,
 }
 
 export default function PerfilProfundoPage() {
   const router = useRouter()
   const [form, setForm] = useState<FormState>(INITIAL)
   const [esAtleta, setEsAtleta] = useState(false)
+  const [segmento, setSegmento] = useState<Segmento | ''>('')
   const [clienteId, setClienteId] = useState<string | null>(null)
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    // Fetch onboarding básico para saber si es atleta y obtener cliente_id
     fetch('/api/onboarding/perfil', { method: 'GET' })
       .then(r => r.json())
       .then(data => {
         if (data.cliente_id) setClienteId(data.cliente_id)
         if (data.dias_entreno > 2) setEsAtleta(true)
+        if (data.segmento) setSegmento(data.segmento as Segmento)
       })
       .catch(() => {})
   }, [])
@@ -87,6 +104,7 @@ export default function PerfilProfundoPage() {
     { label: 'Social', component: 'E' },
     { label: 'Salud', component: 'F' },
     ...(esAtleta ? [{ label: 'Deporte', component: 'G' }] : []),
+    { label: 'Analítica', component: 'H' },
   ]
 
   const set = <K extends keyof FormState>(field: K, value: FormState[K]) =>
@@ -139,6 +157,16 @@ export default function PerfilProfundoPage() {
           fecha_competicion: form.fechaCompeticion || null,
           tipo_competicion: form.tipoCompeticion,
           nutricion_peri_entreno: form.nutricionPeriEntreno,
+          analisis_disponibles: form.analisisDisponibles,
+          analisis_valores: form.analisisValores,
+          tests_recomendados_pendientes: form.testsPendientes,
+          composicion_metodo: form.composicionMetodo,
+          composicion_grasa_pct: form.composicionGrasaPct || null,
+          composicion_masa_muscular_kg: form.composicionMasaMuscularKg || null,
+          composicion_objetivo_grasa_pct: form.composicionObjetivoGrasaPct || null,
+          peso_competicion: form.pesoCompeticion || null,
+          vo2max: form.vo2max || null,
+          notas_analisis: form.notasAnalisis,
         }),
       })
       const data = await res.json()
@@ -247,6 +275,26 @@ export default function PerfilProfundoPage() {
                 onFechaChange={v => set('fechaCompeticion', v)}
                 onTipoChange={v => set('tipoCompeticion', v)}
                 onNutricionChange={v => set('nutricionPeriEntreno', v)}
+              />
+            )}
+            {currentStepLabel === 'H' && (
+              <StepAnalisis
+                segmento={(segmento || 'standard') as Segmento}
+                analisisDisponibles={form.analisisDisponibles}
+                analisisValores={form.analisisValores}
+                testsPendientes={form.testsPendientes}
+                notasAnalisis={form.notasAnalisis}
+                composicionMetodo={form.composicionMetodo}
+                composicionGrasaPct={form.composicionGrasaPct}
+                composicionMasaMuscularKg={form.composicionMasaMuscularKg}
+                composicionObjetivoGrasaPct={form.composicionObjetivoGrasaPct}
+                pesoCompeticion={form.pesoCompeticion}
+                vo2max={form.vo2max}
+                onDisponiblesChange={v => set('analisisDisponibles', v)}
+                onValoresChange={v => set('analisisValores', v)}
+                onTestsPendientesChange={v => set('testsPendientes', v)}
+                onNotasChange={v => set('notasAnalisis', v)}
+                onComposicionChange={(field, v) => set(field as keyof FormState, v as never)}
               />
             )}
           </div>
