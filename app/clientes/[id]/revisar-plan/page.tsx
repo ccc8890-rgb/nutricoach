@@ -1,0 +1,228 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { Loader2, CheckCircle, ChevronDown, ChevronUp, User } from 'lucide-react'
+
+interface OnboardingData {
+  objetivo: string
+  actividad_base: string
+  dias_entreno: number
+  tipo_entreno: string[]
+  duracion_sesion_min: number
+  restricciones: string[]
+  alimentos_no_gustan: string
+  nivel_cocina: string
+  tiempo_cocina_min: number
+  presupuesto_semanal_eur: number | null
+}
+
+interface PlanInicial {
+  kcal_objetivo: number
+  macros: { proteinas_g: number; carbos_g: number; grasas_g: number }
+  distribucion_comidas: { nombre: string; porcentaje_kcal: number; kcal: number; hora_sugerida: string }[]
+  recomendaciones: string[]
+  notas_coach: string
+}
+
+interface ClienteData {
+  id: string
+  profiles: { nombre: string; apellidos: string; email: string } | null
+  objetivo: string
+  peso_inicial: number
+  altura: number
+  edad: number
+  sexo: string
+  revisado_por_coach: boolean
+}
+
+const OBJETIVO_LABEL: Record<string, string> = {
+  perder_grasa: 'Perder grasa',
+  ganar_musculo: 'Ganar músculo',
+  rendimiento: 'Rendimiento deportivo',
+  mantener: 'Mantener peso',
+  salud_general: 'Salud general',
+}
+
+const ACTIVIDAD_LABEL: Record<string, string> = {
+  sedentario: 'Sedentario',
+  ligero: 'Ligeramente activo',
+  moderado: 'Moderadamente activo',
+  activo: 'Activo',
+  muy_activo: 'Muy activo',
+}
+
+export default function RevisarPlanPage() {
+  const params = useParams<{ id: string }>()
+  const router = useRouter()
+  const [cliente, setCliente] = useState<ClienteData | null>(null)
+  const [onboarding, setOnboarding] = useState<OnboardingData | null>(null)
+  const [plan, setPlan] = useState<PlanInicial | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [aprobando, setAprobando] = useState(false)
+  const [showRaw, setShowRaw] = useState(false)
+
+  useEffect(() => {
+    const id = params.id as string
+    Promise.all([
+      supabase.from('clientes').select('*, profiles(nombre, apellidos, email)').eq('id', id).single(),
+      supabase.from('onboarding_responses').select('*').eq('cliente_id', id).single(),
+      supabase.from('registros_ia').select('respuesta_json').eq('cliente_id', id).eq('tipo', 'plan_inicial').order('created_at', { ascending: false }).limit(1).single(),
+    ]).then(([{ data: c }, { data: o }, { data: r }]) => {
+      setCliente(c as ClienteData)
+      setOnboarding(o as OnboardingData)
+      if (r?.respuesta_json) setPlan(r.respuesta_json as PlanInicial)
+      setLoading(false)
+    })
+  }, [params.id])
+
+  const aprobar = async () => {
+    setAprobando(true)
+    await supabase
+      .from('clientes')
+      .update({ revisado_por_coach: true })
+      .eq('id', params.id as string)
+    router.push(`/clientes/${params.id}`)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="animate-spin" size={32} style={{ color: 'var(--primary)' }} />
+      </div>
+    )
+  }
+
+  if (!cliente || !onboarding) {
+    return <div className="p-6 text-[var(--text-muted)]">Cliente o datos de onboarding no encontrados.</div>
+  }
+
+  const perfil = cliente.profiles
+  const nombreCompleto = perfil ? `${perfil.nombre} ${perfil.apellidos}` : 'Cliente'
+
+  return (
+    <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-6">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-[var(--primary)]/10 flex items-center justify-center">
+          <User size={24} style={{ color: 'var(--primary)' }} />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-[var(--text)]">{nombreCompleto}</h1>
+          <p className="text-sm text-[var(--text-muted)]">{perfil?.email}</p>
+        </div>
+        {!cliente.revisado_por_coach && (
+          <span className="ml-auto text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            Pendiente revisión
+          </span>
+        )}
+      </div>
+
+      {/* Datos corporales */}
+      <div className="card p-4">
+        <h2 className="font-semibold text-[var(--text)] mb-3">Datos corporales</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Peso', value: `${cliente.peso_inicial ?? '—'} kg` },
+            { label: 'Altura', value: `${cliente.altura ?? '—'} cm` },
+            { label: 'Edad', value: `${cliente.edad ?? '—'} años` },
+            { label: 'Sexo', value: cliente.sexo === 'hombre' ? '♂ Hombre' : '♀ Mujer' },
+          ].map(({ label, value }) => (
+            <div key={label} className="bg-[var(--bg)] rounded-lg p-3">
+              <div className="text-xs text-[var(--text-muted)]">{label}</div>
+              <div className="font-semibold text-[var(--text)]">{value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Onboarding */}
+      <div className="card p-4">
+        <h2 className="font-semibold text-[var(--text)] mb-3">Perfil del cliente</h2>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
+          <div><dt className="text-[var(--text-muted)]">Objetivo</dt><dd className="font-medium text-[var(--text)]">{OBJETIVO_LABEL[onboarding.objetivo] ?? onboarding.objetivo}</dd></div>
+          <div><dt className="text-[var(--text-muted)]">Actividad</dt><dd className="font-medium text-[var(--text)]">{ACTIVIDAD_LABEL[onboarding.actividad_base] ?? onboarding.actividad_base}</dd></div>
+          <div><dt className="text-[var(--text-muted)]">Entrenos/semana</dt><dd className="font-medium text-[var(--text)]">{onboarding.dias_entreno} días · {onboarding.duracion_sesion_min} min</dd></div>
+          <div><dt className="text-[var(--text-muted)]">Tipo entreno</dt><dd className="font-medium text-[var(--text)]">{onboarding.tipo_entreno?.join(', ') || '—'}</dd></div>
+          <div><dt className="text-[var(--text-muted)]">Restricciones</dt><dd className="font-medium text-[var(--text)]">{onboarding.restricciones?.join(', ') || 'Ninguna'}</dd></div>
+          <div><dt className="text-[var(--text-muted)]">No le gusta</dt><dd className="font-medium text-[var(--text)]">{onboarding.alimentos_no_gustan || '—'}</dd></div>
+          <div><dt className="text-[var(--text-muted)]">Nivel cocina</dt><dd className="font-medium text-[var(--text)] capitalize">{onboarding.nivel_cocina?.replace('_', ' ')}</dd></div>
+          <div><dt className="text-[var(--text-muted)]">Tiempo cocina</dt><dd className="font-medium text-[var(--text)]">{onboarding.tiempo_cocina_min} min/día</dd></div>
+          {onboarding.presupuesto_semanal_eur && (
+            <div><dt className="text-[var(--text-muted)]">Presupuesto</dt><dd className="font-medium text-[var(--text)]">{onboarding.presupuesto_semanal_eur}€/semana</dd></div>
+          )}
+        </dl>
+      </div>
+
+      {/* Plan IA */}
+      {plan && (
+        <div className="card p-4">
+          <h2 className="font-semibold text-[var(--text)] mb-3">Plan inicial generado por IA</h2>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="bg-[var(--primary)]/10 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-[var(--primary)]">{plan.kcal_objetivo}</div>
+              <div className="text-xs text-[var(--text-muted)]">kcal/día</div>
+            </div>
+            <div className="bg-[var(--bg)] rounded-lg p-3 text-center">
+              <div className="text-xl font-bold text-[var(--text)]">{plan.macros?.proteinas_g}g</div>
+              <div className="text-xs text-[var(--text-muted)]">proteína</div>
+            </div>
+            <div className="bg-[var(--bg)] rounded-lg p-3 text-center">
+              <div className="text-xl font-bold text-[var(--text)]">{plan.macros?.carbos_g}g C · {plan.macros?.grasas_g}g G</div>
+              <div className="text-xs text-[var(--text-muted)]">carbos · grasas</div>
+            </div>
+          </div>
+
+          {plan.notas_coach && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-300 mb-3">
+              <span className="font-semibold">Nota IA:</span> {plan.notas_coach}
+            </div>
+          )}
+
+          {plan.recomendaciones?.length > 0 && (
+            <ul className="text-sm text-[var(--text-muted)] space-y-1 mb-3">
+              {plan.recomendaciones.map((r, i) => (
+                <li key={i} className="flex items-start gap-2"><span className="text-[var(--primary)] mt-0.5">•</span>{r}</li>
+              ))}
+            </ul>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowRaw(v => !v)}
+            className="flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text)]"
+          >
+            {showRaw ? <ChevronUp size={14} /> : <ChevronDown size={14} />} Ver JSON completo
+          </button>
+          {showRaw && (
+            <pre className="mt-2 p-3 bg-[var(--bg)] rounded-lg text-xs overflow-auto max-h-48 text-[var(--text-muted)]">
+              {JSON.stringify(plan, null, 2)}
+            </pre>
+          )}
+        </div>
+      )}
+
+      {/* Actions */}
+      {!cliente.revisado_por_coach && (
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => router.push(`/clientes/${params.id}`)}
+            className="btn-secondary flex-1"
+          >
+            Ver perfil completo
+          </button>
+          <button
+            type="button"
+            onClick={aprobar}
+            disabled={aprobando}
+            className="btn-primary flex-1 flex items-center justify-center gap-2"
+          >
+            {aprobando ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+            Aprobar y activar cliente
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}

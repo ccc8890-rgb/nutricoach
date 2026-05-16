@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { Loader2, CheckCircle, XCircle, Mail } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -10,6 +10,7 @@ type Estado = 'cargando' | 'token_invalido' | 'formulario' | 'magic_enviado' | '
 export default function RegistroPage() {
   const params = useParams<{ token: string }>()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const token = params.token as string
 
   const [estado, setEstado] = useState<Estado>('cargando')
@@ -151,13 +152,10 @@ export default function RegistroPage() {
   }
 
   if (estado === 'exito') {
+    router.push('/onboarding')
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg)' }}>
-        <div className="card max-w-md w-full text-center p-8">
-          <CheckCircle size={48} className="mx-auto mb-4" style={{ color: 'var(--primary)' }} />
-          <h2 className="text-xl font-bold mb-2">Bienvenido/a</h2>
-          <p className="text-gray-500">Tu portal está listo. Tu coach te enviará el enlace de acceso.</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <Loader2 className="animate-spin" size={32} style={{ color: 'var(--primary)' }} />
       </div>
     )
   }
