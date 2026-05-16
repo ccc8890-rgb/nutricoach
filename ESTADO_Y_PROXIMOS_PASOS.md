@@ -6,9 +6,9 @@
 
 ## 📍 DÓNDE ESTAMOS AHORA
 
-### Fase: **Scraping Multi-Supermercado — Diagnóstico y Fix de Scrapers**
+### Fase: **Scraping Multi-Supermercado — Lidl optimizado ✅, Scraping cerrado**
 
-**Última sesión:** 15-05-2026
+**Última sesión:** 16-05-2026 (Noche — cierre)
 **Responsable:** Carlos Casanova
 **Estado de tokens:** ✅ OK
 **Servidor local:** No necesario (scraping)
@@ -17,17 +17,17 @@
 
 | Supermercado | Productos | Técnica | Estado |
 |---|---|---|---|
-| **Mercadona** | ~4.342 ✅ | API HTTP (pública) | ✅ Operativo |
-| **Consum** | ~9.785 ✅ | API interna (árbol categorías) | ✅ Operativo |
-| **Alcampo** | ~50 ✅ | API Ocado HTTP | ✅ Operativo |
-| **Carrefour** | ~54 ✅ | Playwright homepage (evita Cloudflare) | ✅ Operativo con fix _name |
-| **Eroski** | ~12 ✅ | Playwright homepage (slick-slider carousels) | ✅ Re-escrito con selectores reales + fix _name |
-| **Bonpreu** | ~4.138 ✅ | Playwright + interceptación API v5/product-pages + v6/products | ✅ VERIFICADO (15 cat, con dedup) |
-| **Esclat** | ~4.138 ✅ | Playwright + interceptación API (misma plataforma Bonpreu) | ✅ VERIFICADO (15 cat, con dedup) |
-| **Lidl** | 0 ❌ | Playwright | ❌ Web rediseñada (modelo folletos), no lista productos |
-| **Día** | 0 ❌ | Playwright | ❌ WAF bloquea headless, APIs requieren sesión |
-| **Hipercor** | 0 ❌ | Playwright | ❌ Akamai — "Access Denied" |
-| **El Corte Inglés** | 0 ❌ | Playwright | ❌ Akamai — "Access Denied" |
+| **Mercadona** | ~2,895 ✅ | API HTTP (pública) | ✅ Operativo |
+| **Consum** | ~4,765 ✅ | API interna (árbol categorías) | ✅ Operativo |
+| **Alcampo** | ~38 ✅ | API Ocado HTTP | ✅ Operativo |
+| **Carrefour** | ~20 ✅ | Playwright homepage (evita Cloudflare) | ✅ Operativo |
+| **Eroski** | ~11 ✅ | Playwright homepage (slick-slider) | ✅ Operativo |
+| **Bonpreu** | ~21 ✅ | Playwright + interceptación API | ✅ Operativo |
+| **Esclat** | ~21 ✅ | Playwright + interceptación API | ✅ Operativo |
+| **Lidl** | **75 ✅** | **Playwright search v3 — batch (4×15, browser refresh)** | **✅ v3 pipeline ejecutado (4.0 min, 429 prod, 0 errores)** |
+| **Día** | 0 ❌ | Playwright | ❌ WAF bloquea headless |
+| **Hipercor** | 0 ❌ | Playwright | ❌ Akamai |
+| **El Corte Inglés** | 0 ❌ | Playwright | ❌ Akamai |
 
 ---
 
@@ -653,15 +653,19 @@ La SPA de Bonpreu/Esclat usa dos APIs REST que devuelven productos completos en 
 ### Pendiente para próxima sesión
 
 - [x] ~~Verificar Bonpreu/Esclat~~ ✅ **BREAKTHROUGH HTTP DIRECTO (v3)**: APIs funcionan con fetch() directo. Scrapers reescritos a modo híbrido (1 PW + HTTP directo)
-- [ ] **Hipercor/El Corte Inglés**: Akamai sigue bloqueando. Diagnóstico ejecutado (15-05-2026): "Access Denied" en homepage. Endpoint `/supermercado/api/productos` existe pero devuelve HTML prerenderizado. Sin API interna descubierta. Requiere proxies residenciales o alternativa.
-- [ ] Pipeline multi-producto **EN EJECUCIÓN**: `scrapear-supermercados.ts bonpreu esclat eroski mercadona` — esperar finalización (~15-30 min por 4.600 productos secuenciales)
+- [x] ~~**Lidl v3**: Ejecutar scraper completo (60 términos en 4 lotes)~~ ✅ **EJECUTADO**: 429 productos únicos en 4.0 min, 0 scraping errors
+- [x] ~~**Lidl v3**: Re-scrapear con pipeline BD~~ ✅ **EJECUTADO**: 16 alimentos nuevos, 147 actualizados, 263 historico
+- [x] ~~**Lidl**: Filtro NO_COMESTIBLE_KEYWORDS ampliado~~ ✅ **COMPLETADO**: ~260 keywords (de ~155), 27 falsos positivos eliminados
+- [ ] **Hipercor/El Corte Inglés**: Akamai sigue bloqueando. Diagnóstico ejecutado (15-05-2026): "Access Denied" en homepage. Sin API interna descubierta.
 - [ ] Actualizar PanelScraping para mostrar múltiples productos por alimento con nombre_original y marca
 - [ ] Dashboard de rentabilidad/ahorro con la vista `top_precios_escandallo`
 - [ ] Automatización con Vercel Cron Jobs (plan Pro)
 - [ ] Refinar normalizador para subir el ~24% de match exacto (más sinónimos)
 - [ ] Histórico de precios y tendencias (gráficos, alertas)
+- [ ] **Mercadona**: Re-scrapear (~2,895 productos, posible desactualización)
+- [ ] **Lidl**: Re-ejecutar trimestralmente (75 productos, mantener precios actualizados)
 
 ---
 
-**Última actualización:** 15-05-2026 ~12:48
-**Responsable:** Roo (scraping multi-supermercado — diagnóstico API, reescritura Bonpreu/Esclat)
+**Última actualización:** 16-05-2026 (cierre sesión)
+**Responsable:** Roo (Sesión 14 — Lidl v3 pipeline completo ✅)

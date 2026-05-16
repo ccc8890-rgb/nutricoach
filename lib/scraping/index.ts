@@ -19,7 +19,7 @@ import type { ProductoRaw } from './types'
 const NO_COMESTIBLE_KEYWORDS = [
     // ── Higiene personal ────────────────────────────────────────
     'champú', 'champu', 'acondicionador', 'mascarilla capilar', 'sérum capilar',
-    'gel de ducha', 'gel ducha', 'desodorante', 'antitranspirante', 'colonia',
+    'gel de ducha', 'gel ducha', 'desodorante', 'antitranspirante', 'colonia', 'perfume', 'eau de parfum',
     'crema corporal', 'loción corporal', 'sorbete corporal', 'manteca corporal',
     'aceite corporal', 'crema reductora', 'anticelulítico', 'tratamiento reductor',
     'crema facial', 'sérum facial', 'contorno de ojos', 'parches para ojos',
@@ -66,7 +66,7 @@ const NO_COMESTIBLE_KEYWORDS = [
     'detergente ropa', 'suavizante ropa', 'pastillas lavavajillas', 'gel lavavajillas',
     'limpiahogar', 'limpiavidrios', 'limpiagafas', 'lavaparabrisas',
     'bayeta', 'estropajo', 'fregona', 'bolsa basura', 'bolsas basura',
-    'papel higiénico', 'papel de cocina', 'papel aluminio', 'film transparente',
+    'papel higiénico', 'papel de cocina', 'papel aluminio', 'papel vegetal', 'film transparente',
     'ambientador', 'difusor ambientador', 'insecticida', 'trampa ratas',
     'borrador mágico', 'cera multisuperficies', 'sosa cáustica',
     'alcohol 96', 'agua oxigenada', 'amoniaco',
@@ -114,6 +114,86 @@ const NO_COMESTIBLE_KEYWORDS = [
     // ── Electrónica / aparatos ──────────────────────────────────
     'aparato eléctrico', 'aparato ectrico', 'aparato ecttrico',
     'recambio eléctrico', 'recambio ectrico',
+    // Electrodomésticos de cocina (Lidl mezcla con comida)
+    'espumador de leche', 'cafetera', 'batidora', 'freidora de aceite', 'freidora eléctrica',
+    'microondas ', // trailing space = standalone "microondas" not "palomitas microondas"
+    'microondas con', 'microondas de', 'microondas digital', 'microondas integrado',
+    'horno microondas', 'microondas grill',
+    'hervidor de agua', 'licuadora', 'exprimidor',
+    'máquina para hacer pasta', 'palomitero', 'cocedor de huevos',
+    'cuecehuevos', 'grill', 'olla eléctrica', 'olla de cocción',
+    'fuente de chocolate', 'fondue eléctrica',
+    'herramienta multifunción', 'herramienta de diagnóstico',
+    'mini nevera', 'mininevera',
+    'hervidor ', // hervidor de agua
+    // Juguetes (Lidl vende juguetes de comida)
+    'juguete', 'de juguete', 'caja registradora',
+    // Menaje no alimenticio
+    'cuchillo de cocina', 'sartén ', 'set de cuencos',
+    'bolsa térmica', 'bolsa para aparejos',
+    'recipiente para alimentos', 'recipientes para alimentos',
+    'recipientes con tapa', 'set de recipientes',
+    'caja de accesorios para',
+    'hervidor de agua con', 'hervidor de agua de',
+    'hervidor de agua 3', 'hervidor de agua 2',
+    // Potencia en vatios — Lidl incluye electrodomésticos en resultados de comida
+    // Menaje extra que Lidl mezcla con comida
+    'cubertería', 'cuberteria',
+    'tazas', 'platillo', 'dosificador', 'dosificador de',
+    'envasadora al vacío', 'envasadora al vacio',
+    'máquina para pasta', 'maquina para pasta',
+    'accesorios para manguera',
+    // Plantas (Lidl vende plantas en la sección de hogar)
+    'pachira', 'schefflera', 'drácena', 'anturio',
+    'arbusto', 'bonsái', 'bonsai',
+    'spa de pies', 'spa pies',
+    // Mascotas — Lidl vende comida de mascota mezclada con comida humana
+    'croquetas perro', 'croquetas gato', 'comida perro', 'comida gato',
+    'snack para perro', 'snack para gato', 'pienso para',
+    'cuenco', 'cuencos',
+    'robot de cocina', 'monsieur cuisine', 'cuisine smart',
+    'kitchen tools',
+    // ── Ropa y textil (Lidl vende mucha ropa mezclada con comida) ──
+    'calcetines', 'calcetín', 'chaqueta', 'edredón', 'edredon',
+    'almohada', 'bufanda', 'gorro', 'guantes', 'vestido',
+    'pantalón', 'pantalon', 'ropa de cama', 'funda nórdica',
+    'cojín', 'cojin', 'sábanas', 'sabana', 'cortina', 'toalla',
+    'toallas', 'camiseta', 'polar térmica', 'polar térmico',
+    'abrigo', 'bañador', 'banador', 'bikini', 'piel de cordero',
+    // ── Hogar / decoración ──
+    'maceta', 'tierra para plantas', 'planta decorativa',
+    'planta artificial', 'flor artificial', 'portavelas',
+    'marco foto', 'cuadro decorativo', 'espejo',
+    'adorno decorativo', 'percha', 'perchero', 'balda',
+    'estantería', 'estante', 'cesta de almacenaje',
+    'cestas de', 'cestos',
+    'pájaro decorativo', 'pajaro decorativo',
+    // ── Menaje no alimenticio ──
+    'botes de almacenamiento', 'bote de almacenamiento',
+    'tarros de especias', 'tarro de especias',
+    'organizador de', 'organizador para',
+    'estuche guardar', 'caja organizador', 'caja de accesorios',
+    'abrelatas', 'tabla de cortar', 'tablas de cortar',
+    'utensilios de cocina', 'utensilio de cocina',
+    'quesera', 'set de pulverizadores', 'pulverizador',
+    // ── Juguetes — NO confundir con alimentos ──
+    'muñeco', 'muñeca', 'peluche', 'piezas encajables',
+    'juegos de madera', 'juego de madera', 'construcción',
+    'de dinosaurio', 'de dinosaurios', 'encajable',
+    'arenero', 'tobogán', 'tobogan', 'columpio',
+    'set de pesca', 'caña de pescar', 'caña spinning', 'pesca spinning',
+    'tren de madera', 'tren de juguete', 'tren de pasajeros',
+    // ── Ferretería / herramientas ──
+    'disco de corte', 'disco corte', 'cepillos de alambre',
+    'puntas de amolar', 'punta amolar',
+    'tornillo', 'tuerca', 'arandela', 'destornillador',
+    'taladro', 'broca', 'alicate', 'llave inglesa',
+    'cable eléctrico', 'enchufe', 'alargador',
+    'linterna', 'candado', 'cerradura', 'bombilla',
+    // ── Electrodomésticos adicionales ──
+    'plancha de vapor', 'aspirador', 'aspiradora',
+    'picadora multifunción', 'robot aspirador',
+    'cafetera superautomática', 'máquina de coser',
 ]
 
 // Bebidas alcohólicas — rechazadas antes de entrar en BD
@@ -142,7 +222,6 @@ const ALCOHOL_KEYWORDS = [
     'anís seco', 'anís dulce', 'anisete',
     // Vinos fortificados / aperitivos
     'vermut', 'vermouth',
-    'moscatel',
     'jerez fino', 'jerez oloroso', 'jerez amontillado',
     // Champagne / espumosos
     'champán', 'champagne',
@@ -166,12 +245,49 @@ const ALCOHOL_FOOD_EXCEPTIONS = [
     'uva moscatel', 'uvas moscatel',
 ]
 
+// Si el nombre contiene estas frases, el producto NO se filtra aunque tenga keyword
+// de electrodoméstico (ej: "palomitas microondas" = comida, no microondas)
+const COMESTIBLE_EXCEPTIONS = [
+    // Microondas — productos que se cocinan EN microondas (no el electrodoméstico)
+    'palomitas microondas', 'palomitas para microondas',
+    'para microondas',  // "brócoli para microondas", "patatas para microondas"
+    'brócoli microondas', 'brocoli microondas',
+    'coliflor microondas',
+    'verduras microondas',
+    'patatas microondas', 'batatas microondas',
+    'verdura microondas',
+    'coliflor-brócoli-zanahoria microondas',
+    'floretas de',
+    // Freidora — productos que son COMIDA (aceites/sprays para freidora)
+    'spray para freidora', 'spray freidora',
+    'spray especial freidora',
+    'aceite para freidora',
+]
+
 /** Devuelve true si el nombre del producto indica que NO es comestible por humanos */
 function esNoComestible(nombre: string): boolean {
     const lower = nombre.toLowerCase()
-    if (NO_COMESTIBLE_KEYWORDS.some(kw => lower.includes(kw))) return true
+
+    // Primero, detectar potencia en vatios (electrodomésticos)
+    // Patrones: "500 w", "200w", "1500 w", "(W)", etc.
+    const tieneVatios = /\d+\s*w/i.test(lower) || /\(w\)/i.test(lower)
+    if (tieneVatios) return true
+
+    // Verificar NO_COMESTIBLE_KEYWORDS con excepciones
+    const matchKw = NO_COMESTIBLE_KEYWORDS.find(kw => lower.includes(kw))
+    if (matchKw) {
+        // Si el keyword es "freidora" o "microondas", verificar excepciones
+        if ((matchKw.includes('freidora') || matchKw.includes('microondas'))
+            && COMESTIBLE_EXCEPTIONS.some(ex => lower.includes(ex))) {
+            return false
+        }
+        return true
+    }
+
+    // Verificar alcohol (con excepciones)
     const tieneExcepcion = ALCOHOL_FOOD_EXCEPTIONS.some(ex => lower.includes(ex))
     if (!tieneExcepcion && ALCOHOL_KEYWORDS.some(kw => lower.includes(kw))) return true
+
     return false
 }
 

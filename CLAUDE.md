@@ -8,6 +8,97 @@
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 - **Enriquecer alimentos:** `node scripts/enriquecer-alimentos.mjs --limite=N`
 
+## ✅ SESIÓN 15 — Dashboard rediseñado + Lidl scraper v4 híbrido (16-05-2026)
+
+### Dashboard NutriCoach — Rediseño completo ✅
+- **Widgets eliminados**: Tendencia check-ins, Clientes con/sin dieta (progress bar), Dietas por cliente, Top clientes activos, Clientes sin actividad, Clientes recientes
+- **Widgets nuevos**: Quick Actions (4 chips), Estado reactivo (N sin dieta / N consultas pendientes / Todo al día), Próximas revisiones
+- **Phosphor icons** (`@phosphor-icons/react`): weight `fill`/`regular`, `TrendUp` (no `TrendingUp`)
+- **Desplegado en Vercel** ✅
+
+### Lidl scraper v4 — Híbrido Playwright + gridboxes API ✅
+- **Problema v3**: 75 productos limpios pero precios por DOM parsing (poco fiable) + falsos positivos (6 herramientas/electrodomésticos) que escapaban al filtro NO_COMESTIBLE
+- **v4 arquitectura**: Fase 1 (Playwright por lotes) → erpNumbers; Fase 2 (HTTP gridboxes) → precio real + categoría
+- **API gridboxes confirmada**: `price.price` (float), `category: "Food"` para alimentos, `"Categorías/Hogar y cocina/..."` para no-alimentos, `brand.name`, `price.packaging.text` ("500 g", "1 l")
+- **Filtro de categoría**: `cat === 'food'` → alimento; path largo → descartado sin necesidad de keywords
+- **String IIFE en page.evaluate**: corrige bug `__name` de tsx (arrow functions no serializan al browser context)
+- **Test end-to-end verificado**: 3 términos → 12 erpNumbers → gridboxes 200 → 7 alimentos / 5 descartados (hogar/bricolaje/jardín correctamente eliminados)
+- **Scraper completo ejecutado** (60 términos, 4.0 min): **306 erpNumbers** → **126 alimentos Food** / **180 descartados** (59% filtrados) → 2 alimentos nuevos, 99 productos actualizados, 74 nuevos en BD
+
+### Archivos clave v4
+| Archivo | Cambio |
+|---------|--------|
+| `lib/scraping/supermercados/lidl.ts` | **REESCRITO v4** — híbrido: Playwright DOM (erpNumbers) + gridboxes API HTTP (precios + categoría) |
+| `scripts/test-lidl-gridboxes.ts` | **NUEVO** — verifica API gridboxes con erpNumbers de BD existentes |
+| `scripts/test-lidl-v4.ts` | **NUEVO** — test end-to-end v4 (3 términos) |
+
+### API gridboxes — Notas para futura referencia
+- URL: `https://www.lidl.es/p/api/gridboxes/ES/es?erpNumbers=11035146,11031440,...`
+- Requiere cookies de sesión Lidl (`context.cookies()` de Playwright)
+- Respuesta: array de objetos. Campos clave: `erpNumber`, `fullTitle`, `category`, `price.price`, `price.packaging.text`, `canonicalPath`, `brand.name`, `image`
+- `category: "Food"` → alimento humano/animal. `category: "Categorías/..."` → no-alimento
+- erpNumbers se extraen de URLs: `/p/nombre-producto/p11035146` → `11035146`
+
+---
+
+## ✅ SESIÓN 14 — Lidl scraper v3 + Pipeline completo + Filtro NO_COMESTIBLE + Cierre (16-05-2026)
+
+### Lidl scraper v2→v3 — Pipeline ejecutado ✅
+- **v3 batch architecture**: 60 términos en **4 lotes de 15**, cada lote con browser NUEVO
+- **Pipeline real (60 términos → BD)**: **237.3s (4.0 min)**, **429 productos únicos**, **0 errores de scraping**
+- **Escritura**: 16 nuevos alimentos creados, 147 productos actualizados, 263 registros en `precios_historico`
+- **vs v2**: de ~7.9h a 4.0 min → **~107x más rápido** (real, no proyección)
+- **Dedup por URL**: 0 duplicados en BD
+
+### Filtro NO_COMESTIBLE_KEYWORDS — Ampliación completa
+- **Antes**: ~155 keywords
+- **Ahora**: ~260 keywords (ropa, decoración, menaje, juguetes, ferretería, plantas, electrodomésticos, menaje cocina, jardinería, pesca)
+- **27 falsos positivos eliminados** de la BD (17 v1 + 10 v2 legacy)
+- **Categorías nuevas añadidas**:
+  - Menaje cocina: `abrelatas`, `tabla de cortar`, `utensilios de cocina`, `quesera`, `set de pulverizadores`
+  - Juguetes/jardín: `arenero`, `tobogán`, `columpio`, `set de pesca`, `caña de pescar`, `tren de madera`
+  - Plantas: `arbusto`, `bonsái`
+- **Lidl en BD**: **75 productos limpios** (sin falsos positivos)
+
+### Lección #11 documentada
+- `docs/scraping-lecciones-aprendidas.md` — Browser degradation en Playwright (causa, fix, métricas, código)
+
+### Archivos modificados (total sesión)
+| Archivo | Cambio |
+|---------|--------|
+| `lib/scraping/supermercados/lidl.ts` | **REESCRITO v3** — Batch architecture, browser refresh, retry, selectores mejorados |
+| `lib/scraping/index.ts` | **NO_COMESTIBLE_KEYWORDS**: de ~155 a ~260 keywords (11 categorías) |
+| `lib/scraping/index.ts` | **NO_COMESTIBLE_KEYWORDS**: 2ª ronda (abrelatas, tabla cortar, utensilios cocina, arenero, pesca, tren, arbusto) |
+| `scripts/ejecutar-lidl-v3.ts` | **NUEVO** — Pipeline completo scraper → BD |
+| `CLAUDE.md` | Actualizada SESIÓN 14 |
+| `ESTADO_Y_PROXIMOS_PASOS.md` | Lidl: v3 + pipeline ejecutado |
+| `docs/scraping-lecciones-aprendidas.md` | Lección #11: browser degradation |
+
+### Estado actual de productos por supermercado
+| Supermercado | Productos | Método | Estado |
+|---|---|---|---|
+| Consum | 4,765 | API HTTP | ✅ |
+| Mercadona | 2,895 | API HTTP | ✅ |
+| Alcampo | 38 | API Ocado | ✅ |
+| Carrefour | 20 | Playwright homepage | ✅ |
+| Bonpreu | 21 | Híbrido | ✅ |
+| Esclat | 21 | Híbrido | ✅ |
+| Eroski | 11 | Playwright | ✅ |
+| **Lidl** | **~149** | **Híbrido v4**: Playwright (erpNumbers) + gridboxes API (precios+cat) | **✅ v4** |
+| **Total** | **~7,920** | | |
+| Dia | 0 | Playwright | ❌ (WAF) |
+| Aldi | 0 | — | ❌ |
+| ECI/Hipercor | 0 | Playwright | ❌ (Akamai) |
+
+### Pendiente para próxima sesión
+1. **Día**: Investigar si hay API subyacente tras el WAF de Cloudflare
+2. **ECI/Hipercor**: Siguen bloqueados por Akamai
+3. **Consum**: Bajar de 4,765 a ~200? (posible duplicación de tandas anteriores)
+4. **Lidl**: Re-ejecutar trimestralmente para mantener precios actualizados (75 productos)
+5. **Mercadona**: Re-scrapear (2,895 productos, posible desactualización)
+
+---
+
 ## ✅ SESIÓN 13 — Scrapers Carrefour/Alcampo reparados + Enriquecimiento 100% + Fix dedup productos (16-05-2026 PM)
 
 ### Enriquecimiento nutricional COMPLETADO ✅ (100%)
