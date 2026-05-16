@@ -63,10 +63,63 @@ const NO_COMESTIBLE_KEYWORDS = [
     'snack para perro', 'snack para gato', 'gatos adulto', 'caninos',
 ]
 
+// Bebidas alcohólicas — rechazadas antes de entrar en BD
+const ALCOHOL_KEYWORDS = [
+    // Cerveza (español + catalán)
+    'cerveza', 'cervesa',
+    // Vinos
+    'vino tinto', 'vino blanco', 'vino rosado', 'vino espumoso', 'vino dulce',
+    'vino de jerez', 'vino generoso', 'vino ecologico', 'vino ecológico',
+    'vi negre', 'vi blanc', 'vi rosat', 'vi escumós', 'vi dolc', 'vi ranci',
+    'caixa vi ',
+    // Cava / espumosos
+    'cava brut', 'cava semi', 'cava rosado', 'cava rosat', 'cava nature',
+    'cava benjamín', 'cava pack',
+    // Destilados
+    'whisky', 'whiskey', 'bourbon',
+    'vodka',
+    'ginebra', ' gin ',
+    'tequila', 'mezcal',
+    'brandy', 'coñac', 'cognac',
+    'amaretto', 'absenta', 'absinthe',
+    'ron añejo', 'ron blanco', 'ron negro', 'ron dorado', 'ron de caña',
+    // Licores
+    'licor de café', 'licor de menta', 'licor de hierbas', 'licor de naranja',
+    'licor de almendra', 'licor de anís', 'aperitivo licor',
+    'anís seco', 'anís dulce', 'anisete',
+    // Vinos fortificados / aperitivos
+    'vermut', 'vermouth',
+    'moscatel',
+    'jerez fino', 'jerez oloroso', 'jerez amontillado',
+    // Champagne / espumosos
+    'champán', 'champagne',
+    // Sidra
+    'sidra',
+    // Combinados / RTD
+    'sangría', 'sangria',
+    'tinto de verano',
+    'bebida preparada de ron', 'bebida preparada de vodka', 'bebida preparada de gin',
+]
+
+// Si el nombre contiene estas frases, el producto NO se filtra aunque tenga keyword de alcohol
+// (platos cocinados o alimentos que usan alcohol como ingrediente)
+const ALCOHOL_FOOD_EXCEPTIONS = [
+    'al vino', 'en vino', 'con vino', 'estofado', 'guiso',
+    'al licor', 'bombones', 'trufas',
+    'al ron', 'flambead',
+    'vinagre',
+    'vitamina',
+    'pasas',
+    'uva moscatel', 'uvas moscatel',
+]
+
 /** Devuelve true si el nombre del producto indica que NO es comestible por humanos */
 function esNoComestible(nombre: string): boolean {
     const lower = nombre.toLowerCase()
-    return NO_COMESTIBLE_KEYWORDS.some(kw => lower.includes(kw))
+    if (NO_COMESTIBLE_KEYWORDS.some(kw => lower.includes(kw))) return true
+    const tieneExcepcion = ALCOHOL_FOOD_EXCEPTIONS.some(ex => lower.includes(ex))
+    if (!tieneExcepcion && ALCOHOL_KEYWORDS.some(kw => lower.includes(kw))) return true
+    return false
 }
 
 /** Mapa de slug → función scraper */
