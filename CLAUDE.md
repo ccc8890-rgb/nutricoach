@@ -10,26 +10,27 @@
 
 ## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo (16-05-2026)
 
-### 7 tandas ejecutadas
-| Tanda | Procesados | Notas |
-|-------|-----------|-------|
-| 1ª | +483 | Primer lote |
-| 2ª | 500/500 OK | 0 errores, 407s |
-| 3ª | +136 parcial | Interrumpida por duplicados |
-| 4ª | 500/500 OK | 0 errores, 517s |
-| 5ª | 500/500 OK | 0 errores, 504s |
-| 6ª | 500/500 OK | 0 errores, 503s |
-| 7ª | 500/500 OK | 0 errores, 501s |
+### 8 tandas ejecutadas
+| Tanda | Procesados | Tiempo | Errores | Notas |
+|-------|-----------|--------|---------|-------|
+| 1ª | +483 | — | — | Primer lote |
+| 2ª | 500/500 OK | 407s | 0 | — |
+| 3ª | +136 parcial | — | — | Interrumpida por duplicados |
+| 4ª | 500/500 OK | 517s | 0 | — |
+| 5ª | 500/500 OK | 504s | 0 | — |
+| 6ª | 500/500 OK | 503s | 0 | — |
+| 7ª | 500/500 OK | 501s | 0 | — |
+| 8ª | 500/500 OK | ~7,200s | 0 | Rate limiting severo (~85s/lote) |
 
 ### Estado final del día
 | Métrica | Valor |
 |---------|-------|
 | Total alimentos en BD | 8,522 |
-| Procesados hoy | **~3,119** (7 tandas) |
-| Pendientes (vista) | ~6,442 |
+| Pendientes en cola | **~5,883** |
+| Completados en cola | 1,678 |
 | Tasa de acierto | **100%** (0 errores en tandas limpias) |
-| Tiempo por tanda (500 uds) | ~8.3 min |
-| Tiempo por lote (5 uds) | ~5s |
+| Tiempo normal (500 uds) | ~8.3 min |
+| Con rate limiting | ~2h |
 
 ### Para procesar todos (~13 tandas más)
 ```bash
