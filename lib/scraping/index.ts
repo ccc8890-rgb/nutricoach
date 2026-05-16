@@ -554,10 +554,24 @@ export async function scrapearSupermercado(
         }
 
         if (productosInsert.length > 0) {
-            console.log(`[Batch] Insertando ${productosInsert.length} productos nuevos...`)
+            // Deduplicar por alimento_id (constraint unique supermercado_id + alimento_id)
+            const vistos = new Set<string>()
+            const dedupProducts: typeof productosInsert = []
+            for (const p of productosInsert) {
+                const key = p.alimento_id
+                if (!vistos.has(key)) {
+                    vistos.add(key)
+                    dedupProducts.push(p)
+                }
+            }
+            const dedupCount = productosInsert.length - dedupProducts.length
+            if (dedupCount > 0) {
+                console.log(`[Batch] Eliminados ${dedupCount} duplicados por alimento_id`)
+            }
+            console.log(`[Batch] Insertando ${dedupProducts.length} productos nuevos...`)
             const LOTE = 100
-            for (let i = 0; i < productosInsert.length; i += LOTE) {
-                const lote = productosInsert.slice(i, i + LOTE)
+            for (let i = 0; i < dedupProducts.length; i += LOTE) {
+                const lote = dedupProducts.slice(i, i + LOTE)
                 const { error } = await supabase
                     .from('productos_supermercado')
                     .insert(lote.map(p => ({

@@ -9,6 +9,10 @@
  *
  * La API necesita regionId. Se obtiene de la página principal.
  * También usa GraphQL para ciertas operaciones.
+ *
+ * ⚠️ NOTA: La API devuelve los precios como objetos {amount, currency}
+ * y no como números planos. El mapper extrae `amount` como string y lo
+ * convierte a número.
  */
 
 import type { ScrapingConfig } from '../types'
@@ -32,30 +36,64 @@ export const configAlcampo: ScrapingConfig = {
     timeout_ms: 15000,
 }
 
-/* ─── Interfaces ─── */
+/* ─── Interfaces reales de la API Ocado ─── */
+
+interface AlcampoPrice {
+    amount: string
+    currency: string
+}
+
+interface AlcampoUnitPrice {
+    price: AlcampoPrice
+    unit: string
+}
+
+interface AlcampoProductData {
+    productId: string
+    retailerProductId: string
+    name?: string
+    brand?: string
+    /** La API devuelve {amount: "1.80", currency: "EUR"} */
+    price?: AlcampoPrice | number
+    /** Precio por unidad (kg/L) */
+    unitPrice?: AlcampoUnitPrice
+    /** Imagen del producto */
+    image?: { src?: string }
+    /** Ruta de categoría */
+    categoryPath?: string[]
+    packaging?: string
+    available?: boolean
+    packSizeDescription?: string
+}
 
 interface AlcampoProductPage {
     productId: string
-    product: {
-        productId: string
-        retailerProductId: string
-        name?: string
-        brand?: string
-        price?: number
-        pricePerKg?: number
-        unit?: string
-        imageUrl?: string
-        url?: string
-        packaging?: string
-        available?: boolean
-    }
+    product: AlcampoProductData
 }
 
-interface AlcampoProductPagesResponse {
+interface AlcampoProductGroupsResponse {
     productGroups: {
         type: string
         products: AlcampoProductPage[]
     }[]
+}
+
+/* ─── Helpers ─── */
+
+/** Extrae el valor numérico de un precio que puede ser objeto {amount, currency} o número directo */
+function extraerPrecio(p: AlcampoPrice | number | undefined): number {
+    if (p === undefined || p === null) return 0
+    if (typeof p === 'number') return p
+    // Es objeto {amount, currency}
+    const val = parseFloat(String(p.amount).replace(',', '.'))
+    return isNaN(val) ? 0 : val
+}
+
+/** Extrae precio por kg desde unitPrice */
+function extraerPrecioPorKg(unitPrice: AlcampoUnitPrice | undefined): number | undefined {
+    if (!unitPrice?.price?.amount) return undefined
+    const val = parseFloat(String(unitPrice.price.amount).replace(',', '.'))
+    return isNaN(val) ? undefined : val
 }
 
 /* ─── Fetch helper ─── */
@@ -75,18 +113,21 @@ async function fetchJSON<T>(url: string, timeoutMs: number): Promise<T> {
 
 /* ─── Mapeo ─── */
 
-function mapearProducto(p: AlcampoProductPage['product'], categoria?: string): ProductoRaw {
+function mapearProducto(p: AlcampoProductData, categoria?: string): ProductoRaw {
+    const precio = extraerPrecio(p.price)
+    const precioPorKg = p.unitPrice ? extraerPrecioPorKg(p.unitPrice) : undefined
+
     return {
         nombre: p.name || '',
-        precio_actual: p.price || 0,
-        precio_por_kg: p.pricePerKg,
-        unidad: p.unit || 'kg',
-        url_producto: p.url || '',
-        imagen_url: p.imageUrl || undefined,
+        precio_actual: precio,
+        precio_por_kg: precioPorKg,
+        unidad: p.unitPrice?.unit?.replace('fop.price.per.', '') || 'kg',
+        url_producto: '', // La API no devuelve URL directa
+        imagen_url: p.image?.src || undefined,
         marca: p.brand || 'Alcampo',
-        cantidad: p.packaging || undefined,
+        cantidad: p.packSizeDescription || p.packaging || undefined,
         disponible: p.available !== false,
-        categoria,
+        categoria: categoria || p.categoryPath?.join(' > '),
     }
 }
 
@@ -160,7 +201,7 @@ export async function scrapearAlcampo(): Promise<{
             await new Promise(r => setTimeout(r, configAlcampo.rate_limit_ms))
 
             try {
-                const result = await fetchJSON<AlcampoProductPagesResponse>(
+                const result = await fetchJSON<AlcampoProductGroupsResponse>(
                     `${configAlcampo.url_base}/api/webproductpagews/v5/product-pages?decoratedOnly=true&limit=50&searchTerm=${encodeURIComponent(term)}&tag=web`,
                     configAlcampo.timeout_ms
                 )

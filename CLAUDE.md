@@ -8,44 +8,39 @@
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 - **Enriquecer alimentos:** `node scripts/enriquecer-alimentos.mjs --limite=N`
 
-## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo + Pipeline scraping (16-05-2026)
+## ✅ SESIÓN 13 — Scrapers Carrefour/Alcampo reparados + Enriquecimiento 100% + Fix dedup productos (16-05-2026 PM)
 
-### 9 tandas ejecutadas + Pipeline scraping completado
-| Tanda | Procesados | Tiempo | Errores | Notas |
-|-------|-----------|--------|---------|-------|
-| 1ª | +483 | — | — | Primer lote |
-| 2ª | 500/500 OK | 407s | 0 | — |
-| 3ª | +136 parcial | — | — | Interrumpida por duplicados |
-| 4ª | 500/500 OK | 517s | 0 | — |
-| 5ª | 500/500 OK | 504s | 0 | — |
-| 6ª | 500/500 OK | 503s | 0 | — |
-| 7ª | 500/500 OK | 501s | 0 | — |
-| 8ª | 500/500 OK | ~7,200s | 0 | Rate limiting severo (~85s/lote) |
-| 9ª | +144 (parcial) | — | 0 | Rate limiting. Queda corriendo `--limite=100` |
-
-**Pipeline scraping paralelo** ✅ — `scrapear-supermercados.ts bonpreu esclat eroski mercadona`
-
-### Estado actual (cierre)
+### Enriquecimiento nutricional COMPLETADO ✅ (100%)
 | Métrica | Valor |
 |---------|-------|
-| Total alimentos en BD | 8,522 |
-| **Pendientes en cola** | **~8,945** (aumentaron por scraping de nuevos productos) |
-| **Completados en cola** | **2,178** (sigue subiendo — script activo) |
-| Tasa de acierto | **100%** (0 errores en tandas limpias) |
-| Tiempo normal (500 uds) | ~8.3 min |
-| Con rate limiting | ~2-3h por tanda |
+| Alimentos en BD | **12,174** |
+| Alimentos enriquecidos | **12,169** ✅ |
+| Pendientes | **0** 🎉 |
+| Precios históricos | **78,235** |
 
-### Resultados del Pipeline scraping
-| Supermercado | Productos en DB |
-|---|---|
-| Consum | 5,130 |
-| Mercadona | 3,031 |
-| Bonpreu | 24 |
-| Esclat | 24 |
-| Eroski | 14 |
-| **Total** | **8,223** |
+### Scrapers reparados
+| Bug | Causa | Fix |
+|-----|-------|-----|
+| **Alcampo no insertaba** | API Ocado devuelve precios como `{amount:"1.80", currency:"EUR"}`, el mapper los pasaba como objeto literal a columna `numeric` | [`alcampo.ts`](lib/scraping/supermercados/alcampo.ts) — `extraerPrecio()` y `extraerPrecioPorKg()` convierten objeto a float |
+| **Carrefour/Alcampo productos no persistian** | Batch insert fallaba completamente por `duplicate key` (varios productos al mismo `alimento_id` viola unique `(supermercado_id, alimento_id)`) | [`index.ts`](lib/scraping/index.ts:559) — deduplicacion por `alimento_id` antes del batch insert |
 
-**Nota**: Bonpreu/Esclat solo tienen 24 productos cada uno — indica que el scraper v3 híbrido encontró pocos productos o el matching con alimentos existentes fue bajo. Consum saltó de ~194 a 5,130 (probablemente de tandas anteriores). Mercadona consolidado en 3,031.
+### Estado actual de productos por supermercado
+| Supermercado | Productos | Metodo | Estado |
+|---|---|---|---|
+| Consum | 4,765 | API HTTP | ✅ |
+| Mercadona | 2,895 | API HTTP | ✅ |
+| Alcampo | 38 | API Ocado | ✅ |
+| Carrefour | 20 | Playwright homepage | ✅ |
+| Bonpreu | 21 | Hibrido | ✅ |
+| Esclat | 21 | Hibrido | ✅ |
+| Eroski | 11 | Playwright | ✅ |
+| **Total** | **7,771** | | |
+| Lidl | 0 | Playwright | ❌ (web folletos) |
+| Dia | 0 | Playwright | ❌ (WAF) |
+| Aldi | 0 | — | ❌ |
+| ECI/Hipercor | 0 | Playwright | ❌ (Akamai) |
+
+**Nota**: Alcampo 38 productos (dedup de 47 candidatos), Carrefour 20 (dedup de 35 candidatos). La deduplicacion es correcta — un mismo alimento solo aparece una vez por supermercado, que es el diseno de la BD (unique `supermercado_id + alimento_id`).
 
 ### Notas sobre ejecución
 - **Rate limiting**: DeepSeek ralentizó progresivamente tras ~20.000+ llamadas API. De ~5s/lote a ~85-120s/lote
@@ -145,29 +140,30 @@ cd nutricoach-modulos && pkill -f "enriquecer-alimentos" 2>/dev/null; sleep 1 &&
 - `scripts/diagnosticar-carrefour-categorias.ts` — Atascado (navegación infinita)
 - `scripts/diagnosticar-hipercor-api.ts` — **NUEVO**: Verifica si Hipercor/ECI tienen APIs internas. Resultado: ❌ Akamai bloquea homepage y categorías. No se pudo interceptar APIs. El endpoint `/supermercado/api/productos` existe pero devuelve HTML prerenderizado, no JSON.
 
-### Estado actual de scrapers (15-05-2026 — actualizado con v3)
+### Estado actual de scrapers (16-05-2026 — actualizado con fix dedup)
 
-| Supermercado | Productos | Método | Estado |
+| Supermercado | Productos (DB) | Método | Estado |
 |---|---|---|---|
-| Mercadona | ~4.616+ | API HTTP pública | ✅ |
-| Consum | ~9.785 | API HTTP árbol categorías | ✅ |
-| Alcampo | ~50 | API Ocado HTTP | ✅ |
-| Carrefour | ~54 | Playwright homepage | ✅ |
-| Eroski | ~12+ | Playwright selectores reales | ✅ |
-| **Bonpreu** | **~4.138+** | **Híbrido v3: 1 PW + HTTP directo** | **✅ VERIFICADO** |
-| **Esclat** | **~4.138+** | **Híbrido v3: 1 PW + HTTP directo** | **✅ VERIFICADO** |
+| Consum | 4,765 | API HTTP | ✅ |
+| Mercadona | 2,895 | API HTTP | ✅ |
+| Alcampo | 38 | API Ocado HTTP | ✅ |
+| Carrefour | 20 | Playwright homepage | ✅ |
+| Bonpreu | 21 | Híbrido | ✅ |
+| Esclat | 21 | Híbrido | ✅ |
+| Eroski | 11 | Playwright | ✅ |
 | Lidl | 0 | Playwright | ❌ (web folletos) |
 | Día | 0 | Playwright | ❌ (WAF) |
 | Hipercor | 0 | Playwright | ❌ (Akamai) |
 | El Corte Inglés | 0 | Playwright | ❌ (Akamai) |
 
 ### Pendiente para próxima sesión
-1. ~~Ejecutar pipeline completo de scraping~~ ✅ **EN EJECUCIÓN** — esperar finalización
-2. ~~Investigar si las APIs REST de Bonpreu/Esclat funcionan con fetch HTTP directo~~ ✅ **VERIFICADO — SÍ FUNCIONAN**
+1. ~~Ejecutar pipeline completo de scraping~~ ✅ COMPLETADO
+2. ~~Arreglar Alcampo (precio objeto) y Carrefour (dedup productos)~~ ✅ COMPLETADO
 3. **Hipercor/El Corte Inglés** siguen bloqueados por Akamai — buscar solución tipo API pública, proxy rotatorio, o scraper alternativo
 4. **Lidl** — web de folletos sin lista completa de productos (investigar API alternativa)
 5. **Día** — WAF de Cloudflare sigue bloqueando (investigar si hay API subyacente)
 6. Actualizar ESTADO_Y_PROXIMOS_PASOS.md con stats finales del pipeline
+7. **Consum** — bajar de 4,765 a ~200? (parece que se duplicaron en tandas anteriores)
 
 ---
 
