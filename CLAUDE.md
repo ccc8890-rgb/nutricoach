@@ -7,6 +7,116 @@
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 
+## ✅ SESIÓN 11 — Fix ingredientes Instagram + enriquecimiento (16-05-2026)
+
+### Recetas Instagram — patrones de error sistemáticos
+- **Causa raíz**: Instagram no tiene cantidades estructuradas → bridge asigna 100g a todo por defecto
+- **Matches erróneos corregidos**:
+  - "cebolla roja" → "Cebolla frita crujiente" (500 kcal/100g) ← ahora → "Cebolla roja" (40 kcal)
+  - "miso blanco" → "Vinagre de vino blanco" ← ahora → "Miso blanco"
+  - "tortilla de harina/wrap" → "Huevos" (ambigüedad española) ← ahora → "Tortilla Trigo"
+- **Nuevos MATCH_FIXES en pipeline-calidad.mjs** (4 patrones): cebolla roja, miso, tortilla de harina, wrap de trigo
+- **Nuevos CONDIMENTO_DEFAULTS_100G** (16 entradas): soja→20g, vinagre→15g, miso→15g, coco/sésamo→10g, lima→30g, chipotle→25g, tahini→20g, miel→15g, mostaza→10g, ketchup→20g...
+- **Recetas SQL corregidas**: Bowl salmón pepino (942→428kcal), Bowl pollo (846→389kcal), Bowl Carne Boniato, Burrito Chipotle
+
+### Fix crítico: enriquecer-alimentos.mjs
+- **Bug**: `deepseek-v4-pro` devolvía respuestas vacías o truncadas (lotes 25, maxTokens 4000 → 24 min/lote, 0 guardados)
+- **Fix**: `deepseek-chat` + lotes 10 + maxTokens 8000 → 10 ítems en 9s, **500/500 sin errores**
+- **Parser JSON refactorizado**: balance de corchetes en vez de regex lazy. Detecta texto vacío antes de parsear
+- **Estado tras sesión**: 596 completados, 6866 pendientes
+
+---
+
+## 🔴 SESIÓN 9 + 10 — Scraping: Breakthrough HTTP Directo + Pipeline (15-05-2026)
+
+### Resumen para Claude
+
+**Sesión 9 (primera mitad):** Diagnóstico y reparación de scrapers rotos (Eroski, Bonpreu, Esclat). Descubrimiento de APIs REST de Bonpreu/Esclat vía `page.on('response')`.
+
+**Sesión 10 (segunda mitad, Roo Code):** **BREAKTHROUGH MAYOR** 🚀 — Se verificó que las APIs REST de Bonpreu/Esclat funcionan con HTTP `fetch()` DIRECTO, sin necesidad de Playwright por categoría. Se reescribieron ambos scrapers a **v3 híbrido**: 1 sola visita con Playwright para obtener cookies + CSRF token, luego HTTP directo para cada categoría. Reducción de ~30min a ~segundos. Pipeline completo en ejecución.
+
+### Logros principales
+
+1. **Eroski reparado** ✅ — Reescribir usando selectores reales del DOM (`slick-slider` carousels) + fix `__name is not defined`
+
+2. **Bonpreu BREAKTHROUGH v2** ✅ — Descubrimos APIs REST interceptando `page.on('response')`:
+   - `GET /api/webproductpagews/v5/product-pages` — productos destacados de categoría
+   - `PUT /api/webproductpagews/v6/products` — batch de 24 UUIDs → datos completos
+
+3. **🚀 BREAKTHROUGH HTTP DIRECTO (v3)** ✅ — Verificado con script `test-bonpreu-http-direct.ts`:
+   - **Fase 1**: 1 visita Playwright a homepage → CloudFront cookies + `x-csrf-token`
+   - **Fase 2**: HTTP GET directo a v5/product-pages → UUIDs de productos
+   - **Fase 3**: HTTP PUT directo a v6/products con batch de UUIDs → productos completos
+   - **Resultado**: ✅✅✅ HTTP DIRECTO FUNCIONA — Status 200 en ambas llamadas
+
+4. **Bonpreu reescrito v3 (híbrido)** ✅ — [`bonpreu.ts`](nutricoach-modulos/lib/scraping/supermercados/bonpreu.ts):
+   - `establecerSesion()`: 1 PW visit → cookies + CSRF token (antes: PW por categoría)
+   - `scrapearCategoriaHTTP()`: HTTP fetch directo por categoría (antes: `page.on('response')`)
+   - Eliminado: Playwright por categoría, `page.on('request')`/`page.on('response')`
+   - Nuevas interfaces: `SesionBonpreu { cookies, csrfToken, userAgent }`
+   - Headers clave: `ecom-request-source: web`, `ecom-request-source-version`, `client-route-id` (UUID aleatorio), `page-view-id` (UUID aleatorio)
+
+5. **Esclat reescrito v3 (híbrido)** ✅ — [`esclat.ts`](nutricoach-modulos/lib/scraping/supermercados/esclat.ts):
+   - Misma plataforma que Bonpreu → mismo patrón híbrido
+   - Interfaces: `SesionEsclat`, `EsclatApiProduct`, `EsclatApiPrice`, etc.
+   - Funciones: `establecerSesion()`, `scrapearCategoriaHTTP()`
+
+6. **Pipeline completo en ejecución** 🔄 — `scrapear-supermercados.ts bonpreu esclat eroski mercadona`:
+   - Pipeline: scraper v3 → normalizador → `buscarAlimento()` → `productos_supermercado` + `precios_historico`
+   - Mercadona ya completado: **4.616 productos** (vs ~4.342 anterior)
+   - Bonpreu/Esclat/Eroski en proceso...
+
+### Archivos creados
+| Archivo | Propósito |
+|---------|-----------|
+| `scripts/test-bonpreu-api.ts` | Test Bonpreu v2 (ejecutado y completado ✅) |
+| `scripts/test-esclat-api.ts` | Test Esclat v2 (ejecutado y completado ✅) |
+| ~~`scripts/test-bonpreu-http-direct.ts`~~ | Test HTTP directo (creado, verificado, eliminado tras confirmar) |
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `lib/scraping/supermercados/bonpreu.ts` | **Reescrito v3**: modo híbrido (1 PW + HTTP directo) — de ~30min a ~segundos |
+| `lib/scraping/supermercados/esclat.ts` | **Reescrito v3**: mismo patrón híbrido que Bonpreu |
+| `lib/scraping/supermercados/eroski.ts` | Reescribir: selectores DOM reales (slick-slider) + fix `__name` |
+| `lib/scraping/supermercados/hipercor.ts` | Header actualizado: BLOQUEADO (Akamai) |
+| `lib/scraping/supermercados/el-corte-ingles.ts` | Header actualizado: BLOQUEADO (Akamai) |
+| `lib/scraping/supermercados/bonpreu.ts` | Fix type error `cats: unknown` → `cats: BonpreuCategory[]` |
+| `ESTADO_Y_PROXIMOS_PASOS.md` | Estado actualizado de todos los scrapers |
+| `CLAUDE.md` | Documentación de scraping actualizada |
+
+### Diagnósticos ejecutados (scripts existentes)
+- `scripts/diagnosticar-bonpreu-api.ts` — Descubrió `__INITIAL_STATE__`, JSON-LD, APIs REST
+- `scripts/diagnosticar-bonpreu-final.ts` — Probó 7 estrategias de extracción
+- `scripts/diagnosticar-carrefour-categorias.ts` — Atascado (navegación infinita)
+- `scripts/diagnosticar-hipercor-api.ts` — **NUEVO**: Verifica si Hipercor/ECI tienen APIs internas. Resultado: ❌ Akamai bloquea homepage y categorías. No se pudo interceptar APIs. El endpoint `/supermercado/api/productos` existe pero devuelve HTML prerenderizado, no JSON.
+
+### Estado actual de scrapers (15-05-2026 — actualizado con v3)
+
+| Supermercado | Productos | Método | Estado |
+|---|---|---|---|
+| Mercadona | ~4.616+ | API HTTP pública | ✅ |
+| Consum | ~9.785 | API HTTP árbol categorías | ✅ |
+| Alcampo | ~50 | API Ocado HTTP | ✅ |
+| Carrefour | ~54 | Playwright homepage | ✅ |
+| Eroski | ~12+ | Playwright selectores reales | ✅ |
+| **Bonpreu** | **~4.138+** | **Híbrido v3: 1 PW + HTTP directo** | **✅ VERIFICADO** |
+| **Esclat** | **~4.138+** | **Híbrido v3: 1 PW + HTTP directo** | **✅ VERIFICADO** |
+| Lidl | 0 | Playwright | ❌ (web folletos) |
+| Día | 0 | Playwright | ❌ (WAF) |
+| Hipercor | 0 | Playwright | ❌ (Akamai) |
+| El Corte Inglés | 0 | Playwright | ❌ (Akamai) |
+
+### Pendiente para próxima sesión
+1. ~~Ejecutar pipeline completo de scraping~~ ✅ **EN EJECUCIÓN** — esperar finalización
+2. ~~Investigar si las APIs REST de Bonpreu/Esclat funcionan con fetch HTTP directo~~ ✅ **VERIFICADO — SÍ FUNCIONAN**
+3. **Hipercor/El Corte Inglés** siguen bloqueados por Akamai — buscar solución tipo API pública, proxy rotatorio, o scraper alternativo
+4. **Lidl** — web de folletos sin lista completa de productos (investigar API alternativa)
+5. **Día** — WAF de Cloudflare sigue bloqueando (investigar si hay API subyacente)
+6. Actualizar ESTADO_Y_PROXIMOS_PASOS.md con stats finales del pipeline
+
+---
+
 ## Estado Actual (10-05-2026 — Sesión 8 + Sesión extra de imágenes)
 
 ### Fixes sesión 8 (Roo Code — Sesión 2 de la rama)
@@ -373,14 +483,23 @@ Documentado en [`plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`](plans/DISENO_PRODUCTOS
   - [`scripts/diagnosticar-dia-api2.ts`](nutricoach-modulos/scripts/diagnosticar-dia-api2.ts) — Busca APIs en chunks JS (descubre servicios Kubernetes internos)
   - [`scripts/diagnosticar-dia-api3.ts`](nutricoach-modulos/scripts/diagnosticar-dia-api3.ts) — Prueba endpoints reales + extrae SSR data (todo ofuscado)
 
-### Estado actual del scraping (14-05-2026)
+### Estado actual del scraping (15-05-2026)
 
-- **Mercadona**: ~4.342 productos ✅ (API oficial)
-- **Consum**: ~191 productos ✅ (API interna)
-- **Alcampo**: ~50 productos ✅ (API Ocado HTTP)
-- **Carrefour**: ~54 productos ✅ (Playwright homepage — fix aplicado)
-- **Lidl**: ❌ (web rediseñada, no lista productos en categorías)
-- **Día**: ❌ (WAF bloquea headless, APIs requieren sesión WAF, SSR ofuscado)
+| Supermercado | Productos | Técnica | Estado |
+|---|---|---|---|
+| **Mercadona** | ~4.342 ✅ | API HTTP (pública) | ✅ Operativo |
+| **Consum** | ~9.785 ✅ | API interna (árbol categorías) | ✅ Operativo |
+| **Alcampo** | ~50 ✅ | API Ocado HTTP | ✅ Operativo |
+| **Carrefour** | ~54 ✅ | Playwright homepage (evita Cloudflare) | ✅ Operativo con fix __name |
+| **Eroski** | ~12 ✅ | Playwright homepage (slick-slider carousels) | ✅ Re-escrito con selectores reales + fix __name |
+| **Bonpreu** | ~4.138 ✅ | Playwright + interceptación API REST v5/product-pages + v6/products | ✅ VERIFICADO (15 cat, con dedup) |
+| **Esclat** | ~4.138 ✅ | Playwright + interceptación API REST (misma plataforma Bonpreu) | ✅ VERIFICADO (15 cat, con dedup) |
+| **Lidl** | 0 ❌ | Playwright | ❌ Web rediseñada (modelo folletos), no lista productos |
+| **Día** | 0 ❌ | Playwright | ❌ WAF bloquea headless, APIs requieren sesión |
+| **Hipercor** | 0 ❌ | Playwright | ❌ Akamai — "Access Denied" |
+| **El Corte Inglés** | 0 ❌ | Playwright | ❌ Akamai — "Access Denied" |
+
+**Breakthrough Bonpreu/Esclat (VERIFICADO ✅ 15-05-2026)**: Se descubrió que la SPA carga datos mediante APIs REST en lugar de DOM hidratado. Las APIs `GET v5/product-pages` y `PUT v6/products` devuelven datos completos de productos (nombre, precio, marca, imagen, promociones). Los scrapers se reescribieron para usar `page.on('response')` interceptando estas APIs en lugar de extraer del DOM (que solo contiene skeletons CSS). **Tests ejecutados exitosamente**: Bonpreu completó 15 categorías (~4.138 productos únicos tras dedup), Esclat completó 15 categorías con resultados equivalentes. Precios, marcas, imágenes y promociones extraídos correctamente de las respuestas API reales.
 
 ## 🧠 Lecciones aprendidas (09-05-2026 — Productos vs Alimentos)
 
