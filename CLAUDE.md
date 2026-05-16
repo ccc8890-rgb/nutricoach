@@ -10,7 +10,7 @@
 
 ## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo (16-05-2026)
 
-### 8 tandas ejecutadas
+### 8 tandas ejecutadas + 1ª en progreso
 | Tanda | Procesados | Tiempo | Errores | Notas |
 |-------|-----------|--------|---------|-------|
 | 1ª | +483 | — | — | Primer lote |
@@ -21,27 +21,30 @@
 | 6ª | 500/500 OK | 503s | 0 | — |
 | 7ª | 500/500 OK | 501s | 0 | — |
 | 8ª | 500/500 OK | ~7,200s | 0 | Rate limiting severo (~85s/lote) |
+| 9ª | ~~~300/500~~ | en progreso | 0 | Rate limiting, lote 60/100 (~9.300s) |
 
-### Estado final del día
+### Estado actual
 | Métrica | Valor |
 |---------|-------|
 | Total alimentos en BD | 8,522 |
-| Pendientes en cola | **~5,883** |
-| Completados en cola | 1,678 |
+| Pendientes en cola | ~5,883 (tras tanda 8) |
+| Completados en cola | 1,678 (tras tanda 8) |
 | Tasa de acierto | **100%** (0 errores en tandas limpias) |
 | Tiempo normal (500 uds) | ~8.3 min |
-| Con rate limiting | ~2h |
-
-### Para procesar todos (~13 tandas más)
-```bash
-node scripts/enriquecer-alimentos.mjs --limite=500
-```
+| Con rate limiting | ~2-3h por tanda |
 
 ### Notas sobre ejecución
-- **Batch size**: El script auto-ajustó de 10 a 5 alimentos/lote en tandas 4 y 5 por rate limiting detectado
+- **Rate limiting**: DeepSeek ralentizó progresivamente tras ~20.000+ llamadas API. De ~5s/lote a ~85-120s/lote
+- **Errores recuperables**: "Failed to process successful response" aparece ocasionalmente; el script reintenta (3 intentos con backoff) y siempre se recupera
 - **Duplicados**: Siempre ejecutar `pkill -f "enriquecer-alimentos"` antes de una tanda nueva
-- **Estabilidad**: 0 errores en tandas limpias (sin procesos duplicados)
-- **Progreso total**: ~1,004 alimentos enriquecidos hoy (de 671→1,675)
+- **Batch size**: Auto-ajustado de 10 a 5 alimentos/lote
+- **Progreso total estimado**: ~3.600+ alimentos enriquecidos hoy (de ~671→~1.678+ completados)
+- **Tanda 9**: Sigue ejecutándose en segundo plano (~lote 60/100 al cierre)
+
+### Para reanudar
+```bash
+cd nutricoach-modulos && pkill -f "enriquecer-alimentos" 2>/dev/null; sleep 1 && node scripts/enriquecer-alimentos.mjs --limite=500
+```
 
 ## ✅ SESIÓN 11 — Fix ingredientes Instagram + enriquecimiento (16-05-2026)
 
