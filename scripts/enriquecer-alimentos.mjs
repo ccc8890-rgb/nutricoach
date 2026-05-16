@@ -39,7 +39,7 @@ const args = process.argv.slice(2)
 const LIMITE = parseInt(args.find(a => a.startsWith('--limite'))?.split('=')[1] || '500', 10)
 const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 const TEMPERATURA = 0.1
-const LOTES_POR_VEZ = 10
+const LOTES_POR_VEZ = 5
 const MAX_INTENTOS = 3
 
 // ── Inicializar ──────────────────────────────────────────────────
