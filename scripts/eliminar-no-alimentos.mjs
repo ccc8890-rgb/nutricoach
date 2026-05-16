@@ -15,38 +15,77 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 )
 
+// ⚠️ Mantener sincronizado con lib/scraping/index.ts → NO_COMESTIBLE_KEYWORDS
 const NO_ALIMENTOS_KEYWORDS = [
-  // Limpieza hogar
-  'limpieza', 'bayeta', 'fregona', 'escoba', 'cubo con ruedas', 'mopa', 'rasqueta', 'desatascador', 'desinfectante',
-  'lejía', 'cloro', 'alcohol 96', 'lavaparabrisas', 'bolsas basura', 'bolsas de basura', 'bolsas congelación',
-  'multiusos ph neutro', 'pastillas desinfectantes', 'recambio mopa', 'disuelve manchas', '70% alcohol',
-  'limpiagafas', 'cera multisuperficies', 'pastillas enciende',
   // Higiene personal
-  'maquillaje', 'corrector', 'deliplus', 'rimmel', 'polvo suelto', 'perlas faciales', 'serum',
-  'corrector fluido', 'corrector mate', 'antiarrugas', 'reafirmante',
-  'biberón', 'chupete', 'tetina', 'cepillo limpiabiberón',
-  'desodorante', 'antitranspirante', 'agua facial',
-  'acondicionador', 'champú', 'champu', 'gel de ducha', 'gel de baño', 'gel de afeitar', 'espuma de afeitar',
-  'loción corporal', 'aceite corporal', 'crema corporal', 'sorbete corporal', 'manteca corporal',
-  'crema reductora', 'anticelulítico', 'tratamiento reductor', 'tratamiento para uñas',
-  'laca de uñas', 'rizador de pestañas', 'máscara de pestañas', 'delineador de ojos', 'colorete',
-  'parches para ojos', 'parches faciales', 'tiras faciales',
-  'tónico facial', 'perlas faciales', 'sérum reductor', 'sérum reafirmante',
-  'jabón de manos', 'pasta de dientes',
-  'tampones', 'compresas', 'preservativo', 'preservativos',
-  // Accesorios / hogar
-  'mascarillas quirúrgicas', 'guantes de látex', 'protector cama', 'protectores para los oídos', 'pulsera de citronela',
-  'sacapuntas', 'palo extensible', 'gamuzas', 'esponja de calzado', 'papel hogar', 'plato llano biodegradable',
-  'posavajillas', 'pajitas', 'palillos redondos', 'recipiente de plástico', 'bandeja de cartón', 'molde de papel',
-  'bandas adhesivas', 'cubo de hielo', 'cubos de hielo', 'estropajo', 'borrador mágico',
-  // Mascotas / otros
-  'gato adulto', 'caninos', 'delikuit', 'nuske', 'mascotas', 'animales',
-  // Medicamentos / suplementos no alimentarios
-  'kit analizador', 'roll-on alivio', 'lágrimas hidratantes', 'laxforte', 'cápsulas colagen', 'laxante',
-  'cuquis', 'kit esencial', 'cápsulas lax', 'comprimidos vitaminas',
-  // Marcas / referencias (solo marcas no alimentarias específicas)
-  '3 brujas', 'aquachek', 'bosque verde', 'khanya', 'moldex',
-  'higiene personal', 'cuidado personal', 'hogar', 'limpieza del hogar'
+  'champú', 'champu', 'acondicionador', 'mascarilla capilar', 'sérum capilar',
+  'gel de ducha', 'gel ducha', 'desodorante', 'antitranspirante', 'colonia',
+  'crema corporal', 'loción corporal', 'sorbete corporal', 'manteca corporal',
+  'aceite corporal', 'crema reductora', 'anticelulítico', 'tratamiento reductor',
+  'crema facial', 'sérum facial', 'contorno de ojos', 'parches para ojos',
+  'gel de afeitar', 'espuma de afeitar', 'aftershave', 'after shave', 'maquinilla',
+  'pasta de dientes', 'dentifrico', 'dentífrico', 'cepillo de dientes', 'enjuague bucal', 'hilo dental',
+  'jabón de manos', 'champú seco',
+  'tampón', 'tampones', 'compresas', 'salvaslip', 'protegeslip', 'copa menstrual',
+  'preservativo', 'preservativos', 'lubricante sexual',
+  'pañal', 'pañales', 'toallitas bebé', 'biberón', 'chupete', 'tetina', 'cepillo limpiabiberón',
+  'maquillaje', 'colorete', 'corrector maquillaje', 'base de maquillaje',
+  'máscara de pestañas', 'delineador de ojos', 'sombra de ojos',
+  'laca de uñas', 'tratamiento para uñas', 'rizador de pestañas',
+  // Cosmética / belleza
+  'aftersun', 'after sun', 'agua micelar', 'agua facial', 'agua de peinado',
+  'bálsamo labial', 'balsamo labial', 'protector labial',
+  'barra labios', 'pintalabios', 'labial ',
+  'body spray', 'body mist', 'body lotion', 'body milk',
+  'antiestrias', 'anti-estrias', 'antiestrías',
+  'protector solar', 'crema solar', 'spray solar', 'spf ',
+  'sérum cabello', 'serum cabello', 'ampollas capilares', 'ampollas cabello',
+  'ampollas tratamiento', 'ampollas flash',
+  'aclarante cabello', 'tinte cabello', 'decolorante cabello',
+  'mascarilla facial', 'exfoliante facial', 'desmaquillante',
+  'bastoncillos', 'algodón hidrófilo', 'algodón mágico',
+  'bandas depilatorias', 'cera depilatoria', 'crema depilatoria',
+  'alicate uñas', 'lima uñas', 'cortauñas',
+  'espuma cabello', 'fijador cabello',
+  'aplicador sombra', 'autobronceador', 'locion reafirmante',
+  // Sanidad / farmacia
+  'apósitos', 'apositos', 'tiritas', 'vendas',
+  'suero fisiológico', 'ampollas suero',
+  'arcos dentales', 'irrigador dental',
+  'laxante', 'laxforte',
+  'lentes de contacto', 'lágrimas hidratantes', 'lagrimas hidratantes',
+  'clorhexidina',
+  // Limpieza hogar
+  'lejía', 'limpiador', 'limpiacristales', 'desengrasante', 'quitamanchas ropa',
+  'detergente ropa', 'suavizante ropa', 'pastillas lavavajillas', 'gel lavavajillas',
+  'limpiahogar', 'limpiavidrios', 'limpiagafas', 'lavaparabrisas',
+  'bayeta', 'estropajo', 'fregona', 'bolsa basura', 'bolsas basura',
+  'papel higiénico', 'papel de cocina', 'papel aluminio', 'film transparente',
+  'ambientador', 'difusor ambientador', 'insecticida', 'trampa ratas',
+  'borrador mágico', 'cera multisuperficies', 'sosa cáustica',
+  'alcohol 96', 'agua oxigenada', 'amoniaco',
+  'abrillantador', 'quitagrasas', 'desincrustante', 'posavajillas',
+  'rasqueta', 'multiusos', 'disuelve manchas', 'limpiajuntas', 'desatascador',
+  'escoba', 'escobilla', 'plumero', 'recogedor', 'fregasuelos',
+  'absorbeolores', 'antipolilla', 'antipolillas',
+  'repelente insectos', 'repelente mosquitos', 'citronela colgador',
+  'aditivo textil', 'desinfectante textil', 'quitamanchas desinfectante',
+  'recambio mopa', 'limpia mopas', 'gamuzas',
+  'blanqueador juntas',
+  // Menaje / descartables
+  'cuaderno', 'bolígrafo', 'boligrafo', 'pilas', 'bombilla',
+  'guantes desechables', 'mascarillas quirúrgicas', 'cubrecalzado',
+  'bandeja cartón', 'bandeja carton', 'bol biodegradable', 'plato biodegradable',
+  'cubiertos desechables', 'pajitas', 'bolsa isotérmica', 'bolsas reutilizables',
+  'barreño', 'sacapuntas', 'almohadilla inferior',
+  // Mascotas
+  'arena gatos', 'arena para gato', 'pienso', 'comida para gato', 'comida para perro',
+  'aritos perro', 'cepillo mascotas', 'toallitas mascotas', 'empapadores mascotas',
+  'lecho mascotas', 'pinza animales',
+  // Bebé no alimenticio
+  'bañador desechable', 'banador desechable', 'babero desechable', 'anillo denticion',
+  // Aparatos eléctricos
+  'aparato eléctrico', 'aparato ectrico', 'aparato ecttrico', 'recambio eléctrico',
 ]
 
 // Bebidas alcohólicas — se eliminan independientemente de las calorías
