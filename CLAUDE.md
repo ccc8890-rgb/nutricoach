@@ -10,17 +10,29 @@
 
 ## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo (16-05-2026)
 
-### Ejecución de enriquecimiento
+### Primera tanda (+483 alimentos)
 - **Lanzado**: `node scripts/enriquecer-alimentos.mjs --limite=500` desde nutricoach-modulos/
 - **Resultado**: +483 alimentos enriquecidos (de 671→1,154 completados en cola)
-- **Pendientes restantes**: 6,795 (vista `alimentos_pendientes_enriquecer`)
-- **Total alimentos en BD**: 8,522
-- **Métrica real**: La diferencia entre cola (1,154) y pendientes (6,795) = 7,949, pero el total es 8,522 → ~573 alimentos ya tenían algunos macros pero no aparecen en la vista porque no cumplen el criterio ANY macro = 0 o NULL
-- **Modelo usado**: `deepseek-chat`, lotes de 10, maxTokens 8000 → ~8s por lote, 0 errores
+- **Modelo**: `deepseek-chat`, lotes de 10, maxTokens 8000 → ~8s por lote, 0 errores
 
-### Pendiente
-- Quedan ~6,795 alimentos sin macros completos
-- Para procesar todos: ejecutar `node scripts/enriquecer-alimentos.mjs --limite=500` varias veces más
+### Segunda tanda (+500 alimentos, 0 errores)
+- **Lanzado**: `node scripts/enriquecer-alimentos.mjs --limite=500`
+- **Resultado**: **500/500 OK**, 0 errores, 407.4s de duración (~8.1s/lote)
+- **Completados totales en cola**: 1,350
+
+### Estado actual tras 2 tandas
+| Métrica | Valor |
+|---------|-------|
+| Total alimentos en BD | 8,522 |
+| Completados (cola) | **1,350** (+983 desde inicio del día) |
+| Pendientes (vista) | **6,648** |
+| Tasa de acierto | **100%** (0 errores en 1,000 procesados hoy) |
+| Tiempo por lote | ~8s |
+
+### Para procesar todos (~13 tandas más)
+```bash
+node scripts/enriquecer-alimentos.mjs --limite=500
+```
 
 ## ✅ SESIÓN 11 — Fix ingredientes Instagram + enriquecimiento (16-05-2026)
 
