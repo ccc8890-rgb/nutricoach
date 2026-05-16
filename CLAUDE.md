@@ -8,9 +8,9 @@
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
 - **Enriquecer alimentos:** `node scripts/enriquecer-alimentos.mjs --limite=N`
 
-## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo (16-05-2026)
+## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo + Pipeline scraping (16-05-2026)
 
-### 8 tandas ejecutadas + 1ª en progreso
+### 9 tandas ejecutadas + Pipeline scraping completado
 | Tanda | Procesados | Tiempo | Errores | Notas |
 |-------|-----------|--------|---------|-------|
 | 1ª | +483 | — | — | Primer lote |
@@ -21,25 +21,40 @@
 | 6ª | 500/500 OK | 503s | 0 | — |
 | 7ª | 500/500 OK | 501s | 0 | — |
 | 8ª | 500/500 OK | ~7,200s | 0 | Rate limiting severo (~85s/lote) |
-| 9ª | ~~~300/500~~ | en progreso | 0 | Rate limiting, lote 60/100 (~9.300s) |
+| 9ª | +144 (parcial) | — | 0 | Rate limiting. Queda corriendo `--limite=100` |
 
-### Estado actual
+**Pipeline scraping paralelo** ✅ — `scrapear-supermercados.ts bonpreu esclat eroski mercadona`
+
+### Estado actual (cierre)
 | Métrica | Valor |
 |---------|-------|
 | Total alimentos en BD | 8,522 |
-| Pendientes en cola | ~5,883 (tras tanda 8) |
-| Completados en cola | 1,678 (tras tanda 8) |
+| **Pendientes en cola** | **~8,945** (aumentaron por scraping de nuevos productos) |
+| **Completados en cola** | **2,178** (sigue subiendo — script activo) |
 | Tasa de acierto | **100%** (0 errores en tandas limpias) |
 | Tiempo normal (500 uds) | ~8.3 min |
 | Con rate limiting | ~2-3h por tanda |
+
+### Resultados del Pipeline scraping
+| Supermercado | Productos en DB |
+|---|---|
+| Consum | 5,130 |
+| Mercadona | 3,031 |
+| Bonpreu | 24 |
+| Esclat | 24 |
+| Eroski | 14 |
+| **Total** | **8,223** |
+
+**Nota**: Bonpreu/Esclat solo tienen 24 productos cada uno — indica que el scraper v3 híbrido encontró pocos productos o el matching con alimentos existentes fue bajo. Consum saltó de ~194 a 5,130 (probablemente de tandas anteriores). Mercadona consolidado en 3,031.
 
 ### Notas sobre ejecución
 - **Rate limiting**: DeepSeek ralentizó progresivamente tras ~20.000+ llamadas API. De ~5s/lote a ~85-120s/lote
 - **Errores recuperables**: "Failed to process successful response" aparece ocasionalmente; el script reintenta (3 intentos con backoff) y siempre se recupera
 - **Duplicados**: Siempre ejecutar `pkill -f "enriquecer-alimentos"` antes de una tanda nueva
 - **Batch size**: Auto-ajustado de 10 a 5 alimentos/lote
-- **Progreso total estimado**: ~3.600+ alimentos enriquecidos hoy (de ~671→~1.678+ completados)
-- **Tanda 9**: Sigue ejecutándose en segundo plano (~lote 60/100 al cierre)
+- **Progreso total acumulado**: ~671 → **2,178 completados** (+1,507 en esta sesión)
+- **Scraping paralelo**: Se ejecutó `scrapear-supermercados.ts bonpreu esclat eroski mercadona` mientras el enriquecimiento seguía en segundo plano
+- **Commit**: `8bd4a12` (cierre sesión)
 
 ### Para reanudar
 ```bash
