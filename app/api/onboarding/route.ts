@@ -68,13 +68,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error al guardar onboarding' }, { status: 500 })
   }
 
-  // Fire-and-forget plan generation
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  fetch(`${baseUrl}/api/generar-plan-inicial`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cliente_id: cliente.id }),
-  }).catch(() => {})
-
+  // Plan generation is triggered after the deep profile form (/api/onboarding/perfil)
   return NextResponse.json({ cliente_id: cliente.id })
 }

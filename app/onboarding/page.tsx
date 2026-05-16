@@ -81,7 +81,7 @@ export default function OnboardingPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error al guardar')
-      router.push(`/cliente/${data.cliente_id}/dashboard?onboarding=completo`)
+      router.push('/onboarding/perfil')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error inesperado')
       setLoading(false)

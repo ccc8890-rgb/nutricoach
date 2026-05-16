@@ -51,6 +51,13 @@ export async function POST(request: NextRequest) {
 
   if (!onboarding) return NextResponse.json({ error: 'Onboarding no completado' }, { status: 400 })
 
+  // Fetch deep profile (optional — may not exist yet)
+  const { data: perfil } = await supabase
+    .from('onboarding_perfil_profundo')
+    .select('*')
+    .eq('cliente_id', cliente_id)
+    .single()
+
   const tdee = calcularTDEE(
     cliente.peso_inicial ?? 70,
     cliente.altura ?? 170,
@@ -63,30 +70,91 @@ export async function POST(request: NextRequest) {
   const grasas = Math.round((kcalObjetivo * 0.28) / 9)
   const carbos = Math.round((kcalObjetivo - proteinas * 4 - grasas * 9) / 4)
 
-  const prompt = `Eres un dietista experto. Genera un plan nutricional inicial en JSON.
+  // Build timing context for circadian nutrition
+  const ventanaAlimentacion = perfil?.hora_primera_ingesta && perfil?.hora_ultima_ingesta
+    ? `Ventana de alimentación: ${perfil.hora_primera_ingesta} - ${perfil.hora_ultima_ingesta}`
+    : ''
 
-DATOS DEL CLIENTE:
+  // Behavioral flags for the AI
+  const esInflexible = perfil?.todo_o_nada === 'si'
+  const tieneAnsiedad = ['ansiedad', 'conflicto'].includes(perfil?.relacion_comida ?? '')
+  const duermePoco = (perfil?.horas_sueno ?? 7) < 6
+  const estresAlto = (perfil?.nivel_estres ?? 0) >= 4
+  const confianzaBaja = (perfil?.autoeficacia ?? 10) < 7
+
+  const prompt = `Eres Carlos Casanova, dietista titulado. Genera un plan nutricional inicial altamente personalizado en JSON.
+
+═══ DATOS FÍSICOS Y OBJETIVO ═══
 - Objetivo: ${onboarding.objetivo}
-- TDEE calculado: ${tdee} kcal/día
-- Kcal objetivo (ajustado): ${kcalObjetivo} kcal/día
+- TDEE calculado (Mifflin-St Jeor): ${tdee} kcal/día
+- Kcal objetivo ajustado: ${kcalObjetivo} kcal/día
 - Macros objetivo: ${proteinas}g proteína | ${carbos}g carbohidratos | ${grasas}g grasa
-- Actividad: ${onboarding.actividad_base} (${onboarding.dias_entreno} días/semana de ${onboarding.duracion_sesion_min} min)
+- Sexo: ${cliente.sexo ?? 'no especificado'} | Edad: ${cliente.edad ?? '?'} | Peso: ${cliente.peso_inicial ?? '?'}kg
+
+═══ ACTIVIDAD Y ENTRENAMIENTO ═══
+- Nivel actividad: ${onboarding.actividad_base} (${onboarding.dias_entreno} días/semana, ${onboarding.duracion_sesion_min} min/sesión)
 - Tipos de entrenamiento: ${onboarding.tipo_entreno?.join(', ') || 'no especificado'}
-- Restricciones: ${onboarding.restricciones?.join(', ') || 'ninguna'}
-- Alimentos no deseados: ${onboarding.alimentos_no_gustan || 'ninguno'}
+${perfil?.hora_entreno ? `- Hora habitual de entreno: ${perfil.hora_entreno}` : ''}
+${perfil?.descripcion_semana_entreno ? `- Descripción semana tipo: ${perfil.descripcion_semana_entreno}` : ''}
+${perfil?.fecha_competicion ? `- COMPETICIÓN PRÓXIMA: ${perfil.fecha_competicion} (${perfil.tipo_competicion || 'tipo no especificado'})` : ''}
+${perfil?.nutricion_peri_entreno ? `- Nutrición peri-entreno actual: ${perfil.nutricion_peri_entreno}` : ''}
+
+═══ RESTRICCIONES Y PREFERENCIAS ALIMENTARIAS ═══
+- Intolerancias/alergias: ${onboarding.restricciones?.join(', ') || 'ninguna'}
+- Alimentos no deseados (wizard): ${onboarding.alimentos_no_gustan || 'ninguno'}
+${perfil?.alimentos_evitar_extra ? `- Alimentos que no comería nunca: ${perfil.alimentos_evitar_extra}` : ''}
+${perfil?.comidas_favoritas ? `- COMIDAS QUE LE ENCANTAN (incluir en el plan): ${perfil.comidas_favoritas}` : ''}
+${perfil?.suplementos ? `- Suplementos actuales: ${perfil.suplementos}` : ''}
+${perfil?.alcohol_semanal ? `- Consumo de alcohol semanal: ${perfil.alcohol_semanal} unidades` : ''}
+
+═══ ALIMENTACIÓN REAL HOY ═══
+${perfil?.dia_tipico ? `- Día típico actual del cliente: ${perfil.dia_tipico}` : '- Sin información de hábitos actuales'}
+
+═══ LOGÍSTICA Y COCINA ═══
 - Nivel cocina: ${onboarding.nivel_cocina}
 - Tiempo para cocinar: ${onboarding.tiempo_cocina_min} min/día
+${onboarding.presupuesto_semanal_eur ? `- Presupuesto semanal: ${onboarding.presupuesto_semanal_eur}€` : ''}
+${perfil?.con_quien_come?.length ? `- Come habitualmente con: ${perfil.con_quien_come.join(', ')}` : ''}
+${perfil?.frecuencia_fuera ? `- Come fuera de casa: ${perfil.frecuencia_fuera} veces/semana` : ''}
+${perfil?.comida_trampa ? `- "Válvula de escape" planificada: ${perfil.comida_trampa}` : ''}
+
+═══ HORARIOS Y TIMING ═══
+${ventanaAlimentacion}
+${perfil?.hora_comida_principal ? `- Comida principal: ${perfil.hora_comida_principal}` : ''}
+${perfil?.patrones_energia?.length ? `- Patrones de energía reportados: ${perfil.patrones_energia.join(', ')}` : ''}
+
+═══ SALUD Y BIENESTAR ═══
+${perfil?.condiciones_salud ? `- Condiciones de salud / medicación: ${perfil.condiciones_salud}` : '- Sin condiciones reportadas'}
+- Sueño: ${perfil?.horas_sueno ?? 7}h/noche, calidad ${perfil?.calidad_sueno ?? '?'}/5
+- Estrés habitual: ${perfil?.nivel_estres ?? '?'}/5
+
+═══ PERFIL PSICOLÓGICO Y ADHERENCIA ═══
+- Confianza en seguir el plan: ${perfil?.autoeficacia ?? '?'}/10
+- Historial dietas: ${perfil?.historial_dietas?.join(', ') || 'ninguna anterior'}
+${perfil?.razones_abandono?.length ? `- Razones de abandono anteriores: ${perfil.razones_abandono.join(', ')}` : ''}
+- Relación con la comida: ${perfil?.relacion_comida || 'no especificada'}
+- Mentalidad "todo o nada": ${perfil?.todo_o_nada || 'no especificada'}
+${perfil?.trigger_onboarding ? `- Motivación para buscar ayuda: ${perfil.trigger_onboarding}` : ''}
+
+═══ FLAGS DE PERSONALIZACIÓN CRÍTICOS ═══
+${confianzaBaja ? '⚠️ CONFIANZA BAJA (<7): diseñar plan FLEXIBLE con margen del 20%, evitar restricciones duras.' : ''}
+${esInflexible ? '⚠️ MENTALIDAD TODO-O-NADA: incluir días de flex integrados, nunca alimentos "prohibidos absolutos".' : ''}
+${tieneAnsiedad ? '⚠️ RELACIÓN COMPLEJA CON COMIDA: evitar lenguaje de culpa, incluir permiso explícito para la válvula de escape.' : ''}
+${duermePoco ? '⚠️ SUEÑO <6H: aumentar proteína en snacks para controlar grelina, anticipar hambre extra de 300-500 kcal.' : ''}
+${estresAlto ? '⚠️ ESTRÉS ALTO: incluir snacks de control anti-ansiedad (proteína+fibra), aceptar mayor variabilidad calórica.' : ''}
 
 Responde SOLO con este JSON (sin markdown):
 {
   "kcal_objetivo": número,
   "macros": { "proteinas_g": número, "carbos_g": número, "grasas_g": número },
   "distribucion_comidas": [
-    { "nombre": "Desayuno", "porcentaje_kcal": número, "kcal": número, "hora_sugerida": "HH:MM" },
-    ...
+    { "nombre": string, "porcentaje_kcal": número, "kcal": número, "hora_sugerida": "HH:MM", "notas": "string breve" }
   ],
-  "recomendaciones": ["frase corta 1", "frase corta 2", "frase corta 3"],
-  "notas_coach": "texto breve para el coach con puntos clave de este perfil"
+  "estrategia_adherencia": "1-2 frases sobre cómo adaptar el plan a su perfil psicológico concreto",
+  "valvula_escape": "cómo integrar su comida trampa sin destruir el plan",
+  "recomendaciones": ["máx 4 frases cortas accionables y específicas para ESTE cliente"],
+  "alertas_coach": ["alertas o puntos de atención específicos para que el coach los vigile"],
+  "notas_coach": "párrafo con los puntos clave del perfil — qué vigilar, qué evitar, qué potenciar"
 }`
 
   let planJson: Record<string, unknown> = {}
@@ -122,17 +190,25 @@ Responde SOLO con este JSON (sin markdown):
 
   // If DeepSeek failed, build a minimal plan from our calculations
   if (!planJson.kcal_objetivo) {
+    const horaBase = perfil?.hora_primera_ingesta ?? '08:00'
     planJson = {
       kcal_objetivo: kcalObjetivo,
       macros: { proteinas_g: proteinas, carbos_g: carbos, grasas_g: grasas },
       distribucion_comidas: [
-        { nombre: 'Desayuno', porcentaje_kcal: 25, kcal: Math.round(kcalObjetivo * 0.25), hora_sugerida: '08:00' },
-        { nombre: 'Comida', porcentaje_kcal: 35, kcal: Math.round(kcalObjetivo * 0.35), hora_sugerida: '13:30' },
-        { nombre: 'Merienda', porcentaje_kcal: 15, kcal: Math.round(kcalObjetivo * 0.15), hora_sugerida: '17:00' },
-        { nombre: 'Cena', porcentaje_kcal: 25, kcal: Math.round(kcalObjetivo * 0.25), hora_sugerida: '20:30' },
+        { nombre: 'Desayuno', porcentaje_kcal: 25, kcal: Math.round(kcalObjetivo * 0.25), hora_sugerida: horaBase, notas: '' },
+        { nombre: 'Comida', porcentaje_kcal: 35, kcal: Math.round(kcalObjetivo * 0.35), hora_sugerida: '13:30', notas: '' },
+        { nombre: 'Merienda', porcentaje_kcal: 15, kcal: Math.round(kcalObjetivo * 0.15), hora_sugerida: '17:00', notas: '' },
+        { nombre: 'Cena', porcentaje_kcal: 25, kcal: Math.round(kcalObjetivo * 0.25), hora_sugerida: perfil?.hora_ultima_ingesta ?? '20:30', notas: '' },
       ],
-      recomendaciones: ['Plan generado automáticamente. El coach revisará y personalizará.'],
-      notas_coach: `Cliente nuevo. Objetivo: ${onboarding.objetivo}. TDEE: ${tdee} kcal.`,
+      estrategia_adherencia: confianzaBaja ? 'Plan flexible con margen de error incorporado.' : 'Plan estructurado con flexibilidad semanal.',
+      valvula_escape: perfil?.comida_trampa ? `${perfil.comida_trampa} integrado como comida libre semanal planificada.` : 'Una comida libre semanal permitida.',
+      recomendaciones: ['Plan generado. El coach revisará y personalizará en detalle.'],
+      alertas_coach: [
+        ...(confianzaBaja ? ['Autoeficacia baja — revisar expectativas'] : []),
+        ...(duermePoco ? ['Sueño insuficiente — vigilar hambre y adherencia'] : []),
+        ...(estresAlto ? ['Estrés alto — riesgo de alimentación emocional'] : []),
+      ],
+      notas_coach: `Cliente nuevo. Objetivo: ${onboarding.objetivo}. TDEE: ${tdee} kcal. Autoeficacia: ${perfil?.autoeficacia ?? '?'}/10.`,
     }
   }
 
