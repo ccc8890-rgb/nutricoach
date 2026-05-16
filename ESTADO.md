@@ -1,16 +1,16 @@
-# ESTADO NutriCoach — 13-05-2026 (Sesión 11 — PWA/Offline + Bugs + Precios básicos COMPLETADO)
+# ESTADO NutriCoach — 16-05-2026 (Sesión 16 — Auditoría bugs post-reconciliación + Build verificado ✅)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (13-05-2026).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (16-05-2026).
 
 ---
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Sesión 11 completada. SelectorComparativa integrado. PWA/offline activado (SW v2 + manifest standalone). Seed de precios + reconciliación de vinculación creado. **Bug crítico corregido:** `comidas_alimentos` → `comida_alimentos` (10 referencias en 4 API routes). Build verificado ✅.
+**Fase:** Sesión 12 completada. **TODAS las migraciones SQL pendientes ejecutadas y verificadas.** Reconciliación de vinculación scraping→alimentos ejecutada (100% productos vinculados). `match_alimento` mejorada con 6 pasos priorizando seed. Auditoría completa de 29 SQL files contra BD real. Build pendiente para próxima sesión.
 
 ---
 
-## ✅ COMPLETADO (13-05-2026) — Sesión 11 — PWA/Offline + Bug Fix + Precios
+## ✅ COMPLETADO (16-05-2026) — Sesión 12 — Migraciones BD + Reconciliación
 
 ### 🔷 SelectorComparativa ✅
 - **`SelectorComparativa.tsx`** creado e integrado en `ListaCompra.tsx`
@@ -53,12 +53,68 @@ Estrategia de caché SW v2:
 
 ---
 
+## ✅ COMPLETADO (16-05-2026) — Detalle
+
+### 🔷 Migraciones SQL pendientes — Auditoría completa ✅
+- **Verificados 29 archivos SQL** contra BD real columna a columna
+- **Ejecutados 3 scripts** que estaban pendientes:
+  - [`supabase_productos_vs_alimentos.sql`](nutricoach-modulos/supabase_productos_vs_alimentos.sql) — columna `preferido`, índices URL únicos, vistas `mejores_precios_por_alimento`, `top_precios_escandallo`, `precios_actuales` actualizada
+  - [`seed_precios_supermercado.sql`](nutricoach-modulos/seed_precios_supermercado.sql) — precios básicos para 20+ alimentos en 7 supermercados
+  - [`supabase_fix_rls_alimentos.sql`](nutricoach-modulos/supabase_fix_rls_alimentos.sql) — políticas RLS para lectura pública de alimentos compartidos
+
+### 🔷 Reconciliación de Vinculación (Scraping → Alimentos) ✅
+- **Ejecutado [`supabase_reconciliacion_vinculacion.sql`](nutricoach-modulos/supabase_reconciliacion_vinculacion.sql)**
+  - ✅ Creada función `reconciliar_alimento()` — matching progresivo 5 niveles
+  - ✅ Re-apuntados productos_supermercado a alimentos seed correctos
+  - ✅ Eliminados **1.206 duplicados huérfanos** (sin referencias)
+  - ✅ **`match_alimento` actualizada** — versión mejorada con 6 pasos:
+    1. Exacto (prioriza seed)
+    2. Sin acentos (prioriza seed)
+    3. Contiene bidireccional (solo seed)
+    4. Palabra clave más larga (solo seed)
+    5. Fuzzy similarity > 0.3 (solo seed)
+    6. Fallback genérico
+  - ✅ **Extensión `unaccent` instalada** para matching sin acentos
+
+### 🔷 Estado final BD
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| Productos vinculados | 7.528 | 7.528 (100%) |
+| Productos → alimentos sin macros | 4.274 (56.8%) | 4.269 (alimentos legítimos sin macros: sal, especias, agua) |
+| Productos → alimentos con macros | 3.254 | 3.259 |
+| Duplicados genéricos (es_generico=true) | 2.831 | 1.625 |
+| Productos → duplicados scraping | 84 | 84 (requieren re-scrape) |
+
+### 🔷 Verificaciones adicionales
+- 43 tablas en schema público ✅
+- 114 entries en `knowledge_base` ✅
+- 25 categorías IA en `alimento_categorias_ia` ✅
+- 11.106 alimentos en cola de enriquecimiento ✅
+- 12 supermercados ✅
+- `calcular_macros_receta` con columnas correctas (post-fix trigger) ✅
+
+---
+
+## 🐛 Auditoría de Bugs (16-05-2026) ✅
+### Build verificado
+- `npx tsc --noEmit` (nutricoach): **0 errores** (3 corregidos)
+- `npx next build` (nutricoach): **0 errores** ✅
+- `npx tsc --noEmit` (nutricoach-modulos): Solo errores en scripts/ de diagnóstico (32, todos one-shot)
+
+### Bugs corregidos
+1. **`addToast` con 2 args en lugar de objeto** — [`MiPlan.tsx`](nutricoach/components/PortalCliente/MiPlan.tsx:152)
+2. **`total_interacciones` no existe en interfaz** — [`actualizar-perfil.ts`](nutricoach/lib/personalizacion/actualizar-perfil.ts:49)
+
+### Patrón débil detectado
+- **21 `.catch(() => {})` silenciosos** sin logging en scrapers, modales y componentes
+- Documentado en [`salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md`](salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md)
+
 ## 🔜 PRÓXIMA SESIÓN (prioridades)
 
-1. **Probar el Dashboard de Rentabilidad en vivo** — seleccionar cliente con precios y verificar que los datos se renderizan
-2. **Validar que las proyecciones de ahorro funcionan** — probar con Mercadona vs Lidl
-3. **Histórico y Tendencias** — Mostrar evolución de precios en el tiempo (si hay datos históricos)
-4. **Relanzar lote restante Content Radar** (los ~50 items que quedaron por SSL timeout)
+1. **Re-scrapear supermercados** para que los nuevos productos usen `match_alimento` mejorado (versión 6 pasos)
+2. **Verificar Dashboard de Rentabilidad en vivo** — seleccionar cliente con precios
+3. **Validar proyecciones de ahorro** — probar con Mercadona vs Lidl
+4. **Build de verificación:** `npx next build`
 5. **Despliegue en Vercel**
 
 ---

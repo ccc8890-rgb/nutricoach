@@ -255,7 +255,10 @@ const COMESTIBLE_EXCEPTIONS = [
     'coliflor microondas',
     'verduras microondas',
     'patatas microondas', 'batatas microondas',
+    'patata microondas', 'batata microondas',   // singular
     'verdura microondas',
+    'vegetales microondas',                      // "3 Vegetales Microondas"
+    'sazonador ',
     'coliflor-brócoli-zanahoria microondas',
     'floretas de',
     // Freidora — productos que son COMIDA (aceites/sprays para freidora)
@@ -270,12 +273,20 @@ function esNoComestible(nombre: string): boolean {
 
     // Primero, detectar potencia en vatios (electrodomésticos)
     // Patrones: "500 w", "200w", "1500 w", "(W)", etc.
-    const tieneVatios = /\d+\s*w/i.test(lower) || /\(w\)/i.test(lower)
+    // Mínimo 3 dígitos para evitar "1 Wrap" en nombres de sushi
+    const tieneVatios = /\d{3,}\s*w/i.test(lower) || /\(w\)/i.test(lower)
     if (tieneVatios) return true
 
     // Verificar NO_COMESTIBLE_KEYWORDS con excepciones
     const matchKw = NO_COMESTIBLE_KEYWORDS.find(kw => lower.includes(kw))
     if (matchKw) {
+        // Excepciones para dosificador + miel (la miel con dosificador es comida)
+        if (matchKw.includes('dosificador') && lower.includes('miel')) return false
+        // Excepciones para grill + brocheta/minigrill/tostadas/biscotes (comida a la plancha)
+        if (matchKw === 'grill' && (lower.includes('brocheta') || lower.includes('minigrill')
+            || lower.includes('tostada') || lower.includes('biscotes'))) return false
+        // Excepción para vela + chorizo (chorizo extra vela dulce)
+        if (matchKw.trim() === 'vela' && lower.includes('chorizo')) return false
         // Si el keyword es "freidora" o "microondas", verificar excepciones
         if ((matchKw.includes('freidora') || matchKw.includes('microondas'))
             && COMESTIBLE_EXCEPTIONS.some(ex => lower.includes(ex))) {

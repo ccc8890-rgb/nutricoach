@@ -650,22 +650,48 @@ La SPA de Bonpreu/Esclat usa dos APIs REST que devuelven productos completos en 
 - [`el-corte-ingles.ts`](nutricoach-modulos/lib/scraping/supermercados/el-corte-ingles.ts) — Fix __name + header "BLOQUEADO Akamai"
 - [`eroski.ts`](nutricoach-modulos/lib/scraping/supermercados/eroski.ts) — Reescrito desde cero (sesión anterior)
 
+### ✅ COMPLETADO EN SESIÓN SIGUIENTE (16-05-2026) — Sesión 15 — Migraciones BD y reconciliación
+
+#### 🔧 Auditoría y migraciones SQL completadas
+- [x] **Auditoría de 29 SQL files** contra BD real columna a columna — verificado que 24 ya estaban aplicados
+- [x] **Ejecutado** [`supabase_productos_vs_alimentos.sql`](nutricoach-modulos/supabase_productos_vs_alimentos.sql) (pendiente: columna `preferido`, índices URL únicos, vistas)
+- [x] **Ejecutado** [`seed_precios_supermercado.sql`](nutricoach-modulos/seed_precios_supermercado.sql) (precios básicos 20+ alimentos en 7 supermercados)
+- [x] **Ejecutado** [`supabase_fix_rls_alimentos.sql`](nutricoach-modulos/supabase_fix_rls_alimentos.sql) (políticas RLS públicas)
+- [x] **Instalada extensión** `unaccent` para matching sin acentos
+- [x] **Creada función** `reconciliar_alimento()` — matching progresivo 5 niveles
+
+#### 🔗 Reconciliación de vinculación (Scraping → Alimentos)
+- [x] **Ejecutado** [`supabase_reconciliacion_vinculacion.sql`](nutricoach-modulos/supabase_reconciliacion_vinculacion.sql) completo
+- [x] **Re-apuntados** productos_supermercado → alimentos seed correctos
+- [x] **Eliminados 1.206 duplicados huérfanos** sin referencias
+- [x] **`match_alimento` mejorada**: de 3 pasos → 6 pasos con priorización de seed
+
+#### 📊 Estado final vinculación
+| Métrica | Valor |
+|---------|-------|
+| Productos totales | 7.528 (100% vinculados) |
+| → Alimentos con macros | 3.259 (43.3%) |
+| → Alimentos sin macros (legítimos: sal, especias, agua, etc.) | 4.185 (55.6%) |
+| → Alimentos duplicados scraping (es_generico=true) | 84 (1.1%) — requieren re-scrape |
+| Alimentos duplicados restantes | 1.625 (pendientes de re-scrape para re-vincular) |
+
 ### Pendiente para próxima sesión
 
 - [x] ~~Verificar Bonpreu/Esclat~~ ✅ **BREAKTHROUGH HTTP DIRECTO (v3)**: APIs funcionan con fetch() directo. Scrapers reescritos a modo híbrido (1 PW + HTTP directo)
 - [x] ~~**Lidl v3**: Ejecutar scraper completo (60 términos en 4 lotes)~~ ✅ **EJECUTADO**: 429 productos únicos en 4.0 min, 0 scraping errors
 - [x] ~~**Lidl v3**: Re-scrapear con pipeline BD~~ ✅ **EJECUTADO**: 16 alimentos nuevos, 147 actualizados, 263 historico
 - [x] ~~**Lidl**: Filtro NO_COMESTIBLE_KEYWORDS ampliado~~ ✅ **COMPLETADO**: ~260 keywords (de ~155), 27 falsos positivos eliminados
+- [ ] **Re-scrapear supermercados** para re-vincular ~84 productos que aún apuntan a duplicados (usará `match_alimento` v2 mejorado)
 - [ ] **Hipercor/El Corte Inglés**: Akamai sigue bloqueando. Diagnóstico ejecutado (15-05-2026): "Access Denied" en homepage. Sin API interna descubierta.
-- [ ] Actualizar PanelScraping para mostrar múltiples productos por alimento con nombre_original y marca
 - [ ] Dashboard de rentabilidad/ahorro con la vista `top_precios_escandallo`
 - [ ] Automatización con Vercel Cron Jobs (plan Pro)
 - [ ] Refinar normalizador para subir el ~24% de match exacto (más sinónimos)
 - [ ] Histórico de precios y tendencias (gráficos, alertas)
 - [ ] **Mercadona**: Re-scrapear (~2,895 productos, posible desactualización)
 - [ ] **Lidl**: Re-ejecutar trimestralmente (75 productos, mantener precios actualizados)
+- [ ] Build de verificación: `npx next build`
 
 ---
 
 **Última actualización:** 16-05-2026 (cierre sesión)
-**Responsable:** Roo (Sesión 14 — Lidl v3 pipeline completo ✅)
+**Responsable:** Roo (Sesión 15 — Migraciones BD completas + Reconciliación ✅)

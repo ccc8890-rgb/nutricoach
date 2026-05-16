@@ -77,15 +77,15 @@
 ### Estado actual de productos por supermercado
 | Supermercado | Productos | Método | Estado |
 |---|---|---|---|
-| Consum | 4,765 | API HTTP | ✅ |
-| Mercadona | 2,895 | API HTTP | ✅ |
+| Consum | 4,763 | API HTTP | ✅ |
+| Mercadona | 2,820 | API HTTP | ✅ |
 | Alcampo | 38 | API Ocado | ✅ |
-| Carrefour | 20 | Playwright homepage | ✅ |
+| Carrefour | 17 | Playwright homepage | ✅ |
 | Bonpreu | 21 | Híbrido | ✅ |
 | Esclat | 21 | Híbrido | ✅ |
 | Eroski | 11 | Playwright | ✅ |
-| **Lidl** | **~149** | **Híbrido v4**: Playwright (erpNumbers) + gridboxes API (precios+cat) | **✅ v4** |
-| **Total** | **~7,920** | | |
+| **Lidl** | **74** | **Híbrido v4**: Playwright (erpNumbers) + gridboxes API (precios+cat) | **✅ v4** |
+| **Total** | **7,765** | | |
 | Dia | 0 | Playwright | ❌ (WAF) |
 | Aldi | 0 | — | ❌ |
 | ECI/Hipercor | 0 | Playwright | ❌ (Akamai) |
@@ -93,9 +93,9 @@
 ### Pendiente para próxima sesión
 1. **Día**: Investigar si hay API subyacente tras el WAF de Cloudflare
 2. **ECI/Hipercor**: Siguen bloqueados por Akamai
-3. **Consum**: Bajar de 4,765 a ~200? (posible duplicación de tandas anteriores)
-4. **Lidl**: Re-ejecutar trimestralmente para mantener precios actualizados (75 productos)
-5. **Mercadona**: Re-scrapear (2,895 productos, posible desactualización)
+3. **Lidl**: Re-ejecutar trimestralmente para mantener precios actualizados (74 productos)
+4. **Mercadona**: Re-scrapear (2,820 productos, posible desactualización)
+5. **Consum**: 4,763 productos — sin duplicados reales
 
 ---
 
