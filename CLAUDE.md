@@ -10,12 +10,13 @@
 
 ## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo (16-05-2026)
 
-### 3 tandas ejecutadas
-| Tanda | Completados | Pendientes restantes | Notas |
-|-------|-------------|---------------------|-------|
-| 1ª | 671→1,154 (+483) | 6,795 | Primer lote de 500 |
-| 2ª | 1,154→1,350 (+500) | 6,648 | 500/500 OK, 407s, 0 errores |
-| 3ª | 1,350→1,486 (+136 parcial) | 6,535 | Interrumpida por procesos duplicados |
+### 4 tandas ejecutadas
+| Tanda | Completados en cola | Pendientes | Notas |
+|-------|--------------------|------------|-------|
+| 1ª | 671→1,154 (+483) | 6,795 | Primer lote |
+| 2ª | 1,154→1,350 (+500) | 6,648 | 500/500 OK, 407s |
+| 3ª | 1,350→1,486 (+136 parcial) | 6,535 | Interrumpida por duplicados |
+| 4ª | 1,486→1,595 (+500) | 6,446 | 500/500 OK, 517s, 0 errores |
 
 ### Estado final del día
 | Métrica | Valor |
