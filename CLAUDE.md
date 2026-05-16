@@ -10,28 +10,36 @@
 
 ## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo (16-05-2026)
 
-### 4 tandas ejecutadas
+### 5 tandas ejecutadas
 | Tanda | Completados en cola | Pendientes | Notas |
 |-------|--------------------|------------|-------|
 | 1ª | 671→1,154 (+483) | 6,795 | Primer lote |
-| 2ª | 1,154→1,350 (+500) | 6,648 | 500/500 OK, 407s |
+| 2ª | 1,154→1,350 (+500) | 6,648 | 500/500 OK, 407s, 0 errores |
 | 3ª | 1,350→1,486 (+136 parcial) | 6,535 | Interrumpida por duplicados |
 | 4ª | 1,486→1,595 (+500) | 6,446 | 500/500 OK, 517s, 0 errores |
+| 5ª | 1,595→1,675 (+500) | 6,442 | 500/500 OK, 504s, 0 errores |
 
 ### Estado final del día
 | Métrica | Valor |
 |---------|-------|
 | Total alimentos en BD | 8,522 |
-| Completados (cola) | **1,486** (+815 desde inicio del día) |
-| Pendientes (vista) | **6,535** |
-| Tasa de acierto | **100%** (0 errores) |
-| Tiempo por lote (normal) | ~8s |
+| Completados (cola) | **1,675** (+1,004 desde inicio del día) |
+| Pendientes (vista) | **6,442** |
+| Tasa de acierto | **100%** (0 errores en 4 de 5 tandas) |
+| Tiempo por tanda (500 uds) | ~8.5 min |
+| Tiempo por lote (normal) | ~4-5s |
 | Tiempo por lote (con rate limiting) | ~45s |
 
 ### Para procesar todos (~13 tandas más)
 ```bash
 node scripts/enriquecer-alimentos.mjs --limite=500
 ```
+
+### Notas sobre ejecución
+- **Batch size**: El script auto-ajustó de 10 a 5 alimentos/lote en tandas 4 y 5 por rate limiting detectado
+- **Duplicados**: Siempre ejecutar `pkill -f "enriquecer-alimentos"` antes de una tanda nueva
+- **Estabilidad**: 0 errores en tandas limpias (sin procesos duplicados)
+- **Progreso total**: ~1,004 alimentos enriquecidos hoy (de 671→1,675)
 
 ## ✅ SESIÓN 11 — Fix ingredientes Instagram + enriquecimiento (16-05-2026)
 
