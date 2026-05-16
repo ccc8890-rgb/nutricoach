@@ -8,13 +8,16 @@ import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
 import { SkeletonCard } from '@/components/ui/Skeleton'
 
-// Categorías existentes en la BD
+// Categorías en orden lógico de grupos alimenticios
 const CATEGORIAS = [
-    'Carnes', 'Pescados', 'Huevos', 'Lácteos', 'Suplementos',
-    'Cereales', 'Tubérculos', 'Legumbres', 'Verduras', 'Frutas',
-    'Grasas', 'Frutos secos', 'Semillas', 'Condimentos', 'Otros',
-    'Bebidas', 'Supermercado',
+    'Carnes', 'Pescados', 'Huevos', 'Lácteos',
+    'Verduras', 'Frutas', 'Legumbres', 'Cereales', 'Tubérculos',
+    'Grasas', 'Frutos secos', 'Semillas', 'Condimentos',
+    'Bebidas', 'Suplementos', 'Otros', 'Supermercado',
 ]
+
+// Orden de display de categorías (el mismo array define la prioridad)
+const CATEGORY_ORDER = CATEGORIAS
 
 const CATEGORIA_ICON: Record<string, typeof Beef> = {
     Carnes: Beef,
@@ -441,8 +444,18 @@ export default function AlimentosPage() {
                     </div>
                 ) : (
                     <div className="space-y-8">
-                        {/* Resultados locales agrupados por categoría */}
-                        {Object.entries(grupos).map(([categoria, items]) => {
+                        {/* Resultados locales agrupados por categoría — orden lógico */}
+                        {Object.entries(grupos)
+                            .sort(([a], [b]) => {
+                                const ia = CATEGORY_ORDER.indexOf(a)
+                                const ib = CATEGORY_ORDER.indexOf(b)
+                                // Categorías conocidas primero; desconocidas al final por orden alfabético
+                                if (ia === -1 && ib === -1) return a.localeCompare(b)
+                                if (ia === -1) return 1
+                                if (ib === -1) return -1
+                                return ia - ib
+                            })
+                            .map(([categoria, items]) => {
                             const Icon = CATEGORIA_ICON[categoria] ?? CircleDot
                             const color = CATEGORIA_COLOR[categoria] ?? '#6B7280'
                             return (

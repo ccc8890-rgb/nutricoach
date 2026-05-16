@@ -17,6 +17,20 @@ import type { ProductoRaw } from './types'
 // ── Filtro de productos no comestibles ──────────────────────────
 
 const NO_COMESTIBLE_KEYWORDS = [
+    // Filtros y accesorios de café/cocina
+    'filtro de café', 'filtros de café', 'filtro cafe', 'filtros cafe',
+    'papel filtro', 'filtro papel', 'cápsulas compatibles nespresso',
+    'cápsulas dolce gusto', 'capsulas compatibles', 'capsula compatible',
+    'vaso de papel', 'vasos de papel', 'vaso termico', 'vaso desechable',
+    // Papel y embalaje
+    'papel higiénico', 'papel de cocina', 'papel aluminio', 'film transparente',
+    'papel vegetal', 'papel de horno desechable', 'bolsa de papel kraft',
+    'bolsa congelación', 'bolsas congelación', 'bolsa basura', 'bolsas basura',
+    'bolsas de basura', 'bolsa zip', 'bolsas zip',
+    'servilleta de papel', 'servilletas de papel', 'pañuelo de papel', 'pañuelos de papel',
+    'rollo de cocina', 'rollos de cocina', 'papel tissue',
+    'bandeja de aluminio', 'molde desechable', 'molde de aluminio desechable',
+    'film de plástico', 'bolsa kraft',
     // Higiene personal
     'champú', 'champu', 'acondicionador', 'mascarilla capilar', 'sérum capilar',
     'gel de ducha', 'gel ducha', 'desodorante', 'antitranspirante', 'colonia',
@@ -32,19 +46,26 @@ const NO_COMESTIBLE_KEYWORDS = [
     'cepillo limpiabiberón',
     'maquillaje', 'colorete', 'corrector maquillaje', 'base de maquillaje',
     'máscara de pestañas', 'delineador de ojos', 'sombra de ojos',
-    'laca de uñas', 'tratamiento para uñas', 'rizador de pestañas',
+    'laca de uñas', 'esmalte de uñas', 'tratamiento para uñas', 'rizador de pestañas',
+    'rizador de pelo', 'plancha de pelo',
     // Limpieza hogar
-    'lejía', 'limpiador', 'desengrasante', 'quitamanchas ropa',
+    'lejía', 'limpiador multiusos', 'desengrasante', 'quitamanchas ropa',
     'detergente ropa', 'suavizante ropa', 'pastillas lavavajillas', 'gel lavavajillas',
     'limpiahogar', 'limpiavidrios', 'limpiagafas', 'lavaparabrisas',
     'bayeta', 'estropajo', 'fregona', 'bolsa basura', 'bolsas basura',
-    'papel higiénico', 'papel de cocina', 'papel aluminio', 'film transparente',
     'ambientador', 'difusor ambientador', 'insecticida', 'trampa ratas',
     'borrador mágico', 'cera multisuperficies', 'sosa cáustica',
-    'alcohol 96', 'agua oxigenada', 'amoniaco',
+    'alcohol 96', 'agua oxigenada sanitaria', 'amoniaco',
+    'pastillas enciende', 'desatascador', 'guantes de fregar',
+    // Accesorios / utensilios desechables
+    'palillos de dientes', 'mondadientes', 'pajitas desechables', 'cañitas desechables',
+    'cubiertos desechables', 'tenedor desechable', 'cuchara desechable',
+    'plato de cartón', 'plato desechable', 'bandeja cartón',
+    'pulsera citronela', 'repelente mosquitos spray',
     // Mascotas
     'comida para gato', 'comida para perro', 'pienso', 'arena para gato',
     'snack para perro', 'snack para gato', 'gatos adulto', 'caninos',
+    'alimento para mascota',
 ]
 
 /** Devuelve true si el nombre del producto indica que NO es comestible por humanos */
