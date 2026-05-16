@@ -29,6 +29,7 @@ import {
   ShoppingCart,
   Clock,
   TrendingUp,
+  Sparkles,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -55,8 +56,10 @@ const NUTRICION_SUBITEMS = [
   { href: '/recetas', label: 'Recetario', icon: BookOpen },
   { href: '/recetas/cola', label: 'Pendientes', icon: Clock },
   { href: '/precios', label: 'Precios', icon: Store },
+  { href: '/precios/scraping', label: 'Scraping', icon: ShoppingCart },
   { href: '/precios/escandallo', label: 'Escandallo', icon: Receipt },
   { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: TrendingUp },
+  { href: '/precios/enriquecer', label: 'Enriquecer', icon: Sparkles },
   { href: '/compra', label: 'Lista de la compra', icon: ShoppingCart },
 ]
 
