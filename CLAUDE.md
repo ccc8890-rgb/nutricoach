@@ -10,24 +10,22 @@
 
 ## ✅ SESIÓN 12 — Enriquecimiento nutricional masivo (16-05-2026)
 
-### Primera tanda (+483 alimentos)
-- **Lanzado**: `node scripts/enriquecer-alimentos.mjs --limite=500` desde nutricoach-modulos/
-- **Resultado**: +483 alimentos enriquecidos (de 671→1,154 completados en cola)
-- **Modelo**: `deepseek-chat`, lotes de 10, maxTokens 8000 → ~8s por lote, 0 errores
+### 3 tandas ejecutadas
+| Tanda | Completados | Pendientes restantes | Notas |
+|-------|-------------|---------------------|-------|
+| 1ª | 671→1,154 (+483) | 6,795 | Primer lote de 500 |
+| 2ª | 1,154→1,350 (+500) | 6,648 | 500/500 OK, 407s, 0 errores |
+| 3ª | 1,350→1,486 (+136 parcial) | 6,535 | Interrumpida por procesos duplicados |
 
-### Segunda tanda (+500 alimentos, 0 errores)
-- **Lanzado**: `node scripts/enriquecer-alimentos.mjs --limite=500`
-- **Resultado**: **500/500 OK**, 0 errores, 407.4s de duración (~8.1s/lote)
-- **Completados totales en cola**: 1,350
-
-### Estado actual tras 2 tandas
+### Estado final del día
 | Métrica | Valor |
 |---------|-------|
 | Total alimentos en BD | 8,522 |
-| Completados (cola) | **1,350** (+983 desde inicio del día) |
-| Pendientes (vista) | **6,648** |
-| Tasa de acierto | **100%** (0 errores en 1,000 procesados hoy) |
-| Tiempo por lote | ~8s |
+| Completados (cola) | **1,486** (+815 desde inicio del día) |
+| Pendientes (vista) | **6,535** |
+| Tasa de acierto | **100%** (0 errores) |
+| Tiempo por lote (normal) | ~8s |
+| Tiempo por lote (con rate limiting) | ~45s |
 
 ### Para procesar todos (~13 tandas más)
 ```bash
