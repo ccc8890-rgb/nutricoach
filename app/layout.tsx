@@ -1,15 +1,10 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
 import Script from "next/script"
 import "./globals.css"
 import { ToastProvider } from '@/components/ui/Toast'
 import { ThemeProvider } from '@/components/ThemeProvider'
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-})
 
 export const metadata: Metadata = {
   title: "Casanova Nutrition",
@@ -44,11 +39,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`h-full ${inter.variable}`} suppressHydrationWarning>
+    <html lang="es" className={`h-full ${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <body
         className="min-h-full font-sans overflow-x-hidden"
         style={{
-          fontFamily: '-apple-system, BlinkMacSystemFont, var(--font-inter), system-ui, sans-serif',
+          fontFamily: 'var(--font-geist-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif',
           WebkitTapHighlightColor: 'transparent',
           overscrollBehavior: 'none',
         }}

@@ -6,31 +6,22 @@ import Link from 'next/link'
 import { useToast } from '@/components/ui/Toast'
 import {
   Users,
-  UtensilsCrossed,
-  MessageSquareReply,
-  TrendingUp,
+  ForkKnife,
+  ChatCircle,
+  TrendUp,
   ArrowRight,
-  CalendarDays,
-  AlertTriangle,
-  CheckCircle2,
-  Heart,
-  ClipboardCheck,
-  Award,
-  Target,
+  CalendarBlank,
+  Warning,
+  CheckCircle,
+  Lightning,
   Plus,
-  Sparkles,
-} from 'lucide-react'
-// ── Dynamic imports (charts solo se cargan cuando se usan) ──
+  Sparkle,
+  UserPlus,
+  BookOpen,
+} from '@phosphor-icons/react'
 import { SkeletonChart } from '@/components/ui/Skeleton'
 import { CountUp } from '@/components/ui/CountUp'
-import { FadeIn, StaggerList, StaggerItem } from '@/components/ui/Motion'
-import { StatCardPremium } from '@/components/premium'
 import { MiniSparkline } from '@/components/dashboard/MiniSparkline'
-
-const LineChart = dynamic(() => import('@/components/dashboard/LineChart'), {
-  loading: () => <SkeletonChart height={120} />,
-  ssr: false,
-})
 
 const BarChart = dynamic(() => import('@/components/dashboard/BarChart'), {
   loading: () => <SkeletonChart height={100} />,
@@ -49,7 +40,6 @@ const MiniDonut = dynamic(() => import('@/components/dashboard/MiniDonut'), {
 
 // ── Interfaces ──
 
-/** Resultado del SELECT con join a profiles */
 type ClienteRow = {
   id: string
   profile: { nombre: string; apellidos: string; email: string } | null
@@ -90,37 +80,31 @@ interface AnalyticsData {
   timestamp: string
 }
 
-// ── STAT CARDS ──
-
 interface StatCardConfig {
   label: string
   key: keyof Stats
-  icon: typeof Users
+  icon: React.ElementType
   accent: string
-  /** Datos mock de tendencia para sparkline (simula variación sobre ~12 periodos) */
   trend?: number[]
 }
 
+// ── Config ──
+
 const STAT_CARDS: StatCardConfig[] = [
-  {
-    label: 'Clientes', key: 'totalClientes' as const, icon: Users, accent: 'var(--accent)',
-    trend: [4, 3, 5, 4, 6, 5, 7, 6, 8, 7, 9, 10]
-  },
-  {
-    label: 'Dietas activas', key: 'dietasActivas' as const, icon: UtensilsCrossed, accent: 'var(--accent-light)',
-    trend: [2, 3, 2, 4, 3, 5, 4, 6, 5, 7, 6, 8]
-  },
-  {
-    label: 'Respuestas pendientes', key: 'respuestasPendientes' as const, icon: MessageSquareReply, accent: 'var(--accent)',
-    trend: [1, 2, 1, 3, 2, 4, 3, 2, 5, 4, 3, 6]
-  },
-  {
-    label: 'Nuevas hoy', key: 'respuestasNuevas' as const, icon: TrendingUp, accent: 'var(--info)',
-    trend: [0, 1, 0, 2, 1, 0, 3, 1, 2, 0, 1, 2]
-  },
+  { label: 'Clientes', key: 'totalClientes', icon: Users, accent: 'var(--accent)', trend: [4,3,5,4,6,5,7,6,8,7,9,10] },
+  { label: 'Dietas activas', key: 'dietasActivas', icon: ForkKnife, accent: 'var(--accent-light)', trend: [2,3,2,4,3,5,4,6,5,7,6,8] },
+  { label: 'Respuestas pendientes', key: 'respuestasPendientes', icon: ChatCircle, accent: 'var(--accent)', trend: [1,2,1,3,2,4,3,2,5,4,3,6] },
+  { label: 'Nuevas hoy', key: 'respuestasNuevas', icon: TrendUp, accent: 'var(--info)', trend: [0,1,0,2,1,0,3,1,2,0,1,2] },
 ]
 
-// ── Página Principal ──
+const QUICK_ACTIONS = [
+  { label: 'Nuevo cliente', href: '/clientes/nuevo', icon: UserPlus, bg: 'var(--accent-bg)', color: 'var(--accent)' },
+  { label: 'Nueva dieta', href: '/dietas/nueva', icon: ForkKnife, bg: 'var(--accent-bg)', color: 'var(--accent-light)' },
+  { label: 'Consultas', href: '/respuestas', icon: ChatCircle, bg: 'var(--info-bg)', color: 'var(--info)' },
+  { label: 'Recetario', href: '/recetas', icon: BookOpen, bg: 'var(--surface-elevated)', color: 'var(--text-secondary)' },
+]
+
+// ── Página ──
 
 export default function DashboardPage() {
   const { addToast } = useToast()
@@ -130,7 +114,6 @@ export default function DashboardPage() {
     clientesConDieta: 0, clientesSinDieta: 0,
     dietasActivas: 0, dietasInactivas: 0,
   })
-  const [clientes, setClientes] = useState<ClienteRow[]>([])
   const [loading, setLoading] = useState(true)
   const [revisionesProximas, setRevisionesProximas] = useState<{ id: string; nombre: string; apellidos: string; fecha: string }[]>([])
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
@@ -149,9 +132,9 @@ export default function DashboardPage() {
           supabase.from('respuestas_clientes').select('id, estado, created_at').eq('coach_id', user.id),
         ])
 
-        if (resClientes.error) console.error('[dashboard] Error clientes:', resClientes.error.message, resClientes.error.details)
-        if (resDietas.error) console.error('[dashboard] Error dietas:', resDietas.error.message, resDietas.error.details)
-        if (resRespuestas.error) console.error('[dashboard] Error respuestas:', resRespuestas.error.message, resRespuestas.error.details)
+        if (resClientes.error) console.error('[dashboard] Error clientes:', resClientes.error.message)
+        if (resDietas.error) console.error('[dashboard] Error dietas:', resDietas.error.message)
+        if (resRespuestas.error) console.error('[dashboard] Error respuestas:', resRespuestas.error.message)
 
         const clientesData = resClientes.data ?? []
         const dietasData = resDietas.data ?? []
@@ -167,10 +150,7 @@ export default function DashboardPage() {
 
         const hoy = new Date()
         hoy.setHours(0, 0, 0, 0)
-        const respuestasNuevas = resps.filter(r => {
-          const d = new Date(r.created_at)
-          return d >= hoy
-        }).length
+        const respuestasNuevas = resps.filter(r => new Date(r.created_at) >= hoy).length
 
         setStats({ totalClientes, totalDietas, respuestasPendientes, respuestasNuevas, clientesConDieta, clientesSinDieta, dietasActivas, dietasInactivas })
 
@@ -188,25 +168,19 @@ export default function DashboardPage() {
           .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
           .slice(0, 5)
         setRevisionesProximas(proxRevisiones)
-
-        setClientes(clientesData as unknown as ClienteRow[])
       } catch (e) {
-        console.error('[dashboard] Excepción en load:', e)
+        console.error('[dashboard] Excepción:', e)
       }
       setLoading(false)
     }
     load()
   }, [])
 
-  // ── Cargar analytics ──
   useEffect(() => {
     async function loadAnalytics() {
       try {
         const res = await fetch('/api/dashboard/analytics')
-        if (res.ok) {
-          const data = await res.json()
-          setAnalytics(data)
-        }
+        if (res.ok) setAnalytics(await res.json())
       } catch (e) {
         console.error('Error loading analytics:', e)
         addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar las analíticas' })
@@ -217,37 +191,36 @@ export default function DashboardPage() {
     loadAnalytics()
   }, [])
 
-  const a = analytics?.totales
-  const loadingA = analyticsLoading
-  const analyticsData = analytics
-
   return (
-    <main className="flex-1 p-8 max-w-7xl">
-      {/* Header — premium con glow y Sparkles animado */}
+    <main className="flex-1 p-6 sm:p-8 max-w-7xl">
+
+      {/* ── Header ── */}
       <header className="mb-6 sm:mb-8">
-        <div className="flex items-start justify-between gap-3 stack-mobile sm:flex-row sm:items-center">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-0.5">
               <h1 className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--text)' }}>Dashboard</h1>
-              <Sparkles size={18} className="animate-spin-slow" style={{ color: 'var(--accent)' }} />
+              <Sparkle size={16} weight="fill" style={{ color: 'var(--accent)' }} />
             </div>
-            <p className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>Panel de control con analytics avanzados</p>
+            <p className="text-xs sm:text-sm capitalize" style={{ color: 'var(--text-muted)' }}>
+              {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2">
             <Link href="/clientes/nuevo" className="btn btn-primary btn-sm">
-              <span className="hidden sm:inline">+ Nuevo cliente</span>
+              <Plus size={13} weight="bold" />
+              <span className="hidden sm:inline">Nuevo cliente</span>
               <span className="sm:hidden">+ Cliente</span>
             </Link>
-            <Link href="/dietas/nueva" className="btn btn-ghost btn-sm">
-              <span className="hidden sm:inline">+ Nueva dieta</span>
-              <span className="sm:hidden">+ Dieta</span>
+            <Link href="/dietas/nueva" className="btn btn-ghost btn-sm hidden sm:flex">
+              + Dieta
             </Link>
           </div>
         </div>
       </header>
 
-      {/* ═══ BENTO GRID — STATS CARDS PREMIUM con sparklines ═══ */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* ── Stat cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         {STAT_CARDS.map(({ label, key, icon: Icon, accent, trend }) => {
           const value = stats[key]
           const idx = STAT_CARDS.findIndex(s => s.key === key)
@@ -255,31 +228,28 @@ export default function DashboardPage() {
             <div
               key={key}
               className="card-glass card-hoverable animate-fade-in"
-              style={{ animationDelay: `${idx * 80}ms` }}
+              style={{ animationDelay: `${idx * 60}ms` }}
             >
               <div className="flex items-start justify-between mb-3">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: 'var(--accent-bg)' }}
-                >
-                  <Icon size={20} style={{ color: accent }} />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: 'var(--accent-bg)' }}>
+                  <Icon size={18} weight="fill" style={{ color: accent }} />
                 </div>
-                {/* Mini sparkline de tendencia */}
                 {trend && !loading && (
-                  <MiniSparkline data={trend} width={64} height={24} color={accent} />
+                  <MiniSparkline data={trend} width={56} height={22} color={accent} />
                 )}
               </div>
               {loading ? (
-                <div className="space-y-2">
-                  <div className="skeleton h-8 w-16" />
-                  <div className="skeleton h-4 w-24" />
+                <div className="space-y-1.5">
+                  <div className="skeleton h-7 w-12" />
+                  <div className="skeleton h-3.5 w-20" />
                 </div>
               ) : (
                 <>
                   <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
                     <CountUp to={value as number} />
                   </p>
-                  <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{label}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{label}</p>
                 </>
               )}
             </div>
@@ -287,114 +257,53 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* ═══ BENTO GRID — FILA 1: Tendencia (span 2) + Quick stats ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-        {/* Tendencia check-ins — span 2 columnas (destacado) */}
-        <div className="lg:col-span-2 card-glass card-hoverable">
-          <div className="flex items-center gap-2 mb-4">
-            <Heart size={18} style={{ color: 'var(--error)' }} />
-            <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Tendencia de check-ins</h2>
-            {!loadingA && analyticsData && (
-              <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>
-                {analyticsData.tendenciaCheckins.reduce((s, d) => s + d.total, 0)} check-ins totales
-              </span>
-            )}
-          </div>
-          {loadingA ? (
-            <div className="skeleton h-24 w-full" />
-          ) : !analyticsData || analyticsData.tendenciaCheckins.every(d => d.total === 0) ? (
-            <div className="text-center py-6">
-              <Heart size={28} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Aún no hay check-ins registrados</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                Los clientes harán check-in desde su portal
-              </p>
-            </div>
-          ) : (
-            <LineChart
-              data={analyticsData.tendenciaCheckins.map(d => ({
-                label: d.label,
-                valor: d.adherenciaPromedio,
-                valor2: d.energiaPromedio,
-                valor3: d.suenoPromedio,
-              }))}
-              height={90}
-              color="#30D158"
-              color2="var(--accent)"
-              color3="var(--info)"
-              showDots={true}
-              labels={{ label1: 'Adherencia', label2: 'Energía', label3: 'Sueño' }}
-            />
-          )}
+      {/* ── Quick actions ── */}
+      <div className="card-glass mb-6">
+        <div className="flex items-center gap-1.5 mb-3.5">
+          <Lightning size={13} weight="fill" style={{ color: 'var(--accent)' }} />
+          <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+            Acciones rápidas
+          </span>
         </div>
-
-        {/* Quick stats — columna lateral */}
-        <div className="flex flex-col gap-3">
-          {!loadingA && analyticsData ? (
-            <>
-              <div className="card-glass flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-bg)' }}>
-                  <ClipboardCheck size={17} style={{ color: 'var(--accent)' }} />
-                </div>
-                <div>
-                  <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>
-                    <CountUp to={a?.totalCheckins ?? 0} />
-                  </p>
-                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Check-ins totales</p>
-                </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {QUICK_ACTIONS.map(({ label, href, icon: Icon, bg, color }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all duration-150 active:scale-95"
+              style={{ background: 'var(--surface-hover)' }}
+            >
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: bg }}>
+                <Icon size={14} weight="fill" style={{ color }} />
               </div>
-              <div className="card-glass flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--info-bg)' }}>
-                  <MessageSquareReply size={17} style={{ color: 'var(--info)' }} />
-                </div>
-                <div>
-                  <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>
-                    <CountUp to={a?.totalRespuestas ?? 0} />
-                  </p>
-                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Respuestas totales</p>
-                </div>
-              </div>
-              <div className="card-glass flex items-center gap-3"
-                style={{ borderColor: a && a.clientesSinDieta > 0 ? 'rgba(255,69,58,0.2)' : undefined }}>
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--error-bg)' }}>
-                  <Users size={17} style={{ color: 'var(--error)' }} />
-                </div>
-                <div>
-                  <p className="text-lg font-bold" style={{ color: a && a.clientesSinDieta > 0 ? 'var(--error)' : 'var(--text)' }}>
-                    {a?.clientesSinDieta ?? 0}
-                  </p>
-                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Clientes sin dieta</p>
-                </div>
-              </div>
-            </>
-          ) : loadingA ? (
-            <>
-              {[1, 2, 3].map(i => <div key={i} className="card-glass skeleton h-[60px]" />)}
-            </>
-          ) : null}
+              <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</span>
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* ═══ BENTO GRID — FILA 2: Nuevos clientes + Consultas ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        {/* Nuevos clientes por mes */}
+      {/* ── Nuevos clientes + Consultas ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+
+        {/* Nuevos clientes */}
         <div className="card-glass card-hoverable">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <TrendingUp size={17} style={{ color: 'var(--accent)' }} />
+              <TrendUp size={16} weight="fill" style={{ color: 'var(--accent)' }} />
               <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Nuevos clientes</h2>
             </div>
-            {!loadingA && analyticsData && (
+            {!analyticsLoading && analytics && (
               <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                +{analyticsData.nuevosClientesPorMes.reduce((s, d) => s + d.valor, 0)} total
+                +{analytics.nuevosClientesPorMes.reduce((s, d) => s + d.valor, 0)} total
               </span>
             )}
           </div>
-          {loadingA ? (
+          {analyticsLoading ? (
             <div className="skeleton h-20 w-full" />
-          ) : !analyticsData || analyticsData.nuevosClientesPorMes.every(d => d.valor === 0) ? (
+          ) : !analytics || analytics.nuevosClientesPorMes.every(d => d.valor === 0) ? (
             <div className="text-center py-6">
-              <TrendingUp size={28} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
+              <TrendUp size={28} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin clientes nuevos aún</p>
               <Link href="/clientes/nuevo" className="btn btn-ghost btn-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
                 <Plus size={14} /> Añadir cliente
@@ -402,7 +311,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <BarChart
-              data={analyticsData.nuevosClientesPorMes.map(d => ({ label: d.mes, valor: d.valor }))}
+              data={analytics.nuevosClientesPorMes.map(d => ({ label: d.mes, valor: d.valor }))}
               height={90}
               color="var(--accent)"
             />
@@ -412,14 +321,14 @@ export default function DashboardPage() {
         {/* Consultas pendientes */}
         <div className="card-glass card-hoverable">
           <div className="flex items-center gap-2 mb-4">
-            <MessageSquareReply size={17} style={{ color: 'var(--accent)' }} />
+            <ChatCircle size={16} weight="fill" style={{ color: 'var(--accent)' }} />
             <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Consultas pendientes</h2>
           </div>
-          {loadingA ? (
+          {analyticsLoading ? (
             <div className="skeleton h-20 w-full" />
-          ) : !analyticsData || analyticsData.distribucionRespuestas.every(d => d.valor === 0) ? (
+          ) : !analytics || analytics.distribucionRespuestas.every(d => d.valor === 0) ? (
             <div className="text-center py-6">
-              <MessageSquareReply size={28} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
+              <ChatCircle size={28} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin respuestas de cuestionarios</p>
               <Link href="/cuestionarios" className="btn btn-ghost btn-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
                 <Plus size={14} /> Crear cuestionario
@@ -427,30 +336,20 @@ export default function DashboardPage() {
             </div>
           ) : (
             <StackedBar
-              items={analyticsData.distribucionRespuestas.map(d => ({
-                label: d.label,
-                valor: d.valor,
-                color: d.color,
-              }))}
-              total={analyticsData.distribucionRespuestas.reduce((s, d) => s + d.valor, 0)}
+              items={analytics.distribucionRespuestas.map(d => ({ label: d.label, valor: d.valor, color: d.color }))}
+              total={analytics.distribucionRespuestas.reduce((s, d) => s + d.valor, 0)}
               height={20}
             />
           )}
-          {/* Mini donut + leyenda compacta */}
-          {!loadingA && analyticsData && analyticsData.distribucionRespuestas.some(d => d.valor > 0) && (
-            <div className="flex items-center gap-4 mt-4 pt-3 border-t"
-              style={{ borderColor: 'var(--border)' }}>
+          {!analyticsLoading && analytics && analytics.distribucionRespuestas.some(d => d.valor > 0) && (
+            <div className="flex items-center gap-4 mt-4 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
               <MiniDonut
-                data={analyticsData.distribucionRespuestas.filter(d => d.valor > 0).map(d => ({
-                  label: d.label,
-                  valor: d.valor,
-                  color: d.color,
-                }))}
+                data={analytics.distribucionRespuestas.filter(d => d.valor > 0).map(d => ({ label: d.label, valor: d.valor, color: d.color }))}
                 size={36}
                 innerRadius={12}
               />
               <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px]">
-                {analyticsData.distribucionRespuestas.filter(d => d.valor > 0).map(d => (
+                {analytics.distribucionRespuestas.filter(d => d.valor > 0).map(d => (
                   <div key={d.estado} className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full" style={{ background: d.color }} />
                     <span style={{ color: 'var(--text-muted)' }}>{d.label}</span>
@@ -463,170 +362,14 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ═══ BENTO GRID — FILA 3: Clientes dieta + Dietas por cliente ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        {/* Clientes con/sin dieta */}
-        <div className="card-glass card-hoverable">
+      {/* ── Próximas revisiones + Estado ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+
+        {/* Próximas revisiones — span 2 */}
+        <div className="lg:col-span-2 card-glass card-hoverable">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Users size={17} style={{ color: 'var(--accent)' }} />
-              <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Clientes con dieta asignada</h2>
-            </div>
-          </div>
-          {loading ? (
-            <div className="skeleton h-12 w-full" />
-          ) : stats.totalClientes === 0 ? (
-            <p className="text-sm text-center py-6" style={{ color: 'var(--text-muted)' }}>Sin clientes todavía</p>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex rounded-full overflow-hidden h-4">
-                <div className="transition-all duration-500"
-                  style={{
-                    width: `${(stats.clientesConDieta / stats.totalClientes) * 100}%`,
-                    background: 'var(--accent)',
-                  }} />
-                <div className="transition-all duration-500"
-                  style={{
-                    width: `${(stats.clientesSinDieta / stats.totalClientes) * 100}%`,
-                    background: 'var(--border)',
-                  }} />
-              </div>
-              <div className="flex justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: 'var(--accent)' }} />
-                  <span style={{ color: 'var(--text-muted)' }}>Con dieta</span>
-                  <span className="font-bold" style={{ color: 'var(--text-secondary)' }}>{stats.clientesConDieta}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: 'var(--border)' }} />
-                  <span style={{ color: 'var(--text-muted)' }}>Sin dieta</span>
-                  <span className="font-bold" style={{ color: 'var(--text-secondary)' }}>{stats.clientesSinDieta}</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Distribución de dietas por cliente */}
-        <div className="card-glass card-hoverable">
-          <div className="flex items-center gap-2 mb-4">
-            <Target size={17} style={{ color: 'var(--accent)' }} />
-            <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Dietas por cliente</h2>
-          </div>
-          {loadingA ? (
-            <div className="skeleton h-20 w-full" />
-          ) : !analyticsData ? (
-            <p className="text-sm text-center py-6" style={{ color: 'var(--text-muted)' }}>Sin datos</p>
-          ) : (
-            <div className="space-y-4">
-              <StackedBar
-                items={[
-                  { label: 'Sin dieta', valor: analyticsData.distribucionDietas.sinDietas, color: 'var(--border)' },
-                  { label: '1 dieta', valor: analyticsData.distribucionDietas.con1Dieta, color: 'var(--text-secondary)' },
-                  { label: '2-3 dietas', valor: analyticsData.distribucionDietas.con2a3Dietas, color: 'var(--accent)' },
-                  { label: '+3 dietas', valor: analyticsData.distribucionDietas.conMasDe3, color: 'var(--accent-dark)' },
-                ]}
-                total={analyticsData.totales.totalClientes}
-                height={16}
-              />
-              {analyticsData.totales.totalClientes === 0 && (
-                <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Sin clientes</p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ═══ BENTO GRID — FILA 4: Top clientes + Sin actividad ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        {/* Top clientes por check-ins */}
-        <div className="card-glass card-hoverable">
-          <div className="flex items-center gap-2 mb-4">
-            <Award size={17} style={{ color: 'var(--accent)' }} />
-            <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Top clientes más activos</h2>
-          </div>
-          {loadingA ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map(i => <div key={i} className="skeleton h-8 w-full" />)}
-            </div>
-          ) : !analyticsData || analyticsData.topClientesCheckins.length === 0 ? (
-            <div className="text-center py-6">
-              <Award size={28} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin check-ins registrados</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Disponible cuando los clientes usen su portal</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {analyticsData.topClientesCheckins.map((c, i) => (
-                <Link key={c.id} href={`/clientes/${c.id}`}
-                  className="flex items-center justify-between p-2.5 rounded-lg transition-colors"
-                  style={{ background: 'transparent' }}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                      style={{
-                        background: i === 0 ? 'var(--accent)' : i === 1 ? 'var(--surface-hover)' : 'var(--surface-elevated)',
-                        color: i === 0 ? '#1C1C1E' : 'var(--text-muted)',
-                      }}>
-                      {i + 1}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{c.nombre} {c.apellidos}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <ClipboardCheck size={12} style={{ color: 'var(--accent)' }} />
-                    <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{c.totalCheckins}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Clientes sin actividad reciente */}
-        <div className="card-glass card-hoverable">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertTriangle size={17} style={{ color: 'var(--error)' }} />
-            <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Clientes sin check-in (7 días)</h2>
-            {!loadingA && analyticsData && (
-              <span className="text-xs ml-auto font-semibold" style={{ color: 'var(--error)' }}>
-                {analyticsData.clientesSinActividadReciente.length}
-              </span>
-            )}
-          </div>
-          {loadingA ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map(i => <div key={i} className="skeleton h-8 w-full" />)}
-            </div>
-          ) : !analyticsData || analyticsData.clientesSinActividadReciente.length === 0 ? (
-            <div className="text-center py-6">
-              <CheckCircle2 size={32} className="mx-auto mb-2" style={{ color: 'var(--success)' }} />
-              <p className="text-sm font-medium" style={{ color: 'var(--success)' }}>¡Todos los clientes han hecho check-in!</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Ningún cliente inactivo en los últimos 7 días</p>
-            </div>
-          ) : (
-            <div className="space-y-1.5 max-h-48 overflow-y-auto">
-              {analyticsData.clientesSinActividadReciente.map(c => (
-                <Link key={c.id} href={`/clientes/${c.id}`}
-                  className="flex items-center gap-3 p-2 rounded-lg transition-colors"
-                  style={{ background: 'transparent' }}>
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--error)' }} />
-                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{c.nombre} {c.apellidos}</p>
-                  <ArrowRight size={12} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ═══ BENTO GRID — FILA 5: Próximas revisiones + Clientes recientes ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        {/* Próximas revisiones */}
-        <div className="card-glass card-hoverable">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <CalendarDays size={17} style={{ color: 'var(--accent)' }} />
+              <CalendarBlank size={16} weight="fill" style={{ color: 'var(--accent)' }} />
               <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Próximas revisiones</h2>
             </div>
             <Link href="/clientes" className="btn btn-ghost btn-sm text-xs">
@@ -635,13 +378,15 @@ export default function DashboardPage() {
           </div>
           {loading ? (
             <div className="space-y-2">
-              {[1, 2].map(i => <div key={i} className="skeleton h-10 w-full" />)}
+              {[1, 2, 3].map(i => <div key={i} className="skeleton h-12 w-full rounded-xl" />)}
             </div>
           ) : revisionesProximas.length === 0 ? (
-            <div className="text-center py-6">
-              <CalendarDays size={28} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
+            <div className="text-center py-8">
+              <CalendarBlank size={32} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No hay revisiones programadas</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Establece una fecha de revisión en el perfil de cada cliente</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                Establece la fecha en el perfil de cada cliente
+              </p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -651,23 +396,38 @@ export default function DashboardPage() {
                 const esUrgente = diasRestantes <= 3
                 const esHoy = diasRestantes <= 0
                 return (
-                  <Link key={r.id} href={`/clientes/${r.id}`}
-                    className="flex items-center justify-between p-2.5 rounded-lg transition-colors"
-                    style={{ background: 'transparent' }}>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-2 h-2 rounded-full"
-                        style={{ background: esHoy ? 'var(--error)' : esUrgente ? 'var(--accent)' : 'var(--success)' }} />
+                  <Link
+                    key={r.id}
+                    href={`/clientes/${r.id}`}
+                    className="flex items-center justify-between p-3 rounded-xl transition-all duration-150"
+                    style={{ background: 'var(--surface-hover)' }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ background: esHoy ? 'var(--error)' : esUrgente ? '#FF9F0A' : 'var(--success)' }}
+                      />
                       <div>
-                        <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{r.nombre} {r.apellidos}</p>
+                        <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                          {r.nombre} {r.apellidos}
+                        </p>
                         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                           {fechaRev.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs font-semibold"
-                      style={{ color: esHoy || esUrgente ? 'var(--error)' : 'var(--text-muted)' }}>
-                      {esHoy ? 'Hoy' : `${diasRestantes}d`}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                        style={{
+                          background: esHoy ? 'var(--error-bg)' : esUrgente ? 'rgba(255,159,10,0.1)' : 'var(--surface-elevated)',
+                          color: esHoy ? 'var(--error)' : esUrgente ? '#FF9F0A' : 'var(--text-muted)',
+                        }}
+                      >
+                        {esHoy ? 'Hoy' : `${diasRestantes}d`}
+                      </span>
+                      <ArrowRight size={12} style={{ color: 'var(--text-muted)' }} />
+                    </div>
                   </Link>
                 )
               })}
@@ -675,69 +435,91 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Clientes recientes */}
-        <div className="card-glass card-hoverable">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Clientes recientes</h2>
-              <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Últimos registrados</p>
-            </div>
-            <Link href="/clientes" className="btn btn-ghost btn-sm">
-              Ver todos <ArrowRight size={14} />
-            </Link>
+        {/* Estado — span 1 */}
+        <div className="card-glass">
+          <div className="flex items-center gap-1.5 mb-4">
+            <Warning size={13} weight="fill" style={{ color: 'var(--text-muted)' }} />
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+              Estado
+            </span>
           </div>
-
           {loading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="skeleton w-8 h-8 rounded-full" />
-                  <div className="flex-1 space-y-1">
-                    <div className="skeleton h-4 w-32" />
-                    <div className="skeleton h-3 w-24" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : clientes.length === 0 ? (
-            <div className="text-center py-8">
-              <Users size={36} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
-              <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>Aún no tienes clientes</p>
-              <Link href="/clientes/nuevo" className="btn btn-primary btn-sm">
-                Añadir primer cliente
-              </Link>
+              {[1, 2].map(i => <div key={i} className="skeleton h-14 w-full rounded-xl" />)}
             </div>
           ) : (
-            <div className="space-y-1">
-              {clientes.slice(0, 5).map(c => (
-                <Link key={c.id} href={`/clientes/${c.id}`}
-                  className="flex items-center gap-3 p-2.5 rounded-lg transition-colors"
-                  style={{ background: 'transparent' }}>
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
-                    style={{
-                      background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
-                      color: '#1C1C1E',
-                    }}>
-                    {(c.profile?.nombre?.[0] || '?').toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
-                      {c.profile?.nombre || 'Sin nombre'}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{c.profile?.email || ''}</p>
-                  </div>
-                  <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} />
-                </Link>
-              ))}
+            <div className="space-y-2.5">
+
+              {/* Clientes sin dieta */}
+              <Link
+                href="/clientes"
+                className="flex items-center gap-3 p-3 rounded-xl transition-all duration-150"
+                style={{ background: stats.clientesSinDieta > 0 ? 'var(--error-bg)' : 'var(--surface-hover)' }}
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: stats.clientesSinDieta > 0 ? 'rgba(255,69,58,0.15)' : 'var(--surface-elevated)' }}
+                >
+                  <Users
+                    size={15}
+                    weight="fill"
+                    style={{ color: stats.clientesSinDieta > 0 ? 'var(--error)' : 'var(--text-muted)' }}
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate"
+                    style={{ color: stats.clientesSinDieta > 0 ? 'var(--error)' : 'var(--text-secondary)' }}>
+                    {stats.clientesSinDieta} sin dieta
+                  </p>
+                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    {stats.clientesSinDieta > 0 ? 'Asigna un plan' : 'Todos con plan'}
+                  </p>
+                </div>
+              </Link>
+
+              {/* Respuestas pendientes */}
+              <Link
+                href="/respuestas"
+                className="flex items-center gap-3 p-3 rounded-xl transition-all duration-150"
+                style={{ background: stats.respuestasPendientes > 0 ? 'rgba(255,159,10,0.08)' : 'var(--surface-hover)' }}
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: stats.respuestasPendientes > 0 ? 'rgba(255,159,10,0.12)' : 'var(--surface-elevated)' }}
+                >
+                  <ChatCircle
+                    size={15}
+                    weight="fill"
+                    style={{ color: stats.respuestasPendientes > 0 ? '#FF9F0A' : 'var(--text-muted)' }}
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate"
+                    style={{ color: stats.respuestasPendientes > 0 ? '#FF9F0A' : 'var(--text-secondary)' }}>
+                    {stats.respuestasPendientes} pendientes
+                  </p>
+                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    {stats.respuestasPendientes > 0 ? 'Revisar consultas' : 'Al día'}
+                  </p>
+                </div>
+              </Link>
+
+              {/* Todo al día */}
+              {stats.clientesSinDieta === 0 && stats.respuestasPendientes === 0 && (
+                <div className="flex items-center gap-2.5 p-3 rounded-xl"
+                  style={{ background: 'rgba(48,209,88,0.08)' }}>
+                  <CheckCircle size={16} weight="fill" style={{ color: 'var(--success)' }} />
+                  <p className="text-sm font-medium" style={{ color: 'var(--success)' }}>Todo al día</p>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Footer info */}
-      {analyticsData && (
+      {analytics && (
         <div className="text-center text-[10px] pb-8" style={{ color: 'var(--text-muted)' }}>
-          Última actualización: {new Date(analyticsData.timestamp).toLocaleString('es-ES')}
+          Actualizado {new Date(analytics.timestamp).toLocaleString('es-ES')}
         </div>
       )}
     </main>

@@ -11,11 +11,13 @@
   "dependencies": {
     "@ai-sdk/deepseek": "^2.0.34",
     "@ai-sdk/openai": "^3.0.63",
+    "@phosphor-icons/react": "^2.1.10",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.3",
     "ai": "^6.0.176",
     "apify-client": "^2.23.2",
     "framer-motion": "^12.38.0",
+    "geist": "^1.7.0",
     "lightningcss": "^1.32.0",
     "lucide-react": "^1.8.0",
     "next": "16.2.4",
