@@ -32,6 +32,10 @@ const ProtocoloCompeticion = dynamic(() => import('@/components/ProtocoloCompeti
   loading: () => <div className="skeleton h-64 w-full rounded-xl" />,
   ssr: false,
 })
+const CompeticionesManager = dynamic(() => import('@/components/CompeticionesManager'), {
+  loading: () => <div className="skeleton h-48 w-full rounded-xl" />,
+  ssr: false,
+})
 import { useToast } from '@/components/ui/Toast'
 
 type NotaCoachRow = {
@@ -505,7 +509,13 @@ export default function ClienteDetallePage() {
           </ErrorBoundary>
         ) : tabActiva === 'competicion' ? (
           <ErrorBoundary>
-            <ProtocoloCompeticion clienteId={id as string} />
+            <div className="space-y-4">
+              <CompeticionesManager
+                clienteId={id as string}
+                pesoKg={cliente?.peso_inicial ?? undefined}
+              />
+              <ProtocoloCompeticion clienteId={id as string} />
+            </div>
           </ErrorBoundary>
         ) : tabActiva === 'historial_ia' ? (
           <HistorialDietasIA clienteId={id as string} />
