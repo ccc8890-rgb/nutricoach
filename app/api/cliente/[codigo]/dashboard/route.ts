@@ -28,7 +28,7 @@ export async function GET(
         if (clienteId) {
             const { data: c } = await supabase
                 .from('clientes')
-                .select('id, nombre, objetivo, peso_inicial, fecha_proxima_revision')
+                .select('id, nombre, objetivo, peso_inicial, fecha_proxima_revision, onboarding_completado')
                 .eq('id', clienteId)
                 .single()
             cliente = c

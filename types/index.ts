@@ -24,6 +24,7 @@ export interface Cliente {
   restricciones_alimentarias?: string
   notas?: string
   activo: boolean
+  onboarding_completado?: boolean
   created_at: string
   updated_at: string
   profile?: Profile

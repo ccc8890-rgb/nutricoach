@@ -13,7 +13,7 @@ import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPes
 
 interface DashboardData {
     plan: PlanNutricion
-    cliente: Pick<Cliente, 'id' | 'peso_inicial' | 'objetivo'> & { nombre?: string; fecha_proxima_revision?: string }
+    cliente: Pick<Cliente, 'id' | 'peso_inicial' | 'objetivo' | 'onboarding_completado'> & { nombre?: string; fecha_proxima_revision?: string }
     entreno: PlanEntrenamiento | null
     checkins: CheckIn[]
     peso: SeguimientoPeso[]
@@ -230,6 +230,19 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                     ))}
                 </div>
             </div>
+
+            {/* Banner onboarding pendiente */}
+            {data.cliente?.onboarding_completado === false && (
+                <div className="max-w-2xl mx-auto px-4 pt-4">
+                    <a href="/onboarding" className="block rounded-xl p-4 border-l-4 text-sm font-medium"
+                        style={{ background: 'var(--warning-bg, #fef3c7)', borderColor: '#f59e0b', color: '#92400e' }}>
+                        <span className="font-semibold">Completa tu perfil en 5 minutos</span>
+                        <span className="block text-xs mt-0.5 font-normal" style={{ color: '#a16207' }}>
+                            Tu coach necesita tus datos para personalizar tu plan. Toca aquí para continuar el onboarding.
+                        </span>
+                    </a>
+                </div>
+            )}
 
             {/* Contenido */}
             <div className="max-w-2xl mx-auto p-4 space-y-4">

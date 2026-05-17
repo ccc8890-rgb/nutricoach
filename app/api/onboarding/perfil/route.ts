@@ -93,6 +93,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error al guardar perfil' }, { status: 500 })
   }
 
+  // Marcar onboarding como completado
+  await supabase
+    .from('clientes')
+    .update({ onboarding_completado: true })
+    .eq('id', cliente.id)
+
   // Ahora sí lanzamos la generación del plan con todos los datos disponibles
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   fetch(`${baseUrl}/api/generar-plan-inicial`, {

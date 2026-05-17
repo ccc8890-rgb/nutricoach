@@ -213,7 +213,14 @@ export default function ClienteDetallePage() {
           <Link href="/clientes" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900">{p.nombre} {p.apellidos}</h1>
-            <p className="text-gray-500 text-sm">{p.email}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-gray-500 text-sm">{p.email}</p>
+              {cliente.onboarding_completado === false && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                  Sin onboarding
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {dietas.find(d => d.activo && d.codigo_publico) && (

@@ -19,6 +19,7 @@ import {
   UserPlus,
   BookOpen,
   Trophy,
+  ClipboardText,
 } from '@phosphor-icons/react'
 import { SkeletonChart } from '@/components/ui/Skeleton'
 import { CountUp } from '@/components/ui/CountUp'
@@ -57,6 +58,7 @@ interface Stats {
   clientesSinDieta: number
   dietasActivas: number
   dietasInactivas: number
+  clientesSinOnboarding: number
 }
 
 interface AnalyticsData {
@@ -114,6 +116,7 @@ export default function DashboardPage() {
     respuestasPendientes: 0, respuestasNuevas: 0,
     clientesConDieta: 0, clientesSinDieta: 0,
     dietasActivas: 0, dietasInactivas: 0,
+    clientesSinOnboarding: 0,
   })
   const [loading, setLoading] = useState(true)
   const [revisionesProximas, setRevisionesProximas] = useState<{ id: string; nombre: string; apellidos: string; fecha: string }[]>([])
@@ -136,7 +139,7 @@ export default function DashboardPage() {
         if (!user) { console.warn('[dashboard] No hay usuario autenticado'); setLoading(false); return }
 
         const [resClientes, resDietas, resRespuestas] = await Promise.all([
-          supabase.from('clientes').select('id, profile:profiles!profile_id(nombre, apellidos, email), fecha_proxima_revision, created_at', { count: 'exact' }).eq('coach_id', user.id),
+          supabase.from('clientes').select('id, onboarding_completado, profile:profiles!profile_id(nombre, apellidos, email), fecha_proxima_revision, created_at', { count: 'exact' }).eq('coach_id', user.id),
           supabase.from('planes_nutricion').select('id, nombre, activo, proteinas_objetivo, carbohidratos_objetivo, grasas_objetivo, kcal_objetivo, cliente_id, created_at', { count: 'exact' }).eq('coach_id', user.id),
           supabase.from('respuestas_clientes').select('id, estado, created_at').eq('coach_id', user.id),
         ])
@@ -153,6 +156,7 @@ export default function DashboardPage() {
         const dietasInactivas = totalDietas - dietasActivas
         const clientesConDieta = new Set(dietasData.filter(d => d.cliente_id).map(d => d.cliente_id)).size
         const clientesSinDieta = totalClientes - clientesConDieta
+        const clientesSinOnboarding = clientesData.filter((c: { onboarding_completado?: boolean }) => c.onboarding_completado === false).length
 
         const resps = resRespuestas.data ?? []
         const respuestasPendientes = resps.filter(r => r.estado === 'nueva' || r.estado === 'dieta_rechazada').length
@@ -161,7 +165,7 @@ export default function DashboardPage() {
         hoy.setHours(0, 0, 0, 0)
         const respuestasNuevas = resps.filter(r => new Date(r.created_at) >= hoy).length
 
-        setStats({ totalClientes, totalDietas, respuestasPendientes, respuestasNuevas, clientesConDieta, clientesSinDieta, dietasActivas, dietasInactivas })
+        setStats({ totalClientes, totalDietas, respuestasPendientes, respuestasNuevas, clientesConDieta, clientesSinDieta, dietasActivas, dietasInactivas, clientesSinOnboarding })
 
         const treintaDias = new Date()
         treintaDias.setDate(treintaDias.getDate() + 30)
@@ -532,6 +536,26 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </Link>
+
+              {/* Sin onboarding */}
+              {stats.clientesSinOnboarding > 0 && (
+                <Link
+                  href="/clientes"
+                  className="flex items-center gap-3 p-3 rounded-xl transition-all duration-150"
+                  style={{ background: 'rgba(245,158,11,0.08)' }}
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(245,158,11,0.12)' }}>
+                    <ClipboardText size={15} weight="fill" style={{ color: '#d97706' }} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{ color: '#d97706' }}>
+                      {stats.clientesSinOnboarding} sin onboarding
+                    </p>
+                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Perfil incompleto</p>
+                  </div>
+                </Link>
+              )}
 
               {/* Todo al día */}
               {stats.clientesSinDieta === 0 && stats.respuestasPendientes === 0 && (
