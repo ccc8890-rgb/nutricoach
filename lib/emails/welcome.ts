@@ -56,9 +56,9 @@ export function welcomeEmailHtml(nombre: string, appUrl: string): string {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding:24px 0 0 0;" align="center">
-                    <a href="${appUrl}/login"
+                    <a href="${appUrl}/onboarding"
                        style="display:inline-block; background-color:#22c55e; color:#ffffff; text-decoration:none; font-size:15px; font-weight:600; padding:14px 32px; border-radius:8px; text-align:center;">
-                      Acceder a mi portal
+                      Completar mi perfil
                     </a>
                   </td>
                 </tr>
