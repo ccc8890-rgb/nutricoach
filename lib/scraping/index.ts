@@ -16,6 +16,7 @@ import type { ProductoRaw } from './types'
 
 // ── Filtro de productos no comestibles ──────────────────────────
 
+// ⚠️ SYNC con scripts/eliminar-no-alimentos.mjs — actualizar ambos a la vez
 const NO_COMESTIBLE_KEYWORDS = [
     // ── Higiene personal ────────────────────────────────────────
     'champú', 'champu', 'acondicionador', 'mascarilla capilar', 'sérum capilar',
@@ -60,7 +61,7 @@ const NO_COMESTIBLE_KEYWORDS = [
     'laxante', 'laxforte',
     'solución única lentes', 'lentes de contacto',
     'lágrimas hidratantes', 'lagrimas hidratantes',
-    'spray desinfectante antiséptico', 'clorhexidina spray',
+    'spray desinfectante antiséptico', 'clorhexidina spray', 'clorhexidina',
     // ── Limpieza hogar ──────────────────────────────────────────
     'lejía', 'limpiador', 'limpiacristales', 'desengrasante', 'quitamanchas ropa',
     'detergente ropa', 'suavizante ropa', 'pastillas lavavajillas', 'gel lavavajillas',
@@ -222,7 +223,9 @@ const ALCOHOL_KEYWORDS = [
     'anís seco', 'anís dulce', 'anisete',
     // Vinos fortificados / aperitivos
     'vermut', 'vermouth',
+    'moscatel',
     'jerez fino', 'jerez oloroso', 'jerez amontillado',
+    'oporto',
     // Champagne / espumosos
     'champán', 'champagne',
     // Sidra
@@ -231,13 +234,14 @@ const ALCOHOL_KEYWORDS = [
     'sangría', 'sangria',
     'tinto de verano',
     'bebida preparada de ron', 'bebida preparada de vodka', 'bebida preparada de gin',
+    'carajillo de ron',
 ]
 
 // Si el nombre contiene estas frases, el producto NO se filtra aunque tenga keyword de alcohol
 // (platos cocinados o alimentos que usan alcohol como ingrediente)
 const ALCOHOL_FOOD_EXCEPTIONS = [
     'al vino', 'en vino', 'con vino', 'estofado', 'guiso',
-    'al licor', 'bombones', 'trufas',
+    'al licor', 'bombones', 'trufas', 'pralinés',
     'al ron', 'flambead',
     'vinagre',
     'vitamina',
@@ -248,6 +252,8 @@ const ALCOHOL_FOOD_EXCEPTIONS = [
 // Si el nombre contiene estas frases, el producto NO se filtra aunque tenga keyword
 // de electrodoméstico (ej: "palomitas microondas" = comida, no microondas)
 const COMESTIBLE_EXCEPTIONS = [
+    // Jabón con glicerina — ingrediente alimentario (no producto de higiene)
+    'jabón con glicerina',
     // Microondas — productos que se cocinan EN microondas (no el electrodoméstico)
     'palomitas microondas', 'palomitas para microondas',
     'para microondas',  // "brócoli para microondas", "patatas para microondas"
@@ -287,6 +293,8 @@ function esNoComestible(nombre: string): boolean {
             || lower.includes('tostada') || lower.includes('biscotes'))) return false
         // Excepción para vela + chorizo (chorizo extra vela dulce)
         if (matchKw.trim() === 'vela' && lower.includes('chorizo')) return false
+        // Excepción para jabón de manos + glicerina (jabón con glicerina es ingrediente alimentario)
+        if (matchKw.includes('jabón') && lower.includes('glicerina')) return false
         // Si el keyword es "freidora" o "microondas", verificar excepciones
         if ((matchKw.includes('freidora') || matchKw.includes('microondas'))
             && COMESTIBLE_EXCEPTIONS.some(ex => lower.includes(ex))) {
@@ -622,6 +630,7 @@ export async function scrapearSupermercado(
                         carbohidratos: 0,
                         grasas: 0,
                         es_generico: !tieneMarca,
+                        es_comestible: true,  // ya pasó el filtro esNoComestible
                     }
                 })
 
@@ -644,6 +653,7 @@ export async function scrapearSupermercado(
                                 carbohidratos: 0,
                                 grasas: 0,
                                 es_generico: true,
+                                es_comestible: true,  // ya pasó el filtro esNoComestible
                             })
                             .select('id, nombre')
                             .maybeSingle()

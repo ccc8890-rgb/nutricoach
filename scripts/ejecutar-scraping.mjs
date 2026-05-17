@@ -717,11 +717,25 @@ async function scrapearAlcampo() {
                         const key = p.productId || p.name
                         if (vistos.has(key)) continue
                         vistos.add(key)
+
+                        // Extraer precio por kg desde unitPrice (objeto {price: {amount, currency}, unit})
+                        let precioKg
+                        if (p.unitPrice?.price?.amount) {
+                            const val = parseFloat(String(p.unitPrice.price.amount).replace(',', '.'))
+                            if (!isNaN(val)) precioKg = val
+                        }
+
+                        // La API devuelve nombre de unidad como "fop.price.per.kilogram" o similar
+                        let unidad = 'kg'
+                        if (p.unitPrice?.unit) {
+                            unidad = p.unitPrice.unit.replace(/^fop\.price\.per\./, '')
+                        }
+
                         productos.push({
                             nombre: p.name || '',
                             precio_actual: extraerPrecioAlcampo(p.price),
-                            precio_por_kg: p.pricePerKg ? extraerPrecioAlcampo(p.pricePerKg) : undefined,
-                            unidad: p.unit || 'kg',
+                            precio_por_kg: precioKg,
+                            unidad,
                             url_producto: p.url || '',
                             imagen_url: p.imageUrl || undefined,
                             marca: p.brand || 'Alcampo',
@@ -772,17 +786,21 @@ async function fetchConsumJSON(url) {
 function mapearProductoConsum(p, categoria) {
     const d = p.productData || {}
     const pd = p.priceData
+
+    // ⚠️ El API de Consum (Commercetools) devuelve centAmount/centUnitAmount
+    //    YA en euros (1.85 = 1.85€), NO en céntimos.
+    //    NO dividir entre 100 — eso produciría precios 100× menores.
     let precioActual = 0
     let precioKg
 
     if (pd?.prices?.length) {
         const price = pd.prices.find(p2 => p2.id === 'PRICE')
         if (price?.value?.centAmount) {
-            precioActual = price.value.centAmount / 100
+            precioActual = price.value.centAmount
         }
         const unitPrice = pd.prices.find(p2 => p2.id === 'UNIT_PRICE' || p2.id === 'PRICE')
         if (unitPrice?.value?.centUnitAmount && unitPrice.value.centUnitAmount !== price?.value?.centAmount) {
-            precioKg = unitPrice.value.centUnitAmount / 100
+            precioKg = unitPrice.value.centUnitAmount
         }
         if (!precioKg && pd.unitPriceUnitType) {
             precioKg = precioActual

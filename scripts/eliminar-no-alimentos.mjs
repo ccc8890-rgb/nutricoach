@@ -15,7 +15,7 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 )
 
-// ⚠️ Mantener sincronizado con lib/scraping/index.ts → NO_COMESTIBLE_KEYWORDS
+// ⚠️ SYNC con lib/scraping/index.ts — actualizar ambos a la vez
 const NO_ALIMENTOS_KEYWORDS = [
   // Higiene personal
   'champú', 'champu', 'acondicionador', 'mascarilla capilar', 'sérum capilar',
@@ -46,15 +46,15 @@ const NO_ALIMENTOS_KEYWORDS = [
   'bastoncillos', 'algodón hidrófilo', 'algodón mágico',
   'bandas depilatorias', 'cera depilatoria', 'crema depilatoria',
   'alicate uñas', 'lima uñas', 'cortauñas',
-  'espuma cabello', 'fijador cabello',
+  'espuma cabello', 'laca cabello', 'fijador cabello',
   'aplicador sombra', 'autobronceador', 'locion reafirmante',
   // Sanidad / farmacia
-  'apósitos', 'apositos', 'tiritas', 'vendas',
+  'apósitos', 'apositos', 'tiritas', 'vendas', 'venda ',
   'suero fisiológico', 'ampollas suero',
   'arcos dentales', 'irrigador dental',
   'laxante', 'laxforte',
-  'lentes de contacto', 'lágrimas hidratantes', 'lagrimas hidratantes',
-  'clorhexidina',
+  'solución única lentes', 'lentes de contacto', 'lágrimas hidratantes', 'lagrimas hidratantes',
+  'spray desinfectante antiséptico', 'clorhexidina spray', 'clorhexidina',
   // Limpieza hogar
   'lejía', 'limpiador', 'limpiacristales', 'desengrasante', 'quitamanchas ropa',
   'detergente ropa', 'suavizante ropa', 'pastillas lavavajillas', 'gel lavavajillas',
@@ -84,8 +84,71 @@ const NO_ALIMENTOS_KEYWORDS = [
   'lecho mascotas', 'pinza animales',
   // Bebé no alimenticio
   'bañador desechable', 'banador desechable', 'babero desechable', 'anillo denticion',
-  // Aparatos eléctricos
+  // Aparatos eléctricos / electrodomésticos
   'aparato eléctrico', 'aparato ectrico', 'aparato ecttrico', 'recambio eléctrico',
+  'espumador de leche', 'cafetera', 'batidora', 'freidora de aceite', 'freidora eléctrica',
+  'hervidor de agua', 'licuadora', 'exprimidor',
+  'máquina para hacer pasta', 'palomitero', 'cocedor de huevos',
+  'cuecehuevos', 'olla eléctrica', 'olla de cocción',
+  'fuente de chocolate', 'fondue eléctrica',
+  'mini nevera', 'mininevera',
+  'plancha de vapor', 'aspirador', 'aspiradora',
+  'picadora multifunción', 'robot aspirador',
+  'cafetera superautomática', 'máquina de coser',
+  'robot de cocina', 'monsieur cuisine', 'cuisine smart',
+  // Ropa y textil
+  'calcetines', 'calcetín', 'chaqueta', 'edredón', 'edredon',
+  'almohada', 'bufanda', 'gorro', 'vestido',
+  'pantalón', 'pantalon', 'ropa de cama', 'funda nórdica',
+  'cojín', 'cojin', 'sábanas', 'sabana', 'cortina', 'toalla', 'toallas',
+  'camiseta', 'polar térmica', 'polar térmico',
+  'abrigo', 'bañador', 'banador', 'bikini', 'piel de cordero',
+  // Hogar / decoración
+  'maceta', 'tierra para plantas', 'planta decorativa',
+  'planta artificial', 'flor artificial', 'portavelas',
+  'marco foto', 'cuadro decorativo', 'espejo',
+  'adorno decorativo', 'percha', 'perchero', 'balda',
+  'estantería', 'estante', 'cesta de almacenaje',
+  'cestas de', 'cestos',
+  'pájaro decorativo', 'pajaro decorativo',
+  // Plantas
+  'pachira', 'schefflera', 'drácena', 'anturio',
+  'arbusto', 'bonsái', 'bonsai',
+  // Menaje no alimenticio
+  'abrelatas', 'tabla de cortar', 'tablas de cortar',
+  'utensilios de cocina', 'utensilio de cocina',
+  'quesera', 'set de pulverizadores', 'pulverizador',
+  'botes de almacenamiento', 'bote de almacenamiento',
+  'tarros de especias', 'tarro de especias',
+  'organizador de', 'organizador para',
+  'estuche guardar', 'caja organizador',
+  'cuchillo de cocina', 'cubertería', 'cuberteria',
+  'envasadora al vacío', 'envasadora al vacio',
+  'spa de pies', 'spa pies',
+  // Juguetes
+  'juguete', 'de juguete', 'caja registradora',
+  'muñeco', 'muñeca', 'peluche', 'piezas encajables',
+  'juegos de madera', 'juego de madera',
+  'de dinosaurio', 'de dinosaurios', 'encajable',
+  'arenero', 'tobogán', 'tobogan', 'columpio',
+  'set de pesca', 'caña de pescar', 'caña spinning', 'pesca spinning',
+  'tren de madera', 'tren de juguete', 'tren de pasajeros',
+  // Ferretería / herramientas
+  'disco de corte', 'disco corte', 'cepillos de alambre',
+  'puntas de amolar', 'punta amolar',
+  'tornillo', 'tuerca', 'arandela', 'destornillador',
+  'taladro', 'broca', 'alicate', 'llave inglesa',
+  'cable eléctrico', 'enchufe', 'alargador',
+  'linterna',
+  // Limpieza ampliada
+  'limpiahornos', 'limpiador horno', 'limpiametales',
+  'limpiador baño', 'limpia baños', 'friegasuelos', 'limpia suelos', 'limpiador suelos',
+  'limpiafondos', 'desagües', 'cubo fregona',
+  'estropajo metálico', 'esponja metálica', 'limpiacoches', 'champú coche',
+  'limpiador tapicerías', 'limpia alfombras', 'quitacal', 'antical',
+  'pulsera citronela', 'aditivo textil', 'quitamanchas prelavado', 'prelavado spray',
+  'spray limpiamopas', 'gamuzas impregnadas', 'gamuzas atrapapolvo',
+  'papel vegetal',
 ]
 
 // Bebidas alcohólicas — se eliminan independientemente de las calorías
@@ -118,7 +181,7 @@ const ALCOHOL_KEYWORDS = [
   'moscatel',
   'jerez fino', 'jerez oloroso', 'jerez amontillado',
   'oporto',
-  // Champagne
+  // Champagne / espumosos
   'champán', 'champagne',
   // Sidra alcohólica
   'sidra',
