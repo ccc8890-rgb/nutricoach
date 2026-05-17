@@ -109,12 +109,45 @@ Estrategia de caché SW v2:
 - **21 `.catch(() => {})` silenciosos** sin logging en scrapers, modales y componentes
 - Documentado en [`salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md`](salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md)
 
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 18 — Enriquecimiento + Categorías + Fase 0 limpieza BD
+
+### 🔷 Enriquecimiento nutricional — avance
+- Ejecutados ~25+ pases de `node scripts/enriquecer-alimentos.mjs --limite=100`
+- Progreso real: **10.218/14.600 → 10.239/14.188** alimentos con `calorias > 0` (72%)
+- La vista `alimentos_pendientes_enriquecer` alcanzó su **floor permanente de ~1.439** (zeros legítimos: agua, vinagre, sal, etc.)
+- Los ~4.382 alimentos restantes sin calorías incluyen zeros legítimos + nuevos de scrapers aún sin procesar
+
+### 🔷 Corrección de categorías
+- Ejecutado `scripts/corregir-categorias.mjs --aplicar`
+- **11.335 alimentos actualizados**: subcategorías IA → categorías UI (Carnes rojas → Carnes, Verduras y hortalizas → Verduras, etc.)
+
+### 🔷 Fase 0 — Limpieza BD (`eliminar-no-alimentos.mjs`)
+- **1.390 eliminados** (950 higiene/hogar + 444 alcohol)
+- 4 conservados por estar en recetas activas: licor amaretto, Vino tinto, Vodka, Anís seco
+- 1.483 registros de precios también eliminados
+- BD tras limpieza: **14.188 alimentos**, 10.239 con calorías (72%)
+
+### 🔷 Algoritmo de filtrado — verificado sincronizado
+- `lib/scraping/index.ts` y `scripts/eliminar-no-alimentos.mjs` ya tienen SYNC comment y listas sincronizadas
+- ~260+ keywords cubriendo: higiene, limpieza, ropa, ferretería, electrodomésticos, juguetes, hogar/decoración, plantas, alcohol
+- Prevención activa en `esNoComestible()` antes de insertar en BD
+
+### 🔷 Fase 1 (onboarding_completado) — verificada COMPLETADA
+- Columna `onboarding_completado BOOLEAN DEFAULT false` en tabla `clientes` ✅
+- API `/api/onboarding/perfil` marca `onboarding_completado = true` ✅
+- Dashboard cuenta `clientesSinOnboarding` ✅
+- Ficha cliente muestra badge cuando `onboarding_completado === false` ✅
+
+---
+
 ## 🔜 PRÓXIMA SESIÓN (prioridades)
 
-1. **Re-scrapear supermercados** para que los nuevos productos usen `match_alimento` mejorado (versión 6 pasos)
-2. **Verificar Dashboard de Rentabilidad en vivo** — seleccionar cliente con precios
-3. **Validar proyecciones de ahorro** — probar con Mercadona vs Lidl
-4. **Build de verificación:** `npx next build`
+1. **Email bienvenida (Resend)** — `sendWelcomeEmail()` ya existe, Carlos configura `RESEND_API_KEY` en `.env.local` + Vercel
+2. **Re-scrapear supermercados** para que los nuevos productos usen `match_alimento` mejorado (versión 6 pasos)
+3. **Verificar Dashboard de Rentabilidad en vivo** — seleccionar cliente con precios
+4. **Enriquecimiento restante** — ~4.382 alimentos sin calorías (floor legítimo + nuevos de scrapers)
 5. **Despliegue en Vercel**
 
 ---
