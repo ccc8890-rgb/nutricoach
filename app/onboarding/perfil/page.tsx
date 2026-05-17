@@ -112,7 +112,7 @@ export default function PerfilProfundoPage() {
 
   const puedeAvanzar = () => {
     const s = steps[step]?.component
-    if (s === 'A') return form.autoeficacia > 0
+    if (s === 'A') return form.autoeficacia >= 0
     if (s === 'C') return form.diaTipico.trim().length > 10
     return true
   }
@@ -171,7 +171,7 @@ export default function PerfilProfundoPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error al guardar')
-      router.push(`/cliente/${data.cliente_id}/dashboard?onboarding=completo`)
+      router.push('/cliente?onboarding=completo')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Error inesperado')
       setLoading(false)

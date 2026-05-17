@@ -20,6 +20,17 @@ const OBJETIVO_AJUSTE: Record<string, number> = {
   salud_general: 0,
 }
 
+// Proteína objetivo por objetivo (g/kg de peso corporal)
+// Fuentes: RDA WHO/FAO, Phillips & Van Loon 2011, ISSN Position Stand 2017,
+//          Helms et al. 2014, Morton et al. 2018 BJSM
+const PROTEINA_OBJETIVO: Record<string, number> = {
+  salud_general: 1.0,   // RDA: 0.8–1.0 g/kg (WHO/FAO)
+  mantener:      1.6,   // Phillips & Van Loon 2011: 1.4–1.8 g/kg
+  rendimiento:   1.8,   // ISSN 2017: 1.6–2.0 g/kg
+  ganar_musculo: 2.0,   // Helms 2014 / Morton 2018: 1.6–2.2 g/kg
+  perder_grasa:  2.4,   // Helms 2014: 2.3–3.1 g/kg en déficit (valor conservador)
+}
+
 function calcularTDEE(peso: number, altura: number, edad: number, sexo: string, actividad: string): number {
   const tmb =
     sexo === 'mujer'
@@ -66,7 +77,9 @@ export async function POST(request: NextRequest) {
     onboarding.actividad_base,
   )
   const kcalObjetivo = tdee + (OBJETIVO_AJUSTE[onboarding.objetivo] ?? 0)
-  const proteinas = Math.round((cliente.peso_inicial ?? 70) * 2)
+  const factorSexo = cliente.sexo === 'mujer' && onboarding.objetivo === 'ganar_musculo' ? 0.9 : 1.0
+  const gProteina = PROTEINA_OBJETIVO[onboarding.objetivo] ?? 1.8
+  const proteinas = Math.round((cliente.peso_inicial ?? 70) * gProteina * factorSexo)
   const grasas = Math.round((kcalObjetivo * 0.28) / 9)
   const carbos = Math.round((kcalObjetivo - proteinas * 4 - grasas * 9) / 4)
 
@@ -124,7 +137,7 @@ ${segmentoFlag}
 - Objetivo: ${onboarding.objetivo}
 - TDEE calculado (Mifflin-St Jeor): ${tdee} kcal/día
 - Kcal objetivo ajustado: ${kcalObjetivo} kcal/día
-- Macros objetivo: ${proteinas}g proteína | ${carbos}g carbohidratos | ${grasas}g grasa
+- Macros objetivo: ${proteinas}g proteína (${gProteina}g/kg) | ${carbos}g carbohidratos | ${grasas}g grasa
 - Sexo: ${cliente.sexo ?? 'no especificado'} | Edad: ${cliente.edad ?? '?'} | Peso: ${cliente.peso_inicial ?? '?'}kg
 
 ═══ ACTIVIDAD Y ENTRENAMIENTO ═══

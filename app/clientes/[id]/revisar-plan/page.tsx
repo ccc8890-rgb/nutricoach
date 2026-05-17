@@ -71,6 +71,8 @@ export default function RevisarPlanPage() {
   const [plantillaSeleccionadaEntreno, setPlantillaSeleccionadaEntreno] = useState<PlantillaEntrenamiento | null>(null)
   const [creandoEntreno, setCreandoEntreno] = useState(false)
   const [entrenoCreado, setEntrenoCreado] = useState<{ id: string } | null>(null)
+  const [errorEntreno, setErrorEntreno] = useState<string | null>(null)
+  const [reintentandoPlan, setReintentandoPlan] = useState(false)
 
   useEffect(() => {
     const id = params.id as string
@@ -86,17 +88,35 @@ export default function RevisarPlanPage() {
     })
   }, [params.id])
 
+  const reintentarPlan = async () => {
+    setReintentandoPlan(true)
+    const { data: r } = await supabase
+      .from('registros_ia')
+      .select('respuesta_json')
+      .eq('cliente_id', params.id as string)
+      .eq('tipo', 'plan_inicial')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+    if (r?.respuesta_json) setPlan(r.respuesta_json as PlanInicial)
+    setReintentandoPlan(false)
+  }
+
   const aprobar = async () => {
     setAprobando(true)
     await supabase
       .from('clientes')
-      .update({ revisado_por_coach: true })
+      .update({ revisado_por_coach: true, activo: true })
       .eq('id', params.id as string)
     router.push(`/clientes/${params.id}`)
   }
 
   const crearPlan = async () => {
     if (!plan) return
+    if (!plan.distribucion_comidas?.length) {
+      setErrorDieta('El plan no tiene comidas definidas. Espera a que la IA termine de generarlo o recarga.')
+      return
+    }
     setCreandoDieta(true)
     setErrorDieta(null)
     try {
@@ -142,6 +162,7 @@ export default function RevisarPlanPage() {
 
   const crearPlanDesdeEntrenamiento = async (plantilla: PlantillaEntrenamiento) => {
     setCreandoEntreno(true)
+    setErrorEntreno(null)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No autenticado')
@@ -157,6 +178,11 @@ export default function RevisarPlanPage() {
       if (error || !plan) throw new Error(error?.message ?? 'Error al crear el plan de entrenamiento')
 
       const sesiones = (plantilla.sesiones ?? []) as PlantillaSesion[]
+      if (!sesiones.length) {
+        setErrorEntreno('La plantilla seleccionada no tiene sesiones. Elige otra plantilla.')
+        setCreandoEntreno(false)
+        return
+      }
       for (const sesion of sesiones) {
         const { data: nuevaSesion } = await supabase
           .from('sesiones_entrenamiento')
@@ -190,7 +216,7 @@ export default function RevisarPlanPage() {
       setEntrenoCreado({ id: plan.id })
       setShowSelectorEntreno(false)
     } catch (err) {
-      console.error('Error al crear plan de entrenamiento:', err)
+      setErrorEntreno(err instanceof Error ? err.message : 'Error al crear el plan de entrenamiento')
     } finally {
       setCreandoEntreno(false)
     }
@@ -263,6 +289,31 @@ export default function RevisarPlanPage() {
           )}
         </dl>
       </div>
+
+      {/* Plan IA — estado "generando" cuando aún no existe */}
+      {!plan && (
+        <div className="card p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {reintentandoPlan
+                ? <Loader2 className="animate-spin shrink-0" size={18} style={{ color: 'var(--primary)' }} />
+                : <Loader2 className="animate-spin shrink-0opacity-40" size={18} style={{ color: 'var(--text-muted)' }} />}
+              <div>
+                <p className="text-sm font-medium text-[var(--text)]">Generando plan con IA…</p>
+                <p className="text-xs text-[var(--text-muted)]">Suele tardar menos de 1 minuto</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={reintentarPlan}
+              disabled={reintentandoPlan}
+              className="btn-secondary text-sm shrink-0"
+            >
+              {reintentandoPlan ? 'Comprobando…' : 'Recargar'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Plan IA */}
       {plan && (
@@ -426,6 +477,9 @@ export default function RevisarPlanPage() {
       )}
       {errorDieta && (
         <p className="text-sm text-red-600 dark:text-red-400 text-center">{errorDieta}</p>
+      )}
+      {errorEntreno && (
+        <p className="text-sm text-red-600 dark:text-red-400 text-center">{errorEntreno}</p>
       )}
     </div>
   )
