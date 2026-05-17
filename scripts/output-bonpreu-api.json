@@ -1,0 +1,27 @@
+[
+  {
+    "url": "https://www.compraonline.bonpreuesclat.cat/graphql",
+    "status": 200,
+    "headers": {
+      "x-content-type-options": "nosniff",
+      "expires": "0",
+      "requestid": "2912cc33-66bb-4a0b-8ee4-94736423b452",
+      "x-cache": "Miss from cloudfront",
+      "x-amz-cf-id": "1NoLZKwUbrXorBXZgkXVWlo8-LjlW4xlv-cC3l0681k3Rq6pvJ1s9g==",
+      "date": "Fri, 15 May 2026 10:42:57 GMT",
+      "content-type": "application/graphql-response+json",
+      "x-frame-options": "DENY",
+      "strict-transport-security": "max-age=31536000 ; includeSubDomains, max-age=31536000; includeSubDomains",
+      "content-security-policy": "script-src 'self' 'unsafe-inline' esm.sh data:",
+      "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+      "pragma": "no-cache",
+      "via": "1.1 aff3e77afcd71b70f6f1abc3b26a2e72.cloudfront.net (CloudFront)",
+      "content-length": "116",
+      "x-xss-protection": "0",
+      "x-amz-cf-pop": "MAD56-P6",
+      "server": "http"
+    },
+    "bodyLength": 116,
+    "body": "{\"data\":{\"advertsAndModulesForCategoryPage\":{\"advertModules\":[],\"advertsByStyle\":[],\"__typename\":\"AdvertsForPage\"}}}"
+  }
+]

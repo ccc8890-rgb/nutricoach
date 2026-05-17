@@ -1,0 +1,355 @@
+[
+  {
+    "type": "REQUEST",
+    "method": "GET",
+    "url": "/api/webproductpagews/v5/product-pages",
+    "queryString": "decoratedOnly=true&limit=27&tag=web&tag=lohp",
+    "resourceType": "fetch",
+    "timestamp": 1778861236092
+  },
+  {
+    "type": "REQUEST",
+    "method": "GET",
+    "url": "/api/search/v1/redirects/active",
+    "queryString": "regionId=d57f6327-ce67-44d5-bdd5-dc63e98460a6",
+    "resourceType": "fetch",
+    "timestamp": 1778861236093
+  },
+  {
+    "type": "REQUEST",
+    "method": "GET",
+    "url": "/api/search/v1/suggestions/primary",
+    "queryString": "searchTerm=&limit=20000&regionId=d57f6327-ce67-44d5-bdd5-dc63e98460a6",
+    "resourceType": "fetch",
+    "timestamp": 1778861236093
+  },
+  {
+    "type": "REQUEST",
+    "method": "GET",
+    "url": "/api/adverts/v1/pop-up",
+    "queryString": "platform=WEB",
+    "resourceType": "fetch",
+    "timestamp": 1778861236106
+  },
+  {
+    "type": "RESPONSE",
+    "method": "GET",
+    "url": "/api/search/v1/suggestions/primary",
+    "queryString": "searchTerm=&limit=20000&regionId=d57f6327-ce67-44d5-bdd5-dc63e98460a6",
+    "status": 200,
+    "bodyLength": 80982,
+    "paginationInfo": "",
+    "timestamp": 1778861236184
+  },
+  {
+    "type": "RESPONSE",
+    "method": "GET",
+    "url": "/api/search/v1/redirects/active",
+    "queryString": "regionId=d57f6327-ce67-44d5-bdd5-dc63e98460a6",
+    "status": 200,
+    "bodyLength": 11160,
+    "paginationInfo": "",
+    "timestamp": 1778861236185
+  },
+  {
+    "type": "RESPONSE",
+    "method": "GET",
+    "url": "/api/adverts/v1/pop-up",
+    "queryString": "platform=WEB",
+    "status": 204,
+    "bodyLength": 0,
+    "paginationInfo": "",
+    "timestamp": 1778861236185
+  },
+  {
+    "type": "RESPONSE",
+    "method": "GET",
+    "url": "/api/webproductpagews/v5/product-pages",
+    "queryString": "decoratedOnly=true&limit=27&tag=web&tag=lohp",
+    "status": 200,
+    "bodyLength": 303888,
+    "paginationInfo": "totalProducts: 300 | productGroups: 2 groups, 27 total products",
+    "timestamp": 1778861236290
+  },
+  {
+    "type": "REQUEST",
+    "method": "GET",
+    "url": "/categories/frescos/c95cfbf2-501d-433f-bae3-10fcef330b11",
+    "queryString": "",
+    "resourceType": "document",
+    "timestamp": 1778861241280
+  },
+  {
+    "type": "RESPONSE",
+    "method": "GET",
+    "url": "/categories/frescos/c95cfbf2-501d-433f-bae3-10fcef330b11",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 1093443,
+    "paginationInfo": "",
+    "timestamp": 1778861241787
+  },
+  {
+    "type": "REQUEST",
+    "method": "GET",
+    "url": "/api/search/v1/redirects/active",
+    "queryString": "regionId=d57f6327-ce67-44d5-bdd5-dc63e98460a6",
+    "resourceType": "fetch",
+    "timestamp": 1778861241881
+  },
+  {
+    "type": "REQUEST",
+    "method": "GET",
+    "url": "/api/search/v1/suggestions/primary",
+    "queryString": "searchTerm=&limit=20000&regionId=d57f6327-ce67-44d5-bdd5-dc63e98460a6",
+    "resourceType": "fetch",
+    "timestamp": 1778861241881
+  },
+  {
+    "type": "REQUEST",
+    "method": "GET",
+    "url": "/api/adverts/v1/pop-up",
+    "queryString": "platform=WEB",
+    "resourceType": "fetch",
+    "timestamp": 1778861241890
+  },
+  {
+    "type": "RESPONSE",
+    "method": "GET",
+    "url": "/api/search/v1/redirects/active",
+    "queryString": "regionId=d57f6327-ce67-44d5-bdd5-dc63e98460a6",
+    "status": 200,
+    "bodyLength": 11160,
+    "paginationInfo": "",
+    "timestamp": 1778861241948
+  },
+  {
+    "type": "RESPONSE",
+    "method": "GET",
+    "url": "/api/search/v1/suggestions/primary",
+    "queryString": "searchTerm=&limit=20000&regionId=d57f6327-ce67-44d5-bdd5-dc63e98460a6",
+    "status": 200,
+    "bodyLength": 80982,
+    "paginationInfo": "",
+    "timestamp": 1778861241951
+  },
+  {
+    "type": "RESPONSE",
+    "method": "GET",
+    "url": "/api/adverts/v1/pop-up",
+    "queryString": "platform=WEB",
+    "status": 204,
+    "bodyLength": 0,
+    "paginationInfo": "",
+    "timestamp": 1778861241960
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"97aaf095-24e3-47d1-a91b-dd7415b81c90\",\"736c2c42-bd38-459a-80ee-6559ac06a003\",\"40e9faf5-ff7d-45ad-aa53-bec3e68cb236\",\"2c8770cf-9c10-4f69-afa5-3c460a63d7ee\",\"6e38b35d-cf4c-41fc-8f1d-cd6d5fa4447e\",\"bd9ac8f7-21d4-4441-a628-dddf1d58e5e1\",\"af8c4f77-02a0-4453-8d2d-57618f167ea0\",\"fb0db4e2-bc8a-41d7-8370-3",
+    "resourceType": "fetch",
+    "timestamp": 1778861251408
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 299810,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861251532
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"20fb26f8-837e-4ebd-9807-6d70db4ac732\",\"8ef1b500-57cc-4453-b7c1-066aa659f59e\",\"9eb21324-c5a1-42ab-a3cc-6ce0cdea3b94\",\"293439af-8acf-4854-b921-d923256b6856\",\"40d6b7b9-41f8-474d-83bb-1af84cb0a4cd\",\"972ec5c9-07b2-404e-a9c7-840952ed451e\",\"1473431d-29c8-4e34-96af-e1a42ab79ac1\",\"7c32c28c-33ae-4e1d-a287-4",
+    "resourceType": "fetch",
+    "timestamp": 1778861873714
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 281392,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861873897
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"9fe175f7-a844-46fc-9c1c-92d4dc5bf6ae\",\"f01025af-3631-4f12-b713-7bd5ba547d95\",\"35d03ce0-ce20-46f8-b1e1-cd508a7bea46\",\"7e7ed9b0-7ed8-4580-ae5e-705ed747c87b\",\"bd46f740-2d51-41fb-bab6-bb037633d009\",\"9e6b1c39-eddf-46c3-bb31-2c48d8e2f835\",\"72566ff3-e7ce-4d5c-8a9b-5272e40526dd\",\"8ea875de-62f2-49bc-9d9b-f",
+    "resourceType": "fetch",
+    "timestamp": 1778861875735
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 280127,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861876073
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"c9364fcf-a842-4a4b-b0ba-173a3ba59f08\",\"5eb1786e-b907-45c4-816c-cbab2cc6c8d2\",\"d9e6aa9e-a36c-4764-bd6e-16a3b6e203bf\",\"27ed5d79-63d9-4f1c-8cb5-5b3b7648aa9b\",\"0154bbad-791c-45d3-998b-de497cdb7e16\",\"290df6ac-d63d-4b93-b7b4-2d84ac2544d6\",\"1d306fc3-ee72-42bf-8b79-dba0632451b5\",\"37482fde-fe21-49d9-87d8-4",
+    "resourceType": "fetch",
+    "timestamp": 1778861877746
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 293746,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861877869
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"28a97720-98ea-4736-83de-f31ab0d49d56\",\"168629fd-6f65-49ee-8345-acec4188a743\",\"43621112-1b62-4e09-805f-d025eb6db471\",\"adab5557-66fe-4e2a-a5d8-7f451d2633b8\",\"33caf68d-d0d2-475d-81eb-220dbf6cb94b\",\"341d7c5f-c9db-458a-a4e9-b6c49f955b98\",\"44664c2d-ee46-4cb6-9411-1bc086861e78\",\"38bdcace-6223-45dd-841a-e",
+    "resourceType": "fetch",
+    "timestamp": 1778861879779
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 279867,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861879900
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"75259623-d038-4e91-936a-88a9b69426a6\",\"d9bd8cd9-802d-49c2-9e30-f28b92c4521a\",\"36162591-951e-49f7-a8f2-dad14fbbc428\",\"a75c5b0a-9349-444a-a391-e533b2b5a04e\",\"1036ea1c-1af1-46b5-a91c-88980f5c9513\",\"002dab6f-2c56-4a4a-a2e2-9b9cf07e3f74\",\"da661492-a094-433c-ac1a-3f89bf0ce3f8\",\"61a61318-c449-43da-ba4a-0",
+    "resourceType": "fetch",
+    "timestamp": 1778861881756
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 303137,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861882142
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"81b6ad4a-64a3-4c42-8f27-8213197f065b\",\"f1f34664-71b1-4772-8589-c6dc70dd175c\",\"c9cfa48e-fb31-45bc-a4b8-ffd874b84ceb\",\"8e71e36b-7397-45ff-b70a-77901471b111\",\"c9bad3e3-9490-4fbd-8339-47a0d403fdd0\",\"58cdfb52-fe13-4723-ba4b-6b4ffcf276fb\",\"ff97eab3-6371-4636-90c9-82632350939c\",\"647086ed-d182-4aae-8f5f-c",
+    "resourceType": "fetch",
+    "timestamp": 1778861882188
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 285464,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861882441
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"310245f4-9a14-456e-b2f9-5ad75ee7edbe\",\"700585f0-e411-4d8c-b7c7-d2a32bc59a4f\",\"1e464f91-cb21-485a-90ed-b937c263cc4f\",\"51165fa4-cee1-4577-92d9-651b07fe5ceb\",\"b6a1403d-e197-4cb8-bf54-3db83f317bb2\",\"ea47f024-7420-4d79-a242-737a2f1f31db\",\"2ea4e42b-d9f2-48ad-833a-97688219b276\",\"7c34e45e-f68f-410d-a12b-f",
+    "resourceType": "fetch",
+    "timestamp": 1778861883768
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 281969,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861883896
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"4d18e3df-96ed-4d32-b1f5-0e449271e777\",\"0dc33b5a-f2ec-4043-b59b-036b8028b856\",\"a8990ff0-ab57-4c6e-a379-43924fdc7965\",\"e5e35fbb-ea13-4d69-aee3-611be12f3d6e\",\"62142e01-a6ef-4ce3-afc5-0cdc6728e557\",\"c6123710-251a-4803-9de2-9dba5bfb9f51\",\"d0b85395-d149-4c1f-bb1a-5a6929a2d03b\",\"dbe27ade-ab62-4372-a3eb-a",
+    "resourceType": "fetch",
+    "timestamp": 1778861883928
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 273710,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861884045
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"68287674-3d7d-4a00-aed5-dfeac2cbc292\",\"2f735c80-a46f-4f68-a779-f0783ac52fc4\",\"9ab06282-d7da-4faa-99cb-0a6ccf624067\",\"6f8f5506-ba1d-4d05-a896-b489dd2ad886\",\"e5d2638b-4b30-4bbf-8c40-674fdc2d1a78\",\"42a05b2b-d476-46eb-992b-b8ed91206c7b\",\"02250ef4-a79f-4672-9ade-bcdb2ac92fe5\",\"2c2f1dfa-eccd-4be3-a74f-f",
+    "resourceType": "fetch",
+    "timestamp": 1778861885774
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 277705,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861885889
+  },
+  {
+    "type": "REQUEST",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "postData": "[\"602a512d-ef00-4764-affa-7aebf1df3ccd\",\"473d4d6b-366c-4499-93d1-f5684f3816bf\",\"f31cc293-7d26-4dad-8754-522399c9ddcd\",\"a3542b64-89c0-476d-ba42-e6517dcd1396\",\"d8e4fb0e-3f7b-41b9-83cf-df4a8b6a4bfd\",\"88c18f7e-38c9-47e7-95ca-7cd4069c99d9\",\"318a1f95-78ac-47f0-a7bf-891d18330fcd\",\"60b5377f-1e11-4d04-8926-6",
+    "resourceType": "fetch",
+    "timestamp": 1778861885917
+  },
+  {
+    "type": "RESPONSE",
+    "method": "PUT",
+    "url": "/api/webproductpagews/v6/products",
+    "queryString": "",
+    "status": 200,
+    "bodyLength": 328091,
+    "paginationInfo": " | products: 24",
+    "timestamp": 1778861886036
+  }
+]

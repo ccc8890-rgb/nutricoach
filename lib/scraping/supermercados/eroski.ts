@@ -1,12 +1,23 @@
 /**
  * eroski.ts — Scraper para Eroski España
  *
- * Eroski usa Apache Tapestry (framework Java), no tiene API REST pública.
- * Estrategia: Playwright para navegar por categorías y extraer productos del HTML.
+ * Eroski usa Apache Tapestry (framework Java). Las URLs de categoría
+ * redirigen a 404, así que solo podemos extraer productos del homepage.
+ * El homepage muestra productos en carruseles (slick-slider) con estructura:
  *
- * Web: https://supermercado.eroski.es/
+ * div.product-container.product-item
+ *   div.product-image → a → img
+ *   div.product-info.product-description
+ *     div.product-name-div → a → p.product-name
+ *     div.product-price.offer-description → p.product-price-value → span.product-price-currency
+ *     p.product-price-per-uom (precio por kg/litro)
+ *
+ * Web: https://supermercado.eroski.es/es/
+ *
+ * NOTA: page.evaluate usa string IIFE en vez de arrow functions
+ * para evitar el error "__name is not defined" que causa tsx al
+ * serializar funciones compiladas al contexto del navegador.
  */
-
 import type { ScrapingConfig } from '../types'
 import type { ProductoRaw } from '../types'
 import { chromium } from 'playwright'
@@ -21,35 +32,6 @@ export const configEroski: ScrapingConfig = {
     url_base: 'https://supermercado.eroski.es',
     rate_limit_ms: 800,
     timeout_ms: 30000,
-}
-
-/* ─── Interfaces ─── */
-
-interface EroskiProductExtraido {
-    nombre: string
-    precio: number
-    precioPorKg?: number
-    url: string
-    imagen: string
-    marca?: string
-    cantidad?: string
-}
-
-/* ─── Mapeo ─── */
-
-function mapearProducto(p: EroskiProductExtraido, categoria?: string): ProductoRaw {
-    return {
-        nombre: p.nombre,
-        precio_actual: p.precio,
-        precio_por_kg: p.precioPorKg,
-        unidad: 'kg',
-        url_producto: p.url,
-        imagen_url: p.imagen || undefined,
-        marca: p.marca || 'Eroski',
-        cantidad: p.cantidad || undefined,
-        disponible: true,
-        categoria,
-    }
 }
 
 /* ─── Lógica principal con Playwright ─── */
@@ -79,51 +61,142 @@ export async function scrapearEroski(): Promise<{
 
         const page = await context.newPage()
 
-        // ── 1. Obtener categorías de alimentación ──
-        console.log('[Eroski] Obteniendo categorías...')
-        let categorias = await obtenerCategoriasAlimentacion(page)
-        console.log(`[Eroski] ${categorias.length} categorías encontradas`)
-
-        // Fallback si no se encuentran categorías
-        if (categorias.length === 0) {
-            console.log('[Eroski] Usando categorías predefinidas...')
-            const CATS_PREDEFINIDAS = [
-                'https://supermercado.eroski.es/es/c/Alimentacion-y-bebidas/',
-                'https://supermercado.eroski.es/es/c/Carniceria/',
-                'https://supermercado.eroski.es/es/c/Pescaderia/',
-                'https://supermercado.eroski.es/es/c/Frutas-y-verduras/',
-                'https://supermercado.eroski.es/es/c/Lacteos-y-huevos/',
-                'https://supermercado.eroski.es/es/c/Congelados/',
-                'https://supermercado.eroski.es/es/c/Panaderia/',
-                'https://supermercado.eroski.es/es/c/Despensa/',
-                'https://supermercado.eroski.es/es/c/Bebidas/',
-            ]
-            for (const url of CATS_PREDEFINIDAS) {
-                categorias.push({ url, name: url.split('/c/').pop()?.replace(/-/g, ' ')?.replace(/\//g, '') || url })
-            }
+        // ── 1. Navegar al homepage ──
+        // NOTA: Las URLs de categoría (/es/c/...) redirigen a 404.
+        // Solo el homepage tiene productos visibles.
+        console.log('[Eroski] Navegando al homepage...')
+        try {
+            await page.goto('https://supermercado.eroski.es/es/', {
+                waitUntil: 'domcontentloaded',
+                timeout: configEroski.timeout_ms,
+            })
+        } catch (err) {
+            console.warn('[Eroski] Timeout en carga inicial, continuando...')
         }
 
-        // ── 2. Scrapear cada categoría ──
-        const maxCats = Math.min(categorias.length, 12)
+        await page.waitForTimeout(5000)
 
-        for (let i = 0; i < maxCats; i++) {
-            const cat = categorias[i]
-            console.log(`[Eroski] Categoría ${i + 1}/${maxCats}: ${cat.name}`)
+        // Scroll progresivo para activar lazy loading de imágenes
+        console.log('[Eroski] Scroll progresivo...')
+        await page.evaluate(`window.scrollTo(0, document.body.scrollHeight * 0.2)`)
+        await page.waitForTimeout(800)
+        await page.evaluate(`window.scrollTo(0, document.body.scrollHeight * 0.4)`)
+        await page.waitForTimeout(800)
+        await page.evaluate(`window.scrollTo(0, document.body.scrollHeight * 0.6)`)
+        await page.waitForTimeout(800)
+        await page.evaluate(`window.scrollTo(0, document.body.scrollHeight * 0.8)`)
+        await page.waitForTimeout(800)
+        await page.evaluate(`window.scrollTo(0, document.body.scrollHeight)`)
+        await page.waitForTimeout(2000)
 
-            await new Promise(r => setTimeout(r, configEroski.rate_limit_ms))
+        // ── 2. Extraer productos del DOM ──
+        console.log('[Eroski] Extrayendo productos del homepage...')
 
-            try {
-                const prods = await scrapearCategoria(page, cat.url, cat.name)
-                for (const p of prods) {
-                    productos.push(mapearProducto(p, cat.name))
-                }
-                console.log(`[Eroski]   → ${prods.length} productos`)
-            } catch (err) {
-                const msg = err instanceof Error ? err.message : String(err)
-                errores.push(`Error en categoría ${cat.name}: ${msg}`)
-                console.warn(`[Eroski]   ❌ ${msg}`)
-            }
+        const prods = await page.evaluate<ProductoRaw[]>(`
+            (() => {
+                var items = [];
+                var seen = new Set();
+
+                // Selector de contenedor de producto (diagnóstico confirmado)
+                var containers = document.querySelectorAll('.product-container.product-item');
+
+                containers.forEach(function(container) {
+                    // Nombre
+                    var nameEl = container.querySelector('.product-name');
+                    var nombre = (nameEl && nameEl.textContent && nameEl.textContent.trim()) || '';
+                    if (!nombre) return;
+
+                    // Evitar duplicados (slick-slider duplica items)
+                    if (seen.has(nombre)) return;
+                    seen.add(nombre);
+
+                    // Precio - extraer del .product-price-value
+                    var priceEl = container.querySelector('.product-price-value');
+                    var precio = 0;
+                    if (priceEl && priceEl.textContent) {
+                        // Formato español: "33.00" o "1,50"
+                        var text = priceEl.textContent.trim();
+                        // Si tiene punto como separador de miles, quitarlo
+                        // Si tiene coma, reemplazar por punto
+                        if (text.indexOf('.') !== -1 && text.indexOf(',') !== -1) {
+                            // Tiene ambos: "1.234,56" → quitar puntos, reemplazar coma
+                            text = text.replace(/\./g, '').replace(',', '.');
+                        } else if (text.indexOf(',') !== -1) {
+                            text = text.replace(',', '.');
+                        }
+                        var parsed = parseFloat(text);
+                        if (!isNaN(parsed)) precio = parsed;
+                    }
+
+                    // Precio por kg/unidad - extraer del .product-price-per-uom
+                    var perKgEl = container.querySelector('.product-price-per-uom');
+                    var precioKg;
+                    if (perKgEl && perKgEl.textContent) {
+                        // Formato: "1 KILO A 8,571 €" o "1 LITRO A 0,593 €"
+                        var match = perKgEl.textContent.match(/(\\d+[.,]\\d+)/);
+                        if (match) {
+                            var text = match[1].replace(',', '.');
+                            var parsed = parseFloat(text);
+                            if (!isNaN(parsed)) precioKg = parsed;
+                        }
+                    }
+
+                    // URL - buscar el enlace dentro del contenedor
+                    // Los enlaces pasan por Criteo tracking, extraer dest= real
+                    var link = container.querySelector('a[href*="productDetail"]') ||
+                               container.querySelector('a[href*="criteo"]');
+                    var href = '';
+                    if (link) {
+                        var rawHref = link.getAttribute('href') || '';
+                        // Extraer URL real del parámetro dest= (Criteo redirect)
+                        var destMatch = rawHref.match(/dest=([^&]+)/);
+                        if (destMatch) {
+                            href = decodeURIComponent(destMatch[1]);
+                        } else if (rawHref.startsWith('http')) {
+                            href = rawHref;
+                        } else if (rawHref.startsWith('//')) {
+                            href = 'https:' + rawHref;
+                        } else if (rawHref.startsWith('/')) {
+                            href = 'https://supermercado.eroski.es' + rawHref;
+                        }
+                    }
+
+                    // Imagen
+                    var img = container.querySelector('img');
+                    var imagen = '';
+                    if (img) {
+                        var src = img.getAttribute('src') || img.getAttribute('data-src') || '';
+                        if (src && !src.startsWith('data:')) {
+                            if (src.startsWith('//')) imagen = 'https:' + src;
+                            else if (src.startsWith('/')) imagen = 'https://supermercado.eroski.es' + src;
+                            else imagen = src;
+                        }
+                    }
+
+                    if (nombre && precio > 0) {
+                        items.push({
+                            nombre: nombre,
+                            precio_actual: precio,
+                            precio_por_kg: precioKg,
+                            unidad: 'kg',
+                            url_producto: href || '',
+                            imagen_url: imagen || undefined,
+                            marca: 'Eroski',
+                            cantidad: '',
+                            disponible: true,
+                            categoria: 'Homepage',
+                        });
+                    }
+                });
+
+                return items;
+            })()
+        `)
+
+        for (const p of prods) {
+            productos.push(p)
         }
+        console.log(`[Eroski] ${prods.length} productos únicos extraídos`)
 
         console.log(`[Eroski] ${productos.length} productos totales`)
     } catch (err) {
@@ -135,145 +208,4 @@ export async function scrapearEroski(): Promise<{
     }
 
     return { productos, errores, duracion_ms: Date.now() - inicio }
-}
-
-/**
- * Obtiene categorías desde la página principal de Eroski.
- */
-async function obtenerCategoriasAlimentacion(
-    page: import('playwright').Page
-): Promise<{ url: string; name: string }[]> {
-    try {
-        await page.goto('https://supermercado.eroski.es/es/', {
-            waitUntil: 'networkidle',
-            timeout: configEroski.timeout_ms,
-        }).catch(() => { })
-
-        await page.waitForTimeout(3000)
-
-        const cats = await page.evaluate(() => {
-            const links: { url: string; name: string }[] = []
-            const seen = new Set<string>()
-
-            const anchors = document.querySelectorAll<HTMLAnchorElement>(
-                'a[href*="/es/c/"], ' +
-                'nav a[href*="/categoria"], ' +
-                '.menu-item a[href*="/c/"], ' +
-                '[class*="category"] a[href], ' +
-                'a[href*="Alimentacion"], a[href*="alimentacion"]'
-            )
-
-            anchors.forEach(a => {
-                const href = a.href?.trim()
-                const text = a.textContent?.trim()
-                if (href && text && !seen.has(href) && text.length > 3 && !href.includes('#')) {
-                    seen.add(href)
-                    links.push({ url: href, name: text })
-                }
-            })
-
-            return links
-        })
-
-        return cats
-    } catch (err) {
-        return []
-    }
-}
-
-/**
- * Scrapea productos de una categoría de Eroski.
- */
-async function scrapearCategoria(
-    page: import('playwright').Page,
-    url: string,
-    categoria: string
-): Promise<EroskiProductExtraido[]> {
-    await page.goto(url, {
-        waitUntil: 'networkidle',
-        timeout: configEroski.timeout_ms,
-    }).catch(() => { })
-
-    await page.waitForTimeout(3000)
-
-    // Scroll para lazy loading
-    await page.evaluate(async () => {
-        const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
-        for (let i = 0; i < document.body.scrollHeight; i += 500) {
-            window.scrollTo(0, i)
-            await delay(400)
-        }
-    })
-
-    await page.waitForTimeout(1000)
-
-    // Extraer productos del DOM
-    const prods = await page.evaluate(() => {
-        const items: EroskiProductExtraido[] = []
-
-        const cards = document.querySelectorAll<HTMLElement>(
-            '[class*="product-card"], ' +
-            '[class*="product-item"], ' +
-            '[class*="product"], ' +
-            'li[class*="product"], ' +
-            '.grid-item, ' +
-            'article'
-        )
-
-        cards.forEach(card => {
-            const nombreEl = card.querySelector<HTMLElement>(
-                '[class*="product-name"], ' +
-                '[class*="product-title"], ' +
-                '[class*="name"], ' +
-                'h3, h2, [class*="title"]'
-            )
-            const precioEl = card.querySelector<HTMLElement>(
-                '[class*="price"], ' +
-                '.current-price, [class*="precio"], ' +
-                '[data-price], [class*="offer"]'
-            )
-            const precioKgEl = card.querySelector<HTMLElement>(
-                '[class*="unit-price"], ' +
-                '[class*="price-per"], ' +
-                '[class*="base-price"], ' +
-                '[class*="reference"]'
-            )
-            const urlEl = card.querySelector<HTMLAnchorElement>('a[href]')
-            const imgEl = card.querySelector<HTMLImageElement>('img')
-            const marcaEl = card.querySelector<HTMLElement>(
-                '[class*="brand"], [data-brand], [class*="marca"]'
-            )
-            const cantidadEl = card.querySelector<HTMLElement>(
-                '[class*="quantity"], [class*="weight"], [class*="packaging"], ' +
-                '[data-quantity], [class*="amount"]'
-            )
-
-            const nombre = nombreEl?.textContent?.trim() || ''
-            const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0'
-            const precio = parseFloat(precioTexto) || 0
-            const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || ''
-            const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined
-
-            let href = urlEl?.href || ''
-            if (href && !href.startsWith('http')) {
-                href = `https://supermercado.eroski.es${href}`
-            }
-
-            if (nombre && precio > 0) {
-                items.push({
-                    nombre,
-                    precio,
-                    precioPorKg: precioKg,
-                    url: href,
-                    imagen: imgEl?.src || '',
-                    marca: marcaEl?.textContent?.trim() || undefined,
-                    cantidad: cantidadEl?.textContent?.trim() || undefined,
-                })
-            }
-        })
-
-        return items
-    })
-
-    return prods
 }

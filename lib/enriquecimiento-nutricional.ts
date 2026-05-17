@@ -18,12 +18,43 @@ import type { ResultadoEnriquecimiento, AlimentoPendienteEnriquecer } from '@/ty
 
 // ── Configuración ─────────────────────────────────────────────
 
-const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
+const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash' // Flash es más barato y suficiente para enriquecer macros
 const TEMPERATURA = 0.1
 const LOTES_POR_VEZ = 25 // nº de alimentos por llamada a DeepSeek
 const MAX_INTENTOS = 3
 
 const deepseek = createDeepSeek()
+
+/**
+ * Extrae el primer array JSON válido del texto de respuesta.
+ * Maneja: JSON plano, markdown ```json ... ```, y objetos individuales.
+ */
+function extraerJsonArray(texto: string): unknown {
+    // 1. Intentar extraer bloque ```json ... ```
+    const mdMatch = texto.match(/```(?:json)?\s*\n?([\s\S]*?)```/)
+    if (mdMatch) {
+        const contenido = mdMatch[1].trim()
+        const parsed = JSON.parse(contenido)
+        if (Array.isArray(parsed)) return parsed
+        return parsed
+    }
+
+    // 2. Intentar con regex de array [...]
+    const arrayMatch = texto.match(/\[[\s\S]*\]/)
+    if (arrayMatch) {
+        const parsed = JSON.parse(arrayMatch[0])
+        if (Array.isArray(parsed)) return parsed
+        return parsed
+    }
+
+    // 3. Intentar con objeto individual {...}
+    const objMatch = texto.match(/\{[\s\S]*\}/)
+    if (objMatch) {
+        return JSON.parse(objMatch[0])
+    }
+
+    throw new Error(`No se pudo extraer JSON. Texto: ${texto.slice(0, 500)}`)
+}
 
 /**
  * Prompt para que DeepSeek rellene macros de alimentos.
@@ -39,13 +70,14 @@ function construirPromptEnriquecimiento(alimentos: { id: string; nombre: string;
 6. **fibra**: gramos por 100g (0 si no aplica)
 7. **confianza**: "alta" si conoces el valor exacto, "media" si es estimación, "baja" si es muy incierto
 
-IMPORTANTE: Responde SOLO con un array JSON válido, sin markdown ni explicaciones.
+IMPORTANTE: Responde SOLO con un array JSON válido dentro de un bloque de código \`\`\`json.
 Usa valores realistas basados en tablas de composición de alimentos españolas (BEDCA).
 
 Alimentos a procesar:
 ${JSON.stringify(alimentos, null, 2)}
 
-Formato de respuesta (array JSON):
+Formato de respuesta:
+\`\`\`json
 [
   {
     "alimento_id": "uuid",
@@ -59,7 +91,8 @@ Formato de respuesta (array JSON):
     "confianza": "alta|media|baja",
     "explicacion": "breve razón de los valores"
   }
-]`
+]
+\`\`\``
 }
 
 /**
@@ -77,23 +110,15 @@ async function enriquecerLoteConIA(
         maxOutputTokens: 4000,
     })
 
-    // Extraer JSON del texto de respuesta
-    const jsonMatch = text.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) {
-        // Intentar con objeto individual
-        const singleMatch = text.match(/\{[\s\S]*\}/)
-        if (!singleMatch) {
-            throw new Error(`No se pudo extraer JSON de la respuesta. Texto: ${text.slice(0, 500)}`)
-        }
-        return [JSON.parse(singleMatch[0])]
-    }
+    // Extraer JSON del texto de respuesta (maneja markdown, JSON plano, objetos individuales)
+    const parsed = extraerJsonArray(text)
 
-    const parsed: ResultadoEnriquecimiento[] = JSON.parse(jsonMatch[0])
+    // Si es un objeto individual, devolver como array de 1 elemento
     if (!Array.isArray(parsed)) {
         return [parsed as unknown as ResultadoEnriquecimiento]
     }
 
-    return parsed
+    return parsed as ResultadoEnriquecimiento[]
 }
 
 /**
@@ -123,11 +148,13 @@ export async function obtenerPendientesEnriquecer(
  * Procesa un lote de alimentos con IA y los actualiza en Supabase.
  * @param supabase - Cliente Supabase con service_role
  * @param alimentos - Array de alimentos pendientes
+ * @param onProgreso - Callback opcional para reportar progreso en tiempo real
  * @returns Estadísticas del proceso
  */
 export async function procesarLoteEnriquecimiento(
     supabase: SupabaseClient,
-    alimentos: AlimentoPendienteEnriquecer[]
+    alimentos: AlimentoPendienteEnriquecer[],
+    onProgreso?: (procesados: number, total: number, actualizados: number, errores: number) => void
 ): Promise<{
     procesados: number
     actualizados: number
@@ -173,6 +200,10 @@ export async function procesarLoteEnriquecimiento(
                 }
 
                 exito = true
+
+                // Reportar progreso vía callback
+                onProgreso?.(Math.min(i + LOTES_POR_VEZ, alimentos.length), alimentos.length, stats.actualizados, stats.errores.length)
+
                 // Pequeña pausa entre lotes para no saturar la API
                 if (i + LOTES_POR_VEZ < alimentos.length) {
                     await new Promise(r => setTimeout(r, 1000))
@@ -195,10 +226,14 @@ export async function procesarLoteEnriquecimiento(
 
 /**
  * Enriquecimiento completo: obtiene pendientes, procesa y actualiza.
+ * @param supabase - Cliente Supabase con service_role
+ * @param limite - Nº máximo de alimentos a procesar
+ * @param onProgreso - Callback opcional para reportar progreso en tiempo real
  */
 export async function ejecutarEnriquecimientoCompleto(
     supabase: SupabaseClient,
-    limite: number = 100
+    limite: number = 100,
+    onProgreso?: (procesados: number, total: number, actualizados: number, errores: number) => void
 ): Promise<{
     total_pendientes: number
     procesados: number
@@ -220,7 +255,7 @@ export async function ejecutarEnriquecimientoCompleto(
         }
     }
 
-    const stats = await procesarLoteEnriquecimiento(supabase, pendientes)
+    const stats = await procesarLoteEnriquecimiento(supabase, pendientes, onProgreso)
 
     return {
         total_pendientes: pendientes.length,

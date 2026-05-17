@@ -195,6 +195,257 @@ Todos los demás archivos compartidos en `lib/`, `components/`, `app/` (no lista
 - **Migración de esquema antiguo a nuevo de recetas:** `node scripts/migrar-recetas.mjs`
 - **Reparar ingredientes en recetas antiguas:** `node scripts/reparar-recetas-ingredientes.mjs`
 - **Backfill de recetas (Scrape URL y auto-relleno):** `npx tsx scripts/backfill-recetas.ts`
+- **Enriquecer alimentos:** `node scripts/enriquecer-alimentos.mjs --limite=N`
+
+## ✅ SESIÓN 15 — Dashboard rediseñado + Lidl scraper v4 híbrido (16-05-2026)
+
+### Dashboard NutriCoach — Rediseño completo ✅
+- **Widgets eliminados**: Tendencia check-ins, Clientes con/sin dieta (progress bar), Dietas por cliente, Top clientes activos, Clientes sin actividad, Clientes recientes
+- **Widgets nuevos**: Quick Actions (4 chips), Estado reactivo (N sin dieta / N consultas pendientes / Todo al día), Próximas revisiones
+- **Phosphor icons** (`@phosphor-icons/react`): weight `fill`/`regular`, `TrendUp` (no `TrendingUp`)
+- **Desplegado en Vercel** ✅
+
+### Lidl scraper v4 — Híbrido Playwright + gridboxes API ✅
+- **Problema v3**: 75 productos limpios pero precios por DOM parsing (poco fiable) + falsos positivos (6 herramientas/electrodomésticos) que escapaban al filtro NO_COMESTIBLE
+- **v4 arquitectura**: Fase 1 (Playwright por lotes) → erpNumbers; Fase 2 (HTTP gridboxes) → precio real + categoría
+- **API gridboxes confirmada**: `price.price` (float), `category: "Food"` para alimentos, `"Categorías/Hogar y cocina/..."` para no-alimentos, `brand.name`, `price.packaging.text` ("500 g", "1 l")
+- **Filtro de categoría**: `cat === 'food'` → alimento; path largo → descartado sin necesidad de keywords
+- **String IIFE en page.evaluate**: corrige bug `__name` de tsx (arrow functions no serializan al browser context)
+- **Test end-to-end verificado**: 3 términos → 12 erpNumbers → gridboxes 200 → 7 alimentos / 5 descartados (hogar/bricolaje/jardín correctamente eliminados)
+- **Scraper completo ejecutado** (60 términos, 4.0 min): **306 erpNumbers** → **126 alimentos Food** / **180 descartados** (59% filtrados) → 2 alimentos nuevos, 99 productos actualizados, 74 nuevos en BD
+
+### Archivos clave v4
+| Archivo | Cambio |
+|---------|--------|
+| `lib/scraping/supermercados/lidl.ts` | **REESCRITO v4** — híbrido: Playwright DOM (erpNumbers) + gridboxes API HTTP (precios + categoría) |
+| `scripts/test-lidl-gridboxes.ts` | **NUEVO** — verifica API gridboxes con erpNumbers de BD existentes |
+| `scripts/test-lidl-v4.ts` | **NUEVO** — test end-to-end v4 (3 términos) |
+
+### API gridboxes — Notas para futura referencia
+- URL: `https://www.lidl.es/p/api/gridboxes/ES/es?erpNumbers=11035146,11031440,...`
+- Requiere cookies de sesión Lidl (`context.cookies()` de Playwright)
+- Respuesta: array de objetos. Campos clave: `erpNumber`, `fullTitle`, `category`, `price.price`, `price.packaging.text`, `canonicalPath`, `brand.name`, `image`
+- `category: "Food"` → alimento humano/animal. `category: "Categorías/..."` → no-alimento
+- erpNumbers se extraen de URLs: `/p/nombre-producto/p11035146` → `11035146`
+
+---
+
+## ✅ SESIÓN 14 — Lidl scraper v3 + Pipeline completo + Filtro NO_COMESTIBLE + Cierre (16-05-2026)
+
+### Lidl scraper v2→v3 — Pipeline ejecutado ✅
+- **v3 batch architecture**: 60 términos en **4 lotes de 15**, cada lote con browser NUEVO
+- **Pipeline real (60 términos → BD)**: **237.3s (4.0 min)**, **429 productos únicos**, **0 errores de scraping**
+- **Escritura**: 16 nuevos alimentos creados, 147 productos actualizados, 263 registros en `precios_historico`
+- **vs v2**: de ~7.9h a 4.0 min → **~107x más rápido** (real, no proyección)
+- **Dedup por URL**: 0 duplicados en BD
+
+### Filtro NO_COMESTIBLE_KEYWORDS — Ampliación completa
+- **Antes**: ~155 keywords
+- **Ahora**: ~260 keywords (ropa, decoración, menaje, juguetes, ferretería, plantas, electrodomésticos, menaje cocina, jardinería, pesca)
+- **27 falsos positivos eliminados** de la BD (17 v1 + 10 v2 legacy)
+- **Categorías nuevas añadidas**:
+  - Menaje cocina: `abrelatas`, `tabla de cortar`, `utensilios de cocina`, `quesera`, `set de pulverizadores`
+  - Juguetes/jardín: `arenero`, `tobogán`, `columpio`, `set de pesca`, `caña de pescar`, `tren de madera`
+  - Plantas: `arbusto`, `bonsái`
+- **Lidl en BD**: **75 productos limpios** (sin falsos positivos)
+
+### Lección #11 documentada
+- `docs/scraping-lecciones-aprendidas.md` — Browser degradation en Playwright (causa, fix, métricas, código)
+
+### Archivos modificados (total sesión)
+| Archivo | Cambio |
+|---------|--------|
+| `lib/scraping/supermercados/lidl.ts` | **REESCRITO v3** — Batch architecture, browser refresh, retry, selectores mejorados |
+| `lib/scraping/index.ts` | **NO_COMESTIBLE_KEYWORDS**: de ~155 a ~260 keywords (11 categorías) |
+| `lib/scraping/index.ts` | **NO_COMESTIBLE_KEYWORDS**: 2ª ronda (abrelatas, tabla cortar, utensilios cocina, arenero, pesca, tren, arbusto) |
+| `scripts/ejecutar-lidl-v3.ts` | **NUEVO** — Pipeline completo scraper → BD |
+| `CLAUDE.md` | Actualizada SESIÓN 14 |
+| `ESTADO_Y_PROXIMOS_PASOS.md` | Lidl: v3 + pipeline ejecutado |
+| `docs/scraping-lecciones-aprendidas.md` | Lección #11: browser degradation |
+
+### Estado actual de productos por supermercado
+| Supermercado | Productos | Método | Estado |
+|---|---|---|---|
+| Consum | 4,763 | API HTTP | ✅ |
+| Mercadona | 2,820 | API HTTP | ✅ |
+| Alcampo | 38 | API Ocado | ✅ |
+| Carrefour | 17 | Playwright homepage | ✅ |
+| Bonpreu | 21 | Híbrido | ✅ |
+| Esclat | 21 | Híbrido | ✅ |
+| Eroski | 11 | Playwright | ✅ |
+| **Lidl** | **74** | **Híbrido v4**: Playwright (erpNumbers) + gridboxes API (precios+cat) | **✅ v4** |
+| **Total** | **7,765** | | |
+| Dia | 0 | Playwright | ❌ (WAF) |
+| Aldi | 0 | — | ❌ |
+| ECI/Hipercor | 0 | Playwright | ❌ (Akamai) |
+
+### Pendiente para próxima sesión
+1. **Día**: Investigar si hay API subyacente tras el WAF de Cloudflare
+2. **ECI/Hipercor**: Siguen bloqueados por Akamai
+3. **Lidl**: Re-ejecutar trimestralmente para mantener precios actualizados (74 productos)
+4. **Mercadona**: Re-scrapear (2,820 productos, posible desactualización)
+5. **Consum**: 4,763 productos — sin duplicados reales
+
+---
+
+## ✅ SESIÓN 13 — Scrapers Carrefour/Alcampo reparados + Enriquecimiento 100% + Fix dedup productos (16-05-2026 PM)
+
+### Enriquecimiento nutricional COMPLETADO ✅ (100%)
+| Métrica | Valor |
+|---------|-------|
+| Alimentos en BD | **12,174** |
+| Alimentos enriquecidos | **12,169** ✅ |
+| Pendientes | **0** 🎉 |
+| Precios históricos | **78,235** |
+
+### Scrapers reparados
+| Bug | Causa | Fix |
+|-----|-------|-----|
+| **Alcampo no insertaba** | API Ocado devuelve precios como `{amount:"1.80", currency:"EUR"}`, el mapper los pasaba como objeto literal a columna `numeric` | [`alcampo.ts`](lib/scraping/supermercados/alcampo.ts) — `extraerPrecio()` y `extraerPrecioPorKg()` convierten objeto a float |
+| **Carrefour/Alcampo productos no persistian** | Batch insert fallaba completamente por `duplicate key` (varios productos al mismo `alimento_id` viola unique `(supermercado_id, alimento_id)`) | [`index.ts`](lib/scraping/index.ts:559) — deduplicacion por `alimento_id` antes del batch insert |
+
+### Estado actual de productos por supermercado
+| Supermercado | Productos | Metodo | Estado |
+|---|---|---|---|
+| Consum | 4,765 | API HTTP | ✅ |
+| Mercadona | 2,895 | API HTTP | ✅ |
+| Alcampo | 38 | API Ocado | ✅ |
+| Carrefour | 20 | Playwright homepage | ✅ |
+| Bonpreu | 21 | Hibrido | ✅ |
+| Esclat | 21 | Hibrido | ✅ |
+| Eroski | 11 | Playwright | ✅ |
+| **Total** | **7,771** | | |
+| Lidl | 0 | Playwright | ❌ (web folletos) |
+| Dia | 0 | Playwright | ❌ (WAF) |
+| Aldi | 0 | — | ❌ |
+| ECI/Hipercor | 0 | Playwright | ❌ (Akamai) |
+
+**Nota**: Alcampo 38 productos (dedup de 47 candidatos), Carrefour 20 (dedup de 35 candidatos). La deduplicacion es correcta — un mismo alimento solo aparece una vez por supermercado, que es el diseno de la BD (unique `supermercado_id + alimento_id`).
+
+### Notas sobre ejecución
+- **Rate limiting**: DeepSeek ralentizó progresivamente tras ~20.000+ llamadas API. De ~5s/lote a ~85-120s/lote
+- **Errores recuperables**: "Failed to process successful response" aparece ocasionalmente; el script reintenta (3 intentos con backoff) y siempre se recupera
+- **Duplicados**: Siempre ejecutar `pkill -f "enriquecer-alimentos"` antes de una tanda nueva
+- **Batch size**: Auto-ajustado de 10 a 5 alimentos/lote
+- **Progreso total acumulado**: ~671 → **2,178 completados** (+1,507 en esta sesión)
+- **Scraping paralelo**: Se ejecutó `scrapear-supermercados.ts bonpreu esclat eroski mercadona` mientras el enriquecimiento seguía en segundo plano
+- **Commit**: `8bd4a12` (cierre sesión)
+
+### Para reanudar
+```bash
+cd nutricoach-modulos && pkill -f "enriquecer-alimentos" 2>/dev/null; sleep 1 && node scripts/enriquecer-alimentos.mjs --limite=500
+```
+
+## ✅ SESIÓN 11 — Fix ingredientes Instagram + enriquecimiento (16-05-2026)
+
+### Recetas Instagram — patrones de error sistemáticos
+- **Causa raíz**: Instagram no tiene cantidades estructuradas → bridge asigna 100g a todo por defecto
+- **Matches erróneos corregidos**:
+  - "cebolla roja" → "Cebolla frita crujiente" (500 kcal/100g) ← ahora → "Cebolla roja" (40 kcal)
+  - "miso blanco" → "Vinagre de vino blanco" ← ahora → "Miso blanco"
+  - "tortilla de harina/wrap" → "Huevos" (ambigüedad española) ← ahora → "Tortilla Trigo"
+- **Nuevos MATCH_FIXES en pipeline-calidad.mjs** (4 patrones): cebolla roja, miso, tortilla de harina, wrap de trigo
+- **Nuevos CONDIMENTO_DEFAULTS_100G** (16 entradas): soja→20g, vinagre→15g, miso→15g, coco/sésamo→10g, lima→30g, chipotle→25g, tahini→20g, miel→15g, mostaza→10g, ketchup→20g...
+- **Recetas SQL corregidas**: Bowl salmón pepino (942→428kcal), Bowl pollo (846→389kcal), Bowl Carne Boniato, Burrito Chipotle
+
+### Fix crítico: enriquecer-alimentos.mjs
+- **Bug**: `deepseek-v4-pro` devolvía respuestas vacías o truncadas (lotes 25, maxTokens 4000 → 24 min/lote, 0 guardados)
+- **Fix**: `deepseek-chat` + lotes 10 + maxTokens 8000 → 10 ítems en 9s, **500/500 sin errores**
+- **Parser JSON refactorizado**: balance de corchetes en vez de regex lazy. Detecta texto vacío antes de parsear
+- **Estado tras sesión**: 596 completados, 6866 pendientes
+
+---
+
+## 🔴 SESIÓN 9 + 10 — Scraping: Breakthrough HTTP Directo + Pipeline (15-05-2026)
+
+### Resumen para Claude
+
+**Sesión 9 (primera mitad):** Diagnóstico y reparación de scrapers rotos (Eroski, Bonpreu, Esclat). Descubrimiento de APIs REST de Bonpreu/Esclat vía `page.on('response')`.
+
+**Sesión 10 (segunda mitad, Roo Code):** **BREAKTHROUGH MAYOR** 🚀 — Se verificó que las APIs REST de Bonpreu/Esclat funcionan con HTTP `fetch()` DIRECTO, sin necesidad de Playwright por categoría. Se reescribieron ambos scrapers a **v3 híbrido**: 1 sola visita con Playwright para obtener cookies + CSRF token, luego HTTP directo para cada categoría. Reducción de ~30min a ~segundos. Pipeline completo en ejecución.
+
+### Logros principales
+
+1. **Eroski reparado** ✅ — Reescribir usando selectores reales del DOM (`slick-slider` carousels) + fix `__name is not defined`
+
+2. **Bonpreu BREAKTHROUGH v2** ✅ — Descubrimos APIs REST interceptando `page.on('response')`:
+   - `GET /api/webproductpagews/v5/product-pages` — productos destacados de categoría
+   - `PUT /api/webproductpagews/v6/products` — batch de 24 UUIDs → datos completos
+
+3. **🚀 BREAKTHROUGH HTTP DIRECTO (v3)** ✅ — Verificado con script `test-bonpreu-http-direct.ts`:
+   - **Fase 1**: 1 visita Playwright a homepage → CloudFront cookies + `x-csrf-token`
+   - **Fase 2**: HTTP GET directo a v5/product-pages → UUIDs de productos
+   - **Fase 3**: HTTP PUT directo a v6/products con batch de UUIDs → productos completos
+   - **Resultado**: ✅✅✅ HTTP DIRECTO FUNCIONA — Status 200 en ambas llamadas
+
+4. **Bonpreu reescrito v3 (híbrido)** ✅ — [`bonpreu.ts`](nutricoach-modulos/lib/scraping/supermercados/bonpreu.ts):
+   - `establecerSesion()`: 1 PW visit → cookies + CSRF token (antes: PW por categoría)
+   - `scrapearCategoriaHTTP()`: HTTP fetch directo por categoría (antes: `page.on('response')`)
+   - Eliminado: Playwright por categoría, `page.on('request')`/`page.on('response')`
+   - Nuevas interfaces: `SesionBonpreu { cookies, csrfToken, userAgent }`
+   - Headers clave: `ecom-request-source: web`, `ecom-request-source-version`, `client-route-id` (UUID aleatorio), `page-view-id` (UUID aleatorio)
+
+5. **Esclat reescrito v3 (híbrido)** ✅ — [`esclat.ts`](nutricoach-modulos/lib/scraping/supermercados/esclat.ts):
+   - Misma plataforma que Bonpreu → mismo patrón híbrido
+   - Interfaces: `SesionEsclat`, `EsclatApiProduct`, `EsclatApiPrice`, etc.
+   - Funciones: `establecerSesion()`, `scrapearCategoriaHTTP()`
+
+6. **Pipeline completo en ejecución** 🔄 — `scrapear-supermercados.ts bonpreu esclat eroski mercadona`:
+   - Pipeline: scraper v3 → normalizador → `buscarAlimento()` → `productos_supermercado` + `precios_historico`
+   - Mercadona ya completado: **4.616 productos** (vs ~4.342 anterior)
+   - Bonpreu/Esclat/Eroski en proceso...
+
+### Archivos creados
+| Archivo | Propósito |
+|---------|-----------|
+| `scripts/test-bonpreu-api.ts` | Test Bonpreu v2 (ejecutado y completado ✅) |
+| `scripts/test-esclat-api.ts` | Test Esclat v2 (ejecutado y completado ✅) |
+| ~~`scripts/test-bonpreu-http-direct.ts`~~ | Test HTTP directo (creado, verificado, eliminado tras confirmar) |
+
+### Archivos modificados
+| Archivo | Cambio |
+|---------|--------|
+| `lib/scraping/supermercados/bonpreu.ts` | **Reescrito v3**: modo híbrido (1 PW + HTTP directo) — de ~30min a ~segundos |
+| `lib/scraping/supermercados/esclat.ts` | **Reescrito v3**: mismo patrón híbrido que Bonpreu |
+| `lib/scraping/supermercados/eroski.ts` | Reescribir: selectores DOM reales (slick-slider) + fix `__name` |
+| `lib/scraping/supermercados/hipercor.ts` | Header actualizado: BLOQUEADO (Akamai) |
+| `lib/scraping/supermercados/el-corte-ingles.ts` | Header actualizado: BLOQUEADO (Akamai) |
+| `lib/scraping/supermercados/bonpreu.ts` | Fix type error `cats: unknown` → `cats: BonpreuCategory[]` |
+| `ESTADO_Y_PROXIMOS_PASOS.md` | Estado actualizado de todos los scrapers |
+| `CLAUDE.md` | Documentación de scraping actualizada |
+
+### Diagnósticos ejecutados (scripts existentes)
+- `scripts/diagnosticar-bonpreu-api.ts` — Descubrió `__INITIAL_STATE__`, JSON-LD, APIs REST
+- `scripts/diagnosticar-bonpreu-final.ts` — Probó 7 estrategias de extracción
+- `scripts/diagnosticar-carrefour-categorias.ts` — Atascado (navegación infinita)
+- `scripts/diagnosticar-hipercor-api.ts` — **NUEVO**: Verifica si Hipercor/ECI tienen APIs internas. Resultado: ❌ Akamai bloquea homepage y categorías. No se pudo interceptar APIs. El endpoint `/supermercado/api/productos` existe pero devuelve HTML prerenderizado, no JSON.
+
+### Estado actual de scrapers (16-05-2026 — actualizado con fix dedup)
+
+| Supermercado | Productos (DB) | Método | Estado |
+|---|---|---|---|
+| Consum | 4,765 | API HTTP | ✅ |
+| Mercadona | 2,895 | API HTTP | ✅ |
+| Alcampo | 38 | API Ocado HTTP | ✅ |
+| Carrefour | 20 | Playwright homepage | ✅ |
+| Bonpreu | 21 | Híbrido | ✅ |
+| Esclat | 21 | Híbrido | ✅ |
+| Eroski | 11 | Playwright | ✅ |
+| Lidl | 0 | Playwright | ❌ (web folletos) |
+| Día | 0 | Playwright | ❌ (WAF) |
+| Hipercor | 0 | Playwright | ❌ (Akamai) |
+| El Corte Inglés | 0 | Playwright | ❌ (Akamai) |
+
+### Pendiente para próxima sesión
+1. ~~Ejecutar pipeline completo de scraping~~ ✅ COMPLETADO
+2. ~~Arreglar Alcampo (precio objeto) y Carrefour (dedup productos)~~ ✅ COMPLETADO
+3. **Hipercor/El Corte Inglés** siguen bloqueados por Akamai — buscar solución tipo API pública, proxy rotatorio, o scraper alternativo
+4. **Lidl** — web de folletos sin lista completa de productos (investigar API alternativa)
+5. **Día** — WAF de Cloudflare sigue bloqueando (investigar si hay API subyacente)
+6. Actualizar ESTADO_Y_PROXIMOS_PASOS.md con stats finales del pipeline
+7. **Consum** — bajar de 4,765 a ~200? (parece que se duplicaron en tandas anteriores)
+
+---
 
 ## Estado Actual (14-05-2026 — Sesión 12: Unificación worktrees + Deploy Vercel)
 
@@ -665,6 +916,9 @@ Documentado en [`plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`](plans/DISENO_PRODUCTOS
 - ✅ **Plan de diseño documentado:** `plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`
 
 ### Pendiente para próxima sesión
+- [x] **ACTUALIZAR selectores DOM de Carrefour** — ✅ Fix aplicado: extracción desde homepage (54 productos, evita Cloudflare)
+- [x] **Diagnosticar Lidl** — ❌ Web rediseñada, no lista productos (modelo folletos)
+- [x] **Diagnosticar Día** — ❌ WAF impenetrable (4 estrategias headless probadas + APIs internas, todas bloqueadas)
 - [ ] Scrapers pendientes: aldi, el-corte-ingles, hipercor, bonpreu, esclat
 - [ ] Ejecutar re-scraper de Mercadona para probar el pipeline multi-producto en producción
 - [ ] Actualizar PanelScraping para mostrar múltiples productos por alimento con nombre_original y marca
@@ -675,6 +929,106 @@ Documentado en [`plans/DISENO_PRODUCTOS_VS_ALIMENTOS.md`](plans/DISENO_PRODUCTOS
 - [ ] Actualizar ruta vieja `GET /api/precios/alimento` para usar nueva vista
 - [ ] Onboarding: cuestionario inicial post-registro, email de bienvenida automático
 - [ ] Imágenes de recetas: borrar actuales y rehacer con estilo casero
+
+## 🆕 Scrapers: fix `__name is not defined` + ejecución (14-05-2026 — Sesión 9)
+
+### Problema: `ReferenceError: __name is not defined` en scrapers Playwright
+
+**Causa raíz:** El compilador `tsx` (usado por `npx tsx scripts/scrapear-supermercados.ts`) añade un helper `__name()` a funciones flecha/nombradas compiladas. Cuando Playwright serializa estas funciones vía `page.evaluate(() => { ... })`, el código serializado referencia `__name`, que no existe en el contexto del navegador.
+
+**Fix aplicado a 3 scrapers (Carrefour, Lidl, Día):**
+- Convertir `page.evaluate(() => { ... })` → `page.evaluate(\`string IIFE\`)`
+- Las IIFE en string no pasan por `tsx`, se serializan como texto plano
+- Añadir generic type `<T>()` a `page.evaluate<T>()` para type-safety
+
+### Archivos modificados
+
+1. [`lib/scraping/supermercados/carrefour.ts`](nutricoach-modulos/lib/scraping/supermercados/carrefour.ts) — 3 calls convertidas a string IIFE + generic `<ProductoRaw[]>` ✅
+2. [`lib/scraping/supermercados/lidl.ts`](nutricoach-modulos/lib/scraping/supermercados/lidl.ts) — 3 calls convertidas a string IIFE + generic types ✅
+3. [`lib/scraping/supermercados/dia.ts`](nutricoach-modulos/lib/scraping/supermercados/dia.ts) — 3 calls convertidas a string IIFE + generic types ✅
+
+### Resultados de ejecución
+
+| Supermercado | Productos | Técnica | Estado |
+|---|---|---|---|
+| **Alcampo** | **50 únicos** | API HTTP (Ocado) | ✅ Sin fix necesario |
+| **Lidl** | **0** | Playwright DOM | ⚠️ Fix __name ok, selectores desactualizados |
+| **Día** | **0** | Playwright DOM | ⚠️ Fix __name ok, selectores desactualizados + Access Denied |
+| **Carrefour** | **0→54** | Playwright DOM → Homepage | ✅ Fix __name ok, selectores actualizados |
+
+### Diagnóstico DOM (14-05-2026)
+
+#### Carrefour — Fix aplicado ✅ (54 productos)
+- **Problema original:** El scraper navegaba a cada categoría individual (ej: `/supermercado/frescos/cat20002/c`), pero Cloudflare bloqueaba las navegaciones 2ª, 3ª, 4ª.
+- **Problema selectores original:** Buscaba `.product-card__title-link` (no existe), `.product-card__price` (clase real es `.product-card__prices`), `.product-card__price-per-unit` (clase real es `[class*="price-per-unit"]`).
+- **Solución:** Extraer productos directamente del homepage `/supermercado`, que carga TODAS las categorías mezcladas. En homepage hay ~444 `.product-card__parent` con atributos `app_price`, `app_price_per_unit`, `catalog`.
+- **Selectores actuales del homepage funcionales:**
+  - Contenedor: `.product-card__parent` (444 elementos en homepage, 29 en categoria Frescos)
+  - Título: `h2.product-card__title`
+  - Precio: atributo `app_price` en el parent, fallback `.product-card__prices`
+  - Precio/kg: atributo `app_price_per_unit`, fallback `[class*="price-per-unit"]`
+  - Imagen: `img` dentro del card (data-src o src)
+  - URL: `a[href*="/supermercado/"]` dentro del card
+  - Filtro comida: `catalog="food"` en el parent
+- **Cloudflare:** Solo la homepage y la primera navegación a categoría pasan. El fix de extraer desde homepage evita el problema completamente.
+- **Archivo:** [`lib/scraping/supermercados/carrefour.ts`](nutricoach-modulos/lib/scraping/supermercados/carrefour.ts)
+- **Nuevas funciones:** `extraerProductosHomepage()` y `extraerProductosDOM()` (reemplazan `scrapearProductosCategoria()`)
+- **Resultado:** 54 productos extraídos ✅
+
+#### Lidl — Web rediseñada ❌ (no lista productos)
+- **URLs de categoría cambiaron:** De `/c/alimentacion` a `/c/alimentacion/s10068374` (formato con ID numérico)
+- **Problema principal:** Las páginas de categoría ya NO listan productos. Al navegar a `/c/alimentacion/s10068374` redirige a folletos (`/c/descubre-nuevas-ofertas-cada-semana-folletos-lidl/s10087402`).
+- **Subcategorías probadas:** `/c/frutas-y-verduras/s10068375`, `/c/carnes-y-aves/s10068376`, `/c/lacteos-y-huevos/s10068378` — todas cargan sin contenedores de producto, solo navegación y footer.
+- **Causa probable:** Lidl movió su tienda online a un modelo "folletos semanales" donde los productos solo aparecen temporalmente. La experiencia de compra ahora redirige a la web de folletos, no a un catálogo permanente. También podría detectar Playwright headless y ocultar productos.
+- **Elementos detectados en homepage:** 142 elementos con `[class*="product"]`, pero son genéricos (no contienen precios). La clase de producto es `ods-product` / `ods-price`.
+- **Estado:** No scrapeable actualmente con la estrategia actual. Requeriría investigar si hay API interna o si renderiza productos solo para usuarios logueados.
+
+#### Día — WAF impenetrable ❌ (diagnóstico completo)
+- **Playwright headless (4 estrategias probadas):** TODAS bloqueadas con "Access Denied" (288 bytes).
+  - Headless normal (control) → ❌
+  - Headless + `--disable-blink-features=AutomationControlled` → ❌
+  - Headless + Stealth JS (navigator.webdriver, chrome.runtime, plugins, languages) → ❌
+  - Homepage first + stealth (como Carrefour) → ❌
+- **APIs HTTP directas con fetch:** Todas las rutas API internas (`/api/v2/home-back`, `/api/v1/search-back`, `/api/v1/search-insight`, etc.) devuelven 404 desde fetch — requieren cookies de sesión WAF.
+- **APIs internas descubiertas en HTML SPA:**
+  - `https://www.dia.es/api/v2/home-back`
+  - `https://www.dia.es/api/v1/search-back`
+  - `https://www.dia.es/api/v1/search-insight`
+  - `https://www.dia.es/api/v1/common-aggregator`
+  - `https://www.dia.es/api/v2/home-insight`
+  - `https://www.dia.es/api/v1/cart`
+  - `https://www.dia.es/api/v1/list-back`
+- **Datos SSR:** El HTML contiene un script de ~59KB con pageProps, pero está ofuscado (`pageProps: "undefined"` como string) — no hay datos de producto accesibles sin JS.
+- **Selectores en el HTML fetch (200 OK, 210KB SPA shell):**
+  - `search-product-card__active-price`: clase real para precios
+  - `search-product-card-kil`: clase real para precio/kg
+  - `data-test-id` como identificador principal de componentes
+  - `class*="product-card"`: 479 elementos
+- **Conclusión:** El WAF de Día opera a nivel de red/fingerprint TLS (no solo JS). Es el mismo WAF que bloquea incluso curl/fetch desde la misma IP. Bypass requeriría: proxy residencial, puppeteer-extra con stealth, o sesión real con cookies. **No viable actualmente.**
+- **Archivos de diagnóstico creados:**
+  - [`scripts/diagnosticar-dia.ts`](nutricoach-modulos/scripts/diagnosticar-dia.ts) — Prueba 4 estrategias anti-WAF (todas fallan)
+  - [`scripts/diagnosticar-dia-api.ts`](nutricoach-modulos/scripts/diagnosticar-dia-api.ts) — Busca APIs HTTP (14 endpoints, todos 404/block)
+  - [`scripts/diagnosticar-dia-html.ts`](nutricoach-modulos/scripts/diagnosticar-dia-html.ts) — Inspecciona HTML SPA (descubre selectores y APIs internas)
+  - [`scripts/diagnosticar-dia-api2.ts`](nutricoach-modulos/scripts/diagnosticar-dia-api2.ts) — Busca APIs en chunks JS (descubre servicios Kubernetes internos)
+  - [`scripts/diagnosticar-dia-api3.ts`](nutricoach-modulos/scripts/diagnosticar-dia-api3.ts) — Prueba endpoints reales + extrae SSR data (todo ofuscado)
+
+### Estado actual del scraping (15-05-2026)
+
+| Supermercado | Productos | Técnica | Estado |
+|---|---|---|---|
+| **Mercadona** | ~4.342 ✅ | API HTTP (pública) | ✅ Operativo |
+| **Consum** | ~9.785 ✅ | API interna (árbol categorías) | ✅ Operativo |
+| **Alcampo** | ~50 ✅ | API Ocado HTTP | ✅ Operativo |
+| **Carrefour** | ~54 ✅ | Playwright homepage (evita Cloudflare) | ✅ Operativo con fix __name |
+| **Eroski** | ~12 ✅ | Playwright homepage (slick-slider carousels) | ✅ Re-escrito con selectores reales + fix __name |
+| **Bonpreu** | ~4.138 ✅ | Playwright + interceptación API REST v5/product-pages + v6/products | ✅ VERIFICADO (15 cat, con dedup) |
+| **Esclat** | ~4.138 ✅ | Playwright + interceptación API REST (misma plataforma Bonpreu) | ✅ VERIFICADO (15 cat, con dedup) |
+| **Lidl** | 0 ❌ | Playwright | ❌ Web rediseñada (modelo folletos), no lista productos |
+| **Día** | 0 ❌ | Playwright | ❌ WAF bloquea headless, APIs requieren sesión |
+| **Hipercor** | 0 ❌ | Playwright | ❌ Akamai — "Access Denied" |
+| **El Corte Inglés** | 0 ❌ | Playwright | ❌ Akamai — "Access Denied" |
+
+**Breakthrough Bonpreu/Esclat (VERIFICADO ✅ 15-05-2026)**: Se descubrió que la SPA carga datos mediante APIs REST en lugar de DOM hidratado. Las APIs `GET v5/product-pages` y `PUT v6/products` devuelven datos completos de productos (nombre, precio, marca, imagen, promociones). Los scrapers se reescribieron para usar `page.on('response')` interceptando estas APIs en lugar de extraer del DOM (que solo contiene skeletons CSS). **Tests ejecutados exitosamente**: Bonpreu completó 15 categorías (~4.138 productos únicos tras dedup), Esclat completó 15 categorías con resultados equivalentes. Precios, marcas, imágenes y promociones extraídos correctamente de las respuestas API reales.
 
 ## 🧠 Lecciones aprendidas (09-05-2026 — Productos vs Alimentos)
 

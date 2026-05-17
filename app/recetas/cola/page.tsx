@@ -131,7 +131,7 @@ export default function ColaPage() {
     const { data, error } = await supabase
       .from('recetas')
       .select('*')
-      .eq('coach_id', user.id)
+      .or(`coach_id.eq.${user.id},coach_id.is.null`)
       .in('estado', ['borrador', 'en_revision'])
       .order('created_at', { ascending: false })
 

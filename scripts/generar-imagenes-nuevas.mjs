@@ -135,12 +135,13 @@ async function main() {
         .from('recetas')
         .select('id, nombre, categoria, receta_ingredientes(nombre_libre, alimento:alimentos(nombre))')
         .is('url_origen', null)
+        .is('imagen_url', null)
 
     if (SLUG_FILTRO) query = query.ilike('nombre', `%${SLUG_FILTRO}%`)
 
     const { data: recetas, error } = await query
     if (error) { console.error('Error Supabase:', error.message); process.exit(1) }
-    if (!recetas?.length) { console.log('✅ No hay recetas sin url_origen.'); return }
+    if (!recetas?.length) { console.log('✅ No hay recetas sin imagen.'); return }
 
     const lista = PRUEBA ? recetas.slice(0, 2) : recetas
     const coste = (lista.length * 0.034).toFixed(2)

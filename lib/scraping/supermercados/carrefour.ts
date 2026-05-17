@@ -98,6 +98,10 @@ function mapearProducto(p: CarrefourProduct, categoria?: string): ProductoRaw {
  * 2. Navegar a supermercado y extraer categorías del DOM
  * 3. Para cada categoría, navegar y extraer productos con selectores
  * 4. Fallback: interceptar llamadas a cloud-api si están disponibles
+ *
+ * NOTA: Usamos page.evaluate con strings en vez de arrow functions
+ * para evitar el error "__name is not defined" que causa tsx al
+ * serializar funciones compiladas al contexto del navegador.
  */
 export async function scrapearCarrefour(): Promise<{
     productos: ProductoRaw[]
@@ -130,95 +134,106 @@ export async function scrapearCarrefour(): Promise<{
         // ── 1. Navegar a supermercado ──
         console.log('[Carrefour] Navegando a supermercado...')
         try {
-            await page.goto('https://www.carrefour.es/supermercado/c/alimentacion', {
-                waitUntil: 'networkidle',
-                timeout: configCarrefour.timeout_ms,
+            await page.goto('https://www.carrefour.es/supermercado', {
+                waitUntil: 'domcontentloaded',
+                timeout: 30000,
             })
             console.log('[Carrefour] Página cargada:', await page.title())
         } catch (err) {
-            // Cloudflare timeout no es fatal, a veces la página carga igual
             console.warn('[Carrefour] Timeout en carga inicial, continuando...')
         }
 
-        await page.waitForTimeout(3000)
+        // Cloudflare tarda en resolver, esperamos a que el DOM cargue
+        await page.waitForTimeout(8000)
 
-        // ── 2. Intentar extraer categorías del DOM ──
-        console.log('[Carrefour] Extrayendo categorías del DOM...')
+        // ── 2. Extraer categorías de alimentación del nav ──
+        console.log('[Carrefour] Extrayendo categorías del nav...')
         let categorias: { url: string; name: string }[] = []
 
         try {
-            categorias = await page.evaluate(() => {
-                // Intentar varios patrones comunes de Carrefour
-                const links: { url: string; name: string }[] = []
-
-                // Buscar enlaces de categorías en el menú de navegación
-                const anchors = document.querySelectorAll<HTMLAnchorElement>(
-                    'a[href*="/supermercado/c/"], ' +
-                    'a[href*="/category/"], ' +
-                    '.nav-link[href*="alimentacion"], ' +
-                    '.menu-item a[href*="/c/"], ' +
-                    'nav a[href*="/supermercado"]'
-                )
-
-                const seen = new Set<string>()
-                anchors.forEach(a => {
-                    const href = a.href?.trim()
-                    const text = a.textContent?.trim()
-                    if (href && text && !seen.has(href) && !href.includes('#') && text.length > 2) {
-                        seen.add(href)
-                        links.push({ url: href, name: text })
-                    }
-                })
-
-                return links
-            })
+            categorias = await page.evaluate(`
+                (() => {
+                    const links = [];
+                    const seen = new Set();
+                    // Buscar enlaces de navegación de categorías principales de supermercado
+                    const navLinks = document.querySelectorAll(
+                        '.nav-first-level-categories__list-element a, ' +
+                        'nav a[href*="/supermercado/"], ' +
+                        'a[href*="/supermercado/"][href*="/cat"]'
+                    );
+                    navLinks.forEach(a => {
+                        const href = a.href && a.href.trim();
+                        const text = a.textContent && a.textContent.trim();
+                        // Solo categorías de alimentación (excluir droguería, mascotas, parafarmacia, bebé)
+                        if (href && text && !seen.has(href) && !href.includes('#') && text.length > 2) {
+                            const lower = text.toLowerCase();
+                            if (lower.includes('fresco') || lower.includes('despensa') ||
+                                lower.includes('bebida') || lower.includes('congelado') ||
+                                lower.includes('lácteo') || lower.includes('huevo') ||
+                                lower.includes('pan') || lower.includes('aceite')) {
+                                seen.add(href);
+                                links.push({ url: href, name: text });
+                            }
+                        }
+                    });
+                    return links;
+                })()
+            `)
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err)
             console.warn('[Carrefour] Error extrayendo categorías:', msg)
         }
 
-        console.log(`[Carrefour] ${categorias.length} categorías encontradas en DOM`)
+        console.log(`[Carrefour] ${categorias.length} categorías encontradas en nav`)
 
-        // ── 3. Si no hay categorías, usar categorías predefinidas ──
+        // ── 3. Fallback: categorías predefinidas con nuevo formato ──
         if (categorias.length === 0) {
-            console.log('[Carrefour] Usando categorías predefinidas para búsqueda...')
-            const CATS_PREDEFINIDAS = [
-                'https://www.carrefour.es/supermercado/c/alimentacion',
-                'https://www.carrefour.es/supermercado/c/bebidas',
-                'https://www.carrefour.es/supermercado/c/frescos/carnicos',
-                'https://www.carrefour.es/supermercado/c/frescos/pescados-marisco',
-                'https://www.carrefour.es/supermercado/c/frescos/frutas-verduras',
-                'https://www.carrefour.es/supermercado/c/lacteos-huevos',
-                'https://www.carrefour.es/supermercado/c/panaderia-pasteleria',
-                'https://www.carrefour.es/supermercado/c/congelados',
-                'https://www.carrefour.es/supermercado/c/despensa',
-                'https://www.carrefour.es/supermercado/c/aceite-especias-salsas',
-                'https://www.carrefour.es/supermercado/c/conservas',
-                'https://www.carrefour.es/supermercado/c/legumbres',
-                'https://www.carrefour.es/supermercado/c/arroz-pasta',
+            console.log('[Carrefour] Usando categorías predefinidas (nuevo formato)...')
+            const CATS_PREDEFINIDAS: { url: string; name: string }[] = [
+                { url: 'https://www.carrefour.es/supermercado/frescos/cat20002/c', name: 'Frescos' },
+                { url: 'https://www.carrefour.es/supermercado/la-despensa/cat20001/c', name: 'La Despensa' },
+                { url: 'https://www.carrefour.es/supermercado/bebidas/cat20003/c', name: 'Bebidas' },
+                { url: 'https://www.carrefour.es/supermercado/congelados/cat21449123/c', name: 'Congelados' },
             ]
-            categorias = CATS_PREDEFINIDAS.map(url => ({ url, name: url.split('/c/').pop()?.replace(/-/g, ' ') || url }))
+            categorias = CATS_PREDEFINIDAS
         }
 
-        // ── 4. Scrapear productos de cada categoría ──
-        const maxCats = Math.min(categorias.length, 20) // Limitar para no saturar
+        // ── 4. Extraer productos directamente del homepage ──
+        // Carrefour carga TODAS las categorías en el homepage, evitando
+        // los bloqueos de Cloudflare al navegar a URLs de categoría individual.
+        // El homepage tiene ~444 product-card__parent con catalog="food".
+        console.log('[Carrefour] Extrayendo productos del homepage...')
 
-        for (let i = 0; i < maxCats; i++) {
-            const cat = categorias[i]
-            console.log(`[Carrefour] Categoría ${i + 1}/${maxCats}: ${cat.name}`)
+        try {
+            const prods = await extraerProductosHomepage(page)
+            for (const p of prods) {
+                productos.push(p)
+            }
+            console.log(`[Carrefour]   → ${prods.length} productos desde homepage`)
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            errores.push(`Error extrayendo homepage: ${msg}`)
+            console.warn(`[Carrefour]   ❌ ${msg}`)
+        }
 
-            await new Promise(r => setTimeout(r, configCarrefour.rate_limit_ms))
-
-            try {
-                const prods = await scrapearProductosCategoria(page, cat.url, cat.name)
-                for (const p of prods) {
-                    productos.push(p)
+        // ── 5. Intentar también Frescos (única categoría que no bloquea Cloudflare) ──
+        // La primera navegación a categoría suele pasar Cloudflare
+        if (categorias.length > 0) {
+            const frescos = categorias.find(c => c.url.includes('cat20002'))
+            if (frescos) {
+                console.log('[Carrefour] Intentando categoría Frescos (primera navegación)...')
+                await new Promise(r => setTimeout(r, configCarrefour.rate_limit_ms))
+                try {
+                    const prods = await extraerProductosDOM(page, frescos.url, frescos.name)
+                    for (const p of prods) {
+                        // Evitar duplicados con los del homepage (por nombre)
+                        const yaExiste = productos.some(e => e.nombre === p.nombre)
+                        if (!yaExiste) productos.push(p)
+                    }
+                    console.log(`[Carrefour]   → ${prods.length} adicionales de Frescos`)
+                } catch (err) {
+                    console.warn('[Carrefour]   Frescos saltado (posible Cloudflare):', err instanceof Error ? err.message : String(err))
                 }
-                console.log(`[Carrefour]   → ${prods.length} productos`)
-            } catch (err) {
-                const msg = err instanceof Error ? err.message : String(err)
-                errores.push(`Error en categoría ${cat.name}: ${msg}`)
-                console.warn(`[Carrefour]   ❌ ${msg}`)
             }
         }
 
@@ -235,107 +250,210 @@ export async function scrapearCarrefour(): Promise<{
 }
 
 /**
- * Scrapea productos de una categoría de Carrefour.
- * Navega a la URL y extrae productos del DOM renderizado.
+ * Extrae productos del homepage de Carrefour (donde aparecen todas las categorías).
+ * Evita navegar a URLs individuales que Cloudflare bloquea.
  */
-async function scrapearProductosCategoria(
+async function extraerProductosHomepage(
+    page: import('playwright').Page
+): Promise<ProductoRaw[]> {
+    // Scroll rápido para trigger lazy loading
+    await page.evaluate('window.scrollTo(0, document.body.scrollHeight * 0.3)')
+    await page.waitForTimeout(800)
+    await page.evaluate('window.scrollTo(0, document.body.scrollHeight * 0.6)')
+    await page.waitForTimeout(800)
+    await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
+    await page.waitForTimeout(1500)
+
+    // Extraer productos del DOM del homepage
+    const prods = await page.evaluate<ProductoRaw[]>(`
+        (() => {
+            const items = [];
+            const parents = document.querySelectorAll('.product-card__parent');
+            const seen = new Set();
+
+            parents.forEach(function(parent) {
+                const appPrice = parent.getAttribute('app_price') || '';
+                const appPricePerUnit = parent.getAttribute('app_price_per_unit') || '';
+                const catalog = parent.getAttribute('catalog') || '';
+
+                // Solo productos de alimentación
+                if (catalog && catalog !== 'food') return;
+
+                // Precio desde atributo app_price
+                var precio = 0;
+                var pm = appPrice.match(/(\\d+[.,]\\d+)/);
+                if (pm) {
+                    precio = parseFloat(pm[1].replace(',', '.'));
+                }
+                if (!precio || isNaN(precio)) {
+                    var priceEl = parent.querySelector('.product-card__prices');
+                    if (priceEl && priceEl.textContent) {
+                        var m = priceEl.textContent.replace(/[^\\d,]/g, '').replace(',', '.');
+                        precio = parseFloat(m) || 0;
+                    }
+                }
+
+                // Precio por kg
+                var precioKg;
+                var km = appPricePerUnit.match(/(\\d+[.,]\\d+)/);
+                if (km) {
+                    precioKg = parseFloat(km[1].replace(',', '.'));
+                }
+                if (!precioKg) {
+                    var kgEl = parent.querySelector('[class*="price-per-unit"]');
+                    if (kgEl && kgEl.textContent) {
+                        var m = kgEl.textContent.replace(/[^\\d,]/g, '').replace(',', '.');
+                        precioKg = parseFloat(m) || undefined;
+                    }
+                }
+
+                // Nombre desde h2.product-card__title (diagnóstico confirmó esta estructura)
+                var titleEl = parent.querySelector('.product-card__title');
+                var nombre = (titleEl && titleEl.textContent && titleEl.textContent.trim()) || '';
+
+                // URL - buscar cualquier enlace dentro del card
+                var link = parent.querySelector('a[href*="/supermercado/"]');
+                var href = (link && link.getAttribute('href')) || '';
+                if (href && !href.startsWith('http')) {
+                    href = 'https://www.carrefour.es' + href;
+                }
+
+                // Imagen
+                var img = parent.querySelector('img');
+                var imagen = '';
+                if (img) {
+                    imagen = img.getAttribute('data-src') || img.getAttribute('src') || '';
+                }
+
+                // Categoría - intentar inferir del enlace
+                var categoria = 'Homepage';
+                if (href.indexOf('cat20002') !== -1) categoria = 'Frescos';
+                else if (href.indexOf('cat20001') !== -1) categoria = 'Despensa';
+                else if (href.indexOf('cat20003') !== -1) categoria = 'Bebidas';
+                else if (href.indexOf('cat21449123') !== -1) categoria = 'Congelados';
+
+                if (nombre && precio > 0 && !seen.has(nombre)) {
+                    seen.add(nombre);
+                    items.push({
+                        nombre: nombre,
+                        precio_actual: precio,
+                        precio_por_kg: precioKg,
+                        unidad: 'kg',
+                        url_producto: href || '',
+                        imagen_url: imagen,
+                        marca: 'Carrefour',
+                        cantidad: '',
+                        disponible: true,
+                        categoria: categoria,
+                    });
+                }
+            });
+
+            return items;
+        })()
+    `)
+
+    return prods
+}
+
+/**
+ * Extrae productos de una URL de categoría de Carrefour navegando a ella.
+ * La primera navegación suele pasar Cloudflare; las siguientes no.
+ */
+async function extraerProductosDOM(
     page: import('playwright').Page,
     url: string,
     categoria: string
 ): Promise<ProductoRaw[]> {
     await page.goto(url, {
-        waitUntil: 'networkidle',
+        waitUntil: 'domcontentloaded',
         timeout: configCarrefour.timeout_ms,
-    }).catch(() => {
-        // Timeout no fatal
-    })
+    }).catch(() => { })
 
     await page.waitForTimeout(3000)
 
-    // Scroll para trigger lazy loading
-    await page.evaluate(async () => {
-        const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
-        const scrollStep = 500
-        let totalScroll = 0
-        while (totalScroll < document.body.scrollHeight) {
-            window.scrollTo(0, totalScroll)
-            await delay(500)
-            totalScroll += scrollStep
-        }
-    })
-
+    // Scroll
+    await page.evaluate('window.scrollTo(0, document.body.scrollHeight * 0.3)')
+    await page.waitForTimeout(800)
+    await page.evaluate('window.scrollTo(0, document.body.scrollHeight * 0.6)')
+    await page.waitForTimeout(800)
+    await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
     await page.waitForTimeout(1000)
 
-    // Extraer productos del DOM
-    const prods = await page.evaluate(() => {
-        const items: ProductoRaw[] = []
+    const prods = await page.evaluate<ProductoRaw[]>(`
+        (() => {
+            var items = [];
+            var seen = new Set();
+            var parents = document.querySelectorAll('.product-card__parent');
 
-        // Intentar diferentes selectores comunes de Carrefour
-        const productCards = document.querySelectorAll<HTMLElement>(
-            'article[data-product], ' +
-            '.product-card, ' +
-            '.product-item, ' +
-            '[data-testid*="product"], ' +
-            '.grid-item, ' +
-            'li[class*="product"]'
-        )
+            parents.forEach(function(parent) {
+                var appPrice = parent.getAttribute('app_price') || '';
+                var appPricePerUnit = parent.getAttribute('app_price_per_unit') || '';
+                var catalog = parent.getAttribute('catalog') || '';
 
-        productCards.forEach(card => {
-            const nombreEl = card.querySelector<HTMLElement>(
-                '[data-product-name], ' +
-                '.product-card__title, ' +
-                '.product-name, ' +
-                'h3, h2, [class*="title"], [class*="name"]'
-            )
-            const precioEl = card.querySelector<HTMLElement>(
-                '[data-product-price], ' +
-                '.product-card__price, ' +
-                '.price, [class*="price"], ' +
-                '.current-price, .offer-price'
-            )
-            const precioKgEl = card.querySelector<HTMLElement>(
-                '.product-card__unit-price, ' +
-                '.unit-price, [class*="unit"], ' +
-                '.price-per-unit, .reference-price'
-            )
-            const urlEl = card.querySelector<HTMLAnchorElement>('a[href]')
-            const imgEl = card.querySelector<HTMLImageElement>('img')
-            const marcaEl = card.querySelector<HTMLElement>(
-                '[data-brand], .brand, .product-brand, [class*="brand"]'
-            )
-            const cantidadEl = card.querySelector<HTMLElement>(
-                '[data-quantity], .quantity, .packaging, [class*="quantity"], [class*="weight"]'
-            )
+                if (catalog && catalog !== 'food') return;
 
-            const nombre = nombreEl?.textContent?.trim() || ''
-            const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0'
-            const precio = parseFloat(precioTexto) || 0
-            const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || ''
-            const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined
+                var precio = 0;
+                var pm = appPrice.match(/(\\d+[.,]\\d+)/);
+                if (pm) {
+                    precio = parseFloat(pm[1].replace(',', '.'));
+                }
+                if (!precio || isNaN(precio)) {
+                    var priceEl = parent.querySelector('.product-card__prices');
+                    if (priceEl && priceEl.textContent) {
+                        var m = priceEl.textContent.replace(/[^\\d,]/g, '').replace(',', '.');
+                        precio = parseFloat(m) || 0;
+                    }
+                }
 
-            let href = urlEl?.href || ''
-            if (href && !href.startsWith('http')) {
-                href = `https://www.carrefour.es${href}`
-            }
+                var precioKg;
+                var km = appPricePerUnit.match(/(\\d+[.,]\\d+)/);
+                if (km) {
+                    precioKg = parseFloat(km[1].replace(',', '.'));
+                }
+                if (!precioKg) {
+                    var kgEl = parent.querySelector('[class*="price-per-unit"]');
+                    if (kgEl && kgEl.textContent) {
+                        var m = kgEl.textContent.replace(/[^\\d,]/g, '').replace(',', '.');
+                        precioKg = parseFloat(m) || undefined;
+                    }
+                }
 
-            if (nombre && precio > 0) {
-                items.push({
-                    nombre,
-                    precio_actual: precio,
-                    precio_por_kg: precioKg,
-                    unidad: 'kg' as const,
-                    url_producto: href || '',
-                    imagen_url: imgEl?.src || '',
-                    marca: marcaEl?.textContent?.trim() || 'Carrefour',
-                    cantidad: cantidadEl?.textContent?.trim() || '',
-                    disponible: true,
-                    categoria,
-                })
-            }
-        })
+                var titleEl = parent.querySelector('.product-card__title');
+                var nombre = (titleEl && titleEl.textContent && titleEl.textContent.trim()) || '';
 
-        return items
-    })
+                var link = parent.querySelector('a[href*="/supermercado/"]');
+                var href = (link && link.getAttribute('href')) || '';
+                if (href && !href.startsWith('http')) {
+                    href = 'https://www.carrefour.es' + href;
+                }
+
+                var img = parent.querySelector('img');
+                var imagen = '';
+                if (img) {
+                    imagen = img.getAttribute('data-src') || img.getAttribute('src') || '';
+                }
+
+                if (nombre && precio > 0 && !seen.has(nombre)) {
+                    seen.add(nombre);
+                    items.push({
+                        nombre: nombre,
+                        precio_actual: precio,
+                        precio_por_kg: precioKg,
+                        unidad: 'kg',
+                        url_producto: href || '',
+                        imagen_url: imagen,
+                        marca: 'Carrefour',
+                        cantidad: '',
+                        disponible: true,
+                        categoria: '${categoria.replace(/'/g, "\\'")}',
+                    });
+                }
+            });
+
+            return items;
+        })()
+    `)
 
     return prods
 }

@@ -1,9 +1,15 @@
 /**
  * el-corte-ingles.ts — Scraper para El Corte Inglés España
  *
- * El Corte Inglés usa Akamai (protección anti-bot).
- * Estrategia: Playwright con navegador real para evitar bloqueos,
- * navegando por categorías de supermercado y extrayendo productos del DOM.
+ * ❌ ESTADO: BLOQUEADO — Akamai WAF
+ *
+ * El Corte Inglés usa protección Akamai (anti-bot).
+ * Diagnóstico (15-05-2026) con Playwright headless: "Access Denied"
+ * en homepage y categorías. Misma situación que Día e Hipercor.
+ *
+ * Se ha aplicado el fix __name pero el scraper no funcionará hasta
+ * encontrar una estrategia para evadir Akamai (persistent context,
+ * proxies residenciales, o API interna).
  *
  * Web: https://www.elcorteingles.es/supermercado/
  */
@@ -155,25 +161,20 @@ async function obtenerCategoriasAlimentacion(
 
         await page.waitForTimeout(4000)
 
-        const cats = await page.evaluate(() => {
-            const links: { url: string; name: string }[] = []
-            const seen = new Set<string>()
-
-            const anchors = document.querySelectorAll<HTMLAnchorElement>(
-                'a[href*="/supermercado/"]:not([href*="login"]):not([href*="carrito"]):not([href*="ayuda"])'
-            )
-
-            anchors.forEach(a => {
-                const href = a.href?.trim()
-                const text = a.textContent?.trim()
-                if (href && text && !seen.has(href) && text.length > 2 && !href.includes('#')) {
-                    seen.add(href)
-                    links.push({ url: href, name: text })
+        const cats = await page.evaluate(`(() => {
+            var links = [];
+            var seen = new Set();
+            var anchors = document.querySelectorAll('a[href*="/supermercado/"]:not([href*="login"]):not([href*="carrito"]):not([href*="ayuda"])');
+            anchors.forEach(function(a) {
+                var href = a.href ? a.href.trim() : '';
+                var text = a.textContent ? a.textContent.trim() : '';
+                if (href && text && !seen.has(href) && text.length > 2 && href.indexOf('#') === -1) {
+                    seen.add(href);
+                    links.push({ url: href, name: text });
                 }
-            })
-
-            return links
-        })
+            });
+            return links;
+        })()`) as { url: string; name: string }[]
 
         // Filtrar solo categorías de supermercado (no páginas auxiliares)
         return cats.filter(c => {
@@ -203,21 +204,21 @@ async function scrapearCategoria(
     await page.waitForTimeout(4000)
 
     // Scroll para trigger lazy loading
-    await page.evaluate(async () => {
-        const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
-        for (let i = 0; i < document.body.scrollHeight; i += 500) {
-            window.scrollTo(0, i)
-            await delay(500)
+    await page.evaluate(`(async () => {
+        var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
+        for (var i = 0; i < document.body.scrollHeight; i += 500) {
+            window.scrollTo(0, i);
+            await delay(500);
         }
-    })
+    })()`)
 
     await page.waitForTimeout(1000)
 
     // Extraer productos del DOM
-    const prods = await page.evaluate(() => {
-        const items: ECIProductExtraido[] = []
+    const prods = await page.evaluate<ECIProductExtraido[]>(`(() => {
+        var items = [];
 
-        const cards = document.querySelectorAll<HTMLElement>(
+        var cards = document.querySelectorAll(
             'article[data-product], ' +
             '[class*="product-card"], ' +
             '[class*="product-item"], ' +
@@ -226,65 +227,65 @@ async function scrapearCategoria(
             '.grid-item, ' +
             '[class*="ProductCard"], ' +
             '[class*="productContainer"]'
-        )
+        );
 
-        cards.forEach(card => {
-            const nombreEl = card.querySelector<HTMLElement>(
+        cards.forEach(function(card) {
+            var nombreEl = card.querySelector(
                 '[class*="product-name"], ' +
                 '[class*="product-title"], ' +
                 '[class*="name"], ' +
                 'h3, h2, [class*="title"], ' +
                 '[data-product-name]'
-            )
-            const precioEl = card.querySelector<HTMLElement>(
+            );
+            var precioEl = card.querySelector(
                 '[class*="price"], ' +
                 '.current-price, [class*="precio"], ' +
                 '[data-price], [class*="offer-price"], ' +
                 '[class*="Price"]'
-            )
-            const precioKgEl = card.querySelector<HTMLElement>(
+            );
+            var precioKgEl = card.querySelector(
                 '[class*="unit-price"], ' +
                 '[class*="price-per-kg"], ' +
                 '[class*="base-price"], ' +
                 '[class*="reference-price"], ' +
                 '[class*="UnitPrice"]'
-            )
-            const urlEl = card.querySelector<HTMLAnchorElement>('a[href]')
-            const imgEl = card.querySelector<HTMLImageElement>('img')
-            const marcaEl = card.querySelector<HTMLElement>(
+            );
+            var urlEl = card.querySelector('a[href]');
+            var imgEl = card.querySelector('img');
+            var marcaEl = card.querySelector(
                 '[class*="brand"], [data-brand], [class*="marca"], [class*="Brand"]'
-            )
-            const cantidadEl = card.querySelector<HTMLElement>(
+            );
+            var cantidadEl = card.querySelector(
                 '[class*="quantity"], [class*="weight"], [class*="packaging"], ' +
                 '[data-quantity], [class*="amount"], [class*="Size"]'
-            )
+            );
 
-            const nombre = nombreEl?.textContent?.trim() || ''
-            const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0'
-            const precio = parseFloat(precioTexto) || 0
-            const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || ''
-            const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined
+            var nombre = (nombreEl && nombreEl.textContent && nombreEl.textContent.trim()) || '';
+            var precioTexto = (precioEl && precioEl.textContent && precioEl.textContent.replace(/[^\\d,]/g, '').replace(',', '.')) || '0';
+            var precio = parseFloat(precioTexto) || 0;
+            var precioKgTexto = (precioKgEl && precioKgEl.textContent && precioKgEl.textContent.replace(/[^\\d,]/g, '').replace(',', '.')) || '';
+            var precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined;
 
-            let href = urlEl?.href || ''
-            if (href && !href.startsWith('http')) {
-                href = `https://www.elcorteingles.es${href}`
+            var href = (urlEl && urlEl.href) || '';
+            if (href && href.indexOf('http') !== 0) {
+                href = 'https://www.elcorteingles.es' + href;
             }
 
             if (nombre && precio > 0) {
                 items.push({
-                    nombre,
-                    precio,
+                    nombre: nombre,
+                    precio: precio,
                     precioPorKg: precioKg,
                     url: href,
-                    imagen: imgEl?.src || '',
-                    marca: marcaEl?.textContent?.trim() || undefined,
-                    cantidad: cantidadEl?.textContent?.trim() || undefined,
-                })
+                    imagen: (imgEl && imgEl.src) || '',
+                    marca: (marcaEl && marcaEl.textContent && marcaEl.textContent.trim()) || undefined,
+                    cantidad: (cantidadEl && cantidadEl.textContent && cantidadEl.textContent.trim()) || undefined,
+                });
             }
-        })
+        });
 
-        return items
-    })
+        return items;
+    })()`)
 
     return prods
 }

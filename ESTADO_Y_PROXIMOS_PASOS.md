@@ -6,14 +6,34 @@
 
 ## 📍 DÓNDE ESTAMOS AHORA
 
-### Fase: **Onboarding Autónomo de Clientes + Knowledge Base Científica**
+### Fase: **Scraping Multi-Supermercado — Lidl optimizado ✅, Scraping cerrado**
 
-**Última sesión:** 06-05-2026
+**Última sesión:** 16-05-2026 (Noche — cierre)
 **Responsable:** Carlos Casanova
 **Estado de tokens:** ✅ OK
-**Servidor local:** corriendo en `http://localhost:3000`
+**Servidor local:** No necesario (scraping)
+
+### Estado de cada scraper
+
+| Supermercado | Productos | Técnica | Estado |
+|---|---|---|---|
+| **Mercadona** | ~2,895 ✅ | API HTTP (pública) | ✅ Operativo |
+| **Consum** | ~4,765 ✅ | API interna (árbol categorías) | ✅ Operativo |
+| **Alcampo** | ~38 ✅ | API Ocado HTTP | ✅ Operativo |
+| **Carrefour** | ~20 ✅ | Playwright homepage (evita Cloudflare) | ✅ Operativo |
+| **Eroski** | ~11 ✅ | Playwright homepage (slick-slider) | ✅ Operativo |
+| **Bonpreu** | ~21 ✅ | Playwright + interceptación API | ✅ Operativo |
+| **Esclat** | ~21 ✅ | Playwright + interceptación API | ✅ Operativo |
+| **Lidl** | **75 ✅** | **Playwright search v3 — batch (4×15, browser refresh)** | **✅ v3 pipeline ejecutado (4.0 min, 429 prod, 0 errores)** |
+| **Día** | 0 ❌ | Playwright | ❌ WAF bloquea headless |
+| **Hipercor** | 0 ❌ | Playwright | ❌ Akamai |
+| **El Corte Inglés** | 0 ❌ | Playwright | ❌ Akamai |
+
+---
 
 ### ✅ COMPLETADO (hasta ahora)
+
+#### Fase 0 — Setup
 
 #### Fase 0 — Setup
 - [x] Decisión arquitectónica (Supabase + DeepSeek V3)
@@ -607,5 +627,101 @@ Se ha realizado una auditoría completa del código fuente. Los hallazgos están
 
 ---
 
-**Última actualización:** 06-05-2026 ~11:55
-**Responsable:** Roo (knowledge base científica + onboarding autónomo + bug fixes)
+## 🆕 Scraping Multi-Supermercado — Diagnóstico y Fix (14-15/05/2026)
+
+### Problema: `ReferenceError: __name is not defined`
+
+**Causa raíz:** El compilador `tsx` añade un helper `__name()` a funciones flecha/nombradas compiladas. Cuando Playwright serializa estas funciones vía `page.evaluate(() => { ... })`, el código serializado referencia `__name`, que no existe en el contexto del navegador.
+
+**Fix:** Convertir `page.evaluate(() => { ... })` → `page.evaluate(\`(() => { ... })()\`)` en los 6 scrapers Playwright pendientes.
+
+### Scrapers diagnosticados y reparados
+
+| Supermercado | Estado | Detalle |
+|---|---|---|
+| **Eroski** | ✅ Reescrito | Homepage-only con slick-slider carousels. Selectores: `.product-container.product-item`, `.product-name`, `.product-price-value`. 12 productos extraídos en test. Categorías redirigen a 404 (Apache Tapestry). |
+| **Bonpreu** | ⚠️ Fix __name aplicado | SPA Next.js con AWS WAF. Categorías con UUID. 78 `.product-card-container` skeletons — la SPA no hidrata en headless. Pendiente investigar API interna o login-gated. |
+| **Esclat** | ⚠️ Fix __name aplicado | Misma plataforma que Bonpreu. Mismo problema de skeletons. |
+| **Hipercor** | ❌ Bloqueado | Akamai WAF — "Access Denied" en Playwright headless. Mismo grupo que El Corte Inglés. |
+| **El Corte Inglés** | ❌ Bloqueado | Akamai WAF — "Access Denied" en Playwright headless. |
+| **Carrefour** | ⏳ Diagnóstico en curso (script atascado) | Ya funciona con homepage + selectores actualizados (54 productos). El diagnóstico de categorías no terminó — posiblemente atascado en Cloudflare. |
+
+### Diagnósticos creados (15-05-2026)
+
+- [`scripts/diagnosticar-eroski.ts`](nutricoach-modulos/scripts/diagnosticar-eroski.ts) — Selectores reales descubiertos + test funcional
+- [`scripts/diagnosticar-bonpreu-esclat.ts`](nutricoach-modulos/scripts/diagnosticar-bonpreu-esclat.ts) — Primer pase: `product-card-container`, categorías UUID
+- [`scripts/diagnosticar-bonpreu-profundo.ts`](nutricoach-modulos/scripts/diagnosticar-bonpreu-profundo.ts) — Análisis DOM profundo: `data-test="products-page"`, `data-test="fop-body"`
+- [`scripts/diagnosticar-bonpreu-final.ts`](nutricoach-modulos/scripts/diagnosticar-bonpreu-final.ts) — Confirmación: 78 skeletons, SPA no hidrata
+- [`scripts/diagnosticar-bonpreu-api.ts`](nutricoach-modulos/scripts/diagnosticar-bonpreu-api.ts) — Multi-estrategia: descubrió `__INITIAL_STATE__` (718KB), JSON-LD (126 productos), `__URQL_DATA__`
+- [`scripts/diagnosticar-bonpreu-api2.ts`](nutricoach-modulos/scripts/diagnosticar-bonpreu-api2.ts) — Captura de respuestas API (solo graphql capturado)
+- [`scripts/diagnosticar-bonpreu-api3.ts`](nutricoach-modulos/scripts/diagnosticar-bonpreu-api3.ts) — **BREAKTHROUGH**: Capturó 10 llamadas API completas con headers y bodies. API `PUT /api/webproductpagews/v6/products` devuelve productos completos (nombre, marca, precio, imagen, promociones)
+- [`scripts/diagnosticar-hipercor-eci.ts`](nutricoach-modulos/scripts/diagnosticar-hipercor-eci.ts) — Ambos bloqueados por Akamai
+- [`scripts/diagnosticar-carrefour-categorias.ts`](nutricoach-modulos/scripts/diagnosticar-carrefour-categorias.ts) — Diagnóstico de categorías (atascado, proceso kill)
+
+### API Bonpreu descubierta
+
+La SPA de Bonpreu/Esclat usa dos APIs REST que devuelven productos completos en JSON (no solo DOM skeletons):
+
+1. **`GET /api/webproductpagews/v5/product-pages?decoratedOnly=true&limit=27&tag=web&tag=lohp`**
+   - Devuelve `{ productGroups: [{ type, products: [{ productId, product: { name, brand, price, ... } }] }] }`
+   - Productos destacados con datos COMPLETOS (303KB gzipped)
+   
+2. **`PUT /api/webproductpagews/v6/products`**
+   - Body: JSON array de 24 UUIDs → `{ products: [{ productId, name, brand, packSizeDescription, price: { amount, currency }, unitPrice, image, promotions, promoPrice }] }`
+   - Headers requeridos: `x-csrf-token`, `client-route-id`, `page-view-id`, `ecom-request-source`, `ecom-request-source-version`
+   - Respuesta: ~280-300KB gzipped con 24 productos completos
+   - Pasa por CloudFront (`x-cache: Miss from cloudfront`, `x-amz-cf-id`)
+
+### Archivos modificados
+
+- [`bonpreu.ts`](nutricoach-modulos/lib/scraping/supermercados/bonpreu.ts) — **REESCRITO**: ahora usa interceptación de red (`page.on('response')`) para capturar APIs `v5/product-pages` y `v6/products` en lugar de DOM scraping
+- [`esclat.ts`](nutricoach-modulos/lib/scraping/supermercados/esclat.ts) — **REESCRITO**: mismo enfoque que bonpreu (misma plataforma)
+- [`hipercor.ts`](nutricoach-modulos/lib/scraping/supermercados/hipercor.ts) — Fix __name + header "BLOQUEADO Akamai"
+- [`el-corte-ingles.ts`](nutricoach-modulos/lib/scraping/supermercados/el-corte-ingles.ts) — Fix __name + header "BLOQUEADO Akamai"
+- [`eroski.ts`](nutricoach-modulos/lib/scraping/supermercados/eroski.ts) — Reescrito desde cero (sesión anterior)
+
+### ✅ COMPLETADO EN SESIÓN SIGUIENTE (16-05-2026) — Sesión 15 — Migraciones BD y reconciliación
+
+#### 🔧 Auditoría y migraciones SQL completadas
+- [x] **Auditoría de 29 SQL files** contra BD real columna a columna — verificado que 24 ya estaban aplicados
+- [x] **Ejecutado** [`supabase_productos_vs_alimentos.sql`](nutricoach-modulos/supabase_productos_vs_alimentos.sql) (pendiente: columna `preferido`, índices URL únicos, vistas)
+- [x] **Ejecutado** [`seed_precios_supermercado.sql`](nutricoach-modulos/seed_precios_supermercado.sql) (precios básicos 20+ alimentos en 7 supermercados)
+- [x] **Ejecutado** [`supabase_fix_rls_alimentos.sql`](nutricoach-modulos/supabase_fix_rls_alimentos.sql) (políticas RLS públicas)
+- [x] **Instalada extensión** `unaccent` para matching sin acentos
+- [x] **Creada función** `reconciliar_alimento()` — matching progresivo 5 niveles
+
+#### 🔗 Reconciliación de vinculación (Scraping → Alimentos)
+- [x] **Ejecutado** [`supabase_reconciliacion_vinculacion.sql`](nutricoach-modulos/supabase_reconciliacion_vinculacion.sql) completo
+- [x] **Re-apuntados** productos_supermercado → alimentos seed correctos
+- [x] **Eliminados 1.206 duplicados huérfanos** sin referencias
+- [x] **`match_alimento` mejorada**: de 3 pasos → 6 pasos con priorización de seed
+
+#### 📊 Estado final vinculación
+| Métrica | Valor |
+|---------|-------|
+| Productos totales | 7.528 (100% vinculados) |
+| → Alimentos con macros | 3.259 (43.3%) |
+| → Alimentos sin macros (legítimos: sal, especias, agua, etc.) | 4.185 (55.6%) |
+| → Alimentos duplicados scraping (es_generico=true) | 84 (1.1%) — requieren re-scrape |
+| Alimentos duplicados restantes | 1.625 (pendientes de re-scrape para re-vincular) |
+
+### Pendiente para próxima sesión
+
+- [x] ~~Verificar Bonpreu/Esclat~~ ✅ **BREAKTHROUGH HTTP DIRECTO (v3)**: APIs funcionan con fetch() directo. Scrapers reescritos a modo híbrido (1 PW + HTTP directo)
+- [x] ~~**Lidl v3**: Ejecutar scraper completo (60 términos en 4 lotes)~~ ✅ **EJECUTADO**: 429 productos únicos en 4.0 min, 0 scraping errors
+- [x] ~~**Lidl v3**: Re-scrapear con pipeline BD~~ ✅ **EJECUTADO**: 16 alimentos nuevos, 147 actualizados, 263 historico
+- [x] ~~**Lidl**: Filtro NO_COMESTIBLE_KEYWORDS ampliado~~ ✅ **COMPLETADO**: ~260 keywords (de ~155), 27 falsos positivos eliminados
+- [ ] **Re-scrapear supermercados** para re-vincular ~84 productos que aún apuntan a duplicados (usará `match_alimento` v2 mejorado)
+- [ ] **Hipercor/El Corte Inglés**: Akamai sigue bloqueando. Diagnóstico ejecutado (15-05-2026): "Access Denied" en homepage. Sin API interna descubierta.
+- [ ] Dashboard de rentabilidad/ahorro con la vista `top_precios_escandallo`
+- [ ] Automatización con Vercel Cron Jobs (plan Pro)
+- [ ] Refinar normalizador para subir el ~24% de match exacto (más sinónimos)
+- [ ] Histórico de precios y tendencias (gráficos, alertas)
+- [ ] **Mercadona**: Re-scrapear (~2,895 productos, posible desactualización)
+- [ ] **Lidl**: Re-ejecutar trimestralmente (75 productos, mantener precios actualizados)
+- [ ] Build de verificación: `npx next build`
+
+---
+
+**Última actualización:** 16-05-2026 (cierre sesión)
+**Responsable:** Roo (Sesión 15 — Migraciones BD completas + Reconciliación ✅)

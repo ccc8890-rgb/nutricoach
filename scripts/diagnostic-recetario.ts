@@ -138,18 +138,18 @@ async function diagnostic() {
 
     // ─── 5. INGREDIENTES ──────────────────────────────
     const { count: totalIng } = await supabase
-        .from('recetas_ingredientes')
+        .from('receta_ingredientes')
         .select('*', { count: 'exact', head: true })
 
     const { data: recetasIng } = await supabase
-        .from('recetas_ingredientes')
+        .from('receta_ingredientes')
         .select('receta_id')
 
     const idsConIng = new Set(recetasIng?.map(r => r.receta_id) || [])
     const sinIng = todas.filter(r => !idsConIng.has(r.id))
 
     console.log(`\n🥗 INGREDIENTES:`)
-    console.log(`   Total filas en recetas_ingredientes: ${totalIng}`)
+    console.log(`   Total filas en receta_ingredientes: ${totalIng}`)
     console.log(`   Recetas CON ingredientes: ${idsConIng.size}`)
     console.log(`   Recetas SIN ingredientes: ${sinIng.length}`)
 

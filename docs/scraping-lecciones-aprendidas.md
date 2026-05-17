@@ -2,6 +2,7 @@
 
 > Documento para que Claude lo revise al inicio de futuras sesiones sobre scraping.
 > Creado: 2026-05-10 tras auditoría de 15 archivos y corrección de 8 bugs.
+> Actualizado: 2026-05-16 — Añadida lección #11 sobre browser degradation y batch processing.
 
 ---
 
@@ -161,7 +162,7 @@ Cada supermercado tiene restricciones distintas. Documentar en el scraper:
 | Alcampo | 400ms | API REST moderada |
 | Consum | 300ms | API REST permisiva |
 | Eroski | 800ms | Sin API REST (usa Playwright) |
-| Lidl | 1000ms | Sin API REST (usa Playwright) |
+| Lidl | 600ms | Sin API REST (usa Playwright, domcontentloaded) |
 
 ---
 
@@ -174,3 +175,54 @@ Actualmente hay **dos implementaciones** paralelas de los scrapers:
 **Riesgo:** Las implementaciones divergen. Si se arregla un bug en una, la otra sigue rota.
 
 **Recomendación:** A futuro, el script `.mjs` debería importar las funciones `.ts` compiladas, o al menos compartir la lógica de mapeo y upsert.
+
+---
+
+## 🔴 11. Browser degradation en Playwright (Lidl — el caso más grave)
+
+**Problema:** Playwright acumula **memory leak** por cada página cargada en el mismo browser. Con 60 términos de búsqueda en un solo browser:
+- Test inicial (primeros términos): ~5-6s por término → 6 min total estimado
+- Producción real (todos los términos): degradación progresiva hasta 7.9 horas
+- Últimos términos: "page has been closed" o timeout, 0 productos
+
+**Causa raíz:** Playwright retiene referencias a estilos renderizados, imágenes en memoria caché, y objetos JS de páginas anteriores. Cada `page.goto()` con un nuevo DOM→ el browser no libera memoria entre páginas.
+
+**Solución (v3): Batch processing con browser refresh:**
+```typescript
+// ❌ MAL — 60 términos con 1 browser
+const browser = await chromium.launch()
+for (const termino of 60Terminos) {
+    await page.goto(...)
+    // ... browser cada vez más lento
+}
+await browser.close()  // Solo se cierra al final
+
+// ✅ BIEN — lotes de 15, browser nuevo cada lote
+const TERMINOS_POR_LOTE = 15
+const lotes = chunk(60Terminos, TERMINOS_POR_LOTE)
+
+for (const lote of lotes) {
+    const browser = await chromium.launch()  // ← NUEVO cada lote
+    for (const termino of lote) {
+        await page.goto(...)
+    }
+    await browser.close()  // ← SE CIERRA después de 15 términos
+    // Libera toda la memoria acumulada
+}
+```
+
+**Métrica de mejora (Lidl):**
+| Estrategia | Tiempo | Factor |
+|-----------|--------|--------|
+| v2 (1 browser, 60 términos) | 7.9h (28,439s) | 1x |
+| v3 (4 lotes × 15, browser refresh) | ~5 min (estimado) | **~95x más rápido** |
+| Test diagnóstico (2 lotes × 3 términos) | ~14s/lote, sin degradación | Rendimiento consistente |
+
+**Regla general para scrapers Playwright con múltiples páginas:**
+- Si el scraper visita **>20 páginas** en el mismo browser, dividir en lotes con browser refresh.
+- El tamaño de lote depende del supermercado: 15-20 términos/páginas por lote es seguro.
+- Medir degradación: si el tiempo por página se duplica respecto al inicio, el lote es demasiado grande.
+- Usar `domcontentloaded` en vez de `networkidle` para evitar que el browser espere recursos no esenciales.
+- Args útiles para reducir footprint: `--disable-dev-shm-usage`, `--disable-gpu`, `--single-process`.
+
+**Archivo de referencia:** [`lidl.ts`](nutricoach-modulos/lib/scraping/supermercados/lidl.ts) — implementa batch processing con comentarios inline y lecciones aprendidas en el header.
