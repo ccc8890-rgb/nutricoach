@@ -3,30 +3,22 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, ProgresionPlantilla } from '@/types'
+import type { SportModality } from '@/types'
 import {
     Dumbbell,
-    Heart,
-    Flame,
     Target,
     ChevronDown,
     ChevronUp,
     Search,
-    Zap,
-    Bike,
-    Waves,
     Download,
     Loader2,
     CheckCircle2,
     AlertCircle,
+    Crown,
 } from 'lucide-react'
 import { useDebounce } from '@/lib/useDebounce'
 import { useToast } from '@/components/ui/Toast'
-
-const MODALIDADES = [
-    { key: 'mixto', label: 'HYROX', icon: Zap, color: 'text-orange-500', bg: 'bg-orange-50', border: 'border-orange-200' },
-    { key: 'cardio', label: 'Cardio', icon: Heart, color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-200' },
-    { key: 'gimnasio', label: 'Gimnasio', icon: Dumbbell, color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-200' },
-]
+import { MODALITY_CONFIG, detectarSubcategoriaLegacy } from '@/lib/entrenos/utils'
 
 const OBJETIVO_COLOR: Record<string, string> = {
     hipertrofia: 'badge-purple',
@@ -43,27 +35,11 @@ const NIVEL_COLOR: Record<string, string> = {
     avanzado: 'text-red-600 bg-red-50',
 }
 
-function detectarSubcategoria(p: PlantillaEntrenamiento): string {
-    const n = (p.nombre ?? '').toLowerCase()
-    if (n.includes('hyrox') || n.includes('hyrox')) return 'HYROX'
-    if (n.includes('triatlón') || n.includes('triatlon') || n.includes('ironman')) return 'Triatlón'
-    if (n.includes('ciclismo') || n.includes('rodillo') || n.includes('ftp') || n.includes('bici')) return 'Ciclismo'
-    if (n.includes('running') || n.includes('maratón') || n.includes('maraton') || n.includes('5k') || n.includes('10k') || n.includes('media')) return 'Running'
-    if (n.includes('full body')) return 'Full Body'
-    if (n.includes('push') || n.includes('pull') || n.includes('ppl')) return 'PPL'
-    if (n.includes('torso') || n.includes('pierna')) return 'Torso/Pierna'
-    if (n.includes('upper') || n.includes('lower')) return 'Upper/Lower'
-    if (n.includes('weider')) return 'Weider'
-    if (n.includes('hiit')) return 'HIIT'
-    if (n.includes('cardio') || n.includes('steady') || n.includes('liss') || n.includes('estado estable')) return 'Cardio Estado Estable'
-    return ''
-}
-
 export default function PlantillasEntrenoPage() {
     const [plantillas, setPlantillas] = useState<PlantillaEntrenamiento[]>([])
     const [loading, setLoading] = useState(true)
     const [busqueda, setBusqueda] = useState('')
-    const [filtroModalidad, setFiltroModalidad] = useState<string>('todas')
+    const [filtroModalidad, setFiltroModalidad] = useState<SportModality | null>(null)
     const [expandida, setExpandida] = useState<string | null>(null)
     const [seedStatus, setSeedStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
     const [seedMessage, setSeedMessage] = useState('')
@@ -80,7 +56,8 @@ export default function PlantillasEntrenoPage() {
             .select('*, sesiones:plantilla_sesiones(*, ejercicios:plantilla_sesion_ejercicios(*, ejercicio:ejercicios(*)))')
             .eq('coach_id', user.id)
             .eq('activo', true)
-            .order('tipo', { ascending: true })
+            .order('sport_modality', { ascending: true })
+            .order('tier', { ascending: false })
             .order('dias_por_semana', { ascending: true })
 
         setPlantillas(data ?? [])
@@ -90,26 +67,27 @@ export default function PlantillasEntrenoPage() {
     useEffect(() => { load() }, [load])
 
     const filtradas = plantillas.filter(p => {
-        if (filtroModalidad !== 'todas' && p.tipo !== filtroModalidad) return false
+        if (filtroModalidad !== null && p.sport_modality !== filtroModalidad) return false
         if (busquedaDebounced) {
             const q = busquedaDebounced.toLowerCase()
             const matchesNombre = p.nombre.toLowerCase().includes(q)
             const matchesDesc = (p.descripcion ?? '').toLowerCase().includes(q)
             const matchesObj = (p.objetivo ?? '').toLowerCase().includes(q)
             const matchesNivel = (p.nivel ?? '').toLowerCase().includes(q)
-            const matchesSub = detectarSubcategoria(p).toLowerCase().includes(q)
-            return matchesNombre || matchesDesc || matchesObj || matchesNivel || matchesSub
+            const matchesSub = detectarSubcategoriaLegacy(p.nombre ?? '').toLowerCase().includes(q)
+            const matchesModality = (p.sport_modality ?? '').toLowerCase().includes(q)
+            const matchesTier = (p.tier ?? '').toLowerCase().includes(q)
+            return matchesNombre || matchesDesc || matchesObj || matchesNivel || matchesSub || matchesModality || matchesTier
         }
         return true
     })
 
-    // Agrupar por tipo
-    const agrupadas = filtradas.reduce<Record<string, PlantillaEntrenamiento[]>>((acc, p) => {
-        const tipo = p.tipo ?? 'gimnasio'
-        if (!acc[tipo]) acc[tipo] = []
-        acc[tipo].push(p)
+    // Agrupar por sport_modality (en el orden canónico de MODALITY_CONFIG)
+    const agrupadasPorModalidad = (Object.keys(MODALITY_CONFIG) as SportModality[]).reduce<Record<string, PlantillaEntrenamiento[]>>((acc, m) => {
+        acc[m] = filtradas.filter(p => p.sport_modality === m)
         return acc
     }, {})
+    const legacy = filtradas.filter(p => !p.sport_modality)
 
     async function poblarPlantillas() {
         setSeedStatus('loading')
@@ -137,7 +115,10 @@ export default function PlantillasEntrenoPage() {
     function renderPlantillaCard(p: PlantillaEntrenamiento) {
         const estaExpandida = expandida === p.id
         const sesiones = (p.sesiones ?? []) as PlantillaSesion[]
-        const subcategoria = detectarSubcategoria(p)
+        const modality = p.sport_modality as SportModality | undefined
+        const tier = p.tier
+        const cfg = modality ? MODALITY_CONFIG[modality] : null
+        const subcategoria = !modality ? detectarSubcategoriaLegacy(p.nombre ?? '') : ''
 
         return (
             <div
@@ -149,17 +130,30 @@ export default function PlantillasEntrenoPage() {
                     onClick={() => setExpandida(estaExpandida ? null : p.id)}
                 >
                     <div className="flex items-start gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${p.tipo === 'cardio' ? 'bg-red-50 text-red-500' :
-                            p.tipo === 'mixto' ? 'bg-orange-50 text-orange-500' :
-                                'bg-purple-50 text-purple-600'
-                            }`}>
-                            {p.tipo === 'mixto' ? <Zap size={18} /> :
-                                p.tipo === 'cardio' ? <Heart size={18} /> :
-                                    <Dumbbell size={18} />}
+                        {/* Icono modalidad */}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                            cfg ? `${cfg.bg} ${cfg.color}` :
+                            p.tipo === 'cardio' ? 'bg-red-50 text-red-500' :
+                            p.tipo === 'mixto'  ? 'bg-orange-50 text-orange-500' :
+                            'bg-purple-50 text-purple-600'
+                        }`}>
+                            {cfg ? <cfg.Icon size={18} /> : <Dumbbell size={18} />}
                         </div>
+
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <p className="font-semibold text-gray-900 text-[15px]">{p.nombre}</p>
+                                {tier === 'elite' && (
+                                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+                                        <Crown size={9} /> Elite
+                                    </span>
+                                )}
+                                {cfg && (
+                                    <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium border px-1.5 py-0.5 rounded-full ${cfg.bg} ${cfg.color} ${cfg.border}`}>
+                                        <cfg.Icon size={11} />
+                                        {cfg.label}
+                                    </span>
+                                )}
                                 {subcategoria && (
                                     <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
                                         {subcategoria}
@@ -176,6 +170,7 @@ export default function PlantillasEntrenoPage() {
                                 )}
                             </div>
                         </div>
+
                         <div className="flex gap-1.5 flex-wrap justify-end items-start">
                             {p.objetivo && (
                                 <span className={`badge text-[11px] ${OBJETIVO_COLOR[p.objetivo] ?? 'badge-gray'}`}>
@@ -191,7 +186,7 @@ export default function PlantillasEntrenoPage() {
                         </div>
                     </div>
                     {p.descripcion && (
-                        <p className="text-xs text-gray-400 mt-2 line-clamp-2">{p.descripcion}</p>
+                        <p className="text-xs text-gray-400 mt-2 line-clamp-2">{p.descripcion.split('🎯')[0].trim()}</p>
                     )}
                 </div>
 
@@ -270,6 +265,8 @@ export default function PlantillasEntrenoPage() {
         </div>
     )
 
+    const hayAlgunaPlantilla = (Object.keys(MODALITY_CONFIG) as SportModality[]).some(m => agrupadasPorModalidad[m].length > 0) || legacy.length > 0
+
     return (
         <div className="p-8 max-w-5xl mx-auto">
             {/* Header */}
@@ -277,7 +274,7 @@ export default function PlantillasEntrenoPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">Planificación de entrenos</h1>
                     <p className="text-sm text-gray-400 mt-1">
-                        Plantillas predefinidas por modalidad — HYROX, Running, Ciclismo, Triatlón, Gimnasio, Cardio
+                        Plantillas predefinidas por modalidad — Gym, HYROX, Running, Ciclismo, Funcional, Calistenia
                     </p>
                 </div>
                 <button
@@ -313,35 +310,35 @@ export default function PlantillasEntrenoPage() {
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Buscar plantillas…"
+                        placeholder="Buscar por nombre, modalidad, tier…"
                         className="input search-input"
                         value={busqueda}
                         onChange={e => setBusqueda(e.target.value)}
                     />
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 flex-wrap">
                     <button
-                        onClick={() => setFiltroModalidad('todas')}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${filtroModalidad === 'todas'
+                        onClick={() => setFiltroModalidad(null)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${filtroModalidad === null
                             ? 'bg-gray-800 text-white'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
                     >
                         Todas
                     </button>
-                    {MODALIDADES.map(m => {
-                        const Icon = m.icon
+                    {(Object.keys(MODALITY_CONFIG) as SportModality[]).map(m => {
+                        const c = MODALITY_CONFIG[m]
                         return (
                             <button
-                                key={m.key}
-                                onClick={() => setFiltroModalidad(m.key)}
-                                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 ${filtroModalidad === m.key
-                                    ? `${m.bg} ${m.color} border ${m.border}`
+                                key={m}
+                                onClick={() => setFiltroModalidad(filtroModalidad === m ? null : m)}
+                                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 ${filtroModalidad === m
+                                    ? `${c.bg} ${c.color} border ${c.border}`
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
-                                <Icon size={14} />
-                                {m.label}
+                                <c.Icon size={14} />
+                                {c.label}
                             </button>
                         )
                     })}
@@ -351,7 +348,7 @@ export default function PlantillasEntrenoPage() {
             {/* Listado */}
             {loading ? (
                 loadingSpinner
-            ) : filtradas.length === 0 ? (
+            ) : !hayAlgunaPlantilla ? (
                 <div className="card text-center py-16">
                     <Target size={32} className="mx-auto mb-3 text-gray-300" />
                     <p className="text-gray-500 font-medium mb-1">
@@ -372,17 +369,18 @@ export default function PlantillasEntrenoPage() {
                 </div>
             ) : (
                 <div className="flex flex-col gap-6">
-                    {MODALIDADES.map(({ key, label, icon: Icon, color, bg, border }) => {
-                        const items = agrupadas[key] ?? []
+                    {(Object.keys(MODALITY_CONFIG) as SportModality[]).map(m => {
+                        const items = agrupadasPorModalidad[m]
                         if (items.length === 0) return null
+                        const c = MODALITY_CONFIG[m]
                         return (
-                            <div key={key}>
+                            <div key={m}>
                                 <div className="flex items-center gap-2 mb-3">
-                                    <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center`}>
-                                        <Icon size={16} className={color} />
+                                    <div className={`w-8 h-8 rounded-lg ${c.bg} flex items-center justify-center`}>
+                                        <c.Icon size={16} className={c.color} />
                                     </div>
-                                    <h2 className="font-semibold text-gray-700">{label}</h2>
-                                    <span className="text-xs text-gray-400">({items.length} plantillas)</span>
+                                    <h2 className="font-semibold text-gray-700">{c.label}</h2>
+                                    <span className="text-xs text-gray-400">({items.length} plantilla{items.length !== 1 ? 's' : ''})</span>
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     {items.map(renderPlantillaCard)}
@@ -390,6 +388,20 @@ export default function PlantillasEntrenoPage() {
                             </div>
                         )
                     })}
+                    {legacy.length > 0 && (
+                        <div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                                    <Dumbbell size={16} className="text-gray-500" />
+                                </div>
+                                <h2 className="font-semibold text-gray-700">General</h2>
+                                <span className="text-xs text-gray-400">({legacy.length} plantilla{legacy.length !== 1 ? 's' : ''})</span>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                {legacy.map(renderPlantillaCard)}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
