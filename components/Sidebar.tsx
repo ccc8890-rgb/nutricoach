@@ -320,8 +320,9 @@ export default function Sidebar() {
       {mounted && (
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
+          className="fixed left-4 z-50 lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
           style={{
+            top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)',
             background: mobileOpen ? 'var(--surface)' : 'var(--glass-bg)',
             border: '1px solid var(--glass-border)',
             backdropFilter: 'blur(12px)',
@@ -352,6 +353,7 @@ export default function Sidebar() {
           borderColor: 'var(--glass-border)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
         {sidebarContent}

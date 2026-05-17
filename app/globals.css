@@ -528,6 +528,26 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   SAFE AREA UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Padding inferior que respeta el home indicator de iOS */
+.pb-nav-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+}
+
+/* Padding superior en móvil: status bar + altura botón hamburguesa + margen */
+.layout-main {
+  padding-top: 0;
+}
+
+@media (max-width: 1023px) {
+  .layout-main {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 3.75rem);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    BOTTOM NAV (iOS-style)
    ═══════════════════════════════════════════════════════════════ */
 .bottom-nav {
