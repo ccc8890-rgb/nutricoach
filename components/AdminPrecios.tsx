@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
     Store, Search, X, Euro, Save, Trash2, Plus,
@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import type { Supermercado, Alimento, PrecioActual } from '@/types'
+
+const PAGE_SIZE = 200
 
 interface ProductoForm {
     supermercado_id: string
@@ -32,12 +34,14 @@ export default function AdminPrecios() {
     // Estados
     const [supermercados, setSupermercados] = useState<Supermercado[]>([])
     const [precios, setPrecios] = useState<PrecioActual[]>([])
+    const [totalCount, setTotalCount] = useState(0)
     const [cargando, setCargando] = useState(true)
     const [supermercadoSel, setSupermercadoSel] = useState<string | null>(null)
     const [busqueda, setBusqueda] = useState('')
     const [mostrarForm, setMostrarForm] = useState(false)
     const [form, setForm] = useState<ProductoForm>(PRODUCTO_VACIO)
     const [guardando, setGuardando] = useState(false)
+    const [pagina, setPagina] = useState(0)
 
     // Búsqueda de alimentos para el formulario
     const [queryAlimento, setQueryAlimento] = useState('')
@@ -48,19 +52,68 @@ export default function AdminPrecios() {
     const [editandoId, setEditandoId] = useState<string | null>(null)
     const [editValor, setEditValor] = useState('')
 
-    // Cargar datos iniciales
+    const totalPaginas = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+    // Cargar datos con paginación real
+    const cargarPrecios = useCallback(async () => {
+        setCargando(true)
+
+        let query = supabase
+            .from('precios_actuales')
+            .select('*', { count: 'exact' })
+
+        if (supermercadoSel) {
+            query = query.eq('supermercado_id', supermercadoSel)
+        }
+
+        if (busqueda) {
+            const q = busqueda.toLowerCase()
+            query = query.or(`alimento_nombre.ilike.%${q}%,alimento_categoria.ilike.%${q}%`)
+        }
+
+        const from = pagina * PAGE_SIZE
+        const to = from + PAGE_SIZE - 1
+
+        const { data, count, error } = await query
+            .order('alimento_categoria', { ascending: true })
+            .order('alimento_nombre', { ascending: true })
+            .range(from, to)
+
+        if (error) {
+            addToast({ type: 'error', title: 'Error al cargar', message: error.message })
+        }
+
+        setPrecios(data ?? [])
+        setTotalCount(count ?? 0)
+        setCargando(false)
+    }, [supermercadoSel, busqueda, pagina, addToast])
+
+    // Cargar supermercados al inicio
     useEffect(() => {
-        Promise.all([
-            supabase.from('supermercados').select('*').eq('activo', true).order('nombre'),
-            supabase.from('precios_actuales').select('*').order('supermercado_nombre').order('alimento_categoria'),
-        ]).then(([sRes, pRes]) => {
-            setSupermercados(sRes.data ?? [])
-            setPrecios(pRes.data ?? [])
-            if ((sRes.data ?? []).length > 0) {
-                setSupermercadoSel(sRes.data![0].id)
-            }
-        }).finally(() => setCargando(false))
-    }, [])
+        supabase.from('supermercados').select('*').eq('activo', true).order('nombre')
+            .then(({ data }) => {
+                setSupermercados(data ?? [])
+                if ((data ?? []).length > 0 && !supermercadoSel) {
+                    setSupermercadoSel(data![0].id)
+                }
+            })
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Recargar precios cuando cambia supermercado, búsqueda o página
+    useEffect(() => {
+        if (supermercadoSel) {
+            cargarPrecios()
+        } else {
+            setPrecios([])
+            setTotalCount(0)
+            setCargando(false)
+        }
+    }, [cargarPrecios, supermercadoSel])
+
+    // Resetear página al cambiar supermercado o búsqueda
+    useEffect(() => {
+        setPagina(0)
+    }, [supermercadoSel, busqueda])
 
     // Búsqueda de alimentos
     useEffect(() => {
@@ -81,21 +134,10 @@ export default function AdminPrecios() {
         return () => clearTimeout(timer)
     }, [queryAlimento])
 
-    // Precios filtrados por supermercado y búsqueda
+    // Precios filtrados solo por búsqueda local (el filtro de supermercado ya es SQL)
     const preciosFiltrados = useMemo(() => {
-        let filtrados = precios
-        if (supermercadoSel) {
-            filtrados = filtrados.filter(p => p.supermercado_id === supermercadoSel)
-        }
-        if (busqueda) {
-            const q = busqueda.toLowerCase()
-            filtrados = filtrados.filter(p =>
-                p.alimento_nombre.toLowerCase().includes(q) ||
-                p.alimento_categoria.toLowerCase().includes(q)
-            )
-        }
-        return filtrados.sort((a, b) => a.alimento_categoria.localeCompare(b.alimento_categoria) || a.alimento_nombre.localeCompare(b.alimento_nombre))
-    }, [precios, supermercadoSel, busqueda])
+        return precios
+    }, [precios])
 
     // Guardar nuevo precio
     async function guardarProducto() {
@@ -121,9 +163,7 @@ export default function AdminPrecios() {
             setForm(PRODUCTO_VACIO)
             setQueryAlimento('')
             setResultadosAlimentos([])
-            // Recargar precios
-            const { data } = await supabase.from('precios_actuales').select('*').order('supermercado_nombre').order('alimento_categoria')
-            setPrecios(data ?? [])
+            cargarPrecios()
         }
         setGuardando(false)
     }
@@ -133,6 +173,7 @@ export default function AdminPrecios() {
         const { error } = await supabase.from('productos_supermercado').delete().eq('id', id)
         if (!error) {
             setPrecios(prev => prev.filter(p => p.id !== id))
+            setTotalCount(prev => Math.max(0, prev - 1))
             addToast({ type: 'info', title: 'Eliminado', message: 'Precio eliminado correctamente' })
         } else {
             addToast({ type: 'error', title: 'Error', message: error.message })
@@ -184,7 +225,7 @@ export default function AdminPrecios() {
                         Gestión de Precios
                     </h2>
                     <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                        {precios.length} precios registrados en {supermercados.length} supermercados
+                        {totalCount.toLocaleString('es-ES')} precios registrados en {supermercados.length} supermercados
                     </p>
                 </div>
                 <button
@@ -211,7 +252,7 @@ export default function AdminPrecios() {
                     >
                         {s.nombre}
                         <span className="ml-1.5 text-xs opacity-70">
-                            ({precios.filter(p => p.supermercado_id === s.id).length})
+                            ({totalCount.toLocaleString('es-ES')})
                         </span>
                     </button>
                 ))}
@@ -245,85 +286,115 @@ export default function AdminPrecios() {
                     </p>
                 </div>
             ) : (
-                <div className="space-y-4">
-                    {preciosAgrupados.map(([categoria, items]) => (
-                        <div key={categoria} className="card !p-0 overflow-hidden">
-                            <div className="px-4 py-2.5 flex items-center gap-2 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg)' }}>
-                                <span className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>
-                                    {categoria}
-                                </span>
-                                <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--primary-bg)', color: 'var(--primary)' }}>
-                                    {items.length}
-                                </span>
-                            </div>
-                            <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-                                {items.map(precio => (
-                                    <div key={precio.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>
-                                                {precio.alimento_nombre}
-                                            </p>
-                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                                Actualizado: {new Date(precio.fecha_precio).toLocaleDateString('es-ES')}
-                                                {precio.url_producto && (
-                                                    <a href={precio.url_producto} target="_blank" rel="noopener noreferrer"
-                                                        className="ml-2 underline inline-flex items-center gap-0.5">
-                                                        Ver producto <ExternalLink size={10} />
-                                                    </a>
+                <>
+                    <div className="space-y-4">
+                        {preciosAgrupados.map(([categoria, items]) => (
+                            <div key={categoria} className="card !p-0 overflow-hidden">
+                                <div className="px-4 py-2.5 flex items-center gap-2 border-b" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg)' }}>
+                                    <span className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>
+                                        {categoria}
+                                    </span>
+                                    <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'var(--primary-bg)', color: 'var(--primary)' }}>
+                                        {items.length}
+                                    </span>
+                                </div>
+                                <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+                                    {items.map(precio => (
+                                        <div key={precio.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>
+                                                    {precio.alimento_nombre}
+                                                </p>
+                                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                                    Actualizado: {new Date(precio.fecha_precio).toLocaleDateString('es-ES')}
+                                                    {precio.url_producto && (
+                                                        <a href={precio.url_producto} target="_blank" rel="noopener noreferrer"
+                                                            className="ml-2 underline inline-flex items-center gap-0.5">
+                                                            Ver producto <ExternalLink size={10} />
+                                                        </a>
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-3 ml-3">
+                                                {/* Precio editable */}
+                                                {editandoId === precio.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0"
+                                                            autoFocus
+                                                            className="w-20 text-right text-sm rounded px-2 py-1 border"
+                                                            value={editValor}
+                                                            onChange={e => setEditValor(e.target.value)}
+                                                            onKeyDown={e => {
+                                                                if (e.key === 'Enter') guardarEdicion(precio.id, parseFloat(editValor) || 0)
+                                                                if (e.key === 'Escape') setEditandoId(null)
+                                                            }}
+                                                        />
+                                                        <button onClick={() => guardarEdicion(precio.id, parseFloat(editValor) || 0)}
+                                                            className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                            <Check size={14} />
+                                                        </button>
+                                                        <button onClick={() => setEditandoId(null)}
+                                                            className="p-1 text-gray-400 hover:bg-gray-100 rounded">
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => { setEditandoId(precio.id); setEditValor(precio.precio_por_kg.toString()) }}
+                                                        className="text-sm font-bold px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                                        style={{ color: '#16A34A' }}
+                                                    >
+                                                        {precio.precio_por_kg.toFixed(2)} €/kg
+                                                    </button>
                                                 )}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-3 ml-3">
-                                            {/* Precio editable */}
-                                            {editandoId === precio.id ? (
-                                                <div className="flex items-center gap-1">
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        min="0"
-                                                        autoFocus
-                                                        className="w-20 text-right text-sm rounded px-2 py-1 border"
-                                                        value={editValor}
-                                                        onChange={e => setEditValor(e.target.value)}
-                                                        onKeyDown={e => {
-                                                            if (e.key === 'Enter') guardarEdicion(precio.id, parseFloat(editValor) || 0)
-                                                            if (e.key === 'Escape') setEditandoId(null)
-                                                        }}
-                                                    />
-                                                    <button onClick={() => guardarEdicion(precio.id, parseFloat(editValor) || 0)}
-                                                        className="p-1 text-green-600 hover:bg-green-50 rounded">
-                                                        <Check size={14} />
-                                                    </button>
-                                                    <button onClick={() => setEditandoId(null)}
-                                                        className="p-1 text-gray-400 hover:bg-gray-100 rounded">
-                                                        <X size={14} />
-                                                    </button>
-                                                </div>
-                                            ) : (
                                                 <button
-                                                    onClick={() => { setEditandoId(precio.id); setEditValor(precio.precio_por_kg.toString()) }}
-                                                    className="text-sm font-bold px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                                    style={{ color: '#16A34A' }}
+                                                    onClick={() => eliminarPrecio(precio.id)}
+                                                    className="p-1.5 rounded hover:bg-red-50 transition-colors"
+                                                    style={{ color: 'var(--text-muted)' }}
+                                                    onMouseEnter={e => { e.currentTarget.style.color = '#EF4444' }}
+                                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
                                                 >
-                                                    {precio.precio_por_kg.toFixed(2)} €/kg
+                                                    <Trash2 size={14} />
                                                 </button>
-                                            )}
-                                            <button
-                                                onClick={() => eliminarPrecio(precio.id)}
-                                                className="p-1.5 rounded hover:bg-red-50 transition-colors"
-                                                style={{ color: 'var(--text-muted)' }}
-                                                onMouseEnter={e => { e.currentTarget.style.color = '#EF4444' }}
-                                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
+                        ))}
+                    </div>
+
+                    {/* Paginación */}
+                    {totalPaginas > 1 && (
+                        <div className="flex items-center justify-center gap-2 pt-4 pb-2">
+                            <button
+                                onClick={() => setPagina(p => Math.max(0, p - 1))}
+                                disabled={pagina === 0}
+                                className="px-3 py-1.5 text-sm rounded-lg border disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                            >
+                                Anterior
+                            </button>
+
+                            <span className="text-sm px-3" style={{ color: 'var(--text-muted)' }}>
+                                Página {pagina + 1} de {totalPaginas}
+                                <span className="ml-2">({totalCount.toLocaleString('es-ES')} total)</span>
+                            </span>
+
+                            <button
+                                onClick={() => setPagina(p => Math.min(totalPaginas - 1, p + 1))}
+                                disabled={pagina >= totalPaginas - 1}
+                                className="px-3 py-1.5 text-sm rounded-lg border disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                            >
+                                Siguiente
+                            </button>
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
             )}
 
             {/* Modal: Añadir precio */}

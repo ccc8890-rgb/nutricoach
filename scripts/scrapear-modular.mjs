@@ -28,17 +28,17 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 // ── IDs de supermercados (mapeo slug → id) ──
 const SUPERMERCADOS = {
-    mercadona: 'b4a94174-0e96-4a68-882d-91f40bea27cc',
-    carrefour: 'a3963fee-ed67-40da-a850-b68bc13a6ef8',
-    dia: '8a5c5b38-3bb5-4081-9497-432c00346452',
-    alcampo: 'f40021e3-93fb-4a98-b75a-6e6838badee2',
-    consum: 'c1fabfab-69f1-4bbf-9324-b6d3cdff2427',
-    eroski: 'f156cba6-b234-43e5-b8ee-3215a28cc9eb',
-    lidl: '3c7add77-080f-4eae-b831-a5b79c4b26db',
-    bonpreu: '9f0cd41e-22fb-4cc9-ade9-54aa24f9a1c5',
-    esclat: '0d1b23a1-2a98-4d1d-a54e-15ee43e92b99',
-    'el-corte-ingles': '7eaa25df-8836-4e4f-931a-eb93e21e7270',
-    hipercor: 'e6ed9db9-e9be-47ba-9c3d-06f38946503a',
+    mercadona: '7a742169-14dd-4a61-b4d0-b7af7f20a182',
+    carrefour: '04773652-b024-4636-91c4-2870c9d3bd57',
+    dia: '814453a3-f6e5-444b-ad3a-7294718b40d2',
+    alcampo: '5359e3ea-c32a-4902-8b6a-e4af1532759f',
+    consum: '965e60c1-8030-4fbe-a44a-0214bce61781',
+    eroski: '2238c2ee-bae4-4fd0-add8-74eb4a0a59af',
+    lidl: '29d40fe3-c49d-40c9-b61b-5072f704ec35',
+    bonpreu: 'c720e5db-e8d7-481c-95fe-36cc53c085be',
+    esclat: 'c307b882-9c55-406b-af2e-6e6b6004e496',
+    'el-corte-ingles': '478d817f-f370-45d0-ba08-f92ec71913b1',
+    hipercor: '77ddb2d6-23cb-4e28-9e49-0991cbde0010',
 }
 
 // ── Mapeo slug → función scraper ──
