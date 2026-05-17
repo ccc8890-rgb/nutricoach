@@ -1309,6 +1309,12 @@ async function procesarSupermercado(slug, scrapeFn, supermercados) {
 //  MAIN
 // ═══════════════════════════════════════════════════════════════
 
+/**
+ * Scrapers inline disponibles.
+ * Bonpreu, Esclat, Hipercor y El Corte Inglés no tienen versión inline
+ * porque usan Playwright con intercepción de API + scroll progresivo.
+ * Ejecutar via: npx tsx --env-file=.env.local scripts/ejecutar-modular.ts <slug>
+ */
 const MODOS = {
     mercadona: scrapearMercadona,
     carrefour: scrapearCarrefour,
@@ -1317,6 +1323,10 @@ const MODOS = {
     consum: scrapearConsum,
     eroski: scrapearEroski,
     lidl: scrapearLidl,
+    bonpreu: null,
+    esclat: null,
+    'el-corte-ingles': null,
+    hipercor: null,
 }
 
 async function main() {
@@ -1359,6 +1369,14 @@ async function main() {
 
     for (const slug of slugsAEjecutar) {
         const scrapeFn = MODOS[slug]
+
+        if (scrapeFn === null) {
+            console.log(`\n⚠️  "${slug}" no tiene scraper inline.`)
+            console.log(`   Usa el script modular:`)
+            console.log(`   npx tsx --env-file=.env.local scripts/ejecutar-modular.ts ${slug}`)
+            continue
+        }
+
         if (scrapeFn) {
             try {
                 await procesarSupermercado(slug, scrapeFn, smMap)

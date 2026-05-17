@@ -104,6 +104,22 @@ async function main() {
                     const { scrapearLidl } = await import('../lib/scraping/supermercados/lidl')
                     scraperFn = scrapearLidl
                     break
+                case 'bonpreu':
+                    const { scrapearBonpreu } = await import('../lib/scraping/supermercados/bonpreu')
+                    scraperFn = scrapearBonpreu
+                    break
+                case 'esclat':
+                    const { scrapearEsclat } = await import('../lib/scraping/supermercados/esclat')
+                    scraperFn = scrapearEsclat
+                    break
+                case 'el-corte-ingles':
+                    const { scrapearElCorteIngles } = await import('../lib/scraping/supermercados/el-corte-ingles')
+                    scraperFn = scrapearElCorteIngles
+                    break
+                case 'hipercor':
+                    const { scrapearHipercor } = await import('../lib/scraping/supermercados/hipercor')
+                    scraperFn = scrapearHipercor
+                    break
                 default:
                     console.error(`❌ Scraper para "${slug}" no disponible en modo solo-scrape`)
                     continue
