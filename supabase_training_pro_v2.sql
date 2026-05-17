@@ -93,7 +93,7 @@ CREATE POLICY "Cliente can read own perfil_entreno"
   USING (
     EXISTS (
       SELECT 1 FROM public.clientes c
-      WHERE c.id = cliente_id AND c.user_id = auth.uid()
+      WHERE c.id = cliente_id AND c.profile_id = auth.uid()
     )
   );
 
