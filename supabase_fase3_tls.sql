@@ -38,6 +38,7 @@ CREATE INDEX IF NOT EXISTS idx_registros_entreno_cliente_fecha
 
 ALTER TABLE public.registros_entreno ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Coach can manage registros_entreno" ON public.registros_entreno;
 CREATE POLICY "Coach can manage registros_entreno"
   ON public.registros_entreno FOR ALL
   USING (
@@ -48,6 +49,7 @@ CREATE POLICY "Coach can manage registros_entreno"
     )
   );
 
+DROP POLICY IF EXISTS "Cliente can manage own registros_entreno" ON public.registros_entreno;
 CREATE POLICY "Cliente can manage own registros_entreno"
   ON public.registros_entreno FOR ALL
   USING (
@@ -113,8 +115,7 @@ sesiones_recientes AS (
 SELECT json_build_object(
   'tls_semana_actual',    ROUND((SELECT tls_semanal FROM semana_actual)::numeric, 1),
   'num_sesiones',         (SELECT num_sesiones FROM semana_actual),
-  'tls_promedio_4sem',    ROUND(COALESCE(AVG(tls_semanal), 0)::numeric, 1)
-                          FROM ultimas_4_semanas,
+  'tls_promedio_4sem',    (SELECT ROUND(COALESCE(AVG(tls_semanal), 0)::numeric, 1) FROM ultimas_4_semanas),
   'umbral',               (SELECT umbral FROM umbral),
   'porcentaje_umbral',    CASE
                             WHEN (SELECT umbral FROM umbral) = 0 THEN 0

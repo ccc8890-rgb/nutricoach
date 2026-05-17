@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import ClienteEditar from '@/components/ClienteEditar'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
-import { ArrowLeft, UtensilsCrossed, Dumbbell, Weight, CalendarDays, Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2, Zap, Bot, Trophy, CopyPlus, X } from 'lucide-react'
+import { ArrowLeft, UtensilsCrossed, Dumbbell, Weight, CalendarDays, Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2, Zap, Bot, Trophy, CopyPlus, X, Activity } from 'lucide-react'
 import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import { OBJETIVO_LABELS, NIVEL_LABELS } from '@/lib/utils'
@@ -32,6 +32,10 @@ const ProtocoloCompeticion = dynamic(() => import('@/components/ProtocoloCompeti
   loading: () => <div className="skeleton h-64 w-full rounded-xl" />,
   ssr: false,
 })
+const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel'), {
+  loading: () => <div className="animate-pulse h-32 rounded-xl" style={{ background: 'var(--border)' }} />,
+  ssr: false,
+})
 const CompeticionesManager = dynamic(() => import('@/components/CompeticionesManager'), {
   loading: () => <div className="skeleton h-48 w-full rounded-xl" />,
   ssr: false,
@@ -45,7 +49,7 @@ type NotaCoachRow = {
   created_at: string
 }
 
-type Tab = 'informacion' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion'
+type Tab = 'informacion' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion'
 
 type ClienteConExtra = Cliente & {
   fecha_proxima_revision?: string
@@ -194,6 +198,7 @@ export default function ClienteDetallePage() {
     { key: 'informacion', label: 'Información', icon: Info },
     { key: 'planificacion', label: 'Planificación', icon: CalendarDays },
     { key: 'competicion', label: 'Competición', icon: Trophy },
+    { key: 'periodizacion', label: 'Periodización', icon: Activity },
     { key: 'historial_ia', label: 'Historial IA', icon: Brain },
     { key: 'conversaciones_ia', label: 'Conversaciones IA', icon: Bot },
     { key: 'ajuste_macros', label: 'Ajuste Macros', icon: Zap },
@@ -516,6 +521,10 @@ export default function ClienteDetallePage() {
               />
               <ProtocoloCompeticion clienteId={id as string} />
             </div>
+          </ErrorBoundary>
+        ) : tabActiva === 'periodizacion' ? (
+          <ErrorBoundary>
+            <PeriodizacionPanel clienteId={id as string} />
           </ErrorBoundary>
         ) : tabActiva === 'historial_ia' ? (
           <HistorialDietasIA clienteId={id as string} />
