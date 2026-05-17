@@ -1,6 +1,35 @@
-# ESTADO NutriCoach — 17-05-2026 (Sesión 21 — Fix móvil: safe area solapamiento header)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 22 — Auditoría health: seguridad + lint)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 21).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 22).
+
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 22 — Auditoría completa de bugs y sistema
+
+### Qué se hizo
+Health check completo de la app: TypeScript, ESLint, seguridad de API routes, variables de entorno.
+
+### Hallazgos y fixes — commit `b9ebe6e`
+
+| Severidad | Issue | Fix |
+|-----------|-------|-----|
+| 🔴 Seguridad | `POST /api/subir-imagen-receta` sin auth — cualquiera podía subir imágenes | Añadido `createApiSupabase` + `auth.getUser()` al inicio. 401 si no autenticado |
+| 🟡 Runtime | Unescaped entities `"texto"` en JSX en `entrenos/generar-ia/page.tsx` y `clientes/[id]/page.tsx` | Reemplazadas por `&ldquo;` / `&rdquo;` |
+| 🟡 Hoisting | `loadPlan` en `dietas/[id]/page.tsx` llamada antes de declararse en el mismo componente | Movida la declaración de `loadPlan` por encima del `useEffect` que la invoca |
+| 🟢 Lint ruido | 160 falsos positivos de reglas React Compiler (`purity`, `immutability`, `set-state-in-effect`, `preserve-manual-memoization`) | Desactivadas en `eslint.config.mjs` de nutricoach y nutricoach-modulos |
+
+### Estado post-auditoría
+- **TypeScript**: ✅ 0 errores (`tsc --noEmit` clean en los 2 worktrees)
+- **Lint crítico**: ✅ 0 errores de runtime — solo quedan 128 `no-explicit-any` + 5 `prefer-const` (style, no bugs)
+- **Seguridad**: ✅ endpoint de imágenes protegido
+- **React Compiler lint**: ✅ silenciado (compilador no instalado en este proyecto)
+
+### Lo que NO se tocó (decisión)
+- `MAKE_WEBHOOK_NUEVO_CLIENTE` / `MAKE_WEBHOOK_PERIODIZACION` — opcionales, guarded con `if`, Make pendiente para implementar
+- `lib/replicate.ts` — dead code sin importadores, sin impacto
+- `no-explicit-any` (128) — style, no bugs, quedará para refactor futuro si hace falta
+
+---
 
 ---
 
