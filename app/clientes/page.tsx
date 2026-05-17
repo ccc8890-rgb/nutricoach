@@ -146,7 +146,7 @@ export default function ClientesPage() {
           {filtrados.map((c) => (
             <StaggerItem key={c.id}>
               <Link
-                href={`/clientes/${c.id}`}
+                href={c.revisado_por_coach === false ? `/clientes/${c.id}/revisar-plan` : `/clientes/${c.id}`}
                 className="card flex items-center gap-4 block"
               >
                 {/* Avatar con gradiente charcoal */}
@@ -164,7 +164,7 @@ export default function ClientesPage() {
                       {c.activo ? 'Activo' : 'Inactivo'}
                     </span>
                     {c.revisado_por_coach === false && (
-                      <span className="badge" style={{ background: 'var(--primary)', color: 'white' }}>Nuevo</span>
+                      <span className="badge" style={{ background: 'var(--primary)', color: 'white', fontWeight: 700, letterSpacing: '0.01em' }}>Revisar →</span>
                     )}
                   </div>
                   <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>{c.profile?.email}</p>

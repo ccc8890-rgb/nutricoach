@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Loader2, CheckCircle, ChevronDown, ChevronUp, User } from 'lucide-react'
+import { Loader2, CheckCircle, ChevronDown, ChevronUp, User, Utensils, ExternalLink, Dumbbell } from 'lucide-react'
+import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
+import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 
 interface OnboardingData {
   objetivo: string
@@ -62,6 +64,13 @@ export default function RevisarPlanPage() {
   const [loading, setLoading] = useState(true)
   const [aprobando, setAprobando] = useState(false)
   const [showRaw, setShowRaw] = useState(false)
+  const [creandoDieta, setCreandoDieta] = useState(false)
+  const [dietaCreada, setDietaCreada] = useState<{ id: string } | null>(null)
+  const [errorDieta, setErrorDieta] = useState<string | null>(null)
+  const [showSelectorEntreno, setShowSelectorEntreno] = useState(false)
+  const [plantillaSeleccionadaEntreno, setPlantillaSeleccionadaEntreno] = useState<PlantillaEntrenamiento | null>(null)
+  const [creandoEntreno, setCreandoEntreno] = useState(false)
+  const [entrenoCreado, setEntrenoCreado] = useState<{ id: string } | null>(null)
 
   useEffect(() => {
     const id = params.id as string
@@ -84,6 +93,107 @@ export default function RevisarPlanPage() {
       .update({ revisado_por_coach: true })
       .eq('id', params.id as string)
     router.push(`/clientes/${params.id}`)
+  }
+
+  const crearPlan = async () => {
+    if (!plan) return
+    setCreandoDieta(true)
+    setErrorDieta(null)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('No autenticado')
+
+      const { data: planCreado, error: errorPlan } = await supabase
+        .from('planes_nutricion')
+        .insert({
+          coach_id: user.id,
+          cliente_id: params.id as string,
+          nombre: `Plan inicial - ${cliente?.profiles ? `${cliente.profiles.nombre} ${cliente.profiles.apellidos}` : 'Cliente'}`,
+          descripcion: plan.notas_coach || null,
+          kcal_objetivo: plan.kcal_objetivo,
+          proteinas_objetivo: plan.macros.proteinas_g,
+          carbohidratos_objetivo: plan.macros.carbos_g,
+          grasas_objetivo: plan.macros.grasas_g,
+          activo: true,
+          generado_por_ia: true,
+        })
+        .select('id')
+        .single()
+
+      if (errorPlan || !planCreado) throw new Error(errorPlan?.message ?? 'Error al crear el plan')
+
+      const comidas = plan.distribucion_comidas.map((item, index) => ({
+        plan_id: planCreado.id,
+        nombre: item.nombre,
+        orden: index,
+        hora_sugerida: item.hora_sugerida,
+      }))
+
+      const { error: errorComidas } = await supabase.from('comidas').insert(comidas)
+      if (errorComidas) throw new Error(errorComidas.message)
+
+      setDietaCreada({ id: planCreado.id })
+    } catch (err) {
+      setErrorDieta(err instanceof Error ? err.message : 'Error desconocido')
+    } finally {
+      setCreandoDieta(false)
+    }
+  }
+
+  const crearPlanDesdeEntrenamiento = async (plantilla: PlantillaEntrenamiento) => {
+    setCreandoEntreno(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('No autenticado')
+
+      const { data: plan, error } = await supabase.from('planes_entrenamiento').insert({
+        coach_id: user.id,
+        cliente_id: params.id as string,
+        nombre: plantilla.nombre,
+        descripcion: plantilla.descripcion ?? null,
+        duracion_semanas: plantilla.duracion_semanas ?? null,
+      }).select().single()
+
+      if (error || !plan) throw new Error(error?.message ?? 'Error al crear el plan de entrenamiento')
+
+      const sesiones = (plantilla.sesiones ?? []) as PlantillaSesion[]
+      for (const sesion of sesiones) {
+        const { data: nuevaSesion } = await supabase
+          .from('sesiones_entrenamiento')
+          .insert({
+            plan_id: plan.id,
+            nombre: sesion.nombre,
+            dia_semana: sesion.dia_semana ?? null,
+            orden: sesion.orden,
+            notas: sesion.notas ?? null,
+          })
+          .select('id')
+          .single()
+
+        if (!nuevaSesion) continue
+
+        const ejercicios = (sesion.ejercicios ?? []) as PlantillaSesionEjercicio[]
+        for (const ej of ejercicios) {
+          await supabase.from('sesion_ejercicios').insert({
+            sesion_id: nuevaSesion.id,
+            ejercicio_id: ej.ejercicio_id,
+            series: ej.series ?? null,
+            repeticiones: ej.repeticiones ?? null,
+            descanso_segundos: ej.descanso_segundos ?? null,
+            peso_sugerido: ej.peso_sugerido ?? null,
+            notas: ej.notas ?? null,
+            orden: ej.orden,
+          })
+        }
+      }
+
+      setEntrenoCreado({ id: plan.id })
+      setShowSelectorEntreno(false)
+    } catch (err) {
+      console.error('Error al crear plan de entrenamiento:', err)
+    } finally {
+      setCreandoEntreno(false)
+    }
   }
 
   if (loading) {
@@ -202,6 +312,75 @@ export default function RevisarPlanPage() {
         </div>
       )}
 
+      {/* Entrenamiento inicial */}
+      {onboarding && (
+        <div className="card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Dumbbell size={18} style={{ color: 'var(--primary)' }} />
+            <h2 className="font-semibold text-[var(--text)]">Entrenamiento inicial</h2>
+          </div>
+
+          {entrenoCreado ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <CheckCircle size={16} />
+                <span>Entrenamiento asignado</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push(`/entrenos/${entrenoCreado.id}`)}
+                className="btn-secondary flex items-center gap-2 text-sm"
+              >
+                <ExternalLink size={14} />
+                Ver entrenamiento →
+              </button>
+            </div>
+          ) : plantillaSeleccionadaEntreno ? (
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-[var(--text)] font-medium truncate">{plantillaSeleccionadaEntreno.nombre}</p>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => { setPlantillaSeleccionadaEntreno(null); setShowSelectorEntreno(true) }}
+                  className="btn-secondary text-sm"
+                >
+                  Cambiar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => crearPlanDesdeEntrenamiento(plantillaSeleccionadaEntreno)}
+                  disabled={creandoEntreno}
+                  className="btn-primary flex items-center gap-2 text-sm"
+                >
+                  {creandoEntreno ? <Loader2 size={14} className="animate-spin" /> : <Dumbbell size={14} />}
+                  Asignar entrenamiento
+                </button>
+              </div>
+            </div>
+          ) : showSelectorEntreno ? (
+            <PlantillaEntrenoSelector
+              onSeleccionar={(plantilla) => {
+                setPlantillaSeleccionadaEntreno(plantilla)
+                setShowSelectorEntreno(false)
+              }}
+              seleccionada={plantillaSeleccionadaEntreno}
+            />
+          ) : (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-[var(--text-muted)]">No hay plantilla seleccionada</p>
+              <button
+                type="button"
+                onClick={() => setShowSelectorEntreno(true)}
+                className="btn-secondary flex items-center gap-2 text-sm"
+              >
+                <Dumbbell size={14} />
+                Seleccionar plantilla
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Actions */}
       {!cliente.revisado_por_coach && (
         <div className="flex gap-3">
@@ -212,6 +391,28 @@ export default function RevisarPlanPage() {
           >
             Ver perfil completo
           </button>
+          {plan && (
+            dietaCreada ? (
+              <button
+                type="button"
+                onClick={() => router.push(`/dietas/${dietaCreada.id}`)}
+                className="btn-secondary flex-1 flex items-center justify-center gap-2"
+              >
+                <ExternalLink size={16} />
+                Ver dieta →
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={crearPlan}
+                disabled={creandoDieta}
+                className="btn-secondary flex-1 flex items-center justify-center gap-2"
+              >
+                {creandoDieta ? <Loader2 size={16} className="animate-spin" /> : <Utensils size={16} />}
+                Crear plan de dieta
+              </button>
+            )
+          )}
           <button
             type="button"
             onClick={aprobar}
@@ -222,6 +423,9 @@ export default function RevisarPlanPage() {
             Aprobar y activar cliente
           </button>
         </div>
+      )}
+      {errorDieta && (
+        <p className="text-sm text-red-600 dark:text-red-400 text-center">{errorDieta}</p>
       )}
     </div>
   )
