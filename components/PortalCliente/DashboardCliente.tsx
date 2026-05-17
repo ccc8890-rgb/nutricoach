@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Bell, Flame, MessageSquareText, History } from 'lucide-react'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell } from 'lucide-react'
 import MiPlan from './MiPlan'
 import CheckInForm from './CheckInForm'
 import ProgresoCharts from './ProgresoCharts'
 import NotasCoach from './NotasCoach'
 import HistorialCheckins from './HistorialCheckins'
+import TLSGauge from './TLSGauge'
+import RegistrarEntrenoModal from './RegistrarEntrenoModal'
 import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach } from '@/types'
 
 interface DashboardData {
@@ -22,11 +24,12 @@ interface DashboardClienteProps {
     codigo: string
 }
 
-type Tab = 'plan' | 'checkin' | 'progreso' | 'historial'
+type Tab = 'plan' | 'checkin' | 'entreno' | 'progreso' | 'historial'
 
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: 'plan', label: 'Mi plan', icon: UtensilsCrossed },
     { key: 'checkin', label: 'Check-in', icon: ClipboardCheck },
+    { key: 'entreno', label: 'Carga', icon: Dumbbell },
     { key: 'historial', label: 'Historial', icon: History },
     { key: 'progreso', label: 'Progreso', icon: BarChart3 },
 ]
@@ -59,6 +62,8 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     const [tab, setTab] = useState<Tab>('plan')
     const [notasNoLeidas, setNotasNoLeidas] = useState(0)
     const [notasVistas, setNotasVistas] = useState<string[]>([])
+    const [mostrarRegistrarEntreno, setMostrarRegistrarEntreno] = useState(false)
+    const [tlsKey, setTlsKey] = useState(0)
 
     const loadData = useCallback(async () => {
         try {
@@ -244,6 +249,14 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                     />
                 )}
 
+                {tab === 'entreno' && (
+                    <TLSGauge
+                        key={tlsKey}
+                        codigo={codigo}
+                        onRegistrar={() => setMostrarRegistrarEntreno(true)}
+                    />
+                )}
+
                 {tab === 'historial' && (
                     <HistorialCheckins codigo={codigo} />
                 )}
@@ -257,6 +270,17 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                     />
                 )}
             </div>
+
+            {mostrarRegistrarEntreno && (
+                <RegistrarEntrenoModal
+                    codigo={codigo}
+                    onClose={() => setMostrarRegistrarEntreno(false)}
+                    onGuardado={() => {
+                        setTlsKey(k => k + 1)
+                        setTab('entreno')
+                    }}
+                />
+            )}
 
             {/* Footer con notas del coach */}
             <div className="max-w-2xl mx-auto px-4 pb-8">

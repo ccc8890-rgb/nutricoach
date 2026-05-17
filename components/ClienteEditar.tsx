@@ -12,6 +12,7 @@ interface Cliente {
   notas?: string
   restricciones_alimentarias?: string
   activo?: boolean
+  tls_umbral_carga_alta?: number
 }
 
 interface Props {
@@ -28,6 +29,7 @@ export default function ClienteEditar({ cliente, onSave, onCancel }: Props) {
   const [notas, setNotas] = useState(cliente.notas ?? '')
   const [restricciones, setRestricciones] = useState(cliente.restricciones_alimentarias ?? '')
   const [activo, setActivo] = useState(cliente.activo ?? true)
+  const [tlsUmbral, setTlsUmbral] = useState(cliente.tls_umbral_carga_alta ?? 80)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,6 +47,7 @@ export default function ClienteEditar({ cliente, onSave, onCancel }: Props) {
           notas,
           restricciones_alimentarias: restricciones,
           activo,
+          tls_umbral_carga_alta: tlsUmbral,
         })
         .eq('id', cliente.id)
 
@@ -138,6 +141,24 @@ export default function ClienteEditar({ cliente, onSave, onCancel }: Props) {
             value={restricciones}
             onChange={(e) => setRestricciones(e.target.value)}
           />
+        </div>
+
+        {/* Umbral TLS */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Umbral carga semanal (pts TLS)
+          </label>
+          <input
+            type="number"
+            className="input"
+            min="10"
+            max="500"
+            value={tlsUmbral}
+            onChange={(e) => setTlsUmbral(Number(e.target.value))}
+          />
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+            General: 80 · Atleta rendimiento: 150+
+          </p>
         </div>
 
         {/* Activo */}
