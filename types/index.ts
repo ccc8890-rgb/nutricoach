@@ -246,6 +246,68 @@ export interface PlantillaDieta {
   updated_at: string
 }
 
+// ─── Training Pro v2 ─────────────────────────────────────────
+export type SportModality =
+  | 'gym_estetica' | 'gym_fuerza' | 'funcional'
+  | 'hyrox' | 'ciclismo' | 'running' | 'hibrido' | 'calistenia'
+
+export type TrainingTier = 'general' | 'elite'
+
+export type UnidadEjercicio = 'reps' | 'cal' | 'metros' | 'segundos' | 'km' | 'pct_ftp' | 'km_h' | 'kg'
+export type CargaTipo = 'peso_kg' | 'pct_rm' | 'pct_ftp' | 'rpe' | 'zona_fc' | 'rir' | 'sin_carga'
+
+export interface PerfilEntrenoCliente {
+  id: string
+  cliente_id: string
+  sport_modality?: SportModality
+  objetivo_especifico?: string
+  nivel?: PlantillaEntrenoNivel
+  dias_disponibles: number
+  mejor_momento_sesion?: 'manana' | 'tarde' | 'noche' | 'variable'
+  ftp_watts?: number
+  vdot?: number
+  rm_sentadilla_kg?: number
+  rm_banca_kg?: number
+  rm_peso_muerto_kg?: number
+  dominadas_max_reps?: number
+  capacidad_recuperacion: 'baja' | 'media' | 'alta'
+  respuesta_a_volumen: 'bajo' | 'medio' | 'alto'
+  patron_lesiones: Array<{zona: string; frecuencia: string; ultima_vez: string}>
+  adherencia_historica_pct?: number
+  respuesta_psicologica: 'variedad' | 'rutina' | 'competicion'
+  plateau_detectado: boolean
+  semanas_sin_progresion: number
+  equipo_disponible: string[]
+  restricciones_temporales?: string
+  hrv_baseline?: number
+  hrv_fecha_ultimo?: string
+  vo2max_estimado?: number
+  fms_score?: Record<string, number>
+  garmin_user_id?: string
+  strava_athlete_id?: string
+  apple_health_enabled: boolean
+  fisio_informe: Array<{fecha: string; diagnostico: string; contraindicados: string[]; correctivos: string[]}>
+  analisis_sangre: Array<{fecha: string; ferritina?: number; vit_d?: number; hemoglobina?: number}>
+  created_at: string
+  updated_at: string
+}
+
+export interface AjusteSesionCliente {
+  id: string
+  cliente_id: string
+  plantilla_sesion_id?: string
+  fecha_semana: string
+  motivo: 'lesion' | 'molestia' | 'fatiga_alta' | 'hrv_bajo' | 'viaje' | 'equipo_no_disponible' | 'sobreentrenamiento' | 'deload' | 'coach_manual'
+  detalle_motivo?: string
+  ajuste_aplicado?: Record<string, unknown>
+  razonamiento_ia?: string
+  generado_por: 'ia' | 'coach'
+  estado: 'propuesto' | 'aprobado' | 'modificado' | 'revertido'
+  coach_notas?: string
+  created_at: string
+}
+// ─── Fin Training Pro v2 ─────────────────────────────────────
+
 // ============================================================
 // Tipos para Plantillas de Entrenamiento
 // ============================================================
@@ -265,6 +327,11 @@ export interface PlantillaEntrenamiento {
   objetivo?: PlantillaEntrenoObjetivo
   dias_por_semana?: number
   activo: boolean
+  // Training Pro v2
+  sport_modality?: SportModality
+  objetivo_especifico?: string
+  tier: TrainingTier
+  phase_adjustments?: Record<string, {volumen: number; intensidad: number}>
   progresion?: ProgresionPlantilla[]
   created_at: string
   updated_at: string
@@ -300,6 +367,12 @@ export interface PlantillaSesionEjercicio {
   notas?: string
   orden: number
   ejercicio?: Ejercicio
+  // Training Pro v2
+  unidad?: UnidadEjercicio
+  carga_tipo?: CargaTipo
+  carga_valor?: number
+  notas_tecnicas?: string
+  sustituciones?: Array<{condicion: string; ejercicio_id: string}>
 }
 
 export const PLANTILLA_DIETA_TIPO_LABELS: Record<PlantillaDietaTipo, string> = {
