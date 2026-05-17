@@ -1,7 +1,94 @@
-# ESTADO NutriCoach — 17-05-2026 (Sesión 18 — Fase 3b: Competiciones + Fase Deportiva)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 18 — Fase 3b completa · Próxima: Fase 4 cliente)
 
 > Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 18).
 > **Este archivo vive en `nutricoach/` (rama main).** El trabajo de scraping está en `nutricoach-modulos/` (rama feature/modulos).
+
+---
+
+## 🚀 PRÓXIMA SESIÓN — Fase 4: Experiencia del cliente
+
+### Contexto previo — qué hay construido ya
+
+El flujo de registro está completo pero **desconectado**:
+
+```
+/registro/[token] → POST /api/registro-invitacion → router.push('/onboarding') ✅
+/onboarding       → 6 pasos (segmento, objetivo, cuerpo, actividad, dieta, cocina) ✅
+/onboarding/perfil → 8 pasos profundos (motivación, historial, timing, salud, deportes) ✅
+lib/emails/welcome.ts → email HTML + sendWelcomeEmail() con Resend ✅ (listo, solo falta RESEND_API_KEY)
+```
+
+**Lo que FALTA — 4 tareas concretas:**
+
+---
+
+#### TAREA 1 — Campo `onboarding_completado` en `clientes` + redirección automática
+
+**Problema:** Cuando un cliente entra al portal sin haber completado el onboarding, lo ve vacío. No hay redirect ni aviso.
+
+**SQL a aplicar:**
+```sql
+ALTER TABLE public.clientes ADD COLUMN IF NOT EXISTS onboarding_completado bool NOT NULL DEFAULT false;
+```
+
+**Archivos a tocar:**
+- `app/api/onboarding/perfil/route.ts` (línea ~75, justo antes del `return`): añadir `UPDATE clientes SET onboarding_completado = true WHERE id = cliente.id`
+- `components/PortalCliente/DashboardCliente.tsx`: al montar, verificar `onboarding_completado`. Si false → mostrar banner o redirect a `/onboarding`
+- `types/index.ts` — añadir `onboarding_completado?: boolean` al tipo `Cliente`
+
+---
+
+#### TAREA 2 — Email de bienvenida operativo
+
+**Problema:** `sendWelcomeEmail()` ya existe en `lib/emails/welcome.ts` y ya se llama en `app/api/registro-invitacion/route.ts`, pero necesita `RESEND_API_KEY` configurada.
+
+**Pasos:**
+1. Crear cuenta en resend.com (gratuito hasta 3.000 emails/mes)
+2. Añadir a `.env.local`:
+   ```
+   RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
+   RESEND_FROM_EMAIL=noreply@tudominio.com   # o usar onboarding@resend.dev en pruebas
+   RESEND_FROM_NAME=NutriCoach
+   NEXT_PUBLIC_APP_URL=https://nutricoach-delta.vercel.app
+   ```
+3. Añadir las mismas variables en Vercel → Settings → Environment Variables
+4. El email ya lleva al `/login` — cambiar el botón para que lleve directamente a `/onboarding` si `onboarding_completado = false`, o a `/mi-portal` si ya lo completó
+
+---
+
+#### TAREA 3 — Banner "Completa tu perfil" en el portal del cliente
+
+**Problema:** Si el cliente entra al portal con onboarding sin completar, el plan está vacío y no sabe qué hacer.
+
+**Dónde:** `components/PortalCliente/DashboardCliente.tsx`
+
+**Comportamiento:**
+- Si `onboarding_completado === false` → mostrar card prominente encima de todo con CTA "Completa tu perfil en 5 min" → link a `/onboarding`
+- Si ya hay un plan generado (`planes.length > 0`) pero onboarding incompleto → igual, mostrar el plan pero el banner persiste hasta completar
+
+---
+
+#### TAREA 4 — Badge "Pendiente onboarding" en la ficha del coach
+
+**Dónde:** `app/clientes/[id]/page.tsx` — ya tiene `revisado_por_coach`. Añadir indicador visual si `onboarding_completado = false`.
+
+**Dónde en el dashboard:** `app/dashboard/page.tsx` — ya hay sección "Estado". Añadir contador "X clientes sin onboarding".
+
+---
+
+### Orden de ejecución en la próxima sesión
+
+1. **SQL** — `ALTER TABLE clientes ADD COLUMN onboarding_completado` → aplicar vía MCP
+2. **API** — marcar `onboarding_completado = true` al finalizar `/api/onboarding/perfil`
+3. **Tipo** — añadir campo en `types/index.ts`
+4. **Portal cliente** — banner de onboarding pendiente en `DashboardCliente`
+5. **Email** — Carlos configura `RESEND_API_KEY` en `.env.local` + Vercel, luego verificar que llega
+6. **Ficha coach + dashboard** — indicador visual clientes sin onboarding
+
+### Después de Fase 4 → Fase 5 (calidad recetas/alimentos)
+- Enriquecimiento alimentos: `cd nutricoach-modulos && node scripts/enriquecer-alimentos.mjs --limite=100` (7 pases)
+- 7 recetas con macros altas → Carlos revisa porciones en UI
+- Imágenes recetas: `node scripts/regenerar-flux-masivo.mjs --genera` (cuando OpenAI sin bloqueo billing)
 
 ---
 
@@ -9,9 +96,7 @@
 
 **Fase:** Sesión 18 completada. Fase 3b (Competiciones + Detección automática de fase deportiva) implementada y commiteada (`3de884f`). El coach puede registrar competiciones para cada cliente. El sistema detecta automáticamente la fase deportiva (base → construcción → pico → tapering → race day → recuperación) según los días restantes hasta la competición. Muestra macros objetivos por fase y disciplina (14 deportes). Alerta visual anti-tapering activa cuando quedan 1-7 días.
 
-**Migración SQL:** aplicada en Supabase vía MCP (`fase3b_competiciones`). No requiere acción manual.
-
-**Próxima sesión:** Widget "próximas competiciones" en dashboard coach (`app/dashboard/page.tsx`) — pendiente menor. O continuar con Fase 4 (onboarding avanzado) según prioridades.
+**Migración SQL Fase 3b:** aplicada en Supabase vía MCP. No requiere acción manual.
 
 ---
 
