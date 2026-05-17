@@ -1,15 +1,51 @@
-# ESTADO NutriCoach — 17-05-2026 (Sesión 16 — Fases 2a + 2b: Motor IA + Intercambios)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 17 — Fase 3: Training Load Score)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 17).
 > **Este archivo vive en `nutricoach/` (rama main).** El trabajo de scraping está en `nutricoach-modulos/` (rama feature/modulos).
 
 ---
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Sesión 16 completada. Fases 2a (Motor de personalización IA) y 2b (Intercambios inteligentes) implementadas y commiteadas. El portal cliente ahora tiene botones "Cambiar" por alimento (→ modal de alternativas macroequivalentes) y "Generar alternativa con IA" por comida (→ modal de generación con DeepSeek V4 Pro). El sistema aprende preferencias por cliente.
+**Fase:** Sesión 17 completada. Fase 3 (Training Load Score) implementada y commiteada (`e5d3c42`). El portal cliente tiene nuevo tab "Carga" donde el cliente registra entrenos con tipo, duración y RPE. El sistema calcula TLS diario automáticamente y muestra la carga semanal con semáforo de color. El coach puede editar el umbral de carga alta por cliente desde la ficha.
 
-**Próxima sesión:** Fase 3 — Training Load Score.
+**⚠️ PASO OBLIGATORIO antes de usar en producción:** ejecutar `supabase_fase3_tls.sql` en Supabase Dashboard → SQL Editor.
+
+**Próxima sesión:** Fase 3b — Protocolos atletas + competiciones.
+
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 17 — Fase 3: Training Load Score
+
+**Commit:** `e5d3c42`
+
+**Archivos nuevos:**
+- [`supabase_fase3_tls.sql`](supabase_fase3_tls.sql) — **ejecutar en Supabase antes de usar**:
+  - Tabla `registros_entreno`: `cliente_id`, `fecha`, `tipo_actividad`, `duracion_min`, `rpe`, `tls_diario` (columna generada), `notas`
+  - `tls_diario = duracion_min × (rpe/10)²` calculado en BD
+  - Campo `tls_umbral_carga_alta` en `clientes` (default 80 pts/semana)
+  - Vista `tls_por_cliente`: TLS semanal por cliente
+  - RPC `get_tls_dashboard(p_cliente_id)`: TLS actual, media 4 sem, semáforo, sesiones recientes
+- [`app/api/cliente/[codigo]/registrar-entreno/route.ts`](app/api/cliente/[codigo]/registrar-entreno/route.ts) — POST (cliente registra sesión) + GET (obtiene TLS dashboard)
+- [`app/api/clientes/[id]/tls/route.ts`](app/api/clientes/[id]/tls/route.ts) — GET (coach ve TLS de un cliente) + PATCH (actualiza umbral)
+- [`components/PortalCliente/TLSGauge.tsx`](components/PortalCliente/TLSGauge.tsx) — barra de progreso con semáforo 4 estados: bajo (verde) / normal (azul) / alto (ámbar) / muy_alto (rojo)
+- [`components/PortalCliente/RegistrarEntrenoModal.tsx`](components/PortalCliente/RegistrarEntrenoModal.tsx) — 9 tipos actividad, slider RPE 1-10, preview TLS calculado en tiempo real
+
+**Archivos modificados:**
+- [`components/PortalCliente/DashboardCliente.tsx`](components/PortalCliente/DashboardCliente.tsx) — nuevo tab "Carga" (icono Dumbbell) + integración TLSGauge + RegistrarEntrenoModal
+- [`components/ClienteEditar.tsx`](components/ClienteEditar.tsx) — campo `tls_umbral_carga_alta` editable, guardado en BD
+
+**Semáforo TLS:**
+| Estado | Porcentaje del umbral | Color |
+|--------|----------------------|-------|
+| Bajo | <50% | Verde |
+| Normal | 50–100% | Azul |
+| Alto | 100–130% | Ámbar |
+| Muy alto (sobreentrenamiento) | >130% | Rojo |
+
+**Fórmula:** `TLS_diario = duracion_min × (rpe / 10)²`
+- 60 min RPE 7 → 60 × 0.49 = **29.4 pts**
+- 90 min RPE 9 → 90 × 0.81 = **72.9 pts**
 
 ---
 
@@ -55,18 +91,20 @@ Cambios:
 
 ---
 
-## 🔜 PRÓXIMA SESIÓN — Fase 3: Training Load Score
+## 🔜 PRÓXIMA SESIÓN — Fase 3b: Protocolos atletas + competiciones
 
-**Plan:** `docs/superpowers/plans/2026-05-16-nutricoach-pro-master-plan.md` → Fase 3
+**Plan:** `docs/superpowers/plans/2026-05-16-nutricoach-pro-master-plan.md` → Fase 3b
 
-**Qué hace Fase 3:**
-- Tabla `registros_entreno` — el cliente loguea RPE, duración, tipo de actividad
-- `TLS = duracion_min × (rpe/10)²` — acumulado semanal y 4 semanas
-- Detección automática de fase deportiva: base/construcción/pico/tapering/race_day/recuperación
-- Alerta anti-tapering: detecta reducción de CHO en semana de tapering
-- Visible en portal cliente como "Mi carga de entrenamiento"
+**Qué hace Fase 3b:**
+- Tabla `competiciones` — el coach añade las competiciones del cliente con fecha y disciplina
+- Vista `fase_deportiva_cliente` — detecta automáticamente: base/construcción/pico/pico_maximo/tapering/carrera_inminente/race_day/recuperación/finalizada
+- Biblioteca `lib/alto-rendimiento/macros-por-fase.ts` — macros por fase y disciplina (Hyrox, maratón, Ironman, etc.)
+- API `GET /api/clientes/[id]/fase-deportiva`
+- Alerta automática anti-reducción CHO en tapering
+- UI para añadir/editar competiciones en ficha de cliente
+- PDF "Plan de carrera" con semana de tapering, cena previa, desayuno race day, nutrición intra-carrera
 
-**No depende de Fases 0 ni 1** → puede arrancar ya.
+**⚠️ Antes de arrancar Fase 3b:** ejecutar la SQL de Fase 3 en Supabase si no se ha hecho.
 
 ---
 
