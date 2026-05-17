@@ -1,6 +1,43 @@
-# ESTADO NutriCoach — 16-05-2026 (Sesión 16 — Auditoría bugs post-reconciliación + Build verificado ✅)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 20 — Email bienvenida operativo en producción)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (16-05-2026).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 20).
+
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 20 — Experiencia cliente + Email Resend
+
+### Estado final de las 4 tareas de experiencia cliente
+
+| Tarea | Estado |
+|-------|--------|
+| SQL `onboarding_completado` en tabla `clientes` | ✅ Ya existía en Supabase (`DEFAULT false`, `NOT NULL`) |
+| API POST `/api/onboarding/perfil` marca `true` | ✅ Ya implementado en sesiones anteriores |
+| Banner "Completa tu perfil" en DashboardCliente | ✅ Ya implementado en sesiones anteriores |
+| Badge "Sin onboarding" en ficha coach | ✅ Ya implementado en sesiones anteriores |
+| Email botón → `/onboarding` (en vez de `/login`) | ✅ **Fix aplicado esta sesión** — `lib/emails/welcome.ts` |
+| `RESEND_API_KEY` en `.env.local` (nutricoach + modulos) | ✅ **Configurado esta sesión** |
+| Variables Resend en Vercel Production | ✅ **Añadidas esta sesión** (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_FROM_NAME`) |
+| Deploy en producción | ✅ **Desplegado — Ready en Vercel** |
+
+### Comportamiento actual del flujo de registro
+1. Coach invita cliente → token por URL
+2. Cliente se registra en `/registro/[token]`
+3. `POST /api/registro-invitacion` → crea cuenta + llama `sendWelcomeEmail()` automáticamente
+4. Cliente recibe email con botón "Completar mi perfil" → va directo a `/onboarding`
+5. Al terminar `/onboarding/perfil` → `onboarding_completado = true` en BD
+6. Si el cliente entra al portal sin completar → banner amarillo con link a `/onboarding`
+7. Ficha del coach → badge "Sin onboarding" mientras `onboarding_completado = false`
+
+---
+
+## 🚀 PRÓXIMA SESIÓN — Tareas pendientes CLAUDE.md
+
+| Prioridad | Tarea |
+|-----------|-------|
+| 🟠 Media | **Enriquecer alimentos restantes (~6648+)** — `cd nutricoach-modulos && for i in 1 2 3 4 5 6 7; do node scripts/enriquecer-alimentos.mjs --limite=100; done` |
+| 🟡 Baja | **7 recetas con macros altas** — Carlos revisa porciones desde `/recetas/[id]` |
+
+---
 
 ---
 
