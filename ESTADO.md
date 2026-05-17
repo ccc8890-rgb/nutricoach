@@ -1,12 +1,63 @@
-# ESTADO NutriCoach — 16-05-2026 (Sesión 16 — Auditoría bugs post-reconciliación + Build verificado ✅)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 17 — Limpieza BD + Enriquecimiento 100% + Fix vista pendientes ✅)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (16-05-2026).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026).
 
 ---
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Sesión 12 completada. **TODAS las migraciones SQL pendientes ejecutadas y verificadas.** Reconciliación de vinculación scraping→alimentos ejecutada (100% productos vinculados). `match_alimento` mejorada con 6 pasos priorizando seed. Auditoría completa de 29 SQL files contra BD real. Build pendiente para próxima sesión.
+**Fase:** Sesión 17 completada. **Base de datos limpia y enriquecimiento al 100%.** 0 no-alimentos en BD (filtros masivos en pipeline), 0 pendientes de enriquecimiento, vista `alimentos_pendientes_enriquecer` corregida para no crear falsos positivos.
+
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 17 — Limpieza BD + Enriquecimiento completo
+
+### 🔷 Filtros no-comestibles masivos en pipeline ✅
+
+- **`esNoComestible()` en `lib/scraping/index.ts`** ampliada con ~80 keywords nuevas:
+  - Cosmética: aftersun, agua micelar, bálsamo labial, barra labios, body spray, protector solar, bastoncillos, bandas depilatorias, desmaquillante, autobronceador
+  - Sanidad/farmacia: apósitos, tiritas, suero fisiológico, clorhexidina, irrigador dental
+  - Limpieza hogar: absorbeolores, antipolilla, repelente insectos, blanqueador juntas, gamuzas, desincrustante, posavajillas, escoba, escobilla, plumero, recogedor, aditivo textil
+  - Mascotas: arena gatos, cepillo mascotas, empapadores mascotas
+  - Bebé no alimenticio: bañador desechable, babero desechable, anillo dentición
+  - Aparatos eléctricos: aparato eléctrico, recambio eléctrico
+- **`ALCOHOL_KEYWORDS`** ampliado: destilados (whisky, vodka, gin, tequila, brandy), licores, vinos fortificados, cava, champán, sidra, combinados RTD, anís seco/dulce, jerez
+- **`ALCOHOL_FOOD_EXCEPTIONS`** añadidas: pasas, uva moscatel (evitan falsos positivos)
+- Commit `75b125c` en feature/modulos
+
+### 🔷 Limpieza BD: 219 no-alimentos eliminados ✅
+
+Script `eliminar-no-alimentos.mjs` ejecutado con las keywords expandidas:
+- **219 productos eliminados**: labiales, aftersun, apósitos, bastoncillos, antipolillas, repelente insectos, barreños, arena gatos, bañadores desechables, gel fijador cabello, dentifricio, protegeslips, etc.
+- **4 alcoholes conservados** (están en recetas — FK protegida): licor amaretto, Vino tinto Bobal, Vodka, Anís seco Cassalla Cerveró
+- 33 precios también eliminados, cola de enriquecimiento limpiada
+
+### 🔷 Enriquecimiento nutricional: 0 pendientes ✅
+
+13 pases de 500 alimentos (6.500 enriquecidos esta sesión), 0 errores salvo 1 timeout de DeepSeek que se recuperó automáticamente.
+
+| Métrica | Valor |
+|---------|-------|
+| Alimentos en BD | ~11.955 (todos comestibles) |
+| Pendientes enriquecimiento | **0** ✅ |
+| Pases ejecutados hoy | 13 × 500 = 6.500 alimentos |
+
+### 🔷 Fix vista `alimentos_pendientes_enriquecer` ✅
+
+- **Problema**: La vista usaba `OR` en todos los macros → aceites (proteinas=0), carnes/pescados (carbohidratos=0), azúcar (proteinas=0) aparecían permanentemente como "pendientes" aunque sus macros son correctos
+- **Fix**: Condición simplificada a `calorias = 0 OR calorias IS NULL` — solo requiere enriquecimiento si no hay dato calórico
+- **Resultado**: 0 pendientes (antes 142 bloqueados)
+- Migración aplicada en Supabase: `fix_vista_pendientes_enriquecer_v2`
+
+---
+
+## 📍 PRÓXIMAS SESIONES (orden de prioridad)
+
+| Prioridad | Tarea |
+|-----------|-------|
+| 🔴 Alta | **Fase 1 — Onboarding automático** (sub-plan `2026-05-16-fase1-onboarding.md`) |
+| 🟠 Media | **7 recetas con macros altas** — Carlos revisa porciones desde UI `/recetas/[id]` |
+| 🟡 Baja | **Imágenes recetas**: `node scripts/regenerar-flux-masivo.mjs --genera` (cuando OpenAI billing lo permita) |
 
 ---
 
