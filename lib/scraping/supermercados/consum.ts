@@ -101,20 +101,21 @@ function mapearProducto(p: ConsumProduct, categoria?: string): ProductoRaw {
     const pd = p.priceData
 
     // Extraer precio actual del priceData
-    // ⚠️ Los valores vienen en céntimos (centAmount, centUnitAmount).
-    //    Dividimos entre 100 para obtener precio en euros.
+    // ⚠️ El API de Consum (Commercetools) devuelve centAmount/centUnitAmount
+    //    YA en euros (1.85 = 1.85€), NO en céntimos.
+    //    NO dividir entre 100 — eso produciría precios 100× menores.
     let precioActual = 0
     let precioKg: number | undefined
 
     if (pd?.prices?.length) {
         const price = pd.prices.find(p => p.id === 'PRICE')
         if (price?.value?.centAmount) {
-            precioActual = price.value.centAmount / 100
+            precioActual = price.value.centAmount
         }
         // unitPrice (precio por kg) a veces viene en centUnitAmount
         const unitPrice = pd.prices.find(p => p.id === 'UNIT_PRICE' || p.id === 'PRICE')
         if (unitPrice?.value?.centUnitAmount && unitPrice.value.centUnitAmount !== price?.value?.centAmount) {
-            precioKg = unitPrice.value.centUnitAmount / 100
+            precioKg = unitPrice.value.centUnitAmount
         }
         // Si no hay unit price separado y tenemos unitPriceUnitType, usar precioActual como precioKg
         if (!precioKg && pd.unitPriceUnitType) {

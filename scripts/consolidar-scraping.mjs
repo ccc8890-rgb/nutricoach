@@ -595,11 +595,11 @@ function mapearProductoConsum(p, categoria) {
     if (pd?.prices?.length) {
         const price = pd.prices.find(p2 => p2.id === 'PRICE')
         if (price?.value?.centAmount) {
-            precioActual = price.value.centAmount / 100
+            precioActual = price.value.centAmount  // YA en euros, NO dividir entre 100
         }
         const unitPrice = pd.prices.find(p2 => p2.id === 'UNIT_PRICE' || p2.id === 'PRICE')
         if (unitPrice?.value?.centUnitAmount && unitPrice.value.centUnitAmount !== price?.value?.centAmount) {
-            precioKg = unitPrice.value.centUnitAmount / 100
+            precioKg = unitPrice.value.centUnitAmount  // YA en euros, NO dividir entre 100
         }
         if (!precioKg && pd.unitPriceUnitType) {
             precioKg = precioActual

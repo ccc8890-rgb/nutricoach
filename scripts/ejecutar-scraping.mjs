@@ -622,6 +622,18 @@ const ALCAMPO_HEADERS = {
     'Accept-Language': 'es-ES,es;q=0.9',
 }
 
+/** Alcampo API devuelve precios como {amount: "3.74", currency: "EUR"} o número directo */
+function extraerPrecioAlcampo(p) {
+    if (p === undefined || p === null) return 0
+    if (typeof p === 'number') return p
+    if (typeof p === 'object' && p.amount !== undefined) {
+        const val = parseFloat(String(p.amount).replace(',', '.'))
+        return isNaN(val) ? 0 : val
+    }
+    const val = parseFloat(String(p).replace(',', '.'))
+    return isNaN(val) ? 0 : val
+}
+
 async function fetchAlcampoJSON(url) {
     const res = await fetch(url, {
         signal: AbortSignal.timeout(15000),
@@ -707,8 +719,8 @@ async function scrapearAlcampo() {
                         vistos.add(key)
                         productos.push({
                             nombre: p.name || '',
-                            precio_actual: p.price || 0,
-                            precio_por_kg: p.pricePerKg,
+                            precio_actual: extraerPrecioAlcampo(p.price),
+                            precio_por_kg: p.pricePerKg ? extraerPrecioAlcampo(p.pricePerKg) : undefined,
                             unidad: p.unit || 'kg',
                             url_producto: p.url || '',
                             imagen_url: p.imageUrl || undefined,
