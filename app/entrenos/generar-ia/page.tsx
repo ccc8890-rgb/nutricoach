@@ -264,7 +264,7 @@ function GenerarIAForm() {
                 El plan aparecerá aquí
               </p>
               <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                Configura el perfil y pulsa "Generar"
+                Configura el perfil y pulsa &ldquo;Generar&rdquo;
               </p>
             </div>
           )}

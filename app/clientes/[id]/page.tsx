@@ -419,7 +419,7 @@ export default function ClienteDetallePage() {
                             </div>
                             {c.notas && (
                               <p className="text-sm text-gray-600 mt-2 italic border-t pt-2" style={{ borderColor: '#F1F5F9' }}>
-                                "{c.notas}"
+                                &ldquo;{c.notas}&rdquo;
                               </p>
                             )}
                           </div>

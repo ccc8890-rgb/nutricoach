@@ -11,11 +11,17 @@
  *   metodo: string     (origen: playwright, google_images, flux_txt2img, etc.)
  */
 
-import { NextResponse } from 'next/server'
-import { createServiceSupabase } from '@/lib/supabase-server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        const supabaseAuth = createApiSupabase(request)
+        const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
+        if (authError || !user) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+        }
+
         const { receta_id, buffer, fileName, metodo } = await request.json()
 
         if (!receta_id || !buffer || !fileName) {

@@ -70,6 +70,16 @@ export default function EditarDietaPage() {
   const [guardando, setGuardando] = useState(false)
   const [descargandoPDF, setDescargandoPDF] = useState(false)
 
+  async function loadPlan() {
+    const [planRes, comidasRes] = await Promise.all([
+      supabase.from('planes_nutricion').select('*, cliente:clientes(id, profile:profiles!profile_id(nombre, apellidos))').eq('id', id).single(),
+      supabase.from('comidas').select('*, alimentos:comida_alimentos(id, cantidad_gramos, alimento:alimentos(*))').eq('plan_id', id).order('orden'),
+    ])
+    setPlan(planRes.data)
+    setComidas((comidasRes.data ?? []).map(c => ({ ...c, expandida: true })))
+    setLoading(false)
+  }
+
   useEffect(() => { loadPlan() }, [id])
 
   async function toggleActivo() {
@@ -127,16 +137,6 @@ export default function EditarDietaPage() {
     } finally {
       setDescargandoPDF(false)
     }
-  }
-
-  async function loadPlan() {
-    const [planRes, comidasRes] = await Promise.all([
-      supabase.from('planes_nutricion').select('*, cliente:clientes(id, profile:profiles!profile_id(nombre, apellidos))').eq('id', id).single(),
-      supabase.from('comidas').select('*, alimentos:comida_alimentos(id, cantidad_gramos, alimento:alimentos(*))').eq('plan_id', id).order('orden'),
-    ])
-    setPlan(planRes.data)
-    setComidas((comidasRes.data ?? []).map(c => ({ ...c, expandida: true })))
-    setLoading(false)
   }
 
   // Buscar — local o OFF según fuente activa
