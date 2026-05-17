@@ -18,6 +18,7 @@ import {
   Sparkle,
   UserPlus,
   BookOpen,
+  Trophy,
 } from '@phosphor-icons/react'
 import { SkeletonChart } from '@/components/ui/Skeleton'
 import { CountUp } from '@/components/ui/CountUp'
@@ -118,6 +119,14 @@ export default function DashboardPage() {
   const [revisionesProximas, setRevisionesProximas] = useState<{ id: string; nombre: string; apellidos: string; fecha: string }[]>([])
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
+  const [competicionesProximas, setCompeticionesProximas] = useState<{
+    id: string
+    nombre: string
+    disciplina: string
+    fecha_competicion: string
+    cliente_id: string
+    clienteNombre: string
+  }[]>([])
 
   useEffect(() => {
     async function load() {
@@ -168,6 +177,26 @@ export default function DashboardPage() {
           .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
           .slice(0, 5)
         setRevisionesProximas(proxRevisiones)
+
+        // Próximas competiciones (todas las activas a futuro)
+        const hoyStr = new Date().toISOString().slice(0, 10)
+        const { data: comps } = await supabase
+          .from('competiciones')
+          .select('id, nombre, disciplina, fecha_competicion, cliente_id, clientes!inner(profile:profiles!profile_id(nombre, apellidos))')
+          .eq('activo', true)
+          .gte('fecha_competicion', hoyStr)
+          .order('fecha_competicion', { ascending: true })
+          .limit(6)
+        if (comps) {
+          setCompeticionesProximas(comps.map((c: any) => ({
+            id: c.id,
+            nombre: c.nombre,
+            disciplina: c.disciplina,
+            fecha_competicion: c.fecha_competicion,
+            cliente_id: c.cliente_id,
+            clienteNombre: `${c.clientes?.profile?.nombre ?? ''} ${c.clientes?.profile?.apellidos ?? ''}`.trim() || 'Cliente',
+          })))
+        }
       } catch (e) {
         console.error('[dashboard] Excepción:', e)
       }
@@ -516,6 +545,57 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* ── Próximas competiciones ── */}
+      {!loading && competicionesProximas.length > 0 && (
+        <div className="card-glass mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Trophy size={16} weight="fill" style={{ color: 'var(--accent)' }} />
+              <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Próximas competiciones</h2>
+            </div>
+            <span className="text-xs px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+              {competicionesProximas.length}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {competicionesProximas.map(c => {
+              const dias = Math.ceil((new Date(c.fecha_competicion).getTime() - Date.now()) / 86400000)
+              const tapering = dias <= 7
+              return (
+                <Link
+                  key={c.id}
+                  href={`/clientes/${c.cliente_id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl transition-all duration-150"
+                  style={{ background: tapering ? 'rgba(255,159,10,0.07)' : 'var(--surface-hover)' }}
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: tapering ? 'rgba(255,159,10,0.15)' : 'var(--surface-elevated)' }}>
+                    <Trophy size={14} weight="fill"
+                      style={{ color: tapering ? '#FF9F0A' : 'var(--text-muted)' }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text-secondary)' }}>
+                      {c.nombre}
+                    </p>
+                    <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
+                      {c.clienteNombre}
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                    style={{
+                      background: tapering ? 'rgba(255,159,10,0.15)' : 'var(--surface-elevated)',
+                      color: tapering ? '#FF9F0A' : 'var(--text-muted)',
+                    }}>
+                    {dias === 0 ? '¡Hoy!' : `${dias}d`}
+                  </span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {analytics && (
         <div className="text-center text-[10px] pb-8" style={{ color: 'var(--text-muted)' }}>
