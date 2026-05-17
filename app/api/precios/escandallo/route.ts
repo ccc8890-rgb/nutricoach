@@ -70,13 +70,22 @@ export async function GET(request: NextRequest) {
         }
 
         // Si no viene cliente_id, listar todos los clientes con escandallo
+        // ⚠️ clientes no tiene nombre/apellidos directamente; están en profiles
         const { data: clientes } = await serviceRole
             .from('clientes')
-            .select('id, nombre, apellidos, planes_nutricion!inner(id, nombre, activo)')
+            .select('id, profile_id, planes_nutricion!inner(id, nombre, activo)')
 
-        if (!clientes) {
+        if (!clientes || clientes.length === 0) {
             return NextResponse.json({ clientes: [] })
         }
+
+        // Obtener profiles para los nombres
+        const profileIds = clientes.map(c => c.profile_id).filter(Boolean)
+        const { data: perfiles } = await serviceRole
+            .from('profiles')
+            .select('id, nombre, apellidos')
+            .in('id', profileIds)
+        const mapaPerfiles = new Map(perfiles?.map(p => [p.id, p]) ?? [])
 
         const escandallos = []
         for (const cliente of clientes) {
@@ -104,10 +113,11 @@ export async function GET(request: NextRequest) {
             }))
 
             const resultado = await calcularCostePlan(comidasData, supermercadoId || null)
+            const perfil = mapaPerfiles.get(cliente.profile_id)
 
             escandallos.push({
                 cliente_id: cliente.id,
-                cliente_nombre: `${cliente.nombre} ${cliente.apellidos || ''}`.trim(),
+                cliente_nombre: perfil ? `${perfil.nombre} ${perfil.apellidos || ''}`.trim() : 'Cliente',
                 plan_id: planActivo.id,
                 plan_nombre: planActivo.nombre,
                 ...resultado,
