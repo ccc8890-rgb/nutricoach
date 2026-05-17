@@ -1,6 +1,27 @@
-# ESTADO NutriCoach — 17-05-2026 (Sesión 20 — Email bienvenida operativo en producción)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 21 — Fix móvil: safe area solapamiento header)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 20).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 21).
+
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 21 — Fix móvil: safe area y solapamiento de header
+
+### Problema
+En móvil (iPhone), el header con "Dashboard" y las pestañas de navegación se solapaban con la barra de estado del sistema (notch / Dynamic Island). El botón hamburguesa también quedaba parcialmente bajo el notch.
+
+### Causa raíz
+`viewportFit: "cover"` + `statusBarStyle: "black-translucent"` hacen que la app renderice edge-to-edge, incluyendo bajo la status bar. No había padding que compensara:
+- `.pb-nav-safe` se usaba en todos los layouts pero **no estaba definida** (era no-op)
+- El botón hamburguesa usaba `top-4` (16px fijo), menos que la status bar del iPhone (44-59px)
+- El `<main>` no tenía padding-top en móvil para bajar el contenido
+
+### Fix aplicado — commit `1194b77`
+
+| Archivo | Cambio |
+|---------|--------|
+| `app/globals.css` | Definida `.pb-nav-safe` (padding-bottom con safe-area-inset-bottom). Añadida `.layout-main` con padding-top móvil: `calc(env(safe-area-inset-top) + 3.75rem)` |
+| `components/Sidebar.tsx` | Botón hamburguesa: `top-4` → `top: calc(env(safe-area-inset-top,0px) + 0.75rem)`. Aside drawer: `paddingTop: env(safe-area-inset-top,0px)` |
+| 9 layouts (dashboard, recetas, dietas, clientes, cuestionarios, conocimiento, respuestas, entrenos, precios) | Añadida clase `layout-main` al `<main>` |
 
 ---
 
