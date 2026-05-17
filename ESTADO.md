@@ -1,13 +1,72 @@
-# ESTADO NutriCoach — 16-05-2026 (Sesión 15 — Dashboard + Lidl v4)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 16 — Fases 2a + 2b: Motor IA + Intercambios)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (16-05-2026).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026).
 > **Este archivo vive en `nutricoach/` (rama main).** El trabajo de scraping está en `nutricoach-modulos/` (rama feature/modulos).
 
 ---
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Sesión 15 completada. Dashboard rediseñado y desplegado en Vercel. Lidl scraper reescrito en v4 híbrido (Playwright + gridboxes API): 126 alimentos con categoría verificada, 180 no-alimentos automáticamente descartados.
+**Fase:** Sesión 16 completada. Fases 2a (Motor de personalización IA) y 2b (Intercambios inteligentes) implementadas y commiteadas. El portal cliente ahora tiene botones "Cambiar" por alimento (→ modal de alternativas macroequivalentes) y "Generar alternativa con IA" por comida (→ modal de generación con DeepSeek V4 Pro). El sistema aprende preferencias por cliente.
+
+**Próxima sesión:** Fase 3 — Training Load Score.
+
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 16 — Fases 2a + 2b
+
+### 🔷 Fase 2a — Motor de personalización IA ✅
+
+**Commit:** `4d4ea72` (con auditoría bugs de sesión 15)
+
+**Tablas SQL nuevas (migración `fase2_personalizacion_e_intercambios`):**
+- `perfil_alimentario_cliente` — nivel cocina, tiempo disponible, ingredientes preferidos/rechazados, patrones aprendidos (JSONB), electrodomésticos
+- `feedback_comidas_generadas` — historial accept/reject por cliente y tipo_comida
+- `intercambios_historial` — qué alimentos ha swapeado cada cliente y cuántos gramos
+
+**Archivos creados:**
+- [`lib/personalizacion/generador-comidas.ts`](lib/personalizacion/generador-comidas.ts) — llama a DeepSeek V4 Pro (temp 0.6, max_tokens 1000), devuelve `ComidaGenerada` con nombre, ingredientes, instrucciones, macros estimados, tip
+- [`lib/personalizacion/actualizar-perfil.ts`](lib/personalizacion/actualizar-perfil.ts) — `obtenerOCrearPerfil()` (bootstrap desde onboarding) + `procesarFeedback()` (actualiza ingredientes_preferidos/rechazados + patrones_aprendidos)
+- [`app/api/personalizacion/generar/route.ts`](app/api/personalizacion/generar/route.ts) — POST: auth → restricciones onboarding → perfil → DeepSeek → `{ comida }`
+- [`app/api/personalizacion/feedback/route.ts`](app/api/personalizacion/feedback/route.ts) — POST: auth → `procesarFeedback()`
+- [`components/personalizacion/GenerarComidaModal.tsx`](components/personalizacion/GenerarComidaModal.tsx) — modal cliente: 2 fases (inicio / resultado), muestra receta generada, botones aceptar/rechazar/regenerar, feedback inline
+
+### 🔷 Fase 2b — Intercambios inteligentes ✅
+
+**Archivos creados:**
+- [`app/api/intercambios/route.ts`](app/api/intercambios/route.ts) — GET: busca alternativas macroequivalentes (misma categoría, kcal ±15%, prot ±20%); fallback si <2 resultados (±22.5%/±30%, sin filtro categoría), max 3 alternativas
+- [`app/api/intercambios/elegir/route.ts`](app/api/intercambios/elegir/route.ts) — POST: guarda en `intercambios_historial`
+- [`components/personalizacion/AlternativasModal.tsx`](components/personalizacion/AlternativasModal.tsx) — modal cliente: muestra original + hasta 3 alternativas con gramos equivalentes calculados para mantener las mismas kcal
+
+### 🔷 MiPlan.tsx — Integración de modales ✅
+
+**Archivo:** [`components/PortalCliente/MiPlan.tsx`](components/PortalCliente/MiPlan.tsx)
+
+Cambios:
+- `AlimentoEnComida` interface: añadido `alimento_id?: string`
+- Estado local `planLocal` que replica `plan` prop y se actualiza al elegir alternativa
+- `modalAlternativas` state + `handleElegirAlternativa()` — actualiza `planLocal` con el alimento alternativo
+- `modalGenerar` state + `handleAceptarComida()` — toast de confirmación
+- Botón `ArrowLeftRight` (↔ Cambiar) inline en cada fila de alimento — solo visible cuando `alimento_id` existe
+- Botón `Sparkles` (✨ Generar alternativa con IA) al final de cada comida expandida
+- Ambos modals renderizados condicionalmente al final del JSX
+
+**⚠️ Nota para el coach:** `alimento_id` solo aparece en el portal si la API de planes lo devuelve en el select de Supabase. Verificar que la query incluye `alimento_id` en `comida_alimentos`.
+
+---
+
+## 🔜 PRÓXIMA SESIÓN — Fase 3: Training Load Score
+
+**Plan:** `docs/superpowers/plans/2026-05-16-nutricoach-pro-master-plan.md` → Fase 3
+
+**Qué hace Fase 3:**
+- Tabla `registros_entreno` — el cliente loguea RPE, duración, tipo de actividad
+- `TLS = duracion_min × (rpe/10)²` — acumulado semanal y 4 semanas
+- Detección automática de fase deportiva: base/construcción/pico/tapering/race_day/recuperación
+- Alerta anti-tapering: detecta reducción de CHO en semana de tapering
+- Visible en portal cliente como "Mi carga de entrenamiento"
+
+**No depende de Fases 0 ni 1** → puede arrancar ya.
 
 ---
 
