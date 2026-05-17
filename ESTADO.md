@@ -1,11 +1,50 @@
-# ESTADO NutriCoach — 17-05-2026 (Sesión 18 — Fase 3b completa · Próxima: Fase 4 cliente)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 19 — Fase 4 Periodización completa · Próxima: Experiencia cliente)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 18).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 19).
 > **Este archivo vive en `nutricoach/` (rama main).** El trabajo de scraping está en `nutricoach-modulos/` (rama feature/modulos).
 
 ---
 
-## 🚀 PRÓXIMA SESIÓN — Fase 4: Experiencia del cliente
+## ✅ COMPLETADO (17-05-2026) — Sesión 19 — Fase 4: Periodización nutricional dinámica
+
+**SQL a aplicar en Supabase (si no se hizo en sesión):**
+- [`supabase_fase3_tls.sql`](supabase_fase3_tls.sql) — tabla `registros_entreno` + vista + RPC `get_tls_dashboard`
+- [`supabase_fase3b_competiciones.sql`](supabase_fase3b_competiciones.sql) — tabla `competiciones` + vista
+- [`supabase_fase4_periodizacion.sql`](supabase_fase4_periodizacion.sql) — tabla `periodizacion_acciones` + vista `periodizacion_pendientes`
+
+**Archivos creados (motor de periodización):**
+- [`lib/periodizacion/umbrales.ts`](lib/periodizacion/umbrales.ts) — umbrales configurables (fatiga, sueño, adherencia, TLS, refeed)
+- [`lib/periodizacion/arbol-decision.ts`](lib/periodizacion/arbol-decision.ts) — árbol de 6 acciones: `refeed_sugerir`, `higiene_sueno`, `mensaje_apoyo`, `ajuste_calorico_10pct`, `alerta_coach_solo`, `sin_accion`
+- [`lib/periodizacion/motor-macros.ts`](lib/periodizacion/motor-macros.ts) — `calcularAjusteCaloricoSemanal` (+10% kcal semanal) y `calcularAjustePorTLS` (periodización diaria CHO ±17.5%)
+
+**Archivos creados (APIs):**
+- [`app/api/periodizacion/evaluar/route.ts`](app/api/periodizacion/evaluar/route.ts) — POST coach-only: evalúa árbol → guarda acción → webhook Make.com opcional
+- [`app/api/periodizacion/refeed/aprobar/route.ts`](app/api/periodizacion/refeed/aprobar/route.ts) — POST: aprobación coach de refeed/alertas
+- [`app/api/clientes/[id]/periodizacion/route.ts`](app/api/clientes/[id]/periodizacion/route.ts) — GET: historial 20 últimas acciones
+
+**Archivos creados (UI):**
+- [`components/PeriodizacionPanel.tsx`](components/PeriodizacionPanel.tsx) — panel con pendientes de aprobación (refeed/alertas) + historial cronológico con inputs snapshot
+
+**Archivos modificados:**
+- [`app/api/cliente/[codigo]/checkin/route.ts`](app/api/cliente/[codigo]/checkin/route.ts) — dispara evaluación de periodización de forma no bloqueante tras cada check-in
+- [`app/clientes/[id]/page.tsx`](app/clientes/[id]/page.tsx) — tab "Periodización" (icono Activity) con `PeriodizacionPanel`
+
+**Lógica del árbol de decisión (prioridad descendente):**
+| Condición | Acción |
+|-----------|--------|
+| Fatiga alta + ≥4 sem déficit + adherencia ≥80% | `refeed_sugerir` (requiere aprobación coach) |
+| Fatiga alta + sueño <6h | `higiene_sueno` |
+| Fatiga alta + TLS > umbral | `ajuste_calorico_10pct` |
+| Fatiga alta + sueño ≥7h + adherencia ≥85% | `mensaje_apoyo` |
+| Adherencia <60% | `alerta_coach_solo` (requiere aprobación coach) |
+| Resto | `sin_accion` |
+
+**Bug corregido (sesión 19):**
+- `scripts/test-escandallo.ts:17` — `createClient(undefined, undefined)` → añadido guard con `process.exit(1)` si faltan variables de entorno
+
+---
+
+## 🚀 PRÓXIMA SESIÓN — Experiencia del cliente (onboarding completado)
 
 ### Contexto previo — qué hay construido ya
 
