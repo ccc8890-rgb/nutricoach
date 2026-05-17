@@ -1,17 +1,48 @@
-# ESTADO NutriCoach — 17-05-2026 (Sesión 17 — Fase 3: Training Load Score)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 18 — Fase 3b: Competiciones + Fase Deportiva)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 17).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 18).
 > **Este archivo vive en `nutricoach/` (rama main).** El trabajo de scraping está en `nutricoach-modulos/` (rama feature/modulos).
 
 ---
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Sesión 17 completada. Fase 3 (Training Load Score) implementada y commiteada (`e5d3c42`). El portal cliente tiene nuevo tab "Carga" donde el cliente registra entrenos con tipo, duración y RPE. El sistema calcula TLS diario automáticamente y muestra la carga semanal con semáforo de color. El coach puede editar el umbral de carga alta por cliente desde la ficha.
+**Fase:** Sesión 18 completada. Fase 3b (Competiciones + Detección automática de fase deportiva) implementada y commiteada (`3de884f`). El coach puede registrar competiciones para cada cliente. El sistema detecta automáticamente la fase deportiva (base → construcción → pico → tapering → race day → recuperación) según los días restantes hasta la competición. Muestra macros objetivos por fase y disciplina (14 deportes). Alerta visual anti-tapering activa cuando quedan 1-7 días.
 
-**⚠️ PASO OBLIGATORIO antes de usar en producción:** ejecutar `supabase_fase3_tls.sql` en Supabase Dashboard → SQL Editor.
+**Migración SQL:** aplicada en Supabase vía MCP (`fase3b_competiciones`). No requiere acción manual.
 
-**Próxima sesión:** Fase 3b — Protocolos atletas + competiciones.
+**Próxima sesión:** Widget "próximas competiciones" en dashboard coach (`app/dashboard/page.tsx`) — pendiente menor. O continuar con Fase 4 (onboarding avanzado) según prioridades.
+
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 18 — Fase 3b: Competiciones + Fase Deportiva
+
+**Commit:** `3de884f`
+
+**Archivos nuevos:**
+- [`supabase_fase3b_competiciones.sql`](../supabase_fase3b_competiciones.sql) — migración ya aplicada en Supabase:
+  - Tabla `competiciones`: cliente_id, nombre, disciplina (14 opciones), fecha, objetivo, tiempo_objetivo_min, activo
+  - Vista `fase_deportiva_cliente`: calcula fase_actual (8 estados) y alerta_tapering_activa en tiempo real
+  - RLS: coach gestiona todo, cliente solo ve las propias
+- [`app/api/clientes/[id]/fase-deportiva/route.ts`](app/api/clientes/[id]/fase-deportiva/route.ts) — GET (fase activa + lista), POST (crear), DELETE (soft delete)
+- [`lib/alto-rendimiento/macros-por-fase.ts`](lib/alto-rendimiento/macros-por-fase.ts) — macros g/kg por 14 disciplinas × 8 fases, colores por fase, protocolos intra-carrera
+- [`components/CompeticionesManager.tsx`](components/CompeticionesManager.tsx) — CRUD competiciones + FaseDeportivaCard inline (fase actual coloreada, alerta tapering, macros absolutos si hay peso)
+
+**Archivos modificados:**
+- [`app/clientes/[id]/page.tsx`](app/clientes/[id]/page.tsx) — CompeticionesManager integrado sobre ProtocoloCompeticion en tab Competición
+
+**Fases deportivas detectadas automáticamente:**
+| Días hasta carrera | Fase | Color |
+|-------------------|------|-------|
+| >90 | Base | Azul claro |
+| 60–90 | Construcción | Verde |
+| 20–60 | Pico | Naranja |
+| 7–20 | Pico máximo | Rojo claro |
+| 3–7 | Tapering ⚠️ | Ámbar (alerta) |
+| 1–3 | Carrera inminente | Rojo |
+| 0 | Race Day | Dorado |
+| -10–0 | Recuperación | Lila |
+| <-10 | Finalizada | Gris |
 
 ---
 
