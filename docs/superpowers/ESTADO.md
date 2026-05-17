@@ -1,6 +1,6 @@
 # ESTADO — NutriCoach Training Pro
 
-**Última actualización:** 17-05-2026 (sesión 25)
+**Última actualización:** 17-05-2026 (sesión 25 — bugs T01-T04 resueltos, commit `ba427a1`)
 
 ---
 
@@ -28,26 +28,19 @@
 
 ---
 
-## 🐛 Bugs conocidos — pendientes de Fix
+## ✅ Bugs resueltos — sesión 25 (commit `ba427a1`)
 
-### BUG-T01 — `app/entrenos/plantillas/page.tsx` filtros obsoletos [CRÍTICO]
-- **Problema:** La página de gestión de plantillas filtra por `p.tipo` (gimnasio/cardio/mixto), no por `sport_modality`. Las nuevas 8 plantillas aparecen mezcladas bajo 'gimnasio', 'cardio' o 'mixto' sin diferenciación. `MODALIDADES` array solo tiene 3 entradas — no expone Ciclismo, Running, Calistenia, Híbrido, Gym Estética, Gym Fuerza, Funcional como filtros.
-- **Archivos:** `app/entrenos/plantillas/page.tsx:25-29, 66, 93, 106-110`
-- **Fix:** Reemplazar `MODALIDADES` + filtro `tipo` por `MODALITY_CONFIG` + filtro `sport_modality`. Agrupar por `sport_modality` igual que en `PlantillaEntrenoSelector`.
+### BUG-T01 — `app/entrenos/plantillas/page.tsx` filtros obsoletos ✅ RESUELTO
+- **Fix aplicado:** `MODALIDADES` eliminado. Filtros ahora usan `MODALITY_CONFIG` + `sport_modality`. Agrupación por `sport_modality` con fallback legacy para null. 8 modalidades canónicas visibles.
 
-### BUG-T02 — Búsqueda en `/entrenos/plantillas` no incluye `sport_modality`/`tier` [MENOR]
-- **Problema:** Buscar "elite" o "running" no encuentra plantillas por sus campos nuevos. La búsqueda solo cubre nombre, descripción, objetivo, nivel, subcategoría detectada por nombre.
-- **Archivos:** `app/entrenos/plantillas/page.tsx:94-101`
-- **Fix:** Añadir `p.sport_modality?.includes(q)` y `p.tier?.includes(q)` a los checks de búsqueda.
+### BUG-T02 — Búsqueda en `/entrenos/plantillas` no incluye `sport_modality`/`tier` ✅ RESUELTO
+- **Fix aplicado:** Añadidos `matchesModality` y `matchesTier` al filtro de búsqueda. Buscar "elite", "running", "hyrox" etc. ahora encuentra las plantillas correctas.
 
-### BUG-T03 — `detectarSubcategoria()` duplicada [MENOR]
-- **Problema:** La función existe en `PlantillaEntrenoSelector.tsx:33-41` y en `plantillas/page.tsx:46-60`. Con `sport_modality` en BD ya no es la fuente de verdad.
-- **Fix Plan 2:** Extraer a `lib/entrenos/utils.ts` como fallback legacy y eliminar duplicados.
+### BUG-T03 — `detectarSubcategoria()` duplicada ✅ RESUELTO
+- **Fix aplicado:** Función extraída a `lib/entrenos/utils.ts` como `detectarSubcategoriaLegacy()`. Ambos componentes importan desde utils. Duplicados locales eliminados.
 
-### BUG-T04 — Ordering `tier` incorrecto en `PlantillaEntrenoSelector` [MENOR]
-- **Problema:** `.order('tier', { ascending: true })` pone 'elite' ANTES que 'general' (orden alfabético: e < g). Visualmente confuso — lo natural es general primero, elite después.
-- **Archivos:** `components/training/PlantillaEntrenoSelector.tsx:63`
-- **Fix:** `.order('tier', { ascending: false })` o usar `.order('sport_modality')` sin ordenar por tier.
+### BUG-T04 — Ordering `tier` incorrecto en `PlantillaEntrenoSelector` ✅ RESUELTO
+- **Fix aplicado:** `.order('tier', { ascending: false })` — general (g) antes que elite (e) en orden z→a.
 
 ---
 
