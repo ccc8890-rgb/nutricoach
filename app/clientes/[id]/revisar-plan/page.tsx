@@ -28,6 +28,32 @@ interface PlanInicial {
   notas_coach: string
 }
 
+interface PerfilProfundo {
+  trigger_onboarding?: string
+  autoeficacia?: number
+  historial_dietas?: string[]
+  razones_abandono?: string[]
+  relacion_comida?: string
+  todo_o_nada?: string
+  hora_primera_ingesta?: string
+  hora_comida_principal?: string
+  hora_ultima_ingesta?: string
+  hora_entreno?: string
+  frecuencia_fuera?: string
+  con_quien_come?: string[]
+  condiciones_salud?: string
+  horas_sueno?: number
+  calidad_sueno?: string
+  nivel_estres?: string
+  composicion_grasa_pct?: number
+  composicion_masa_muscular_kg?: number
+  composicion_objetivo_grasa_pct?: number
+  vo2max?: number
+  suplementos?: string
+  comidas_favoritas?: string
+  alimentos_evitar_extra?: string
+}
+
 interface ClienteData {
   id: string
   profiles: { nombre: string; apellidos: string; email: string } | null
@@ -74,6 +100,8 @@ export default function RevisarPlanPage() {
   const [errorEntreno, setErrorEntreno] = useState<string | null>(null)
   const [reintentandoPlan, setReintentandoPlan] = useState(false)
   const [regenerandoPlan, setRegenerandoPlan] = useState(false)
+  const [perfilProfundo, setPerfilProfundo] = useState<PerfilProfundo | null>(null)
+  const [showPerfilProfundo, setShowPerfilProfundo] = useState(false)
 
   useEffect(() => {
     const id = params.id as string
@@ -81,10 +109,12 @@ export default function RevisarPlanPage() {
       supabase.from('clientes').select('*, profiles(nombre, apellidos, email)').eq('id', id).single(),
       supabase.from('onboarding_responses').select('*').eq('cliente_id', id).single(),
       supabase.from('registros_ia').select('respuesta_json').eq('cliente_id', id).eq('tipo', 'plan_inicial').order('created_at', { ascending: false }).limit(1).single(),
-    ]).then(([{ data: c }, { data: o }, { data: r }]) => {
+      supabase.from('onboarding_perfil_profundo').select('*').eq('cliente_id', id).single(),
+    ]).then(([{ data: c }, { data: o }, { data: r }, { data: pp }]) => {
       setCliente(c as ClienteData)
       setOnboarding(o as OnboardingData)
       if (r?.respuesta_json) setPlan(r.respuesta_json as PlanInicial)
+      if (pp) setPerfilProfundo(pp as PerfilProfundo)
       setLoading(false)
     })
   }, [params.id])
@@ -315,6 +345,87 @@ export default function RevisarPlanPage() {
           )}
         </dl>
       </div>
+
+      {/* Perfil profundo — colapsable */}
+      {perfilProfundo && (
+        <div className="card p-4">
+          <button
+            type="button"
+            onClick={() => setShowPerfilProfundo(v => !v)}
+            className="flex items-center justify-between w-full text-left"
+          >
+            <h2 className="font-semibold text-[var(--text)]">Perfil profundo del cliente</h2>
+            <span className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+              {showPerfilProfundo ? 'Ocultar' : 'Ver'}
+              {showPerfilProfundo ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </span>
+          </button>
+
+          {showPerfilProfundo && (
+            <div className="mt-4 space-y-4">
+
+              {/* Psicología y motivación */}
+              {(perfilProfundo.trigger_onboarding || perfilProfundo.autoeficacia != null || perfilProfundo.relacion_comida || perfilProfundo.todo_o_nada || (perfilProfundo.historial_dietas?.length ?? 0) > 0 || (perfilProfundo.razones_abandono?.length ?? 0) > 0) && (
+                <div>
+                  <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Psicología y motivación</p>
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
+                    {perfilProfundo.trigger_onboarding && <div><dt className="text-[var(--text-muted)] text-xs">Detonante</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.trigger_onboarding}</dd></div>}
+                    {perfilProfundo.autoeficacia != null && <div><dt className="text-[var(--text-muted)] text-xs">Autoeficacia (0-10)</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.autoeficacia}/10</dd></div>}
+                    {perfilProfundo.relacion_comida && <div><dt className="text-[var(--text-muted)] text-xs">Relación con la comida</dt><dd className="font-medium text-[var(--text)] capitalize">{perfilProfundo.relacion_comida}</dd></div>}
+                    {perfilProfundo.todo_o_nada && <div><dt className="text-[var(--text-muted)] text-xs">Mentalidad todo/nada</dt><dd className="font-medium text-[var(--text)] capitalize">{perfilProfundo.todo_o_nada}</dd></div>}
+                    {(perfilProfundo.historial_dietas?.length ?? 0) > 0 && <div className="sm:col-span-2"><dt className="text-[var(--text-muted)] text-xs">Historial de dietas</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.historial_dietas!.join(', ')}</dd></div>}
+                    {(perfilProfundo.razones_abandono?.length ?? 0) > 0 && <div className="sm:col-span-2"><dt className="text-[var(--text-muted)] text-xs">Razones de abandono anteriores</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.razones_abandono!.join(', ')}</dd></div>}
+                  </dl>
+                </div>
+              )}
+
+              {/* Horarios y hábitos */}
+              {(perfilProfundo.hora_primera_ingesta || perfilProfundo.hora_entreno || perfilProfundo.frecuencia_fuera || perfilProfundo.comidas_favoritas || perfilProfundo.alimentos_evitar_extra || perfilProfundo.suplementos) && (
+                <div>
+                  <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Horarios y hábitos</p>
+                  <dl className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-6 text-sm">
+                    {perfilProfundo.hora_primera_ingesta && <div><dt className="text-[var(--text-muted)] text-xs">Primera ingesta</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.hora_primera_ingesta}</dd></div>}
+                    {perfilProfundo.hora_comida_principal && <div><dt className="text-[var(--text-muted)] text-xs">Comida principal</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.hora_comida_principal}</dd></div>}
+                    {perfilProfundo.hora_ultima_ingesta && <div><dt className="text-[var(--text-muted)] text-xs">Última ingesta</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.hora_ultima_ingesta}</dd></div>}
+                    {perfilProfundo.hora_entreno && <div><dt className="text-[var(--text-muted)] text-xs">Hora de entreno</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.hora_entreno}</dd></div>}
+                    {perfilProfundo.frecuencia_fuera && <div><dt className="text-[var(--text-muted)] text-xs">Come fuera</dt><dd className="font-medium text-[var(--text)] capitalize">{perfilProfundo.frecuencia_fuera}</dd></div>}
+                    {perfilProfundo.suplementos && <div className="sm:col-span-2"><dt className="text-[var(--text-muted)] text-xs">Suplementos</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.suplementos}</dd></div>}
+                    {perfilProfundo.comidas_favoritas && <div className="col-span-2 sm:col-span-3"><dt className="text-[var(--text-muted)] text-xs">Comidas favoritas</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.comidas_favoritas}</dd></div>}
+                    {perfilProfundo.alimentos_evitar_extra && <div className="col-span-2 sm:col-span-3"><dt className="text-[var(--text-muted)] text-xs">Alimentos a evitar (extra)</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.alimentos_evitar_extra}</dd></div>}
+                  </dl>
+                </div>
+              )}
+
+              {/* Salud */}
+              {(perfilProfundo.condiciones_salud || perfilProfundo.horas_sueno != null || perfilProfundo.calidad_sueno || perfilProfundo.nivel_estres) && (
+                <div>
+                  <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Salud y bienestar</p>
+                  <dl className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-6 text-sm">
+                    {perfilProfundo.horas_sueno != null && <div><dt className="text-[var(--text-muted)] text-xs">Horas de sueño</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.horas_sueno}h</dd></div>}
+                    {perfilProfundo.calidad_sueno && <div><dt className="text-[var(--text-muted)] text-xs">Calidad sueño</dt><dd className="font-medium text-[var(--text)] capitalize">{perfilProfundo.calidad_sueno}</dd></div>}
+                    {perfilProfundo.nivel_estres && <div><dt className="text-[var(--text-muted)] text-xs">Nivel de estrés</dt><dd className="font-medium text-[var(--text)] capitalize">{perfilProfundo.nivel_estres}</dd></div>}
+                    {perfilProfundo.condiciones_salud && <div className="col-span-2 sm:col-span-3"><dt className="text-[var(--text-muted)] text-xs">Condiciones de salud</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.condiciones_salud}</dd></div>}
+                  </dl>
+                </div>
+              )}
+
+              {/* Composición corporal */}
+              {(perfilProfundo.composicion_grasa_pct != null || perfilProfundo.composicion_masa_muscular_kg != null || perfilProfundo.vo2max != null) && (
+                <div>
+                  <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Composición y rendimiento</p>
+                  <dl className="grid grid-cols-2 sm:grid-cols-3 gap-y-2 gap-x-6 text-sm">
+                    {perfilProfundo.composicion_grasa_pct != null && <div><dt className="text-[var(--text-muted)] text-xs">% grasa actual</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.composicion_grasa_pct}%</dd></div>}
+                    {perfilProfundo.composicion_objetivo_grasa_pct != null && <div><dt className="text-[var(--text-muted)] text-xs">% grasa objetivo</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.composicion_objetivo_grasa_pct}%</dd></div>}
+                    {perfilProfundo.composicion_masa_muscular_kg != null && <div><dt className="text-[var(--text-muted)] text-xs">Masa muscular</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.composicion_masa_muscular_kg} kg</dd></div>}
+                    {perfilProfundo.vo2max != null && <div><dt className="text-[var(--text-muted)] text-xs">VO₂ max</dt><dd className="font-medium text-[var(--text)]">{perfilProfundo.vo2max} ml/kg/min</dd></div>}
+                  </dl>
+                </div>
+              )}
+
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Plan IA — estado "generando" cuando aún no existe */}
       {!plan && (
