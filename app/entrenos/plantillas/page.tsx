@@ -29,10 +29,12 @@ const OBJETIVO_COLOR: Record<string, string> = {
     rendimiento: 'badge-teal',
 }
 
-const NIVEL_COLOR: Record<string, string> = {
-    principiante: 'text-green-600 bg-green-50',
-    intermedio: 'text-[#8E8E93] bg-[#F2F2F4]',
-    avanzado: 'text-red-600 bg-red-50',
+function nivelStyle(nivel: string | null | undefined): React.CSSProperties {
+    switch (nivel) {
+        case 'principiante': return { color: 'rgb(52,199,89)', background: 'rgba(52,199,89,0.12)' }
+        case 'avanzado':     return { color: 'rgb(255,69,58)', background: 'rgba(255,69,58,0.12)' }
+        default:             return { color: 'var(--text-muted)', background: 'rgba(128,128,128,0.12)' }
+    }
 }
 
 export default function PlantillasEntrenoPage() {
@@ -82,7 +84,6 @@ export default function PlantillasEntrenoPage() {
         return true
     })
 
-    // Agrupar por sport_modality (en el orden canónico de MODALITY_CONFIG)
     const agrupadasPorModalidad = (Object.keys(MODALITY_CONFIG) as SportModality[]).reduce<Record<string, PlantillaEntrenamiento[]>>((acc, m) => {
         acc[m] = filtradas.filter(p => p.sport_modality === m)
         return acc
@@ -123,7 +124,8 @@ export default function PlantillasEntrenoPage() {
         return (
             <div
                 key={p.id}
-                className="border border-gray-200 rounded-xl hover:border-purple-200 hover:shadow-sm transition-all"
+                className="border rounded-xl transition-all"
+                style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
             >
                 <div
                     className="p-4 cursor-pointer"
@@ -131,42 +133,59 @@ export default function PlantillasEntrenoPage() {
                 >
                     <div className="flex items-start gap-3">
                         {/* Icono modalidad */}
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                            cfg ? `${cfg.bg} ${cfg.color}` :
-                            p.tipo === 'cardio' ? 'bg-red-50 text-red-500' :
-                            p.tipo === 'mixto'  ? 'bg-orange-50 text-orange-500' :
-                            'bg-purple-50 text-purple-600'
-                        }`}>
+                        <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                            style={cfg
+                                ? { background: cfg.bgRgba, color: cfg.colorRgb }
+                                : p.tipo === 'cardio'
+                                    ? { background: 'rgba(239,68,68,0.15)', color: 'rgb(239,68,68)' }
+                                    : p.tipo === 'mixto'
+                                        ? { background: 'rgba(249,115,22,0.15)', color: 'rgb(249,115,22)' }
+                                        : { background: 'rgba(168,85,247,0.15)', color: 'rgb(168,85,247)' }
+                            }
+                        >
                             {cfg ? <cfg.Icon size={18} /> : <Dumbbell size={18} />}
                         </div>
 
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-gray-900 text-[15px]">{p.nombre}</p>
+                                <p className="font-semibold text-[15px]" style={{ color: 'var(--text)' }}>{p.nombre}</p>
                                 {tier === 'elite' && (
-                                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+                                    <span
+                                        className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full border"
+                                        style={{ background: 'rgba(201,169,110,0.15)', borderColor: 'rgba(201,169,110,0.4)', color: '#C9A96E' }}
+                                    >
                                         <Crown size={9} /> Elite
                                     </span>
                                 )}
                                 {cfg && (
-                                    <span className={`inline-flex items-center gap-0.5 text-[10px] font-medium border px-1.5 py-0.5 rounded-full ${cfg.bg} ${cfg.color} ${cfg.border}`}>
+                                    <span
+                                        className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full border"
+                                        style={{ background: cfg.bgRgba, color: cfg.colorRgb, borderColor: cfg.bgRgba.replace('0.15', '0.35') }}
+                                    >
                                         <cfg.Icon size={11} />
                                         {cfg.label}
                                     </span>
                                 )}
                                 {subcategoria && (
-                                    <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">
+                                    <span
+                                        className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                                        style={{ color: 'var(--text-muted)', background: 'rgba(128,128,128,0.12)' }}
+                                    >
                                         {subcategoria}
                                     </span>
                                 )}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                                <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${NIVEL_COLOR[p.nivel ?? ''] ?? 'text-gray-500 bg-gray-50'}`}>
+                                <span
+                                    className="text-[11px] font-medium px-1.5 py-0.5 rounded"
+                                    style={nivelStyle(p.nivel)}
+                                >
                                     {p.nivel}
                                 </span>
-                                <span className="text-xs text-gray-400">{p.dias_por_semana} días/sem</span>
+                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.dias_por_semana} días/sem</span>
                                 {(p.duracion_semanas ?? 0) > 0 && (
-                                    <span className="text-xs text-gray-400">{p.duracion_semanas} semanas</span>
+                                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.duracion_semanas} semanas</span>
                                 )}
                             </div>
                         </div>
@@ -179,39 +198,51 @@ export default function PlantillasEntrenoPage() {
                             )}
                             <button
                                 onClick={(e) => { e.stopPropagation(); setExpandida(estaExpandida ? null : p.id) }}
-                                className="text-gray-300 hover:text-gray-600 ml-1"
+                                className="ml-1"
+                                style={{ color: 'var(--text-muted)' }}
                             >
                                 {estaExpandida ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                             </button>
                         </div>
                     </div>
                     {p.descripcion && (
-                        <p className="text-xs text-gray-400 mt-2 line-clamp-2">{p.descripcion.split('🎯')[0].trim()}</p>
+                        <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{p.descripcion.split('🎯')[0].trim()}</p>
                     )}
                 </div>
 
                 {/* Sesiones expandidas */}
                 {estaExpandida && (
-                    <div className="px-4 pb-4 border-t border-gray-100 pt-3">
+                    <div className="px-4 pb-4 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                         {p.progresion && Array.isArray(p.progresion) && p.progresion.length > 0 && (
                             <div className="mb-3">
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
                                     📈 Progresión semanal
                                 </p>
                                 <div className="flex flex-col gap-1.5 max-h-[200px] overflow-y-auto pr-1">
                                     {p.progresion.map((sem: ProgresionPlantilla) => (
-                                        <div key={sem.semana} className="bg-[#F2F2F4] border border-[#D1D1D6] rounded-lg p-2.5">
+                                        <div
+                                            key={sem.semana}
+                                            className="rounded-lg p-2.5"
+                                            style={{ background: 'rgba(128,128,128,0.08)', border: '1px solid var(--border)' }}
+                                        >
                                             <div className="flex items-center justify-between mb-1">
-                                                <p className="text-xs font-bold text-[#48484A]">Semana {sem.semana} · {sem.titulo}</p>
-                                                <span className="text-[10px] font-medium text-[#8E8E93] bg-[#E5E5EA] px-1.5 py-0.5 rounded">
+                                                <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Semana {sem.semana} · {sem.titulo}</p>
+                                                <span
+                                                    className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                                                    style={{ color: 'var(--text-muted)', background: 'rgba(128,128,128,0.15)' }}
+                                                >
                                                     {sem.descripcion?.match(/RPE [\d-]+\/10/)?.[0] || ''}
                                                 </span>
                                             </div>
-                                            <p className="text-[11px] text-[#636366] leading-relaxed">{sem.descripcion}</p>
+                                            <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{sem.descripcion}</p>
                                             {sem.ajustes && sem.ajustes.length > 0 && (
                                                 <div className="mt-1 flex flex-col gap-0.5">
                                                     {sem.ajustes.map((a: string, i: number) => (
-                                                        <p key={i} className="text-[10px] text-[#8E8E93] pl-2 border-l-2 border-[#C7C7CC]">{a}</p>
+                                                        <p
+                                                            key={i}
+                                                            className="text-[10px] pl-2"
+                                                            style={{ color: 'var(--text-muted)', borderLeft: '2px solid var(--border)' }}
+                                                        >{a}</p>
                                                     ))}
                                                 </div>
                                             )}
@@ -223,23 +254,27 @@ export default function PlantillasEntrenoPage() {
 
                         {sesiones.length > 0 && (
                             <div className="flex flex-col gap-2">
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
                                     🏋️ Sesiones
                                 </p>
                                 {sesiones.sort((a, b) => a.orden - b.orden).map(sesion => {
                                     const ejercicios = (sesion.ejercicios ?? []) as PlantillaSesionEjercicio[]
                                     return (
-                                        <div key={sesion.id} className="bg-white border border-gray-100 rounded-lg p-3">
-                                            <p className="font-medium text-sm text-gray-700 mb-2">
+                                        <div
+                                            key={sesion.id}
+                                            className="rounded-lg p-3"
+                                            style={{ background: 'rgba(128,128,128,0.06)', border: '1px solid var(--border)' }}
+                                        >
+                                            <p className="font-medium text-sm mb-2" style={{ color: 'var(--text)' }}>
                                                 {sesion.nombre}
-                                                {sesion.dia_semana && <span className="text-gray-400 font-normal ml-1">· {sesion.dia_semana}</span>}
+                                                {sesion.dia_semana && <span className="font-normal ml-1" style={{ color: 'var(--text-muted)' }}>· {sesion.dia_semana}</span>}
                                             </p>
                                             <div className="flex flex-col gap-1">
                                                 {ejercicios.sort((a, b) => a.orden - b.orden).map((ej, idx) => (
-                                                    <div key={ej.id} className="flex items-center gap-2 text-xs text-gray-500">
-                                                        <span className="text-gray-300 w-4">{idx + 1}.</span>
-                                                        <span className="font-medium text-gray-600">{ej.ejercicio?.nombre}</span>
-                                                        <span className="text-gray-400">
+                                                    <div key={ej.id} className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                                                        <span className="w-4 opacity-50">{idx + 1}.</span>
+                                                        <span className="font-medium" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre}</span>
+                                                        <span>
                                                             {ej.series}×{ej.repeticiones}
                                                             {ej.rpe ? ` · RPE ${ej.rpe}` : ''}
                                                             {ej.descanso_segundos ? ` · ${ej.descanso_segundos}s` : ''}
@@ -259,7 +294,7 @@ export default function PlantillasEntrenoPage() {
     }
 
     const loadingSpinner = (
-        <div className="flex items-center gap-2 text-sm text-gray-400 py-8 justify-center">
+        <div className="flex items-center gap-2 text-sm py-8 justify-center" style={{ color: 'var(--text-muted)' }}>
             <Loader2 size={16} className="animate-spin" />
             Cargando plantillas…
         </div>
@@ -272,8 +307,8 @@ export default function PlantillasEntrenoPage() {
             {/* Header */}
             <header className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Planificación de entrenos</h1>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Planificación de entrenos</h1>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
                         Plantillas predefinidas por modalidad — Gym, HYROX, Running, Ciclismo, Funcional, Calistenia
                     </p>
                 </div>
@@ -293,10 +328,15 @@ export default function PlantillasEntrenoPage() {
 
             {/* Estado del seed */}
             {seedMessage && (
-                <div className={`mb-6 p-3 rounded-lg text-sm flex items-center gap-2 ${seedStatus === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
-                    seedStatus === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
-                        'bg-gray-50 text-gray-600'
-                    }`}>
+                <div
+                    className="mb-6 p-3 rounded-lg text-sm flex items-center gap-2"
+                    style={seedStatus === 'success'
+                        ? { background: 'rgba(52,199,89,0.12)', border: '1px solid rgba(52,199,89,0.35)', color: 'rgb(52,199,89)' }
+                        : seedStatus === 'error'
+                            ? { background: 'rgba(255,69,58,0.12)', border: '1px solid rgba(255,69,58,0.35)', color: 'rgb(255,69,58)' }
+                            : { background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }
+                    }
+                >
                     {seedStatus === 'success' ? <CheckCircle2 size={16} /> :
                         seedStatus === 'error' ? <AlertCircle size={16} /> :
                             <Loader2 size={16} className="animate-spin" />}
@@ -307,7 +347,7 @@ export default function PlantillasEntrenoPage() {
             {/* Filtros */}
             <div className="flex items-center gap-3 mb-6 flex-wrap">
                 <div className="relative flex-1 max-w-xs">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                     <input
                         type="text"
                         placeholder="Buscar por nombre, modalidad, tier…"
@@ -319,10 +359,11 @@ export default function PlantillasEntrenoPage() {
                 <div className="flex gap-1.5 flex-wrap">
                     <button
                         onClick={() => setFiltroModalidad(null)}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${filtroModalidad === null
-                            ? 'bg-gray-800 text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
+                        style={filtroModalidad === null
+                            ? { background: 'rgba(168,85,247,0.2)', color: 'rgb(192,132,252)', border: '1px solid rgba(168,85,247,0.4)' }
+                            : { background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)', border: '1px solid transparent' }
+                        }
                     >
                         Todas
                     </button>
@@ -332,10 +373,11 @@ export default function PlantillasEntrenoPage() {
                             <button
                                 key={m}
                                 onClick={() => setFiltroModalidad(filtroModalidad === m ? null : m)}
-                                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 ${filtroModalidad === m
-                                    ? `${c.bg} ${c.color} border ${c.border}`
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                    }`}
+                                className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5"
+                                style={filtroModalidad === m
+                                    ? { background: c.bgRgba, color: c.colorRgb, border: `1px solid ${c.bgRgba.replace('0.15', '0.4')}` }
+                                    : { background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)', border: '1px solid transparent' }
+                                }
                             >
                                 <c.Icon size={14} />
                                 {c.label}
@@ -350,13 +392,13 @@ export default function PlantillasEntrenoPage() {
                 loadingSpinner
             ) : !hayAlgunaPlantilla ? (
                 <div className="card text-center py-16">
-                    <Target size={32} className="mx-auto mb-3 text-gray-300" />
-                    <p className="text-gray-500 font-medium mb-1">
+                    <Target size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+                    <p className="font-medium mb-1" style={{ color: 'var(--text)' }}>
                         {plantillas.length === 0
                             ? 'Todavía no hay plantillas de entrenamiento'
                             : 'No hay plantillas que coincidan con tu búsqueda'}
                     </p>
-                    <p className="text-sm text-gray-400 mb-4">
+                    <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
                         {plantillas.length === 0
                             ? 'Pulsa "Poblar plantillas" para insertar las plantillas predefinidas'
                             : 'Prueba con otros filtros'}
@@ -376,11 +418,11 @@ export default function PlantillasEntrenoPage() {
                         return (
                             <div key={m}>
                                 <div className="flex items-center gap-2 mb-3">
-                                    <div className={`w-8 h-8 rounded-lg ${c.bg} flex items-center justify-center`}>
-                                        <c.Icon size={16} className={c.color} />
+                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: c.bgRgba }}>
+                                        <c.Icon size={16} style={{ color: c.colorRgb }} />
                                     </div>
-                                    <h2 className="font-semibold text-gray-700">{c.label}</h2>
-                                    <span className="text-xs text-gray-400">({items.length} plantilla{items.length !== 1 ? 's' : ''})</span>
+                                    <h2 className="font-semibold" style={{ color: 'var(--text)' }}>{c.label}</h2>
+                                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>({items.length} plantilla{items.length !== 1 ? 's' : ''})</span>
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     {items.map(renderPlantillaCard)}
@@ -391,11 +433,11 @@ export default function PlantillasEntrenoPage() {
                     {legacy.length > 0 && (
                         <div>
                             <div className="flex items-center gap-2 mb-3">
-                                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                                    <Dumbbell size={16} className="text-gray-500" />
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(128,128,128,0.15)' }}>
+                                    <Dumbbell size={16} style={{ color: 'var(--text-muted)' }} />
                                 </div>
-                                <h2 className="font-semibold text-gray-700">General</h2>
-                                <span className="text-xs text-gray-400">({legacy.length} plantilla{legacy.length !== 1 ? 's' : ''})</span>
+                                <h2 className="font-semibold" style={{ color: 'var(--text)' }}>General</h2>
+                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>({legacy.length} plantilla{legacy.length !== 1 ? 's' : ''})</span>
                             </div>
                             <div className="flex flex-col gap-2">
                                 {legacy.map(renderPlantillaCard)}

@@ -5,20 +5,24 @@ import type { SportModality } from '@/types'
 export interface ModalityConfig {
   label: string
   Icon: LucideIcon
-  color: string    // text color class
-  bg: string       // background color class
-  border: string   // border color class
+  color: string    // text color class (Tailwind)
+  bg: string       // background color class (Tailwind) — use bgRgba for dark-mode-safe icons
+  border: string   // border color class (Tailwind)
+  /** Dark-mode-safe icon background as rgba — use this for icon containers */
+  bgRgba: string
+  /** Dark-mode-safe icon color as rgb — use this for icon containers */
+  colorRgb: string
 }
 
 export const MODALITY_CONFIG: Record<SportModality, ModalityConfig> = {
-  gym_estetica: { label: 'Gym Estética', Icon: Dumbbell, color: 'text-purple-600', bg: 'bg-purple-50',  border: 'border-purple-200' },
-  gym_fuerza:   { label: 'Gym Fuerza',   Icon: Dumbbell, color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-200'   },
-  funcional:    { label: 'Funcional',    Icon: Flame,    color: 'text-orange-600', bg: 'bg-orange-50',  border: 'border-orange-200' },
-  hyrox:        { label: 'HYROX',        Icon: Zap,      color: 'text-yellow-700', bg: 'bg-yellow-50',  border: 'border-yellow-200' },
-  ciclismo:     { label: 'Ciclismo',     Icon: Bike,     color: 'text-cyan-600',   bg: 'bg-cyan-50',    border: 'border-cyan-200'   },
-  running:      { label: 'Running',      Icon: Heart,    color: 'text-red-500',    bg: 'bg-red-50',     border: 'border-red-200'    },
-  hibrido:      { label: 'Híbrido',      Icon: Waves,    color: 'text-teal-600',   bg: 'bg-teal-50',    border: 'border-teal-200'   },
-  calistenia:   { label: 'Calistenia',   Icon: Dumbbell, color: 'text-indigo-600', bg: 'bg-indigo-50',  border: 'border-indigo-200' },
+  gym_estetica: { label: 'Gym Estética', Icon: Dumbbell, color: 'text-purple-600', bg: 'bg-purple-50',  border: 'border-purple-200', bgRgba: 'rgba(168,85,247,0.15)',  colorRgb: 'rgb(168,85,247)'  },
+  gym_fuerza:   { label: 'Gym Fuerza',   Icon: Dumbbell, color: 'text-blue-600',   bg: 'bg-blue-50',    border: 'border-blue-200',   bgRgba: 'rgba(59,130,246,0.15)',  colorRgb: 'rgb(59,130,246)'  },
+  funcional:    { label: 'Funcional',    Icon: Flame,    color: 'text-orange-600', bg: 'bg-orange-50',  border: 'border-orange-200', bgRgba: 'rgba(249,115,22,0.15)', colorRgb: 'rgb(249,115,22)'  },
+  hyrox:        { label: 'HYROX',        Icon: Zap,      color: 'text-yellow-700', bg: 'bg-yellow-50',  border: 'border-yellow-200', bgRgba: 'rgba(234,179,8,0.15)',  colorRgb: 'rgb(234,179,8)'   },
+  ciclismo:     { label: 'Ciclismo',     Icon: Bike,     color: 'text-cyan-600',   bg: 'bg-cyan-50',    border: 'border-cyan-200',   bgRgba: 'rgba(6,182,212,0.15)',  colorRgb: 'rgb(6,182,212)'   },
+  running:      { label: 'Running',      Icon: Heart,    color: 'text-red-500',    bg: 'bg-red-50',     border: 'border-red-200',    bgRgba: 'rgba(239,68,68,0.15)',  colorRgb: 'rgb(239,68,68)'   },
+  hibrido:      { label: 'Híbrido',      Icon: Waves,    color: 'text-teal-600',   bg: 'bg-teal-50',    border: 'border-teal-200',   bgRgba: 'rgba(20,184,166,0.15)', colorRgb: 'rgb(20,184,166)'  },
+  calistenia:   { label: 'Calistenia',   Icon: Dumbbell, color: 'text-indigo-600', bg: 'bg-indigo-50',  border: 'border-indigo-200', bgRgba: 'rgba(99,102,241,0.15)', colorRgb: 'rgb(99,102,241)'  },
 }
 
 // Solo para plantillas legacy sin sport_modality en BD

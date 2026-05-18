@@ -69,8 +69,8 @@ export default function EntrenosPage() {
               style={{ borderColor: 'var(--border)' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#D8B4FE'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}>
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#F5F3FF' }}>
-                <Dumbbell size={20} style={{ color: '#7C3AED' }} />
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(168,85,247,0.15)' }}>
+                <Dumbbell size={20} style={{ color: 'rgb(168,85,247)' }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold" style={{ color: 'var(--text)' }}>{p.nombre}</p>

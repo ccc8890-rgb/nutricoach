@@ -129,8 +129,8 @@ export default function EditarEntrenoPage() {
         <div className="flex items-center gap-3 mb-6">
           <Link href="/entrenos" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-gray-900">{plan?.nombre}</h1>
-            <p className="text-sm text-gray-400">
+            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{plan?.nombre}</h1>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
               {plan?.cliente?.profile?.nombre} {plan?.cliente?.profile?.apellidos}
               {plan?.duracion_semanas && ` · ${plan.duracion_semanas} semanas`}
             </p>
@@ -142,26 +142,30 @@ export default function EditarEntrenoPage() {
             <div key={sesion.id} className="card">
               {/* Header sesión */}
               <div className="flex items-center gap-3 mb-3">
-                <button onClick={() => setSesiones(prev => prev.map(s => s.id === sesion.id ? { ...s, expandida: !s.expandida } : s))}
-                  className="text-gray-400 hover:text-gray-600">
+                <button
+                  onClick={() => setSesiones(prev => prev.map(s => s.id === sesion.id ? { ...s, expandida: !s.expandida } : s))}
+                  style={{ color: 'var(--text-muted)' }}
+                >
                   {sesion.expandida ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </button>
                 <input
-                  className="font-semibold text-gray-800 bg-transparent border-none outline-none flex-1 text-base"
+                  className="font-semibold bg-transparent border-none outline-none flex-1 text-base"
+                  style={{ color: 'var(--text)' }}
                   value={sesion.nombre}
                   onChange={e => actualizarSesion(sesion.id, 'nombre', e.target.value)}
                   onBlur={e => supabase.from('sesiones_entrenamiento').update({ nombre: e.target.value }).eq('id', sesion.id)}
                 />
                 <select
-                  className="text-sm border border-gray-200 rounded-lg px-2 py-1 outline-none text-gray-600"
+                  className="text-sm rounded-lg px-2 py-1 outline-none"
+                  style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
                   value={sesion.dia_semana ?? ''}
                   onChange={e => actualizarSesion(sesion.id, 'dia_semana', e.target.value)}
                 >
                   <option value="">Sin día</option>
                   {DIAS_SEMANA.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
-                <span className="text-sm text-gray-400">{sesion.ejercicios.length} ejercicios</span>
-                <button onClick={() => eliminarSesion(sesion.id)} className="text-gray-300 hover:text-red-400">
+                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{sesion.ejercicios.length} ejercicios</span>
+                <button onClick={() => eliminarSesion(sesion.id)} style={{ color: 'var(--text-muted)' }} className="hover:text-red-400 transition-colors">
                   <Trash2 size={15} />
                 </button>
               </div>
@@ -171,13 +175,17 @@ export default function EditarEntrenoPage() {
                   {/* Ejercicios */}
                   {sesion.ejercicios.length > 0 && (
                     <div className="mb-3 flex flex-col gap-2">
-                      {sesion.ejercicios.map((ej, idx) => (
-                        <div key={ej.id} className="border border-gray-100 rounded-lg p-3">
+                      {sesion.ejercicios.map((ej) => (
+                        <div
+                          key={ej.id}
+                          className="rounded-lg p-3"
+                          style={{ border: '1px solid var(--border)' }}
+                        >
                           <div className="flex items-start gap-3">
-                            <GripVertical size={16} className="text-gray-300 mt-1 flex-shrink-0" />
+                            <GripVertical size={16} className="mt-1 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                <span className="font-medium text-gray-800 text-sm">{ej.ejercicio?.nombre}</span>
+                                <span className="font-medium text-sm" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre}</span>
                                 {ej.ejercicio?.grupo_muscular && (
                                   <span className="badge badge-gray text-xs">{ej.ejercicio.grupo_muscular}</span>
                                 )}
@@ -187,22 +195,22 @@ export default function EditarEntrenoPage() {
                               </div>
                               <div className="grid grid-cols-4 gap-2">
                                 <div>
-                                  <label className="text-xs text-gray-400 block mb-1">Series</label>
+                                  <label className="text-xs block mb-1" style={{ color: 'var(--text-muted)' }}>Series</label>
                                   <input type="number" className="input py-1 text-sm text-center" value={ej.series ?? 3} min={1} max={20}
                                     onChange={e => actualizarEjercicio(sesion.id, ej.id, 'series', parseInt(e.target.value))} />
                                 </div>
                                 <div>
-                                  <label className="text-xs text-gray-400 block mb-1">Reps</label>
+                                  <label className="text-xs block mb-1" style={{ color: 'var(--text-muted)' }}>Reps</label>
                                   <input className="input py-1 text-sm text-center" placeholder="8-12" value={ej.repeticiones ?? ''}
                                     onChange={e => actualizarEjercicio(sesion.id, ej.id, 'repeticiones', e.target.value)} />
                                 </div>
                                 <div>
-                                  <label className="text-xs text-gray-400 block mb-1">Descanso</label>
+                                  <label className="text-xs block mb-1" style={{ color: 'var(--text-muted)' }}>Descanso</label>
                                   <input className="input py-1 text-sm text-center" placeholder="90s" value={ej.descanso_segundos ? `${ej.descanso_segundos}s` : ''}
                                     onChange={e => actualizarEjercicio(sesion.id, ej.id, 'descanso_segundos', parseInt(e.target.value) || 90)} />
                                 </div>
                                 <div>
-                                  <label className="text-xs text-gray-400 block mb-1">Peso sugerido</label>
+                                  <label className="text-xs block mb-1" style={{ color: 'var(--text-muted)' }}>Peso sugerido</label>
                                   <input className="input py-1 text-sm" placeholder="ej: 60kg" value={ej.peso_sugerido ?? ''}
                                     onChange={e => actualizarEjercicio(sesion.id, ej.id, 'peso_sugerido', e.target.value)} />
                                 </div>
@@ -210,7 +218,11 @@ export default function EditarEntrenoPage() {
                               <input className="input py-1 text-sm mt-2" placeholder="Notas (opcional)…" value={ej.notas ?? ''}
                                 onChange={e => actualizarEjercicio(sesion.id, ej.id, 'notas', e.target.value)} />
                             </div>
-                            <button onClick={() => eliminarEjercicio(sesion.id, ej.id)} className="text-gray-300 hover:text-red-400 mt-1">
+                            <button
+                              onClick={() => eliminarEjercicio(sesion.id, ej.id)}
+                              className="mt-1 hover:text-red-400 transition-colors"
+                              style={{ color: 'var(--text-muted)' }}
+                            >
                               <X size={15} />
                             </button>
                           </div>
@@ -222,26 +234,43 @@ export default function EditarEntrenoPage() {
                   {/* Buscador de ejercicios */}
                   {busquedaAbierta === sesion.id ? (
                     <div className="relative">
-                      <div className="flex items-center border border-purple-400 rounded-lg overflow-hidden" style={{ boxShadow: '0 0 0 3px rgba(124,58,237,0.1)' }}>
-                        <Search size={15} className="ml-3 text-gray-400 flex-shrink-0" />
+                      <div
+                        className="flex items-center rounded-lg overflow-hidden"
+                        style={{ border: '1px solid rgb(168,85,247)', boxShadow: '0 0 0 3px rgba(168,85,247,0.12)' }}
+                      >
+                        <Search size={15} className="ml-3 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
                         <input
                           autoFocus
-                          className="flex-1 px-3 py-2 outline-none text-sm"
+                          className="flex-1 px-3 py-2 outline-none text-sm bg-transparent"
+                          style={{ color: 'var(--text)' }}
                           placeholder="Buscar ejercicio… (ej: sentadilla, press banca)"
                           value={queryEjercicio}
                           onChange={e => setQueryEjercicio(e.target.value)}
                         />
-                        <button onClick={() => { setBusquedaAbierta(null); setQueryEjercicio(''); setResultados([]) }} className="px-3 text-gray-400">
+                        <button
+                          onClick={() => { setBusquedaAbierta(null); setQueryEjercicio(''); setResultados([]) }}
+                          className="px-3"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
                           <X size={15} />
                         </button>
                       </div>
                       {resultados.length > 0 && (
-                        <div className="absolute z-10 left-0 right-0 mt-1 bg-white rounded-lg border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
+                        <div
+                          className="absolute z-10 left-0 right-0 mt-1 rounded-lg max-h-60 overflow-y-auto"
+                          style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}
+                        >
                           {resultados.map(ej => (
-                            <button key={ej.id} onClick={() => añadirEjercicio(sesion.id, ej)}
-                              className="w-full text-left px-4 py-2.5 hover:bg-purple-50 transition-colors border-b border-gray-50 last:border-0">
-                              <span className="font-medium text-gray-800 text-sm">{ej.nombre}</span>
-                              {ej.grupo_muscular && <span className="text-xs text-gray-400 ml-2">{ej.grupo_muscular}</span>}
+                            <button
+                              key={ej.id}
+                              onClick={() => añadirEjercicio(sesion.id, ej)}
+                              className="w-full text-left px-4 py-2.5 transition-colors last:border-0"
+                              style={{ borderBottom: '1px solid var(--border)', color: 'var(--text)' }}
+                              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(168,85,247,0.1)')}
+                              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                            >
+                              <span className="font-medium text-sm">{ej.nombre}</span>
+                              {ej.grupo_muscular && <span className="text-xs ml-2" style={{ color: 'var(--text-muted)' }}>{ej.grupo_muscular}</span>}
                               {ej.tipo && <span className={`badge ${TIPO_COLORS[ej.tipo] ?? 'badge-gray'} text-xs ml-2`}>{ej.tipo}</span>}
                             </button>
                           ))}
@@ -251,7 +280,10 @@ export default function EditarEntrenoPage() {
                   ) : (
                     <button
                       onClick={() => { setBusquedaAbierta(sesion.id); setQueryEjercicio('') }}
-                      className="w-full border border-dashed border-gray-200 rounded-lg py-2.5 text-sm text-gray-400 hover:border-purple-300 hover:text-purple-600 transition-colors flex items-center justify-center gap-2"
+                      className="w-full rounded-lg py-2.5 text-sm transition-colors flex items-center justify-center gap-2"
+                      style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgb(168,85,247)'; e.currentTarget.style.color = 'rgb(192,132,252)' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
                     >
                       <Plus size={15} /> Añadir ejercicio
                     </button>
@@ -263,7 +295,10 @@ export default function EditarEntrenoPage() {
 
           <button
             onClick={añadirSesion}
-            className="w-full border-2 border-dashed border-gray-200 rounded-xl py-4 text-gray-400 hover:border-purple-300 hover:text-purple-600 transition-colors flex items-center justify-center gap-2 font-medium"
+            className="w-full rounded-xl py-4 transition-colors flex items-center justify-center gap-2 font-medium"
+            style={{ border: '2px dashed var(--border)', color: 'var(--text-muted)' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgb(168,85,247)'; e.currentTarget.style.color = 'rgb(192,132,252)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
           >
             <Plus size={18} /> Añadir día de entrenamiento
           </button>
