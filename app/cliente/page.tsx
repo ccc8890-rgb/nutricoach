@@ -2,13 +2,14 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { UtensilsCrossed, Dumbbell, Weight, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
+import { UtensilsCrossed, Dumbbell, Weight, LogOut, ChevronDown, ChevronUp, Trophy } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, Comida, SesionEntrenamiento, SesionEjercicio, SeguimientoPeso } from '@/types'
 import GaleriaFotosProgreso from '@/components/PortalCliente/GaleriaFotosProgreso'
 import ListaCompraPortal from '@/components/PortalCliente/ListaCompraPortal'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
 import GraficoPeso from '@/components/PortalCliente/GraficoPeso'
+import MilestonesLogros from '@/components/PortalCliente/MilestonesLogros'
 
 function PortalClientePageContent() {
   const router = useRouter()
@@ -18,7 +19,7 @@ function PortalClientePageContent() {
   const [cliente, setCliente] = useState<Cliente | null>(null)
   const [dieta, setDieta] = useState<PlanNutricion | null>(null)
   const [entreno, setEntreno] = useState<PlanEntrenamiento | null>(null)
-  const [tab, setTab] = useState<'dieta' | 'entreno' | 'progreso'>('dieta')
+  const [tab, setTab] = useState<'dieta' | 'entreno' | 'progreso' | 'logros'>('dieta')
   const [peso, setPeso] = useState('')
   const [notaPeso, setNotaPeso] = useState('')
   const [guardandoPeso, setGuardandoPeso] = useState(false)
@@ -145,8 +146,9 @@ function PortalClientePageContent() {
             { key: 'dieta', label: 'Dieta', icon: UtensilsCrossed },
             { key: 'entreno', label: 'Entreno', icon: Dumbbell },
             { key: 'progreso', label: 'Progreso', icon: Weight },
+            { key: 'logros', label: 'Logros', icon: Trophy },
           ].map(({ key, label, icon: Icon }) => (
-            <button key={key} onClick={() => setTab(key as 'dieta' | 'entreno' | 'progreso')}
+            <button key={key} onClick={() => setTab(key as 'dieta' | 'entreno' | 'progreso' | 'logros')}
               className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors ${tab === key ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}>
               <Icon size={14} className="sm:size-4" /> {label}
@@ -263,51 +265,77 @@ function PortalClientePageContent() {
         {tab === 'entreno' && (
           entreno ? (
             <div>
-              <div className="card mb-4 p-4">
-                <p className="font-semibold text-gray-900">{entreno.nombre}</p>
-                {entreno.descripcion && <p className="text-sm text-gray-500 mt-1">{entreno.descripcion}</p>}
-                {entreno.duracion_semanas && <p className="text-sm text-gray-400 mt-1">{entreno.duracion_semanas} semanas</p>}
+              {/* Plan header */}
+              <div className="rounded-xl p-4 mb-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <p className="font-semibold" style={{ color: 'var(--text)' }}>{entreno.nombre}</p>
+                {entreno.descripcion && <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{entreno.descripcion}</p>}
+                <div className="flex items-center gap-3 mt-2">
+                  {entreno.duracion_semanas && (
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{entreno.duracion_semanas} semanas</span>
+                  )}
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {(entreno.sesiones ?? []).length} días
+                  </span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-3">
                 {(entreno.sesiones ?? []).map(sesion => (
-                  <div key={sesion.id} className="card">
-                    <div className="flex items-center justify-between mb-3">
+                  <div
+                    key={sesion.id}
+                    className="rounded-xl overflow-hidden"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                  >
+                    {/* Session header */}
+                    <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: '1px solid var(--border)' }}>
                       <div>
-                        <p className="font-semibold text-gray-800">{sesion.nombre}</p>
-                        {sesion.dia_semana && <p className="text-xs text-gray-400">{sesion.dia_semana}</p>}
+                        <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+                        {sesion.dia_semana && (
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{sesion.dia_semana}</p>
+                        )}
                       </div>
-                      <span className="badge badge-purple">{(sesion.ejercicios ?? []).length} ejercicios</span>
+                      <a
+                        href={`/cliente/sesion/${sesion.id}`}
+                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                        style={{ background: 'rgba(168,85,247,0.12)', color: 'rgb(192,132,252)', border: '1px solid rgba(168,85,247,0.2)' }}
+                      >
+                        <Dumbbell size={12} />
+                        Iniciar
+                      </a>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      {(sesion.ejercicios ?? []).sort((a, b) => a.orden - b.orden).map((ej, idx: number) => (
-                        <div key={ej.id} className="flex items-start gap-3 p-2.5 bg-gray-50 rounded-lg">
-                          <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
+                    {/* Exercise preview */}
+                    <div className="px-4 py-3 flex flex-col gap-2">
+                      {(sesion.ejercicios ?? []).sort((a, b) => a.orden - b.orden).slice(0, 4).map((ej, idx: number) => (
+                        <div key={ej.id} className="flex items-center gap-3">
+                          <span
+                            className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
+                            style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)' }}
+                          >
                             {idx + 1}
                           </span>
-                          <div className="flex-1">
-                            <p className="font-medium text-sm text-gray-800">{ej.ejercicio?.nombre}</p>
-                            {ej.ejercicio?.grupo_muscular && <p className="text-xs text-gray-400">{ej.ejercicio.grupo_muscular}</p>}
-                            <div className="flex gap-3 mt-1.5 flex-wrap">
-                              {ej.series && <span className="text-xs bg-white border border-gray-100 rounded px-2 py-0.5 text-gray-600">{ej.series} series</span>}
-                              {ej.repeticiones && <span className="text-xs bg-white border border-gray-100 rounded px-2 py-0.5 text-gray-600">{ej.repeticiones} reps</span>}
-                              {ej.descanso_segundos && <span className="text-xs bg-white border border-gray-100 rounded px-2 py-0.5 text-gray-600">{ej.descanso_segundos}s descanso</span>}
-                              {ej.peso_sugerido && <span className="text-xs bg-white border border-gray-100 rounded px-2 py-0.5 text-gray-600">{ej.peso_sugerido}</span>}
-                            </div>
-                            {ej.notas && <p className="text-xs text-gray-400 mt-1 italic">{ej.notas}</p>}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm truncate" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre}</p>
                           </div>
+                          <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+                            {ej.series}×{ej.repeticiones}
+                          </span>
                         </div>
                       ))}
+                      {(sesion.ejercicios ?? []).length > 4 && (
+                        <p className="text-xs pl-8" style={{ color: 'var(--text-muted)' }}>
+                          +{(sesion.ejercicios ?? []).length - 4} más
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="card text-center py-12">
-              <Dumbbell size={40} className="mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-500">Tu coach aún no te ha asignado un plan de entrenamiento</p>
+            <div className="rounded-xl text-center py-12" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <Dumbbell size={36} className="mx-auto mb-3" style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
+              <p style={{ color: 'var(--text-muted)' }}>Tu coach aún no te ha asignado un plan de entrenamiento</p>
             </div>
           )
         )}
@@ -372,6 +400,20 @@ function PortalClientePageContent() {
             {/* Galería de fotos de progreso */}
             {dieta?.codigo_publico && (
               <GaleriaFotosProgreso codigo={dieta.codigo_publico} />
+            )}
+          </div>
+        )}
+
+        {/* TAB: LOGROS */}
+        {tab === 'logros' && (
+          <div>
+            {dieta?.codigo_publico ? (
+              <MilestonesLogros codigo={dieta.codigo_publico} />
+            ) : (
+              <div className="card text-center py-12">
+                <Trophy size={40} className="mx-auto text-gray-300 mb-3" />
+                <p className="text-gray-500">Activa un plan de nutrición para ver tus logros</p>
+              </div>
             )}
           </div>
         )}
