@@ -63,6 +63,7 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     const [notasNoLeidas, setNotasNoLeidas] = useState(0)
     const [notasVistas, setNotasVistas] = useState<string[]>([])
     const [mostrarRegistrarEntreno, setMostrarRegistrarEntreno] = useState(false)
+    const [sesionPendiente, setSesionPendiente] = useState<string | null>(null)
     const [tlsKey, setTlsKey] = useState(0)
 
     const loadData = useCallback(async () => {
@@ -231,6 +232,19 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                 </div>
             </div>
 
+            {/* Banner racha */}
+            {racha >= 3 && (
+                <div className="max-w-2xl mx-auto px-4 pt-3 no-print">
+                    <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium"
+                        style={{ background: 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)', color: 'white' }}>
+                        <Flame size={16} />
+                        {racha >= 7
+                            ? <span>¡Increíble! Llevas <strong>{racha} días</strong> de racha 🔥</span>
+                            : <span>¡Llevas <strong>{racha} días</strong> seguidos de check-in!</span>}
+                    </div>
+                </div>
+            )}
+
             {/* Banner onboarding pendiente */}
             {data.cliente?.onboarding_completado === false && (
                 <div className="max-w-2xl mx-auto px-4 pt-4">
@@ -251,6 +265,10 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                         codigo={codigo}
                         plan={data.plan}
                         entreno={data.entreno}
+                        onMarcarSesionHecha={(nombre) => {
+                            setSesionPendiente(nombre)
+                            setMostrarRegistrarEntreno(true)
+                        }}
                     />
                 )}
 
@@ -287,9 +305,12 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
             {mostrarRegistrarEntreno && (
                 <RegistrarEntrenoModal
                     codigo={codigo}
-                    onClose={() => setMostrarRegistrarEntreno(false)}
+                    sesionNombre={sesionPendiente ?? undefined}
+                    tipoPreset="gym"
+                    onClose={() => { setMostrarRegistrarEntreno(false); setSesionPendiente(null) }}
                     onGuardado={() => {
                         setTlsKey(k => k + 1)
+                        setSesionPendiente(null)
                         setTab('entreno')
                     }}
                 />

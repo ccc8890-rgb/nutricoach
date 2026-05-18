@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2 } from 'lucide-react'
+import RecetaDelDia from './RecetaDelDia'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros } from '@/types'
 import { useToast } from '@/components/ui/Toast'
@@ -70,6 +71,7 @@ interface MiPlanProps {
     codigo: string
     plan: PlanData
     entreno: EntrenoData | null
+    onMarcarSesionHecha?: (sesionNombre: string) => void
 }
 
 interface ModalAlternativasState {
@@ -98,7 +100,148 @@ interface RecetaSugerida {
     tiempo_prep_min: number | null
 }
 
-export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
+const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+const DIAS_KEYS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
+
+function normalizarDia(dia: string | undefined): number | null {
+    if (!dia) return null
+    const d = dia.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    const idx = DIAS_KEYS.findIndex(k => d.includes(k))
+    if (idx >= 0) return idx
+    const n = parseInt(d)
+    if (!isNaN(n) && n >= 1 && n <= 7) return n - 1
+    return null
+}
+
+function SemanaEntreno({
+    entreno,
+    onMarcarHecha,
+}: {
+    entreno: EntrenoData
+    onMarcarHecha?: (nombre: string) => void
+}) {
+    const [diaSeleccionado, setDiaSeleccionado] = useState<number | null>(null)
+    const sesiones = entreno.sesiones ?? []
+
+    // Mapear sesiones a día de la semana (0=Lun … 6=Dom)
+    const porDia: Record<number, Sesion[]> = {}
+    const sinDia: Sesion[] = []
+    for (const s of sesiones) {
+        const idx = normalizarDia(s.dia_semana)
+        if (idx !== null) {
+            if (!porDia[idx]) porDia[idx] = []
+            porDia[idx].push(s)
+        } else {
+            sinDia.push(s)
+        }
+    }
+
+    const tieneCalendario = Object.keys(porDia).length > 0
+    const sesionesActivas = diaSeleccionado !== null ? (porDia[diaSeleccionado] ?? []) : sinDia
+
+    return (
+        <div className="card">
+            <div className="flex items-center gap-2 mb-4">
+                <Dumbbell size={18} style={{ color: '#0D9488' }} />
+                <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{entreno.nombre}</h3>
+                    {entreno.duracion_semanas && (
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{entreno.duracion_semanas} semanas</p>
+                    )}
+                </div>
+            </div>
+
+            {tieneCalendario && (
+                <div className="grid grid-cols-7 gap-1 mb-4">
+                    {DIAS_SEMANA.map((label, i) => {
+                        const tiene = !!porDia[i]?.length
+                        const activo = diaSeleccionado === i
+                        return (
+                            <button
+                                key={i}
+                                onClick={() => setDiaSeleccionado(activo ? null : i)}
+                                disabled={!tiene}
+                                className="flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-semibold transition-all"
+                                style={{
+                                    background: activo ? '#0D9488' : tiene ? 'var(--bg)' : 'transparent',
+                                    color: activo ? 'white' : tiene ? 'var(--text)' : 'var(--text-muted)',
+                                    border: `1px solid ${activo ? '#0D9488' : tiene ? 'var(--border)' : 'transparent'}`,
+                                    opacity: tiene ? 1 : 0.35,
+                                }}
+                            >
+                                {label}
+                                {tiene && (
+                                    <span
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ background: activo ? 'rgba(255,255,255,0.7)' : '#0D9488' }}
+                                    />
+                                )}
+                            </button>
+                        )
+                    })}
+                </div>
+            )}
+
+            {/* Sesiones del día seleccionado (o todas si no hay calendario) */}
+            {(tieneCalendario ? sesionesActivas.length > 0 : true) && (
+                <div className="space-y-2">
+                    {(tieneCalendario ? sesionesActivas : sesiones).map(sesion => (
+                        <div key={sesion.id} className="rounded-xl p-3" style={{ background: 'var(--bg)' }}>
+                            <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+                            {!tieneCalendario && sesion.dia_semana && (
+                                <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{sesion.dia_semana}</p>
+                            )}
+                            {sesion.ejercicios && sesion.ejercicios.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {sesion.ejercicios
+                                        .sort((a, b) => a.orden - b.orden)
+                                        .map(ej => (
+                                            <span key={ej.id} className="badge badge-gray text-[11px]">
+                                                {ej.ejercicio?.nombre}
+                                            </span>
+                                        ))}
+                                </div>
+                            )}
+                            {onMarcarHecha && (
+                                <button
+                                    type="button"
+                                    onClick={() => onMarcarHecha(sesion.nombre)}
+                                    className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg font-medium transition-colors"
+                                    style={{ color: '#0D9488', border: '1px solid #0D9488' }}
+                                    onMouseEnter={e => {
+                                        (e.currentTarget as HTMLButtonElement).style.background = '#0D9488'
+                                        ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
+                                    }}
+                                    onMouseLeave={e => {
+                                        ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                                        ;(e.currentTarget as HTMLButtonElement).style.color = '#0D9488'
+                                    }}
+                                >
+                                    <CheckCircle2 size={13} />
+                                    Marcar como hecha
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {tieneCalendario && diaSeleccionado === null && (
+                <p className="text-xs text-center py-2" style={{ color: 'var(--text-muted)' }}>
+                    Toca un día para ver la sesión
+                </p>
+            )}
+
+            {tieneCalendario && diaSeleccionado !== null && sesionesActivas.length === 0 && (
+                <p className="text-xs text-center py-2" style={{ color: 'var(--text-muted)' }}>
+                    Día de descanso 💤
+                </p>
+            )}
+        </div>
+    )
+}
+
+export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: MiPlanProps) {
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>(
         Object.fromEntries((plan.comidas ?? []).map(c => [c.id, true]))
     )
@@ -219,6 +362,9 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Receta del día */}
+            <RecetaDelDia kcal={totalDia.calorias} proteinas={totalDia.proteinas} />
 
             {/* ─── Lista de la Compra ─── */}
             <ListaCompra planId={planLocal.id} clienteId={planLocal.cliente_id} nombrePlan={planLocal.nombre} rol="cliente" />
@@ -383,35 +529,8 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                 })}
             </div>
 
-            {/* Plan de entrenamiento si existe */}
-            {entreno && (
-                <div className="card">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Dumbbell size={18} style={{ color: '#0D9488' }} />
-                        <h3 className="font-semibold text-gray-900">{entreno.nombre}</h3>
-                    </div>
-                    {entreno.descripcion && <p className="text-sm text-gray-500 mb-2">{entreno.descripcion}</p>}
-                    {entreno.duracion_semanas && <p className="text-xs text-gray-400 mb-3">{entreno.duracion_semanas} semanas</p>}
-
-                    <div className="space-y-2">
-                        {(entreno.sesiones ?? []).map(sesion => (
-                            <div key={sesion.id} className="p-3 rounded-lg" style={{ backgroundColor: 'var(--bg)' }}>
-                                <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
-                                {sesion.dia_semana && <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{sesion.dia_semana}</p>}
-                                {sesion.ejercicios && sesion.ejercicios.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap gap-1.5">
-                                        {sesion.ejercicios.sort((a, b) => a.orden - b.orden).map(ej => (
-                                            <span key={ej.id} className="badge badge-gray text-[11px]">
-                                                {ej.ejercicio?.nombre}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+            {/* Plan de entrenamiento — Vista semanal */}
+            {entreno && <SemanaEntreno entreno={entreno} onMarcarHecha={onMarcarSesionHecha} />}
 
             {/* Botón Descargar PDF */}
             <button

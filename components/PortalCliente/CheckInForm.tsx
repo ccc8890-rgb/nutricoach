@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useToast } from '@/components/ui/Toast'
-import { Loader2, Send, Clock, Flame, ClipboardCheck } from 'lucide-react'
+import { Loader2, Send, Clock, Flame, ClipboardCheck, Camera, X } from 'lucide-react'
 
 interface CheckInFormProps {
     codigo: string
@@ -46,8 +46,28 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
     const [energia, setEnergia] = useState(5)
     const [sueno, setSueno] = useState(5)
     const [notas, setNotas] = useState('')
+    const [foto, setFoto] = useState<File | null>(null)
+    const [fotoPreview, setFotoPreview] = useState<string | null>(null)
     const [guardando, setGuardando] = useState(false)
+    const fotoInputRef = useRef<HTMLInputElement>(null)
     const { addToast } = useToast()
+
+    function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0] ?? null
+        setFoto(file)
+        if (file) {
+            const url = URL.createObjectURL(file)
+            setFotoPreview(url)
+        } else {
+            setFotoPreview(null)
+        }
+    }
+
+    function quitarFoto() {
+        setFoto(null)
+        setFotoPreview(null)
+        if (fotoInputRef.current) fotoInputRef.current.value = ''
+    }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -57,6 +77,22 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
         }
         setGuardando(true)
         try {
+            // 1. Subir foto si hay una seleccionada
+            let foto_url: string | null = null
+            if (foto) {
+                const fd = new FormData()
+                fd.append('file', foto)
+                const uploadRes = await fetch(`/api/cliente/${codigo}/subir-foto-progreso`, {
+                    method: 'POST',
+                    body: fd,
+                })
+                if (uploadRes.ok) {
+                    const { url } = await uploadRes.json()
+                    foto_url = url
+                }
+            }
+
+            // 2. Guardar check-in
             const res = await fetch(`/api/cliente/${codigo}/checkin`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -66,6 +102,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                     energia,
                     sueno,
                     notas: notas || null,
+                    foto_url,
                 }),
             })
             if (!res.ok) throw new Error('Error al guardar')
@@ -75,6 +112,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
             setEnergia(5)
             setSueno(5)
             setNotas('')
+            quitarFoto()
             onCheckinCreado()
         } catch {
             addToast({ type: 'error', title: 'Error', message: 'No se pudo guardar el check-in' })
@@ -242,6 +280,49 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                         value={notas}
                         onChange={e => setNotas(e.target.value)}
                         rows={3}
+                    />
+                </div>
+
+                {/* Foto de progreso */}
+                <div>
+                    <label className="text-sm font-medium text-gray-700">📷 Foto de progreso (opcional)</label>
+                    <p className="text-xs text-gray-400 mb-2">Solo la ve tu coach</p>
+                    {fotoPreview ? (
+                        <div className="relative inline-block">
+                            <img
+                                src={fotoPreview}
+                                alt="Vista previa"
+                                className="h-32 w-32 object-cover rounded-xl border"
+                                style={{ borderColor: 'var(--border)' }}
+                            />
+                            <button
+                                type="button"
+                                onClick={quitarFoto}
+                                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"
+                            >
+                                <X size={12} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={() => fotoInputRef.current?.click()}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm transition-colors"
+                            style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#0D9488'; (e.currentTarget as HTMLButtonElement).style.color = '#0D9488' }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)' }}
+                        >
+                            <Camera size={16} />
+                            Añadir foto
+                        </button>
+                    )}
+                    <input
+                        ref={fotoInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={handleFotoChange}
                     />
                 </div>
 

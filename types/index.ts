@@ -470,6 +470,7 @@ export interface CheckIn {
   energia?: number
   sueno?: number
   notas?: string
+  foto_url?: string
   created_at: string
 }
 

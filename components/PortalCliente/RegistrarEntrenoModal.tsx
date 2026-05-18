@@ -32,13 +32,15 @@ interface RegistrarEntrenoModalProps {
     codigo: string
     onClose: () => void
     onGuardado: () => void
+    sesionNombre?: string
+    tipoPreset?: string
 }
 
-export default function RegistrarEntrenoModal({ codigo, onClose, onGuardado }: RegistrarEntrenoModalProps) {
-    const [tipo, setTipo] = useState('running')
+export default function RegistrarEntrenoModal({ codigo, onClose, onGuardado, sesionNombre, tipoPreset }: RegistrarEntrenoModalProps) {
+    const [tipo, setTipo] = useState(tipoPreset ?? 'gym')
     const [duracion, setDuracion] = useState('')
     const [rpe, setRpe] = useState(7)
-    const [notas, setNotas] = useState('')
+    const [notas, setNotas] = useState(sesionNombre ? `Sesión: ${sesionNombre}` : '')
     const [guardando, setGuardando] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -91,7 +93,7 @@ export default function RegistrarEntrenoModal({ codigo, onClose, onGuardado }: R
                 <div className="flex items-center justify-between px-5 py-4 border-b"
                     style={{ borderColor: 'var(--border)' }}>
                     <h2 className="text-base font-bold" style={{ color: 'var(--text)' }}>
-                        Registrar entreno
+                        {sesionNombre ? `✓ Marcar sesión como hecha` : 'Registrar entreno'}
                     </h2>
                     <button onClick={onClose} style={{ color: 'var(--text-secondary)' }}>
                         <X size={20} />
