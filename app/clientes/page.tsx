@@ -16,6 +16,7 @@ type ClienteRow = {
   fecha_proxima_revision?: string | null
   revisado_por_coach?: boolean | null
   profile?: { nombre?: string; apellidos?: string; email?: string }
+  dias_sin_checkin?: number
 }
 
 export default function ClientesPage() {
@@ -24,6 +25,7 @@ export default function ClientesPage() {
   const busquedaDebounced = useDebounce(busqueda, 250)
   const [loading, setLoading] = useState(true)
   const [invitando, setInvitando] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [mostrarSinCheckin, setMostrarSinCheckin] = useState(false)
 
   async function handleInvitar() {
     setInvitando('loading')
@@ -67,7 +69,37 @@ export default function ClientesPage() {
           console.log(`[clientes] ${data?.length ?? 0} clientes cargados para coach ${user.id}`)
         }
 
-        setClientes((data ?? []).map(c => ({ ...c, profile: Array.isArray(c.profile) ? c.profile[0] : c.profile })))
+        const clientesMapeados: ClienteRow[] = (data ?? []).map(c => ({ ...c, profile: Array.isArray(c.profile) ? c.profile[0] : c.profile }))
+
+        // Segundo query: obtener el último check-in de cada cliente
+        if (clientesMapeados.length > 0) {
+          const { data: checkins } = await supabase
+            .from('checkins')
+            .select('cliente_id, fecha')
+            .in('cliente_id', clientesMapeados.map(c => c.id))
+            .order('fecha', { ascending: false })
+
+          // Reducir a Map: cliente_id → fecha más reciente
+          const ultimoCheckinMap = new Map<string, string>()
+          if (checkins) {
+            for (const ch of checkins) {
+              if (!ultimoCheckinMap.has(ch.cliente_id)) {
+                ultimoCheckinMap.set(ch.cliente_id, ch.fecha)
+              }
+            }
+          }
+
+          // Calcular días sin check-in para cada cliente
+          const ahora = Date.now()
+          for (const c of clientesMapeados) {
+            const fechaCheckin = ultimoCheckinMap.get(c.id)
+            c.dias_sin_checkin = fechaCheckin
+              ? Math.floor((ahora - new Date(fechaCheckin).getTime()) / 86400000)
+              : 999
+          }
+        }
+
+        setClientes(clientesMapeados)
       } catch (e) {
         console.error('[clientes] Excepción inesperada:', e)
       }
@@ -76,11 +108,14 @@ export default function ClientesPage() {
     load()
   }, [])
 
-  const filtrados = clientes.filter(c =>
-    `${c.profile?.nombre} ${c.profile?.apellidos} ${c.profile?.email}`
+  const filtrados = clientes.filter(c => {
+    const textoMatch = `${c.profile?.nombre} ${c.profile?.apellidos} ${c.profile?.email}`
       .toLowerCase()
       .includes(busquedaDebounced.toLowerCase())
-  )
+    if (!textoMatch) return false
+    if (mostrarSinCheckin) return (c.dias_sin_checkin ?? 0) > 4
+    return true
+  })
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -110,14 +145,23 @@ export default function ClientesPage() {
         </div>
       </header>
 
-      <div className="relative mb-6">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-        <input
-          className="input search-input"
-          placeholder="Buscar cliente por nombre o email…"
-          value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
-        />
+      <div className="flex items-center gap-2 mb-6">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+          <input
+            className="input search-input"
+            placeholder="Buscar cliente por nombre o email…"
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={() => setMostrarSinCheckin(!mostrarSinCheckin)}
+          className={`btn btn-sm ${mostrarSinCheckin ? 'btn-primary' : 'btn-ghost'}`}
+          style={{ flexShrink: 0 }}
+        >
+          ⚠️ Sin check-in
+        </button>
       </div>
 
       {loading ? (
@@ -168,6 +212,18 @@ export default function ClientesPage() {
                     )}
                   </div>
                   <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>{c.profile?.email}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {(c.dias_sin_checkin ?? 0) > 7 && (
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#FEE2E2', color: '#DC2626' }}>
+                        ⚠️ {c.dias_sin_checkin}d sin check-in
+                      </span>
+                    )}
+                    {(c.dias_sin_checkin ?? 0) >= 4 && (c.dias_sin_checkin ?? 0) <= 7 && (
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#FEF3C7', color: '#D97706' }}>
+                        {c.dias_sin_checkin}d sin check-in
+                      </span>
+                    )}
+                  </div>
                   {c.fecha_proxima_revision && (
                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                       📅 Revisión: {new Date(c.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}

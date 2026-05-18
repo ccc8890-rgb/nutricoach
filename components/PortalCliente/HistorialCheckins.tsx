@@ -24,6 +24,7 @@ interface CheckIn {
     sueno?: number
     notas?: string | null
     nota_coach?: string | null
+    mensaje_coach_ia?: string | null
     created_at: string
 }
 
@@ -398,6 +399,17 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                                         <span className="text-xs font-medium text-gray-500">Tus notas</span>
                                                     </div>
                                                     <p className="text-sm text-gray-700 whitespace-pre-wrap">{c.notas}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Mensaje IA automático (solo si NO hay nota del coach) */}
+                                            {c.mensaje_coach_ia && !c.nota_coach && (
+                                                <div className="mt-3 p-3 rounded-xl border" style={{ background: '#F0FDF4', borderColor: '#BBF7D0' }}>
+                                                    <div className="flex items-center gap-1.5 mb-1.5">
+                                                        <span className="text-xs">🤖</span>
+                                                        <span className="text-xs font-semibold" style={{ color: '#15803D' }}>Análisis automático</span>
+                                                    </div>
+                                                    <p className="text-sm whitespace-pre-wrap" style={{ color: '#14532D' }}>{c.mensaje_coach_ia}</p>
                                                 </div>
                                             )}
 

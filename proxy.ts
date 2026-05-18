@@ -1,7 +1,58 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Rate limiter en memoria simple para endpoints del portal cliente
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+const RL_LIMIT = 60
+const RL_WINDOW_MS = 60_000
+
+function rateLimitMiddleware(request: NextRequest): NextResponse | null {
+    // Solo aplicar a rutas del portal cliente
+    if (!request.nextUrl.pathname.startsWith('/api/cliente/')) {
+        return null
+    }
+
+    const ip =
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+        request.headers.get('x-real-ip') ??
+        'unknown'
+
+    const now = Date.now()
+    const entry = rateLimitMap.get(ip)
+
+    if (!entry || entry.resetAt < now) {
+        rateLimitMap.set(ip, { count: 1, resetAt: now + RL_WINDOW_MS })
+        if (rateLimitMap.size > 1000) {
+            for (const [key, val] of rateLimitMap.entries()) {
+                if (val.resetAt < now) rateLimitMap.delete(key)
+            }
+        }
+        return null // continue
+    }
+
+    entry.count++
+
+    if (entry.count > RL_LIMIT) {
+        return NextResponse.json(
+            { error: 'Demasiadas solicitudes. Inténtalo en un momento.' },
+            {
+                status: 429,
+                headers: {
+                    'X-RateLimit-Limit': RL_LIMIT.toString(),
+                    'X-RateLimit-Remaining': '0',
+                    'Retry-After': Math.ceil((entry.resetAt - now) / 1000).toString(),
+                },
+            }
+        )
+    }
+
+    return null // continue
+}
+
 export async function proxy(request: NextRequest) {
+    // Rate limiting antes que nada
+    const rateLimitResponse = rateLimitMiddleware(request)
+    if (rateLimitResponse) return rateLimitResponse
     let supabaseResponse = NextResponse.next({ request })
 
     const supabase = createServerClient(

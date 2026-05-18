@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { evaluarCheckin } from '@/lib/periodizacion/arbol-decision'
 import { calcularAjusteCaloricoSemanal } from '@/lib/periodizacion/motor-macros'
+import { generarFeedbackCheckinIA } from '@/lib/feedback-checkin-ia'
 
 export async function POST(
     request: Request,
@@ -67,6 +68,33 @@ export async function POST(
                 sueno: sueno ?? 7,
                 adherencia: adherencia ?? 80,
             }).catch(err => console.error('Error en evaluación periodización:', err))
+        }
+
+        // Generar feedback IA en background (no bloquea la respuesta)
+        if (data?.id && plan.cliente_id) {
+            const db = createServiceSupabase()
+            const { data: clienteInfo } = await db
+                .from('clientes')
+                .select('objetivo, profile:profiles!profile_id(nombre)')
+                .eq('id', plan.cliente_id)
+                .single()
+
+            const nombreCliente = (clienteInfo?.profile as { nombre?: string } | null)?.nombre ?? 'cliente'
+            const objetivoCliente = (clienteInfo as { objetivo?: string | null } | null)?.objetivo ?? null
+
+            generarFeedbackCheckinIA({
+                nombre: nombreCliente,
+                peso: peso ?? null,
+                adherencia: adherencia ?? null,
+                energia: energia ?? null,
+                sueno: sueno ?? null,
+                objetivo: objetivoCliente,
+            }).then(async (mensaje) => {
+                if (mensaje) {
+                    const sdb = createServiceSupabase()
+                    await sdb.from('checkins').update({ mensaje_coach_ia: mensaje }).eq('id', data.id)
+                }
+            }).catch(() => null) // nunca bloquea aunque falle
         }
 
         return NextResponse.json({ success: true, checkin: data })

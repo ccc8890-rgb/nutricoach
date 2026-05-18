@@ -1,13 +1,19 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { UtensilsCrossed, Dumbbell, Weight, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, Comida, SesionEntrenamiento, SesionEjercicio, SeguimientoPeso } from '@/types'
+import GaleriaFotosProgreso from '@/components/PortalCliente/GaleriaFotosProgreso'
+import ListaCompraPortal from '@/components/PortalCliente/ListaCompraPortal'
+import InstallBanner from '@/components/PortalCliente/InstallBanner'
+import GraficoPeso from '@/components/PortalCliente/GraficoPeso'
 
 export default function PortalClientePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const [showBienvenida, setShowBienvenida] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [cliente, setCliente] = useState<Cliente | null>(null)
   const [dieta, setDieta] = useState<PlanNutricion | null>(null)
@@ -18,7 +24,18 @@ export default function PortalClientePage() {
   const [guardandoPeso, setGuardandoPeso] = useState(false)
   const [historialPeso, setHistorialPeso] = useState<SeguimientoPeso[]>([])
   const [expandidas, setExpandidas] = useState<Record<string, boolean>>({})
+  const [mostrarListaCompra, setMostrarListaCompra] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (searchParams.get('onboarding') === 'completo') {
+      const visto = localStorage.getItem('bienvenida_vista')
+      if (!visto) {
+        setShowBienvenida(true)
+        localStorage.setItem('bienvenida_vista', '1')
+      }
+    }
+  }, [searchParams])
 
   useEffect(() => {
     async function load() {
@@ -109,6 +126,17 @@ export default function PortalClientePage() {
           </button>
         </div>
       </div>
+
+      {/* Banner bienvenida onboarding */}
+      {showBienvenida && (
+        <div className="max-w-2xl mx-auto px-4 pt-3">
+          <div className="flex items-start justify-between gap-3 px-4 py-3 rounded-xl text-sm"
+            style={{ background: '#dcfce7', color: '#15803d' }}>
+            <p className="font-medium">¡Bienvenido/a! Tu plan ya está listo. Tu coach ha preparado todo para ti.</p>
+            <button onClick={() => setShowBienvenida(false)} className="text-green-600 flex-shrink-0 font-bold text-base leading-none">×</button>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="bg-white border-b border-gray-100">
@@ -202,6 +230,26 @@ export default function PortalClientePage() {
                   )
                 })}
               </div>
+
+              {/* Lista de la compra */}
+              <div className="card mt-4">
+                <button
+                  onClick={() => setMostrarListaCompra(!mostrarListaCompra)}
+                  className="w-full flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🛒</span>
+                    <span className="font-semibold text-sm text-gray-800">Lista de la compra</span>
+                  </div>
+                  <span className="text-xs text-gray-400">{mostrarListaCompra ? 'Ocultar' : 'Ver'}</span>
+                </button>
+
+                {mostrarListaCompra && (
+                  <div className="mt-3 border-t border-gray-100 pt-3">
+                    <ListaCompraPortal codigo={dieta.codigo_publico ?? ''} />
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="card text-center py-12">
@@ -281,6 +329,15 @@ export default function PortalClientePage() {
               </button>
             </div>
 
+            {/* Gráfico de evolución */}
+            {historialPeso.length >= 2 && (
+              <div className="card mb-4">
+                <GraficoPeso
+                  datos={historialPeso.map(h => ({ fecha: h.fecha, peso: h.peso ?? 0 })).filter(d => d.peso > 0)}
+                />
+              </div>
+            )}
+
             {/* Historial */}
             <div className="card">
               <h2 className="font-semibold text-gray-800 mb-4">Historial de peso</h2>
@@ -311,9 +368,16 @@ export default function PortalClientePage() {
                 </div>
               )}
             </div>
+
+            {/* Galería de fotos de progreso */}
+            {dieta?.codigo_publico && (
+              <GaleriaFotosProgreso codigo={dieta.codigo_publico} />
+            )}
           </div>
         )}
       </div>
+
+      <InstallBanner />
     </div>
   )
 }
