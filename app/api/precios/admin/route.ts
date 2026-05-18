@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabase } from '@/lib/supabase-server'
+import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+
+async function requireAuth(request: NextRequest) {
+    const supabase = createApiSupabase(request)
+    const { data: { user } } = await supabase.auth.getUser()
+    return user
+}
 
 /**
  * GET /api/precios/admin
@@ -13,6 +19,8 @@ import { createServiceSupabase } from '@/lib/supabase-server'
  *   - to: number (default 199) — límite para paginación
  */
 export async function GET(request: NextRequest) {
+    if (!await requireAuth(request)) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const supabase = createServiceSupabase()
     const { searchParams } = new URL(request.url)
 
@@ -51,7 +59,9 @@ export async function GET(request: NextRequest) {
  * POST /api/precios/admin
  * Inserta o actualiza un precio de producto.
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+    if (!await requireAuth(request)) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const body = await request.json()
     const supabase = createServiceSupabase()
 
@@ -78,7 +88,9 @@ export async function POST(request: Request) {
  * Actualiza el precio_por_kg de un producto (edición inline).
  * Body: { id: string, precio_por_kg: number }
  */
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
+    if (!await requireAuth(request)) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const body = await request.json()
     const { id, precio_por_kg } = body
 
@@ -104,7 +116,9 @@ export async function PATCH(request: Request) {
  * DELETE /api/precios/admin?id=X
  * Elimina un precio de producto.
  */
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
+    if (!await requireAuth(request)) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
-import { createServiceSupabase } from '@/lib/supabase-server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
 interface AlimentoRow {
     id: string
@@ -20,7 +20,11 @@ interface AlimentoRow {
  *
  * NO requiere autenticación porque usa service_role (operación de mantenimiento).
  */
-export async function POST() {
+export async function POST(request: NextRequest) {
+    const supabaseAuth = createApiSupabase(request)
+    const { data: { user } } = await supabaseAuth.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     try {
         const supabase = createServiceSupabase()
 

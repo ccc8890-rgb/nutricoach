@@ -31,6 +31,7 @@ function formatGramos(g: number): string {
 export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
     const [items, setItems] = useState<ItemListaCompra[]>([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(false)
     const [marcados, setMarcados] = useState<Set<string>>(new Set())
     const [colapsadas, setColapsadas] = useState<Set<string>>(new Set())
 
@@ -38,13 +39,19 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
         fetch(`/api/cliente/${codigo}/lista-compra`)
             .then(r => r.json())
             .then(({ items }) => setItems(items ?? []))
-            .catch(() => {})
+            .catch(() => setError(true))
             .finally(() => setLoading(false))
     }, [codigo])
 
     if (loading) return (
         <div className="flex items-center justify-center py-8">
             <Loader2 size={20} className="animate-spin" style={{ color: '#0D9488' }} />
+        </div>
+    )
+
+    if (error) return (
+        <div className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>
+            No se pudo cargar la lista. Inténtalo de nuevo.
         </div>
     )
 
