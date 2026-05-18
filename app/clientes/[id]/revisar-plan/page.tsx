@@ -128,10 +128,12 @@ export default function RevisarPlanPage() {
 
   const aprobar = async () => {
     setAprobando(true)
-    await supabase
-      .from('clientes')
-      .update({ revisado_por_coach: true, activo: true })
-      .eq('id', params.id as string)
+    await fetch('/api/aprobar-cliente', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ cliente_id: params.id }),
+    })
     router.push(`/clientes/${params.id}`)
   }
 
