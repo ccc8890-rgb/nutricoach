@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
 import {
     Store, Search, X, Euro, Save, Trash2, Plus,
     ChevronDown, ChevronUp, ExternalLink, RefreshCw,
@@ -33,6 +32,7 @@ export default function AdminPrecios() {
 
     // Estados
     const [supermercados, setSupermercados] = useState<Supermercado[]>([])
+    const [conteosSupermercados, setConteosSupermercados] = useState<Record<string, number>>({})
     const [precios, setPrecios] = useState<PrecioActual[]>([])
     const [totalCount, setTotalCount] = useState(0)
     const [cargando, setCargando] = useState(true)
@@ -54,48 +54,59 @@ export default function AdminPrecios() {
 
     const totalPaginas = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
-    // Cargar datos con paginación real
+    // Cargar datos con paginación real — usando API con service_role
     const cargarPrecios = useCallback(async () => {
         setCargando(true)
 
-        let query = supabase
-            .from('precios_actuales')
-            .select('*', { count: 'exact' })
+        const params = new URLSearchParams()
+        if (supermercadoSel) params.set('supermercado_id', supermercadoSel)
+        if (busqueda) params.set('q', busqueda)
+        params.set('from', String(pagina * PAGE_SIZE))
+        params.set('to', String(pagina * PAGE_SIZE + PAGE_SIZE - 1))
 
-        if (supermercadoSel) {
-            query = query.eq('supermercado_id', supermercadoSel)
+        try {
+            const res = await fetch(`/api/precios/admin?${params.toString()}`)
+            const json = await res.json()
+
+            if (!res.ok) {
+                addToast({ type: 'error', title: 'Error al cargar', message: json.error ?? 'Error desconocido' })
+                setPrecios([])
+                setTotalCount(0)
+            } else {
+                setPrecios(json.data ?? [])
+                setTotalCount(json.count ?? 0)
+            }
+        } catch (err: any) {
+            addToast({ type: 'error', title: 'Error al cargar', message: err.message })
+            setPrecios([])
+            setTotalCount(0)
         }
 
-        if (busqueda) {
-            const q = busqueda.toLowerCase()
-            query = query.or(`alimento_nombre.ilike.%${q}%,alimento_categoria.ilike.%${q}%`)
-        }
-
-        const from = pagina * PAGE_SIZE
-        const to = from + PAGE_SIZE - 1
-
-        const { data, count, error } = await query
-            .order('alimento_categoria', { ascending: true })
-            .order('alimento_nombre', { ascending: true })
-            .range(from, to)
-
-        if (error) {
-            addToast({ type: 'error', title: 'Error al cargar', message: error.message })
-        }
-
-        setPrecios(data ?? [])
-        setTotalCount(count ?? 0)
         setCargando(false)
     }, [supermercadoSel, busqueda, pagina, addToast])
 
-    // Cargar supermercados al inicio
+    // Cargar supermercados al inicio (desde API para obtener total_productos real)
     useEffect(() => {
-        supabase.from('supermercados').select('*').eq('activo', true).order('nombre')
-            .then(({ data }) => {
-                setSupermercados(data ?? [])
-                if ((data ?? []).length > 0 && !supermercadoSel) {
-                    setSupermercadoSel(data![0].id)
+        fetch('/api/precios/supermercados')
+            .then(res => res.json())
+            .then(data => {
+                const lista = Array.isArray(data) ? data : []
+                setSupermercados(lista)
+
+                // Construir mapa de conteos individuales
+                const conteos: Record<string, number> = {}
+                for (const sm of lista) {
+                    conteos[sm.id] = sm.total_productos ?? 0
                 }
+                setConteosSupermercados(conteos)
+
+                if (lista.length > 0 && !supermercadoSel) {
+                    setSupermercadoSel(lista[0].id)
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando supermercados:', err)
+                addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los supermercados' })
             })
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -115,7 +126,7 @@ export default function AdminPrecios() {
         setPagina(0)
     }, [supermercadoSel, busqueda])
 
-    // Búsqueda de alimentos
+    // Búsqueda de alimentos — usando API con service_role
     useEffect(() => {
         if (!queryAlimento || queryAlimento.length < 2) {
             setResultadosAlimentos([])
@@ -123,12 +134,15 @@ export default function AdminPrecios() {
         }
         setBuscandoAlimento(true)
         const timer = setTimeout(async () => {
-            const { data } = await supabase
-                .from('alimentos')
-                .select('*')
-                .ilike('nombre', `%${queryAlimento}%`)
-                .limit(10)
-            setResultadosAlimentos(data ?? [])
+            try {
+                const res = await fetch(`/api/alimentos?q=${encodeURIComponent(queryAlimento)}`)
+                if (res.ok) {
+                    const data = await res.json()
+                    setResultadosAlimentos(Array.isArray(data) ? data.slice(0, 10) : [])
+                }
+            } catch {
+                setResultadosAlimentos([])
+            }
             setBuscandoAlimento(false)
         }, 300)
         return () => clearTimeout(timer)
@@ -139,60 +153,82 @@ export default function AdminPrecios() {
         return precios
     }, [precios])
 
-    // Guardar nuevo precio
+    // Guardar nuevo precio — usando API
     async function guardarProducto() {
         if (!form.supermercado_id || !form.alimento_id || !form.precio_por_kg) {
             addToast({ type: 'error', title: 'Campos requeridos', message: 'Supermercado, alimento y precio son obligatorios' })
             return
         }
         setGuardando(true)
-        const { error } = await supabase.from('productos_supermercado').upsert({
-            supermercado_id: form.supermercado_id,
-            alimento_id: form.alimento_id,
-            precio_por_kg: parseFloat(form.precio_por_kg),
-            precio_unidad: form.precio_unidad ? parseFloat(form.precio_unidad) : null,
-            url_producto: form.url_producto || null,
-            fecha_precio: new Date().toISOString().split('T')[0],
-        }, { onConflict: 'supermercado_id, alimento_id' })
 
-        if (error) {
-            addToast({ type: 'error', title: 'Error', message: error.message })
-        } else {
-            addToast({ type: 'success', title: 'Precio guardado', message: 'El precio se ha actualizado correctamente' })
-            setMostrarForm(false)
-            setForm(PRODUCTO_VACIO)
-            setQueryAlimento('')
-            setResultadosAlimentos([])
-            cargarPrecios()
+        try {
+            const res = await fetch('/api/precios/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    supermercado_id: form.supermercado_id,
+                    alimento_id: form.alimento_id,
+                    precio_por_kg: parseFloat(form.precio_por_kg),
+                    precio_unidad: form.precio_unidad ? parseFloat(form.precio_unidad) : null,
+                    url_producto: form.url_producto || null,
+                }),
+            })
+
+            if (res.ok) {
+                addToast({ type: 'success', title: 'Precio guardado', message: 'El precio se ha actualizado correctamente' })
+                setMostrarForm(false)
+                setForm(PRODUCTO_VACIO)
+                setQueryAlimento('')
+                setResultadosAlimentos([])
+                cargarPrecios()
+            } else {
+                const json = await res.json()
+                addToast({ type: 'error', title: 'Error', message: json.error ?? 'Error al guardar' })
+            }
+        } catch (err: any) {
+            addToast({ type: 'error', title: 'Error', message: err.message })
         }
+
         setGuardando(false)
     }
 
-    // Eliminar precio
+    // Eliminar precio — usando API
     async function eliminarPrecio(id: string) {
-        const { error } = await supabase.from('productos_supermercado').delete().eq('id', id)
-        if (!error) {
-            setPrecios(prev => prev.filter(p => p.id !== id))
-            setTotalCount(prev => Math.max(0, prev - 1))
-            addToast({ type: 'info', title: 'Eliminado', message: 'Precio eliminado correctamente' })
-        } else {
-            addToast({ type: 'error', title: 'Error', message: error.message })
+        try {
+            const res = await fetch(`/api/precios/admin?id=${id}`, { method: 'DELETE' })
+
+            if (res.ok) {
+                setPrecios(prev => prev.filter(p => p.id !== id))
+                setTotalCount(prev => Math.max(0, prev - 1))
+                addToast({ type: 'info', title: 'Eliminado', message: 'Precio eliminado correctamente' })
+            } else {
+                const json = await res.json()
+                addToast({ type: 'error', title: 'Error', message: json.error ?? 'Error al eliminar' })
+            }
+        } catch (err: any) {
+            addToast({ type: 'error', title: 'Error', message: err.message })
         }
     }
 
-    // Editar precio inline (precio_por_kg)
+    // Editar precio inline (precio_por_kg) — usando API
     async function guardarEdicion(id: string, precioKg: number) {
-        const { error } = await supabase.from('productos_supermercado').update({
-            precio_por_kg: precioKg,
-            fecha_precio: new Date().toISOString().split('T')[0],
-        }).eq('id', id)
+        try {
+            const res = await fetch('/api/precios/admin', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, precio_por_kg: precioKg }),
+            })
 
-        if (!error) {
-            setPrecios(prev => prev.map(p => p.id === id ? { ...p, precio_por_kg: precioKg } : p))
-            setEditandoId(null)
-            addToast({ type: 'success', title: 'Actualizado', message: 'Precio actualizado' })
-        } else {
-            addToast({ type: 'error', title: 'Error', message: error.message })
+            if (res.ok) {
+                setPrecios(prev => prev.map(p => p.id === id ? { ...p, precio_por_kg: precioKg } : p))
+                setEditandoId(null)
+                addToast({ type: 'success', title: 'Actualizado', message: 'Precio actualizado' })
+            } else {
+                const json = await res.json()
+                addToast({ type: 'error', title: 'Error', message: json.error ?? 'Error al actualizar' })
+            }
+        } catch (err: any) {
+            addToast({ type: 'error', title: 'Error', message: err.message })
         }
     }
 
@@ -239,23 +275,26 @@ export default function AdminPrecios() {
 
             {/* Selector de supermercado */}
             <div className="flex flex-wrap gap-2">
-                {supermercados.map(s => (
-                    <button
-                        key={s.id}
-                        onClick={() => setSupermercadoSel(s.id)}
-                        className="text-sm px-4 py-2 rounded-full border transition-all font-medium"
-                        style={{
-                            backgroundColor: supermercadoSel === s.id ? (s.color ?? '#16A34A') : 'transparent',
-                            color: supermercadoSel === s.id ? 'white' : 'var(--text-secondary)',
-                            borderColor: supermercadoSel === s.id ? (s.color ?? '#16A34A') : 'var(--border)',
-                        }}
-                    >
-                        {s.nombre}
-                        <span className="ml-1.5 text-xs opacity-70">
-                            ({totalCount.toLocaleString('es-ES')})
-                        </span>
-                    </button>
-                ))}
+                {supermercados.map(s => {
+                    const conteo = conteosSupermercados[s.id] ?? 0
+                    return (
+                        <button
+                            key={s.id}
+                            onClick={() => setSupermercadoSel(s.id)}
+                            className="text-sm px-4 py-2 rounded-full border transition-all font-medium"
+                            style={{
+                                backgroundColor: supermercadoSel === s.id ? (s.color ?? '#16A34A') : 'transparent',
+                                color: supermercadoSel === s.id ? 'white' : 'var(--text-secondary)',
+                                borderColor: supermercadoSel === s.id ? (s.color ?? '#16A34A') : 'var(--border)',
+                            }}
+                        >
+                            {s.nombre}
+                            <span className="ml-1.5 text-xs opacity-70">
+                                ({conteo.toLocaleString('es-ES')})
+                            </span>
+                        </button>
+                    )
+                })}
             </div>
 
             {/* Buscador */}

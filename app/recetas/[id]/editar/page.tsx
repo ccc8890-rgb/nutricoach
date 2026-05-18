@@ -3,12 +3,13 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Link2, X, Search, Plus, Trash2, Upload } from 'lucide-react'
+import { ArrowLeft, Link2, X, Search, Plus, Trash2, Upload, Hash } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import type { Alimento } from '@/types'
 import { CATEGORIAS, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
 import { useToast } from '@/components/ui/Toast'
+import { TagInput } from '@/components/ui/TagInput'
 
 interface Ingrediente {
     id?: string
@@ -41,6 +42,8 @@ export default function EditarRecetaPage() {
         url_origen: '',
     })
     const [intolerancias, setIntolerancias] = useState<string[]>([])
+    const [tags, setTags] = useState<string[]>([])
+    const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
     const [ingredientes, setIngredientes] = useState<Ingrediente[]>([])
     const [imagenFile, setImagenFile] = useState<File | null>(null)
     const [imagenPreview, setImagenPreview] = useState<string | null>(null)
@@ -82,6 +85,7 @@ export default function EditarRecetaPage() {
             })
 
             setIntolerancias(receta.intolerancias ?? [])
+            setTags(receta.tags ?? [])
             setImagenExistente(receta.imagen_url ?? '')
             setImagenUrlExterna(receta.imagen_url ?? '')
 
@@ -98,6 +102,16 @@ export default function EditarRecetaPage() {
         }
         load()
     }, [id])
+
+    // Cargar sugerencias de tags desde la API
+    useEffect(() => {
+        fetch('/api/recetas/tags')
+            .then(r => r.json())
+            .then(data => {
+                if (data?.tags) setTagSuggestions(data.tags)
+            })
+            .catch(() => { })
+    }, [])
 
     // Búsqueda de alimentos via API (service_role bypass RLS)
     useEffect(() => {
@@ -206,6 +220,7 @@ export default function EditarRecetaPage() {
             tipo_coccion: form.tipo_coccion || null,
             dificultad: form.dificultad || null,
             intolerancias: intolerancias.length ? intolerancias : null,
+            tags: tags.length ? tags : null,
             porciones: parseInt(form.porciones) || 1,
             descripcion_porcion: form.descripcion_porcion || null,
             tiempo_prep_min: form.tiempo_prep_min ? parseInt(form.tiempo_prep_min) : null,
@@ -374,6 +389,16 @@ export default function EditarRecetaPage() {
                                         </button>
                                     ))}
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-2" style={{ color: 'var(--text-secondary)' }}>Tags</label>
+                                <TagInput
+                                    tags={tags}
+                                    onChange={setTags}
+                                    suggestions={tagSuggestions}
+                                    placeholder="Ej: mealprep, rápido, alto en proteína…"
+                                />
                             </div>
 
                             <div>

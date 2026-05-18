@@ -21,6 +21,15 @@ export async function GET(request: NextRequest) {
         else if (custom === 'false') query = query.eq('custom', false)
         if (fuente) query = query.eq('fuente', fuente)
 
+        // ⚠️ Sin paginación: el catálogo de alimentos tiene ~3.200 registros.
+        // Esto es intencional porque se usa como catálogo completo (autocomplete, selector).
+        // Si en el futuro supera 1.000, añadir ?from&to como parámetros opcionales.
+        const from = parseInt(searchParams.get('from') || '')
+        const to = parseInt(searchParams.get('to') || '')
+        if (!isNaN(from) && !isNaN(to)) {
+            query = query.range(from, to)
+        }
+
         const { data, error } = await query
         if (error) return NextResponse.json({ error: error.message }, { status: 400 })
         return NextResponse.json(data)

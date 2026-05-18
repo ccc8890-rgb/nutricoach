@@ -57,10 +57,10 @@ const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 // ── Args ─────────────────────────────────────────────────────────────────────
 const ARGS = process.argv.slice(2)
 const getArg = f => { const i = ARGS.indexOf(f); return i !== -1 ? ARGS[i + 1] : null }
-const DRY_RUN   = ARGS.includes('--dry-run')
+const DRY_RUN = ARGS.includes('--dry-run')
 const SIN_FOTOS = ARGS.includes('--sin-fotos')
-const HORAS     = parseInt(getArg('--horas') || '0', 10)
-const SOLO_ID   = getArg('--id')
+const HORAS = parseInt(getArg('--horas') || '0', 10)
+const SOLO_ID = getArg('--id')
 const SOLO_FASE = parseInt(getArg('--solo-fase') || '0', 10)
 
 // ── Contadores globales ───────────────────────────────────────────────────────
@@ -166,34 +166,83 @@ async function fase1_qualityCheck(recetas) {
 // Añadir aquí cuando se detecte un patrón sistemático
 const MATCH_FIXES = [
     // Sal → matchea "Salsa pesto", "Salsa de tomate", etc. por prefijo
-    [/^sal$/i,           '0adc820b-8ec6-4888-8c75-91e916531f60', 'Sal'],
-    [/^agua$/i,          'c125af5a-afe3-4ffc-a9d5-185817b6a9db', 'Agua'],
+    [/^sal$/i, '0adc820b-8ec6-4888-8c75-91e916531f60', 'Sal'],
+    [/^agua$/i, 'c125af5a-afe3-4ffc-a9d5-185817b6a9db', 'Agua'],
+    // Queso cottage → matchea "Queso cheddar", "Queso crema", etc. por prefijo "queso"
+    [/^queso cottag/i, 'aa87b67a-3b99-4a31-90de-e63e2be09af2', 'Queso cottage'],
+    [/^queso cotas/i, 'aa87b67a-3b99-4a31-90de-e63e2be09af2', 'Queso cottage'],
+    // Salsa verde → matchea "Sal" por substring "sal"
+    [/^salsa verd/i, '1d197cae-57f7-42ab-8b31-4be779410a32', 'Salsa de tomate'],
+    // Salsa picante → matchea "Sal" por substring "sal"
+    [/^salsa picant/i, 'e98d8405-0b53-4cf6-ac91-fd8eeb2cf831', 'Salsa tabasco'],
+    [/^salsa ingl/i, '464ace19-26f8-451c-b7bd-4159b8df63f5', 'Salsa Worcestershire Botella'],
+    [/^salsa perrins/i, '464ace19-26f8-451c-b7bd-4159b8df63f5', 'Salsa Worcestershire Botella'],
+    // Salsa de tomate variants → matchea "Sal" por substring "sal"
+    // Salsa de tomate variants → matchea "Sal" por substring "sal"
+    [/^salsa de tomate/i, '1d197cae-57f7-42ab-8b31-4be779410a32', 'Salsa de tomate'],
+    // Salsa de tomate sin azúcar(es añadidos) → matchea "Sal" por palabra "sal" + "tomate"
+    [/^salsa de tomate sin az[uú]c/i, '1d197cae-57f7-42ab-8b31-4be779410a32', 'Salsa de tomate'],
+    [/^salsa de tomate zero/i, '1d197cae-57f7-42ab-8b31-4be779410a32', 'Salsa de tomate'],
+    // Harina de almendra → matchea "Harina De Avena" por palabras comunes
+    [/^harina de almandr/i, '23ec40c0-75bf-4e8d-b4d9-a56405a809fb', 'Harina de almendra'],
+    [/^harina de almendr/i, '23ec40c0-75bf-4e8d-b4d9-a56405a809fb', 'Harina de almendra'],
+    // Harina de trigo → matchea "Harina De Avena" por palabras comunes
+    [/^harina de trig/i, '20c74a2a-e6f5-4fd9-8778-39e123d50333', 'Harina de trigo'],
+    // Ajo picado → matchea "Ajo" correctamente pero calidad gate lo detecta
+    [/^ajo picado/i, '248b631b-30cc-419c-93da-c3c61a56ebfc', 'Ajo Picado'],
+    // Azúcar glass/glas → matchea "azucar glas" correctamente pero calidad gate lo detecta
+    [/^az[uú]car\s*(glass|glas)/i, '70b4da1a-795a-4a63-b60c-7548d6cf189c', 'Azúcar glas'],
+    // Azúcar (standalone) → matchea "Refresco Coca-Cola Zero azúcar" por substring
+    [/^az[uú]car$/i, '2c6f1573-16be-4f70-9c75-39c5de606542', 'Azúcar'],
+    // Cubitos de hielo → matchea "Bolsas Cubitos Hielo Caja" (0 kcal)
+    [/^cubitos? de hielo/i, '41bfc3dd-c8c5-4d79-b86f-7ad4b3167b50', 'Cubos hielo'],
+    // Cebolla en polvo → matchea "Curry en polvo" por "polvo"
+    [/^cebolla en polvo/i, 'c17ad017-7fe4-46c9-b42f-e3c45c09b89d', 'Cebolla en polvo'],
+    // Espinacas baby → matchea "Piña" por heurística
+    [/^espinacas baby/i, 'd2291b23-9872-412b-99f4-0ea1f0a75d6a', 'Espinacas baby lavadas'],
+    [/^espinacas$/i, 'cb57d667-c292-4fd4-a081-f6d62840a908', 'Espinacas'],
+    // Tomates → matchea "Salsa de tomate Boloñesa" por palabra "tomate"
+    [/^tomates?$/i, '2a76a1e3-d073-43d3-8a79-fad47395fa02', 'Tomate natural'],
+    [/^tomates?\s+cherry/i, '59700c20-0241-4499-8c1e-e256a9c59e88', 'Rama de Tomates'],
+    [/^tomate tritura/i, '1390b7a4-693d-47c4-9a54-cf03649b8033', 'Tomate triturado'],
+    [/^tomate frito/i, '3b71ee6a-3d66-4a7a-9042-0471b1e96768', 'Tomate frito'],
+    // Fideos de arroz → matchea "Arros" (error ortográfico en DB)
+    [/^fideos? de arroz/i, '463f97f0-7e85-4242-bc35-b3235312b84c', 'Arroz'],
+    // Pasta de trufa → matchea "Pasta" por substring
+    [/^pasta de trufa/i, '3285d3b1-0875-490f-9ff0-3089054248ba', 'Pasta'],
     // Chocolate → matchea cereales de chocolate
     [/^chocolate negro/i, 'ccedb95e-bd69-4b1f-a940-3b5909db3a3d', 'Chocolate negro 85% cacao'],
-    [/^chocolate$/i,      'ccedb95e-bd69-4b1f-a940-3b5909db3a3d', 'Chocolate negro 85% cacao'],
+    [/^chocolate$/i, 'ccedb95e-bd69-4b1f-a940-3b5909db3a3d', 'Chocolate negro 85% cacao'],
     // Miel → matchea salsas con miel
-    [/^miel$/i,          '8619b09f-af3a-4ec4-a11c-f8eace75e90f', 'Miel'],
+    [/^miel$/i, '8619b09f-af3a-4ec4-a11c-f8eace75e90f', 'Miel'],
     // Calabaza → matchea pipas de calabaza
-    [/^calabaza$/i,      'cfd9ca77-0710-4f2b-bae1-0219fe9de85c', 'Calabaza'],
+    [/^calabaza$/i, 'cfd9ca77-0710-4f2b-bae1-0219fe9de85c', 'Calabaza'],
     // Zumo de limón → matchea "Zumo maracuyá y chía" u otros zumos por prefijo "zumo"
-    [/^zumo de lim/i,   '60ad001e-bb47-44ba-a48f-c8afe9a2e6f2', 'Limón'],
-    [/^jugo de lim/i,   '60ad001e-bb47-44ba-a48f-c8afe9a2e6f2', 'Limón'],
+    [/^zumo de lim/i, '60ad001e-bb47-44ba-a48f-c8afe9a2e6f2', 'Limón'],
+    [/^jugo de lim/i, '60ad001e-bb47-44ba-a48f-c8afe9a2e6f2', 'Limón'],
     // Spray de aceite → matchea "Aceite de Aguacate Cristal" u otros aceites de supermercado
     [/^spray.*aceite/i, 'bf392211-3527-4c7d-98a5-a2fc0bda8270', 'Aceite de oliva'],
-    [/^aceite en spray/i,'bf392211-3527-4c7d-98a5-a2fc0bda8270', 'Aceite de oliva'],
+    [/^aceite en spray/i, 'bf392211-3527-4c7d-98a5-a2fc0bda8270', 'Aceite de oliva'],
     // Ajo en polvo → matchea "Cebolla en polvo" por la palabra "polvo" en común
-    [/^ajo en polvo/i,  'bbece24a-301c-40fe-97d2-81fe63fca922', 'Ajo en polvo'],
+    [/^ajo en polvo/i, 'bbece24a-301c-40fe-97d2-81fe63fca922', 'Ajo en polvo'],
     // Tomates secos → matchea "Dátiles secos" por la palabra "secos" en común
-    [/^tomates? sec/i,  '954a260a-2a2b-45c1-810f-59d05987d5bd', 'Tomate seco'],
+    [/^tomates? sec/i, '954a260a-2a2b-45c1-810f-59d05987d5bd', 'Tomate seco'],
     // Yemas de huevo → matchea "Yemas muy Gruesas Frasco" (0 kcal) por prefijo "yema"
-    [/^yemas? de huevo/i,'fd38e2b4-8579-482a-9caf-0d0ae21087df', 'Yema de huevo'],
+    [/^yemas? de huevo/i, 'fd38e2b4-8579-482a-9caf-0d0ae21087df', 'Yema de huevo'],
     // Cebolla roja/morada → matchea "Cebolla frita crujiente" (500 kcal!) por prefijo "cebolla"
     [/^cebolla\s*(roja|morada)/i, '08637e90-5e34-4cb3-baa9-b63bbb168f97', 'Cebolla roja'],
     // Miso → matchea "Vinagre de vino blanco" por heurística de palabras
-    [/^miso/i,           '8637e22c-259e-40df-ad22-3e466784ea90', 'Miso blanco'],
+    [/^miso/i, '8637e22c-259e-40df-ad22-3e466784ea90', 'Miso blanco'],
+    // Salsa Bragg (aminos)→ matchea "Salsa de soja" por "salsa"
+    [/^bragg/i, '49357762-14ba-4b73-9fec-b5a9fa37e80a', 'Salsa de soja'],
+    [/^salsa de soja/i, '49357762-14ba-4b73-9fec-b5a9fa37e80a', 'Salsa de soja'],
+    // Bebida de avena → matchea "Copos de avena" por "avena"
+    [/^bebida de avena/i, '4c7ae3c8-6d68-4d20-ba93-66aaeff9c196', 'Bebida de avena'],
+    // Pasta de dientes virulenta → matchea por "pasta"
+    [/^pasta de dientes/i, null, null], // non-food, se salta
     // Tortilla de harina/trigo/wrap → matchea "Huevos" porque en español "tortilla" = huevos
     [/^tortilla\s*(de\s*)?(harina|trigo|wrap)/i, '4922ca42-8512-40b1-8b9d-ab0e19fe2ca9', 'Tortilla Trigo'],
-    [/^wrap\s*(de\s*)?(trigo|harina)/i,          '4922ca42-8512-40b1-8b9d-ab0e19fe2ca9', 'Tortilla Trigo'],
+    [/^wrap\s*(de\s*)?(trigo|harina)/i, '4922ca42-8512-40b1-8b9d-ab0e19fe2ca9', 'Tortilla Trigo'],
 ]
 
 // IDs de alimentos que son SOSPECHOSOS como resultado de match (productos muy procesados o matches claramente erróneos)
@@ -342,63 +391,63 @@ ${listaIng}`
 const CONDIMENTO_DEFAULTS_100G = [
     // Sal y variantes
     { kw: ['sal marina', 'sal del himalaya', 'sal rosa', 'sal gorda', 'fleur de sel', 'sal en escamas', 'sal ahumada'], g: 5 },
-    { kw: ['sal'],                                                                         g: 5 },
+    { kw: ['sal'], g: 5 },
     // Pimienta
-    { kw: ['pimienta negra', 'pimienta blanca', 'pimienta rosa', 'pimienta verde'],       g: 2 },
-    { kw: ['pimienta'],                                                                    g: 2 },
+    { kw: ['pimienta negra', 'pimienta blanca', 'pimienta rosa', 'pimienta verde'], g: 2 },
+    { kw: ['pimienta'], g: 2 },
     // Pimentón / paprika
     { kw: ['pimenton ahumado', 'pimenton picante', 'pimenton dulce', 'pimenton', 'paprika smoked', 'paprika'], g: 5 },
     // Hierbas secas
-    { kw: ['oregano'],                                                                     g: 3 },
-    { kw: ['tomillo'],                                                                     g: 2 },
-    { kw: ['romero seco', 'romero'],                                                       g: 2 },
-    { kw: ['albahaca seca', 'albahaca'],                                                   g: 3 },
-    { kw: ['perejil seco'],                                                                g: 5 },
-    { kw: ['cilantro seco'],                                                               g: 5 },
-    { kw: ['eneldo seco', 'eneldo'],                                                       g: 3 },
-    { kw: ['estragón seco', 'estragon'],                                                   g: 2 },
-    { kw: ['laurel'],                                                                      g: 2 },
+    { kw: ['oregano'], g: 3 },
+    { kw: ['tomillo'], g: 2 },
+    { kw: ['romero seco', 'romero'], g: 2 },
+    { kw: ['albahaca seca', 'albahaca'], g: 3 },
+    { kw: ['perejil seco'], g: 5 },
+    { kw: ['cilantro seco'], g: 5 },
+    { kw: ['eneldo seco', 'eneldo'], g: 3 },
+    { kw: ['estragón seco', 'estragon'], g: 2 },
+    { kw: ['laurel'], g: 2 },
     // Especias en polvo
-    { kw: ['comino molido', 'comino en polvo', 'comino'],                                  g: 3 },
-    { kw: ['curcuma', 'cúrcuma'],                                                          g: 3 },
-    { kw: ['curry en polvo', 'curry'],                                                     g: 5 },
-    { kw: ['canela en polvo', 'canela molida', 'canela'],                                  g: 5 },
-    { kw: ['jengibre en polvo', 'jengibre molido'],                                        g: 4 },
-    { kw: ['jengibre'],                                                                    g: 5 },
-    { kw: ['ajo en polvo', 'ajo molido'],                                                  g: 3 },
-    { kw: ['cebolla en polvo', 'cebolla molida'],                                          g: 5 },
-    { kw: ['cardamomo'],                                                                   g: 2 },
-    { kw: ['clavo'],                                                                       g: 2 },
-    { kw: ['anis estrellado', 'anis', 'anís'],                                             g: 3 },
-    { kw: ['nuez moscada'],                                                                g: 2 },
-    { kw: ['azafran', 'azafrán'],                                                          g: 1 },
+    { kw: ['comino molido', 'comino en polvo', 'comino'], g: 3 },
+    { kw: ['curcuma', 'cúrcuma'], g: 3 },
+    { kw: ['curry en polvo', 'curry'], g: 5 },
+    { kw: ['canela en polvo', 'canela molida', 'canela'], g: 5 },
+    { kw: ['jengibre en polvo', 'jengibre molido'], g: 4 },
+    { kw: ['jengibre'], g: 5 },
+    { kw: ['ajo en polvo', 'ajo molido'], g: 3 },
+    { kw: ['cebolla en polvo', 'cebolla molida'], g: 5 },
+    { kw: ['cardamomo'], g: 2 },
+    { kw: ['clavo'], g: 2 },
+    { kw: ['anis estrellado', 'anis', 'anís'], g: 3 },
+    { kw: ['nuez moscada'], g: 2 },
+    { kw: ['azafran', 'azafrán'], g: 1 },
     { kw: ['cayena', 'chile flakes', 'hojuelas de chile', 'copos de chile', 'chile en polvo'], g: 2 },
-    { kw: ['mostaza en polvo'],                                                            g: 5 },
+    { kw: ['mostaza en polvo'], g: 5 },
     // Levaduras y gasificantes
-    { kw: ['bicarbonato sodico', 'bicarbonato'],                                           g: 5 },
-    { kw: ['levadura quimica', 'polvo de hornear', 'polvo hornear', 'royal'],              g: 8 },
+    { kw: ['bicarbonato sodico', 'bicarbonato'], g: 5 },
+    { kw: ['levadura quimica', 'polvo de hornear', 'polvo hornear', 'royal'], g: 8 },
     // Extractos y esencias
     { kw: ['extracto de vainilla', 'extracto vainilla', 'esencia de vainilla', 'esencia vainilla'], g: 5 },
-    { kw: ['esencia de almendra', 'aroma de almendra'],                                    g: 5 },
+    { kw: ['esencia de almendra', 'aroma de almendra'], g: 5 },
     // Potenciadores
-    { kw: ['glutamato', 'glutamato monosodico', 'msg'],                                    g: 3 },
+    { kw: ['glutamato', 'glutamato monosodico', 'msg'], g: 3 },
     // Salsas y líquidos de condimentación (suelen ser 10-30g, no 100g)
-    { kw: ['salsa de soja', 'soja baja en sal', 'tamari'],                                 g: 20 },
+    { kw: ['salsa de soja', 'soja baja en sal', 'tamari'], g: 20 },
     { kw: ['vinagre de arroz', 'vinagre de manzana', 'vinagre de vino', 'vinagre balsámico', 'vinagre balsamico', 'vinagre'], g: 15 },
-    { kw: ['miso blanco', 'miso rojo', 'pasta de miso', 'miso'],                           g: 15 },
-    { kw: ['aceite de sesamo', 'aceite de sésamo', 'aceite de coco'],                      g: 10 },
-    { kw: ['aceite de aguacate'],                                                           g: 10 },
-    { kw: ['zumo de lima', 'jugo de lima', 'lima'],                                        g: 30 },
-    { kw: ['zumo de limon', 'jugo de limon'],                                              g: 20 },
-    { kw: ['miel'],                                                                        g: 15 },
-    { kw: ['sriracha', 'tabasco', 'salsa picante'],                                        g: 8 },
-    { kw: ['chipotle', 'chipotles en adobo'],                                              g: 25 },
-    { kw: ['tahini', 'tahín'],                                                             g: 20 },
-    { kw: ['mostaza'],                                                                     g: 10 },
-    { kw: ['ketchup'],                                                                     g: 20 },
-    { kw: ['salsa worcestershire', 'worcestershire'],                                      g: 10 },
-    { kw: ['pasta de curry', 'pasta curry'],                                               g: 20 },
-    { kw: ['concentrado de tomate', 'tomate concentrado'],                                 g: 15 },
+    { kw: ['miso blanco', 'miso rojo', 'pasta de miso', 'miso'], g: 15 },
+    { kw: ['aceite de sesamo', 'aceite de sésamo', 'aceite de coco'], g: 10 },
+    { kw: ['aceite de aguacate'], g: 10 },
+    { kw: ['zumo de lima', 'jugo de lima', 'lima'], g: 30 },
+    { kw: ['zumo de limon', 'jugo de limon'], g: 20 },
+    { kw: ['miel'], g: 15 },
+    { kw: ['sriracha', 'tabasco', 'salsa picante'], g: 8 },
+    { kw: ['chipotle', 'chipotles en adobo'], g: 25 },
+    { kw: ['tahini', 'tahín'], g: 20 },
+    { kw: ['mostaza'], g: 10 },
+    { kw: ['ketchup'], g: 20 },
+    { kw: ['salsa worcestershire', 'worcestershire'], g: 10 },
+    { kw: ['pasta de curry', 'pasta curry'], g: 20 },
+    { kw: ['concentrado de tomate', 'tomate concentrado'], g: 15 },
 ]
 
 function buscarCondimentoDefault(nombreLibre) {
@@ -500,8 +549,8 @@ async function fase4_recalcularMacros(recetas) {
             if (!r || !r.calorias) continue
             const f = ing.cantidad_gramos / 100
             if (!porReceta[ing.receta_id]) porReceta[ing.receta_id] = { kcal: 0, prot: 0, carbs: 0, grasas: 0 }
-            porReceta[ing.receta_id].kcal  += (r.calorias || 0) * f
-            porReceta[ing.receta_id].prot  += (r.proteinas || 0) * f
+            porReceta[ing.receta_id].kcal += (r.calorias || 0) * f
+            porReceta[ing.receta_id].prot += (r.proteinas || 0) * f
             porReceta[ing.receta_id].carbs += (r.carbohidratos || 0) * f
             porReceta[ing.receta_id].grasas += (r.grasas || 0) * f
         }
@@ -512,10 +561,10 @@ async function fase4_recalcularMacros(recetas) {
             if (totales.kcal < 1) continue // sin datos útiles
 
             const { error } = await supabase.from('recetas').update({
-                kcal:          Math.round(totales.kcal  / porciones * 10) / 10,
-                proteinas:     Math.round(totales.prot  / porciones * 10) / 10,
+                kcal: Math.round(totales.kcal / porciones * 10) / 10,
+                proteinas: Math.round(totales.prot / porciones * 10) / 10,
                 carbohidratos: Math.round(totales.carbs / porciones * 10) / 10,
-                grasas:        Math.round(totales.grasas / porciones * 10) / 10,
+                grasas: Math.round(totales.grasas / porciones * 10) / 10,
             }).eq('id', rid)
 
             if (!error) actualizadas++
@@ -531,25 +580,25 @@ async function fase4_recalcularMacros(recetas) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // Palabras clave por categoría — en minúsculas, sin acentos
-const GLUTEN_KW   = ['harina','pan ','pasta','galleta','bizcocho','cerveza','cebada','centeno','semola','espelta','kamut','trigo','bulgur','cuscus']
-const LACTOSA_KW  = ['leche','queso','mantequilla','nata ','yogur','crema ','ricotta','mascarpone','kefir','lactozym','requesón']
-const HUEVO_KW    = ['huevo','clara','yema']
-const FSECOS_KW   = ['almendra','nuez','nueces','anacardo','pistacho','avellana','macadamia','castana','pinon','cacahuete','cacahuetes','frutos secos','tahini','sesamo']
-const MARISCO_KW  = ['gamba','langostino','mejillon','almeja','calamar','pulpo','sepia','langosta','buey de mar','bogavante','percebes']
-const CARNE_KW    = ['pollo','pechuga','muslo','carne','ternera','cerdo','jamon','bacon','tocino','salchicha','chorizo','morcilla','pavo','pato','conejo','cordero','buey']
-const PESCADO_KW  = ['salmon','atun','merluza','bacalao','lubina','dorada','sardina','anchoa','bonito','trucha','rape','lenguado','mero','pez']
-const MIEL_KW     = ['miel']
-const AZUCAR_KW   = ['azucar','sacarosa','sirope','glucosa','fructosa','miel','mermelada','caramelo','chocolate']
+const GLUTEN_KW = ['harina', 'pan ', 'pasta', 'galleta', 'bizcocho', 'cerveza', 'cebada', 'centeno', 'semola', 'espelta', 'kamut', 'trigo', 'bulgur', 'cuscus']
+const LACTOSA_KW = ['leche', 'queso', 'mantequilla', 'nata ', 'yogur', 'crema ', 'ricotta', 'mascarpone', 'kefir', 'lactozym', 'requesón']
+const HUEVO_KW = ['huevo', 'clara', 'yema']
+const FSECOS_KW = ['almendra', 'nuez', 'nueces', 'anacardo', 'pistacho', 'avellana', 'macadamia', 'castana', 'pinon', 'cacahuete', 'cacahuetes', 'frutos secos', 'tahini', 'sesamo']
+const MARISCO_KW = ['gamba', 'langostino', 'mejillon', 'almeja', 'calamar', 'pulpo', 'sepia', 'langosta', 'buey de mar', 'bogavante', 'percebes']
+const CARNE_KW = ['pollo', 'pechuga', 'muslo', 'carne', 'ternera', 'cerdo', 'jamon', 'bacon', 'tocino', 'salchicha', 'chorizo', 'morcilla', 'pavo', 'pato', 'conejo', 'cordero', 'buey']
+const PESCADO_KW = ['salmon', 'atun', 'merluza', 'bacalao', 'lubina', 'dorada', 'sardina', 'anchoa', 'bonito', 'trucha', 'rape', 'lenguado', 'mero', 'pez']
+const MIEL_KW = ['miel']
+const AZUCAR_KW = ['azucar', 'sacarosa', 'sirope', 'glucosa', 'fructosa', 'miel', 'mermelada', 'caramelo', 'chocolate']
 
 function detectarIntolerancias(ingredientesNombres) {
     const todos = ingredientesNombres.map(n => normalizar(n)).join(' ')
     const tiene = kws => kws.some(k => todos.includes(k))
 
     const tags = []
-    if (!tiene(GLUTEN_KW))  tags.push('Sin Gluten')
+    if (!tiene(GLUTEN_KW)) tags.push('Sin Gluten')
     if (!tiene(LACTOSA_KW)) tags.push('Sin Lactosa')
-    if (!tiene(HUEVO_KW))   tags.push('Sin Huevo')
-    if (!tiene(FSECOS_KW))  tags.push('Sin Frutos Secos')
+    if (!tiene(HUEVO_KW)) tags.push('Sin Huevo')
+    if (!tiene(FSECOS_KW)) tags.push('Sin Frutos Secos')
     if (!tiene(MARISCO_KW)) tags.push('Sin Mariscos')
     if (!tiene(CARNE_KW) && !tiene(PESCADO_KW) && !tiene(MARISCO_KW) && !tiene(HUEVO_KW) && !tiene(LACTOSA_KW) && !tiene(MIEL_KW)) tags.push('Vegano')
     else if (!tiene(CARNE_KW) && !tiene(PESCADO_KW) && !tiene(MARISCO_KW)) tags.push('Vegetariano')

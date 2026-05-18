@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { completarAlimentoConIA } from '@/lib/deepseek'
+import { completarAlimentoConIA, refinarRecetaConIA } from '@/lib/deepseek'
 
 const execAsync = promisify(exec)
 
@@ -342,7 +342,7 @@ async function callDeepSeekExtraction(html: string): Promise<any> {
 El campo descripcion_porcion describe qué es físicamente 1 porción. Ejemplos: "1 galleta", "2 tacos", "1 rebanada", "1 bol", "1 donut", "1 porción de tarta". Infierelo del nombre de la receta, el yield y las instrucciones. Si no está claro, pon null.
 TEXTO WEB: ${texto}`
 
-  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_KEY}` },
@@ -862,7 +862,7 @@ async function extractRecipeFromSocial(url: string, fuenteTipo: string): Promise
 }
 Árbol: ${tree.substring(0, 10000)}`
 
-  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
+  const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
   const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEEPSEEK_KEY}` },
@@ -1076,6 +1076,68 @@ export async function POST(req: NextRequest) {
             { error: 'No se pudo extraer la receta de esta URL' },
             { status: 422 }
           )
+        }
+      }
+    }
+
+    // ════════════════════════════════════════════════════════
+    // Stage 2: IA REFINEMENT — Limpiar y estructurar receta
+    // ════════════════════════════════════════════════════════
+    // Aplica a redes sociales (Instagram/TikTok) donde los datos llegan sucios:
+    // hashtags, @menciones, emojis, medidas imperiales, ingredientes en inglés.
+    // Para web, solo si se detectan signos de contenido social.
+    // Non-blocking: si falla, continuamos con los datos extraídos originales.
+    if (extracted?.nombre) {
+      const esSocial = fuenteTipo === 'instagram' || fuenteTipo === 'tiktok'
+      const textoSucio = [
+        extracted.instrucciones || '',
+        ...(extracted.ingredientes || []).map((i: any) =>
+          typeof i === 'string' ? i : `${i.cantidad || ''} ${i.unidad || ''} ${i.nombre || ''}`
+        ),
+      ].join(' ')
+      const tieneSuciedad = /[#@]|cup\b|tbsp\b|tsp\b|oz\b|lb\b|tablespoon|teaspoon|inch/i.test(textoSucio)
+
+      if (esSocial || tieneSuciedad) {
+        try {
+          const textoCrudo = [
+            extracted.nombre || '',
+            extracted.descripcion || '',
+            ...(Array.isArray(extracted.instrucciones)
+              ? extracted.instrucciones
+              : [extracted.instrucciones || '']),
+            ...(extracted.ingredientes || []).map((i: any) =>
+              typeof i === 'string' ? i : `${i.cantidad || ''} ${i.unidad || ''} ${i.nombre || ''}`
+            ),
+          ].filter(Boolean).join('\n\n')
+
+          if (textoCrudo.length > 50) {
+            const refined = await refinarRecetaConIA(textoCrudo, url)
+            console.log(`[Stage 2] Refinada "${extracted.nombre}" → "${refined.data.nombre}" (${refined.total_tokens} tokens)`)
+
+            // Merge: datos refinados sobreescriben, preservamos campos estructurales
+            extracted.nombre = refined.data.nombre
+            extracted.descripcion = refined.data.descripcion
+            extracted.instrucciones = refined.data.instrucciones
+            extracted.porciones = refined.data.porciones ?? extracted.porciones
+            extracted.tiempo_prep_min = refined.data.tiempo_prep_min ?? extracted.tiempo_prep_min
+            extracted.tiempo_coccion_min = refined.data.tiempo_coccion_min ?? extracted.tiempo_coccion_min
+            if (!extracted.imagen_url) extracted.imagen_url = refined.data.imagen_url
+
+            // Reemplazar ingredientes con los refinados (ya convertidos a gramos, traducidos)
+            if (refined.data.ingredientes?.length) {
+              extracted.ingredientes = refined.data.ingredientes.map((ing, idx: number) => ({
+                nombre: ing.nombre_limpio,
+                cantidad: ing.cantidad_gramos,
+                unidad: 'g',
+                nombre_original: ing.nombre_original,
+                macros_100g: ing.macros_100g,
+                orden: idx,
+              }))
+            }
+          }
+        } catch (err) {
+          console.warn('[Stage 2] Refinamiento IA falló (non-blocking):', err instanceof Error ? err.message : err)
+          // Non-blocking — continuamos con datos originales
         }
       }
     }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Clock, Users, Flame } from 'lucide-react'
+import { Clock, Users, Flame, Hash } from 'lucide-react'
 
 interface RecipeCardPremiumProps {
     id: string
@@ -15,6 +15,7 @@ interface RecipeCardPremiumProps {
     proteinas?: number
     carbohidratos?: number
     grasas?: number
+    tags?: string[]
     className?: string
 }
 
@@ -35,10 +36,12 @@ export function RecipeCardPremium({
     proteinas = 0,
     carbohidratos = 0,
     grasas = 0,
+    tags,
     className = '',
 }: RecipeCardPremiumProps) {
     const [imgLoaded, setImgLoaded] = useState(false)
     const hasMacros = proteinas > 0 || carbohidratos > 0 || grasas > 0
+    const topTags = tags?.slice(0, 2) ?? []
 
     return (
         <Link
@@ -105,6 +108,28 @@ export function RecipeCardPremium({
                 >
                     {categoria}
                 </span>
+            )}
+
+            {/* Tags chips — esquina derecha */}
+            {topTags.length > 0 && (
+                <div className="absolute top-3 right-3 flex flex-wrap gap-1 justify-end max-w-[50%]">
+                    {topTags.map(t => (
+                        <span
+                            key={t}
+                            className="text-[10px] px-1.5 py-0.5 rounded-md font-medium"
+                            style={{
+                                background: 'rgba(0,0,0,0.35)',
+                                backdropFilter: 'blur(8px)',
+                                WebkitBackdropFilter: 'blur(8px)',
+                                color: 'rgba(255,255,255,0.8)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                            }}
+                        >
+                            <Hash size={9} className="inline mr-0.5" />
+                            {t}
+                        </span>
+                    ))}
+                </div>
             )}
 
             {/* Info inferior — sobre el overlay */}

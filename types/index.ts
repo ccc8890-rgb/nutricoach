@@ -466,6 +466,12 @@ export interface CosteAlimento {
   cantidad_total_gramos: number
   precio_por_kg: number
   coste_total_euros: number
+  /** % de merma estimado (pérdida en cocción/manipulación) — ej: 10 = 10% */
+  merma_pct?: number
+  /** Coste real aplicando la merma: coste_euros / (1 - merma/100) */
+  coste_con_merma?: number
+  /** Coste por porción (coste_total_euros / porciones del plan) */
+  coste_por_porcion?: number
   recetas_json?: { comida_nombre: string; gramos: number }[]
 }
 
@@ -475,17 +481,37 @@ export interface CosteComida {
   cantidad_gramos: number
   precio_por_kg: number
   coste_euros: number
+  /** % de merma estimado para este ingrediente */
+  merma_pct?: number
+  /** Coste incluyendo merma */
+  coste_con_merma?: number
 }
 
 export interface CostePorReceta {
   comida_nombre: string
   coste_total: number
+  /** Coste total incluyendo merma */
+  coste_total_con_merma?: number
   alimentos: CosteComida[]
 }
 
 export interface ResumenCostesPlan {
   supermercado_seleccionado: string | null
   precio_total: number
+  /** Precio total incluyendo merma */
+  precio_total_con_merma?: number
+  /** Coste por porción del plan (precio_total / porciones) */
+  coste_por_porcion?: number
+  /** % de merma media ponderada */
+  merma_media_pct?: number
+  /** Precio de venta recomendado (precio_total_con_merma * (1 + margen/100)) */
+  precio_venta_sin_iva?: number
+  /** Precio de venta con IVA (10% por defecto para alimentación) */
+  precio_venta_con_iva?: number
+  /** Margen de beneficio aplicado (%) — ej: 30 = 30% */
+  margen_beneficio_pct?: number
+  /** Beneficio neto estimado (precio_venta_sin_iva - precio_total_con_merma) */
+  beneficio_neto?: number
   alimentos: CosteAlimento[]
   coste_por_comida: CostePorReceta[]
 }
@@ -525,6 +551,10 @@ export interface OpcionEscandallo {
     precio_por_kg: number
   }
   coste_euros: number
+  /** % de merma estimado (pérdida en cocción/manipulación) */
+  merma_pct?: number
+  /** Coste real aplicando la merma */
+  coste_con_merma?: number
   alternativas: {
     id: string
     supermercado_nombre: string
@@ -536,9 +566,23 @@ export interface OpcionEscandallo {
 /** Resultado completo del cálculo de escandallo con multi-precio */
 export interface EscandalloPlan {
   precio_total: number
+  /** Precio total incluyendo merma */
+  precio_total_con_merma?: number
+  /** Coste por porción (precio_total / porciones) */
+  coste_por_porcion?: number
+  /** % de merma media ponderada */
+  merma_media_pct?: number
   supermercado_base?: string        // supermercado del preferido mayoritario
   alimentos: OpcionEscandallo[]
   ahorro_potencial: number          // lo que se ahorraría yendo al más barato
+  /** Precio de venta recomendado (precio_total_con_merma * (1 + margen/100)) */
+  precio_venta_sin_iva?: number
+  /** Precio de venta con IVA */
+  precio_venta_con_iva?: number
+  /** Margen de beneficio aplicado (%) */
+  margen_beneficio_pct?: number
+  /** Beneficio neto estimado */
+  beneficio_neto?: number
 }
 
 // ============================================================

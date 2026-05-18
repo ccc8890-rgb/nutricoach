@@ -347,6 +347,9 @@ function quitarAcentos(s: string): string {
 /**
  * Busca un alimento en el Map in-memory usando la misma lógica que buscarAlimento()
  * pero sin queries a Supabase.
+ *
+ * MEJORA v2: nivel 5 usa word boundaries (\\b) para evitar falsos positivos
+ * como "Poma" → "Pomada", "Sal" → "Salsa", "Surimi" → no encuentra en "Refresco Coca-Cola"
  */
 function matchAlimentoInMemory(
     nombreLimpio: string,
@@ -404,10 +407,17 @@ function matchAlimentoInMemory(
         }
     }
 
-    // 5. Último recurso en memoria: cualquier palabra individual
-    for (const palabra of (palabras.length ? palabras : [lower]).sort((a, b) => b.length - a.length)) {
+    // 5. Último recurso: palabra individual con límite de palabra (\\b)
+    // ANTES: a.nombreLower.includes(palabra) → "Poma" MATCH "Pomada" (FALSO POSITIVO)
+    // AHORA: \\bpalabra\\b → "Poma" NO match "Pomada", solo matchea si es palabra completa
+    const palabrasFiltradas = (palabras.length ? palabras : [lower])
+        .filter(p => p.length >= 3)  // palabras de 1-2 letras son ruido (preposiciones, artículos, "sal"? "sal" tiene 3)
+        .sort((a, b) => b.length - a.length)
+
+    for (const palabra of palabrasFiltradas) {
+        const regex = new RegExp(`\\b${palabra.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
         for (const a of alimentosMap.values()) {
-            if (a.nombreLower.includes(palabra)) {
+            if (regex.test(a.nombreLower)) {
                 return a.id
             }
         }
@@ -461,15 +471,29 @@ async function cargarProductosExistentes(
     supermercadoId: string
 ): Promise<Map<string, string>> {
     const map = new Map<string, string>()
-    const { data } = await supabase
-        .from('productos_supermercado')
-        .select('id, nombre_original')
-        .eq('supermercado_id', supermercadoId)
+    const PAGE_SIZE = 1000
+    let desde = 0
+    let hayMas = true
 
-    if (data) {
+    while (hayMas) {
+        const { data, error } = await supabase
+            .from('productos_supermercado')
+            .select('id, nombre_original')
+            .eq('supermercado_id', supermercadoId)
+            .range(desde, desde + PAGE_SIZE - 1)
+            .order('id')
+
+        if (error || !data || data.length === 0) {
+            hayMas = false
+            break
+        }
+
         for (const p of data) {
             map.set(p.nombre_original, p.id)
         }
+
+        if (data.length < PAGE_SIZE) hayMas = false
+        else desde += PAGE_SIZE
     }
 
     console.log(`[Batch] Cargados ${map.size} productos existentes para supermercado`)

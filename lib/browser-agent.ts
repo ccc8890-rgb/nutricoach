@@ -17,7 +17,7 @@ import { chromium } from 'playwright'
 import type { ProductoRaw } from './scraping/types'
 
 const deepseek = createDeepSeek()
-const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
+const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 
 export interface BrowserAgentResult {
     productos: ProductoRaw[]

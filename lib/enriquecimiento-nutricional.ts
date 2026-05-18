@@ -18,7 +18,7 @@ import type { ResultadoEnriquecimiento, AlimentoPendienteEnriquecer } from '@/ty
 
 // ── Configuración ─────────────────────────────────────────────
 
-const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash' // Flash es más barato y suficiente para enriquecer macros
+const MODELO = process.env.DEEPSEEK_MODEL || 'deepseek-chat' // deepseek-chat (V3) — deepseek-v4-flash ya no existe
 const TEMPERATURA = 0.1
 const LOTES_POR_VEZ = 25 // nº de alimentos por llamada a DeepSeek
 const MAX_INTENTOS = 3

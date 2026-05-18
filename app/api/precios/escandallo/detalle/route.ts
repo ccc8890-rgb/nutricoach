@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
             })),
         }))
 
-        const resultado = await calcularEscandalloConAlternativas(comidasData, supermercadoId || null)
+        const resultado = await calcularEscandalloConAlternativas(comidasData, supermercadoId || null, srv)
 
         return NextResponse.json({
             cliente_id: clienteId,

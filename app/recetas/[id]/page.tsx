@@ -38,6 +38,7 @@ interface RecetaDetalle {
   tipo_plato?: string | null
   tiempo_prep_min?: number | null
   tiempo_coccion_min?: number | null
+  tags?: string[]
   estado?: string
   intolerancias?: string[]
   coach_id?: string
@@ -331,6 +332,25 @@ export default function DetalleRecetaPage() {
                 </span>
               )}
             </div>
+
+            {/* Tags */}
+            {receta.tags && Array.isArray(receta.tags) && receta.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {receta.tags.map((tag: string) => (
+                  <span
+                    key={tag}
+                    className="text-[11px] px-2 py-0.5 rounded-md font-medium"
+                    style={{
+                      background: 'var(--bg-subtle)',
+                      color: 'var(--text-muted)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </FadeIn>
 

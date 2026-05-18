@@ -14,10 +14,10 @@
  */
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
-// Modelos disponibles: deepseek-v4-flash, deepseek-v4-pro
+// Modelo actual: deepseek-chat (V3). NO usar deepseek-v4-pro ni deepseek-v4-flash (deprecados)
 // GET https://api.deepseek.com/v1/models
-// Configurable via DEEPSEEK_MODEL en .env.local (default: deepseek-v4-pro)
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
+// Configurable via DEEPSEEK_MODEL en .env.local (default: deepseek-chat)
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 
 interface DeepSeekMessage {
     role: 'system' | 'user' | 'assistant'

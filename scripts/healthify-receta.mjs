@@ -135,7 +135,7 @@ async function callDeepSeek(userPrompt) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEEPSEEK_KEY}` },
         body: JSON.stringify({
-            model: 'deepseek-v4-pro',
+            model: 'deepseek-chat',
             messages: [
                 { role: 'system', content: SYSTEM_PROMPT },
                 { role: 'user', content: userPrompt },

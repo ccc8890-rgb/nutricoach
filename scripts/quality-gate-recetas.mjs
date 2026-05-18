@@ -81,6 +81,55 @@ const SINONIMOS_VALIDOS = [
   ['crema chocolate avellana', 'nutella'],
   // Tomates secos → tomate seco (variante con/sin "hacendado" o "en aceite")
   ['tomates secos', 'tomate seco'],
+  // Queso cottage — variantes ortográficas
+  ['queso cottage', 'queso cottage'],
+  ['queso cotas', 'queso cottage'],
+  ['queso fresco', 'queso cottage'],
+  // Salsa de tomate — cualquier variante
+  ['salsa de tomate', 'salsa de tomate'],
+  ['salsa tomate', 'salsa de tomate'],
+  ['salsa verde', 'salsa de tomate'],
+  // Salsa picante
+  ['salsa picante', 'tabasco'],
+  ['salsa picante', 'salsa picante'],
+  // Salsa Worcestershire / inglesa
+  ['salsa inglesa', 'worcestershire'],
+  ['salsa perrins', 'worcestershire'],
+  // Harina de almendra
+  ['harina de almendra', 'harina de almendra'],
+  ['harina de almendras', 'harina de almendra'],
+  // Harina de trigo
+  ['harina de trigo', 'harina de trigo'],
+  // Ajo picado
+  ['ajo picado', 'ajo'],
+  // Azúcar glass/glas
+  ['azucar glass', 'azucar glas'],
+  ['azucar glas', 'azucar glas'],
+  // Cubitos de hielo → hielo
+  ['cubitos de hielo', 'cubos hielo'],
+  ['cubito de hielo', 'cubos hielo'],
+  ['hielo', 'cubos hielo'],
+  // Cebolla en polvo
+  ['cebolla en polvo', 'cebolla en polvo'],
+  // Espinacas baby
+  ['espinacas baby', 'espinacas'],
+  ['espinacas', 'espinacas'],
+  // Tomate natural/triturado/frito
+  ['tomates', 'tomate natural'],
+  ['tomates cherry', 'tomate pera'],
+  ['tomate triturado', 'tomate triturado'],
+  ['tomate frito', 'tomate frito'],
+  // Fideos de arroz → arroz
+  ['fideos de arroz', 'arroz'],
+  ['fideo de arroz', 'arroz'],
+  // Pasta de trufa → pasta
+  ['pasta de trufa', 'pasta'],
+  // Salsa de tomate sin azúcar
+  ['salsa de tomate sin azucar', 'salsa de tomate'],
+  ['salsa de tomate sin azúcar', 'salsa de tomate'],
+  ['salsa de tomate sin azucares', 'salsa de tomate'],
+  ['salsa de tomate sin azúcares', 'salsa de tomate'],
+  ['salsa de tomate zero', 'salsa de tomate'],
 ]
 
 // ── Matches forzados (cualquier patrón normalizado → alimento válido) ─────────
@@ -108,7 +157,7 @@ function normSingular(s) {
   // Elimina trailing 's' y 'es' para comparar singular/plural
   return s.endsWith('es') && s.length > 4 ? s.slice(0, -2)
     : s.endsWith('s') && s.length > 3 ? s.slice(0, -1)
-    : s
+      : s
 }
 
 function limpiarParentesis(s) {
@@ -207,7 +256,7 @@ function checkMatchSospechoso(nombreLibre, nombreAlimento) {
 
   // Limpiar paréntesis antes de analizar palabras
   const libreClean = limpiarParentesis(nombreLibre)
-  const alimClean  = limpiarParentesis(nombreAlimento)
+  const alimClean = limpiarParentesis(nombreAlimento)
 
   const wL = norm(libreClean).split(/\s+/).filter(w => !GENERICAS.has(w) && w.length > 3)
   const wA = norm(alimClean).split(/\s+/).filter(w => !GENERICAS.has(w) && w.length > 3)
@@ -228,12 +277,12 @@ function checkMatchSospechoso(nombreLibre, nombreAlimento) {
 // Potenciadores de sabor y condimentos muy concentrados con umbrales específicos
 // Se usan en cantidades de gramos, no de 100g → cualquier valor >threshold es sospechoso
 const CONDIMENTOS_FUERTES = [
-  { kw: ['glutamato', 'msg', 'potenciador'],   max: 8  },
-  { kw: ['tabasco', 'sriracha', 'hot sauce'],  max: 20 },
-  { kw: ['levadura nutricional'],               max: 30 },
+  { kw: ['glutamato', 'msg', 'potenciador'], max: 8 },
+  { kw: ['tabasco', 'sriracha', 'hot sauce'], max: 20 },
+  { kw: ['levadura nutricional'], max: 30 },
   { kw: ['polvo hornear', 'levadura quimica', 'bicarbonato'], max: 15 },
-  { kw: ['extracto vainilla', 'esencia'],       max: 10 },
-  { kw: ['colorante', 'tinte alimentario'],     max: 5  },
+  { kw: ['extracto vainilla', 'esencia'], max: 10 },
+  { kw: ['colorante', 'tinte alimentario'], max: 5 },
 ]
 
 function checkCantidadSospechosa(nombre, gramos) {
@@ -292,15 +341,15 @@ function checkAlimentoCeroKcal(nombreLibre, kcalAlimento, gramos) {
 
 function checkMacrosSospechosas(kcal, tipo_plato) {
   const RANGOS = {
-    'Desayuno':  { min: 80,  max: 900 },
-    'Almuerzo':  { min: 50,  max: 600 },
-    'Comida':    { min: 100, max: 1200 },
-    'Cena':      { min: 80,  max: 1000 },
-    'Snack':     { min: 30,  max: 500 },
-    'Merienda':  { min: 50,  max: 600 },
-    'Postre':    { min: 30,  max: 800 },
-    'Bebida':    { min: 0,   max: 300 },
-    'Condimento':{ min: 0,   max: 200 },
+    'Desayuno': { min: 80, max: 900 },
+    'Almuerzo': { min: 50, max: 600 },
+    'Comida': { min: 100, max: 1200 },
+    'Cena': { min: 80, max: 1000 },
+    'Snack': { min: 30, max: 500 },
+    'Merienda': { min: 50, max: 600 },
+    'Postre': { min: 30, max: 800 },
+    'Bebida': { min: 0, max: 300 },
+    'Condimento': { min: 0, max: 200 },
   }
   const rango = RANGOS[tipo_plato] || { min: 50, max: 1500 }
   if (kcal < rango.min) return `${kcal} kcal/porción es muy bajo para ${tipo_plato} (mín ${rango.min})`
@@ -486,7 +535,7 @@ async function main() {
 
   // Separar críticos de advertencias
   const conCriticos = issues.filter(r => r.issues.some(i => TIPOS_CRITICOS.includes(i.tipo)))
-  const soloAvisos  = issues.filter(r => r.issues.every(i => !TIPOS_CRITICOS.includes(i.tipo)))
+  const soloAvisos = issues.filter(r => r.issues.every(i => !TIPOS_CRITICOS.includes(i.tipo)))
 
   if (conCriticos.length > 0) {
     console.log(`\n🚨 CRÍTICOS — Requieren acción antes de publicar (${conCriticos.length} recetas):`)
