@@ -1,13 +1,15 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, ProgresionPlantilla, SportModality, TrainingTier } from '@/types'
-import { Dumbbell, Target, ChevronDown, ChevronUp, Check, Crown } from 'lucide-react'
+import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, ProgresionPlantilla, SportModality, TrainingTier, PerfilEntrenoCliente } from '@/types'
+import { Dumbbell, Target, ChevronDown, ChevronUp, Check, Crown, AlertTriangle, Sparkles } from 'lucide-react'
 import { MODALITY_CONFIG, detectarSubcategoriaLegacy } from '@/lib/entrenos/utils'
+import { evaluarPerfilEntreno, type RecomendacionEntreno } from '@/lib/motor-entreno'
 
 interface Props {
     onSeleccionar: (plantilla: PlantillaEntrenamiento) => void
     seleccionada: PlantillaEntrenamiento | null
+    clienteId?: string
 }
 
 const OBJETIVO_COLOR: Record<string, string> = {
@@ -19,12 +21,28 @@ const OBJETIVO_COLOR: Record<string, string> = {
     rendimiento:   'badge-teal',
 }
 
-export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada }: Props) {
+export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, clienteId }: Props) {
     const [plantillas, setPlantillas] = useState<PlantillaEntrenamiento[]>([])
     const [loading, setLoading] = useState(true)
     const [expandida, setExpandida] = useState<string | null>(null)
     const [filtroModalidad, setFiltroModalidad] = useState<SportModality | null>(null)
     const [filtroTier, setFiltroTier] = useState<TrainingTier | null>(null)
+    const [recomendacion, setRecomendacion] = useState<RecomendacionEntreno | null>(null)
+
+    useEffect(() => {
+        if (!clienteId) return
+        async function loadPerfil() {
+            const res = await fetch(`/api/perfil-entreno/${clienteId}`, { credentials: 'include' })
+            if (!res.ok) return
+            const { perfil } = await res.json() as { perfil: PerfilEntrenoCliente | null }
+            if (!perfil) return
+            const rec = evaluarPerfilEntreno(perfil)
+            setRecomendacion(rec)
+            if (rec.filtros_plantilla.sport_modality) setFiltroModalidad(rec.filtros_plantilla.sport_modality)
+            if (rec.filtros_plantilla.tier) setFiltroTier(rec.filtros_plantilla.tier)
+        }
+        loadPerfil().catch(() => {})
+    }, [clienteId])
 
     useEffect(() => {
         async function load() {
@@ -221,6 +239,36 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada }
             <p className="text-xs text-gray-400 mb-3">
                 Selecciona una plantilla para rellenar automáticamente las sesiones y ejercicios
             </p>
+
+            {/* Panel recomendación del motor */}
+            {recomendacion && (
+                <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50 p-3 space-y-2">
+                    <div className="flex items-start gap-2">
+                        <Sparkles size={13} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                            <p className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider mb-0.5">Motor de recomendación</p>
+                            <p className="text-xs text-blue-700">{recomendacion.foco_principal}</p>
+                        </div>
+                    </div>
+                    {recomendacion.advertencias.length > 0 && (
+                        <div className="space-y-1 pt-1 border-t border-blue-100">
+                            {recomendacion.advertencias.map((adv, i) => (
+                                <div key={i} className="flex items-start gap-1.5">
+                                    <AlertTriangle size={11} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                                    <p className="text-[11px] text-amber-700">{adv}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    {recomendacion.ajustes_adicionales.length > 0 && (
+                        <div className="space-y-1 pt-1 border-t border-blue-100">
+                            {recomendacion.ajustes_adicionales.map((aj, i) => (
+                                <p key={i} className="text-[11px] text-gray-500 pl-3 border-l-2 border-blue-200">{aj}</p>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Filtros */}
             <div className="flex flex-col gap-2 mb-4">

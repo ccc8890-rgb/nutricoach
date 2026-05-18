@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import ClienteEditar from '@/components/ClienteEditar'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
-import { ArrowLeft, UtensilsCrossed, Dumbbell, Weight, CalendarDays, Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2, Zap, Bot, Trophy, CopyPlus, X, Activity } from 'lucide-react'
+import { ArrowLeft, UtensilsCrossed, Dumbbell, Weight, CalendarDays, Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2, Zap, Bot, Trophy, CopyPlus, X, Activity, PersonStanding } from 'lucide-react'
 import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import { OBJETIVO_LABELS, NIVEL_LABELS } from '@/lib/utils'
@@ -32,6 +32,10 @@ const ProtocoloCompeticion = dynamic(() => import('@/components/ProtocoloCompeti
   loading: () => <div className="skeleton h-64 w-full rounded-xl" />,
   ssr: false,
 })
+const PerfilEntrenoForm = dynamic(() => import('@/components/training/PerfilEntrenoForm'), {
+  loading: () => <div className="skeleton h-48 w-full rounded-xl" />,
+  ssr: false,
+})
 const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel'), {
   loading: () => <div className="animate-pulse h-32 rounded-xl" style={{ background: 'var(--border)' }} />,
   ssr: false,
@@ -49,7 +53,7 @@ type NotaCoachRow = {
   created_at: string
 }
 
-type Tab = 'informacion' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion'
+type Tab = 'informacion' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion' | 'perfil_atleta'
 
 type ClienteConExtra = Cliente & {
   fecha_proxima_revision?: string
@@ -201,6 +205,7 @@ export default function ClienteDetallePage() {
     { key: 'periodizacion', label: 'Periodización', icon: Activity },
     { key: 'historial_ia', label: 'Historial IA', icon: Brain },
     { key: 'conversaciones_ia', label: 'Conversaciones IA', icon: Bot },
+    { key: 'perfil_atleta', label: 'Perfil Atleta', icon: PersonStanding },
     { key: 'ajuste_macros', label: 'Ajuste Macros', icon: Zap },
   ]
 
@@ -533,6 +538,10 @@ export default function ClienteDetallePage() {
           <ErrorBoundary>
             <PeriodizacionPanel clienteId={id as string} />
           </ErrorBoundary>
+        ) : tabActiva === 'perfil_atleta' ? (
+          <ErrorBoundary>
+            <PerfilEntrenoForm clienteId={id as string} />
+          </ErrorBoundary>
         ) : tabActiva === 'historial_ia' ? (
           <HistorialDietasIA clienteId={id as string} />
         ) : tabActiva === 'conversaciones_ia' ? (
@@ -567,6 +576,7 @@ export default function ClienteDetallePage() {
                 <PlantillaEntrenoSelector
                   onSeleccionar={setPlantillaSeleccionada}
                   seleccionada={plantillaSeleccionada}
+                  clienteId={id}
                 />
               </div>
 
