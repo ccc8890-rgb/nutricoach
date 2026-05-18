@@ -70,31 +70,38 @@ export async function POST(
             }).catch(err => console.error('Error en evaluación periodización:', err))
         }
 
-        // Generar feedback IA en background (no bloquea la respuesta)
+        // Generar feedback IA en background (fire-and-forget total — no bloquea la respuesta)
         if (data?.id && plan.cliente_id) {
-            const db = createServiceSupabase()
-            const { data: clienteInfo } = await db
-                .from('clientes')
-                .select('objetivo, profile:profiles!profile_id(nombre)')
-                .eq('id', plan.cliente_id)
-                .single()
+            const checkinId = data.id
+            const clienteId = plan.cliente_id
+                ; (async () => {
+                    try {
+                        const db = createServiceSupabase()
+                        const { data: clienteInfo } = await db
+                            .from('clientes')
+                            .select('objetivo, profile:profiles!profile_id(nombre)')
+                            .eq('id', clienteId)
+                            .single()
 
-            const nombreCliente = (clienteInfo?.profile as { nombre?: string } | null)?.nombre ?? 'cliente'
-            const objetivoCliente = (clienteInfo as { objetivo?: string | null } | null)?.objetivo ?? null
+                        const nombreCliente = (clienteInfo?.profile as { nombre?: string } | null)?.nombre ?? 'cliente'
+                        const objetivoCliente = (clienteInfo as { objetivo?: string | null } | null)?.objetivo ?? null
 
-            generarFeedbackCheckinIA({
-                nombre: nombreCliente,
-                peso: peso ?? null,
-                adherencia: adherencia ?? null,
-                energia: energia ?? null,
-                sueno: sueno ?? null,
-                objetivo: objetivoCliente,
-            }).then(async (mensaje) => {
-                if (mensaje) {
-                    const sdb = createServiceSupabase()
-                    await sdb.from('checkins').update({ mensaje_coach_ia: mensaje }).eq('id', data.id)
-                }
-            }).catch(() => null) // nunca bloquea aunque falle
+                        const mensaje = await generarFeedbackCheckinIA({
+                            nombre: nombreCliente,
+                            peso: peso ?? null,
+                            adherencia: adherencia ?? null,
+                            energia: energia ?? null,
+                            sueno: sueno ?? null,
+                            objetivo: objetivoCliente,
+                        })
+                        if (mensaje) {
+                            const sdb = createServiceSupabase()
+                            await sdb.from('checkins').update({ mensaje_coach_ia: mensaje }).eq('id', checkinId)
+                        }
+                    } catch {
+                        // Silencioso — nunca bloquea la respuesta HTTP
+                    }
+                })()
         }
 
         return NextResponse.json({ success: true, checkin: data })

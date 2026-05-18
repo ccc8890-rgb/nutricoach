@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { UtensilsCrossed, Dumbbell, Weight, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
@@ -10,7 +10,7 @@ import ListaCompraPortal from '@/components/PortalCliente/ListaCompraPortal'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
 import GraficoPeso from '@/components/PortalCliente/GraficoPeso'
 
-export default function PortalClientePage() {
+function PortalClientePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showBienvenida, setShowBienvenida] = useState(false)
@@ -379,5 +379,17 @@ export default function PortalClientePage() {
 
       <InstallBanner />
     </div>
+  )
+}
+
+export default function PortalClientePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
+      </div>
+    }>
+      <PortalClientePageContent />
+    </Suspense>
   )
 }

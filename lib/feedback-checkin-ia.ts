@@ -15,11 +15,11 @@ export async function generarFeedbackCheckinIA(datos: DatosCheckin): Promise<str
     if (!apiKey) return null
 
     const partes = []
-    if (datos.peso) partes.push(`peso: ${datos.peso} kg`)
-    if (datos.adherencia) partes.push(`adherencia al plan: ${datos.adherencia}/10`)
-    if (datos.energia) partes.push(`energía: ${datos.energia}/10`)
-    if (datos.sueno) partes.push(`sueño: ${datos.sueno}/10`)
-    if (datos.objetivo) partes.push(`objetivo: ${datos.objetivo}`)
+    if (datos.peso != null) partes.push(`peso: ${datos.peso} kg`)
+    if (datos.adherencia != null) partes.push(`adherencia al plan: ${datos.adherencia}/10`)
+    if (datos.energia != null) partes.push(`energía: ${datos.energia}/10`)
+    if (datos.sueno != null) partes.push(`sueño: ${datos.sueno}/10`)
+    if (datos.objetivo != null) partes.push(`objetivo: ${datos.objetivo}`)
 
     const resumenCheckin = partes.join(', ')
 

@@ -71,7 +71,7 @@ export async function GET(request: Request) {
 
             // 3. Si lleva 7+ días sin check-in, enviar recordatorio
             if (diasSinCheckin >= 7) {
-                const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://nutricoach.vercel.app'}/cliente?codigo=${codigoPublico}`
+                const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://nutricoach.vercel.app'}/cliente`
                 await sendRecordatorioCheckinEmail({ to: email, nombre, portalUrl })
                 resultados.enviados++
                 resultados.detalles.push(`[${cliente.id}] ✅ recordatorio enviado a ${email} (${diasSinCheckin}d sin check-in)`)
