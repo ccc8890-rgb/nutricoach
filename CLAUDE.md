@@ -2,6 +2,63 @@
 
 ---
 
+## 🔴 IMÁGENES DE RECETAS — Reglas absolutas (leer antes de tocar cualquier imagen)
+
+### Modelo único: `gpt-image-1` (OpenAI)
+**NUNCA** usar Flux Pro, Replicate, Stable Diffusion, ni ningún otro modelo.
+`gpt-image-1.5` era el nombre antiguo — ahora es `gpt-image-1`. Mismo endpoint, mismo modelo.
+
+### Estética obligatoria (todas las recetas deben verse así)
+> Foto food blogger español en casa. Luz natural de ventana, suave y difusa. Composición overhead o 45°, ligeramente imperfecta. Plato cerámico o bowl simple. Mesa de madera o encimera blanca/mármol. Tonos cálidos mediterráneos. Sin texto, sin watermarks, sin personas, sin manos, sin logos. Photorealistic. 1:1.
+
+### Clasificación de imágenes en BD (18-05-2026)
+
+| Tipo | Criterio SQL | Regla |
+|------|-------------|-------|
+| ✅ Protegida | `url_origen IS NOT NULL` (109 recetas) | **NUNCA regenerar** — thumbnails IG/TikTok reales |
+| ✅ Protegida compartida | `imagen_url` igual que una protegida (ej: Wrap César Fit) | **NUNCA regenerar** |
+| ✅ Serie Chef | `imagen_url` formato UUID sin `auto_` (10 recetas) | **NUNCA regenerar** |
+| 🔴 Mala | `url_origen IS NULL` + `imagen_url LIKE '%/auto_%'` (147 recetas) | **Regenerar con script** |
+
+### Scripts de imagen disponibles
+
+```bash
+cd nutricoach
+
+# Regenerar las 147 imágenes malas con estilo food blogger:
+node scripts/regenerar-imagenes-malas.mjs              # preview
+node scripts/regenerar-imagenes-malas.mjs --prueba --genera   # 3 de prueba
+node scripts/regenerar-imagenes-malas.mjs --genera            # todas (~$5)
+node scripts/regenerar-imagenes-malas.mjs --genera --limite 20  # por lotes
+node scripts/regenerar-imagenes-malas.mjs --repara-chuck --genera  # Chuck Fudge
+
+# Para nuevas recetas (si el bridge falla la imagen):
+# → Usar prompt del NUTRICION/CLAUDE.md sección "REGLA ABSOLUTA"
+# → Modelo: gpt-image-1, size: 1024x1024, quality: medium, output_format: jpeg
+# → Subir a bucket 'recetas', path 'blog/{uuid}.jpg'
+# → UPDATE recetas SET imagen_url = publicUrl WHERE id = uuid
+```
+
+### Prompt estándar txt2img
+
+```
+Photorealistic food photo of "[nombre]".
+Key ingredients visible: [hasta 6 ingredientes].
+Setting: [tipo_plato descripción] on a simple ceramic dish, wooden kitchen table.
+Style: Spanish nutrition coach's Instagram — personal food blog aesthetic.
+Natural window light, soft and diffused, not dramatic. Sony mirrorless camera.
+Slightly imperfect home plating, warm Mediterranean tones. Square 1:1 format.
+No text, no watermarks, no people, no hands, no logos.
+```
+
+### Lo que NO hacer nunca
+- ❌ `gpt-image-1.5` (nombre antiguo, puede no funcionar — usar `gpt-image-1`)
+- ❌ Flux Pro / Replicate — sin crédito y sin acceso
+- ❌ Regenerar recetas con `url_origen IS NOT NULL` — son fotos reales de Instagram/TikTok
+- ❌ Subir imágenes sin el UUID real de la receta (`auto_TIMESTAMP` es el patrón malo)
+
+---
+
 ## 🔴 LEER SIEMPRE — Sistema de matching de ingredientes
 
 ### Cómo funciona la visualización (crítico para diagnosticar)
