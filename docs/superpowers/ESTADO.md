@@ -1,6 +1,21 @@
 # ESTADO — NutriCoach Training Pro
 
-**Última actualización:** 17-05-2026 (sesión 26 — flujo E2E onboarding→plan, auditoría científica, 6 fixes, commits `d78c721` + `677c0b4`)
+**Última actualización:** 18-05-2026 (sesión 33 — lista de la compra portal + nota coach en check-in, commit `d69ce58`)
+
+---
+
+## ✅ Sesión 33 — 18-05-2026 — Lista de la compra portal + Nota del coach (commit `d69ce58`)
+
+### Lista de la compra en portal cliente
+- **API** `GET /api/cliente/[codigo]/lista-compra`: agrega todos los `comida_alimentos` del plan activo sumando gramos por `alimento_id`. Responde array `ItemListaCompra` ordenado por categoría y nombre.
+- **`ListaCompraPortal.tsx`**: componente cliente con estado local (sin persistencia). Checkbox tap-to-check con strikethrough, colapso por categoría, barra de progreso, botón "Limpiar selección".
+- **`MiPlan.tsx`**: sección colapsable con icono `ShoppingCart` y estado `listaAbierta`. Reemplaza el antiguo `<ListaCompra>` que requería auth de sesión (incompatible con el portal).
+
+### Nota del coach al check-in
+- **Migración Supabase** aplicada: `ALTER TABLE checkins ADD COLUMN IF NOT EXISTS nota_coach text`
+- **API** `PUT /api/checkins/[id]/nota`: verifica ownership del coach vía join `clientes!inner(coach_id)`, luego escribe o borra la nota.
+- **Ficha cliente** (`app/clientes/[id]/page.tsx`): botón "Responder al cliente" → input inline → guarda. Si ya hay nota, se muestra en tarjeta azul con botón "Editar".
+- **Portal cliente** (`HistorialCheckins.tsx`): indicador azul en fila si hay nota, bloque "Respuesta de tu coach" en panel expandido.
 
 ---
 
