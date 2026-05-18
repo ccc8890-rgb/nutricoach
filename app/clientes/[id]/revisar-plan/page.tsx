@@ -173,6 +173,13 @@ export default function RevisarPlanPage() {
       setErrorDieta('El plan no tiene comidas definidas. Espera a que la IA termine de generarlo o recarga.')
       return
     }
+    const kcalMin = cliente?.sexo === 'mujer' ? 1200 : 1500
+    if (plan.kcal_objetivo < kcalMin) {
+      const ok = window.confirm(
+        `⚠️ El plan tiene ${plan.kcal_objetivo} kcal/día, por debajo del mínimo recomendado de ${kcalMin} kcal para ${cliente?.sexo === 'mujer' ? 'mujer' : 'hombre'}.\n\n¿Confirmas que quieres crear este plan igualmente?`
+      )
+      if (!ok) return
+    }
     setCreandoDieta(true)
     setErrorDieta(null)
     try {
