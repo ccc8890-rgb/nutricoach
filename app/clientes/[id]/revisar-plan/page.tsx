@@ -157,6 +157,10 @@ export default function RevisarPlanPage() {
   }
 
   const aprobar = async () => {
+    const ok = window.confirm(
+      `¿Confirmas que ${nombreCompleto} tiene dieta y entrenamiento asignados y está listo para activarse?`
+    )
+    if (!ok) return
     setAprobando(true)
     await fetch('/api/aprobar-cliente', {
       method: 'POST',
