@@ -28,6 +28,12 @@ interface PlanInicial {
   notas_coach: string
 }
 
+interface RegistroIA {
+  id: string
+  respuesta_json: PlanInicial
+  created_at: string
+}
+
 interface PerfilProfundo {
   trigger_onboarding?: string
   autoeficacia?: number
@@ -100,6 +106,8 @@ export default function RevisarPlanPage() {
   const [errorEntreno, setErrorEntreno] = useState<string | null>(null)
   const [reintentandoPlan, setReintentandoPlan] = useState(false)
   const [regenerandoPlan, setRegenerandoPlan] = useState(false)
+  const [versiones, setVersiones] = useState<RegistroIA[]>([])
+  const [versionIdx, setVersionIdx] = useState(0)
   const [perfilProfundo, setPerfilProfundo] = useState<PerfilProfundo | null>(null)
   const [showPerfilProfundo, setShowPerfilProfundo] = useState(false)
 
@@ -108,28 +116,36 @@ export default function RevisarPlanPage() {
     Promise.all([
       supabase.from('clientes').select('*, profiles(nombre, apellidos, email)').eq('id', id).single(),
       supabase.from('onboarding_responses').select('*').eq('cliente_id', id).single(),
-      supabase.from('registros_ia').select('respuesta_json').eq('cliente_id', id).eq('tipo', 'plan_inicial').order('created_at', { ascending: false }).limit(1).single(),
+      supabase.from('registros_ia').select('id, respuesta_json, created_at').eq('cliente_id', id).eq('tipo', 'plan_inicial').order('created_at', { ascending: false }),
       supabase.from('onboarding_perfil_profundo').select('*').eq('cliente_id', id).single(),
-    ]).then(([{ data: c }, { data: o }, { data: r }, { data: pp }]) => {
+    ]).then(([{ data: c }, { data: o }, { data: rs }, { data: pp }]) => {
       setCliente(c as ClienteData)
       setOnboarding(o as OnboardingData)
-      if (r?.respuesta_json) setPlan(r.respuesta_json as PlanInicial)
+      const registros = (rs ?? []) as RegistroIA[]
+      setVersiones(registros)
+      setVersionIdx(0)
+      if (registros.length > 0) setPlan(registros[0].respuesta_json)
       if (pp) setPerfilProfundo(pp as PerfilProfundo)
       setLoading(false)
     })
   }, [params.id])
 
-  const reintentarPlan = async () => {
-    setReintentandoPlan(true)
-    const { data: r } = await supabase
+  const cargarVersiones = async () => {
+    const { data } = await supabase
       .from('registros_ia')
-      .select('respuesta_json')
+      .select('id, respuesta_json, created_at')
       .eq('cliente_id', params.id as string)
       .eq('tipo', 'plan_inicial')
       .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
-    if (r?.respuesta_json) setPlan(r.respuesta_json as PlanInicial)
+    const registros = (data ?? []) as RegistroIA[]
+    setVersiones(registros)
+    setVersionIdx(0)
+    if (registros.length > 0) setPlan(registros[0].respuesta_json)
+  }
+
+  const reintentarPlan = async () => {
+    setReintentandoPlan(true)
+    await cargarVersiones()
     setReintentandoPlan(false)
   }
 
@@ -142,15 +158,7 @@ export default function RevisarPlanPage() {
         credentials: 'include',
         body: JSON.stringify({ cliente_id: params.id }),
       })
-      const { data: r } = await supabase
-        .from('registros_ia')
-        .select('respuesta_json')
-        .eq('cliente_id', params.id as string)
-        .eq('tipo', 'plan_inicial')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-      if (r?.respuesta_json) setPlan(r.respuesta_json as PlanInicial)
+      await cargarVersiones()
     } finally {
       setRegenerandoPlan(false)
     }
@@ -479,6 +487,34 @@ export default function RevisarPlanPage() {
               {regenerandoPlan ? 'Generando…' : 'Regenerar'}
             </button>
           </div>
+
+          {/* Selector de versiones */}
+          {versiones.length > 1 && (
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <span className="text-[11px] text-[var(--text-muted)]">Versión:</span>
+              {[...versiones].reverse().map((v, displayIdx) => {
+                const arrIdx = versiones.length - 1 - displayIdx
+                const isActive = arrIdx === versionIdx
+                const fecha = new Date(v.created_at).toLocaleString('es-ES', {
+                  day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                })
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => { setVersionIdx(arrIdx); setPlan(v.respuesta_json) }}
+                    className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                      isActive
+                        ? 'bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/30 font-medium'
+                        : 'bg-[var(--bg)] text-[var(--text-muted)] border-[var(--border)] hover:border-gray-300'
+                    }`}
+                  >
+                    V{displayIdx + 1} · {fecha}
+                  </button>
+                )
+              })}
+            </div>
+          )}
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="bg-[var(--primary)]/10 rounded-lg p-3 text-center">
               <div className="text-2xl font-bold text-[var(--primary)]">{plan.kcal_objetivo}</div>
