@@ -471,6 +471,7 @@ export interface CheckIn {
   sueno?: number
   notas?: string
   foto_url?: string
+  nota_coach?: string
   created_at: string
 }
 

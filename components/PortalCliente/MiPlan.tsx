@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2 } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart } from 'lucide-react'
 import RecetaDelDia from './RecetaDelDia'
+import ListaCompraPortal from './ListaCompraPortal'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros } from '@/types'
 import { useToast } from '@/components/ui/Toast'
-import ListaCompra from '@/components/ListaCompra'
 import AlternativasModal from '@/components/personalizacion/AlternativasModal'
 import GenerarComidaModal from '@/components/personalizacion/GenerarComidaModal'
 
@@ -252,6 +252,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
     const [recetasComida, setRecetasComida] = useState<Record<string, RecetaSugerida[]>>({})
     const [loadingRecetas, setLoadingRecetas] = useState<Record<string, boolean>>({})
     const [showRecetas, setShowRecetas] = useState<Record<string, boolean>>({})
+    const [listaAbierta, setListaAbierta] = useState(false)
     const printRef = useRef<HTMLDivElement>(null)
     const { addToast } = useToast()
 
@@ -367,7 +368,26 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
             <RecetaDelDia kcal={totalDia.calorias} proteinas={totalDia.proteinas} />
 
             {/* ─── Lista de la Compra ─── */}
-            <ListaCompra planId={planLocal.id} clienteId={planLocal.cliente_id} nombrePlan={planLocal.nombre} rol="cliente" />
+            <div className="card !p-0 overflow-hidden">
+                <button
+                    onClick={() => setListaAbierta(p => !p)}
+                    className="w-full flex items-center justify-between px-4 py-3"
+                >
+                    <div className="flex items-center gap-2">
+                        <ShoppingCart size={16} style={{ color: '#0D9488' }} />
+                        <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Lista de la compra</span>
+                    </div>
+                    {listaAbierta
+                        ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} />
+                        : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
+                    }
+                </button>
+                {listaAbierta && (
+                    <div className="px-4 pb-4">
+                        <ListaCompraPortal codigo={codigo} />
+                    </div>
+                )}
+            </div>
 
             {/* Comidas */}
             <div className="space-y-3">

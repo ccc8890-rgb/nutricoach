@@ -76,6 +76,8 @@ export default function ClienteDetallePage() {
   const [notasCoach, setNotasCoach] = useState<NotaCoachRow[]>([])
   const [nuevaNota, setNuevaNota] = useState('')
   const [guardandoNota, setGuardandoNota] = useState(false)
+  const [respuestaCheckin, setRespuestaCheckin] = useState<Record<string, string>>({})
+  const [guardandoRespuesta, setGuardandoRespuesta] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [isEditando, setIsEditando] = useState(false)
   const [tabActiva, setTabActiva] = useState<Tab>('informacion')
@@ -115,6 +117,26 @@ export default function ClienteDetallePage() {
       .eq('id', id)
       .single()
     if (data) setCliente(data)
+  }
+
+  async function guardarRespuestaCheckin(checkinId: string) {
+    const nota = respuestaCheckin[checkinId]?.trim()
+    if (nota === undefined) return
+    setGuardandoRespuesta(checkinId)
+    try {
+      const res = await fetch(`/api/checkins/${checkinId}/nota`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nota }),
+      })
+      if (!res.ok) throw new Error()
+      setCheckins(prev => prev.map(c => c.id === checkinId ? { ...c, nota_coach: nota || undefined } : c))
+      addToast({ type: 'success', title: 'Respuesta guardada', message: 'El cliente verá tu nota en su historial' })
+    } catch {
+      addToast({ type: 'error', title: 'Error', message: 'No se pudo guardar la respuesta' })
+    } finally {
+      setGuardandoRespuesta(null)
+    }
   }
 
   async function crearPlanDesdePlantilla() {
@@ -427,6 +449,57 @@ export default function ClienteDetallePage() {
                                 &ldquo;{c.notas}&rdquo;
                               </p>
                             )}
+                            {/* Nota del coach — respuesta al check-in */}
+                            <div className="mt-2 pt-2 border-t" style={{ borderColor: '#F1F5F9' }}>
+                              {c.nota_coach ? (
+                                <div className="flex items-start gap-2">
+                                  <div className="flex-1 text-xs p-2 rounded-lg" style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+                                    <span className="font-semibold">Tu respuesta: </span>{c.nota_coach}
+                                  </div>
+                                  <button
+                                    className="text-xs text-gray-400 hover:text-gray-600 mt-1 flex-shrink-0"
+                                    onClick={() => setRespuestaCheckin(prev => ({ ...prev, [c.id]: c.nota_coach ?? '' }))}
+                                  >
+                                    Editar
+                                  </button>
+                                </div>
+                              ) : (
+                                respuestaCheckin[c.id] !== undefined ? null : (
+                                  <button
+                                    className="text-xs font-medium flex items-center gap-1"
+                                    style={{ color: '#0D9488' }}
+                                    onClick={() => setRespuestaCheckin(prev => ({ ...prev, [c.id]: '' }))}
+                                  >
+                                    <MessageSquareText size={12} /> Responder al cliente
+                                  </button>
+                                )
+                              )}
+                              {respuestaCheckin[c.id] !== undefined && (
+                                <div className="flex gap-2 mt-1">
+                                  <input
+                                    className="input text-xs py-1.5"
+                                    placeholder="Escribe tu feedback..."
+                                    value={respuestaCheckin[c.id]}
+                                    onChange={e => setRespuestaCheckin(prev => ({ ...prev, [c.id]: e.target.value }))}
+                                    onKeyDown={e => { if (e.key === 'Enter') guardarRespuestaCheckin(c.id) }}
+                                    autoFocus
+                                  />
+                                  <button
+                                    className="btn btn-primary btn-sm flex-shrink-0"
+                                    disabled={guardandoRespuesta === c.id}
+                                    onClick={() => guardarRespuestaCheckin(c.id)}
+                                  >
+                                    {guardandoRespuesta === c.id ? <Loader2 size={12} className="animate-spin" /> : 'Guardar'}
+                                  </button>
+                                  <button
+                                    className="btn btn-ghost btn-sm flex-shrink-0"
+                                    onClick={() => setRespuestaCheckin(prev => { const n = { ...prev }; delete n[c.id]; return n })}
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>

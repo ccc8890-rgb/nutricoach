@@ -23,6 +23,7 @@ interface CheckIn {
     energia?: number
     sueno?: number
     notas?: string | null
+    nota_coach?: string | null
     created_at: string
 }
 
@@ -302,12 +303,17 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                             </div>
                                         </div>
 
-                                        {/* Indicador de notas */}
-                                        {tieneNotas && (
-                                            <div className="flex-shrink-0">
+                                        {/* Indicadores */}
+                                        <div className="flex-shrink-0 flex items-center gap-1">
+                                            {c.nota_coach && (
+                                                <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: '#DBEAFE' }}>
+                                                    <MessageSquareText size={10} style={{ color: '#2563EB' }} />
+                                                </div>
+                                            )}
+                                            {tieneNotas && !c.nota_coach && (
                                                 <MessageSquareText size={14} className="text-gray-300" />
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
 
                                         {/* Badge "Hoy" / "Ayer" */}
                                         <div className="flex-shrink-0">
@@ -384,14 +390,25 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                                 </div>
                                             </div>
 
-                                            {/* Notas */}
+                                            {/* Notas del cliente */}
                                             {tieneNotas && (
                                                 <div className="mt-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
                                                     <div className="flex items-center gap-1.5 mb-1.5">
                                                         <MessageSquareText size={12} className="text-gray-400" />
-                                                        <span className="text-xs font-medium text-gray-500">Notas</span>
+                                                        <span className="text-xs font-medium text-gray-500">Tus notas</span>
                                                     </div>
                                                     <p className="text-sm text-gray-700 whitespace-pre-wrap">{c.notas}</p>
+                                                </div>
+                                            )}
+
+                                            {/* Nota del coach */}
+                                            {c.nota_coach && (
+                                                <div className="mt-3 p-3 rounded-xl border" style={{ background: '#EFF6FF', borderColor: '#BFDBFE' }}>
+                                                    <div className="flex items-center gap-1.5 mb-1.5">
+                                                        <MessageSquareText size={12} style={{ color: '#2563EB' }} />
+                                                        <span className="text-xs font-semibold" style={{ color: '#1D4ED8' }}>Respuesta de tu coach</span>
+                                                    </div>
+                                                    <p className="text-sm whitespace-pre-wrap" style={{ color: '#1E3A5F' }}>{c.nota_coach}</p>
                                                 </div>
                                             )}
 
