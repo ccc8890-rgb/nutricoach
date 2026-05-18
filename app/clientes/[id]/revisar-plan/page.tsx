@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Loader2, CheckCircle, ChevronDown, ChevronUp, User, Utensils, ExternalLink, Dumbbell } from 'lucide-react'
+import { Loader2, CheckCircle, ChevronDown, ChevronUp, User, Utensils, ExternalLink, Dumbbell, RefreshCw } from 'lucide-react'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 
@@ -73,6 +73,7 @@ export default function RevisarPlanPage() {
   const [entrenoCreado, setEntrenoCreado] = useState<{ id: string } | null>(null)
   const [errorEntreno, setErrorEntreno] = useState<string | null>(null)
   const [reintentandoPlan, setReintentandoPlan] = useState(false)
+  const [regenerandoPlan, setRegenerandoPlan] = useState(false)
 
   useEffect(() => {
     const id = params.id as string
@@ -100,6 +101,29 @@ export default function RevisarPlanPage() {
       .single()
     if (r?.respuesta_json) setPlan(r.respuesta_json as PlanInicial)
     setReintentandoPlan(false)
+  }
+
+  const regenerarPlan = async () => {
+    setRegenerandoPlan(true)
+    try {
+      await fetch('/api/generar-plan-inicial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ cliente_id: params.id }),
+      })
+      const { data: r } = await supabase
+        .from('registros_ia')
+        .select('respuesta_json')
+        .eq('cliente_id', params.id as string)
+        .eq('tipo', 'plan_inicial')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+      if (r?.respuesta_json) setPlan(r.respuesta_json as PlanInicial)
+    } finally {
+      setRegenerandoPlan(false)
+    }
   }
 
   const aprobar = async () => {
@@ -318,7 +342,19 @@ export default function RevisarPlanPage() {
       {/* Plan IA */}
       {plan && (
         <div className="card p-4">
-          <h2 className="font-semibold text-[var(--text)] mb-3">Plan inicial generado por IA</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-[var(--text)]">Plan inicial generado por IA</h2>
+            <button
+              type="button"
+              onClick={regenerarPlan}
+              disabled={regenerandoPlan}
+              className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors disabled:opacity-50"
+              title="Pedir un nuevo plan a la IA"
+            >
+              <RefreshCw size={13} className={regenerandoPlan ? 'animate-spin' : ''} />
+              {regenerandoPlan ? 'Generando…' : 'Regenerar'}
+            </button>
+          </div>
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="bg-[var(--primary)]/10 rounded-lg p-3 text-center">
               <div className="text-2xl font-bold text-[var(--primary)]">{plan.kcal_objetivo}</div>
@@ -415,6 +451,7 @@ export default function RevisarPlanPage() {
                 setShowSelectorEntreno(false)
               }}
               seleccionada={plantillaSeleccionadaEntreno}
+              clienteId={params.id as string}
             />
           ) : (
             <div className="flex items-center justify-between">
