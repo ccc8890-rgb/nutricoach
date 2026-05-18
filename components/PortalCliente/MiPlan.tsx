@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Printer, Dumbbell, Loader2, ArrowLeftRight, Sparkles } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros } from '@/types'
 import { useToast } from '@/components/ui/Toast'
@@ -86,6 +86,18 @@ interface ModalGenerarState {
     macrosObjetivo: { kcal: number; proteinas: number; carbohidratos: number; grasas: number }
 }
 
+interface RecetaSugerida {
+    id: string
+    nombre: string
+    imagen_url: string | null
+    kcal: number
+    proteinas: number
+    carbohidratos: number
+    grasas: number
+    tipo_plato: string | null
+    tiempo_prep_min: number | null
+}
+
 export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>(
         Object.fromEntries((plan.comidas ?? []).map(c => [c.id, true]))
@@ -94,6 +106,9 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
     const [modalAlternativas, setModalAlternativas] = useState<ModalAlternativasState | null>(null)
     const [modalGenerar, setModalGenerar] = useState<ModalGenerarState | null>(null)
     const [descargando, setDescargando] = useState(false)
+    const [recetasComida, setRecetasComida] = useState<Record<string, RecetaSugerida[]>>({})
+    const [loadingRecetas, setLoadingRecetas] = useState<Record<string, boolean>>({})
+    const [showRecetas, setShowRecetas] = useState<Record<string, boolean>>({})
     const printRef = useRef<HTMLDivElement>(null)
     const { addToast } = useToast()
 
@@ -155,6 +170,25 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
     function handleAceptarComida() {
         setModalGenerar(null)
         addToast({ title: '¡Comida guardada como preferencia!', type: 'success' })
+    }
+
+    async function toggleRecetasComida(comidaId: string, macros: { calorias: number; proteinas: number }) {
+        if (showRecetas[comidaId]) {
+            setShowRecetas(prev => ({ ...prev, [comidaId]: false }))
+            return
+        }
+        setShowRecetas(prev => ({ ...prev, [comidaId]: true }))
+        if (recetasComida[comidaId]) return  // ya cargadas
+        setLoadingRecetas(prev => ({ ...prev, [comidaId]: true }))
+        try {
+            const res = await fetch(
+                `/api/recetas/sugeridas?kcal=${Math.round(macros.calorias)}&proteinas=${Math.round(macros.proteinas)}&limite=3`
+            )
+            const { recetas } = await res.json() as { recetas: RecetaSugerida[] }
+            setRecetasComida(prev => ({ ...prev, [comidaId]: recetas }))
+        } finally {
+            setLoadingRecetas(prev => ({ ...prev, [comidaId]: false }))
+        }
     }
 
     const totalDia = sumarMacros(
@@ -267,25 +301,75 @@ export default function MiPlan({ codigo, plan, entreno }: MiPlanProps) {
                                     <div className="pt-2 border-t text-right text-sm font-medium text-gray-700" style={{ borderColor: '#F1F5F9' }}>
                                         Total: {macros.calorias.toFixed(0)} kcal · P:{macros.proteinas.toFixed(1)}g · C:{macros.carbohidratos.toFixed(1)}g · G:{macros.grasas.toFixed(1)}g
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setModalGenerar({
-                                            tipoComida: comida.nombre,
-                                            macrosObjetivo: {
-                                                kcal: Math.round(macros.calorias),
-                                                proteinas: Math.round(macros.proteinas),
-                                                carbohidratos: Math.round(macros.carbohidratos),
-                                                grasas: Math.round(macros.grasas),
-                                            }
-                                        })}
-                                        className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors no-print"
-                                        style={{ color: 'var(--primary)' }}
-                                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary-bg)' }}
-                                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
-                                    >
-                                        <Sparkles size={13} />
-                                        Generar alternativa con IA
-                                    </button>
+                                    <div className="flex gap-2 no-print">
+                                        <button
+                                            type="button"
+                                            onClick={() => setModalGenerar({
+                                                tipoComida: comida.nombre,
+                                                macrosObjetivo: {
+                                                    kcal: Math.round(macros.calorias),
+                                                    proteinas: Math.round(macros.proteinas),
+                                                    carbohidratos: Math.round(macros.carbohidratos),
+                                                    grasas: Math.round(macros.grasas),
+                                                }
+                                            })}
+                                            className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
+                                            style={{ color: 'var(--primary)' }}
+                                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary-bg)' }}
+                                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
+                                        >
+                                            <Sparkles size={13} />
+                                            Generar con IA
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleRecetasComida(comida.id, macros)}
+                                            className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
+                                            style={{ color: 'var(--text-muted)' }}
+                                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg)' }}
+                                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
+                                        >
+                                            {loadingRecetas[comida.id]
+                                                ? <Loader2 size={13} className="animate-spin" />
+                                                : <BookOpen size={13} />}
+                                            {showRecetas[comida.id] ? 'Ocultar recetas' : 'Recetas compatibles'}
+                                        </button>
+                                    </div>
+
+                                    {/* Mini-galería de recetas sugeridas */}
+                                    {showRecetas[comida.id] && !loadingRecetas[comida.id] && (
+                                        <div className="pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                                            {(recetasComida[comida.id] ?? []).length === 0 ? (
+                                                <p className="text-xs text-center py-2" style={{ color: 'var(--text-muted)' }}>
+                                                    No hay recetas con macros similares en el recetario
+                                                </p>
+                                            ) : (
+                                                <div className="grid grid-cols-3 gap-2 pt-1">
+                                                    {(recetasComida[comida.id] ?? []).map(receta => (
+                                                        <a
+                                                            key={receta.id}
+                                                            href={`/recetas/${receta.id}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="block rounded-xl overflow-hidden border transition-shadow hover:shadow-md"
+                                                            style={{ borderColor: 'var(--border)' }}
+                                                        >
+                                                            <div className="aspect-square bg-gray-100 relative">
+                                                                {receta.imagen_url
+                                                                    ? <img src={receta.imagen_url} alt={receta.nombre} className="w-full h-full object-cover" />
+                                                                    : <div className="w-full h-full flex items-center justify-center text-2xl">🍽</div>
+                                                                }
+                                                            </div>
+                                                            <div className="p-1.5">
+                                                                <p className="text-[10px] font-medium leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
+                                                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{receta.kcal} kcal · {receta.proteinas}g P</p>
+                                                            </div>
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
