@@ -2,11 +2,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Link2, Plus, Search, X, Trash2, Upload } from 'lucide-react'
+import { ArrowLeft, Link2, Plus, Search, X, Trash2, Upload, Hash } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Alimento } from '@/types'
 import { CATEGORIAS, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
 import { useToast } from '@/components/ui/Toast'
+import { TagInput } from '@/components/ui/TagInput'
 
 interface Ingrediente {
   tempId: string
@@ -26,6 +27,8 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
     porciones: '1', tiempo_prep_min: '', tiempo_coccion_min: '', url_origen: '',
   })
   const [intolerancias, setIntolerancias] = useState<string[]>([])
+  const [tags, setTags] = useState<string[]>([])
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
   const [ingredientes, setIngredientes] = useState<Ingrediente[]>([])
   const [imagenFile, setImagenFile] = useState<File | null>(null)
   const [imagenPreview, setImagenPreview] = useState<string | null>(null)
@@ -38,6 +41,14 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
   const [queryAlimento, setQueryAlimento] = useState('')
   const [resultados, setResultados] = useState<Alimento[]>([])
   const [buscando, setBuscando] = useState(false)
+
+  // Cargar sugerencias de tags
+  useEffect(() => {
+    fetch('/api/recetas/tags')
+      .then(r => r.json())
+      .then(data => { if (data?.tags) setTagSuggestions(data.tags) })
+      .catch(() => { })
+  }, [])
 
   useEffect(() => {
     if (!queryAlimento || queryAlimento.length < 2) { setResultados([]); return }
@@ -114,6 +125,7 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
       consejos: form.consejos || null, categoria: form.categoria || null,
       tipo_coccion: form.tipo_coccion || null, dificultad: form.dificultad || null,
       intolerancias: intolerancias.length ? intolerancias : null,
+      tags: tags.length ? tags : null,
       porciones: parseInt(form.porciones) || 1,
       tiempo_prep_min: form.tiempo_prep_min ? parseInt(form.tiempo_prep_min) : null,
       tiempo_coccion_min: form.tiempo_coccion_min ? parseInt(form.tiempo_coccion_min) : null,
@@ -215,6 +227,15 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
               </button>
             ))}
           </div>
+        </div>
+        <div>
+          <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Tags</label>
+          <TagInput
+            tags={tags}
+            onChange={setTags}
+            suggestions={tagSuggestions}
+            placeholder="Ej: mealprep, rápido, alto en proteína…"
+          />
         </div>
       </div>
 

@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, Search, BookOpen, Clock, Users, Inbox, AlertTriangle, Calendar, Sparkles } from 'lucide-react'
+import { Plus, Search, BookOpen, Clock, Users, Inbox, AlertTriangle, Calendar, Sparkles, Hash } from 'lucide-react'
 import { StaggerList, StaggerItem, FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
 import { useToast } from '@/components/ui/Toast'
@@ -67,6 +67,7 @@ type RecetaRow = {
   pasos?: string | null
   url?: string | null
   instrucciones?: string | null
+  tags?: string[] | null
   created_at?: string | null
 }
 
@@ -78,6 +79,8 @@ export default function RecetasPage() {
   const [metodoCoccion, setMetodoCoccion] = useState('Todos')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [tagOpciones, setTagOpciones] = useState<string[]>([])
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente')
   const [loading, setLoading] = useState(true)
 
@@ -90,7 +93,7 @@ export default function RecetasPage() {
 
         const { data, error } = await supabase
           .from('recetas')
-          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, created_at')
+          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, created_at')
           .or(`coach_id.eq.${user.id},coach_id.is.null`)
           .eq('estado', 'aprobada')
           .order('created_at', { ascending: false })
@@ -108,6 +111,11 @@ export default function RecetasPage() {
       setLoading(false)
     }
     load()
+    // Cargar opciones de tags
+    fetch('/api/recetas/tags')
+      .then(r => r.json())
+      .then(data => { if (data?.tags) setTagOpciones(data.tags) })
+      .catch(() => { })
   }, [])
 
 
@@ -116,6 +124,7 @@ export default function RecetasPage() {
       const matchBusqueda = r.nombre.toLowerCase().includes(busqueda.toLowerCase())
       const matchCategoria = categoria === 'Todos' || r.categoria === categoria
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
+      const matchTag = !tagFilter || (Array.isArray(r.tags) && r.tags.includes(tagFilter))
 
       let matchFecha = true
       if (r.created_at) {
@@ -129,7 +138,7 @@ export default function RecetasPage() {
           matchFecha = matchFecha && fechaReceta <= hasta
         }
       }
-      return matchBusqueda && matchCategoria && matchCoccion && matchFecha
+      return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchFecha
     })
       .sort((a, b) => {
         if (!a.created_at || !b.created_at) return 0
@@ -137,7 +146,7 @@ export default function RecetasPage() {
         const db = new Date(b.created_at).getTime()
         return orden === 'reciente' ? db - da : da - db
       })
-  }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, orden])
+  }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, orden])
 
   const coccionEnUso = new Set(recetas.map(r => r.tipo_coccion).filter(Boolean))
 
@@ -276,6 +285,36 @@ export default function RecetasPage() {
             ))}
           </div>
 
+          {/* Tags — chips */}
+          {tagOpciones.length > 0 && (
+            <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+              {tagFilter && (
+                <button
+                  onClick={() => setTagFilter(null)}
+                  className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                >
+                  ✕ Limpiar
+                </button>
+              )}
+              {tagOpciones.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTagFilter(tagFilter === t ? null : t)}
+                  className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150 flex items-center gap-1"
+                  style={tagFilter === t
+                    ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
+                    : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
+                  onMouseEnter={e => { if (tagFilter !== t) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                  onMouseLeave={e => { if (tagFilter !== t) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+                >
+                  <Hash size={11} />
+                  {t}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Filtros extra: fecha + orden */}
           <div className="flex items-center gap-2 text-xs flex-wrap mb-6">
             <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
@@ -379,6 +418,7 @@ export default function RecetasPage() {
                   proteinas={r.proteinas ?? 0}
                   carbohidratos={r.carbohidratos ?? 0}
                   grasas={r.grasas ?? 0}
+                  tags={r.tags ?? undefined}
                 />
               ))}
             </div>

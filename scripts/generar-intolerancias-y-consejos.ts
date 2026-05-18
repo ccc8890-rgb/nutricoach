@@ -18,7 +18,7 @@ import * as path from 'path'
 
 // ─── Config ──────────────────────────────────────────────────────
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
-const MODEL = 'deepseek-v4-pro'
+const MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 const BATCH_SIZE = parseInt(process.env.BATCH || '10', 10)
 const DRY_RUN = process.env.DRY_RUN === 'true'
 const SOLO_INTOLERANCIAS = process.env.INTOLERANCIAS === 'true'

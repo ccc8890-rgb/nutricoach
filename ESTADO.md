@@ -1,99 +1,63 @@
-# ESTADO NutriCoach — 17-05-2026 (Sesión 22 — Auditoría health: seguridad + lint)
+# ESTADO NutriCoach — 17-05-2026 (Sesión 17 — Limpieza BD + Enriquecimiento 100% + Fix vista pendientes ✅)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026 — sesión 22).
-
----
-
-## ✅ COMPLETADO (17-05-2026) — Sesión 22 — Auditoría completa de bugs y sistema
-
-### Qué se hizo
-Health check completo de la app: TypeScript, ESLint, seguridad de API routes, variables de entorno.
-
-### Hallazgos y fixes — commit `b9ebe6e`
-
-| Severidad | Issue | Fix |
-|-----------|-------|-----|
-| 🔴 Seguridad | `POST /api/subir-imagen-receta` sin auth — cualquiera podía subir imágenes | Añadido `createApiSupabase` + `auth.getUser()` al inicio. 401 si no autenticado |
-| 🟡 Runtime | Unescaped entities `"texto"` en JSX en `entrenos/generar-ia/page.tsx` y `clientes/[id]/page.tsx` | Reemplazadas por `&ldquo;` / `&rdquo;` |
-| 🟡 Hoisting | `loadPlan` en `dietas/[id]/page.tsx` llamada antes de declararse en el mismo componente | Movida la declaración de `loadPlan` por encima del `useEffect` que la invoca |
-| 🟢 Lint ruido | 160 falsos positivos de reglas React Compiler (`purity`, `immutability`, `set-state-in-effect`, `preserve-manual-memoization`) | Desactivadas en `eslint.config.mjs` de nutricoach y nutricoach-modulos |
-
-### Estado post-auditoría
-- **TypeScript**: ✅ 0 errores (`tsc --noEmit` clean en los 2 worktrees)
-- **Lint crítico**: ✅ 0 errores de runtime — solo quedan 128 `no-explicit-any` + 5 `prefer-const` (style, no bugs)
-- **Seguridad**: ✅ endpoint de imágenes protegido
-- **React Compiler lint**: ✅ silenciado (compilador no instalado en este proyecto)
-
-### Lo que NO se tocó (decisión)
-- `MAKE_WEBHOOK_NUEVO_CLIENTE` / `MAKE_WEBHOOK_PERIODIZACION` — opcionales, guarded con `if`, Make pendiente para implementar
-- `lib/replicate.ts` — dead code sin importadores, sin impacto
-- `no-explicit-any` (128) — style, no bugs, quedará para refactor futuro si hace falta
-
----
-
----
-
-## ✅ COMPLETADO (17-05-2026) — Sesión 21 — Fix móvil: safe area y solapamiento de header
-
-### Problema
-En móvil (iPhone), el header con "Dashboard" y las pestañas de navegación se solapaban con la barra de estado del sistema (notch / Dynamic Island). El botón hamburguesa también quedaba parcialmente bajo el notch.
-
-### Causa raíz
-`viewportFit: "cover"` + `statusBarStyle: "black-translucent"` hacen que la app renderice edge-to-edge, incluyendo bajo la status bar. No había padding que compensara:
-- `.pb-nav-safe` se usaba en todos los layouts pero **no estaba definida** (era no-op)
-- El botón hamburguesa usaba `top-4` (16px fijo), menos que la status bar del iPhone (44-59px)
-- El `<main>` no tenía padding-top en móvil para bajar el contenido
-
-### Fix aplicado — commit `1194b77`
-
-| Archivo | Cambio |
-|---------|--------|
-| `app/globals.css` | Definida `.pb-nav-safe` (padding-bottom con safe-area-inset-bottom). Añadida `.layout-main` con padding-top móvil: `calc(env(safe-area-inset-top) + 3.75rem)` |
-| `components/Sidebar.tsx` | Botón hamburguesa: `top-4` → `top: calc(env(safe-area-inset-top,0px) + 0.75rem)`. Aside drawer: `paddingTop: env(safe-area-inset-top,0px)` |
-| 9 layouts (dashboard, recetas, dietas, clientes, cuestionarios, conocimiento, respuestas, entrenos, precios) | Añadida clase `layout-main` al `<main>` |
-
----
-
-## ✅ COMPLETADO (17-05-2026) — Sesión 20 — Experiencia cliente + Email Resend
-
-### Estado final de las 4 tareas de experiencia cliente
-
-| Tarea | Estado |
-|-------|--------|
-| SQL `onboarding_completado` en tabla `clientes` | ✅ Ya existía en Supabase (`DEFAULT false`, `NOT NULL`) |
-| API POST `/api/onboarding/perfil` marca `true` | ✅ Ya implementado en sesiones anteriores |
-| Banner "Completa tu perfil" en DashboardCliente | ✅ Ya implementado en sesiones anteriores |
-| Badge "Sin onboarding" en ficha coach | ✅ Ya implementado en sesiones anteriores |
-| Email botón → `/onboarding` (en vez de `/login`) | ✅ **Fix aplicado esta sesión** — `lib/emails/welcome.ts` |
-| `RESEND_API_KEY` en `.env.local` (nutricoach + modulos) | ✅ **Configurado esta sesión** |
-| Variables Resend en Vercel Production | ✅ **Añadidas esta sesión** (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_FROM_NAME`) |
-| Deploy en producción | ✅ **Desplegado — Ready en Vercel** |
-
-### Comportamiento actual del flujo de registro
-1. Coach invita cliente → token por URL
-2. Cliente se registra en `/registro/[token]`
-3. `POST /api/registro-invitacion` → crea cuenta + llama `sendWelcomeEmail()` automáticamente
-4. Cliente recibe email con botón "Completar mi perfil" → va directo a `/onboarding`
-5. Al terminar `/onboarding/perfil` → `onboarding_completado = true` en BD
-6. Si el cliente entra al portal sin completar → banner amarillo con link a `/onboarding`
-7. Ficha del coach → badge "Sin onboarding" mientras `onboarding_completado = false`
-
----
-
-## 🚀 PRÓXIMA SESIÓN — Tareas pendientes CLAUDE.md
-
-| Prioridad | Tarea |
-|-----------|-------|
-| 🟠 Media | **Enriquecer alimentos restantes (~6648+)** — `cd nutricoach-modulos && for i in 1 2 3 4 5 6 7; do node scripts/enriquecer-alimentos.mjs --limite=100; done` |
-| 🟡 Baja | **7 recetas con macros altas** — Carlos revisa porciones desde `/recetas/[id]` |
-
----
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026).
 
 ---
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Sesión 12 completada. **TODAS las migraciones SQL pendientes ejecutadas y verificadas.** Reconciliación de vinculación scraping→alimentos ejecutada (100% productos vinculados). `match_alimento` mejorada con 6 pasos priorizando seed. Auditoría completa de 29 SQL files contra BD real. Build pendiente para próxima sesión.
+**Fase:** Sesión 17 completada. **Base de datos limpia y enriquecimiento al 100%.** 0 no-alimentos en BD (filtros masivos en pipeline), 0 pendientes de enriquecimiento, vista `alimentos_pendientes_enriquecer` corregida para no crear falsos positivos.
+
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 17 — Limpieza BD + Enriquecimiento completo
+
+### 🔷 Filtros no-comestibles masivos en pipeline ✅
+
+- **`esNoComestible()` en `lib/scraping/index.ts`** ampliada con ~80 keywords nuevas:
+  - Cosmética: aftersun, agua micelar, bálsamo labial, barra labios, body spray, protector solar, bastoncillos, bandas depilatorias, desmaquillante, autobronceador
+  - Sanidad/farmacia: apósitos, tiritas, suero fisiológico, clorhexidina, irrigador dental
+  - Limpieza hogar: absorbeolores, antipolilla, repelente insectos, blanqueador juntas, gamuzas, desincrustante, posavajillas, escoba, escobilla, plumero, recogedor, aditivo textil
+  - Mascotas: arena gatos, cepillo mascotas, empapadores mascotas
+  - Bebé no alimenticio: bañador desechable, babero desechable, anillo dentición
+  - Aparatos eléctricos: aparato eléctrico, recambio eléctrico
+- **`ALCOHOL_KEYWORDS`** ampliado: destilados (whisky, vodka, gin, tequila, brandy), licores, vinos fortificados, cava, champán, sidra, combinados RTD, anís seco/dulce, jerez
+- **`ALCOHOL_FOOD_EXCEPTIONS`** añadidas: pasas, uva moscatel (evitan falsos positivos)
+- Commit `75b125c` en feature/modulos
+
+### 🔷 Limpieza BD: 219 no-alimentos eliminados ✅
+
+Script `eliminar-no-alimentos.mjs` ejecutado con las keywords expandidas:
+- **219 productos eliminados**: labiales, aftersun, apósitos, bastoncillos, antipolillas, repelente insectos, barreños, arena gatos, bañadores desechables, gel fijador cabello, dentifricio, protegeslips, etc.
+- **4 alcoholes conservados** (están en recetas — FK protegida): licor amaretto, Vino tinto Bobal, Vodka, Anís seco Cassalla Cerveró
+- 33 precios también eliminados, cola de enriquecimiento limpiada
+
+### 🔷 Enriquecimiento nutricional: 0 pendientes ✅
+
+13 pases de 500 alimentos (6.500 enriquecidos esta sesión), 0 errores salvo 1 timeout de DeepSeek que se recuperó automáticamente.
+
+| Métrica | Valor |
+|---------|-------|
+| Alimentos en BD | ~11.955 (todos comestibles) |
+| Pendientes enriquecimiento | **0** ✅ |
+| Pases ejecutados hoy | 13 × 500 = 6.500 alimentos |
+
+### 🔷 Fix vista `alimentos_pendientes_enriquecer` ✅
+
+- **Problema**: La vista usaba `OR` en todos los macros → aceites (proteinas=0), carnes/pescados (carbohidratos=0), azúcar (proteinas=0) aparecían permanentemente como "pendientes" aunque sus macros son correctos
+- **Fix**: Condición simplificada a `calorias = 0 OR calorias IS NULL` — solo requiere enriquecimiento si no hay dato calórico
+- **Resultado**: 0 pendientes (antes 142 bloqueados)
+- Migración aplicada en Supabase: `fix_vista_pendientes_enriquecer_v2`
+
+---
+
+## 📍 PRÓXIMAS SESIONES (orden de prioridad)
+
+| Prioridad | Tarea |
+|-----------|-------|
+| 🔴 Alta | **Fase 1 — Onboarding automático** (sub-plan `2026-05-16-fase1-onboarding.md`) |
+| 🟠 Media | **7 recetas con macros altas** — Carlos revisa porciones desde UI `/recetas/[id]` |
+| 🟡 Baja | **Imágenes recetas**: `node scripts/regenerar-flux-masivo.mjs --genera` (cuando OpenAI billing lo permita) |
 
 ---
 
@@ -196,12 +160,45 @@ Estrategia de caché SW v2:
 - **21 `.catch(() => {})` silenciosos** sin logging en scrapers, modales y componentes
 - Documentado en [`salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md`](salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md)
 
+---
+
+## ✅ COMPLETADO (17-05-2026) — Sesión 18 — Enriquecimiento + Categorías + Fase 0 limpieza BD
+
+### 🔷 Enriquecimiento nutricional — avance
+- Ejecutados ~25+ pases de `node scripts/enriquecer-alimentos.mjs --limite=100`
+- Progreso real: **10.218/14.600 → 10.239/14.188** alimentos con `calorias > 0` (72%)
+- La vista `alimentos_pendientes_enriquecer` alcanzó su **floor permanente de ~1.439** (zeros legítimos: agua, vinagre, sal, etc.)
+- Los ~4.382 alimentos restantes sin calorías incluyen zeros legítimos + nuevos de scrapers aún sin procesar
+
+### 🔷 Corrección de categorías
+- Ejecutado `scripts/corregir-categorias.mjs --aplicar`
+- **11.335 alimentos actualizados**: subcategorías IA → categorías UI (Carnes rojas → Carnes, Verduras y hortalizas → Verduras, etc.)
+
+### 🔷 Fase 0 — Limpieza BD (`eliminar-no-alimentos.mjs`)
+- **1.390 eliminados** (950 higiene/hogar + 444 alcohol)
+- 4 conservados por estar en recetas activas: licor amaretto, Vino tinto, Vodka, Anís seco
+- 1.483 registros de precios también eliminados
+- BD tras limpieza: **14.188 alimentos**, 10.239 con calorías (72%)
+
+### 🔷 Algoritmo de filtrado — verificado sincronizado
+- `lib/scraping/index.ts` y `scripts/eliminar-no-alimentos.mjs` ya tienen SYNC comment y listas sincronizadas
+- ~260+ keywords cubriendo: higiene, limpieza, ropa, ferretería, electrodomésticos, juguetes, hogar/decoración, plantas, alcohol
+- Prevención activa en `esNoComestible()` antes de insertar en BD
+
+### 🔷 Fase 1 (onboarding_completado) — verificada COMPLETADA
+- Columna `onboarding_completado BOOLEAN DEFAULT false` en tabla `clientes` ✅
+- API `/api/onboarding/perfil` marca `onboarding_completado = true` ✅
+- Dashboard cuenta `clientesSinOnboarding` ✅
+- Ficha cliente muestra badge cuando `onboarding_completado === false` ✅
+
+---
+
 ## 🔜 PRÓXIMA SESIÓN (prioridades)
 
-1. **Re-scrapear supermercados** para que los nuevos productos usen `match_alimento` mejorado (versión 6 pasos)
-2. **Verificar Dashboard de Rentabilidad en vivo** — seleccionar cliente con precios
-3. **Validar proyecciones de ahorro** — probar con Mercadona vs Lidl
-4. **Build de verificación:** `npx next build`
+1. **Email bienvenida (Resend)** — `sendWelcomeEmail()` ya existe, Carlos configura `RESEND_API_KEY` en `.env.local` + Vercel
+2. **Re-scrapear supermercados** para que los nuevos productos usen `match_alimento` mejorado (versión 6 pasos)
+3. **Verificar Dashboard de Rentabilidad en vivo** — seleccionar cliente con precios
+4. **Enriquecimiento restante** — ~4.382 alimentos sin calorías (floor legítimo + nuevos de scrapers)
 5. **Despliegue en Vercel**
 
 ---

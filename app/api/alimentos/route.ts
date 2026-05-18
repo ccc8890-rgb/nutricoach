@@ -26,15 +26,22 @@ export async function GET(request: NextRequest) {
 
         if (q) {
             // Búsqueda: primero los que tienen datos nutricionales, límite 50
-            query = query.order('calorias', { ascending: false, nullsFirst: false })
-            query = query.order('nombre', { ascending: true })
+            query = query.order("calorias", { ascending: false, nullsFirst: false })
+            query = query.order("nombre", { ascending: true })
             query = query.limit(50)
         } else {
             // Navegación: ordenar alfabéticamente por categoría y nombre, sin límite restrictivo
-            query = query.order('categoria', { ascending: true })
-            query = query.order('nombre', { ascending: true })
+            query = query.order("categoria", { ascending: true })
+            query = query.order("nombre", { ascending: true })
             query = query.limit(600)
+            // Soporte opcional de paginación para clientes que necesiten rangos específicos
+            const from = parseInt(searchParams.get("from") || "")
+            const to = parseInt(searchParams.get("to") || "")
+            if (!isNaN(from) && !isNaN(to)) {
+                query = query.range(from, to)
+            }
         }
+
 
         const { data, error } = await query
         if (error) return NextResponse.json({ error: error.message }, { status: 400 })

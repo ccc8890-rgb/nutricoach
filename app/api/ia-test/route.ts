@@ -10,7 +10,7 @@ import { createApiSupabase } from '@/lib/supabase-server'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 
-const MODELO_POR_DEFECTO = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
+const MODELO_POR_DEFECTO = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 
 const SYSTEM_PROMPTS: Record<string, string> = {
     neutral: 'Eres un asistente útil.',

@@ -18,7 +18,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
-const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-flash'
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 
 function loadEnvLocal() {
     const envPath = path.resolve(process.cwd(), '.env.local')

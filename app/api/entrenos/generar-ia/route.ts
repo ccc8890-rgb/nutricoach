@@ -77,7 +77,7 @@ Genera el plan en JSON EXACTO sin markdown:
       return NextResponse.json({ error: 'DEEPSEEK_API_KEY no configurada' }, { status: 500 })
     }
 
-    const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
+    const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',

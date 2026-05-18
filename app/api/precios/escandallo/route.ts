@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
                 })),
             }))
 
-            const resultado = await calcularCostePlan(comidasData, supermercadoId || null)
+            const resultado = await calcularCostePlan(comidasData, supermercadoId || null, undefined, serviceRole)
 
             return NextResponse.json({
                 cliente_id: clienteId,
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
                 })),
             }))
 
-            const resultado = await calcularCostePlan(comidasData, supermercadoId || null)
+            const resultado = await calcularCostePlan(comidasData, supermercadoId || null, undefined, serviceRole)
             const perfil = mapaPerfiles.get(cliente.profile_id)
 
             escandallos.push({

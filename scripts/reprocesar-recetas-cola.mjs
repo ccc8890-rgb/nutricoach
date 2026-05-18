@@ -39,7 +39,7 @@ const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
 
 // ── DeepSeek API helper (inline, sin depender de TS) ──
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
-const DEEPSEEK_MODEL = env.DEEPSEEK_MODEL || 'deepseek-v4-flash'
+const DEEPSEEK_MODEL = env.DEEPSEEK_MODEL || 'deepseek-chat'
 
 async function completarAlimentoConIA(nombreAlimento) {
     const apiKey = env.DEEPSEEK_API_KEY
