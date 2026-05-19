@@ -117,12 +117,18 @@ function mapearProducto(p: AlcampoProductData, categoria?: string): ProductoRaw 
     const precio = extraerPrecio(p.price)
     const precioPorKg = p.unitPrice ? extraerPrecioPorKg(p.unitPrice) : undefined
 
+    // Construir URL desde productId o retailerProductId
+    const productId = p.productId || p.retailerProductId
+    const url_producto = productId
+        ? `https://www.compraonline.alcampo.es/product/${productId}`
+        : ''
+
     return {
         nombre: p.name || '',
         precio_actual: precio,
         precio_por_kg: precioPorKg,
         unidad: p.unitPrice?.unit?.replace('fop.price.per.', '') || 'kg',
-        url_producto: '', // La API no devuelve URL directa
+        url_producto,
         imagen_url: p.image?.src || undefined,
         marca: p.brand || 'Alcampo',
         cantidad: p.packSizeDescription || p.packaging || undefined,

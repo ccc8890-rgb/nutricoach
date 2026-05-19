@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { normalizarProducto } from './normalizador'
+import { matchAlimentoInMemory, cargarAlimentosMap, AlimentoRecord } from './matcher'
 import { scrapearMercadona } from './supermercados/mercadona'
 import { scrapearCarrefour } from './supermercados/carrefour'
 import { scrapearDia } from './supermercados/dia'
@@ -16,7 +17,7 @@ import type { ProductoRaw } from './types'
 
 // ── Filtro de productos no comestibles ──────────────────────────
 
-// ⚠️ SYNC con scripts/eliminar-no-alimentos.mjs — actualizar ambos a la vez
+// ✅ Script eliminar-no-alimentos.mjs eliminado — mantener solo aquí
 const NO_COMESTIBLE_KEYWORDS = [
     // ── Higiene personal ────────────────────────────────────────
     'champú', 'champu', 'acondicionador', 'mascarilla capilar', 'sérum capilar',
@@ -117,7 +118,6 @@ const NO_COMESTIBLE_KEYWORDS = [
     'recambio eléctrico', 'recambio ectrico',
     // Electrodomésticos de cocina (Lidl mezcla con comida)
     'espumador de leche', 'cafetera', 'batidora', 'freidora de aceite', 'freidora eléctrica',
-    'microondas ', // trailing space = standalone "microondas" not "palomitas microondas"
     'microondas con', 'microondas de', 'microondas digital', 'microondas integrado',
     'horno microondas', 'microondas grill',
     'hervidor de agua', 'licuadora', 'exprimidor',
@@ -402,163 +402,6 @@ const SCRAPERS: Record<string, () => Promise<{
 /** Slugs de supermercados que tienen scraper implementado */
 export const SLUGS_SCRAPERS_DISPONIBLES: string[] = Object.keys(SCRAPERS)
 
-// ── Helpers de matching in-memory ──────────────────────────────
-
-interface AlimentoRecord {
-    id: string
-    nombre: string
-    nombreLower: string
-}
-
-function quitarAcentos(s: string): string {
-    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-}
-
-/**
- * Busca un alimento en el Map in-memory usando la misma lógica que buscarAlimento()
- * pero sin queries a Supabase.
- *
- * MEJORA v2: nivel 5 usa word boundaries (\\b) para evitar falsos positivos
- * como "Poma" → "Pomada", "Sal" → "Salsa", "Surimi" → no encuentra en "Refresco Coca-Cola"
- */
-function matchAlimentoInMemory(
-    nombreLimpio: string,
-    alimentosMap: Map<string, AlimentoRecord>
-): string | null {
-    const lower = nombreLimpio.toLowerCase()
-
-    // 1. Coincidencia exacta
-    const exacto = alimentosMap.get(lower)
-    if (exacto) return exacto.id
-
-    // 2. Coincidencia exacta sin acentos
-    const lowerSinAcentos = quitarAcentos(lower)
-    for (const a of alimentosMap.values()) {
-        if (quitarAcentos(a.nombreLower) === lowerSinAcentos) {
-            return a.id
-        }
-    }
-
-    // 3. Contiene bidireccional
-    // - Si el alimento contiene el nombre completo del producto → match muy específico
-    // - Si el producto contiene el nombre del alimento como palabra completa → match válido
-    //   (con word boundaries para evitar "chocolate" → "Col" por substring dentro de palabra)
-    // - Entre matches donde el producto contiene al alimento, preferir el MÁS LARGO
-    //   (más específico: "Salsa de tomate Boloñesa" > "Tomate")
-    let mejor: AlimentoRecord | null = null
-    let mejorContainsLower: AlimentoRecord | null = null  // aLower.includes(lower)
-    for (const a of alimentosMap.values()) {
-        const aLower = a.nombreLower
-        // Caso A: el alimento contiene el nombre completo del producto
-        if (aLower.includes(lower)) {
-            if (!mejorContainsLower || a.nombre.length < mejorContainsLower.nombre.length) {
-                mejorContainsLower = a
-            }
-            continue
-        }
-        // Caso B: el producto contiene el nombre del alimento como palabra completa
-        const aLowerEscaped = aLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        const wordBoundaryRegex = new RegExp(`\\b${aLowerEscaped}\\b`)
-        if (wordBoundaryRegex.test(lower)) {
-            // Preferir el nombre más largo (más específico)
-            if (!mejor || a.nombre.length > mejor.nombre.length) {
-                mejor = a
-            }
-        }
-    }
-    // Caso A tiene prioridad sobre Caso B
-    if (mejorContainsLower) mejor = mejorContainsLower
-    if (mejor) return mejor.id
-
-    // 4. Coincidencia por palabra clave (palabra más larga)
-    const palabras = lower.split(/\s+/).filter(p => p.length > 2)
-    if (palabras.length > 0) {
-        const palabraClave = [...palabras].sort((a, b) => b.length - a.length)[0]
-        const candidatos: AlimentoRecord[] = []
-        for (const a of alimentosMap.values()) {
-            if (a.nombreLower.includes(palabraClave)) {
-                candidatos.push(a)
-            }
-        }
-        if (candidatos.length > 0) {
-            // Filtrar: el nombre del alimento debe contener AL MENOS 2 palabras del producto buscado
-            const conMatch = candidatos.filter(a => {
-                const palabrasAlimento = a.nombreLower.split(/\s+/)
-                const coincidencias = palabras.filter(p =>
-                    palabrasAlimento.some(pa => pa.includes(p) || p.includes(pa))
-                )
-                return coincidencias.length >= 2 || coincidencias.length === palabras.length
-            })
-            if (conMatch.length > 0) {
-                conMatch.sort((a, b) => a.nombre.length - b.nombre.length)
-                return conMatch[0].id
-            }
-        }
-    }
-
-    // 5. Último recurso: palabra individual con límite de palabra (\\b)
-    // ANTES: a.nombreLower.includes(palabra) → "Poma" MATCH "Pomada" (FALSO POSITIVO)
-    // AHORA: \\bpalabra\\b → "Poma" NO match "Pomada", solo matchea si es palabra completa
-    //
-    // REGLA: Si el producto tiene ≥2 palabras relevantes (≥3 chars), NO usar nivel 5.
-    // Esto evita falsos positivos como "pasta huevo" → palabra "huevo" → matchea "Huevos L".
-    // Productos multi-palabra deben resolver en niveles 1-4.
-    const palabrasFiltradas = (palabras.length ? palabras : [lower])
-        .filter(p => p.length >= 3)
-        .sort((a, b) => b.length - a.length)
-
-    // Si hay 2+ palabras relevantes, no usar nivel 5 (evitar falsos positivos)
-    if (palabrasFiltradas.length >= 2) return null
-
-    for (const palabra of palabrasFiltradas) {
-        const regex = new RegExp(`\\b${palabra.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
-        for (const a of alimentosMap.values()) {
-            if (regex.test(a.nombreLower)) {
-                return a.id
-            }
-        }
-    }
-
-    return null
-}
-
-/**
- * Pre-carga todos los alimentos de la BD en un Map para matching rápido en memoria.
- */
-async function cargarAlimentosMap(supabase: SupabaseClient): Promise<Map<string, AlimentoRecord>> {
-    const map = new Map<string, AlimentoRecord>()
-    const pageSize = 5000
-    let desde = 0
-    let hayMas = true
-
-    while (hayMas) {
-        const { data, error } = await supabase
-            .from('alimentos')
-            .select('id, nombre')
-            .eq('es_comestible', true)
-            .range(desde, desde + pageSize - 1)
-
-        if (error || !data || data.length === 0) {
-            hayMas = false
-            break
-        }
-
-        for (const a of data) {
-            const record: AlimentoRecord = {
-                id: a.id,
-                nombre: a.nombre,
-                nombreLower: a.nombre.toLowerCase(),
-            }
-            map.set(record.nombreLower, record)
-        }
-
-        if (data.length < pageSize) hayMas = false
-        else desde += pageSize
-    }
-
-    console.log(`[Batch] Cargados ${map.size} alimentos en memoria`)
-    return map
-}
 
 /**
  * Pre-carga los productos_supermercado existentes para un supermercado.
@@ -706,8 +549,8 @@ export async function scrapearSupermercado(
                 nombre_original: raw.nombre,
                 alimento_id: alimentoId || '__PENDING__', // placeholder
                 marca: raw.marca || null,
-                precio_por_kg: raw.precio_por_kg || raw.precio_actual,
-                precio_unidad: raw.precio_actual !== (raw.precio_por_kg || raw.precio_actual) ? raw.precio_actual : null,
+                precio_unidad: raw.precio_actual > 0 ? raw.precio_actual : null,
+                precio_por_kg: (raw.precio_por_kg && raw.precio_por_kg > 0) ? raw.precio_por_kg : null,
                 unidad: raw.unidad || 'kg',
                 url_producto: raw.url_producto || null,
                 url_imagen: raw.imagen_url || null,
@@ -718,8 +561,8 @@ export async function scrapearSupermercado(
                 supermercado_id: supermercadoId,
                 alimento_id: alimentoId || '__PENDING__',
                 nombre_producto: raw.nombre,
-                precio_por_kg: raw.precio_por_kg || raw.precio_actual,
-                precio_unidad: raw.precio_actual !== (raw.precio_por_kg || raw.precio_actual) ? raw.precio_actual : null,
+                precio_unidad: raw.precio_actual > 0 ? raw.precio_actual : null,
+                precio_por_kg: (raw.precio_por_kg && raw.precio_por_kg > 0) ? raw.precio_por_kg : null,
                 url_producto: raw.url_producto,
                 fuente: 'scraping_http',
                 metadatos: {

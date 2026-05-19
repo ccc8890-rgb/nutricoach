@@ -49,7 +49,9 @@ const CYAN = '\x1b[36m'
 const MAGENTA = '\x1b[35m'
 const RESET = '\x1b[0m'
 
-// ─── Lógica de matching mejorada (copiada de index.ts) ──────────
+// ─── Lógica de matching (duplicada de lib/scraping/matcher.ts) ──
+// ⚠️ Mantenida inline porque este script es .mjs (Node plano) y no puede
+//    importar TypeScript. Si cambias la lógica, actualiza AMBOS archivos.
 
 function quitarAcentos(s) {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '')

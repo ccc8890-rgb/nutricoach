@@ -1,14 +1,16 @@
 /**
  * regenerar-imagenes-reales.mjs
  *
- * Pipeline: foto real de Cookpad → crop cuadrado → edición ligera GPT-4o → Supabase Storage
- * La edición solo limpia texto/personas — mantiene la composición exacta de la foto real.
- * Misma estrategia que el pipeline de fotos reales de Instagram (refinar-imagenes-og.mjs).
+ * Pipeline: Brave Image Search → descarga → crop cuadrado → Supabase Storage
+ * Fuente primaria: Brave Images (fotos reales de webs de recetas españolas)
+ * Fallback:        Cookpad → webs de recetas (pequerecetas, recetasgratis, directoalpaladar)
+ * Edición GPT-4o:  opcional con --con-ia (~$0.034/img)
  *
  * USO:
  *   node scripts/regenerar-imagenes-reales.mjs               → preview
  *   node scripts/regenerar-imagenes-reales.mjs --prueba      → 5 de prueba
- *   node scripts/regenerar-imagenes-reales.mjs --genera      → todas (~$0.034/img)
+ *   node scripts/regenerar-imagenes-reales.mjs --genera      → todas (~$0/img sin IA)
+ *   node scripts/regenerar-imagenes-reales.mjs --genera --con-ia  → con edición GPT-4o
  *   node scripts/regenerar-imagenes-reales.mjs --limite 20   → máx N
  *   node scripts/regenerar-imagenes-reales.mjs --id <uuid>   → solo esa
  *   node scripts/regenerar-imagenes-reales.mjs --forzar --id <uuid> → re-genera aunque ya OK
@@ -42,10 +44,10 @@ loadEnv()
 const SB_URL    = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SB_KEY    = process.env.SUPABASE_SERVICE_ROLE_KEY
 const OPENAI_KEY = process.env.OPENAI_API_KEY
+const BRAVE_KEY  = 'BSAdjZX9V2Z51PAl0x7y1nThToNA7d1'
 const BUCKET    = 'recetas'
 
 if (!SB_URL || !SB_KEY) { console.error('❌ Variables Supabase no configuradas'); process.exit(1) }
-if (!OPENAI_KEY) { console.error('❌ OPENAI_API_KEY no configurada en .env.local'); process.exit(1) }
 
 const sb = createClient(SB_URL, SB_KEY, { auth: { persistSession: false } })
 
@@ -54,6 +56,7 @@ const args    = process.argv.slice(2)
 const GENERA  = args.includes('--genera')
 const PRUEBA  = args.includes('--prueba')
 const FORZAR  = args.includes('--forzar')
+const CON_IA  = args.includes('--con-ia')   // edición ligera GPT-4o (opt-in)
 const idIdx   = args.indexOf('--id')
 const SOLO_ID = idIdx !== -1 ? args[idIdx + 1] : undefined
 const limIdx  = args.indexOf('--limite')
@@ -61,12 +64,88 @@ const MAX     = limIdx !== -1 ? parseInt(args[limIdx + 1], 10) : 9999
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
 
-// ── Buscar imagen en Cookpad ──────────────────────────────────────────────────
-async function buscarEnCookpad(nombre) {
-    const r = await fetch('https://cookpad.com/es/buscar/' + encodeURIComponent(nombre), {
-        headers: { 'User-Agent': UA, 'Accept-Language': 'es-ES,es;q=0.9' },
-        signal: AbortSignal.timeout(15000),
+// ── Brave Image Search (fuente primaria) ──────────────────────────────────────
+async function _braveImageQuery(query) {
+    const q = encodeURIComponent(query)
+    const url = `https://api.search.brave.com/res/v1/images/search?q=${q}&count=10&search_lang=es&country=ES&safesearch=strict`
+
+    let res
+    try {
+        res = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'Accept-Encoding': 'gzip',
+                'X-Subscription-Token': BRAVE_KEY,
+            },
+            signal: AbortSignal.timeout(10000),
+        })
+    } catch { return null }
+
+    if (!res.ok) return null
+
+    let data
+    try { data = await res.json() } catch { return null }
+
+    // La API devuelve dimensiones y URL real en r.properties
+    const resultados = (data.results || []).filter(r => {
+        const w = r.properties?.width, h = r.properties?.height
+        return w >= 400 && h >= 400
     })
+
+    if (!resultados.length) return null
+
+    const sitiosReceta = ['receta', 'cocina', 'hogar', 'pequere', 'directo', 'vitonica', 'food', 'nutri', 'chef', 'cocinando', 'thermomix']
+
+    const enriquecidos = resultados.map(r => {
+        const w = r.properties?.width || 1
+        const h = r.properties?.height || 1
+        return {
+            imgUrl: r.properties?.url,
+            ratio: w / h,
+            esRecetaSite: sitiosReceta.some(s =>
+                (r.url || '').toLowerCase().includes(s) ||
+                (r.source || '').toLowerCase().includes(s) ||
+                (r.properties?.url || '').toLowerCase().includes(s)
+            ),
+        }
+    })
+
+    // 1ª opción: de web de recetas y ratio ~cuadrado
+    const ideal = enriquecidos.find(r => r.esRecetaSite && r.ratio >= 0.75 && r.ratio <= 1.5)
+    if (ideal?.imgUrl) return ideal.imgUrl
+
+    // 2ª opción: cualquiera con ratio razonable
+    const razonable = enriquecidos.find(r => r.ratio >= 0.7 && r.ratio <= 1.8)
+    if (razonable?.imgUrl) return razonable.imgUrl
+
+    return enriquecidos[0]?.imgUrl || null
+}
+
+async function buscarEnBrave(nombre) {
+    // Intento 1: nombre completo + "receta"
+    const url1 = await _braveImageQuery(`${nombre} receta`)
+    if (url1) return url1
+
+    // Intento 2: primeras 3 palabras (nombres específicos con términos poco indexados)
+    const palabras = nombre.trim().split(/\s+/)
+    if (palabras.length > 3) {
+        const corto = palabras.slice(0, 3).join(' ')
+        const url2 = await _braveImageQuery(`${corto} receta`)
+        if (url2) return url2
+    }
+
+    return null
+}
+
+// ── Fallback: Cookpad ─────────────────────────────────────────────────────────
+async function buscarEnCookpad(nombre) {
+    let r
+    try {
+        r = await fetch('https://cookpad.com/es/buscar/' + encodeURIComponent(nombre), {
+            headers: { 'User-Agent': UA, 'Accept-Language': 'es-ES,es;q=0.9' },
+            signal: AbortSignal.timeout(15000),
+        })
+    } catch { return null }
     if (!r.ok) return null
     const html = await r.text()
 
@@ -81,12 +160,12 @@ async function buscarEnCookpad(nombre) {
         || null
 }
 
-// Fallback: og:image desde webs de recetas españolas
+// ── Fallback: og:image desde webs estáticas ───────────────────────────────────
 async function buscarFallback(nombre) {
+    // Webs que renderizan HTML estático con og:image accesible
     const sitios = [
-        `https://www.pequerecetas.com/?s=${encodeURIComponent(nombre)}`,
         `https://www.recetasgratis.net/busqueda?q=${encodeURIComponent(nombre)}`,
-        `https://www.directoalpaladar.com/?s=${encodeURIComponent(nombre)}`,
+        `https://www.pequerecetas.com/?s=${encodeURIComponent(nombre)}`,
     ]
     for (const sitioUrl of sitios) {
         try {
@@ -112,12 +191,15 @@ async function buscarFallback(nombre) {
     return null
 }
 
-// ── Descargar y cropear ───────────────────────────────────────────────────────
+// ── Descargar y encuadrar ─────────────────────────────────────────────────────
 async function descargarYCropear(url) {
-    const r = await fetch(url, {
-        headers: { 'User-Agent': UA, Referer: 'https://cookpad.com/' },
-        signal: AbortSignal.timeout(20000),
-    })
+    let r
+    try {
+        r = await fetch(url, {
+            headers: { 'User-Agent': UA, Referer: 'https://www.google.com/' },
+            signal: AbortSignal.timeout(20000),
+        })
+    } catch { return null }
     if (!r.ok) return null
     const ct = r.headers.get('content-type') || ''
     if (!ct.startsWith('image/')) return null
@@ -125,17 +207,17 @@ async function descargarYCropear(url) {
     const raw = Buffer.from(await r.arrayBuffer())
     if (raw.length < 10000) return null
 
-    // Fit completo: imagen entera dentro del cuadrado, sin recortar
+    // fit:contain → imagen entera dentro del cuadrado, fondo cálido
     return sharp(raw)
         .resize(1024, 1024, {
             fit: 'contain',
-            background: { r: 250, g: 248, b: 244, alpha: 1 }, // blanco cálido neutro
+            background: { r: 250, g: 248, b: 244, alpha: 1 },
         })
         .jpeg({ quality: 90 })
         .toBuffer()
 }
 
-// ── Edición ligera GPT-4o — mismo pipeline que fotos de Instagram ─────────────
+// ── Edición ligera GPT-4o (opt-in con --con-ia) ───────────────────────────────
 function buildPrompt(nombre) {
     return `Esta es una foto de la receta "${nombre}".
 
@@ -148,9 +230,10 @@ El objetivo es la foto original sin texto ni personas. Nada más.`
 }
 
 async function editarConGPT(jpegBuffer, nombre) {
+    if (!OPENAI_KEY) throw new Error('OPENAI_API_KEY no configurada')
     const form = new FormData()
     const blob = new Blob([jpegBuffer], { type: 'image/jpeg' })
-    form.append('image', blob, 'foto.png')   // OpenAI acepta JPEG aunque la extensión diga png
+    form.append('image', blob, 'foto.png')
     form.append('model', 'gpt-image-1')
     form.append('prompt', buildPrompt(nombre))
     form.append('n', '1')
@@ -179,9 +262,9 @@ async function editarConGPT(jpegBuffer, nombre) {
     const b64 = data.data?.[0]?.b64_json
     if (b64) return Buffer.from(b64, 'base64')
 
-    const url = data.data?.[0]?.url
-    if (url) {
-        const imgRes = await fetch(url, { signal: AbortSignal.timeout(30000) })
+    const imgUrl = data.data?.[0]?.url
+    if (imgUrl) {
+        const imgRes = await fetch(imgUrl, { signal: AbortSignal.timeout(30000) })
         return Buffer.from(await imgRes.arrayBuffer())
     }
 
@@ -210,10 +293,12 @@ async function actualizarUrl(id, imagenUrl) {
 
 // ── MAIN ──────────────────────────────────────────────────────────────────────
 async function main() {
+    const modoIA = CON_IA ? 'GPT-4o edit ligero' : 'sin IA (foto directa)'
     console.log(`
 ╔══════════════════════════════════════════════════════════════════╗
-║  📸 IMÁGENES REALES — Cookpad → crop → GPT-4o edición ligera    ║
-║  Mismo pipeline que fotos de Instagram. ~$0.034/imagen.          ║
+║  📸 IMÁGENES REALES — Brave Search → crop → Supabase            ║
+║  Fuentes: Brave Images > Cookpad > recetasgratis > pequerecetas ║
+║  Modo IA: ${modoIA.padEnd(42)}║
 ╚══════════════════════════════════════════════════════════════════╝
 `)
 
@@ -246,8 +331,8 @@ async function main() {
     })
     const lista = PRUEBA ? lista0.slice(0, 5) : lista0
 
-    const coste = (lista.length * 0.034).toFixed(2)
-    console.log(`📋 A procesar: ${lista.length}   💰 Coste estimado: ~$${coste}\n`)
+    const costeEstimado = CON_IA ? `~$${(lista.length * 0.034).toFixed(2)}` : '~$0.00'
+    console.log(`📋 A procesar: ${lista.length}   💰 Coste estimado: ${costeEstimado}\n`)
 
     if (!GENERA) {
         console.log('⚠️  PREVIEW — añade --genera para ejecutar\n')
@@ -256,7 +341,8 @@ async function main() {
         )
         if (lista.length > 20) console.log(`  ... y ${lista.length - 20} más`)
         console.log(`\n  node scripts/regenerar-imagenes-reales.mjs --prueba --genera`)
-        console.log(`  node scripts/regenerar-imagenes-reales.mjs --genera\n`)
+        console.log(`  node scripts/regenerar-imagenes-reales.mjs --genera`)
+        console.log(`  node scripts/regenerar-imagenes-reales.mjs --genera --con-ia  (con GPT-4o)\n`)
         return
     }
 
@@ -267,8 +353,14 @@ async function main() {
         process.stdout.write(`[${i+1}/${lista.length}] ${r.nombre.slice(0, 48).padEnd(50)} `)
 
         try {
-            let imgUrl = await buscarEnCookpad(r.nombre)
-            let fuente = 'Cookpad'
+            // Búsqueda en orden: Brave → Cookpad → fallback webs
+            let imgUrl = await buscarEnBrave(r.nombre)
+            let fuente = 'Brave'
+
+            if (!imgUrl) {
+                imgUrl = await buscarEnCookpad(r.nombre)
+                fuente = 'Cookpad'
+            }
 
             if (!imgUrl) {
                 imgUrl = await buscarFallback(r.nombre)
@@ -288,10 +380,10 @@ async function main() {
                 continue
             }
 
-            const edited = await editarConGPT(cropped, r.nombre)
-            const publicUrl = await subirImagen(edited, r.id)
+            const final = CON_IA ? await editarConGPT(cropped, r.nombre) : cropped
+            const publicUrl = await subirImagen(final, r.id)
             await actualizarUrl(r.id, publicUrl)
-            console.log(`✅ ${fuente} ${(edited.length/1024).toFixed(0)}KB`)
+            console.log(`✅ ${fuente} ${(final.length/1024).toFixed(0)}KB`)
             ok++
 
         } catch (err) {
@@ -299,16 +391,16 @@ async function main() {
             errores++
         }
 
-        if (i < lista.length - 1) await new Promise(x => setTimeout(x, 1500))
+        if (i < lista.length - 1) await new Promise(x => setTimeout(x, 800))
     }
 
-    const costeReal = (ok * 0.034).toFixed(2)
+    const costeReal = CON_IA ? `~$${(ok * 0.034).toFixed(2)}` : '~$0.00'
     console.log(`
 ═══════════════════════════════════════
   ✅ OK:        ${ok}
   📭 Sin foto:  ${sinFoto}
   ❌ Errores:   ${errores}
-  💰 Coste:     ~$${costeReal}
+  💰 Coste:     ${costeReal}
 `)
     if (sinFoto > 0) console.log(`  Las ${sinFoto} sin foto → usar regenerar-imagenes-malas.mjs como fallback.`)
 }

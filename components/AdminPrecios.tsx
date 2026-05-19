@@ -36,6 +36,8 @@ export default function AdminPrecios() {
     const [precios, setPrecios] = useState<PrecioActual[]>([])
     const [totalCount, setTotalCount] = useState(0)
     const [cargando, setCargando] = useState(true)
+    const [cargandoSupermercados, setCargandoSupermercados] = useState(true)
+    const [errorSupermercados, setErrorSupermercados] = useState<string | null>(null)
     const [supermercadoSel, setSupermercadoSel] = useState<string | null>(null)
     const [busqueda, setBusqueda] = useState('')
     const [mostrarForm, setMostrarForm] = useState(false)
@@ -87,9 +89,12 @@ export default function AdminPrecios() {
 
     // Cargar supermercados al inicio (desde API para obtener total_productos real)
     useEffect(() => {
+        setCargandoSupermercados(true)
+        setErrorSupermercados(null)
         fetch('/api/precios/supermercados')
-            .then(res => res.json())
-            .then(data => {
+            .then(async res => {
+                if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`)
+                const data = await res.json()
                 const lista = Array.isArray(data) ? data : []
                 setSupermercados(lista)
 
@@ -106,8 +111,10 @@ export default function AdminPrecios() {
             })
             .catch(err => {
                 console.error('Error cargando supermercados:', err)
+                setErrorSupermercados(err.message)
                 addToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los supermercados' })
             })
+            .finally(() => setCargandoSupermercados(false))
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Recargar precios cuando cambia supermercado, búsqueda o página
@@ -275,26 +282,38 @@ export default function AdminPrecios() {
 
             {/* Selector de supermercado */}
             <div className="flex flex-wrap gap-2">
-                {supermercados.map(s => {
-                    const conteo = conteosSupermercados[s.id] ?? 0
-                    return (
-                        <button
-                            key={s.id}
-                            onClick={() => setSupermercadoSel(s.id)}
-                            className="text-sm px-4 py-2 rounded-full border transition-all font-medium"
-                            style={{
-                                backgroundColor: supermercadoSel === s.id ? (s.color ?? '#16A34A') : 'transparent',
-                                color: supermercadoSel === s.id ? 'white' : 'var(--text-secondary)',
-                                borderColor: supermercadoSel === s.id ? (s.color ?? '#16A34A') : 'var(--border)',
-                            }}
-                        >
-                            {s.nombre}
-                            <span className="ml-1.5 text-xs opacity-70">
-                                ({conteo.toLocaleString('es-ES')})
-                            </span>
-                        </button>
-                    )
-                })}
+                {cargandoSupermercados ? (
+                    <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                        <Loader2 size={14} className="animate-spin" />
+                        Cargando supermercados...
+                    </div>
+                ) : errorSupermercados ? (
+                    <div className="flex items-center gap-2 text-sm text-red-500">
+                        <AlertCircle size={14} />
+                        Error al cargar supermercados
+                    </div>
+                ) : (
+                    supermercados.map(s => {
+                        const conteo = conteosSupermercados[s.id] ?? 0
+                        return (
+                            <button
+                                key={s.id}
+                                onClick={() => setSupermercadoSel(s.id)}
+                                className="text-sm px-4 py-2 rounded-full border transition-all font-medium"
+                                style={{
+                                    backgroundColor: supermercadoSel === s.id ? (s.color ?? '#16A34A') : 'transparent',
+                                    color: supermercadoSel === s.id ? 'white' : 'var(--text-secondary)',
+                                    borderColor: supermercadoSel === s.id ? (s.color ?? '#16A34A') : 'var(--border)',
+                                }}
+                            >
+                                {s.nombre}
+                                <span className="ml-1.5 text-xs opacity-70">
+                                    ({conteo.toLocaleString('es-ES')})
+                                </span>
+                            </button>
+                        )
+                    })
+                )}
             </div>
 
             {/* Buscador */}
@@ -382,7 +401,7 @@ export default function AdminPrecios() {
                                                     </div>
                                                 ) : (
                                                     <button
-                                                        onClick={() => { setEditandoId(precio.id); setEditValor(precio.precio_por_kg.toString()) }}
+                                                        onClick={() => { setEditandoId(precio.id); setEditValor(precio.precio_por_kg.toFixed(3)) }}
                                                         className="text-sm font-bold px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                                         style={{ color: '#16A34A' }}
                                                     >
