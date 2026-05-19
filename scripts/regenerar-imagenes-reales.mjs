@@ -125,18 +125,12 @@ async function descargarYCropear(url) {
     const raw = Buffer.from(await r.arrayBuffer())
     if (raw.length < 10000) return null
 
-    const img = sharp(raw)
-    const meta = await img.metadata()
-    const lado = Math.min(meta.width || 800, meta.height || 800)
-
-    return img
-        .extract({
-            left:   Math.floor(((meta.width || 0) - lado) / 2),
-            top:    Math.floor(((meta.height || 0) - lado) / 2),
-            width:  lado,
-            height: lado,
+    // Fit completo: imagen entera dentro del cuadrado, sin recortar
+    return sharp(raw)
+        .resize(1024, 1024, {
+            fit: 'contain',
+            background: { r: 250, g: 248, b: 244, alpha: 1 }, // blanco cálido neutro
         })
-        .resize(1024, 1024)
         .jpeg({ quality: 90 })
         .toBuffer()
 }

@@ -40,6 +40,10 @@ const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel
   loading: () => <div className="animate-pulse h-32 rounded-xl" style={{ background: 'var(--border)' }} />,
   ssr: false,
 })
+const HistorialEntreno = dynamic(() => import('@/components/training/HistorialEntreno'), {
+  loading: () => <div className="skeleton h-48 w-full rounded-xl" />,
+  ssr: false,
+})
 const CompeticionesManager = dynamic(() => import('@/components/CompeticionesManager'), {
   loading: () => <div className="skeleton h-48 w-full rounded-xl" />,
   ssr: false,
@@ -53,7 +57,7 @@ type NotaCoachRow = {
   created_at: string
 }
 
-type Tab = 'informacion' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion' | 'perfil_atleta'
+type Tab = 'informacion' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion' | 'perfil_atleta' | 'historial_entreno'
 
 type ClienteConExtra = Cliente & {
   fecha_proxima_revision?: string
@@ -228,6 +232,7 @@ export default function ClienteDetallePage() {
     { key: 'historial_ia', label: 'Historial IA', icon: Brain },
     { key: 'conversaciones_ia', label: 'Conversaciones IA', icon: Bot },
     { key: 'perfil_atleta', label: 'Perfil Atleta', icon: PersonStanding },
+    { key: 'historial_entreno', label: 'Historial Entreno', icon: Dumbbell },
     { key: 'ajuste_macros', label: 'Ajuste Macros', icon: Zap },
   ]
 
@@ -614,6 +619,10 @@ export default function ClienteDetallePage() {
         ) : tabActiva === 'perfil_atleta' ? (
           <ErrorBoundary>
             <PerfilEntrenoForm clienteId={id as string} />
+          </ErrorBoundary>
+        ) : tabActiva === 'historial_entreno' ? (
+          <ErrorBoundary>
+            <HistorialEntreno clienteId={id as string} />
           </ErrorBoundary>
         ) : tabActiva === 'historial_ia' ? (
           <HistorialDietasIA clienteId={id as string} />
