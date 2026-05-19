@@ -83,10 +83,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'No hay plantillas de dieta configuradas. Ejecuta el seed primero.' }, { status: 400 })
         }
 
-        // 5. Obtener recetas disponibles
+        // 5. Obtener recetas disponibles (incluyendo azúcares, sodio y fibra para IA personalizada)
         const { data: recetas } = await supabase
             .from('recetas')
-            .select('id, nombre, categoria, kcal, proteinas, carbohidratos, grasas')
+            .select('id, nombre, categoria, kcal, proteinas, carbohidratos, grasas, azucares, sodio_mg, fibra')
             .or(`coach_id.eq.${user.id},coach_id.is.null`)
 
         if (!recetas || recetas.length < 5) {

@@ -10,6 +10,7 @@ import ListaCompraPortal from '@/components/PortalCliente/ListaCompraPortal'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
 import GraficoPeso from '@/components/PortalCliente/GraficoPeso'
 import MilestonesLogros from '@/components/PortalCliente/MilestonesLogros'
+import SemanaEntrenoCard from '@/components/training/SemanaEntrenoCard'
 
 function PortalClientePageContent() {
   const router = useRouter()
@@ -264,74 +265,7 @@ function PortalClientePageContent() {
         {/* TAB: ENTRENO */}
         {tab === 'entreno' && (
           entreno ? (
-            <div>
-              {/* Plan header */}
-              <div className="rounded-xl p-4 mb-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <p className="font-semibold" style={{ color: 'var(--text)' }}>{entreno.nombre}</p>
-                {entreno.descripcion && <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{entreno.descripcion}</p>}
-                <div className="flex items-center gap-3 mt-2">
-                  {entreno.duracion_semanas && (
-                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{entreno.duracion_semanas} semanas</span>
-                  )}
-                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {(entreno.sesiones ?? []).length} días
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                {(entreno.sesiones ?? []).map(sesion => (
-                  <div
-                    key={sesion.id}
-                    className="rounded-xl overflow-hidden"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                  >
-                    {/* Session header */}
-                    <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: '1px solid var(--border)' }}>
-                      <div>
-                        <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
-                        {sesion.dia_semana && (
-                          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{sesion.dia_semana}</p>
-                        )}
-                      </div>
-                      <a
-                        href={`/cliente/sesion/${sesion.id}`}
-                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
-                        style={{ background: 'rgba(168,85,247,0.12)', color: 'rgb(192,132,252)', border: '1px solid rgba(168,85,247,0.2)' }}
-                      >
-                        <Dumbbell size={12} />
-                        Iniciar
-                      </a>
-                    </div>
-
-                    {/* Exercise preview */}
-                    <div className="px-4 py-3 flex flex-col gap-2">
-                      {(sesion.ejercicios ?? []).sort((a, b) => a.orden - b.orden).slice(0, 4).map((ej, idx: number) => (
-                        <div key={ej.id} className="flex items-center gap-3">
-                          <span
-                            className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
-                            style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)' }}
-                          >
-                            {idx + 1}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm truncate" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre}</p>
-                          </div>
-                          <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
-                            {ej.series}×{ej.repeticiones}
-                          </span>
-                        </div>
-                      ))}
-                      {(sesion.ejercicios ?? []).length > 4 && (
-                        <p className="text-xs pl-8" style={{ color: 'var(--text-muted)' }}>
-                          +{(sesion.ejercicios ?? []).length - 4} más
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <SemanaEntrenoCard planId={entreno.id} planNombre={entreno.nombre} />
           ) : (
             <div className="rounded-xl text-center py-12" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <Dumbbell size={36} className="mx-auto mb-3" style={{ color: 'var(--text-muted)', opacity: 0.4 }} />

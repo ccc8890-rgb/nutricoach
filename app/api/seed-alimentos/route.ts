@@ -44,6 +44,7 @@ async function deduplicarAlimentos() {
     const { data: todos } = await supabaseAdmin
         .from('alimentos')
         .select('id, nombre, fuente, calorias, proteinas, carbohidratos, grasas')
+        .eq('es_comestible', true)
         .is('coach_id', null)
 
     if (!todos?.length) return 0

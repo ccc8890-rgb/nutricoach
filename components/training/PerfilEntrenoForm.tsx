@@ -13,6 +13,8 @@ const SPORT_MODALITY_LABELS: Record<SportModality, string> = {
   running: 'Running',
   hibrido: 'Híbrido',
   calistenia: 'Calistenia',
+  natacion: 'Natación',
+  triatlon: 'Triatlón',
 }
 
 const NIVEL_LABELS: Record<PlantillaEntrenoNivel, string> = {
@@ -332,11 +334,10 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
               key={item}
               type="button"
               onClick={() => toggleEquipo(item)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                (form.equipo_disponible ?? []).includes(item)
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${(form.equipo_disponible ?? []).includes(item)
                   ? 'bg-gray-900 text-white border-gray-900'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-              }`}
+                }`}
             >
               {item}
             </button>

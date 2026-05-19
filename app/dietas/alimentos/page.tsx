@@ -67,6 +67,12 @@ const NUTRI_LABELS = [
     { key: 'fibra', label: 'Fibra', unit: 'g', color: '#22C55E' },
 ] as const satisfies readonly { key: keyof Alimento; label: string; unit: string; color: string }[]
 
+// Azúcares y sodio — visibles directamente cuando el alimento tiene datos
+const AZUCAR_SODIO_HIGHLIGHTS: { key: keyof Alimento; label: string; unit: string; color: string }[] = [
+    { key: 'azucares', label: 'Azúcares', unit: 'g', color: '#F97316' },
+    { key: 'sodio_mg', label: 'Sal', unit: 'mg', color: '#06B6D4' },
+]
+
 const FORM_VACIO = { nombre: '', categoria: 'Supermercado', calorias: '', proteinas: '', carbohidratos: '', grasas: '', fibra: '' }
 
 // Perfil lipídico visible directamente en la card (cuando el alimento tiene datos)
@@ -125,7 +131,7 @@ const MICRO_GRUPOS: { titulo: string; campos: { key: keyof Alimento; label: stri
             { key: 'magnesio_mg', label: 'Magnesio', unit: 'mg' },
             { key: 'fosforo_mg', label: 'Fósforo', unit: 'mg' },
             { key: 'potasio_mg', label: 'Potasio', unit: 'mg' },
-            { key: 'sodio_mg', label: 'Sodio', unit: 'mg' },
+            // sodio_mg excluido intencionadamente — ya se muestra en AZUCAR_SODIO_HIGHLIGHTS
             { key: 'zinc_mg', label: 'Zinc', unit: 'mg' },
             { key: 'cobre_mg', label: 'Cobre', unit: 'mg' },
             { key: 'selenio_ug', label: 'Selenio', unit: 'µg' },
@@ -171,6 +177,7 @@ export default function AlimentosPage() {
     const [categoriaFiltro, setCategoriaFiltro] = useState('')
     const [soloCustom, setSoloCustom] = useState(false)
     const [soloIA, setSoloIA] = useState(false)
+    const [soloConDatos, setSoloConDatos] = useState(false)
     const debouncedSearch = useDebounce(search, 300)
     const [showForm, setShowForm] = useState(false)
     const [editando, setEditando] = useState<Alimento | null>(null)
@@ -219,12 +226,13 @@ export default function AlimentosPage() {
         if (debouncedSearch) params.set('q', debouncedSearch)
         if (categoriaFiltro) params.set('categoria', categoriaFiltro)
         if (soloCustom) params.set('custom', 'true')
+        if (soloConDatos) params.set('soloConDatos', 'true')
 
         const res = await fetch(`/api/alimentos?${params.toString()}`)
         const data = await res.json()
         if (Array.isArray(data)) setAlimentos(data)
         setLoading(false)
-    }, [debouncedSearch, categoriaFiltro, soloCustom])
+    }, [debouncedSearch, categoriaFiltro, soloCustom, soloConDatos])
 
     // Cargar OFF en paralelo cuando hay búsqueda
     useEffect(() => {
@@ -424,6 +432,15 @@ export default function AlimentosPage() {
                     />
                     Solo IA
                 </label>
+                <label className="flex items-center gap-2 text-sm" style={{ color: '#16a34a' }}>
+                    <input
+                        type="checkbox"
+                        checked={soloConDatos}
+                        onChange={e => setSoloConDatos(e.target.checked)}
+                        className="rounded" style={{ accentColor: '#16a34a' }}
+                    />
+                    Solo con datos nutricionales
+                </label>
             </div>
 
             {/* Loading — skeleton grid que imita la estructura real */}
@@ -456,179 +473,199 @@ export default function AlimentosPage() {
                                 return ia - ib
                             })
                             .map(([categoria, items]) => {
-                            const Icon = CATEGORIA_ICON[categoria] ?? CircleDot
-                            const color = CATEGORIA_COLOR[categoria] ?? '#6B7280'
-                            return (
-                                <div key={categoria}>
-                                    <h2 className="flex items-center gap-2 text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
-                                        <Icon size={16} style={{ color }} />
-                                        {categoria}
-                                        <span className="font-normal" style={{ color: 'var(--text-muted)' }}>({items.length})</span>
-                                    </h2>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                        {items.map(a => (
-                                            <div
-                                                key={a.id}
-                                                className="card p-3 relative group"
-                                            >
-                                                {/* Badges superior */}
-                                                <div className="absolute top-2 right-2 flex gap-1">
-                                                    {a.custom && (
-                                                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border" style={{ color: 'var(--primary)', backgroundColor: 'var(--primary-bg)', borderColor: 'var(--primary)' }}>
-                                                            custom
-                                                        </span>
-                                                    )}
-                                                    {a.fuente && FUENTE_CONFIG[a.fuente] && (
-                                                        <span
-                                                            className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border flex items-center gap-1"
-                                                            style={{
-                                                                color: FUENTE_CONFIG[a.fuente].color,
-                                                                background: FUENTE_CONFIG[a.fuente].bg,
-                                                                borderColor: FUENTE_CONFIG[a.fuente].border,
-                                                            }}
-                                                        >
-                                                            {FUENTE_CONFIG[a.fuente].label}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                <p className="font-medium text-sm mb-2 pr-20" style={{ color: 'var(--text)' }}>{a.nombre}</p>
-
-                                                {/* Macros */}
-                                                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                                                    {NUTRI_LABELS.map(({ key, label, unit, color: c }) => {
-                                                        const val = a[key] as number | undefined
-                                                        if (val === undefined || val === null) return null
-                                                        return (
-                                                            <span key={key} className="flex items-center gap-1" title={label}>
-                                                                <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0" style={{ background: c }} />
-                                                                <span style={{ color: c }} className="font-medium">{label}</span>
-                                                                <span>{val}{unit === 'kcal' ? '' : 'g'}</span>
-                                                                <span style={{ color: 'var(--text-muted)' }}>{unit}</span>
+                                const Icon = CATEGORIA_ICON[categoria] ?? CircleDot
+                                const color = CATEGORIA_COLOR[categoria] ?? '#6B7280'
+                                return (
+                                    <div key={categoria}>
+                                        <h2 className="flex items-center gap-2 text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                                            <Icon size={16} style={{ color }} />
+                                            {categoria}
+                                            <span className="font-normal" style={{ color: 'var(--text-muted)' }}>({items.length})</span>
+                                        </h2>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {items.map(a => (
+                                                <div
+                                                    key={a.id}
+                                                    className="card p-3 relative group"
+                                                >
+                                                    {/* Badges superior */}
+                                                    <div className="absolute top-2 right-2 flex gap-1">
+                                                        {a.custom && (
+                                                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border" style={{ color: 'var(--primary)', backgroundColor: 'var(--primary-bg)', borderColor: 'var(--primary)' }}>
+                                                                custom
                                                             </span>
-                                                        )
-                                                    })}
-                                                </div>
-
-                                                {/* Perfil lipídico — visible directamente si hay datos */}
-                                                {LIPID_HIGHLIGHTS.some(h => (a[h.key] as number ?? 0) > 0) && (
-                                                    <div className="mt-2 pt-2 text-xs" style={{ borderTop: '1px solid var(--border)' }}>
-                                                        <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Perfil lipídico</p>
-                                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                                                            {LIPID_HIGHLIGHTS.map(h => {
-                                                                const val = a[h.key] as number | undefined
-                                                                if (!val || val === 0) return null
-                                                                const unit = h.key === 'colesterol_mg' ? 'mg' : 'g'
-                                                                return (
-                                                                    <span key={String(h.key)} className="flex items-center gap-1">
-                                                                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: h.color }} />
-                                                                        <span style={{ color: h.color }} className="font-medium">{h.label}</span>
-                                                                        <span style={{ color: 'var(--text-secondary)' }}>{val}{unit}</span>
-                                                                    </span>
-                                                                )
-                                                            })}
-                                                        </div>
+                                                        )}
+                                                        {a.fuente && FUENTE_CONFIG[a.fuente] && (
+                                                            <span
+                                                                className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border flex items-center gap-1"
+                                                                style={{
+                                                                    color: FUENTE_CONFIG[a.fuente].color,
+                                                                    background: FUENTE_CONFIG[a.fuente].bg,
+                                                                    borderColor: FUENTE_CONFIG[a.fuente].border,
+                                                                }}
+                                                            >
+                                                                {FUENTE_CONFIG[a.fuente].label}
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                )}
 
-                                                {/* Vitaminas y minerales clave — visible directamente si hay datos */}
-                                                {MICRO_HIGHLIGHTS.some(h => (a[h.key] as number ?? 0) > 0) && (
-                                                    <div className="mt-1.5 text-xs">
-                                                        <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Vitaminas y minerales</p>
-                                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                                                            {MICRO_HIGHLIGHTS.map(h => {
-                                                                const val = a[h.key] as number | undefined
-                                                                if (!val || val === 0) return null
-                                                                return (
-                                                                    <span key={String(h.key)} className="flex items-center gap-1">
-                                                                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: h.color }} />
-                                                                        <span style={{ color: h.color }} className="font-medium">{h.label}</span>
-                                                                        <span style={{ color: 'var(--text-secondary)' }}>{val}{h.unit}</span>
-                                                                    </span>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                    <p className="font-medium text-sm mb-2 pr-20" style={{ color: 'var(--text)' }}>{a.nombre}</p>
 
-                                                {/* Botón acordeón — solo para el perfil completo (resto de vitaminas) */}
-                                                {tieneMicros(a) && (
-                                                    <button
-                                                        onClick={() => toggleMicro(a.id)}
-                                                        className="mt-2 text-xs flex items-center gap-1 transition-colors"
-                                                        style={{ color: 'var(--text-muted)' }}
-                                                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary)')}
-                                                        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-                                                    >
-                                                        {microAbierto.has(a.id) ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
-                                                        Perfil completo
-                                                    </button>
-                                                )}
-
-                                                {/* Acordeón micronutrientes */}
-                                                {microAbierto.has(a.id) && tieneMicros(a) && (
-                                                    <div className="mt-2 pt-2 space-y-2 text-xs" style={{ borderTop: '1px solid var(--border)' }}>
-                                                        {MICRO_GRUPOS.map(grupo => {
-                                                            const tieneAlguno = grupo.campos.some(c => (a[c.key] as number ?? 0) > 0)
-                                                            if (!tieneAlguno) return null
+                                                    {/* Macros */}
+                                                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                                                        {NUTRI_LABELS.map(({ key, label, unit, color: c }) => {
+                                                            const val = a[key] as number | undefined
+                                                            if (val === undefined || val === null) return null
                                                             return (
-                                                                <div key={grupo.titulo}>
-                                                                    <p className="font-medium mb-1 text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
-                                                                        {grupo.titulo}
-                                                                    </p>
-                                                                    <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                                                                        {grupo.campos.map(c => {
-                                                                            const val = a[c.key] as number | undefined
-                                                                            if (!val || val === 0) return null
-                                                                            return (
-                                                                                <span key={c.key} style={{ color: 'var(--text-muted)' }}>
-                                                                                    {c.label}: <strong style={{ color: 'var(--text-secondary)' }} className="font-medium">{val}</strong> {c.unit}
-                                                                                </span>
-                                                                            )
-                                                                        })}
-                                                                    </div>
-                                                                </div>
+                                                                <span key={key} className="flex items-center gap-1" title={label}>
+                                                                    <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0" style={{ background: c }} />
+                                                                    <span style={{ color: c }} className="font-medium">{label}</span>
+                                                                    <span>{val}{unit === 'kcal' ? '' : 'g'}</span>
+                                                                    <span style={{ color: 'var(--text-muted)' }}>{unit}</span>
+                                                                </span>
                                                             )
                                                         })}
                                                     </div>
-                                                )}
 
-                                                {/* Acciones hover */}
-                                                <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                                    {a.custom && (
-                                                        <>
-                                                            <button
-                                                                onClick={() => abrirEditar(a)}
-                                                                className="p-1 rounded-md border transition-colors" style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                                                                onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--primary-light)' }}
-                                                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
-                                                                title="Editar"
-                                                            >
-                                                                <Pencil size={13} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleEliminar(a)}
-                                                                className="p-1 rounded-md border transition-colors" style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                                                                onMouseEnter={e => { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.borderColor = '#FECACA' }}
-                                                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
-                                                                title="Eliminar"
-                                                            >
-                                                                <Trash2 size={13} />
-                                                            </button>
-                                                        </>
+                                                    {/* Azúcares y sal — visibles directamente si hay datos */}
+                                                    {AZUCAR_SODIO_HIGHLIGHTS.some(h => (a[h.key] as number ?? 0) > 0) && (
+                                                        <div className="mt-2 pt-2 text-xs" style={{ borderTop: '1px solid var(--border)' }}>
+                                                            <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Azúcares y sal</p>
+                                                            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                                                                {AZUCAR_SODIO_HIGHLIGHTS.map(h => {
+                                                                    const val = a[h.key] as number | undefined
+                                                                    if (!val || val === 0) return null
+                                                                    return (
+                                                                        <span key={String(h.key)} className="flex items-center gap-1">
+                                                                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: h.color }} />
+                                                                            <span style={{ color: h.color }} className="font-medium">{h.label}</span>
+                                                                            <span style={{ color: 'var(--text-secondary)' }}>{val}{h.unit}</span>
+                                                                        </span>
+                                                                    )
+                                                                })}
+                                                            </div>
+                                                        </div>
                                                     )}
-                                                    {!a.custom && (
-                                                        <span className="text-[10px] rounded-md px-1.5 py-0.5 border" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}>
-                                                            Sistema
-                                                        </span>
+
+                                                    {/* Perfil lipídico — visible directamente si hay datos */}
+                                                    {LIPID_HIGHLIGHTS.some(h => (a[h.key] as number ?? 0) > 0) && (
+                                                        <div className="mt-2 pt-2 text-xs" style={{ borderTop: '1px solid var(--border)' }}>
+                                                            <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Perfil lipídico</p>
+                                                            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                                                                {LIPID_HIGHLIGHTS.map(h => {
+                                                                    const val = a[h.key] as number | undefined
+                                                                    if (!val || val === 0) return null
+                                                                    const unit = h.key === 'colesterol_mg' ? 'mg' : 'g'
+                                                                    return (
+                                                                        <span key={String(h.key)} className="flex items-center gap-1">
+                                                                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: h.color }} />
+                                                                            <span style={{ color: h.color }} className="font-medium">{h.label}</span>
+                                                                            <span style={{ color: 'var(--text-secondary)' }}>{val}{unit}</span>
+                                                                        </span>
+                                                                    )
+                                                                })}
+                                                            </div>
+                                                        </div>
                                                     )}
+
+                                                    {/* Vitaminas y minerales clave — visible directamente si hay datos */}
+                                                    {MICRO_HIGHLIGHTS.some(h => (a[h.key] as number ?? 0) > 0) && (
+                                                        <div className="mt-1.5 text-xs">
+                                                            <p className="text-[10px] uppercase tracking-wider mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Vitaminas y minerales</p>
+                                                            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                                                                {MICRO_HIGHLIGHTS.map(h => {
+                                                                    const val = a[h.key] as number | undefined
+                                                                    if (!val || val === 0) return null
+                                                                    return (
+                                                                        <span key={String(h.key)} className="flex items-center gap-1">
+                                                                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: h.color }} />
+                                                                            <span style={{ color: h.color }} className="font-medium">{h.label}</span>
+                                                                            <span style={{ color: 'var(--text-secondary)' }}>{val}{h.unit}</span>
+                                                                        </span>
+                                                                    )
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Botón acordeón — solo para el perfil completo (resto de vitaminas) */}
+                                                    {tieneMicros(a) && (
+                                                        <button
+                                                            onClick={() => toggleMicro(a.id)}
+                                                            className="mt-2 text-xs flex items-center gap-1 transition-colors"
+                                                            style={{ color: 'var(--text-muted)' }}
+                                                            onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary)')}
+                                                            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                                                        >
+                                                            {microAbierto.has(a.id) ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                                                            Perfil completo
+                                                        </button>
+                                                    )}
+
+                                                    {/* Acordeón micronutrientes */}
+                                                    {microAbierto.has(a.id) && tieneMicros(a) && (
+                                                        <div className="mt-2 pt-2 space-y-2 text-xs" style={{ borderTop: '1px solid var(--border)' }}>
+                                                            {MICRO_GRUPOS.map(grupo => {
+                                                                const tieneAlguno = grupo.campos.some(c => (a[c.key] as number ?? 0) > 0)
+                                                                if (!tieneAlguno) return null
+                                                                return (
+                                                                    <div key={grupo.titulo}>
+                                                                        <p className="font-medium mb-1 text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                                                                            {grupo.titulo}
+                                                                        </p>
+                                                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                                                                            {grupo.campos.map(c => {
+                                                                                const val = a[c.key] as number | undefined
+                                                                                if (!val || val === 0) return null
+                                                                                return (
+                                                                                    <span key={c.key} style={{ color: 'var(--text-muted)' }}>
+                                                                                        {c.label}: <strong style={{ color: 'var(--text-secondary)' }} className="font-medium">{val}</strong> {c.unit}
+                                                                                    </span>
+                                                                                )
+                                                                            })}
+                                                                        </div>
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Acciones hover */}
+                                                    <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                                                        {a.custom && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => abrirEditar(a)}
+                                                                    className="p-1 rounded-md border transition-colors" style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                                                                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.borderColor = 'var(--primary-light)' }}
+                                                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+                                                                    title="Editar"
+                                                                >
+                                                                    <Pencil size={13} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleEliminar(a)}
+                                                                    className="p-1 rounded-md border transition-colors" style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                                                                    onMouseEnter={e => { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.borderColor = '#FECACA' }}
+                                                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+                                                                    title="Eliminar"
+                                                                >
+                                                                    <Trash2 size={13} />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        {!a.custom && (
+                                                            <span className="text-[10px] rounded-md px-1.5 py-0.5 border" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}>
+                                                                Sistema
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            )
-                        })}
+                                )
+                            })}
 
                         {/* Open Food Facts results */}
                         {debouncedSearch.length >= 2 && (

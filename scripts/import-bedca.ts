@@ -31,15 +31,14 @@ const alimentos = [
 export async function importBedca() {
   try {
     // Verificar qué alimentos de BEDCA ya existen en la BD
-    const nombres = alimentos.map(a => a.nombre.trim().toLowerCase())
-
-    const { data: existentes } = await supabase
+    // Traemos todos los nombres y comparamos case-insensitive en JS
+    // (es más fiable que .in() que es case-sensitive en Postgres)
+    const { data: todosNombres } = await supabase
       .from('alimentos')
       .select('nombre')
-      .in('nombre', alimentos.map(a => a.nombre))
 
     const nombresExistentes = new Set(
-      (existentes ?? []).map(a => a.nombre.trim().toLowerCase())
+      (todosNombres ?? []).map(a => a.nombre.trim().toLowerCase())
     )
 
     const aInsertar = alimentos.filter(

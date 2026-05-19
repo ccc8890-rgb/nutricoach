@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, CheckCircle2, Circle, RotateCcw, ChevronDown, ChevronUp, Play, Pause, Trophy } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Circle, RotateCcw, ChevronDown, ChevronUp, Play, Pause, Trophy, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
 interface EjercicioSesion {
@@ -64,8 +64,12 @@ export default function EjecucionSesionPage() {
   const [timerRunning, setTimerRunning] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Completion screen
+  // Completion screen + save state
   const [showCompletion, setShowCompletion] = useState(false)
+  const [esfuerzoPercibido, setEsfuerzoPercibido] = useState<number | null>(null)
+  const [guardando, setGuardando] = useState(false)
+  const [guardadoOk, setGuardadoOk] = useState(false)
+  const sesionStartRef = useRef(Date.now())
 
   useEffect(() => { loadSesion() }, [id])
 
@@ -203,6 +207,38 @@ export default function EjecucionSesionPage() {
     }
   }
 
+  async function guardarSesion() {
+    if (!sesion) return
+    setGuardando(true)
+    const duracion_sesion_s = Math.round((Date.now() - sesionStartRef.current) / 1000)
+    const ejerciciosPayload = sesion.ejercicios.map(ej => ({
+      sesion_ejercicio_id: ej.id,
+      ejercicio_id: ej.ejercicio?.id,
+      sets_ejecutados: (sets[ej.id] ?? []).map((s, idx) => ({
+        set_num: idx + 1,
+        reps: s.reps ? parseInt(s.reps) : undefined,
+        peso_kg: s.carga ? parseFloat(s.carga) : undefined,
+      })).filter(s => s.reps != null || s.peso_kg != null),
+    })).filter(ej => ej.ejercicio_id)
+    try {
+      await fetch('/api/entrenos/registrar-sesion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sesion_id: id,
+          ejercicios: ejerciciosPayload,
+          duracion_sesion_s,
+          esfuerzo_percibido: esfuerzoPercibido ?? undefined,
+        }),
+      })
+      setGuardadoOk(true)
+    } catch {
+      // silent — session still shown as complete
+    } finally {
+      setGuardando(false)
+    }
+  }
+
   const setsHechos = (ejId: string) => (sets[ejId] ?? []).filter(s => s.hecho).length
   const totalEjercicios = sesion?.ejercicios.length ?? 0
   const completados = ejerciciosDone.size
@@ -234,32 +270,93 @@ export default function EjecucionSesionPage() {
   )
 
   // Completion screen
-  if (showCompletion) return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: 'var(--bg)' }}>
-      <div
-        className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-        style={{ background: 'rgba(168,85,247,0.15)', border: '2px solid rgba(168,85,247,0.3)' }}
-      >
-        <Trophy size={36} style={{ color: 'rgb(192,132,252)' }} />
-      </div>
-      <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--text)' }}>¡Sesión completada!</h1>
-      <p className="text-base mb-1" style={{ color: 'var(--text-muted)' }}>{sesion.nombre}</p>
-      <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
-        {totalEjercicios} ejercicio{totalEjercicios !== 1 ? 's' : ''} completados
-      </p>
-      <div className="flex flex-col gap-3 w-full max-w-xs">
-        <Link href="/cliente" className="btn-primary text-center">
-          Volver al portal
-        </Link>
-        <button
-          onClick={() => { setShowCompletion(false); setEjerciciosDone(new Set()); setEjercicioActivo(sesion.ejercicios[0]?.id ?? null) }}
-          className="btn-secondary"
+  if (showCompletion) {
+    const totalVolumen = sesion.ejercicios.reduce((acc, ej) => {
+      const ejSets = sets[ej.id] ?? []
+      return acc + ejSets.reduce((s, set) => {
+        const kg = parseFloat(set.carga) || 0
+        const reps = parseInt(set.reps) || 0
+        return s + (kg * reps)
+      }, 0)
+    }, 0)
+    const durMin = Math.round((Date.now() - sesionStartRef.current) / 60000)
+
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: 'var(--bg)' }}>
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
+          style={{ background: 'rgba(168,85,247,0.15)', border: '2px solid rgba(168,85,247,0.3)' }}
         >
-          Repetir sesión
-        </button>
+          <Trophy size={36} style={{ color: 'rgb(192,132,252)' }} />
+        </div>
+        <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>¡Sesión completada!</h1>
+        <p className="text-base mb-4" style={{ color: 'var(--text-muted)' }}>{sesion.nombre}</p>
+
+        {/* Stats */}
+        <div className="flex gap-4 mb-6">
+          {[
+            { label: 'Ejercicios', value: totalEjercicios },
+            { label: 'Duración', value: `${durMin} min` },
+            ...(totalVolumen > 0 ? [{ label: 'Volumen', value: `${Math.round(totalVolumen)} kg` }] : []),
+          ].map(stat => (
+            <div key={stat.label} className="flex flex-col items-center">
+              <span className="text-lg font-bold" style={{ color: 'var(--text)' }}>{stat.value}</span>
+              <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{stat.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* RPE selector */}
+        {!guardadoOk && (
+          <div className="w-full max-w-xs mb-6">
+            <p className="text-sm font-medium mb-3" style={{ color: 'var(--text)' }}>
+              ¿Cómo fue el esfuerzo? <span style={{ color: 'var(--text-muted)' }}>(opcional)</span>
+            </p>
+            <div className="grid grid-cols-5 gap-1.5">
+              {[1,2,3,4,5,6,7,8,9,10].map(n => (
+                <button
+                  key={n}
+                  onClick={() => setEsfuerzoPercibido(esfuerzoPercibido === n ? null : n)}
+                  className="rounded-xl py-2.5 text-sm font-bold transition-all"
+                  style={esfuerzoPercibido === n
+                    ? { background: 'rgb(168,85,247)', color: 'white' }
+                    : { background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }
+                  }
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            {esfuerzoPercibido && (
+              <p className="text-xs mt-2 text-center" style={{ color: 'var(--text-muted)' }}>
+                {esfuerzoPercibido <= 3 ? 'Muy ligero' : esfuerzoPercibido <= 5 ? 'Moderado' : esfuerzoPercibido <= 7 ? 'Intenso' : esfuerzoPercibido <= 9 ? 'Muy intenso' : 'Máximo esfuerzo'}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          {!guardadoOk ? (
+            <button
+              onClick={async () => { await guardarSesion(); router.push('/cliente') }}
+              disabled={guardando}
+              className="btn-primary flex items-center justify-center gap-2"
+            >
+              {guardando ? <><Loader2 size={16} className="animate-spin" />Guardando…</> : 'Guardar y volver'}
+            </button>
+          ) : (
+            <Link href="/cliente" className="btn-primary text-center">Volver al portal</Link>
+          )}
+          <button
+            onClick={() => { setShowCompletion(false); setEjerciciosDone(new Set()); setEjercicioActivo(sesion.ejercicios[0]?.id ?? null); sesionStartRef.current = Date.now() }}
+            className="btn-secondary"
+          >
+            Repetir sesión
+          </button>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="min-h-screen pb-32" style={{ background: 'var(--bg)' }}>

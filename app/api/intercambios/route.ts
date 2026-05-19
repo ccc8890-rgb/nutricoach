@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     .from('alimentos')
     .select('id, nombre, kcal, proteinas, carbohidratos, grasas, categoria')
     .eq('id', alimento_id)
+    .eq('es_comestible', true)
     .single()
 
   if (!original) return NextResponse.json({ error: 'Alimento no encontrado' }, { status: 404 })
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
     .from('alimentos')
     .select('id, nombre, kcal, proteinas, carbohidratos, grasas, categoria')
     .eq('categoria', original.categoria)
+    .eq('es_comestible', true)
     .gte('kcal', kcal - margenKcal)
     .lte('kcal', kcal + margenKcal)
     .gte('proteinas', proteinas - margenProt)
@@ -49,6 +51,7 @@ export async function GET(request: NextRequest) {
     const { data: ampliado } = await supabase
       .from('alimentos')
       .select('id, nombre, kcal, proteinas, carbohidratos, grasas, categoria')
+      .eq('es_comestible', true)
       .gte('kcal', kcal - margenKcal * 1.5)
       .lte('kcal', kcal + margenKcal * 1.5)
       .gte('proteinas', proteinas - margenProt * 1.5)

@@ -24,6 +24,7 @@ export async function POST(request: Request) {
         let query = supabase
             .from('alimentos')
             .select('id, nombre, categoria, calorias, proteinas, carbohidratos, grasas')
+            .eq('es_comestible', true)
             .is('vitamina_a_ug', null)
 
         if (alimentoId) {

@@ -396,6 +396,7 @@ export async function buscarAlimento(
     const { data: exacto } = await supabase
         .from('alimentos')
         .select('id')
+        .eq('es_comestible', true)
         .ilike('nombre', nombreLimpio)
         .maybeSingle()
 
@@ -408,6 +409,7 @@ export async function buscarAlimento(
     const { data: alimentos } = await supabase
         .from('alimentos')
         .select('id, nombre')
+        .eq('es_comestible', true)
         .limit(50)
 
     if (alimentos && alimentos.length > 0) {
@@ -423,6 +425,7 @@ export async function buscarAlimento(
     const { data: contains } = await supabase
         .from('alimentos')
         .select('id, nombre')
+        .eq('es_comestible', true)
         .or(`nombre.ilike.%${nombreLimpio}%,nombre.ilike.${nombreLimpio}%`)
         .limit(5)
 
@@ -441,6 +444,7 @@ export async function buscarAlimento(
         const { data: porPalabra } = await supabase
             .from('alimentos')
             .select('id, nombre')
+            .eq('es_comestible', true)
             .ilike('nombre', `%${palabraClave}%`)
             .limit(5)
 
@@ -474,6 +478,7 @@ export async function buscarAlimento(
         const { data: porPalabraUnica } = await supabase
             .from('alimentos')
             .select('id')
+            .eq('es_comestible', true)
             .ilike('nombre', `%${palabra}%`)
             .limit(1)
             .maybeSingle()
@@ -484,6 +489,20 @@ export async function buscarAlimento(
     }
 
     return { alimento_id: null, confianza: 'no_encontrado' }
+}
+
+// ── Guard: detectar productos no comestibles (mascotas, cosmética, higiene) ──
+const PATRONES_NO_COMESTIBLE = [
+    /comida (gato|gatos|perro|perros|perr[oa])/i,
+    /comida (seca|humeda) (gatos|perros)/i,
+    /barra labial|barra labios|labial (limitless|glass shine|ink matte)/i,
+    /pasta encias/i,
+    /superstay|limitless matte|glass shine/i,
+]
+
+function esProductoNoComestible(nombre: string): boolean {
+    const n = nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    return PATRONES_NO_COMESTIBLE.some(p => p.test(n))
 }
 
 /**
@@ -498,6 +517,12 @@ export async function crearAlimentoSiNoExiste(
 ): Promise<string | null> {
     const nombreLimpio = limpiarNombre(nombre)
     if (!nombreLimpio || nombreLimpio.length < 2) return null
+
+    // 🚫 Rechazar productos no comestibles (comida mascotas, cosmética, higiene)
+    if (esProductoNoComestible(nombreLimpio)) {
+        console.log(`[Normalizador] 🚫 Rechazado producto no comestible: "${nombreLimpio}"`)
+        return null
+    }
 
     // Inferir si es genérico por el nombre si no se especifica
     const MARCAS_CONOCIDAS = [

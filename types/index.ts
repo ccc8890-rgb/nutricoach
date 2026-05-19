@@ -41,6 +41,7 @@ export interface Alimento {
   fibra: number
   azucares?: number
   custom: boolean
+  es_generico?: boolean
   coach_id?: string
   // Fuente de datos
   fuente?: 'curada' | 'bedca' | 'usda' | 'openfoodfacts' | 'ia' | 'coach'
@@ -250,6 +251,7 @@ export interface PlantillaDieta {
 export type SportModality =
   | 'gym_estetica' | 'gym_fuerza' | 'funcional'
   | 'hyrox' | 'ciclismo' | 'running' | 'hibrido' | 'calistenia'
+  | 'natacion' | 'triatlon'
 
 export type TrainingTier = 'general' | 'elite'
 
@@ -272,7 +274,7 @@ export interface PerfilEntrenoCliente {
   dominadas_max_reps?: number
   capacidad_recuperacion: 'baja' | 'media' | 'alta'
   respuesta_a_volumen: 'bajo' | 'medio' | 'alto'
-  patron_lesiones: Array<{zona: string; frecuencia: string; ultima_vez: string}>
+  patron_lesiones: Array<{ zona: string; frecuencia: string; ultima_vez: string }>
   adherencia_historica_pct?: number
   respuesta_psicologica: 'variedad' | 'rutina' | 'competicion'
   plateau_detectado: boolean
@@ -286,8 +288,8 @@ export interface PerfilEntrenoCliente {
   garmin_user_id?: string
   strava_athlete_id?: string
   apple_health_enabled: boolean
-  fisio_informe: Array<{fecha: string; diagnostico: string; contraindicados: string[]; correctivos: string[]}>
-  analisis_sangre: Array<{fecha: string; ferritina?: number; vit_d?: number; hemoglobina?: number}>
+  fisio_informe: Array<{ fecha: string; diagnostico: string; contraindicados: string[]; correctivos: string[] }>
+  analisis_sangre: Array<{ fecha: string; ferritina?: number; vit_d?: number; hemoglobina?: number }>
   created_at: string
   updated_at: string
 }
@@ -331,7 +333,7 @@ export interface PlantillaEntrenamiento {
   sport_modality?: SportModality
   objetivo_especifico?: string
   tier: TrainingTier
-  phase_adjustments?: Record<string, {volumen: number; intensidad: number}>
+  phase_adjustments?: Record<string, { volumen: number; intensidad: number }>
   progresion?: ProgresionPlantilla[]
   created_at: string
   updated_at: string
@@ -372,7 +374,7 @@ export interface PlantillaSesionEjercicio {
   carga_tipo?: CargaTipo
   carga_valor?: number
   notas_tecnicas?: string
-  sustituciones?: Array<{condicion: string; ejercicio_id: string}>
+  sustituciones?: Array<{ condicion: string; ejercicio_id: string }>
 }
 
 export const PLANTILLA_DIETA_TIPO_LABELS: Record<PlantillaDietaTipo, string> = {

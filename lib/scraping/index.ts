@@ -91,7 +91,7 @@ const NO_COMESTIBLE_KEYWORDS = [
     'blanqueador juntas',
     // ── Menaje / descartables ───────────────────────────────────
     'cuaderno', 'bolígrafo', 'boligrafo', 'rotulador', 'subrayador',
-    'pegamento', 'celo', 'cinta adhesiva', 'tijeras', 'grapadora',
+    'pegamento', 'cinta adhesiva', 'tijeras', 'grapadora',
     'pilas', 'bombilla', 'vela ', 'mechero', 'cerilla',
     'clip', 'grapas', 'goma de borrar',
     'guantes desechables', 'mascarilla quirúrgica', 'mascarillas quirúrgicas', 'cubrecalzado',
@@ -197,10 +197,60 @@ const NO_COMESTIBLE_KEYWORDS = [
     'cafetera superautomática', 'máquina de coser',
 ]
 
+// ── Bebidas energéticas y no saludables ────────────────────────────
+const BEBIDAS_NO_SALUDABLES_KEYWORDS = [
+    // Bebidas energéticas
+    'monster energy', 'monster ',  // trailing space to avoid "monstera"
+    'red bull', 'redbull',
+    'burn energy', 'burn ',
+    'rockstar energy',
+    'hell energy',
+    'boost energy',
+    'te Energy',  // marca española
+    'amper energy',
+    'battery energy',
+    'bullit energy',
+    'dark dog',
+    'enjoy energy',
+    'free way energy',
+    'go fast energy',
+    'lifefuel',
+    'megamon',
+    'monster verde', 'monster azul', 'monster blanco', 'monster rojo',
+    'monster mango', 'monster original',
+    'mutant energy',
+    'one energy shot',
+    'panda energy',
+    'playmatte energy',
+    'pro tension',
+    'pure energy',
+    'red fire',
+    'select energy',
+    'spark energy',
+    'speed energy',
+    'tnt energy',
+    'torque energy',
+    'v energy',
+    'viper energy',
+    'volt energy',
+    'wakal energy',
+    'x-force energy',
+    'x-raid energy',
+    'zero effect',
+    'bebida energética', 'bebida energetica',
+    'energy drink',
+    // Bebidas alcohólicas — formato RTD (ready to drink)
+    'calipo ',
+    'cubata ',
+    'destornillador ',
+    // Otras bebidas no aptas
+    'zumo fermentado',
+    'hidromiel',
+]
+
 // Bebidas alcohólicas — rechazadas antes de entrar en BD
 const ALCOHOL_KEYWORDS = [
-    // Cerveza (español + catalán)
-    'cerveza', 'cervesa',
+    'cerveza', 'cervesa', 'cerveza sin', 'cerveza 0,0',
     // Vinos
     'vino tinto', 'vino blanco', 'vino rosado', 'vino espumoso', 'vino dulce',
     'vino de jerez', 'vino generoso', 'vino ecologico', 'vino ecológico',
@@ -235,6 +285,23 @@ const ALCOHOL_KEYWORDS = [
     'tinto de verano',
     'bebida preparada de ron', 'bebida preparada de vodka', 'bebida preparada de gin',
     'carajillo de ron',
+    // Más alcohol
+    'cerveza tostada', 'cerveza rubia', 'cerveza negra',
+    'cerveza artesana', 'cerveza artesanal',
+    'pack cerveza', 'lata cerveza',
+    'vino variedad', 'vino crianza', 'vino reserva', 'vino gran reserva',
+    'vino de la tierra', 'vino de pago',
+    'botella vino', 'botella de vino',
+    'canasta de vino',
+    'vino de aguja',
+    'vino de hielo',
+    'vino naranja',
+    'vino de naranja',
+    'clarete',
+    'mosto de uva',  // en España el mosto de uva es no alcohólico, pero SIEMPRE revisar
+    'vinagre de vino',  // esto es vinagre, se maneja con excepción
+    // Cervezas sin alcohol (también se filtran, no aplican)
+    'cerveza 0.0', 'cerveza 0,0%', 'cerveza 0.0%',
 ]
 
 // Si el nombre contiene estas frases, el producto NO se filtra aunque tenga keyword de alcohol
@@ -307,6 +374,9 @@ function esNoComestible(nombre: string): boolean {
     const tieneExcepcion = ALCOHOL_FOOD_EXCEPTIONS.some(ex => lower.includes(ex))
     if (!tieneExcepcion && ALCOHOL_KEYWORDS.some(kw => lower.includes(kw))) return true
 
+    // Verificar bebidas energéticas / no saludables (sin excepciones)
+    if (BEBIDAS_NO_SALUDABLES_KEYWORDS.some(kw => lower.includes(kw))) return true
+
     return false
 }
 
@@ -370,15 +440,34 @@ function matchAlimentoInMemory(
     }
 
     // 3. Contiene bidireccional
+    // - Si el alimento contiene el nombre completo del producto → match muy específico
+    // - Si el producto contiene el nombre del alimento como palabra completa → match válido
+    //   (con word boundaries para evitar "chocolate" → "Col" por substring dentro de palabra)
+    // - Entre matches donde el producto contiene al alimento, preferir el MÁS LARGO
+    //   (más específico: "Salsa de tomate Boloñesa" > "Tomate")
     let mejor: AlimentoRecord | null = null
+    let mejorContainsLower: AlimentoRecord | null = null  // aLower.includes(lower)
     for (const a of alimentosMap.values()) {
         const aLower = a.nombreLower
-        if (aLower.includes(lower) || lower.includes(aLower)) {
-            if (!mejor || a.nombre.length < mejor.nombre.length) {
+        // Caso A: el alimento contiene el nombre completo del producto
+        if (aLower.includes(lower)) {
+            if (!mejorContainsLower || a.nombre.length < mejorContainsLower.nombre.length) {
+                mejorContainsLower = a
+            }
+            continue
+        }
+        // Caso B: el producto contiene el nombre del alimento como palabra completa
+        const aLowerEscaped = aLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const wordBoundaryRegex = new RegExp(`\\b${aLowerEscaped}\\b`)
+        if (wordBoundaryRegex.test(lower)) {
+            // Preferir el nombre más largo (más específico)
+            if (!mejor || a.nombre.length > mejor.nombre.length) {
                 mejor = a
             }
         }
     }
+    // Caso A tiene prioridad sobre Caso B
+    if (mejorContainsLower) mejor = mejorContainsLower
     if (mejor) return mejor.id
 
     // 4. Coincidencia por palabra clave (palabra más larga)
@@ -410,9 +499,16 @@ function matchAlimentoInMemory(
     // 5. Último recurso: palabra individual con límite de palabra (\\b)
     // ANTES: a.nombreLower.includes(palabra) → "Poma" MATCH "Pomada" (FALSO POSITIVO)
     // AHORA: \\bpalabra\\b → "Poma" NO match "Pomada", solo matchea si es palabra completa
+    //
+    // REGLA: Si el producto tiene ≥2 palabras relevantes (≥3 chars), NO usar nivel 5.
+    // Esto evita falsos positivos como "pasta huevo" → palabra "huevo" → matchea "Huevos L".
+    // Productos multi-palabra deben resolver en niveles 1-4.
     const palabrasFiltradas = (palabras.length ? palabras : [lower])
-        .filter(p => p.length >= 3)  // palabras de 1-2 letras son ruido (preposiciones, artículos, "sal"? "sal" tiene 3)
+        .filter(p => p.length >= 3)
         .sort((a, b) => b.length - a.length)
+
+    // Si hay 2+ palabras relevantes, no usar nivel 5 (evitar falsos positivos)
+    if (palabrasFiltradas.length >= 2) return null
 
     for (const palabra of palabrasFiltradas) {
         const regex = new RegExp(`\\b${palabra.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
@@ -439,6 +535,7 @@ async function cargarAlimentosMap(supabase: SupabaseClient): Promise<Map<string,
         const { data, error } = await supabase
             .from('alimentos')
             .select('id, nombre')
+            .eq('es_comestible', true)
             .range(desde, desde + pageSize - 1)
 
         if (error || !data || data.length === 0) {

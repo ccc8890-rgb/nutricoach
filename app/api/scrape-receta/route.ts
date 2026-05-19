@@ -529,6 +529,7 @@ async function buscarAlimento(supabaseService: any, token: string): Promise<any[
   const { data: direct } = await supabaseService
     .from('alimentos')
     .select('id, nombre, calorias')
+    .eq('es_comestible', true)
     .ilike('nombre', '%' + token + '%')
   if (direct && direct.length > 0) return direct
 
@@ -539,6 +540,7 @@ async function buscarAlimento(supabaseService: any, token: string): Promise<any[
   const { data: conAcentos } = await supabaseService
     .from('alimentos')
     .select('id, nombre, calorias')
+    .eq('es_comestible', true)
     .or(conditions.join(','))
 
   return conAcentos || []
@@ -671,6 +673,7 @@ async function matchIngredient(
   const { data: exact } = await supabaseService
     .from('alimentos')
     .select('id, nombre')
+    .eq('es_comestible', true)
     .ilike('nombre', q)
   if (exact?.length) return exact[0]
 
@@ -680,6 +683,7 @@ async function matchIngredient(
     const { data: exSing } = await supabaseService
       .from('alimentos')
       .select('id, nombre')
+      .eq('es_comestible', true)
       .ilike('nombre', singular)
     if (exSing?.length) return exSing[0]
   }
@@ -691,6 +695,7 @@ async function matchIngredient(
   const { data: startsWith } = await supabaseService
     .from('alimentos')
     .select('id, nombre, calorias')
+    .eq('es_comestible', true)
     .ilike('nombre', q + '%')
   if (startsWith?.length === 1) return startsWith[0]
   if (startsWith && startsWith.length > 1) {

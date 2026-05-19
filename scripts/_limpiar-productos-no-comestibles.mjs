@@ -1,31 +1,54 @@
+#!/usr/bin/env node
 /**
- * Backfill: marcar es_comestible en alimentos existentes
+ * Limpia productos_supermercado que referencian alimentos no comestibles
+ * (alcohol, bebidas energéticas, cosmética, mascotas, etc.)
  *
- * Aplica la misma lógica de esNoComestible() que usa el scraper en
- * lib/scraping/index.ts a TODOS los alimentos de la BD.
+ * También detecta productos cuyo nombre contiene keywords no comestibles
+ * aunque el alimento_id apunte a algo comestible (scraping mal vinculado).
  *
- * USO:
- *   node --env-file=.env.local scripts/backfill-es-comestible.mjs              --dry-run
- *   node --env-file=.env.local scripts/backfill-es-comestible.mjs --aplicar    --escribe BD
- *   node --env-file=.env.local scripts/backfill-es-comestible.mjs --sql        --genera SQL
+ * Uso:
+ *   node scripts/_limpiar-productos-no-comestibles.mjs --dry-run   # solo inspeccionar
+ *   node scripts/_limpiar-productos-no-comestibles.mjs              # eliminar
  */
-
 import { createClient } from '@supabase/supabase-js'
+import { readFileSync, existsSync } from 'fs'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const PROJECT_ROOT = resolve(__dirname, '..')
 
-if (!supabaseUrl || !supabaseKey) {
-    console.error('❌ Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env')
-    process.exit(1)
+function loadEnv() {
+    const envPath = resolve(PROJECT_ROOT, '.env.local')
+    if (!existsSync(envPath)) { console.error('❌ No .env.local'); process.exit(1) }
+    const content = readFileSync(envPath, 'utf-8')
+    for (const line of content.split('\n')) {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed.startsWith('#')) continue
+        const eqIdx = trimmed.indexOf('=')
+        if (eqIdx === -1) continue
+        const key = trimmed.slice(0, eqIdx).trim()
+        let value = trimmed.slice(eqIdx + 1).trim()
+        if ((value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1)
+        process.env[key] = value
+    }
 }
+loadEnv()
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+const args = process.argv.slice(2)
+const DRY_RUN = args.includes('--dry-run')
+
+const GREEN = '\x1b[32m'
+const YELLOW = '\x1b[33m'
+const RED = '\x1b[31m'
+const CYAN = '\x1b[36m'
+const RESET = '\x1b[0m'
 
 // ─── Misma lógica que lib/scraping/index.ts ─────────────────────
 
 const NO_COMESTIBLE_KEYWORDS = [
-    // ── Higiene personal ────────────────────────────────────────
     'champú', 'champu', 'acondicionador', 'mascarilla capilar', 'sérum capilar',
     'gel de ducha', 'gel ducha', 'desodorante', 'antitranspirante', 'colonia', 'perfume', 'eau de parfum',
     'crema corporal', 'loción corporal', 'sorbete corporal', 'manteca corporal',
@@ -67,7 +90,6 @@ const NO_COMESTIBLE_KEYWORDS = [
     'solución única lentes', 'lentes de contacto',
     'lágrimas hidratantes', 'lagrimas hidratantes',
     'spray desinfectante antiséptico', 'clorhexidina spray',
-    // ── Limpieza hogar ──────────────────────────────────────────
     'lejía', 'limpiador', 'limpiacristales', 'desengrasante', 'quitamanchas ropa',
     'detergente ropa', 'suavizante ropa', 'pastillas lavavajillas', 'gel lavavajillas',
     'limpiahogar', 'limpiavidrios', 'limpiagafas', 'lavaparabrisas',
@@ -90,7 +112,6 @@ const NO_COMESTIBLE_KEYWORDS = [
     'citronela colgador', 'pulsera citronela',
     'aditivo textil', 'quitamanchas prelavado', 'prelavado spray',
     'desinfectante textil', 'quitamanchas desinfectante',
-    // ── Bebidas / mascotas ──────────────────────────────────────
     'comida perro', 'comida para perro', 'pienso perro', 'pienso para perro',
     'comida gato', 'comida para gato', 'pienso gato', 'pienso para gato',
     'comida húmeda perro', 'comida húmeda gato',
@@ -100,7 +121,6 @@ const NO_COMESTIBLE_KEYWORDS = [
     'leche polvo gato', 'leche maternizada gato',
     'antipulgas', 'antiparasitario',
     'shampoo perro',
-    // ── Material de oficina / hogar ─────────────────────────────
     'pilas', 'batería ', 'cargador', 'bombilla', 'adaptador corriente',
     'pinza', 'brida', 'cinta adhesiva', 'pegamento',
     'tijeras', 'cúter',
@@ -111,13 +131,10 @@ const NO_COMESTIBLE_KEYWORDS = [
     'vela aromática', 'vela decorativa', 'vela de cumpleaños', 'vela led',
     'mechero', 'encendedor',
     'cenicero', 'cigarrillos',
-    // ── Animales vivos ──────────────────────────────────────────
     'comida para peces', 'comida peces',
-    // ── Electrodomésticos ───────────────────────────────────────
     'freidora de aire', 'freidora sin aceite',
     'microondas ', 'horno eléctrico', 'tostadora', 'sandwichera',
     'robot cocina',
-    // ── Mascotas (general) ──────────────────────────────────────
     'pienso', 'comida perro', 'comida gato',
     'cama perro', 'cama gato',
     'juguete perro', 'juguete gato',
@@ -158,20 +175,24 @@ const NO_COMESTIBLE_KEYWORDS = [
     'galleta perro',
     'galleta gato',
     'kit comida',
-    // ── Tabaco ──────────────────────────────────────────────────
     'tabaco', 'cigarro',
+    'tornillo', 'tuerca', 'arandela', 'destornillador',
+    'taladro', 'broca', 'alicate', 'llave inglesa',
+    'cable eléctrico', 'enchufe', 'alargador',
+    'linterna', 'candado', 'cerradura', 'bombilla',
+    'plancha de vapor', 'aspirador', 'aspiradora',
+    'picadora multifunción', 'robot aspirador',
+    'cafetera superautomática', 'máquina de coser',
 ]
 
-// ── Bebidas energéticas y no saludables ────────────────────────────
 const BEBIDAS_NO_SALUDABLES_KEYWORDS = [
-    // Bebidas energéticas
-    'monster energy', 'monster ',  // trailing space to avoid "monstera"
+    'monster energy', 'monster ',
     'red bull', 'redbull',
     'burn energy', 'burn ',
     'rockstar energy',
     'hell energy',
     'boost energy',
-    'te energy',  // marca española
+    'te energy',
     'amper energy',
     'battery energy',
     'bullit energy',
@@ -204,27 +225,21 @@ const BEBIDAS_NO_SALUDABLES_KEYWORDS = [
     'zero effect',
     'bebida energética', 'bebida energetica',
     'energy drink',
-    // Bebidas alcohólicas — formato RTD (ready to drink)
     'calipo ',
     'cubata ',
     'destornillador ',
-    // Otras bebidas no aptas
     'zumo fermentado',
     'hidromiel',
 ]
 
-// Bebidas alcohólicas — rechazadas antes de entrar en BD
 const ALCOHOL_KEYWORDS = [
     'cerveza', 'cervesa', 'cerveza sin', 'cerveza 0,0',
-    // Vinos
     'vino tinto', 'vino blanco', 'vino rosado', 'vino espumoso', 'vino dulce',
     'vino de jerez', 'vino generoso', 'vino ecologico', 'vino ecológico',
     'vi negre', 'vi blanc', 'vi rosat', 'vi escumós', 'vi dolc', 'vi ranci',
     'caixa vi ',
-    // Cava / espumosos
     'cava brut', 'cava semi', 'cava rosado', 'cava rosat', 'cava nature',
     'cava benjamín', 'cava pack',
-    // Destilados
     'whisky', 'whiskey', 'bourbon',
     'vodka',
     'ginebra', ' gin ',
@@ -232,25 +247,19 @@ const ALCOHOL_KEYWORDS = [
     'brandy', 'coñac', 'cognac',
     'amaretto', 'absenta', 'absinthe',
     'ron añejo', 'ron blanco', 'ron negro', 'ron dorado', 'ron de caña',
-    // Licores
     'licor de café', 'licor de menta', 'licor de hierbas', 'licor de naranja',
     'licor de almendra', 'licor de anís', 'aperitivo licor',
     'anís seco', 'anís dulce', 'anisete',
-    // Vinos fortificados / aperitivos
     'vermut', 'vermouth',
     'moscatel',
     'jerez fino', 'jerez oloroso', 'jerez amontillado',
     'oporto',
-    // Champagne / espumosos
     'champán', 'champagne',
-    // Sidra
     'sidra',
-    // Combinados / RTD
     'sangría', 'sangria',
     'tinto de verano',
     'bebida preparada de ron', 'bebida preparada de vodka', 'bebida preparada de gin',
     'carajillo de ron',
-    // Más alcohol
     'cerveza tostada', 'cerveza rubia', 'cerveza negra',
     'cerveza artesana', 'cerveza artesanal',
     'pack cerveza', 'lata cerveza',
@@ -263,9 +272,8 @@ const ALCOHOL_KEYWORDS = [
     'vino naranja',
     'vino de naranja',
     'clarete',
-    'mosto de uva',  // en España el mosto de uva es no alcohólico, pero SIEMPRE revisar
-    'vinagre de vino',  // esto es vinagre, se maneja con excepción
-    // Cervezas sin alcohol (también se filtran, no aplican)
+    'mosto de uva',
+    'vinagre de vino',
     'cerveza 0.0', 'cerveza 0,0%', 'cerveza 0.0%',
 ]
 
@@ -280,6 +288,7 @@ const ALCOHOL_FOOD_EXCEPTIONS = [
 ]
 
 const COMESTIBLE_EXCEPTIONS = [
+    'jabón con glicerina',
     'palomitas microondas', 'palomitas para microondas',
     'para microondas',
     'brócoli microondas', 'brocoli microondas',
@@ -297,7 +306,7 @@ const COMESTIBLE_EXCEPTIONS = [
     'aceite para freidora',
 ]
 
-function esNoComestible(nombre) {
+function esProductoNoComestible(nombre) {
     const lower = nombre.toLowerCase()
 
     const tieneVatios = /\d{3,}\s*w/i.test(lower) || /\(w\)/i.test(lower)
@@ -309,6 +318,7 @@ function esNoComestible(nombre) {
         if (matchKw === 'grill' && (lower.includes('brocheta') || lower.includes('minigrill')
             || lower.includes('tostada') || lower.includes('biscotes'))) return false
         if (matchKw.trim() === 'vela' && lower.includes('chorizo')) return false
+        if (matchKw.includes('jabón') && lower.includes('glicerina')) return false
         if ((matchKw.includes('freidora') || matchKw.includes('microondas'))
             && COMESTIBLE_EXCEPTIONS.some(ex => lower.includes(ex))) {
             return false
@@ -319,130 +329,148 @@ function esNoComestible(nombre) {
     const tieneExcepcion = ALCOHOL_FOOD_EXCEPTIONS.some(ex => lower.includes(ex))
     if (!tieneExcepcion && ALCOHOL_KEYWORDS.some(kw => lower.includes(kw))) return true
 
-    // Verificar bebidas energéticas / no saludables (sin excepciones)
     if (BEBIDAS_NO_SALUDABLES_KEYWORDS.some(kw => lower.includes(kw))) return true
 
     return false
 }
 
-// ─── Helpers para paginación ──────────────────────────────────────
-
-async function cargarTodosAlimentos() {
-    const PAGE_SIZE = 1000
-    let todos = []
+async function fetchAllProductos() {
+    const all = []
     let from = 0
-    let hasMore = true
+    const limit = 1000
+    while (true) {
+        const { data, error } = await supabase
+            .from('productos_supermercado')
+            .select('id, nombre_original, url_producto, supermercado_id, alimento_id, created_at')
+            .range(from, from + limit - 1)
+            .order('id')
 
-    // Primero obtener el total
-    const { count } = await supabase
-        .from('alimentos')
-        .select('*', { count: 'exact', head: true })
-
-    const total = count || 0
-    console.log(`📊 Total registros en BD: ${total}\n`)
-
-    while (hasMore) {
-        const { data: page, error } = await supabase
-            .from('alimentos')
-            .select('id, nombre')
-            .order('nombre')
-            .range(from, from + PAGE_SIZE - 1)
-
-        if (error) {
-            console.error(`❌ Error cargando página ${from / PAGE_SIZE + 1}: ${error.message}`)
-            process.exit(1)
-        }
-
-        todos = todos.concat(page)
-        from += PAGE_SIZE
-
-        process.stdout.write(`\r  Cargando alimentos... ${todos.length} / ${total}`)
-
-        if (page.length < PAGE_SIZE) {
-            hasMore = false
-        }
+        if (error) { console.error('❌ Error:', error.message); break }
+        if (!data || data.length === 0) break
+        all.push(...data)
+        from += limit
     }
-
-    console.log() // newline after progress
-    return todos
+    return all
 }
 
-// ─── Main ──────────────────────────────────────────────────────
-
-const APLICAR = process.argv.includes('--aplicar')
-const GENERAR_SQL = process.argv.includes('--sql')
+async function fetchAlimentosMap() {
+    const { data } = await supabase.from('alimentos').select('id, nombre, es_comestible')
+    const map = new Map()
+    if (data) for (const a of data) map.set(a.id, a)
+    return map
+}
 
 async function main() {
-    console.log('══════════════════════════════════════════════════════')
-    console.log('  Backfill: es_comestible en alimentos')
-    console.log(`  Modo: ${APLICAR ? '✅ APLICAR (escribe en BD)' : GENERAR_SQL ? '📄 Generar SQL' : '🔍 Dry-run (solo lectura)'}`)
-    console.log('══════════════════════════════════════════════════════\n')
+    console.log(`${CYAN}══════════════════════════════════════════════════════════${RESET}`)
+    console.log(`${CYAN}  🧹 Limpieza de productos_supermercado no comestibles${RESET}`)
+    console.log(`${CYAN}══════════════════════════════════════════════════════════${RESET}`)
+    console.log(`Dry-run: ${DRY_RUN ? 'SÍ' : 'NO'}\n`)
 
-    // Cargar TODOS los alimentos con paginación
-    const alimentos = await cargarTodosAlimentos()
+    const [productos, alimentosMap] = await Promise.all([
+        fetchAllProductos(),
+        fetchAlimentosMap(),
+    ])
 
-    console.log(`\n📦 Total alimentos cargados: ${alimentos.length}\n`)
+    console.log(`📦 Total productos_supermercado: ${productos.length}`)
+    console.log(`📦 Total alimentos (referencia): ${alimentosMap.size}\n`)
 
-    const noComestibles = []
+    // Categorías de limpieza
+    const candidatosAEliminar = []
 
-    for (const a of alimentos) {
-        const deberiaSer = !esNoComestible(a.nombre)
-        if (!deberiaSer) {
-            noComestibles.push(a)
+    for (const p of productos) {
+        const alimento = alimentosMap.get(p.alimento_id)
+        const nombreAlimento = alimento?.nombre || '(desconocido)'
+        const esComestible = alimento?.es_comestible
+
+        // Caso 1: El alimento vinculado ya está marcado como no comestible
+        if (esComestible === false) {
+            candidatosAEliminar.push({
+                ...p,
+                motivo: `alimento "${nombreAlimento}" marcado como no comestible`,
+                nombreAlimento,
+            })
+            continue
+        }
+
+        // Caso 2: El nombre del producto contiene keyword no comestible
+        // (scraping mal vinculado: producto no comestible linkeado a alimento comestible)
+        if (esProductoNoComestible(p.nombre_original)) {
+            candidatosAEliminar.push({
+                ...p,
+                motivo: `nombre de producto contiene keyword no comestible (alimento vinculado: "${nombreAlimento}")`,
+                nombreAlimento,
+            })
+            continue
         }
     }
 
-    console.log(`🍽️  Comestibles: ${alimentos.length - noComestibles.length}`)
-    console.log(`🚫 No comestibles: ${noComestibles.length}`)
+    if (candidatosAEliminar.length === 0) {
+        console.log(`${GREEN}✓ No hay productos que limpiar.${RESET}`)
+        return
+    }
 
-    if (noComestibles.length > 0) {
-        console.log('\n📋 No comestibles detectados:\n')
-        for (const a of noComestibles) {
-            const kw = NO_COMESTIBLE_KEYWORDS.find(k => a.nombre.toLowerCase().includes(k))
-                ?? BEBIDAS_NO_SALUDABLES_KEYWORDS.find(k => a.nombre.toLowerCase().includes(k))
-                ?? ALCOHOL_KEYWORDS.find(k => a.nombre.toLowerCase().includes(k))
-                ?? (/\d{3,}\s*w/i.test(a.nombre) ? 'VATIOS' : '?')
-            console.log(`  • [${a.id.slice(0, 8)}] "${a.nombre}" → keyword: "${kw}"`)
+    // Agrupar por motivo para mejor reporte
+    const porMotivo = {}
+    for (const c of candidatosAEliminar) {
+        const key = c.motivo.includes('marcado como no comestible') ? 'alimento_no_comestible' : 'keyword_en_nombre'
+        if (!porMotivo[key]) porMotivo[key] = []
+        porMotivo[key].push(c)
+    }
+
+    if (porMotivo.alimento_no_comestible) {
+        console.log(`${YELLOW}🔗 Productos con alimento marcado como no comestible (${porMotivo.alimento_no_comestible.length}):${RESET}`)
+        for (const c of porMotivo.alimento_no_comestible) {
+            console.log(`   [${c.id}] "${c.nombre_original}" → alimento: "${c.nombreAlimento}" (${c.alimento_id.slice(0, 8)})`)
+        }
+        console.log()
+    }
+
+    if (porMotivo.keyword_en_nombre) {
+        console.log(`${YELLOW}🏷️  Productos con keyword no comestible en nombre (${porMotivo.keyword_en_nombre.length}):${RESET}`)
+        for (const c of porMotivo.keyword_en_nombre) {
+            console.log(`   [${c.id}] "${c.nombre_original}" → alimento: "${c.nombreAlimento}" (${c.alimento_id.slice(0, 8)})`)
+        }
+        console.log()
+    }
+
+    console.log(`${CYAN}Total a eliminar: ${candidatosAEliminar.length} filas${RESET}`)
+
+    if (DRY_RUN) {
+        console.log(`\n${YELLOW}🏁 Dry-run — no se modificó nada.${RESET}`)
+        console.log(`Para eliminar: node scripts/_limpiar-productos-no-comestibles.mjs`)
+        return
+    }
+
+    // Confirmación interactiva
+    console.log(`\n${RED}⚠️  ATENCIÓN: Se eliminarán ${candidatosAEliminar.length} registros de productos_supermercado.${RESET}`)
+    console.log(`Pulsa Ctrl+C para cancelar o espera 5 segundos para continuar...`)
+    await new Promise(r => setTimeout(r, 5000))
+
+    // Eliminar en lotes
+    let ok = 0, err = 0
+    const LOTE = 100
+    for (let i = 0; i < candidatosAEliminar.length; i += LOTE) {
+        const ids = candidatosAEliminar.slice(i, i + LOTE).map(c => c.id)
+        const { error } = await supabase
+            .from('productos_supermercado')
+            .delete()
+            .in('id', ids)
+
+        if (error) {
+            console.error(`   ${RED}✗${RESET} Lote ${i / LOTE + 1}: ${error.message}`)
+            err += ids.length
+        } else {
+            console.log(`   ${GREEN}✓${RESET} Lote ${i / LOTE + 1}: ${ids.length} eliminados`)
+            ok += ids.length
         }
     }
 
-    if (GENERAR_SQL && noComestibles.length > 0) {
-        const ids = noComestibles.map(a => `'${a.id}'`)
-        console.log('\n─── SQL GENERADO ─────────────────────────────────\n')
-        console.log(`update public.alimentos set es_comestible = false where id in (${ids.join(', ')});`)
-        console.log(`\n-- Total: ${noComestibles.length} alimentos marcados como no comestibles`)
-    }
-
-    if (APLICAR && noComestibles.length > 0) {
-        console.log('\n✏️  Actualizando BD...')
-
-        const LOTE = 100
-        for (let i = 0; i < noComestibles.length; i += LOTE) {
-            const lote = noComestibles.slice(i, i + LOTE)
-            const ids = lote.map(a => a.id)
-
-            const { error: updateError } = await supabase
-                .from('alimentos')
-                .update({ es_comestible: false })
-                .in('id', ids)
-
-            if (updateError) {
-                console.error(`  ❌ Error actualizando lote ${i / LOTE + 1}: ${updateError.message}`)
-            } else {
-                console.log(`  ✅ Lote ${i / LOTE + 1}: ${lote.length} alimentos actualizados`)
-            }
-        }
-
-        console.log(`\n✅ ${noComestibles.length} alimentos marcados como es_comestible = false`)
-    }
-
-    if (!APLICAR && !GENERAR_SQL) {
-        console.log('\n💡 Para aplicar: node scripts/backfill-es-comestible.mjs --aplicar')
-        console.log('💡 Para SQL:     node scripts/backfill-es-comestible.mjs --sql')
-    }
+    console.log(`\n${GREEN}✅ Limpieza completada${RESET}`)
+    console.log(`   Eliminados: ${ok}`)
+    console.log(`   Errores: ${err}`)
+    console.log(`\n💡 Ahora ejecuta backfill para marcar alimentos como no comestibles:`)
+    console.log(`   node scripts/backfill-es-comestible.mjs --aplicar`)
+    console.log(`   node scripts/backfill-es-comestible.mjs --sql (solo ver SQL)`)
 }
 
-main().catch(err => {
-    console.error('\n❌ Error fatal:', err)
-    process.exit(1)
-})
+main().catch(e => { console.error('💥', e.message); process.exit(1) })

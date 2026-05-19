@@ -52,7 +52,7 @@ async function matchIngrediente(nombreLibre: string, supabase: ReturnType<typeof
 
   // Nivel 1: exact ilike
   const { data: exacto } = await supabase.from('alimentos').select('id, nombre, calorias, proteinas, carbohidratos, grasas')
-    .ilike('nombre', nombreLibre).gt('calorias', 0).limit(1)
+    .eq('es_comestible', true).ilike('nombre', nombreLibre).gt('calorias', 0).limit(1)
   if (exacto?.length) return exacto[0]
 
   // Nivel 2: startsWith — acumula candidatos de TODAS las palabras antes de elegir
@@ -62,7 +62,7 @@ async function matchIngrediente(nombreLibre: string, supabase: ReturnType<typeof
 
   for (const palabra of palabras) {
     const { data } = await supabase.from('alimentos').select('id, nombre, calorias, proteinas, carbohidratos, grasas')
-      .ilike('nombre', `${palabra}%`).gt('calorias', 0).order('calorias', { ascending: false }).limit(5)
+      .eq('es_comestible', true).ilike('nombre', `${palabra}%`).gt('calorias', 0).order('calorias', { ascending: false }).limit(5)
     for (const a of (data || [])) {
       if (vistos.has(a.id)) continue
       vistos.add(a.id)
@@ -81,7 +81,7 @@ async function matchIngrediente(nombreLibre: string, supabase: ReturnType<typeof
   // Nivel 3: contains (fallback)
   for (const palabra of palabras) {
     const { data } = await supabase.from('alimentos').select('id, nombre, calorias, proteinas, carbohidratos, grasas')
-      .ilike('nombre', `%${palabra}%`).gt('calorias', 0).order('nombre', { ascending: true }).limit(3)
+      .eq('es_comestible', true).ilike('nombre', `%${palabra}%`).gt('calorias', 0).order('nombre', { ascending: true }).limit(3)
     if (data?.length) {
       // Elegir el que más palabras comparte
       const scored = data.map((a: AlimentoRow) => {
@@ -118,7 +118,7 @@ export async function POST(
 
   if (!recetaBase) return NextResponse.json({ error: 'Receta no encontrada' }, { status: 404 })
 
-  const ings = (recetaBase.receta_ingredientes as {nombre_libre: string; cantidad_gramos: number}[] || [])
+  const ings = (recetaBase.receta_ingredientes as { nombre_libre: string; cantidad_gramos: number }[] || [])
     .map(i => `${i.nombre_libre} (${i.cantidad_gramos}g)`).join(', ')
 
   const nombreFit = nombrePersonalizado || `${recetaBase.nombre} Fit`

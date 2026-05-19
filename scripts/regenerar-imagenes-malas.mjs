@@ -64,41 +64,31 @@ const args    = process.argv.slice(2)
 const GENERA  = args.includes('--genera')
 const PRUEBA  = args.includes('--prueba')
 const CHUCK   = args.includes('--repara-chuck')
+const FORZAR  = args.includes('--forzar')   // re-genera IDs aunque ya tengan imagen nueva
 const idIdx   = args.indexOf('--id')
 const SOLO_ID = idIdx !== -1 ? args[idIdx + 1] : undefined
 const limIdx  = args.indexOf('--limite')
 const MAX     = limIdx !== -1 ? parseInt(args[limIdx + 1], 10) : 9999
 
 // ── Prompt ────────────────────────────────────────────────────────────────────
-// Estilo: food blogger español en casa, como las fotos de Instagram reales del recetario
+// Estilo: foto rápida de móvil en casa, sin decoración, real e imperfecta
 function buildPrompt(receta) {
     const ings = (receta.receta_ingredientes || [])
-        .slice(0, 6)
+        .slice(0, 5)
         .map(i => i.nombre_libre)
         .filter(Boolean)
         .join(', ')
 
-    const tipoMap = {
-        Desayuno:  'breakfast bowl or plate on a wooden kitchen table, morning light',
-        Comida:    'lunch plate on a white ceramic dish, Mediterranean kitchen',
-        Cena:      'dinner plate, warm evening kitchen ambiance, cozy home feel',
-        Snack:     'snack on a small plate or board, casual home counter shot',
-        Merienda:  'afternoon snack, home kitchen table, warm afternoon light',
-        Postre:    'homemade dessert on a rustic ceramic plate, soft natural light',
-        Almuerzo:  'brunch plate on wooden table, natural light, home kitchen',
-    }
-    const tipoContext = tipoMap[receta.tipo_plato] || tipoMap[receta.categoria] || 'home-cooked meal on a simple plate'
-
-    return `Photorealistic food photo of "${receta.nombre}".
-${ings ? `Key ingredients visible: ${ings}.` : ''}
-Setting: ${tipoContext}.
-Style: Spanish nutrition coach's Instagram — personal food blog aesthetic.
-Shot on Sony mirrorless camera. Natural window light, soft and diffused, not dramatic.
-Composition: overhead or slight 45-degree angle. Slightly imperfect, authentic home plating.
-Surface: clean wooden table or white marble countertop, minimal props (maybe a fork or napkin).
-Colors: warm Mediterranean tones, natural and appetizing.
-No text, no watermarks, no people, no hands, no logos.
-Photorealistic, high quality, square 1:1 format.`
+    return `Candid home photo of "${receta.nombre}" taken on a smartphone.
+${ings ? `Food contains: ${ings}.` : ''}
+Shot quickly at home — the plate is just sitting on the kitchen counter or table, no styling.
+Soft, flat, diffused indoor light. Slightly washed out, not dramatic. No shadows.
+The food fills most of the frame. Plain background — just the surface it's resting on.
+No decoration, no props, no garnishes added for the photo. What you see is what was cooked.
+Looks like a real person took it before eating, not a professional shoot.
+Muted, natural colors. Slightly imperfect framing, honest and casual.
+No text, no watermarks, no people, no hands.
+Photorealistic, square 1:1.`
 }
 
 // ── OpenAI txt2img ────────────────────────────────────────────────────────────
@@ -298,10 +288,12 @@ async function main() {
     let query = sb
         .from('recetas')
         .select('id, nombre, tipo_plato, categoria, imagen_url, receta_ingredientes(nombre_libre)')
-        .is('url_origen', null)
-        .ilike('imagen_url', '%/auto_%')
         .order('nombre')
 
+    // Sin --forzar: solo las malas (auto_*). Con --forzar + --id: re-genera aunque ya tenga imagen nueva
+    if (!FORZAR) {
+        query = query.is('url_origen', null).ilike('imagen_url', '%/auto_%')
+    }
     if (SOLO_ID) query = query.eq('id', SOLO_ID)
     if (!SOLO_ID) query = query.limit(MAX)
 

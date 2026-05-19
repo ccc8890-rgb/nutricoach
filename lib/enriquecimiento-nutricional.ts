@@ -277,10 +277,11 @@ export async function obtenerStatsEnriquecimiento(
     supermercados_con_precios: number
     productos_con_precio: number
 }> {
-    // Total alimentos en DB
+    // Total alimentos comestibles en DB
     const { count: totalAlimentos } = await supabase
         .from('alimentos')
         .select('*', { count: 'exact', head: true })
+        .eq('es_comestible', true)
 
     // Pendientes de enriquecer (vista)
     const { count: pendientes } = await supabase

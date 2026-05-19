@@ -66,7 +66,7 @@ export interface DietaGenerada {
 export function construirPrompt(
     datosCliente: Record<string, string | string[] | number>,
     plantillas: { id: string; nombre: string; kcal_objetivo: number; proteinas_objetivo: number; carbohidratos_objetivo: number; grasas_objetivo: number }[],
-    recetas: { id: string; nombre: string; categoria: string; kcal: number; proteinas: number; carbohidratos: number; grasas: number }[],
+    recetas: { id: string; nombre: string; categoria: string; kcal: number; proteinas: number; carbohidratos: number; grasas: number; azucares?: number; sodio_mg?: number; fibra?: number }[],
     conocimientoCientifico?: string
 ): string {
     const clienteStr = Object.entries(datosCliente)
@@ -98,6 +98,11 @@ INSTRUCCIONES IMPORTANTES:
 - Distribuye las comidas de forma equilibrada en el día
 - Prioriza variedad (no repetir la misma receta en distintas comidas)
 - Ten en cuenta restricciones dietéticas y preferencias del cliente
+- Las recetas incluyen datos de azúcares, sodio y fibra por porción — úsalos para personalizar según patologías:
+  * DIABETES o resistencia a insulina: prioriza recetas con azúcares < 10g/100g, limita azúcares añadidos
+  * HIPERTENSIÓN: prioriza recetas con sodio < 400mg/100g, evita embutidos/procesados
+  * PROBLEMAS DIGESTIVOS/ESTREÑIMIENTO: prioriza recetas con fibra > 4g/100g
+  * OBJETIVO GENERAL: azúcares < 20g/día añadidos, sodio < 2000mg/día, fibra > 25g/día
 
 DATOS DEL CLIENTE:
 ${clienteStr}

@@ -27,6 +27,7 @@ export async function POST(request: Request) {
         let query = supabase
             .from('alimentos')
             .select('id, nombre, categoria, codigo_externo, calorias, proteinas, carbohidratos, grasas, fuente')
+            .eq('es_comestible', true)
             .or('vitamina_a_ug.is.null, vitamina_a_ug.eq.0')
             .neq('fuente', 'bedca')  // Los BEDCA ya tienen micros
 
