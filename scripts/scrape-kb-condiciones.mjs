@@ -9,12 +9,19 @@
 
 import { createClient } from '@supabase/supabase-js'
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !DEEPSEEK_API_KEY) {
+  throw new Error('Faltan env vars: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DEEPSEEK_API_KEY')
+}
+
 const supabase = createClient(
-  'https://hopeqzwzmlrpktoeygxz.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvcGVxend6bWxycGt0b2V5Z3h6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzEyMjUxOSwiZXhwIjoyMDkyNjk4NTE5fQ.e0iP547fppOHFfFiWEo053tjl7FmcQMAZzvCPwcVSkc'
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY
 )
 
-const DEEPSEEK_API_KEY = 'sk-a91e02bc988b4ef59460e31b2a2cef7d'
 const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions'
 
 const NIVEL_MAP = {
