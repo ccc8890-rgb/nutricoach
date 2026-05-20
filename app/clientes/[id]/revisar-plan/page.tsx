@@ -110,6 +110,8 @@ export default function RevisarPlanPage() {
   const [versionIdx, setVersionIdx] = useState(0)
   const [perfilProfundo, setPerfilProfundo] = useState<PerfilProfundo | null>(null)
   const [showPerfilProfundo, setShowPerfilProfundo] = useState(false)
+  const [recetasPorComida, setRecetasPorComida] = useState<Record<number, { id: string; nombre: string; kcal: number; proteinas: number; imagen_url: string | null }[]>>({})
+  const [cargandoRecetas, setCargandoRecetas] = useState(false)
 
   useEffect(() => {
     const id = params.id as string
@@ -124,7 +126,10 @@ export default function RevisarPlanPage() {
       const registros = (rs ?? []) as RegistroIA[]
       setVersiones(registros)
       setVersionIdx(0)
-      if (registros.length > 0) setPlan(registros[0].respuesta_json)
+      if (registros.length > 0) {
+        setPlan(registros[0].respuesta_json)
+        cargarRecetasPlan(registros[0].respuesta_json)
+      }
       if (pp) setPerfilProfundo(pp as PerfilProfundo)
       setLoading(false)
     })
@@ -140,7 +145,36 @@ export default function RevisarPlanPage() {
     const registros = (data ?? []) as RegistroIA[]
     setVersiones(registros)
     setVersionIdx(0)
-    if (registros.length > 0) setPlan(registros[0].respuesta_json)
+    if (registros.length > 0) {
+      setPlan(registros[0].respuesta_json)
+      cargarRecetasPlan(registros[0].respuesta_json)
+    }
+  }
+
+  const cargarRecetasPlan = async (planData: PlanInicial) => {
+    if (!planData.distribucion_comidas?.length) return
+    setCargandoRecetas(true)
+    const resultados: typeof recetasPorComida = {}
+    await Promise.all(
+      planData.distribucion_comidas.map(async (comida, idx) => {
+        try {
+          const params = new URLSearchParams({
+            kcal: String(comida.kcal),
+            proteinas: String(Math.round((comida.kcal * 0.30) / 4)),
+            limite: '3',
+          })
+          const res = await fetch(`/api/recetas/sugeridas?${params}`)
+          if (res.ok) {
+            const data = await res.json()
+            resultados[idx] = data.recetas ?? []
+          }
+        } catch {
+          // Non-critical
+        }
+      })
+    )
+    setRecetasPorComida(resultados)
+    setCargandoRecetas(false)
   }
 
   const reintentarPlan = async () => {
@@ -542,6 +576,49 @@ export default function RevisarPlanPage() {
                 <li key={i} className="flex items-start gap-2"><span className="text-[var(--primary)] mt-0.5">•</span>{r}</li>
               ))}
             </ul>
+          )}
+
+          {/* Distribución de comidas + recetas compatibles */}
+          {plan.distribucion_comidas?.length > 0 && (
+            <div className="mb-3">
+              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">
+                Distribución de comidas
+              </p>
+              <div className="flex flex-col gap-2">
+                {plan.distribucion_comidas.map((comida, idx) => {
+                  const recetas = recetasPorComida[idx] ?? []
+                  return (
+                    <div key={idx} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.75rem' }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-[var(--text)]">{comida.nombre}</span>
+                        <span className="text-xs text-[var(--text-muted)]">{comida.hora_sugerida} · {comida.kcal} kcal</span>
+                      </div>
+                      {cargandoRecetas ? (
+                        <div className="flex gap-2 mt-1">
+                          {[1,2,3].map(i => <div key={i} className="h-6 w-20 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.06)' }} />)}
+                        </div>
+                      ) : recetas.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          {recetas.map(r => (
+                            <a
+                              key={r.id}
+                              href={`/recetas/${r.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs px-2 py-0.5 rounded-full border hover:opacity-80 transition-opacity"
+                              style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', background: 'var(--bg)' }}
+                              title={`${r.kcal} kcal · ${r.proteinas}g P`}
+                            >
+                              {r.nombre}
+                            </a>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           )}
 
           <button

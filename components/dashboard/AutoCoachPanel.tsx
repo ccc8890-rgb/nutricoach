@@ -37,6 +37,8 @@ const TIPO_META: Record<TipoRecomendacion, { icon: React.ElementType; label: str
   checkin_recordatorio: { icon: Bell, label: 'Sin check-in' },
   feedback_positivo: { icon: Smiley, label: 'Buen progreso' },
   revision_plan: { icon: CalendarBlank, label: 'Revisión plan' },
+  sin_actividad_portal: { icon: Clock, label: 'Sin actividad' },
+  sin_entreno: { icon: Lightning, label: 'Sin entreno' },
 }
 
 const URGENCIA_COLOR: Record<NivelUrgencia, string> = {

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { seleccionarProtocolos, formatearEvidenciaParaPrompt } from '@/lib/knowledge-base'
+import type { MetodologiaCoach } from '@/types'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
@@ -69,6 +71,58 @@ export async function POST(request: NextRequest) {
     .eq('cliente_id', cliente_id)
     .single()
 
+  // Fetch coach methodology (optional — uses static defaults if not configured)
+  const { data: metodologia } = await supabase
+    .from('metodologia_coach')
+    .select('*')
+    .eq('coach_id', cliente.coach_id)
+    .maybeSingle() as { data: MetodologiaCoach | null }
+
+  // Override protein factors from coach methodology if configured
+  const proteinaObjetivoFinal: Record<string, number> = {
+    salud_general: metodologia?.proteina_salud_general   ?? PROTEINA_OBJETIVO.salud_general,
+    mantener:      PROTEINA_OBJETIVO.mantener,
+    rendimiento:   metodologia?.proteina_rendimiento     ?? PROTEINA_OBJETIVO.rendimiento,
+    ganar_musculo: metodologia?.proteina_ganancia_musculo ?? PROTEINA_OBJETIVO.ganar_musculo,
+    perder_grasa:  metodologia?.proteina_perdida_grasa   ?? PROTEINA_OBJETIVO.perder_grasa,
+    recomposicion: metodologia?.proteina_recomposicion   ?? 2.0,
+  }
+
+  // Build methodology prompt block
+  const metodologiaBlock = metodologia
+    ? `
+═══ METODOLOGÍA DEL COACH (reglas obligatorias) ═══
+${metodologia.reglas_fijas?.length ? metodologia.reglas_fijas.map((r: string) => `- ✓ ${r}`).join('\n') : ''}
+- Estilo de alimentación preferido: ${metodologia.estilos_dieta?.join(', ') || 'flexible'}
+- Déficit máximo permitido: ${metodologia.deficit_maximo_kcal} kcal
+- Superávit máximo permitido: ${metodologia.superavit_maximo_kcal} kcal
+- Nº comidas habitual: ${metodologia.num_comidas_default}
+${metodologia.filosofia_coaching ? `\nFilosofía del coach:\n"${metodologia.filosofia_coaching}"` : ''}`
+    : ''
+
+  // Apply coach caloric limits
+  const deficitLimite  = metodologia?.deficit_maximo_kcal  ?? 500
+  const superavitLimite = metodologia?.superavit_maximo_kcal ?? 400
+  const OBJETIVO_AJUSTE_FINAL: Record<string, number> = {
+    perder_grasa:  -Math.min(Math.abs(OBJETIVO_AJUSTE.perder_grasa), deficitLimite),
+    ganar_musculo:  Math.min(OBJETIVO_AJUSTE.ganar_musculo, superavitLimite),
+    rendimiento:    Math.min(OBJETIVO_AJUSTE.rendimiento, superavitLimite),
+    recomposicion: -100,
+    mantener:       0,
+    salud_general:  0,
+  }
+
+  // Select scientific evidence for this client's profile
+  const protocolos = seleccionarProtocolos({
+    objetivo:                  onboarding.objetivo,
+    tipo_entreno:              onboarding.tipo_entreno?.join(', '),
+    condiciones_salud:         perfil?.condiciones_salud,
+    restricciones_alimentarias: cliente.restricciones_alimentarias,
+    edad:                      cliente.edad,
+    sexo:                      cliente.sexo,
+  })
+  const evidenciaBlock = formatearEvidenciaParaPrompt(protocolos)
+
   const tdee = calcularTDEE(
     cliente.peso_inicial ?? 70,
     cliente.altura ?? 170,
@@ -76,9 +130,9 @@ export async function POST(request: NextRequest) {
     cliente.sexo ?? 'hombre',
     onboarding.actividad_base,
   )
-  const kcalObjetivo = tdee + (OBJETIVO_AJUSTE[onboarding.objetivo] ?? 0)
+  const kcalObjetivo = tdee + (OBJETIVO_AJUSTE_FINAL[onboarding.objetivo] ?? 0)
   const factorSexo = cliente.sexo === 'mujer' && onboarding.objetivo === 'ganar_musculo' ? 0.9 : 1.0
-  const gProteina = PROTEINA_OBJETIVO[onboarding.objetivo] ?? 1.8
+  const gProteina = proteinaObjetivoFinal[onboarding.objetivo] ?? 1.8
   const proteinas = Math.round((cliente.peso_inicial ?? 70) * gProteina * factorSexo)
   const grasas = Math.round((kcalObjetivo * 0.28) / 9)
   const carbos = Math.round((kcalObjetivo - proteinas * 4 - grasas * 9) / 4)
@@ -128,7 +182,7 @@ export async function POST(request: NextRequest) {
     : ''
 
   const prompt = `Eres Carlos Casanova, dietista titulado. Genera un plan nutricional inicial altamente personalizado en JSON.
-
+${evidenciaBlock ? `\n${evidenciaBlock}\n` : ''}${metodologiaBlock ? `\n${metodologiaBlock}\n` : ''}
 ═══ SEGMENTO DE CLIENTE ═══
 - Segmento: ${SEGMENTO_LABELS[segmento] || segmento}
 ${segmentoFlag}

@@ -48,6 +48,9 @@ function PortalClientePageContent() {
       if (prof?.role === 'coach') { window.location.href = '/dashboard'; return }
       setProfile(prof as Profile)
 
+      // Registrar acceso al portal (fire-and-forget)
+      fetch('/api/cliente/registrar-acceso', { method: 'POST' }).catch(() => {})
+
       const { data: cli } = await supabase.from('clientes').select('*').eq('profile_id', user.id).single()
       setCliente(cli as Cliente)
 

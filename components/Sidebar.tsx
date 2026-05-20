@@ -30,6 +30,7 @@ import {
   Clock,
   TrendingUp,
   Sparkles,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -39,6 +40,7 @@ const NAV_ITEMS = [
   { href: '/respuestas', label: 'Consulta', icon: MessageSquareReply },
   { href: '/clientes', label: 'Clientes', icon: Users },
   { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
+  { href: '/coach/metodologia', label: 'Mi metodología', icon: SlidersHorizontal },
   { href: '/conocimiento', label: 'Conocimiento', icon: BrainCircuit },
   { href: '/ia-test', label: 'Probador IA', icon: FlaskConical },
 ]

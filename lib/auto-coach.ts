@@ -262,6 +262,63 @@ export async function analizarCliente(
     })
   }
 
+  // 6f2. Sin actividad en el portal
+  const { data: clienteAcceso } = await supabase
+    .from('clientes')
+    .select('last_portal_access')
+    .eq('id', clienteId)
+    .single()
+  const lastAccess = (clienteAcceso as { last_portal_access?: string } | null)?.last_portal_access
+  const diasSinPortal = lastAccess ? diasDesde(lastAccess) : 99
+  if (diasSinPortal >= 5) {
+    recomendaciones.push({
+      id: generarId(),
+      cliente_id: clienteId,
+      cliente_nombre: nombre,
+      tipo: 'sin_actividad_portal',
+      urgencia: diasSinPortal >= 10 ? 'alta' : 'media',
+      titulo: `${diasSinPortal} días sin abrir la app`,
+      descripcion: `${nombre} no ha accedido al portal desde hace ${diasSinPortal} días.`,
+      detalle_ia: '',
+      sugerencia_accion: 'Enviar mensaje de motivación. El cliente puede haberse desconectado del proceso.',
+      datos_contexto: { dias_sin_checkin: diasSinPortal },
+      created_at: ahora,
+    })
+  }
+
+  // 6f3. Sin registrar entreno (si tiene plan activo)
+  const { data: planEntreno } = await supabase
+    .from('planes_entrenamiento')
+    .select('id')
+    .eq('cliente_id', clienteId)
+    .eq('activo', true)
+    .limit(1)
+  if (planEntreno?.length) {
+    const fechaLimiteEntreno = new Date()
+    fechaLimiteEntreno.setDate(fechaLimiteEntreno.getDate() - 7)
+    const { data: sesiones } = await supabase
+      .from('registros_sets')
+      .select('created_at')
+      .eq('cliente_id', clienteId)
+      .gte('created_at', fechaLimiteEntreno.toISOString())
+      .limit(1)
+    if (!sesiones?.length) {
+      recomendaciones.push({
+        id: generarId(),
+        cliente_id: clienteId,
+        cliente_nombre: nombre,
+        tipo: 'sin_entreno',
+        urgencia: 'media',
+        titulo: 'Sin registrar entreno esta semana',
+        descripcion: `${nombre} no ha registrado ninguna sesión de entrenamiento en los últimos 7 días.`,
+        detalle_ia: '',
+        sugerencia_accion: 'Verificar si el cliente tiene dificultades con los entrenamientos o necesita ajuste del plan.',
+        datos_contexto: {},
+        created_at: ahora,
+      })
+    }
+  }
+
   // 6g. Feedback positivo
   const checksRecientesPositivos = checks.filter(c => diasDesde(c.fecha) <= 14)
   const checksBuenos = checksRecientesPositivos.filter(c =>

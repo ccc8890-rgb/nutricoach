@@ -969,6 +969,8 @@ export type TipoRecomendacion =
   | 'revision_plan'
   | 'feedback_positivo'
   | 'checkin_recordatorio'
+  | 'sin_actividad_portal'
+  | 'sin_entreno'
 
 export type NivelUrgencia = 'baja' | 'media' | 'alta' | 'critica'
 
@@ -1015,4 +1017,25 @@ export interface AutoCoachDashboard {
   por_tipo: Record<TipoRecomendacion, number>
   analisis: AnalisisAutoCoach[]
   resumen_ia?: string
+}
+
+// ============================================================
+// Metodología del coach (white-label, una fila por coach)
+// ============================================================
+
+export interface MetodologiaCoach {
+  id: string
+  coach_id: string
+  proteina_perdida_grasa: number
+  proteina_recomposicion: number
+  proteina_rendimiento: number
+  proteina_ganancia_musculo: number
+  proteina_salud_general: number
+  reglas_fijas: string[]
+  estilos_dieta: string[]
+  filosofia_coaching: string
+  num_comidas_default: number
+  deficit_maximo_kcal: number
+  superavit_maximo_kcal: number
+  updated_at: string
 }
