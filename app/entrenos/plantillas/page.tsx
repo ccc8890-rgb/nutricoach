@@ -15,6 +15,8 @@ import {
     CheckCircle2,
     AlertCircle,
     Crown,
+    UserPlus,
+    X,
 } from 'lucide-react'
 import { useDebounce } from '@/lib/useDebounce'
 import { useToast } from '@/components/ui/Toast'
@@ -48,6 +50,13 @@ export default function PlantillasEntrenoPage() {
     const busquedaDebounced = useDebounce(busqueda, 300)
     const { addToast } = useToast()
 
+    // Asignación a cliente
+    const [asignandoId, setAsignandoId] = useState<string | null>(null)
+    const [clientes, setClientes] = useState<Array<{ id: string; nombre: string }>>([])
+    const [clienteSeleccionado, setClienteSeleccionado] = useState('')
+    const [nombrePlan, setNombrePlan] = useState('')
+    const [asignando, setAsignando] = useState(false)
+
     const load = useCallback(async () => {
         setLoading(true)
         const { data: { user } } = await supabase.auth.getUser()
@@ -67,6 +76,25 @@ export default function PlantillasEntrenoPage() {
     }, [])
 
     useEffect(() => { load() }, [load])
+
+    // Cargar clientes del coach
+    useEffect(() => {
+        ;(async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+            const { data } = await supabase
+                .from('clientes')
+                .select('id, profile:profiles!profile_id(nombre, apellidos)')
+                .eq('coach_id', user.id)
+                .eq('activo', true)
+            const mapped = (data ?? []).map(c => {
+                const p = Array.isArray(c.profile) ? c.profile[0] : c.profile
+                const nombreCompleto = p ? `${p.nombre ?? ''} ${p.apellidos ?? ''}`.trim() : 'Cliente sin nombre'
+                return { id: c.id, nombre: nombreCompleto }
+            })
+            setClientes(mapped)
+        })()
+    }, [])
 
     const filtradas = plantillas.filter(p => {
         if (filtroModalidad !== null && p.sport_modality !== filtroModalidad) return false
@@ -196,6 +224,13 @@ export default function PlantillasEntrenoPage() {
                                     {p.objetivo.replace(/_/g, ' ')}
                                 </span>
                             )}
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setAsignandoId(p.id); setNombrePlan(p.nombre); setClienteSeleccionado('') }}
+                                className="p-1.5 rounded-lg text-xs font-medium flex items-center gap-1"
+                                style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)', border: '1px solid rgba(168,85,247,0.25)' }}
+                            >
+                                <UserPlus size={13} /> Asignar
+                            </button>
                             <button
                                 onClick={(e) => { e.stopPropagation(); setExpandida(estaExpandida ? null : p.id) }}
                                 className="ml-1"
@@ -447,5 +482,127 @@ export default function PlantillasEntrenoPage() {
                 </div>
             )}
         </div>
+    )
+
+    // Modal de asignación
+    const plantillaActual = plantillas.find(p => p.id === asignandoId)
+
+    async function handleAsignar() {
+        if (!asignandoId || !clienteSeleccionado || !nombrePlan) return
+        setAsignando(true)
+        try {
+            const res = await fetch(`/api/plantillas-entreno/${asignandoId}/asignar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cliente_id: clienteSeleccionado, nombre: nombrePlan }),
+            })
+            const data = await res.json()
+            if (data.ok) {
+                addToast({ type: 'success', title: 'Plan asignado correctamente' })
+                setAsignandoId(null)
+            } else {
+                addToast({ type: 'error', title: data.error ?? 'Error al asignar' })
+            }
+        } catch {
+            addToast({ type: 'error', title: 'Error de conexión' })
+        } finally {
+            setAsignando(false)
+        }
+    }
+
+    return (
+        <>
+            {/* contenido principal ya está arriba */}
+            {asignandoId && (
+                <div
+                    className="fixed inset-0 z-50 flex items-start justify-center pt-32"
+                    style={{ background: 'rgba(0,0,0,0.5)' }}
+                    onClick={() => setAsignandoId(null)}
+                >
+                    <div
+                        className="rounded-2xl w-full max-w-md mx-4 p-6"
+                        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>
+                                Asignar plantilla a cliente
+                            </h3>
+                            <button
+                                onClick={() => setAsignandoId(null)}
+                                className="p-1 rounded-lg"
+                                style={{ color: 'var(--text-muted)' }}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
+                            {plantillaActual?.nombre ?? ''}
+                        </p>
+
+                        <div className="mb-4">
+                            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
+                                Cliente
+                            </label>
+                            <select
+                                className="w-full rounded-lg px-3 py-2 text-sm"
+                                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                                value={clienteSeleccionado}
+                                onChange={(e) => setClienteSeleccionado(e.target.value)}
+                            >
+                                <option value="">Selecciona un cliente…</option>
+                                {clientes.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.nombre}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="mb-6">
+                            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
+                                Nombre del plan
+                            </label>
+                            <input
+                                type="text"
+                                className="w-full rounded-lg px-3 py-2 text-sm"
+                                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                                value={nombrePlan}
+                                onChange={(e) => setNombrePlan(e.target.value)}
+                                placeholder="Ej: Plan HYROX Q2"
+                            />
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setAsignandoId(null)}
+                                className="px-4 py-2 text-sm font-medium rounded-lg"
+                                style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleAsignar}
+                                disabled={!clienteSeleccionado || !nombrePlan || asignando}
+                                className="px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2"
+                                style={{
+                                    background: !clienteSeleccionado || !nombrePlan || asignando
+                                        ? 'rgba(128,128,128,0.2)'
+                                        : 'rgba(168,85,247,0.2)',
+                                    color: !clienteSeleccionado || !nombrePlan || asignando
+                                        ? 'var(--text-muted)'
+                                        : 'rgb(168,85,247)',
+                                    border: '1px solid rgba(168,85,247,0.25)',
+                                    cursor: !clienteSeleccionado || !nombrePlan || asignando ? 'not-allowed' : 'pointer',
+                                }}
+                            >
+                                {asignando ? <Loader2 size={14} className="animate-spin" /> : null}
+                                Asignar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     )
 }
