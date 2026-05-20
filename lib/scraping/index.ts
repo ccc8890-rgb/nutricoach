@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { normalizarProducto } from './normalizador'
 import { matchAlimentoInMemory, cargarAlimentosMap, AlimentoRecord } from './matcher'
+import { categorizarAlimento } from './categorizador'
 import { scrapearMercadona } from './supermercados/mercadona'
 import { scrapearCarrefour } from './supermercados/carrefour'
 import { scrapearDia } from './supermercados/dia'
@@ -586,15 +587,18 @@ export async function scrapearSupermercado(
                 const inserts = lote.map(a => {
                     const nombreLower = a.nombreLimpio
                     const tieneMarca = MARCAS_CONOCIDAS.some(m => nombreLower.includes(m))
+                    const categoriaNutricional = categorizarAlimento(a.nombre)
                     return {
                         nombre: a.nombre,
-                        categoria: 'Supermercado',
+                        categoria: categoriaNutricional || 'Supermercado',
                         calorias: 0,
                         proteinas: 0,
                         carbohidratos: 0,
                         grasas: 0,
                         es_generico: !tieneMarca,
-                        es_comestible: true,  // ya pasó el filtro esNoComestible
+                        es_comestible: true,
+                        fuente_nutricional: 'scraping_default',
+                        ultima_actualizacion_nutricional: new Date().toISOString(),
                     }
                 })
 
@@ -607,17 +611,20 @@ export async function scrapearSupermercado(
                     // Si falla el batch, reintentar uno por uno (por si hay conflictos de unique)
                     console.warn(`[Batch] Error en batch insert (${error.message}), reintentando individual...`)
                     for (const a of lote) {
+                        const categoriaNutricional = categorizarAlimento(a.nombre)
                         const { data: single } = await supabase
                             .from('alimentos')
                             .insert({
                                 nombre: a.nombre,
-                                categoria: 'Supermercado',
+                                categoria: categoriaNutricional || 'Supermercado',
                                 calorias: 0,
                                 proteinas: 0,
                                 carbohidratos: 0,
                                 grasas: 0,
                                 es_generico: true,
-                                es_comestible: true,  // ya pasó el filtro esNoComestible
+                                es_comestible: true,
+                                fuente_nutricional: 'scraping_default',
+                                ultima_actualizacion_nutricional: new Date().toISOString(),
                             })
                             .select('id, nombre')
                             .maybeSingle()

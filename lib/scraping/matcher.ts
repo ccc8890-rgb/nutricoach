@@ -4,6 +4,7 @@ export interface AlimentoRecord {
     id: string
     nombre: string
     nombreLower: string
+    calorias?: number  // opcional — para desempatar priorizando alimentos con macros reales
 }
 
 export function quitarAcentos(s: string): string {
@@ -67,6 +68,7 @@ export function matchAlimentoInMemory(
     }
     // Caso A tiene prioridad sobre Caso B
     if (mejorContainsLower) mejor = mejorContainsLower
+    // Desempate en nivel 3: si hay múltiples opciones, priorizar el que tiene macros reales
     if (mejor) return mejor.id
 
     // 4. Coincidencia por palabra clave (palabra más larga)
@@ -89,7 +91,15 @@ export function matchAlimentoInMemory(
                 return coincidencias.length >= 2 || coincidencias.length === palabras.length
             })
             if (conMatch.length > 0) {
-                conMatch.sort((a, b) => a.nombre.length - b.nombre.length)
+                // Desempate: priorizar alimentos con macros reales (calorias > 0)
+                // sobre los creados por scraping con macros=0
+                conMatch.sort((a, b) => {
+                    const aHasMacros = (a.calorias ?? 0) > 0 ? 1 : 0
+                    const bHasMacros = (b.calorias ?? 0) > 0 ? 1 : 0
+                    if (aHasMacros !== bHasMacros) return bHasMacros - aHasMacros
+                    // A igualdad de macros, elegir el nombre más corto (más genérico = mejor match)
+                    return a.nombre.length - b.nombre.length
+                })
                 return conMatch[0].id
             }
         }
@@ -117,6 +127,7 @@ export function matchAlimentoInMemory(
 
 /**
  * Pre-carga todos los alimentos comestibles de la BD en un Map para matching rápido en memoria.
+ * Ahora también carga `calorias` para poder desempatar entre candidatos.
  */
 export async function cargarAlimentosMap(supabase: SupabaseClient): Promise<Map<string, AlimentoRecord>> {
     const map = new Map<string, AlimentoRecord>()
@@ -127,7 +138,7 @@ export async function cargarAlimentosMap(supabase: SupabaseClient): Promise<Map<
     while (hayMas) {
         const { data, error } = await supabase
             .from('alimentos')
-            .select('id, nombre')
+            .select('id, nombre, calorias')
             .eq('es_comestible', true)
             .range(desde, desde + pageSize - 1)
 
@@ -141,6 +152,7 @@ export async function cargarAlimentosMap(supabase: SupabaseClient): Promise<Map<
                 id: a.id,
                 nombre: a.nombre,
                 nombreLower: a.nombre.toLowerCase(),
+                calorias: a.calorias ?? undefined,
             }
             map.set(record.nombreLower, record)
         }
