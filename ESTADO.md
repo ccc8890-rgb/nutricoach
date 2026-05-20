@@ -1,4 +1,49 @@
-# ESTADO NutriCoach — 17-05-2026 (Sesión 17 — Limpieza BD + Enriquecimiento 100% + Fix vista pendientes ✅)
+# ESTADO NutriCoach — 20-05-2026 (Sesión 33 — Mejoras sección Entrenos ✅)
+
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (20-05-2026).
+
+---
+
+## 📍 DÓNDE ESTAMOS
+
+**Fase:** Sesión 33 completada. **Sección Entrenos mejorada en 3 frentes:** dashboard con stats de actividad, modal de demo de ejercicio en portal cliente, y asignación de plantillas a cliente directamente desde /entrenos/plantillas. Build 0 errores. Push a Vercel.
+
+---
+
+## ✅ COMPLETADO (20-05-2026) — Sesión 33 — Mejoras sección Entrenos
+
+### 🔷 Dashboard /entrenos con stats de actividad (commit `72aec9b` + `6a0e7d0`) ✅
+
+- **3 chips de resumen** en cabecera: Planes activos / Sesiones 30d (púrpura) / Clientes activos (verde)
+- **Cards mejoradas**: dot verde pulsante si cliente entrenó en últimos 7 días, "Hoy/Ayer/Hace X días" de última sesión, nº sesiones en 30d
+- **Query eficiente**: carga `registros_sets` filtrado por `cliente_id` de los planes del coach, agrupa en JS
+
+### 🔷 Sprint 4 Exercise Library — Modal demo en ejecución cliente (commit `b13f7cc`) ✅
+
+- **Icono ⓘ** junto al nombre del ejercicio en `/cliente/sesion/[id]` si tiene `video_url`
+- **Modal YouTube**: extrae video ID con regex, renderiza iframe embed (aspect 16:9)
+- **Fallback**: link directo si la URL no es de YouTube
+
+### 🔷 Asignar plantilla a cliente desde /entrenos/plantillas (commit `3fe97b4`) ✅
+
+- **Botón "Asignar"** en cada card de plantilla con icono UserPlus
+- **Modal**: selector de clientes activos del coach + nombre editable del plan (prefilled)
+- **API `POST /api/plantillas-entreno/[id]/asignar`**: copia `plantilla_sesiones` + `plantilla_sesion_ejercicios` → `sesiones_entrenamiento` + `sesion_ejercicios` del plan nuevo
+
+---
+
+## 🔴 PRÓXIMAS MEJORAS PROPUESTAS (ver sección al final del ESTADO)
+
+| Prioridad | Tarea |
+|-----------|-------|
+| 🟠 Media | **Adherencia semanal en ficha cliente**: tab Historial Entreno muestra PRs pero no gráfico de adherencia semana a semana |
+| 🟠 Media | **Completar sesión desde SemanaEntrenoCard**: marcar sesión como "completada hoy" sin abrir toda la pantalla de ejecución |
+| 🟡 Baja | **Historial de sesiones en /entrenos/[id]**: ver qué días completó el cliente cada sesión del plan |
+| 🟡 Baja | **Editar ejercicios desde /entrenos/plantillas**: ahora son read-only (solo expandibles), añadir edición inline |
+
+---
+
+## ✅ COMPLETADO ANTERIORMENTE (17-05-2026) — Sesión 17 — Limpieza BD + Enriquecimiento 100% + Fix vista pendientes ✅
 
 > Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026).
 
