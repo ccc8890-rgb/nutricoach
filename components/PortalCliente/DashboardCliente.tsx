@@ -68,6 +68,8 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
 
     const loadData = useCallback(async () => {
         try {
+            fetch(`/api/cliente/${codigo}/registrar-acceso`, { method: 'POST' }).catch(() => {})
+
             const res = await fetch(`/api/cliente/${codigo}/dashboard`)
             if (!res.ok) {
                 const err = await res.json()

@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     .upsert({
       cliente_id: cliente.id,
       trigger_onboarding: body.trigger_onboarding || null,
-      autoeficacia: body.autoeficacia || null,
+      autoeficacia: body.autoeficacia ?? null,
       historial_dietas: body.historial_dietas ?? [],
       razones_abandono: body.razones_abandono ?? [],
       relacion_comida: body.relacion_comida || null,

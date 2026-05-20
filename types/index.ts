@@ -971,6 +971,7 @@ export type TipoRecomendacion =
   | 'checkin_recordatorio'
   | 'sin_actividad_portal'
   | 'sin_entreno'
+  | 'periodizacion_ajuste'
 
 export type NivelUrgencia = 'baja' | 'media' | 'alta' | 'critica'
 
@@ -991,6 +992,8 @@ export interface RecomendacionAutoCoach {
     energia_media?: number
     sueno_medio?: number
     dias_sin_checkin?: number
+    dias_sin_portal?: number
+    dias_sin_entreno?: number
     tendencia_semanal?: string
   }
   created_at: string

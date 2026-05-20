@@ -118,7 +118,7 @@ export default function RevisarPlanPage() {
     Promise.all([
       supabase.from('clientes').select('*, profiles(nombre, apellidos, email)').eq('id', id).single(),
       supabase.from('onboarding_responses').select('*').eq('cliente_id', id).single(),
-      supabase.from('registros_ia').select('id, respuesta_json, created_at').eq('cliente_id', id).eq('tipo', 'plan_inicial').order('created_at', { ascending: false }),
+      supabase.from('registros_ia').select('id, respuesta_json, created_at').eq('cliente_id', id).in('tipo', ['plan_inicial', 'dieta']).order('created_at', { ascending: false }),
       supabase.from('onboarding_perfil_profundo').select('*').eq('cliente_id', id).single(),
     ]).then(([{ data: c }, { data: o }, { data: rs }, { data: pp }]) => {
       setCliente(c as ClienteData)
@@ -140,7 +140,7 @@ export default function RevisarPlanPage() {
       .from('registros_ia')
       .select('id, respuesta_json, created_at')
       .eq('cliente_id', params.id as string)
-      .eq('tipo', 'plan_inicial')
+      .in('tipo', ['plan_inicial', 'dieta'])
       .order('created_at', { ascending: false })
     const registros = (data ?? []) as RegistroIA[]
     setVersiones(registros)

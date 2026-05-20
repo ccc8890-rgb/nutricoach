@@ -10,7 +10,7 @@ export interface ProtocoloCientifico {
 }
 
 // ──────────────────────────────────────────────────────────────
-// BASE DE CONOCIMIENTO — 15 protocolos
+// BASE DE CONOCIMIENTO — 18 protocolos (15 originales + HTA, dislipemia, hígado graso)
 // ──────────────────────────────────────────────────────────────
 
 export const BASE_CONOCIMIENTO: ProtocoloCientifico[] = [
@@ -250,6 +250,68 @@ export const BASE_CONOCIMIENTO: ProtocoloCientifico[] = [
       'Thomas DT et al. Position of the Academy of Nutrition and Dietetics, Dietitians of Canada, and ACSM. J Acad Nutr Diet 2016.',
     ],
   },
+  {
+    id: 'hta_hipertension',
+    titulo: 'Hipertensión arterial y salud cardiovascular',
+    tags: ['hta', 'hipertension', 'presion_alta', 'cardiovascular', 'tension_alta'],
+    resumen: `PROTOCOLO HIPERTENSIÓN ARTERIAL:
+- REDUCCIÓN DE SODIO: prioridad absoluta. Objetivo < 1500-2000 mg/día (DASH-Sodium Trial, NEJM 1997; Sacks et al. 2001).
+- AUMENTO DE POTASIO: > 3500 mg/día. Fuentes: frutas, verduras de hoja verde, legumbres, boniato, plátano, aguacate.
+- DIETA DASH: rica en frutas, verduras, lácteos desnatados, cereales integrales, proteína magra. Reduce PA sistólica 8-14 mmHg.
+- PESO: cada kg perdido reduce PA ~1-1.5 mmHg. Objetivo pérdida 5-10% si sobrepeso.
+- ALCOHOL: limitar ≤1 bebida/día (mujeres), ≤2 (hombres). Reducción directa de PA.
+- MAGNESIO: > 300 mg/día de fuentes dietéticas. Relación inversa con PA en meta-análisis.
+- OMEGA-3: EPA+DHA > 2g/semana. Pescado azul 2-3 raciones/semana. Efecto vasodilatador.
+- EVITAR: embutidos, conservas saladas, snacks salados, quesos curados, pan industrial, salsas comerciales, platos preparados.
+- CAFEÍNA: si consume café, limitar a 2-3 tazas/día. No efecto negativo crónico en consumidores habituales.
+- ⚠️ Interacción medicación: diuréticos (riesgo hipopotasemia), IECA/ARAII (vigilar potasio si función renal alterada). Derivar a nefrólogo si ERC.`,
+    referencias: [
+      'Sacks FM et al. DASH-Sodium Collaborative Research Group. Effects on blood pressure of reduced dietary sodium and the DASH diet. NEJM 2001.',
+      'Appel LJ et al. A clinical trial of the effects of dietary patterns on blood pressure. NEJM 1997 (DASH).',
+      'Whelton PK et al. 2017 ACC/AHA Guideline for the Prevention, Detection, Evaluation, and Management of High Blood Pressure. Hypertension 2018.',
+      'Filippou CD et al. Dietary approaches to stop hypertension (DASH) diet and blood pressure reduction in adults. Adv Nutr 2021.',
+    ],
+  },
+  {
+    id: 'dislipemia',
+    titulo: 'Dislipemia y perfil lipídico',
+    tags: ['colesterol', 'dislipemia', 'ldl', 'trigliceridos', 'hipercolesterolemia'],
+    resumen: `PROTOCOLO DISLIPEMIA:
+- GRASA SATURADA: reducir a < 7% de calorías totales. Limitar carnes rojas grasas, lácteos enteros, aceite de palma/coco, ultraprocesados.
+- GRASA INSATURADA: aumentar. Aceite oliva virgen extra (AOVE 30-40g/día), frutos secos (30g/día), aguacate.
+- OMEGA-3: EPA+DHA 2-4g/día para reducción de triglicéridos (30-50%). Pescado azul 3-4 raciones/semana o suplemento.
+- FIBRA SOLUBLE: avena, legumbres, manzana, psyllium, berenjena. Reduce LDL 5-15% (Brown et al. 1999).
+- FITOESTEROLES: 2g/día reduce LDL 8-10%. Presentes en algunos lácteos enriquecidos.
+- EJERCICIO: mejora perfil lipídico (↑HDL, ↓triglicéridos). Entreno aeróbico + fuerza óptimo.
+- ALCOHOL: si consume, moderado (≤1-2 bebidas/día). El HDL sube pero no compensa otros riesgos.
+- CARBOHIDRATOS REFINADOS: limitar, se asocian a ↑triglicéridos. Priorizar cereales integrales y legumbres.
+- ⚠️ Interacción estatinas: evitar pomelo/toronja (inhibe CYP3A4). Coenzima Q10 podría mitigar mialgias.`,
+    referencias: [
+      'Brown L et al. Cholesterol-lowering effects of dietary fiber: a meta-analysis. Am J Clin Nutr 1999.',
+      'Jacobson TA et al. National Lipid Association recommendations for patient-centered management of dyslipidemia. J Clin Lipidol 2015.',
+      'Estruch R et al. Primary prevention of cardiovascular disease with a Mediterranean diet. NEJM 2013 (PREDIMED).',
+    ],
+  },
+  {
+    id: 'higado_graso_nafld',
+    titulo: 'Enfermedad del hígado graso no alcohólico (NAFLD/MAFLD)',
+    tags: ['higado_graso', 'nafld', 'mafl', 'higado', 'transaminasas', 'esteatosis'],
+    resumen: `PROTOCOLO HÍGADO GRASO / NAFLD:
+- PÉRDIDA DE PESO: > 5% del peso corporal reduce esteatosis > 30% (Vilar-Gomez et al. 2015). >10% mejora inflamación y fibrosis.
+- DIETA MEDITERRÁNEA: evidencia A para reducción de grasa hepática (PREDIMED).
+- AZÚCARES AÑADIDOS Y FRUCTOSA: eliminar. La fructosa (especialmente en bebidas azucaradas, zumos y ultraprocesados) se metaboliza en hígado y promueve lipogénesis de novo.
+- CARBOHIDRATOS: moderados, de bajo IG. Evitar grandes cargas de CHO refinado.
+- GRASA SATURADA: limitar < 10% kcal. Priorizar AOVE como fuente grasa principal.
+- CAFÉ: 2-3 tazas/día asociado a menor riesgo de fibrosis hepática (evidencia epidemiológica consistente).
+- VITAMINA E: 800 UI/día puede mejorar histología en NASH confirmado por biopsia (PIVENS trial). NO recomendar sin supervisión médica.
+- EJERCICIO: aeróbico + fuerza 3-5 días/semana. Reduce grasa hepática incluso sin pérdida de peso significativa.
+- ALCOHOL: idealmente 0. Si es posible, limitar drásticamente.`,
+    referencias: [
+      'Vilar-Gomez E et al. Weight loss through lifestyle modification significantly reduces features of nonalcoholic steatohepatitis. Gastroenterology 2015.',
+      'Sanyal AJ et al. Pioglitazone, vitamin E, or placebo for nonalcoholic steatohepatitis (PIVENS). NEJM 2010.',
+      'Romero-Gómez M et al. NAFLD and MAFLD: What Is New in Diagnosis and Classification? J Hepatol 2020.',
+    ],
+  },
 ]
 
 // ──────────────────────────────────────────────────────────────
@@ -332,6 +394,15 @@ function detectarTags(perfil: PerfilClienteKB): Set<string> {
     }
     if (texto.includes('menop') || texto.includes('climaterio') || texto.includes('perimen')) {
       tags.add('menopausia').add('climaterio')
+    }
+    if (texto.includes('hipertens') || texto.includes('hta') || texto.includes('presion alta') || texto.includes('tension alta') || texto.includes('colesterol') || texto.includes('dislipemia') || texto.includes('hipercolesterole') || texto.includes('trigliceridos')) {
+      tags.add('hta').add('hipertension').add('presion_alta').add('cardiovascular')
+    }
+    if (texto.includes('higado graso') || texto.includes('hígado graso') || texto.includes('nafld') || texto.includes('esteatosis') || texto.includes('transaminasas')) {
+      tags.add('higado_graso').add('nafld').add('esteatosis')
+    }
+    if (texto.includes('ansiedad') || texto.includes('depresion') || texto.includes('depresión') || texto.includes('salud mental')) {
+      tags.add('ansiedad').add('salud_mental')
     }
   }
 

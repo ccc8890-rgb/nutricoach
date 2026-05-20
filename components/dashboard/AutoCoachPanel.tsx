@@ -39,6 +39,7 @@ const TIPO_META: Record<TipoRecomendacion, { icon: React.ElementType; label: str
   revision_plan: { icon: CalendarBlank, label: 'Revisión plan' },
   sin_actividad_portal: { icon: Clock, label: 'Sin actividad' },
   sin_entreno: { icon: Lightning, label: 'Sin entreno' },
+  periodizacion_ajuste: { icon: TrendDown, label: 'Periodización' },
 }
 
 const URGENCIA_COLOR: Record<NivelUrgencia, string> = {

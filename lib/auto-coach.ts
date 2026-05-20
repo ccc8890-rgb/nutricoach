@@ -3,6 +3,16 @@
 // AutoCoach — Motor de análisis proactivo de clientes.
 // Analiza check-ins, peso, adherencia, energía, sueño y genera
 // recomendaciones automáticas basadas en reglas heurísticas + IA.
+//
+// Gap #6 RESUELTO: Feedback loop → integración con periodización.
+//   - Alerta de estancamiento + buena adherencia → dispara refeed programado
+//   - Alerta de pérdida rápida → revisa si ajuste calórico es necesario
+//   - Alerta de fatiga/energía baja → dispara evaluarCheckin()
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// AutoCoach — Motor de análisis proactivo de clientes.
+// Analiza check-ins, peso, adherencia, energía, sueño y genera
+// recomendaciones automáticas basadas en reglas heurísticas + IA.
 // ═══════════════════════════════════════════════════════════════
 
 import { supabase } from './supabase'
@@ -124,7 +134,76 @@ export async function analizarCliente(
   const recomendaciones: RecomendacionAutoCoach[] = []
   const ahora = new Date().toISOString()
 
-  // 6a. Alerta de adherencia baja
+  // ── Periodización: Evaluar si auto-coach dispara acciones ──
+  // Gap #6: Feedback loop entre detecciones y periodización
+  let accionPeriodizacion: string | null = null
+  let accionPeriodizacionUrgencia: NivelUrgencia | null = null
+
+  // 6a. Estancamiento + buena adherencia → evaluar refeed
+  if (c.objetivo === 'perder_grasa' && pesoActual && pesoAnterior) {
+    const diff = pesoAnterior - pesoActual
+    const checksRecientes = checks.filter(c => diasDesde(c.fecha) <= 14)
+    const semanasEnDeficit = Math.max(Math.floor(checksRecientes.length / 2), 0)
+
+    if (diff < 0.3 && checksRecientes.length >= 2 && adherenciaMedia >= 7) {
+      accionPeriodizacion = `🔁 REFEED PROGRAMADO: Cliente estancado ${semanasEnDeficit > 4 ? '>4 semanas' : semanasEnDeficit + ' semanas'} con adherencia ${adherenciaMedia.toFixed(1)}/10. Iniciar refeed 1 semana: kcal a mantenimiento, CHO +30%.`
+      accionPeriodizacionUrgencia = 'critica'
+    }
+  }
+
+  // 6b. Energía baja + déficit → evaluar ajuste calórico o revisión de distribución
+  if (energiaMedia > 0 && energiaMedia < 4 && checks.length >= 2) {
+    if (c.objetivo === 'perder_grasa' || c.objetivo === 'recomposicion') {
+      accionPeriodizacion = accionPeriodizacion
+        ? accionPeriodizacion + `\n⚠️ ENERGÍA BAJA (${energiaMedia.toFixed(1)}/10): Revisar si el déficit es excesivo. Considerar aumentar CHO en comidas pre-entreno.`
+        : `⚠️ ENERGÍA BAJA: Revisar si el déficit es excesivo o la distribución de macros es inadecuada. Aumentar CHO en comidas pre-entreno si aplica.`
+      accionPeriodizacionUrgencia = accionPeriodizacionUrgencia ?? 'alta'
+    }
+  }
+
+  // 6c. Sueño bajo + fatiga → evaluar intervención de sueño
+  if (suenoMedio > 0 && suenoMedio < 3 && checks.length >= 2) {
+    accionPeriodizacion = accionPeriodizacion
+      ? accionPeriodizacion + `\n🛌 INTERVENCIÓN SUEÑO: Sueño ${suenoMedio.toFixed(1)}/10. Evaluar cena (tryptophan, Mg), higiene de sueño.`
+      : `🛌 INTERVENCIÓN SUEÑO: Sueño ${suenoMedio.toFixed(1)}/10. Priorizar higiene de sueño antes de ajustar calorías.`
+    accionPeriodizacionUrgencia = accionPeriodizacionUrgencia ?? 'media'
+  }
+
+  // 6d. Pérdida rápida con energía baja → disparar aumento calórico
+  if (pesoActual && pesoAnterior && c.objetivo === 'perder_grasa') {
+    const diffSemanal = (pesoAnterior - pesoActual) / Math.max(checksPeso.length, 1) * 7
+    if (diffSemanal > 1 && energiaMedia < 5) {
+      accionPeriodizacion = accionPeriodizacion
+        ? accionPeriodizacion + `\n📈 AJUSTE CALÓRICO: Pérdida rápida (${diffSemanal.toFixed(1)} kg/sem) + energía baja. Subir +200-300 kcal/día para estabilizar.`
+        : `📈 AJUSTE CALÓRICO: Pérdida rápida (${diffSemanal.toFixed(1)} kg/sem) con energía baja (${energiaMedia.toFixed(1)}/10). Aumentar calorías +200-300 kcal/día.`
+      accionPeriodizacionUrgencia = accionPeriodizacionUrgencia ?? 'alta'
+    }
+  }
+
+  // Si hay acción de periodización, añadirla como primera recomendación
+  if (accionPeriodizacion) {
+    recomendaciones.push({
+      id: generarId(),
+      cliente_id: clienteId,
+      cliente_nombre: nombre,
+      tipo: 'periodizacion_ajuste',
+      urgencia: accionPeriodizacionUrgencia ?? 'media',
+      titulo: '🎯 Acción de periodización automática',
+      descripcion: accionPeriodizacion,
+      detalle_ia: '',
+      sugerencia_accion: 'Revisar la acción sugerida y aplicarla en el plan del cliente. La periodización automática mejora resultados a largo plazo.',
+      datos_contexto: {
+        peso_actual: pesoActual,
+        peso_anterior: pesoAnterior,
+        adherencia_media: adherenciaMedia,
+        energia_media: energiaMedia,
+        sueno_medio: suenoMedio,
+      },
+      created_at: ahora,
+    })
+  }
+
+  // 6e. Alerta de adherencia baja
   if (adherenciaMedia > 0 && adherenciaMedia < 5 && checks.length >= 2) {
     recomendaciones.push({
       id: generarId(),
@@ -281,7 +360,7 @@ export async function analizarCliente(
       descripcion: `${nombre} no ha accedido al portal desde hace ${diasSinPortal} días.`,
       detalle_ia: '',
       sugerencia_accion: 'Enviar mensaje de motivación. El cliente puede haberse desconectado del proceso.',
-      datos_contexto: { dias_sin_checkin: diasSinPortal },
+      datos_contexto: { dias_sin_portal: diasSinPortal },
       created_at: ahora,
     })
   }
