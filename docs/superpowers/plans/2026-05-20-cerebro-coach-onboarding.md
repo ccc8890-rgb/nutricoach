@@ -916,11 +916,372 @@ Vercel desplegará automáticamente. Verificar en https://nutricoach-delta.verce
 
 ---
 
+---
+
+## Task 11: Base de Conocimiento Científica — lib/knowledge-base.ts
+
+**Files:**
+- Create: `lib/knowledge-base.ts`
+
+La base de conocimiento es un archivo TypeScript estático con protocolos científicos organizados por etiquetas. Cada protocolo tiene un resumen accionable que se inyecta en el prompt cuando el cliente cumple las condiciones.
+
+No necesita base de datos — empieza como fichero, se puede migrar a tabla Supabase en el futuro cuando Carlos quiera gestionarla desde una UI.
+
+- [ ] **Step 11.1: Crear lib/knowledge-base.ts**
+
+```typescript
+// lib/knowledge-base.ts
+// ═══════════════════════════════════════════════════════════════
+// Base de conocimiento científica de NutriCoach.
+// Cada protocolo se inyecta dinámicamente en el prompt de IA
+// cuando el perfil del cliente activa sus condiciones.
+// ═══════════════════════════════════════════════════════════════
+
+export interface ProtocoloCientifico {
+  id: string
+  categoria: string
+  titulo: string
+  // Resumen accionable para el prompt (máx 3-4 frases)
+  guia_prompt: string
+  // Fuentes bibliográficas breves
+  referencias: string[]
+  // Tags que activan este protocolo (se matchean con el perfil del cliente)
+  tags: string[]
+}
+
+export const BASE_CONOCIMIENTO: ProtocoloCientifico[] = [
+  // ── PÉRDIDA DE GRASA ──────────────────────────────────────
+  {
+    id: 'fat_loss_deficit',
+    categoria: 'perdida_grasa',
+    titulo: 'Déficit calórico óptimo para pérdida de grasa sin pérdida muscular',
+    guia_prompt: 'Déficit de 300-500 kcal/día. Déficits >500 kcal aceleran catabolismo muscular. Con proteína ≥2.2 g/kg y entrenamiento de fuerza, se puede llegar a 1% del peso corporal/semana de pérdida sin pérdida muscular significativa. No reducir por debajo de 1.200 kcal (mujeres) o 1.500 kcal (hombres).',
+    referencias: ['Trexler et al. 2014 (JISSN)', 'Helms et al. 2014 (EJSN)', 'Hall et al. 2012 (AJCN)'],
+    tags: ['perder_grasa', 'perdida_peso', 'deficit'],
+  },
+  {
+    id: 'fat_loss_protein',
+    categoria: 'perdida_grasa',
+    titulo: 'Proteína elevada en déficit calórico',
+    guia_prompt: 'En déficit, mínimo 2.3-3.1 g/kg de masa libre de grasa para preservar músculo (Helms 2014). Distribuir en 4+ tomas de ≥25g. La proteína aumenta saciedad y termogénesis, facilitando el déficit. Priorizar fuentes magras: pechuga, claras, pescado blanco, proteína de suero.',
+    referencias: ['Helms et al. 2014', 'Leidy et al. 2015 (AJCN)', 'Paddon-Jones et al. 2015'],
+    tags: ['perder_grasa', 'perdida_peso', 'recomposicion'],
+  },
+
+  // ── GANANCIA MUSCULAR ─────────────────────────────────────
+  {
+    id: 'muscle_gain_surplus',
+    categoria: 'ganancia_musculo',
+    titulo: 'Superávit mínimo efectivo para ganancia muscular',
+    guia_prompt: 'Superávit de 200-300 kcal/día para minimizar acumulación de grasa. Tasas de ganancia muscular natural: 1-2 kg/mes (principiantes), 0.5-1 kg/mes (intermedios), 0.25 kg/mes (avanzados). Superávits mayores no aceleran ganancia muscular pero sí acumulación grasa.',
+    referencias: ['Barakat et al. 2020 (Strength Cond J)', 'Slater & Phillips 2011 (JSMS)'],
+    tags: ['ganar_musculo', 'volumen', 'hipertrofia'],
+  },
+  {
+    id: 'muscle_protein_synthesis',
+    categoria: 'ganancia_musculo',
+    titulo: 'Síntesis proteica muscular — dosis y timing',
+    guia_prompt: 'Dosis óptima por toma: 0.4 g/kg, mínimo 3-4 tomas/día (Morton 2018). Leucina ≥3g por toma activa mTOR. Ventana post-entrenamiento: 40g proteína en las 2h post-sesión maximiza síntesis proteica muscular. Fuentes completas (leucina alta): suero, huevo, carne, salmón.',
+    referencias: ['Morton et al. 2018 (BJSM)', 'Witard et al. 2014 (AJCN)', 'Phillips & Van Loon 2011'],
+    tags: ['ganar_musculo', 'hipertrofia', 'fuerza', 'gym'],
+  },
+
+  // ── RENDIMIENTO DEPORTIVO ─────────────────────────────────
+  {
+    id: 'endurance_carbs',
+    categoria: 'rendimiento',
+    titulo: 'Carbohidratos para deportes de resistencia',
+    guia_prompt: 'Para sesiones >60 min: 6-10 g/kg/día CHO. Pre-entreno (2-4h antes): 1-4 g/kg CHO de bajo IG. Durante: 30-60 g/h CHO (hasta 90 g/h si sesión >2.5h con mezcla glucosa:fructosa 2:1). Post-entreno inmediato: 1-1.2 g/kg CHO para resíntesis glucógeno. Reducir CHO en días de descanso.',
+    referencias: ['Burke et al. 2011 (JSCR)', 'ACSM Joint Position Statement 2016', 'Jeukendrup 2014 (Sports Med)'],
+    tags: ['rendimiento', 'running', 'ciclismo', 'triatlon', 'resistencia', 'endurance'],
+  },
+  {
+    id: 'hyrox_crossfit_fueling',
+    categoria: 'rendimiento',
+    titulo: 'Nutrición para CrossFit / HYROX / deportes funcionales',
+    guia_prompt: 'WODs de alta intensidad: requieren CHO rápidamente disponibles pre-sesión (1-2 g/kg 1h antes). Post-WOD: 0.4 g/kg proteína + 0.8 g/kg CHO en 30 min. Múltiples sesiones/día: rellenar glucógeno entre sesiones es prioritario. Creatina monohidrato 3-5 g/día mejora rendimiento en esfuerzos repetidos de alta intensidad.',
+    referencias: ['Glassman 2002 (CFJ)', 'ISSN Position Stand 2017', 'Kreider et al. 2017 (JISSN)'],
+    tags: ['crossfit', 'hyrox', 'funcional', 'hiit', 'rendimiento'],
+  },
+  {
+    id: 'strength_periodization',
+    categoria: 'rendimiento',
+    titulo: 'Periodización nutricional para fuerza',
+    guia_prompt: 'Ajustar CHO al volumen de entrenamiento: días de alta intensidad/volumen → CHO altos (5-7 g/kg); días ligeros/descanso → CHO reducidos (2-3 g/kg). Proteína constante todo el ciclo (≥1.8 g/kg). La periodización nutricional mejora composición corporal y rendimiento vs. dieta constante.',
+    referencias: ['Jeukendrup 2017 (Sports Med)', 'Impey et al. 2018 (Front Physiol)'],
+    tags: ['fuerza', 'gym', 'powerlifting', 'rendimiento', 'periodizacion'],
+  },
+
+  // ── PATOLOGÍAS METABÓLICAS ────────────────────────────────
+  {
+    id: 'diabetes_t2_nutrition',
+    categoria: 'patologia',
+    titulo: 'Diabetes tipo 2 — protocolo nutricional basado en evidencia',
+    guia_prompt: 'Reducir CHO refinados, priorizar CHO de bajo índice glucémico (legumbres, avena, verduras). Distribución calórica: CHO 40-45%, Proteína 25-30%, Grasas 25-30%. Timing CHO: mayor cantidad en desayuno y comida, mínimo en cena (cronodieta). El ejercicio post-comida (10-15 min caminata) reduce glucemia prandial un 30%. Evitar picos glucémicos: comer CHO siempre con proteína/grasa/fibra.',
+    referencias: ['ADA Standards of Care 2024', 'Evert et al. 2019 (Diabetes Care)', 'EASD 2020 guidelines'],
+    tags: ['diabetes', 'diabetes_tipo2', 'resistencia_insulina', 'glucemia'],
+  },
+  {
+    id: 'hypothyroidism_nutrition',
+    categoria: 'patologia',
+    titulo: 'Hipotiroidismo — adaptaciones nutricionales',
+    guia_prompt: 'El hipotiroidismo reduce TDEE un 15-20% — ajustar kcal a la baja vs. calculado por fórmula. Nutrientes clave: selenio (200 mcg/día, de nueces de Brasil), yodo (en dosis correctas — ni exceso ni deficiencia), vitamina D (deficiencia frecuente, suplementar si <30 ng/mL). Evitar sojas y brásicas crudas en exceso (goitrógenos). La proteína alta (1.8-2.0 g/kg) ayuda a mantener masa muscular en contexto de metabolismo reducido.',
+    referencias: ['Triggiani et al. 2009 (Thyroid)', 'Winther et al. 2020 (Nutrients)', 'Ventura et al. 2017'],
+    tags: ['hipotiroidismo', 'tiroides', 'hashimoto'],
+  },
+  {
+    id: 'pcos_nutrition',
+    categoria: 'patologia',
+    titulo: 'SOP (PCOS) — manejo nutricional',
+    guia_prompt: 'Resistencia a insulina presente en 70% de casos. Dieta baja en IG mejora sensibilidad insulínica y reduce andrógenos. Reducir CHO refinados y azúcares. Inositol (myo-inositol 2-4 g/día + d-chiro-inositol 100 mg/día) mejora ovulación y sensibilidad insulínica. Vitamina D y omega-3 con evidencia moderada de beneficio hormonal. Déficit calórico moderado (300-400 kcal) si sobrepeso — no agresivo.',
+    referencias: ['Barrea et al. 2021 (Nutrients)', 'Unfer et al. 2016 (EJOG)', 'AE-PCOS Society 2023'],
+    tags: ['sop', 'pcos', 'sindrome_ovario_poliquistico', 'hormonal'],
+  },
+
+  // ── POBLACIONES ESPECIALES ────────────────────────────────
+  {
+    id: 'vegan_protein',
+    categoria: 'dieta_especial',
+    titulo: 'Vegetariano/Vegano — complementación proteica y micronutrientes críticos',
+    guia_prompt: 'Incrementar objetivo proteico un 10-20% vs. omnívoro (menor digestibilidad y perfil de aminoácidos). Combinar fuentes: legumbres + cereales (complementación). B12: suplementación obligatoria (2.4 mcg/día mínimo). Hierro no hemo: consumir con VitC para aumentar absorción; evitar café/té 1h antes/después. Zinc: suplementar o priorizar semillas de calabaza, legumbres. Omega-3: microalgas DHA/EPA si vegano.',
+    referencias: ['Rogerson 2017 (JISSN)', 'Craig et al. 2009 (JADA)', 'Pawlak et al. 2013 (Nutr Rev)'],
+    tags: ['vegano', 'vegetariano', 'plant_based'],
+  },
+  {
+    id: 'sarcopenia_older',
+    categoria: 'poblacion',
+    titulo: 'Prevención de sarcopenia — adultos mayores de 60 años',
+    guia_prompt: 'Umbral de leucina más alto en mayores: necesitan ≥0.4 g/kg por toma para activar síntesis proteica (vs. 0.3 g/kg en jóvenes). Proteína total: 1.6-2.0 g/kg/día. Vitamina D ≥800 IU/día (deficiencia frecuente y clave para fuerza muscular). Calcio 1200 mg/día (mujeres >50). Distribuir proteína en 4 tomas equitativas — el patrón de distribución importa más que en jóvenes. Ejercicio de fuerza 2-3x/semana es sinérgico con la nutrición.',
+    referencias: ['Bauer et al. 2013 (JAMDA)', 'Deutz et al. 2017 (Clin Nutr)', 'PROT-AGE Study Group 2013'],
+    tags: ['sarcopenia', 'mayores', 'tercera_edad', 'masa_muscular'],
+  },
+  {
+    id: 'menopause_nutrition',
+    categoria: 'poblacion',
+    titulo: 'Menopausia — adaptaciones nutricionales',
+    guia_prompt: 'TDEE reducido ~200 kcal/día post-menopausia. Mayor tendencia a acumulación de grasa visceral — priorizar déficit moderado y ejercicio de fuerza. Calcio: 1200 mg/día. VitD: 800-2000 IU/día. Fitoestrógenos (soja, lino): evidencia moderada de alivio de sofocos. Proteína alta (1.6-2.0 g/kg) protege masa muscular en contexto de pérdida de estrógenos.',
+    referencias: ['Davis et al. 2012 (Maturitas)', 'NAMS Position Statement 2022', 'Messina 2014 (Maturitas)'],
+    tags: ['menopausia', 'climaterio', 'postmenopausia', 'mujer_mayor'],
+  },
+]
+
+// ── Detector de tags desde el perfil del cliente ──────────
+
+interface PerfilCliente {
+  objetivo?: string
+  tipo_entreno?: string[]
+  condiciones_salud?: string
+  restricciones?: string[]
+  segmento?: string
+  edad?: number
+  sexo?: string
+  nivel_actividad?: string
+}
+
+const TAG_NORMALIZER: Record<string, string[]> = {
+  perder_grasa: ['perder_grasa', 'perdida_peso', 'deficit'],
+  ganar_musculo: ['ganar_musculo', 'volumen', 'hipertrofia'],
+  rendimiento: ['rendimiento'],
+  mantener: [],
+  salud_general: [],
+  // Entrenamientos
+  running: ['running', 'resistencia', 'endurance'],
+  ciclismo: ['ciclismo', 'resistencia', 'endurance'],
+  triatlon: ['triatlon', 'resistencia', 'endurance'],
+  crossfit: ['crossfit', 'funcional', 'hiit'],
+  hyrox: ['hyrox', 'funcional', 'hiit'],
+  gym: ['gym', 'fuerza'],
+  natacion: ['resistencia', 'endurance'],
+  yoga: [],
+  // Condiciones (se detectan por keywords en condiciones_salud)
+  diabetes: ['diabetes', 'diabetes_tipo2', 'resistencia_insulina'],
+  hipotiroidismo: ['hipotiroidismo', 'tiroides', 'hashimoto'],
+  sop: ['sop', 'pcos', 'hormonal'],
+  // Dieta
+  vegano: ['vegano', 'plant_based'],
+  vegetariano: ['vegetariano', 'plant_based'],
+}
+
+export function seleccionarProtocolos(perfil: PerfilCliente): ProtocoloCientifico[] {
+  const tagsActivos = new Set<string>()
+
+  // Por objetivo
+  const tagsObjetivo = TAG_NORMALIZER[perfil.objetivo ?? ''] ?? []
+  tagsObjetivo.forEach(t => tagsActivos.add(t))
+
+  // Por tipo de entrenamiento
+  for (const entreno of perfil.tipo_entreno ?? []) {
+    const normalized = entreno.toLowerCase().replace(/\s+/g, '_')
+    const tags = TAG_NORMALIZER[normalized] ?? []
+    tags.forEach(t => tagsActivos.add(t))
+    // También añadir el entreno directamente como tag
+    tagsActivos.add(normalized)
+  }
+
+  // Por condiciones de salud (keyword detection)
+  const condiciones = (perfil.condiciones_salud ?? '').toLowerCase()
+  if (condiciones.includes('diabet')) {
+    TAG_NORMALIZER['diabetes'].forEach(t => tagsActivos.add(t))
+  }
+  if (condiciones.includes('hipotiroi') || condiciones.includes('hashimoto') || condiciones.includes('tiroides')) {
+    TAG_NORMALIZER['hipotiroidismo'].forEach(t => tagsActivos.add(t))
+  }
+  if (condiciones.includes('sop') || condiciones.includes('ovario poliquístico') || condiciones.includes('pcos')) {
+    TAG_NORMALIZER['sop'].forEach(t => tagsActivos.add(t))
+  }
+  if (condiciones.includes('sarcopenia') || condiciones.includes('masa muscular') && (perfil.edad ?? 0) >= 60) {
+    tagsActivos.add('sarcopenia')
+  }
+
+  // Por restricciones dietéticas
+  for (const r of perfil.restricciones ?? []) {
+    const rl = r.toLowerCase()
+    if (rl.includes('vegan')) TAG_NORMALIZER['vegano'].forEach(t => tagsActivos.add(t))
+    if (rl.includes('vegetar')) TAG_NORMALIZER['vegetariano'].forEach(t => tagsActivos.add(t))
+  }
+
+  // Por edad y sexo
+  if ((perfil.edad ?? 0) >= 60) tagsActivos.add('mayores')
+  if ((perfil.edad ?? 0) >= 50 && perfil.sexo === 'mujer') tagsActivos.add('menopausia')
+
+  // Seleccionar protocolos que tengan al menos 1 tag activo
+  const seleccionados = BASE_CONOCIMIENTO.filter(protocolo =>
+    protocolo.tags.some(tag => tagsActivos.has(tag))
+  )
+
+  // Limitar a 5 protocolos más relevantes (los que más tags tienen en común)
+  return seleccionados
+    .map(p => ({
+      protocolo: p,
+      score: p.tags.filter(t => tagsActivos.has(t)).length,
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map(({ protocolo }) => protocolo)
+}
+
+export function formatearEvidenciaParaPrompt(protocolos: ProtocoloCientifico[]): string {
+  if (protocolos.length === 0) return ''
+  return `
+═══ EVIDENCIA CIENTÍFICA APLICABLE A ESTE CLIENTE ═══
+${protocolos.map(p => `
+▸ ${p.titulo}
+  ${p.guia_prompt}
+  [Fuentes: ${p.referencias.join(', ')}]
+`).join('')}
+INSTRUCCIÓN: Aplica las guías anteriores cuando sean relevantes para este cliente. Son específicas para su perfil — no son opcionales.
+`
+}
+```
+
+- [ ] **Step 11.2: Verificar tipos**
+
+```bash
+npx tsc --noEmit 2>&1 | head -20
+```
+
+- [ ] **Step 11.3: Commit**
+
+```bash
+git add lib/knowledge-base.ts
+git commit -m "feat: base de conocimiento científica — 15 protocolos evidencia-based por perfil"
+```
+
+---
+
+## Task 12: Inyectar evidencia científica en el prompt de generación
+
+**Files:**
+- Modify: `app/api/generar-plan-inicial/route.ts`
+
+- [ ] **Step 12.1: Importar funciones de knowledge-base**
+
+Al inicio de `generar-plan-inicial/route.ts`, añadir el import:
+
+```typescript
+import { seleccionarProtocolos, formatearEvidenciaParaPrompt } from '@/lib/knowledge-base'
+```
+
+- [ ] **Step 12.2: Construir el perfil del cliente para el selector**
+
+Tras obtener `onboarding` y `perfil` de Supabase, construir el perfil:
+
+```typescript
+const perfilParaEvidencia = {
+  objetivo: onboarding.objetivo,
+  tipo_entreno: onboarding.tipo_entreno ?? [],
+  condiciones_salud: perfil?.condiciones_salud ?? '',
+  restricciones: onboarding.restricciones ?? [],
+  segmento: onboarding.segmento,
+  edad: cliente.edad ?? undefined,
+  sexo: cliente.sexo ?? undefined,
+}
+
+const protocolosSeleccionados = seleccionarProtocolos(perfilParaEvidencia)
+const evidenciaBlock = formatearEvidenciaParaPrompt(protocolosSeleccionados)
+```
+
+- [ ] **Step 12.3: Insertar evidencia en el prompt**
+
+En el string del `prompt`, insertar `${evidenciaBlock}` justo antes de `${metodologiaBlock}` (o del bloque de flags de personalización si no existe `metodologiaBlock` aún):
+
+```typescript
+// El prompt debe quedar así (fragmento del final):
+// ...
+// ${evidenciaBlock}
+// ${metodologiaBlock}
+// ═══ FLAGS DE PERSONALIZACIÓN CRÍTICOS ═══
+// ...
+// Responde SOLO con este JSON...
+```
+
+- [ ] **Step 12.4: Verificar**
+
+```bash
+npx tsc --noEmit 2>&1 | head -20
+```
+
+- [ ] **Step 12.5: Test manual — verificar que un plan con diabetes aplica el protocolo**
+
+Ejecutar en la consola del navegador (o via curl) un POST a `/api/generar-plan-inicial` con un `cliente_id` de un cliente de prueba que tenga `condiciones_salud` con "diabetes". Luego verificar en Supabase que en `registros_ia.prompt` aparece el bloque "EVIDENCIA CIENTÍFICA APLICABLE".
+
+- [ ] **Step 12.6: Commit**
+
+```bash
+git add app/api/generar-plan-inicial/route.ts
+git commit -m "feat: inyectar evidencia científica personalizada en prompt de generación de planes"
+```
+
+---
+
+## Task 10 (actualizada): Build final y push
+
+- [ ] **Step 10.1: Build completo**
+
+```bash
+cd /Users/carloscasanova/Desktop/Carlos/CLAUDE/NUTRICION/nutricoach
+npx next build 2>&1 | tail -20
+```
+
+Esperado: ✓ Build exitoso, 0 errores TypeScript.
+
+- [ ] **Step 10.2: Push a Vercel**
+
+```bash
+git push origin main
+```
+
+Vercel desplegará automáticamente.
+
+---
+
 ## Resumen de lo que se construye
 
 | Feature | Dónde se ve | Impacto |
 |---------|-------------|---------|
-| Metodología del coach | `/coach/metodologia` (nueva página) | Cada plan nuevo usa tus reglas reales |
-| Recetas en el plan | Panel revisar-plan del coach | El coach ve qué recetas encajan en cada comida |
-| Auto-trigger ya existe | — | El plan se genera solo al acabar onboarding |
+| Metodología del coach | `/coach/metodologia` (nueva página) | Cada plan usa las reglas del coach |
+| Base de conocimiento científica | `lib/knowledge-base.ts` | 15 protocolos evidence-based por categoría |
+| Selector de evidencia por perfil | Automático en generación de plan | El plan aplica protocolos relevantes para ESTE cliente |
+| Recetas en el plan | Panel revisar-plan | El coach ve qué recetas encajan por comida |
+| Tracking acceso portal | Automático en `app/cliente` | Señal para auto-coach |
 | Señales sin_portal + sin_entreno | Dashboard coach (AutoCoachPanel) | Detecta clientes que se "duermen" |

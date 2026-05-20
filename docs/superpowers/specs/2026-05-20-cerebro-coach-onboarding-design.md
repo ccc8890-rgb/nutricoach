@@ -12,19 +12,46 @@ Convertir NutriCoach en un sistema que amplifica la expertise de Carlos como die
 
 **Problema central:** El tiempo entre "cliente nuevo" y "cliente con plan activo" es demasiado largo. Los clientes pierden la motivación inicial si esperan más de pocas horas.
 
+**Visión ampliada (20-05-2026):** NutriCoach es multi-nicho por diseño. Carlos no se especializa en un único perfil de cliente. La IA debe ser capaz de atender a un atleta élite de triatlón, una mujer con hipotiroidismo que quiere perder peso, o un adolescente con sobrepeso — con el mismo nivel de rigor científico en cada caso. Para eso, el motor de planes debe seleccionar dinámicamente los protocolos y evidencia científica relevantes para cada cliente concreto, no aplicar siempre los mismos parámetros genéricos.
+
+**Producto vendible a otros coaches:** La capa de metodología del coach es white-label — cualquier otro dietista/entrenador puede configurar sus propias reglas y vender el sistema como su propio software.
+
 ---
 
 ## Arquitectura del sistema
 
 ```
-Perfil cliente (onboarding) 
-  + Metodología del coach (tabla BD)
+Perfil cliente (onboarding)
+  → Detector de perfil clínico/deportivo
+      ↓
+      Selecciona protocolos de la Base de Conocimiento
+      (papers, guías clínicas, estudios por patología/deporte/objetivo)
+      ↓
+  + Metodología del coach (sus reglas y filosofía)
   + Recetario NutriCoach (257+ recetas con macros)
-  → Motor IA (DeepSeek) 
-  → Plan con recetas reales + macros exactos
-  → Revisión express del coach (móvil, ≤ 2 min)
+  → Motor IA DeepSeek (recibe: perfil + evidencia seleccionada + metodología)
+  → Plan científicamente fundamentado, con recetas reales y macros exactos
+  → Revisión express del coach (≤ 2 min, móvil)
   → Plan activo para el cliente
 ```
+
+### Base de Conocimiento — Categorías de evidencia
+
+| Categoría | Ejemplos de protocolos |
+|-----------|----------------------|
+| Patologías metabólicas | Diabetes T2: timing CHO, IG, respuesta glucémica post-ejercicio |
+| Patologías tiroideas | Hipotiroidismo: requerimientos proteicos, selenio, yodo, adaptación metabólica |
+| Atleta élite | Periodización nutricional, carbo-loading, nutrición peri-entreno ACSM |
+| Atleta amateur/runner | ISSN guidelines, hidratación, timing proteico post-entreno |
+| Pérdida de grasa | Déficit calórico óptimo (Trexler 2014), preservación masa muscular en déficit |
+| Ganancia muscular | Surplus mínimo efectivo, RET + proteína (Morton 2018), creatina |
+| Recomposición | Condiciones para recomp simultánea (Barakat 2020) |
+| CrossFit/Funcional | CHO para WODs de alta intensidad, recuperación entre sesiones |
+| Running fondo | Umbral aeróbico, fat adaptation vs CHO (Volek), VO2max nutrition |
+| Ciclismo/Triatlón | Fueling en ruta, bebidas isotónicas, recuperación etapas |
+| Menopausia/PCOS | Resistencia a insulina, fitoestrógenos, calcio, VitD |
+| Vegetariano/Vegano | Complementación proteica, B12, hierro no hemo, zinc |
+| Sarcopenia/mayores | Leucina threshold, distribución proteína en comidas, vit D |
 
 ---
 
