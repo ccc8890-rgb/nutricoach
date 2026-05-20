@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { execSync } from 'child_process'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 
 // ──────────────────────────────────────────────
 // Estilos por categoría — variedad de entornos caseros
@@ -188,19 +189,12 @@ export async function POST(req: NextRequest) {
       if (refined) imageBuffer = refined
     }
 
-    // ── 3. Subir a Supabase Storage ──
+    // ── 3. Subir a Cloudinary ──
     if (imageBuffer) {
-      const path = `${receta_id}/auto_${Date.now()}.webp`
-      const { error: uploadError } = await supabaseService.storage
-        .from('recetas')
-        .upload(path, imageBuffer, { contentType: 'image/webp', upsert: true })
-
-      if (!uploadError) {
-        const { data: { publicUrl } } = supabaseService.storage
-          .from('recetas')
-          .getPublicUrl(path)
-        finalImageUrl = publicUrl
-      }
+      finalImageUrl = await uploadToCloudinary(imageBuffer, {
+        folder: 'nutricoach/recetas',
+        public_id: receta_id,
+      })
     }
 
     if (!finalImageUrl) {

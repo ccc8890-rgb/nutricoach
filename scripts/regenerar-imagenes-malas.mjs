@@ -26,6 +26,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { v2 as cloudinary } from 'cloudinary'
 import { readFileSync, existsSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -181,21 +182,36 @@ Resultado: foto auténtica de food blogger español, sin elementos extraños, so
     throw new Error('OpenAI edit: respuesta vacía')
 }
 
-// ── Supabase Storage ──────────────────────────────────────────────────────────
+// ── Cloudinary ────────────────────────────────────────────────────────────────
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
+
 function extractFilename(imagenUrl) {
     if (!imagenUrl) return null
     try { return new URL(imagenUrl).pathname.split('/').pop() } catch { return null }
 }
 
 async function subirImagen(buffer, recetaId) {
-    const path = `blog/${recetaId}.jpg`
-    const { error } = await sb.storage.from(BUCKET).upload(path, buffer, {
-        contentType: 'image/jpeg',
-        upsert: true,
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'nutricoach/recetas',
+          public_id: recetaId,
+          resource_type: 'image',
+          format: 'webp',
+          overwrite: true,
+          quality: 'auto:good',
+        },
+        (error, result) => {
+          if (error || !result) return reject(error ?? new Error('Cloudinary error'))
+          resolve(result.secure_url)
+        }
+      )
+      stream.end(buffer)
     })
-    if (error) throw new Error(`Storage: ${error.message}`)
-    const { data: { publicUrl } } = sb.storage.from(BUCKET).getPublicUrl(path)
-    return publicUrl
 }
 
 async function actualizarUrl(id, imagenUrl) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 
 export async function POST(
     request: NextRequest,
@@ -36,29 +37,16 @@ export async function POST(
         return NextResponse.json({ error: 'El archivo supera los 10 MB' }, { status: 400 })
     }
 
-    const fileName = `${plan.cliente_id}/${Date.now()}.${ext}`
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    let result = await db.storage
-        .from('fotos-progreso')
-        .upload(fileName, buffer, { contentType: file.type, upsert: false })
+    const folder = 'nutricoach/fotos-progreso/' + plan.cliente_id
+    const publicId = Date.now().toString()
+    const fotoUrl = await uploadToCloudinary(buffer, {
+      folder,
+      public_id: publicId,
+      format: ext === 'webp' ? 'webp' : 'jpg',
+    })
 
-    if (result.error?.message?.includes('not found')) {
-        await db.storage.createBucket('fotos-progreso', { public: false })
-        result = await db.storage
-            .from('fotos-progreso')
-            .upload(fileName, buffer, { contentType: file.type, upsert: false })
-    }
-
-    if (result.error) {
-        return NextResponse.json({ error: result.error.message }, { status: 500 })
-    }
-
-    // URL firmada válida 1 año (solo el coach puede acceder via API)
-    const { data: signed } = await db.storage
-        .from('fotos-progreso')
-        .createSignedUrl(fileName, 60 * 60 * 24 * 365)
-
-    return NextResponse.json({ url: signed?.signedUrl ?? null, path: fileName })
+    return NextResponse.json({ url: fotoUrl, path: folder + '/' + publicId })
 }

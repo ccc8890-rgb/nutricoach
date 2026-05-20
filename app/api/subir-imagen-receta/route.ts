@@ -13,6 +13,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 
 export async function POST(request: NextRequest) {
     try {
@@ -36,42 +37,17 @@ export async function POST(request: NextRequest) {
         // Convertir array de bytes a Buffer
         const imageBuffer = Buffer.from(buffer)
 
-        // Subir a Storage
-        let result = await supabase.storage
-            .from('recetas')
-            .upload(fileName, imageBuffer, {
-                contentType: 'image/webp',
-                upsert: true,
-            })
-
-        // Crear bucket si no existe
-        if (result.error?.message?.includes('not found')) {
-            await supabase.storage.createBucket('recetas', { public: true })
-            result = await supabase.storage
-                .from('recetas')
-                .upload(fileName, imageBuffer, {
-                    contentType: 'image/webp',
-                    upsert: true,
-                })
-        }
-
-        if (result.error) {
-            return NextResponse.json(
-                { error: result.error.message },
-                { status: 500 }
-            )
-        }
-
-        // Obtener URL pública
-        const { data: pub } = supabase.storage
-            .from('recetas')
-            .getPublicUrl(fileName)
+        // Subir a Cloudinary
+        const publicUrl = await uploadToCloudinary(imageBuffer, {
+            folder: 'nutricoach/recetas',
+            public_id: receta_id,
+        })
 
         // Actualizar la receta en BD
         const { error: updateError } = await supabase
             .from('recetas')
             .update({
-                imagen_url: pub.publicUrl,
+                imagen_url: publicUrl,
                 updated_at: new Date().toISOString(),
             } as any)
             .eq('id', receta_id)
@@ -85,7 +61,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            imagen_url: pub.publicUrl,
+            imagen_url: publicUrl,
             metodo,
         })
     } catch (err) {
