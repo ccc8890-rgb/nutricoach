@@ -1,32 +1,50 @@
 /**
  * hipercor.ts — Scraper para Hipercor España
  *
- * ❌ ESTADO: BLOQUEADO — Akamai WAF
+ * ✅ REPARADO (20-05-2026) — Puppeteer-extra + stealth plugin
  *
  * Hipercor pertenece al grupo El Corte Inglés y usa protección Akamai.
- * Diagnóstico (15-05-2026) con Playwright headless: "Access Denied"
- * en homepage y categorías. Misma situación que Día.
+ * Playwright headless normal es bloqueado ("Access Denied"), pero
+ * puppeteer-extra con stealth plugin lo evade correctamente.
  *
- * Se ha aplicado el fix __name pero el scraper no funcionará hasta
- * encontrar una estrategia para evadir Akamai (persistent context,
- * proxies residenciales, o API interna).
+ * DOM structure descubierta:
+ *   - Container: .food-product-preview-responsive
+ *   - Nombre: .food-product-preview-responsive__description
+ *   - Precio: .food-prices__price (dentro de __footer__price)
+ *   - Precio/kg: .food-prices__measurement-unit (texto: "13,86 € / Kg")
+ *   - Imagen: .food-product-preview-responsive__image img
+ *   - Link: .food-product-preview-responsive__link
+ *
+ * Estrategia: browser persistente, scroll progresivo, extracción precisa.
+ * Browser refresh cada 5 categorías para evitar memory leaks (patrón Lidl).
  *
  * Web: https://www.hipercor.es/supermercado/
  */
 
-import type { ScrapingConfig } from '../types'
 import type { ProductoRaw } from '../types'
-import { chromium } from 'playwright'
 
-export const configHipercor: ScrapingConfig = {
+// Es modules — import dinámico de puppeteer-extra
+let puppeteerExtra: any = null
+let StealthPlugin: any = null
+
+async function getPuppeteer() {
+    if (!puppeteerExtra) {
+        puppeteerExtra = (await import('puppeteer-extra')).default
+        StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default
+        puppeteerExtra.use(StealthPlugin())
+    }
+    return puppeteerExtra
+}
+
+export const configHipercor = {
     supermercado: {
         id: '',
-        nombre: 'Hipercor',
-        slug: 'hipercor',
+        nombre: 'Hipercor' as const,
+        slug: 'hipercor' as const,
     },
-    metodo: 'playwright',
+    metodo: 'playwright' as const,
     url_base: 'https://www.hipercor.es/supermercado',
-    rate_limit_ms: 1500,
+    rate_limit_ms: 2000,
     timeout_ms: 45000,
 }
 
@@ -59,7 +77,23 @@ function mapearProducto(p: HipercorProductExtraido, categoria?: string): Product
     }
 }
 
-/* ─── Lógica principal con Playwright ─── */
+/* ─── Categorías predefinidas ─── */
+
+const CATEGORIAS: { url: string; name: string }[] = [
+    { url: 'https://www.hipercor.es/supermercado/carniceria/', name: 'Carnicería' },
+    { url: 'https://www.hipercor.es/supermercado/pescaderia/', name: 'Pescadería' },
+    { url: 'https://www.hipercor.es/supermercado/frutas-verduras/', name: 'Frutas y Verduras' },
+    { url: 'https://www.hipercor.es/supermercado/lacteos-huevos/', name: 'Lácteos y Huevos' },
+    { url: 'https://www.hipercor.es/supermercado/pan-pasteleria/', name: 'Pan y Pastelería' },
+    { url: 'https://www.hipercor.es/supermercado/congelados/', name: 'Congelados' },
+    { url: 'https://www.hipercor.es/supermercado/despensa/', name: 'Despensa' },
+    { url: 'https://www.hipercor.es/supermercado/bebidas/', name: 'Bebidas' },
+    { url: 'https://www.hipercor.es/supermercado/aceite-especias-salsas/', name: 'Aceite, Especias y Salsas' },
+    { url: 'https://www.hipercor.es/supermercado/conservas/', name: 'Conservas' },
+    { url: 'https://www.hipercor.es/supermercado/arroz-pasta-legumbres/', name: 'Arroz, Pasta y Legumbres' },
+]
+
+/* ─── Lógica principal ─── */
 
 export async function scrapearHipercor(): Promise<{
     productos: ProductoRaw[]
@@ -69,58 +103,37 @@ export async function scrapearHipercor(): Promise<{
     const inicio = Date.now()
     const errores: string[] = []
     const productos: ProductoRaw[] = []
-    let browser
+    let browser: any = null
 
     try {
-        console.log('[Hipercor] Lanzando navegador Playwright...')
-        browser = await chromium.launch({
+        console.log('[Hipercor] Lanzando navegador Puppeteer-extra + stealth...')
+        const puppeteer = await getPuppeteer()
+        browser = await puppeteer.launch({
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
         })
 
-        const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            viewport: { width: 1920, height: 1080 },
-            locale: 'es-ES',
-        })
-
-        const page = await context.newPage()
-
-        // ── 1. Obtener categorías de supermercado ──
-        console.log('[Hipercor] Obteniendo categorías de supermercado...')
-        const categorias = await obtenerCategoriasAlimentacion(page)
-        console.log(`[Hipercor] ${categorias.length} categorías encontradas`)
-
-        // Fallback: categorías predefinidas
-        if (categorias.length === 0) {
-            console.log('[Hipercor] Usando categorías predefinidas...')
-            const CATS_PREDEFINIDAS = [
-                'https://www.hipercor.es/supermercado/carniceria/',
-                'https://www.hipercor.es/supermercado/pescaderia/',
-                'https://www.hipercor.es/supermercado/frutas-verduras/',
-                'https://www.hipercor.es/supermercado/lacteos-huevos/',
-                'https://www.hipercor.es/supermercado/pan-pasteleria/',
-                'https://www.hipercor.es/supermercado/congelados/',
-                'https://www.hipercor.es/supermercado/despensa/',
-                'https://www.hipercor.es/supermercado/bebidas/',
-                'https://www.hipercor.es/supermercado/aceite-especias-salsas/',
-                'https://www.hipercor.es/supermercado/conservas/',
-                'https://www.hipercor.es/supermercado/arroz-pasta-legumbres/',
-            ]
-            for (const url of CATS_PREDEFINIDAS) {
-                const name = url.split('/supermercado/').pop()?.replace(/-/g, ' ')?.replace(/\//g, '') || url
-                categorias.push({ url, name })
-            }
-        }
-
-        // ── 2. Scrapear cada categoría ──
-        const maxCats = Math.min(categorias.length, 15)
+        const maxCats = Math.min(CATEGORIAS.length, 11)
 
         for (let i = 0; i < maxCats; i++) {
-            const cat = categorias[i]
+            const cat = CATEGORIAS[i]
             console.log(`[Hipercor] Categoría ${i + 1}/${maxCats}: ${cat.name}`)
 
-            await new Promise(r => setTimeout(r, configHipercor.rate_limit_ms))
+            // Refresh browser cada 5 categorías para evitar memory leak
+            if (i > 0 && i % 5 === 0) {
+                console.log('[Hipercor] Refreshing browser (memory management)...')
+                await browser.close()
+                browser = await puppeteer.launch({
+                    headless: true,
+                    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+                })
+            }
+
+            const page = await browser.newPage()
+            await page.setViewport({ width: 1920, height: 1080 })
+            await page.setUserAgent(
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+            )
 
             try {
                 const prods = await scrapearCategoria(page, cat.url, cat.name)
@@ -132,7 +145,12 @@ export async function scrapearHipercor(): Promise<{
                 const msg = err instanceof Error ? err.message : String(err)
                 errores.push(`Error en categoría ${cat.name}: ${msg}`)
                 console.warn(`[Hipercor]   ❌ ${msg}`)
+            } finally {
+                await page.close().catch(() => { })
             }
+
+            // Rate limiting
+            await new Promise(r => setTimeout(r, configHipercor.rate_limit_ms))
         }
 
         console.log(`[Hipercor] ${productos.length} productos totales`)
@@ -141,149 +159,86 @@ export async function scrapearHipercor(): Promise<{
         errores.push(`Error general: ${msg}`)
         console.error('[Hipercor] Error:', msg)
     } finally {
-        if (browser) await browser.close()
+        if (browser) await browser.close().catch(() => { })
     }
 
     return { productos, errores, duracion_ms: Date.now() - inicio }
 }
 
 /**
- * Obtiene categorías desde la página principal de Hipercor.
- */
-async function obtenerCategoriasAlimentacion(
-    page: import('playwright').Page
-): Promise<{ url: string; name: string }[]> {
-    try {
-        await page.goto('https://www.hipercor.es/supermercado/', {
-            waitUntil: 'networkidle',
-            timeout: configHipercor.timeout_ms,
-        }).catch(() => { })
-
-        await page.waitForTimeout(4000)
-
-        const cats = await page.evaluate(`(() => {
-            var links = [];
-            var seen = new Set();
-            var anchors = document.querySelectorAll('a[href*="/supermercado/"]:not([href*="login"]):not([href*="carrito"]):not([href*="ayuda"])');
-            anchors.forEach(function(a) {
-                var href = a.href ? a.href.trim() : '';
-                var text = a.textContent ? a.textContent.trim() : '';
-                if (href && text && !seen.has(href) && text.length > 2 && href.indexOf('#') === -1) {
-                    seen.add(href);
-                    links.push({ url: href, name: text });
-                }
-            });
-            return links;
-        })()`) as { url: string; name: string }[]
-
-        return cats.filter(c => {
-            const path = new URL(c.url).pathname
-            const parts = path.split('/').filter(Boolean)
-            return parts.length >= 2 && parts[0] === 'supermercado' && !c.name.toLowerCase().includes('ofert')
-        })
-    } catch (err) {
-        return []
-    }
-}
-
-/**
  * Scrapea productos de una categoría de Hipercor.
+ * Usa puppeteer-extra (page.evaluate con arrow functions, OK en Puppeteer v24).
  */
 async function scrapearCategoria(
-    page: import('playwright').Page,
+    page: any,
     url: string,
     categoria: string
 ): Promise<HipercorProductExtraido[]> {
     await page.goto(url, {
-        waitUntil: 'networkidle',
+        waitUntil: 'domcontentloaded',
         timeout: configHipercor.timeout_ms,
     }).catch(() => { })
 
-    await page.waitForTimeout(4000)
+    // Esperar a que cargue contenido dinámico
+    await new Promise(r => setTimeout(r, 8000))
 
-    // Scroll para lazy loading
-    await page.evaluate(`(async () => {
-        var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
-        for (var i = 0; i < document.body.scrollHeight; i += 500) {
-            window.scrollTo(0, i);
-            await delay(500);
-        }
-    })()`)
+    // Scroll progresivo para lazy loading
+    for (const pct of [0.3, 0.6, 1.0]) {
+        await page.evaluate((p: number) => window.scrollTo(0, document.body.scrollHeight * p), pct)
+        await new Promise(r => setTimeout(r, 2000))
+    }
 
-    await page.waitForTimeout(1000)
+    // Extraer productos del DOM con selectores precisos
+    const prods = await page.evaluate(() => {
+        const items: any[] = []
+        const containers = document.querySelectorAll('.food-product-preview-responsive')
 
-    // Extraer productos del DOM
-    const prods = await page.evaluate<HipercorProductExtraido[]>(`(() => {
-        var items = [];
+        containers.forEach(container => {
+            const nameEl = container.querySelector('.food-product-preview-responsive__description')
+            const priceFooter = container.querySelector('.food-product-preview-responsive__footer__price')
+            const imgEl = container.querySelector('.food-product-preview-responsive__image img')
+            const linkEl = container.querySelector('.food-product-preview-responsive__link')
 
-        var cards = document.querySelectorAll(
-            'article[data-product], ' +
-            '[class*="product-card"], ' +
-            '[class*="product-item"], ' +
-            'li[class*="product"], ' +
-            '[data-testid*="product"], ' +
-            '.grid-item, ' +
-            '[class*="ProductCard"], ' +
-            '[class*="productContainer"]'
-        );
+            const name = nameEl?.textContent?.trim() || ''
 
-        cards.forEach(function(card) {
-            var nombreEl = card.querySelector(
-                '[class*="product-name"], ' +
-                '[class*="product-title"], ' +
-                '[class*="name"], ' +
-                'h3, h2, [class*="title"], ' +
-                '[data-product-name]'
-            );
-            var precioEl = card.querySelector(
-                '[class*="price"], ' +
-                '.current-price, [class*="precio"], ' +
-                '[data-price], [class*="offer-price"], ' +
-                '[class*="Price"]'
-            );
-            var precioKgEl = card.querySelector(
-                '[class*="unit-price"], ' +
-                '[class*="price-per-kg"], ' +
-                '[class*="base-price"], ' +
-                '[class*="reference-price"], ' +
-                '[class*="UnitPrice"]'
-            );
-            var urlEl = card.querySelector('a[href]');
-            var imgEl = card.querySelector('img');
-            var marcaEl = card.querySelector(
-                '[class*="brand"], [data-brand], [class*="marca"], [class*="Brand"]'
-            );
-            var cantidadEl = card.querySelector(
-                '[class*="quantity"], [class*="weight"], [class*="packaging"], ' +
-                '[data-quantity], [class*="amount"], [class*="Size"]'
-            );
+            // Precio actual
+            const priceEl = priceFooter?.querySelector('.food-prices__price')
+            const priceText = priceEl?.textContent?.trim() || ''
+            const priceMatch = priceText.match(/([\d.,]+)/)
+            const price = priceMatch ? parseFloat(priceMatch[1].replace(',', '.')) : 0
 
-            var nombre = (nombreEl && nombreEl.textContent && nombreEl.textContent.trim()) || '';
-            var precioTexto = (precioEl && precioEl.textContent && precioEl.textContent.replace(/[^\\d,]/g, '').replace(',', '.')) || '0';
-            var precio = parseFloat(precioTexto) || 0;
-            var precioKgTexto = (precioKgEl && precioKgEl.textContent && precioKgEl.textContent.replace(/[^\\d,]/g, '').replace(',', '.')) || '';
-            var precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined;
+            // Precio por kg (unitario)
+            const unitEl = priceFooter?.querySelector('.food-prices__measurement-unit')
+            const unitText = unitEl?.textContent?.trim() || ''
+            const kgMatch = unitText.match(/([\d.,]+)\s*€\s*\/\s*(kg|unidad|l|g|100\s*g)/i)
+            const priceKg = kgMatch ? parseFloat(kgMatch[1].replace(',', '.')) : undefined
 
-            var href = (urlEl && urlEl.href) || '';
-            if (href && href.indexOf('http') !== 0) {
-                href = 'https://www.hipercor.es' + href;
-            }
+            // Marca (a veces aparece como segundo texto en description)
+            const fullText = container.textContent || ''
+            const brandMatch = fullText.match(/\b(EL CORTE INGLES|HIPERCOR|PASSION MEAT|SELECTED|MAGNOLIA|WOMBAT|TWIN)\b/i)
+            const marca = brandMatch ? brandMatch[1].toUpperCase() : undefined
 
-            if (nombre && precio > 0) {
+            const linkAnchor = linkEl as HTMLAnchorElement | null
+            const href = linkAnchor?.href || ''
+            const fullUrl = href && href.startsWith('http') ? href :
+                href ? `https://www.hipercor.es${href.startsWith('/') ? '' : '/'}${href}` : ''
+
+            const imgInstance = imgEl as HTMLImageElement | null
+
+            if (name && price > 0) {
                 items.push({
-                    nombre: nombre,
-                    precio: precio,
-                    precioPorKg: precioKg,
-                    url: href,
-                    imagen: (imgEl && imgEl.src) || '',
-                    marca: (marcaEl && marcaEl.textContent && marcaEl.textContent.trim()) || undefined,
-                    cantidad: (cantidadEl && cantidadEl.textContent && cantidadEl.textContent.trim()) || undefined,
-                });
+                    nombre: name,
+                    precio: price,
+                    precioPorKg: priceKg,
+                    url: fullUrl,
+                    imagen: imgInstance?.src || '',
+                    marca,
+                })
             }
-        });
+        })
 
-        return items;
-    })()`)
+        return items
+    })
 
     return prods
 }

@@ -373,9 +373,10 @@ Todos los demás archivos compartidos en `lib/`, `components/`, `app/` (no lista
 | Eroski | 11 | Playwright | ✅ |
 | **Total** | **7,771** | | |
 | Lidl | 0 | Playwright | ❌ (web folletos) |
-| Dia | 0 | Playwright | ❌ (WAF) |
+| Dia | ~130 | API HTTP (SSR) | ✅ (reparado 20-05) |
+| Hipercor | ~308 | Puppeteer-extra+stealth | ✅ (reparado 20-05) |
+| El Corte Inglés | ~308 | Puppeteer-extra+stealth (vía Hipercor) | ✅ (reparado 20-05, mismo backend) |
 | Aldi | 0 | — | ❌ |
-| ECI/Hipercor | 0 | Playwright | ❌ (Akamai) |
 
 **Nota**: Alcampo 38 productos (dedup de 47 candidatos), Carrefour 20 (dedup de 35 candidatos). La deduplicacion es correcta — un mismo alimento solo aparece una vez por supermercado, que es el diseno de la BD (unique `supermercado_id + alimento_id`).
 

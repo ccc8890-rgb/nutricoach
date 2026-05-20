@@ -695,3 +695,115 @@ create policy "Cliente can view own protocolos" on public.protocolos_competicion
 
 create index if not exists idx_protocolos_cliente on public.protocolos_competicion(cliente_id);
 create index if not exists idx_protocolos_coach on public.protocolos_competicion(coach_id);
+
+-- ============================================================
+-- TABLA: invitaciones (onboarding autónomo de clientes)
+-- ============================================================
+create table if not exists public.invitaciones (
+    id uuid primary key default gen_random_uuid(),
+    token text unique not null default encode(gen_random_bytes(32), 'hex'),
+    coach_id uuid not null references public.profiles(id) on delete cascade,
+    email text,
+    usado boolean default false,
+    created_at timestamptz default now(),
+    expires_at timestamptz default now() + interval '7 days'
+);
+
+alter table public.invitaciones enable row level security;
+
+create policy "Coach can manage invitaciones" on public.invitaciones
+  for all using (coach_id = auth.uid());
+
+-- Columna: clientes.revisado_por_coach
+alter table public.clientes
+  add column if not exists revisado_por_coach boolean default true;
+
+create index if not exists idx_invitaciones_coach on public.invitaciones(coach_id);
+create index if not exists idx_invitaciones_token on public.invitaciones(token);
+
+-- ============================================================
+-- TABLA: knowledge_base (fichas de conocimiento científico)
+-- ============================================================
+create table if not exists public.knowledge_base (
+  id uuid primary key default gen_random_uuid(),
+  coach_id uuid references auth.users(id) on delete cascade,
+
+  disciplina text not null check (disciplina in (
+    'nutricion', 'hyrox', 'running', 'ciclismo', 'triatlon',
+    'hibrido', 'fuerza', 'recuperacion', 'general'
+  )),
+  categoria text not null check (categoria in (
+    'periodizacion', 'intensidad', 'volumen', 'fuerza',
+    'resistencia', 'hiit', 'zona2', 'competicion', 'recuperacion',
+    'proteina', 'hidratacion', 'suplementacion', 'patologia',
+    'composicion_corporal', 'metabolismo', 'metodologia', 'otro'
+  )),
+  tipo text not null default 'estudio' check (tipo in (
+    'estudio', 'meta_analisis', 'revision', 'guia_clinica',
+    'protocolo', 'metodologia', 'referencia', 'nota_propia'
+  )),
+
+  titulo text not null,
+  resumen text not null,
+  contenido_completo text,
+  puntos_clave text[],
+  fuente text,
+  url_origen text,
+  doi text,
+
+  tags text[] default '{}',
+  poblacion text[] default '{}',
+  condiciones text[] default '{}',
+  nivel_evidencia text check (nivel_evidencia in (
+    'meta_analisis', 'rct', 'revision_sistematica',
+    'estudio_observacional', 'opinion_experto', 'practica_clinica'
+  )),
+
+  fuente_tipo text default 'manual' check (fuente_tipo in (
+    'manual', 'scrapeado', 'doi', 'ia_generado'
+  )),
+  verificado boolean default false,
+  activo boolean default true,
+  busqueda tsvector,
+
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create index if not exists kb_coach_id_idx on public.knowledge_base(coach_id);
+create index if not exists kb_disciplina_idx on public.knowledge_base(disciplina);
+create index if not exists kb_busqueda_idx on public.knowledge_base using gin(busqueda);
+create index if not exists kb_tags_idx on public.knowledge_base using gin(tags);
+create index if not exists kb_condiciones_idx on public.knowledge_base using gin(condiciones);
+
+alter table public.knowledge_base enable row level security;
+
+create policy "coach_lee_conocimiento" on public.knowledge_base
+  for select using (coach_id is null or coach_id = auth.uid());
+create policy "coach_escribe_conocimiento" on public.knowledge_base
+  for insert with check (coach_id = auth.uid());
+create policy "coach_edita_conocimiento" on public.knowledge_base
+  for update using (coach_id = auth.uid());
+create policy "coach_borra_conocimiento" on public.knowledge_base
+  for delete using (coach_id = auth.uid());
+
+-- Trigger: actualizar busqueda tsvector automáticamente
+create or replace function public.kb_before_upsert()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  new.busqueda = to_tsvector(
+    'spanish'::regconfig,
+    coalesce(new.titulo, '') || ' ' ||
+    coalesce(new.resumen, '') || ' ' ||
+    coalesce(new.fuente, '') || ' ' ||
+    coalesce(array_to_string(new.tags, ' '), '') || ' ' ||
+    coalesce(array_to_string(new.condiciones, ' '), '')
+  );
+  return new;
+end; $$;
+
+drop trigger if exists kb_upsert on public.knowledge_base;
+create trigger kb_upsert
+  before insert or update on public.knowledge_base
+  for each row execute function public.kb_before_upsert();

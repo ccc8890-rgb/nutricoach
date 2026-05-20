@@ -2,7 +2,7 @@
 
 > Documento para que Claude lo revise al inicio de futuras sesiones sobre scraping.
 > Creado: 2026-05-10 tras auditoría de 15 archivos y corrección de 8 bugs.
-> Actualizado: 2026-05-16 — Añadida lección #11 sobre browser degradation y batch processing.
+> Actualizado: 2026-05-20 — Añadidas lecciones #12-14 sobre WAF bypass, Puppeteer-extra, y plataformas unificadas.
 
 ---
 
@@ -226,3 +226,103 @@ for (const lote of lotes) {
 - Args útiles para reducir footprint: `--disable-dev-shm-usage`, `--disable-gpu`, `--single-process`.
 
 **Archivo de referencia:** [`lidl.ts`](nutricoach-modulos/lib/scraping/supermercados/lidl.ts) — implementa batch processing con comentarios inline y lecciones aprendidas en el header.
+
+---
+
+## 🔴 12. WAF bypass: Akamai bloquea Playwright pero no curl (Día)
+
+**Problema:** Día usa Akamai WAF que detecta headless browsers. Playwright (normal, anti-automation, stealth JS) es bloqueado en todas las URLs. Pero curl con User-Agent real recibe HTTP 200 con HTML completo.
+
+**Causa raíz:** El WAF de Día solo inspecciona fingerprints de navegador (WebDriver, navigator.webdriver, etc.) pero no bloquea tráfico HTTP directo. El HTML que devuelve contiene SSR con datos de producto en JSON incrustado.
+
+**Solución — Estrategia de 3 pasos para diagnosticar:**
+```typescript
+// PASO 1 — Probar curl primero (gratis, rápido)
+// curl -A "Mozilla/5.0..." https://www.dia.es/compra-online/ | head -c 1000
+// Si devuelve 200 con HTML real → scraper HTTP directo es viable
+
+// PASO 2 — Si curl funciona, extraer JSON del SSR
+// Buscar "products": en el HTML, extraer con balanced bracket parser
+function extraerProductos(html: string): DiaSSRProduct[] {
+    const idx = html.indexOf('"products"')
+    // Buscar '[' y balancear corchetes
+    // JSON.parse() directo
+}
+
+// PASO 3 — 13 categorías con slugs e IDs, paginación vía ?page=N
+// URL: /compra-online/{slug}/c/{id}?page={n}
+```
+
+**Regla:** Antes de intentar evadir un WAF, probar con un simple `fetch()` con User-Agent real. Si devuelve HTML, ahorrarás horas de debugging con headless browsers.
+
+**Archivo de referencia:** [`dia.ts`](lib/scraping/supermercados/dia.ts) — scraper HTTP SSR completo.
+
+---
+
+## 🔴 13. Puppeteer-extra vs Playwright: cuándo usar cada uno
+
+**Problema:** Hipercor y El Corte Inglés usan Akamai que bloquea Playwright headless pero es vulnerable a Puppeteer-extra con stealth plugin. La pregunta es cuándo usar uno u otro.
+
+**Comparativa:**
+
+| Característica | Playwright | Puppeteer-extra+stealth |
+|---|---|---|
+| Mantenimiento | Microsoft (activo) | Comunidad (menos activo) |
+| API moderna | ✅ Arrow functions nativas | ⚠️ evaluate() con strings o arrow functions |
+| Evasión WAF | ❌ Básica (solo user-agent) | ✅ ~20 plugins de evasión |
+| TypeScript | ✅ Nativo | ⚠️ `.ts` no puede importar `.mjs`, usar dynamic import |
+| Instalación | `npm install playwright` | `npm install puppeteer-extra puppeteer-extra-plugin-stealth puppeteer` |
+| Bundle size | ~300MB (chromium incluido) | ~300MB (puppeteer incluye chromium también) |
+
+**Patrón para import dinámico (TypeScript + ESM):**
+```typescript
+// puppeteer-extra es ESM-only, TypeScript requiere import() dinámico
+let puppeteerExtra: any = null
+let StealthPlugin: any = null
+
+async function getPuppeteer() {
+    if (!puppeteerExtra) {
+        puppeteerExtra = (await import('puppeteer-extra')).default
+        StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default
+        puppeteerExtra.use(StealthPlugin())
+    }
+    return puppeteerExtra
+}
+```
+
+**Diferencias clave de API (Puppeteer v24 vs Playwright):**
+- ❌ `page.waitForTimeout()` — eliminado en Puppeteer v24. Usar `new Promise(r => setTimeout(r, ms))`
+- ⚠️ `page.evaluate()` con arrow functions — funciona en Puppeteer, a diferencia de Playwright donde causaba `__name is not defined`
+
+**Regla:** Usar Playwright para supermercados sin WAF. Usar Puppeteer-extra+stealth como segunda línea cuando Playwright falle. No mezclar ambos en el mismo scraper.
+
+**Archivos de referencia:** [`hipercor.ts`](lib/scraping/supermercados/hipercor.ts) (Puppeteer-extra), [`lidl.ts`](lib/scraping/supermercados/lidl.ts) (Playwright).
+
+---
+
+## 🟡 14. Plataformas unificadas: El Corte Inglés = Hipercor
+
+**Problema:** El Corte Inglés y Hipercor comparten el mismo backend de supermercado. Las URLs de ECI (`elcorteingles.es/supermercado/carniceria/`) redirigen a la homepage sin productos. Los productos reales están en `hipercor.es/supermercado/`.
+
+**Descubrimiento:**
+- `elcorteingles.es/supermercado/` → homepage genérica, sin productos, sin categorías funcionales
+- `hipercor.es/supermercado/carniceria/` → productos reales con DOM `.food-product-preview-responsive`
+- Ambas URLs comparten el mismo HTML structure, mismas clases CSS, mismos selectores
+- La marca "El Corte Inglés" aparece como texto en los productos (ej: "atún claro EL CORTE INGLES")
+
+**Solución:** No duplicar lógica. Hacer que el scraper de ECI llame al de Hipercor y re-etiquete los productos:
+```typescript
+import { scrapearHipercor } from './hipercor'
+
+export async function scrapearElCorteIngles() {
+    const result = await scrapearHipercor()
+    for (const p of result.productos) {
+        p.marca = p.marca === 'Hipercor' ? 'El Corte Inglés' : p.marca
+    }
+    return result
+}
+```
+
+**Regla:** Antes de escribir un scraper nuevo, verificar si comparte plataforma con otro ya existente. Señales: mismo HTML structure, mismas clases CSS (`food-*`), misma protección WAF, mismo grupo empresarial.
+
+**Archivo de referencia:** [`el-corte-ingles.ts`](lib/scraping/supermercados/el-corte-ingles.ts) — delega completamente en Hipercor.

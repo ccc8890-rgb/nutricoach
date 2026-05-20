@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, Brain, AlertTriangle, Clock, Users, ChevronLeft, Euro } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, Brain, AlertTriangle, Clock, Users, ChevronLeft, Euro, ShoppingCart, Eye, Copy, Check } from 'lucide-react'
 import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -86,6 +86,19 @@ export default function DetalleRecetaPage() {
   const [borrando, setBorrando] = useState(false)
   const [accionando, setAccionando] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
+  const [copiedToLista, setCopiedToLista] = useState(false)
+
+  async function copiarAListaCompra() {
+    const texto = ingredientes.map(ing => {
+      const nombre = ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente'
+      return `□ ${nombre} — ${ing.cantidad_gramos}g`
+    }).join('\n')
+    try {
+      await navigator.clipboard.writeText(texto)
+      setCopiedToLista(true)
+      setTimeout(() => setCopiedToLista(false), 2000)
+    } catch { /* fallback silencioso */ }
+  }
 
   async function handleEstado(nuevoEstado: 'aprobada' | 'descartada') {
     setAccionando(true)
@@ -458,6 +471,38 @@ export default function DetalleRecetaPage() {
                 </div>
               )}
 
+              {/* Acciones rápidas */}
+              <div className="flex flex-wrap gap-2 pt-2 border-t mt-2" style={{ borderColor: 'var(--border)' }}>
+                {ingredientes.length > 0 && (
+                  <button
+                    onClick={copiarAListaCompra}
+                    className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all duration-200"
+                    style={{
+                      borderColor: copiedToLista ? 'var(--success)' : 'var(--border)',
+                      color: copiedToLista ? 'var(--success)' : 'var(--text-secondary)',
+                      background: copiedToLista ? 'var(--success-bg)' : 'transparent',
+                    }}
+                    onMouseEnter={e => { if (!copiedToLista) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                    onMouseLeave={e => { if (!copiedToLista) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+                  >
+                    {copiedToLista ? <Check size={13} /> : <Copy size={13} />}
+                    {copiedToLista ? 'Copiado' : 'Copiar lista compra'}
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    const el = document.getElementById('escandallo-receta')
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }}
+                  className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all duration-200"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+                >
+                  <Euro size={13} /> Ver precios
+                </button>
+              </div>
+
               {/* Fuente */}
               {r.url_origen && (
                 <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
@@ -572,7 +617,8 @@ export default function DetalleRecetaPage() {
         {/* ═══════ ESCANDALLO DE COSTES ═══════ */}
         <FadeIn delay={0.42}>
           <div
-            className="rounded-2xl p-5 mb-6"
+            id="escandallo-receta"
+            className="rounded-2xl p-5 mb-6 scroll-mt-24"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
           >
             <h2 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>

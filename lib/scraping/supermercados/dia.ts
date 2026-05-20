@@ -1,59 +1,160 @@
 /**
- * dia.ts — Scraper para Día España
+ * dia.ts — Scraper para Día España v2
  *
- * Día bloquea accesos directos con fetch (Access Denied).
- * Estrategia: Playwright con navegador real para evitar bloqueos,
- * navegando por categorías de alimentación y extrayendo productos del DOM.
+ * ✅ REESCRITO 20-05-2026 v2: SSR directo via HTTP, sin Playwright
+ *
+ * Día usa Akamai WAF que bloquea cualquier headless browser (Playwright).
+ * PERO responde a peticiones HTTP directas con User-Agent real, devolviendo
+ * el HTML renderizado vía SSR con datos de producto incrustados en JSON.
+ *
+ * Estrategia:
+ *   - HTTP directo con fetch (User-Agent real)
+ *   - Extraer JSON de productos del HTML SSR vía regex
+ *   - 13 categorías predefinidas con paginación (?page=N)
+ *   - Sin Playwright, sin Chromium, sin memory leaks
  *
  * Web: https://www.dia.es/compra-online/
  */
 
-import type { ScrapingConfig } from '../types'
 import type { ProductoRaw } from '../types'
-import { chromium } from 'playwright'
 
-export const configDia: ScrapingConfig = {
-    supermercado: {
-        id: '',
-        nombre: 'Día',
-        slug: 'dia',
-    },
-    metodo: 'playwright',
-    url_base: 'https://www.dia.es',
-    rate_limit_ms: 1000,
-    timeout_ms: 30000,
+// ── Config ──
+
+const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+
+interface CategoriaDia {
+    id: string
+    slug: string
+    name: string
 }
 
-/* ─── Interfaces ─── */
+const CATEGORIAS: CategoriaDia[] = [
+    { id: 'AL00', slug: 'alimentacion', name: 'Alimentación' },
+    { id: 'AL01', slug: 'leches-y-postres', name: 'Leches y Postres' },
+    { id: 'AL02', slug: 'huevos', name: 'Huevos' },
+    { id: 'AL03', slug: 'aceite', name: 'Aceite' },
+    { id: 'AL04', slug: 'arroz-pasta-legumbres', name: 'Arroz, Pasta y Legumbres' },
+    { id: 'AL05', slug: 'pan-panaderia', name: 'Pan y Panadería' },
+    { id: 'AL06', slug: 'cereales-y-galletas', name: 'Cereales y Galletas' },
+    { id: 'AL07', slug: 'chocolates-y-dulces', name: 'Chocolates y Dulces' },
+    { id: 'AL08', slug: 'conservas', name: 'Conservas' },
+    { id: 'AL09', slug: 'congelados', name: 'Congelados' },
+    { id: 'AL10', slug: 'bebidas', name: 'Bebidas' },
+    { id: 'AL11', slug: 'salsas-especias', name: 'Salsas y Especias' },
+    { id: 'AL12', slug: 'frutos-secos', name: 'Frutos Secos' },
+]
 
-interface DiaProductExtraido {
-    nombre: string
-    precio: number
-    precioPorKg?: number
+const MAX_PAGINAS = 10          // Máximo de páginas por categoría
+const RATE_LIMIT_MS = 800       // ms entre peticiones
+
+// ── Interfaces de la API SSR ──
+
+interface DiaSSRProduct {
+    brand: string
+    display_name: string
+    image: string
+    prices: {
+        currency: string
+        price: number
+        price_per_unit: number
+        measure_unit: string
+        is_promo_price: boolean
+    }
+    sku_id: string
     url: string
-    imagen: string
-    marca?: string
-    cantidad?: string
 }
 
-/* ─── Mapeo ─── */
+// ── Mapeo ──
 
-function mapearProducto(p: DiaProductExtraido, categoria?: string): ProductoRaw {
+function mapearProducto(p: DiaSSRProduct, categoria: string): ProductoRaw {
     return {
-        nombre: p.nombre,
-        precio_actual: p.precio,
-        precio_por_kg: p.precioPorKg,
-        unidad: 'kg',
-        url_producto: p.url,
-        imagen_url: p.imagen || undefined,
-        marca: p.marca || 'Día',
-        cantidad: p.cantidad || undefined,
+        nombre: p.display_name,
+        precio_actual: p.prices.price,
+        precio_por_kg: p.prices.price_per_unit || undefined,
+        unidad: p.prices.measure_unit === 'KILO' ? 'kg' : 'unidad',
+        url_producto: p.url.startsWith('http') ? p.url : `https://www.dia.es${p.url}`,
+        imagen_url: p.image
+            ? (p.image.startsWith('http') ? p.image : `https://www.dia.es${p.image}`)
+            : undefined,
+        marca: p.brand || 'Día',
+        cantidad: undefined,
         disponible: true,
         categoria,
     }
 }
 
-/* ─── Lógica principal con Playwright ─── */
+// ── Extracción JSON del HTML SSR ──
+
+/**
+ * Busca "products": en el HTML y extrae el array JSON balanceando corchetes.
+ * Día renderiza los productos vía SSR en JSON incrustado en el HTML.
+ * El patrón es: "products":[{"brand":"...", ...}]
+ */
+function extraerProductos(html: string): DiaSSRProduct[] {
+    const PRODUCTS_MARKER = '"products"'
+    const idx = html.indexOf(PRODUCTS_MARKER)
+    if (idx === -1) return []
+
+    // Buscar el '[' después de "products":
+    const startIdx = html.indexOf('[', idx + PRODUCTS_MARKER.length)
+    if (startIdx === -1) return []
+
+    // Balancear corchetes para encontrar el cierre del array
+    let depth = 0
+    let endIdx = -1
+    for (let i = startIdx; i < html.length; i++) {
+        if (html[i] === '[') depth++
+        else if (html[i] === ']') {
+            depth--
+            if (depth === 0) {
+                endIdx = i
+                break
+            }
+        }
+    }
+
+    if (endIdx === -1) return []
+
+    const jsonStr = html.slice(startIdx, endIdx + 1)
+    if (jsonStr.length < 10) return []
+
+    try {
+        return JSON.parse(jsonStr) as DiaSSRProduct[]
+    } catch {
+        return []
+    }
+}
+
+// ── Petición HTTP a una categoría ──
+
+async function fetchCategoria(cat: CategoriaDia, pagina: number): Promise<{ productos: DiaSSRProduct[]; hasNext: boolean }> {
+    const url = `https://www.dia.es/compra-online/${cat.slug}/c/${cat.id}?page=${pagina}`
+
+    const response = await fetch(url, {
+        headers: {
+            'User-Agent': USER_AGENT,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'es-ES,es;q=0.9',
+            'Referer': 'https://www.dia.es/compra-online/',
+        },
+        signal: AbortSignal.timeout(30000),
+    })
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status} para ${url}`)
+    }
+
+    const html = await response.text()
+
+    // Detectar si hay página siguiente
+    const hasNext = html.includes(`page=${pagina + 1}`) ||
+        html.includes(`page\\u003d${pagina + 1}`)
+
+    const productos = extraerProductos(html)
+    return { productos, hasNext }
+}
+
+// ── Scraper principal ──
 
 export async function scrapearDia(): Promise<{
     productos: ProductoRaw[]
@@ -63,228 +164,40 @@ export async function scrapearDia(): Promise<{
     const inicio = Date.now()
     const errores: string[] = []
     const productos: ProductoRaw[] = []
-    let browser
 
-    try {
-        console.log('[Día] Lanzando navegador Playwright...')
-        browser = await chromium.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        })
+    for (let i = 0; i < CATEGORIAS.length; i++) {
+        const cat = CATEGORIAS[i]
+        console.log(`[Día v2] Categoría ${i + 1}/${CATEGORIAS.length}: ${cat.name} (${cat.slug})`)
 
-        const context = await browser.newContext({
-            userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            viewport: { width: 1920, height: 1080 },
-            locale: 'es-ES',
-        })
+        let pagina = 1
+        let productosCat = 0
 
-        const page = await context.newPage()
-
-        // ── 1. Obtener categorías de alimentación ──
-        console.log('[Día] Obteniendo categorías de alimentación...')
-        const categorias = await obtenerCategoriasAlimentacion(page)
-        console.log(`[Día] ${categorias.length} categorías de alimentación`)
-
-        if (categorias.length === 0) {
-            // Fallback: usar categorías predefinidas
-            console.log('[Día] Usando categorías predefinidas...')
-            const CATS_PREDEFINIDAS = [
-                'https://www.dia.es/compra-online/alimentacion/c/AL00',
-                'https://www.dia.es/compra-online/leches-y-postres/c/AL01',
-                'https://www.dia.es/compra-online/huevos/c/AL02',
-                'https://www.dia.es/compra-online/aceite/c/AL03',
-                'https://www.dia.es/compra-online/arroz-pasta-legumbres/c/AL04',
-                'https://www.dia.es/compra-online/pan-panaderia/c/AL05',
-                'https://www.dia.es/compra-online/cereales-y-galletas/c/AL06',
-                'https://www.dia.es/compra-online/chocolates-y-dulces/c/AL07',
-                'https://www.dia.es/compra-online/conservas/c/AL08',
-                'https://www.dia.es/compra-online/congelados/c/AL09',
-                'https://www.dia.es/compra-online/bebidas/c/AL10',
-                'https://www.dia.es/compra-online/salsas-especias/c/AL11',
-                'https://www.dia.es/compra-online/frutos-secos/c/AL12',
-            ]
-            for (const url of CATS_PREDEFINIDAS) {
-                const name = url.split('/c/').pop()?.replace(/-/g, ' ') || url
-                categorias.push({ url, name })
-            }
-        }
-
-        // ── 2. Scrapear cada categoría ──
-        const maxCats = Math.min(categorias.length, 15)
-
-        for (let i = 0; i < maxCats; i++) {
-            const cat = categorias[i]
-            console.log(`[Día] Categoría ${i + 1}/${maxCats}: ${cat.name}`)
-
-            await new Promise(r => setTimeout(r, configDia.rate_limit_ms))
+        while (pagina <= MAX_PAGINAS) {
+            await new Promise(r => setTimeout(r, RATE_LIMIT_MS))
 
             try {
-                const prods = await scrapearCategoria(page, cat.url, cat.name)
+                const { productos: prods, hasNext } = await fetchCategoria(cat, pagina)
+                if (prods.length === 0) break  // Sin más productos
+
                 for (const p of prods) {
                     productos.push(mapearProducto(p, cat.name))
                 }
-                console.log(`[Día]   → ${prods.length} productos`)
+                productosCat += prods.length
+                console.log(`[Día v2]   Página ${pagina}: ${prods.length} productos`)
+
+                if (!hasNext) break
+                pagina++
             } catch (err) {
                 const msg = err instanceof Error ? err.message : String(err)
-                errores.push(`Error en categoría ${cat.name}: ${msg}`)
-                console.warn(`[Día]   ❌ ${msg}`)
+                errores.push(`Error en ${cat.name} página ${pagina}: ${msg}`)
+                console.warn(`[Día v2]   ❌ Página ${pagina}: ${msg}`)
+                break
             }
         }
 
-        console.log(`[Día] ${productos.length} productos totales`)
-    } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        errores.push(`Error general: ${msg}`)
-        console.error('[Día] Error:', msg)
-    } finally {
-        if (browser) await browser.close()
+        console.log(`[Día v2]   → ${productosCat} productos en total`)
     }
 
+    console.log(`[Día v2] ${productos.length} productos totales, ${errores.length} errores`)
     return { productos, errores, duracion_ms: Date.now() - inicio }
-}
-
-/**
- * Obtiene las URLs de categorías de alimentación desde la página principal.
- */
-async function obtenerCategoriasAlimentacion(
-    page: import('playwright').Page
-): Promise<{ url: string; name: string }[]> {
-    try {
-        await page.goto('https://www.dia.es/compra-online/', {
-            waitUntil: 'networkidle',
-            timeout: configDia.timeout_ms,
-        }).catch(() => { })
-
-        await page.waitForTimeout(3000)
-
-        const cats = await page.evaluate<{ url: string; name: string }[]>(`
-            (() => {
-                const links = [];
-                const seen = new Set();
-
-                const anchors = document.querySelectorAll(
-                    'a[href*="/compra-online/"]:not([href*="login"]):not([href*="carrito"])'
-                );
-
-                anchors.forEach(a => {
-                    const href = a.href?.trim();
-                    const text = a.textContent?.trim();
-                    if (href && text && !seen.has(href) && text.length > 3 && href.includes('/c/')) {
-                        seen.add(href);
-                        links.push({ url: href, name: text });
-                    }
-                });
-
-                return links;
-            })()
-        `)
-
-        return cats
-    } catch (err) {
-        return []
-    }
-}
-
-/**
- * Scrapea productos de una categoría de Día.
- */
-async function scrapearCategoria(
-    page: import('playwright').Page,
-    url: string,
-    categoria: string
-): Promise<DiaProductExtraido[]> {
-    await page.goto(url, {
-        waitUntil: 'networkidle',
-        timeout: configDia.timeout_ms,
-    }).catch(() => { })
-
-    await page.waitForTimeout(3000)
-
-    // Scroll para lazy loading
-    await page.evaluate(`
-        (async () => {
-            const delay = (ms) => new Promise(r => setTimeout(r, ms));
-            for (let i = 0; i < document.body.scrollHeight; i += 500) {
-                window.scrollTo(0, i);
-                await delay(400);
-            }
-        })()
-    `)
-
-    await page.waitForTimeout(1000)
-
-    // Extraer productos del DOM
-    const prods = await page.evaluate<{
-        nombre: string; precio: number; precioPorKg?: number;
-        url: string; imagen: string; marca?: string; cantidad?: string
-    }[]>(`
-        (() => {
-            const items = [];
-
-            const cards = document.querySelectorAll(
-                'article[data-product], ' +
-                '[class*="product-card"], ' +
-                '[class*="product-item"], ' +
-                'li[class*="product"], ' +
-                '[data-testid*="product"], ' +
-                '.product-grid [class*="item"]'
-            );
-
-            cards.forEach(card => {
-                const nombreEl = card.querySelector(
-                    '[class*="product-name"], ' +
-                    '[class*="product-title"], ' +
-                    '[class*="name"], ' +
-                    'h3, h2, [class*="brand"] + [class*="name"]'
-                );
-                const precioEl = card.querySelector(
-                    '[class*="price"], ' +
-                    '.current-price, .offer-price, ' +
-                    '[data-price], [class*="precio"]'
-                );
-                const precioKgEl = card.querySelector(
-                    '[class*="unit-price"], ' +
-                    '[class*="price-per-kg"], ' +
-                    '[class*="base-price"], ' +
-                    '[class*="reference"]'
-                );
-                const urlEl = card.querySelector('a[href]');
-                const imgEl = card.querySelector('img');
-                const marcaEl = card.querySelector(
-                    '[class*="brand"], [data-brand], [class*="marca"]'
-                );
-                const cantidadEl = card.querySelector(
-                    '[class*="quantity"], [class*="weight"], [class*="amount"], ' +
-                    '[data-quantity], [class*="packaging"]'
-                );
-
-                const nombre = nombreEl?.textContent?.trim() || '';
-                const precioTexto = precioEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '0';
-                const precio = parseFloat(precioTexto) || 0;
-                const precioKgTexto = precioKgEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.') || '';
-                const precioKg = precioKgTexto ? parseFloat(precioKgTexto) : undefined;
-
-                let href = urlEl?.href || '';
-                if (href && !href.startsWith('http')) {
-                    href = 'https://www.dia.es' + href;
-                }
-
-                if (nombre && precio > 0) {
-                    items.push({
-                        nombre,
-                        precio,
-                        precioPorKg: precioKg,
-                        url: href,
-                        imagen: imgEl?.src || '',
-                        marca: marcaEl?.textContent?.trim() || undefined,
-                        cantidad: cantidadEl?.textContent?.trim() || undefined,
-                    });
-                }
-            });
-
-            return items;
-        })()
-    `)
-
-    return prods
 }

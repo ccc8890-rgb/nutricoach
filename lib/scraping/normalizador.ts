@@ -80,13 +80,13 @@ const SINONIMOS: Record<string, string> = {
     'yogures': 'yogur',
     // Aceite
     'aove': 'aceite de oliva virgen extra',
-    'aceite oliva virgen extra': 'aceite de oliva virgen extra',
-    'aceite oliva virgen': 'aceite de oliva virgen',
+    'aceite oliva virgen extra': 'aceite de oliva',
+    'aceite oliva virgen': 'aceite de oliva',
     'aceite oliva': 'aceite de oliva',
     'aceite girasol': 'aceite de girasol',
     // Leche
-    'leche entera': 'leche entera',
-    'leche semidesnatada': 'leche semidesnatada',
+    'leche entera': 'leche',
+    'leche semidesnatada': 'leche',
     'leche desnatada': 'leche desnatada',
     'leche sin lactosa': 'leche sin lactosa',
     'leche deslactosada': 'leche sin lactosa',
@@ -97,13 +97,14 @@ const SINONIMOS: Record<string, string> = {
     'carne molida': 'carne picada',
     'pollo': 'pollo',
     'pollo entero': 'pollo',
-    'pechuga pollo': 'pechuga de pollo',
-    'pechuga de pollo': 'pechuga de pollo',
-    'muslo pollo': 'muslo de pollo',
-    'muslo de pollo': 'muslo de pollo',
-    'contramuslo': 'contramuslo de pollo',
-    'ala pollo': 'ala de pollo',
-    'ala de pollo': 'ala de pollo',
+    'pechuga pollo': 'pollo',
+    'pechuga de pollo': 'pollo',
+    'muslo pollo': 'pollo',
+    'muslo de pollo': 'pollo',
+    'contramuslo': 'pollo',
+    'contramuslos pollo': 'pollo',
+    'ala pollo': 'pollo',
+    'ala de pollo': 'pollo',
     // Cerdo
     'lomo cerdo': 'lomo de cerdo',
     'lomo de cerdo': 'lomo de cerdo',
@@ -123,6 +124,7 @@ const SINONIMOS: Record<string, string> = {
     'atún claro': 'atún',
     'atún en aceite': 'atún',
     'atún en aceite oliva': 'atún',
+    'atún en conserva': 'atún',
     'atún en escabeche': 'atún en escabeche',
     'atún natural': 'atún',
     // Huevos
@@ -145,6 +147,8 @@ const SINONIMOS: Record<string, string> = {
     'tomate ensalada': 'tomate',
     'tomate cherry': 'tomate cherry',
     'tomates cherry': 'tomate cherry',
+    'tomate frito': 'tomate',
+    'tomate natural triturado': 'tomate',
     'cebollas': 'cebolla',
     'patatas': 'patata',
     'papas': 'patata',
@@ -172,6 +176,11 @@ const SINONIMOS: Record<string, string> = {
     'judias': 'judía',
     'frijoles': 'alubia',
     'porotos': 'alubia',
+    // Harinas
+    'harina de trigo': 'harina',
+    'harina de avena': 'harina de avena',
+    'harina de almendra': 'harina de almendra',
+    'harina de coco': 'harina de coco',
     // Arroz
     'arroz redondo': 'arroz',
     'arroz bomba': 'arroz',
@@ -248,6 +257,19 @@ const SINONIMOS: Record<string, string> = {
     'ciabatta': 'pan chapata',
     'pan de pueblo': 'pan',
     'pan rustico': 'pan rústico',
+    // Sal / especias
+    'sal marina': 'sal',
+    'sal del himalaya': 'sal',
+    'sal rosa': 'sal',
+    'pimienta negra molida': 'pimienta',
+    'pimienta blanca molida': 'pimienta',
+    // Azúcares
+    'azucar blanca': 'azúcar',
+    'azúcar blanco': 'azúcar',
+    'azucar moreno': 'azúcar moreno',
+    'azúcar moreno': 'azúcar moreno',
+    'azucar integral': 'azúcar moreno',
+    'azucar de coco': 'azúcar de coco',
 }
 
 /** Caracteres acentuados → su equivalente sin acento */

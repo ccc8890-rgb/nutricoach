@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, Search, BookOpen, Clock, Users, Inbox, AlertTriangle, Calendar, Sparkles, Hash } from 'lucide-react'
 import { StaggerList, StaggerItem, FadeIn, PageTransition } from '@/components/ui/Motion'
-import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
+import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
 
@@ -60,6 +60,7 @@ type RecetaRow = {
   url_origen?: string | null
   tipo_plato?: string | null
   estado?: string | null
+  intolerancias?: string[] | null
   kcal_por_porcion?: number | null
   proteinas_por_porcion?: number | null
   carbohidratos_por_porcion?: number | null
@@ -79,6 +80,9 @@ export default function RecetasPage() {
   const [metodoCoccion, setMetodoCoccion] = useState('Todos')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
+  const [rangoKcal, setRangoKcal] = useState<string | null>(null)
+  const [tiempoPrep, setTiempoPrep] = useState<string | null>(null)
+  const [intoleranciaFilter, setIntoleranciaFilter] = useState<string | null>(null)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [tagOpciones, setTagOpciones] = useState<string[]>([])
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente')
@@ -93,7 +97,7 @@ export default function RecetasPage() {
 
         const { data, error } = await supabase
           .from('recetas')
-          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, created_at')
+          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, intolerancias, created_at')
           .or(`coach_id.eq.${user.id},coach_id.is.null`)
           .eq('estado', 'aprobada')
           .order('created_at', { ascending: false })
@@ -126,6 +130,32 @@ export default function RecetasPage() {
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
       const matchTag = !tagFilter || (Array.isArray(r.tags) && r.tags.includes(tagFilter))
 
+      // Filtro rango kcal
+      let matchKcal = true
+      if (rangoKcal && r.kcal != null) {
+        if (rangoKcal === '<300') matchKcal = r.kcal < 300
+        else if (rangoKcal === '300-600') matchKcal = r.kcal >= 300 && r.kcal <= 600
+        else if (rangoKcal === '>600') matchKcal = r.kcal > 600
+      } else if (rangoKcal) {
+        matchKcal = false // si el filtro está activo pero la receta no tiene kcal, no pasa
+      }
+
+      // Filtro tiempo preparación
+      let matchTiempo = true
+      if (tiempoPrep) {
+        const totalMin = (r.tiempo_prep_min ?? 0) + (r.tiempo_coccion_min ?? 0)
+        if (tiempoPrep === '<15') matchTiempo = totalMin > 0 && totalMin < 15
+        else if (tiempoPrep === '15-30') matchTiempo = totalMin >= 15 && totalMin <= 30
+        else if (tiempoPrep === '>30') matchTiempo = totalMin > 30
+      }
+
+      // Filtro intolerancia
+      let matchIntolerancia = true
+      if (intoleranciaFilter) {
+        const recetaIntolerancias = r.intolerancias ?? []
+        matchIntolerancia = recetaIntolerancias.includes(intoleranciaFilter)
+      }
+
       let matchFecha = true
       if (r.created_at) {
         const fechaReceta = new Date(r.created_at)
@@ -138,7 +168,7 @@ export default function RecetasPage() {
           matchFecha = matchFecha && fechaReceta <= hasta
         }
       }
-      return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchFecha
+      return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchKcal && matchTiempo && matchIntolerancia && matchFecha
     })
       .sort((a, b) => {
         if (!a.created_at || !b.created_at) return 0
@@ -315,7 +345,108 @@ export default function RecetasPage() {
             </div>
           )}
 
-          {/* Filtros extra: fecha + orden */}
+          {/* ═══ Rango kcal — chips ═══ */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+            <span className="text-xs flex items-center gap-1 px-2 font-medium" style={{ color: 'var(--text-muted)' }}>
+              <Sparkles size={12} />
+              Kcal
+            </span>
+            {[
+              { value: '<300', label: '< 300' },
+              { value: '300-600', label: '300–600' },
+              { value: '>600', label: '> 600' },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setRangoKcal(rangoKcal === opt.value ? null : opt.value)}
+                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
+                style={rangoKcal === opt.value
+                  ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
+                  : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
+                onMouseEnter={e => { if (rangoKcal !== opt.value) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                onMouseLeave={e => { if (rangoKcal !== opt.value) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+              >
+                {opt.label}
+              </button>
+            ))}
+            {rangoKcal && (
+              <button
+                onClick={() => setRangoKcal(null)}
+                className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* ═══ Tiempo preparación — chips ═══ */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+            <span className="text-xs flex items-center gap-1 px-2 font-medium" style={{ color: 'var(--text-muted)' }}>
+              <Clock size={12} />
+              Tiempo
+            </span>
+            {[
+              { value: '<15', label: '< 15min' },
+              { value: '15-30', label: '15–30min' },
+              { value: '>30', label: '> 30min' },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setTiempoPrep(tiempoPrep === opt.value ? null : opt.value)}
+                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
+                style={tiempoPrep === opt.value
+                  ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
+                  : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
+                onMouseEnter={e => { if (tiempoPrep !== opt.value) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                onMouseLeave={e => { if (tiempoPrep !== opt.value) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+              >
+                {opt.label}
+              </button>
+            ))}
+            {tiempoPrep && (
+              <button
+                onClick={() => setTiempoPrep(null)}
+                className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* ═══ Intolerancias — chips ═══ */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+            <span className="text-xs flex items-center gap-1 px-2 font-medium" style={{ color: 'var(--text-muted)' }}>
+              <AlertTriangle size={12} />
+              Intolerancias
+            </span>
+            {intoleranciaFilter && (
+              <button
+                onClick={() => setIntoleranciaFilter(null)}
+                className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
+                ✕
+              </button>
+            )}
+            {INTOLERANCIAS.map(i => (
+              <button
+                key={i}
+                onClick={() => setIntoleranciaFilter(intoleranciaFilter === i ? null : i)}
+                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
+                style={intoleranciaFilter === i
+                  ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
+                  : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
+                onMouseEnter={e => { if (intoleranciaFilter !== i) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                onMouseLeave={e => { if (intoleranciaFilter !== i) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+              >
+                {i}
+              </button>
+            ))}
+          </div>
+
+          {/* ═══ Filtros extra: fecha + orden ═══ */}
           <div className="flex items-center gap-2 text-xs flex-wrap mb-6">
             <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
             <span style={{ color: 'var(--text-secondary)' }}>Creada entre</span>
