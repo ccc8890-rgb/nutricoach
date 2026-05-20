@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, CheckCircle2, Circle, RotateCcw, ChevronDown, ChevronUp, Play, Pause, Trophy, Loader2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Circle, RotateCcw, ChevronDown, ChevronUp, Play, Pause, Trophy, Loader2, Info, X } from 'lucide-react'
 import Link from 'next/link'
 
 interface EjercicioSesion {
@@ -70,6 +70,7 @@ export default function EjecucionSesionPage() {
   const [guardando, setGuardando] = useState(false)
   const [guardadoOk, setGuardadoOk] = useState(false)
   const sesionStartRef = useRef(Date.now())
+  const [demoEjId, setDemoEjId] = useState<string | null>(null)
 
   useEffect(() => { loadSesion() }, [id])
 
@@ -165,6 +166,11 @@ export default function EjecucionSesionPage() {
   function resetTimer() {
     setTimerRunning(false)
     setTimerLeft(timerTotal)
+  }
+
+  function extractYouTubeId(url: string): string | null {
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&?\/\s]+)/)
+    return match ? match[1] : null
   }
 
   function marcarSet(ejId: string, setIdx: number) {
@@ -441,12 +447,26 @@ export default function EjecucionSesionPage() {
                 )}
 
                 <div className="flex-1 min-w-0">
-                  <p
-                    className="font-semibold text-sm"
-                    style={{ color: isDone ? 'var(--text-muted)' : 'var(--text)' }}
-                  >
-                    {ej.ejercicio?.nombre}
-                  </p>
+                  <div className="flex items-center gap-1">
+                    <p
+                      className="font-semibold text-sm"
+                      style={{ color: isDone ? 'var(--text-muted)' : 'var(--text)' }}
+                    >
+                      {ej.ejercicio?.nombre}
+                    </p>
+                    {ej.ejercicio?.video_url && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDemoEjId(ej.id)
+                        }}
+                        className="p-0.5 rounded transition-opacity hover:opacity-70"
+                        style={{ color: 'rgb(168,85,247)' }}
+                      >
+                        <Info size={14} />
+                      </button>
+                    )}
+                  </div>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                     {[
                       ej.ejercicio?.grupo_muscular,
@@ -626,6 +646,66 @@ export default function EjecucionSesionPage() {
           </div>
         </div>
       )}
+
+      {/* Demo modal */}
+      {demoEjId && (() => {
+        const ej = sesion.ejercicios.find(e => e.id === demoEjId)
+        const ejercicio = ej?.ejercicio
+        if (!ejercicio) return null
+        const videoUrl = ejercicio.video_url
+        const youtubeId = videoUrl ? extractYouTubeId(videoUrl) : null
+        return (
+          <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4" onClick={() => setDemoEjId(null)}>
+            <div className="fixed inset-0 bg-black/70" />
+            <div
+              className="relative rounded-2xl max-w-lg w-full overflow-hidden"
+              style={{ background: 'var(--surface)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+                <div>
+                  <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{ejercicio.nombre}</p>
+                  {ejercicio.grupo_muscular && (
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{ejercicio.grupo_muscular}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setDemoEjId(null)}
+                  className="p-1.5 rounded-lg transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              {/* Body */}
+              <div className="p-4">
+                {youtubeId ? (
+                  <iframe
+                    width="100%"
+                    height="250"
+                    src={`https://www.youtube.com/embed/${youtubeId}`}
+                    frameBorder="0"
+                    allowFullScreen
+                    className="rounded-lg"
+                  />
+                ) : videoUrl ? (
+                  <a
+                    href={videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple-400 underline text-sm"
+                  >
+                    {videoUrl}
+                  </a>
+                ) : (
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin video disponible</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
