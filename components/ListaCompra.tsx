@@ -226,6 +226,7 @@ export default function ListaCompra({ planId, clienteId, semanaInicio, nombrePla
                                     return maxId ?? undefined
                                 })()}
                                 aplicando={aplicandoSuper !== null}
+                                nombrePlan={nombrePlan}
                             />
 
                             {/* Lista de ingredientes */}

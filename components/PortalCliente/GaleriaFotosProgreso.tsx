@@ -17,7 +17,7 @@ export default function GaleriaFotosProgreso({ codigo }: { codigo: string }) {
         fetch(`/api/cliente/${codigo}/fotos-progreso`)
             .then(r => r.json())
             .then(({ fotos }) => setFotos(fotos ?? []))
-            .catch(() => { })
+            .catch(e => console.error('[GaleriaFotosProgreso] Error cargando fotos de progreso:', e))
             .finally(() => setLoading(false))
     }, [codigo])
 

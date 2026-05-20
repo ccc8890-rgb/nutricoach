@@ -71,7 +71,7 @@ export default function AlternativasModal({
         gramos_original: gramosOriginal,
         gramos_alternativa: gramosAlternativa,
       }),
-    }).catch(() => {})
+    }).catch(e => console.error('[AlternativasModal] Error guardando alternativa elegida:', e))
 
     onElegir(alternativa, gramosAlternativa)
     setGuardando(null)

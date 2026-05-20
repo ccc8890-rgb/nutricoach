@@ -64,7 +64,7 @@ export default function HistorialEntreno({ clienteId }: { clienteId: string }) {
         setPrs(d.prs ?? [])
         setSesiones(d.sesiones ?? [])
       })
-      .catch(() => {})
+      .catch(e => console.error('[HistorialEntreno] Error cargando historial:', e))
       .finally(() => setLoading(false))
   }, [clienteId, diasFiltro])
 

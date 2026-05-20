@@ -29,7 +29,7 @@ export default function MilestonesLogros({ codigo }: { codigo: string }) {
         fetch(`/api/cliente/${codigo}/logros`)
             .then(r => r.json())
             .then(({ logros }) => setLogros(logros ?? []))
-            .catch(() => { })
+            .catch(e => console.error('[MilestonesLogros] Error cargando logros:', e))
             .finally(() => setLoading(false))
     }, [codigo])
 

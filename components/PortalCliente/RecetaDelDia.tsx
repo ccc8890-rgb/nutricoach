@@ -28,7 +28,7 @@ export default function RecetaDelDia({ kcal, proteinas }: RecetaDelDiaProps) {
         fetch(`/api/recetas/sugeridas?kcal=${kcalTarget}&proteinas=${protTarget}&limite=1`)
             .then(r => r.json())
             .then(({ recetas }) => { if (recetas?.length) setReceta(recetas[0]) })
-            .catch(() => {})
+            .catch(e => console.error('[RecetaDelDia] Error cargando receta sugerida:', e))
     }, [kcal, proteinas])
 
     if (!receta) return null

@@ -41,7 +41,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
             if (rec.filtros_plantilla.sport_modality) setFiltroModalidad(rec.filtros_plantilla.sport_modality)
             if (rec.filtros_plantilla.tier) setFiltroTier(rec.filtros_plantilla.tier)
         }
-        loadPerfil().catch(() => {})
+        loadPerfil().catch(e => console.error('[PlantillaEntrenoSelector] Error cargando perfil:', e))
     }, [clienteId])
 
     useEffect(() => {

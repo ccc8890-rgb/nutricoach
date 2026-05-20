@@ -110,7 +110,7 @@ export default function EditarRecetaPage() {
             .then(data => {
                 if (data?.tags) setTagSuggestions(data.tags)
             })
-            .catch(() => { })
+            .catch(e => console.error('[EditarRecetaPage] Error cargando tags:', e))
     }, [])
 
     // Búsqueda de alimentos via API (service_role bypass RLS)

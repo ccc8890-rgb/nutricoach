@@ -67,7 +67,7 @@ export default function EscandalloPage() {
             .then(data => {
                 setSupermercados(data.supermercados || data || [])
             })
-            .catch(() => { })
+            .catch(e => console.error('[EscandalloPage] Error cargando supermercados:', e))
 
         cargarEscandallo()
     }, [])

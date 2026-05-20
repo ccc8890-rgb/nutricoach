@@ -119,7 +119,7 @@ export default function RecetasPage() {
     fetch('/api/recetas/tags')
       .then(r => r.json())
       .then(data => { if (data?.tags) setTagOpciones(data.tags) })
-      .catch(() => { })
+      .catch(e => console.error('[RecetasPage] Error cargando tags:', e))
   }, [])
 
 

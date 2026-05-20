@@ -93,7 +93,7 @@ export default function PerfilProfundoPage() {
         if (data.dias_entreno > 2) setEsAtleta(true)
         if (data.segmento) setSegmento(data.segmento as Segmento)
       })
-      .catch(() => {})
+      .catch(e => console.error('[PerfilProfundoPage] Error cargando perfil:', e))
   }, [])
 
   const steps = [

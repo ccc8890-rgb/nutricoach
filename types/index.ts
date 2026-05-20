@@ -915,3 +915,42 @@ export interface ListaCompraSemanal {
   coste_total: number
   coste_total_mas_caro: number    // si compraras todo en el super más caro
 }
+
+// ============================================================
+// Tipos para Smart Cart (Optimización multi-supermercado)
+// ============================================================
+
+/** Asignación optimizada de un ingrediente a su supermercado más barato */
+export interface AsignacionOptimizada {
+  alimento_id: string
+  alimento_nombre: string
+  cantidad_gramos: number
+  supermercado_id: string
+  supermercado_nombre: string
+  supermercado_color?: string
+  precio_por_kg: number
+  coste_euros: number
+  es_oferta: boolean
+  ahorro_vs_super_actual: number
+}
+
+/** Resumen de un supermercado en la optimización multi-super */
+export interface ResumenOptimizacionSuper {
+  supermercado_id: string
+  supermercado_nombre: string
+  supermercado_color?: string
+  coste: number
+  num_ingredientes: number
+}
+
+/** Resultado completo de la optimización multi-supermercado */
+export interface ResultadoOptimizacion {
+  ingredientes: AsignacionOptimizada[]
+  coste_total_multi_super: number
+  ahorro_vs_mejor_super: number      // ahorro adicional vs el super más barato individual
+  ahorro_vs_peor_super: number       // ahorro vs el super más caro
+  mejor_super_nombre: string
+  peor_super_nombre: string
+  num_ofertas: number
+  resumen_por_super: ResumenOptimizacionSuper[]
+}

@@ -79,7 +79,7 @@ export default function GenerarComidaModal({
         comida_ingredientes: comida.ingredientes,
         macros_objetivo: macrosObjetivo,
       }),
-    }).catch(() => {})
+    }).catch(e => console.error('[GenerarComidaModal] Error enviando feedback:', e))
   }
 
   const aceptar = async () => {

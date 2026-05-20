@@ -88,7 +88,7 @@ export default function EscandalloReceta({ recetaId }: EscandalloRecetaProps) {
         fetch('/api/precios/supermercados')
             .then(r => r.json())
             .then(d => setSupermercados(d.supermercados || d || []))
-            .catch(() => { })
+            .catch(e => { console.error('[EscandalloReceta] Error cargando supermercados:', e); setError('Error al cargar supermercados') })
         cargar()
     }, [recetaId])
 

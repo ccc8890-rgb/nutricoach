@@ -100,7 +100,7 @@ export default function ListaCompraPage() {
             setRecetas(recetasData.recetas || recetasData || [])
             setClientes(clientesData.clientes || clientesData || [])
             setSupermercados(supersData.supermercados || supersData || [])
-        }).catch(() => { })
+        }).catch(e => { console.error('[ListaCompraPage] Error cargando datos iniciales:', e); setError('Error al cargar datos') })
     }, [])
 
     /* Añadir receta */

@@ -47,7 +47,7 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
     fetch('/api/recetas/tags')
       .then(r => r.json())
       .then(data => { if (data?.tags) setTagSuggestions(data.tags) })
-      .catch(() => { })
+      .catch(e => console.error('[NuevaRecetaPage] Error cargando tags:', e))
   }, [])
 
   useEffect(() => {
