@@ -954,3 +954,65 @@ export interface ResultadoOptimizacion {
   num_ofertas: number
   resumen_por_super: ResumenOptimizacionSuper[]
 }
+
+// ============================================================
+// Tipos para AutoCoach (Recomendaciones proactivas IA)
+// ============================================================
+
+export type TipoRecomendacion =
+  | 'ajuste_macros'
+  | 'alerta_adherencia'
+  | 'alerta_peso_estancado'
+  | 'alerta_peso_rapido'
+  | 'alerta_sueno'
+  | 'alerta_energia'
+  | 'revision_plan'
+  | 'feedback_positivo'
+  | 'checkin_recordatorio'
+
+export type NivelUrgencia = 'baja' | 'media' | 'alta' | 'critica'
+
+export interface RecomendacionAutoCoach {
+  id: string
+  cliente_id: string
+  cliente_nombre: string
+  tipo: TipoRecomendacion
+  urgencia: NivelUrgencia
+  titulo: string
+  descripcion: string
+  detalle_ia: string
+  sugerencia_accion?: string
+  datos_contexto: {
+    peso_actual?: number
+    peso_anterior?: number
+    adherencia_media?: number
+    energia_media?: number
+    sueno_medio?: number
+    dias_sin_checkin?: number
+    tendencia_semanal?: string
+  }
+  created_at: string
+  aplicada?: boolean
+  aplicada_at?: string
+}
+
+export interface AnalisisAutoCoach {
+  cliente_id: string
+  cliente_nombre: string
+  semanas_datos: number
+  ultimo_checkin: string | null
+  recomendaciones: RecomendacionAutoCoach[]
+  resumen_ia: string
+  necesita_atencion: boolean
+}
+
+export interface AutoCoachDashboard {
+  total_clientes_activos: number
+  clientes_con_alerta: number
+  clientes_analizados: number
+  recomendaciones_pendientes: number
+  criticas: number
+  por_tipo: Record<TipoRecomendacion, number>
+  analisis: AnalisisAutoCoach[]
+  resumen_ia?: string
+}

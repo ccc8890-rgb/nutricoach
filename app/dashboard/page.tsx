@@ -25,6 +25,7 @@ import { SkeletonChart } from '@/components/ui/Skeleton'
 import { CountUp } from '@/components/ui/CountUp'
 import { MiniSparkline } from '@/components/dashboard/MiniSparkline'
 import CheckinsPendientes from '@/components/dashboard/CheckinsPendientes'
+import AutoCoachPanel from '@/components/dashboard/AutoCoachPanel'
 
 const BarChart = dynamic(() => import('@/components/dashboard/BarChart'), {
   loading: () => <SkeletonChart height={100} />,
@@ -95,10 +96,10 @@ interface StatCardConfig {
 // ── Config ──
 
 const STAT_CARDS: StatCardConfig[] = [
-  { label: 'Clientes', key: 'totalClientes', icon: Users, accent: 'var(--accent)', trend: [4,3,5,4,6,5,7,6,8,7,9,10] },
-  { label: 'Dietas activas', key: 'dietasActivas', icon: ForkKnife, accent: 'var(--accent-light)', trend: [2,3,2,4,3,5,4,6,5,7,6,8] },
-  { label: 'Respuestas pendientes', key: 'respuestasPendientes', icon: ChatCircle, accent: 'var(--accent)', trend: [1,2,1,3,2,4,3,2,5,4,3,6] },
-  { label: 'Nuevas hoy', key: 'respuestasNuevas', icon: TrendUp, accent: 'var(--info)', trend: [0,1,0,2,1,0,3,1,2,0,1,2] },
+  { label: 'Clientes', key: 'totalClientes', icon: Users, accent: 'var(--accent)', trend: [4, 3, 5, 4, 6, 5, 7, 6, 8, 7, 9, 10] },
+  { label: 'Dietas activas', key: 'dietasActivas', icon: ForkKnife, accent: 'var(--accent-light)', trend: [2, 3, 2, 4, 3, 5, 4, 6, 5, 7, 6, 8] },
+  { label: 'Respuestas pendientes', key: 'respuestasPendientes', icon: ChatCircle, accent: 'var(--accent)', trend: [1, 2, 1, 3, 2, 4, 3, 2, 5, 4, 3, 6] },
+  { label: 'Nuevas hoy', key: 'respuestasNuevas', icon: TrendUp, accent: 'var(--info)', trend: [0, 1, 0, 2, 1, 0, 3, 1, 2, 0, 1, 2] },
 ]
 
 const QUICK_ACTIONS = [
@@ -317,6 +318,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <AutoCoachPanel />
       <CheckinsPendientes />
 
       {/* ── Nuevos clientes + Consultas ── */}
