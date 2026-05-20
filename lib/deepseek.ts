@@ -609,9 +609,18 @@ export async function completarAlimentoConIA(
 ): Promise<{
     data: {
         kcal: number; proteinas: number; carbohidratos: number; grasas: number; fibra: number;
-        calcio_mg?: number; hierro_mg?: number; magnesio_mg?: number; potasio_mg?: number;
-        sodio_mg?: number; zinc_mg?: number; vitamina_c_mg?: number; vitamina_a_ug?: number;
-        vitamina_d_ug?: number; vitamina_b12_ug?: number;
+        // Vitaminas
+        vitamina_a_ug?: number; vitamina_c_mg?: number; vitamina_d_ug?: number;
+        vitamina_e_mg?: number; vitamina_k_ug?: number; vitamina_b6_mg?: number;
+        vitamina_b12_ug?: number; tiamina_mg?: number; riboflavina_mg?: number;
+        niacina_mg?: number; folato_ug?: number;
+        // Minerales
+        calcio_mg?: number; hierro_mg?: number; magnesio_mg?: number; fosforo_mg?: number;
+        potasio_mg?: number; sodio_mg?: number; zinc_mg?: number; cobre_mg?: number;
+        selenio_ug?: number;
+        // Perfil lipídico
+        saturados_g?: number; monoinsaturados_g?: number; poliinsaturados_g?: number;
+        colesterol_mg?: number;
     }; total_tokens: number
 }> {
     const apiKey = process.env.DEEPSEEK_API_KEY
@@ -624,23 +633,37 @@ export async function completarAlimentoConIA(
 Dados nombres de alimentos, devuelves sus valores nutricionales por 100g basados en BEDCA (Base de Datos Española) y USDA.
 Debes ser preciso. Si no conoces el valor exacto, da la estimación más cercana.
 
-RESPONDE SOLO CON JSON (sin markdown, sin explicaciones):
+RESPONDE SOLO CON JSON (sin markdown, sin explicaciones), TODOS los campos incluidos:
 {
-  "kcal": number,
-  "proteinas": number,
-  "carbohidratos": number,
-  "grasas": number,
-  "fibra": number,
-  "calcio_mg": number,
-  "hierro_mg": number,
-  "magnesio_mg": number,
-  "potasio_mg": number,
-  "sodio_mg": number,
-  "zinc_mg": number,
-  "vitamina_c_mg": number,
-  "vitamina_a_ug": number,
-  "vitamina_d_ug": number,
-  "vitamina_b12_ug": number
+  "kcal": 0,
+  "proteinas": 0,
+  "carbohidratos": 0,
+  "grasas": 0,
+  "fibra": 0,
+  "vitamina_a_ug": 0,
+  "vitamina_c_mg": 0,
+  "vitamina_d_ug": 0,
+  "vitamina_e_mg": 0,
+  "vitamina_k_ug": 0,
+  "vitamina_b6_mg": 0,
+  "vitamina_b12_ug": 0,
+  "tiamina_mg": 0,
+  "riboflavina_mg": 0,
+  "niacina_mg": 0,
+  "folato_ug": 0,
+  "calcio_mg": 0,
+  "hierro_mg": 0,
+  "magnesio_mg": 0,
+  "fosforo_mg": 0,
+  "potasio_mg": 0,
+  "sodio_mg": 0,
+  "zinc_mg": 0,
+  "cobre_mg": 0,
+  "selenio_ug": 0,
+  "saturados_g": 0,
+  "monoinsaturados_g": 0,
+  "poliinsaturados_g": 0,
+  "colesterol_mg": 0
 }`
         },
         { role: 'user', content: `Valores nutricionales por 100g para: "${nombreAlimento}"` }

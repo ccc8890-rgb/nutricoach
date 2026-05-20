@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { normalizarProducto } from './normalizador'
 import { matchAlimentoInMemory, cargarAlimentosMap, AlimentoRecord } from './matcher'
 import { categorizarAlimento } from './categorizador'
+import { clasificarPendientes, enriquecerAlimentosNuevos } from './post-scraping'
 import { scrapearMercadona } from './supermercados/mercadona'
 import { scrapearCarrefour } from './supermercados/carrefour'
 import { scrapearDia } from './supermercados/dia'
@@ -493,21 +494,23 @@ export async function scrapearSupermercado(
             cargarProductosExistentes(supabase, supermercadoId),
         ])
 
-        // 3. Procesar cada producto (TODO en memoria)
-        const alimentosACrear: Array<{ nombre: string; nombreLimpio: string }> = []
+        // FASE 4: El scraper NO crea alimentos. Productos sin match
+        // se insertan con alimento_id=null y pendiente_clasificacion=true.
+        // clasificarPendientes() los procesa post-ejecucion.
         const productosAUpsert: Array<{
             nombre_original: string
-            alimento_id: string
+            alimento_id: string | null
             marca: string | null
             precio_por_kg: number | null
             precio_unidad: number | null
             unidad: string
             url_producto: string | null
             url_imagen: string | null
+            pendiente_clasificacion: boolean
         }> = []
         const historicoAInsertar: Array<{
             supermercado_id: string
-            alimento_id: string
+            alimento_id: string | null
             nombre_producto: string
             precio_por_kg: number | null
             precio_unidad: number | null
@@ -531,156 +534,69 @@ export async function scrapearSupermercado(
             }
 
             const nombreNormalizado = normalizarProducto(raw.nombre)
-            const nombreLower = nombreNormalizado.toLowerCase()
 
             // Buscar alimento en el Map in-memory
-            let alimentoId = matchAlimentoInMemory(nombreNormalizado, alimentosMap)
+            const alimentoId = matchAlimentoInMemory(nombreNormalizado, alimentosMap)
 
-            if (!alimentoId) {
-                // Marcar para crear (en batch después)
-                alimentosACrear.push({ nombre: nombreNormalizado, nombreLimpio: nombreLower })
-                nuevos++
-            } else {
+            if (alimentoId) {
                 actualizados++
+            } else {
+                nuevos++
             }
 
-            // Guardamos el producto para upsert batch después
-            // (alimentoId puede ser null si aún no se ha creado — lo resolveremos en batch)
+            // FASE 4: El scraper NO crea alimentos. Si no hay match,
+            // el producto se inserta con alimento_id=null y
+            // pendiente_clasificacion=true. clasificarPendientes()
+            // lo procesara post-ejecucion.
+            const pendiente = !alimentoId
+
             productosAUpsert.push({
                 nombre_original: raw.nombre,
-                alimento_id: alimentoId || '__PENDING__', // placeholder
+                alimento_id: alimentoId,
                 marca: raw.marca || null,
                 precio_unidad: raw.precio_actual > 0 ? raw.precio_actual : null,
                 precio_por_kg: (raw.precio_por_kg && raw.precio_por_kg > 0) ? raw.precio_por_kg : null,
                 unidad: raw.unidad || 'kg',
                 url_producto: raw.url_producto || null,
                 url_imagen: raw.imagen_url || null,
+                pendiente_clasificacion: pendiente,
             })
 
-            // Guardar histórico (con placeholder de alimento_id)
-            historicoAInsertar.push({
-                supermercado_id: supermercadoId,
-                alimento_id: alimentoId || '__PENDING__',
-                nombre_producto: raw.nombre,
-                precio_unidad: raw.precio_actual > 0 ? raw.precio_actual : null,
-                precio_por_kg: (raw.precio_por_kg && raw.precio_por_kg > 0) ? raw.precio_por_kg : null,
-                url_producto: raw.url_producto,
-                fuente: 'scraping_http',
-                metadatos: {
-                    marca: raw.marca,
-                    cantidad: raw.cantidad,
-                    disponible: raw.disponible,
-                    imagen_url: raw.imagen_url,
-                },
-            })
-        }
-
-        // 4. Crear alimentos nuevos en BATCH
-        const alimentosIdMap = new Map<string, string>() // nombreLower → id
-        if (alimentosACrear.length > 0) {
-            console.log(`[Batch] Creando ${alimentosACrear.length} alimentos nuevos en batch...`)
-
-            // Crear en lotes de 100 para evitar payloads enormes
-            const LOTE = 100
-            for (let i = 0; i < alimentosACrear.length; i += LOTE) {
-                const lote = alimentosACrear.slice(i, i + LOTE)
-                const inserts = lote.map(a => {
-                    const nombreLower = a.nombreLimpio
-                    const tieneMarca = MARCAS_CONOCIDAS.some(m => nombreLower.includes(m))
-                    const categoriaNutricional = categorizarAlimento(a.nombre)
-                    return {
-                        nombre: a.nombre,
-                        categoria: categoriaNutricional || 'Supermercado',
-                        calorias: 0,
-                        proteinas: 0,
-                        carbohidratos: 0,
-                        grasas: 0,
-                        es_generico: !tieneMarca,
-                        es_comestible: true,
-                        fuente_nutricional: 'scraping_default',
-                        ultima_actualizacion_nutricional: new Date().toISOString(),
-                    }
+            // Guardar historico (solo si hay alimento_id)
+            if (alimentoId) {
+                historicoAInsertar.push({
+                    supermercado_id: supermercadoId,
+                    alimento_id: alimentoId,
+                    nombre_producto: raw.nombre,
+                    precio_unidad: raw.precio_actual > 0 ? raw.precio_actual : null,
+                    precio_por_kg: (raw.precio_por_kg && raw.precio_por_kg > 0) ? raw.precio_por_kg : null,
+                    url_producto: raw.url_producto,
+                    fuente: 'scraping_http',
+                    metadatos: {
+                        marca: raw.marca,
+                        cantidad: raw.cantidad,
+                        disponible: raw.disponible,
+                        imagen_url: raw.imagen_url,
+                    },
                 })
-
-                const { data: creados, error } = await supabase
-                    .from('alimentos')
-                    .insert(inserts)
-                    .select('id, nombre')
-
-                if (error) {
-                    // Si falla el batch, reintentar uno por uno (por si hay conflictos de unique)
-                    console.warn(`[Batch] Error en batch insert (${error.message}), reintentando individual...`)
-                    for (const a of lote) {
-                        const categoriaNutricional = categorizarAlimento(a.nombre)
-                        const { data: single } = await supabase
-                            .from('alimentos')
-                            .insert({
-                                nombre: a.nombre,
-                                categoria: categoriaNutricional || 'Supermercado',
-                                calorias: 0,
-                                proteinas: 0,
-                                carbohidratos: 0,
-                                grasas: 0,
-                                es_generico: true,
-                                es_comestible: true,
-                                fuente_nutricional: 'scraping_default',
-                                ultima_actualizacion_nutricional: new Date().toISOString(),
-                            })
-                            .select('id, nombre')
-                            .maybeSingle()
-
-                        if (single) {
-                            alimentosIdMap.set(a.nombreLimpio, single.id)
-                            console.log(`[Batch] Alimento creado (individual): "${a.nombre}" (${single.id})`)
-                        } else {
-                            // Podría ser duplicado, intentar buscar
-                            const { data: existente } = await supabase
-                                .from('alimentos')
-                                .select('id')
-                                .ilike('nombre', a.nombre)
-                                .maybeSingle()
-                            if (existente) {
-                                alimentosIdMap.set(a.nombreLimpio, existente.id)
-                            } else {
-                                console.warn(`[Batch] No se pudo crear alimento: "${a.nombre}"`)
-                                noEncontrados++
-                            }
-                        }
-                    }
-                } else if (creados) {
-                    for (const c of creados) {
-                        const key = c.nombre.toLowerCase()
-                        alimentosIdMap.set(key, c.id)
-                        // Añadir al map global también
-                        alimentosMap.set(key, {
-                            id: c.id,
-                            nombre: c.nombre,
-                            nombreLower: key,
-                        })
-                    }
-                }
             }
-            console.log(`[Batch] Creados ${alimentosIdMap.size} alimentos nuevos`)
         }
 
-        // 5. Reemplazar placeholders de alimento_id y separar inserts de updates
+        // FASE 4: No se crean alimentos durante el scraping.
+        // Los productos sin match se insertan con pendiente_clasificacion=true.
+        // clasificarPendientes() los procesara despues.
+        const nuevosAlimentosIds: string[] = [] // Se llenara con el resultado de clasificarPendientes()
         const productosInsert: typeof productosAUpsert = []
         const productosUpdate: Array<{ id: string; data: typeof productosAUpsert[0] }> = []
 
         for (const p of productosAUpsert) {
-            let alimentoId: string | null = p.alimento_id
-            if (alimentoId === '__PENDING__') {
-                // Buscar en los recién creados
-                const nombreLower = normalizarProducto(p.nombre_original).toLowerCase()
-                alimentoId = alimentosIdMap.get(nombreLower) || matchAlimentoInMemory(normalizarProducto(p.nombre_original), alimentosMap) || null
-            }
-
-            if (!alimentoId) {
+            if (!p.alimento_id) {
+                // Sin match - se inserta como pendiente
+                productosInsert.push(p)
                 noEncontrados++
                 continue
             }
 
-            p.alimento_id = alimentoId
             const existenteId = productosExistentes.get(p.nombre_original)
 
             if (existenteId) {
@@ -715,10 +631,16 @@ export async function scrapearSupermercado(
         }
 
         if (productosInsert.length > 0) {
-            // Deduplicar por alimento_id (constraint unique supermercado_id + alimento_id)
+            // Deduplicar por alimento_id (solo cuando no es null ni pendiente)
+            // Productos con alimento_id=null se insertan todos (cada uno es un producto distinto)
             const vistos = new Set<string>()
             const dedupProducts: typeof productosInsert = []
             for (const p of productosInsert) {
+                if (!p.alimento_id) {
+                    // Sin match: cada producto se inserta individualmente
+                    dedupProducts.push(p)
+                    continue
+                }
                 const key = p.alimento_id
                 if (!vistos.has(key)) {
                     vistos.add(key)
@@ -745,6 +667,7 @@ export async function scrapearSupermercado(
                         unidad: p.unidad,
                         url_producto: p.url_producto,
                         fecha_precio: fechaHoy,
+                        pendiente_clasificacion: p.pendiente_clasificacion,
                     })))
                 if (error) {
                     errores.push(`Error batch insert productos: ${error.message}`)
@@ -753,19 +676,8 @@ export async function scrapearSupermercado(
         }
 
         // 7. Batch INSERT precios_historico
-        const historicoValidos = historicoAInsertar.filter(h => {
-            if (h.alimento_id === '__PENDING__') {
-                const nombreNormalizado = normalizarProducto(h.nombre_producto)
-                const nombreLower = nombreNormalizado.toLowerCase()
-                const id = alimentosIdMap.get(nombreLower) || matchAlimentoInMemory(nombreNormalizado, alimentosMap)
-                if (id) {
-                    h.alimento_id = id
-                    return true
-                }
-                return false
-            }
-            return true
-        })
+        // Solo se insertan productos con alimento_id (los pendientes se saltan)
+        const historicoValidos = historicoAInsertar.filter(h => h.alimento_id != null)
 
         if (historicoValidos.length > 0) {
             console.log(`[Batch] Insertando ${historicoValidos.length} registros en precios_historico...`)
@@ -781,7 +693,33 @@ export async function scrapearSupermercado(
             }
         }
 
-        // 8. Construir respuesta
+        // 8. Post-procesado FASE 4: clasificar pendientes + enriquecer
+        //    a) clasificarPendientes() vincula productos sin match o crea nuevos alimentos
+        //    b) enriquecerAlimentosNuevos() rellena macros+micros via DeepSeek
+        try {
+            const clasifResult = await clasificarPendientes(supabase, supermercadoId)
+            if (clasifResult.clasificados > 0 || clasifResult.creados > 0) {
+                console.log(`[Batch] Clasificados: ${clasifResult.clasificados} productos, ${clasifResult.creados} alimentos creados`)
+            }
+            // Enriquecer los alimentos nuevos creados por el clasificador
+            const idsParaEnriquecer = clasifResult.nuevosAlimentosIds
+            if (idsParaEnriquecer.length > 0) {
+                console.log(`[Batch] Post-enriqueciendo ${idsParaEnriquecer.length} alimentos nuevos...`)
+                const postResult = await enriquecerAlimentosNuevos(supabase, idsParaEnriquecer)
+                if (postResult.errores.length > 0) {
+                    console.warn(`[Batch] Post-enriquecimiento: ${postResult.actualizados}/${postResult.procesados} OK, ${postResult.errores.length} errores`)
+                    errores.push(...postResult.errores.map(e => `[PostEnriquecimiento] ${e}`))
+                } else {
+                    console.log(`[Batch] Post-enriquecimiento: ${postResult.actualizados} alimentos enriquecidos`)
+                }
+            }
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            console.warn(`[Batch] Error en post-procesado (no critico): ${msg}`)
+            // No propagar el error - el scraping ya fue exitoso
+        }
+
+        // 9. Construir respuesta
         const totalProcesados = productosRaw.length
         const duracion = Date.now() - inicio
         console.log(`[Batch] ${supermercadoSlug} completado en ${(duracion / 1000).toFixed(1)}s`)

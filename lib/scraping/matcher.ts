@@ -61,14 +61,24 @@ export function matchAlimentoInMemory(
         const aLowerEscaped = aLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
         const wordBoundaryRegex = new RegExp(`\\b${aLowerEscaped}\\b`)
         if (wordBoundaryRegex.test(lower)) {
-            if (!mejor || a.nombre.length > mejor.nombre.length) {
+            // Priorizar: primero macros reales, luego nombre más específico (más largo)
+            const esMejor = !mejor ||
+                ((a.calorias ?? 0) > 0 && (mejor.calorias ?? 0) === 0) ||
+                ((a.calorias ?? 0) === (mejor.calorias ?? 0) && a.nombre.length > mejor.nombre.length)
+            if (esMejor) {
                 mejor = a
             }
         }
     }
     // Caso A tiene prioridad sobre Caso B
-    if (mejorContainsLower) mejor = mejorContainsLower
-    // Desempate en nivel 3: si hay múltiples opciones, priorizar el que tiene macros reales
+    // Y dentro de Caso A, priorizar macros reales
+    if (mejorContainsLower) {
+        if (mejor && (mejor.calorias ?? 0) > 0 && (mejorContainsLower.calorias ?? 0) === 0) {
+            // mejor ya tiene macros, mantenerlo
+        } else {
+            mejor = mejorContainsLower
+        }
+    }
     if (mejor) return mejor.id
 
     // 4. Coincidencia por palabra clave (palabra más larga)
