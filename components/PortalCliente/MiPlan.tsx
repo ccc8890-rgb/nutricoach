@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw } from 'lucide-react'
 import RecetaDelDia from './RecetaDelDia'
 import ListaCompraPortal from './ListaCompraPortal'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -253,8 +253,45 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
     const [loadingRecetas, setLoadingRecetas] = useState<Record<string, boolean>>({})
     const [showRecetas, setShowRecetas] = useState<Record<string, boolean>>({})
     const [listaAbierta, setListaAbierta] = useState(false)
+    const [usandoReceta, setUsandoReceta] = useState<string | null>(null)
     const printRef = useRef<HTMLDivElement>(null)
     const { addToast } = useToast()
+
+    function inferirTipoPlato(nombreComida: string): string | null {
+        const n = nombreComida.toLowerCase()
+        if (n.includes('desayuno') || n.includes('mañana') && n.includes('primera')) return 'Desayuno'
+        if (n.includes('almuerzo') || n.includes('media mañana')) return 'Almuerzo'
+        if (n.includes('comida') || n.includes('mediodía') || n.includes('almuerzo principal')) return 'Comida'
+        if (n.includes('merienda') || n.includes('post') || n.includes('snack')) return 'Merienda'
+        if (n.includes('cena')) return 'Cena'
+        return null
+    }
+
+    async function usarReceta(comidaId: string, recetaId: string, recetaNombre: string) {
+        setUsandoReceta(recetaId)
+        try {
+            const res = await fetch(`/api/recetas/${recetaId}/ingredientes`)
+            if (!res.ok) throw new Error('Error al cargar ingredientes')
+            const { ingredientes } = await res.json() as { ingredientes: AlimentoEnComida[] }
+
+            setPlanLocal(prev => ({
+                ...prev,
+                comidas: (prev.comidas ?? []).map(c =>
+                    c.id === comidaId ? { ...c, alimentos: ingredientes } : c
+                )
+            }))
+
+            // Invalidar caché de sugerencias para esta comida (la composición cambió)
+            setRecetasComida(prev => { const next = { ...prev }; delete next[comidaId]; return next })
+            setShowRecetas(prev => ({ ...prev, [comidaId]: false }))
+
+            addToast({ title: `"${recetaNombre}" aplicada para hoy ✓`, type: 'success' })
+        } catch {
+            addToast({ title: 'Error al cargar la receta', type: 'error' })
+        } finally {
+            setUsandoReceta(null)
+        }
+    }
 
     function calcMacrosComida(alimentos: AlimentoEnComida[]): Macros {
         return sumarMacros((alimentos ?? []).map(a =>
@@ -316,7 +353,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
         addToast({ title: '¡Comida guardada como preferencia!', type: 'success' })
     }
 
-    async function toggleRecetasComida(comidaId: string, macros: { calorias: number; proteinas: number }) {
+    async function toggleRecetasComida(comidaId: string, comidaNombre: string, macros: { calorias: number; proteinas: number }) {
         if (showRecetas[comidaId]) {
             setShowRecetas(prev => ({ ...prev, [comidaId]: false }))
             return
@@ -325,9 +362,14 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
         if (recetasComida[comidaId]) return  // ya cargadas
         setLoadingRecetas(prev => ({ ...prev, [comidaId]: true }))
         try {
-            const res = await fetch(
-                `/api/recetas/sugeridas?kcal=${Math.round(macros.calorias)}&proteinas=${Math.round(macros.proteinas)}&limite=3`
-            )
+            const tipo = inferirTipoPlato(comidaNombre)
+            const params = new URLSearchParams({
+                kcal: String(Math.round(macros.calorias)),
+                proteinas: String(Math.round(macros.proteinas)),
+                limite: '4',
+                ...(tipo ? { tipo_plato: tipo } : {}),
+            })
+            const res = await fetch(`/api/recetas/sugeridas?${params}`)
             const { recetas } = await res.json() as { recetas: RecetaSugerida[] }
             setRecetasComida(prev => ({ ...prev, [comidaId]: recetas }))
         } finally {
@@ -489,7 +531,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => toggleRecetasComida(comida.id, macros)}
+                                            onClick={() => toggleRecetasComida(comida.id, comida.nombre, macros)}
                                             className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
                                             style={{ color: 'var(--text-muted)' }}
                                             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg)' }}
@@ -498,39 +540,59 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                                             {loadingRecetas[comida.id]
                                                 ? <Loader2 size={13} className="animate-spin" />
                                                 : <BookOpen size={13} />}
-                                            {showRecetas[comida.id] ? 'Ocultar recetas' : 'Recetas compatibles'}
+                                            {showRecetas[comida.id] ? 'Ocultar alternativas' : 'Ver alternativas'}
                                         </button>
                                     </div>
 
-                                    {/* Mini-galería de recetas sugeridas */}
+                                    {/* Alternativas de recetas accionables */}
                                     {showRecetas[comida.id] && !loadingRecetas[comida.id] && (
                                         <div className="pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                                            <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-muted)' }}>
+                                                Alternativas para hoy
+                                            </p>
                                             {(recetasComida[comida.id] ?? []).length === 0 ? (
                                                 <p className="text-xs text-center py-2" style={{ color: 'var(--text-muted)' }}>
                                                     No hay recetas con macros similares en el recetario
                                                 </p>
                                             ) : (
-                                                <div className="grid grid-cols-3 gap-2 pt-1">
+                                                <div className="space-y-2">
                                                     {(recetasComida[comida.id] ?? []).map(receta => (
-                                                        <a
+                                                        <div
                                                             key={receta.id}
-                                                            href={`/recetas/${receta.id}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="block rounded-xl overflow-hidden border transition-shadow hover:shadow-md"
-                                                            style={{ borderColor: 'var(--border)' }}
+                                                            className="flex items-center gap-3 rounded-xl p-2 border"
+                                                            style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
                                                         >
-                                                            <div className="aspect-square bg-gray-100 relative">
+                                                            <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                                                                 {receta.imagen_url
                                                                     ? <img src={receta.imagen_url} alt={receta.nombre} className="w-full h-full object-cover" />
-                                                                    : <div className="w-full h-full flex items-center justify-center text-2xl">🍽</div>
+                                                                    : <div className="w-full h-full flex items-center justify-center text-xl">🍽</div>
                                                                 }
                                                             </div>
-                                                            <div className="p-1.5">
-                                                                <p className="text-[10px] font-medium leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
-                                                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{receta.kcal} kcal · {receta.proteinas}g P</p>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-xs font-medium leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
+                                                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                                                    {receta.kcal} kcal · {receta.proteinas}g P
+                                                                    {receta.tiempo_prep_min ? ` · ${receta.tiempo_prep_min} min` : ''}
+                                                                </p>
                                                             </div>
-                                                        </a>
+                                                            <button
+                                                                type="button"
+                                                                disabled={usandoReceta === receta.id}
+                                                                onClick={() => usarReceta(comida.id, receta.id, receta.nombre)}
+                                                                className="flex-shrink-0 flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors"
+                                                                style={{
+                                                                    background: 'var(--primary)',
+                                                                    color: 'white',
+                                                                    opacity: usandoReceta === receta.id ? 0.6 : 1,
+                                                                }}
+                                                            >
+                                                                {usandoReceta === receta.id
+                                                                    ? <Loader2 size={10} className="animate-spin" />
+                                                                    : <RefreshCw size={10} />
+                                                                }
+                                                                Usar
+                                                            </button>
+                                                        </div>
                                                     ))}
                                                 </div>
                                             )}
