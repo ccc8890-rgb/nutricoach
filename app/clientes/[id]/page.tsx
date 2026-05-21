@@ -148,6 +148,7 @@ export default function ClienteDetallePage() {
       nombre: plantillaSeleccionada.nombre,
       descripcion: plantillaSeleccionada.descripcion ?? null,
       duracion_semanas: plantillaSeleccionada.duracion_semanas ?? null,
+      activo: true,
     }).select().single()
     if (error || !plan) { addToast({ type: 'error', title: 'Error', message: 'No se pudo crear el plan' }); setCreandoPlan(false); return }
     for (const sesion of (plantillaSeleccionada.sesiones ?? []) as PlantillaSesion[]) {

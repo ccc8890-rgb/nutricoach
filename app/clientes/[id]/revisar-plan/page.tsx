@@ -7,6 +7,15 @@ import { Loader2, CheckCircle, ChevronDown, ChevronUp, User, Utensils, ExternalL
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 
+function generarCodigoPublico(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let codigo = ''
+  for (let i = 0; i < 8; i++) {
+    codigo += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return codigo
+}
+
 interface OnboardingData {
   objetivo: string
   actividad_base: string
@@ -286,6 +295,7 @@ export default function RevisarPlanPage() {
           grasas_objetivo: plan.macros.grasas_g,
           activo: true,
           generado_por_ia: true,
+          codigo_publico: generarCodigoPublico(),
         })
         .select('id')
         .single()
@@ -386,6 +396,7 @@ export default function RevisarPlanPage() {
         nombre: plantilla.nombre,
         descripcion: plantilla.descripcion ?? null,
         duracion_semanas: plantilla.duracion_semanas ?? null,
+        activo: true,
       }).select().single()
 
       if (error || !plan) throw new Error(error?.message ?? 'Error al crear el plan de entrenamiento')
