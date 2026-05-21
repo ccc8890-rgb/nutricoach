@@ -110,7 +110,7 @@ export default function RevisarPlanPage() {
   const [versionIdx, setVersionIdx] = useState(0)
   const [perfilProfundo, setPerfilProfundo] = useState<PerfilProfundo | null>(null)
   const [showPerfilProfundo, setShowPerfilProfundo] = useState(false)
-  const [recetasPorComida, setRecetasPorComida] = useState<Record<number, { id: string; nombre: string; kcal: number; proteinas: number; imagen_url: string | null }[]>>({})
+  const [recetasPorComida, setRecetasPorComida] = useState<Record<number, { id: string; nombre: string; kcal: number; proteinas: number; carbohidratos: number; grasas: number; imagen_url: string | null }[]>>({})
   const [cargandoRecetas, setCargandoRecetas] = useState(false)
 
   useEffect(() => {
@@ -176,6 +176,7 @@ export default function RevisarPlanPage() {
             kcal: String(comida.kcal),
             proteinas: String(protTarget),
             limite: '3',
+            cliente_id: params.id as string,
             ...(tipoPlatoFiltro ? { tipo_plato: tipoPlatoFiltro } : {}),
           })
           const res = await fetch(`/api/recetas/sugeridas?${qs}`)
@@ -266,15 +267,78 @@ export default function RevisarPlanPage() {
 
       if (errorPlan || !planCreado) throw new Error(errorPlan?.message ?? 'Error al crear el plan')
 
-      const comidas = plan.distribucion_comidas.map((item, index) => ({
-        plan_id: planCreado.id,
-        nombre: item.nombre,
-        orden: index,
-        hora_sugerida: item.hora_sugerida,
-      }))
+      // Insertar comidas una a una para obtener sus IDs (necesarios para comida_alimentos)
+      const comidasCreadas: { id: string; nombre: string; orden: number }[] = []
+      for (let index = 0; index < plan.distribucion_comidas.length; index++) {
+        const item = plan.distribucion_comidas[index]
+        const { data: comidaCreada } = await supabase
+          .from('comidas')
+          .insert({
+            plan_id: planCreado.id,
+            nombre: item.nombre,
+            orden: index,
+            hora_sugerida: item.hora_sugerida,
+          })
+          .select('id, nombre, orden')
+          .single()
+        if (comidaCreada) comidasCreadas.push(comidaCreada)
+      }
 
-      const { error: errorComidas } = await supabase.from('comidas').insert(comidas)
-      if (errorComidas) throw new Error(errorComidas.message)
+      // Persistir la primera receta sugerida como "alimento" en comida_alimentos
+      // para que el cliente vea platos asignados y la vista semanal pueda calcular macros
+      for (let index = 0; index < comidasCreadas.length; index++) {
+        const comida = comidasCreadas[index]
+        const recetas = recetasPorComida[index]
+        if (!recetas?.length) continue
+
+        const primeraReceta = recetas[0]
+        try {
+          // Buscar si ya existe un alimento con ese nombre (misma receta)
+          let { data: alimentoExistente } = await supabase
+            .from('alimentos')
+            .select('id')
+            .eq('nombre', primeraReceta.nombre)
+            .eq('categoria', 'receta_ia')
+            .maybeSingle()
+
+          let alimentoId: string
+
+          if (alimentoExistente) {
+            alimentoId = alimentoExistente.id
+          } else {
+            // Crear un alimento virtual con los macros de la receta
+            const { data: nuevoAlimento, error: alError } = await supabase
+              .from('alimentos')
+              .insert({
+                nombre: primeraReceta.nombre,
+                categoria: 'receta_ia',
+                calorias: primeraReceta.kcal,
+                proteinas: primeraReceta.proteinas,
+                carbohidratos: primeraReceta.carbohidratos,
+                grasas: primeraReceta.grasas,
+                custom: true,
+              })
+              .select('id')
+              .single()
+
+            if (alError || !nuevoAlimento) {
+              console.error(`Error al crear alimento para receta "${primeraReceta.nombre}":`, alError)
+              continue
+            }
+            alimentoId = nuevoAlimento.id
+          }
+
+          // Vincular a la comida (100g = 1 porción como base)
+          await supabase.from('comida_alimentos').insert({
+            comida_id: comida.id,
+            alimento_id: alimentoId,
+            cantidad_gramos: 100,
+          })
+        } catch (err) {
+          console.error(`Error al persistir receta en comida "${comida.nombre}":`, err)
+          // No bloqueamos — el coach siempre puede editar manualmente desde /dietas
+        }
+      }
 
       setDietaCreada({ id: planCreado.id })
     } catch (err) {
@@ -402,19 +466,19 @@ export default function RevisarPlanPage() {
         {!onboarding ? (
           <p className="text-sm text-[var(--text-muted)]">El cliente aún no ha completado el cuestionario inicial.</p>
         ) : (
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
-          <div><dt className="text-[var(--text-muted)]">Objetivo</dt><dd className="font-medium text-[var(--text)]">{OBJETIVO_LABEL[onboarding.objetivo] ?? onboarding.objetivo}</dd></div>
-          <div><dt className="text-[var(--text-muted)]">Actividad</dt><dd className="font-medium text-[var(--text)]">{ACTIVIDAD_LABEL[onboarding.actividad_base] ?? onboarding.actividad_base}</dd></div>
-          <div><dt className="text-[var(--text-muted)]">Entrenos/semana</dt><dd className="font-medium text-[var(--text)]">{onboarding.dias_entreno} días · {onboarding.duracion_sesion_min} min</dd></div>
-          <div><dt className="text-[var(--text-muted)]">Tipo entreno</dt><dd className="font-medium text-[var(--text)]">{onboarding.tipo_entreno?.join(', ') || '—'}</dd></div>
-          <div><dt className="text-[var(--text-muted)]">Restricciones</dt><dd className="font-medium text-[var(--text)]">{onboarding.restricciones?.join(', ') || 'Ninguna'}</dd></div>
-          <div><dt className="text-[var(--text-muted)]">No le gusta</dt><dd className="font-medium text-[var(--text)]">{onboarding.alimentos_no_gustan || '—'}</dd></div>
-          <div><dt className="text-[var(--text-muted)]">Nivel cocina</dt><dd className="font-medium text-[var(--text)] capitalize">{onboarding.nivel_cocina?.replace('_', ' ')}</dd></div>
-          <div><dt className="text-[var(--text-muted)]">Tiempo cocina</dt><dd className="font-medium text-[var(--text)]">{onboarding.tiempo_cocina_min} min/día</dd></div>
-          {onboarding.presupuesto_semanal_eur && (
-            <div><dt className="text-[var(--text-muted)]">Presupuesto</dt><dd className="font-medium text-[var(--text)]">{onboarding.presupuesto_semanal_eur}€/semana</dd></div>
-          )}
-        </dl>
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
+            <div><dt className="text-[var(--text-muted)]">Objetivo</dt><dd className="font-medium text-[var(--text)]">{OBJETIVO_LABEL[onboarding.objetivo] ?? onboarding.objetivo}</dd></div>
+            <div><dt className="text-[var(--text-muted)]">Actividad</dt><dd className="font-medium text-[var(--text)]">{ACTIVIDAD_LABEL[onboarding.actividad_base] ?? onboarding.actividad_base}</dd></div>
+            <div><dt className="text-[var(--text-muted)]">Entrenos/semana</dt><dd className="font-medium text-[var(--text)]">{onboarding.dias_entreno} días · {onboarding.duracion_sesion_min} min</dd></div>
+            <div><dt className="text-[var(--text-muted)]">Tipo entreno</dt><dd className="font-medium text-[var(--text)]">{onboarding.tipo_entreno?.join(', ') || '—'}</dd></div>
+            <div><dt className="text-[var(--text-muted)]">Restricciones</dt><dd className="font-medium text-[var(--text)]">{onboarding.restricciones?.join(', ') || 'Ninguna'}</dd></div>
+            <div><dt className="text-[var(--text-muted)]">No le gusta</dt><dd className="font-medium text-[var(--text)]">{onboarding.alimentos_no_gustan || '—'}</dd></div>
+            <div><dt className="text-[var(--text-muted)]">Nivel cocina</dt><dd className="font-medium text-[var(--text)] capitalize">{onboarding.nivel_cocina?.replace('_', ' ')}</dd></div>
+            <div><dt className="text-[var(--text-muted)]">Tiempo cocina</dt><dd className="font-medium text-[var(--text)]">{onboarding.tiempo_cocina_min} min/día</dd></div>
+            {onboarding.presupuesto_semanal_eur && (
+              <div><dt className="text-[var(--text-muted)]">Presupuesto</dt><dd className="font-medium text-[var(--text)]">{onboarding.presupuesto_semanal_eur}€/semana</dd></div>
+            )}
+          </dl>
         )}
       </div>
 
@@ -556,11 +620,10 @@ export default function RevisarPlanPage() {
                     key={v.id}
                     type="button"
                     onClick={() => { setVersionIdx(arrIdx); setPlan(v.respuesta_json) }}
-                    className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
-                      isActive
-                        ? 'bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/30 font-medium'
-                        : 'bg-[var(--bg)] text-[var(--text-muted)] border-[var(--border)] hover:border-gray-300'
-                    }`}
+                    className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${isActive
+                      ? 'bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/30 font-medium'
+                      : 'bg-[var(--bg)] text-[var(--text-muted)] border-[var(--border)] hover:border-gray-300'
+                      }`}
                   >
                     V{displayIdx + 1} · {fecha}
                   </button>
@@ -614,7 +677,7 @@ export default function RevisarPlanPage() {
                       </div>
                       {cargandoRecetas ? (
                         <div className="flex gap-2 mt-1">
-                          {[1,2,3].map(i => <div key={i} className="h-6 w-20 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.06)' }} />)}
+                          {[1, 2, 3].map(i => <div key={i} className="h-6 w-20 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.06)' }} />)}
                         </div>
                       ) : recetas.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5 mt-1">

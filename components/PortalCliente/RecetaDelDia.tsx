@@ -15,9 +15,10 @@ interface RecetaData {
 interface RecetaDelDiaProps {
     kcal: number
     proteinas: number
+    clienteId?: string
 }
 
-export default function RecetaDelDia({ kcal, proteinas }: RecetaDelDiaProps) {
+export default function RecetaDelDia({ kcal, proteinas, clienteId }: RecetaDelDiaProps) {
     const [receta, setReceta] = useState<RecetaData | null>(null)
 
     useEffect(() => {
@@ -25,7 +26,9 @@ export default function RecetaDelDia({ kcal, proteinas }: RecetaDelDiaProps) {
         // Apuntar al rango de una comida principal (~1/3 del día)
         const kcalTarget = Math.round(kcal / 3)
         const protTarget = Math.round(proteinas / 3)
-        fetch(`/api/recetas/sugeridas?kcal=${kcalTarget}&proteinas=${protTarget}&limite=1`)
+        const params = new URLSearchParams({ kcal: String(kcalTarget), proteinas: String(protTarget), limite: '1' })
+        if (clienteId) params.set('cliente_id', clienteId)
+        fetch(`/api/recetas/sugeridas?${params}`)
             .then(r => r.json())
             .then(({ recetas }) => { if (recetas?.length) setReceta(recetas[0]) })
             .catch(e => console.error('[RecetaDelDia] Error cargando receta sugerida:', e))

@@ -387,6 +387,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                 kcal: String(Math.round(macros.calorias)),
                 proteinas: String(Math.round(macros.proteinas)),
                 limite: '4',
+                ...(planLocal.cliente_id ? { cliente_id: planLocal.cliente_id } : {}),
                 ...(tipo ? { tipo_plato: tipo } : {}),
             })
             const res = await fetch(`/api/recetas/sugeridas?${params}`)
@@ -427,7 +428,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
 
             {/* Vista semanal — usa comidasParaSemana (plan original, referencia estable) */}
             {vistaActual === 'semana' && (
-                <PlanSemanal comidas={comidasParaSemana} />
+                <PlanSemanal comidas={comidasParaSemana} clienteId={planLocal.cliente_id} />
             )}
 
             {/* Vista diaria */}
@@ -457,7 +458,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
             </div>
 
             {/* Receta del día */}
-            <RecetaDelDia kcal={totalDia.calorias} proteinas={totalDia.proteinas} />
+            <RecetaDelDia kcal={totalDia.calorias} proteinas={totalDia.proteinas} clienteId={planLocal.cliente_id} />
 
             {/* ─── Micronutrientes ─── */}
             <div className="card !p-0 overflow-hidden">

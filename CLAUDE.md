@@ -317,6 +317,7 @@ git add -A && git commit -m "Sesion [FECHA]: [RESUMEN]" && git push
 2. **`URL` como nombre de variable**: Sombrea constructor global. Usar `SB`, `API_URL`.
 3. **Typos en variables**: `grasa` vs `grasas`. Usar `node --check` antes de ejecutar.
 4. **No verificar 416 en paginación**: Manejar 416 en toda paginación con Supabase REST API.
+5. **Asumir que ingredientes de recetas tienen `alimento_id` vinculado**: El primer intento de fix usó `/api/recetas/[id]/ingredientes` para obtener ingredientes con `alimento_id`, pero muchas recetas en BD solo tienen `nombre_libre` (sin vínculo a la tabla `alimentos`). El filtro `ing.alimento_id && ing.cantidad_gramos > 0` resultaba en array vacío y no se guardaba nada.
 
 ### ⚡ REGLAS PARA PRÓXIMAS SESIONES
 1. Preguntar siempre antes de consumir APIs externas.

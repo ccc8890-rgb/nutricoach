@@ -43,6 +43,7 @@ interface RecetaSlot {
 
 interface PlanSemanalProps {
     comidas: Comida[]
+    clienteId?: string
 }
 
 function calcMacros(alimentos: AlimentoEnComida[]) {
@@ -68,7 +69,7 @@ function inferirTipoPlato(nombre: string): string | null {
     return null
 }
 
-export default function PlanSemanal({ comidas }: PlanSemanalProps) {
+export default function PlanSemanal({ comidas, clienteId }: PlanSemanalProps) {
     const [diaSeleccionado, setDiaSeleccionado] = useState(0)
     // pool: comida.id → lista de recetas disponibles para esa franja
     const [pool, setPool] = useState<Record<string, RecetaSlot[]>>({})
@@ -96,6 +97,7 @@ export default function PlanSemanal({ comidas }: PlanSemanalProps) {
                     kcal: String(Math.round(macros.calorias)),
                     proteinas: String(Math.round(macros.proteinas)),
                     limite: '7',
+                    ...(clienteId ? { cliente_id: clienteId } : {}),
                     ...(tipo ? { tipo_plato: tipo } : {}),
                 })
                 try {

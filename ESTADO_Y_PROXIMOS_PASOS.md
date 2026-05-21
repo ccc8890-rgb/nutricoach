@@ -1,5 +1,38 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 21-05-2026 (Bugfix) — PLAN INICIAL SIN PLATOS ASIGNADOS 🔴 → ✅
+
+##### 🐛 Bug corregido
+**Síntoma**: Al generar plan desde `revisar-plan` (botón "Crear plan de dieta"), el plan se creaba con macros visibles pero **sin ningún plato/receta/alimento asignado**. Al entrar al portal cliente (`cliente/[codigo]`), las comidas aparecían vacías ("Sin alimentos asignados").
+
+**Causa raíz**: La función [`crearPlan()`](app/clientes/[id]/revisar-plan/page.tsx:231) creaba `planes_nutricion` y `comidas` en BD pero **nunca persistía alimentos** en `comida_alimentos`. Las recetas sugeridas por la IA solo se mostraban visualmente via `cargarRecetasPlan()` → `/api/recetas/sugeridas`, pero no se guardaban.
+
+**Historial del fix (2 intentos)**:
+
+| Intento | Estrategia | Resultado | Por qué falló |
+|---------|-----------|-----------|---------------|
+| 1️⃣ | Fetch `/api/recetas/[id]/ingredientes` y guardar ingredientes con `alimento_id` en `comida_alimentos` | ❌ No funcionó | Las recetas en BD no tienen `alimento_id` vinculado en sus ingredientes — solo `nombre_libre`. El filtro `ing.alimento_id && ing.cantidad_gramos > 0` resultaba en array vacío. |
+| 2️⃣ ✅ | Crear **alimento virtual** por receta (categoria `receta_ia`, `custom: true`) con sus macros y vincularlo via `comida_alimentos` | ✅ Funciona | Sigue el patrón de [`generar-dieta-ia/route.ts`](app/api/generar-dieta-ia/route.ts:183-240). No depende de ingredientes con `alimento_id`. |
+
+**Archivos modificados**:
+| Archivo | Cambio |
+|---------|--------|
+| [`app/clientes/[id]/revisar-plan/page.tsx`](app/clientes/[id]/revisar-plan/page.tsx:286-340) | Nuevo bloque post-creación de comidas que: (1) busca/crea `alimento` con macros de la receta, (2) inserta `comida_alimentos` vinculando el alimento a la comida |
+| [`CLAUDE.md`](CLAUDE.md:322) | Nueva lección aprendida: "No asumir que ingredientes de recetas tienen `alimento_id`" |
+
+**Flujo reparado**:
+1. Coach ve plan con recetas sugeridas → hace clic en "Crear plan de dieta"
+2. `crearPlan()` crea `planes_nutricion` + `comidas` (como antes)
+3. **NUEVO**: Por cada comida, toma la 1ª receta sugerida → crea `alimento` en tabla `alimentos` (con `nombre`, `kcal`, `proteinas`, `carbohidratos`, `grasas`, `categoria: 'receta_ia'`, `custom: true`) → inserta `comida_alimentos` (100g = 1 porción)
+4. Portal cliente (`cliente/[codigo]`): `MiPlan` ve `comida_alimentos.length > 0` → muestra nombre de receta con macros
+5. `PlanSemanal`: `calcMacros(comida.alimentos)` devuelve valores > 0 → carga sugerencias de `/api/recetas/sugeridas` con rotación circular por día
+
+**Próximos pasos sugeridos**:
+- Evaluar si los alimentos `receta_ia` deberían mostrarse en selectores de alimentos del editor de dietas (actualmente se filtran por `categoria != 'receta_ia'` o no)
+- Considerar añadir un campo `receta_id` opcional en `comida_alimentos` para trazabilidad completa receta→alimento→comida
+
+---
+
 ## Sesión 21-05-2026 (8ª ronda) — SISTEMA APRENDIZAJE D + CLIENTES TEST B + COSTE SEMANAL C 🚀
 
 ##### ✅ Completado esta ronda
@@ -119,5 +152,5 @@
 
 ---
 
-**Última actualización:** 21-05-2026 (Sesión 6ª ronda — TAG_BRIDGE + cosméticos eliminados + prevención futura unificada)
-**Responsable:** Roo (Sesión 21-05-2026 — 6ª ronda: refinar TAG_BRIDGE, diagnosticar 216 protocolos, eliminar 1.480 cosméticos/no comestibles de BD, crear guard-no-comestible.ts como único punto de verdad)
+**Última actualización:** 22-05-2026 (Bugfix — Plan inicial sin platos asignados)
+**Responsable:** Roo (22-05-2026 — Bugfix: crearPlan() ahora persiste recetas sugeridas como alimentos virtuales en comida_alimentos)
