@@ -2,9 +2,43 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { evaluarPerfilEntreno } from '@/lib/motor-entreno'
 import type { PerfilEntrenoCliente } from '@/types'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com/v1/chat/completions'
 const MODEL = 'deepseek-chat'
+
+// Palabras genéricas que no aportan al matching
+const STOP_WORDS = new Set(['con', 'de', 'en', 'el', 'la', 'los', 'las', 'y', 'a', 'al', 'del'])
+
+async function matchEjercicio(sb: SupabaseClient, nombre: string): Promise<string | null> {
+  const normalizado = nombre.toLowerCase().trim()
+
+  // Nivel 1: match exacto (case-insensitive)
+  const { data: exacto } = await sb.from('ejercicios')
+    .select('id')
+    .ilike('nombre', normalizado)
+    .limit(1)
+  if (exacto?.[0]) return exacto[0].id
+
+  // Nivel 2: match parcial — nombre del ejercicio contiene la búsqueda
+  const { data: parcial } = await sb.from('ejercicios')
+    .select('id')
+    .ilike('nombre', `%${normalizado}%`)
+    .limit(1)
+  if (parcial?.[0]) return parcial[0].id
+
+  // Nivel 3: buscar por palabras significativas (>3 chars, sin stop words)
+  const palabras = normalizado.split(/\s+/).filter(p => p.length > 3 && !STOP_WORDS.has(p))
+  for (const palabra of palabras) {
+    const { data: porPalabra } = await sb.from('ejercicios')
+      .select('id')
+      .ilike('nombre', `%${palabra}%`)
+      .limit(1)
+    if (porPalabra?.[0]) return porPalabra[0].id
+  }
+
+  return null
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -194,17 +228,37 @@ ${evidenciasTexto}
         const sesiones = (planIA.sesiones as Record<string, unknown>[]) ?? []
         for (let i = 0; i < sesiones.length; i++) {
           const s = sesiones[i]
-          const ejercicios = (s.ejercicios as Record<string, unknown>[]) ?? []
-          const ejerciciosTexto = ejercicios.map(e =>
-            `${e.nombre}: ${e.series}x${e.repeticiones} | Desc: ${e.descanso_segundos}s | RPE: ${e.rpe_objetivo}\n${e.notas ?? ''}`
-          ).join('\n\n')
-          await sb.from('sesiones_entrenamiento').insert({
+          const ejerciciosIA = (s.ejercicios as Record<string, unknown>[]) ?? []
+
+          const { data: nuevaSesion } = await sb.from('sesiones_entrenamiento').insert({
             plan_id: planDB.id,
             nombre: (s.nombre as string) ?? `Sesión ${i + 1}`,
             dia_semana: (s.dia_semana as string) ?? null,
             orden: i + 1,
-            notas: ejerciciosTexto || null,
-          })
+            notas: null,
+          }).select('id').single()
+
+          if (!nuevaSesion) continue
+
+          // Vincular cada ejercicio IA a un ejercicio real de la BD por nombre
+          for (let j = 0; j < ejerciciosIA.length; j++) {
+            const ej = ejerciciosIA[j]
+            const nombreEj = (ej.nombre as string ?? '').trim()
+            if (!nombreEj) continue
+
+            const ejercicioId = await matchEjercicio(sb, nombreEj)
+            if (!ejercicioId) continue // no hay match — se omite
+
+            await sb.from('sesion_ejercicios').insert({
+              sesion_id: nuevaSesion.id,
+              ejercicio_id: ejercicioId,
+              series: typeof ej.series === 'number' ? ej.series : null,
+              repeticiones: ej.repeticiones != null ? String(ej.repeticiones) : null,
+              descanso_segundos: typeof ej.descanso_segundos === 'number' ? ej.descanso_segundos : null,
+              notas: [ej.rpe_objetivo ? `RPE ${ej.rpe_objetivo}` : null, ej.notas].filter(Boolean).join(' — ') || null,
+              orden: j + 1,
+            })
+          }
         }
         // Historial para poder regenerar / ver versiones
         await sb.from('registros_ia').insert({
