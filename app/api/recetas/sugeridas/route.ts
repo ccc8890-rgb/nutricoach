@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const kcal = parseFloat(searchParams.get('kcal') ?? '0')
     const proteinas = parseFloat(searchParams.get('proteinas') ?? '0')
-    const limite = Math.min(parseInt(searchParams.get('limite') ?? '3'), 6)
+    const limite = Math.min(parseInt(searchParams.get('limite') ?? '3'), 7)
     const tipo_plato = searchParams.get('tipo_plato') ?? null
 
     if (kcal <= 0) return NextResponse.json({ recetas: [] })
@@ -29,16 +29,20 @@ export async function GET(request: NextRequest) {
     // Si no hay suficientes con filtro de tipo_plato, ampliar sin él
     let pool = data ?? []
     if (tipo_plato && pool.length < limite) {
-        const { data: sinFiltro } = await db
+        let fallbackQuery = db
             .from('recetas')
             .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min')
             .eq('estado', 'aprobada')
             .gte('kcal', Math.round(kcal * (1 - tolerancia)))
             .lte('kcal', Math.round(kcal * (1 + tolerancia)))
             .gte('proteinas', Math.round(proteinas * (1 - tolerancia)))
-            .not('id', 'in', `(${pool.map(r => r.id).join(',')})`)
             .order('kcal', { ascending: true })
             .limit(limite * 2)
+        // NOT IN () vacío es SQL inválido — solo excluir si hay resultados previos
+        if (pool.length > 0) {
+            fallbackQuery = fallbackQuery.not('id', 'in', `(${pool.map(r => r.id).join(',')})`)
+        }
+        const { data: sinFiltro } = await fallbackQuery
         pool = [...pool, ...(sinFiltro ?? [])]
     }
 

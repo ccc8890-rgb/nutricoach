@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw } from 'lucide-react'
 import RecetaDelDia from './RecetaDelDia'
 import ListaCompraPortal from './ListaCompraPortal'
@@ -379,6 +379,10 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
         }
     }
 
+    // Usar plan original (no planLocal) para PlanSemanal — evita re-ejecutar
+    // el useEffect cada vez que el usuario hace swap en la vista Hoy
+    const comidasParaSemana = useMemo(() => plan.comidas ?? [], [plan.comidas])
+
     const totalDia = sumarMacros(
         (planLocal.comidas ?? []).map(c => calcMacrosComida(c.alimentos ?? []))
     )
@@ -403,9 +407,9 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                 ))}
             </div>
 
-            {/* Vista semanal */}
+            {/* Vista semanal — usa comidasParaSemana (plan original, referencia estable) */}
             {vistaActual === 'semana' && (
-                <PlanSemanal comidas={planLocal.comidas ?? []} />
+                <PlanSemanal comidas={comidasParaSemana} />
             )}
 
             {/* Vista diaria */}

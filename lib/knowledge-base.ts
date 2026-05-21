@@ -382,7 +382,7 @@ export const TAG_BRIDGE: Record<string, string[]> = {
 
   // PCOS / SOP / Menopausia — EXPANDIDO con nuevas fuentes clínicas PubMed
   pcos: ['hormonas', 'mujeres', 'insulina', 'sop', 'SOP', 'ovario poliquistico', 'sindrome metabolico', 'testosterona', 'sindrome_ovario_poliquistico', 'morfologia_ovarica', 'salud_femenina', 'glp-1'],
-  sop: ['hormonas', 'mujeres', 'insulina', 'pcos', 'ovario poliquistico', 'sindrome metabolico', 'sindrome_ovario_poliquistico', 'salud_femenina'],
+  sop: ['sop', 'hormonas', 'mujeres', 'insulina', 'pcos', 'ovario poliquistico', 'sindrome metabolico', 'sindrome_ovario_poliquistico', 'salud_femenina', 'testosterona'],
   menopausia: ['mujeres', 'hormonas', 'salud osea', 'tercera edad', 'menopausia', 'estrogenos', 'osteoporosis', 'densidad osea', 'mujeres_posmenopausicas', 'salud_femenina', 'metabolismo_oseo', 'homocisteina', 'densidad_mineral_osea', 'densidad_osea', 'fracturas_osteoporoticas', 'perimenopausia', 'dimorfismo_sexual', 'depresion'],
   climaterio: ['mujeres', 'hormonas', 'salud osea', 'menopausia', 'estrogenos', 'climaterio', 'perimenopausia'],
 
@@ -454,6 +454,110 @@ export const TAG_BRIDGE: Record<string, string[]> = {
 
   // Salud ósea / osteoporosis (nuevas fuentes clínicas)
   salud_osea: ['salud osea', 'osteoporosis', 'densidad osea', 'densidad_mineral_osea', 'densidad_osea', 'fracturas_osteoporoticas', 'calcio', 'vitamina_d', 'metabolismo_oseo', 'homocisteina', 'mujeres_posmenopausicas'],
+  hueso: ['salud osea', 'osteoporosis', 'densidad osea', 'masa_osea', 'calcio', 'vitamina_d'],
+  masa_osea: ['salud osea', 'osteoporosis', 'densidad_mineral_osea', 'densidad_osea', 'metabolismo_oseo'],
+
+  // Suplementación avanzada
+  absorcion: ['biodisponibilidad', 'absorcion', 'digestion', 'nutrientes'],
+  l_citrulina: ['l-citrulina', 'oxido nitrico', 'rendimiento', 'flujo sanguineo', 'ergogenico'],
+  creatina_monohidrato: ['creatina', 'fuerza', 'masa muscular', 'suplementacion', 'rendimiento'],
+  beta_alanina: ['beta-alanina', 'carnesina', 'buffer', 'capacidad', 'alta intensidad'],
+  cafeína: ['cafeina', 'estimulante', 'rendimiento', 'fatiga', 'concentracion', 'ergogenico'],
+  probioticos: ['probióticos', 'microbiota', 'salud intestinal', 'microbioma', 'microbiota_intestinal', 'inmunidad', 'permeabilidad_intestinal'],
+
+  // Microbiota / salud intestinal
+  microbiota: ['microbiota', 'microbioma', 'microbiota_intestinal', 'salud intestinal', 'fibra', 'probióticos', 'butirato', 'postbiotico', 'permeabilidad_intestinal'],
+  microbioma: ['microbiota', 'microbioma', 'microbiota_intestinal', 'salud intestinal', 'fibra'],
+  butirato: ['butirato', 'fibra', 'microbiota', 'salud intestinal', 'acido_graso_cc'],
+  permeabilidad_intestinal: ['permeabilidad_intestinal', 'intestino permeable', 'microbiota', 'salud intestinal', 'butirato', 'probióticos'],
+  fodmap: ['fodmap', 'sindrome_intestino_irritable', 'fermentacion', 'sintomas_gastrointestinales', 'tolerancia_gastrointestinal', 'dieta_baja_en_fodmap'],
+  sindrome_intestino_irritable: ['sindrome_intestino_irritable', 'fodmap', 'sintomas_gastrointestinales', 'tolerancia_gastrointestinal', 'dieta_baja_en_fodmap', 'permeabilidad_intestinal'],
+
+  // Dieta mediterránea / patrones dietéticos
+  dieta_mediterranea: ['dieta mediterránea', 'dieta mediterranea', 'salud cardiovascular', 'prevencion cardiovascular', 'aceite de oliva virgen extra', 'frutos secos', 'fibra', 'grasas saludables', 'omega-3', 'frutas', 'vegetales'],
+  aceite_oliva: ['aceite de oliva virgen extra', 'grasas saludables', 'dieta mediterránea', 'AOVE', 'polifenoles', 'cardiosaludable'],
+  frutos_secos: ['frutos secos', 'nueces', 'grasas saludables', 'omega-3', 'fibra', 'dieta mediterránea', 'snack saludable'],
+  alimentos_ultraprocesados: ['alimentos ultraprocesados', 'alimentos_ultraprocesados', 'ultraprocesados', 'novel', 'bebidas azucaradas', 'carnes procesadas', 'grasas saturadas', 'calidad dietetica', 'enfermedades crónicas'],
+  patron_dietetico: ['patron dietetico', 'patrones dieteticos', 'patrones dietéticos', 'dieta', 'calidad dietetica', 'habitos alimentarios', 'factores_dieteticos'],
+
+  // Nutrición clínica / patologías
+  dieta_cetogenica: ['dieta_cetogenica', 'cetogenica', 'keto', 'grasas', 'baja grasa', 'bajo carbohidratos', 'cuerpos cetonicos', 'epilepsia', 'obesidad'],
+  dieta_sin_gluten: ['dieta_sin_gluten', 'gluten', 'celiaquia', 'introducción de gluten', 'enfermedad celiaca'],
+  enfermedad_renal: ['enfermedad_renal_cronica', 'renal', 'riñon', 'proteinuria', 'filtrado glomerular', 'potasio', 'soporte_nutricional'],
+  soporte_nutricional: ['nutricion clinica', 'soporte_nutricional', 'nutricion enteral', 'nutricion parenteral', 'control_enfermedad', 'intervencion_dietetica'],
+  nutricion_clinica: ['nutricion clinica', 'soporte_nutricional', 'nutricion enteral', 'intervencion_nutricional', 'clinica', 'hospitalario'],
+
+  // Prevención / factores de riesgo
+  prevencion: ['prevención', 'prevencion', 'salud publica', 'factores de riesgo', 'factores_dieteticos', 'factores_reproductivos', 'factores_socioeconomicos', 'enfermedades crónicas'],
+  mortalidad: ['mortalidad', 'mortalidad cardiovascular', 'mortalidad cardiometabolica', 'supervivencia', 'riesgo_cardiovascular', 'prevencion cardiovascular'],
+  riesgo_cardiovascular: ['riesgo_cardiovascular', 'salud cardiovascular', 'enfermedad cardiovascular', 'prevencion cardiovascular', 'mortalidad cardiovascular', 'funcion_cardiaca'],
+  salud_metabolica: ['salud_metabolica', 'metabolismo', 'sindrome metabolico', 'obesidad', 'resistencia insulina', 'gasto energetico', 'ingesta_energetica'],
+  gasto_energetico: ['gasto energetico', 'metabolismo', 'ingesta_energetica', 'balance energetico', 'NEAT', 'termogenesis', 'REE', 'TEE'],
+
+  // Suplementación carbohidratos / nutrientes específicos
+  suplementacion_carbohidratos: ['suplementacion_carbohidratos', 'carbohidratos', 'carga de carbohidratos', 'glucogeno', 'geles', 'isotonica', 'rendimiento_resistencia'],
+  ferritina: ['ferritina', 'hierro', 'hemoglobina', 'anemia', 'ferritina', 'atletas', 'mujeres', 'rendimiento', 'donacion_sangre'],
+  potasio: ['potasio', 'electrolitos', 'hidratacion', 'sodio', 'presion arterial', 'salud cardiovascular', 'calambres'],
+  restriccion_calorica: ['restriccion_calorica', 'deficit calorico', 'perdida grasa', 'longevidad', 'envejecimiento', 'ayuno intermitente'],
+  crono_nutricion: ['crono-nutricion', 'ritmo circadiano', 'timing', 'desayuno', 'sueño', 'cronobiologia', 'metabolismo', 'hormonas'],
+
+  // Entrenamiento avanzado
+  desentrenamiento: ['desentrenamiento', 'destreine', 'destraining', 'detraining', 'mantenimiento', 'recuperacion', 'cese', 'descanso'],
+  rangos_movimiento: ['rango_de_movimiento', 'ROM', 'amplitud', 'movilidad', 'flexibilidad', 'lesiones', 'entrenamiento_fuerza', 'hipertrofia'],
+  series_agrupadas: ['series_agrupadas', 'cluster sets', 'series agrupadas', 'descanso intra-serie', 'potencia', 'fuerza', 'volumen'],
+  superseries: ['superseries', 'series compuestas', 'antagonistas', 'eficiencia_temporal', 'densidad', 'hipertrofia'],
+  entrenamiento_combinado: ['entrenamiento_combinado', 'concurrente', 'hibrido', 'fuerza', 'resistencia', 'interferencia', 'compatibilidad'],
+  sobreentrenamiento: ['sobreentrenamiento', 'sobrecarga', 'fatiga cronica', 'recuperacion', 'HRV', 'cortisol', 'rendimiento', 'ACWR'],
+  autorregulacion: ['autorregulacion', 'RPE', 'RIR', 'autoregulación', 'intensidad', 'carga', 'periodizacion', 'entrenamiento_fuerza'],
+  rhabdomiolisis: ['rabdomiolisis', 'rhabdomiolisis', 'daño muscular', 'CK', 'exceso entrenamiento', 'riesgo'],
+
+  // Running / resistencia avanzado
+  red_s: ['red-s', 'deficit energetico', 'triada', 'disponibilidad_energetica', 'atletas', 'mujeres', 'hormonas', 'menstruacion', 'hueso', 'salud osea'],
+  triada_atleta: ['triada', 'red-s', 'mujeres', 'atletas', 'disponibilidad_energetica', 'amenorrea', 'salud osea'],
+  periodo_ventana: ['periodizacion_nutricional', 'timing', 'pre-entreno', 'post-entreno', 'ventana anabolica', 'carbohidratos', 'proteina'],
+  oxidacion_grasas: ['oxidacion_grasas', 'fat oxidation', 'grasas', 'metabolismo', 'zona2', 'ejercicio_resistencia', 'baja intensidad'],
+  seiler: ['seiler', 'polarizado', '80/20', 'zona2', 'intensidad', 'running', 'rendimiento_resistencia'],
+
+  // Psicología / coaching nutricional
+  coaching_nutricional: ['coaching nutricional', 'entrevista motivacional', 'cambio de comportamiento', 'cambio de conducta', 'adherencia', 'educación nutricional', 'hábitos alimentarios', 'intervención nutricional', 'desconocimiento_nutricional'],
+  educacion_nutricional: ['educación nutricional', 'coaching nutricional', 'habitos_alimentarios', 'adherencia', 'cambio de comportamiento', 'desconocimiento_nutricional', 'intervencion_intensiva'],
+  habitos_alimentarios: ['habitos_alimentarios', 'conducta alimentaria', 'adherencia', 'cambio de comportamiento', 'dieta', 'patron dietetico', 'factores_socioeconomicos', 'entrevista motivacional'],
+  apetito: ['apetito', 'hambre', 'saciedad', 'compensacion', 'frecuencia comidas', 'volumen', 'densidad_energetica', 'control_peso'],
+
+  // Salud femenina / género
+  diferencias_sexo: ['diferencias_sexo', 'sexo', 'hombre', 'mujer', 'dimorfismo_sexual', 'hombres', 'mujeres_jovenes', 'hombres_jovenes', 'hormonas'],
+  salud_femenina: ['mujeres', 'hormonas', 'ginecologia', 'obstetricia', 'suelo_pelvico', 'factores_reproductivos', 'paridad', 'menopausia', 'pcos', 'incontinencia_urinaria'],
+  suelo_pelvico: ['suelo_pelvico', 'suelo pelvico', 'incontinencia_urinaria', 'mujeres', 'embarazo', 'postparto', 'rehabilitacion'],
+  ginecologia: ['ginecologia', 'obstetricia', 'mujeres', 'salud femenina', 'menstruacion', 'anticonceptivos', 'fertilidad'],
+
+  // Pediatría / adolescentes
+  pediatria: ['pediatría', 'niños', 'adolescentes', 'infancia', 'neurodesarrollo', 'crecimiento', 'alimentación complementaria'],
+  adolescentes: ['adolescentes', 'jovenes', 'pediatría', 'nutricion', 'deporte', 'rendimiento', 'creencias', 'composicion corporal'],
+  tercera_edad: ['tercera_edad', 'adultos_mayores', 'envejecimiento', 'sarcopenia', 'calidad_de_vida', 'funcion_fisica', 'adultos', 'nutricion clinica', 'polimedicacion'],
+
+  // Tecnología / IA
+  inteligencia_artificial: ['inteligencia_artificial', 'IA', 'machine learning', 'aprendizaje_automatico', 'nutricion_precision', 'personalizacion'],
+  nutricion_precision: ['nutricion_precision', 'personalizacion', 'genomica', 'metabolomica', 'microbioma', 'inteligencia_artificial'],
+  monitorizacion: ['monitorizacion', 'monitoreo_bioquimico', 'marcadores_bioquimicos', 'control', 'seguimiento', 'glucemia', 'HbA1c', 'ferritina'],
+
+  // Inmunidad / inflamación
+  inmunidad: ['inmunidad', 'sistema inmune', 'inflamacion', 'defensas', 'ejercicio', 'nutricion', 'vitaminas', 'minerales', 'probióticos', 'cinc', 'vitamina_c', 'vitamina_d'],
+  inflamacion: ['inflamacion', 'antiinflamatorio', 'cronico', 'inmunidad', 'omega-3', 'grasas saludables', 'dieta mediterranea', 'cortisol', 'ejercicio'],
+
+  // Miscelánea — otros bridges relevantes
+  cancer: ['supervivientes_de_cancer', 'cancer_mama', 'terapia_endocrina', 'oncologia', 'nutricion clinica', 'caquexia', 'supervivencia'],
+  vegano_avanzado: ['vegano', 'plant_based', 'veganismo', 'b12', 'hierro', 'biodisponibilidad', 'proteina vegetal', 'aminoacidos'],
+  tiroides_avanzado: ['tiroides', 'hipotiroidismo', 'hashimoto', 'TSH', 'T4', 'T3', 'yodo', 'selenio', 'cinc', 'funcion_tiroidea'],
+  intoxicacion: ['toxicología', 'metales_pesados', 'metales', 'disrupcion_endocrina', 'parabenos', 'seguridad', 'alimentaria'],
+  medio_ambiente: ['sostenibilidad', 'medio ambiente', 'huella carbono', 'dieta sostenible', 'alimentos locales', 'estacionalidad'],
+}
+
+// ── Tags adicionales para normalización de objetivos ──
+// Algunos tags de papers que son sinónimos de bridges existentes
+const TAG_SINONIMOS: Record<string, string[]> = {
+  deficit: ['deficit', 'deficit calorico', 'perdida grasa'],
+  cardiovascular: ['cardiovascular', 'salud cardiovascular', 'enfermedad cardiovascular'],
+  esteatosis: ['esteatosis', 'higado graso', 'NAFLD', 'higado_graso'],
 }
 
 // ──────────────────────────────────────────────────────────────
