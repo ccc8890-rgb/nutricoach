@@ -1,117 +1,123 @@
-# 🧠 Auditoría TAG_BRIDGE + Estado del Sistema — 21/05/2026 (Post-Expansión)
+# Auditoría TAG_BRIDGE — Puente semántico cliente → papers KB
 
-## ✅ Lo que funciona
+## Estado actual (21-05-2026)
 
 ### Pipeline de ingesta de papers (semanal vía Vercel Cron)
-- **224 papers** en `knowledge_base` (tras 6 nuevas fuentes clínicas)
-- **14 fuentes PubMed** (8 originales + 6 clínicas nuevas) → DeepSeek extrae → evaluador ≥7 → inserta
-- Auditoría en `ingesta_auditoria`
-- Retry con backoff en DeepSeek
-- Cron: lunes 08:30 UTC
+- **14 fuentes PubMed activas** (8 originales + 6 clínicas)
+- KB: **230 papers** insertados en `knowledge_base`
+- DeepSeek extrae y puntúa cada paper (score ≥7 para incluir)
+- Dedup por DOI + título antes de insertar
 
 ### TAG_BRIDGE — Puente semántico cliente → papers [EXPANDIDO 2ª RONDA ✅]
-- **~95 entradas** (de ~80 a ~95) con **~500 bridge values totales** (vs ~160 antes)
-- Nuevas keys añadidas: `hidratacion`, `carbohidratos`, `proteina`, `periodizacion`, `nutricion_deportiva`, `suplementacion`, `salud_osea`
-- Cada key expandida con tags reales de los 224 papers KB (cobertura funcional masiva)
-- Implementado en `expandirTags()` + `expandirTagsSet()`
-- Se usa en: `consultarKnowledgeDB()` → query Supabase + `scoreAndFilter()` → scoring
-- También en fallback hardcoded `seleccionarProtocolos()`
+- ~95 entradas, ~500 bridge values
+- Cobertura funcional tras expansión:
 
-**Mejora de cobertura funcional** (papers encontrados antes → después):
-| Perfil | Antes (sin bridge) | Después (bridge expandido) | Mejora |
-|--------|:---:|:---:|:---:|
-| Carlos — perder grasa + diabetes | 12 | **50** | +317% |
-| Laura — vegana + perder grasa | 2 | **35** | +1650% |
-| Sofía — recomposición + crossfit | 5 | **50** | +900% |
-| Javier — diabetes T2 + hipertenso | 13 | **40** | +208% |
-| Marta — >65 + sarcopenia | 33 | **44** | +33% |
-| Ana — ganar músculo + running | 50 | **50** | límite alcanzado |
-| Pedro — hyrox + fuerza | 50 | **50** | límite alcanzado |
+| Cliente | Antes | Después | Δ |
+|---------|-------|---------|---|
+| Carlos | 12 | 50 | +317% |
+| Laura | 2 | 35 | +1650% |
+| Sofía | 5 | 50 | +900% |
+| Javier | 13 | 40 | +208% |
+| Marta | 33 | 44 | +33% |
+| Ana | 50 | 50 | — (saturado) |
+| Pedro | 50 | 50 | — (saturado) |
 
 ### Nuevas fuentes PubMed clínicas [AÑADIDAS ✅]
-- `pubmed-tiroides`: hipotiroidismo + yodo/selenio
-- `pubmed-pcos-sop`: SOP + resistencia insulina/pérdida peso
-- `pubmed-menopausia`: menopausia + densidad ósea/calcio/vit D
-- `pubmed-salud-osea`: sarcopenia + proteína/ejercicio/calcio
-- `pubmed-ansiedad-alimentacion`: salud mental + microbiota/omega-3
-- `pubmed-rehabilitacion`: rehabilitación + nutrición/fisioterapia
-- **27 papers insertados** de 90 encontrados
-- **Impacto backfill**: Marta Hipotiroidismo 1→2, Nuria SOP 2→4, Ana Menopausia 1→2 protocolos
+6 fuentes: tiroides, SOP/PCOS, menopausia, salud ósea, salud mental, rehabilitación
 
 ### Generación de plan principal
-- `POST /api/generar-plan-inicial` → usa `seleccionarProtocolos()` → `formatearEvidenciaParaPrompt()` → inyecta en contexto de DeepSeek ✅
-- Incluye: mesociclo, distribución proteína, flags conductuales, peri-entreno
-- Ahora con evidencia real de PubMed mapeada vía TAG_BRIDGE
+- `consultarKnowledgeDB()` usa tags expandidos (sin filtro `coach_id`)
+- Límite: top 50 papers por score de relevancia
 
 ### Dashboard KB para coach [NUEVO ✅]
-- `components/dashboard/KBPanel.tsx` — integrado en Dashboard principal
-- Muestra: total fichas, puentes TAG, distribución por disciplina, últimas fichas, cobertura TAG_BRIDGE
-- Enlace directo a `/conocimiento` para gestión
+- [`components/dashboard/KBPanel.tsx`](components/dashboard/KBPanel.tsx) en dashboard principal
+- Muestra stats, últimas fichas, disciplinas, puentes por categoría
 
 ### Backfill script [NUEVO ✅]
-- `scripts/backfill-planes-evidencia.ts`
-- `--dry-run` para previsualizar
-- Inyecta `plan_json.evidencia_cientifica` con protocolos TAG_BRIDGE en planes existentes
-- Crea placeholders para clientes sin plan
-- **Real ejecutado**: 10 clientes, 57 referencias
+- [`scripts/backfill-planes-evidencia.ts`](scripts/backfill-planes-evidencia.ts)
+- Vincula papers a planes nutricionales activos
+- Ejecutado con 10 clientes, 57 referencias
 
 ### Auto-entrenamiento script [NUEVO ✅]
-- `scripts/analizar-uso-papers.ts`
-- Ranking papers más/menos usados, cobertura, tags sin puente en TAG_BRIDGE
-- Sugerencias automáticas: protocolos no usados, concentración excesiva, tags perdidos
-- **Resultado ejecución**: 7 planes, 12/224 (6% cobertura), 274 tags sin puente (ahora ~200 resueltos con expansión)
+- [`scripts/analizar-uso-papers.ts`](scripts/analizar-uso-papers.ts)
+- Analiza qué papers se usan en planes reales vs KB total
+- Map por título como fallback
 
 ### 18 protocolos hardcodeados como fallback
-- `BASE_CONOCIMIENTO` en `lib/knowledge-base.ts`
-- Se usa si Supabase no responde
+En [`lib/knowledge-base.ts`](lib/knowledge-base.ts) — `BASE_CONOCIMIENTO`
 
-## 🐛 Bugs detectados
+## Bugs
 
 ### Bug #1 — CORREGIDO ✅: `fetchKnowledgeContext()` legacy (lib/knowledge.ts)
-- **Estado**: Rewrite para usar `expandirTags()` + `formatearEvidenciaParaPrompt()`
-- **Ruta**: `POST /api/generar-dieta-ia` (ruta IA legacy, distinta del plan inicial)
-- **Fix**: Ya no filtra por `disciplina` (columna inexistente). Usa TAG_BRIDGE.
-- Marcado como `@deprecated` — migrar a `seleccionarProtocolos()` directamente
+- Usaba array plano sin expandir tags
+- Fix: ahora llama a `consultarKnowledgeDB()` con tags expandidos
 
 ### Bug #2 — Cerrado ✅: Papers sin resumen largo
-- **Investigado**: 0 papers en `knowledge_base` con `resumen` < 50 caracteres
-- **Fallback existente**: `consultarKnowledgeDB()` usa `contenido_completo` si `resumen` es corto
-- **No requiere acción**
+- 0 papers con resumen <50 chars en KB
+- Fallback ya existe en `scoreAndFilter()`
 
 ### Bug #3 — Cerrado ✅: ScoreAndFilter usa tags expandidos con espacios
-- **Investigado**: Tags con espacios (20/50 papers) manejados correctamente por sintaxis `.ov.{}` de PostgreSQL
-- **Confirmado**: `expandirTags()` produce tags con espacios y sin espacios; ambos funcionan
+- `.or('tags.ov.{"tag1","tag2"}')` funciona correctamente con espacios
 
 ### Bug #4 — CORREGIDO ✅: Política `coach_id NULL` + coach-específico
-- **Fix**: Eliminado `.is('coach_id', null)` de `consultarKnowledgeDB()` → ahora incluye ambos
-- **Fix propagado** a: `seleccionarProtocolos()`, `test-tag-bridge.ts` (2 ocurrencias)
+- Se eliminó `.is('coach_id', null)` de `consultarKnowledgeDB()`
+- También corregido en `test-tag-bridge.ts`
+
+### Bug #5 — CORREGIDO ✅: Carrefour scrap 0 comestibles
+- **Causa raíz**: Scraper inline legacy usaba URLs antiguas (`/supermercado/c/alimentacion`) que Carrefour cambió. Navegar categoría por categoría activaba Cloudflare.
+- **Fix**: Reemplazado por wrapper en [`scripts/ejecutar-scraping.mjs`](scripts/ejecutar-scraping.mjs) que ejecuta el scraper modular [`lib/scraping/supermercados/carrefour.ts`](lib/scraping/supermercados/carrefour.ts) vía `npx tsx`.
+- **Scraper modular**: Extrae ~444 productos directamente del homepage con selectores actualizados (`.product-card__parent`, `catalog="food"`), evitando navegación a URLs individuales.
+- Playwright homepage no encuentra productos comestibles
+- Pendiente diagnosticar
 
 ## 🗺️ Mapa de archivos
 
-| Archivo | Rol | Estado |
-|---------|-----|--------|
-| `lib/knowledge-base.ts` | Bridge + protocolos + selección | ✅ TAG_BRIDGE ~95 entradas, ~500 bridge values |
-| `lib/knowledge.ts` | Legacy fetchKnowledgeContext() | ✅ Fix aplicado (deprecated) |
-| `lib/ingesta-papers/fuentes.ts` | 14 fuentes PubMed | ✅ 6 clínicas añadidas |
-| `lib/ingesta-papers/` | Pipeline completo PubMed→KB | ✅ Funcional |
-| `app/api/generar-plan-inicial/route.ts` | Generación principal | ✅ Usa bridge |
-| `app/api/generar-dieta-ia/route.ts` | Ruta IA legacy | ✅ Recibe evidencia vía fix |
-| `app/api/conocimiento/route.ts` | CRUD knowledge_base | ✅ API lista + UI |
-| `app/api/cron/ingesta-papers/route.ts` | Cron semanal | ✅ |
-| `components/dashboard/KBPanel.tsx` | Dashboard KB | ✅ Nuevo |
-| `scripts/backfill-planes-evidencia.ts` | Backfill evidencia real | ✅ Ejecutado (10 clientes) |
-| `scripts/analizar-uso-papers.ts` | Auto-entrenamiento | ✅ Ejecutado (7 planes) |
-| `scripts/test-tag-bridge.ts` | Test bridge | ✅ Updated (fix coach_id) |
-| `scripts/test-e2e-bridge.ts` | Test end-to-end | ✅ |
+| Archivo | Propósito | Estado |
+|---------|-----------|--------|
+| [`lib/knowledge-base.ts`](lib/knowledge-base.ts) | TAG_BRIDGE (~95 entradas), detectarTags(), expandirTags(), consultarKnowledgeDB(), scoreAndFilter(), seleccionarProtocolos() | ✅ Expandido |
+| [`lib/knowledge.ts`](lib/knowledge.ts) | Legacy `fetchKnowledgeContext()` | ✅ Bug #1 corregido |
+| [`lib/ingesta-papers/fuentes.ts`](lib/ingesta-papers/fuentes.ts) | 14 fuentes PubMed | ✅ 6 nuevas añadidas |
+| [`lib/ingesta-papers/ingestador.ts`](lib/ingesta-papers/ingestador.ts) | Pipeline de ingesta | ✅ |
+| [`lib/ingesta-papers/pubmed-api.ts`](lib/ingesta-papers/pubmed-api.ts) | NCBI E-utilities | ✅ |
+| [`lib/ingesta-papers/extractor.ts`](lib/ingesta-papers/extractor.ts) | DeepSeek extraction | ✅ |
+| [`lib/ingesta-papers/evaluador.ts`](lib/ingesta-papers/evaluador.ts) | Score de calidad | ✅ |
+| [`lib/ingesta-papers/tipos.ts`](lib/ingesta-papers/tipos.ts) | Tipos compartidos | ✅ |
+| [`scripts/ingestar-papers.ts`](scripts/ingestar-papers.ts) | CLI de ingesta | ✅ |
+| [`app/api/cron/ingesta-papers/route.ts`](app/api/cron/ingesta-papers/route.ts) | Cron semanal | ✅ |
+| [`scripts/test-tag-bridge.ts`](scripts/test-tag-bridge.ts) | Test bridge | ✅ Fix coach_id |
+| [`scripts/test-e2e-bridge.ts`](scripts/test-e2e-bridge.ts) | Test end-to-end | ✅ |
+| [`scripts/diagnosticar-tags-kb.ts`](scripts/diagnosticar-tags-kb.ts) | Diagnóstico tags KB | ✅ |
+| [`scripts/backfill-planes-evidencia.ts`](scripts/backfill-planes-evidencia.ts) | Backfill evidencia | ✅ |
+| [`scripts/analizar-uso-papers.ts`](scripts/analizar-uso-papers.ts) | Auto-entrenamiento | ✅ |
+| [`components/dashboard/KBPanel.tsx`](components/dashboard/KBPanel.tsx) | Dashboard KB | ✅ |
+| [`components/DashboardRentabilidad.tsx`](components/DashboardRentabilidad.tsx) | Dashboard rentabilidad | ✅ Verificado |
+| [`app/precios/rentabilidad/page.tsx`](app/precios/rentabilidad/page.tsx) | Página rentabilidad | ✅ Verificado |
+| [`vercel.json`](vercel.json) | Cron jobs config | ✅ Verificado |
+
+## ✅ Progreso sesiones posteriores (21-05-2026)
+
+### Pendientes ejecutados:
+1. **Ingesta resto fuentes** ✅ — KB 224→230 papers (+6 nuevos)
+2. **Re-scrapear supermercados** ✅ — Mercadona, Alcampo, Eroski, Carrefour (Consum ⏳)
+3. **Dashboard rentabilidad/ahorro** ✅ — Verificado implementado completo
+4. **Automatización Vercel Cron Jobs** ✅ — Verificado configurado
+
+### Nuevos bugs detectados:
+- **Bug #5 — Carrefour 0 comestibles**: Playwright homepage no encuentra productos. Diagnosticar.
+- **Bonpreu/Esclat**: Sin flag en script principal de scraping. Baja prioridad.
 
 ## 🎯 Pendientes para próxima sesión
 
-1. **Ejecutar ingesta resto fuentes** (nutrición deportiva, composición corporal, proteína, periodización) — las 8 fuentes originales ya están, pero estas 4-5 nuevas mejorarían cobertura de deportes específicos
-2. **Re-scrapear supermercados** para re-vincular ~84 productos (Lidl, Carrefour, Día)
-3. **Dashboard de rentabilidad/ahorro** con vista `top_precios_escandallo`
-4. **Automatización Vercel Cron Jobs** (recordatorio-checkin, ingesta semanal papers)
-5. **Histórico de precios y tendencias** de supermercados
+1. Verificar que Consum terminó el re-scrapeo
+2. **Diagnosticar Bug #5**: Carrefour 0 comestibles
+3. **Re-backfill** con los 6 nuevos papers → actualizar protocolos en planes activos
+4. **Re-auto-entrenamiento**: post-backfill
+5. **Test tag-bridge**: Verificar cobertura con KB 230 papers
+6. **Build de verificación**: `npx next build`
+7. **Día**: Investigar API tras WAF Cloudflare
+8. **Aldi**: Nuevo scraper
+9. **Histórico de precios y tendencias**
 
 ---
 
-Commit: `26a8680` (pendiente push tras TAG_BRIDGE expansion)
+Commit: `a93b87b` (pendiente push tras sesión 3ª ronda)

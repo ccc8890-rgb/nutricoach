@@ -1311,7 +1311,8 @@ async function procesarSupermercado(slug, scrapeFn, supermercados) {
 
 /**
  * Scrapers inline disponibles.
- * Bonpreu, Esclat, Hipercor y El Corte Inglés no tienen versión inline
+ * Bonpreu, Esclat, Hipercor y El Corte Inglés no tienen versión inline.
+ * Carrefour ahora delega en el scraper modular para evitar URLs rotas.
  * porque usan Playwright con intercepción de API + scroll progresivo.
  * Ejecutar via: npx tsx --env-file=.env.local scripts/ejecutar-modular.ts <slug>
  */
