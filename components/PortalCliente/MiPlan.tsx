@@ -325,6 +325,22 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
     ) {
         if (!modalAlternativas) return
         const targetAfId = modalAlternativas.afId
+
+        // Record swap for learning system (fire-and-forget)
+        if (planLocal.cliente_id && modalAlternativas.alimentoId) {
+            fetch('/api/intercambios/elegir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cliente_id: planLocal.cliente_id,
+                    alimento_original_id: modalAlternativas.alimentoId,
+                    alternativa_elegida_id: alternativa.id,
+                    gramos_original: modalAlternativas.gramosOriginal,
+                    gramos_alternativa: gramosAlternativa,
+                }),
+            }).catch(() => {})
+        }
+
         setPlanLocal(prev => ({
             ...prev,
             comidas: (prev.comidas ?? []).map(comida => ({

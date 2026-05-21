@@ -91,6 +91,13 @@ export async function POST(request: NextRequest) {
     .eq('cliente_id', cliente_id)
     .maybeSingle()
 
+  // ── 1e. Fetch perfil alimentario aprendido (intercambios) ─────────────────
+  const { data: perfilAlimentario } = await supabase
+    .from('perfil_alimentario_cliente')
+    .select('ingredientes_rechazados, ingredientes_preferidos, total_interacciones')
+    .eq('cliente_id', cliente_id)
+    .maybeSingle()
+
   // ── 1c. Fetch plantillas de entrenamiento ──────────────────────────────────
   const { data: plantillasEntreno } = await supabase
     .from('plantillas_entrenamiento')
@@ -307,6 +314,17 @@ ${perfil?.alimentos_evitar_extra ? `- Alimentos prohibidos: ${perfil.alimentos_e
 ${perfil?.comidas_favoritas ? `- COMIDAS FAVORITAS (incluir): ${perfil.comidas_favoritas}` : ''}
 ${perfil?.suplementos ? `- Suplementos: ${perfil.suplementos}` : ''}
 ${perfil?.alcohol_semanal ? `- Alcohol: ${perfil.alcohol_semanal} ud/semana` : ''}
+${(() => {
+  const rechazados: string[] = perfilAlimentario?.ingredientes_rechazados ?? []
+  const preferidos: string[] = perfilAlimentario?.ingredientes_preferidos ?? []
+  const total = perfilAlimentario?.total_interacciones ?? 0
+  if (total < 2) return ''
+  return `
+═══ PREFERENCIAS APRENDIDAS (comportamiento real del cliente) ═══
+${rechazados.length > 0 ? `- Alimentos que rechaza habitualmente: ${rechazados.join(', ')} — EVITAR en el plan` : ''}
+${preferidos.length > 0 ? `- Alimentos preferidos como sustitutos: ${preferidos.join(', ')} — PRIORIZAR si encajan con los macros` : ''}
+- Intercambios registrados: ${total} (datos reales de adherencia)`
+})()}
 
 ═══ ALIMENTACIÓN ACTUAL ═══
 ${perfil?.dia_tipico ? `- Día típico: ${perfil.dia_tipico}` : '- Sin datos de alimentación actual'}

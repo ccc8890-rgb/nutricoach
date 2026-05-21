@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { actualizarPerfilDesdeIntercambios } from '@/lib/actualizar-perfil'
 
 export async function POST(request: NextRequest) {
   const supabaseAuth = createApiSupabase(request)
@@ -24,6 +25,9 @@ export async function POST(request: NextRequest) {
   })
 
   if (error) return NextResponse.json({ error: 'Error al guardar intercambio' }, { status: 500 })
+
+  // Fire-and-forget: update learned profile without blocking the response
+  actualizarPerfilDesdeIntercambios(cliente_id).catch(console.error)
 
   return NextResponse.json({ ok: true })
 }
