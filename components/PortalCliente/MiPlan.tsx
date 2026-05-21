@@ -4,6 +4,7 @@ import { useState, useRef, useMemo } from 'react'
 import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw } from 'lucide-react'
 import RecetaDelDia from './RecetaDelDia'
 import ListaCompraPortal from './ListaCompraPortal'
+import MicronutrientesPortal from './MicronutrientesPortal'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros } from '@/types'
 import { useToast } from '@/components/ui/Toast'
@@ -254,6 +255,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
     const [loadingRecetas, setLoadingRecetas] = useState<Record<string, boolean>>({})
     const [showRecetas, setShowRecetas] = useState<Record<string, boolean>>({})
     const [vistaActual, setVistaActual] = useState<'hoy' | 'semana'>('hoy')
+    const [microsAbiertos, setMicrosAbiertos] = useState(false)
     const [listaAbierta, setListaAbierta] = useState(false)
     const [usandoReceta, setUsandoReceta] = useState<string | null>(null)
     const printRef = useRef<HTMLDivElement>(null)
@@ -440,6 +442,28 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
 
             {/* Receta del día */}
             <RecetaDelDia kcal={totalDia.calorias} proteinas={totalDia.proteinas} />
+
+            {/* ─── Micronutrientes ─── */}
+            <div className="card !p-0 overflow-hidden">
+                <button
+                    onClick={() => setMicrosAbiertos(p => !p)}
+                    className="w-full flex items-center justify-between px-4 py-3"
+                >
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 size={16} style={{ color: '#0D9488' }} />
+                        <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Micronutrientes</span>
+                    </div>
+                    {microsAbiertos
+                        ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} />
+                        : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
+                    }
+                </button>
+                {microsAbiertos && (
+                    <div className="px-4 pb-4">
+                        <MicronutrientesPortal codigo={codigo} />
+                    </div>
+                )}
+            </div>
 
             {/* ─── Lista de la Compra ─── */}
             <div className="card !p-0 overflow-hidden">

@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase-server'
+import { createServiceSupabase } from '@/lib/supabase-server'
+
+interface ComidaOrdenable {
+    orden: number
+}
 
 export async function GET(
     _request: Request,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createServiceSupabase()
         const { codigo } = await params
 
         // 1. Buscar plan por código público
@@ -49,7 +53,7 @@ export async function GET(
         }
 
         // 4. Check-ins (últimos 10) — buscar por plan_id si no hay cliente
-        let checkins: any[] = []
+        let checkins: unknown[] = []
         if (clienteId) {
             const { data: c } = await supabase
                 .from('checkins')
@@ -61,7 +65,7 @@ export async function GET(
         }
 
         // 5. Historial de peso (últimos 20)
-        let peso: any[] = []
+        let peso: unknown[] = []
         if (clienteId) {
             const { data: p } = await supabase
                 .from('seguimiento_peso')
@@ -73,7 +77,7 @@ export async function GET(
         }
 
         // 6. Notas del coach
-        let notas: any[] = []
+        let notas: unknown[] = []
         if (clienteId) {
             const { data: n } = await supabase
                 .from('notas_coach')
@@ -87,7 +91,7 @@ export async function GET(
         return NextResponse.json({
             plan: {
                 ...plan,
-                comidas: (plan.comidas ?? []).sort((a: any, b: any) => a.orden - b.orden),
+                comidas: ((plan.comidas ?? []) as ComidaOrdenable[]).sort((a, b) => a.orden - b.orden),
             },
             cliente,
             entreno,

@@ -1,8 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ShoppingCart, Loader2, ChevronDown, ChevronUp, Check } from 'lucide-react'
+import { Loader2, ChevronDown, ChevronUp, Check, Send, TrendingDown, Tag, Store } from 'lucide-react'
 import type { ItemListaCompra } from '@/app/api/cliente/[codigo]/lista-compra/route'
+import type { ResultadoOptimizacion } from '@/types'
+import type { OfertaDetectada, MensajeWhatsApp, ProyeccionAhorroAnual } from '@/lib/precios-smart-cart'
+import type { SustitutoEconomico } from '@/lib/lista-compra/inteligente'
 
 interface ListaCompraPortalProps {
     codigo: string
@@ -28,8 +31,28 @@ function formatGramos(g: number): string {
     return `${Math.round(g)} g`
 }
 
+function formatEuro(valor: number): string {
+    return new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+    }).format(valor)
+}
+
+interface ListaCompraResponse {
+    items: ItemListaCompra[]
+    optimizacion: ResultadoOptimizacion | null
+    ofertas: OfertaDetectada[]
+    sustitutos_economicos: SustitutoEconomico[]
+    proyeccion_ahorro: ProyeccionAhorroAnual | null
+    whatsapp: MensajeWhatsApp | null
+    coste_total: number
+    coste_diario_estimado: number
+}
+
 export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
     const [items, setItems] = useState<ItemListaCompra[]>([])
+    const [data, setData] = useState<ListaCompraResponse | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
     const [marcados, setMarcados] = useState<Set<string>>(new Set())
@@ -38,7 +61,10 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
     useEffect(() => {
         fetch(`/api/cliente/${codigo}/lista-compra`)
             .then(r => r.json())
-            .then(({ items }) => setItems(items ?? []))
+            .then((res: ListaCompraResponse) => {
+                setData(res)
+                setItems(res.items ?? [])
+            })
             .catch(() => setError(true))
             .finally(() => setLoading(false))
     }, [codigo])
@@ -71,11 +97,17 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
 
     const totalItems = items.length
     const totalMarcados = marcados.size
+    const optimizacion = data?.optimizacion
+    const ahorro = optimizacion?.ahorro_vs_peor_super ?? data?.proyeccion_ahorro?.ahorro_semanal ?? 0
 
     function toggleMarcado(id: string) {
         setMarcados(prev => {
             const next = new Set(prev)
-            next.has(id) ? next.delete(id) : next.add(id)
+            if (next.has(id)) {
+                next.delete(id)
+            } else {
+                next.add(id)
+            }
             return next
         })
     }
@@ -83,13 +115,81 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
     function toggleCategoria(cat: string) {
         setColapsadas(prev => {
             const next = new Set(prev)
-            next.has(cat) ? next.delete(cat) : next.add(cat)
+            if (next.has(cat)) {
+                next.delete(cat)
+            } else {
+                next.add(cat)
+            }
             return next
         })
     }
 
     return (
         <div className="space-y-2">
+            {optimizacion && (
+                <div className="rounded-xl border p-3 space-y-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                    <div className="grid grid-cols-3 gap-2">
+                        <div>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Cesta</p>
+                            <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                                {formatEuro(optimizacion.coste_total_multi_super)}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Ahorro</p>
+                            <p className="text-sm font-bold" style={{ color: '#0D9488' }}>
+                                {formatEuro(Math.max(0, ahorro))}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Ofertas</p>
+                            <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                                {data?.ofertas?.length ?? 0}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        {data?.whatsapp?.deepLink && (
+                            <a
+                                href={data.whatsapp.deepLink}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
+                                style={{ background: '#0D9488', color: 'white' }}
+                            >
+                                <Send size={13} />
+                                WhatsApp
+                            </a>
+                        )}
+                        {optimizacion.resumen_por_super.slice(0, 2).map(supermercado => (
+                            <span
+                                key={supermercado.supermercado_id}
+                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs"
+                                style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}
+                            >
+                                <Store size={13} />
+                                {supermercado.supermercado_nombre}: {formatEuro(supermercado.coste)}
+                            </span>
+                        ))}
+                    </div>
+
+                    {!!data?.sustitutos_economicos?.length && (
+                        <div className="space-y-1">
+                            <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                                <TrendingDown size={12} />
+                                Ahorros destacados
+                            </p>
+                            {data.sustitutos_economicos.slice(0, 2).map(item => (
+                                <p key={item.alimento_id} className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                    {item.alimento_nombre}: {formatEuro(item.ahorro_euros)} en {item.supermercado_recomendado}
+                                </p>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Progreso */}
             <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
                 <span>{totalItems} ingredientes · {Object.keys(porCategoria).length} categorías</span>
@@ -180,10 +280,11 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
 
                                             {/* Cantidad */}
                                             <span
-                                                className="text-xs font-semibold flex-shrink-0"
+                                                className="text-xs font-semibold flex-shrink-0 inline-flex items-center gap-1"
                                                 style={{ color: checked ? 'var(--text-muted)' : '#0D9488' }}
                                             >
-                                                {formatGramos(item.cantidad_gramos)}
+                                                {item.cantidad_compra ?? formatGramos(item.cantidad_gramos)}
+                                                {data?.ofertas?.some(o => o.alimento_id === item.alimento_id) && <Tag size={11} />}
                                             </span>
                                         </button>
                                     )
