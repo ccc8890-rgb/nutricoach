@@ -2,7 +2,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import ErrorBoundary from '@/components/ui/ErrorBoundary'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import ClienteEditar from '@/components/ClienteEditar'
 import Link from 'next/link'
@@ -85,6 +85,9 @@ export default function ClienteDetallePage() {
   const [loading, setLoading] = useState(true)
   const [isEditando, setIsEditando] = useState(false)
   const [tabActiva, setTabActiva] = useState<Tab>('informacion')
+  const [confirmandoEliminar, setConfirmandoEliminar] = useState(false)
+  const [eliminando, setEliminando] = useState(false)
+  const router = useRouter()
   const [showSelectorPlantilla, setShowSelectorPlantilla] = useState(false)
   const [plantillaSeleccionada, setPlantillaSeleccionada] = useState<PlantillaEntrenamiento | null>(null)
   const [creandoPlan, setCreandoPlan] = useState(false)
@@ -121,6 +124,21 @@ export default function ClienteDetallePage() {
       .eq('id', id)
       .single()
     if (data) setCliente(data)
+  }
+
+  async function handleEliminarCliente() {
+    setEliminando(true)
+    try {
+      const res = await fetch(`/api/clientes/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json()
+        alert(data.error ?? 'Error al eliminar cliente')
+        return
+      }
+      router.push('/clientes')
+    } finally {
+      setEliminando(false)
+    }
   }
 
   async function guardarRespuestaCheckin(checkinId: string) {
@@ -591,6 +609,42 @@ export default function ClienteDetallePage() {
                 </div>
               </>
             )}
+
+            {/* ── Zona de peligro ── */}
+            <div className="mt-8 rounded-xl border p-4" style={{ borderColor: 'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.04)' }}>
+              <p className="text-sm font-semibold mb-1" style={{ color: '#ef4444' }}>Zona de peligro</p>
+              <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+                Eliminar el cliente borrará su perfil, planes, check-ins y todos sus datos. Esta acción no se puede deshacer.
+              </p>
+              {!confirmandoEliminar ? (
+                <button
+                  className="text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors"
+                  style={{ borderColor: 'rgba(239,68,68,0.4)', color: '#ef4444', background: 'transparent' }}
+                  onClick={() => setConfirmandoEliminar(true)}
+                >
+                  Eliminar cliente
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>¿Seguro? Esto no se puede deshacer.</span>
+                  <button
+                    className="text-xs px-3 py-1.5 rounded-lg font-medium"
+                    style={{ background: '#ef4444', color: '#fff' }}
+                    disabled={eliminando}
+                    onClick={handleEliminarCliente}
+                  >
+                    {eliminando ? 'Eliminando…' : 'Sí, eliminar'}
+                  </button>
+                  <button
+                    className="text-xs px-3 py-1.5 rounded-lg"
+                    style={{ background: 'var(--surface-raised)', color: 'var(--text-muted)' }}
+                    onClick={() => setConfirmandoEliminar(false)}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         ) : tabActiva === 'planificacion' ? (
           <ErrorBoundary>
