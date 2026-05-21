@@ -1,4 +1,4 @@
-const CACHE = 'nutricoach-v2'
+const CACHE = 'nutricoach-v3'
 const STATIC_ASSETS = [
     '/',
     '/cliente',
@@ -13,7 +13,6 @@ const STATIC_ASSETS = [
 // Rutas de API que queremos cachear para offline parcial
 const API_CACHE_ROUTES = [
     '/api/recetas',
-    '/api/alimentos',
 ]
 
 self.addEventListener('install', (event) => {
@@ -48,7 +47,8 @@ self.addEventListener('fetch', (event) => {
 
     const pathname = url.pathname
 
-    // API de recetas y alimentos → cache-first para lectura, network para escritura
+    // APIs cacheables → cache-first para lectura, network para escritura.
+    // /api/alimentos no se cachea: el catálogo cambia por limpieza de BD y debe reflejarse al momento.
     const esApiCacheable = API_CACHE_ROUTES.some(route => pathname.startsWith(route))
     if (esApiCacheable) {
         event.respondWith(
