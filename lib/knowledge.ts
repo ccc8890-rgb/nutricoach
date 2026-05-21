@@ -1,62 +1,83 @@
 import { SupabaseClient } from '@supabase/supabase-js'
+import { expandirTags, formatearEvidenciaParaPrompt, type ProtocoloCientifico } from './knowledge-base'
 
-interface KnowledgeRow {
-  titulo: string
-  disciplina: string
-  categoria: string | null
-  resumen: string | null
-  puntos_clave: string[] | null
-  nivel_evidencia: string | null
-}
-
+/**
+ * Versión legacy de consulta de conocimiento científico.
+ * AHORA usa TAG_BRIDGE internamente para expandir condiciones a tags de KB.
+ *
+ * @deprecated Usa seleccionarProtocolos() + formatearEvidenciaParaPrompt() para nuevo código
+ */
 export async function fetchKnowledgeContext(
   supabase: SupabaseClient,
   opts: {
-    disciplinas: string[]
+    disciplinas?: string[]
     condiciones?: string[]
     limite?: number
   }
 ): Promise<string> {
-  const { disciplinas, condiciones, limite = 8 } = opts
+  const { condiciones, limite = 8 } = opts
 
-  // Priorizar estudios verificados primero, luego por fecha de ingesta (más recientes primero)
-  let query = supabase
-    .from('knowledge_base')
-    .select('titulo, disciplina, categoria, resumen, puntos_clave, nivel_evidencia')
-    .eq('activo', true)
-    .is('coach_id', null)
-    .in('disciplina', disciplinas)
-    .order('verificado', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(limite)
+  try {
+    // 1. Construir tags de búsqueda desde las condiciones (usando TAG_BRIDGE donde aplique)
+    const tagsBusqueda = condiciones && condiciones.length > 0
+      ? expandirTags(condiciones)
+      : []
 
-  if (condiciones && condiciones.length > 0) {
-    const condArray = condiciones.map(c => `"${c.replace(/"/g, '\\"')}"`).join(',')
-    query = query.or(`condiciones.ov.{${condArray}}`)
-  }
+    // 2. Construir query base sobre knowledge_base
+    let query = supabase
+      .from('knowledge_base')
+      .select('titulo, resumen, contenido_completo, fuente, tags, condiciones, nivel_evidencia')
+      .eq('activo', true)
+      .is('coach_id', null)
+      .order('verificado', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(limite)
 
-  const { data, error } = await query
+    // 3. Filtrar por tags expandidos si hay condiciones
+    if (tagsBusqueda.length > 0) {
+      const tagsArray = tagsBusqueda.map(t => `"${t.replace(/"/g, '\\"')}"`).join(',')
+      query = query.or(`tags.ov.{${tagsArray}}`)
+    }
 
-  if (error) {
-    console.error('fetchKnowledgeContext error:', error)
+    const { data, error } = await query
+
+    if (error) {
+      console.error('fetchKnowledgeContext error:', error)
+      return ''
+    }
+
+    if (!data || data.length === 0) return ''
+
+    // 4. Mapear a ProtocoloCientifico[] para usar formatearEvidenciaParaPrompt
+    const protocolos: ProtocoloCientifico[] = (data as Array<{
+      titulo: string
+      resumen: string | null
+      contenido_completo: string | null
+      fuente: string | null
+      tags: string[]
+      condiciones: string[]
+      nivel_evidencia: string | null
+    }>).map((row, i) => {
+      const resumen = row.resumen && row.resumen.length > 50
+        ? row.resumen
+        : (row.contenido_completo || row.resumen || '')
+
+      const referencias = row.fuente
+        ? row.fuente.split('|').map(r => r.trim()).filter(Boolean)
+        : []
+
+      return {
+        id: `kb_${i}`,
+        titulo: row.titulo,
+        tags: row.tags || [],
+        resumen,
+        referencias,
+      }
+    })
+
+    return formatearEvidenciaParaPrompt(protocolos)
+  } catch (err) {
+    console.error('fetchKnowledgeContext exception:', err)
     return ''
   }
-
-  if (!data || data.length === 0) return ''
-
-  const rows = data as KnowledgeRow[]
-  const parts: string[] = ['=== CONOCIMIENTO CIENTÍFICO RELEVANTE ===\n']
-
-  for (const row of rows) {
-    const cat = row.categoria ? `/${row.categoria}` : ''
-    const nivel = row.nivel_evidencia ? ` [${row.nivel_evidencia}]` : ''
-    const header = `${row.titulo}${nivel} — ${row.disciplina}${cat}`
-    const resumen = row.resumen ? `Resumen: ${row.resumen}` : ''
-    const puntos = row.puntos_clave?.length
-      ? `Puntos clave:\n- ${row.puntos_clave.join('\n- ')}`
-      : ''
-    parts.push([header, resumen, puntos].filter(Boolean).join('\n') + '\n')
-  }
-
-  return parts.join('\n')
 }
