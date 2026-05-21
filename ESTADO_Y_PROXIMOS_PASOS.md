@@ -1,5 +1,44 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 22-05-2026 — Lint focal entrenamiento cliente ✅
+
+##### ✅ Corregido
+
+- **`app/cliente/sesion/[id]/page.tsx`**: eliminado el error React Compiler `Cannot access refs during render`.
+  - Causa: la pantalla final leía `sesionStartRef.current` durante render para calcular duración.
+  - Solución: la duración se congela al completar la sesión en `duracionCompletadaMin` y el render usa ese estado estable.
+- En el mismo archivo se limpiaron warnings focales:
+  - `loadSesion` ahora está memoizada con `useCallback` y el `useEffect` depende de la función estable.
+  - Eliminadas variables muertas `allDone` y `setsHechos`.
+- **`app/clientes/[id]/revisar-plan/page.tsx`**: limpiado warning `react-hooks/exhaustive-deps` de `cargarRecetasPlan`, moviendo el helper de tipo de plato fuera del componente y usando `useCallback`.
+- **`app/api/recetas/sugeridas/route.ts`**: eliminado warning de variable `_dist` no usada al limpiar el campo auxiliar de ordenación.
+
+##### 🧪 Verificación ejecutada
+
+```bash
+npm run lint -- 'app/cliente/sesion/[id]/page.tsx' 'app/api/recetas/sugeridas/route.ts' 'app/clientes/[id]/revisar-plan/page.tsx'
+npx tsc --noEmit --pretty false
+npm run build
+```
+
+Resultado:
+- Lint focal: 0 errores, 0 warnings.
+- TypeScript: OK.
+- Build Next.js: OK, 110 rutas/páginas generadas.
+
+##### ⚠️ Lint global sigue pendiente
+
+`npm run lint` global sigue fallando por deuda histórica fuera de esta corrección:
+
+- 680 problemas: 401 errores y 279 warnings.
+- Predominan `@typescript-eslint/no-explicit-any`, `prefer-const`, variables/imports sin uso y scripts legacy.
+- Error estructural pendiente: `scripts/limpiar-huerfanos-productos.ts` tiene parse error (`}` expected).
+- Ya no aparece el error de refs de `app/cliente/sesion/[id]/page.tsx`.
+
+Próximo paso recomendado: crear una fase específica de limpieza de lint separando `app/**` runtime de `scripts/**`, para no mezclar deuda de herramientas antiguas con rutas de producción.
+
+---
+
 ## Sesión 21-05-2026 (Bugfix) — PLAN INICIAL SIN PLATOS ASIGNADOS 🔴 → ✅
 
 ##### 🐛 Bug corregido

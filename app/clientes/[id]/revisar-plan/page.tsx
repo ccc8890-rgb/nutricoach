@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Loader2, CheckCircle, ChevronDown, ChevronUp, User, Utensils, ExternalLink, Dumbbell, RefreshCw } from 'lucide-react'
@@ -60,6 +60,16 @@ interface PerfilProfundo {
   alimentos_evitar_extra?: string
 }
 
+interface RecetaSugerida {
+  id: string
+  nombre: string
+  kcal: number
+  proteinas: number
+  carbohidratos: number
+  grasas: number
+  imagen_url: string | null
+}
+
 interface ClienteData {
   id: string
   profiles: { nombre: string; apellidos: string; email: string } | null
@@ -87,6 +97,17 @@ const ACTIVIDAD_LABEL: Record<string, string> = {
   muy_activo: 'Muy activo',
 }
 
+function nombreATipoPlato(nombre: string): string | null {
+  const n = nombre.toLowerCase()
+  if (n.includes('desayuno') || n.includes('brunch')) return 'Desayuno'
+  if (n.includes('merienda') || n.includes('snack') || n.includes('tentempié') || n.includes('media mañana')) return 'Merienda'
+  if (n.includes('cena')) return 'Cena'
+  if (n.includes('comida') || n.includes('almuerzo') || n.includes('mediodía')) return 'Comida'
+  if (n.includes('post') || n.includes('recuper')) return 'Snack'
+  if (n.includes('pre') || n.includes('antes del entreno')) return 'Snack'
+  return null
+}
+
 export default function RevisarPlanPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
@@ -110,63 +131,13 @@ export default function RevisarPlanPage() {
   const [versionIdx, setVersionIdx] = useState(0)
   const [perfilProfundo, setPerfilProfundo] = useState<PerfilProfundo | null>(null)
   const [showPerfilProfundo, setShowPerfilProfundo] = useState(false)
-  const [recetasPorComida, setRecetasPorComida] = useState<Record<number, { id: string; nombre: string; kcal: number; proteinas: number; carbohidratos: number; grasas: number; imagen_url: string | null }[]>>({})
+  const [recetasPorComida, setRecetasPorComida] = useState<Record<number, RecetaSugerida[]>>({})
   const [cargandoRecetas, setCargandoRecetas] = useState(false)
 
-  useEffect(() => {
-    const id = params.id as string
-    fetch(`/api/clientes/${id}/revisar-data`)
-      .then(r => r.json())
-      .then(({ cliente: c, onboarding: o, registros: rs, perfilProfundo: pp }) => {
-        setCliente(c as ClienteData)
-        setOnboarding(o as OnboardingData)
-        const registros = (rs ?? []) as RegistroIA[]
-        setVersiones(registros)
-        setVersionIdx(0)
-        if (registros.length > 0) {
-          setPlan(registros[0].respuesta_json)
-          cargarRecetasPlan(registros[0].respuesta_json)
-        }
-        if (pp) setPerfilProfundo(pp as PerfilProfundo)
-        setLoading(false)
-      })
-      .catch(e => {
-        console.error('[revisar-plan] Error cargando datos:', e)
-        setLoading(false)
-      })
-  }, [params.id])
-
-  const cargarVersiones = async () => {
-    const { data } = await supabase
-      .from('registros_ia')
-      .select('id, respuesta_json, created_at')
-      .eq('cliente_id', params.id as string)
-      .in('tipo', ['plan_inicial', 'dieta'])
-      .order('created_at', { ascending: false })
-    const registros = (data ?? []) as RegistroIA[]
-    setVersiones(registros)
-    setVersionIdx(0)
-    if (registros.length > 0) {
-      setPlan(registros[0].respuesta_json)
-      cargarRecetasPlan(registros[0].respuesta_json)
-    }
-  }
-
-  const nombreATipoPlato = (nombre: string): string | null => {
-    const n = nombre.toLowerCase()
-    if (n.includes('desayuno') || n.includes('brunch')) return 'Desayuno'
-    if (n.includes('merienda') || n.includes('snack') || n.includes('tentempié') || n.includes('media mañana')) return 'Merienda'
-    if (n.includes('cena')) return 'Cena'
-    if (n.includes('comida') || n.includes('almuerzo') || n.includes('mediodía')) return 'Comida'
-    if (n.includes('post') || n.includes('recuper')) return 'Snack'
-    if (n.includes('pre') || n.includes('antes del entreno')) return 'Snack'
-    return null
-  }
-
-  const cargarRecetasPlan = async (planData: PlanInicial) => {
+  const cargarRecetasPlan = useCallback(async (planData: PlanInicial) => {
     if (!planData.distribucion_comidas?.length) return
     setCargandoRecetas(true)
-    const resultados: typeof recetasPorComida = {}
+    const resultados: Record<number, RecetaSugerida[]> = {}
     await Promise.all(
       planData.distribucion_comidas.map(async (comida, idx) => {
         try {
@@ -191,6 +162,45 @@ export default function RevisarPlanPage() {
     )
     setRecetasPorComida(resultados)
     setCargandoRecetas(false)
+  }, [params.id])
+
+  useEffect(() => {
+    const id = params.id as string
+    fetch(`/api/clientes/${id}/revisar-data`)
+      .then(r => r.json())
+      .then(({ cliente: c, onboarding: o, registros: rs, perfilProfundo: pp }) => {
+        setCliente(c as ClienteData)
+        setOnboarding(o as OnboardingData)
+        const registros = (rs ?? []) as RegistroIA[]
+        setVersiones(registros)
+        setVersionIdx(0)
+        if (registros.length > 0) {
+          setPlan(registros[0].respuesta_json)
+          cargarRecetasPlan(registros[0].respuesta_json)
+        }
+        if (pp) setPerfilProfundo(pp as PerfilProfundo)
+        setLoading(false)
+      })
+      .catch(e => {
+        console.error('[revisar-plan] Error cargando datos:', e)
+        setLoading(false)
+      })
+  }, [params.id, cargarRecetasPlan])
+
+  const cargarVersiones = async () => {
+    const { data } = await supabase
+      .from('registros_ia')
+      .select('id, respuesta_json, created_at')
+      .eq('cliente_id', params.id as string)
+      .in('tipo', ['plan_inicial', 'dieta'])
+      .order('created_at', { ascending: false })
+    const registros = (data ?? []) as RegistroIA[]
+    setVersiones(registros)
+    setVersionIdx(0)
+    if (registros.length > 0) {
+      setPlan(registros[0].respuesta_json)
+      cargarRecetasPlan(registros[0].respuesta_json)
+    }
   }
 
   const reintentarPlan = async () => {
@@ -294,7 +304,7 @@ export default function RevisarPlanPage() {
         const primeraReceta = recetas[0]
         try {
           // Buscar si ya existe un alimento con ese nombre (misma receta)
-          let { data: alimentoExistente } = await supabase
+          const { data: alimentoExistente } = await supabase
             .from('alimentos')
             .select('id')
             .eq('nombre', primeraReceta.nombre)

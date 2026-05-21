@@ -99,7 +99,10 @@ export async function GET(request: NextRequest) {
         }))
         .sort((a, b) => a._dist - b._dist)
         .slice(0, limite)
-        .map(({ _dist: _, ...r }) => r)
+        .map(({ _dist, ...r }) => {
+            void _dist
+            return r
+        })
 
     return NextResponse.json({ recetas: sorted })
 }

@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, CheckCircle2, Circle, RotateCcw, ChevronDown, ChevronUp, Play, Pause, Trophy, Loader2, Info, X } from 'lucide-react'
@@ -69,12 +69,11 @@ export default function EjecucionSesionPage() {
   const [esfuerzoPercibido, setEsfuerzoPercibido] = useState<number | null>(null)
   const [guardando, setGuardando] = useState(false)
   const [guardadoOk, setGuardadoOk] = useState(false)
+  const [duracionCompletadaMin, setDuracionCompletadaMin] = useState<number | null>(null)
   const sesionStartRef = useRef(Date.now())
   const [demoEjId, setDemoEjId] = useState<string | null>(null)
 
-  useEffect(() => { loadSesion() }, [id])
-
-  async function loadSesion() {
+  const loadSesion = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setAuthError(true); setLoading(false); return }
 
@@ -131,7 +130,9 @@ export default function EjecucionSesionPage() {
     setSets(setsInit)
     if (ejerciciosSorted.length > 0) setEjercicioActivo(ejerciciosSorted[0].id)
     setLoading(false)
-  }
+  }, [id])
+
+  useEffect(() => { loadSesion() }, [loadSesion])
 
   // Timer logic
   useEffect(() => {
@@ -177,7 +178,6 @@ export default function EjecucionSesionPage() {
     setSets(prev => {
       const ejSets = [...(prev[ejId] ?? [])]
       ejSets[setIdx] = { ...ejSets[setIdx], hecho: !ejSets[setIdx].hecho }
-      const allDone = ejSets.every(s => s.hecho)
       // Auto-start rest timer when set is completed (not un-completed)
       if (!prev[ejId][setIdx].hecho) {
         const ej = sesion?.ejercicios.find(e => e.id === ejId)
@@ -208,7 +208,7 @@ export default function EjecucionSesionPage() {
         document.getElementById(`ej-${next.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 150)
     } else {
-      // All done
+      setDuracionCompletadaMin(Math.round((Date.now() - sesionStartRef.current) / 60000))
       setShowCompletion(true)
     }
   }
@@ -245,7 +245,6 @@ export default function EjecucionSesionPage() {
     }
   }
 
-  const setsHechos = (ejId: string) => (sets[ejId] ?? []).filter(s => s.hecho).length
   const totalEjercicios = sesion?.ejercicios.length ?? 0
   const completados = ejerciciosDone.size
   const progressPct = totalEjercicios > 0 ? (completados / totalEjercicios) * 100 : 0
@@ -285,7 +284,7 @@ export default function EjecucionSesionPage() {
         return s + (kg * reps)
       }, 0)
     }, 0)
-    const durMin = Math.round((Date.now() - sesionStartRef.current) / 60000)
+    const durMin = duracionCompletadaMin ?? 0
 
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: 'var(--bg)' }}>
@@ -354,7 +353,7 @@ export default function EjecucionSesionPage() {
             <Link href="/cliente" className="btn-primary text-center">Volver al portal</Link>
           )}
           <button
-            onClick={() => { setShowCompletion(false); setEjerciciosDone(new Set()); setEjercicioActivo(sesion.ejercicios[0]?.id ?? null); sesionStartRef.current = Date.now() }}
+              onClick={() => { setShowCompletion(false); setEjerciciosDone(new Set()); setEjercicioActivo(sesion.ejercicios[0]?.id ?? null); setDuracionCompletadaMin(null); sesionStartRef.current = Date.now() }}
             className="btn-secondary"
           >
             Repetir sesión
