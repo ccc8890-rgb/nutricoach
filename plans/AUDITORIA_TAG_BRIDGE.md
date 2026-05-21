@@ -3,22 +3,47 @@
 ## ✅ Lo que funciona
 
 ### Pipeline de ingesta de papers (semanal vía Vercel Cron)
-- 197 papers en `knowledge_base`
-- 8 fuentes PubMed → DeepSeek extrae → evaluador ≥7 → inserta
+- 197+ papers en `knowledge_base`
+- **14 fuentes PubMed** (8 originales + 6 clínicas nuevas) → DeepSeek extrae → evaluador ≥7 → inserta
 - Auditoría en `ingesta_auditoria`
 - Retry con backoff en DeepSeek
 - Cron: lunes 08:30 UTC
 
-### TAG_BRIDGE — Puente semántico cliente → papers [NUEVO]
-- 50+ entradas que expanden tags cliente a tags KB
+### TAG_BRIDGE — Puente semántico cliente → papers [EXPANDIDO ✅]
+- **80+ entradas** (de ~50 a ~85) — cubre objetivos, deportes, salud metabólica, hormonas, suplementación, lesiones, sueño
 - Implementado en `expandirTags()` + `expandirTagsSet()`
 - Se usa en: `consultarKnowledgeDB()` → query Supabase + `scoreAndFilter()` → scoring
 - También en fallback hardcoded `seleccionarProtocolos()`
 - **Resultado**: de 0-11 papers encontrados por perfil → 25-50 papers
 
+### Nuevas fuentes PubMed clínicas [AÑADIDAS ✅]
+- `pubmed-tiroides`: hipotiroidismo + yodo/selenio
+- `pubmed-pcos-sop`: SOP + resistencia insulina/pérdida peso
+- `pubmed-menopausia`: menopausia + densidad ósea/calcio/vit D
+- `pubmed-salud-osea`: sarcopenia + proteína/ejercicio/calcio
+- `pubmed-ansiedad-alimentacion`: salud mental + microbiota/omega-3
+- `pubmed-rehabilitacion`: rehabilitación + nutrición/fisioterapia
+
 ### Generación de plan principal
 - `POST /api/generar-plan-inicial` → usa `seleccionarProtocolos()` → `formatearEvidenciaParaPrompt()` → inyecta en contexto de DeepSeek ✅
 - Incluye: mesociclo, distribución proteína, flags conductuales, peri-entreno
+- Ahora con evidencia real de PubMed mapeada vía TAG_BRIDGE
+
+### Dashboard KB para coach [NUEVO ✅]
+- `components/dashboard/KBPanel.tsx` — integrado en Dashboard principal
+- Muestra: total fichas, puentes TAG, distribución por disciplina, últimas fichas, cobertura TAG_BRIDGE
+- Enlace directo a `/conocimiento` para gestión
+
+### Backfill script [NUEVO ✅]
+- `scripts/backfill-planes-evidencia.ts`
+- `--dry-run` para previsualizar
+- Inyecta `plan_json.evidencia_cientifica` con protocolos TAG_BRIDGE en planes existentes
+- Crea placeholders para clientes sin plan
+
+### Auto-entrenamiento script [NUEVO ✅]
+- `scripts/analizar-uso-papers.ts`
+- Ranking papers más/menos usados, cobertura, tags sin puente en TAG_BRIDGE
+- Sugerencias automáticas: protocolos no usados, concentración excesiva, tags perdidos
 
 ### 18 protocolos hardcodeados como fallback
 - `BASE_CONOCIMIENTO` en `lib/knowledge-base.ts`
@@ -26,12 +51,11 @@
 
 ## 🐛 Bugs detectados
 
-### Bug #1 — CRÍTICO: `fetchKnowledgeContext()` legacy (lib/knowledge.ts)
+### Bug #1 — CORREGIDO ✅: `fetchKnowledgeContext()` legacy (lib/knowledge.ts)
+- **Estado**: Rewrite para usar `expandirTags()` + `formatearEvidenciaParaPrompt()`
 - **Ruta**: `POST /api/generar-dieta-ia` (ruta IA legacy, distinta del plan inicial)
-- **Problema**: filtra por `disciplina` (columna inexistente → query devuelve 0 resultados)
-- Además **NO usa TAG_BRIDGE**
-- **Impacto**: la IA legacy nunca recibe evidencia científica
-- **Fix**: actualizar para usar `seleccionarProtocolos()` con TAG_BRIDGE
+- **Fix**: Ya no filtra por `disciplina` (columna inexistente). Usa TAG_BRIDGE.
+- Marcado como `@deprecated` — migrar a `seleccionarProtocolos()` directamente
 
 ### Bug #2 — Papers sin resumen largo
 - Algunos papers extraídos por DeepSeek tienen `<50 chars` en resumen
@@ -48,68 +72,33 @@
 - `consultarKnowledgeDB()` filtra con `.is('coach_id', null)` ✅ — funciona
 - Pero si un coach añade papers manuales con su `coach_id`, no se mezclan
 
-## 📈 Mejoras prioritarias para próxima sesión
-
-### Mejora #1 — Backfill: regenerar planes existentes con TAG_BRIDGE
-- Los 3 planes generados ANTES del bridge no tienen evidencia real de PubMed
-- Propuesta: script que regenera planes de test clients con TAG_BRIDGE activo
-
-### Mejora #2 — Más papers para condiciones clínicas
-- `diabetes`: solo 5 papers (etiqueta exacta), ~15 con bridge
-- `hipotiroidismo`: 0 papers en KB (no existe en fuentes PubMed configuradas)
-- `pcos/sop`: 0 papers
-- `menopausia`: 0 papers
-- **Fix**: añadir fuentes PubMed especializadas en: tiroides, SOP, menopausia, salud ósea
-
-### Mejora #3 — Expandir TAG_BRIDGE con más sinónimos
-- Revisar manualmente papers sin match y añadir entradas al bridge
-- Ej: "tension_alta" (en condiciones de papers) → mapeado a "hipertension" (cliente)
-
-### Mejora #4 — Dashboard de knowledge_base
-- UI para coach: ver qué papers existen, filtrar, desactivar, añadir manualmente
-- Ya existe `GET /api/conocimiento` endpoint (falta UI)
-
-### Mejora #5 — Auto-entrenamiento del algoritmo
-- Sistema que analice qué papers se usaron en cada plan y sugiera refinamientos
-- Si un paper se usa mucho → priorizarlo en scoring
-- Si un paper nunca se usa → revisar etiquetado o desactivar
-
 ## 🗺️ Mapa de archivos
 
 | Archivo | Rol | Estado |
 |---------|-----|--------|
-| `lib/knowledge-base.ts` | Bridge + protocolos + selección | ✅ Con TAG_BRIDGE |
-| `lib/knowledge.ts` | Legacy fetchKnowledgeContext() | 🐛 No usa bridge (Bug #1) |
+| `lib/knowledge-base.ts` | Bridge + protocolos + selección | ✅ TAG_BRIDGE 80+ entradas |
+| `lib/knowledge.ts` | Legacy fetchKnowledgeContext() | ✅ Fix aplicado (deprecated) |
+| `lib/ingesta-papers/fuentes.ts` | 14 fuentes PubMed | ✅ 6 clínicas añadidas |
 | `lib/ingesta-papers/` | Pipeline completo PubMed→KB | ✅ Funcional |
 | `app/api/generar-plan-inicial/route.ts` | Generación principal | ✅ Usa bridge |
-| `app/api/generar-dieta-ia/route.ts` | Ruta IA legacy | 🐛 Bug #1 |
-| `app/api/conocimiento/route.ts` | CRUD knowledge_base (sin UI) | ✅ API lista |
+| `app/api/generar-dieta-ia/route.ts` | Ruta IA legacy | ✅ Recibe evidencia vía fix |
+| `app/api/conocimiento/route.ts` | CRUD knowledge_base | ✅ API lista + UI |
 | `app/api/cron/ingesta-papers/route.ts` | Cron semanal | ✅ |
+| `components/dashboard/KBPanel.tsx` | Dashboard KB | ✅ Nuevo |
+| `scripts/backfill-planes-evidencia.ts` | Backfill evidencia real | ✅ Nuevo |
+| `scripts/analizar-uso-papers.ts` | Auto-entrenamiento | ✅ Nuevo |
 | `scripts/test-tag-bridge.ts` | Test bridge | ✅ |
 | `scripts/test-e2e-bridge.ts` | Test end-to-end | ✅ |
 
-## 📊 Tags en KB vs Tags cliente
+## 🎯 Pendientes para próxima sesión
 
-```
-Tags disponibles en KB (top 15):
-  proteina(25), hipertrofia(24), rendimiento(24), fuerza(20),
-  recuperacion(16), running(14), intensidad(14), periodizacion(14),
-  hyrox(13), volumen(13), obesidad(11), zona2(10),
-  autorregulacion(10), leucina(9), sodio(9)
+1. **Ejecutar backfill**: `npx tsx scripts/backfill-planes-evidencia.ts --dry-run` → luego sin flag
+2. **Ejecutar auto-entrenamiento**: `npx tsx scripts/analizar-uso-papers.ts` → ajustar TAG_BRIDGE según resultados
+3. **Bug #2**: Investigar papers con resumen <50 chars — ¿DeepSeek o PubMed?
+4. **Bug #3**: Tests de estrés con espacios en tags del bridge
+5. **Bug #4**: Política de mezcla coach_id NULL + coach_id específico
+6. **Ejecutar ingesta**: las nuevas 6 fuentes clínicas necesitan primera ejecución (Vercel Cron o manual)
 
-Tags cliente SIN cobertura en KB:
-  ❌ hipotiroidismo   ❌ tiroides   ❌ pcos   ❌ sop
-  ❌ menopausia       ❌ climaterio ❌ dislipemia
-  ❌ ansiedad          ❌ salud_mental
-  ❌ ciclismo         ❌ triatlon   ❌ bici    ❌ ironman
-```
+---
 
-## 🎯 Resumen para próxima sesión
-
-1. **Fix Bug #1**: Actualizar `fetchKnowledgeContext()` para usar `seleccionarProtocolos()` con TAG_BRIDGE
-2. **Añadir fuentes clínicas**: tiroides, SOP, menopausia en PubMed
-3. **Backfill**: regenerar planes de test con evidencia real
-4. **Dashboard KB**: UI para coach sobre papers disponibles
-5. **Expandir TAG_BRIDGE**: más sinónimos para tags sin cobertura
-
-Commit: `85d1a63` — TAG_BRIDGE implementado
+Commit: `ab54e2b` — 5 mejoras implementadas: TAG_BRIDGE expandido, PubMed clínico, backfill, KB dashboard, auto-entrenamiento
