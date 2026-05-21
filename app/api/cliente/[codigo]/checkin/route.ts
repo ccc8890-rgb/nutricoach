@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { evaluarCheckin } from '@/lib/periodizacion/arbol-decision'
-import { calcularAjusteCaloricoSemanal } from '@/lib/periodizacion/motor-macros'
+import { calcularAjusteCaloricoSemanal, type AjusteMacros } from '@/lib/periodizacion/motor-macros'
 import { generarFeedbackCheckinIA } from '@/lib/feedback-checkin-ia'
 
 export async function POST(
@@ -162,26 +162,30 @@ async function dispararEvaluacionPeriodizacion(
     const resultado = evaluarCheckin(input)
 
     let ajuste_macros = null
+    let plan_activo_id: string | null = null
+
     if (resultado.accion === 'ajuste_calorico_10pct') {
-        const { data: dieta } = await serviceSupabase
-            .from('dietas')
-            .select('kcal_objetivo, proteinas_objetivo, carbos_objetivo, grasas_objetivo')
+        const { data: planActivo } = await serviceSupabase
+            .from('planes_nutricion')
+            .select('id, kcal_objetivo, proteinas_objetivo, carbohidratos_objetivo, grasas_objetivo')
             .eq('cliente_id', cliente_id)
+            .eq('activo', true)
             .order('created_at', { ascending: false })
             .limit(1)
             .single()
 
-        if (dieta) {
+        if (planActivo) {
+            plan_activo_id = planActivo.id
             ajuste_macros = calcularAjusteCaloricoSemanal({
-                kcal: dieta.kcal_objetivo ?? 2000,
-                proteinas: dieta.proteinas_objetivo ?? 150,
-                carbohidratos: dieta.carbos_objetivo ?? 200,
-                grasas: dieta.grasas_objetivo ?? 70,
+                kcal: planActivo.kcal_objetivo ?? 2000,
+                proteinas: planActivo.proteinas_objetivo ?? 150,
+                carbohidratos: planActivo.carbohidratos_objetivo ?? 200,
+                grasas: planActivo.grasas_objetivo ?? 70,
             })
         }
     }
 
-    await serviceSupabase.from('periodizacion_acciones').insert({
+    const { data: accionGuardada } = await serviceSupabase.from('periodizacion_acciones').insert({
         cliente_id,
         checkin_id,
         accion: resultado.accion,
@@ -189,8 +193,18 @@ async function dispararEvaluacionPeriodizacion(
         ajuste_macros,
         requiere_aprobacion: resultado.requiere_aprobacion_coach,
         aprobado_por_coach: resultado.requiere_aprobacion_coach ? null : true,
-        aplicado: !resultado.requiere_aprobacion_coach,
-    })
+        aplicado: false, // siempre false hasta aplicar efectivamente
+    }).select('id').single()
+
+    // Auto-aplicar al plan si no requiere aprobación y hay ajuste calculado
+    if (
+        !resultado.requiere_aprobacion_coach &&
+        ajuste_macros &&
+        plan_activo_id &&
+        accionGuardada?.id
+    ) {
+        await aplicarAjusteAlPlan(serviceSupabase, plan_activo_id, ajuste_macros, accionGuardada.id)
+    }
 
     // Webhook Make.com si requiere aprobación
     if (resultado.requiere_aprobacion_coach && process.env.MAKE_WEBHOOK_PERIODIZACION) {
@@ -205,4 +219,24 @@ async function dispararEvaluacionPeriodizacion(
             }),
         }).catch(() => null)
     }
+}
+
+// ─── Función compartida: aplica ajuste de macros al plan activo ──────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function aplicarAjusteAlPlan(supabase: any, planId: string, ajuste_macros: AjusteMacros, accionId: string) {
+    await supabase
+        .from('planes_nutricion')
+        .update({
+            kcal_objetivo: ajuste_macros.kcal_ajustado,
+            proteinas_objetivo: ajuste_macros.proteinas_ajustadas,
+            carbohidratos_objetivo: ajuste_macros.carbohidratos_ajustados,
+            grasas_objetivo: ajuste_macros.grasas_ajustadas,
+            updated_at: new Date().toISOString(),
+        })
+        .eq('id', planId)
+
+    await supabase
+        .from('periodizacion_acciones')
+        .update({ aplicado: true })
+        .eq('id', accionId)
 }
