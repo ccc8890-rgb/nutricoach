@@ -1,5 +1,53 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 22-05-2026 (noche 3) — CALENDARIO + PLANES IA ENTRENO ✅
+
+##### ✅ Completado
+
+**Calendario funcional** (`PlanificacionCalendario.tsx` reescrito — commit `9c5ebeb` sesión previa + ajustes)
+- Carga sesiones reales de `sesiones_entrenamiento` desde Supabase (fetch interno en el componente)
+- Dots de color por día: entreno (teal), dieta (gris), revisión (morado), hoy (ring teal)
+- Cabeceras de columna resaltadas cuando ese día tiene sesión de entreno
+- Panel derecho: tarjeta dieta activa + tarjeta entrenamiento + info check-in + revisión
+- Leyenda visual al pie
+
+**3 bugs de asignación de planes corregidos** (commit `3f36b04`)
+- `planes_nutricion` sin `codigo_publico` → portal del cliente completamente roto (todos los endpoints usan este campo como clave pública). Ahora se genera automáticamente al crear
+- `planes_entrenamiento` sin `activo: true` → no aparecía en ninguna query que filtre por activo
+- `MiPlan` recibía `entreno={null}` hardcodeado → el portal nunca veía el plan de entreno del cliente
+- Parche SQL aplicado en Supabase: todos los registros históricos sin `codigo_publico` y sin `activo` actualizados
+
+**14 plantillas de entrenamiento** (+6 nuevas via SQL)
+- Gym Principiante — Cuerpo Completo (gym_estetica, general)
+- Running 5K — Base Aeróbica (running, general)
+- HIIT Metabólico — Pérdida de Grasa (funcional, general)
+- Powerlifting Base — Big 3 (gym_fuerza, general)
+- Natación — Base Técnica y Aeróbica (natacion, general)
+- Running 10K — Ritmo y Resistencia (running, intermedio)
+
+**Auto-asignación de plan de entrenamiento con IA científica** (commits `2870aed`, `cd36ee2`)
+- Nuevo endpoint `POST /api/entrenos/proponer-plan-ciencia`:
+  - Carga perfil atleta (`perfil_entreno_cliente`) + onboarding + últimas 20 sesiones completadas (RPE)
+  - Ejecuta `evaluarPerfilEntreno()` del motor-entreno (árbol 9 decisiones)
+  - Filtra papers de `knowledge_base` por modalidad + fuerza + cardio + hiit
+  - Llama DeepSeek `deepseek-chat` con JSON mode (temp 0.3, 4000 tokens)
+  - RPE promedio > 8.5 → reduce volumen 15-20%; < 6.0 → aumenta carga; 6-8.5 → mantiene progresión
+  - Guarda automáticamente: `planes_entrenamiento` + `sesiones_entrenamiento` (ejercicios como texto en `notas`) + `registros_ia` tipo `plan_entreno_ia`
+  - Devuelve `{ plan, plan_id, metadata }`
+- Al abrir `revisar-plan` con cliente sin plan activo:
+  - Spinner "Generando plan de entrenamiento con IA científica…"
+  - Plan guardado automáticamente cuando llega la respuesta
+  - Coach ve: badge verde "Entrenamiento asignado · generado por IA" + botones Regenerar / Cambiar plantilla / Ver →
+  - Panel colapsable con sesiones propuestas y fundamentación científica
+- Si ya hay plan activo, lo detecta y muestra directamente sin llamar a la IA
+
+##### 🔲 Pendiente
+- Regenerar 147 imágenes malas: `node scripts/regenerar-imagenes-malas.mjs --genera` (~$5)
+- Edición de ejercicios en sesiones de entrenamiento IA (actualmente como texto en `notas`)
+- Vincular ejercicios IA a `ejercicios` reales de la BD (para tracking de sets/reps/PRs)
+
+---
+
 ## Sesión 22-05-2026 (noche 2) — ALÉRGENOS EN RECETARIO ✅
 
 ##### ✅ Completado
