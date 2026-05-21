@@ -2,7 +2,11 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Home, BookOpen, ClipboardCheck, BarChart2, LogOut, UtensilsCrossed, Dumbbell, Weight, Trophy } from 'lucide-react'
+import {
+  Home, BookOpen, ClipboardCheck, BarChart2, LogOut,
+  UtensilsCrossed, Dumbbell, Weight, Trophy, Sun, Moon,
+  Flame, Zap, ChevronRight, X, TrendingDown, TrendingUp,
+} from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
@@ -15,12 +19,95 @@ import NotasCoach from '@/components/PortalCliente/NotasCoach'
 import TLSGauge from '@/components/PortalCliente/TLSGauge'
 import MiPlan from '@/components/PortalCliente/MiPlan'
 import SemanaEntrenoCard from '@/components/training/SemanaEntrenoCard'
+import { useTheme } from '@/components/ThemeProvider'
 
 type Tab = 'hoy' | 'plan' | 'checkin' | 'progreso'
 
+/* ── Macro ring SVG ─────────────────────────────── */
+function MacroRing({
+  value, max, color, size = 56, stroke = 5,
+}: { value: number; max: number; color: string; size?: number; stroke?: number }) {
+  const r = (size - stroke * 2) / 2
+  const circ = 2 * Math.PI * r
+  const pct = max > 0 ? Math.min(value / max, 1) : 0
+  const dash = circ * pct
+  return (
+    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none"
+        stroke="rgba(255,255,255,0.07)" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none"
+        stroke={color} strokeWidth={stroke}
+        strokeDasharray={`${dash} ${circ}`}
+        strokeLinecap="round"
+        style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(0.23,1,0.32,1)' }}
+      />
+    </svg>
+  )
+}
+
+/* ── Macro pill ─────────────────────────────────── */
+function MacroPill({ label, value, target, color, unit = 'g' }: {
+  label: string; value: number; target: number; color: string; unit?: string
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1.5 cursor-default">
+      <div className="relative">
+        <MacroRing value={value} max={target} color={color} size={60} stroke={5} />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-[11px] font-bold" style={{ color: 'var(--text)' }}>
+            {value > 0 ? value.toFixed(0) : '—'}
+          </span>
+        </div>
+      </div>
+      <div className="text-center">
+        <p className="text-[10px] font-semibold tracking-wide uppercase" style={{ color }}>
+          {label}
+        </p>
+        <p className="text-[9px]" style={{ color: 'var(--text-muted)' }}>
+          / {target > 0 ? target.toFixed(0) : '—'}{unit}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/* ── Stat badge ─────────────────────────────────── */
+function StatBadge({ icon: Icon, label, value, sub, color }: {
+  icon: React.ElementType; label: string; value: string; sub?: string; color: string
+}) {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: 'var(--surface)' }}>
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: `${color}18` }}>
+        <Icon size={16} style={{ color }} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-wide font-medium" style={{ color: 'var(--text-muted)' }}>{label}</p>
+        <p className="font-bold text-sm leading-tight" style={{ color: 'var(--text)' }}>{value}</p>
+        {sub && <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
+      </div>
+    </div>
+  )
+}
+
+/* ── Empty state ────────────────────────────────── */
+function EmptyState({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-14 text-center">
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+        style={{ background: 'var(--surface)' }}>
+        <Icon size={22} style={{ color: 'var(--text-muted)' }} />
+      </div>
+      <p className="text-sm max-w-[220px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{text}</p>
+    </div>
+  )
+}
+
+/* ── Main component ─────────────────────────────── */
 function PortalClientePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { theme, toggleTheme } = useTheme()
   const [showBienvenida, setShowBienvenida] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [cliente, setCliente] = useState<Cliente | null>(null)
@@ -126,98 +213,195 @@ function PortalClientePageContent() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center"
+          style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', boxShadow: '0 0 30px var(--accent-glow)' }}>
+          <span className="text-sm font-bold" style={{ color: '#1C1C1E' }}>CN</span>
+        </div>
+        <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+      </div>
     </div>
   )
 
   const totalDia = calcMacrosDia()
   const codigo = dieta?.codigo_publico ?? ''
+  const iniciales = profile?.nombre?.[0]?.toUpperCase() ?? '?'
+  const ultimoPeso = historialPeso[0]?.peso
+  const penultimoPeso = historialPeso[1]?.peso
+  const diffPeso = ultimoPeso && penultimoPeso ? ultimoPeso - penultimoPeso : null
 
   const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'hoy',     label: 'Hoy',      icon: Home },
-    { key: 'plan',    label: 'Mi Plan',  icon: BookOpen },
-    { key: 'checkin', label: 'Check-in', icon: ClipboardCheck },
-    { key: 'progreso',label: 'Progreso', icon: BarChart2 },
+    { key: 'hoy',      label: 'Hoy',      icon: Home },
+    { key: 'plan',     label: 'Mi Plan',  icon: BookOpen },
+    { key: 'checkin',  label: 'Check-in', icon: ClipboardCheck },
+    { key: 'progreso', label: 'Progreso', icon: BarChart2 },
   ]
 
   return (
-    <div className="min-h-screen pb-safe" style={{ background: '#f9fafb' }}>
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 pt-safe pb-3">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+
+      {/* ── Header ── */}
+      <div className="sticky top-0 z-20 px-4 pt-safe"
+        style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
+        <div className="max-w-xl mx-auto flex items-center justify-between h-14">
+          {/* Avatar + name */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm sm:text-base">
-              {profile?.nombre?.[0]?.toUpperCase()}
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', color: '#1C1C1E' }}>
+              {iniciales}
             </div>
             <div>
-              <p className="font-semibold text-gray-900 text-sm sm:text-base">{profile?.nombre}</p>
-              <p className="text-[10px] sm:text-xs text-gray-400">Mi plan de coaching</p>
+              <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--text)' }}>
+                {profile?.nombre}
+              </p>
+              <p className="text-[10px] leading-tight" style={{ color: 'var(--text-muted)' }}>
+                Portal de cliente
+              </p>
             </div>
           </div>
-          <button onClick={handleLogout} className="text-gray-400 hover:text-gray-600 p-2 touch-manipulation">
-            <LogOut size={18} />
-          </button>
+          {/* Actions */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={toggleTheme}
+              className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+              style={{ color: 'var(--text-secondary)' }}
+              aria-label="Cambiar tema"
+            >
+              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-8 h-8 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+              style={{ color: 'var(--text-muted)' }}
+              aria-label="Cerrar sesión"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Banner bienvenida */}
+      {/* ── Bienvenida banner ── */}
       {showBienvenida && (
-        <div className="max-w-2xl mx-auto px-4 pt-3">
-          <div className="flex items-start justify-between gap-3 px-4 py-3 rounded-xl text-sm"
-            style={{ background: '#dcfce7', color: '#15803d' }}>
-            <p className="font-medium">¡Bienvenido/a! Tu plan ya está listo. Tu coach ha preparado todo para ti.</p>
-            <button onClick={() => setShowBienvenida(false)} className="text-green-600 flex-shrink-0 font-bold text-base leading-none">×</button>
+        <div className="px-4 pt-3 max-w-xl mx-auto">
+          <div className="flex items-start justify-between gap-3 px-4 py-3 rounded-2xl text-sm"
+            style={{ background: 'var(--success-bg)', border: '1px solid rgba(48,209,88,0.2)' }}>
+            <p style={{ color: 'var(--success)' }} className="font-medium text-sm">
+              ¡Bienvenido/a! Tu plan ya está listo. Tu coach ha preparado todo para ti. 🎉
+            </p>
+            <button onClick={() => setShowBienvenida(false)} className="flex-shrink-0 cursor-pointer"
+              style={{ color: 'var(--success)' }}>
+              <X size={16} />
+            </button>
           </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto flex">
-          {TABS.map(({ key, label, icon: Icon }) => (
-            <button key={key} onClick={() => setTab(key)}
-              className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors ${
-                tab === key ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}>
-              <Icon size={14} className="sm:size-4" /> {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* ── Content ── */}
+      <div className="max-w-xl mx-auto px-4 pt-4 pb-28">
 
-      <div className="max-w-2xl mx-auto p-4 pb-8">
-
-        {/* ─── TAB: HOY ─── */}
+        {/* ─── HOY ─── */}
         {tab === 'hoy' && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
 
-            {/* Macros del día */}
+            {/* Hero: Calorías */}
             {totalDia ? (
-              <div className="card" style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)', border: 'none', color: 'white' }}>
-                <p className="text-green-100 text-sm mb-1">{dieta?.nombre}</p>
-                <p className="text-3xl font-bold">{totalDia.calorias.toFixed(0)} <span className="text-lg font-normal text-green-200">kcal/día</span></p>
-                <div className="flex gap-6 mt-3">
-                  {[
-                    { l: 'Proteínas', v: totalDia.proteinas, c: '#bbf7d0' },
-                    { l: 'Carbos', v: totalDia.carbohidratos, c: '#fef08a' },
-                    { l: 'Grasas', v: totalDia.grasas, c: '#fed7aa' },
-                  ].map(({ l, v, c }) => (
-                    <div key={l}>
-                      <p className="text-xl font-bold" style={{ color: c }}>{v.toFixed(0)}g</p>
-                      <p className="text-xs text-green-200">{l}</p>
-                    </div>
-                  ))}
+              <div className="rounded-3xl p-5 overflow-hidden relative"
+                style={{
+                  background: 'linear-gradient(135deg, #1a1a1f 0%, #0f1117 100%)',
+                  border: '1px solid var(--border)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                }}>
+                {/* Glow orb */}
+                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20"
+                  style={{ background: 'radial-gradient(circle, var(--accent) 0%, transparent 70%)' }} />
+
+                <div className="relative">
+                  <p className="text-xs font-medium uppercase tracking-widest mb-1"
+                    style={{ color: 'var(--text-muted)' }}>
+                    Plan: {dieta?.nombre ?? 'Mi dieta'}
+                  </p>
+                  <div className="flex items-end gap-2 mb-5">
+                    <span className="text-5xl font-black tracking-tight" style={{ color: 'var(--text)' }}>
+                      {totalDia.calorias.toFixed(0)}
+                    </span>
+                    <span className="text-base mb-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>
+                      kcal / día
+                    </span>
+                  </div>
+
+                  {/* Macro rings */}
+                  <div className="flex justify-around">
+                    <MacroPill
+                      label="Proteínas"
+                      value={totalDia.proteinas}
+                      target={dieta?.proteinas_objetivo ?? totalDia.proteinas}
+                      color="#52B788"
+                    />
+                    <MacroPill
+                      label="Carbos"
+                      value={totalDia.carbohidratos}
+                      target={dieta?.carbohidratos_objetivo ?? totalDia.carbohidratos}
+                      color="#74B9E0"
+                    />
+                    <MacroPill
+                      label="Grasas"
+                      value={totalDia.grasas}
+                      target={dieta?.grasas_objetivo ?? totalDia.grasas}
+                      color="#F4A261"
+                    />
+                    {totalDia.fibra > 0 && (
+                      <MacroPill
+                        label="Fibra"
+                        value={totalDia.fibra}
+                        target={30}
+                        color="#C47AC0"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="card text-center py-8">
-                <UtensilsCrossed size={32} className="mx-auto text-gray-300 mb-2" />
-                <p className="text-gray-500 text-sm">Tu coach aún no te ha asignado un plan de dieta</p>
+              <EmptyState icon={UtensilsCrossed} text="Tu coach aún no ha asignado un plan de dieta" />
+            )}
+
+            {/* Bento grid: stats rápidos */}
+            {(ultimoPeso || entreno) && (
+              <div className="grid grid-cols-2 gap-3">
+                {ultimoPeso && (
+                  <StatBadge
+                    icon={Weight}
+                    label="Último peso"
+                    value={`${ultimoPeso} kg`}
+                    sub={diffPeso !== null
+                      ? `${diffPeso > 0 ? '+' : ''}${diffPeso.toFixed(1)} kg`
+                      : undefined}
+                    color={diffPeso !== null ? (diffPeso < 0 ? '#52B788' : '#F4A261') : 'var(--accent)'}
+                  />
+                )}
+                {entreno && (
+                  <button
+                    onClick={() => setTab('plan')}
+                    className="flex items-center gap-3 p-3 rounded-2xl text-left cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ background: 'var(--surface)' }}
+                  >
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'rgba(116,185,224,0.12)' }}>
+                      <Dumbbell size={16} style={{ color: '#74B9E0' }} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] uppercase tracking-wide font-medium" style={{ color: 'var(--text-muted)' }}>Entreno</p>
+                      <p className="font-bold text-sm leading-tight truncate" style={{ color: 'var(--text)' }}>{entreno.nombre}</p>
+                      <p className="text-[10px]" style={{ color: '#74B9E0' }}>Ver plan →</p>
+                    </div>
+                  </button>
+                )}
               </div>
             )}
 
-            {/* Carga de entrenamiento */}
+            {/* TLS Gauge */}
             {codigo && (
               <TLSGauge codigo={codigo} onRegistrar={() => setTab('checkin')} />
             )}
@@ -227,103 +411,112 @@ function PortalClientePageContent() {
               <NotasCoach codigo={codigo} />
             )}
 
-            {/* Acceso rápido al entreno de hoy */}
-            {entreno && (
-              <div className="card">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Dumbbell size={16} className="text-green-600" />
-                    <span className="font-semibold text-sm text-gray-800">Entreno de hoy</span>
+            {/* CTA check-in */}
+            {codigo && (
+              <button
+                onClick={() => setTab('checkin')}
+                className="w-full flex items-center justify-between px-5 py-4 rounded-2xl cursor-pointer transition-all active:scale-[0.98]"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(82,183,136,0.12) 0%, rgba(82,183,136,0.06) 100%)',
+                  border: '1px solid rgba(82,183,136,0.2)',
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ background: 'rgba(82,183,136,0.15)' }}>
+                    <ClipboardCheck size={16} style={{ color: '#52B788' }} />
                   </div>
-                  <button onClick={() => setTab('plan')} className="text-xs text-green-600 font-medium">Ver plan →</button>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Check-in semanal</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Registra tu progreso</p>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-500">{entreno.nombre}</p>
-              </div>
+                <ChevronRight size={16} style={{ color: '#52B788' }} />
+              </button>
             )}
-
           </div>
         )}
 
-        {/* ─── TAB: MI PLAN ─── */}
+        {/* ─── MI PLAN ─── */}
         {tab === 'plan' && (
           <div className="flex flex-col gap-4">
             {dieta ? (
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <MiPlan codigo={codigo} plan={dieta as any} entreno={null} />
             ) : (
-              <div className="card text-center py-12">
-                <UtensilsCrossed size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-gray-500">Tu coach aún no te ha asignado un plan de dieta</p>
-              </div>
+              <EmptyState icon={UtensilsCrossed} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
 
-            {/* Separador entrenamiento */}
-            <div className="flex items-center gap-3 mt-2">
-              <div className="flex-1 border-t border-gray-200" />
-              <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
-                <Dumbbell size={12} />
+            {/* Separador */}
+            <div className="flex items-center gap-3 my-1">
+              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+              <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                <Dumbbell size={11} />
                 Entrenamiento
               </div>
-              <div className="flex-1 border-t border-gray-200" />
+              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
             </div>
 
             {entreno ? (
               <SemanaEntrenoCard planId={entreno.id} planNombre={entreno.nombre} />
             ) : (
-              <div className="rounded-xl text-center py-12" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <Dumbbell size={36} className="mx-auto mb-3" style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
-                <p style={{ color: 'var(--text-muted)' }}>Tu coach aún no te ha asignado un plan de entrenamiento</p>
-              </div>
+              <EmptyState icon={Dumbbell} text="Tu coach aún no ha asignado un plan de entrenamiento" />
             )}
           </div>
         )}
 
-        {/* ─── TAB: CHECK-IN ─── */}
+        {/* ─── CHECK-IN ─── */}
         {tab === 'checkin' && (
           <div className="flex flex-col gap-4">
             {codigo ? (
               <>
-                <CheckInForm
-                  codigo={codigo}
-                  onCheckinCreado={() => setCheckinKey(k => k + 1)}
-                />
+                <CheckInForm codigo={codigo} onCheckinCreado={() => setCheckinKey(k => k + 1)} />
                 <HistorialCheckins key={checkinKey} codigo={codigo} />
               </>
             ) : (
-              <div className="card text-center py-12">
-                <ClipboardCheck size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-gray-500">Necesitas tener un plan activo para hacer check-ins</p>
-              </div>
+              <EmptyState icon={ClipboardCheck} text="Necesitas tener un plan activo para hacer check-ins" />
             )}
           </div>
         )}
 
-        {/* ─── TAB: PROGRESO ─── */}
+        {/* ─── PROGRESO ─── */}
         {tab === 'progreso' && (
           <div className="flex flex-col gap-4">
 
             {/* Registrar peso */}
-            <div className="card">
-              <h2 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                <Weight size={16} className="text-green-600" />
-                Registrar peso de hoy
+            <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <h2 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
+                <Weight size={15} style={{ color: 'var(--accent)' }} />
+                Registrar peso
               </h2>
-              <div className="flex gap-2 mb-2">
-                <input type="number" step="0.1" className="input flex-1" placeholder="Ej: 74.5"
-                  value={peso} onChange={e => setPeso(e.target.value)} />
-                <span className="flex items-center text-gray-500 font-medium px-1">kg</span>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="number" step="0.1" inputMode="decimal"
+                  className="input flex-1 rounded-xl"
+                  placeholder="74.5"
+                  value={peso}
+                  onChange={e => setPeso(e.target.value)}
+                />
+                <span className="flex items-center font-semibold px-2 text-sm" style={{ color: 'var(--text-secondary)' }}>kg</span>
               </div>
-              <input className="input mb-3" placeholder="Nota (opcional)…"
-                value={notaPeso} onChange={e => setNotaPeso(e.target.value)} />
-              <button className="btn-primary w-full justify-center" onClick={guardarPeso}
-                disabled={!peso || guardandoPeso}>
+              <input
+                className="input mb-3 rounded-xl w-full"
+                placeholder="Nota (opcional)…"
+                value={notaPeso}
+                onChange={e => setNotaPeso(e.target.value)}
+              />
+              <button
+                className="btn btn-primary w-full justify-center rounded-xl cursor-pointer"
+                onClick={guardarPeso}
+                disabled={!peso || guardandoPeso}
+              >
                 {guardandoPeso ? 'Guardando…' : 'Guardar registro'}
               </button>
             </div>
 
             {/* Gráfico */}
             {historialPeso.length >= 2 && (
-              <div className="card">
+              <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <GraficoPeso
                   datos={historialPeso.map(h => ({ fecha: h.fecha, peso: h.peso ?? 0 })).filter(d => d.peso > 0)}
                 />
@@ -331,37 +524,46 @@ function PortalClientePageContent() {
             )}
 
             {/* Historial peso */}
-            <div className="card">
-              <h2 className="font-semibold text-gray-800 mb-4">Historial de peso</h2>
-              {historialPeso.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-6">Aún no hay registros</p>
-              ) : (
-                <div className="flex flex-col gap-2">
+            {historialPeso.length > 0 && (
+              <div className="rounded-3xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <div className="px-5 pt-4 pb-2">
+                  <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Historial de peso</h2>
+                </div>
+                <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
                   {historialPeso.map((r, idx) => {
                     const ant = historialPeso[idx + 1]
                     const diff = ant && r.peso && ant.peso ? r.peso - ant.peso : null
                     return (
-                      <div key={r.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                      <div key={r.id} className="flex items-center justify-between px-5 py-3">
                         <div>
-                          <p className="text-sm font-medium text-gray-800">
+                          <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
                             {new Date(r.fecha).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })}
                           </p>
-                          {r.notas && <p className="text-xs text-gray-400">{r.notas}</p>}
+                          {r.notas && <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{r.notas}</p>}
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-gray-900">{r.peso} kg</p>
+                        <div className="text-right flex items-center gap-2">
                           {diff !== null && (
-                            <p className={`text-xs ${diff < 0 ? 'text-green-500' : diff > 0 ? 'text-red-400' : 'text-gray-400'}`}>
-                              {diff > 0 ? '+' : ''}{diff.toFixed(1)} kg
-                            </p>
+                            diff < 0
+                              ? <TrendingDown size={13} style={{ color: '#52B788' }} />
+                              : diff > 0
+                              ? <TrendingUp size={13} style={{ color: '#F4A261' }} />
+                              : null
                           )}
+                          <div>
+                            <p className="font-bold text-sm" style={{ color: 'var(--text)' }}>{r.peso} kg</p>
+                            {diff !== null && (
+                              <p className="text-[10px]" style={{ color: diff < 0 ? '#52B788' : diff > 0 ? '#F4A261' : 'var(--text-muted)' }}>
+                                {diff > 0 ? '+' : ''}{diff.toFixed(1)} kg
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )
                   })}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Fotos de progreso */}
             {codigo && <GaleriaFotosProgreso codigo={codigo} />}
@@ -370,15 +572,44 @@ function PortalClientePageContent() {
             {codigo ? (
               <MilestonesLogros codigo={codigo} />
             ) : (
-              <div className="card text-center py-8">
-                <Trophy size={36} className="mx-auto text-gray-300 mb-2" />
-                <p className="text-gray-500 text-sm">Activa un plan para ver tus logros</p>
-              </div>
+              <EmptyState icon={Trophy} text="Activa un plan para ver tus logros" />
             )}
 
           </div>
         )}
+      </div>
 
+      {/* ── Bottom navigation ── */}
+      <div className="fixed bottom-0 left-0 right-0 z-30"
+        style={{
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid var(--glass-border)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}>
+        <div className="max-w-xl mx-auto flex">
+          {TABS.map(({ key, label, icon: Icon }) => {
+            const active = tab === key
+            return (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className="flex-1 flex flex-col items-center justify-center gap-1 py-3 cursor-pointer transition-all"
+                style={{ color: active ? 'var(--accent)' : 'var(--text-muted)' }}
+              >
+                <div className="relative">
+                  {active && (
+                    <div className="absolute inset-0 rounded-full scale-[2.5] opacity-10"
+                      style={{ background: 'var(--accent)' }} />
+                  )}
+                  <Icon size={20} strokeWidth={active ? 2.5 : 1.75} />
+                </div>
+                <span className="text-[10px] font-medium tracking-tight">{label}</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <InstallBanner />
@@ -389,8 +620,9 @@ function PortalClientePageContent() {
 export default function PortalClientePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
       </div>
     }>
       <PortalClientePageContent />
