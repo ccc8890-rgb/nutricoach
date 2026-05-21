@@ -145,6 +145,7 @@ export async function GET(request: NextRequest) {
             .from('precios_actuales')
             .select('alimento_id, supermercado_id, supermercado_nombre, supermercado_slug, supermercado_color, precio_por_kg, url_producto')
             .in('alimento_id', alimentoIds)
+            .gt('precio_por_kg', 0)
 
         // Mapa: alimento_id → array de precios por super
         const mapaPrecio = new Map<string, typeof precios>()

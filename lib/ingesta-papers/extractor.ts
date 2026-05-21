@@ -53,6 +53,50 @@ Devuelve SOLO el JSON.`
 /**
  * Llama a DeepSeek para extraer campos estructurados de un abstract.
  */
+const MAX_RETRIES = 2
+const RETRY_BASE_DELAY = 1000 // 1s, se duplica con cada intento
+
+/**
+ * Retry con exponential backoff para errores recuperables (timeout, rate limit, 5xx).
+ */
+async function fetchWithRetry(url: string, options: RequestInit, retries = MAX_RETRIES): Promise<Response> {
+  let lastResponse: Response | null = null
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url, options)
+      lastResponse = response
+
+      // Éxito → devolver
+      if (response.ok) return response
+
+      // Solo reintentar en: 429 (rate limit), 5xx (server error)
+      if (response.status !== 429 && response.status < 500) {
+        return response // error no recuperable
+      }
+
+      if (attempt < retries) {
+        const delay = RETRY_BASE_DELAY * Math.pow(2, attempt)
+        console.warn(`[extractor] DeepSeek ${response.status} — reintento ${attempt + 1}/${retries} en ${delay}ms`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    } catch (e) {
+      // Timeout o error de red — reintentar si quedan intentos
+      if (attempt < retries) {
+        const delay = RETRY_BASE_DELAY * Math.pow(2, attempt)
+        console.warn(`[extractor] DeepSeek error de red/timeout — reintento ${attempt + 1}/${retries} en ${delay}ms`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      } else {
+        throw e
+      }
+    }
+  }
+
+  // Último intento falló
+  const errorText = lastResponse ? await lastResponse.text() : 'sin respuesta del servidor'
+  throw new Error(`DeepSeek API error ${lastResponse?.status ?? 'timeout'}: ${errorText}`)
+}
+
 async function extractWithDeepSeek(paper: PaperRaw): Promise<PaperExtraido | null> {
   const apiKey = process.env.DEEPSEEK_API_KEY
   if (!apiKey) {
@@ -61,7 +105,7 @@ async function extractWithDeepSeek(paper: PaperRaw): Promise<PaperExtraido | nul
 
   const prompt = buildExtractPrompt(paper)
 
-  const response = await fetch(DEEPSEEK_API_URL, {
+  const response = await fetchWithRetry(DEEPSEEK_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -76,16 +120,11 @@ async function extractWithDeepSeek(paper: PaperRaw): Promise<PaperExtraido | nul
         },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.1, // Baja temperatura para consistencia en extracción
+      temperature: 0.2, // Temperatura baja para extracción, ligeramente más alta que 0.1 para evitar rigidez
       max_tokens: 1000,
     }),
     signal: AbortSignal.timeout(30_000),
   })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`DeepSeek API error ${response.status}: ${errorText}`)
-  }
 
   const data: DeepSeekResponse = await response.json()
   const content = data.choices?.[0]?.message?.content

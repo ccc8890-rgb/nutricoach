@@ -44,6 +44,18 @@ function scoreRevista(revista?: string): number {
     'frontiers in physiology',
     'scandinavian journal of medicine and science in sports',
     'journal of sports sciences',
+    // Añadidas en mejora #5
+    'british journal of sports medicine',
+    'international journal of obesity',
+    'appetite',
+    'journal of the academy of nutrition and dietetics',
+    'annual review of nutrition',
+    'nutrition reviews',
+    'critical reviews in food science and nutrition',
+    'international journal of behavioral nutrition and physical activity',
+    'journal of obesity',
+    'european journal of sport science',
+    'international journal of environmental research and public health',
   ]
   if (highImpact.some(t => r.includes(t))) return 2
 

@@ -69,9 +69,7 @@ export async function GET(request: NextRequest) {
             .from('precios_actuales')
             .select('alimento_id, supermercado_id, supermercado_nombre, supermercado_slug, supermercado_color, precio_por_kg, url_producto')
             .in('alimento_id', alimentoIds)
-
-        // 4. Supermercados disponibles con precio completo
-        const superIds = new Set(todosPrecios?.map(p => p.supermercado_id) || [])
+            .gt('precio_por_kg', 0)
 
         // Mapa: supermercado_id → { nombre, slug, color, precios: Map<alimento_id, precio_kg> }
         const mapaSuper = new Map<string, {
@@ -91,6 +89,7 @@ export async function GET(request: NextRequest) {
                     urls: new Map(),
                 })
             }
+            if (typeof p.precio_por_kg !== 'number' || p.precio_por_kg <= 0) continue
             mapaSuper.get(p.supermercado_id)!.precios.set(p.alimento_id, p.precio_por_kg)
             if (p.url_producto) {
                 mapaSuper.get(p.supermercado_id)!.urls.set(p.alimento_id, p.url_producto)
@@ -157,6 +156,8 @@ export async function GET(request: NextRequest) {
         })
 
         const costeTotal = desglose.reduce((s, i) => s + i.coste_euros, 0)
+        const ingredientesSinPrecio = desglose.filter(i => !i.precio_por_kg || i.precio_por_kg <= 0).length
+        const coberturaPct = Math.round(((desglose.length - ingredientesSinPrecio) / desglose.length) * 100)
 
         // 6. Comparativa por supermercado (coste total de la receta en cada super)
         const comparativaSupers = Array.from(mapaSuper.values()).map(s => {
@@ -180,7 +181,10 @@ export async function GET(request: NextRequest) {
                 ingredientes_sin_precio: ingredientesSinPrecio,
                 cobertura_pct: Math.round(((ingredientes.length - ingredientesSinPrecio) / ingredientes.length) * 100),
             }
-        }).sort((a, b) => a.coste_total - b.coste_total)
+        }).sort((a, b) => {
+            if (b.cobertura_pct !== a.cobertura_pct) return b.cobertura_pct - a.cobertura_pct
+            return a.coste_total - b.coste_total
+        })
 
         return NextResponse.json({
             receta_id: recetaId,
@@ -189,6 +193,8 @@ export async function GET(request: NextRequest) {
             supermercado_id: supermercadoId,
             coste_total: Math.round(costeTotal * 100) / 100,
             coste_por_porcion: Math.round((costeTotal / porciones) * 100) / 100,
+            ingredientes_sin_precio: ingredientesSinPrecio,
+            cobertura_pct: coberturaPct,
             ingredientes: desglose,
             comparativa_supermercados: comparativaSupers,
         })

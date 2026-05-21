@@ -17,6 +17,10 @@ function getClient(db?: SupabaseClient): SupabaseClient {
  */
 const PAGE_SIZE = 1000
 
+function esPrecioKgValido(precio: unknown): precio is number {
+    return typeof precio === 'number' && Number.isFinite(precio) && precio > 0
+}
+
 async function paginateQuery<T>(
     client: SupabaseClient,
     table: string,
@@ -100,6 +104,7 @@ export async function obtenerPreciosAlimento(alimentoId: string, db?: SupabaseCl
         .from('mejores_precios_por_alimento')
         .select('*')
         .eq('alimento_id', alimentoId)
+        .gt('precio_por_kg', 0)
         .order('precio_por_kg', { ascending: true })
     return data ?? []
 }
@@ -347,6 +352,7 @@ export async function calcularCostePlan(
     const mapaPrecios = new Map<string, number>()
     if (precios) {
         for (const p of precios) {
+            if (!esPrecioKgValido(p.precio_por_kg)) continue
             const actual = mapaPrecios.get(p.alimento_id) ?? Infinity
             if (p.precio_por_kg < actual) {
                 mapaPrecios.set(p.alimento_id, p.precio_por_kg)
@@ -509,6 +515,7 @@ export async function calcularEscandalloConAlternativas(
     const mapaMejores = new Map<string, ProductoSupermercadoDetalle>()
     if (mejoresPrecios) {
         for (const p of mejoresPrecios) {
+            if (!esPrecioKgValido(p.precio_por_kg)) continue
             const actual = mapaMejores.get(p.alimento_id)
             if (!actual || p.precio_por_kg < actual.precio_por_kg) {
                 mapaMejores.set(p.alimento_id, p as ProductoSupermercadoDetalle)
@@ -537,6 +544,7 @@ export async function calcularEscandalloConAlternativas(
             supermercados!inner(nombre, slug, color)
         `)
         .in('alimento_id', Array.from(todosAlimentoIds))
+        .gt('precio_por_kg', 0)
         .order('precio_por_kg', { ascending: true })
 
     // Agrupar productos por alimento_id

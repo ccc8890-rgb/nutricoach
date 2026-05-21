@@ -173,6 +173,24 @@ async function insertarEnKnowledgeBase(
 }
 
 /**
+ * Registra el resultado de una ejecución en la tabla de auditoría.
+ * Proporciona trazabilidad de cada ingesta ejecutada.
+ */
+async function registrarAuditoria(resultado: ResultadoIngesta): Promise<void> {
+  try {
+    const supabase = createServiceSupabase()
+    await supabase.from('ingesta_auditoria').insert({
+      tipo: 'ingesta_pipeline',
+      resultado,
+      created_at: new Date().toISOString(),
+    })
+  } catch (e) {
+    // El logging no debe romper el pipeline
+    console.warn('[ingestador] Error registrando auditoría:', e instanceof Error ? e.message : 'error desconocido')
+  }
+}
+
+/**
  * Pipeline completo de ingesta:
  * 1. Búsqueda PubMed API (esearch + efetch) → PaperRaw[]
  * 2. Extraer campos con DeepSeek → PaperExtraido[]
@@ -279,7 +297,7 @@ export async function ejecutarIngesta(options?: {
     }
   }
 
-  return {
+  const resultado: ResultadoIngesta = {
     fuentes_consultadas: fuentes.length,
     papers_encontrados: todosRaw.length,
     papers_extraidos: extraidos.length,
@@ -290,4 +308,9 @@ export async function ejecutarIngesta(options?: {
     errores,
     duracion_ms: Date.now() - startTime,
   }
+
+  // Registrar en auditoría (fire & forget — no debe romper el pipeline)
+  registrarAuditoria(resultado)
+
+  return resultado
 }

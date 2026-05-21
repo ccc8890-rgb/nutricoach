@@ -517,6 +517,8 @@ export async function buscarAlimento(
 const PATRONES_NO_COMESTIBLE = [
     /comida (gato|gatos|perro|perros|perr[oa])/i,
     /comida (seca|humeda) (gatos|perros)/i,
+    /compresa|salvaslip|protegeslip|tampon/i,
+    /suavizante|detergente|lavavajillas/i,
     /barra labial|barra labios|labial (limitless|glass shine|ink matte)/i,
     /pasta encias/i,
     /superstay|limitless matte|glass shine/i,

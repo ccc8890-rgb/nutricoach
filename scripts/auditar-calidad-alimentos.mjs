@@ -49,13 +49,6 @@ async function main() {
     console.log('')
 
     // 1. Total de alimentos
-    const conteo = await fetchAll('alimentos?select=id&limit=0')
-    const totalCabecera = res ?? []
-    const { count } = await (await fetch(`${SUPABASE_URL}/rest/v1/alimentos?select=id`, {
-        headers: { ...headers, Prefer: 'count=exact' }
-    })).json()
-
-    // Mejor: usar count con prefer
     const countRes = await fetch(`${SUPABASE_URL}/rest/v1/alimentos?select=id`, {
         headers: { ...headers, Prefer: 'count=exact' }
     })

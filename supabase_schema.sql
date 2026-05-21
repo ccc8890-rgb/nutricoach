@@ -807,3 +807,21 @@ drop trigger if exists kb_upsert on public.knowledge_base;
 create trigger kb_upsert
   before insert or update on public.knowledge_base
   for each row execute function public.kb_before_upsert();
+
+-- ============================================================
+-- TABLA: ingesta_auditoria (log de ejecuciones del pipeline)
+-- ============================================================
+create table if not exists public.ingesta_auditoria (
+  id uuid not null default gen_random_uuid(),
+  tipo text not null default 'ingesta_pipeline',
+  resultado jsonb not null,
+  created_at timestamptz not null default now(),
+  constraint ingesta_auditoria_pkey primary key (id)
+);
+
+create index if not exists idx_ingesta_auditoria_created_at
+  on public.ingesta_auditoria (created_at desc);
+
+comment on table public.ingesta_auditoria is 'Auditoria del pipeline de ingesta de papers (Mejora #2)';
+comment on column public.ingesta_auditoria.tipo is 'Tipo de ejecucion (ej: ingesta_pipeline)';
+comment on column public.ingesta_auditoria.resultado is 'Resultado completo de la ejecucion (ResultadoIngesta)';

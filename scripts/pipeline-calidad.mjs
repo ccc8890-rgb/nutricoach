@@ -172,9 +172,9 @@ const MATCH_FIXES = [
     [/^queso cottag/i, 'aa87b67a-3b99-4a31-90de-e63e2be09af2', 'Queso cottage'],
     [/^queso cotas/i, 'aa87b67a-3b99-4a31-90de-e63e2be09af2', 'Queso cottage'],
     // Salsa verde → matchea "Sal" por substring "sal"
-    [/^salsa verd/i, '1d197cae-57f7-42ab-8b31-4be779410a32', 'Salsa de tomate'],
+    [/^salsa verd/i, '91946107-b6ae-4f36-9190-165b84e02033', 'Salsa verde'],
     // Salsa picante → matchea "Sal" por substring "sal"
-    [/^salsa picant/i, 'e98d8405-0b53-4cf6-ac91-fd8eeb2cf831', 'Salsa tabasco'],
+    [/^salsa picant/i, '0a547955-282b-407b-b156-a9141a46d189', 'Salsa Picante Louisiana'],
     [/^salsa ingl/i, '464ace19-26f8-451c-b7bd-4159b8df63f5', 'Salsa Worcestershire Botella'],
     [/^salsa perrins/i, '464ace19-26f8-451c-b7bd-4159b8df63f5', 'Salsa Worcestershire Botella'],
     // Salsa de tomate variants → matchea "Sal" por substring "sal"

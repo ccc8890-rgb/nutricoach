@@ -30,7 +30,7 @@ const NO_COMESTIBLE_KEYWORDS = [
     'gel de afeitar', 'espuma de afeitar', 'aftershave', 'after shave', 'maquinilla',
     'pasta de dientes', 'dentifrico', 'dentífrico', 'cepillo de dientes', 'enjuague bucal', 'hilo dental',
     'jabón de manos', 'champú seco',
-    'tampón', 'tampones', 'compresas', 'salvaslip', 'protegeslip', 'copa menstrual',
+    'tampón', 'tampones', 'compresa', 'compresas', 'salvaslip', 'protegeslip', 'copa menstrual',
     'preservativo', 'preservativos', 'lubricante sexual',
     'pañal', 'pañales', 'toallitas bebé', 'biberón', 'chupete', 'tetina',
     'cepillo limpiabiberón',
@@ -67,7 +67,7 @@ const NO_COMESTIBLE_KEYWORDS = [
     'spray desinfectante antiséptico', 'clorhexidina spray', 'clorhexidina',
     // ── Limpieza hogar ──────────────────────────────────────────
     'lejía', 'limpiador', 'limpiacristales', 'desengrasante', 'quitamanchas ropa',
-    'detergente ropa', 'suavizante ropa', 'pastillas lavavajillas', 'gel lavavajillas',
+    'detergente ropa', 'suavizante', 'suavizante ropa', 'pastillas lavavajillas', 'gel lavavajillas',
     'limpiahogar', 'limpiavidrios', 'limpiagafas', 'lavaparabrisas',
     'bayeta', 'estropajo', 'fregona', 'bolsa basura', 'bolsas basura',
     'papel higiénico', 'papel de cocina', 'papel aluminio', 'papel vegetal', 'film transparente',

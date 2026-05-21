@@ -331,7 +331,7 @@ function checkAlimentoCeroKcal(nombreLibre, kcalAlimento, gramos) {
   const n = norm(nombreLibre)
   // Alimentos legítimamente sin calorías (o negligibles)
   const CERO_KCAL_VALIDOS = [
-    'agua', 'sal', 'vinagre', 'gelatina', 'caldo', 'endulzante', 'stevia',
+    'agua', 'hielo', 'cubito', 'cubitos', 'sal', 'vinagre', 'gelatina', 'caldo', 'endulzante', 'stevia',
     'eritritol', 'sucralosa', 'splenda', 'levadura quimica', 'polvo hornear',
     'glutamato', 'especia', 'condimento',
   ]
