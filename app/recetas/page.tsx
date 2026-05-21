@@ -125,7 +125,10 @@ export default function RecetasPage() {
 
   const filtradas = useMemo(() => {
     return recetas.map(r => ({ ...r, ...normalizarReceta(r) })).filter(r => {
-      const matchBusqueda = r.nombre.toLowerCase().includes(busqueda.toLowerCase())
+      const q = busqueda.toLowerCase()
+      const matchBusqueda = !q || r.nombre.toLowerCase().includes(q)
+        || (Array.isArray(r.tags) && r.tags.some((t: string) => t.toLowerCase().includes(q)))
+        || (r.descripcion?.toLowerCase().includes(q) ?? false)
       const matchCategoria = categoria === 'Todos' || r.categoria === categoria
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
       const matchTag = !tagFilter || (Array.isArray(r.tags) && r.tags.includes(tagFilter))
@@ -267,7 +270,7 @@ export default function RecetasPage() {
               <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
               <input
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all duration-200"
-                placeholder="Buscar receta…"
+                placeholder="Buscar por nombre, ingrediente…"
                 value={busqueda}
                 onChange={e => setBusqueda(e.target.value)}
                 style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}
