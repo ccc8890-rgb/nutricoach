@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         }
 
         let processed = 0
-        let errors: string[] = []
+        const errors: string[] = []
 
         // Process in batches to avoid rate limits
         const batchSize = 5

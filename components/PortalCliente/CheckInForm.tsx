@@ -19,6 +19,38 @@ interface CheckInFormProps {
 
 const EMOTICONOS = ['😞', '😐', '🙂', '😊', '🔥']
 
+interface SliderGroupProps {
+    label: string
+    value: number
+    onChange: (v: number) => void
+    leftLabel: string
+    rightLabel: string
+}
+
+function SliderGroup({ label, value, onChange, leftLabel, rightLabel }: SliderGroupProps) {
+    return (
+        <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+                <label className="!mb-0 text-sm">{label}</label>
+                <span className="text-lg">{EMOTICONOS[Math.min(value - 1, 4)]}</span>
+            </div>
+            <input
+                type="range"
+                min="1"
+                max="10"
+                value={value}
+                onChange={e => onChange(Number(e.target.value))}
+                className="w-full accent-teal-500"
+                style={{ accentColor: '#0D9488' }}
+            />
+            <div className="flex justify-between text-xs text-gray-400">
+                <span>{leftLabel}</span>
+                <span>{rightLabel}</span>
+            </div>
+        </div>
+    )
+}
+
 /* ── Helper: racha de check-ins ── */
 function calcularRacha(checkins: { fecha: string }[]): number {
     if (!checkins || checkins.length === 0) return 0
@@ -119,42 +151,6 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
         } finally {
             setGuardando(false)
         }
-    }
-
-    function SliderGroup({
-        label,
-        value,
-        onChange,
-        leftLabel,
-        rightLabel,
-    }: {
-        label: string
-        value: number
-        onChange: (v: number) => void
-        leftLabel: string
-        rightLabel: string
-    }) {
-        return (
-            <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                    <label className="!mb-0 text-sm">{label}</label>
-                    <span className="text-lg">{EMOTICONOS[Math.min(value - 1, 4)]}</span>
-                </div>
-                <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={value}
-                    onChange={e => onChange(Number(e.target.value))}
-                    className="w-full accent-teal-500"
-                    style={{ accentColor: '#0D9488' }}
-                />
-                <div className="flex justify-between text-xs text-gray-400">
-                    <span>{leftLabel}</span>
-                    <span>{rightLabel}</span>
-                </div>
-            </div>
-        )
     }
 
     // Determinar si hoy ya hizo check-in

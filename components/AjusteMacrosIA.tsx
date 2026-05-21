@@ -212,7 +212,7 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
             {/* Estado vacío */}
             {!loading && !sugerencia && !error && (
                 <p className="text-sm text-gray-400 text-center py-4">
-                    Haz clic en "Recalcular con IA" para analizar la evolución del cliente y obtener una sugerencia de macros ajustada a su progreso.
+                    Haz clic en &quot;Recalcular con IA&quot; para analizar la evolución del cliente y obtener una sugerencia de macros ajustada a su progreso.
                 </p>
             )}
         </div>

@@ -370,7 +370,7 @@ export default function PanelScraping() {
                     <Bot size={48} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
                     <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>Sin scraping todavía</p>
                     <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                        Haz clic en "Scrapear" en cualquier supermercado para empezar a extraer precios automáticamente
+                        Haz clic en &quot;Scrapear&quot; en cualquier supermercado para empezar a extraer precios automáticamente
                     </p>
                 </div>
             )}

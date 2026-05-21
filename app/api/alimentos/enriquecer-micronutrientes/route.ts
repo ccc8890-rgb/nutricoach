@@ -45,8 +45,8 @@ export async function POST(request: Request) {
         }
 
         let processed = 0
-        let errors: string[] = []
-        let porFuente = { openfoodfacts: 0, ia: 0 }
+        const errors: string[] = []
+        const porFuente = { openfoodfacts: 0, ia: 0 }
 
         for (const alimento of alimentos) {
             try {

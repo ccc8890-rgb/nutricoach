@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ArrowRight, Loader2 } from 'lucide-react'
 import OnboardingProgress from '@/components/onboarding/OnboardingProgress'
@@ -56,10 +56,26 @@ export default function OnboardingPage() {
   const [error, setError] = useState('')
   const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward')
   const [visible, setVisible] = useState(true)
-  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [autoAdvanceRequest, setAutoAdvanceRequest] = useState({ id: 0, fromStep: 0 })
 
-  /* Clean up timer on unmount */
-  useEffect(() => () => { if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current) }, [])
+  useEffect(() => {
+    if (autoAdvanceRequest.id === 0) return
+
+    let transitionTimer: ReturnType<typeof setTimeout> | null = null
+    const autoTimer = setTimeout(() => {
+      setAnimDir('forward')
+      setVisible(false)
+      transitionTimer = setTimeout(() => {
+        setStep(prev => prev === autoAdvanceRequest.fromStep ? Math.min(prev + 1, TOTAL_STEPS - 1) : prev)
+        setVisible(true)
+      }, 180)
+    }, 260)
+
+    return () => {
+      clearTimeout(autoTimer)
+      if (transitionTimer) clearTimeout(transitionTimer)
+    }
+  }, [autoAdvanceRequest])
 
   function navigate(targetStep: number) {
     const dir = targetStep > step ? 'forward' : 'back'
@@ -84,7 +100,7 @@ export default function OnboardingPage() {
     return (v: T) => {
       setter(v)
       if (AUTO_ADVANCE_STEPS.has(step)) {
-        autoAdvanceTimer.current = setTimeout(() => goNext(), 260)
+        setAutoAdvanceRequest(prev => ({ id: prev.id + 1, fromStep: step }))
       }
     }
   }

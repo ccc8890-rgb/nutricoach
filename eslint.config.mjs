@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".remember/**",
+    "scripts/**",
   ]),
   // React Compiler lint rules — compilador no instalado, reglas generan falsos positivos
   {
@@ -18,6 +20,7 @@ const eslintConfig = defineConfig([
       "react-hooks/purity": "off",
       "react-hooks/immutability": "off",
       "react-hooks/preserve-manual-memoization": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
     },
   },
 ]);

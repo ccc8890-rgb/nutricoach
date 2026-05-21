@@ -477,9 +477,7 @@ export interface CheckIn {
   created_at: string
 }
 
-export interface SeguimientoPesoConFecha extends SeguimientoPeso {
-  // Extiende el tipo existente
-}
+export type SeguimientoPesoConFecha = SeguimientoPeso
 
 export interface NotaCoach {
   id: string

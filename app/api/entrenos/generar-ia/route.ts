@@ -101,7 +101,7 @@ Genera el plan en JSON EXACTO sin markdown:
     }
 
     const data = await response.json()
-    let planText = data?.choices?.[0]?.message?.content
+    const planText = data?.choices?.[0]?.message?.content
     if (!planText) {
       return NextResponse.json({ error: 'Respuesta vacía de la IA' }, { status: 502 })
     }

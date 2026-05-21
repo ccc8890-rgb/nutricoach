@@ -120,7 +120,7 @@ export default function InformeSemanal({ clienteId }: Props) {
                     <FileText size={40} className="mx-auto text-gray-300 dark:text-[var(--text-muted)] mb-3" />
                     <p className="text-sm text-gray-400 dark:text-[var(--text-muted)] mb-1">Aún no has generado ningún informe</p>
                     <p className="text-xs text-gray-400 dark:text-[var(--text-muted)]">
-                        Pulsa "Generar informe" para que DeepSeek analice los datos de la última semana del cliente
+                        Pulsa &quot;Generar informe&quot; para que DeepSeek analice los datos de la última semana del cliente
                     </p>
                 </div>
             )}
