@@ -1,5 +1,32 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 22-05-2026 (noche 2) — ALÉRGENOS EN RECETARIO ✅
+
+##### ✅ Completado
+
+**Nuevos tags de alérgenos en el recetario**
+- `INTOLERANCIAS` ampliada: `Sin Mariscos`, `Sin Cerdo`, `Sin Soja` (antes solo tenía 6 tags, ahora 9)
+- `RESTRICCION_A_INTOLERANCIA` en `sugeridas/route.ts` ampliado con los 3 nuevos mapeos
+- Script `scripts/etiquetar-alergenos.mjs`: auto-etiqueta recetas buscando keywords en `receta_ingredientes.nombre_libre` + nombre + descripción como fallback (cubre recetas con ingredientes no vinculados)
+- **254/254 recetas procesadas, 0 errores**
+
+**Keywords de detección por alérgeno:**
+- Sin Mariscos: gamba, langostino, mejillón, almeja, pulpo, calamar, sepia, cangrejo, surimi, vieira, ostra, etc.
+- Sin Cerdo: cerdo, panceta, bacon, chorizo, jamón, lomo embuchado, morcilla, fuet, tocino, butifarra, etc.
+- Sin Soja: soja, tofu, tempeh, edamame, miso, tamari, salsa de soja, leche de soja, etc.
+
+**Fixes adicionales** (commit `3f36b04`)
+- Portal cliente: `MiPlan` recibía `entreno={null}` hardcodeado → ahora pasa `entreno` real
+- Ficha cliente: `planes_entrenamiento` se creaban sin `activo: true` → corregido
+- `revisar-plan`: `planes_nutricion` se creaban sin `codigo_publico` → añadido generador aleatorio de 8 chars
+- `PlanificacionCalendario`: mejoras internas
+
+##### 🔲 Pendiente
+- Regenerar 147 imágenes malas: `node scripts/regenerar-imagenes-malas.mjs --genera` (~$5)
+
+---
+
+
 ## Sesión 22-05-2026 (noche) — REDISEÑO FICHA CLIENTE + FILTRO RESTRICCIONES RECETAS ✅
 
 ##### ✅ Completado esta sesión
