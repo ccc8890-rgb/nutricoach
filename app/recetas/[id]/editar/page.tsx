@@ -375,7 +375,7 @@ export default function EditarRecetaPage() {
                             </div>
 
                             <div>
-                                <label className="mb-2" style={{ color: 'var(--text-secondary)' }}>Intolerancias / apto para</label>
+                                <label className="mb-2" style={{ color: 'var(--text-secondary)' }}>Alérgenos / clasificación dietética</label>
                                 <div className="flex flex-wrap gap-2">
                                     {INTOLERANCIAS.map(i => (
                                         <button key={i} type="button" onClick={() => toggleIntolerancia(i)}

@@ -179,7 +179,7 @@ export default function RecetasPage() {
         const db = new Date(b.created_at).getTime()
         return orden === 'reciente' ? db - da : da - db
       })
-  }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, orden])
+  }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter])
 
   const coccionEnUso = new Set(recetas.map(r => r.tipo_coccion).filter(Boolean))
 
@@ -422,7 +422,7 @@ export default function RecetasPage() {
           <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
             <span className="text-xs flex items-center gap-1 px-2 font-medium" style={{ color: 'var(--text-muted)' }}>
               <AlertTriangle size={12} />
-              Intolerancias
+              Alérgenos
             </span>
             {intoleranciaFilter && (
               <button

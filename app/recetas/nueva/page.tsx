@@ -213,7 +213,7 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
             <input type="number" min={0} className="input" placeholder="20" value={form.tiempo_coccion_min} onChange={e => setForm(p => ({ ...p, tiempo_coccion_min: e.target.value }))} /></div>
         </div>
         <div>
-          <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Intolerancias / apto para</label>
+          <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Alérgenos / clasificación dietética</label>
           <div className="flex flex-wrap gap-2">
             {INTOLERANCIAS.map(i => (
               <button key={i} type="button" onClick={() => toggleIntolerancia(i)}

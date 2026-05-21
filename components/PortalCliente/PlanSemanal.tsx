@@ -126,7 +126,7 @@ export default function PlanSemanal({ comidas, clienteId }: PlanSemanalProps) {
         }
 
         cargarSugerencias()
-    }, [comidas])
+    }, [comidas, clienteId])
 
     function swapReceta(diaIdx: number, comidaId: string) {
         const recetas = pool[comidaId] ?? []

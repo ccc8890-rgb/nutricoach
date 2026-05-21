@@ -32,7 +32,7 @@ export default function RecetaDelDia({ kcal, proteinas, clienteId }: RecetaDelDi
             .then(r => r.json())
             .then(({ recetas }) => { if (recetas?.length) setReceta(recetas[0]) })
             .catch(e => console.error('[RecetaDelDia] Error cargando receta sugerida:', e))
-    }, [kcal, proteinas])
+    }, [kcal, proteinas, clienteId])
 
     if (!receta) return null
 
