@@ -102,6 +102,23 @@ export default function RegistroPage() {
       })
       const data = await res.json()
       if (data.ok) {
+        // Sign in as the new client — the admin API doesn't create a session
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+        if (signInError) {
+          setErrorMsg('Cuenta creada pero error al iniciar sesión. Intenta entrar desde el login.')
+          return
+        }
+        // Sync session to server cookies
+        if (signInData.session) {
+          await fetch('/api/auth/callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              access_token: signInData.session.access_token,
+              refresh_token: signInData.session.refresh_token,
+            }),
+          })
+        }
         setEstado('exito')
       } else {
         setErrorMsg(data.error ?? 'Error al procesar el registro')
