@@ -352,12 +352,6 @@ export const TAG_BRIDGE: Record<string, string[]> = {
   trail: ['running', 'resistencia'],
   resistencia_aerobica: ['resistencia', 'aeróbico', 'zona2', 'umbral', 'ejercicio_resistencia'],
 
-  // Ciclismo / triatlón
-  ciclismo: ['rendimiento', 'resistencia', 'aeróbico', 'umbral'],
-  triatlon: ['rendimiento', 'resistencia', 'rendimiento_resistencia'],
-  bici: ['rendimiento', 'resistencia'],
-  ironman: ['rendimiento', 'resistencia', 'hidratacion', 'sodio'],
-
   // Hyrox / Crossfit / funcional
   hyrox: ['hyrox', 'hibrido', 'fuerza', 'intensidad', 'zona2', 'funcional', 'wod'],
   crossfit: ['hyrox', 'hibrido', 'fuerza', 'intensidad', 'funcional', 'wod'],
@@ -378,50 +372,77 @@ export const TAG_BRIDGE: Record<string, string[]> = {
   elite: ['atletas', 'competicion', 'rendimiento_deportivo'],
 
   // Condiciones metabólicas / salud
-  diabetes: ['diabetes', 'diabetes tipo 2', 'insulina', 'glucemia'],
-  resistencia_insulina: ['resistencia a la insulina', 'insulina', 'diabetes tipo 2', 'diabetes'],
-  glucemia: ['glucemia', 'insulina', 'diabetes', 'diabetes tipo 2'],
+  diabetes: ['diabetes', 'diabetes tipo 2', 'insulina', 'glucemia', 'hemoglobina glicosilada', 'HbA1c', 'diabetes mellitus'],
+  resistencia_insulina: ['resistencia a la insulina', 'insulina', 'diabetes tipo 2', 'diabetes', 'HOMA-IR', 'glucemia'],
+  glucemia: ['glucemia', 'insulina', 'diabetes', 'diabetes tipo 2', 'HbA1c', 'control glucemico'],
 
   // Tiroides
-  hipotiroidismo: ['tiroides', 'hormonas', 'metabolismo', 'mujeres'],
-  tiroides: ['tiroides', 'hormonas', 'metabolismo'],
+  hipotiroidismo: ['tiroides', 'hormonas', 'metabolismo', 'mujeres', 'hipotiroidismo', 'hashimoto', 'TSH', 'tiroxina'],
+  tiroides: ['tiroides', 'hormonas', 'metabolismo', 'TSH', 'hipotiroidismo', 'hashimoto'],
 
   // PCOS / SOP / Menopausia
-  pcos: ['hormonas', 'mujeres', 'insulina', 'sop'],
-  sop: ['hormonas', 'mujeres', 'insulina'],
-  menopausia: ['mujeres', 'hormonas', 'salud osea', 'tercera edad'],
-  climaterio: ['mujeres', 'hormonas', 'salud osea'],
+  pcos: ['hormonas', 'mujeres', 'insulina', 'sop', 'SOP', 'ovario poliquistico', 'sindrome metabolico', 'testosterona'],
+  sop: ['hormonas', 'mujeres', 'insulina', 'pcos', 'ovario poliquistico', 'sindrome metabolico'],
+  menopausia: ['mujeres', 'hormonas', 'salud osea', 'tercera edad', 'menopausia', 'estrogenos', 'osteoporosis', 'densidad osea'],
+  climaterio: ['mujeres', 'hormonas', 'salud osea', 'menopausia', 'estrogenos'],
 
   // Edad / sarcopenia
-  sarcopenia: ['sarcopenia', 'adultos_mayores', 'masa muscular', 'proteina', 'sintesis muscular', 'envejecimiento', 'tercera edad'],
-  envejecimiento: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad'],
-  mayor_55: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad'],
+  sarcopenia: ['sarcopenia', 'adultos_mayores', 'masa muscular', 'proteina', 'sintesis muscular', 'envejecimiento', 'tercera edad', 'calidad muscular', 'fuerza muscular'],
+  envejecimiento: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad', 'longevidad', 'calidad de vida'],
+  mayor_55: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad', 'fuerza muscular', 'deterioro funcional'],
 
   // Cardiovascular / HTA
-  hta: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial'],
-  hipertension: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial'],
-  presion_alta: ['hipertension', 'salud cardiovascular', 'presion arterial'],
+  hta: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial', 'riesgo cardiovascular', 'dieta DASH'],
+  hipertension: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial', 'riesgo cardiovascular', 'dieta DASH', 'tension_alta'],
+  presion_alta: ['hipertension', 'salud cardiovascular', 'presion arterial', 'tension_alta', 'riesgo cardiovascular'],
+  cardiovascular: ['salud cardiovascular', 'enfermedad cardiovascular', 'riesgo cardiovascular', 'prevencion cardiovascular', 'dieta mediterranea'],
 
   // Colesterol / dislipemia
-  dislipemia: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea'],
-  colesterol: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea'],
+  dislipemia: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea', 'trigliceridos', 'LDL', 'HDL', 'perfil lipidico'],
+  colesterol: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea', 'LDL', 'HDL', 'trigliceridos', 'dislipemia', 'perfil lipidico'],
 
   // Hígado graso
-  higado_graso: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado'],
-  nafld: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado'],
-  esteatosis: ['obesidad', 'metabolismo', 'higado'],
+  higado_graso: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado', 'esteatosis hepatica', 'NAFLD', 'transaminasas', 'resistencia insulina'],
+  nafld: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado', 'esteatosis hepatica', 'transaminasas', 'NAFLD'],
+  esteatosis: ['obesidad', 'metabolismo', 'higado', 'esteatosis hepatica', 'transaminasas', 'NAFLD'],
 
   // Salud mental
-  ansiedad: ['salud mental', 'bienestar', 'HRV', 'sueño', 'cortisol'],
-  salud_mental: ['salud mental', 'bienestar', 'cortisol', 'HRV'],
+  ansiedad: ['salud mental', 'bienestar', 'HRV', 'sueño', 'cortisol', 'estres', 'estrés', 'neurotransmisores', 'depresion', 'estado de animo'],
+  salud_mental: ['salud mental', 'bienestar', 'cortisol', 'HRV', 'depresion', 'ansiedad', 'estres', 'neurotransmisores'],
+  estres: ['cortisol', 'HRV', 'salud mental', 'estres', 'bienestar', 'sueño', 'recuperacion'],
+  sueno: ['sueño', 'cortisol', 'recuperacion', 'HRV', 'salud mental', 'cronobiologia', 'ritmo circadiano'],
 
   // Dieta / alimentación
-  vegano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad'],
-  vegetariano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad'],
-  plant_based: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'vegetales'],
+  vegano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad', 'dieta basada en plantas', 'hierro', 'vitamina b12'],
+  vegetariano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad', 'dieta basada en plantas'],
+  plant_based: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'vegetales', 'dieta basada en plantas'],
+  vegetales: ['vegetales', 'verduras', 'fibra', 'dieta mediterranea', 'plant-based', 'dieta basada en plantas'],
 
   // Obesidad / composición
-  obesidad: ['obesidad', 'IMC', 'composicion corporal', 'perdida grasa', 'deficit calorico', 'sobrepeso'],
+  obesidad: ['obesidad', 'IMC', 'composicion corporal', 'perdida grasa', 'deficit calorico', 'sobrepeso', 'tejido adiposo', 'sindrome metabolico', 'grasa visceral', 'circunferencia cintura'],
+
+  // Suplementación general
+  suplementos: ['suplementacion', 'suplementos', 'creatina', 'cafeina', 'beta-alanina', 'proteina suero', 'whey'],
+  creatina: ['creatina', 'fuerza', 'suplementacion', 'masa muscular', 'rendimiento'],
+  cafeina: ['cafeina', 'rendimiento', 'estimulante', 'fatiga', 'concentracion'],
+  proteina_suplementos: ['proteina', 'whey', 'proteina suero', 'suplementacion proteica', 'leucina', 'mTOR', 'biodisponibilidad'],
+
+  // Running y ciclismo avanzado
+  ciclismo: ['ciclismo', 'rendimiento', 'resistencia', 'aeróbico', 'umbral', 'potencia', 'VO2max'],
+  triatlon: ['triatlon', 'rendimiento', 'resistencia', 'rendimiento_resistencia', 'carga', 'VO2max', 'recuperacion'],
+  bici: ['ciclismo', 'rendimiento', 'resistencia', 'potencia'],
+  ironman: ['ironman', 'rendimiento', 'resistencia', 'hidratacion', 'sodio', 'carga de carbohidratos', 'ultra-resistencia'],
+
+  // Natación / deportes acuáticos
+  natacion: ['rendimiento', 'resistencia', 'aeróbico', 'VO2max'],
+
+  // Lesiones / rehabilitación
+  lesiones: ['lesiones', 'recuperacion', 'rehabilitacion', 'prevencion', 'dolor', 'inflamacion', 'proteina'],
+  recuperacion: ['recuperacion', 'descanso', 'sueño', 'cortisol', 'HRV', 'inflamacion', 'nutricion deportiva', 'fisioterapia'],
+  rehabilitacion: ['lesiones', 'recuperacion', 'rehabilitacion', 'proteina', 'sintesis muscular', 'calidad muscular'],
+
+  // Deportes de equipo
+  deporte_equipo: ['rendimiento', 'deporte', 'ejercicio', 'competicion', 'intensidad', 'carga global'],
 }
 
 // ──────────────────────────────────────────────────────────────

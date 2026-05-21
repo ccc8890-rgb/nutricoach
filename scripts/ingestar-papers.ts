@@ -17,7 +17,8 @@
  *   - DEEPSEEK_API_KEY (solo si no se usa --skip-extraction)
  */
 
-import 'dotenv/config'
+import dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
 import { ejecutarIngesta, FUENTES_PUBMED } from '../lib/ingesta-papers'
 
 // ── Parsear argumentos CLI ──────────────────────────────────────────

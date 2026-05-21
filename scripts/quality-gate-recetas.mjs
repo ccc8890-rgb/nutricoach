@@ -116,6 +116,7 @@ const SINONIMOS_VALIDOS = [
   ['espinacas', 'espinacas'],
   // Tomate natural/triturado/frito
   ['tomates', 'tomate natural'],
+  ['tomates', 'tomate'],
   ['tomates cherry', 'tomate pera'],
   ['tomate triturado', 'tomate triturado'],
   ['tomate frito', 'tomate frito'],

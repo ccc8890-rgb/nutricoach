@@ -200,6 +200,7 @@ const MATCH_FIXES = [
     [/^az[uú]car\s*(glass|glas)/i, '70b4da1a-795a-4a63-b60c-7548d6cf189c', 'Azúcar glas'],
     // Azúcar (standalone) → matchea "Refresco Coca-Cola Zero azúcar" por substring
     [/^az[uú]car$/i, '2c6f1573-16be-4f70-9c75-39c5de606542', 'Azúcar'],
+    [/^tomates?$/i, '7f40a393-4f21-4196-bcd6-9c6e9a413532', 'Tomate'],
     // Cubitos de hielo → matchea "Bolsas Cubitos Hielo Caja" (0 kcal)
     [/^cubitos? de hielo/i, '41bfc3dd-c8c5-4d79-b86f-7ad4b3167b50', 'Cubos hielo'],
     // Cebolla en polvo → matchea "Curry en polvo" por "polvo"

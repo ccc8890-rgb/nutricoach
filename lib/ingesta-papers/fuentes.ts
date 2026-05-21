@@ -85,6 +85,55 @@ export const FUENTES_PUBMED: FuentePubMed[] = [
     categoria: 'hiit',
     activa: true,
   },
+  // ── Fuentes clínicas especializadas (MeSH queries específicas) ──
+  {
+    id: 'pubmed-tiroides',
+    nombre: 'PubMed — Tiroides y Metabolismo',
+    query: '(hypothyroidism[MeSH] OR thyroid[MeSH]) AND (diet[MeSH] OR nutrition[MeSH] OR iodine OR selenium OR weight management) AND (english[Filter]) NOT (review[Filter])',
+    disciplina: 'nutricion',
+    categoria: 'tiroides',
+    activa: true,
+  },
+  {
+    id: 'pubmed-pcos-sop',
+    nombre: 'PubMed — SOP/PCOS y Nutrición',
+    query: '(polycystic ovary syndrome[MeSH] OR PCOS[Title/Abstract]) AND (diet[MeSH] OR nutrition OR insulin resistance OR weight loss OR metformin) AND (english[Filter]) NOT (review[Filter])',
+    disciplina: 'nutricion',
+    categoria: 'sop',
+    activa: true,
+  },
+  {
+    id: 'pubmed-menopausia',
+    nombre: 'PubMed — Menopausia y Salud Ósea',
+    query: '(menopause[MeSH] OR postmenopause[MeSH]) AND (diet[MeSH] OR nutrition OR bone density OR protein OR calcium OR vitamin D) AND (english[Filter]) NOT (review[Filter])',
+    disciplina: 'nutricion',
+    categoria: 'menopausia',
+    activa: true,
+  },
+  {
+    id: 'pubmed-salud-osea',
+    nombre: 'PubMed — Salud Ósea y Sarcopenia',
+    query: '(bone density[MeSH] OR sarcopenia[MeSH]) AND (protein[MeSH] OR exercise[MeSH] OR nutrition OR vitamin D OR calcium) AND (english[Filter]) NOT (review[Filter])',
+    disciplina: 'nutricion',
+    categoria: 'salud_osea',
+    activa: true,
+  },
+  {
+    id: 'pubmed-ansiedad-alimentacion',
+    nombre: 'PubMed — Salud Mental y Nutrición',
+    query: '(mental health[MeSH] OR anxiety[MeSH] OR depression[MeSH]) AND (diet[MeSH] OR nutrition OR gut microbiome OR omega-3) AND (english[Filter]) NOT (review[Filter])',
+    disciplina: 'nutricion',
+    categoria: 'salud_mental',
+    activa: true,
+  },
+  {
+    id: 'pubmed-rehabilitacion',
+    nombre: 'PubMed — Rehabilitación y Recuperación',
+    query: '(rehabilitation[MeSH] OR injury recovery[Title/Abstract]) AND (nutrition[MeSH] OR protein[MeSH] OR physical therapy) AND (english[Filter]) NOT (review[Filter])',
+    disciplina: 'nutricion',
+    categoria: 'rehabilitacion',
+    activa: true,
+  },
 ]
 
 /** Obtiene las fuentes activas */
