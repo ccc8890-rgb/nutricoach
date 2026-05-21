@@ -26,9 +26,18 @@ export async function GET(request: NextRequest) {
     if (tipo_plato) query = query.eq('tipo_plato', tipo_plato)
     const { data } = await query
 
-    // Si no hay suficientes con filtro de tipo_plato, ampliar sin él
+    // Si no hay suficientes con filtro de tipo_plato, ampliar con tipos compatibles
+    const TIPOS_COMPATIBLES: Record<string, string[]> = {
+        'Merienda': ['Merienda', 'Snack', 'Desayuno'],
+        'Snack':    ['Snack', 'Merienda', 'Desayuno'],
+        'Desayuno': ['Desayuno', 'Merienda', 'Snack'],
+        'Comida':   ['Comida', 'Cena'],
+        'Cena':     ['Cena', 'Comida'],
+    }
+
     let pool = data ?? []
     if (tipo_plato && pool.length < limite) {
+        const tiposExtra = TIPOS_COMPATIBLES[tipo_plato] ?? []
         let fallbackQuery = db
             .from('recetas')
             .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min')
@@ -38,6 +47,9 @@ export async function GET(request: NextRequest) {
             .gte('proteinas', Math.round(proteinas * (1 - tolerancia)))
             .order('kcal', { ascending: true })
             .limit(limite * 2)
+        if (tiposExtra.length > 0) {
+            fallbackQuery = fallbackQuery.in('tipo_plato', tiposExtra)
+        }
         // NOT IN () vacío es SQL inválido — solo excluir si hay resultados previos
         if (pool.length > 0) {
             fallbackQuery = fallbackQuery.not('id', 'in', `(${pool.map(r => r.id).join(',')})`)

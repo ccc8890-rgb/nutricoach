@@ -233,7 +233,7 @@ export default function ClienteDetallePage() {
     </div>
   )
 
-  if (!cliente) return <div className="p-8 text-gray-500">Cliente no encontrado</div>
+  if (!cliente) return <div className="p-8 text-[var(--text-muted)]">Cliente no encontrado</div>
 
   const p: { nombre?: string; apellidos?: string; email?: string; telefono?: string } = cliente.profile ?? {}
 
@@ -262,9 +262,9 @@ export default function ClienteDetallePage() {
         <div className="flex items-center gap-3 mb-6">
           <Link href="/clientes" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900">{p.nombre} {p.apellidos}</h1>
+            <h1 className="text-2xl font-bold text-[var(--text)]">{p.nombre} {p.apellidos}</h1>
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-gray-500 text-sm">{p.email}</p>
+              <p className="text-[var(--text-muted)] text-sm">{p.email}</p>
               {cliente.onboarding_completado === false && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                   Sin onboarding
@@ -307,8 +307,8 @@ export default function ClienteDetallePage() {
               className={`
               flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
               ${tabActiva === key
-                  ? 'text-gray-900 border-gray-900'
-                  : 'text-gray-400 border-transparent hover:text-gray-600 hover:border-gray-300'
+                  ? 'text-[var(--text)] border-gray-900'
+                  : 'text-gray-400 border-transparent hover:text-[var(--text-muted)] hover:border-gray-300'
                 }
             `}
             >
@@ -339,7 +339,7 @@ export default function ClienteDetallePage() {
                   ].map(({ label, value }) => (
                     <div key={label} className="card">
                       <p className="text-xs text-gray-400 mb-1">{label}</p>
-                      <p className="font-semibold text-gray-800">{value}</p>
+                      <p className="font-semibold text-[var(--text)]">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -348,7 +348,7 @@ export default function ClienteDetallePage() {
                   {/* Planes de nutrición */}
                   <div className="card">
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="font-semibold text-gray-800 flex items-center gap-2">
+                      <h2 className="font-semibold text-[var(--text)] flex items-center gap-2">
                         <UtensilsCrossed size={18} className="text-green-600" /> Planes de nutrición
                       </h2>
                       <Link href={`/dietas/nueva?cliente=${id}`} className="btn-primary text-sm py-1.5 px-3">+ Nuevo</Link>
@@ -361,7 +361,7 @@ export default function ClienteDetallePage() {
                           <Link key={d.id} href={`/dietas/${d.id}`}
                             className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
                             <div>
-                              <p className="font-medium text-sm text-gray-800">{d.nombre}</p>
+                              <p className="font-medium text-sm text-[var(--text)]">{d.nombre}</p>
                               {d.kcal_objetivo && <p className="text-xs text-gray-400">{d.kcal_objetivo} kcal/día</p>}
                             </div>
                             <span className={`badge ${d.activo ? 'badge-green' : 'badge-gray'}`}>{d.activo ? 'Activo' : 'Inactivo'}</span>
@@ -374,7 +374,7 @@ export default function ClienteDetallePage() {
                   {/* Planes de entrenamiento */}
                   <div className="card">
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="font-semibold text-gray-800 flex items-center gap-2">
+                      <h2 className="font-semibold text-[var(--text)] flex items-center gap-2">
                         <Dumbbell size={18} className="text-purple-600" /> Planes de entrenamiento
                       </h2>
                       <div className="flex items-center gap-2">
@@ -397,7 +397,7 @@ export default function ClienteDetallePage() {
                           <Link key={e.id} href={`/entrenos/${e.id}`}
                             className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
                             <div>
-                              <p className="font-medium text-sm text-gray-800">{e.nombre}</p>
+                              <p className="font-medium text-sm text-[var(--text)]">{e.nombre}</p>
                               {e.duracion_semanas && <p className="text-xs text-gray-400">{e.duracion_semanas} semanas</p>}
                             </div>
                             <span className={`badge ${e.activo ? 'badge-green' : 'badge-gray'}`}>{e.activo ? 'Activo' : 'Inactivo'}</span>
@@ -410,7 +410,7 @@ export default function ClienteDetallePage() {
                   {/* Seguimiento de peso */}
                   <div className="card lg:col-span-2">
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="font-semibold text-gray-800 flex items-center gap-2">
+                      <h2 className="font-semibold text-[var(--text)] flex items-center gap-2">
                         <Weight size={18} className="text-blue-600" /> Seguimiento de peso
                       </h2>
                     </div>
@@ -429,8 +429,8 @@ export default function ClienteDetallePage() {
                           <tbody>
                             {seguimiento.map(s => (
                               <tr key={s.id} className="border-b border-gray-50">
-                                <td className="py-2 text-gray-600">{new Date(s.fecha).toLocaleDateString('es-ES')}</td>
-                                <td className="py-2 font-semibold text-gray-800">{s.peso ? `${s.peso} kg` : '—'}</td>
+                                <td className="py-2 text-[var(--text-muted)]">{new Date(s.fecha).toLocaleDateString('es-ES')}</td>
+                                <td className="py-2 font-semibold text-[var(--text)]">{s.peso ? `${s.peso} kg` : '—'}</td>
                                 <td className="py-2 text-gray-400 truncate max-w-xs">{s.notas || '—'}</td>
                               </tr>
                             ))}
@@ -443,8 +443,8 @@ export default function ClienteDetallePage() {
                   {/* Check-ins recibidos */}
                   <div className="card lg:col-span-2">
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-                        <ClipboardCheck size={18} className="text-gray-500" /> Check-ins del cliente
+                      <h2 className="font-semibold text-[var(--text)] flex items-center gap-2">
+                        <ClipboardCheck size={18} className="text-[var(--text-muted)]" /> Check-ins del cliente
                       </h2>
                       {checkins.length > 0 && (
                         <span className="badge badge-teal">{checkins.length} registros</span>
@@ -457,18 +457,18 @@ export default function ClienteDetallePage() {
                         {checkins.slice(0, 5).map(c => (
                           <div key={c.id} className="p-3 rounded-lg border" style={{ borderColor: '#E2E8F0', background: '#FAFAFA' }}>
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-gray-700">
+                              <span className="text-sm font-medium text-[var(--text-secondary)]">
                                 {new Date(c.fecha).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                               </span>
-                              {c.peso && <span className="font-semibold text-gray-800">{c.peso} kg</span>}
+                              {c.peso && <span className="font-semibold text-[var(--text)]">{c.peso} kg</span>}
                             </div>
-                            <div className="flex gap-3 text-xs text-gray-500">
+                            <div className="flex gap-3 text-xs text-[var(--text-muted)]">
                               {c.adherencia && <span>🥗 Adherencia: {c.adherencia}/10</span>}
                               {c.energia && <span>⚡ Energía: {c.energia}/10</span>}
                               {c.sueno && <span>😴 Sueño: {c.sueno}/10</span>}
                             </div>
                             {c.notas && (
-                              <p className="text-sm text-gray-600 mt-2 italic border-t pt-2" style={{ borderColor: '#F1F5F9' }}>
+                              <p className="text-sm text-[var(--text-muted)] mt-2 italic border-t pt-2" style={{ borderColor: '#F1F5F9' }}>
                                 &ldquo;{c.notas}&rdquo;
                               </p>
                             )}
@@ -480,7 +480,7 @@ export default function ClienteDetallePage() {
                                     <span className="font-semibold">Tu respuesta: </span>{c.nota_coach}
                                   </div>
                                   <button
-                                    className="text-xs text-gray-400 hover:text-gray-600 mt-1 flex-shrink-0"
+                                    className="text-xs text-gray-400 hover:text-[var(--text-muted)] mt-1 flex-shrink-0"
                                     onClick={() => setRespuestaCheckin(prev => ({ ...prev, [c.id]: c.nota_coach ?? '' }))}
                                   >
                                     Editar
@@ -532,8 +532,8 @@ export default function ClienteDetallePage() {
                   {/* Notas del coach */}
                   <div className="card lg:col-span-2">
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-                        <MessageSquareText size={18} className="text-gray-500" /> Notas para el cliente
+                      <h2 className="font-semibold text-[var(--text)] flex items-center gap-2">
+                        <MessageSquareText size={18} className="text-[var(--text-muted)]" /> Notas para el cliente
                       </h2>
                       {notasCoach.length > 0 && (
                         <span className="badge badge-teal">{notasCoach.length} notas</span>
@@ -576,7 +576,7 @@ export default function ClienteDetallePage() {
                       <div className="space-y-2 max-h-60 overflow-y-auto">
                         {notasCoach.map(n => (
                           <div key={n.id} className="p-3 rounded-lg text-sm" style={{ background: '#F2F2F7', border: '1px solid #E5E5EA' }}>
-                            <p className="text-gray-800">{n.mensaje}</p>
+                            <p className="text-[var(--text)]">{n.mensaje}</p>
                             <p className="text-xs text-gray-400 mt-1">
                               {new Date(n.created_at).toLocaleDateString('es-ES', {
                                 day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
@@ -591,17 +591,17 @@ export default function ClienteDetallePage() {
                   {/* Notas y restricciones */}
                   {(cliente.notas || cliente.restricciones_alimentarias) && (
                     <div className="card">
-                      <h2 className="font-semibold text-gray-800 mb-3">Notas y restricciones</h2>
+                      <h2 className="font-semibold text-[var(--text)] mb-3">Notas y restricciones</h2>
                       {cliente.restricciones_alimentarias && (
                         <div className="mb-3">
                           <p className="text-xs text-gray-400 mb-1">Restricciones alimentarias</p>
-                          <p className="text-sm text-gray-700">{cliente.restricciones_alimentarias}</p>
+                          <p className="text-sm text-[var(--text-secondary)]">{cliente.restricciones_alimentarias}</p>
                         </div>
                       )}
                       {cliente.notas && (
                         <div>
                           <p className="text-xs text-gray-400 mb-1">Notas privadas</p>
-                          <p className="text-sm text-gray-700">{cliente.notas}</p>
+                          <p className="text-sm text-[var(--text-secondary)]">{cliente.notas}</p>
                         </div>
                       )}
                     </div>
@@ -696,12 +696,12 @@ export default function ClienteDetallePage() {
               {/* Header */}
               <div className="flex items-center justify-between p-5 pb-3 border-b" style={{ borderColor: '#F1F5F9' }}>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Asignar desde plantilla</h2>
-                  <p className="text-sm text-gray-500">Selecciona una plantilla y se creará el plan con todas sus sesiones y ejercicios</p>
+                  <h2 className="text-lg font-bold text-[var(--text)]">Asignar desde plantilla</h2>
+                  <p className="text-sm text-[var(--text-muted)]">Selecciona una plantilla y se creará el plan con todas sus sesiones y ejercicios</p>
                 </div>
                 <button
                   onClick={() => { setShowSelectorPlantilla(false); setPlantillaSeleccionada(null) }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
+                  className="text-gray-400 hover:text-[var(--text-muted)] transition-colors p-1 rounded-lg hover:bg-gray-100"
                 >
                   <X size={18} />
                 </button>

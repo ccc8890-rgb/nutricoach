@@ -152,6 +152,17 @@ export default function RevisarPlanPage() {
     }
   }
 
+  const nombreATipoPlato = (nombre: string): string | null => {
+    const n = nombre.toLowerCase()
+    if (n.includes('desayuno') || n.includes('brunch')) return 'Desayuno'
+    if (n.includes('merienda') || n.includes('snack') || n.includes('tentempié') || n.includes('media mañana')) return 'Merienda'
+    if (n.includes('cena')) return 'Cena'
+    if (n.includes('comida') || n.includes('almuerzo') || n.includes('mediodía')) return 'Comida'
+    if (n.includes('post') || n.includes('recuper')) return 'Snack'
+    if (n.includes('pre') || n.includes('antes del entreno')) return 'Snack'
+    return null
+  }
+
   const cargarRecetasPlan = async (planData: PlanInicial) => {
     if (!planData.distribucion_comidas?.length) return
     setCargandoRecetas(true)
@@ -159,12 +170,15 @@ export default function RevisarPlanPage() {
     await Promise.all(
       planData.distribucion_comidas.map(async (comida, idx) => {
         try {
-          const params = new URLSearchParams({
+          const tipoPlatoFiltro = nombreATipoPlato(comida.nombre)
+          const protTarget = Math.round((comida.kcal * 0.30) / 4)
+          const qs = new URLSearchParams({
             kcal: String(comida.kcal),
-            proteinas: String(Math.round((comida.kcal * 0.30) / 4)),
+            proteinas: String(protTarget),
             limite: '3',
+            ...(tipoPlatoFiltro ? { tipo_plato: tipoPlatoFiltro } : {}),
           })
-          const res = await fetch(`/api/recetas/sugeridas?${params}`)
+          const res = await fetch(`/api/recetas/sugeridas?${qs}`)
           if (res.ok) {
             const data = await res.json()
             resultados[idx] = data.recetas ?? []
@@ -716,7 +730,7 @@ export default function RevisarPlanPage() {
         <div className="flex gap-3">
           <button
             type="button"
-            onClick={() => router.push(`/clientes/${params.id}`)}
+            onClick={() => window.open(`/clientes/${params.id}`, '_blank')}
             className="btn-secondary flex-1"
           >
             Ver perfil completo
