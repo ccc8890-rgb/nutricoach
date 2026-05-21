@@ -177,8 +177,50 @@ ${evidenciasTexto}
       return NextResponse.json({ error: 'Respuesta IA no válida', raw: planTexto }, { status: 502 })
     }
 
+    // Guardar automáticamente en planes_entrenamiento + sesiones_entrenamiento
+    let planGuardadoId: string | null = null
+    try {
+      const { data: planDB } = await sb.from('planes_entrenamiento').insert({
+        coach_id: user.id,
+        cliente_id,
+        nombre: (planIA.nombre_plan as string) ?? `Plan IA — ${modalidadFoco}`,
+        descripcion: (planIA.fundamentacion as string) ?? null,
+        duracion_semanas: (planIA.duracion_semanas as number) ?? null,
+        activo: true,
+      }).select('id').single()
+
+      if (planDB) {
+        planGuardadoId = planDB.id
+        const sesiones = (planIA.sesiones as Record<string, unknown>[]) ?? []
+        for (let i = 0; i < sesiones.length; i++) {
+          const s = sesiones[i]
+          const ejercicios = (s.ejercicios as Record<string, unknown>[]) ?? []
+          const ejerciciosTexto = ejercicios.map(e =>
+            `${e.nombre}: ${e.series}x${e.repeticiones} | Desc: ${e.descanso_segundos}s | RPE: ${e.rpe_objetivo}\n${e.notas ?? ''}`
+          ).join('\n\n')
+          await sb.from('sesiones_entrenamiento').insert({
+            plan_id: planDB.id,
+            nombre: (s.nombre as string) ?? `Sesión ${i + 1}`,
+            dia_semana: (s.dia_semana as string) ?? null,
+            orden: i + 1,
+            notas: ejerciciosTexto || null,
+          })
+        }
+        // Historial para poder regenerar / ver versiones
+        await sb.from('registros_ia').insert({
+          cliente_id,
+          tipo: 'plan_entreno_ia',
+          respuesta_json: planIA,
+        })
+      }
+    } catch (saveErr) {
+      // No bloqueante: devolvemos el plan aunque falle el guardado
+      console.error('proponer-plan-ciencia save error:', saveErr)
+    }
+
     return NextResponse.json({
       plan: planIA,
+      plan_id: planGuardadoId,
       metadata: {
         rpe_promedio: rpePromedio,
         ajuste_rpe: ajusteRpe,
