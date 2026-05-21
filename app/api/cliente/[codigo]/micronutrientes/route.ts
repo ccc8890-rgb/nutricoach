@@ -45,12 +45,38 @@ export async function GET(
 
     const { data: plan } = await db
         .from('planes_nutricion')
-        .select('id, nombre')
+        .select('id, nombre, cliente_id')
         .eq('codigo_publico', codigo)
         .eq('activo', true)
         .single()
 
     if (!plan) return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 })
+
+    let perfil: {
+        sexo?: string | null
+        edad?: number | null
+        objetivo?: string | null
+        condiciones?: string[] | null
+    } | undefined
+
+    if (plan.cliente_id) {
+        const { data: cliente } = await db
+            .from('clientes')
+            .select('sexo, edad, objetivo, restricciones_alimentarias')
+            .eq('id', plan.cliente_id)
+            .single()
+
+        if (cliente) {
+            perfil = {
+                sexo: cliente.sexo,
+                edad: cliente.edad,
+                objetivo: cliente.objetivo,
+                condiciones: cliente.restricciones_alimentarias
+                    ? [cliente.restricciones_alimentarias]
+                    : null,
+            }
+        }
+    }
 
     const { data: comidas } = await db
         .from('comidas')
@@ -98,7 +124,7 @@ export async function GET(
         }
     }
 
-    const gaps = calcularGapMicronutrientes(totales)
+    const gaps = calcularGapMicronutrientes(totales, perfil)
     const prioritarios = seleccionarMicronutrientesPrioritarios(gaps)
     const ok = gaps.filter(gap => gap.estado === 'ok').length
 
@@ -108,6 +134,7 @@ export async function GET(
         totales,
         nutrientes: gaps,
         prioritarios,
+        perfil_aplicado: perfil ?? null,
         resumen: {
             ok,
             revisar: gaps.length - ok,

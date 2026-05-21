@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useMemo } from 'react'
+import { useState, useMemo } from 'react'
+import Image from 'next/image'
 import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw } from 'lucide-react'
 import RecetaDelDia from './RecetaDelDia'
 import ListaCompraPortal from './ListaCompraPortal'
@@ -258,7 +259,6 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
     const [microsAbiertos, setMicrosAbiertos] = useState(false)
     const [listaAbierta, setListaAbierta] = useState(false)
     const [usandoReceta, setUsandoReceta] = useState<string | null>(null)
-    const printRef = useRef<HTMLDivElement>(null)
     const { addToast } = useToast()
 
     function inferirTipoPlato(nombreComida: string): string | null {
@@ -620,7 +620,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                                                         >
                                                             <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                                                                 {receta.imagen_url
-                                                                    ? <img src={receta.imagen_url} alt={receta.nombre} className="w-full h-full object-cover" />
+                                                                    ? <Image src={receta.imagen_url} alt={receta.nombre} width={56} height={56} className="w-full h-full object-cover" sizes="56px" />
                                                                     : <div className="w-full h-full flex items-center justify-center text-xl">🍽</div>
                                                                 }
                                                             </div>

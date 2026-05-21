@@ -1,7 +1,53 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { escapeHtml } from '@/lib/html/escape'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros } from '@/types'
+
+interface ClienteConProfile {
+    objetivo?: string | null
+    profile?: { nombre?: string | null } | null
+}
+
+interface AlimentoPdf {
+    nombre?: string | null
+    calorias?: number | null
+    proteinas?: number | null
+    carbohidratos?: number | null
+    grasas?: number | null
+    fibra?: number | null
+}
+
+interface ComidaAlimentoPdf {
+    cantidad_gramos: number
+    alimento?: AlimentoPdf | null
+}
+
+interface ComidaPdf {
+    nombre: string
+    hora_sugerida?: string | null
+    orden?: number | null
+    alimentos?: ComidaAlimentoPdf[]
+}
+
+interface EjercicioPdf {
+    orden?: number | null
+    ejercicio?: { nombre?: string | null } | null
+}
+
+interface SesionPdf {
+    nombre: string
+    dia_semana?: string | null
+    orden?: number | null
+    ejercicios?: EjercicioPdf[]
+}
+
+interface EntrenoPdf {
+    nombre: string
+    descripcion?: string | null
+    duracion_semanas?: number | null
+    sesiones?: SesionPdf[]
+}
 
 export async function GET(
     _request: Request,
@@ -33,8 +79,9 @@ export async function GET(
                 .eq('id', plan.cliente_id)
                 .single()
             if (c) {
-                clienteNombre = (c as any).profile?.nombre || 'Cliente'
-                clienteObjetivo = (c as any).objetivo || ''
+                const cliente = c as ClienteConProfile
+                clienteNombre = cliente.profile?.nombre || 'Cliente'
+                clienteObjetivo = cliente.objetivo || ''
             }
         }
 
@@ -53,7 +100,7 @@ export async function GET(
         }
 
         // 4. Lista de compra
-        let listaCompra: { nombre: string; categoria?: string; cantidad?: number; unidad?: string }[] = []
+        const listaCompra: ItemListaPdf[] = []
         const lunes = getLunesActual()
         const { data: listaData } = await supabase
             .from('vista_lista_compra_semanal')
@@ -63,7 +110,7 @@ export async function GET(
 
         if (listaData) {
             const vistos = new Set<string>()
-            for (const item of listaData as any[]) {
+            for (const item of listaData as ItemListaVista[]) {
                 if (!vistos.has(item.alimento_nombre)) {
                     vistos.add(item.alimento_nombre)
                     listaCompra.push({
@@ -84,7 +131,7 @@ export async function GET(
             planNombre: plan.nombre,
             planDescripcion: plan.descripcion,
             comidas: plan.comidas || [],
-            entreno,
+            entreno: entreno as EntrenoPdf | null,
             listaCompra,
             appUrl,
         })
@@ -110,8 +157,8 @@ function getLunesActual(): string {
     return lunes.toISOString().split('T')[0]
 }
 
-function calcMacrosComida(alimentos: any[]): Macros {
-    return sumarMacros((alimentos ?? []).map((a: any) =>
+function calcMacrosComida(alimentos: ComidaAlimentoPdf[]): Macros {
+    return sumarMacros((alimentos ?? []).map(a =>
         calcularMacrosPorCantidad(
             a.alimento?.calorias ?? 0,
             a.alimento?.proteinas ?? 0,
@@ -123,26 +170,39 @@ function calcMacrosComida(alimentos: any[]): Macros {
     ))
 }
 
+interface ItemListaVista {
+    alimento_nombre: string
+    categoria?: string | null
+    cantidad_total?: number | null
+}
+
+interface ItemListaPdf {
+    nombre: string
+    categoria?: string | null
+    cantidad?: number | null
+    unidad?: string
+}
+
 interface GenerarHtmlParams {
     nombreCliente: string
     objetivo: string
     planNombre: string
     planDescripcion?: string
-    comidas: any[]
-    entreno: any
-    listaCompra: { nombre: string; categoria?: string; cantidad?: number; unidad?: string }[]
+    comidas: ComidaPdf[]
+    entreno: EntrenoPdf | null
+    listaCompra: ItemListaPdf[]
     appUrl: string
 }
 
 function generarHtmlPlan(p: GenerarHtmlParams): string {
     const totalDia = sumarMacros(
-        (p.comidas ?? []).map((c: any) => calcMacrosComida(c.alimentos ?? []))
+        (p.comidas ?? []).map(c => calcMacrosComida(c.alimentos ?? []))
     )
 
-    const comidasHtml = (p.comidas ?? []).map((comida: any, ci: number) => {
+    const comidasHtml = (p.comidas ?? []).map((comida, ci: number) => {
         const alimentos = comida.alimentos ?? []
         const macros = calcMacrosComida(alimentos)
-        const itemsHtml = alimentos.map((af: any) => {
+        const itemsHtml = alimentos.map(af => {
             const m = calcularMacrosPorCantidad(
                 af.alimento?.calorias ?? 0,
                 af.alimento?.proteinas ?? 0,
@@ -152,7 +212,7 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
                 af.cantidad_gramos
             )
             return `<tr>
-        <td style="padding:6px 12px; border-bottom:1px solid #e5e7eb;">${af.alimento?.nombre || '—'}</td>
+        <td style="padding:6px 12px; border-bottom:1px solid #e5e7eb;">${escapeHtml(af.alimento?.nombre || '—')}</td>
         <td style="padding:6px 12px; border-bottom:1px solid #e5e7eb; text-align:center;">${af.cantidad_gramos}g</td>
         <td style="padding:6px 12px; border-bottom:1px solid #e5e7eb; text-align:center;">${m.calorias.toFixed(0)}</td>
         <td style="padding:6px 12px; border-bottom:1px solid #e5e7eb; text-align:center;">${m.proteinas.toFixed(1)}g</td>
@@ -163,7 +223,7 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
 
         return `<div style="margin-bottom:24px; page-break-inside:avoid;">
       <div style="background:linear-gradient(135deg,#22c55e,#16a34a); padding:12px 16px; border-radius:8px 8px 0 0; display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="color:white; margin:0; font-size:16px;">${ci + 1}. ${comida.nombre}</h3>
+        <h3 style="color:white; margin:0; font-size:16px;">${ci + 1}. ${escapeHtml(comida.nombre)}</h3>
         <span style="color:#dcfce7; font-size:13px;">${macros.calorias.toFixed(0)} kcal${comida.hora_sugerida ? ` · ${comida.hora_sugerida.slice(0, 5)}` : ''}</span>
       </div>
       <table style="width:100%; border-collapse:collapse; background:white; border:1px solid #e5e7eb; border-radius:0 0 8px 8px; font-size:13px;">
@@ -196,21 +256,21 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
     // Entreno
     let entrenoHtml = ''
     if (p.entreno) {
-        const sesionesHtml = (p.entreno.sesiones ?? []).map((sesion: any) => {
+        const sesionesHtml = (p.entreno.sesiones ?? []).map(sesion => {
             const ejHtml = (sesion.ejercicios ?? [])
-                .sort((a: any, b: any) => a.orden - b.orden)
-                .map((ej: any) =>
-                    `<span style="display:inline-block; background:#f3f4f6; padding:3px 10px; border-radius:12px; font-size:12px; margin:2px; color:#374151;">${ej.ejercicio?.nombre || 'Ejercicio'}</span>`
+                .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+                .map(ej =>
+                    `<span style="display:inline-block; background:#f3f4f6; padding:3px 10px; border-radius:12px; font-size:12px; margin:2px; color:#374151;">${escapeHtml(ej.ejercicio?.nombre || 'Ejercicio')}</span>`
                 ).join('')
             return `<div style="margin-bottom:12px; padding:12px; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb;">
-        <p style="margin:0 0 4px 0; font-weight:600; font-size:14px;">${sesion.nombre}</p>
-        ${sesion.dia_semana ? `<p style="margin:0 0 8px 0; font-size:12px; color:#6b7280;">${sesion.dia_semana}</p>` : ''}
+        <p style="margin:0 0 4px 0; font-weight:600; font-size:14px;">${escapeHtml(sesion.nombre)}</p>
+        ${sesion.dia_semana ? `<p style="margin:0 0 8px 0; font-size:12px; color:#6b7280;">${escapeHtml(sesion.dia_semana)}</p>` : ''}
         <div>${ejHtml}</div>
       </div>`
         }).join('')
         entrenoHtml = `<section style="margin-bottom:24px; page-break-inside:avoid;">
-      <h2 style="font-size:18px; color:#0d9488; margin:0 0 12px 0; padding-bottom:8px; border-bottom:2px solid #0d9488;">🏋️ Plan de entrenamiento: ${p.entreno.nombre}</h2>
-      ${p.entreno.descripcion ? `<p style="color:#6b7280; font-size:14px; margin-bottom:12px;">${p.entreno.descripcion}</p>` : ''}
+      <h2 style="font-size:18px; color:#0d9488; margin:0 0 12px 0; padding-bottom:8px; border-bottom:2px solid #0d9488;">🏋️ Plan de entrenamiento: ${escapeHtml(p.entreno.nombre)}</h2>
+      ${p.entreno.descripcion ? `<p style="color:#6b7280; font-size:14px; margin-bottom:12px;">${escapeHtml(p.entreno.descripcion)}</p>` : ''}
       ${p.entreno.duracion_semanas ? `<p style="font-size:13px; color:#6b7280; margin-bottom:12px;">Duración: ${p.entreno.duracion_semanas} semanas</p>` : ''}
       ${sesionesHtml}
     </section>`
@@ -221,7 +281,7 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
     if (p.listaCompra.length > 0) {
         const items = p.listaCompra.map(item =>
             `<li style="padding:6px 0; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; font-size:14px;">
-        <span>${item.nombre}</span>
+        <span>${escapeHtml(item.nombre)}</span>
         ${item.cantidad ? `<span style="color:#6b7280;">${item.cantidad.toFixed(0)}${item.unidad || 'g'}</span>` : ''}
       </li>`
         ).join('')
@@ -236,7 +296,7 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plan Nutricional - ${p.nombreCliente}</title>
+  <title>Plan Nutricional - ${escapeHtml(p.nombreCliente)}</title>
   <style>
     @page { margin: 20mm 15mm; }
     * { box-sizing: border-box; }
@@ -302,8 +362,8 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
   <div class="page">
     <div class="header">
       <h1>🏋️ NutriCoach</h1>
-      <p>Plan nutricional personalizado para <strong>${p.nombreCliente}</strong></p>
-      ${p.objetivo ? `<p>Objetivo: ${p.objetivo}</p>` : ''}
+      <p>Plan nutricional personalizado para <strong>${escapeHtml(p.nombreCliente)}</strong></p>
+      ${p.objetivo ? `<p>Objetivo: ${escapeHtml(p.objetivo)}</p>` : ''}
     </div>
 
     <div class="macro-summary">
@@ -325,14 +385,14 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
     </div>
 
     <h2 style="font-size:18px; color:#16a34a; margin:0 0 12px 0; padding-bottom:8px; border-bottom:2px solid #16a34a;">🍽️ Plan de comidas</h2>
-    ${p.planDescripcion ? `<p style="color:#6b7280; font-size:14px; margin-bottom:16px;">${p.planDescripcion}</p>` : ''}
+    ${p.planDescripcion ? `<p style="color:#6b7280; font-size:14px; margin-bottom:16px;">${escapeHtml(p.planDescripcion)}</p>` : ''}
     ${comidasHtml}
 
     ${entrenoHtml}
     ${listaHtml}
 
     <div style="text-align:center; padding:24px 0 0 0; font-size:12px; color:#9ca3af; border-top:1px solid #e5e7eb; margin-top:24px;">
-      Generado por <a href="${p.appUrl}" style="color:#22c55e; text-decoration:none;">NutriCoach</a>
+      Generado por <a href="${escapeHtml(p.appUrl)}" style="color:#22c55e; text-decoration:none;">NutriCoach</a>
     </div>
 
     <button class="btn-print no-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>

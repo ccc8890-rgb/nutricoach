@@ -36,7 +36,14 @@ interface TargetMicronutriente {
   sugerencia: string
 }
 
-export const TARGETS_MICRONUTRIENTES: TargetMicronutriente[] = [
+export interface PerfilMicronutrientes {
+  sexo?: string | null
+  edad?: number | null
+  objetivo?: string | null
+  condiciones?: string[] | null
+}
+
+export const TARGETS_MICRONUTRIENTES_BASE: TargetMicronutriente[] = [
   { key: 'fibra_g', label: 'Fibra', unidad: 'g', objetivo: 25, direccion: 'min', sugerencia: 'Añadir verdura, legumbres, fruta con piel o avena.' },
   { key: 'calcio_mg', label: 'Calcio', unidad: 'mg', objetivo: 1000, direccion: 'min', sugerencia: 'Revisar lácteos, bebidas enriquecidas, sardina o tofu con calcio.' },
   { key: 'hierro_mg', label: 'Hierro', unidad: 'mg', objetivo: 14, direccion: 'min', sugerencia: 'Añadir legumbres, carne magra, moluscos o combinar vegetal con vitamina C.' },
@@ -49,6 +56,16 @@ export const TARGETS_MICRONUTRIENTES: TargetMicronutriente[] = [
   { key: 'azucares_anyadidos_g', label: 'Azúcares añadidos', unidad: 'g', objetivo: 25, direccion: 'max', sugerencia: 'Cambiar productos azucarados por opciones naturales o sin añadido.' },
   { key: 'saturados_g', label: 'Grasa saturada', unidad: 'g', objetivo: 20, direccion: 'max', sugerencia: 'Ajustar quesos grasos, mantequilla, bollería, embutidos o coco.' },
 ]
+
+export function normalizarCondicionesMicronutrientes(perfil?: PerfilMicronutrientes): string[] {
+  return [
+    perfil?.objetivo ?? '',
+    ...(perfil?.condiciones ?? []),
+  ]
+    .flatMap(valor => valor.split(','))
+    .map(valor => valor.trim().toLowerCase())
+    .filter(Boolean)
+}
 
 function redondear(valor: number): number {
   return Math.round(valor * 10) / 10
@@ -71,8 +88,41 @@ export function crearTotalesMicronutrientes(): TotalesMicronutrientes {
   }
 }
 
-export function calcularGapMicronutrientes(totales: TotalesMicronutrientes): NutrienteGap[] {
-  return TARGETS_MICRONUTRIENTES.map(target => {
+function crearTargetsPorPerfil(perfil?: PerfilMicronutrientes): TargetMicronutriente[] {
+  const condiciones = normalizarCondicionesMicronutrientes(perfil)
+  const targets = TARGETS_MICRONUTRIENTES_BASE.map(target => ({ ...target }))
+  const get = (key: keyof TotalesMicronutrientes) => targets.find(target => target.key === key)
+
+  if (condiciones.some(c => c.includes('hta') || c.includes('hipertension'))) {
+    const sodio = get('sodio_mg')
+    if (sodio) sodio.objetivo = 1500
+  }
+
+  if (condiciones.some(c => c.includes('diabet') || c.includes('resistencia') || c.includes('sop'))) {
+    const fibra = get('fibra_g')
+    const azucares = get('azucares_anyadidos_g')
+    if (fibra) fibra.objetivo = 30
+    if (azucares) azucares.objetivo = 15
+  }
+
+  if (perfil?.sexo === 'mujer') {
+    const hierro = get('hierro_mg')
+    if (hierro) hierro.objetivo = 18
+  }
+
+  if ((perfil?.edad ?? 0) >= 50) {
+    const calcio = get('calcio_mg')
+    if (calcio) calcio.objetivo = 1200
+  }
+
+  return targets
+}
+
+export function calcularGapMicronutrientes(
+  totales: TotalesMicronutrientes,
+  perfil?: PerfilMicronutrientes
+): NutrienteGap[] {
+  return crearTargetsPorPerfil(perfil).map(target => {
     const valor = redondear(totales[target.key] ?? 0)
     const pctRaw = target.objetivo > 0 ? (valor / target.objetivo) * 100 : 0
     const pct = Math.max(0, Math.min(160, Math.round(pctRaw)))

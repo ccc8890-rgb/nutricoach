@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Loader2, RefreshCw } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 
@@ -229,7 +230,7 @@ export default function PlanSemanal({ comidas }: PlanSemanalProps) {
                                     <div className="flex items-center gap-3">
                                         <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
                                             {receta.imagen_url
-                                                ? <img src={receta.imagen_url} alt={receta.nombre} className="w-full h-full object-cover" />
+                                                ? <Image src={receta.imagen_url} alt={receta.nombre} width={64} height={64} className="w-full h-full object-cover" sizes="64px" />
                                                 : <div className="w-full h-full flex items-center justify-center text-2xl">🍽</div>
                                             }
                                         </div>
