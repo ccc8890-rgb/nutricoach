@@ -34,7 +34,7 @@ function TabSkeleton() {
 
 type NotaCoachRow = { id: string; cliente_id: string; mensaje: string; created_at: string }
 type Tab = 'resumen' | 'planes' | 'checkins' | 'notas' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion' | 'perfil_atleta' | 'historial_entreno'
-type ClienteConExtra = Cliente & { fecha_proxima_revision?: string; profile?: { nombre?: string; apellidos?: string; email?: string; telefono?: string } }
+type ClienteConExtra = Cliente & { fecha_proxima_revision?: string; revisado_por_coach?: boolean | null; profile?: { nombre?: string; apellidos?: string; email?: string; telefono?: string } }
 
 // ── MacroBar ──────────────────────────────────────────────────────────────────
 function MacroBar({ label, value, max, color, icon: Icon }: {
@@ -90,7 +90,6 @@ export default function ClienteDetallePage() {
   const [creandoPlan, setCreandoPlan] = useState(false)
 
   async function loadData() {
-    supabase.from('clientes').update({ revisado_por_coach: true }).eq('id', id).eq('revisado_por_coach', false).then(() => {})
     const [clienteRes, dietasRes, entrenosRes, seguRes, checkinsRes, notasRes] = await Promise.all([
       supabase.from('clientes').select('*, profile:profiles!profile_id(nombre, apellidos, email, telefono)').eq('id', id).single(),
       supabase.from('planes_nutricion').select('*').eq('cliente_id', id).order('created_at', { ascending: false }),
@@ -187,11 +186,11 @@ export default function ClienteDetallePage() {
     { key: 'planificacion', label: 'Planificación', icon: CalendarDays },
     { key: 'competicion', label: 'Competición', icon: Trophy },
     { key: 'periodizacion', label: 'Periodización', icon: Activity },
-    { key: 'historial_ia', label: 'IA', icon: Brain },
+    { key: 'historial_ia', label: 'Historial IA', icon: Brain },
     { key: 'conversaciones_ia', label: 'Chat IA', icon: Bot },
-    { key: 'perfil_atleta', label: 'Atleta', icon: PersonStanding },
-    { key: 'historial_entreno', label: 'Historial', icon: Dumbbell },
-    { key: 'ajuste_macros', label: 'Macros', icon: Zap },
+    { key: 'perfil_atleta', label: 'Perfil atleta', icon: PersonStanding },
+    { key: 'historial_entreno', label: 'Entreno realizado', icon: Dumbbell },
+    { key: 'ajuste_macros', label: 'Ajuste macros', icon: Zap },
   ]
 
   return (
@@ -222,6 +221,9 @@ export default function ClienteDetallePage() {
                 )}
                 {cliente.onboarding_completado === false && (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>Sin onboarding</span>
+                )}
+                {cliente.revisado_por_coach === false && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>Pendiente de revisión</span>
                 )}
               </div>
               <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.email}</p>
@@ -280,10 +282,13 @@ export default function ClienteDetallePage() {
               </div>
             </div>
           ) : (
-            <div className="mt-4 pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
-              <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin plan activo asignado</span>
+            <div className="mt-4 pt-4 flex items-center justify-between gap-3" style={{ borderTop: '1px solid var(--border)' }}>
+              <div>
+                <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>Sin dieta activa</span>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Genera o revisa el plan IA antes de activar el cliente.</p>
+              </div>
               <Link href={`/clientes/${id}/revisar-plan`} className="btn-primary btn-sm">
-                Revisar / generar plan
+                Generar dieta IA
               </Link>
             </div>
           )}

@@ -125,6 +125,7 @@ export default function RevisarPlanPage() {
   const [creandoEntreno, setCreandoEntreno] = useState(false)
   const [entrenoCreado, setEntrenoCreado] = useState<{ id: string } | null>(null)
   const [errorEntreno, setErrorEntreno] = useState<string | null>(null)
+  const [errorPlan, setErrorPlan] = useState<string | null>(null)
   const [reintentandoPlan, setReintentandoPlan] = useState(false)
   const [regenerandoPlan, setRegenerandoPlan] = useState(false)
   const [versiones, setVersiones] = useState<RegistroIA[]>([])
@@ -187,7 +188,7 @@ export default function RevisarPlanPage() {
       })
   }, [params.id, cargarRecetasPlan])
 
-  const cargarVersiones = async () => {
+  const cargarVersiones = async (): Promise<number> => {
     const { data } = await supabase
       .from('registros_ia')
       .select('id, respuesta_json, created_at')
@@ -201,6 +202,7 @@ export default function RevisarPlanPage() {
       setPlan(registros[0].respuesta_json)
       cargarRecetasPlan(registros[0].respuesta_json)
     }
+    return registros.length
   }
 
   const reintentarPlan = async () => {
@@ -211,14 +213,27 @@ export default function RevisarPlanPage() {
 
   const regenerarPlan = async () => {
     setRegenerandoPlan(true)
+    setErrorPlan(null)
     try {
-      await fetch('/api/generar-plan-inicial', {
+      if (!onboarding) {
+        setErrorPlan('No se puede generar dieta: el cliente aún no ha completado el onboarding.')
+        return
+      }
+      const res = await fetch('/api/generar-plan-inicial', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ cliente_id: params.id }),
       })
-      await cargarVersiones()
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        setErrorPlan(data?.error ?? 'No se pudo generar el plan.')
+        return
+      }
+      const total = await cargarVersiones()
+      if (total === 0) setErrorPlan('La generación terminó, pero no se encontró ningún plan guardado. Revisa registros_ia.')
+    } catch (err) {
+      setErrorPlan(err instanceof Error ? err.message : 'Error inesperado al generar el plan.')
     } finally {
       setRegenerandoPlan(false)
     }
@@ -576,26 +591,44 @@ export default function RevisarPlanPage() {
       {/* Plan IA — estado "generando" cuando aún no existe */}
       {!plan && (
         <div className="card p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               {reintentandoPlan
                 ? <Loader2 className="animate-spin shrink-0" size={18} style={{ color: 'var(--primary)' }} />
-                : <Loader2 className="animate-spin shrink-0opacity-40" size={18} style={{ color: 'var(--text-muted)' }} />}
+                : <RefreshCw className="shrink-0 opacity-50" size={18} style={{ color: 'var(--text-muted)' }} />}
               <div>
-                <p className="text-sm font-medium text-[var(--text)]">Generando plan con IA…</p>
-                <p className="text-xs text-[var(--text-muted)]">Suele tardar menos de 1 minuto</p>
+                <p className="text-sm font-medium text-[var(--text)]">No hay plan IA guardado todavía</p>
+                <p className="text-xs text-[var(--text-muted)]">
+                  {onboarding
+                    ? 'Genera el plan inicial para poder crear la dieta del cliente.'
+                    : 'El cliente debe completar el onboarding antes de generar la dieta.'}
+                </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={reintentarPlan}
-              disabled={reintentandoPlan}
-              className="btn-secondary text-sm shrink-0"
-            >
-              {reintentandoPlan ? 'Comprobando…' : 'Recargar'}
-            </button>
+            <div className="flex gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={reintentarPlan}
+                disabled={reintentandoPlan}
+                className="btn-secondary text-sm"
+              >
+                {reintentandoPlan ? 'Comprobando…' : 'Recargar'}
+              </button>
+              <button
+                type="button"
+                onClick={regenerarPlan}
+                disabled={regenerandoPlan || !onboarding}
+                className="btn-primary text-sm flex items-center gap-2"
+              >
+                {regenerandoPlan ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                {regenerandoPlan ? 'Generando…' : 'Generar plan'}
+              </button>
+            </div>
           </div>
         </div>
+      )}
+      {errorPlan && (
+        <p className="text-sm text-red-600 dark:text-red-400 text-center">{errorPlan}</p>
       )}
 
       {/* Plan IA */}
@@ -799,7 +832,7 @@ export default function RevisarPlanPage() {
       )}
 
       {/* Actions */}
-      {!cliente.revisado_por_coach && (
+      {plan && (
         <div className="flex gap-3">
           <button
             type="button"
@@ -808,37 +841,45 @@ export default function RevisarPlanPage() {
           >
             Ver perfil completo
           </button>
-          {plan && (
-            dietaCreada ? (
-              <button
-                type="button"
-                onClick={() => router.push(`/dietas/${dietaCreada.id}`)}
-                className="btn-secondary flex-1 flex items-center justify-center gap-2"
-              >
-                <ExternalLink size={16} />
-                Ver dieta →
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={crearPlan}
-                disabled={creandoDieta}
-                className="btn-secondary flex-1 flex items-center justify-center gap-2"
-              >
-                {creandoDieta ? <Loader2 size={16} className="animate-spin" /> : <Utensils size={16} />}
-                Crear plan de dieta
-              </button>
-            )
+          {dietaCreada ? (
+            <button
+              type="button"
+              onClick={() => router.push(`/dietas/${dietaCreada.id}`)}
+              className="btn-secondary flex-1 flex items-center justify-center gap-2"
+            >
+              <ExternalLink size={16} />
+              Ver dieta →
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={crearPlan}
+              disabled={creandoDieta}
+              className="btn-secondary flex-1 flex items-center justify-center gap-2"
+            >
+              {creandoDieta ? <Loader2 size={16} className="animate-spin" /> : <Utensils size={16} />}
+              Crear plan de dieta
+            </button>
           )}
-          <button
-            type="button"
-            onClick={aprobar}
-            disabled={aprobando}
-            className="btn-primary flex-1 flex items-center justify-center gap-2"
-          >
-            {aprobando ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-            Aprobar y activar cliente
-          </button>
+          {!cliente.revisado_por_coach ? (
+            <button
+              type="button"
+              onClick={aprobar}
+              disabled={aprobando}
+              className="btn-primary flex-1 flex items-center justify-center gap-2"
+            >
+              {aprobando ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+              Aprobar y activar cliente
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => router.push(`/clientes/${params.id}`)}
+              className="btn-primary flex-1 flex items-center justify-center gap-2"
+            >
+              Volver a ficha
+            </button>
+          )}
         </div>
       )}
       {errorDieta && (
