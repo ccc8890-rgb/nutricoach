@@ -58,6 +58,11 @@ function PortalClientePageContent() {
       const { data: cli } = await supabase.from('clientes').select('*').eq('profile_id', user.id).single()
       setCliente(cli as Cliente)
 
+      if (cli && !cli.onboarding_completado) {
+        window.location.href = '/onboarding'
+        return
+      }
+
       if (cli) {
         const [dietaRes, entrenoRes, histRes] = await Promise.all([
           supabase.from('planes_nutricion')
