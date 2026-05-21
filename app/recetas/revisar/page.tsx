@@ -58,6 +58,7 @@ const CAMPOS = [
 ] as const
 
 type CampoKey = (typeof CAMPOS)[number]['key']
+type CampoValor = string | number | string[] | null | undefined
 
 function tieneCampo(r: RecetaRevisar, key: CampoKey): boolean {
     if (key === 'intolerancias') return Array.isArray(r.intolerancias) && r.intolerancias.length > 0
@@ -65,7 +66,7 @@ function tieneCampo(r: RecetaRevisar, key: CampoKey): boolean {
     if (key === 'imagen_url') return !!r.imagen_url
     if (key === 'url_origen') return !!r.url_origen
     if (key === 'notas_coach') return !!r.notas_coach
-    const val = (r as any)[key]
+    const val = r[key] as CampoValor
     return val !== null && val !== undefined && val !== ''
 }
 
@@ -78,6 +79,8 @@ export default function RevisarRecetasPage() {
     const [filtroCampo, setFiltroCampo] = useState<CampoKey | 'todos' | 'incompletas'>('todos')
     const [pagina, setPagina] = useState(1)
     const [soloProblemas, setSoloProblemas] = useState(false)
+    const [aprobandoLote, setAprobandoLote] = useState(false)
+    const [resultadoLote, setResultadoLote] = useState<string | null>(null)
 
     async function cargar(p: number) {
         setLoading(true)
@@ -94,6 +97,42 @@ export default function RevisarRecetasPage() {
             setError(e instanceof Error ? e.message : 'Error al cargar')
         }
         setLoading(false)
+    }
+
+    async function aprobarLoteFiltrado() {
+        const ids = filtradas.filter(r => r.estado !== 'aprobada').map(r => r.id)
+        if (ids.length === 0) {
+            setResultadoLote('No hay recetas pendientes en el filtro actual.')
+            return
+        }
+        const ok = confirm(`Se intentarán aprobar ${ids.length} recetas del filtro actual. El backend bloqueará las que no pasen quality gate. ¿Continuar?`)
+        if (!ok) return
+
+        setAprobandoLote(true)
+        setResultadoLote(null)
+        try {
+            const res = await fetch('/api/recetas/revisar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids }),
+            })
+            const json = await res.json()
+            if (!res.ok) {
+                if (res.status === 409 && Array.isArray(json.bloqueadas)) {
+                    const resumen = json.bloqueadas.slice(0, 5).map((r: { nombre: string; motivos: string[] }) => `${r.nombre}: ${r.motivos.join(', ')}`).join(' | ')
+                    setResultadoLote(`Bloqueadas ${json.bloqueadas.length}. ${resumen}`)
+                } else {
+                    setResultadoLote(json.error || 'Error al aprobar lote')
+                }
+                return
+            }
+            setResultadoLote(`Aprobadas ${json.aprobadas} recetas.`)
+            await cargar(pagina)
+        } catch (e) {
+            setResultadoLote(e instanceof Error ? e.message : 'Error al aprobar lote')
+        } finally {
+            setAprobandoLote(false)
+        }
     }
 
     useEffect(() => { cargar(pagina) }, [pagina])
@@ -161,6 +200,14 @@ export default function RevisarRecetasPage() {
                         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
                     >
                         <RefreshCw size={16} />
+                    </button>
+                    <button
+                        onClick={aprobarLoteFiltrado}
+                        disabled={aprobandoLote || filtradas.filter(r => r.estado !== 'aprobada').length === 0}
+                        className="px-3 py-2 rounded-lg border text-xs font-medium disabled:opacity-40 transition-all"
+                        style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                    >
+                        {aprobandoLote ? 'Aprobando...' : `Aprobar lote (${filtradas.filter(r => r.estado !== 'aprobada').length})`}
                     </button>
                 </div>
             </div>
@@ -238,6 +285,12 @@ export default function RevisarRecetasPage() {
                             <span className="text-sm font-medium">Error: {error}</span>
                         </div>
                         <button onClick={() => cargar(pagina)} className="text-sm underline mt-1">Reintentar</button>
+                    </div>
+                )}
+
+                {resultadoLote && (
+                    <div className="rounded-xl p-3 border text-sm" style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+                        {resultadoLote}
                     </div>
                 )}
 

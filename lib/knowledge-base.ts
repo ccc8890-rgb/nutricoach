@@ -330,119 +330,130 @@ export const BASE_CONOCIMIENTO: ProtocoloCientifico[] = [
 
 export const TAG_BRIDGE: Record<string, string[]> = {
   // Objetivos corporales
-  perder_grasa: ['perdida grasa', 'deficit calorico', 'composicion corporal', 'obesidad', 'grasa'],
-  deficit: ['deficit calorico', 'perdida grasa', 'restriccion calorica'],
-  ganar_musculo: ['hipertrofia', 'masa muscular', 'sintesis muscular', 'proteina', 'volumen', 'mTOR'],
-  hipertrofia: ['hipertrofia', 'masa muscular', 'sintesis muscular', 'proteina', 'mTOR', 'entrenamiento_fuerza'],
-  volumen: ['volumen', 'hipertrofia', 'masa muscular', 'dosis-respuesta', 'sobrecarga'],
-  recomposicion: ['composicion corporal', 'perdida grasa', 'hipertrofia'],
-  mantenimiento: ['mantenimiento', 'nutricion deportiva', 'proteina'],
-  salud_general: ['salud cardiovascular', 'nutricion', 'dieta mediterranea', 'prevencion', 'bienestar', 'ejercicio'],
+  perder_grasa: ['perdida grasa', 'deficit calorico', 'composicion corporal', 'obesidad', 'grasa', 'balance energetico', 'NEAT', 'ayuno intermitente', 'compensacion', 'frecuencia comidas'],
+  deficit: ['deficit calorico', 'perdida grasa', 'restriccion calorica', 'deficit energetico', 'conservacion muscular'],
+  ganar_musculo: ['hipertrofia', 'masa muscular', 'sintesis muscular', 'proteina', 'volumen', 'mTOR', 'leucina', 'MPS', 'sintesis_proteica', 'aminoacidos_ramificados', 'sintesis_proteica_muscular'],
+  hipertrofia: ['hipertrofia', 'masa muscular', 'sintesis muscular', 'proteina', 'mTOR', 'entrenamiento_fuerza', 'leucina', 'sintesis_proteica'],
+  volumen: ['volumen', 'hipertrofia', 'masa muscular', 'dosis-respuesta', 'sobrecarga', 'series', 'frecuencia', 'dosis'],
+  recomposicion: ['composicion corporal', 'perdida grasa', 'hipertrofia', 'composicion_corporal'],
+  mantenimiento: ['mantenimiento', 'nutricion deportiva', 'proteina', 'carbohidratos', 'hidratacion', 'macronutrientes'],
+  salud_general: ['salud cardiovascular', 'nutricion', 'dieta mediterranea', 'prevencion', 'bienestar', 'ejercicio', 'adherencia', 'cambio de comportamiento', 'educacion nutricional', 'cambio de conducta', 'fibra', 'salud publica'],
 
   // Rendimiento / deporte
-  rendimiento: ['rendimiento', 'rendimiento_deportivo', 'rendimiento_resistencia', 'rendimiento_carrera', 'atletas'],
+  rendimiento: ['rendimiento', 'rendimiento_deportivo', 'rendimiento_resistencia', 'rendimiento_carrera', 'atletas', 'nutricion deportiva', 'glucogeno', 'timing', 'pre-entreno', 'post-entreno', 'ergogenico', 'energia', 'macros', 'recomendaciones'],
   atletismo: ['rendimiento', 'atletas', 'competicion', 'rendimiento_deportivo'],
-  deporte: ['rendimiento', 'ejercicio', 'atletas', 'rendimiento deportivo'],
-  competicion: ['competicion', 'rendimiento', 'atletas'],
+  deporte: ['rendimiento', 'ejercicio', 'atletas', 'rendimiento deportivo', 'ejercicio_fisico'],
+  competicion: ['competicion', 'rendimiento', 'atletas', 'elite'],
 
   // Running / resistencia
-  running: ['running', 'zona2', 'rendimiento_resistencia', 'intensidad', 'zona de entrenamiento'],
-  fondo: ['zona2', 'aeróbico', 'base aeróbica', 'resistencia', 'kilometraje'],
-  maraton: ['running', 'resistencia', 'kilometraje', 'zona2'],
-  trail: ['running', 'resistencia'],
-  resistencia_aerobica: ['resistencia', 'aeróbico', 'zona2', 'umbral', 'ejercicio_resistencia'],
+  running: ['running', 'zona2', 'rendimiento_resistencia', 'intensidad', 'zona de entrenamiento', 'kilometraje', 'carga', 'VO2max', 'maraton', 'aeróbico', 'base aeróbica', 'amateur', 'corredores_entrenados'],
+  fondo: ['zona2', 'aeróbico', 'base aeróbica', 'resistencia', 'kilometraje', 'carga', 'zona3'],
+  maraton: ['running', 'resistencia', 'kilometraje', 'zona2', 'carga', 'maraton'],
+  trail: ['running', 'resistencia', 'trail'],
+  resistencia_aerobica: ['resistencia', 'aeróbico', 'zona2', 'umbral', 'ejercicio_resistencia', 'VO2max', 'entrenamiento_aerobico'],
 
   // Hyrox / Crossfit / funcional
-  hyrox: ['hyrox', 'hibrido', 'fuerza', 'intensidad', 'zona2', 'funcional', 'wod'],
-  crossfit: ['hyrox', 'hibrido', 'fuerza', 'intensidad', 'funcional', 'wod'],
-  funcional: ['hibrido', 'fuerza', 'intensidad'],
-  hiit: ['hiit', 'intensidad', 'polarizado', '80/20'],
-  wod: ['hyrox', 'hibrido', 'fuerza', 'intensidad'],
+  hyrox: ['hyrox', 'hibrido', 'fuerza', 'intensidad', 'zona2', 'funcional', 'wod', 'interferencia', 'compatibilidad', 'concurrente', 'crossfit', 'distribucion', 'distribución'],
+  crossfit: ['hyrox', 'hibrido', 'fuerza', 'intensidad', 'funcional', 'wod', 'interferencia', 'compatibilidad', 'crossfit'],
+  funcional: ['hibrido', 'fuerza', 'intensidad', 'interferencia', 'compatibilidad'],
+  hiit: ['hiit', 'intensidad', 'polarizado', '80/20', 'entrenamiento_intervalico', 'entrenamiento_intervalico_alta_intensidad'],
+  wod: ['hyrox', 'hibrido', 'fuerza', 'intensidad', 'wod'],
 
   // Fuerza / powerlifting
-  fuerza: ['fuerza', 'entrenamiento_fuerza', 'series', 'fallo muscular', 'RPE', 'RIR', 'dosis-respuesta', 'sobrecarga'],
-  powerlifting: ['fuerza', 'entrenamiento_fuerza', 'series', 'sentadilla', 'potencia'],
+  fuerza: ['fuerza', 'entrenamiento_fuerza', 'series', 'fallo muscular', 'RPE', 'RIR', 'dosis-respuesta', 'sobrecarga', 'intensidad', 'carga', 'RM', 'dosis', 'ejercicio_resistencia', 'fallo', 'repeticiones', 'pesas', 'progresion', 'entrenamiento_de_fuerza'],
+  powerlifting: ['fuerza', 'entrenamiento_fuerza', 'series', 'sentadilla', 'potencia', 'sentadillas', 'RM', 'repeticiones'],
   halterofilia: ['fuerza', 'potencia', 'entrenamiento_fuerza'],
-  potencia: ['potencia', 'fuerza', 'dosis-respuesta'],
+  potencia: ['potencia', 'fuerza', 'dosis-respuesta', 'entrenamiento_fuerza', 'velocidad'],
 
   // Nivel / experiencia
-  amateur: ['amateur', 'principiante'],
-  recreacional: ['amateur', 'principiante'],
+  amateur: ['amateur', 'principiante', 'recreacional'],
+  recreacional: ['amateur', 'principiante', 'recreacional'],
   principiante: ['amateur', 'principiante'],
-  elite: ['atletas', 'competicion', 'rendimiento_deportivo'],
+  elite: ['atletas', 'competicion', 'rendimiento_deportivo', 'elite'],
 
   // Condiciones metabólicas / salud
-  diabetes: ['diabetes', 'diabetes tipo 2', 'insulina', 'glucemia', 'hemoglobina glicosilada', 'HbA1c', 'diabetes mellitus'],
-  resistencia_insulina: ['resistencia a la insulina', 'insulina', 'diabetes tipo 2', 'diabetes', 'HOMA-IR', 'glucemia'],
-  glucemia: ['glucemia', 'insulina', 'diabetes', 'diabetes tipo 2', 'HbA1c', 'control glucemico'],
+  diabetes: ['diabetes', 'diabetes tipo 2', 'insulina', 'glucemia', 'hemoglobina glicosilada', 'HbA1c', 'diabetes mellitus', 'diabetes tipo 1', 'diabetes_t2', 'prediabetes', 'control glucemico', 'glucosa_intersticial', 'hipoglucemia', 'gliclazida'],
+  resistencia_insulina: ['resistencia a la insulina', 'insulina', 'diabetes tipo 2', 'diabetes', 'HOMA-IR', 'glucemia', 'resistencia_insulina', 'prediabetes', 'glp-1'],
+  glucemia: ['glucemia', 'insulina', 'diabetes', 'diabetes tipo 2', 'HbA1c', 'control glucemico', 'glucosa_intersticial', 'indice_glucemico'],
 
-  // Tiroides
-  hipotiroidismo: ['tiroides', 'hormonas', 'metabolismo', 'mujeres', 'hipotiroidismo', 'hashimoto', 'TSH', 'tiroxina'],
-  tiroides: ['tiroides', 'hormonas', 'metabolismo', 'TSH', 'hipotiroidismo', 'hashimoto'],
+  // Tiroides — EXPANDIDO con nuevas fuentes clínicas PubMed
+  hipotiroidismo: ['tiroides', 'hormonas', 'metabolismo', 'mujeres', 'hipotiroidismo', 'hashimoto', 'TSH', 'tiroxina', 'funcion_tiroidea', 'disfuncion_tiroidea', 'nutrientes_tiroideos', 'disfuncion tiroidea', 'metabolismo_energetico', 'autoimmunidad', 'morfologia_tiroidea'],
+  tiroides: ['tiroides', 'hormonas', 'metabolismo', 'TSH', 'hipotiroidismo', 'hashimoto', 'funcion_tiroidea', 'disfuncion_tiroidea'],
 
-  // PCOS / SOP / Menopausia
-  pcos: ['hormonas', 'mujeres', 'insulina', 'sop', 'SOP', 'ovario poliquistico', 'sindrome metabolico', 'testosterona'],
-  sop: ['hormonas', 'mujeres', 'insulina', 'pcos', 'ovario poliquistico', 'sindrome metabolico'],
-  menopausia: ['mujeres', 'hormonas', 'salud osea', 'tercera edad', 'menopausia', 'estrogenos', 'osteoporosis', 'densidad osea'],
-  climaterio: ['mujeres', 'hormonas', 'salud osea', 'menopausia', 'estrogenos'],
+  // PCOS / SOP / Menopausia — EXPANDIDO con nuevas fuentes clínicas PubMed
+  pcos: ['hormonas', 'mujeres', 'insulina', 'sop', 'SOP', 'ovario poliquistico', 'sindrome metabolico', 'testosterona', 'sindrome_ovario_poliquistico', 'morfologia_ovarica', 'salud_femenina', 'glp-1'],
+  sop: ['hormonas', 'mujeres', 'insulina', 'pcos', 'ovario poliquistico', 'sindrome metabolico', 'sindrome_ovario_poliquistico', 'salud_femenina'],
+  menopausia: ['mujeres', 'hormonas', 'salud osea', 'tercera edad', 'menopausia', 'estrogenos', 'osteoporosis', 'densidad osea', 'mujeres_posmenopausicas', 'salud_femenina', 'metabolismo_oseo', 'homocisteina', 'densidad_mineral_osea', 'densidad_osea', 'fracturas_osteoporoticas', 'perimenopausia', 'dimorfismo_sexual', 'depresion'],
+  climaterio: ['mujeres', 'hormonas', 'salud osea', 'menopausia', 'estrogenos', 'climaterio', 'perimenopausia'],
 
   // Edad / sarcopenia
-  sarcopenia: ['sarcopenia', 'adultos_mayores', 'masa muscular', 'proteina', 'sintesis muscular', 'envejecimiento', 'tercera edad', 'calidad muscular', 'fuerza muscular'],
-  envejecimiento: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad', 'longevidad', 'calidad de vida'],
-  mayor_55: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad', 'fuerza muscular', 'deterioro funcional'],
+  sarcopenia: ['sarcopenia', 'adultos_mayores', 'masa muscular', 'proteina', 'sintesis muscular', 'envejecimiento', 'tercera edad', 'calidad muscular', 'fuerza muscular', 'leucina', 'MPS', 'sintesis_proteica', 'funcion_fisica', 'adultos_mediana_edad', 'calidad_de_vida'],
+  envejecimiento: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad', 'longevidad', 'calidad de vida', 'funcion_fisica', 'adultos_mediana_edad'],
+  mayor_55: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad', 'fuerza muscular', 'deterioro funcional', 'funcion_fisica'],
 
   // Cardiovascular / HTA
-  hta: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial', 'riesgo cardiovascular', 'dieta DASH'],
-  hipertension: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial', 'riesgo cardiovascular', 'dieta DASH', 'tension_alta'],
-  presion_alta: ['hipertension', 'salud cardiovascular', 'presion arterial', 'tension_alta', 'riesgo cardiovascular'],
-  cardiovascular: ['salud cardiovascular', 'enfermedad cardiovascular', 'riesgo cardiovascular', 'prevencion cardiovascular', 'dieta mediterranea'],
+  hta: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial', 'riesgo cardiovascular', 'dieta DASH', 'medicion presion arterial', 'dispositivos oscilometricos', 'monitoreo ambulatorio', 'monitorizacion ambulatoria'],
+  hipertension: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial', 'riesgo cardiovascular', 'dieta DASH', 'tension_alta', 'medicion presion arterial', 'dispositivos oscilometricos', 'monitorizacion ambulatoria'],
+  presion_alta: ['hipertension', 'salud cardiovascular', 'presion arterial', 'tension_alta', 'riesgo cardiovascular', 'medicion presion arterial'],
+  cardiovascular: ['salud cardiovascular', 'enfermedad cardiovascular', 'riesgo cardiovascular', 'prevencion cardiovascular', 'dieta mediterranea', 'medicion presion arterial', 'monitorizacion ambulatoria', 'fibrilacion_auricular', 'ictus', 'hemodinamica_cerebral'],
 
   // Colesterol / dislipemia
-  dislipemia: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea', 'trigliceridos', 'LDL', 'HDL', 'perfil lipidico'],
-  colesterol: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea', 'LDL', 'HDL', 'trigliceridos', 'dislipemia', 'perfil lipidico'],
+  dislipemia: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea', 'trigliceridos', 'LDL', 'HDL', 'perfil lipidico', 'hipercolesterolemia', 'colesterol'],
+  colesterol: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea', 'LDL', 'HDL', 'trigliceridos', 'dislipemia', 'perfil lipidico', 'hipercolesterolemia'],
 
   // Hígado graso
-  higado_graso: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado', 'esteatosis hepatica', 'NAFLD', 'transaminasas', 'resistencia insulina'],
-  nafld: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado', 'esteatosis hepatica', 'transaminasas', 'NAFLD'],
-  esteatosis: ['obesidad', 'metabolismo', 'higado', 'esteatosis hepatica', 'transaminasas', 'NAFLD'],
+  higado_graso: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado', 'esteatosis hepatica', 'NAFLD', 'transaminasas', 'resistencia insulina', 'higado_graso', 'mafl', 'enfermedad cronica'],
+  nafld: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado', 'esteatosis hepatica', 'transaminasas', 'NAFLD', 'mafl', 'higado_graso'],
+  esteatosis: ['obesidad', 'metabolismo', 'higado', 'esteatosis hepatica', 'transaminasas', 'NAFLD', 'higado_graso'],
 
   // Salud mental
-  ansiedad: ['salud mental', 'bienestar', 'HRV', 'sueño', 'cortisol', 'estres', 'estrés', 'neurotransmisores', 'depresion', 'estado de animo'],
-  salud_mental: ['salud mental', 'bienestar', 'cortisol', 'HRV', 'depresion', 'ansiedad', 'estres', 'neurotransmisores'],
-  estres: ['cortisol', 'HRV', 'salud mental', 'estres', 'bienestar', 'sueño', 'recuperacion'],
-  sueno: ['sueño', 'cortisol', 'recuperacion', 'HRV', 'salud mental', 'cronobiologia', 'ritmo circadiano'],
+  ansiedad: ['salud mental', 'bienestar', 'HRV', 'sueño', 'cortisol', 'estres', 'estrés', 'neurotransmisores', 'depresion', 'estado de animo', 'bienestar_psicologico', 'depresion_perinatal', 'depresion_prenatal', 'eventos_vitales'],
+  salud_mental: ['salud mental', 'bienestar', 'cortisol', 'HRV', 'depresion', 'ansiedad', 'estres', 'neurotransmisores', 'bienestar_psicologico', 'depresion_perinatal'],
+  estres: ['cortisol', 'HRV', 'salud mental', 'estres', 'bienestar', 'sueño', 'recuperacion', 'variabilidad_frecuencia_cardiaca'],
+  sueno: ['sueño', 'cortisol', 'recuperacion', 'HRV', 'salud mental', 'cronobiologia', 'ritmo circadiano', 'privacion_sueno', 'higiene del sueño', 'siesta'],
 
   // Dieta / alimentación
-  vegano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad', 'dieta basada en plantas', 'hierro', 'vitamina b12'],
-  vegetariano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad', 'dieta basada en plantas'],
-  plant_based: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'vegetales', 'dieta basada en plantas'],
-  vegetales: ['vegetales', 'verduras', 'fibra', 'dieta mediterranea', 'plant-based', 'dieta basada en plantas'],
+  vegano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad', 'dieta basada en plantas', 'hierro', 'vitamina b12', 'dieta_vegana', 'proteina_vegetal'],
+  vegetariano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad', 'dieta basada en plantas', 'dieta_vegana', 'proteina_vegetal'],
+  plant_based: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'vegetales', 'dieta basada en plantas', 'proteina_vegetal'],
+  vegetales: ['vegetales', 'verduras', 'fibra', 'dieta mediterranea', 'plant-based', 'dieta basada en plantas', 'frutas'],
 
   // Obesidad / composición
-  obesidad: ['obesidad', 'IMC', 'composicion corporal', 'perdida grasa', 'deficit calorico', 'sobrepeso', 'tejido adiposo', 'sindrome metabolico', 'grasa visceral', 'circunferencia cintura'],
+  obesidad: ['obesidad', 'IMC', 'composicion corporal', 'perdida grasa', 'deficit calorico', 'sobrepeso', 'tejido adiposo', 'sindrome metabolico', 'grasa visceral', 'circunferencia cintura', 'perdida peso', 'perdida_de_peso', 'control_peso', 'reduccion_peso', 'peso_corporal', 'tejido_adiposo_visceral', 'balance energetico', 'compensacion'],
 
   // Suplementación general
-  suplementos: ['suplementacion', 'suplementos', 'creatina', 'cafeina', 'beta-alanina', 'proteina suero', 'whey'],
-  creatina: ['creatina', 'fuerza', 'suplementacion', 'masa muscular', 'rendimiento'],
-  cafeina: ['cafeina', 'rendimiento', 'estimulante', 'fatiga', 'concentracion'],
-  proteina_suplementos: ['proteina', 'whey', 'proteina suero', 'suplementacion proteica', 'leucina', 'mTOR', 'biodisponibilidad'],
+  suplementos: ['suplementacion', 'suplementos', 'creatina', 'cafeina', 'beta-alanina', 'proteina suero', 'whey', 'suplementacion_deportiva', 'suplementacion_proteica', 'suplementos_proteicos', 'ISSN'],
+  creatina: ['creatina', 'fuerza', 'suplementacion', 'masa muscular', 'rendimiento', 'hmb', 'suplementacion_deportiva'],
+  cafeina: ['cafeina', 'rendimiento', 'estimulante', 'fatiga', 'concentracion', 'ergogenico'],
+  proteina_suplementos: ['proteina', 'whey', 'proteina suero', 'suplementacion proteica', 'leucina', 'mTOR', 'biodisponibilidad', 'proteina_de_suero', 'proteina_suero', 'proteina_vegetal', 'proteina_animal', 'suplementacion_proteica'],
 
   // Running y ciclismo avanzado
-  ciclismo: ['ciclismo', 'rendimiento', 'resistencia', 'aeróbico', 'umbral', 'potencia', 'VO2max'],
-  triatlon: ['triatlon', 'rendimiento', 'resistencia', 'rendimiento_resistencia', 'carga', 'VO2max', 'recuperacion'],
+  ciclismo: ['ciclismo', 'rendimiento', 'resistencia', 'aeróbico', 'umbral', 'potencia', 'VO2max', 'ciclismo'],
+  triatlon: ['triatlon', 'rendimiento', 'resistencia', 'rendimiento_resistencia', 'carga', 'VO2max', 'recuperacion', 'natacion'],
   bici: ['ciclismo', 'rendimiento', 'resistencia', 'potencia'],
-  ironman: ['ironman', 'rendimiento', 'resistencia', 'hidratacion', 'sodio', 'carga de carbohidratos', 'ultra-resistencia'],
+  ironman: ['ironman', 'rendimiento', 'resistencia', 'hidratacion', 'sodio', 'carga de carbohidratos', 'ultra-resistencia', 'sodio'],
 
   // Natación / deportes acuáticos
-  natacion: ['rendimiento', 'resistencia', 'aeróbico', 'VO2max'],
+  natacion: ['rendimiento', 'resistencia', 'aeróbico', 'VO2max', 'natacion'],
 
   // Lesiones / rehabilitación
-  lesiones: ['lesiones', 'recuperacion', 'rehabilitacion', 'prevencion', 'dolor', 'inflamacion', 'proteina'],
-  recuperacion: ['recuperacion', 'descanso', 'sueño', 'cortisol', 'HRV', 'inflamacion', 'nutricion deportiva', 'fisioterapia'],
-  rehabilitacion: ['lesiones', 'recuperacion', 'rehabilitacion', 'proteina', 'sintesis muscular', 'calidad muscular'],
+  lesiones: ['lesiones', 'recuperacion', 'rehabilitacion', 'prevencion', 'dolor', 'inflamacion', 'proteina', 'dolor_persistente', 'lesion_musculoesqueletica', 'antiinflamatorio', 'dolor_lumbar', 'prevencion'],
+  recuperacion: ['recuperacion', 'descanso', 'sueño', 'cortisol', 'HRV', 'inflamacion', 'nutricion deportiva', 'fisioterapia', 'DOMS', 'agua fria', 'recuperacion activa', 'masaje', 'compresion', 'recuperacion_muscular', 'calidad_de_vida', 'variabilidad_frecuencia_cardiaca', 'variabilidad FC'],
+  rehabilitacion: ['lesiones', 'recuperacion', 'rehabilitacion', 'proteina', 'sintesis muscular', 'calidad muscular', 'funcion_fisica', 'dolor_persistente'],
 
   // Deportes de equipo
-  deporte_equipo: ['rendimiento', 'deporte', 'ejercicio', 'competicion', 'intensidad', 'carga global'],
+  deporte_equipo: ['rendimiento', 'deporte', 'ejercicio', 'competicion', 'intensidad', 'carga global', 'cambio_de_direccion', 'velocidad', 'futbol', 'futbol_femenino', 'futbol_sala_femenino'],
+
+  // Nutrición general — nuevos bridges para conceptos transversales
+  hidratacion: ['hidratacion', 'sodio', 'isotonica', 'hiponatremia', 'sudor', 'deshidratacion', 'calor_humedad'],
+  carbohidratos: ['carbohidratos', 'carga de carbohidratos', 'glucogeno', 'dieta_alta_en_carbohidratos', 'bajo carbohidratos', 'indice_glucemico', 'isomaltulosa'],
+  proteina: ['proteina', 'leucina', 'sintesis muscular', 'masa muscular', 'MPS', 'mTOR', 'sintesis_proteica', 'sintesis_proteica_muscular', 'biodisponibilidad', 'whey', 'aminoacidos_ramificados', 'fuentes_naturales', 'proteina_vegetal', 'proteina_animal', 'dieta_alta_proteina', 'suplementacion_proteica'],
+  periodizacion: ['periodizacion', 'mesociclo', 'carga', 'descarga', 'deload', 'progresion', 'distribucion', 'distribución', 'lineal', 'ondulante', 'dosis-respuesta', 'sobrecarga', 'sobreentrenamiento', 'autorregulacion', 'ACWR'],
+  nutricion_deportiva: ['nutricion deportiva', 'suplementacion deportiva', 'timing', 'pre-entreno', 'post-entreno', 'hidratacion', 'glucogeno', 'recuperacion', 'macros', 'micronutrientes', 'periodizacion_nutricional'],
+  suplementacion: ['suplementacion', 'suplementos', 'creatina', 'cafeina', 'beta-alanina', 'whey', 'proteina suero', 'suplementacion_deportiva', 'suplementacion_proteica', 'ISSN', 'hmb'],
+
+  // Salud ósea / osteoporosis (nuevas fuentes clínicas)
+  salud_osea: ['salud osea', 'osteoporosis', 'densidad osea', 'densidad_mineral_osea', 'densidad_osea', 'fracturas_osteoporoticas', 'calcio', 'vitamina_d', 'metabolismo_oseo', 'homocisteina', 'mujeres_posmenopausicas'],
 }
 
 // ──────────────────────────────────────────────────────────────

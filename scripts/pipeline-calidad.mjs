@@ -243,6 +243,7 @@ const MATCH_FIXES = [
     [/^cebolla\s*(roja|morada)/i, '08637e90-5e34-4cb3-baa9-b63bbb168f97', 'Cebolla roja'],
     // Miso → matchea "Vinagre de vino blanco" por heurística de palabras
     [/^miso/i, '8637e22c-259e-40df-ad22-3e466784ea90', 'Miso blanco'],
+    [/^vinagre de vino blanco/i, 'e601abd9-e506-403b-9c82-a5f329dd308b', 'Vinagre de vino blanco'],
     // Salsa Bragg (aminos)→ matchea "Salsa de soja" por "salsa"
     [/^bragg/i, '49357762-14ba-4b73-9fec-b5a9fa37e80a', 'Salsa de soja'],
     [/^salsa de soja/i, '49357762-14ba-4b73-9fec-b5a9fa37e80a', 'Salsa de soja'],
@@ -250,6 +251,8 @@ const MATCH_FIXES = [
     [/^bebida de avena/i, '4c7ae3c8-6d68-4d20-ba93-66aaeff9c196', 'Bebida de avena'],
     [/^at[uú]n en lata/i, '2019b04b-ed3d-41d8-8a04-19780f9c15a5', 'Atún En Lata Al Natural'],
     [/^galletas? de arroz/i, '77740294-1569-4de0-a650-9d7b67517f7f', 'Tortita Arroz y Quinoa Ecológica'],
+    [/^chocolate blanco$/i, '1434af96-98a4-4f5e-8b35-6d405aefb526', 'Chocolate blanco fundir'],
+    [/^cereales cubiertos de chocolate blanco/i, '4cfa9bab-16bc-420f-80f5-a278a1aa691e', 'Cereales cubiertos chocolate blanco rellenos leche'],
     // Pasta de dientes virulenta → matchea por "pasta"
     [/^pasta de dientes/i, null, null], // non-food, se salta
     // Tortilla de harina/trigo/wrap → matchea "Huevos" porque en español "tortilla" = huevos
@@ -307,8 +310,8 @@ async function fase2_fixMatches(recetas) {
                     } else {
                         process.stdout.write(' [dry-run]\n')
                     }
-                    fixAplicado = true
                 }
+                fixAplicado = true
                 break
             }
         }

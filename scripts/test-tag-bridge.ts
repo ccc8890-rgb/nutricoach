@@ -73,7 +73,6 @@ async function testBridge() {
       .from('knowledge_base')
       .select('titulo, tags')
       .eq('activo', true)
-      .is('coach_id', null)
       .or(`tags.ov.{${tagsEscaped}}`)
       .limit(20)
 
@@ -103,8 +102,8 @@ async function testBridge() {
     const tagsExpEscaped = tagsExpandidos.map(t => `"${t.replace(/"/g, '\\"')}"`).join(',')
 
     const [resOriginal, resExpandido] = await Promise.all([
-      supabase.from('knowledge_base').select('id').eq('activo', true).is('coach_id', null).or(`tags.ov.{${tagsOriginal}}`).limit(50),
-      supabase.from('knowledge_base').select('id').eq('activo', true).is('coach_id', null).or(`tags.ov.{${tagsExpEscaped}}`).limit(50),
+      supabase.from('knowledge_base').select('id').eq('activo', true).or(`tags.ov.{${tagsOriginal}}`).limit(50),
+      supabase.from('knowledge_base').select('id').eq('activo', true).or(`tags.ov.{${tagsExpEscaped}}`).limit(50),
     ])
 
     const before = (resOriginal.data ?? []).length
