@@ -383,6 +383,14 @@ export default function AlimentosPage() {
         return acc
     }, {})
 
+    const gruposDisplay: Record<string, Alimento[]> = categoriaFiltro
+        ? grupos
+        : {
+            'Todos los alimentos': [...filtradas].sort((a, b) =>
+                a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' })
+            ),
+        }
+
     return (
         <div className="p-8 max-w-5xl mx-auto">
             {/* Header */}
@@ -462,8 +470,9 @@ export default function AlimentosPage() {
                 ) : (
                     <div className="space-y-8">
                         {/* Resultados locales agrupados por categoría — orden lógico */}
-                        {Object.entries(grupos)
+                        {Object.entries(gruposDisplay)
                             .sort(([a], [b]) => {
+                                if (!categoriaFiltro) return 0
                                 const ia = CATEGORY_ORDER.indexOf(a)
                                 const ib = CATEGORY_ORDER.indexOf(b)
                                 // Categorías conocidas primero; desconocidas al final por orden alfabético
@@ -473,8 +482,8 @@ export default function AlimentosPage() {
                                 return ia - ib
                             })
                             .map(([categoria, items]) => {
-                                const Icon = CATEGORIA_ICON[categoria] ?? CircleDot
-                                const color = CATEGORIA_COLOR[categoria] ?? '#6B7280'
+                                const Icon = !categoriaFiltro ? Apple : (CATEGORIA_ICON[categoria] ?? CircleDot)
+                                const color = !categoriaFiltro ? '#22C55E' : (CATEGORIA_COLOR[categoria] ?? '#6B7280')
                                 return (
                                     <div key={categoria}>
                                         <h2 className="flex items-center gap-2 text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
