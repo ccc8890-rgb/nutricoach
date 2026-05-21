@@ -9,6 +9,7 @@ import type { Macros } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import AlternativasModal from '@/components/personalizacion/AlternativasModal'
 import GenerarComidaModal from '@/components/personalizacion/GenerarComidaModal'
+import PlanSemanal from './PlanSemanal'
 
 interface AlimentoEnComida {
     id: string
@@ -252,6 +253,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
     const [recetasComida, setRecetasComida] = useState<Record<string, RecetaSugerida[]>>({})
     const [loadingRecetas, setLoadingRecetas] = useState<Record<string, boolean>>({})
     const [showRecetas, setShowRecetas] = useState<Record<string, boolean>>({})
+    const [vistaActual, setVistaActual] = useState<'hoy' | 'semana'>('hoy')
     const [listaAbierta, setListaAbierta] = useState(false)
     const [usandoReceta, setUsandoReceta] = useState<string | null>(null)
     const printRef = useRef<HTMLDivElement>(null)
@@ -383,6 +385,32 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
 
     return (
         <div className="space-y-4 print-area">
+            {/* Toggle Hoy / Semana */}
+            <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+                {(['hoy', 'semana'] as const).map(v => (
+                    <button
+                        key={v}
+                        type="button"
+                        onClick={() => setVistaActual(v)}
+                        className="flex-1 py-2.5 text-sm font-semibold transition-colors"
+                        style={{
+                            background: vistaActual === v ? 'var(--primary)' : 'transparent',
+                            color: vistaActual === v ? 'white' : 'var(--text-muted)',
+                        }}
+                    >
+                        {v === 'hoy' ? 'Hoy' : 'Semana'}
+                    </button>
+                ))}
+            </div>
+
+            {/* Vista semanal */}
+            {vistaActual === 'semana' && (
+                <PlanSemanal comidas={planLocal.comidas ?? []} />
+            )}
+
+            {/* Vista diaria */}
+            {vistaActual === 'hoy' && (<>
+
             {/* Resumen macros del día */}
             <div className="card !p-5" style={{ borderTop: '3px solid var(--primary)' }}>
                 <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Total del día</p>
@@ -623,6 +651,8 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                 {descargando ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
                 {descargando ? 'Generando...' : 'Descargar plan en PDF'}
             </button>
+
+            </>)}
 
             {/* Modal alternativas */}
             {modalAlternativas && (
