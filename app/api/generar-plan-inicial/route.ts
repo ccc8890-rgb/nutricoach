@@ -343,8 +343,23 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
   const { data: recetas } = await supabase
     .from('recetas')
     .select('id, nombre, categoria, kcal, proteinas, carbohidratos, grasas, azucares, sodio_mg, fibra')
-  const recetasDisponibles = recetas ?? []
+    .eq('estado', 'aprobada')
+    .gt('kcal', 0)
+
+  // Limitar a 8 recetas por categoría para no inflar el prompt (evita que DeepSeek ignore la lista)
+  const recetasFiltradas: typeof recetas = []
+  const contadorCategoria: Record<string, number> = {}
+  for (const r of recetas ?? []) {
+    const cat = r.categoria || 'Otras'
+    contadorCategoria[cat] = (contadorCategoria[cat] ?? 0) + 1
+    if (contadorCategoria[cat] <= 8) recetasFiltradas.push(r)
+  }
+  const recetasDisponibles = recetasFiltradas
   const recetasPorId = new Map(recetasDisponibles.map(r => [r.id, r]))
+  // Índice por nombre normalizado para recuperar IDs cuando DeepSeek inventa nombres
+  const recetasPorNombre = new Map(
+    recetasDisponibles.map(r => [r.nombre.toLowerCase().trim(), r])
+  )
 
   // ── 10. Construir el prompt final con recetas ──────────────────────────────
   // Combina el contexto completo del cliente con las recetas disponibles
@@ -422,8 +437,12 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
         })),
         alerta_mps: leucinaCheck.alerta,
         distribucion_comidas: dietaGenerada.comidas.map((c, index) => {
+          const resolverReceta = (receta_id: string, receta_nombre: string) =>
+            recetasPorId.get(receta_id) ??
+            recetasPorNombre.get(receta_nombre.toLowerCase().trim()) ??
+            [...recetasPorNombre.entries()].find(([k]) => k.includes(receta_nombre.toLowerCase().split(' ')[0]))?.[1]
           const kcalComida = c.alimentos.reduce((total, alimento) => {
-            const receta = recetasPorId.get(alimento.receta_id)
+            const receta = resolverReceta(alimento.receta_id, alimento.receta_nombre)
             return total + ((receta?.kcal ?? 0) * alimento.cantidad_porciones)
           }, 0)
           const proteinaComida = distribucionProteina.comidas[index]?.proteinas_g ?? Math.round((kcalComida * 0.30) / 4)
@@ -435,11 +454,14 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
             hora_sugerida: distribucionProteina.comidas[index]?.hora_sugerida || undefined,
             proteinas_g: proteinaComida,
             notas: `Proteína objetivo: ${proteinaComida}g`,
-            recetas: c.alimentos.map(a => ({
-              receta_id: a.receta_id,
-              receta_nombre: a.receta_nombre,
-              cantidad_porciones: a.cantidad_porciones,
-            })),
+            recetas: c.alimentos.map(a => {
+              const recetaReal = resolverReceta(a.receta_id, a.receta_nombre)
+              return {
+                receta_id: recetaReal?.id ?? a.receta_id,
+                receta_nombre: recetaReal?.nombre ?? a.receta_nombre,
+                cantidad_porciones: a.cantidad_porciones,
+              }
+            }),
           }
         }),
         plantilla_id_elegida: dietaGenerada.plantilla_id_elegida,
@@ -468,6 +490,12 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
           mesociclo.semanas.length > 0 ? `Mesociclo planificado: ${mesociclo.semanas[0]?.etiqueta}.` : 'Plan inicial. Se ajustará según evolución.',
           dietaGenerada.notas ? dietaGenerada.notas : 'Seguir distribución de comidas sugerida. Ajustar porciones según hambre y energía.',
         ],
+        evidencia_cientifica: protocolos.map(p => ({
+          titulo: p.titulo,
+          tags: p.tags,
+          referencias: p.referencias,
+          resumen: p.resumen.slice(0, 200),
+        })),
         alertas_coach: [
           ...(confianzaBaja ? ['Autoeficacia baja — revisar expectativas'] : []),
           ...(duermePoco ? ['Sueño insuficiente — vigilar hambre y adherencia'] : []),
@@ -546,7 +574,9 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
   const comidasParaValidar = (planJson.distribucion_comidas as Array<Record<string, unknown>> ?? []).map((c: Record<string, unknown>) => ({
     nombre: c.nombre as string,
     recetas: (c.recetas as Array<Record<string, unknown>> ?? []).map((r: Record<string, unknown>) => {
-      const recetaFull = recetasPorId.get(r.receta_id as string)
+      const recetaFull =
+        recetasPorId.get(r.receta_id as string) ??
+        recetasPorNombre.get((r.receta_nombre as string ?? '').toLowerCase().trim())
       return {
         kcal: recetaFull?.kcal ?? 0,
         proteinas: recetaFull?.proteinas ?? 0,
