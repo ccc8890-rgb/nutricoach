@@ -177,12 +177,15 @@ const PATRONES_NO_COMESTIBLE: RegExp[] = [
   /cava (brut|semi|rosado|nature|benjamin)/i,
   /whisky|whiskey|bourbon|vodka|ginebra|tequila|mezcal/i,
   /brandy|conac|cognac|amaretto|absenta|absinthe/i,
-  /ron (anejo|blanco|negro|dorado)/i,
+  /ron (anejo|blanco|negro|dorado|caribeno|dominicano)|rom (blanc|negre|anyenc|ane|dorat)/i,
   /licor (cafe|menta|hierbas|naranja|almendra|anis)/i,
   /anís|anisete|anis seco|vermut|vermouth|moscatel/i,
   /oporto|sangria|tinto de verano|champan|champagne/i,
   /sidra|mosto de uva/i,
   /bebida preparada de (ron|vodka|gin)/i,
+  /bacardi|brugal|havana club|ron barcelo|barcelo|absolut|smirnoff|beefeater|larios|tanqueray|ballantines/i,
+  /coctel mojito|mojito|daiquiri|pin?a colada|pin colada|combinado (gin|whisky|vodka|ron)|combinat/i,
+  /cocktail whisky|crema whisky/i,
 
   // ── Bebidas energéticas ────────────────────────────────────────
   /monster energy|red bull|redbull|burn energy|rockstar energy/i,
@@ -223,7 +226,11 @@ const EXCEPCIONES: RegExp[] = [
   /vinagre/i,                        // vinagre de vino NO es alcohol
   /vitamina/i,                       // "vino con vitaminas"
   /pasas/i,                          // "pasas al ron"
+  /pasa moscatel/i,
   /uva moscatel|uvas moscatel/i,
+  /levadura cerveza/i,
+  /tarta|helado|bombon|bombones|trufa|trufas/i,
+  /nescafe latte/i,
 ]
 
 /**

@@ -1,6 +1,6 @@
-// 🧹 Elimina alcoholes reales restantes con 0 referencias FK
+// 🧹 Oculta alcoholes reales restantes marcándolos como no comestibles
 // Uso: node scripts/limpiar-alcoholes-restantes.mjs
-// --dry-run: modo simulación (no borra)
+// --dry-run: modo simulación (no actualiza)
 
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
@@ -43,6 +43,7 @@ const FALSE_POSITIVE_KEYWORDS = [
     'maasdam',           // cheese
     'tonyina',           // tuna
     'pasas moscatel',    // raisins
+    'pasa moscatel',     // raisins
     'queso de cava',     // cheese (named after region, not beverage)
     'queso la cava',     // cheese
     'queso tierno',      // cheese
@@ -83,6 +84,12 @@ const FALSE_POSITIVE_KEYWORDS = [
     'pizza',             // pizza
     'maccheroni',        // pasta
     'nescafe latte',     // coffee mix with baileys flavor
+    'levadura cerveza',  // supplement/yeast, not beer
+    'tarta whisky',      // dessert
+    'bombon',            // chocolates
+    'bombones',          // chocolates
+    'trufa',             // chocolates
+    'trufas',            // chocolates
     'infisport',         // supplements
     'salmon',            // salmon
     'atunlo',            // tuna brand
@@ -112,7 +119,8 @@ const ALCOHOL_KEYWORDS = [
     'cava', 'prosecco', 'champán', 'champagne', 'lambrusco',
     // Destilados
     'whisky', 'whiskey', 'ginebra', 'gin ', 'vodka', 'tequila',
-    'ron ', 'ron añejo', 'ron caribeño', 'ron dominicano', 'ron nejo',
+    'ron ', ' ron', 'ron añejo', 'ron caribeño', 'ron dominicano', 'ron nejo',
+    'rom ', ' rom', 'rom blanc', 'rom anyenc', 'rom negre',
     'brandi', 'cognac', 'coñac',
     // Licores
     'licor ', 'licor crema', 'licor de', 'licor hierbas',
@@ -123,6 +131,11 @@ const ALCOHOL_KEYWORDS = [
     'jerez', 'moscatel',
     // Preparados
     'bebida preparada ron',
+    'bebida preparada vodka',
+    'coctel mojito', 'cóctel mojito', 'mojito', 'daiquiri',
+    'pin colada', 'piña colada', 'pina colada',
+    'combinado gin', 'combinado whisky', 'combinado vodka', 'combinado ron',
+    'combinat',
     // Otros
     'aguardiente', 'absenta',
     'baileys', 'amaretto', 'martini',
@@ -132,6 +145,9 @@ const ALCOHOL_KEYWORDS = [
     'solera 1866', 'mascaro brandi',
     'recompensa ice', 'recompensa ron',
     'ice cuvee rosado',
+    'bacardi', 'brugal', 'havana club', 'ron barcelo', 'barcelo',
+    'absolut', 'smirnoff', 'beefeater', 'larios', 'tanqueray', 'ballantines',
+    'cocktail whisky', 'crema whisky',
 ]
 
 function esAlcoholReal(nombre) {
@@ -166,11 +182,16 @@ async function main() {
         '%cava%', '%sidra%', '%vermú%', '%vermut%', '%jerez%',
         '%moscatel%', '%champán%', '%champagne%', '%coñac%', '%cognac%',
         '%vodka%', '%tequila%', '%brandi%', '%ouzo%', '%amaretto%',
-        '%baileys%', '%martini%', '%aguardiente%', '%absenta%'
+        '%baileys%', '%martini%', '%aguardiente%', '%absenta%',
+        '%bacardi%', '%brugal%', '%havana club%', '%barcelo%',
+        '%absolut%', '%smirnoff%', '%beefeater%', '%larios%', '%tanqueray%',
+        '%mojito%', '%daiquiri%', '%pin colada%', '%piña colada%',
+        '%combinado gin%', '%combinado whisky%', '%combinado vodka%', '%combinado ron%',
+        '%combinat%', '%rom %'
     ]
 
     const orClauses = patterns.map(p => `nombre.ilike.${p}`).join(',')
-    const { data: all, error } = await supabase.from('alimentos').select('id,nombre,categoria,calorias').or(orClauses)
+    const { data: all, error } = await supabase.from('alimentos').select('id,nombre,categoria,calorias,es_comestible').or(orClauses).eq('es_comestible', true)
 
     if (error) { console.error('Error fetching:', error); return }
     if (!all || all.length === 0) { console.log('✅ No se encontraron items. Nada que hacer.'); return }
@@ -198,39 +219,25 @@ async function main() {
 
     console.log('')
 
-    // Verificar referencias y eliminar
-    let eliminados = 0
-    let conRefs = 0
+    // Marcar como no comestibles. No borramos: puede haber recetas o histórico de precios referenciando filas.
+    let marcados = 0
     let errores = 0
 
     for (let i = 0; i < candidatos.length; i += 200) {
         const batch = candidatos.slice(i, i + 200)
 
         for (const a of batch) {
-            // Check FK refs
-            let refs = 0
-            for (const t of ['receta_ingredientes', 'comida_alimentos', 'productos_supermercado']) {
-                const { count } = await supabase.from(t).select('id', { count: 'exact', head: true }).eq('alimento_id', a.id)
-                refs += count ?? 0
-            }
-
-            if (refs > 0) {
-                console.log(`  ⏭️  [${refs} refs] ${a.nombre} — tiene referencias, se conserva`)
-                conRefs++
-                continue
-            }
-
             if (DRY_RUN) {
-                console.log(`  📋 [SIMULACIÓN] Se eliminaría: ${a.nombre}`)
-                eliminados++
+                console.log(`  📋 [SIMULACIÓN] Se ocultaría: ${a.nombre}`)
+                marcados++
             } else {
-                const { error: delErr } = await supabase.from('alimentos').delete().eq('id', a.id)
-                if (delErr) {
-                    console.error(`  ❌ Error al eliminar ${a.nombre}: ${delErr.message}`)
+                const { error: updErr } = await supabase.from('alimentos').update({ es_comestible: false }).eq('id', a.id)
+                if (updErr) {
+                    console.error(`  ❌ Error al ocultar ${a.nombre}: ${updErr.message}`)
                     errores++
                 } else {
-                    console.log(`  ✅ Eliminado: ${a.nombre}`)
-                    eliminados++
+                    console.log(`  ✅ Oculto: ${a.nombre}`)
+                    marcados++
                 }
             }
         }
@@ -238,8 +245,7 @@ async function main() {
 
     console.log(`\n📊 RESUMEN:`)
     console.log(`  Total alcoholes reales detectados: ${candidatos.length}`)
-    console.log(`  Eliminados: ${eliminados}`)
-    console.log(`  Con referencias (conservados): ${conRefs}`)
+    console.log(`  Marcados como no comestibles: ${marcados}`)
     console.log(`  Errores: ${errores}`)
     console.log(`  Operación: ${DRY_RUN ? '📋 SIMULACIÓN' : '🔥 REAL'}`)
 }
