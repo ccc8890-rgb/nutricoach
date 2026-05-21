@@ -210,16 +210,22 @@ export async function POST(request: NextRequest) {
   })
 
   // ── 6. Build methodology prompt block ──────────────────────────────────────
+  // La ciencia es la base. El coach sólo añade ajustes si tiene metodología configurada.
   const metodologiaBlock = metodologia
     ? `
-═══ METODOLOGÍA DEL COACH (reglas obligatorias) ═══
+═══ AJUSTES DEL COACH (sobre la base científica) ═══
 ${metodologia.reglas_fijas?.length ? metodologia.reglas_fijas.map((r: string) => `- ✓ ${r}`).join('\n') : ''}
-- Estilo de alimentación preferido: ${metodologia.estilos_dieta?.join(', ') || 'flexible'}
-- Déficit máximo permitido: ${metodologia.deficit_maximo_kcal} kcal
-- Superávit máximo permitido: ${metodologia.superavit_maximo_kcal} kcal
-- Nº comidas habitual: ${metodologia.num_comidas_default}
+${metodologia.estilos_dieta?.length ? `- Estilo preferido: ${metodologia.estilos_dieta.join(', ')}` : ''}
+${metodologia.deficit_maximo_kcal ? `- Déficit máximo: ${metodologia.deficit_maximo_kcal} kcal (ajuste sobre referencia ISSN)` : ''}
+${metodologia.superavit_maximo_kcal ? `- Superávit máximo: ${metodologia.superavit_maximo_kcal} kcal` : ''}
+${metodologia.num_comidas_default ? `- Comidas habituales: ${metodologia.num_comidas_default}` : ''}
 ${metodologia.filosofia_coaching ? `\nFilosofía del coach:\n"${metodologia.filosofia_coaching}"` : ''}`
-    : ''
+    : `
+═══ MODO EVIDENCE-BASED PURO ═══
+El coach no ha definido metodología propia aún.
+APLICA ESTRICTAMENTE los valores de los protocolos científicos inyectados arriba.
+Los valores de proteína, déficit y timing son los recomendados por ISSN, Morton 2018 y Helms 2014.
+No añadas restricciones subjetivas — sólo ciencia.`
 
   // ── 7. Build segment-specific info ─────────────────────────────────────────
   const segmento = onboarding.segmento || 'standard'
@@ -503,7 +509,7 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
           ...(leucinaCheck.alerta ? [leucinaCheck.alerta] : []),
           ...(mesociclo.alertas.length > 0 ? mesociclo.alertas : []),
         ],
-        notas_coach: `Cliente nuevo. Objetivo: ${onboarding.objetivo}. TDEE: ${tdee} kcal. Proteína: ${distribucionProteina.total}g/día (${distribucionProteina.g_por_kg.toFixed(1)}g/kg) distribuida estratégicamente. Plan de ${mesociclo.duracion_total_dias} días. Autoeficacia: ${perfil?.autoeficacia ?? '?'}/10.`,
+        notas_coach: `Cliente nuevo. Objetivo: ${onboarding.objetivo}. TDEE: ${tdee} kcal → objetivo: ${kcalObjetivo} kcal. Proteína: ${distribucionProteina.total}g/día (${distribucionProteina.g_por_kg.toFixed(1)}g/kg) — ref. ${onboarding.objetivo === 'rendimiento' ? 'ISSN 2017' : onboarding.objetivo === 'perder_grasa' ? 'Helms et al. 2014' : 'Morton 2018 BJSM'}. Mesociclo: ${mesociclo.duracion_total_dias} días. ${metodologia ? 'Metodología del coach aplicada.' : 'Modo evidence-based puro — sin metodología coach activa.'}`,
       }
     }
   } catch (err) {
