@@ -1,5 +1,12 @@
 // Base de conocimiento científica — selección dinámica por perfil cliente
 // Los protocolos se inyectan en el prompt de DeepSeek según tags detectados del onboarding
+//
+// ARQUITECTURA (Fase 1 — Unificación Knowledge Base):
+//   1. consultarKnowledgeDB() — consulta Supabase knowledge_base por tags y condiciones
+//   2. seleccionarProtocolos() — async, intenta DB primero, fallback a BASE_CONOCIMIENTO
+//   3. BASE_CONOCIMIENTO — 18 protocolos hardcodeados como fallback si DB vacía o sin conexión
+
+import { SupabaseClient } from '@supabase/supabase-js'
 
 export interface ProtocoloCientifico {
   id: string
@@ -427,20 +434,171 @@ function detectarTags(perfil: PerfilClienteKB): Set<string> {
 }
 
 // ──────────────────────────────────────────────────────────────
-// Selección de protocolos relevantes (top 5 por score de tags)
+// Consulta a Supabase knowledge_base por tags del cliente
 // ──────────────────────────────────────────────────────────────
 
-export function seleccionarProtocolos(
+interface KBRow {
+  titulo: string
+  resumen: string | null
+  contenido_completo: string | null
+  fuente: string | null
+  tags: string[]
+  condiciones: string[]
+  nivel_evidencia: string | null
+}
+
+/**
+ * Consulta Supabase knowledge_base filtrando por tags y condiciones de salud.
+ * Devuelve array vacío si no hay resultados o hay error.
+ */
+export async function consultarKnowledgeDB(
+  supabase: SupabaseClient,
+  tagsCliente: string[],
+  condicionesSalud?: string
+): Promise<ProtocoloCientifico[]> {
+  try {
+    // 1. Construir query base: activos, globales (coach_id IS NULL)
+    let query = supabase
+      .from('knowledge_base')
+      .select('titulo, resumen, contenido_completo, fuente, tags, condiciones, nivel_evidencia')
+      .eq('activo', true)
+      .is('coach_id', null)
+      .order('verificado', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    // 2. Filtrar por tags si hay — usamos .overlaps para tags[]
+    if (tagsCliente.length > 0) {
+      const tagsArray = tagsCliente.map(t => `"${t.replace(/"/g, '\\"')}"`).join(',')
+      query = query.or(`tags.ov.{${tagsArray}}`)
+    }
+
+    // 3. Filtrar por condiciones de salud si hay
+    if (condicionesSalud) {
+      const condiciones = extraerCondiciones(condicionesSalud)
+      if (condiciones.length > 0) {
+        const condArray = condiciones.map(c => `"${c.replace(/"/g, '\\"')}"`).join(',')
+        query = query.or(`condiciones.ov.{${condArray}}`)
+      }
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('[consultarKnowledgeDB] Error:', error.message)
+      return []
+    }
+
+    if (!data || data.length === 0) return []
+
+    // 4. Mapear filas KB a ProtocoloCientifico[]
+    return (data as KBRow[]).map((row, i) => {
+      // Usar contenido_completo si resumen es muy corto
+      const resumen = row.resumen && row.resumen.length > 50
+        ? row.resumen
+        : (row.contenido_completo || row.resumen || '')
+
+      const referencias = row.fuente
+        ? row.fuente.split('|').map(r => r.trim()).filter(Boolean)
+        : []
+
+      return {
+        id: `kb_${i}`,
+        titulo: row.titulo,
+        tags: row.tags || [],
+        resumen,
+        referencias,
+      }
+    })
+  } catch (err) {
+    console.error('[consultarKnowledgeDB] Exception:', err)
+    return []
+  }
+}
+
+/**
+ * Extrae condiciones de salud del texto libre (misma lógica que detectarTags)
+ */
+function extraerCondiciones(texto: string): string[] {
+  const condiciones: string[] = []
+  const lower = texto.toLowerCase()
+
+  if (lower.includes('diabet') || lower.includes('glucemia') || lower.includes('insulina'))
+    condiciones.push('diabetes')
+  if (lower.includes('tiroides') || lower.includes('hipotiroid') || lower.includes('hashimoto'))
+    condiciones.push('hipotiroidismo')
+  if (lower.includes('sop') || lower.includes('ovario poliq') || lower.includes('pcos'))
+    condiciones.push('pcos')
+  if (lower.includes('menop') || lower.includes('climaterio') || lower.includes('perimen'))
+    condiciones.push('menopausia')
+  if (lower.includes('hipertens') || lower.includes('hta') || lower.includes('presion alta') ||
+    lower.includes('tension alta') || lower.includes('cardiovascular'))
+    condiciones.push('hipertension')
+  if (lower.includes('higado graso') || lower.includes('hígado graso') || lower.includes('nafld') ||
+    lower.includes('esteatosis') || lower.includes('transaminasas'))
+    condiciones.push('higado_graso')
+  if (lower.includes('colesterol') || lower.includes('dislipemia') || lower.includes('hipercolesterole'))
+    condiciones.push('colesterol')
+  if (lower.includes('ansiedad') || lower.includes('depresion') || lower.includes('depresión') ||
+    lower.includes('salud mental'))
+    condiciones.push('ansiedad')
+  if (lower.includes('sarcopenia'))
+    condiciones.push('sarcopenia')
+
+  return condiciones
+}
+
+/**
+ * Hace scoring de protocolos por coincidencia de tags y devuelve top N
+ */
+function scoreAndFilter(
+  protocolos: ProtocoloCientifico[],
+  tagsCliente: Set<string>,
+  limite: number
+): ProtocoloCientifico[] {
+  const scored = protocolos.map(p => ({
+    protocolo: p,
+    score: p.tags.filter(t => tagsCliente.has(t)).length,
+  }))
+
+  return scored
+    .filter(s => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limite)
+    .map(s => s.protocolo)
+}
+
+// ──────────────────────────────────────────────────────────────
+// Selección de protocolos relevantes (top N por score de tags)
+// AHORA: consulta Supabase primero, fallback a hardcoded
+// ──────────────────────────────────────────────────────────────
+
+export async function seleccionarProtocolos(
+  supabase: SupabaseClient | null,
   perfil: PerfilClienteKB,
   limite: number = 5
-): ProtocoloCientifico[] {
+): Promise<ProtocoloCientifico[]> {
   const tagsCliente = detectarTags(perfil)
 
   if (tagsCliente.size === 0) {
-    // Sin tags → protocolo general de salud
+    // Sin tags → protocolo general de salud (fallback)
     return BASE_CONOCIMIENTO.filter(p => p.tags.includes('salud_general')).slice(0, 1)
   }
 
+  // 1. Intentar consultar Supabase
+  if (supabase) {
+    const dbProtocolos = await consultarKnowledgeDB(
+      supabase,
+      [...tagsCliente],
+      perfil.condiciones_salud ?? undefined
+    )
+    if (dbProtocolos.length > 0) {
+      const seleccionados = scoreAndFilter(dbProtocolos, tagsCliente, limite)
+      if (seleccionados.length > 0) return seleccionados
+    }
+  }
+
+  // 2. Fallback: hardcoded
   const scored = BASE_CONOCIMIENTO.map(protocolo => {
     const matches = protocolo.tags.filter(t => tagsCliente.has(t)).length
     return { protocolo, score: matches }

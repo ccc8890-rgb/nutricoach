@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
   }, cliente_id)
 
   // ── 5. Scientific evidence ─────────────────────────────────────────────────
-  const protocolos = seleccionarProtocolos({
+  const protocolos = await seleccionarProtocolos(supabase, {
     objetivo: onboarding.objetivo,
     tipo_entreno: onboarding.tipo_entreno?.join(', '),
     condiciones_salud: perfil?.condiciones_salud,
