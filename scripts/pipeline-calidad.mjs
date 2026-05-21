@@ -188,6 +188,12 @@ const MATCH_FIXES = [
     [/^harina de almendr/i, '23ec40c0-75bf-4e8d-b4d9-a56405a809fb', 'Harina de almendra'],
     // Harina de trigo → matchea "Harina De Avena" por palabras comunes
     [/^harina de trig/i, '20c74a2a-e6f5-4fd9-8778-39e123d50333', 'Harina de trigo'],
+    [/^cebolla$/i, '218607a5-5d7f-4ff6-a24c-869b4019ecb0', 'Cebolla cruda'],
+    [/^cebolletas?$/i, '82930270-167e-4fbc-912e-21e0aff20bd4', 'Cebolleta'],
+    [/^fideos? konjac/i, '67bb9a11-4428-4ebd-91ed-148fc934d3f7', 'Fideos konjac'],
+    [/^semillas? de granada/i, 'f2723f87-65a0-4568-99c9-6e2a7b4567da', 'Granada'],
+    [/^mezcla de especias para curry/i, '97b698dd-fe53-4098-945f-c021fce157e9', 'Curry en polvo'],
+    [/^marinada teriyaki/i, '979a1fca-e23e-4d0b-b9cf-7c6a47ec59ac', 'Salsa Teriyaki Botella'],
     // Ajo picado → matchea "Ajo" correctamente pero calidad gate lo detecta
     [/^ajo picado/i, '248b631b-30cc-419c-93da-c3c61a56ebfc', 'Ajo Picado'],
     // Azúcar glass/glas → matchea "azucar glas" correctamente pero calidad gate lo detecta

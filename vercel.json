@@ -3,6 +3,10 @@
         {
             "path": "/api/cron/recordatorio-checkin",
             "schedule": "0 8 * * 1"
+        },
+        {
+            "path": "/api/cron/ingesta-papers",
+            "schedule": "30 8 * * 1"
         }
     ]
 }
