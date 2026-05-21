@@ -46,6 +46,9 @@ export const INTOLERANCIAS = [
     'Vegetariano',
     'Sin Huevo',
     'Sin Frutos Secos',
+    'Sin Mariscos',
+    'Sin Cerdo',
+    'Sin Soja',
 ] as const
 
 // ─── Dificultades ───

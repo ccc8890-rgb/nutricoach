@@ -3,12 +3,15 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 
 // Mapeo entre las restricciones del onboarding del cliente y los tags de intolerancias en recetas
 const RESTRICCION_A_INTOLERANCIA: Record<string, string> = {
-    'sin gluten':      'Sin Gluten',
-    'sin lactosa':     'Sin Lactosa',
-    'vegetariano':     'Vegetariano',
-    'vegano':          'Vegano',
-    'sin frutos secos':'Sin Frutos Secos',
-    'sin huevo':       'Sin Huevo',
+    'sin gluten':       'Sin Gluten',
+    'sin lactosa':      'Sin Lactosa',
+    'vegetariano':      'Vegetariano',
+    'vegano':           'Vegano',
+    'sin frutos secos': 'Sin Frutos Secos',
+    'sin huevo':        'Sin Huevo',
+    'sin mariscos':     'Sin Mariscos',
+    'sin cerdo':        'Sin Cerdo',
+    'sin soja':         'Sin Soja',
 }
 
 export async function GET(request: NextRequest) {
