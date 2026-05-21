@@ -1,5 +1,24 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 23-05-2026 — VINCULACIÓN EJERCICIOS IA + TRACKING COMPLETO ✅
+
+##### ✅ Completado
+
+**Ejercicios IA vinculados a ejercicios reales de la BD** (commit `fa5323b`)
+- `matchEjercicio()` con 3 niveles en `proponer-plan-ciencia/route.ts`:
+  1. Match exacto case-insensitive (`ilike nombre = 'sentadilla con barra'`)
+  2. Match parcial (`ilike nombre LIKE '%sentadilla%'`)
+  3. Por palabras significativas >3 chars sin stop words (con, de, en, el, la…)
+- Si hay match: crea `sesion_ejercicios` con `ejercicio_id` real + series + repeticiones + descanso + RPE en notas
+- Si no hay match: se omite ese ejercicio sin romper el plan
+- Resultado: planes generados por IA quedan completamente funcionales para tracking de sets/reps/PRs desde el portal del cliente
+
+##### 🔲 Pendiente
+- Regenerar 147 imágenes malas (`node scripts/regenerar-imagenes-malas.mjs --genera`, ~$5)
+- Mejorar cobertura de matching: si la IA propone un ejercicio que no existe en BD, crearlo automáticamente
+
+---
+
 ## Sesión 22-05-2026 (madrugada) — AUDITORÍA BUGS + GUARDADO ✅
 
 ##### ✅ Bugs encontrados y corregidos
