@@ -76,6 +76,7 @@ export interface ResultadoIngesta {
   papers_extraidos: number
   papers_evaluados: number
   papers_incluidos: number
+  papers_duplicados: number
   papers_insertados: number
   errores: string[]
   duracion_ms: number

@@ -25,12 +25,11 @@ async function filtrarDuplicados(
   const supabase = createServiceSupabase()
 
   const doids = papers.map(p => p.doi).filter(Boolean) as string[]
-  const titulos = papers.map(p => p.titulo.toLowerCase().trim())
 
   let duplicados = 0
   const nuevos: PaperEvaluado[] = []
 
-  // Buscar duplicados por DOI
+  // 1) Filtrar por DOI (primary key)
   if (doids.length > 0) {
     const { data: existentes } = await supabase
       .from('knowledge_base')
@@ -39,18 +38,37 @@ async function filtrarDuplicados(
 
     if (existentes) {
       const doidsExistentes = new Set(existentes.map(e => e.doi))
+      const sinDoiRepetido: PaperEvaluado[] = []
       for (const paper of papers) {
         if (paper.doi && doidsExistentes.has(paper.doi)) {
           duplicados++
         } else {
-          nuevos.push(paper)
+          sinDoiRepetido.push(paper)
         }
       }
-    } else {
-      nuevos.push(...papers)
+      // Reemplazar papers con los que pasaron el filtro DOI
+      papers = sinDoiRepetido
     }
-  } else {
-    nuevos.push(...papers)
+  }
+
+  // 2) Fallback: filtrar por título (para papers sin DOI o con DOI nuevo)
+  const { data: existentesTitulos } = await supabase
+    .from('knowledge_base')
+    .select('titulo')
+
+  const titulosExistentes = new Set(
+    (existentesTitulos ?? []).map(t => t.titulo.toLowerCase().trim())
+  )
+
+  const titulosVistos = new Set<string>()
+  for (const paper of papers) {
+    const tituloKey = paper.titulo.toLowerCase().trim()
+    if (titulosExistentes.has(tituloKey) || titulosVistos.has(tituloKey)) {
+      duplicados++
+    } else {
+      titulosVistos.add(tituloKey)
+      nuevos.push(paper)
+    }
   }
 
   return { nuevos, duplicados }
@@ -76,7 +94,7 @@ function mapToKnowledgeBaseRow(paper: PaperEvaluado): Record<string, unknown> {
     url_origen: paper.enlace,
     doi: paper.doi ?? null,
     tags: paper.tags_sugeridos,
-    poblacion: paper.keywords,
+    poblacion: paper.poblacion ? [paper.poblacion] : [],
     condiciones: paper.condiciones_relacionadas,
     nivel_evidencia: mapNivelEvidencia(paper.diseno_estudio),
     fuente_tipo: paper.fuente_tipo === 'pubmed_rss' ? 'scrapeado' : 'manual',
@@ -140,17 +158,18 @@ async function insertarEnKnowledgeBase(
   const supabase = createServiceSupabase()
   const rows = papers.map(mapToKnowledgeBaseRow)
 
-  const { error, count } = await supabase
+  const { error } = await supabase
     .from('knowledge_base')
     .insert(rows)
-    .select('count')
+    .select()
 
   if (error) {
     console.error('[ingestador] Error insertando en knowledge_base:', error)
     throw error
   }
 
-  return count ?? 0
+  // Todas las filas se insertaron (transacción) o ninguna
+  return rows.length
 }
 
 /**
@@ -181,6 +200,7 @@ export async function ejecutarIngesta(options?: {
       papers_extraidos: 0,
       papers_evaluados: 0,
       papers_incluidos: 0,
+      papers_duplicados: 0,
       papers_insertados: 0,
       errores: ['No hay fuentes activas configuradas'],
       duracion_ms: Date.now() - startTime,
@@ -210,6 +230,7 @@ export async function ejecutarIngesta(options?: {
       papers_extraidos: 0,
       papers_evaluados: 0,
       papers_incluidos: 0,
+      papers_duplicados: 0,
       papers_insertados: 0,
       errores: errores.length > 0 ? errores : ['No se encontraron papers en las fuentes consultadas'],
       duracion_ms: Date.now() - startTime,
@@ -264,6 +285,7 @@ export async function ejecutarIngesta(options?: {
     papers_extraidos: extraidos.length,
     papers_evaluados: incluidos.length,
     papers_incluidos: nuevos.length,
+    papers_duplicados: duplicados,
     papers_insertados: insertados,
     errores,
     duracion_ms: Date.now() - startTime,

@@ -73,6 +73,17 @@ function buildFetchUrl(pmids: string[]): string {
  * </PubmedArticleSet>
  */
 function parsePubMedXML(xml: string, fuenteTipo: FuenteTipo): PaperRaw[] {
+  // Extraer Month y Day si están disponibles para fecha precisa
+  function extractPubDate(article: string): string {
+    const yearMatch = article.match(/<Year>(\d{4})<\/Year>/)
+    if (!yearMatch) return new Date().toISOString().split('T')[0]
+    const monthMatch = article.match(/<Month>(\d{1,2})<\/Month>/)
+    const dayMatch = article.match(/<Day>(\d{1,2})<\/Day>/)
+    const month = monthMatch ? monthMatch[1].padStart(2, '0') : '01'
+    const day = dayMatch ? dayMatch[1].padStart(2, '0') : '01'
+    return `${yearMatch[1]}-${month}-${day}`
+  }
+
   const papers: PaperRaw[] = []
 
   // Extraer cada bloque PubmedArticle
@@ -111,8 +122,7 @@ function parsePubMedXML(xml: string, fuenteTipo: FuenteTipo): PaperRaw[] {
     const pmid = pmidMatch ? pmidMatch[1] : undefined
 
     // Fecha de publicación
-    const dateMatch = article.match(/<PubDate>\s*<Year>(\d{4})<\/Year>/)
-    const fecha = dateMatch ? `${dateMatch[1]}-01-01` : new Date().toISOString().split('T')[0]
+    const fecha = extractPubDate(article)
 
     const enlace = pmid
       ? `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`
@@ -140,13 +150,13 @@ function parsePubMedXML(xml: string, fuenteTipo: FuenteTipo): PaperRaw[] {
  */
 function cleanXML(text: string): string {
   return text
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
+    .replace(/</g, '<')        // PRIMERO las entidades compuestas
     .replace(/>/g, '>')
     .replace(/"/g, '"')
     .replace(/'/g, "'")
+    .replace(/&/g, '&')        // & AL FINAL para no romper < > etc.
     .replace(/<[^>]+>/g, '')   // quitar HTML tags residuales
-    .replace(/\s+/g, ' ')       // colapsar whitespace
+    .replace(/\s+/g, ' ')      // colapsar whitespace
     .trim()
 }
 
