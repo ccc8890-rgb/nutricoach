@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { esProductoNoComestible } from './guard-no-comestible'
 
 // ─── Constantes ────────────────────────────────────────────────────────────
 
@@ -513,21 +514,10 @@ export async function buscarAlimento(
     return { alimento_id: null, confianza: 'no_encontrado' }
 }
 
-// ── Guard: detectar productos no comestibles (mascotas, cosmética, higiene) ──
-const PATRONES_NO_COMESTIBLE = [
-    /comida (gato|gatos|perro|perros|perr[oa])/i,
-    /comida (seca|humeda) (gatos|perros)/i,
-    /compresa|salvaslip|protegeslip|tampon/i,
-    /suavizante|detergente|lavavajillas/i,
-    /barra labial|barra labios|labial (limitless|glass shine|ink matte)/i,
-    /pasta encias/i,
-    /superstay|limitless matte|glass shine/i,
-]
-
-function esProductoNoComestible(nombre: string): boolean {
-    const n = nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    return PATRONES_NO_COMESTIBLE.some(p => p.test(n))
-}
+// ── Guard: detectar productos no comestibles ──────────────────────────
+// NOTA: El patrón completo está en lib/scraping/guard-no-comestible.ts
+// La función esProductoNoComestible se importa desde allí.
+// Este es el ÚNICO entry point que la usa en scraping.
 
 /**
  * Intenta crear un nuevo alimento si no existe.

@@ -104,6 +104,7 @@ En [`lib/knowledge-base.ts`](lib/knowledge-base.ts) — `BASE_CONOCIMIENTO`
 
 ### Nuevos bugs detectados:
 - **Bug #5 — Carrefour 0 comestibles**: Playwright homepage no encuentra productos. Diagnosticar.
+- **Bug #6 — CORREGIDO ✅: 4 entry points dispersos para filtrar no comestibles**: Había 4 ubicaciones distintas ([`lib/scraping/index.ts`](lib/scraping/index.ts), [`lib/scraping/normalizador.ts`](lib/scraping/normalizador.ts), [`app/api/alimentos/route.ts`](app/api/alimentos/route.ts), [`app/api/scrape-receta/route.ts`](app/api/scrape-receta/route.ts)) cada una con sus propias listas de cosméticos. Tras eliminar 1.480 cosméticos de BD, se creó [`lib/scraping/guard-no-comestible.ts`](lib/scraping/guard-no-comestible.ts) como ÚNICO PUNTO DE VERDAD. Todos los entry points ahora importan `esProductoNoComestible()` desde ahí.
 - **Bonpreu/Esclat**: Sin flag en script principal de scraping. Baja prioridad.
 
 ## 🎯 Pendientes para próxima sesión

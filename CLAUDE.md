@@ -60,6 +60,28 @@ UPDATE recetas SET imagen_url = 'nueva_url', imagen_tipo = 'txt2img' WHERE id = 
 - Las regeneraciones deben actualizar `imagen_tipo` a `'txt2img'`
 - Si el coach sube una foto real, poner `imagen_tipo = 'propia'`
 
+### 🛡️ GUARD — Productos No Comestibles (22-05-2026)
+**Archivo único**: [`lib/scraping/guard-no-comestible.ts`](lib/scraping/guard-no-comestible.ts)
+
+Este es el **ÚNICO PUNTO DE VERDAD** para detectar productos no comestibles. TODOS los entry points importan `esProductoNoComestible()` desde aquí.
+
+**Entry points que importan del guard**:
+| Entry point | Archivo |
+|---|---|
+| Pipeline scraping | [`lib/scraping/index.ts`](lib/scraping/index.ts) → `esNoComestible()` delega |
+| Normalizador | [`lib/scraping/normalizador.ts`](lib/scraping/normalizador.ts) → `crearAlimentoSiNoExiste()` |
+| API alimentos | [`app/api/alimentos/route.ts`](app/api/alimentos/route.ts) → POST inline regex reemplazado |
+| Matcher recetas | [`app/api/scrape-receta/route.ts`](app/api/scrape-receta/route.ts) → `puntuarCandidato()` |
+
+**Cobertura**: mascotas, higiene, dental, capilar, jabón/gel, desodorante, cremas, facial, labial, maquillaje, uñas, brochas, Deliplus, solar, depilación, limpieza hogar, menaje, bebés, alcohol, bebidas energéticas, electrodomésticos (vatios).
+
+**Excepciones documentadas**: miel+dosificador, chorizo+vela, jabón+glicerina, freidora+aire, microondas, alcohol en platos (al vino, estofado, vinagre, etc.).
+
+**Reglas**:
+- NO duplicar listas en otros archivos — siempre importar del guard
+- Para añadir un patrón nuevo, edit SOLO `guard-no-comestible.ts`
+- Para verificar cobertura, ejecutar: `tsx scripts/limpiar-cosmeticos-bd.ts --dry-run`
+
 ### MATCH_FIXES vigentes (15-05-2026)
 Los fixes aplicados en [`lib/foods-data.ts`](lib/foods-data.ts) para corregir matches incorrectos entre ingredientes de recetas y alimentos de la BD.
 

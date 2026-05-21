@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { esProductoNoComestible } from '@/lib/scraping/guard-no-comestible'
 
 // Categorías que consideramos "no alimenticias" — productos que se cuelan
 // de BEDCA, OpenFoodFacts o scraping y no son comestibles reales.
@@ -176,10 +177,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'nombre y calorias son obligatorios' }, { status: 400 })
         }
 
-        // 🚫 Rechazar productos no comestibles
-        const n = (nombre || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        const NO_COMESTIBLE = /comida (gato|gatos|perro|perros)|barra labial|barra labios|labial (limitless|glass shine|ink matte)|pasta encias/
-        if (NO_COMESTIBLE.test(n)) {
+        // 🚫 Rechazar productos no comestibles (delegado a guard-no-comestible.ts)
+        if (esProductoNoComestible(nombre || '')) {
             return NextResponse.json({ error: 'Producto no comestible rechazado' }, { status: 400 })
         }
 

@@ -550,6 +550,66 @@ export const TAG_BRIDGE: Record<string, string[]> = {
   tiroides_avanzado: ['tiroides', 'hipotiroidismo', 'hashimoto', 'TSH', 'T4', 'T3', 'yodo', 'selenio', 'cinc', 'funcion_tiroidea'],
   intoxicacion: ['toxicología', 'metales_pesados', 'metales', 'disrupcion_endocrina', 'parabenos', 'seguridad', 'alimentaria'],
   medio_ambiente: ['sostenibilidad', 'medio ambiente', 'huella carbono', 'dieta sostenible', 'alimentos locales', 'estacionalidad'],
+
+  // Puentes adicionales para tags de papers que aún faltaban
+  masa_muscular: ['masa_muscular', 'masa muscular', 'hipertrofia', 'sarcopenia', 'sintesis_proteica_muscular'],
+  fuerza_muscular: ['fuerza_muscular', 'fuerza muscular', 'entrenamiento_fuerza', 'potencia', 'rendimiento_neuromuscular'],
+  dieta_dash: ['dieta DASH', 'dash', 'hipertension', 'presion arterial', 'salud cardiovascular', 'sodio'],
+  restriccion_flujo_sanguineo: ['restriccion_flujo_sanguineo', 'oclusion', 'BFR', 'hipertrofia', 'fuerza', 'rehabilitacion'],
+  entrenamiento_continuo: ['entrenamiento_continuo', 'entrenamiento_continuo_intensidad_moderada', 'MICT', 'zona2', 'aeróbico', 'resistencia'],
+  atletas_resistencia: ['atletas_resistencia', 'corredores_entrenados', 'rendimiento_resistencia', 'VO2max', 'umbral'],
+  sistema_nervioso_autonomo: ['sistema_nervioso_autonomo', 'SNA', 'HRV', 'variabilidad_frecuencia_cardiaca', 'recuperacion', 'estres'],
+  adaptaciones_neurales: ['adaptaciones_neurales', 'unidades_motoras', 'entrenamiento_fuerza', 'adaptacion_neural', 'coordinacion_intramuscular'],
+  rendimiento_neuromuscular: ['rendimiento_neuromuscular', 'potencia', 'fuerza', 'velocidad', 'entrenamiento_fuerza', 'RFD'],
+  recuperacion_motora: ['recuperacion_motora', 'rehabilitacion', 'neurorehabilitacion', 'funcion_fisica', 'calidad_de_vida'],
+  inmunidad_refuerzo: ['inmunidad', 'sistema inmune', 'defensas', 'ejercicio_inmunidad', 'nutricion_inmune'],
+
+  // ── Tags metodológicos y nicho (diferenciador frente a otros coaches) ──
+  // Diseño experimental / metodología de investigación
+  ensayo_clinico: ['ensayo_clinico', 'RCT', 'ensayo controlado aleatorizado', 'clinical trial', 'metanalisis', 'revision sistematica', 'protocolo_estudio'],
+  protocolo_estudio: ['protocolo_estudio', 'metodologia', 'diseno experimental', 'registro ensayo'],
+  costo_efectividad: ['costo_efectividad', 'costos sanitarios', 'health economics', 'coste-efectividad', 'coste beneficio', 'evaluacion economica'],
+  costos_sanitarios: ['costos sanitarios', 'costo_efectividad', 'carga sanitaria', 'coste enfermedad', 'presupuesto salud'],
+  metabolomica: ['metabolomica', 'metabolomics', 'metabolitos', 'biomarcadores', 'omicas', 'metabolomica'],
+  microarn: ['microarn', 'miRNA', 'ARN no codificante', 'epigenetica', 'expresion genica', 'regulación genética'],
+
+  // Temas muy específicos / avanzados
+  apnea_sueno: ['apnea', 'apnea obstructiva', 'SAOS', 'sueno', 'oxigenacion', 'hipoxia'],
+  apoptosis: ['apoptosis', 'muerte celular', 'estres oxidativo', 'mitocondria', 'autofagia'],
+  irisina: ['irisina', 'ejercicio', 'tejido adiposo', 'metabolismo', 'PGC1a', 'gasto energetico'],
+  angptl6: ['angptl6', 'angiopoyetina', 'metabolismo lipidico', 'grasa', 'obesidad', 'genetica'],
+  cistanche: ['cistanche', 'adaptogeno', 'medicina tradicional', 'fitoterapia', 'rendimiento', 'suplemento natural'],
+  electroacupuntura: ['electroacupuntura', 'acupuntura', 'estimulacion', 'dolor', 'inflamacion', 'recuperacion'],
+  ondas_choque: ['ondas_de_choque', 'terapia ondas choque', 'fisioterapia', 'lesiones', 'tendinopatia', 'rehabilitacion'],
+  estimulacion_magnetica: ['estimulacion_magnetica', 'TMS', 'neuromodulacion', 'cerebro', 'neuroplasticidad'],
+  ozono_terapia: ['ozono', 'ozonoterapia', 'terapia oxidativa', 'regeneracion', 'oxigeno'],
+  nanoburbujas: ['nanoburbujas', 'nanotecnologia', 'burbujas', 'administracion', 'suplementos'],
+
+  // Condiciones muy específicas
+  autoinmunidad_islotes: ['autoinmunidad de islotes', 'autoimmunidad', 'diabetes tipo 1', 'pancreas', 'anticuerpos'],
+  miastenia_gravis: ['miastenia_gravis', 'enfermedad neuromuscular', 'autoimmune', 'debilidad muscular', 'neurologia'],
+  trastornos_oseos_raros: ['trastornos_oseos_raros', 'enfermedad osea rara', 'metabolismo oseo', 'genetica osea', 'osteogenesis imperfecta'],
+  vela_adaptada: ['vela_adaptada', 'deporte adaptado', 'discapacidad', 'navegacion', 'deporte inclusivo'],
+  vih_sida: ['vih', 'VIH', 'SIDA', 'inmunocomprometido', 'antirretroviral', 'nutricion VIH', 'soporte nutricional'],
+  malawi: ['malawi', 'africa', 'poblacion especifica', 'desnutricion', 'seguridad alimentaria'],
+  adultos_chinos: ['adultos_chinos', 'poblacion asiatica', 'dieta oriental', 'nutricion poblacional'],
+  ratas: ['ratas', 'modelo animal', 'experimental', 'investigacion basica', 'mecanismo'],
+
+  // Conceptos de entrenamiento muy específicos
+  hif: ['hif', 'entrenamiento en altitud', 'hipoxia', 'altitud simulada', 'rendimiento altitud', 'aclimatacion'],
+  ictus_subagudo: ['ictus_subagudo', 'ictus', 'accidente cerebrovascular', 'rehabilitacion ictus', 'neurorehabilitacion', 'recuperacion_motora'],
+  inmovilizacion: ['inmovilizacion', 'inmovilidad', 'reposo', 'atrofia', 'desuso', 'pérdida muscular', 'yeso', 'recuperacion'],
+  terapia_pareja: ['terapia_pareja', 'pareja', 'coaching pareja', 'adherencia conjunta', 'apoyo social', 'nutricion en pareja'],
+  respuesta_cardiovascular: ['respuesta_cardiovascular', 'frecuencia cardiaca', 'presion arterial', 'ejercicio', 'sistema cardiovascular'],
+  fitasa: ['fitasa', 'fitato', 'acido fitico', 'biodisponibilidad', 'minerales', 'absorcion', 'enzima'],
+  sustitutivos_comidas: ['sustitutivos_de_comidas', 'meal replacement', 'batidos sustitutivos', 'control peso', 'adelgazamiento'],
+
+  // Miscelánea valiosa
+  neurodesarrollo: ['neurodesarrollo', 'desarrollo neurologico', 'cerebro', 'infancia', 'nutricion desarrollo', 'cognicion'],
+  telerehabilitacion: ['telerehabilitacion', 'telemedicina', 'rehabilitacion remota', 'e-health', 'salud digital', 'monitorizacion remota'],
+  tai_chi: ['tai_chi', 'taichi', 'ejercicio cuerpo mente', 'equilibrio', 'flexibilidad', 'adultos mayores', 'caidas'],
+  doms_avanzado: ['DOMS', 'agujetas', 'dolor muscular tardio', 'recuperacion muscular', 'daño muscular', 'ejercicio excentrico'],
+  hrv_avanzado: ['HRV', 'variabilidad_frecuencia_cardiaca', 'variabilidad FC', 'SNA', 'recuperacion', 'fatiga', 'rendimiento'],
 }
 
 // ── Tags adicionales para normalización de objetivos ──

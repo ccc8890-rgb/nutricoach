@@ -3,6 +3,7 @@ import { exec } from 'child_process'
 import { promisify } from 'util'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { completarAlimentoConIA, refinarRecetaConIA } from '@/lib/deepseek'
+import { esProductoNoComestible } from '@/lib/scraping/guard-no-comestible'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 
 const execAsync = promisify(exec)
@@ -573,7 +574,12 @@ function puntuarCandidato(
   const aNorm = norm(candidato)
   const queryNorm = norm(consultaOriginal)
 
-  // Detectar si el candidato contiene palabras NO comestibles → descarte inmediato
+  // 🛡️ Primer filtro: guard-no-comestible.ts (frases completas, regex)
+  if (esProductoNoComestible(candidato)) {
+    return { total: -999, palabrasRestrictivas: 0, tokensMatchCount: 0 }
+  }
+
+  // 🛡️ Segundo filtro: NON_FOOD_WORDS (palabras sueltas) — complementario
   const palabrasCandidato = aNorm.split(/[\s()]+/).filter(p => p.length > 0 && !CONNECTORS.has(p))
   for (const pc of palabrasCandidato) {
     if (NON_FOOD_WORDS.has(pc)) {
