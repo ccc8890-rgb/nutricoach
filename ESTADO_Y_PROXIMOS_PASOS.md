@@ -1,5 +1,36 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 22-05-2026 (noche 4) — EU ALÉRGENOS + BÚSQUEDA INGREDIENTES + BUGFIX ✅
+
+##### ✅ Completado
+
+**Modelo EU alérgenos 1169/2011 — migración completa**
+- `recetas.intolerancias` ahora declara alérgenos PRESENTES (Gluten, Lácteos, Huevos…) en vez de ausentes (Sin Gluten, Sin Lactosa…)
+- `scripts/migrar-alergenos-eu.mjs` ejecutado: 254/254 recetas actualizadas
+- `RESTRICCION_A_ALERGENOS` + filtro `.not('intolerancias', 'ov', ...)` en `/api/recetas/sugeridas`
+- UI receta detail: sección "Contiene · Gluten · Lácteos" (chips rojos tenues) + Vegetariano/Vegano en verde
+- `#tags` eliminados del display (quedan en BD para búsqueda)
+- Labels "Intolerancias" → "Alérgenos" en filtros y formularios
+
+**Búsqueda por ingrediente en `/recetas`**
+- El buscador busca en nombre + tags + descripcion + `receta_ingredientes` (nombre_libre + alimento.nombre)
+- Placeholder: "Buscar por nombre, ingrediente…"
+
+**4 bugs corregidos**
+- `useMemo` deps faltantes en recetas/page: `rangoKcal`, `tiempoPrep`, `intoleranciaFilter` → filtros no recomputaban
+- `RecetaDelDia` useEffect: `clienteId` no estaba en deps → receta ignoraba restricciones del cliente
+- `PlanSemanal` useEffect: `clienteId` no estaba en deps → pool semanal ignoraba restricciones
+- Linter mejoró el cancel pattern con `cancelado = true` flag en ambos useEffect
+
+**Commits**: `66cf824`, `25e3efe`, `fbf5470`
+
+##### 📌 Pendiente para próximas sesiones
+- 🟠 **Regenerar 147 imágenes malas** (`node scripts/regenerar-imagenes-malas.mjs --genera`, ~$5)
+- 🟡 **Recetario progresivo por cliente** — desbloquear recetas según avance (diseño pendiente)
+- 🟡 **10 recetas Serie Chef** — identificar UUIDs y marcar `imagen_tipo='propia'` antes de regenerar
+
+---
+
 ## Sesión 22-05-2026 (noche 3) — CALENDARIO + PLANES IA ENTRENO ✅
 
 ##### ✅ Completado
