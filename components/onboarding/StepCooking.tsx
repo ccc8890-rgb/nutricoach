@@ -1,12 +1,13 @@
 'use client'
+import { Check } from 'lucide-react'
 
 export type NivelCocina = 'no_cocina' | 'basico' | 'intermedio' | 'avanzado'
 
-const NIVELES: { value: NivelCocina; label: string; desc: string; emoji: string }[] = [
-  { value: 'no_cocina', label: 'No cocino', desc: 'Prefiero comidas muy simples o precocinadas', emoji: '🥡' },
-  { value: 'basico', label: 'Básico', desc: 'Sé hacer recetas sencillas de pocos pasos', emoji: '🍳' },
-  { value: 'intermedio', label: 'Intermedio', desc: 'Me manejo bien en la cocina', emoji: '👨‍🍳' },
-  { value: 'avanzado', label: 'Avanzado', desc: 'Disfruto cocinando y me gustan recetas elaboradas', emoji: '⭐' },
+const NIVELES: { value: NivelCocina; label: string; desc: string }[] = [
+  { value: 'no_cocina',   label: 'Muy simple',    desc: 'Prefiero comidas rápidas o precocinadas' },
+  { value: 'basico',      label: 'Básico',         desc: 'Recetas sencillas de pocos pasos' },
+  { value: 'intermedio',  label: 'Intermedio',     desc: 'Me manejo bien en la cocina' },
+  { value: 'avanzado',    label: 'Avanzado',        desc: 'Disfruto cocinando y me gustan recetas elaboradas' },
 ]
 
 interface Props {
@@ -18,62 +19,78 @@ interface Props {
   onPresupuestoChange: (v: number) => void
 }
 
-export default function StepCooking({ nivelCocina, tiempoCocinaMin, presupuestoSemanal, onNivelChange, onTiempoChange, onPresupuestoChange }: Props) {
+export default function StepCooking({
+  nivelCocina, tiempoCocinaMin, presupuestoSemanal,
+  onNivelChange, onTiempoChange, onPresupuestoChange,
+}: Props) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-[var(--text)] mb-1">Cocina y logística</h2>
-      <p className="text-[var(--text-muted)] mb-6">Un buen plan se adapta a tu realidad, no al revés.</p>
+      <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+        Cocina
+      </p>
+      <h2 className="text-2xl font-bold mb-1 leading-tight" style={{ color: 'var(--text)' }}>
+        ¿Cómo es tu relación con la cocina?
+      </h2>
+      <p className="text-sm mb-7" style={{ color: 'var(--text-muted)' }}>
+        Un buen plan se adapta a tu realidad.
+      </p>
 
-      <div className="grid gap-2 mb-6">
-        {NIVELES.map(n => (
-          <button
-            key={n.value}
-            type="button"
-            onClick={() => onNivelChange(n.value)}
-            className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
-              nivelCocina === n.value
-                ? 'border-[var(--primary)] bg-[var(--primary)]/5'
-                : 'border-[var(--border)] hover:border-[var(--primary)]/40'
-            }`}
-          >
-            <span className="text-xl">{n.emoji}</span>
-            <div className="flex-1">
-              <div className="font-medium text-[var(--text)] text-sm">{n.label}</div>
-              <div className="text-xs text-[var(--text-muted)]">{n.desc}</div>
-            </div>
-            {nivelCocina === n.value && (
-              <div className="w-4 h-4 rounded-full bg-[var(--primary)] flex items-center justify-center text-white text-xs">✓</div>
-            )}
-          </button>
-        ))}
+      <div className="flex flex-col gap-2.5 mb-7">
+        {NIVELES.map(n => {
+          const sel = nivelCocina === n.value
+          return (
+            <button
+              key={n.value}
+              type="button"
+              onClick={() => onNivelChange(n.value)}
+              className="flex items-center justify-between px-5 py-4 rounded-2xl text-left cursor-pointer transition-all duration-200 active:scale-[0.98]"
+              style={{
+                background: sel ? 'rgba(161,161,166,0.1)' : 'var(--surface)',
+                border: `1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'}`,
+              }}
+            >
+              <div>
+                <p className="font-semibold text-[15px] leading-tight" style={{ color: 'var(--text)' }}>{n.label}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{n.desc}</p>
+              </div>
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ml-4 transition-all duration-200"
+                style={{
+                  background: sel ? 'var(--accent)' : 'transparent',
+                  border: `1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'}`,
+                }}
+              >
+                {sel && <Check size={11} strokeWidth={3} style={{ color: '#1C1C1E' }} />}
+              </div>
+            </button>
+          )
+        })}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[var(--text)] mb-1">
-            Tiempo para cocinar al día (min)
-          </label>
-          <input
-            type="number"
-            min={0} max={180} step={5}
-            value={tiempoCocinaMin}
-            onChange={e => onTiempoChange(parseInt(e.target.value) || 0)}
-            className="input w-full"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[var(--text)] mb-1">
-            Presupuesto semanal (€, opcional)
-          </label>
-          <input
-            type="number"
-            min={0} max={500} step={5}
-            value={presupuestoSemanal || ''}
-            onChange={e => onPresupuestoChange(parseInt(e.target.value) || 0)}
-            className="input w-full"
-            placeholder="Sin límite"
-          />
-        </div>
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { label: 'Tiempo para cocinar / día', value: tiempoCocinaMin, min: 0, max: 180, step: 5, onChange: onTiempoChange, unit: 'min' },
+          { label: 'Presupuesto semanal', value: presupuestoSemanal, min: 0, max: 500, step: 5, onChange: onPresupuestoChange, unit: '€', placeholder: 'Libre' },
+        ].map(({ label, value, min, max, step, onChange, unit }) => (
+          <div key={label}>
+            <p className="text-xs font-medium mb-1.5 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+              {label}
+            </p>
+            <div className="relative">
+              <input
+                type="number" inputMode="numeric"
+                min={min} max={max} step={step}
+                value={value || ''}
+                onChange={e => onChange(parseInt(e.target.value) || 0)}
+                className="input w-full pr-9 text-center font-semibold rounded-2xl"
+                style={{ fontSize: '1.05rem' }}
+                placeholder="0"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none"
+                style={{ color: 'var(--text-muted)' }}>{unit}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )

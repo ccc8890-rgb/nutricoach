@@ -1,52 +1,13 @@
 'use client'
+import { Check } from 'lucide-react'
 
 export type Segmento = 'standard' | 'recomposicion' | 'performance' | 'elite'
 
-const OPCIONES: {
-  value: Segmento
-  label: string
-  sublabel: string
-  desc: string
-  emoji: string
-  tier: string
-  tierColor: string
-}[] = [
-  {
-    value: 'standard',
-    label: 'Quiero perder grasa y ponerme en forma',
-    sublabel: 'Pérdida de peso / salud general',
-    desc: 'Entreno poco o nada. Quiero mejorar mis hábitos, bajar de peso y sentirme mejor.',
-    emoji: '🔥',
-    tier: 'Esencial',
-    tierColor: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20',
-  },
-  {
-    value: 'recomposicion',
-    label: 'Entreno y quiero cambiar mi cuerpo',
-    sublabel: 'Recomposición corporal / estética',
-    desc: 'Voy al gym o hago deporte regularmente. Quiero ganar músculo, perder grasa o cambiar mi composición corporal.',
-    emoji: '💪',
-    tier: 'Avanzado',
-    tierColor: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20',
-  },
-  {
-    value: 'performance',
-    label: 'Hago deporte y quiero rendir mejor',
-    sublabel: 'Atleta recreacional / semi-atleta',
-    desc: 'Corro, hago crossfit, ciclismo, natación u otro deporte con regularidad. El rendimiento y la recuperación son mi prioridad.',
-    emoji: '⚡',
-    tier: 'Pro',
-    tierColor: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20',
-  },
-  {
-    value: 'elite',
-    label: 'Compito o entreno a muy alto nivel',
-    sublabel: 'Atleta de competición / físico élite',
-    desc: 'Tengo competiciones, categorías de peso, periodos de puesta a punto. Necesito nutrición muy precisa y periodizada.',
-    emoji: '🏆',
-    tier: 'Élite',
-    tierColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20',
-  },
+const OPCIONES: { value: Segmento; label: string; sub: string }[] = [
+  { value: 'standard',     label: 'Ponerme en forma',       sub: 'Mejorar hábitos y bajar de peso' },
+  { value: 'recomposicion', label: 'Cambiar mi cuerpo',      sub: 'Ganar músculo y perder grasa' },
+  { value: 'performance',  label: 'Rendir mejor',            sub: 'Deportista con objetivos de rendimiento' },
+  { value: 'elite',        label: 'Nivel de competición',    sub: 'Atleta con periodización precisa' },
 ]
 
 interface Props {
@@ -57,40 +18,49 @@ interface Props {
 export default function StepSegment({ value, onChange }: Props) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-[var(--text)] mb-1">¿Cuál es tu situación?</h2>
-      <p className="text-[var(--text-muted)] mb-6">
-        Esto determina el nivel de detalle del cuestionario y la precisión del plan que recibirás.
+      <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>
+        Tu perfil
       </p>
-      <div className="grid gap-3">
-        {OPCIONES.map(op => (
-          <button
-            key={op.value}
-            type="button"
-            onClick={() => onChange(op.value)}
-            className={`relative flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all ${
-              value === op.value
-                ? 'border-[var(--primary)] bg-[var(--primary)]/5'
-                : 'border-[var(--border)] hover:border-[var(--primary)]/40'
-            }`}
-          >
-            <span className="text-2xl mt-0.5">{op.emoji}</span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-[var(--text)]">{op.label}</span>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${op.tierColor}`}>
-                  {op.tier}
-                </span>
+      <h2 className="text-2xl font-bold mb-1 leading-tight" style={{ color: 'var(--text)' }}>
+        ¿Cuál es tu situación?
+      </h2>
+      <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
+        Determina el nivel de detalle de tu plan.
+      </p>
+      <div className="flex flex-col gap-2.5">
+        {OPCIONES.map(op => {
+          const sel = value === op.value
+          return (
+            <button
+              key={op.value}
+              type="button"
+              onClick={() => onChange(op.value)}
+              className="flex items-center justify-between px-5 py-4 rounded-2xl text-left cursor-pointer transition-all duration-200 active:scale-[0.98]"
+              style={{
+                background: sel ? 'rgba(161,161,166,0.1)' : 'var(--surface)',
+                border: `1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'}`,
+              }}
+            >
+              <div>
+                <p className="font-semibold text-[15px] leading-tight" style={{ color: 'var(--text)' }}>
+                  {op.label}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  {op.sub}
+                </p>
               </div>
-              <div className="text-xs font-medium text-[var(--primary)] mt-0.5">{op.sublabel}</div>
-              <div className="text-sm text-[var(--text-muted)] mt-1 leading-snug">{op.desc}</div>
-            </div>
-            {value === op.value && (
-              <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-[var(--primary)] flex items-center justify-center text-white text-xs flex-shrink-0">
-                ✓
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ml-4 transition-all duration-200"
+                style={{
+                  background: sel ? 'var(--accent)' : 'transparent',
+                  border: `1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'}`,
+                }}
+              >
+                {sel && <Check size={11} strokeWidth={3} style={{ color: '#1C1C1E' }} />}
               </div>
-            )}
-          </button>
-        ))}
+            </button>
+          )
+        })}
       </div>
     </div>
   )

@@ -194,7 +194,7 @@ export default function PerfilProfundoPage() {
         </div>
 
         <div className="bg-[var(--surface)] rounded-2xl shadow-sm border border-[var(--border)] p-6">
-          <OnboardingProgress currentStep={step} totalSteps={steps.length} labels={steps.map(s => s.label)} />
+          <OnboardingProgress currentStep={step} totalSteps={steps.length} />
 
           <div className="min-h-[400px]">
             {currentStepLabel === 'A' && (
