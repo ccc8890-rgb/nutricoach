@@ -113,6 +113,7 @@ const ALCOHOL_KEYWORDS = [
     // Vinos
     'vino tinto', 'vino blanco', 'vino rosado', 'vino rosat',
     'vino fino', 'vino dulce', 'vino de mesa',
+    'vi escumos', 'vi escumós',
     // Cervezas
     'cerveza', 'cerveza sin', 'cervesa',
     // Espumosos
@@ -132,6 +133,7 @@ const ALCOHOL_KEYWORDS = [
     // Preparados
     'bebida preparada ron',
     'bebida preparada vodka',
+    'bebida espirituosa', 'beguda espirituosa',
     'coctel mojito', 'cóctel mojito', 'mojito', 'daiquiri',
     'pin colada', 'piña colada', 'pina colada',
     'combinado gin', 'combinado whisky', 'combinado vodka', 'combinado ron',
@@ -187,7 +189,8 @@ async function main() {
         '%absolut%', '%smirnoff%', '%beefeater%', '%larios%', '%tanqueray%',
         '%mojito%', '%daiquiri%', '%pin colada%', '%piña colada%',
         '%combinado gin%', '%combinado whisky%', '%combinado vodka%', '%combinado ron%',
-        '%combinat%', '%rom %'
+        '%combinat%', '%rom %', '%vi escumos%', '%vi escumós%',
+        '%bebida espirituosa%', '%beguda espirituosa%'
     ]
 
     const orClauses = patterns.map(p => `nombre.ilike.${p}`).join(',')

@@ -173,7 +173,7 @@ const PATRONES_NO_COMESTIBLE: RegExp[] = [
   // ── Alcohol ────────────────────────────────────────────────────
   /cerveza|cervesa|cerveza sin|cerveza 0,0/i,
   /vino (tinto|blanco|rosado|espumoso|dulce|jerez|generoso|ecologico|variedad|crianza|reserva|gran reserva)/i,
-  /vi (negre|blanc|rosat|escumos|dolc|ranci)/i,
+  /vi (negre|blanc|rosat|escumos|escum[oó]s|dolc|ranci)/i,
   /cava (brut|semi|rosado|nature|benjamin)/i,
   /whisky|whiskey|bourbon|vodka|ginebra|tequila|mezcal/i,
   /brandy|conac|cognac|amaretto|absenta|absinthe/i,
@@ -183,6 +183,7 @@ const PATRONES_NO_COMESTIBLE: RegExp[] = [
   /oporto|sangria|tinto de verano|champan|champagne/i,
   /sidra|mosto de uva/i,
   /bebida preparada de (ron|vodka|gin)/i,
+  /bebida espirituosa|beguda espirituosa/i,
   /bacardi|brugal|havana club|ron barcelo|barcelo|absolut|smirnoff|beefeater|larios|tanqueray|ballantines/i,
   /coctel mojito|mojito|daiquiri|pin?a colada|pin colada|combinado (gin|whisky|vodka|ron)|combinat/i,
   /cocktail whisky|crema whisky/i,
