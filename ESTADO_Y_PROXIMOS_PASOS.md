@@ -1,5 +1,55 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 22-05-2026 (noche) — REDISEÑO FICHA CLIENTE + FILTRO RESTRICCIONES RECETAS ✅
+
+##### ✅ Completado esta sesión
+
+**Rediseño ficha cliente `/clientes/[id]`** (commit `b76dfc8`)
+- Componentes inline `MacroBar` (barras de progreso con color por macro) y `StatPill` (píldoras de datos compactos)
+- Hero card: avatar con iniciales, badges de estado (activo/revisado), fila de stats (peso, objetivo, BMI, plan), barras de macros del plan activo con links directos a revisar y regenerar plan
+- 12 tabs pill-style: Resumen | Planes | Check-ins | Notas | Planificación | Competición | Periodización | IA | Chat IA | Atleta | Historial | Macros — tab activo inverted (bg text, color bg), inactive = surface+border, badges con conteos
+- Cero colores hardcodeados, todo CSS vars (`var(--text)`, `var(--surface)`, `var(--border)`, `var(--accent)`)
+- Fix TypeScript: `profile` type cast en `const p = cliente.profile ?? {} as {...}`
+
+**RLS fix: endpoint `revisar-data`** (commit `6245cc8`)
+- `GET /api/clientes/[id]/revisar-data`: service role, bypasea RLS de `onboarding_responses`
+- `revisar-plan/page.tsx` usa este endpoint en lugar de queries directas — onboarding ya no bloquea coaches
+- Onboarding opcional: si el cliente no ha completado el cuestionario, la página sigue funcionando
+
+**Filtrado de recetas por restricciones del cliente** (commit `6245cc8`)
+- `GET /api/recetas/sugeridas` acepta `cliente_id` opcional
+- Si se pasa, carga `restricciones` de `onboarding_responses` y mapea a tags de intolerancias de recetas:
+  - `'sin gluten'` → `'Sin Gluten'`, `'sin lactosa'` → `'Sin Lactosa'`, `'vegano'` → `'Vegano'`, `'vegetariano'` → `'Vegetariano'`, `'sin frutos secos'` → `'Sin Frutos Secos'`, `'sin huevo'` → `'Sin Huevo'`
+- Filtro aplicado con `.contains('intolerancias', restriccionesIntolerancia)` — solo recetas compatibles con TODAS las restricciones del cliente
+- Restricciones sin equivalente en BD de recetas (Sin Cerdo, Halal, Kosher, etc.) ignoradas hasta que el recetario tenga esos tags
+- Callers actualizados: `revisar-plan`, `MiPlan` (alternativas + RecetaDelDia), `PlanSemanal`, `revisar-rapido`
+
+**Correcciones adicionales**
+- `revisar-plan`: `tipo_plato` mapeado correctamente (merienda no muestra recetas de cena)
+- `revisar-plan`: "Ver perfil completo" abre en nueva pestaña (`window.open(..., '_blank')`)
+- Dark mode: mass replace `text-gray-*/slate-*` → CSS vars en 29 componentes/páginas
+
+##### ⚙️ Arquitectura del filtro
+
+```
+cliente hace onboarding → selecciona restricciones ['Sin gluten', 'Vegano']
+                                    ↓
+sugeridas?cliente_id=X → fetch onboarding_responses → ['Sin gluten', 'Vegano']
+                                    ↓
+mapeo lowercase → ['Sin Gluten', 'Vegano']
+                                    ↓
+query.contains('intolerancias', ['Sin Gluten', 'Vegano'])
+                                    ↓
+solo recetas donde intolerancias @> ['Sin Gluten', 'Vegano']
+```
+
+##### 🔲 Pendiente relacionado
+- Añadir tags `Sin Mariscos`, `Sin Cerdo`, `Sin Soja` al recetario para cubrir más restricciones del onboarding
+- Regenerar 147 imágenes malas: `node scripts/regenerar-imagenes-malas.mjs --genera` (~$5)
+
+---
+
+
 ## Sesión 22-05-2026 — Lint focal entrenamiento cliente ✅
 
 ##### ✅ Corregido
