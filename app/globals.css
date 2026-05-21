@@ -261,7 +261,7 @@ body {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  border-radius: 10px;
+  border-radius: 14px;
   font-weight: 600;
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -269,9 +269,60 @@ body {
   cursor: pointer;
   border: none;
   text-decoration: none;
+  white-space: nowrap;
 }
 
-.btn:active {
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+  transition-duration: 0.1s;
+}
+
+.btn-lg {
+  padding: 0.875rem 1.5rem;
+  border-radius: 16px;
+  font-size: 0.9375rem;
+}
+
+.btn-sm {
+  padding: 0.4rem 0.875rem;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+}
+
+/* Variants are self-contained — work with or without the .btn base class */
+.btn-primary, .btn-secondary, .btn-ghost, .btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.16s var(--ease-out-strong), border-color 0.16s var(--ease-out-strong), box-shadow 0.2s var(--ease-out-strong), transform 0.16s var(--ease-out-strong), opacity 0.16s var(--ease-out-strong);
+}
+
+.btn-primary:disabled, .btn-secondary:disabled, .btn-ghost:disabled, .btn-danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn-primary:active:not(:disabled), .btn-secondary:active:not(:disabled),
+.btn-ghost:active:not(:disabled), .btn-danger:active:not(:disabled) {
   transform: scale(0.97);
   transition-duration: 0.1s;
 }
@@ -281,25 +332,26 @@ body {
   color: #1C1C1E;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   box-shadow: 0 0 20px var(--accent-glow);
   transform: translateY(-1px);
 }
 
-.btn-primary:active {
+.btn-primary:active:not(:disabled) {
   transform: scale(0.97);
   box-shadow: none;
 }
 
 .btn-secondary {
   background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   border-color: var(--border-accent);
-  box-shadow: var(--shadow-md);
+  color: var(--text);
+  background: var(--surface-hover);
 }
 
 .btn-ghost {
@@ -307,13 +359,21 @@ body {
   color: var(--text-secondary);
 }
 
-.btn-ghost:hover {
+.btn-ghost:hover:not(:disabled) {
   background: var(--surface-hover);
+  color: var(--text);
 }
 
 .btn-danger {
+  background: var(--error-bg);
+  border: 1.5px solid rgba(255,69,58,0.25);
+  color: var(--error);
+}
+
+.btn-danger:hover:not(:disabled) {
   background: var(--error);
   color: white;
+  border-color: transparent;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -324,7 +384,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   padding: 0.625rem 0.875rem;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
@@ -350,8 +410,8 @@ body {
   width: 100%;
   padding: 0.625rem 0.875rem;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
   color: var(--text);
   font-size: 0.875rem;
   outline: none;

@@ -310,18 +310,18 @@ export default function PerfilProfundoPage() {
               type="button"
               onClick={() => setStep(s => s - 1)}
               disabled={step === 0}
-              className="btn-secondary disabled:opacity-40"
+              className="btn btn-secondary"
             >
               Atrás
             </button>
 
             <div className="flex items-center gap-2">
-              {/* Skip disponible en pasos no obligatorios */}
               {currentStepLabel !== 'A' && currentStepLabel !== 'C' && (
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] px-3 py-2"
+                  className="text-sm px-3 py-2 rounded-xl transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
                 >
                   Saltar
                 </button>
@@ -332,7 +332,7 @@ export default function PerfilProfundoPage() {
                   type="button"
                   onClick={() => setStep(s => s + 1)}
                   disabled={!puedeAvanzar()}
-                  className="btn-primary disabled:opacity-40"
+                  className="btn btn-primary"
                 >
                   Siguiente
                 </button>
@@ -341,9 +341,9 @@ export default function PerfilProfundoPage() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="btn-primary disabled:opacity-40"
+                  className="btn btn-primary"
                 >
-                  {loading ? 'Generando tu plan...' : '✨ Crear mi plan personalizado'}
+                  {loading ? 'Generando tu plan...' : 'Crear mi plan personalizado'}
                 </button>
               )}
             </div>
