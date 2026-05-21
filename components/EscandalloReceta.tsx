@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ShoppingCart, TrendingDown, Euro, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { ShoppingCart, TrendingDown, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 
 interface PrecioComparativo {
     supermercado_id: string
@@ -67,7 +67,7 @@ export default function EscandalloReceta({ recetaId }: EscandalloRecetaProps) {
     const [error, setError] = useState('')
     const [expandidos, setExpandidos] = useState<Set<string>>(new Set())
 
-    async function cargar(supId?: string) {
+    const cargar = useCallback(async (supId?: string) => {
         setLoading(true)
         setError('')
         try {
@@ -82,7 +82,7 @@ export default function EscandalloReceta({ recetaId }: EscandalloRecetaProps) {
         } finally {
             setLoading(false)
         }
-    }
+    }, [recetaId])
 
     useEffect(() => {
         fetch('/api/precios/supermercados')
@@ -90,22 +90,28 @@ export default function EscandalloReceta({ recetaId }: EscandalloRecetaProps) {
             .then(d => setSupermercados(d.supermercados || d || []))
             .catch(e => { console.error('[EscandalloReceta] Error cargando supermercados:', e); setError('Error al cargar supermercados') })
         cargar()
-    }, [recetaId])
+    }, [recetaId, cargar])
 
     useEffect(() => {
         cargar(supSel || undefined)
-    }, [supSel])
+    }, [supSel, cargar])
 
     function toggleExpandir(id: string) {
         setExpandidos(prev => {
             const s = new Set(prev)
-            s.has(id) ? s.delete(id) : s.add(id)
+            if (s.has(id)) s.delete(id)
+            else s.add(id)
             return s
         })
     }
 
     function formatGramos(g: number) {
         return g >= 1000 ? `${(g / 1000).toFixed(2)} kg` : `${g} g`
+    }
+
+    function tipoPrecio(nombre: string, url: string | null) {
+        if (nombre === 'Precio referencia coach' || url?.startsWith('referencia://')) return 'referencia'
+        return 'supermercado'
     }
 
     if (loading) {
@@ -242,6 +248,11 @@ export default function EscandalloReceta({ recetaId }: EscandalloRecetaProps) {
                                                     {ing.super_mas_barato.nombre}
                                                 </span>
                                             )}
+                                            {ing.precios_comparativos.some(pc => tipoPrecio(pc.supermercado_nombre, pc.url_producto) === 'referencia' && pc.precio_por_kg === ing.precio_por_kg) && (
+                                                <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: '#f1f5f9', color: '#475569' }}>
+                                                    referencia
+                                                </span>
+                                            )}
                                         </div>
                                         {sinPrecioIng && (
                                             <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>Sin precio registrado</div>
@@ -277,6 +288,9 @@ export default function EscandalloReceta({ recetaId }: EscandalloRecetaProps) {
                                                     <div className="w-2 h-2 rounded-full shrink-0"
                                                         style={{ background: pc.supermercado_color || 'var(--muted-foreground)' }} />
                                                     <span className="text-xs">{pc.supermercado_nombre}</span>
+                                                    {tipoPrecio(pc.supermercado_nombre, pc.url_producto) === 'referencia' && (
+                                                        <span className="text-xs font-medium" style={{ color: '#64748b' }}>referencia</span>
+                                                    )}
                                                     {pc.es_mas_barato && (
                                                         <span className="text-xs font-medium" style={{ color: '#16a34a' }}>más barato</span>
                                                     )}

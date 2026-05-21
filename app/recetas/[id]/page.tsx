@@ -1,9 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, Brain, AlertTriangle, Clock, Users, ChevronLeft, Euro, ShoppingCart, Eye, Copy, Check } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, AlertTriangle, Clock, Users, ChevronLeft, Euro, Copy, Check } from 'lucide-react'
 import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -55,6 +55,17 @@ interface IngredienteConAlimento {
   alimento?: Alimento | null
 }
 
+interface RecetaQuality {
+  ok: boolean
+  cobertura_pct: number
+  ingredientes_sin_precio: number
+  issues: Array<{
+    severity: 'bloqueante' | 'revisar' | 'aviso'
+    codigo: string
+    mensaje: string
+  }>
+}
+
 /** Divide instrucciones en pasos numerados */
 function parsePasos(text: string | null | undefined): { number: number; content: string; title?: string }[] {
   if (!text) return []
@@ -79,7 +90,6 @@ function parsePasos(text: string | null | undefined): { number: number; content:
 
 export default function DetalleRecetaPage() {
   const { id } = useParams<{ id: string }>()
-  const router = useRouter()
   const [receta, setReceta] = useState<RecetaDetalle | null>(null)
   const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
   const [loading, setLoading] = useState(true)
@@ -87,6 +97,7 @@ export default function DetalleRecetaPage() {
   const [accionando, setAccionando] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
   const [copiedToLista, setCopiedToLista] = useState(false)
+  const [quality, setQuality] = useState<RecetaQuality | null>(null)
 
   async function copiarAListaCompra() {
     const texto = ingredientes.map(ing => {
@@ -101,6 +112,20 @@ export default function DetalleRecetaPage() {
   }
 
   async function handleEstado(nuevoEstado: 'aprobada' | 'descartada') {
+    if (nuevoEstado === 'aprobada' && quality) {
+      const bloqueantes = quality.issues.filter(i => i.severity === 'bloqueante')
+      if (bloqueantes.length > 0) {
+        alert(`No apruebes todavía: ${bloqueantes.map(i => i.mensaje).join(' ')}`)
+        return
+      }
+
+      const requiereRevision = quality.issues.filter(i => i.severity === 'revisar')
+      if (requiereRevision.length > 0) {
+        const ok = confirm(`Esta receta tiene avisos antes de aprobar:\n\n${requiereRevision.map(i => `- ${i.mensaje}`).join('\n')}\n\n¿Aprobar igualmente?`)
+        if (!ok) return
+      }
+    }
+
     setAccionando(true)
     await fetch(`/api/recetas/${id}/estado`, {
       method: 'PATCH',
@@ -122,6 +147,19 @@ export default function DetalleRecetaPage() {
       setLoading(false)
     }
     load()
+  }, [id])
+
+  useEffect(() => {
+    async function loadQuality() {
+      try {
+        const res = await fetch(`/api/recetas/${id}/quality`)
+        const json = await res.json()
+        if (res.ok) setQuality(json)
+      } catch (err) {
+        console.error('[DetalleRecetaPage] Error cargando quality:', err)
+      }
+    }
+    loadQuality()
   }, [id])
 
   async function borrar() {
@@ -149,7 +187,7 @@ export default function DetalleRecetaPage() {
     </div>
   )
 
-  const r = normalizarReceta(receta as unknown as Record<string, any>)
+  const r = normalizarReceta(receta as Parameters<typeof normalizarReceta>[0])
 
   const macrosPorPorcion = (() => {
     const porciones = receta.porciones ?? 1
@@ -313,6 +351,45 @@ export default function DetalleRecetaPage() {
               <button onClick={() => handleEstado('aprobada')} className="text-xs mt-1 underline" style={{ color: 'var(--error)' }}>
                 Restaurar como aprobada
               </button>
+            </div>
+          </FadeIn>
+        )}
+
+        {quality && (
+          <FadeIn delay={0.06}>
+            <div
+              className="mb-6 p-4 rounded-2xl"
+              style={{
+                background: quality.ok ? 'var(--success-bg)' : 'var(--warning-bg)',
+                border: `1px solid ${quality.ok ? 'var(--success)' : 'var(--warning)'}`,
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <AlertTriangle size={18} style={{ color: quality.ok ? 'var(--success)' : 'var(--warning)' }} />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <p className="font-semibold text-sm" style={{ color: quality.ok ? 'var(--success)' : 'var(--warning)' }}>
+                      Calidad receta
+                    </p>
+                    <span className="text-xs px-2 py-1 rounded-md" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+                      {quality.cobertura_pct}% cobertura precios
+                    </span>
+                  </div>
+                  {quality.issues.length === 0 ? (
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+                      Sin bloqueos de ingredientes, cantidades o coste.
+                    </p>
+                  ) : (
+                    <ul className="mt-2 space-y-1">
+                      {quality.issues.map(item => (
+                        <li key={`${item.codigo}-${item.mensaje}`} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                          <span className="font-semibold">{item.severity}:</span> {item.mensaje}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
             </div>
           </FadeIn>
         )}
