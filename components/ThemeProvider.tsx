@@ -21,14 +21,14 @@ export function useTheme() {
 }
 
 function getInitialTheme(): Theme {
-    if (typeof window === 'undefined') return 'light'
+    if (typeof window === 'undefined') return 'dark'
     const saved = localStorage.getItem('nutricoach-theme') as Theme | null
     if (saved === 'light' || saved === 'dark') return saved
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    return 'dark'
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>('light')
+    const [theme, setThemeState] = useState<Theme>('dark')
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
