@@ -143,6 +143,10 @@ export default function RevisarPlanPage() {
   const [showPerfilProfundo, setShowPerfilProfundo] = useState(false)
   const [recetasPorComida, setRecetasPorComida] = useState<Record<number, RecetaSugerida[]>>({})
   const [cargandoRecetas, setCargandoRecetas] = useState(false)
+  const [proponendoPlanIA, setProponendoPlanIA] = useState(false)
+  const [propuestaIA, setPropuestaIA] = useState<Record<string, unknown> | null>(null)
+  const [errorPropuestaIA, setErrorPropuestaIA] = useState<string | null>(null)
+  const [showPropuestaIA, setShowPropuestaIA] = useState(false)
 
   const cargarRecetasPlan = useCallback(async (planData: PlanInicial) => {
     if (!planData.distribucion_comidas?.length) return
@@ -245,6 +249,31 @@ export default function RevisarPlanPage() {
       setErrorPlan(err instanceof Error ? err.message : 'Error inesperado al generar el plan.')
     } finally {
       setRegenerandoPlan(false)
+    }
+  }
+
+  const proponerPlanEntrenoIA = async () => {
+    setProponendoPlanIA(true)
+    setErrorPropuestaIA(null)
+    setPropuestaIA(null)
+    try {
+      const res = await fetch('/api/entrenos/proponer-plan-ciencia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ cliente_id: params.id }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        setErrorPropuestaIA(data?.error ?? 'No se pudo generar la propuesta.')
+        return
+      }
+      setPropuestaIA(data)
+      setShowPropuestaIA(true)
+    } catch (err) {
+      setErrorPropuestaIA(err instanceof Error ? err.message : 'Error inesperado.')
+    } finally {
+      setProponendoPlanIA(false)
     }
   }
 
@@ -827,16 +856,90 @@ export default function RevisarPlanPage() {
               clienteId={params.id as string}
             />
           ) : (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-[var(--text-muted)]">No hay plantilla seleccionada</p>
-              <button
-                type="button"
-                onClick={() => setShowSelectorEntreno(true)}
-                className="btn-secondary flex items-center gap-2 text-sm"
-              >
-                <Dumbbell size={14} />
-                Seleccionar plantilla
-              </button>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-[var(--text-muted)]">No hay plantilla seleccionada</p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={proponerPlanEntrenoIA}
+                    disabled={proponendoPlanIA}
+                    className="btn-secondary flex items-center gap-2 text-sm"
+                  >
+                    {proponendoPlanIA ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                    Proponer con IA
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSelectorEntreno(true)}
+                    className="btn-secondary flex items-center gap-2 text-sm"
+                  >
+                    <Dumbbell size={14} />
+                    Seleccionar plantilla
+                  </button>
+                </div>
+              </div>
+              {errorPropuestaIA && (
+                <p className="text-sm text-red-600 dark:text-red-400">{errorPropuestaIA}</p>
+              )}
+              {propuestaIA && (
+                <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowPropuestaIA(v => !v)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[var(--text)]"
+                  >
+                    <span className="flex items-center gap-2">
+                      <RefreshCw size={14} className="text-teal-500" />
+                      Propuesta IA — {(propuestaIA.plan as Record<string, unknown>)?.nombre_plan as string ?? 'Plan generado'}
+                    </span>
+                    {showPropuestaIA ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </button>
+                  {showPropuestaIA && (
+                    <div className="px-4 pb-4 space-y-3 text-sm text-[var(--text-muted)]">
+                      {(() => {
+                        const p = propuestaIA.plan as Record<string, unknown>
+                        const meta = propuestaIA.metadata as Record<string, unknown>
+                        const sesiones = (p?.sesiones as Record<string, unknown>[]) ?? []
+                        return (
+                          <>
+                            {p?.fundamentacion && (
+                              <p className="text-[var(--text)]">{p.fundamentacion as string}</p>
+                            )}
+                            <div className="flex flex-wrap gap-2">
+                              {typeof meta?.ajuste_rpe === 'string' && meta.ajuste_rpe && (
+                                <span className="px-2 py-1 rounded-full text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                                  {meta.ajuste_rpe}
+                                </span>
+                              )}
+                              {typeof meta?.papers_usados === 'number' && (
+                                <span className="px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                                  {meta.papers_usados} papers científicos
+                                </span>
+                              )}
+                            </div>
+                            {sesiones.length > 0 && (
+                              <div className="space-y-1">
+                                <p className="font-medium text-[var(--text)]">Sesiones propuestas:</p>
+                                {sesiones.map((s, i) => (
+                                  <div key={i} className="flex items-center gap-2">
+                                    <span className="w-24 text-xs font-medium">{s.dia_semana as string}</span>
+                                    <span className="text-xs">{s.nombre as string}</span>
+                                    <span className="text-xs text-[var(--text-muted)]">({s.duracion_min as number} min)</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {p?.progresion_semanal && (
+                              <p className="text-xs border-t border-[var(--border)] pt-2">{p.progresion_semanal as string}</p>
+                            )}
+                          </>
+                        )
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
