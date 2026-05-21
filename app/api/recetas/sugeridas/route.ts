@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 
-// Mapeo entre las restricciones del onboarding del cliente y los tags de intolerancias en recetas
-const RESTRICCION_A_INTOLERANCIA: Record<string, string> = {
-    'sin gluten':       'Sin Gluten',
-    'sin lactosa':      'Sin Lactosa',
-    'vegetariano':      'Vegetariano',
-    'vegano':           'Vegano',
-    'sin frutos secos': 'Sin Frutos Secos',
-    'sin huevo':        'Sin Huevo',
-    'sin mariscos':     'Sin Mariscos',
-    'sin cerdo':        'Sin Cerdo',
-    'sin soja':         'Sin Soja',
+// Mapeo: restricción del onboarding → alérgenos EU que la receta NO debe contener
+// Modelo positivo: excluimos recetas donde intolerancias SOLAPA con los alérgenos del cliente
+const RESTRICCION_A_ALERGENOS: Record<string, string[]> = {
+    'sin gluten':       ['Gluten'],
+    'sin lactosa':      ['Lácteos'],
+    'sin huevo':        ['Huevos'],
+    'sin frutos secos': ['Frutos Secos', 'Cacahuetes'],
+    'sin soja':         ['Soja'],
+    'sin mariscos':     ['Crustáceos', 'Moluscos'],
+    'vegetariano':      ['Pescado', 'Crustáceos', 'Moluscos'],
+    'vegano':           ['Lácteos', 'Huevos', 'Pescado', 'Crustáceos', 'Moluscos'],
 }
 
 export async function GET(request: NextRequest) {
@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
     const tolerancia = 0.35  // ±35%
     const db = createServiceSupabase()
 
-    // Obtener restricciones del cliente si se proporciona cliente_id
-    let restriccionesIntolerancia: string[] = []
+    // Obtener restricciones del cliente y convertir a alérgenos EU a excluir
+    let alergenosExcluir: string[] = []
     if (cliente_id) {
         const { data: onboarding } = await db
             .from('onboarding_responses')
@@ -37,9 +37,9 @@ export async function GET(request: NextRequest) {
             .maybeSingle()
 
         if (onboarding?.restricciones?.length) {
-            restriccionesIntolerancia = (onboarding.restricciones as string[])
-                .map(r => RESTRICCION_A_INTOLERANCIA[r.toLowerCase()])
-                .filter(Boolean)
+            const sets = (onboarding.restricciones as string[])
+                .flatMap(r => RESTRICCION_A_ALERGENOS[r.toLowerCase()] ?? [])
+            alergenosExcluir = [...new Set(sets)]
         }
     }
 
@@ -60,9 +60,9 @@ export async function GET(request: NextRequest) {
         if (extraFilters?.excludeIds?.length) {
             q = q.not('id', 'in', `(${extraFilters.excludeIds.join(',')})`)
         }
-        // Filtrar por intolerancias del cliente: solo recetas compatibles con TODAS sus restricciones
-        if (restriccionesIntolerancia.length) {
-            q = q.contains('intolerancias', restriccionesIntolerancia)
+        // Excluir recetas que contengan alérgenos del cliente (modelo EU positivo)
+        if (alergenosExcluir.length) {
+            q = q.not('intolerancias', 'ov', `{${alergenosExcluir.join(',')}}`)
         }
         return q
     }

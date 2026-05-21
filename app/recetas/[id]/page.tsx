@@ -452,24 +452,6 @@ export default function DetalleRecetaPage() {
               )}
             </div>
 
-            {/* Tags */}
-            {receta.tags && Array.isArray(receta.tags) && receta.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {receta.tags.map((tag: string) => (
-                  <span
-                    key={tag}
-                    className="text-[11px] px-2 py-0.5 rounded-md font-medium"
-                    style={{
-                      background: 'var(--bg-subtle)',
-                      color: 'var(--text-muted)',
-                      border: '1px solid var(--border)',
-                    }}
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
         </FadeIn>
 
@@ -672,19 +654,55 @@ export default function DetalleRecetaPage() {
           )}
         </FadeIn>
 
-        {/* ═══════ INTOLERANCIAS ═══════ */}
+        {/* ═══════ ALÉRGENOS EU (Regl. 1169/2011) ═══════ */}
         {intolerancias.length > 0 && (
           <FadeIn delay={0.3}>
-            <div className="flex flex-wrap gap-2 mb-6">
-              {intolerancias.map((t: string) => (
-                <span
-                  key={t}
-                  className="text-xs px-3 py-1 rounded-full border"
-                  style={{ backgroundColor: 'var(--accent-bg)', color: 'var(--accent-dark)', borderColor: 'var(--accent-ring)' }}
-                >
-                  {t}
-                </span>
-              ))}
+            <div
+              className="mb-6 rounded-xl px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+            >
+              {/* Etiqueta fija */}
+              <span className="text-[10px] font-bold uppercase tracking-widest shrink-0" style={{ color: 'var(--text-muted)' }}>
+                Contiene
+              </span>
+
+              {/* Alérgenos EU — declaración positiva */}
+              {intolerancias
+                .filter(t => !['Vegetariano', 'Vegano'].includes(t))
+                .map(t => (
+                  <span
+                    key={t}
+                    className="text-xs font-semibold px-2 py-0.5 rounded"
+                    style={{
+                      background: 'rgba(239,68,68,0.07)',
+                      color: 'rgb(185,28,28)',
+                      border: '1px solid rgba(239,68,68,0.18)',
+                    }}
+                  >
+                    {t}
+                  </span>
+                ))}
+
+              {/* Clasificación dietética — separador visual si hay ambos */}
+              {intolerancias.some(t => !['Vegetariano', 'Vegano'].includes(t)) &&
+               intolerancias.some(t => ['Vegetariano', 'Vegano'].includes(t)) && (
+                <span style={{ color: 'var(--border)' }}>·</span>
+              )}
+              {intolerancias
+                .filter(t => ['Vegetariano', 'Vegano'].includes(t))
+                .map(t => (
+                  <span
+                    key={t}
+                    className="text-xs font-semibold px-2 py-0.5 rounded"
+                    style={{
+                      background: 'rgba(34,197,94,0.07)',
+                      color: 'rgb(21,128,61)',
+                      border: '1px solid rgba(34,197,94,0.18)',
+                    }}
+                  >
+                    {t}
+                  </span>
+                ))}
             </div>
           </FadeIn>
         )}
