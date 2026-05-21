@@ -322,6 +322,109 @@ export const BASE_CONOCIMIENTO: ProtocoloCientifico[] = [
 ]
 
 // ──────────────────────────────────────────────────────────────
+// TAG BRIDGE — Puente entre tags del perfil cliente y tags de papers PubMed
+// Los papers tienen tags en español natural (ej: "perdida grasa", "deficit calorico")
+// mientras que el perfil cliente usa tags normalizados (ej: "perder_grasa", "deficit")
+// Este mapa expande cada tag cliente a sus equivalentes semánticos en KB.
+// ──────────────────────────────────────────────────────────────
+
+export const TAG_BRIDGE: Record<string, string[]> = {
+  // Objetivos corporales
+  perder_grasa: ['perdida grasa', 'deficit calorico', 'composicion corporal', 'obesidad', 'grasa'],
+  deficit: ['deficit calorico', 'perdida grasa', 'restriccion calorica'],
+  ganar_musculo: ['hipertrofia', 'masa muscular', 'sintesis muscular', 'proteina', 'volumen', 'mTOR'],
+  hipertrofia: ['hipertrofia', 'masa muscular', 'sintesis muscular', 'proteina', 'mTOR', 'entrenamiento_fuerza'],
+  volumen: ['volumen', 'hipertrofia', 'masa muscular', 'dosis-respuesta', 'sobrecarga'],
+  recomposicion: ['composicion corporal', 'perdida grasa', 'hipertrofia'],
+  mantenimiento: ['mantenimiento', 'nutricion deportiva', 'proteina'],
+  salud_general: ['salud cardiovascular', 'nutricion', 'dieta mediterranea', 'prevencion', 'bienestar', 'ejercicio'],
+
+  // Rendimiento / deporte
+  rendimiento: ['rendimiento', 'rendimiento_deportivo', 'rendimiento_resistencia', 'rendimiento_carrera', 'atletas'],
+  atletismo: ['rendimiento', 'atletas', 'competicion', 'rendimiento_deportivo'],
+  deporte: ['rendimiento', 'ejercicio', 'atletas', 'rendimiento deportivo'],
+  competicion: ['competicion', 'rendimiento', 'atletas'],
+
+  // Running / resistencia
+  running: ['running', 'zona2', 'rendimiento_resistencia', 'intensidad', 'zona de entrenamiento'],
+  fondo: ['zona2', 'aeróbico', 'base aeróbica', 'resistencia', 'kilometraje'],
+  maraton: ['running', 'resistencia', 'kilometraje', 'zona2'],
+  trail: ['running', 'resistencia'],
+  resistencia_aerobica: ['resistencia', 'aeróbico', 'zona2', 'umbral', 'ejercicio_resistencia'],
+
+  // Ciclismo / triatlón
+  ciclismo: ['rendimiento', 'resistencia', 'aeróbico', 'umbral'],
+  triatlon: ['rendimiento', 'resistencia', 'rendimiento_resistencia'],
+  bici: ['rendimiento', 'resistencia'],
+  ironman: ['rendimiento', 'resistencia', 'hidratacion', 'sodio'],
+
+  // Hyrox / Crossfit / funcional
+  hyrox: ['hyrox', 'hibrido', 'fuerza', 'intensidad', 'zona2', 'funcional', 'wod'],
+  crossfit: ['hyrox', 'hibrido', 'fuerza', 'intensidad', 'funcional', 'wod'],
+  funcional: ['hibrido', 'fuerza', 'intensidad'],
+  hiit: ['hiit', 'intensidad', 'polarizado', '80/20'],
+  wod: ['hyrox', 'hibrido', 'fuerza', 'intensidad'],
+
+  // Fuerza / powerlifting
+  fuerza: ['fuerza', 'entrenamiento_fuerza', 'series', 'fallo muscular', 'RPE', 'RIR', 'dosis-respuesta', 'sobrecarga'],
+  powerlifting: ['fuerza', 'entrenamiento_fuerza', 'series', 'sentadilla', 'potencia'],
+  halterofilia: ['fuerza', 'potencia', 'entrenamiento_fuerza'],
+  potencia: ['potencia', 'fuerza', 'dosis-respuesta'],
+
+  // Nivel / experiencia
+  amateur: ['amateur', 'principiante'],
+  recreacional: ['amateur', 'principiante'],
+  principiante: ['amateur', 'principiante'],
+  elite: ['atletas', 'competicion', 'rendimiento_deportivo'],
+
+  // Condiciones metabólicas / salud
+  diabetes: ['diabetes', 'diabetes tipo 2', 'insulina', 'glucemia'],
+  resistencia_insulina: ['resistencia a la insulina', 'insulina', 'diabetes tipo 2', 'diabetes'],
+  glucemia: ['glucemia', 'insulina', 'diabetes', 'diabetes tipo 2'],
+
+  // Tiroides
+  hipotiroidismo: ['tiroides', 'hormonas', 'metabolismo', 'mujeres'],
+  tiroides: ['tiroides', 'hormonas', 'metabolismo'],
+
+  // PCOS / SOP / Menopausia
+  pcos: ['hormonas', 'mujeres', 'insulina', 'sop'],
+  sop: ['hormonas', 'mujeres', 'insulina'],
+  menopausia: ['mujeres', 'hormonas', 'salud osea', 'tercera edad'],
+  climaterio: ['mujeres', 'hormonas', 'salud osea'],
+
+  // Edad / sarcopenia
+  sarcopenia: ['sarcopenia', 'adultos_mayores', 'masa muscular', 'proteina', 'sintesis muscular', 'envejecimiento', 'tercera edad'],
+  envejecimiento: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad'],
+  mayor_55: ['adultos_mayores', 'sarcopenia', 'envejecimiento', 'tercera edad'],
+
+  // Cardiovascular / HTA
+  hta: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial'],
+  hipertension: ['hipertension', 'salud cardiovascular', 'enfermedad cardiovascular', 'sodio', 'presion arterial'],
+  presion_alta: ['hipertension', 'salud cardiovascular', 'presion arterial'],
+
+  // Colesterol / dislipemia
+  dislipemia: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea'],
+  colesterol: ['colesterol', 'grasas saludables', 'omega-3', 'enfermedad cardiovascular', 'dieta mediterranea'],
+
+  // Hígado graso
+  higado_graso: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado'],
+  nafld: ['obesidad', 'metabolismo', 'dieta mediterranea', 'higado'],
+  esteatosis: ['obesidad', 'metabolismo', 'higado'],
+
+  // Salud mental
+  ansiedad: ['salud mental', 'bienestar', 'HRV', 'sueño', 'cortisol'],
+  salud_mental: ['salud mental', 'bienestar', 'cortisol', 'HRV'],
+
+  // Dieta / alimentación
+  vegano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad'],
+  vegetariano: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'sin_carne', 'vegetales', 'biodisponibilidad'],
+  plant_based: ['vegetariano', 'veganismo', 'plant-based', 'proteina vegetal', 'vegetales'],
+
+  // Obesidad / composición
+  obesidad: ['obesidad', 'IMC', 'composicion corporal', 'perdida grasa', 'deficit calorico', 'sobrepeso'],
+}
+
+// ──────────────────────────────────────────────────────────────
 // Normalización de valores del perfil → tags
 // ──────────────────────────────────────────────────────────────
 
@@ -448,7 +551,24 @@ interface KBRow {
 }
 
 /**
+ * Expande tags del cliente usando TAG_BRIDGE.
+ * Cada tag cliente se expande a sus equivalentes en KB.
+ */
+export function expandirTags(tagsCliente: string[]): string[] {
+  const expanded = new Set<string>()
+  for (const tag of tagsCliente) {
+    expanded.add(tag)
+    const bridge = TAG_BRIDGE[tag]
+    if (bridge) {
+      for (const eq of bridge) expanded.add(eq)
+    }
+  }
+  return [...expanded]
+}
+
+/**
  * Consulta Supabase knowledge_base filtrando por tags y condiciones de salud.
+ * Usa TAG_BRIDGE para expandir tags del cliente a equivalentes en KB.
  * Devuelve array vacío si no hay resultados o hay error.
  */
 export async function consultarKnowledgeDB(
@@ -457,7 +577,10 @@ export async function consultarKnowledgeDB(
   condicionesSalud?: string
 ): Promise<ProtocoloCientifico[]> {
   try {
-    // 1. Construir query base: activos, globales (coach_id IS NULL)
+    // 1. Expandir tags del cliente via TAG_BRIDGE
+    const tagsExpandidos = expandirTags(tagsCliente)
+
+    // 2. Construir query base: activos, globales (coach_id IS NULL)
     let query = supabase
       .from('knowledge_base')
       .select('titulo, resumen, contenido_completo, fuente, tags, condiciones, nivel_evidencia')
@@ -467,9 +590,9 @@ export async function consultarKnowledgeDB(
       .order('created_at', { ascending: false })
       .limit(20)
 
-    // 2. Filtrar por tags si hay — usamos .overlaps para tags[]
-    if (tagsCliente.length > 0) {
-      const tagsArray = tagsCliente.map(t => `"${t.replace(/"/g, '\\"')}"`).join(',')
+    // 3. Filtrar por tags expandidos — usamos .overlaps para tags[]
+    if (tagsExpandidos.length > 0) {
+      const tagsArray = tagsExpandidos.map(t => `"${t.replace(/"/g, '\\"')}"`).join(',')
       query = query.or(`tags.ov.{${tagsArray}}`)
     }
 
@@ -549,16 +672,33 @@ function extraerCondiciones(texto: string): string[] {
 }
 
 /**
- * Hace scoring de protocolos por coincidencia de tags y devuelve top N
+ * Expande tags usando TAG_BRIDGE (versión para Set)
+ */
+function expandirTagsSet(tags: Set<string>): Set<string> {
+  const expanded = new Set(tags)
+  for (const tag of tags) {
+    const bridge = TAG_BRIDGE[tag]
+    if (bridge) {
+      for (const eq of bridge) expanded.add(eq)
+    }
+  }
+  return expanded
+}
+
+/**
+ * Hace scoring de protocolos por coincidencia de tags (con TAG_BRIDGE) y devuelve top N
  */
 function scoreAndFilter(
   protocolos: ProtocoloCientifico[],
   tagsCliente: Set<string>,
   limite: number
 ): ProtocoloCientifico[] {
+  // Expandir tags del cliente para matchear con tags de KB
+  const tagsExpandidos = expandirTagsSet(tagsCliente)
+
   const scored = protocolos.map(p => ({
     protocolo: p,
-    score: p.tags.filter(t => tagsCliente.has(t)).length,
+    score: p.tags.filter(t => tagsExpandidos.has(t)).length,
   }))
 
   return scored
@@ -585,7 +725,7 @@ export async function seleccionarProtocolos(
     return BASE_CONOCIMIENTO.filter(p => p.tags.includes('salud_general')).slice(0, 1)
   }
 
-  // 1. Intentar consultar Supabase
+  // 1. Intentar consultar Supabase (CON TAG_BRIDGE incluido en consultarKnowledgeDB)
   if (supabase) {
     const dbProtocolos = await consultarKnowledgeDB(
       supabase,
@@ -598,9 +738,10 @@ export async function seleccionarProtocolos(
     }
   }
 
-  // 2. Fallback: hardcoded
+  // 2. Fallback: hardcoded (también expandimos tags con TAG_BRIDGE)
+  const tagsExpandidos = expandirTagsSet(tagsCliente)
   const scored = BASE_CONOCIMIENTO.map(protocolo => {
-    const matches = protocolo.tags.filter(t => tagsCliente.has(t)).length
+    const matches = protocolo.tags.filter(t => tagsExpandidos.has(t)).length
     return { protocolo, score: matches }
   })
 
