@@ -167,7 +167,7 @@ function NuevaDietaForm() {
 
         {/* Macros objetivo */}
         <div className="card">
-          <h2 className="font-semibold text-gray-800 mb-4">Objetivos macro diarios</h2>
+          <h2 className="font-semibold text-[var(--text)] mb-4">Objetivos macro diarios</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1.5">Calorías (kcal)</label>

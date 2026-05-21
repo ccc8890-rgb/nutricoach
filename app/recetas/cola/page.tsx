@@ -84,7 +84,7 @@ function FuenteBadge({ fuente }: { fuente?: string | null }) {
 function MacroBadge({ label, value }: { label: string; value?: number | null }) {
   if (!value || value <= 0) return null
   return (
-    <span className="inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-700">
+    <span className="inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-[var(--text-secondary)]">
       {label} {value}
     </span>
   )

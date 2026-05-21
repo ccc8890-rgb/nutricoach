@@ -306,8 +306,8 @@ export default function RespuestasClientes({ respuestas, onActualizar }: Props) 
                                         <div className="space-y-2">
                                             {Object.entries(respuesta.respuestas).map(([key, valor]) => (
                                                 <div key={key} className="bg-white rounded-lg p-3 border border-gray-100">
-                                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">{key}</p>
-                                                    <p className="text-sm text-gray-800">
+                                                    <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-0.5">{key}</p>
+                                                    <p className="text-sm text-[var(--text)]">
                                                         {Array.isArray(valor) ? valor.join(', ') : String(valor)}
                                                     </p>
                                                 </div>

@@ -578,7 +578,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                                             </div>
                                         )
                                     })}
-                                    <div className="pt-2 border-t text-right text-sm font-medium text-gray-700" style={{ borderColor: '#F1F5F9' }}>
+                                    <div className="pt-2 border-t text-right text-sm font-medium text-[var(--text-secondary)]" style={{ borderColor: '#F1F5F9' }}>
                                         Total: {macros.calorias.toFixed(0)} kcal · P:{macros.proteinas.toFixed(1)}g · C:{macros.carbohidratos.toFixed(1)}g · G:{macros.grasas.toFixed(1)}g
                                     </div>
                                     <div className="flex gap-2 no-print">

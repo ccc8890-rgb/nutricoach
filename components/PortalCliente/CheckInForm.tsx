@@ -172,7 +172,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                 <div className="card !p-4">
                     <div className="flex items-center gap-2 mb-2">
                         <ClipboardCheck size={16} style={{ color: '#0D9488' }} />
-                        <h3 className="font-semibold text-gray-900 text-sm">Último check-in</h3>
+                        <h3 className="font-semibold text-[var(--text)] text-sm">Último check-in</h3>
                         <span className="text-xs text-gray-400 ml-auto">
                             {new Date(ultimoCheckin.fecha).toLocaleDateString('es-ES', {
                                 weekday: 'long',
@@ -183,20 +183,20 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                         <div className="text-center p-2 rounded-lg" style={{ background: '#F8FAFC' }}>
-                            <p className="text-xs text-gray-500">Peso</p>
-                            <p className="text-sm font-bold text-gray-800">{ultimoCheckin.peso?.toFixed(1)} kg</p>
+                            <p className="text-xs text-[var(--text-muted)]">Peso</p>
+                            <p className="text-sm font-bold text-[var(--text)]">{ultimoCheckin.peso?.toFixed(1)} kg</p>
                         </div>
                         <div className="text-center p-2 rounded-lg" style={{ background: '#F8FAFC' }}>
-                            <p className="text-xs text-gray-500">Adherencia</p>
-                            <p className="text-sm font-bold text-gray-800">{ultimoCheckin.adherencia}/10</p>
+                            <p className="text-xs text-[var(--text-muted)]">Adherencia</p>
+                            <p className="text-sm font-bold text-[var(--text)]">{ultimoCheckin.adherencia}/10</p>
                         </div>
                         <div className="text-center p-2 rounded-lg" style={{ background: '#F8FAFC' }}>
-                            <p className="text-xs text-gray-500">Energía</p>
-                            <p className="text-sm font-bold text-gray-800">{ultimoCheckin.energia}/10</p>
+                            <p className="text-xs text-[var(--text-muted)]">Energía</p>
+                            <p className="text-sm font-bold text-[var(--text)]">{ultimoCheckin.energia}/10</p>
                         </div>
                         <div className="text-center p-2 rounded-lg" style={{ background: '#F8FAFC' }}>
-                            <p className="text-xs text-gray-500">Sueño</p>
-                            <p className="text-sm font-bold text-gray-800">{ultimoCheckin.sueno}/10</p>
+                            <p className="text-xs text-[var(--text-muted)]">Sueño</p>
+                            <p className="text-sm font-bold text-[var(--text)]">{ultimoCheckin.sueno}/10</p>
                         </div>
                     </div>
                     {diasSinCheckin !== null && !yaHizoCheckinHoy && (
@@ -222,8 +222,8 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
             <form onSubmit={handleSubmit} className="card space-y-5">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="font-semibold text-gray-900 text-lg">📋 Check-in semanal</h2>
-                        <p className="text-sm text-gray-500 mt-0.5">Cuéntame cómo fue tu semana</p>
+                        <h2 className="font-semibold text-[var(--text)] text-lg">📋 Check-in semanal</h2>
+                        <p className="text-sm text-[var(--text-muted)] mt-0.5">Cuéntame cómo fue tu semana</p>
                     </div>
                     {yaHizoCheckinHoy && (
                         <span className="badge badge-success text-xs">Completado hoy</span>
@@ -232,7 +232,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
 
                 {/* Peso */}
                 <div>
-                    <label className="text-sm font-medium text-gray-700">Peso actual</label>
+                    <label className="text-sm font-medium text-[var(--text-secondary)]">Peso actual</label>
                     <div className="flex items-center gap-2 mt-1">
                         <input
                             type="number"
@@ -242,7 +242,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                             value={peso}
                             onChange={e => setPeso(e.target.value)}
                         />
-                        <span className="text-gray-500 font-medium">kg</span>
+                        <span className="text-[var(--text-muted)] font-medium">kg</span>
                     </div>
                 </div>
 
@@ -273,7 +273,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
 
                 {/* Notas */}
                 <div>
-                    <label className="text-sm font-medium text-gray-700">Notas (opcional)</label>
+                    <label className="text-sm font-medium text-[var(--text-secondary)]">Notas (opcional)</label>
                     <textarea
                         className="input mt-1"
                         placeholder="¿Cómo te sientes? ¿Alguna molestia? ¿Dudas?..."
@@ -285,7 +285,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
 
                 {/* Foto de progreso */}
                 <div>
-                    <label className="text-sm font-medium text-gray-700">📷 Foto de progreso (opcional)</label>
+                    <label className="text-sm font-medium text-[var(--text-secondary)]">📷 Foto de progreso (opcional)</label>
                     <p className="text-xs text-gray-400 mb-2">Solo la ve tu coach</p>
                     {fotoPreview ? (
                         <div className="relative inline-block">

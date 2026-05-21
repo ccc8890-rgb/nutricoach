@@ -160,7 +160,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                         <ClipboardCheck size={18} style={{ color: '#0D9488' }} />
-                        <h2 className="font-semibold text-gray-900">📋 Historial completo de check-ins</h2>
+                        <h2 className="font-semibold text-[var(--text)]">📋 Historial completo de check-ins</h2>
                     </div>
                     <span className="text-xs text-gray-400 font-medium">
                         {total} {total === 1 ? 'registro' : 'registros'}
@@ -171,8 +171,8 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                 {total > 0 && (
                     <div className="grid grid-cols-4 gap-2 mb-4">
                         <div className="text-center p-2.5 rounded-lg bg-gray-50">
-                            <p className="text-lg font-bold text-gray-900">{mediaAdherencia.toFixed(1)}</p>
-                            <p className="text-[10px] text-gray-500">Adherencia</p>
+                            <p className="text-lg font-bold text-[var(--text)]">{mediaAdherencia.toFixed(1)}</p>
+                            <p className="text-[10px] text-[var(--text-muted)]">Adherencia</p>
                             <div className="flex justify-center mt-0.5">
                                 {tendenciaAdherencia === 'up' ? <TrendingUp size={10} className="text-green-500" /> :
                                     tendenciaAdherencia === 'down' ? <TrendingDown size={10} className="text-red-500" /> :
@@ -180,19 +180,19 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                             </div>
                         </div>
                         <div className="text-center p-2.5 rounded-lg bg-gray-50">
-                            <p className="text-lg font-bold text-gray-900">{mediaEnergia.toFixed(1)}</p>
-                            <p className="text-[10px] text-gray-500">Energía</p>
+                            <p className="text-lg font-bold text-[var(--text)]">{mediaEnergia.toFixed(1)}</p>
+                            <p className="text-[10px] text-[var(--text-muted)]">Energía</p>
                             <span className="text-xs">{getEmoticono(Math.round(mediaEnergia), EMOTICONOS_ENERGIA)}</span>
                         </div>
                         <div className="text-center p-2.5 rounded-lg bg-gray-50">
-                            <p className="text-lg font-bold text-gray-900">{mediaSueno.toFixed(1)}</p>
-                            <p className="text-[10px] text-gray-500">Sueño</p>
+                            <p className="text-lg font-bold text-[var(--text)]">{mediaSueno.toFixed(1)}</p>
+                            <p className="text-[10px] text-[var(--text-muted)]">Sueño</p>
                             <span className="text-xs">{getEmoticono(Math.round(mediaSueno), EMOTICONOS_SUENO)}</span>
                         </div>
                         <div className="text-center p-2.5 rounded-lg bg-[#F2F2F4]">
                             <Flame size={16} className="mx-auto" style={{ color: '#A1A1A6' }} />
-                            <p className="text-lg font-bold text-gray-900">{total}</p>
-                            <p className="text-[10px] text-gray-500">Total</p>
+                            <p className="text-lg font-bold text-[var(--text)]">{total}</p>
+                            <p className="text-[10px] text-[var(--text-muted)]">Total</p>
                         </div>
                     </div>
                 )}
@@ -243,7 +243,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
             {!loading && !error && total === 0 && (
                 <div className="card text-center py-12">
                     <ClipboardCheck size={40} className="mx-auto text-gray-300 mb-3" />
-                    <p className="text-sm text-gray-500">Aún no has realizado ningún check-in</p>
+                    <p className="text-sm text-[var(--text-muted)]">Aún no has realizado ningún check-in</p>
                     <p className="text-xs text-gray-400 mt-1">Completa tu primer check-in en la pestaña anterior</p>
                 </div>
             )}
@@ -266,7 +266,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                     >
                                         {/* Indicador de fecha */}
                                         <div className="flex-shrink-0 w-12 text-center">
-                                            <p className="text-xs font-bold text-gray-800">
+                                            <p className="text-xs font-bold text-[var(--text)]">
                                                 {new Date(c.fecha).getDate()}
                                             </p>
                                             <p className="text-[9px] text-gray-400 uppercase">
@@ -281,7 +281,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                         <div className="flex-1 grid grid-cols-3 gap-2 text-center">
                                             <div>
                                                 <p className="text-xs text-gray-400">Peso</p>
-                                                <p className="text-sm font-semibold text-gray-800">
+                                                <p className="text-sm font-semibold text-[var(--text)]">
                                                     {c.peso ? `${c.peso.toFixed(1)}` : '—'}
                                                 </p>
                                             </div>
@@ -321,7 +321,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full
                                                 ${formatearFecha(c.fecha) === 'Hoy' ? 'bg-green-100 text-green-700' :
                                                     formatearFecha(c.fecha) === 'Ayer' ? 'bg-[#E5E5EA] text-[#636366]' :
-                                                        'bg-gray-100 text-gray-500'}`}>
+                                                        'bg-gray-100 text-[var(--text-muted)]'}`}>
                                                 {formatearFecha(c.fecha) === 'Hoy' ? 'Hoy' :
                                                     formatearFecha(c.fecha) === 'Ayer' ? 'Ayer' :
                                                         formatearFechaCorta(c.fecha)}
@@ -335,7 +335,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                             <div className="mt-3 grid grid-cols-2 gap-3">
                                                 <div className={`p-3 rounded-lg border ${getAdherenciaColor(c.adherencia ?? 0)}`}>
                                                     <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-xs text-gray-500">Adherencia</span>
+                                                        <span className="text-xs text-[var(--text-muted)]">Adherencia</span>
                                                         <span className="text-lg">{getEmoticono(c.adherencia ?? 0, EMOTICONOS_ADHERENCIA)}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -351,7 +351,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
 
                                                 <div className="p-3 rounded-lg border border-[#D1D1D6] bg-[#F2F2F4]/30">
                                                     <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-xs text-gray-500">Energía</span>
+                                                        <span className="text-xs text-[var(--text-muted)]">Energía</span>
                                                         <span className="text-lg">{getEmoticono(c.energia ?? 0, EMOTICONOS_ENERGIA)}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -367,7 +367,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
 
                                                 <div className="p-3 rounded-lg border border-violet-200 bg-violet-50/30">
                                                     <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-xs text-gray-500">Sueño</span>
+                                                        <span className="text-xs text-[var(--text-muted)]">Sueño</span>
                                                         <span className="text-lg">{getEmoticono(c.sueno ?? 0, EMOTICONOS_SUENO)}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -383,9 +383,9 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
 
                                                 <div className="p-3 rounded-lg border border-gray-200 bg-gray-50">
                                                     <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-xs text-gray-500">Peso</span>
+                                                        <span className="text-xs text-[var(--text-muted)]">Peso</span>
                                                     </div>
-                                                    <p className="text-lg font-bold text-gray-800">
+                                                    <p className="text-lg font-bold text-[var(--text)]">
                                                         {c.peso ? `${c.peso.toFixed(1)} kg` : '—'}
                                                     </p>
                                                 </div>
@@ -396,9 +396,9 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                                 <div className="mt-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
                                                     <div className="flex items-center gap-1.5 mb-1.5">
                                                         <MessageSquareText size={12} className="text-gray-400" />
-                                                        <span className="text-xs font-medium text-gray-500">Tus notas</span>
+                                                        <span className="text-xs font-medium text-[var(--text-muted)]">Tus notas</span>
                                                     </div>
-                                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{c.notas}</p>
+                                                    <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">{c.notas}</p>
                                                 </div>
                                             )}
 
@@ -464,7 +464,7 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
                                             onClick={() => cambiarPagina(pageNum)}
                                             className={`w-7 h-7 rounded-md text-xs font-medium transition-colors ${page === pageNum
                                                 ? 'bg-teal-500 text-white'
-                                                : 'text-gray-500 hover:bg-gray-100'
+                                                : 'text-[var(--text-muted)] hover:bg-gray-100'
                                                 }`}
                                         >
                                             {pageNum}

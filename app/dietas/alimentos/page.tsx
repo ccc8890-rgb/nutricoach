@@ -388,8 +388,8 @@ export default function AlimentosPage() {
             {/* Header */}
             <header className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Alimentos</h1>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <h1 className="text-2xl font-bold text-[var(--text)]">Alimentos</h1>
+                    <p className="text-[var(--text-muted)] text-sm mt-1">
                         Base de datos de {alimentos.length} alimentos
                         {resultadosOFF.length > 0 && ` + ${resultadosOFF.length} de Open Food Facts`}
                     </p>
@@ -775,7 +775,7 @@ export default function AlimentosPage() {
             >
                 <div className="flex flex-col gap-4">
                     <div>
-                        <label className="block mb-1.5 text-sm font-medium text-gray-700">Nombre *</label>
+                        <label className="block mb-1.5 text-sm font-medium text-[var(--text-secondary)]">Nombre *</label>
                         <input
                             className="input"
                             placeholder="Ej: Pechuga de pavo"
@@ -784,7 +784,7 @@ export default function AlimentosPage() {
                         />
                     </div>
                     <div>
-                        <label className="block mb-1.5 text-sm font-medium text-gray-700">Categoría</label>
+                        <label className="block mb-1.5 text-sm font-medium text-[var(--text-secondary)]">Categoría</label>
                         <select
                             className="input"
                             value={form.categoria}
@@ -796,7 +796,7 @@ export default function AlimentosPage() {
                     <div className="grid grid-cols-2 gap-3">
                         {NUTRI_LABELS.map(({ key, label, unit, color }) => (
                             <div key={key}>
-                                <label className="block mb-1 text-xs font-medium text-gray-600" style={{ color }}>
+                                <label className="block mb-1 text-xs font-medium text-[var(--text-muted)]" style={{ color }}>
                                     {label} ({unit})
                                 </label>
                                 <input

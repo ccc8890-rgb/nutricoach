@@ -92,9 +92,9 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
     }
 
     function diffColor(actual: number | undefined, nuevo: number, label: string): string {
-        if (!actual || actual === 0) return 'text-gray-800 dark:text-gray-200'
+        if (!actual || actual === 0) return 'text-[var(--text)] dark:text-gray-200'
         const diff = nuevo - actual
-        if (Math.abs(diff) < 5) return 'text-gray-800 dark:text-gray-200'
+        if (Math.abs(diff) < 5) return 'text-[var(--text)] dark:text-gray-200'
         // Para kcal, incremento es positivo si baja peso; para macros depende
         if (label === 'kcal') {
             return diff > 0 ? 'text-[#8E8E93]' : 'text-green-600'
@@ -107,7 +107,7 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <Brain size={20} className="text-purple-600" />
-                    <h2 className="font-semibold text-gray-800 dark:text-gray-200">Ajuste IA de Macros</h2>
+                    <h2 className="font-semibold text-[var(--text)] dark:text-gray-200">Ajuste IA de Macros</h2>
                 </div>
                 {!loading && !sugerencia && (
                     <button
@@ -125,7 +125,7 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
             {loading && (
                 <div className="flex flex-col items-center py-8 text-center">
                     <Loader2 size={32} className="animate-spin text-purple-500 mb-3" />
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Analizando evolución del cliente...</p>
+                    <p className="text-sm font-medium text-[var(--text-secondary)] dark:text-gray-300">Analizando evolución del cliente...</p>
                     <p className="text-xs text-gray-400 mt-1">DeepSeek está calculando los macros óptimos</p>
                 </div>
             )}
@@ -159,7 +159,7 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
                             const nuevo = sugerencia[key]
                             return (
                                 <div key={key} className="p-3 rounded-lg border" style={{ borderColor: '#E2E8F0', background: '#FAFAFA' }}>
-                                    <p className="text-xs text-gray-500 mb-1">{label}</p>
+                                    <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
                                     <div className="flex items-center gap-1.5">
                                         {actual ? (
                                             <>

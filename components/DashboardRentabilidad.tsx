@@ -155,7 +155,7 @@ export default function DashboardRentabilidad({ clienteId, planId }: Props) {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <PiggyBank className="w-6 h-6 text-emerald-600" />
-                    <h1 className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">
+                    <h1 className="text-2xl font-bold text-[var(--text)] dark:text-neutral-100">
                         📊 Dashboard de Rentabilidad
                     </h1>
                 </div>
@@ -218,7 +218,7 @@ export default function DashboardRentabilidad({ clienteId, planId }: Props) {
                 <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-4 sm:p-6 space-y-4">
                     <div className="flex items-center gap-2">
                         <TrendingUp className="w-5 h-5 text-blue-600" />
-                        <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
+                        <h3 className="text-lg font-semibold text-[var(--text)] dark:text-neutral-100">
                             📈 Proyección de ahorro
                         </h3>
                     </div>
@@ -298,7 +298,7 @@ export default function DashboardRentabilidad({ clienteId, planId }: Props) {
             {/* ─── Tabla completa ──────────────────────────── */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden">
                 <div className="px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
-                    <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                    <h3 className="text-sm font-semibold text-[var(--text-secondary)] dark:text-neutral-300">
                         📋 Comparativa completa — todos los supermercados
                     </h3>
                 </div>
@@ -335,7 +335,7 @@ export default function DashboardRentabilidad({ clienteId, planId }: Props) {
                                                     className="w-2.5 h-2.5 rounded-full inline-block"
                                                     style={{ backgroundColor: sm.color || '#6b7280' }}
                                                 />
-                                                <span className={`font-medium ${idx === 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-neutral-800 dark:text-neutral-200'
+                                                <span className={`font-medium ${idx === 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-[var(--text)] dark:text-neutral-200'
                                                     }`}>
                                                     {sm.nombre}
                                                     {idx === 0 && <span className="ml-1.5 text-[10px] bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded-full">más barato</span>}
@@ -343,7 +343,7 @@ export default function DashboardRentabilidad({ clienteId, planId }: Props) {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-2.5 text-right font-semibold tabular-nums text-neutral-800 dark:text-neutral-200">
+                                        <td className="px-3 py-2.5 text-right font-semibold tabular-nums text-[var(--text)] dark:text-neutral-200">
                                             {formatearEur(precioPeriodo)}
                                         </td>
                                         <td className="px-3 py-2.5 text-right tabular-nums">
@@ -408,7 +408,7 @@ function PeriodCard({
                 </span>
                 <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{label}</span>
             </div>
-            <p className={`text-2xl font-bold tabular-nums ${esAhorro ? 'text-blue-600 dark:text-blue-400' : 'text-neutral-800 dark:text-neutral-100'
+            <p className={`text-2xl font-bold tabular-nums ${esAhorro ? 'text-blue-600 dark:text-blue-400' : 'text-[var(--text)] dark:text-neutral-100'
                 }`}>
                 {formatearEur(value)}
             </p>

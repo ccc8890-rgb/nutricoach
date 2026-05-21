@@ -116,11 +116,11 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
 
       {/* ── Modalidad y Objetivo ── */}
       <section className="card p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Modalidad y objetivo</h3>
+        <h3 className="font-semibold text-[var(--text)] text-sm uppercase tracking-wide">Modalidad y objetivo</h3>
 
         <div className="grid grid-cols-2 gap-4">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Modalidad deportiva</span>
+            <span className="text-xs text-[var(--text-muted)]">Modalidad deportiva</span>
             <select
               className="input"
               value={form.sport_modality ?? ''}
@@ -134,7 +134,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Nivel</span>
+            <span className="text-xs text-[var(--text-muted)]">Nivel</span>
             <select
               className="input"
               value={form.nivel ?? ''}
@@ -149,7 +149,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
         </div>
 
         <label className="flex flex-col gap-1">
-          <span className="text-xs text-gray-500">Objetivo específico (texto libre)</span>
+          <span className="text-xs text-[var(--text-muted)]">Objetivo específico (texto libre)</span>
           <input
             className="input"
             type="text"
@@ -161,7 +161,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
 
         <div className="grid grid-cols-2 gap-4">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Días disponibles / semana</span>
+            <span className="text-xs text-[var(--text-muted)]">Días disponibles / semana</span>
             <input
               className="input"
               type="number" min={1} max={7}
@@ -171,7 +171,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Mejor momento de sesión</span>
+            <span className="text-xs text-[var(--text-muted)]">Mejor momento de sesión</span>
             <select
               className="input"
               value={form.mejor_momento_sesion ?? ''}
@@ -189,11 +189,11 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
 
       {/* ── Métricas de rendimiento ── */}
       <section className="card p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Métricas de rendimiento</h3>
+        <h3 className="font-semibold text-[var(--text)] text-sm uppercase tracking-wide">Métricas de rendimiento</h3>
 
         <div className="grid grid-cols-3 gap-3">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">FTP (W)</span>
+            <span className="text-xs text-[var(--text-muted)]">FTP (W)</span>
             <input className="input" type="number" min={0}
               value={form.ftp_watts ?? ''}
               onChange={e => set('ftp_watts', e.target.value ? Number(e.target.value) : undefined)}
@@ -201,7 +201,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">VDOT</span>
+            <span className="text-xs text-[var(--text-muted)]">VDOT</span>
             <input className="input" type="number" min={0} step={0.1}
               value={form.vdot ?? ''}
               onChange={e => set('vdot', e.target.value ? Number(e.target.value) : undefined)}
@@ -209,7 +209,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">VO2max estimado</span>
+            <span className="text-xs text-[var(--text-muted)]">VO2max estimado</span>
             <input className="input" type="number" min={0} step={0.1}
               value={form.vo2max_estimado ?? ''}
               onChange={e => set('vo2max_estimado', e.target.value ? Number(e.target.value) : undefined)}
@@ -217,7 +217,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">RM Sentadilla (kg)</span>
+            <span className="text-xs text-[var(--text-muted)]">RM Sentadilla (kg)</span>
             <input className="input" type="number" min={0}
               value={form.rm_sentadilla_kg ?? ''}
               onChange={e => set('rm_sentadilla_kg', e.target.value ? Number(e.target.value) : undefined)}
@@ -225,7 +225,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">RM Banca (kg)</span>
+            <span className="text-xs text-[var(--text-muted)]">RM Banca (kg)</span>
             <input className="input" type="number" min={0}
               value={form.rm_banca_kg ?? ''}
               onChange={e => set('rm_banca_kg', e.target.value ? Number(e.target.value) : undefined)}
@@ -233,7 +233,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">RM Peso muerto (kg)</span>
+            <span className="text-xs text-[var(--text-muted)]">RM Peso muerto (kg)</span>
             <input className="input" type="number" min={0}
               value={form.rm_peso_muerto_kg ?? ''}
               onChange={e => set('rm_peso_muerto_kg', e.target.value ? Number(e.target.value) : undefined)}
@@ -241,7 +241,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Dominadas máx. reps</span>
+            <span className="text-xs text-[var(--text-muted)]">Dominadas máx. reps</span>
             <input className="input" type="number" min={0}
               value={form.dominadas_max_reps ?? ''}
               onChange={e => set('dominadas_max_reps', e.target.value ? Number(e.target.value) : undefined)}
@@ -249,7 +249,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Adherencia histórica (%)</span>
+            <span className="text-xs text-[var(--text-muted)]">Adherencia histórica (%)</span>
             <input className="input" type="number" min={0} max={100}
               value={form.adherencia_historica_pct ?? ''}
               onChange={e => set('adherencia_historica_pct', e.target.value ? Number(e.target.value) : undefined)}
@@ -261,11 +261,11 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
 
       {/* ── Capacidades y psicología ── */}
       <section className="card p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Capacidades y psicología</h3>
+        <h3 className="font-semibold text-[var(--text)] text-sm uppercase tracking-wide">Capacidades y psicología</h3>
 
         <div className="grid grid-cols-3 gap-4">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Capacidad de recuperación</span>
+            <span className="text-xs text-[var(--text-muted)]">Capacidad de recuperación</span>
             <select className="input" value={form.capacidad_recuperacion ?? 'media'}
               onChange={e => set('capacidad_recuperacion', e.target.value as FormData['capacidad_recuperacion'])}>
               <option value="baja">Baja</option>
@@ -275,7 +275,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Respuesta a volumen</span>
+            <span className="text-xs text-[var(--text-muted)]">Respuesta a volumen</span>
             <select className="input" value={form.respuesta_a_volumen ?? 'medio'}
               onChange={e => set('respuesta_a_volumen', e.target.value as FormData['respuesta_a_volumen'])}>
               <option value="bajo">Bajo</option>
@@ -285,7 +285,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Respuesta psicológica</span>
+            <span className="text-xs text-[var(--text-muted)]">Respuesta psicológica</span>
             <select className="input" value={form.respuesta_psicologica ?? 'rutina'}
               onChange={e => set('respuesta_psicologica', e.target.value as FormData['respuesta_psicologica'])}>
               <option value="variedad">Le motiva la variedad</option>
@@ -301,12 +301,12 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
               checked={form.plateau_detectado ?? false}
               onChange={e => set('plateau_detectado', e.target.checked)}
             />
-            <span className="text-sm text-gray-700">Plateau detectado</span>
+            <span className="text-sm text-[var(--text-secondary)]">Plateau detectado</span>
           </label>
 
           {form.plateau_detectado && (
             <label className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Semanas sin progresión</span>
+              <span className="text-xs text-[var(--text-muted)]">Semanas sin progresión</span>
               <input className="input w-20" type="number" min={0}
                 value={form.semanas_sin_progresion ?? 0}
                 onChange={e => set('semanas_sin_progresion', Number(e.target.value))}
@@ -316,7 +316,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
         </div>
 
         <label className="flex flex-col gap-1">
-          <span className="text-xs text-gray-500">Restricciones temporales</span>
+          <span className="text-xs text-[var(--text-muted)]">Restricciones temporales</span>
           <input className="input" type="text"
             placeholder="Ej: Viajes de trabajo frecuentes, horario nocturno…"
             value={form.restricciones_temporales ?? ''}
@@ -327,7 +327,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
 
       {/* ── Equipo disponible ── */}
       <section className="card p-5 space-y-3">
-        <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Equipo disponible</h3>
+        <h3 className="font-semibold text-[var(--text)] text-sm uppercase tracking-wide">Equipo disponible</h3>
         <div className="flex flex-wrap gap-2">
           {EQUIPO_OPCIONES.map(item => (
             <button
@@ -336,7 +336,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
               onClick={() => toggleEquipo(item)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${(form.equipo_disponible ?? []).includes(item)
                   ? 'bg-gray-900 text-white border-gray-900'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                  : 'bg-white text-[var(--text-muted)] border-gray-200 hover:border-gray-400'
                 }`}
             >
               {item}
@@ -347,11 +347,11 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
 
       {/* ── Wearables ── */}
       <section className="card p-5 space-y-4">
-        <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Wearables y datos biométricos</h3>
+        <h3 className="font-semibold text-[var(--text)] text-sm uppercase tracking-wide">Wearables y datos biométricos</h3>
 
         <div className="grid grid-cols-3 gap-3">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">HRV baseline (ms)</span>
+            <span className="text-xs text-[var(--text-muted)]">HRV baseline (ms)</span>
             <input className="input" type="number" min={0}
               value={form.hrv_baseline ?? ''}
               onChange={e => set('hrv_baseline', e.target.value ? Number(e.target.value) : undefined)}
@@ -359,7 +359,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">HRV fecha último</span>
+            <span className="text-xs text-[var(--text-muted)]">HRV fecha último</span>
             <input className="input" type="date"
               value={form.hrv_fecha_ultimo ?? ''}
               onChange={e => set('hrv_fecha_ultimo', e.target.value || undefined)}
@@ -370,13 +370,13 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
               checked={form.apple_health_enabled ?? false}
               onChange={e => set('apple_health_enabled', e.target.checked)}
             />
-            <span className="text-sm text-gray-700">Apple Health activo</span>
+            <span className="text-sm text-[var(--text-secondary)]">Apple Health activo</span>
           </label>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Garmin User ID</span>
+            <span className="text-xs text-[var(--text-muted)]">Garmin User ID</span>
             <input className="input" type="text"
               value={form.garmin_user_id ?? ''}
               onChange={e => set('garmin_user_id', e.target.value || undefined)}
@@ -384,7 +384,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-gray-500">Strava Athlete ID</span>
+            <span className="text-xs text-[var(--text-muted)]">Strava Athlete ID</span>
             <input className="input" type="text"
               value={form.strava_athlete_id ?? ''}
               onChange={e => set('strava_athlete_id', e.target.value || undefined)}
@@ -397,7 +397,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
       {/* ── Patrón de lesiones ── */}
       <section className="card p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Patrón de lesiones</h3>
+          <h3 className="font-semibold text-[var(--text)] text-sm uppercase tracking-wide">Patrón de lesiones</h3>
           <button
             type="button"
             className="btn-secondary btn-sm"

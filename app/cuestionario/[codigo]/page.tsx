@@ -53,8 +53,8 @@ export default function CuestionarioPublicoPage() {
                     <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
                         <span className="text-2xl">😕</span>
                     </div>
-                    <h1 className="text-xl font-bold text-gray-900 mb-2">Cuestionario no disponible</h1>
-                    <p className="text-gray-500">{error || 'Este cuestionario no existe o ha sido desactivado'}</p>
+                    <h1 className="text-xl font-bold text-[var(--text)] mb-2">Cuestionario no disponible</h1>
+                    <p className="text-[var(--text-muted)]">{error || 'Este cuestionario no existe o ha sido desactivado'}</p>
                 </div>
             </div>
         )
@@ -95,8 +95,8 @@ export default function CuestionarioPublicoPage() {
                         <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#F2F2F7' }}>
                             <span className="text-3xl">✅</span>
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900 mb-2">¡Respuestas enviadas!</h2>
-                        <p className="text-gray-500">Gracias por completar el cuestionario. Tu coach revisará tus respuestas pronto.</p>
+                        <h2 className="text-xl font-bold text-[var(--text)] mb-2">¡Respuestas enviadas!</h2>
+                        <p className="text-[var(--text-muted)]">Gracias por completar el cuestionario. Tu coach revisará tus respuestas pronto.</p>
                     </div>
                 </div>
             </div>
@@ -110,9 +110,9 @@ export default function CuestionarioPublicoPage() {
                     <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 animate-fade-in" style={{ background: '#F2F2F7' }}>
                         <span className="text-3xl">📋</span>
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">{cuestionario.titulo}</h1>
+                    <h1 className="text-2xl font-bold text-[var(--text)]">{cuestionario.titulo}</h1>
                     {cuestionario.descripcion && (
-                        <p className="text-gray-500 mt-2">{cuestionario.descripcion}</p>
+                        <p className="text-[var(--text-muted)] mt-2">{cuestionario.descripcion}</p>
                     )}
                 </div>
 

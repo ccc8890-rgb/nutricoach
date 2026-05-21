@@ -23,8 +23,8 @@ export default function InstallBanner() {
                     <span className="text-white text-lg">🏋️</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">Añade NutriCoach</p>
-                    <p className="text-xs text-gray-500">Acceso directo desde tu pantalla de inicio</p>
+                    <p className="text-sm font-semibold text-[var(--text)]">Añade NutriCoach</p>
+                    <p className="text-xs text-[var(--text-muted)]">Acceso directo desde tu pantalla de inicio</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                     <button

@@ -150,7 +150,7 @@ export default function RegistroPage() {
         <div className="card max-w-md w-full text-center p-8">
           <XCircle size={48} className="mx-auto mb-4" style={{ color: 'var(--primary)' }} />
           <h2 className="text-xl font-bold mb-2">Enlace inválido</h2>
-          <p className="text-gray-500">{mensajes[motivo] ?? 'Error desconocido'}</p>
+          <p className="text-[var(--text-muted)]">{mensajes[motivo] ?? 'Error desconocido'}</p>
         </div>
       </div>
     )
@@ -162,7 +162,7 @@ export default function RegistroPage() {
         <div className="card max-w-md w-full text-center p-8">
           <Mail size={48} className="mx-auto mb-4" style={{ color: 'var(--primary)' }} />
           <h2 className="text-xl font-bold mb-2">Revisa tu email</h2>
-          <p className="text-gray-500">Te hemos enviado un enlace de acceso a <strong>{emailMagic}</strong>. Haz clic en él para entrar.</p>
+          <p className="text-[var(--text-muted)]">Te hemos enviado un enlace de acceso a <strong>{emailMagic}</strong>. Haz clic en él para entrar.</p>
         </div>
       </div>
     )
@@ -191,7 +191,7 @@ export default function RegistroPage() {
         <button
           type="button"
           onClick={handleGoogle}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium transition-colors mb-4"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-[var(--text-secondary)] font-medium transition-colors mb-4"
         >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>

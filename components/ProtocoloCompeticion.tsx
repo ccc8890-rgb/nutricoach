@@ -195,10 +195,10 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900">
+                        <h2 className="text-xl font-bold text-[var(--text)]">
                             {editandoId ? 'Editar protocolo' : 'Nuevo protocolo de competición'}
                         </h2>
-                        <p className="text-sm text-gray-500">Define la fase de carga y la estrategia de suplementación</p>
+                        <p className="text-sm text-[var(--text-muted)]">Define la fase de carga y la estrategia de suplementación</p>
                     </div>
                     <button onClick={() => setShowEditor(false)} className="btn btn-ghost btn-sm">Volver</button>
                 </div>
@@ -206,32 +206,32 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
                 <div className="card p-6 space-y-6">
                     {/* Info general */}
                     <div>
-                        <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <h3 className="font-semibold text-[var(--text)] mb-3 flex items-center gap-2">
                             <ClipboardList size={16} className="text-teal-600" /> Información general
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del protocolo *</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Nombre del protocolo *</label>
                                 <input className="input" value={form.nombre} onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
                                     placeholder="Ej: Media maratón Valencia" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Deporte</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Deporte</label>
                                 <input className="input" value={form.deporte} onChange={e => setForm(f => ({ ...f, deporte: e.target.value }))}
                                     placeholder="Ej: Running, Triatlón, Ciclismo" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de competición</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Fecha de competición</label>
                                 <input type="date" className="input" value={form.fecha_competicion} onChange={e => setForm(f => ({ ...f, fecha_competicion: e.target.value }))} />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Peso actual (kg)</label>
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Peso actual (kg)</label>
                                     <input type="number" className="input" value={form.peso_inicial} onChange={e => setForm(f => ({ ...f, peso_inicial: e.target.value }))}
                                         placeholder="70" step="0.1" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Peso objetivo (kg)</label>
+                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Peso objetivo (kg)</label>
                                     <input type="number" className="input" value={form.peso_objetivo} onChange={e => setForm(f => ({ ...f, peso_objetivo: e.target.value }))}
                                         placeholder="68" step="0.1" />
                                 </div>
@@ -243,35 +243,35 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
 
                     {/* Fase de carga */}
                     <div>
-                        <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <h3 className="font-semibold text-[var(--text)] mb-3 flex items-center gap-2">
                             <Zap size={16} style={{ color: '#A1A1A6' }} /> Fase de carga de carbohidratos
                         </h3>
-                        <p className="text-xs text-gray-500 mb-4">
+                        <p className="text-xs text-[var(--text-muted)] mb-4">
                             Basado en protocolo clásico de supercompensación de glucógeno (3 días previos, 8-12g/kg carbohidratos)
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Días previos</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Días previos</label>
                                 <input type="number" className="input" value={form.carga_dias_previos}
                                     onChange={e => setForm(f => ({ ...f, carga_dias_previos: e.target.value }))} min={1} max={7} />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Carbos (g/kg)</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Carbos (g/kg)</label>
                                 <input type="number" className="input" value={form.carga_carbs_kg}
                                     onChange={e => setForm(f => ({ ...f, carga_carbs_kg: e.target.value }))} min={1} max={15} step="0.5" />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Proteína (g/kg)</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Proteína (g/kg)</label>
                                 <input type="number" className="input" value={form.carga_proteinas_kg}
                                     onChange={e => setForm(f => ({ ...f, carga_proteinas_kg: e.target.value }))} min={0.5} max={3} step="0.1" />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Grasas (g/kg)</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Grasas (g/kg)</label>
                                 <input type="number" className="input" value={form.carga_grasas_kg}
                                     onChange={e => setForm(f => ({ ...f, carga_grasas_kg: e.target.value }))} min={0.1} max={2} step="0.1" />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Inicio carga</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Inicio carga</label>
                                 <input type="date" className="input" value={form.carga_inicio}
                                     onChange={e => setForm(f => ({ ...f, carga_inicio: e.target.value }))} />
                             </div>
@@ -319,42 +319,42 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
 
                     {/* Suplementación */}
                     <div>
-                        <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <h3 className="font-semibold text-[var(--text)] mb-3 flex items-center gap-2">
                             <Timer size={16} className="text-blue-500" /> Suplementación durante la carrera
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Marca de geles</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Marca de geles</label>
                                 <input className="input" value={form.geles_marca} onChange={e => setForm(f => ({ ...f, geles_marca: e.target.value }))}
                                     placeholder="Ej: GU, Maurten, SiS" />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Carbos por gel (g)</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Carbos por gel (g)</label>
                                 <input type="number" className="input" value={form.geles_carbs_por_gel}
                                     onChange={e => setForm(f => ({ ...f, geles_carbs_por_gel: e.target.value }))} min={15} max={50} />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Cada X minutos</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Cada X minutos</label>
                                 <input type="number" className="input" value={form.geles_cada_minutos}
                                     onChange={e => setForm(f => ({ ...f, geles_cada_minutos: e.target.value }))} min={15} max={60} />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Cafeína (mg)</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Cafeína (mg)</label>
                                 <input type="number" className="input" value={form.cafeina_mg}
                                     onChange={e => setForm(f => ({ ...f, cafeina_mg: e.target.value }))} min={0} max={400} placeholder="Opcional" />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Electrolitos marca</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Electrolitos marca</label>
                                 <input className="input" value={form.electrolitos_marca} onChange={e => setForm(f => ({ ...f, electrolitos_marca: e.target.value }))}
                                     placeholder="Ej: Nuun, Gatorade" />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Electrolitos cada (min)</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Electrolitos cada (min)</label>
                                 <input type="number" className="input" value={form.electrolitos_cada_minutos}
                                     onChange={e => setForm(f => ({ ...f, electrolitos_cada_minutos: e.target.value }))} min={15} max={120} />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Hidratación (ml/15min)</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Hidratación (ml/15min)</label>
                                 <input type="number" className="input" value={form.hidratacion_ml_cada_15min}
                                     onChange={e => setForm(f => ({ ...f, hidratacion_ml_cada_15min: e.target.value }))} min={50} max={500} />
                             </div>
@@ -365,22 +365,22 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
 
                     {/* Notas */}
                     <div>
-                        <h3 className="font-semibold text-gray-800 mb-3">Notas</h3>
+                        <h3 className="font-semibold text-[var(--text)] mb-3">Notas</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Previa (días antes)</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Previa (días antes)</label>
                                 <textarea className="input resize-none" rows={3} value={form.notas_previa}
                                     onChange={e => setForm(f => ({ ...f, notas_previa: e.target.value }))}
                                     placeholder="Recomendaciones para días previos..." />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Durante la competición</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Durante la competición</label>
                                 <textarea className="input resize-none" rows={3} value={form.notas_durante}
                                     onChange={e => setForm(f => ({ ...f, notas_durante: e.target.value }))}
                                     placeholder="Instrucciones durante la carrera..." />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Post-competición</label>
+                                <label className="block text-xs font-medium text-[var(--text-muted)] mb-1">Post-competición</label>
                                 <textarea className="input resize-none" rows={3} value={form.notas_post}
                                     onChange={e => setForm(f => ({ ...f, notas_post: e.target.value }))}
                                     placeholder="Recuperación y realimentación..." />
@@ -415,8 +415,8 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
 
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-lg font-bold text-gray-900">Protocolos de competición</h2>
-                    <p className="text-sm text-gray-500">
+                    <h2 className="text-lg font-bold text-[var(--text)]">Protocolos de competición</h2>
+                    <p className="text-sm text-[var(--text-muted)]">
                         {protocolos.length} protocolo{protocolos.length !== 1 ? 's' : ''} — Fases de carga y suplementación para competiciones
                     </p>
                 </div>
@@ -428,7 +428,7 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
             {loading ? loadingSpinner : protocolos.length === 0 ? (
                 <div className="card text-center py-16">
                     <Dumbbell size={40} className="mx-auto text-gray-300 mb-3" />
-                    <p className="text-gray-500 font-medium">Sin protocolos de competición</p>
+                    <p className="text-[var(--text-muted)] font-medium">Sin protocolos de competición</p>
                     <p className="text-sm text-gray-400 mt-1">Crea un protocolo para planificar la carga de carbohidratos y suplementación</p>
                     <button onClick={abrirNuevo} className="btn btn-primary mt-4">
                         <Plus size={16} /> Crear protocolo
@@ -449,7 +449,7 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
                                             <Zap size={20} className="text-orange-600" />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-gray-900">{p.nombre}</p>
+                                            <p className="font-semibold text-[var(--text)]">{p.nombre}</p>
                                             <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
                                                 {p.deporte && <span>{p.deporte}</span>}
                                                 {p.fecha_competicion && (
@@ -530,7 +530,7 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
                                                     return (
                                                         <div key={h} className="bg-white rounded-lg p-3 border border-blue-100 flex-1 min-w-[140px]">
                                                             <p className="text-sm font-bold text-blue-900 mb-1">{h}h{h % 1 !== 0 ? '' : '00'}</p>
-                                                            <div className="text-xs text-gray-600 space-y-0.5">
+                                                            <div className="text-xs text-[var(--text-muted)] space-y-0.5">
                                                                 <p>🧪 {s.numGeles} geles ({s.totalCarbsGeles}g carbos)</p>
                                                                 <p>💧 {s.numElectrolitos} electrolitos</p>
                                                                 <p>🚰 {s.totalHidratacion >= 1000 ? `${(s.totalHidratacion / 1000).toFixed(1)}L` : `${s.totalHidratacion}ml`} agua</p>
@@ -573,20 +573,20 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                                                 {p.notas_previa && (
                                                     <div className="bg-gray-50 rounded p-3 border">
-                                                        <p className="text-xs font-semibold text-gray-500 mb-1">📋 Previa</p>
-                                                        <p className="text-gray-700">{p.notas_previa}</p>
+                                                        <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">📋 Previa</p>
+                                                        <p className="text-[var(--text-secondary)]">{p.notas_previa}</p>
                                                     </div>
                                                 )}
                                                 {p.notas_durante && (
                                                     <div className="bg-gray-50 rounded p-3 border">
-                                                        <p className="text-xs font-semibold text-gray-500 mb-1">🏃 Durante</p>
-                                                        <p className="text-gray-700">{p.notas_durante}</p>
+                                                        <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">🏃 Durante</p>
+                                                        <p className="text-[var(--text-secondary)]">{p.notas_durante}</p>
                                                     </div>
                                                 )}
                                                 {p.notas_post && (
                                                     <div className="bg-gray-50 rounded p-3 border">
-                                                        <p className="text-xs font-semibold text-gray-500 mb-1">🛌 Post</p>
-                                                        <p className="text-gray-700">{p.notas_post}</p>
+                                                        <p className="text-xs font-semibold text-[var(--text-muted)] mb-1">🛌 Post</p>
+                                                        <p className="text-[var(--text-secondary)]">{p.notas_post}</p>
                                                     </div>
                                                 )}
                                             </div>

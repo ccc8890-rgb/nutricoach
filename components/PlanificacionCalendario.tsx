@@ -126,7 +126,7 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                             <button onClick={mesAnterior} className="btn btn-ghost btn-sm !px-2">
                                 <ChevronLeft size={18} />
                             </button>
-                            <h3 className="font-bold text-gray-900 min-w-[180px] text-center">
+                            <h3 className="font-bold text-[var(--text)] min-w-[180px] text-center">
                                 {MESES[mesActual]} {anioActual}
                             </h3>
                             <button onClick={mesSiguiente} className="btn btn-ghost btn-sm !px-2">
@@ -159,7 +159,7 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                                                 ${esHoy(dia) ? 'ring-2 ring-teal-500 ring-offset-1' : ''}
                                                 ${esFechaRevision(dia)
                                                     ? 'bg-purple-100 text-purple-700 font-bold'
-                                                    : 'hover:bg-gray-50 text-gray-700'
+                                                    : 'hover:bg-gray-50 text-[var(--text-secondary)]'
                                                 }
                                             `}
                                         >
@@ -195,11 +195,11 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#F0FDFA' }}>
                                 <UtensilsCrossed size={16} style={{ color: '#0D9488' }} />
                             </div>
-                            <h3 className="font-semibold text-gray-900 text-sm">Plan de dieta</h3>
+                            <h3 className="font-semibold text-[var(--text)] text-sm">Plan de dieta</h3>
                         </div>
                         {dietaActiva ? (
                             <div>
-                                <p className="text-sm font-medium text-gray-800">{dietaActiva.nombre}</p>
+                                <p className="text-sm font-medium text-[var(--text)]">{dietaActiva.nombre}</p>
                                 <p className="text-xs text-gray-400 mt-0.5">
                                     Desde {new Date(dietaActiva.created_at).toLocaleDateString('es-ES')}
                                 </p>
@@ -218,11 +218,11 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#F3E8FF' }}>
                                 <Dumbbell size={16} style={{ color: '#7C3AED' }} />
                             </div>
-                            <h3 className="font-semibold text-gray-900 text-sm">Rutina de entrenos</h3>
+                            <h3 className="font-semibold text-[var(--text)] text-sm">Rutina de entrenos</h3>
                         </div>
                         {entrenoActivo ? (
                             <div>
-                                <p className="text-sm font-medium text-gray-800">{entrenoActivo.nombre}</p>
+                                <p className="text-sm font-medium text-[var(--text)]">{entrenoActivo.nombre}</p>
                                 <p className="text-xs text-gray-400 mt-0.5">
                                     {entrenoActivo.duracion_semanas} semanas · Desde {new Date(entrenoActivo.created_at).toLocaleDateString('es-ES')}
                                 </p>
@@ -241,7 +241,7 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#F3E8FF' }}>
                                 <CalendarCheck size={16} style={{ color: '#7C3AED' }} />
                             </div>
-                            <h3 className="font-semibold text-gray-900 text-sm">Próxima revisión</h3>
+                            <h3 className="font-semibold text-[var(--text)] text-sm">Próxima revisión</h3>
                         </div>
 
                         {editandoFecha ? (

@@ -42,7 +42,7 @@ export default function RentabilidadPage() {
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-4 sm:p-6">
                 <div className="flex items-center gap-2 mb-4">
                     <Store className="w-5 h-5 text-emerald-600" />
-                    <h2 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
+                    <h2 className="text-lg font-semibold text-[var(--text)] dark:text-neutral-100">
                         Seleccionar cliente
                     </h2>
                 </div>
@@ -79,7 +79,7 @@ export default function RentabilidadPage() {
                                     }}
                                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${seleccionado === c.id
                                         ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 font-medium'
-                                        : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
+                                        : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[var(--text-secondary)] dark:text-neutral-300'
                                         }`}
                                 >
                                     {c.nombre}

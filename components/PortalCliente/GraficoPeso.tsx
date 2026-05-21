@@ -69,7 +69,7 @@ export default function GraficoPeso({ datos, pesoObjetivo }: GraficoPesoProps) {
         <div>
             {/* Cabecera con tendencia */}
             <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-gray-500">Evolución del peso</span>
+                <span className="text-xs font-medium text-[var(--text-muted)]">Evolución del peso</span>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${tendencia < 0 ? 'bg-green-50 text-green-600' : tendencia > 0 ? 'bg-red-50 text-red-400' : 'bg-gray-50 text-gray-400'}`}>
                     {tendencia > 0 ? '+' : ''}{tendencia.toFixed(1)} kg
                 </span>
@@ -123,7 +123,7 @@ export default function GraficoPeso({ datos, pesoObjetivo }: GraficoPesoProps) {
 
             {/* Último peso */}
             <div className="flex items-baseline gap-1 mt-2">
-                <span className="text-2xl font-bold text-gray-900">{puntos[puntos.length - 1].peso}</span>
+                <span className="text-2xl font-bold text-[var(--text)]">{puntos[puntos.length - 1].peso}</span>
                 <span className="text-sm text-gray-400">kg ahora</span>
                 {pesoObjetivo && (
                     <span className="text-xs text-gray-400 ml-2">

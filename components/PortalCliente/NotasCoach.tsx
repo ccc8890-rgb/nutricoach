@@ -49,7 +49,7 @@ export default function NotasCoach({ codigo }: NotasCoachProps) {
         <div className="card !p-4">
             <div className="flex items-center gap-2 mb-3">
                 <MessageSquareText size={16} style={{ color: '#0D9488' }} />
-                <h3 className="font-semibold text-gray-900 text-sm">Notas de tu coach</h3>
+                <h3 className="font-semibold text-[var(--text)] text-sm">Notas de tu coach</h3>
             </div>
             <div className="space-y-3">
                 {notas.map(nota => (
@@ -58,7 +58,7 @@ export default function NotasCoach({ codigo }: NotasCoachProps) {
                         className="p-3 rounded-lg text-sm"
                         style={{ background: '#F0FDFA', borderLeft: '3px solid #0D9488' }}
                     >
-                        <p className="text-gray-800">{nota.mensaje}</p>
+                        <p className="text-[var(--text)]">{nota.mensaje}</p>
                         <p className="text-xs text-gray-400 mt-1">
                             {new Date(nota.created_at).toLocaleDateString('es-ES', {
                                 day: 'numeric',

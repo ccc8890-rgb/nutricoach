@@ -124,8 +124,8 @@ const StackedBar = memo(function StackedBar({ items, total, height = 24 }: Stack
                     return (
                         <div key={i} className="flex items-center gap-1.5 text-xs">
                             <span className="w-2 h-2 rounded-full" style={{ background: item.color }} />
-                            <span className="text-gray-500">{item.label}</span>
-                            <span className="font-semibold text-gray-700">{item.valor}</span>
+                            <span className="text-[var(--text-muted)]">{item.label}</span>
+                            <span className="font-semibold text-[var(--text-secondary)]">{item.valor}</span>
                             <span className="text-gray-400">({pct}%)</span>
                         </div>
                     )

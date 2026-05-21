@@ -52,7 +52,7 @@ export default function ComparadorSupermercados({ data, cargando }: Props) {
             {/* Header */}
             <div className="flex items-center gap-2">
                 <Store className="w-5 h-5 text-emerald-600" />
-                <h2 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100">
+                <h2 className="text-lg font-semibold text-[var(--text)] dark:text-neutral-100">
                     🛒 Comparativa de precios
                 </h2>
             </div>
@@ -100,12 +100,12 @@ export default function ComparadorSupermercados({ data, cargando }: Props) {
                             />
 
                             {/* Nombre */}
-                            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 mt-1">
+                            <p className="text-sm font-semibold text-[var(--text)] dark:text-neutral-100 mt-1">
                                 {sm.nombre}
                             </p>
 
                             {/* Precio */}
-                            <p className={`text-xl font-bold mt-1 ${esMejor ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-800 dark:text-neutral-100'}`}>
+                            <p className={`text-xl font-bold mt-1 ${esMejor ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--text)] dark:text-neutral-100'}`}>
                                 {formatearEur(sm.precio_total)}
                             </p>
 
@@ -145,7 +145,7 @@ export default function ComparadorSupermercados({ data, cargando }: Props) {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
                         <div className="flex items-center gap-2">
                             <Store className="w-5 h-5 text-emerald-600" />
-                            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                            <span className="text-sm font-medium text-[var(--text-secondary)] dark:text-neutral-300">
                                 🏆 Recomendado: <strong className="text-emerald-700 dark:text-emerald-400">{recomendado}</strong>
                             </span>
                         </div>
@@ -172,7 +172,7 @@ export default function ComparadorSupermercados({ data, cargando }: Props) {
                         onClick={() => setDesgloseExpandido(!desgloseExpandido)}
                         className="w-full flex items-center justify-between px-4 py-3 bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                     >
-                        <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                        <span className="text-sm font-semibold text-[var(--text-secondary)] dark:text-neutral-300">
                             📋 Desglose por alimento ({desglose.length})
                         </span>
                         {desgloseExpandido ? (
@@ -210,7 +210,7 @@ export default function ComparadorSupermercados({ data, cargando }: Props) {
                                             key={item.alimento_id}
                                             className="border-b border-neutral-100 dark:border-neutral-700/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/20"
                                         >
-                                            <td className="px-4 py-2.5 font-medium text-neutral-800 dark:text-neutral-200">
+                                            <td className="px-4 py-2.5 font-medium text-[var(--text)] dark:text-neutral-200">
                                                 {item.alimento_nombre}
                                             </td>
                                             {supermercados.map(sm => {

@@ -109,7 +109,7 @@ export default function ConversacionesIA({ clienteId }: Props) {
     if (error) return (
         <div className="card text-center py-12">
             <AlertCircle size={36} className="mx-auto text-red-400 mb-3" />
-            <p className="text-gray-500 text-sm">{error}</p>
+            <p className="text-[var(--text-muted)] text-sm">{error}</p>
         </div>
     )
 
@@ -119,7 +119,7 @@ export default function ConversacionesIA({ clienteId }: Props) {
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: '#F0FDFA' }}>
                 <Bot size={32} style={{ color: '#0D9488' }} />
             </div>
-            <p className="text-gray-500 font-medium mb-2">Sin conversaciones con IA</p>
+            <p className="text-[var(--text-muted)] font-medium mb-2">Sin conversaciones con IA</p>
             <p className="text-sm text-gray-400 mb-4 max-w-sm mx-auto">
                 Aquí aparecerán todas las interacciones con DeepSeek: dietas generadas,
                 informes semanales y ajustes de macros.
@@ -151,7 +151,7 @@ export default function ConversacionesIA({ clienteId }: Props) {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-xs text-gray-400 truncate">{cfg.label}</p>
-                                    <p className="text-lg font-bold text-gray-800">{count}</p>
+                                    <p className="text-lg font-bold text-[var(--text)]">{count}</p>
                                 </div>
                             </div>
                         )
@@ -163,7 +163,7 @@ export default function ConversacionesIA({ clienteId }: Props) {
             {totalTokens > 0 && (
                 <div className="text-xs text-gray-400 flex items-center gap-2 px-1">
                     <span>Total tokens usados:</span>
-                    <span className="font-mono font-medium text-gray-600">{totalTokens.toLocaleString()}</span>
+                    <span className="font-mono font-medium text-[var(--text-muted)]">{totalTokens.toLocaleString()}</span>
                 </div>
             )}
 
@@ -225,7 +225,7 @@ export default function ConversacionesIA({ clienteId }: Props) {
                                                         </div>
 
                                                         {/* Resumen */}
-                                                        <p className="text-sm text-gray-700 leading-snug line-clamp-2">
+                                                        <p className="text-sm text-[var(--text-secondary)] leading-snug line-clamp-2">
                                                             {entry.resumen}
                                                         </p>
 
@@ -274,7 +274,7 @@ export default function ConversacionesIA({ clienteId }: Props) {
                                                             <MessageSquare size={12} />
                                                             Prompt enviado a DeepSeek
                                                         </p>
-                                                        <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto">
+                                                        <pre className="text-xs text-[var(--text-secondary)] whitespace-pre-wrap font-sans leading-relaxed max-h-48 overflow-y-auto">
                                                             {entry.prompt}
                                                         </pre>
                                                     </div>
@@ -285,7 +285,7 @@ export default function ConversacionesIA({ clienteId }: Props) {
                                                             <Brain size={12} />
                                                             Respuesta generada
                                                         </p>
-                                                        <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto bg-white rounded-lg p-3 border border-gray-100">
+                                                        <pre className="text-xs text-[var(--text-secondary)] whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto bg-white rounded-lg p-3 border border-gray-100">
                                                             {JSON.stringify(entry.respuesta, null, 2)}
                                                         </pre>
                                                     </div>

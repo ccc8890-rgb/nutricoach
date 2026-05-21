@@ -270,8 +270,8 @@ function NuevoEntrenoForm() {
       <div className="flex items-center gap-3 mb-8">
         <Link href="/entrenos" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Nuevo plan de entrenamiento</h1>
-          <p className="text-gray-500 text-sm">Selecciona una plantilla o créalo desde cero</p>
+          <h1 className="text-2xl font-bold text-[var(--text)]">Nuevo plan de entrenamiento</h1>
+          <p className="text-[var(--text-muted)] text-sm">Selecciona una plantilla o créalo desde cero</p>
         </div>
       </div>
 
@@ -286,7 +286,7 @@ function NuevoEntrenoForm() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Datos del plan */}
         <div className="card">
-          <h2 className="font-semibold text-gray-800 mb-4">Datos del plan</h2>
+          <h2 className="font-semibold text-[var(--text)] mb-4">Datos del plan</h2>
           <div className="flex flex-col gap-4">
             <div>
               <label className="block mb-1.5">Cliente</label>
@@ -315,7 +315,7 @@ function NuevoEntrenoForm() {
           <div className="card">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="font-semibold text-gray-800">
+                <h2 className="font-semibold text-[var(--text)]">
                   {sesionesLocal.length} {sesionesLocal.length === 1 ? 'sesión' : 'sesiones'} · {totalEjercicios} ejercicios
                 </h2>
                 <p className="text-xs text-gray-400">Modifica las sesiones antes de guardar</p>
@@ -334,16 +334,16 @@ function NuevoEntrenoForm() {
                   {/* Header sesión */}
                   <div className="flex items-center gap-3 p-4 pb-3">
                     <button onClick={() => toggleExpandir(sesion.id)}
-                      className="text-gray-400 hover:text-gray-600">
+                      className="text-gray-400 hover:text-[var(--text-muted)]">
                       {sesion.expandida ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                     </button>
                     <input
-                      className="font-semibold text-gray-800 bg-transparent border-none outline-none flex-1 text-base"
+                      className="font-semibold text-[var(--text)] bg-transparent border-none outline-none flex-1 text-base"
                       value={sesion.nombre}
                       onChange={e => actualizarSesion(sesion.id, 'nombre', e.target.value)}
                     />
                     <select
-                      className="text-sm border border-gray-200 rounded-lg px-2 py-1 outline-none text-gray-600"
+                      className="text-sm border border-gray-200 rounded-lg px-2 py-1 outline-none text-[var(--text-muted)]"
                       value={sesion.dia_semana}
                       onChange={e => actualizarSesion(sesion.id, 'dia_semana', e.target.value)}
                     >
@@ -367,7 +367,7 @@ function NuevoEntrenoForm() {
                                 <GripVertical size={16} className="text-gray-300 mt-1 flex-shrink-0" />
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                    <span className="font-medium text-gray-800 text-sm">{ej.ejercicio_nombre}</span>
+                                    <span className="font-medium text-[var(--text)] text-sm">{ej.ejercicio_nombre}</span>
                                     {ej.ejercicio_grupo && (
                                       <span className="badge badge-gray text-xs">{ej.ejercicio_grupo}</span>
                                     )}
@@ -430,7 +430,7 @@ function NuevoEntrenoForm() {
                               {resultados.map(ej => (
                                 <button key={ej.id} onClick={() => añadirEjercicioSesion(sesion.id, ej)}
                                   className="w-full text-left px-4 py-2.5 hover:bg-purple-50 transition-colors border-b border-gray-50 last:border-0">
-                                  <span className="font-medium text-gray-800 text-sm">{ej.nombre}</span>
+                                  <span className="font-medium text-[var(--text)] text-sm">{ej.nombre}</span>
                                   {ej.grupo_muscular && <span className="text-xs text-gray-400 ml-2">{ej.grupo_muscular}</span>}
                                   {ej.tipo && <span className={`badge ${TIPO_COLORS[ej.tipo] ?? 'badge-gray'} text-xs ml-2`}>{ej.tipo}</span>}
                                 </button>

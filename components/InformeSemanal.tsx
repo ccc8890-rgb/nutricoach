@@ -59,7 +59,7 @@ export default function InformeSemanal({ clienteId }: Props) {
     return (
         <div className="card">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                <h2 className="font-semibold text-[var(--text)] dark:text-gray-100 flex items-center gap-2">
                     <FileText size={18} className="text-teal-600" />
                     Informe Semanal Automático
                 </h2>
@@ -79,7 +79,7 @@ export default function InformeSemanal({ clienteId }: Props) {
 
             {/* Meta info */}
             {meta && (
-                <div className="flex flex-wrap gap-3 mb-4 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex flex-wrap gap-3 mb-4 text-xs text-[var(--text-muted)] dark:text-gray-400">
                     <span className="flex items-center gap-1">
                         <CalendarDays size={12} />
                         Periodo: {meta.periodo}
@@ -117,9 +117,9 @@ export default function InformeSemanal({ clienteId }: Props) {
             {/* Estado vacío */}
             {!informe && !loading && !error && (
                 <div className="text-center py-8">
-                    <FileText size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mb-1">Aún no has generado ningún informe</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                    <FileText size={40} className="mx-auto text-gray-300 dark:text-[var(--text-muted)] mb-3" />
+                    <p className="text-sm text-gray-400 dark:text-[var(--text-muted)] mb-1">Aún no has generado ningún informe</p>
+                    <p className="text-xs text-gray-400 dark:text-[var(--text-muted)]">
                         Pulsa "Generar informe" para que DeepSeek analice los datos de la última semana del cliente
                     </p>
                 </div>
@@ -149,7 +149,7 @@ export default function InformeSemanal({ clienteId }: Props) {
 
                     {/* Resumen */}
                     <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
-                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                        <p className="text-sm text-[var(--text-secondary)] dark:text-gray-300 leading-relaxed">
                             {informe.resumen}
                         </p>
                     </div>
@@ -159,23 +159,23 @@ export default function InformeSemanal({ clienteId }: Props) {
                         <div className="p-3 rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800/30">
                             <div className="flex items-center gap-2 mb-1.5">
                                 <TrendingUp size={14} className="text-blue-500" />
-                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Peso</span>
+                                <span className="text-xs font-medium text-[var(--text-muted)] dark:text-gray-400 uppercase tracking-wider">Peso</span>
                             </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300">{informe.evolucion_peso}</p>
+                            <p className="text-sm text-[var(--text-secondary)] dark:text-gray-300">{informe.evolucion_peso}</p>
                         </div>
                         <div className="p-3 rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800/30">
                             <div className="flex items-center gap-2 mb-1.5">
                                 <Heart size={14} className="text-green-500" />
-                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Adherencia</span>
+                                <span className="text-xs font-medium text-[var(--text-muted)] dark:text-gray-400 uppercase tracking-wider">Adherencia</span>
                             </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300">{informe.adherencia}</p>
+                            <p className="text-sm text-[var(--text-secondary)] dark:text-gray-300">{informe.adherencia}</p>
                         </div>
                         <div className="p-3 rounded-lg border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800/30">
                             <div className="flex items-center gap-2 mb-1.5">
                                 <Smile size={14} style={{ color: '#A1A1A6' }} />
-                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Energía</span>
+                                <span className="text-xs font-medium text-[var(--text-muted)] dark:text-gray-400 uppercase tracking-wider">Energía</span>
                             </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300">{informe.energia}</p>
+                            <p className="text-sm text-[var(--text-secondary)] dark:text-gray-300">{informe.energia}</p>
                         </div>
                     </div>
 

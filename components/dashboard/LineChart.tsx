@@ -191,18 +191,18 @@ const LineChart = memo(function LineChart({
                 <div className="flex gap-4 mt-2 text-[10px]">
                     <div className="flex items-center gap-1.5">
                         <span className="w-2.5 h-0.5 rounded" style={{ background: color }} />
-                        <span className="text-gray-500">{labels.label1}</span>
+                        <span className="text-[var(--text-muted)]">{labels.label1}</span>
                     </div>
                     {labels.label2 && color2 && (
                         <div className="flex items-center gap-1.5">
                             <span className="w-2.5 h-0.5 rounded" style={{ background: color2 }} />
-                            <span className="text-gray-500">{labels.label2}</span>
+                            <span className="text-[var(--text-muted)]">{labels.label2}</span>
                         </div>
                     )}
                     {labels.label3 && color3 && (
                         <div className="flex items-center gap-1.5">
                             <span className="w-2.5 h-0.5 rounded" style={{ background: color3 }} />
-                            <span className="text-gray-500">{labels.label3}</span>
+                            <span className="text-[var(--text-muted)]">{labels.label3}</span>
                         </div>
                     )}
                 </div>

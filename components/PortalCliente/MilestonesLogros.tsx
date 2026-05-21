@@ -47,7 +47,7 @@ export default function MilestonesLogros({ codigo }: { codigo: string }) {
         <div className="card">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-gray-800">🎯 Mis logros</h2>
+                <h2 className="font-semibold text-[var(--text)]">🎯 Mis logros</h2>
                 <span className="text-xs text-gray-400 font-medium">
                     {conseguidos}/{total}
                 </span>
@@ -55,9 +55,9 @@ export default function MilestonesLogros({ codigo }: { codigo: string }) {
 
             {/* Barra de progreso global */}
             <div className="mb-5">
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+                <div className="flex items-center justify-between text-xs text-[var(--text-muted)] mb-1.5">
                     <span>Progreso global</span>
-                    <span className="font-semibold text-gray-700">{porcentajeGlobal}%</span>
+                    <span className="font-semibold text-[var(--text-secondary)]">{porcentajeGlobal}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
                     <div
@@ -76,7 +76,7 @@ export default function MilestonesLogros({ codigo }: { codigo: string }) {
                     onClick={() => setFiltro(null)}
                     className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${filtro === null
                             ? 'bg-gray-800 text-white'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                            : 'bg-gray-100 text-[var(--text-muted)] hover:bg-gray-200'
                         }`}
                 >
                     Todos
@@ -87,7 +87,7 @@ export default function MilestonesLogros({ codigo }: { codigo: string }) {
                         onClick={() => setFiltro(key)}
                         className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${filtro === key
                                 ? 'text-white'
-                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                : 'bg-gray-100 text-[var(--text-muted)] hover:bg-gray-200'
                             }`}
                         style={filtro === key ? { background: cat.color } : undefined}
                     >
@@ -123,7 +123,7 @@ export default function MilestonesLogros({ codigo }: { codigo: string }) {
                                     {/* Contenido */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
-                                            <p className={`font-semibold text-sm ${l.conseguido ? 'text-green-700' : 'text-gray-800'}`}>
+                                            <p className={`font-semibold text-sm ${l.conseguido ? 'text-green-700' : 'text-[var(--text)]'}`}>
                                                 {l.titulo}
                                             </p>
                                             {l.conseguido && (
@@ -155,7 +155,7 @@ export default function MilestonesLogros({ codigo }: { codigo: string }) {
                                                     }}
                                                 />
                                             </div>
-                                            <span className="text-[10px] font-medium text-gray-500 flex-shrink-0">
+                                            <span className="text-[10px] font-medium text-[var(--text-muted)] flex-shrink-0">
                                                 {l.conseguido
                                                     ? `${l.meta}/${l.meta}`
                                                     : `${Math.min(l.meta, Math.floor(l.actual))}/${l.meta}`

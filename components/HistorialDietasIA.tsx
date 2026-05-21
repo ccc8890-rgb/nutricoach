@@ -70,7 +70,7 @@ export default function HistorialDietasIA({ clienteId }: Props) {
     if (error) return (
         <div className="card text-center py-12">
             <AlertCircle size={36} className="mx-auto text-red-400 mb-3" />
-            <p className="text-gray-500 text-sm">{error}</p>
+            <p className="text-[var(--text-muted)] text-sm">{error}</p>
         </div>
     )
 
@@ -79,7 +79,7 @@ export default function HistorialDietasIA({ clienteId }: Props) {
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: '#F0FDFA' }}>
                 <Brain size={32} style={{ color: '#0D9488' }} />
             </div>
-            <p className="text-gray-500 font-medium mb-2">Sin historial de dietas IA</p>
+            <p className="text-[var(--text-muted)] font-medium mb-2">Sin historial de dietas IA</p>
             <p className="text-sm text-gray-400 mb-4">
                 Las dietas generadas con DeepSeek aparecerán aquí con su estado y versión
             </p>
@@ -123,7 +123,7 @@ export default function HistorialDietasIA({ clienteId }: Props) {
                                         <div className="flex-1 min-w-0">
                                             {/* Header */}
                                             <div className="flex items-center gap-2 mb-2">
-                                                <h3 className="font-semibold text-gray-900 text-sm truncate">
+                                                <h3 className="font-semibold text-[var(--text)] text-sm truncate">
                                                     {entry.plan.nombre}
                                                 </h3>
                                                 {esIa && (
@@ -139,8 +139,8 @@ export default function HistorialDietasIA({ clienteId }: Props) {
                                             </div>
 
                                             {/* Macros row */}
-                                            <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
-                                                <span className="font-semibold text-gray-700">
+                                            <div className="flex items-center gap-3 text-xs text-[var(--text-muted)] mb-2">
+                                                <span className="font-semibold text-[var(--text-secondary)]">
                                                     {entry.plan.kcal_objetivo ? `${entry.plan.kcal_objetivo} kcal` : 'Sin macros'}
                                                 </span>
                                                 {entry.plan.proteinas_objetivo && (
