@@ -1,4 +1,30 @@
-### Pendiente para próxima sesión
+---
+
+#### 🏆 Sesión 21-05-2026 — TAG_BRIDGE: 5 mejoras implementadas (Expansión + PubMed clínico + Backfill + Dashboard KB + Auto-entrenamiento)
+
+##### ✅ Completado
+- **Bug #1 fix**: `fetchKnowledgeContext()` en [`lib/knowledge.ts`](lib/knowledge.ts:10) rewrite para usar `expandirTags()` + `formatearEvidenciaParaPrompt()`. Ya no filtra por columna `disciplina` inexistente ✅
+- **TAG_BRIDGE expandido** [`lib/knowledge-base.ts:331`](lib/knowledge-base.ts:331): de ~50 a ~85+ entradas. Nuevas: `cardiovascular`, `suplementos`, `creatina`, `cafeina`, `proteina_suplementos`, `lesiones`, `recuperacion`, `rehabilitacion`, `deporte_equipo`, `estres`, `sueno`, `vegetales`, `natacion`. Expandidas: diabetes (+HbA1c), hipotiroidismo (+hashimoto, TSH), pcos (+testosterona, ovario poliquistico), menopausia (+estrogenos, osteoporosis), sarcopenia (+calidad muscular), ansiedad (+depresion, neurotransmisores), obesidad (+grasa visceral, cintura), ciclismo (+VO2max, potencia), triatlon (+carga, VO2max), etc. ✅
+- **+6 fuentes PubMed clínicas** [`lib/ingesta-papers/fuentes.ts:87`](lib/ingesta-papers/fuentes.ts:87): tiroides, PCOS/SOP, menopausia, salud ósea/sarcopenia, salud mental/ansiedad, rehabilitación — con queries MeSH especializadas ✅
+- **Backfill script** [`scripts/backfill-planes-evidencia.ts`](scripts/backfill-planes-evidencia.ts): inyecta `plan_json.evidencia_cientifica` con protocolos TAG_BRIDGE. Dry-run: `--dry-run`. Crea placeholders para clientes sin plan ✅
+- **Dashboard KB** [`components/dashboard/KBPanel.tsx`](components/dashboard/KBPanel.tsx): stats fichas, puentes TAG, distribución por disciplina (mini-bars), últimas fichas, cobertura TAG_BRIDGE. Integrado en [`app/dashboard/page.tsx:322`](app/dashboard/page.tsx:322) ✅
+- **Auto-entrenamiento script** [`scripts/analizar-uso-papers.ts`](scripts/analizar-uso-papers.ts): ranking papers más/menos usados, cobertura %, tags sin puente en TAG_BRIDGE, sugerencias automáticas. Flags: `--json`, `--top N`, `--bottom N` ✅
+- **Compilación**: `npx tsc --noEmit` → 0 errores ✅
+- **Commit + Push**: `ab54e2b` (feat: 5 mejoras, 10 files, +1032 líneas) + `f4f4c0e` (docs: AUDITORIA_TAG_BRIDGE actualizada) ✅
+
+##### 🧪 Pendientes próxima sesión
+1. **Ejecutar backfill**: `npx tsx scripts/backfill-planes-evidencia.ts --dry-run` → luego sin flag
+2. **Ejecutar auto-entrenamiento**: `npx tsx scripts/analizar-uso-papers.ts` → ajustar TAG_BRIDGE según resultados
+3. **Primera ingesta clínica**: las 6 fuentes nuevas necesitan ejecución (Cron lunes o `npx tsx scripts/ingestar-papers.ts`)
+4. **Bug #2**: papers con resumen <50 chars — investigar si es DeepSeek o PubMed
+5. **Bug #3**: tests de estrés con tags con espacios en el bridge
+6. **Bug #4**: política de mezcla `coach_id IS NULL` + `coach_id` específico en consultas KB
+7. **Re-scrapear supermercados** para re-vincular ~84 productos
+8. **Build de verificación**: `npx next build`
+
+---
+
+### Pendiente para próxima sesión (histórico)
 
 - [x] ~~Verificar Bonpreu/Esclat~~ ✅ **BREAKTHROUGH HTTP DIRECTO (v3)**: APIs funcionan con fetch() directo. Scrapers reescritos a modo híbrido (1 PW + HTTP directo)
 - [x] ~~**Lidl v3**: Ejecutar scraper completo (60 términos en 4 lotes)~~ ✅ **EJECUTADO**: 429 productos únicos en 4.0 min, 0 scraping errors
@@ -45,5 +71,5 @@
 
 ---
 
-**Última actualización:** 20-05-2026 (2ª ronda — Gaps #4, #7, #8, #9 completados)
-**Responsable:** Roo (Sesión 20-05-2026 — Implementación Top Coach completa)
+**Última actualización:** 21-05-2026 (Sesión TAG_BRIDGE — 5 mejoras implementadas)
+**Responsable:** Roo (Sesión 21-05-2026 — Expansión TAG_BRIDGE + PubMed clínico + Backfill + Dashboard KB + Auto-entrenamiento)

@@ -518,10 +518,37 @@ cd nutricoach-modulos && pkill -f "enriquecer-alimentos" 2>/dev/null; sleep 1 &&
 ### Nuevas capacidades incorporadas (desde feature/modulos)
 | Área | Funcionalidad |
 |------|---------------|
+| TAG_BRIDGE | Puente semántico perfil cliente → tags PubMed. 80+ entradas. | ✅ Expandido |
+| PubMed clínico | 6 nuevas fuentes MeSH: tiroides, SOP, menopausia, salud ósea, salud mental, rehabilitación | ✅ Añadido |
+| Backfill evidencia | Script regenera `plan_json.evidencia_cientifica` con TAG_BRIDGE en planes existentes | ✅ Creado |
+| Dashboard KB | Panel en dashboard coach: stats, distribución, últimas fichas, cobertura TAG_BRIDGE | ✅ Nuevo |
+| Auto-entrenamiento | Script analiza papers usados/no usados, sugiere ajustes al TAG_BRIDGE | ✅ Nuevo |
 | Precios | Scraping supermercados, escandallo recetas, rentabilidad, comparador |
 | Clientes | Portal cliente avanzado, registro por invitación, emails Resend |
 | Lista compra | Selección por supermercado, proyección de ahorro |
 | UI/UX | Diseño responsive móvil, tema oscuro Graphite Apple Pro, BackButton, bottom nav |
+
+---
+
+## Estado Actual (21-05-2026 — Sesión TAG_BRIDGE: 5 mejoras implementadas)
+
+### ✅ Completado
+- **TAG_BRIDGE expandido**: de ~50 a ~85+ entradas. Nuevas: `cardiovascular`, `suplementos`, `creatina`, `cafeina`, `lesiones`, `recuperacion`, `rehabilitacion`, `estres`, `sueno`, `vegetales`, `natacion`, `deporte_equipo`. Expandidas: diabetes (+HbA1c), hipotiroidismo (+hashimoto, TSH), pcos (+testosterona, ovario poliquistico), menopausia (+estrogenos, osteoporosis), sarcopenia (+calidad muscular), ansiedad (+depresion, neurotransmisores), obesidad (+grasa visceral, cintura)
+- **6 fuentes PubMed clínicas**: tiroides, PCOS/SOP, menopausia, salud ósea/sarcopenia, salud mental/ansiedad, rehabilitación — con queries MeSH especializadas
+- **Backfill script**: `scripts/backfill-planes-evidencia.ts` — inyecta evidencia real en planes existentes (`--dry-run` disponible)
+- **Dashboard KB**: `components/dashboard/KBPanel.tsx` — stats, distribución por disciplina, últimas fichas, cobertura TAG_BRIDGE
+- **Auto-entrenamiento script**: `scripts/analizar-uso-papers.ts` — ranking uso papers, cobertura, tags sin puente, sugerencias automáticas
+- **Bug #1 fix**: `fetchKnowledgeContext()` rewrite en `lib/knowledge.ts` para usar TAG_BRIDGE y no filtrar por columna inexistente
+- **Compilación**: `npx tsc --noEmit` → 0 errores ✅
+- **Commit + Push**: `ab54e2b` (10 files, +1032) + `f4f4c0e` (docs)
+
+### 🔜 Pendientes próxima sesión
+1. Ejecutar `npx tsx scripts/backfill-planes-evidencia.ts --dry-run` → luego modo real
+2. Ejecutar `npx tsx scripts/analizar-uso-papers.ts` → ajustar TAG_BRIDGE según cobertura
+3. Primera ejecución de las 6 fuentes clínicas nuevas (Cron lunes o manual: `npx tsx scripts/ingestar-papers.ts`)
+4. Bug #2: papers con resumen <50 chars
+5. Bug #3: tests de estrés tags con espacios en bridge
+6. Bug #4: política mezcla coach_id NULL + coach_id específico
 
 ### Estado de los worktrees
 Los 3 worktrees siguen existiendo en local como carpetas, pero `main` contiene **todo el código unificado**. Los worktrees son ahora snapshot histórico — todo el trabajo nuevo converge directamente en `nutricoach/` (main).
