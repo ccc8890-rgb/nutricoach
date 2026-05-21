@@ -115,24 +115,25 @@ export default function RevisarPlanPage() {
 
   useEffect(() => {
     const id = params.id as string
-    Promise.all([
-      supabase.from('clientes').select('*, profiles(nombre, apellidos, email)').eq('id', id).single(),
-      supabase.from('onboarding_responses').select('*').eq('cliente_id', id).single(),
-      supabase.from('registros_ia').select('id, respuesta_json, created_at').eq('cliente_id', id).in('tipo', ['plan_inicial', 'dieta']).order('created_at', { ascending: false }),
-      supabase.from('onboarding_perfil_profundo').select('*').eq('cliente_id', id).single(),
-    ]).then(([{ data: c }, { data: o }, { data: rs }, { data: pp }]) => {
-      setCliente(c as ClienteData)
-      setOnboarding(o as OnboardingData)
-      const registros = (rs ?? []) as RegistroIA[]
-      setVersiones(registros)
-      setVersionIdx(0)
-      if (registros.length > 0) {
-        setPlan(registros[0].respuesta_json)
-        cargarRecetasPlan(registros[0].respuesta_json)
-      }
-      if (pp) setPerfilProfundo(pp as PerfilProfundo)
-      setLoading(false)
-    })
+    fetch(`/api/clientes/${id}/revisar-data`)
+      .then(r => r.json())
+      .then(({ cliente: c, onboarding: o, registros: rs, perfilProfundo: pp }) => {
+        setCliente(c as ClienteData)
+        setOnboarding(o as OnboardingData)
+        const registros = (rs ?? []) as RegistroIA[]
+        setVersiones(registros)
+        setVersionIdx(0)
+        if (registros.length > 0) {
+          setPlan(registros[0].respuesta_json)
+          cargarRecetasPlan(registros[0].respuesta_json)
+        }
+        if (pp) setPerfilProfundo(pp as PerfilProfundo)
+        setLoading(false)
+      })
+      .catch(e => {
+        console.error('[revisar-plan] Error cargando datos:', e)
+        setLoading(false)
+      })
   }, [params.id])
 
   const cargarVersiones = async () => {
