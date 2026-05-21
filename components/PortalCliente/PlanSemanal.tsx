@@ -80,7 +80,13 @@ export default function PlanSemanal({ comidas, clienteId }: PlanSemanalProps) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        if (comidas.length === 0) return
+        let cancelled = false
+        if (comidas.length === 0) {
+            setPool({})
+            setSemana(Array(7).fill(null).map(() => ({})))
+            setLoading(false)
+            return
+        }
 
         async function cargarSugerencias() {
             setLoading(true)
@@ -109,6 +115,7 @@ export default function PlanSemanal({ comidas, clienteId }: PlanSemanalProps) {
                 }
             }))
 
+            if (cancelled) return
             setPool(newPool)
 
             // Distribuir una receta diferente por día (rotación circular por el pool)
@@ -126,6 +133,7 @@ export default function PlanSemanal({ comidas, clienteId }: PlanSemanalProps) {
         }
 
         cargarSugerencias()
+        return () => { cancelled = true }
     }, [comidas, clienteId])
 
     function swapReceta(diaIdx: number, comidaId: string) {

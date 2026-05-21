@@ -39,16 +39,23 @@ export const ICONOS_COCCION: Record<string, ReactNode> = {
 }
 
 // ─── Intolerancias ───
+// Alérgenos EU (Reglamento 1169/2011) — declaración positiva: lo que la receta SÍ contiene
+// Más Vegetariano/Vegano como clasificación dietética positiva
 export const INTOLERANCIAS = [
-    'Sin Gluten',
-    'Sin Lactosa',
-    'Vegano',
+    'Gluten',
+    'Lácteos',
+    'Huevos',
+    'Soja',
+    'Cacahuetes',
+    'Frutos Secos',
+    'Pescado',
+    'Crustáceos',
+    'Moluscos',
+    'Sésamo',
+    'Mostaza',
+    'Sulfitos',
     'Vegetariano',
-    'Sin Huevo',
-    'Sin Frutos Secos',
-    'Sin Mariscos',
-    'Sin Cerdo',
-    'Sin Soja',
+    'Vegano',
 ] as const
 
 // ─── Dificultades ───
@@ -68,7 +75,24 @@ export interface RecetaNormalizada {
     tipo_coccion: string | null
 }
 
-export function normalizarReceta(r: Record<string, any>): RecetaNormalizada {
+interface RecetaNormalizable {
+    kcal?: number | null
+    kcal_por_porcion?: number | null
+    proteinas?: number | null
+    proteinas_por_porcion?: number | null
+    carbohidratos?: number | null
+    carbohidratos_por_porcion?: number | null
+    grasas?: number | null
+    grasas_por_porcion?: number | null
+    instrucciones?: string | null
+    pasos?: string | null
+    url_origen?: string | null
+    url?: string | null
+    tipo_coccion?: string | null
+    tipo_plato?: string | null
+}
+
+export function normalizarReceta(r: RecetaNormalizable): RecetaNormalizada {
     return {
         kcal: r.kcal ?? r.kcal_por_porcion ?? null,
         proteinas: r.proteinas ?? r.proteinas_por_porcion ?? null,

@@ -1,5 +1,48 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 22-05-2026 (madrugada) — AUDITORÍA BUGS + GUARDADO ✅
+
+##### ✅ Bugs encontrados y corregidos
+
+**Recetario `/recetas`**
+- El buscador prometía buscar por ingrediente, pero solo revisaba nombre/tags/descripción.
+- Ahora carga `receta_ingredientes(nombre_libre, alimento.nombre)` y filtra también por ingredientes libres y alimentos vinculados.
+- Fix añadido a dependencias de `useMemo`: kcal, tiempo e intolerancia ya recalculan resultados correctamente.
+
+**Portal cliente — recetas sugeridas**
+- `PlanSemanal` podía quedarse en carga si `comidas` venía vacío.
+- `PlanSemanal` ahora limpia estado y corta respuestas obsoletas si cambian comidas/cliente durante la carga.
+- `RecetaDelDia` podía mantener una receta antigua al cambiar macros o cliente; ahora limpia antes de pedir nueva sugerencia y evita setState tras cambios.
+
+**Onboarding**
+- El autoavance por selección rápida ya no depende de un ref de timer.
+- Añadido guard para no avanzar si el usuario cambia de paso antes de que dispare el autoavance pendiente.
+
+**Alérgenos EU**
+- `INTOLERANCIAS` queda como declaración positiva EU 1169/2011: Gluten, Lácteos, Huevos, Soja, Cacahuetes, Frutos Secos, Pescado, Crustáceos, Moluscos, Sésamo, Mostaza, Sulfitos + Vegetariano/Vegano.
+- Nuevo script `scripts/migrar-alergenos-eu.mjs` para migrar recetas desde el modelo antiguo `Sin X` al modelo positivo.
+- Bug de clasificación corregido: `sepia` pasa a Moluscos, no Pescado.
+- El script valida variables Supabase antes de crear cliente y evita mutar arrays al comparar tags.
+
+##### 🧪 Verificación ejecutada
+
+```bash
+npx tsc --noEmit
+npm run lint -- app/onboarding/page.tsx app/recetas/page.tsx components/PortalCliente/PlanSemanal.tsx components/PortalCliente/RecetaDelDia.tsx lib/recetas-constants.ts
+npm run lint
+node --check scripts/migrar-alergenos-eu.mjs
+npm run build
+```
+
+Resultado:
+- TypeScript: OK.
+- Lint focal: 0 errores, 6 warnings no bloqueantes.
+- Lint global: 0 errores, 263 warnings de deuda tipada/limpieza.
+- Script migración alérgenos: sintaxis OK.
+- Build Next.js: OK, 111 rutas generadas.
+
+---
+
 ## Sesión 22-05-2026 (lint global) — Gate desbloqueado ✅
 
 ##### ✅ Corregido

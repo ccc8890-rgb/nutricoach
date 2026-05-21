@@ -22,16 +22,19 @@ export default function RecetaDelDia({ kcal, proteinas, clienteId }: RecetaDelDi
     const [receta, setReceta] = useState<RecetaData | null>(null)
 
     useEffect(() => {
+        setReceta(null)
         if (kcal <= 0) return
         // Apuntar al rango de una comida principal (~1/3 del día)
         const kcalTarget = Math.round(kcal / 3)
         const protTarget = Math.round(proteinas / 3)
+        let cancelado = false
         const params = new URLSearchParams({ kcal: String(kcalTarget), proteinas: String(protTarget), limite: '1' })
         if (clienteId) params.set('cliente_id', clienteId)
         fetch(`/api/recetas/sugeridas?${params}`)
             .then(r => r.json())
-            .then(({ recetas }) => { if (recetas?.length) setReceta(recetas[0]) })
+            .then(({ recetas }) => { if (!cancelado && recetas?.length) setReceta(recetas[0]) })
             .catch(e => console.error('[RecetaDelDia] Error cargando receta sugerida:', e))
+        return () => { cancelado = true }
     }, [kcal, proteinas, clienteId])
 
     if (!receta) return null

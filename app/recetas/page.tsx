@@ -70,6 +70,10 @@ type RecetaRow = {
   instrucciones?: string | null
   tags?: string[] | null
   created_at?: string | null
+  receta_ingredientes?: Array<{
+    nombre_libre?: string | null
+    alimento?: { nombre?: string | null } | Array<{ nombre?: string | null }> | null
+  }> | null
 }
 
 export default function RecetasPage() {
@@ -97,7 +101,7 @@ export default function RecetasPage() {
 
         const { data, error } = await supabase
           .from('recetas')
-          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, intolerancias, created_at')
+          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, intolerancias, created_at, receta_ingredientes(nombre_libre, alimento:alimentos(nombre))')
           .or(`coach_id.eq.${user.id},coach_id.is.null`)
           .eq('estado', 'aprobada')
           .order('created_at', { ascending: false })
@@ -129,6 +133,11 @@ export default function RecetasPage() {
       const matchBusqueda = !q || r.nombre.toLowerCase().includes(q)
         || (Array.isArray(r.tags) && r.tags.some((t: string) => t.toLowerCase().includes(q)))
         || (r.descripcion?.toLowerCase().includes(q) ?? false)
+        || (Array.isArray(r.receta_ingredientes) && r.receta_ingredientes.some(ing => {
+          const alimento = Array.isArray(ing.alimento) ? ing.alimento[0] : ing.alimento
+          return (ing.nombre_libre?.toLowerCase().includes(q) ?? false)
+            || (alimento?.nombre?.toLowerCase().includes(q) ?? false)
+        }))
       const matchCategoria = categoria === 'Todos' || r.categoria === categoria
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
       const matchTag = !tagFilter || (Array.isArray(r.tags) && r.tags.includes(tagFilter))
