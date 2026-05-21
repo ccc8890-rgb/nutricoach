@@ -1,5 +1,40 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 21-05-2026 (5ª ronda) — PORTAL CLIENTE: PLAN DIARIO + ALTERNATIVAS + VISTA SEMANAL 🚀
+
+##### ✅ Completado esta ronda
+
+**Arquitectura ciencia-first + feedback loop cerrado**
+- `generar-plan-inicial`: Fix 4 bugs críticos (IDs receta falsos, filtro estado, evidencia no guardada, metodología vacía). El plan ahora cita papers específicos (ISSN 2017, Helms 2014, Morton 2018) en `notas_coach`.
+- `checkin/route.ts`: Fix crítico — `from('dietas')` (tabla inexistente) → `planes_nutricion` + columna `carbohidratos_objetivo` (era `carbos_objetivo`). El feedback loop ahora **cierra de verdad**: check-in → periodización → ajuste automático de macros en `planes_nutricion`.
+- `periodizacion/refeed/aprobar`: Importa `aplicarAjusteAlPlan()` compartida — aprobación del coach aplica efectivamente los macros al plan activo.
+
+**Portal cliente — Alternativas por comida (Vista Hoy)**
+- `GET /api/recetas/sugeridas`: Añadido filtro `tipo_plato` (Desayuno/Comida/Cena/Merienda) + fallback sin filtro si hay pocas recetas. Límite subido a 7. Distancia euclidiana preservada.
+- `GET /api/recetas/[id]/ingredientes`: Nuevo endpoint — devuelve ingredientes de una receta formateados como `AlimentoEnComida[]`. Sin auth (datos públicos del recetario).
+- `MiPlan.tsx`: Botón "Ver alternativas" por comida → 4 recetas del recetario filtradas por `tipo_plato`. Cada card tiene botón **"Usar"** que sustituye los alimentos de la comida con los ingredientes de la receta. Toast de confirmación. Caché invalidada al usar.
+
+**Portal cliente — Vista semanal (nueva)**
+- `PlanSemanal.tsx` (nuevo componente): Genera 7 días Mon-Dom con recetas del recetario. Para cada franja (Desayuno, Comida, Merienda, Cena) carga pool de 7 sugerencias y las distribuye por día (rotación circular). Botón ↻ por slot para ciclar alternativas. Resumen macros por día.
+- Toggle **Hoy / Semana** en la parte superior de MiPlan — cambia entre vista diaria detallada y planificación semanal.
+
+**Bugs corregidos (auditoría post-implementación)**
+
+| # | Tipo | Archivo | Bug | Fix |
+|---|------|---------|-----|-----|
+| 1 | 🔴 CRÍTICO | `sugeridas/route.ts` | `NOT IN ()` SQL inválido cuando pool vacío con `tipo_plato` | Solo excluye IDs si `pool.length > 0` |
+| 2 | 🔴 CRÍTICO | `MiPlan.tsx` | `PlanSemanal` re-ejecutaba `useEffect` al hacer swap en vista Hoy (`planLocal` crea nueva referencia) | `useMemo` con `plan.comidas` original — referencia estable |
+| 3 | 🟠 MENOR | `sugeridas/route.ts` | Límite máximo 6, PlanSemanal pedía 7 → días 1 y 7 siempre repetían receta | Límite subido a 7 |
+| 4 | 🟡 MENOR | `lib/knowledge-base.ts` | Clave `sop` duplicada (líneas 385 y 550) → error TS1117 | Merge de valores únicos, eliminado duplicado |
+
+##### 🧪 Pendientes para próxima sesión
+- **Aprendizaje de preferencias**: Registrar intercambios de receta en `intercambios_historial` y pasar historial al siguiente plan (comidas más usadas = likes, base = baseline)
+- **Aldi**: Nuevo scraper
+- **Regeneración de imágenes**: 147 imágenes malas con estilo food blogger
+- **TAG_BRIDGE**: ~195 tags de papers sin entrada en bridge
+
+---
+
 ## Sesión 21-05-2026 (4ª ronda) — PENDIENTES EJECUTADOS + BUG #5 FIX 🚀
 
 ##### ✅ Completado
@@ -24,5 +59,5 @@
 
 ---
 
-**Última actualización:** 21-05-2026 (Sesión 4ª ronda — Pendientes ejecutados + Bug #5 fixed)
+**Última actualización:** 21-05-2026 (Sesión 5ª ronda — Portal cliente: plan diario + alternativas + vista semanal)
 **Responsable:** Roo (Sesión 21-05-2026 — TAG_BRIDGE expansion + pendientes ejecución)

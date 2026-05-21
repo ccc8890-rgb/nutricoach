@@ -210,6 +210,41 @@ No hay conflictos entre worktrees.
 
 ## 13. Sesiones de Trabajo
 
+### ✅ SESIÓN 21-05-2026 (5ª ronda) — PORTAL CLIENTE COMPLETO: CIENCIA + ALTERNATIVAS + SEMANA 🚀
+
+**Arquitectura ciencia-first + feedback loop cerrado**
+
+| Fix | Archivo | Detalle |
+|-----|---------|---------|
+| IDs receta falsos DeepSeek | `generar-plan-inicial` | `recetasPorNombre` index + `resolverReceta()` fallback por nombre |
+| Filtro estado recetas | `generar-plan-inicial` | `.eq('estado', 'aprobada').gt('kcal', 0)` + límite 8/categoría |
+| Evidencia no guardada | `generar-plan-inicial` | Guardada server-side en `evidencia_cientifica` |
+| `from('dietas')` inexistente | `checkin/route.ts` | Cambiado a `planes_nutricion` + columna `carbohidratos_objetivo` |
+| Feedback loop check-in | `checkin/route.ts` | Periodización → `aplicarAjusteAlPlan()` → actualiza plan real |
+| Aprobación coach | `periodizacion/refeed/aprobar` | Importa `aplicarAjusteAlPlan()` compartida |
+
+**Alternativas accionables por comida**
+- `GET /api/recetas/sugeridas`: filtro `tipo_plato` + fallback + límite 7 + distancia euclidiana
+- `GET /api/recetas/[id]/ingredientes`: nuevo endpoint — retorna ingredientes como `AlimentoEnComida[]`
+- `MiPlan.tsx`: "Ver alternativas" → 4 recetas filtradas por tipo comida → botón "Usar" → swap real de alimentos en `planLocal`
+
+**Vista semanal Lun-Dom**
+- `PlanSemanal.tsx` (nuevo): pool de 7 recetas por franja, rotación circular por día, botón ↻ por slot
+- Toggle "Hoy / Semana" en MiPlan
+
+**Bugs corregidos (auditoría)**
+
+| # | Gravedad | Bug | Fix |
+|---|----------|-----|-----|
+| 1 | 🔴 CRÍTICO | `sugeridas`: `NOT IN ()` SQL inválido con pool vacío | Guard `pool.length > 0` |
+| 2 | 🔴 CRÍTICO | `PlanSemanal`: `useEffect` se re-disparaba al cada swap | `useMemo(plan.comidas)` — ref estable |
+| 3 | 🟠 MENOR | `sugeridas`: límite 6 impide 7 recetas distintas/semana | Límite subido a 7 |
+| 4 | 🟡 MENOR | `knowledge-base.ts`: clave `sop` duplicada → TS1117 | Merge + eliminado duplicado |
+
+**Commits**: `8a36671` (generar-plan-inicial ciencia-first) · `bb969ee` (checkin + periodización) · `e9bb370` (alternativas comida) · `62955ba` (vista semanal) · `c41a9c1` (bug fixes)
+
+---
+
 ### ✅ SESIÓN 21-05-2026 (4ª ronda) — PENDIENTES EJECUTADOS COMPLETOS 🚀
 
 **Ejecución completa de pendientes**:
