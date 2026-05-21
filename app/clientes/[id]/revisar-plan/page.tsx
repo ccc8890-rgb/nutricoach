@@ -340,8 +340,8 @@ export default function RevisarPlanPage() {
     )
   }
 
-  if (!cliente || !onboarding) {
-    return <div className="p-6 text-[var(--text-muted)]">Cliente o datos de onboarding no encontrados.</div>
+  if (!cliente) {
+    return <div className="p-6 text-[var(--text-muted)]">Cliente no encontrado.</div>
   }
 
   const perfil = cliente.profiles
@@ -385,6 +385,9 @@ export default function RevisarPlanPage() {
       {/* Onboarding */}
       <div className="card p-4">
         <h2 className="font-semibold text-[var(--text)] mb-3">Perfil del cliente</h2>
+        {!onboarding ? (
+          <p className="text-sm text-[var(--text-muted)]">El cliente aún no ha completado el cuestionario inicial.</p>
+        ) : (
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
           <div><dt className="text-[var(--text-muted)]">Objetivo</dt><dd className="font-medium text-[var(--text)]">{OBJETIVO_LABEL[onboarding.objetivo] ?? onboarding.objetivo}</dd></div>
           <div><dt className="text-[var(--text-muted)]">Actividad</dt><dd className="font-medium text-[var(--text)]">{ACTIVIDAD_LABEL[onboarding.actividad_base] ?? onboarding.actividad_base}</dd></div>
@@ -398,6 +401,7 @@ export default function RevisarPlanPage() {
             <div><dt className="text-[var(--text-muted)]">Presupuesto</dt><dd className="font-medium text-[var(--text)]">{onboarding.presupuesto_semanal_eur}€/semana</dd></div>
           )}
         </dl>
+        )}
       </div>
 
       {/* Perfil profundo — colapsable */}

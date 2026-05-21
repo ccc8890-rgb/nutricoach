@@ -15,12 +15,14 @@
  *   - Las 10 recetas Serie Chef (imagen UUID sin auto_) → NUNCA tocar
  *
  * USO:
- *   node scripts/regenerar-imagenes-malas.mjs               → preview de candidatas
- *   node scripts/regenerar-imagenes-malas.mjs --genera       → regenera todas
- *   node scripts/regenerar-imagenes-malas.mjs --prueba       → solo 3 de prueba
- *   node scripts/regenerar-imagenes-malas.mjs --limite 20    → máx N recetas
- *   node scripts/regenerar-imagenes-malas.mjs --id <uuid>    → solo esa receta
- *   node scripts/regenerar-imagenes-malas.mjs --repara-chuck → repara Chuck Fudge
+ *   node scripts/regenerar-imagenes-malas.mjs                   → preview candidatas (pendiente_revision)
+ *   node scripts/regenerar-imagenes-malas.mjs --genera           → regenera todas las pendiente_revision
+ *   node scripts/regenerar-imagenes-malas.mjs --prueba           → solo 3 de prueba
+ *   node scripts/regenerar-imagenes-malas.mjs --limite 20        → máx N recetas
+ *   node scripts/regenerar-imagenes-malas.mjs --id <uuid>        → solo esa receta
+ *   node scripts/regenerar-imagenes-malas.mjs --repara-chuck     → repara Chuck Fudge
+ *   node scripts/regenerar-imagenes-malas.mjs --ia-generadas     → recetas IA sin foto (imagen_url IS NULL)
+ *   node scripts/regenerar-imagenes-malas.mjs --marcar-ok <uuid> → marca imagen como 'propia' (buena)
  *
  * COSTE: ~$0.034/imagen (gpt-image-1 medium 1024x1024)
  */
@@ -61,15 +63,18 @@ if (!SB_URL || !SB_KEY) { console.error('❌ Variables Supabase no configuradas'
 const sb = createClient(SB_URL, SB_KEY, { auth: { persistSession: false } })
 
 // ── Args ──────────────────────────────────────────────────────────────────────
-const args    = process.argv.slice(2)
-const GENERA  = args.includes('--genera')
-const PRUEBA  = args.includes('--prueba')
-const CHUCK   = args.includes('--repara-chuck')
-const FORZAR  = args.includes('--forzar')   // re-genera IDs aunque ya tengan imagen nueva
-const idIdx   = args.indexOf('--id')
-const SOLO_ID = idIdx !== -1 ? args[idIdx + 1] : undefined
-const limIdx  = args.indexOf('--limite')
-const MAX     = limIdx !== -1 ? parseInt(args[limIdx + 1], 10) : 9999
+const args         = process.argv.slice(2)
+const GENERA       = args.includes('--genera')
+const PRUEBA       = args.includes('--prueba')
+const CHUCK        = args.includes('--repara-chuck')
+const FORZAR       = args.includes('--forzar')       // re-genera aunque ya tengan imagen nueva
+const IA_GENERADAS = args.includes('--ia-generadas') // recetas IA sin foto (imagen_url IS NULL)
+const marcarIdx    = args.indexOf('--marcar-ok')
+const MARCAR_OK    = marcarIdx !== -1 ? args[marcarIdx + 1] : undefined
+const idIdx        = args.indexOf('--id')
+const SOLO_ID      = idIdx !== -1 ? args[idIdx + 1] : undefined
+const limIdx       = args.indexOf('--limite')
+const MAX          = limIdx !== -1 ? parseInt(args[limIdx + 1], 10) : 9999
 
 // ── Prompt ────────────────────────────────────────────────────────────────────
 // Estilo: foto rápida de móvil en casa, sin decoración, real e imperfecta
@@ -215,7 +220,7 @@ async function subirImagen(buffer, recetaId) {
 }
 
 async function actualizarUrl(id, imagenUrl) {
-    const { error } = await sb.from('recetas').update({ imagen_url: imagenUrl }).eq('id', id)
+    const { error } = await sb.from('recetas').update({ imagen_url: imagenUrl, imagen_tipo: 'txt2img' }).eq('id', id)
     if (error) throw new Error(`DB update: ${error.message}`)
 }
 
@@ -278,77 +283,128 @@ async function main() {
 ╚═══════════════════════════════════════════════════════════╝
 `)
 
+    // Modo especial: marcar imagen como buena (propia)
+    if (MARCAR_OK) {
+        const { error } = await sb.from('recetas').update({ imagen_tipo: 'propia' }).eq('id', MARCAR_OK)
+        if (error) { console.error('❌', error.message); process.exit(1) }
+        console.log(`✅ Receta ${MARCAR_OK} marcada como 'propia'`)
+        return
+    }
+
     // Modo especial: reparar Chuck Fudge
     if (CHUCK) {
         await repararChuckFudge()
         return
     }
 
-    // ── 1. Obtener archivos de imagen de recetas PROTEGIDAS (url_origen IS NOT NULL)
-    console.log('📋 Cargando recetas protegidas (url_origen)...')
-    const { data: protegidas, error: errProt } = await sb
-        .from('recetas')
-        .select('imagen_url')
-        .not('url_origen', 'is', null)
+    let lista
 
-    if (errProt) { console.error('❌', errProt.message); process.exit(1) }
+    if (IA_GENERADAS) {
+        // ── MODO IA-GENERADAS: recetas sin foto (imagen_url IS NULL) de fuente_tipo='ia_generada'
+        console.log('📋 Modo --ia-generadas: buscando recetas IA sin foto...')
 
-    const archivosProtegidos = new Set(
-        (protegidas || [])
-            .map(r => extractFilename(r.imagen_url))
-            .filter(Boolean)
-    )
-    console.log(`   ${archivosProtegidos.size} archivos de imagen protegidos\n`)
+        let query = sb
+            .from('recetas')
+            .select('id, nombre, tipo_plato, categoria, imagen_url, receta_ingredientes(nombre_libre)')
+            .eq('fuente_tipo', 'ia_generada')
+            .is('imagen_url', null)
+            .order('tipo_plato', { ascending: true })
+            .order('nombre', { ascending: true })
 
-    // ── 2. Obtener candidatas: url_origen IS NULL + imagen con /auto_ en la URL
-    let query = sb
-        .from('recetas')
-        .select('id, nombre, tipo_plato, categoria, imagen_url, receta_ingredientes(nombre_libre)')
-        .order('nombre')
+        if (SOLO_ID) query = query.eq('id', SOLO_ID)
+        if (!SOLO_ID) query = query.limit(MAX)
 
-    // Sin --forzar: solo las malas (auto_*). Con --forzar + --id: re-genera aunque ya tenga imagen nueva
-    if (!FORZAR) {
-        query = query.is('url_origen', null).ilike('imagen_url', '%/auto_%')
-    }
-    if (SOLO_ID) query = query.eq('id', SOLO_ID)
-    if (!SOLO_ID) query = query.limit(MAX)
+        const { data: candidatas, error: errCand } = await query
+        if (errCand) { console.error('❌', errCand.message); process.exit(1) }
 
-    const { data: candidatas, error: errCand } = await query
-    if (errCand) { console.error('❌', errCand.message); process.exit(1) }
+        lista = PRUEBA ? (candidatas || []).slice(0, 3) : (candidatas || [])
+        const coste = (lista.length * 0.034).toFixed(2)
 
-    // ── 3. Filtrar las que comparten archivo con una receta protegida
-    const candidatasFiltradas = (candidatas || []).filter(r => {
-        const filename = extractFilename(r.imagen_url)
-        if (!filename) return false
-        if (archivosProtegidos.has(filename)) {
-            console.log(`   ⚠️  SKIP (imagen compartida con receta protegida): ${r.nombre}`)
-            return false
+        console.log(`\n📊 Recetas IA sin foto: ${lista.length}`)
+        console.log(`   Coste estimado: ~$${coste}`)
+
+        if (!GENERA) {
+            console.log('\n⚠️  PREVIEW — añade --genera para generar imágenes\n')
+            const porTipo = {}
+            lista.forEach(r => {
+                const t = r.tipo_plato || r.categoria || '—'
+                if (!porTipo[t]) porTipo[t] = []
+                porTipo[t].push(r.nombre)
+            })
+            for (const [tipo, nombres] of Object.entries(porTipo)) {
+                console.log(`\n  ${tipo} (${nombres.length}):`)
+                nombres.forEach(n => console.log(`    · ${n}`))
+            }
+            console.log(`\n  Ejemplos:`)
+            console.log(`    node scripts/regenerar-imagenes-malas.mjs --ia-generadas --prueba --genera`)
+            console.log(`    node scripts/regenerar-imagenes-malas.mjs --ia-generadas --genera`)
+            console.log(`    node scripts/regenerar-imagenes-malas.mjs --ia-generadas --genera --limite 10\n`)
+            return
         }
-        return true
-    })
+    } else {
+        // ── MODO NORMAL: imágenes auto_* (malas)
+        console.log('📋 Cargando recetas protegidas (url_origen)...')
+        const { data: protegidas, error: errProt } = await sb
+            .from('recetas')
+            .select('imagen_url')
+            .not('url_origen', 'is', null)
 
-    const lista = PRUEBA ? candidatasFiltradas.slice(0, 3) : candidatasFiltradas
-    const coste  = (lista.length * 0.034).toFixed(2)
+        if (errProt) { console.error('❌', errProt.message); process.exit(1) }
 
-    console.log(`\n📊 Resumen:`)
-    console.log(`   Candidatas con imagen auto_*: ${(candidatas || []).length}`)
-    console.log(`   Tras filtrar compartidas:      ${candidatasFiltradas.length}`)
-    console.log(`   A procesar ahora:              ${lista.length}`)
-    console.log(`   Coste estimado:               ~$${coste}`)
+        const archivosProtegidos = new Set(
+            (protegidas || [])
+                .map(r => extractFilename(r.imagen_url))
+                .filter(Boolean)
+        )
+        console.log(`   ${archivosProtegidos.size} archivos de imagen protegidos\n`)
 
-    if (!GENERA) {
-        console.log('\n⚠️  PREVIEW — añade --genera para regenerar\n')
-        lista.forEach((r, i) => {
-            const filename = extractFilename(r.imagen_url) || '—'
-            console.log(`  ${String(i + 1).padStart(3)}. ${r.nombre}`)
-            console.log(`       tipo: ${r.tipo_plato || r.categoria || '—'} | archivo: ${filename}`)
+        let query = sb
+            .from('recetas')
+            .select('id, nombre, tipo_plato, categoria, imagen_url, receta_ingredientes(nombre_libre)')
+            .order('nombre')
+
+        if (!FORZAR) {
+            query = query.eq('imagen_tipo', 'pendiente_revision')
+        }
+        if (SOLO_ID) query = query.eq('id', SOLO_ID)
+        if (!SOLO_ID) query = query.limit(MAX)
+
+        const { data: candidatas, error: errCand } = await query
+        if (errCand) { console.error('❌', errCand.message); process.exit(1) }
+
+        const candidatasFiltradas = (candidatas || []).filter(r => {
+            const filename = extractFilename(r.imagen_url)
+            if (!filename) return false
+            if (archivosProtegidos.has(filename)) {
+                console.log(`   ⚠️  SKIP (imagen compartida con receta protegida): ${r.nombre}`)
+                return false
+            }
+            return true
         })
-        console.log(`\n  Ejemplos:`)
-        console.log(`    node scripts/regenerar-imagenes-malas.mjs --prueba --genera`)
-        console.log(`    node scripts/regenerar-imagenes-malas.mjs --genera`)
-        console.log(`    node scripts/regenerar-imagenes-malas.mjs --genera --limite 20`)
-        console.log(`    node scripts/regenerar-imagenes-malas.mjs --repara-chuck --genera\n`)
-        return
+
+        lista = PRUEBA ? candidatasFiltradas.slice(0, 3) : candidatasFiltradas
+        const coste = (lista.length * 0.034).toFixed(2)
+
+        console.log(`\n📊 Resumen:`)
+        console.log(`   Candidatas con imagen auto_*: ${(candidatas || []).length}`)
+        console.log(`   Tras filtrar compartidas:      ${candidatasFiltradas.length}`)
+        console.log(`   A procesar ahora:              ${lista.length}`)
+        console.log(`   Coste estimado:               ~$${coste}`)
+
+        if (!GENERA) {
+            console.log('\n⚠️  PREVIEW — añade --genera para regenerar\n')
+            lista.forEach((r, i) => {
+                const filename = extractFilename(r.imagen_url) || '—'
+                console.log(`  ${String(i + 1).padStart(3)}. ${r.nombre}`)
+                console.log(`       tipo: ${r.tipo_plato || r.categoria || '—'} | archivo: ${filename}`)
+            })
+            console.log(`\n  Ejemplos:`)
+            console.log(`    node scripts/regenerar-imagenes-malas.mjs --prueba --genera`)
+            console.log(`    node scripts/regenerar-imagenes-malas.mjs --genera`)
+            console.log(`    node scripts/regenerar-imagenes-malas.mjs --genera --limite 20`)
+            console.log(`    node scripts/regenerar-imagenes-malas.mjs --repara-chuck --genera\n`)
+            return
+        }
     }
 
     console.log('\n🚀 Regenerando...\n')

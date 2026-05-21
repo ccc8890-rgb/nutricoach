@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import {
-    ShoppingCart, Plus, X, ChevronDown, ChevronUp,
-    Copy, Check, TrendingDown, Store, Euro
+    ShoppingCart, X, ChevronDown, ChevronUp,
+    Copy, Check, Store
 } from 'lucide-react'
 
 /* ── Tipos ─────────────────────────────────────────────────── */
@@ -92,15 +92,37 @@ export default function ListaCompraPage() {
 
     /* Carga inicial */
     useEffect(() => {
-        Promise.all([
-            fetch('/api/recetas').then(r => r.json()),
-            fetch('/api/clientes').then(r => r.json()),
-            fetch('/api/precios/supermercados').then(r => r.json()),
-        ]).then(([recetasData, clientesData, supersData]) => {
-            setRecetas(recetasData.recetas || recetasData || [])
-            setClientes(clientesData.clientes || clientesData || [])
-            setSupermercados(supersData.supermercados || supersData || [])
-        }).catch(e => { console.error('[ListaCompraPage] Error cargando datos iniciales:', e); setError('Error al cargar datos') })
+        async function cargarDatos() {
+            try {
+                const [recetasRes, clientesRes, supersRes] = await Promise.all([
+                    fetch('/api/recetas'),
+                    fetch('/api/clientes'),
+                    fetch('/api/precios/supermercados'),
+                ])
+                if (!recetasRes.ok || !clientesRes.ok || !supersRes.ok) {
+                    throw new Error('No se pudieron cargar los datos iniciales')
+                }
+
+                const [recetasData, clientesData, supersData] = await Promise.all([
+                    recetasRes.json(),
+                    clientesRes.json(),
+                    supersRes.json(),
+                ])
+
+                const recetasLista = recetasData.recetas ?? recetasData
+                const clientesLista = clientesData.clientes ?? clientesData
+                const supersLista = supersData.supermercados ?? supersData
+
+                setRecetas(Array.isArray(recetasLista) ? recetasLista : [])
+                setClientes(Array.isArray(clientesLista) ? clientesLista : [])
+                setSupermercados(Array.isArray(supersLista) ? supersLista : [])
+            } catch (e) {
+                console.warn('[ListaCompraPage] Error cargando datos iniciales:', e)
+                setError('Error al cargar datos')
+            }
+        }
+
+        cargarDatos()
     }, [])
 
     /* Añadir receta */
@@ -223,7 +245,11 @@ export default function ListaCompraPage() {
     function toggleExpand(id: string) {
         setExpandidos(prev => {
             const s = new Set(prev)
-            s.has(id) ? s.delete(id) : s.add(id)
+            if (s.has(id)) {
+                s.delete(id)
+            } else {
+                s.add(id)
+            }
             return s
         })
     }

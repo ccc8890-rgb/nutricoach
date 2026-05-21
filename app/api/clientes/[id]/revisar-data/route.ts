@@ -28,7 +28,7 @@ export async function GET(
       sb.from('onboarding_responses')
         .select('*')
         .eq('cliente_id', id)
-        .single(),
+        .maybeSingle(),
       sb.from('registros_ia')
         .select('id, respuesta_json, created_at')
         .eq('cliente_id', id)

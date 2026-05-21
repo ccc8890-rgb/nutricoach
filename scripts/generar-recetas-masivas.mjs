@@ -51,108 +51,123 @@ const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 // ── Flags ──
 const args = process.argv.slice(2)
 const flagLimite = args.find(a => a.startsWith('--limite='))
-const LIMITE = flagLimite ? parseInt(flagLimite.split('=')[1], 10) : 70
+const LIMITE = flagLimite ? parseInt(flagLimite.split('=')[1], 10) : 90
 const SOLO_SALADAS = args.includes('--secos')
 const SOLO_DULCES = args.includes('--dulces')
 
-// ── 70 recetas nuevas para llegar a 200+ ──────────────
-// Prioriza categorías infrarrepresentadas: Comida, Cena, Merienda, Snack salado
+// COACH_ID fijo (Carlos Casanova)
+const COACH_ID = 'f62aea4e-69a2-4062-b517-bb6a639ee1b5'
+
+// ── 90 recetas nuevas — enfocadas en los GAPS detectados ──────────────
+// Prioridad: CENAS (27→60), DESAYUNOS SALADOS (0→15), COMIDAS diversas (arroces, pasta, legumbres)
+// Estas recetas se insertan con fuente_tipo='ia_generada' y estado='en_revision'
+// para que Carlos pueda revisarlas y sustituirlas por recetas reales en el futuro.
 const RECETAS_A_GENERAR = [
-    // === COMIDAS (platos principales) 25 ===
-    { nombre: 'Pollo al horno con patatas y romero', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 40 },
-    { nombre: 'Lubina al horno con verduras asadas', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 2, tiempo_prep: 15, tiempo_coccion: 30 },
-    { nombre: 'Pechuga de pollo rellena de espinacas y queso', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 2, tiempo_prep: 20, tiempo_coccion: 25 },
-    { nombre: 'Salteado de ternera con brócoli y jengibre', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 15 },
-    { nombre: 'Curry de garbanzos con leche de coco', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 3, tiempo_prep: 10, tiempo_coccion: 25 },
-    { nombre: 'Wok de pollo con verduras y salsa de soja', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 12 },
-    { nombre: 'Merluza a la plancha con pisto', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 20 },
-    { nombre: 'Albóndigas de pollo en salsa ligera de tomate', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 3, tiempo_prep: 20, tiempo_coccion: 30 },
-    { nombre: 'Pavo salteado con calabacín y pimientos', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 15 },
-    { nombre: 'Ensalada de quinoa con aguacate y granada', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 20, tiempo_coccion: 0 },
-    { nombre: 'Lentejas estofadas con verduras', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 4, tiempo_prep: 15, tiempo_coccion: 40 },
-    { nombre: 'Pollo teriyaki con arroz integral', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 2, tiempo_prep: 15, tiempo_coccion: 25 },
-    { nombre: 'Bowl de salmón con aguacate y edamame', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 1, tiempo_prep: 15, tiempo_coccion: 10 },
-    { nombre: 'Pimientos rellenos de pollo y arroz', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 2, tiempo_prep: 20, tiempo_coccion: 35 },
-    { nombre: 'Revuelto de claras con espinacas y champiñones', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 10 },
-    { nombre: 'Tortilla de claras con verduras al horno', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 20 },
 
-    // === CENAS (ligeras) 15 ===
-    { nombre: 'Crema de calabaza con jengibre', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 3, tiempo_prep: 10, tiempo_coccion: 25 },
-    { nombre: 'Tartar de salmón con aguacate', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'media', porciones: 2, tiempo_prep: 20, tiempo_coccion: 0 },
-    { nombre: 'Ensalada de espinacas con pollo y vinagreta balsámica', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 10 },
-    { nombre: 'Sopa de verduras con fideos de arroz', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 3, tiempo_prep: 10, tiempo_coccion: 20 },
-    { nombre: 'Berenjenas a la parmesana ligeras', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'media', porciones: 2, tiempo_prep: 15, tiempo_coccion: 30 },
-    { nombre: 'Ceviche de corvina con mango', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'media', porciones: 2, tiempo_prep: 25, tiempo_coccion: 0 },
-    { nombre: 'Wrap de lechuga con pollo y verduras crujientes', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 8 },
-    { nombre: 'Ensalada templada de garbanzos con bacalao', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 15 },
-    { nombre: 'Calabacín relleno de pavo y queso light', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 25 },
-    { nombre: 'Gazpacho de sandía y tomate', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 3, tiempo_prep: 15, tiempo_coccion: 0 },
+    // ══════════════════════════════════════════════════════════
+    // CENAS — PESCADO Y MARISCO (objetivo: +20 cenas de pescado)
+    // ══════════════════════════════════════════════════════════
+    { nombre: 'Salmón al horno con espárragos y limón', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 20 },
+    { nombre: 'Dorada a la sal con patatas al vapor', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 35 },
+    { nombre: 'Merluza al horno con pisto de verduras', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 25 },
+    { nombre: 'Gambas al ajillo con pan integral tostado', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 5, tiempo_coccion: 8 },
+    { nombre: 'Sepia a la plancha con alioli de ajo negro', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 5, tiempo_coccion: 10 },
+    { nombre: 'Mejillones al vapor con salsa de tomate casera', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 12 },
+    { nombre: 'Bacalao al pil pil ligero con pimientos', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'media', porciones: 2, tiempo_prep: 15, tiempo_coccion: 20 },
+    { nombre: 'Lubina a la plancha con salsa verde de perejil', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 5, tiempo_coccion: 12 },
+    { nombre: 'Boquerones al horno con ajo y limón', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 15 },
+    { nombre: 'Caballa al horno con tomate y orégano', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 20 },
+    { nombre: 'Pulpo a la gallega con pimentón ahumado', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'media', porciones: 2, tiempo_prep: 5, tiempo_coccion: 45 },
+    { nombre: 'Chipirones en su tinta con arroz blanco', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'media', porciones: 2, tiempo_prep: 15, tiempo_coccion: 25 },
+    { nombre: 'Atún a la plancha con ensalada de tomate y cebolla', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 6 },
+    { nombre: 'Gamba roja a la plancha con sal en escamas', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 5, tiempo_coccion: 4 },
 
-    // === SNACKS SALUDABLES 10 ===
-    { nombre: 'Rollitos de jamón serrano con queso fresco', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 0 },
-    { nombre: 'Chips de kale al horno', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 2, tiempo_prep: 5, tiempo_coccion: 12 },
-    { nombre: 'Huevos rellenos de atún y yogur', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 10 },
-    { nombre: 'Pinchos de mozzarella con tomate cherry y albahaca', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 0 },
-    { nombre: 'Hummus de remolacha con crudités', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 4, tiempo_prep: 15, tiempo_coccion: 0 },
-    { nombre: 'Tostas de pan de centeno con sardinas y tomate', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 2, tiempo_prep: 5, tiempo_coccion: 3 },
-    { nombre: 'Palitos de pepino con tzatziki', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 0 },
+    // ══════════════════════════════════════════════════════════
+    // CENAS — CARNE LIGERA Y AVES
+    // ══════════════════════════════════════════════════════════
+    { nombre: 'Pechuga de pavo al horno con limón y hierbas', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 25 },
+    { nombre: 'Pollo a la plancha con ensalada de rúcula y parmesano', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 1, tiempo_prep: 10, tiempo_coccion: 12 },
+    { nombre: 'Lomo de cerdo a la plancha con manzana y mostaza', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 5, tiempo_coccion: 10 },
+    { nombre: 'Filete de ternera a la plancha con espinacas salteadas', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 8 },
+    { nombre: 'Albóndigas de pavo en salsa de champiñones', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'media', porciones: 3, tiempo_prep: 20, tiempo_coccion: 25 },
 
-    // === DESAYUNOS (más variedad) 10 ===
-    { nombre: 'Tostada de pan integral con aguacate y huevo revuelto', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 10, tiempo_coccion: 5 },
-    { nombre: 'Bowl de yogur con granola casera y fruta de temporada', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 10, tiempo_coccion: 0 },
-    { nombre: 'Tortitas de avena y calabaza', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 12 },
-    { nombre: 'Muesli casero con frutos secos y semillas', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 6, tiempo_prep: 10, tiempo_coccion: 15 },
-    { nombre: 'Smoothie verde de espinacas y plátano', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
-    { nombre: 'Huevos poché sobre aguacate y pan integral', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'media', porciones: 1, tiempo_prep: 10, tiempo_coccion: 5 },
-    { nombre: 'Parfait de yogur griego con frutos rojos y semillas de chía', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 10, tiempo_coccion: 0 },
+    // ══════════════════════════════════════════════════════════
+    // CENAS — VERDURA + PROTEÍNA Y SOPAS
+    // ══════════════════════════════════════════════════════════
+    { nombre: 'Frittata de verduras al horno con queso feta', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 20 },
+    { nombre: 'Coliflor asada con salsa de yogur y especias', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 30 },
+    { nombre: 'Sopa de tomate asado con albahaca y huevo pochado', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 25 },
+    { nombre: 'Caldo de pollo casero con verduras y fideos', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 4, tiempo_prep: 15, tiempo_coccion: 40 },
+    { nombre: 'Crema de brócoli con queso fresco y almendras', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 3, tiempo_prep: 10, tiempo_coccion: 20 },
+    { nombre: 'Espinacas salteadas con huevo y jamón ibérico', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 8 },
+    { nombre: 'Champiñones rellenos de atún y queso gratinados', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 15 },
+    { nombre: 'Tortilla española de patata con cebolla', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'media', porciones: 4, tiempo_prep: 20, tiempo_coccion: 15 },
+    { nombre: 'Pisto manchego con huevos al plato', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 25 },
 
-    // === POSTRES (variedad más ligera) 5 ===
-    { nombre: 'Manzanas asadas con canela y nueces', categoria: 'Postre', tipo_plato: 'Postre', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 25 },
-    { nombre: 'Peras al vino tinto sin azúcar', categoria: 'Postre', tipo_plato: 'Postre', dificultad: 'media', porciones: 4, tiempo_prep: 10, tiempo_coccion: 30 },
+    // ══════════════════════════════════════════════════════════
+    // DESAYUNOS SALADOS (GAP CRÍTICO — actualmente 0)
+    // ══════════════════════════════════════════════════════════
+    { nombre: 'Huevos revueltos con espinacas y jamón serrano', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 8 },
+    { nombre: 'Tortilla francesa proteica con queso y champiñones', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 6 },
+    { nombre: 'Tostadas con salmón ahumado, queso fresco y alcaparras', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
+    { nombre: 'Tostadas de sardinas con tomate triturado y orégano', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
+    { nombre: 'Huevos a la mexicana con tomate pimiento y jalapeño', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 10 },
+    { nombre: 'Bowl salado de quínoa con huevo y aguacate', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 10, tiempo_coccion: 15 },
+    { nombre: 'Scrambled eggs con chorizo ibérico y pimiento verde', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 8 },
+    { nombre: 'Tosta de pan de centeno con atún y tomate', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
+    { nombre: 'Shakshuka ligera con pollo y especias marroquíes', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'media', porciones: 2, tiempo_prep: 10, tiempo_coccion: 15 },
+    { nombre: 'Tortilla de claras con pimientos y cebolla caramelizada', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 10, tiempo_coccion: 10 },
+    { nombre: 'Porridge de avena salado con huevo poché y aguacate', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'media', porciones: 1, tiempo_prep: 5, tiempo_coccion: 10 },
+    { nombre: 'Tostada de pan integral con jamón de pavo y tomate', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
 
-    // === MERIENDAS 5 ===
-    { nombre: 'Batido de proteínas con plátano y mantequilla de cacahuete', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
-    { nombre: 'Yogur griego con compota de manzana sin azúcar', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
-    { nombre: 'Mini sándwich de pavo y queso fresco en pan integral', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
-    { nombre: 'Bowl de fruta fresca con requesón y semillas', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 10, tiempo_coccion: 0 },
+    // ══════════════════════════════════════════════════════════
+    // COMIDAS — ARROCES (actualmente solo 3)
+    // ══════════════════════════════════════════════════════════
+    { nombre: 'Arroz caldoso con rape y gambas', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 3, tiempo_prep: 15, tiempo_coccion: 30 },
+    { nombre: 'Arroz a banda con alioli casero', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 3, tiempo_prep: 15, tiempo_coccion: 35 },
+    { nombre: 'Risotto de espárragos trigueros y parmesano', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 2, tiempo_prep: 10, tiempo_coccion: 25 },
+    { nombre: 'Arroz con costillas y judías verdes al estilo valenciano', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 4, tiempo_prep: 20, tiempo_coccion: 40 },
+    { nombre: 'Arroz negro con sepia y alioli', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 3, tiempo_prep: 15, tiempo_coccion: 30 },
+    { nombre: 'Arroz al horno con embutido y patata', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 4, tiempo_prep: 15, tiempo_coccion: 35 },
 
-    // === MÁS RECETAS (para llegar a 200+) ===
-    // COMIDAS
-    { nombre: 'Fajitas de pollo con pimientos y cebolla', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 15 },
-    { nombre: 'Bacalao al horno con patatas panadera', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 2, tiempo_prep: 15, tiempo_coccion: 35 },
-    { nombre: 'Arroz integral con pollo y verduras', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 3, tiempo_prep: 15, tiempo_coccion: 30 },
-    { nombre: 'Pizza casera de base de coliflor', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 2, tiempo_prep: 20, tiempo_coccion: 25 },
-    { nombre: 'Solomillo de cerdo al horno con manzana', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 2, tiempo_prep: 15, tiempo_coccion: 30 },
-    { nombre: 'Rape a la marinera ligero', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 2, tiempo_prep: 15, tiempo_coccion: 25 },
-    { nombre: 'Tallarines de calabacín con pesto de albahaca', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 10 },
-    { nombre: 'Estofado de garbanzos con calabaza y espinacas', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 4, tiempo_prep: 15, tiempo_coccion: 35 },
-    // CENAS
-    { nombre: 'Sopa de pescado y marisco ligera', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'media', porciones: 3, tiempo_prep: 15, tiempo_coccion: 25 },
-    { nombre: 'Ensalada de lentejas con verduras asadas', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 0 },
-    { nombre: 'Revuelto de setas con ajetes y gambas', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 10 },
-    { nombre: 'Crema de puerro y patata light', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 3, tiempo_prep: 10, tiempo_coccion: 25 },
-    { nombre: 'Ensalada de rúcula con queso de cabra y nueces', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 0 },
-    { nombre: 'Brócoli al vapor con jamón serrano y huevo poché', categoria: 'Cena', tipo_plato: 'Cena', dificultad: 'fácil', porciones: 1, tiempo_prep: 10, tiempo_coccion: 12 },
-    // SNACKS
-    { nombre: 'Canapés de pepino con salmón ahumado y eneldo', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 0 },
-    { nombre: 'Palitos de apio con crema de cacahuete', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 2, tiempo_prep: 5, tiempo_coccion: 0 },
-    { nombre: 'Garbanzos especiados al horno crujientes', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 4, tiempo_prep: 5, tiempo_coccion: 25 },
-    { nombre: 'Wrap de lechuga con atún y verduras', categoria: 'Snack', tipo_plato: 'Snack', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 0 },
-    // DESAYUNOS
-    { nombre: 'Porridge de avena con manzana y canela', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 10 },
-    { nombre: 'Tostada de pan integral con requesón y mermelada sin azúcar', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
-    { nombre: 'Crepes de avena y plátano', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 10 },
-    { nombre: 'Batido de frutos rojos con kéfir', categoria: 'Desayuno', tipo_plato: 'Desayuno', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
-    // POSTRES
-    { nombre: 'Mousse de chocolate negro y aguacate', categoria: 'Postre', tipo_plato: 'Postre', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 0 },
-    { nombre: 'Helado de plátano y cacao (nice cream)', categoria: 'Postre', tipo_plato: 'Postre', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 0 },
-    { nombre: 'Flan de huevo casero sin azúcar', categoria: 'Postre', tipo_plato: 'Postre', dificultad: 'media', porciones: 4, tiempo_prep: 15, tiempo_coccion: 45 },
-    { nombre: 'Natillas de coco y vainilla', categoria: 'Postre', tipo_plato: 'Postre', dificultad: 'fácil', porciones: 3, tiempo_prep: 10, tiempo_coccion: 15 },
-    // MERIENDAS
-    { nombre: 'Tostada de pan de centeno con aguacate y tomate', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
-    { nombre: 'Puñado de frutos secos con yogur natural', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 2, tiempo_coccion: 0 },
-    { nombre: 'Rollitos de pavo con queso fresco y espinacas', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 0 },
-    { nombre: 'Batido verde de manzana y espinacas', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
+    // ══════════════════════════════════════════════════════════
+    // COMIDAS — PASTA (actualmente 0 recetas de pasta española)
+    // ══════════════════════════════════════════════════════════
+    { nombre: 'Pasta integral con atún y tomate casero', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 15 },
+    { nombre: 'Espaguetis con gambas y salsa de ajo y perejil', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 15 },
+    { nombre: 'Pasta integral con pollo y pesto de espinacas', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 15 },
+    { nombre: 'Macarrones con carne picada y tomate casero', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 3, tiempo_prep: 10, tiempo_coccion: 20 },
+    { nombre: 'Pasta al pesto de albahaca con tomates cherry', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 10, tiempo_coccion: 12 },
+    { nombre: 'Fideuà de pescado y marisco al estilo valenciano', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 3, tiempo_prep: 15, tiempo_coccion: 25 },
+
+    // ══════════════════════════════════════════════════════════
+    // COMIDAS — LEGUMBRES (actualmente solo 3-4)
+    // ══════════════════════════════════════════════════════════
+    { nombre: 'Lentejas con chorizo y verduras al estilo tradicional', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 4, tiempo_prep: 15, tiempo_coccion: 40 },
+    { nombre: 'Judías blancas con almejas y salsa verde', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 3, tiempo_prep: 15, tiempo_coccion: 25 },
+    { nombre: 'Potaje de garbanzos con espinacas y bacalao', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 4, tiempo_prep: 15, tiempo_coccion: 35 },
+    { nombre: 'Alubias rojas con morcilla y pimiento choricero', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 4, tiempo_prep: 20, tiempo_coccion: 50 },
+    { nombre: 'Hummus casero con crudités y pan de pita', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 4, tiempo_prep: 10, tiempo_coccion: 0 },
+    { nombre: 'Guiso de lentejas rojas con cúrcuma y coco', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 3, tiempo_prep: 10, tiempo_coccion: 25 },
+
+    // ══════════════════════════════════════════════════════════
+    // COMIDAS — GUISOS Y CARNES TRADICIONALES ESPAÑOLAS
+    // ══════════════════════════════════════════════════════════
+    { nombre: 'Muslos de pollo al horno con patatas panaderas', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 3, tiempo_prep: 15, tiempo_coccion: 45 },
+    { nombre: 'Dorada al horno con patatas y verduras mediterráneas', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'fácil', porciones: 2, tiempo_prep: 15, tiempo_coccion: 30 },
+    { nombre: 'Caldereta de cordero con patatas y pimientos', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 4, tiempo_prep: 20, tiempo_coccion: 60 },
+    { nombre: 'Estofado de ternera con patatas y zanahorias', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 4, tiempo_prep: 20, tiempo_coccion: 70 },
+    { nombre: 'Pollo en pepitoria con almendras y azafrán', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 3, tiempo_prep: 20, tiempo_coccion: 40 },
+    { nombre: 'Conejo al ajillo con aceite de oliva y vino blanco', categoria: 'Comida', tipo_plato: 'Comida', dificultad: 'media', porciones: 3, tiempo_prep: 15, tiempo_coccion: 35 },
+
+    // ══════════════════════════════════════════════════════════
+    // MERIENDAS — AMPLIAR BASE (actualmente solo 11)
+    // ══════════════════════════════════════════════════════════
+    { nombre: 'Tostada de pan de centeno con mantequilla de almendra y plátano', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 3, tiempo_coccion: 0 },
+    { nombre: 'Queso fresco con higos frescos y nueces', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
+    { nombre: 'Mini tortilla de claras con espinacas', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 8 },
+    { nombre: 'Dátiles rellenos de almendra y chocolate negro', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 1, tiempo_prep: 5, tiempo_coccion: 0 },
+    { nombre: 'Arroz con leche de avena y canela sin azúcar', categoria: 'Merienda', tipo_plato: 'Merienda', dificultad: 'fácil', porciones: 2, tiempo_prep: 5, tiempo_coccion: 25 },
 ]
 
 // ── Normalizar nombre ─────────────────────────────────
@@ -471,7 +486,14 @@ async function insertarRecetaEnBD(recetaPlan, dataIA, ingredientesDB) {
         categoria: recetaPlan.categoria,
         tipo_plato: recetaPlan.tipo_plato,
         dificultad: recetaPlan.dificultad,
-        estado: 'aprobada',
+        // en_revision para que Carlos las revise antes de activarlas
+        estado: 'en_revision',
+        // Trazabilidad: identifica estas recetas como generadas por IA
+        // → permite filtrarlas en el futuro para sustituirlas por recetas reales
+        fuente: 'ia-generada',
+        fuente_tipo: 'ia_generada',
+        coach_id: COACH_ID,
+        notas_coach: 'Generada automáticamente por DeepSeek. Revisar macros, ingredientes e imagen antes de aprobar.',
         kcal: macros.kcal,
         proteinas: macros.proteinas,
         carbohidratos: macros.carbohidratos,
