@@ -48,6 +48,7 @@ const NON_FOOD_TERMS = [
   'champu', 'champú', 'gel ducha', 'desodorante', 'detergente', 'suavizante',
   'lejia', 'lejía', 'ambientador', 'maquillaje', 'pañal', 'compresa',
   'colonia', 'perfume', 'cepillo dental', 'pasta dentifrica', 'crema facial',
+  'gel de ducha', 'oleogel ducha', 'colgador wc', 'crema manos', 'perlas perfume ropa',
 ]
 
 function money(n) {

@@ -1,20 +1,9 @@
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 
 export const dynamic = 'force-dynamic'
-
-const RANGOS_KCAL: Record<string, { min: number; max: number }> = {
-    Desayuno: { min: 80, max: 900 },
-    Almuerzo: { min: 50, max: 600 },
-    Comida: { min: 100, max: 1200 },
-    Cena: { min: 80, max: 1000 },
-    Snack: { min: 30, max: 500 },
-    Merienda: { min: 50, max: 600 },
-    Postre: { min: 30, max: 800 },
-    Bebida: { min: 0, max: 300 },
-    Condimento: { min: 0, max: 200 },
-}
 
 async function requireUser(request: NextRequest) {
     const auth = createApiSupabase(request)
@@ -48,6 +37,8 @@ export async function GET(request: NextRequest) {
         porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min,
         kcal, proteinas, carbohidratos, grasas, fibra,
         imagen_url, url_origen, fuente, estado,
+        score_calidad, nivel_fit, tipo_uso, contexto_uso, apta_cliente,
+        alcohol_culinario, quality_estado_sugerido, quality_actualizado_at,
         created_at, updated_at
       `)
             .order('nombre', { ascending: true })
@@ -113,9 +104,7 @@ export async function POST(request: NextRequest) {
         const { data: recetas, error } = await supabase
             .from('recetas')
             .select(`
-                id, nombre, descripcion, instrucciones, categoria, tipo_plato,
-                dificultad, intolerancias, imagen_url, url_origen, kcal, porciones, estado,
-                receta_ingredientes(id, alimento_id, cantidad_gramos)
+                id, nombre, estado
             `)
             .in('id', ids)
 
@@ -125,26 +114,8 @@ export async function POST(request: NextRequest) {
         const aprobables: string[] = []
 
         for (const receta of recetas || []) {
-            const motivos: string[] = []
-            const ingredientes = receta.receta_ingredientes || []
-            if (!receta.descripcion) motivos.push('sin descripción')
-            if (!receta.instrucciones || receta.instrucciones.length < 20) motivos.push('instrucciones insuficientes')
-            if (!receta.categoria) motivos.push('sin categoría')
-            if (!receta.dificultad) motivos.push('sin dificultad')
-            if (!receta.imagen_url) motivos.push('sin imagen')
-            if (!receta.intolerancias || receta.intolerancias.length === 0) motivos.push('sin intolerancias')
-            if (!receta.kcal || receta.kcal <= 0) motivos.push('sin macros')
-            if (!receta.porciones || receta.porciones <= 0) motivos.push('porciones inválidas')
-            if (ingredientes.length < 3) motivos.push(`solo ${ingredientes.length} ingredientes`)
-            if (ingredientes.some((i: { alimento_id: string | null }) => !i.alimento_id)) motivos.push('ingredientes sin alimento')
-            if (ingredientes.some((i: { cantidad_gramos: number | null }) => !i.cantidad_gramos || i.cantidad_gramos <= 0)) motivos.push('cantidades inválidas')
-
-            const rango = receta.tipo_plato ? RANGOS_KCAL[receta.tipo_plato] : null
-            if (rango && receta.kcal) {
-                if (receta.kcal < rango.min) motivos.push(`kcal bajas para ${receta.tipo_plato}`)
-                if (receta.kcal > rango.max) motivos.push(`kcal altas para ${receta.tipo_plato}`)
-            }
-
+            const audit = await auditarRecetaProfesional(supabase, receta.id, 'revision_lote_quality', 'api_recetas_revisar')
+            const motivos = [...audit.score.bloqueantes]
             if (motivos.length > 0) bloqueadas.push({ id: receta.id, nombre: receta.nombre, motivos })
             else aprobables.push(receta.id)
         }
@@ -163,6 +134,8 @@ export async function POST(request: NextRequest) {
             .in('id', aprobables)
 
         if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
+
+        await Promise.all(aprobables.map(id => auditarRecetaProfesional(supabase, id, 'aprobada_lote', 'api_recetas_revisar')))
 
         return NextResponse.json({ ok: true, aprobadas: aprobables.length })
     } catch (err) {

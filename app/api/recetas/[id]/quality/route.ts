@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 
 type IssueSeverity = 'bloqueante' | 'revisar' | 'aviso'
 
@@ -24,20 +25,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
     const srv = createServiceSupabase()
-    const [{ data: receta }, { data: ingredientes }] = await Promise.all([
-      srv
-        .from('recetas')
-        .select('id, nombre, tipo_plato, porciones, kcal_por_porcion, kcal')
-        .eq('id', id)
-        .single(),
-      srv
-        .from('receta_ingredientes')
-        .select('id, alimento_id, nombre_libre, cantidad_gramos, alimentos(id,nombre,calorias,proteinas,carbohidratos,grasas)')
-        .eq('receta_id', id)
-        .order('cantidad_gramos', { ascending: false }),
-    ])
-
-    if (!receta) return NextResponse.json({ error: 'Receta no encontrada' }, { status: 404 })
+    const audit = await auditarRecetaProfesional(srv, id, 'quality_check', 'api_quality')
+    const receta = audit.receta
+    const ingredientes = audit.ingredientes
 
     const issues = []
     const ings = ingredientes || []
@@ -49,20 +39,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const cantidadInvalida = ings.filter(i => !Number.isFinite(Number(i.cantidad_gramos)) || Number(i.cantidad_gramos) <= 0)
     if (cantidadInvalida.length > 0) issues.push(issue('bloqueante', 'cantidad_invalida', `${cantidadInvalida.length} ingrediente${cantidadInvalida.length === 1 ? '' : 's'} sin cantidad válida.`))
 
-    const alimentoIds = ings.map(i => i.alimento_id).filter(Boolean)
-    const { data: precios } = alimentoIds.length
-      ? await srv.from('mejores_precios_por_alimento').select('alimento_id').in('alimento_id', alimentoIds)
-      : { data: [] as Array<{ alimento_id: string }> }
-    const conPrecio = new Set((precios || []).map(p => p.alimento_id))
     const conAlimento = ings.filter(i => i.alimento_id)
-    const sinPrecio = conAlimento.filter(i => !conPrecio.has(i.alimento_id))
+    const sinPrecio = conAlimento.filter(i => !audit.conPrecio.has(i.alimento_id as string))
     const coberturaPct = conAlimento.length > 0 ? Math.round(((conAlimento.length - sinPrecio.length) / conAlimento.length) * 100) : 0
     if (conAlimento.length > 0 && coberturaPct < 80) {
       issues.push(issue('revisar', 'cobertura_precio_baja', `Cobertura de precios ${coberturaPct}%. Faltan ${sinPrecio.length} ingrediente${sinPrecio.length === 1 ? '' : 's'} con precio.`))
     }
 
     const porciones = receta.porciones || 1
-    const kcalPorPorcion = receta.kcal_por_porcion || ((receta.kcal || 0) / porciones)
+    const kcalPorPorcion = (receta.kcal || 0) / porciones
     const rango = receta.tipo_plato ? RANGOS_KCAL[receta.tipo_plato] : null
     if (rango && kcalPorPorcion > 0) {
       if (kcalPorPorcion < rango.min) issues.push(issue('revisar', 'kcal_bajas', `${Math.round(kcalPorPorcion)} kcal por porción para ${receta.tipo_plato}.`))
@@ -70,10 +55,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     return NextResponse.json({
-      ok: !issues.some(i => i.severity === 'bloqueante' || i.severity === 'revisar'),
+      ok: audit.resumen.aprobable,
       cobertura_pct: coberturaPct,
       ingredientes_sin_precio: sinPrecio.length,
       issues,
+      score_calidad: audit.score.score,
+      banda_calidad: audit.score.banda,
+      score_desglose: audit.score.desglose,
+      bloqueantes: audit.score.bloqueantes,
+      avisos: audit.score.avisos,
+      estado_sugerido: audit.resumen.estado_sugerido,
+      clasificacion: audit.clasificacion,
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)

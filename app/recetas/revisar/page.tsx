@@ -29,6 +29,14 @@ interface RecetaRevisar {
     url_origen: string | null
     fuente: string | null
     estado: string | null
+    score_calidad: number | null
+    nivel_fit: string | null
+    tipo_uso: string | null
+    contexto_uso: string | null
+    apta_cliente: string | null
+    alcohol_culinario: boolean | null
+    quality_estado_sugerido: string | null
+    quality_actualizado_at: string | null
     created_at: string | null
     updated_at: string | null
     num_ingredientes: number
@@ -361,6 +369,12 @@ export default function RevisarRecetasPage() {
                                         </div>
                                     </th>
                                     <th className="text-center px-2 py-2.5 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                        Score
+                                    </th>
+                                    <th className="text-center px-2 py-2.5 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                        Uso
+                                    </th>
+                                    <th className="text-center px-2 py-2.5 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
                                         Kcal
                                     </th>
                                     <th className="text-right px-3 py-2.5 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
@@ -412,6 +426,28 @@ export default function RevisarRecetasPage() {
                                                     style={{ color: r.num_ingredientes > 0 ? 'var(--text)' : 'var(--text-muted)' }}>
                                                     {r.num_ingredientes}
                                                 </span>
+                                            </td>
+
+                                            {/* Score */}
+                                            <td className="px-2 py-2 text-center">
+                                                <span className="text-xs font-mono tabular-nums"
+                                                    style={{
+                                                        color: !r.score_calidad ? 'var(--text-muted)' : r.score_calidad >= 85 ? 'var(--primary)' : r.score_calidad >= 70 ? '#E8A838' : '#FF6B6B',
+                                                    }}>
+                                                    {r.score_calidad ?? '-'}
+                                                </span>
+                                            </td>
+
+                                            {/* Uso profesional */}
+                                            <td className="px-2 py-2 text-center">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className="text-[11px] px-1.5 py-0.5 rounded-md" style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}>
+                                                        {r.nivel_fit ?? 'sin clas.'}
+                                                    </span>
+                                                    {r.alcohol_culinario && (
+                                                        <span className="text-[10px]" style={{ color: '#E8A838' }}>alcohol</span>
+                                                    )}
+                                                </div>
                                             </td>
 
                                             {/* Kcal */}

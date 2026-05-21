@@ -59,6 +59,16 @@ interface RecetaQuality {
   ok: boolean
   cobertura_pct: number
   ingredientes_sin_precio: number
+  score_calidad: number
+  banda_calidad: 'excelente' | 'buena' | 'revisar' | 'bloqueada'
+  estado_sugerido: 'aprobada' | 'en_revision' | 'bloqueada'
+  clasificacion: {
+    nivel_fit: string
+    tipo_uso: string
+    contexto_uso: string
+    apta_cliente: string
+    alcohol_culinario: boolean
+  }
   issues: Array<{
     severity: 'bloqueante' | 'revisar' | 'aviso'
     codigo: string
@@ -372,12 +382,31 @@ export default function DetalleRecetaPage() {
                       Calidad receta
                     </p>
                     <span className="text-xs px-2 py-1 rounded-md" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
-                      {quality.cobertura_pct}% cobertura precios
+                      Score {quality.score_calidad}/100 · {quality.cobertura_pct}% precios
                     </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+                      {quality.banda_calidad}
+                    </span>
+                    <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+                      {quality.clasificacion.nivel_fit}
+                    </span>
+                    <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+                      {quality.clasificacion.tipo_uso}
+                    </span>
+                    <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+                      {quality.clasificacion.apta_cliente}
+                    </span>
+                    {quality.clasificacion.alcohol_culinario && (
+                      <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--warning)' }}>
+                        alcohol culinario
+                      </span>
+                    )}
                   </div>
                   {quality.issues.length === 0 ? (
                     <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                      Sin bloqueos de ingredientes, cantidades o coste.
+                      Sin bloqueos de ingredientes, cantidades o coste. Clasificada para uso profesional.
                     </p>
                   ) : (
                     <ul className="mt-2 space-y-1">

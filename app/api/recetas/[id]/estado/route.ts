@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createApiSupabase } from '@/lib/supabase-server'
+import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 
 export async function PATCH(
   req: NextRequest,
@@ -45,6 +46,13 @@ export async function PATCH(
       console.error(updateError)
       return NextResponse.json({ error: 'Error al actualizar estado' }, { status: 500 })
     }
+
+    await auditarRecetaProfesional(
+      createServiceSupabase(),
+      id,
+      estado === 'aprobada' ? 'aprobada_manual' : `estado_${estado}`,
+      'api_receta_estado'
+    )
 
     return NextResponse.json({ data: { id, estado } })
   } catch (err) {

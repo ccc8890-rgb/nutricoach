@@ -3,6 +3,7 @@ import { exec } from 'child_process'
 import { promisify } from 'util'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { completarAlimentoConIA, refinarRecetaConIA } from '@/lib/deepseek'
+import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 
 const execAsync = promisify(exec)
 
@@ -1449,6 +1450,12 @@ export async function POST(req: NextRequest) {
       } catch (macroErr) {
         console.error('Error calculando macros para receta:', macroErr)
       }
+    }
+
+    try {
+      await auditarRecetaProfesional(supabaseService, receta.id, 'post_importacion', 'api_scrape_receta')
+    } catch (auditErr) {
+      console.error('Error auditando receta post-importación:', auditErr)
     }
 
     // ── Captura de imagen en background si no hay imagen_url ──
