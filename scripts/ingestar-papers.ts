@@ -5,8 +5,8 @@
  * USO:
  *   npx tsx scripts/ingestar-papers.ts                    # Ingesta completa
  *   npx tsx scripts/ingestar-papers.ts --dry-run           # Simular sin insertar
- *   npx tsx scripts/ingestar-papers.ts --skip-extraction   # Solo fetch + evaluar (sin DeepSeek)
- *   npx tsx scripts/ingestar-papers.ts --fuente pubmed-proteina,pubmed-composicion  # Fuentes específicas
+ *   npx tsx scripts/ingestar-papers.ts --skip-extraction   # Solo PubMed (sin DeepSeek)
+ *   npx tsx scripts/ingestar-papers.ts --fuente pubmed-proteina-ejercicio,pubmed-composicion
  *   npx tsx scripts/ingestar-papers.ts --verbose           # Log detallado
  *
  * Para ejecución periódica (Vercel Cron Jobs o cron local):
@@ -18,7 +18,7 @@
  */
 
 import 'dotenv/config'
-import { ejecutarIngesta, FUENTES_RSS } from '../lib/ingesta-papers'
+import { ejecutarIngesta, FUENTES_PUBMED } from '../lib/ingesta-papers'
 
 // ── Parsear argumentos CLI ──────────────────────────────────────────
 const args = process.argv.slice(2)
@@ -38,7 +38,7 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_
 }
 
 if (!skipExtraction && !process.env.DEEPSEEK_API_KEY) {
-  console.error('❌ DEEPSEEK_API_KEY no configurada. Usa --skip-extraction si solo quieres fetch RSS.')
+  console.error('❌ DEEPSEEK_API_KEY no configurada. Usa --skip-extraction si solo quieres fetch PubMed.')
   process.exit(1)
 }
 
@@ -47,14 +47,24 @@ console.log('══════════════════════�
 console.log('🧠  Pipeline de Ingesta de Papers - NutriCoach')
 console.log('═══════════════════════════════════════════════')
 console.log('')
-console.log(`📡 Fuentes activas:      ${fuentesIds ? fuentesIds.length : FUENTES_RSS.length}`)
-console.log(`🔬 Extracción DeepSeek:  ${skipExtraction ? '❌ SKIP' : '✅ ACTIVA'}`)
-console.log(`🧪 Dry run:              ${dryRun ? '✅ SÍ' : '❌ NO (insertará en BD)'}`)
-console.log(`📝 Verbose:              ${verbose ? '✅ SÍ' : '❌ NO'}`)
+console.log(`📡 Fuentes PubMed activas:  ${fuentesIds ? fuentesIds.length : FUENTES_PUBMED.length}`)
+console.log(`🔬 Extracción DeepSeek:      ${skipExtraction ? '❌ SKIP' : '✅ ACTIVA'}`)
+console.log(`🧪 Dry run:                  ${dryRun ? '✅ SÍ' : '❌ NO (insertará en BD)'}`)
+console.log(`📝 Verbose:                  ${verbose ? '✅ SÍ' : '❌ NO'}`)
 console.log('')
 
 if (fuentesIds) {
   console.log(`📌 Fuentes específicas: ${fuentesIds.join(', ')}`)
+  console.log('')
+}
+
+// Listar fuentes si verbose
+if (verbose) {
+  console.log('📋 Fuentes disponibles:')
+  for (const f of FUENTES_PUBMED) {
+    console.log(`   ${f.activa ? '✅' : '❌'} [${f.id}] ${f.nombre}`)
+    console.log(`      Disciplina: ${f.disciplina} | Categoría: ${f.categoria}`)
+  }
   console.log('')
 }
 

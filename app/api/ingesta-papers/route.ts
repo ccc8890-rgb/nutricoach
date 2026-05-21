@@ -3,13 +3,13 @@
 //
 // Body opcional:
 //   { "dryRun": true }          — simular sin insertar
-//   { "skipExtraction": true }  — solo fetch RSS (sin DeepSeek)
+//   { "skipExtraction": true }  — solo fetch PubMed (sin DeepSeek)
 //   { "fuentesIds": ["pubmed-proteina-ejercicio"] } — fuentes específicas
 //
 // Protegida por API key en header: Authorization: Bearer INGESTA_API_KEY
 
 import { NextRequest, NextResponse } from 'next/server'
-import { ejecutarIngesta, FUENTES_RSS } from '@/lib/ingesta-papers'
+import { ejecutarIngesta, FUENTES_PUBMED } from '@/lib/ingesta-papers'
 
 export async function POST(request: NextRequest) {
   // ── Auth: API key simple ─────────────────────────────────────────
@@ -37,12 +37,12 @@ export async function POST(request: NextRequest) {
 
   // ── Validar fuentes ──────────────────────────────────────────────
   if (fuentesIds) {
-    const validIds = new Set(FUENTES_RSS.map(f => f.id))
+    const validIds = new Set(FUENTES_PUBMED.map(f => f.id))
     const invalid = fuentesIds.filter(id => !validIds.has(id))
     if (invalid.length > 0) {
       return NextResponse.json({
         error: `Fuentes inválidas: ${invalid.join(', ')}`,
-        fuentes_disponibles: FUENTES_RSS.map(f => ({ id: f.id, nombre: f.nombre })),
+        fuentes_disponibles: FUENTES_PUBMED.map(f => ({ id: f.id, nombre: f.nombre })),
       }, { status: 400 })
     }
   }
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   if (!skipExtraction && !process.env.DEEPSEEK_API_KEY) {
     return NextResponse.json({
       error: 'DEEPSEEK_API_KEY no configurada',
-      hint: 'Usa skipExtraction=true si solo quieres fetch RSS',
+      hint: 'Usa skipExtraction=true si solo quieres fetch PubMed',
     }, { status: 500 })
   }
 
@@ -76,12 +76,10 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    const elapsed = Date.now() - startTime
-
     return NextResponse.json({
       ok: false,
       error: error instanceof Error ? error.message : 'Error desconocido en el pipeline de ingesta',
-      duracion_ms: elapsed,
+      duracion_ms: Date.now() - startTime,
       timestamp: new Date().toISOString(),
     }, { status: 500 })
   }
@@ -93,12 +91,12 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     name: '🧠 Ingesta de Papers — NutriCoach',
-    description: 'Pipeline automático: PubMed RSS → DeepSeek reader → evaluador → knowledge_base',
+    description: 'Pipeline automático: PubMed E-utilities → DeepSeek reader → evaluador → knowledge_base',
     version: '1.0.0',
     endpoints: {
       POST: 'Ejecutar ingesta de papers',
     },
-    fuentes: FUENTES_RSS.map(f => ({
+    fuentes: FUENTES_PUBMED.map(f => ({
       id: f.id,
       nombre: f.nombre,
       disciplina: f.disciplina,

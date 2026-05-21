@@ -1,32 +1,30 @@
-// ── Configuración de fuentes RSS para PubMed ──────────────────────
-// Basado en términos de búsqueda de nutrición deportiva y composición corporal.
+// ── Configuración de fuentes PubMed vía NCBI E-utilities API ─────
+// Usa esearch + efetch en lugar de erss.cgi (RSS) que es inestable.
+// PubMed API: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
 
-export interface FuenteRSS {
+export interface FuentePubMed {
   id: string
   nombre: string
-  url: string
-  tipo: 'pubmed_rss'
+  /** Término de búsqueda PubMed (formato: term=(query)&retmax=20) */
+  query: string
   disciplina: string
   categoria: string
   activa: boolean
 }
 
 /**
- * Fuentes RSS de PubMed con términos de búsqueda relevantes.
- * Cada URL es un PubMed RSS feed con términos específicos.
+ * 8 fuentes de búsqueda PubMed usando NCBI E-utilities.
+ * Cada query se pasa a esearch.fcgi que devuelve PMIDs,
+ * luego efetch.fcgi obtiene los abstracts completos.
  *
- * Formato: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?rss_guid=<guid>
- * También se puede usar: https://pubmed.ncbi.nlm.nih.gov/rss/search/<term>/...
- *
- * Usamos el formato directo de PubMed RSS:
- * https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?term=<encoded query>
+ * Límite NCBI: 10 requests/sec sin API key, 10 requests/sec CON API key
+ * https://www.ncbi.nlm.nih.gov/books/NBK25497/
  */
-export const FUENTES_RSS: FuenteRSS[] = [
+export const FUENTES_PUBMED: FuentePubMed[] = [
   {
     id: 'pubmed-nutricion-deportiva',
     nombre: 'PubMed — Nutrición Deportiva',
-    url: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?term=(sports%20nutrition%5BTitle%2FAbstract%5D)%20AND%20(protein%20OR%20carbohydrate%20OR%20creatine)%20AND%20(supplementation%5BTitle%2FAbstract%5D)%20AND%20(english%5BFilter%5D)%20NOT%20(review%5BFilter%5D)&retmax=20',
-    tipo: 'pubmed_rss',
+    query: '(sports nutrition[Title/Abstract]) AND (protein OR carbohydrate OR creatine) AND (supplementation[Title/Abstract]) AND (english[Filter]) NOT (review[Filter])',
     disciplina: 'nutricion',
     categoria: 'suplementacion',
     activa: true,
@@ -34,8 +32,7 @@ export const FUENTES_RSS: FuenteRSS[] = [
   {
     id: 'pubmed-composicion-corporal',
     nombre: 'PubMed — Composición Corporal',
-    url: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?term=(body%20composition%5BTitle%2FAbstract%5D)%20AND%20(diet%20OR%20protein%20OR%20energy%20restriction)%20AND%20(weight%20loss%20OR%20fat%20loss)%20AND%20(english%5BFilter%5D)%20NOT%20(review%5BFilter%5D)&retmax=20',
-    tipo: 'pubmed_rss',
+    query: '(body composition[Title/Abstract]) AND (diet OR protein OR energy restriction) AND (weight loss OR fat loss) AND (english[Filter]) NOT (review[Filter])',
     disciplina: 'nutricion',
     categoria: 'composicion_corporal',
     activa: true,
@@ -43,8 +40,7 @@ export const FUENTES_RSS: FuenteRSS[] = [
   {
     id: 'pubmed-proteina-ejercicio',
     nombre: 'PubMed — Proteína y Ejercicio',
-    url: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?term=(dietary%20proteins%5BMeSH%5D)%20AND%20(resistance%20training%5BTitle%2FAbstract%5D)%20AND%20(muscle%20protein%20synthesis%5BTitle%2FAbstract%5D)%20AND%20(english%5BFilter%5D)&retmax=20',
-    tipo: 'pubmed_rss',
+    query: '(dietary proteins[MeSH]) AND (resistance training[Title/Abstract]) AND (muscle protein synthesis[Title/Abstract]) AND (english[Filter])',
     disciplina: 'nutricion',
     categoria: 'proteina',
     activa: true,
@@ -52,8 +48,7 @@ export const FUENTES_RSS: FuenteRSS[] = [
   {
     id: 'pubmed-periodizacion',
     nombre: 'PubMed — Periodización Nutricional',
-    url: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?term=(nutritional%20periodization%5BTitle%2FAbstract%5D)%20OR%20(dietary%20periodization%5BTitle%2FAbstract%5D)%20OR%20(carb%20cycling%5BTitle%2FAbstract%5D)%20AND%20(english%5BFilter%5D)&retmax=20',
-    tipo: 'pubmed_rss',
+    query: '(nutritional periodization[Title/Abstract]) OR (dietary periodization[Title/Abstract]) OR (carb cycling[Title/Abstract]) AND (english[Filter])',
     disciplina: 'nutricion',
     categoria: 'periodizacion',
     activa: true,
@@ -61,8 +56,7 @@ export const FUENTES_RSS: FuenteRSS[] = [
   {
     id: 'pubmed-ejercicio-fuerza',
     nombre: 'PubMed — Ejercicio de Fuerza',
-    url: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?term=(resistance%20training%5BMeSH%5D)%20AND%20(hypertrophy%5BTitle%2FAbstract%5D%20OR%20strength%5BTitle%2FAbstract%5D)%20AND%20(training%20volume%20OR%20training%20frequency)%20AND%20(english%5BFilter%5D)%20NOT%20(review%5BFilter%5D)&retmax=20',
-    tipo: 'pubmed_rss',
+    query: '(resistance training[MeSH]) AND (hypertrophy[Title/Abstract] OR strength[Title/Abstract]) AND (training volume OR training frequency) AND (english[Filter]) NOT (review[Filter])',
     disciplina: 'fuerza',
     categoria: 'volumen',
     activa: true,
@@ -70,8 +64,7 @@ export const FUENTES_RSS: FuenteRSS[] = [
   {
     id: 'pubmed-running-rendimiento',
     nombre: 'PubMed — Running y Rendimiento',
-    url: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?term=(running%5BMeSH%5D)%20AND%20(nutrition%5BTitle%2FAbstract%5D%20OR%20carbohydrate%20OR%20hydration)%20AND%20(endurance%20performance%5BTitle%2FAbstract%5D)%20AND%20(english%5BFilter%5D)%20NOT%20(review%5BFilter%5D)&retmax=20',
-    tipo: 'pubmed_rss',
+    query: '(running[MeSH]) AND (nutrition[Title/Abstract] OR carbohydrate OR hydration) AND (endurance performance[Title/Abstract]) AND (english[Filter]) NOT (review[Filter])',
     disciplina: 'running',
     categoria: 'resistencia',
     activa: true,
@@ -79,8 +72,7 @@ export const FUENTES_RSS: FuenteRSS[] = [
   {
     id: 'pubmed-patologia-nutricion',
     nombre: 'PubMed — Nutrición Clínica y Patologías',
-    url: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?term=(diabetes%20OR%20hypertension%20OR%20dyslipidemia%20OR%20NAFLD)%20AND%20(diet%20OR%20nutrition%20OR%20protein%20OR%20carbohydrate)%20AND%20(management%5BTitle%2FAbstract%5D)%20AND%20(english%5BFilter%5D)%20NOT%20(review%5BFilter%5D)&retmax=20',
-    tipo: 'pubmed_rss',
+    query: '(diabetes OR hypertension OR dyslipidemia OR NAFLD) AND (diet OR nutrition OR protein OR carbohydrate) AND (management[Title/Abstract]) AND (english[Filter]) NOT (review[Filter])',
     disciplina: 'nutricion',
     categoria: 'patologia',
     activa: true,
@@ -88,8 +80,7 @@ export const FUENTES_RSS: FuenteRSS[] = [
   {
     id: 'pubmed-entreno-hiit',
     nombre: 'PubMed — HIIT y Metabolismo',
-    url: 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/erss.cgi?term=(HIIT%5BTitle%2FAbstract%5D%20OR%20high%20intensity%20interval%20training%5BTitle%2FAbstract%5D)%20AND%20(metabolism%5BTitle%2FAbstract%5D%20OR%20body%20composition%5BTitle%2FAbstract%5D)%20AND%20(english%5BFilter%5D)%20NOT%20(review%5BFilter%5D)&retmax=20',
-    tipo: 'pubmed_rss',
+    query: '(HIIT[Title/Abstract] OR high intensity interval training[Title/Abstract]) AND (metabolism[Title/Abstract] OR body composition[Title/Abstract]) AND (english[Filter]) NOT (review[Filter])',
     disciplina: 'hibrido',
     categoria: 'hiit',
     activa: true,
@@ -97,14 +88,14 @@ export const FUENTES_RSS: FuenteRSS[] = [
 ]
 
 /** Obtiene las fuentes activas */
-export function getFuentesActivas(): FuenteRSS[] {
-  return FUENTES_RSS.filter(f => f.activa)
+export function getFuentesActivas(): FuentePubMed[] {
+  return FUENTES_PUBMED.filter(f => f.activa)
 }
 
 /** Agrupa fuentes por disciplina */
-export function getFuentesPorDisciplina(): Record<string, FuenteRSS[]> {
-  const agrupado: Record<string, FuenteRSS[]> = {}
-  for (const fuente of FUENTES_RSS) {
+export function getFuentesPorDisciplina(): Record<string, FuentePubMed[]> {
+  const agrupado: Record<string, FuentePubMed[]> = {}
+  for (const fuente of FUENTES_PUBMED) {
     if (!fuente.activa) continue
     if (!agrupado[fuente.disciplina]) agrupado[fuente.disciplina] = []
     agrupado[fuente.disciplina].push(fuente)

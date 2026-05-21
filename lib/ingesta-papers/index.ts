@@ -3,8 +3,8 @@
 export { ejecutarIngesta } from './ingestador'
 export { extractPapers } from './extractor'
 export { evaluarPaper, evaluarPapers } from './evaluador'
-export { fetchRSS, parsePubMedRSS } from './rss-parser'
-export { FUENTES_RSS, getFuentesActivas, getFuentesPorDisciplina } from './fuentes'
+export { searchPubMed } from './pubmed-api'
+export { FUENTES_PUBMED, getFuentesActivas, getFuentesPorDisciplina } from './fuentes'
 
 export type {
   FuenteTipo,

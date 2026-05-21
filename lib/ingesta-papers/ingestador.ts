@@ -2,15 +2,15 @@
 // fetch → extract → evaluate → store
 //
 // Flujo completo:
-// 1. Fetch RSS feeds activos
-// 2. Parsear XML → PaperRaw[]
-// 3. Extraer campos con DeepSeek → PaperExtraido[]
-// 4. Evaluar calidad/relevancia → PaperEvaluado[]
+// 1. Búsqueda PubMed API (esearch + efetch) → PaperRaw[]
+// 2. Extraer campos con DeepSeek → PaperExtraido[]
+// 3. Evaluar calidad/relevancia → PaperEvaluado[]
+// 4. Filtrar duplicados por DOI
 // 5. Insertar en knowledge_base los que pasen el threshold
 
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { getFuentesActivas } from './fuentes'
-import { fetchRSS } from './rss-parser'
+import { searchPubMed } from './pubmed-api'
 import { extractPapers } from './extractor'
 import { evaluarPapers } from './evaluador'
 import type { ResultadoIngesta, PaperRaw, PaperExtraido, PaperEvaluado } from './tipos'
@@ -155,12 +155,11 @@ async function insertarEnKnowledgeBase(
 
 /**
  * Pipeline completo de ingesta:
- * 1. Fetch RSS de todas las fuentes activas
- * 2. Parsear XML
- * 3. Extraer con DeepSeek
- * 4. Evaluar calidad
- * 5. Filtrar duplicados
- * 6. Insertar en knowledge_base
+ * 1. Búsqueda PubMed API (esearch + efetch) → PaperRaw[]
+ * 2. Extraer campos con DeepSeek → PaperExtraido[]
+ * 3. Evaluar calidad/relevancia → PaperEvaluado[]
+ * 4. Filtrar duplicados por DOI
+ * 5. Insertar en knowledge_base los que pasen el threshold
  */
 export async function ejecutarIngesta(options?: {
   fuentesIds?: string[]
@@ -188,22 +187,19 @@ export async function ejecutarIngesta(options?: {
     }
   }
 
-  // 2. Fetch RSS de todas las fuentes
-  const rawResults = await Promise.allSettled(
-    fuentes.map(f =>
-      fetchRSS(f.url, f.tipo).catch(e => {
-        throw new Error(`Error en fuente "${f.nombre}": ${e instanceof Error ? e.message : 'error desconocido'}`)
-      })
-    )
-  )
-
+  // 2. Buscar en PubMed API (esearch + efetch) secuencialmente
+  // para respetar rate limiting de NCBI (10 req/s max)
   const todosRaw: PaperRaw[] = []
-  for (let i = 0; i < rawResults.length; i++) {
-    const result = rawResults[i]
-    if (result.status === 'fulfilled') {
-      todosRaw.push(...result.value)
-    } else {
-      errores.push(result.reason.message)
+  for (const fuente of fuentes) {
+    try {
+      console.log(`[ingestador] Consultando fuente: ${fuente.nombre}...`)
+      const papers = await searchPubMed(fuente.query, 'pubmed_rss' as any, 15)
+      console.log(`[ingestador]   → ${papers.length} papers encontrados`)
+      todosRaw.push(...papers)
+    } catch (e) {
+      const msg = `Error en fuente "${fuente.nombre}": ${e instanceof Error ? e.message : 'error desconocido'}`
+      errores.push(msg)
+      console.warn(`[ingestador] ${msg}`)
     }
   }
 
