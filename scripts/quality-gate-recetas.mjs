@@ -306,7 +306,7 @@ function checkCantidadSospechosa(nombre, gramos) {
     'esencia', 'aroma', 'spray', 'gotas', 'sobre', 'sachet',
     'bicarbonato', 'levadura quimica', 'levadura química', 'polvo hornear', 'polvo de hornear',
     'edulcorante', 'stevia', 'eritritol', 'sucralosa',
-    'condimento', 'bagel',
+    'condimento', 'bagel', 'goma xantana', 'xantana',
     'sazonador',   // mezcla de especias en sobre/bote → siempre pequeña cantidad
     'concentrado', // concentrado de tomate/caldo → 1-15g es normal
     'mezcla de especias',

@@ -115,9 +115,13 @@ async function main() {
     .eq('activo', true)
 
   const mapProtocolo: Record<string, { titulo: string; tags: string[] }> = {}
+  const mapPorTitulo: Record<string, string> = {}  // titulo normalizado → id
   if (protocolos) {
     for (const p of protocolos) {
       mapProtocolo[p.id] = { titulo: p.titulo, tags: p.tags ?? [] }
+      // Mapa auxiliar para buscar por título normalizado (fallback)
+      const key = p.titulo.toLowerCase().trim()
+      if (!mapPorTitulo[key]) mapPorTitulo[key] = p.id
     }
   }
 
@@ -131,14 +135,19 @@ async function main() {
     const idsEncontrados = extraerProtocolosDePlan(plan.plan_json)
     const clienteNombre = plan.cliente_id ? (mapCliente[plan.cliente_id] ?? 'Cliente') : 'Cliente'
 
-    for (const id of idsEncontrados) {
-      if (mapProtocolo[id]) {
-        if (!uso[id]) uso[id] = []
-        if (!uso[id].includes(clienteNombre)) {
-          uso[id].push(clienteNombre)
+    for (const idOrTitulo of idsEncontrados) {
+      // Intentar lookup por id (UUID) primero, luego por título normalizado
+      const matchedId = mapProtocolo[idOrTitulo]
+        ? idOrTitulo
+        : mapPorTitulo[idOrTitulo.toLowerCase().trim()] ?? null
+
+      if (matchedId) {
+        if (!uso[matchedId]) uso[matchedId] = []
+        if (!uso[matchedId].includes(clienteNombre)) {
+          uso[matchedId].push(clienteNombre)
         }
       } else {
-        noReconocidos.add(id)
+        noReconocidos.add(idOrTitulo)
       }
     }
   }

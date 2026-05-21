@@ -601,12 +601,11 @@ export async function consultarKnowledgeDB(
     // 1. Expandir tags del cliente via TAG_BRIDGE
     const tagsExpandidos = expandirTags(tagsCliente)
 
-    // 2. Construir query base: activos, globales (coach_id IS NULL)
+    // 2. Construir query base: activos, incluye globales (coach_id IS NULL) + coach-específicos
     let query = supabase
       .from('knowledge_base')
       .select('titulo, resumen, contenido_completo, fuente, tags, condiciones, nivel_evidencia')
       .eq('activo', true)
-      .is('coach_id', null)
       .order('verificado', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(20)

@@ -175,6 +175,7 @@ const MATCH_FIXES = [
     [/^salsa verd/i, '91946107-b6ae-4f36-9190-165b84e02033', 'Salsa verde'],
     // Salsa picante → matchea "Sal" por substring "sal"
     [/^salsa picant/i, '0a547955-282b-407b-b156-a9141a46d189', 'Salsa Picante Louisiana'],
+    [/^condimento picante/i, '0a547955-282b-407b-b156-a9141a46d189', 'Salsa Picante Louisiana'],
     [/^salsa ingl/i, '464ace19-26f8-451c-b7bd-4159b8df63f5', 'Salsa Worcestershire Botella'],
     [/^salsa perrins/i, '464ace19-26f8-451c-b7bd-4159b8df63f5', 'Salsa Worcestershire Botella'],
     // Salsa de tomate variants → matchea "Sal" por substring "sal"
@@ -213,6 +214,8 @@ const MATCH_FIXES = [
     [/^tomates?\s+cherry/i, '59700c20-0241-4499-8c1e-e256a9c59e88', 'Rama de Tomates'],
     [/^tomate tritura/i, '1390b7a4-693d-47c4-9a54-cf03649b8033', 'Tomate triturado'],
     [/^tomate frito/i, '3b71ee6a-3d66-4a7a-9042-0471b1e96768', 'Tomate frito'],
+    [/^concentrado de tomate/i, '230c4f90-3b24-4161-8e65-ef3707c219fc', 'Concentrado Pomodoro Concentrado TomateGI15'],
+    [/^tomate concentrado/i, '230c4f90-3b24-4161-8e65-ef3707c219fc', 'Concentrado Pomodoro Concentrado TomateGI15'],
     // Fideos de arroz → matchea "Arros" (error ortográfico en DB)
     [/^fideos? de arroz/i, '463f97f0-7e85-4242-bc35-b3235312b84c', 'Arroz'],
     // Pasta de trufa → matchea "Pasta" por substring
@@ -245,6 +248,8 @@ const MATCH_FIXES = [
     [/^salsa de soja/i, '49357762-14ba-4b73-9fec-b5a9fa37e80a', 'Salsa de soja'],
     // Bebida de avena → matchea "Copos de avena" por "avena"
     [/^bebida de avena/i, '4c7ae3c8-6d68-4d20-ba93-66aaeff9c196', 'Bebida de avena'],
+    [/^at[uú]n en lata/i, '2019b04b-ed3d-41d8-8a04-19780f9c15a5', 'Atún En Lata Al Natural'],
+    [/^galletas? de arroz/i, '77740294-1569-4de0-a650-9d7b67517f7f', 'Tortita Arroz y Quinoa Ecológica'],
     // Pasta de dientes virulenta → matchea por "pasta"
     [/^pasta de dientes/i, null, null], // non-food, se salta
     // Tortilla de harina/trigo/wrap → matchea "Huevos" porque en español "tortilla" = huevos

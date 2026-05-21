@@ -67,6 +67,9 @@ function round2(n) {
 }
 
 const EXACT = [
+  [/vodka|licor amaretto|anis seco|anís seco/, 11],
+  [/vino tinto|vino blanco/, 3.5],
+  [/pasta de curry|curry rojo|curry verde/, 10],
   [/spaghetti|espagueti|pasta/, 1.8],
   [/harina de avena/, 3.8],
   [/overnight oats|proteina.*vainilla/, 18],
@@ -107,7 +110,7 @@ const EXACT = [
   [/patata/, 1.5],
   [/brocoli|coliflor|espinaca|lechuga|rucula|apio|pepino/, 3],
   [/salm[oó]n/, 18],
-  [/bacalao|merluza|gamba|sepia|corvina|atun/, 14],
+  [/bacalao|merluza|gamba|camar[oó]n|camarones|sepia|corvina|atun/, 14],
   [/jamon|pavo|bacon/, 12],
   [/almendra|cacahuete|nuez|anacardo|pistacho/, 10],
   [/crema de cacahuete/, 6],

@@ -16,17 +16,40 @@ async function main() {
   const dryRun = process.argv.includes('--dry-run')
   const supabase = createServiceSupabase()
 
-  // 1. Obtener clientes de prueba
-  const { data: clientes } = await supabase
-    .from('clientes')
-    .select('id, nombre, objetivo, peso_inicial, altura, edad, sexo, restricciones_alimentarias')
-    .in('id', (
-      await supabase.from('onboarding_responses').select('cliente_id')
-    ).data?.map(r => r.cliente_id) ?? [])
+  // 1. Obtener clientes con onboarding y sus nombres desde profiles
+  const { data: onboardingList } = await supabase
+    .from('onboarding_responses')
+    .select('cliente_id')
 
-  if (!clientes || clientes.length === 0) {
+  if (!onboardingList || onboardingList.length === 0) {
     console.log('No se encontraron clientes con onboarding.')
     return
+  }
+
+  const clienteIds = [...new Set(onboardingList.map(r => r.cliente_id))]
+
+  const { data: clientes } = await supabase
+    .from('clientes')
+    .select('id, profile_id, objetivo, peso_inicial, altura, edad, sexo, restricciones_alimentarias')
+    .in('id', clienteIds)
+
+  if (!clientes || clientes.length === 0) {
+    console.log('No se encontraron clientes en la tabla clientes.')
+    return
+  }
+
+  // Obtener nombres desde profiles
+  const profileIds = [...new Set(clientes.map(c => c.profile_id).filter(Boolean))]
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, nombre, apellidos')
+    .in('id', profileIds)
+
+  const mapNombre: Record<string, string> = {}
+  if (profiles) {
+    for (const p of profiles) {
+      mapNombre[p.id] = `${p.nombre ?? ''} ${p.apellidos ?? ''}`.trim()
+    }
   }
 
   console.log(`Clientes encontrados: ${clientes.length}`)
@@ -35,6 +58,8 @@ async function main() {
   let conProtocolos = 0
 
   for (const c of clientes) {
+    const nombreCliente = mapNombre[c.profile_id] ?? 'Cliente'
+
     // Obtener onboarding + perfil
     const { data: onboarding } = await supabase
       .from('onboarding_responses')
@@ -46,7 +71,7 @@ async function main() {
       .from('onboarding_perfil_profundo')
       .select('*')
       .eq('cliente_id', c.id)
-      .single()
+      .maybeSingle()
 
     if (!onboarding) continue
 
@@ -63,7 +88,7 @@ async function main() {
     totalPapers += protocolos.reduce((sum, p) => sum + p.referencias.length, 0)
     if (protocolos.length > 0) conProtocolos++
 
-    console.log(`\n  ${c.nombre?.padEnd(20)} (${c.id.slice(0, 8)}...)`)
+    console.log(`\n  ${nombreCliente.padEnd(20)} (${c.id.slice(0, 8)}...)`)
     console.log(`    Objetivo: ${onboarding.objetivo}`)
     console.log(`    Protocolos KB: ${protocolos.length}`)
     protocolos.slice(0, 3).forEach(p =>
@@ -81,15 +106,19 @@ async function main() {
 
     if (planExistente) {
       // Marcar plan existente con flag de evidencia actualizada
-      const planJson = typeof planExistente.plan_json === 'string'
-        ? JSON.parse(planExistente.plan_json)
-        : planExistente.plan_json
+      const planJson = planExistente.plan_json
+        ? (typeof planExistente.plan_json === 'string'
+          ? JSON.parse(planExistente.plan_json)
+          : planExistente.plan_json)
+        : { estado: 'pendiente_generar' }
 
       planJson.evidencia_cientifica = {
         actualizada_con_bridge: true,
         fecha: new Date().toISOString(),
         protocolos: protocolos.map(p => ({
+          id: p.id,
           titulo: p.titulo,
+          tags: p.tags,
           referencias: p.referencias,
         })),
       }
@@ -110,7 +139,9 @@ async function main() {
             actualizada_con_bridge: true,
             fecha: new Date().toISOString(),
             protocolos: protocolos.map(p => ({
+              id: p.id,
               titulo: p.titulo,
+              tags: p.tags,
               referencias: p.referencias,
             })),
           },
