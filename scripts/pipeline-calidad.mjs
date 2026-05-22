@@ -187,6 +187,8 @@ const MATCH_FIXES = [
     // Harina de almendra → matchea "Harina De Avena" por palabras comunes
     [/^harina de almandr/i, '23ec40c0-75bf-4e8d-b4d9-a56405a809fb', 'Harina de almendra'],
     [/^harina de almendr/i, '23ec40c0-75bf-4e8d-b4d9-a56405a809fb', 'Harina de almendra'],
+    // Harina genérica → matchea "Harina De Avena" por prefijo "harina"
+    [/^harina$/i, '20c74a2a-e6f5-4fd9-8778-39e123d50333', 'Harina de trigo'],
     // Harina de trigo → matchea "Harina De Avena" por palabras comunes
     [/^harina de trig/i, '20c74a2a-e6f5-4fd9-8778-39e123d50333', 'Harina de trigo'],
     [/^cebolla$/i, '218607a5-5d7f-4ff6-a24c-869b4019ecb0', 'Cebolla cruda'],
@@ -195,6 +197,9 @@ const MATCH_FIXES = [
     [/^semillas? de granada/i, 'f2723f87-65a0-4568-99c9-6e2a7b4567da', 'Granada'],
     [/^mezcla de especias para curry/i, '97b698dd-fe53-4098-945f-c021fce157e9', 'Curry en polvo'],
     [/^marinada teriyaki/i, '979a1fca-e23e-4d0b-b9cf-7c6a47ec59ac', 'Salsa Teriyaki Botella'],
+    // Ajo simple/dientes → matchea "Sal de ajo" por substring "ajo"
+    [/^ajo$/i, 'bdc11c5a-66bc-4325-bf35-5ab0ba52e3f2', 'Ajo'],
+    [/^dientes?\s+de\s+ajo$/i, 'bdc11c5a-66bc-4325-bf35-5ab0ba52e3f2', 'Ajo'],
     // Ajo picado → matchea "Ajo" correctamente pero calidad gate lo detecta
     [/^ajo picado/i, '248b631b-30cc-419c-93da-c3c61a56ebfc', 'Ajo Picado'],
     // Azúcar glass/glas → matchea "azucar glas" correctamente pero calidad gate lo detecta
