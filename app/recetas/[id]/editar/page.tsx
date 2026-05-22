@@ -8,6 +8,7 @@ import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import type { Alimento } from '@/types'
 import { CATEGORIAS, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
+import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
 
@@ -43,7 +44,6 @@ export default function EditarRecetaPage() {
     })
     const [intolerancias, setIntolerancias] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>([])
-    const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
     const [ingredientes, setIngredientes] = useState<Ingrediente[]>([])
     const [imagenFile, setImagenFile] = useState<File | null>(null)
     const [imagenPreview, setImagenPreview] = useState<string | null>(null)
@@ -102,16 +102,6 @@ export default function EditarRecetaPage() {
         }
         load()
     }, [id])
-
-    // Cargar sugerencias de tags desde la API
-    useEffect(() => {
-        fetch('/api/recetas/tags')
-            .then(r => r.json())
-            .then(data => {
-                if (data?.tags) setTagSuggestions(data.tags)
-            })
-            .catch(e => console.error('[EditarRecetaPage] Error cargando tags:', e))
-    }, [])
 
     // Búsqueda de alimentos via API (service_role bypass RLS)
     useEffect(() => {
@@ -392,12 +382,39 @@ export default function EditarRecetaPage() {
                             </div>
 
                             <div>
-                                <label className="mb-2" style={{ color: 'var(--text-secondary)' }}>Tags</label>
+                                <label className="mb-1" style={{ color: 'var(--text-secondary)' }}>Clasificación</label>
+                                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                                    Cómo aparece en los filtros del recetario. Una receta puede tener varios.
+                                </p>
+                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                    {KNOWN_TAGS.map(tag => {
+                                        const active = tags.includes(tag)
+                                        return (
+                                            <button
+                                                key={tag}
+                                                type="button"
+                                                onClick={() => setTags(active ? tags.filter(t => t !== tag) : [...tags, tag])}
+                                                className="text-xs px-2.5 py-1 rounded-full border transition-all"
+                                                style={active ? {
+                                                    background: '#A3E635',
+                                                    color: '#1C1C1E',
+                                                    fontWeight: 600,
+                                                    borderColor: '#A3E635',
+                                                } : {
+                                                    background: 'transparent',
+                                                    color: 'var(--text-secondary)',
+                                                    borderColor: 'var(--border)',
+                                                }}
+                                            >
+                                                {tag}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
                                 <TagInput
-                                    tags={tags}
-                                    onChange={setTags}
-                                    suggestions={tagSuggestions}
-                                    placeholder="Ej: mealprep, rápido, alto en proteína…"
+                                    tags={tags.filter(t => !KNOWN_TAGS.includes(t))}
+                                    onChange={custom => setTags([...tags.filter(t => KNOWN_TAGS.includes(t)), ...custom])}
+                                    placeholder="Tag personalizado (ej: mealprep, rápido…)"
                                 />
                             </div>
 

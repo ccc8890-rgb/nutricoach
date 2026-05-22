@@ -135,13 +135,14 @@ export default function RecetasPage() {
           return (ing.nombre_libre?.toLowerCase().includes(q) ?? false)
             || (alimento?.nombre?.toLowerCase().includes(q) ?? false)
         }))
-      const matchCategoria = categoria === 'Todos' || r.categoria === categoria
-      const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
       const tagLower = tagFilter?.toLowerCase() ?? ''
       const matchTag = !tagFilter || (
         (Array.isArray(r.tags) && r.tags.some(t => t.toLowerCase() === tagLower)) ||
         r.nombre.toLowerCase().includes(tagLower)
       )
+      // Cuando hay sub-tag activo, el tag es la clasificación real → ignorar categoría principal
+      const matchCategoria = categoria === 'Todos' || tagFilter !== null || r.categoria === categoria
+      const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
 
       // Filtro rango kcal
       let matchKcal = true

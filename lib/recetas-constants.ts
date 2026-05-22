@@ -7,14 +7,14 @@ export const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'S
 // Se muestran en la segunda fila solo cuando hay una categoría activa.
 // Matching: tags[] de la receta O nombre contiene el sub-tag (case-insensitive).
 export const SUBCATEGORIAS: Partial<Record<string, string[]>> = {
-  Desayuno: ['Tortitas', 'Pancakes', 'Gofre', 'Tostada', 'Bowl', 'Batido', 'Granola', 'Bizcocho', 'Yogur'],
-  Comida:   ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Burrito', 'Wrap', 'Sandwich', 'Pollo', 'Carne', 'Pescado'],
-  Cena:     ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Pollo', 'Carne', 'Pescado', 'Wok', 'Sopa'],
-  Merienda: ['Batido', 'Bizcocho', 'Galleta', 'Tortitas', 'Tostada', 'Yogur'],
-  Snack:    ['Proteico', 'Fit', 'Crujiente', 'Salado', 'Dulce', 'Fruta'],
-  Postre:        ['Bizcocho', 'Tortitas', 'Pancakes', 'Mousse', 'Galleta', 'Tarta', 'Helado', 'Brownie', 'Cookie', 'Pudding', 'Crepe'],
-  Salsa:          ['Mayonesa', 'Pesto', 'Tomate', 'Barbacoa', 'Alioli', 'Vinagreta', 'Hummus', 'Guacamole', 'Tzatziki'],
-  Acompañamiento: ['Patata', 'Verdura', 'Cuscús', 'Pan', 'Crema', 'Puré'],
+  Desayuno:       ['Tortitas', 'Pancakes', 'Gofre', 'Tostada', 'Bowl', 'Batido', 'Granola', 'Bizcocho', 'Yogur', 'Crepe', 'Pudding'],
+  Comida:         ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Burrito', 'Wrap', 'Sandwich', 'Pollo', 'Carne', 'Pescado'],
+  Cena:           ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Pollo', 'Carne', 'Pescado', 'Wok', 'Sopa'],
+  Merienda:       ['Batido', 'Bizcocho', 'Galleta', 'Tortitas', 'Tostada', 'Yogur', 'Donut', 'Crepe', 'Cookie', 'Pudding'],
+  Snack:          ['Galleta', 'Donut', 'Cookie', 'Yogur', 'Chocolate', 'Batido', 'Granola'],
+  Postre:         ['Bizcocho', 'Tortitas', 'Pancakes', 'Mousse', 'Galleta', 'Tarta', 'Helado', 'Brownie', 'Cookie', 'Pudding', 'Crepe', 'Donut'],
+  Salsa:          ['Mayonesa', 'Pesto', 'Salsa', 'Barbacoa', 'Alioli', 'Hummus', 'Guacamole', 'Tzatziki'],
+  Acompañamiento: ['Patata', 'Arroz', 'Pasta', 'Pan', 'Legumbre'],
 }
 
 // ─── Métodos de cocción (unificados) ───

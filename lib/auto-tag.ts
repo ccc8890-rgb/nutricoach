@@ -100,6 +100,12 @@ function norm(s: string): string {
     .replace(/[^a-z0-9\s]/g, ' ')
 }
 
+// Vocabulario completo de tags conocidos — usado en el editor de recetas
+export const KNOWN_TAGS: string[] = Array.from(new Set([
+  ...NAME_TAGS.map(([, tag]) => tag),
+  ...INGREDIENT_TAGS.map(([, tag]) => tag),
+])).sort()
+
 export function autoTagReceta(receta: RecetaParaTag): string[] {
   const tags = new Set<string>()
   const nombreN = norm(receta.nombre)
