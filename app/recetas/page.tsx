@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, Search, BookOpen, Inbox, AlertTriangle, Sparkles, SlidersHorizontal } from 'lucide-react'
 import { StaggerList, StaggerItem, FadeIn, PageTransition } from '@/components/ui/Motion'
-import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
+import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, SUBCATEGORIAS, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
 
@@ -88,7 +88,6 @@ export default function RecetasPage() {
   const [tiempoPrep, setTiempoPrep] = useState<string | null>(null)
   const [intoleranciaFilter, setIntoleranciaFilter] = useState<string | null>(null)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
-  const [tagOpciones, setTagOpciones] = useState<string[]>([])
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente')
   const [loading, setLoading] = useState(true)
   const [showFilterPanel, setShowFilterPanel] = useState(false)
@@ -122,11 +121,6 @@ export default function RecetasPage() {
       setLoading(false)
     }
     load()
-    // Cargar opciones de tags
-    fetch('/api/recetas/tags')
-      .then(r => r.json())
-      .then(data => { if (data?.tags) setTagOpciones(data.tags) })
-      .catch(e => console.error('[RecetasPage] Error cargando tags:', e))
   }, [])
 
 
@@ -143,7 +137,11 @@ export default function RecetasPage() {
         }))
       const matchCategoria = categoria === 'Todos' || r.categoria === categoria
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
-      const matchTag = !tagFilter || (Array.isArray(r.tags) && r.tags.includes(tagFilter))
+      const tagLower = tagFilter?.toLowerCase() ?? ''
+      const matchTag = !tagFilter || (
+        (Array.isArray(r.tags) && r.tags.some(t => t.toLowerCase() === tagLower)) ||
+        r.nombre.toLowerCase().includes(tagLower)
+      )
 
       // Filtro rango kcal
       let matchKcal = true
@@ -505,7 +503,7 @@ export default function RecetasPage() {
             {CATEGORIAS.map(c => (
               <button
                 key={c}
-                onClick={() => setCategoria(c)}
+                onClick={() => { setCategoria(c); setTagFilter(null) }}
                 className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
                 style={categoria === c ? chipActive : chipInactive}
                 onMouseEnter={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'rgba(163,230,53,0.4)'; e.currentTarget.style.color = '#A3E635' } }}
@@ -516,19 +514,19 @@ export default function RecetasPage() {
             ))}
           </div>
 
-          {/* Tags temáticos */}
-          {tagOpciones.length > 0 && (
+          {/* Sub-categorías contextuales — solo cuando hay categoría activa */}
+          {categoria !== 'Todos' && SUBCATEGORIAS[categoria] && (
             <div className="flex gap-1.5 overflow-x-auto pb-2 mb-5 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-              {tagOpciones.map(t => (
+              {SUBCATEGORIAS[categoria]!.map(sub => (
                 <button
-                  key={t}
-                  onClick={() => setTagFilter(tagFilter === t ? null : t)}
+                  key={sub}
+                  onClick={() => setTagFilter(tagFilter === sub ? null : sub)}
                   className="text-xs whitespace-nowrap px-2.5 py-1 rounded-lg border font-medium transition-all duration-150"
-                  style={tagFilter === t ? tagActive : chipInactive}
-                  onMouseEnter={e => { if (tagFilter !== t) { e.currentTarget.style.borderColor = 'rgba(163,230,53,0.35)'; e.currentTarget.style.color = '#A3E635' } }}
-                  onMouseLeave={e => { if (tagFilter !== t) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+                  style={tagFilter === sub ? tagActive : chipInactive}
+                  onMouseEnter={e => { if (tagFilter !== sub) { e.currentTarget.style.borderColor = 'rgba(163,230,53,0.35)'; e.currentTarget.style.color = '#A3E635' } }}
+                  onMouseLeave={e => { if (tagFilter !== sub) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
                 >
-                  {t}
+                  {sub}
                 </button>
               ))}
             </div>
