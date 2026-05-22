@@ -8,5 +8,6 @@
             "path": "/api/cron/ingesta-papers",
             "schedule": "30 8 * * 1"
         }
-    ]
+    ],
+    "buildCommand": "next build"
 }
