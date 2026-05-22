@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, Search, BookOpen, Clock, Users, Inbox, AlertTriangle, Calendar, Sparkles, Hash } from 'lucide-react'
+import { Plus, Search, BookOpen, Inbox, AlertTriangle, Sparkles, SlidersHorizontal } from 'lucide-react'
 import { StaggerList, StaggerItem, FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
 import { useToast } from '@/components/ui/Toast'
@@ -91,6 +91,9 @@ export default function RecetasPage() {
   const [tagOpciones, setTagOpciones] = useState<string[]>([])
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente')
   const [loading, setLoading] = useState(true)
+  const [showFilterPanel, setShowFilterPanel] = useState(false)
+  const filterPanelRef = useRef<HTMLDivElement>(null)
+  const filterBtnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     async function load() {
@@ -190,11 +193,33 @@ export default function RecetasPage() {
       })
   }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter])
 
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        showFilterPanel &&
+        filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node) &&
+        filterBtnRef.current && !filterBtnRef.current.contains(e.target as Node)
+      ) {
+        setShowFilterPanel(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showFilterPanel])
+
   const coccionEnUso = new Set(recetas.map(r => r.tipo_coccion).filter(Boolean))
 
-  const btnStyle = (active: boolean) => active
-    ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
-    : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }
+  const chipActive = { background: '#A3E635', color: '#1C1C1E', fontWeight: 600, borderColor: '#A3E635' }
+  const chipInactive = { color: 'var(--text-secondary)', borderColor: 'var(--border)' }
+  const tagActive = { background: 'rgba(163,230,53,0.13)', color: '#A3E635', fontWeight: 600, borderColor: 'rgba(163,230,53,0.35)' }
+
+  const activeFilterCount = [
+    metodoCoccion !== 'Todos',
+    rangoKcal !== null,
+    tiempoPrep !== null,
+    intoleranciaFilter !== null,
+    !!(fechaDesde || fechaHasta),
+  ].filter(Boolean).length
 
   // Estadísticas rápidas
   const totalKcal = recetas.reduce((acc, r) => acc + (r.kcal ?? 0), 0)
@@ -294,15 +319,196 @@ export default function RecetasPage() {
       <div className="px-6 max-w-6xl mx-auto pb-safe">
         {/* ═══════ FILTROS ═══════ */}
         <FadeIn delay={0.15}>
-          {/* Categorías — chips scrollables */}
-          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+          {/* Fila utilidad: botón Filtros + Orden */}
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="relative">
+              <button
+                ref={filterBtnRef}
+                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border font-medium transition-all duration-150"
+                style={activeFilterCount > 0
+                  ? { borderColor: 'rgba(163,230,53,0.4)', color: '#A3E635', background: 'rgba(163,230,53,0.07)' }
+                  : { borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'transparent' }}
+              >
+                <SlidersHorizontal size={13} />
+                Filtros
+                {activeFilterCount > 0 && (
+                  <span
+                    className="w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center"
+                    style={{ background: '#A3E635', color: '#1C1C1E' }}
+                  >
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+
+              {showFilterPanel && (
+                <div
+                  ref={filterPanelRef}
+                  className="absolute top-full left-0 mt-2 rounded-2xl border p-5 z-50"
+                  style={{
+                    background: 'var(--surface)',
+                    borderColor: 'var(--border)',
+                    minWidth: 300,
+                    maxWidth: 'calc(100vw - 2rem)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+                  }}
+                >
+                  {/* Cocción */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
+                      Método de cocción
+                    </p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {METODOS_COCCION.filter(m => m.value === 'Todos' || coccionEnUso.has(m.value)).map(m => (
+                        <button
+                          key={m.value}
+                          onClick={() => setMetodoCoccion(m.value)}
+                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150 flex items-center gap-1"
+                          style={metodoCoccion === m.value ? chipActive : chipInactive}
+                        >
+                          {m.value !== 'Todos' && ICONOS_COCCION[m.value]}
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Kcal */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
+                      Kcal por porción
+                    </p>
+                    <div className="flex gap-1.5">
+                      {[
+                        { value: '<300', label: '< 300' },
+                        { value: '300-600', label: '300–600' },
+                        { value: '>600', label: '> 600' },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setRangoKcal(rangoKcal === opt.value ? null : opt.value)}
+                          className="text-xs px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
+                          style={rangoKcal === opt.value ? chipActive : chipInactive}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tiempo */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
+                      Tiempo de preparación
+                    </p>
+                    <div className="flex gap-1.5">
+                      {[
+                        { value: '<15', label: '< 15 min' },
+                        { value: '15-30', label: '15–30 min' },
+                        { value: '>30', label: '> 30 min' },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setTiempoPrep(tiempoPrep === opt.value ? null : opt.value)}
+                          className="text-xs px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
+                          style={tiempoPrep === opt.value ? chipActive : chipInactive}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Alérgenos */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
+                      Alérgenos / Dieta
+                    </p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {INTOLERANCIAS.map(i => (
+                        <button
+                          key={i}
+                          onClick={() => setIntoleranciaFilter(intoleranciaFilter === i ? null : i)}
+                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
+                          style={intoleranciaFilter === i ? chipActive : chipInactive}
+                        >
+                          {i}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Fecha */}
+                  <div className="mb-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
+                      Fecha de creación
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="date"
+                        value={fechaDesde}
+                        onChange={e => setFechaDesde(e.target.value)}
+                        className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
+                        style={{ color: 'var(--text)', background: 'var(--bg)', borderColor: 'var(--border)' }}
+                      />
+                      <span style={{ color: 'var(--text-muted)' }}>—</span>
+                      <input
+                        type="date"
+                        value={fechaHasta}
+                        onChange={e => setFechaHasta(e.target.value)}
+                        className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
+                        style={{ color: 'var(--text)', background: 'var(--bg)', borderColor: 'var(--border)' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Limpiar filtros avanzados */}
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={() => {
+                        setMetodoCoccion('Todos')
+                        setRangoKcal(null)
+                        setTiempoPrep(null)
+                        setIntoleranciaFilter(null)
+                        setFechaDesde('')
+                        setFechaHasta('')
+                      }}
+                      className="w-full text-xs py-2 rounded-xl border font-medium transition-all duration-150 mt-1"
+                      style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(163,230,53,0.4)'; e.currentTarget.style.color = '#A3E635' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                    >
+                      Limpiar filtros avanzados
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Orden */}
+            <select
+              value={orden}
+              onChange={e => setOrden(e.target.value as 'reciente' | 'antiguo')}
+              className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
+              style={{ color: 'var(--text)', background: 'var(--surface)', borderColor: 'var(--border)' }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#A3E635' }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+            >
+              <option value="reciente">Más reciente</option>
+              <option value="antiguo">Más antiguo</option>
+            </select>
+          </div>
+
+          {/* Tipo de plato */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
             {CATEGORIAS.map(c => (
               <button
                 key={c}
                 onClick={() => setCategoria(c)}
                 className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
-                style={btnStyle(categoria === c)}
-                onMouseEnter={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                style={categoria === c ? chipActive : chipInactive}
+                onMouseEnter={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'rgba(163,230,53,0.4)'; e.currentTarget.style.color = '#A3E635' } }}
                 onMouseLeave={e => { if (categoria !== c) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
               >
                 {c}
@@ -310,201 +516,23 @@ export default function RecetasPage() {
             ))}
           </div>
 
-          {/* Método cocción */}
-          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-            {METODOS_COCCION.filter(m => m.value === 'Todos' || coccionEnUso.has(m.value)).map(m => (
-              <button
-                key={m.value}
-                onClick={() => setMetodoCoccion(m.value)}
-                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150 flex items-center gap-1"
-                style={btnStyle(metodoCoccion === m.value)}
-                onMouseEnter={e => { if (metodoCoccion !== m.value) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
-                onMouseLeave={e => { if (metodoCoccion !== m.value) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
-              >
-                {m.value !== 'Todos' && ICONOS_COCCION[m.value]}
-                {m.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tags — chips */}
+          {/* Tags temáticos */}
           {tagOpciones.length > 0 && (
-            <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-              {tagFilter && (
-                <button
-                  onClick={() => setTagFilter(null)}
-                  className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150"
-                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                >
-                  ✕ Limpiar
-                </button>
-              )}
+            <div className="flex gap-1.5 overflow-x-auto pb-2 mb-5 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
               {tagOpciones.map(t => (
                 <button
                   key={t}
                   onClick={() => setTagFilter(tagFilter === t ? null : t)}
-                  className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150 flex items-center gap-1"
-                  style={tagFilter === t
-                    ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
-                    : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
-                  onMouseEnter={e => { if (tagFilter !== t) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                  className="text-xs whitespace-nowrap px-2.5 py-1 rounded-lg border font-medium transition-all duration-150"
+                  style={tagFilter === t ? tagActive : chipInactive}
+                  onMouseEnter={e => { if (tagFilter !== t) { e.currentTarget.style.borderColor = 'rgba(163,230,53,0.35)'; e.currentTarget.style.color = '#A3E635' } }}
                   onMouseLeave={e => { if (tagFilter !== t) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
                 >
-                  <Hash size={11} />
                   {t}
                 </button>
               ))}
             </div>
           )}
-
-          {/* ═══ Rango kcal — chips ═══ */}
-          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-            <span className="text-xs flex items-center gap-1 px-2 font-medium" style={{ color: 'var(--text-muted)' }}>
-              <Sparkles size={12} />
-              Kcal
-            </span>
-            {[
-              { value: '<300', label: '< 300' },
-              { value: '300-600', label: '300–600' },
-              { value: '>600', label: '> 600' },
-            ].map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setRangoKcal(rangoKcal === opt.value ? null : opt.value)}
-                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
-                style={rangoKcal === opt.value
-                  ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
-                  : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
-                onMouseEnter={e => { if (rangoKcal !== opt.value) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
-                onMouseLeave={e => { if (rangoKcal !== opt.value) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
-              >
-                {opt.label}
-              </button>
-            ))}
-            {rangoKcal && (
-              <button
-                onClick={() => setRangoKcal(null)}
-                className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* ═══ Tiempo preparación — chips ═══ */}
-          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-            <span className="text-xs flex items-center gap-1 px-2 font-medium" style={{ color: 'var(--text-muted)' }}>
-              <Clock size={12} />
-              Tiempo
-            </span>
-            {[
-              { value: '<15', label: '< 15min' },
-              { value: '15-30', label: '15–30min' },
-              { value: '>30', label: '> 30min' },
-            ].map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setTiempoPrep(tiempoPrep === opt.value ? null : opt.value)}
-                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
-                style={tiempoPrep === opt.value
-                  ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
-                  : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
-                onMouseEnter={e => { if (tiempoPrep !== opt.value) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
-                onMouseLeave={e => { if (tiempoPrep !== opt.value) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
-              >
-                {opt.label}
-              </button>
-            ))}
-            {tiempoPrep && (
-              <button
-                onClick={() => setTiempoPrep(null)}
-                className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* ═══ Intolerancias — chips ═══ */}
-          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-            <span className="text-xs flex items-center gap-1 px-2 font-medium" style={{ color: 'var(--text-muted)' }}>
-              <AlertTriangle size={12} />
-              Alérgenos
-            </span>
-            {intoleranciaFilter && (
-              <button
-                onClick={() => setIntoleranciaFilter(null)}
-                className="text-xs whitespace-nowrap px-2 py-1 rounded-md border font-medium transition-all duration-150"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-              >
-                ✕
-              </button>
-            )}
-            {INTOLERANCIAS.map(i => (
-              <button
-                key={i}
-                onClick={() => setIntoleranciaFilter(intoleranciaFilter === i ? null : i)}
-                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-medium transition-all duration-150"
-                style={intoleranciaFilter === i
-                  ? { background: 'var(--accent)', color: '#1C1C1E', fontWeight: 600, borderColor: 'var(--accent)' }
-                  : { color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
-                onMouseEnter={e => { if (intoleranciaFilter !== i) { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
-                onMouseLeave={e => { if (intoleranciaFilter !== i) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
-              >
-                {i}
-              </button>
-            ))}
-          </div>
-
-          {/* ═══ Filtros extra: fecha + orden ═══ */}
-          <div className="flex items-center gap-2 text-xs flex-wrap mb-6">
-            <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
-            <span style={{ color: 'var(--text-secondary)' }}>Creada entre</span>
-            <input
-              type="date"
-              value={fechaDesde}
-              onChange={e => setFechaDesde(e.target.value)}
-              className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
-              style={{ color: 'var(--text)', background: 'var(--surface)', borderColor: 'var(--border)' }}
-              onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
-              onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
-            />
-            <span style={{ color: 'var(--text-muted)' }}>y</span>
-            <input
-              type="date"
-              value={fechaHasta}
-              onChange={e => setFechaHasta(e.target.value)}
-              className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
-              style={{ color: 'var(--text)', background: 'var(--surface)', borderColor: 'var(--border)' }}
-              onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
-              onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
-            />
-            {(fechaDesde || fechaHasta) && (
-              <button
-                onClick={() => { setFechaDesde(''); setFechaHasta('') }}
-                className="text-xs underline hover:no-underline"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                Limpiar
-              </button>
-            )}
-            <div className="flex items-center gap-1 ml-auto">
-              <span style={{ color: 'var(--text-muted)' }}>Orden</span>
-              <select
-                value={orden}
-                onChange={e => setOrden(e.target.value as 'reciente' | 'antiguo')}
-                className="text-xs py-1.5 px-2 rounded-lg border outline-none transition-all duration-200"
-                style={{ color: 'var(--text)', background: 'var(--surface)', borderColor: 'var(--border)' }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
-              >
-                <option value="reciente">Más reciente</option>
-                <option value="antiguo">Más antiguo</option>
-              </select>
-            </div>
-          </div>
         </FadeIn>
 
         {/* ═══════ CONTENIDO ═══════ */}
@@ -561,7 +589,6 @@ export default function RecetasPage() {
                   proteinas={r.proteinas ?? 0}
                   carbohidratos={r.carbohidratos ?? 0}
                   grasas={r.grasas ?? 0}
-                  tags={r.tags ?? undefined}
                 />
               ))}
             </div>
