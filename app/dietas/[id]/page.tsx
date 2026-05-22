@@ -164,22 +164,17 @@ export default function EditarDietaPage() {
   // Búsqueda de recetas (solo cuando fuente === 'recetas')
   useEffect(() => {
     if (fuente !== 'recetas') return
-    // Si hay tag activo, buscar por tag; si no, por nombre
-    if (tagReceta) {
-      setBuscandoRecetas(true)
-      supabase.from('recetas').select('id, nombre, categoria, imagen_url, porciones')
-        .eq('estado', 'aprobada').contains('tags', [tagReceta]).order('nombre').limit(20)
-        .then(({ data }) => { setResultadosRecetas(data ?? []); setBuscandoRecetas(false) })
-      return
-    }
-    if (!queryReceta || queryReceta.length < 2) { setResultadosRecetas([]); return }
+    if (!tagReceta && queryReceta.length < 2) { setResultadosRecetas([]); return }
     setBuscandoRecetas(true)
     const timer = setTimeout(async () => {
-      const { data } = await supabase.from('recetas').select('id, nombre, categoria, imagen_url, porciones')
-        .eq('estado', 'aprobada').ilike('nombre', `%${queryReceta}%`).order('nombre').limit(12)
+      let q = supabase.from('recetas').select('id, nombre, categoria, imagen_url, porciones')
+        .eq('estado', 'aprobada')
+      if (tagReceta) q = q.contains('tags', [tagReceta])
+      if (queryReceta.length >= 2) q = q.ilike('nombre', `%${queryReceta}%`)
+      const { data } = await q.order('nombre').limit(20)
       setResultadosRecetas(data ?? [])
       setBuscandoRecetas(false)
-    }, 300)
+    }, tagReceta && !queryReceta ? 0 : 300)
     return () => clearTimeout(timer)
   }, [queryReceta, tagReceta, fuente])
 
@@ -728,7 +723,7 @@ export default function EditarDietaPage() {
                             placeholder={tagReceta ? `Filtrar dentro de ${tagReceta}…` : fuente === 'local' ? 'Buscar en mi base de datos…' : fuente === 'off' ? 'Buscar producto de supermercado…' : 'Buscar receta o tipo…'}
                             value={fuente === 'recetas' ? queryReceta : queryAlimento}
                             onChange={e => {
-                              if (fuente === 'recetas') { setQueryReceta(e.target.value); if (tagReceta) setTagReceta(null) }
+                              if (fuente === 'recetas') setQueryReceta(e.target.value)
                               else setQueryAlimento(e.target.value)
                             }}
                           />
@@ -769,7 +764,7 @@ export default function EditarDietaPage() {
                         {fuente === 'recetas' ? (
                           <>
                             {/* Resultados de recetas */}
-                            {(resultadosRecetas.length > 0 || buscandoRecetas || queryReceta.length >= 2) && (
+                            {(resultadosRecetas.length > 0 || buscandoRecetas || queryReceta.length >= 2 || !!tagReceta) && (
                               <div className="absolute z-10 left-0 right-0 mt-1 rounded-lg border max-h-72 overflow-y-auto"
                                 style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}>
                                 {buscandoRecetas && (
@@ -806,9 +801,9 @@ export default function EditarDietaPage() {
                                     </span>
                                   </button>
                                 ))}
-                                {!buscandoRecetas && resultadosRecetas.length === 0 && queryReceta.length >= 2 && (
+                                {!buscandoRecetas && resultadosRecetas.length === 0 && (queryReceta.length >= 2 || tagReceta) && (
                                   <p className="px-4 py-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                                    Sin recetas para &ldquo;{queryReceta}&rdquo;
+                                    Sin recetas {tagReceta ? `de tipo ${tagReceta}` : `para "${queryReceta}"`}
                                   </p>
                                 )}
                               </div>
