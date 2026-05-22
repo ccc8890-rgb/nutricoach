@@ -1,5 +1,91 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## 0. Spec-Kit + Superpowers — Flujo de desarrollo estructurado (instalado 23-05-2026)
+
+### Qué es
+
+[spec-kit](https://github.com/github/spec-kit) es un toolkit de Spec-Driven Development (SDD) de GitHub. Obliga a escribir especificaciones, planes y tareas ANTES de tocar código. Instalado con integración Claude Code nativa.
+
+[superspec](https://github.com/WangX0111/superspec) es el bridge que conecta spec-kit con las skills de obra/superpowers (brainstorming, TDD, code-review), instalado como skill local en `.claude/skills/superspec/`.
+
+### Versiones instaladas
+
+| Herramienta | Versión | Método |
+|-------------|---------|--------|
+| `specify-cli` | v0.8.13 | `uv tool install` (global) |
+| `superspec` bridge | v1.0.0 | Skill local en `.claude/skills/superspec/` |
+
+### Estructura creada
+
+```
+.specify/
+├── memory/
+│   └── constitution.md        ← Principios del proyecto (LEER PRIMERO)
+├── templates/                 ← Templates de spec/plan/tasks
+├── extensions/                ← git extension activa
+└── workflows/speckit/         ← Workflow automático
+
+specs/                         ← Una carpeta por feature
+└── [nombre-feature]/
+    ├── spec.md                ← Qué se construye y por qué
+    ├── plan.md                ← Cómo se construye técnicamente
+    └── tasks.md               ← Tareas concretas con criterios de aceptación
+```
+
+### Skills disponibles en Claude Code
+
+| Skill | Invocación | Cuándo usar |
+|-------|-----------|-------------|
+| `speckit-constitution` | `/speckit-constitution` | Revisar o actualizar principios del proyecto |
+| `speckit-specify` | `/speckit-specify` | Definir requisitos de una feature nueva |
+| `speckit-clarify` | `/speckit-clarify` | Clarificar antes de planificar (opcional) |
+| `speckit-plan` | `/speckit-plan` | Crear plan técnico desde una spec |
+| `speckit-checklist` | `/speckit-checklist` | Validar completitud de una spec/plan |
+| `speckit-tasks` | `/speckit-tasks` | Generar tareas accionables desde el plan |
+| `speckit-analyze` | `/speckit-analyze` | Consistencia cross-artifact (spec+plan+tasks) |
+| `speckit-implement` | `/speckit-implement` | Ejecutar implementación siguiendo tasks |
+| `superspec` | `/superspec` | Bridge completo SDD + superpowers (brainstorm+TDD+review) |
+
+### Flujo estándar para features nuevas
+
+```
+1. /speckit-clarify  → preguntas para desambiguar (opcional)
+2. /speckit-specify  → spec.md con requisitos
+3. /speckit-plan     → plan.md con diseño técnico
+4. /speckit-checklist → validar calidad de la spec
+5. /speckit-tasks    → tasks.md con criterios de aceptación
+6. /speckit-analyze  → verificar consistencia entre artefactos
+7. /speckit-implement → implementar siguiendo tasks
+```
+
+O usando el bridge completo: `/superspec` gestiona todo el ciclo con superpowers integrado.
+
+### Comando CLI
+
+```bash
+# Ver estado de extensiones y configuración
+specify extension list
+
+# Crear spec para una nueva feature (desde el directorio nutricoach)
+specify workflow run speckit
+
+# Verificar prerrequisitos
+specify check
+```
+
+### Constitution
+
+Los principios del proyecto están en [`.specify/memory/constitution.md`](.specify/memory/constitution.md). **Leer antes de cualquier feature nueva.**
+
+Principios clave:
+- Evidencia científica obligatoria en planes IA
+- Coach aprueba todo antes de llegar al cliente
+- Build verde antes de merge
+- Mobile-first siempre
+- Quality gates documentados en la constitution
+
+---
+
 ## 1. Regeneración de Imágenes de Recetas
 
 ### Modelo único: `gpt-image-1` (OpenAI)
@@ -442,3 +528,8 @@ git add -A && git commit -m "Sesion [FECHA]: [RESUMEN]" && git push
 - `app/recetas/[id]/editar/page.tsx` — `autoComplete="off"`
 
 **Lección aprendida**: Todos los `<input>` con placeholder que incluya "nombre" o "buscar" deben llevar `autoComplete="off"` para evitar que Safari/Chrome móvil los confunda con campos de contacto.
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
