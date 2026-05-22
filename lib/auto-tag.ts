@@ -48,6 +48,15 @@ const NAME_TAGS: [string, string][] = [
   ['tzatziki', 'Tzatziki'],
   ['alioli', 'Alioli'],
   ['barbacoa', 'Barbacoa'],
+  ['donut', 'Donut'],
+  ['dona', 'Donut'],
+  ['rosquilla', 'Donut'],
+  ['yogur', 'Yogur'],
+  ['yogurt', 'Yogur'],
+  ['parfait', 'Yogur'],
+  ['salsa', 'Salsa'],
+  ['chimichurri', 'Salsa'],
+  ['vinagreta', 'Salsa'],
 ]
 
 // Keywords en INGREDIENTES → tag
@@ -79,6 +88,8 @@ const INGREDIENT_TAGS: [string, string][] = [
   ['patata', 'Patata'],
   // Postres
   ['chocolate', 'Chocolate'],
+  // Lácteos destacados
+  ['yogur', 'Yogur'], ['yogurt', 'Yogur'], ['kefir', 'Yogur'],
 ]
 
 function norm(s: string): string {
