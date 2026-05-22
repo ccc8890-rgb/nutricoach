@@ -287,6 +287,44 @@ No hay conflictos entre worktrees.
 
 ---
 
+### ✅ SESIÓN 22-05-2026 (noche) — Sistema de tags del recetario completo 🏷️
+
+**Objetivo**: tags automáticos por ingredientes, filtros por tipo en todas las vistas, editor manual.
+
+| Tarea | Commits | Detalle |
+|-------|---------|---------|
+| Ocultar chips #tag de RecipeCardPremium | `0c79a7d` | Limpio, solo categoría pill |
+| Rediseño filtros `/recetas` | `0c79a7d` | 2 filas fijas + popover avanzado, chips lima #A3E635 |
+| Sub-categorías contextuales por tipo de plato | `0c79a7d` | SUBCATEGORIAS en recetas-constants.ts |
+| `lib/auto-tag.ts` + `KNOWN_TAGS` | `83e1df0` | autoTagReceta() + vocabulario exportado |
+| Script batch auto-etiquetado | `83e1df0` | 254/254 recetas actualizadas, 33 sin tags (legítimos) |
+| Hook auto-tag en scrape-receta (nuevas) | `83e1df0` | Recetas nuevas se etiquetan al insertar |
+| Tags: Donut, Yogur, Salsa añadidos | `850ff49` | 57→33 recetas sin tags |
+| Sub-cats multi-categoría + filtro cross-cat | `6c532a6` | Donut en Postre+Merienda+Snack; tagFilter ignora categoría principal |
+| Editor chips en `/recetas/[id]/editar` | `6c532a6` | Chips toggle vocabulario + TagInput custom |
+| Autocomplete buscador `/recetas` | `635afd1` | Dropdown tags al escribir ≥2 chars, click activa filtro |
+| Autocomplete buscador dietas | `6e1284f` | Chips tipo en buscador recetas del constructor |
+| Fix: tag+texto combinables en dietas | `43e9cf4` | ilike + contains simultáneos, panel visible con tagReceta solo |
+
+**Arquitectura tags**:
+- `lib/auto-tag.ts` — fuente única de verdad: NAME_TAGS (por nombre de plato) + INGREDIENT_TAGS (por ingrediente). Exporta `autoTagReceta()` y `KNOWN_TAGS[]`.
+- Script: `npx tsx scripts/auto-etiquetar-recetas.ts [--dry-run] [--todas]` — re-ejecutar si se añaden keywords
+- Tags en BD: `recetas.tags: string[]` — array de strings capitalizados (Pollo, Arroz, Donut…)
+
+**Comportamiento filtros**:
+- Seleccionar categoría (Comida) → filtra por `r.categoria === 'Comida'`
+- Seleccionar categoría + sub-tag (Merienda → Donut) → ignora categoría, muestra todos los Donuts
+- Esto permite que un Donut categorizado como Postre aparezca en Merienda→Donut ✅
+
+**Bugs corregidos esta sesión**:
+| # | Bug | Fix |
+|---|-----|-----|
+| 1 | Placeholder "Filtrar dentro de X" pero onChange limpiaba el tag | Eliminado `setTagReceta(null)` del onChange |
+| 2 | Panel resultados no aparecía con tagReceta activo + queryReceta vacío | Añadido `|| !!tagReceta` a la condición del panel |
+| 3 | tag y texto no se podían combinar | useEffect unificado: aplica ambos filtros simultáneamente |
+
+---
+
 ## 🔀 Historial de Worktrees — Ya unificados en main
 
 Todos los worktrees han sido mergeados y unificados en `main`. No hay worktrees activos.
