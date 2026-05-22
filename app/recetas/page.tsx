@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Plus, Search, BookOpen, Inbox, AlertTriangle, Sparkles, SlidersHorizontal } from 'lucide-react'
 import { StaggerList, StaggerItem, FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, SUBCATEGORIAS, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
+import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
 
@@ -91,8 +92,10 @@ export default function RecetasPage() {
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente')
   const [loading, setLoading] = useState(true)
   const [showFilterPanel, setShowFilterPanel] = useState(false)
+  const [showSearchDrop, setShowSearchDrop] = useState(false)
   const filterPanelRef = useRef<HTMLDivElement>(null)
   const filterBtnRef = useRef<HTMLButtonElement>(null)
+  const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function load() {
@@ -192,8 +195,28 @@ export default function RecetasPage() {
       })
   }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter])
 
+  // Sugerencias de tags que coinciden con la búsqueda actual
+  const tagSugeridos = useMemo(() => {
+    if (!busqueda.trim() || busqueda.length < 2) return []
+    const q = busqueda.toLowerCase()
+    return KNOWN_TAGS
+      .filter(tag => tag.toLowerCase().includes(q))
+      .map(tag => ({
+        tag,
+        count: recetas.filter(r =>
+          (Array.isArray(r.tags) && r.tags.some((t: string) => t.toLowerCase() === tag.toLowerCase())) ||
+          r.nombre.toLowerCase().includes(tag.toLowerCase())
+        ).length,
+      }))
+      .filter(s => s.count > 0)
+      .slice(0, 5)
+  }, [busqueda, recetas])
+
   useEffect(() => {
     function handleClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSearchDrop(false)
+      }
       if (
         showFilterPanel &&
         filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node) &&
@@ -204,7 +227,7 @@ export default function RecetasPage() {
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [showFilterPanel])
+  }, [showFilterPanel, showSearchDrop])
 
   const coccionEnUso = new Set(recetas.map(r => r.tipo_coccion).filter(Boolean))
 
@@ -299,17 +322,55 @@ export default function RecetasPage() {
 
           {/* Buscador */}
           <FadeIn delay={0.1}>
-            <div className="relative max-w-md">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+            <div ref={searchRef} className="relative max-w-md">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
               <input
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all duration-200"
-                placeholder="Buscar por nombre, ingrediente…"
+                placeholder="Buscar por nombre, ingrediente o tipo…"
                 value={busqueda}
-                onChange={e => setBusqueda(e.target.value)}
+                onChange={e => { setBusqueda(e.target.value); setShowSearchDrop(true) }}
                 style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-ring)' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-ring)'; setShowSearchDrop(true) }}
                 onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
               />
+              {/* Dropdown sugerencias de tags */}
+              {showSearchDrop && tagSugeridos.length > 0 && (
+                <div
+                  className="absolute z-30 left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-xl"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                    Filtrar por tipo
+                  </p>
+                  {tagSugeridos.map(({ tag, count }) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onMouseDown={e => {
+                        e.preventDefault()
+                        setTagFilter(tag)
+                        setCategoria('Todos')
+                        setBusqueda('')
+                        setShowSearchDrop(false)
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2 text-sm transition-colors"
+                      style={{ color: 'var(--text)' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-bg)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full font-medium"
+                          style={{ background: 'rgba(163,230,53,0.15)', color: '#A3E635' }}
+                        >
+                          {tag}
+                        </span>
+                      </span>
+                      <span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>{count} recetas</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </FadeIn>
         </div>
