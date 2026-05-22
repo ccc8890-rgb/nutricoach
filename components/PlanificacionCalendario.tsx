@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import {
     ChevronLeft, ChevronRight, UtensilsCrossed, Dumbbell,
-    CalendarClock, CalendarCheck, AlertCircle, Scale, ClipboardCheck
+    CalendarClock, CalendarCheck, AlertCircle, Scale, ClipboardCheck,
+    X
 } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { supabase } from '@/lib/supabase'
@@ -48,22 +49,36 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
     const [nuevaFecha, setNuevaFecha] = useState(fechaRevision || '')
     const [sesiones, setSesiones] = useState<SesionCalendario[]>([])
     const [loadingSesiones, setLoadingSesiones] = useState(false)
+    const [diaSeleccionado, setDiaSeleccionado] = useState<number | null>(null)
+    const detalleRef = useRef<HTMLDivElement>(null)
 
     const dietaActiva = useMemo(() => dietas.find(d => d.activo), [dietas])
     const entrenoActivo = useMemo(() => entrenos.find(e => e.activo), [entrenos])
 
     useEffect(() => {
         if (!entrenoActivo) { setSesiones([]); return }
+        const planId = entrenoActivo.id
+        let cancelado = false
         setLoadingSesiones(true)
-        supabase
-            .from('sesiones_entrenamiento')
-            .select('nombre, dia_semana')
-            .eq('plan_id', entrenoActivo.id)
-            .not('dia_semana', 'is', null)
-            .then(({ data }) => {
+
+        async function cargarSesiones() {
+            try {
+                const { data } = await supabase
+                    .from('sesiones_entrenamiento')
+                    .select('nombre, dia_semana')
+                    .eq('plan_id', planId)
+                    .not('dia_semana', 'is', null)
+                if (cancelado) return
                 setSesiones((data ?? []) as SesionCalendario[])
-                setLoadingSesiones(false)
-            })
+            } catch {
+                if (!cancelado) setSesiones([])
+            } finally {
+                if (!cancelado) setLoadingSesiones(false)
+            }
+        }
+
+        cargarSesiones()
+        return () => { cancelado = true }
     }, [entrenoActivo?.id])
 
     // Mapear nombre de día → índice 0..6
@@ -82,14 +97,16 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
     function mesAnterior() {
         if (mesActual === 0) { setMesActual(11); setAnioActual(prev => prev - 1) }
         else setMesActual(prev => prev - 1)
+        setDiaSeleccionado(null)
     }
 
     function mesSiguiente() {
         if (mesActual === 11) { setMesActual(0); setAnioActual(prev => prev + 1) }
         else setMesActual(prev => prev + 1)
+        setDiaSeleccionado(null)
     }
 
-    function irAHoy() { setMesActual(hoy.getMonth()); setAnioActual(hoy.getFullYear()) }
+    function irAHoy() { setMesActual(hoy.getMonth()); setAnioActual(hoy.getFullYear()); setDiaSeleccionado(hoy.getDate()) }
 
     function obtenerDiasMes() {
         const primerDia = new Date(anioActual, mesActual, 1)
@@ -114,11 +131,55 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
         return dia === rev.getDate() && mesActual === rev.getMonth() && anioActual === rev.getFullYear()
     }
 
-    // Devuelve el índice de día de semana (0=Lun..6=Dom) para un día del mes
     function diaSemanaDelDia(dia: number): number {
         const d = new Date(anioActual, mesActual, dia)
-        // JS: 0=Dom,1=Lun..6=Sáb → convertir a 0=Lun..6=Dom
         return (d.getDay() + 6) % 7
+    }
+
+    function formatearFecha(dia: number): string {
+        return new Date(anioActual, mesActual, dia).toLocaleDateString('es-ES', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        })
+    }
+
+    function handleDiaClick(dia: number) {
+        setDiaSeleccionado(prev => prev === dia ? null : dia)
+    }
+
+    // Sincronizar nuevaFecha con cambios externos de fechaRevision
+    useEffect(() => {
+        if (!editandoFecha) {
+            setNuevaFecha(fechaRevision || '')
+        }
+    }, [fechaRevision, editandoFecha])
+
+    // Cerrar detalle al hacer clic fuera
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (detalleRef.current && !detalleRef.current.contains(e.target as Node)) {
+                const target = e.target as HTMLElement
+                if (target.closest('[data-cal-day]')) return
+                setDiaSeleccionado(null)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    async function eliminarRevision() {
+        try {
+            setNuevaFecha('')
+            const res = await fetch(`/api/clientes/${clienteId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fecha_proxima_revision: null }),
+            })
+            if (!res.ok) throw new Error('Error al eliminar')
+            onUpdateRevision(null)
+            addToast({ type: 'info', title: 'Revisión eliminada' })
+        } catch {
+            addToast({ type: 'error', title: 'Error', message: 'No se pudo eliminar la revisión' })
+        }
     }
 
     async function guardarFechaRevision() {
@@ -139,39 +200,58 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
 
     const dias = obtenerDiasMes()
 
+    // Info del día seleccionado
+    const infoDiaSeleccionado = useMemo(() => {
+        if (diaSeleccionado === null) return null
+        const diaSemanaIdx = diaSemanaDelDia(diaSeleccionado)
+        const sesionesDelDia = sesionesIndexadas[diaSemanaIdx] ?? []
+        const tieneRevision = esFechaRevision(diaSeleccionado)
+        const esHoyFlag = esHoy(diaSeleccionado)
+        return {
+            dia: diaSeleccionado,
+            fecha: formatearFecha(diaSeleccionado),
+            diaSemana: DIAS_SEMANA[diaSemanaIdx],
+            sesiones: sesionesDelDia,
+            tieneRevision,
+            esHoy: esHoyFlag,
+            tieneDieta: !!dietaActiva,
+        }
+    }, [diaSeleccionado, sesionesIndexadas, fechaRevision, mesActual, anioActual, dietaActiva])
+
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 {/* ── CALENDARIO ── */}
-                <div className="card lg:col-span-2 !p-0 overflow-hidden">
+                <div className="card xl:col-span-2 !p-0 overflow-hidden">
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-                        <div className="flex items-center gap-3">
-                            <button onClick={mesAnterior} className="btn btn-ghost btn-sm !px-2">
+                    <div className="flex items-center justify-between p-3 sm:p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+                        <div className="flex items-center gap-1 sm:gap-3">
+                            <button onClick={mesAnterior} className="btn btn-ghost btn-sm !px-1.5 sm:!px-2" aria-label="Mes anterior">
                                 <ChevronLeft size={18} />
                             </button>
-                            <h3 className="font-bold text-[var(--text)] min-w-[180px] text-center">
+                            <h3 className="font-bold text-[var(--text)] text-xs sm:text-sm md:text-base min-w-[130px] sm:min-w-[180px] text-center">
                                 {MESES[mesActual]} {anioActual}
                             </h3>
-                            <button onClick={mesSiguiente} className="btn btn-ghost btn-sm !px-2">
+                            <button onClick={mesSiguiente} className="btn btn-ghost btn-sm !px-1.5 sm:!px-2" aria-label="Mes siguiente">
                                 <ChevronRight size={18} />
                             </button>
                         </div>
-                        <button onClick={irAHoy} className="btn btn-ghost btn-sm" style={{ color: '#0D9488' }}>
+                        <button onClick={irAHoy} className="btn btn-ghost btn-sm text-xs sm:text-sm" style={{ color: '#0D9488' }}>
                             Hoy
                         </button>
                     </div>
 
                     {/* Grid */}
-                    <div className="p-4">
+                    <div className="p-2 sm:p-4">
                         {/* Cabeceras */}
-                        <div className="grid grid-cols-7 gap-1 mb-1">
+                        <div className="grid grid-cols-7 gap-px sm:gap-1 mb-px sm:mb-1">
                             {DIAS_SEMANA.map((d, idx) => {
                                 const tieneSesion = !!sesionesIndexadas[idx]?.length
                                 return (
-                                    <div key={d} className="text-center py-1.5 text-xs font-semibold uppercase tracking-wider relative"
+                                    <div key={d} className="text-center py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider relative"
                                         style={{ color: tieneSesion ? '#0D9488' : 'var(--text-muted)' }}>
-                                        {d}
+                                        <span className="hidden sm:inline">{d}</span>
+                                        <span className="sm:hidden">{d.charAt(0)}</span>
                                         {tieneSesion && (
                                             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full" style={{ background: '#0D9488' }} />
                                         )}
@@ -181,7 +261,7 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                         </div>
 
                         {/* Días */}
-                        <div className="grid grid-cols-7 gap-1">
+                        <div className="grid grid-cols-7 gap-px sm:gap-1">
                             {dias.map((dia, i) => {
                                 if (dia === null) return <div key={i} className="aspect-square" />
                                 const diaSemanaIdx = diaSemanaDelDia(dia)
@@ -190,37 +270,45 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                                 const tieneRevision = esFechaRevision(dia)
                                 const esHoyFlag = esHoy(dia)
                                 const tieneDieta = !!dietaActiva
+                                const estaSeleccionado = diaSeleccionado === dia
                                 return (
-                                    <div key={i} className="aspect-square p-0.5">
-                                        <div className={`
-                                            w-full h-full rounded-xl flex flex-col items-center justify-center gap-0.5
-                                            text-sm transition-all cursor-default relative
-                                            ${esHoyFlag ? 'ring-2 ring-teal-500 ring-offset-1 font-bold' : ''}
-                                            ${tieneRevision ? 'bg-purple-100 dark:bg-purple-900/30' :
-                                              tieneEntreno ? 'bg-teal-50 dark:bg-teal-900/20' :
-                                              tieneDieta ? 'bg-gray-50 dark:bg-white/5' : ''}
-                                        `}>
-                                            <span className="text-xs font-medium leading-none" style={{
+                                    <div key={i} className="aspect-square p-px sm:p-0.5"
+                                        data-cal-day={dia}>
+                                        <button
+                                            onClick={() => handleDiaClick(dia)}
+                                            className={`
+                                                w-full h-full rounded-lg sm:rounded-xl flex flex-col items-center justify-center gap-px sm:gap-0.5
+                                                text-sm transition-all relative cursor-pointer
+                                                ${esHoyFlag ? 'ring-2 ring-teal-500 ring-offset-1 font-bold' : ''}
+                                                ${estaSeleccionado ? 'ring-2 ring-blue-500 ring-offset-1 bg-blue-50 dark:bg-blue-900/20' : ''}
+                                                ${tieneRevision ? 'bg-purple-100 dark:bg-purple-900/30' :
+                                                    tieneEntreno ? 'bg-teal-50 dark:bg-teal-900/20' :
+                                                        tieneDieta ? 'bg-gray-50 dark:bg-white/5' : 'hover:bg-gray-100 dark:hover:bg-white/10'}
+                                                focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
+                                            `}
+                                            aria-label={`${dia} de ${MESES[mesActual]} — ${sesionDelDia.length} sesiones${tieneRevision ? ', revisión' : ''}${tieneDieta ? ', dieta activa' : ''}`}
+                                        >
+                                            <span className="text-[10px] sm:text-xs font-medium leading-none" style={{
                                                 color: tieneRevision ? '#7C3AED' : esHoyFlag ? '#0D9488' : 'var(--text-secondary)'
                                             }}>{dia}</span>
 
                                             {/* Dots de actividad */}
-                                            <div className="flex gap-0.5 flex-wrap justify-center max-w-[28px]">
+                                            <div className="flex gap-px sm:gap-0.5 flex-wrap justify-center max-w-[20px] sm:max-w-[28px]">
                                                 {tieneEntreno && sesionDelDia.slice(0, 3).map((s, si) => (
                                                     <div key={si}
                                                         title={s.nombre}
-                                                        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                                        className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full flex-shrink-0"
                                                         style={{ background: SESION_COLORS[si % SESION_COLORS.length] }}
                                                     />
                                                 ))}
                                                 {tieneDieta && !tieneEntreno && (
-                                                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'rgba(100,100,100,0.3)' }} />
+                                                    <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full flex-shrink-0" style={{ background: 'rgba(100,100,100,0.3)' }} />
                                                 )}
                                                 {tieneRevision && (
-                                                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#7C3AED' }} />
+                                                    <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full flex-shrink-0" style={{ background: '#7C3AED' }} />
                                                 )}
                                             </div>
-                                        </div>
+                                        </button>
                                     </div>
                                 )
                             })}
@@ -228,46 +316,109 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                     </div>
 
                     {/* Leyenda */}
-                    <div className="flex items-center gap-4 px-4 pb-4 text-xs flex-wrap" style={{ color: 'var(--text-muted)' }}>
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-teal-500" />
+                    <div className="flex items-center gap-2 sm:gap-4 px-2 sm:px-4 pb-3 sm:pb-4 text-[10px] sm:text-xs flex-wrap" style={{ color: 'var(--text-muted)' }}>
+                        <div className="flex items-center gap-1 sm:gap-1.5">
+                            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-teal-500" />
                             <span>Hoy</span>
                         </div>
                         {sesiones.length > 0 && (
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded-full" style={{ background: SESION_COLORS[0] }} />
-                                <span>Entrenamiento</span>
+                            <div className="flex items-center gap-1 sm:gap-1.5">
+                                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" style={{ background: SESION_COLORS[0] }} />
+                                <span>Entreno</span>
                             </div>
                         )}
                         {dietaActiva && (
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-gray-300" />
-                                <span>Dieta activa</span>
+                            <div className="flex items-center gap-1 sm:gap-1.5">
+                                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-gray-300" />
+                                <span>Dieta</span>
                             </div>
                         )}
                         {fechaRevision && (
-                            <div className="flex items-center gap-1.5">
-                                <CalendarClock size={12} className="text-purple-500" />
+                            <div className="flex items-center gap-1 sm:gap-1.5">
+                                <CalendarClock size={10} className="sm:hidden text-purple-500" />
+                                <CalendarClock size={12} className="hidden sm:block text-purple-500" />
                                 <span>Revisión</span>
                             </div>
                         )}
-                        {loadingSesiones && <span className="opacity-50">Cargando sesiones…</span>}
+                        {loadingSesiones && <span className="opacity-50">Cargando…</span>}
+                        <span className="text-[9px] sm:text-[10px] opacity-40 ml-auto">
+                            Toca un día para ver detalle
+                        </span>
                     </div>
 
-                    {/* Lista sesiones del plan activo */}
-                    {sesiones.length > 0 && (
-                        <div className="border-t px-4 pb-4 pt-3" style={{ borderColor: 'var(--border)' }}>
-                            <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-                                Sesiones — {entrenoActivo?.nombre}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {sesiones.map((s, si) => (
-                                    <span key={si} className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg font-medium"
-                                        style={{ background: `${SESION_COLORS[si % SESION_COLORS.length]}18`, color: SESION_COLORS[si % SESION_COLORS.length] }}>
-                                        <Dumbbell size={10} />
-                                        {s.dia_semana} · {s.nombre}
-                                    </span>
-                                ))}
+                    {/* ── PANEL DE DETALLE DEL DÍA SELECCIONADO ── */}
+                    {infoDiaSeleccionado && (
+                        <div
+                            ref={detalleRef}
+                            className="border-t px-3 sm:px-4 py-3 sm:py-4 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                            style={{ borderColor: 'var(--border)' }}
+                        >
+                            <div className="flex items-start justify-between mb-3">
+                                <div>
+                                    <p className="text-sm sm:text-base font-bold text-[var(--text)] capitalize">
+                                        {infoDiaSeleccionado.fecha}
+                                    </p>
+                                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                        {infoDiaSeleccionado.esHoy ? '• Hoy' : ''}
+                                        {infoDiaSeleccionado.tieneRevision ? ' • Revisión programada' : ''}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setDiaSeleccionado(null)}
+                                    className="btn btn-ghost btn-sm !px-1.5 !py-0.5"
+                                    aria-label="Cerrar detalle"
+                                >
+                                    <X size={14} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {/* Sesiones de entrenamiento */}
+                                {infoDiaSeleccionado.sesiones.length > 0 && (
+                                    <div>
+                                        <p className="text-xs font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                                            <Dumbbell size={12} className="inline mr-1" />
+                                            Entrenamiento
+                                        </p>
+                                        <div className="space-y-1.5">
+                                            {infoDiaSeleccionado.sesiones.map((s, si) => (
+                                                <div key={si} className="flex items-center gap-2 text-xs sm:text-sm px-2.5 py-1.5 rounded-lg"
+                                                    style={{
+                                                        background: `${SESION_COLORS[si % SESION_COLORS.length]}12`,
+                                                        borderLeft: `3px solid ${SESION_COLORS[si % SESION_COLORS.length]}`
+                                                    }}>
+                                                    <Dumbbell size={12} style={{ color: SESION_COLORS[si % SESION_COLORS.length] }} />
+                                                    <span className="font-medium text-[var(--text)]">{s.nombre}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Dieta activa */}
+                                {infoDiaSeleccionado.tieneDieta && (
+                                    <div className="flex items-center gap-2 text-xs sm:text-sm px-2.5 py-1.5 rounded-lg"
+                                        style={{ background: 'rgba(13,148,136,0.08)', borderLeft: '3px solid #0D9488' }}>
+                                        <UtensilsCrossed size={14} style={{ color: '#0D9488' }} />
+                                        <span className="font-medium text-[var(--text)]">{dietaActiva?.nombre}</span>
+                                    </div>
+                                )}
+
+                                {/* Revisión */}
+                                {infoDiaSeleccionado.tieneRevision && (
+                                    <div className="flex items-center gap-2 text-xs sm:text-sm px-2.5 py-1.5 rounded-lg"
+                                        style={{ background: 'rgba(124,58,237,0.08)', borderLeft: '3px solid #7C3AED' }}>
+                                        <CalendarCheck size={14} style={{ color: '#7C3AED' }} />
+                                        <span className="font-medium text-[var(--text)]">Revisión programada</span>
+                                    </div>
+                                )}
+
+                                {/* Vacío */}
+                                {infoDiaSeleccionado.sesiones.length === 0 && !infoDiaSeleccionado.tieneDieta && !infoDiaSeleccionado.tieneRevision && (
+                                    <p className="text-xs py-4 text-center" style={{ color: 'var(--text-muted)' }}>
+                                        No hay nada programado para este día
+                                    </p>
+                                )}
                             </div>
                         </div>
                     )}
@@ -377,18 +528,7 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                                 </div>
                                 {nuevaFecha && (
                                     <button
-                                        onClick={async () => {
-                                            setNuevaFecha('')
-                                            const res = await fetch(`/api/clientes/${clienteId}`, {
-                                                method: 'PUT',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ fecha_proxima_revision: null }),
-                                            })
-                                            if (res.ok) {
-                                                onUpdateRevision(null)
-                                                addToast({ type: 'info', title: 'Revisión eliminada' })
-                                            }
-                                        }}
+                                        onClick={eliminarRevision}
                                         className="text-xs text-red-500 hover:underline"
                                     >
                                         Eliminar fecha de revisión
@@ -410,17 +550,7 @@ export default function PlanificacionCalendario({ clienteId, fechaRevision, diet
                                                 Cambiar fecha
                                             </button>
                                             <button
-                                                onClick={async () => {
-                                                    const res = await fetch(`/api/clientes/${clienteId}`, {
-                                                        method: 'PUT',
-                                                        headers: { 'Content-Type': 'application/json' },
-                                                        body: JSON.stringify({ fecha_proxima_revision: null }),
-                                                    })
-                                                    if (res.ok) {
-                                                        onUpdateRevision(null)
-                                                        addToast({ type: 'info', title: 'Revisión eliminada' })
-                                                    }
-                                                }}
+                                                onClick={eliminarRevision}
                                                 className="btn btn-ghost btn-sm text-xs text-red-500">
                                                 Eliminar
                                             </button>

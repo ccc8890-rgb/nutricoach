@@ -21,6 +21,7 @@ interface PlanInicial {
     kcal: number
     hora_sugerida?: string
     notas?: string
+    recetas?: { receta_id: string; receta_nombre: string; cantidad_porciones: number }[]
   }[]
   recomendaciones?: string[]
   alertas_coach?: string[]
@@ -322,7 +323,9 @@ export default function RevisarRapidoPage() {
               Comidas y recetas compatibles
             </p>
             {plan.distribucion_comidas.map((comida, idx) => {
-              const recetas = recetasPorComida[idx] ?? []
+              const sugeridas = recetasPorComida[idx] ?? []
+              const deepSeekRecetas = comida.recetas ?? []
+              const mostrarDeepSeek = deepSeekRecetas.length > 0
               return (
                 <article key={`${comida.nombre}-${idx}`} className="card p-3">
                   <div className="flex items-center justify-between gap-3">
@@ -334,9 +337,23 @@ export default function RevisarRapidoPage() {
                     </div>
                     <Utensils size={16} style={{ color: 'var(--text-muted)' }} />
                   </div>
-                  {recetas.length > 0 && (
+                  {mostrarDeepSeek ? (
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {recetas.map(receta => (
+                      {deepSeekRecetas.map((r, ri) => (
+                        <span
+                          key={ri}
+                          className="text-[11px] px-2 py-1 rounded-full border"
+                          style={{ borderColor: 'rgba(124,58,237,0.3)', color: '#7C3AED', background: 'rgba(124,58,237,0.08)' }}
+                          title={`${r.cantidad_porciones} porción(es) · seleccionada por IA`}
+                        >
+                          {r.receta_nombre}
+                        </span>
+                      ))}
+                      <span className="text-[10px] self-center ml-1" style={{ color: 'var(--text-muted)' }}>🤖 IA</span>
+                    </div>
+                  ) : sugeridas.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {sugeridas.map(receta => (
                         <a
                           key={receta.id}
                           href={`/recetas/${receta.id}`}
@@ -349,7 +366,7 @@ export default function RevisarRapidoPage() {
                         </a>
                       ))}
                     </div>
-                  )}
+                  ) : null}
                 </article>
               )
             })}

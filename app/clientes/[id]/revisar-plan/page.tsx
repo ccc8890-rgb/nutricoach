@@ -32,7 +32,13 @@ interface OnboardingData {
 interface PlanInicial {
   kcal_objetivo: number
   macros: { proteinas_g: number; carbos_g: number; grasas_g: number }
-  distribucion_comidas: { nombre: string; porcentaje_kcal: number; kcal: number; hora_sugerida: string }[]
+  distribucion_comidas: {
+    nombre: string
+    porcentaje_kcal: number
+    kcal: number
+    hora_sugerida: string
+    recetas?: { receta_id: string; receta_nombre: string; cantidad_porciones: number }[]
+  }[]
   recomendaciones: string[]
   notas_coach: string
 }
@@ -331,6 +337,23 @@ export default function RevisarPlanPage() {
     setCreandoDieta(true)
     setErrorDieta(null)
     try {
+      // ── 1. Verificar si generar-plan-inicial ya persisitió el plan ──────────
+      // El server route.ts (líneas 648-800) ya creó plan + comidas + alimentos en BD.
+      // Si existe, redirigimos directamente en vez de duplicar.
+      const { data: planExistente } = await supabase
+        .from('planes_nutricion')
+        .select('id')
+        .eq('cliente_id', params.id as string)
+        .eq('activo', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (planExistente?.id) {
+        setDietaCreada({ id: planExistente.id })
+        return // No creamos duplicado, el usuario ve el plan ya persistido
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No autenticado')
 
@@ -371,59 +394,98 @@ export default function RevisarPlanPage() {
         if (comidaCreada) comidasCreadas.push(comidaCreada)
       }
 
-      // Persistir la primera receta sugerida como "alimento" en comida_alimentos
-      // para que el cliente vea platos asignados y la vista semanal pueda calcular macros
+      // ── 2. Persistir las recetas REALES de DeepSeek (no las sugeridas al azar) ──
+      // usar plan.distribucion_comidas[].recetas que vienen de la IA,
+      // NO recetasPorComida[index] que son sugeridas por rango de kcal.
       for (let index = 0; index < comidasCreadas.length; index++) {
         const comida = comidasCreadas[index]
-        const recetas = recetasPorComida[index]
-        if (!recetas?.length) continue
-
-        const primeraReceta = recetas[0]
-        try {
-          // Buscar si ya existe un alimento con ese nombre (misma receta)
-          const { data: alimentoExistente } = await supabase
-            .from('alimentos')
-            .select('id')
-            .eq('nombre', primeraReceta.nombre)
-            .eq('categoria', 'receta_ia')
-            .maybeSingle()
-
-          let alimentoId: string
-
-          if (alimentoExistente) {
-            alimentoId = alimentoExistente.id
-          } else {
-            // Crear un alimento virtual con los macros de la receta
-            const { data: nuevoAlimento, error: alError } = await supabase
+        const recetasDeepSeek = plan.distribucion_comidas[index]?.recetas
+        if (!recetasDeepSeek?.length) {
+          // Fallback: si DeepSeek no asignó recetas, usar las sugeridas por kcal
+          const recetasSugeridas = recetasPorComida[index]
+          if (!recetasSugeridas?.length) continue
+          const primeraReceta = recetasSugeridas[0]
+          try {
+            const { data: alimentoExistente } = await supabase
               .from('alimentos')
-              .insert({
-                nombre: primeraReceta.nombre,
-                categoria: 'receta_ia',
-                calorias: primeraReceta.kcal,
-                proteinas: primeraReceta.proteinas,
-                carbohidratos: primeraReceta.carbohidratos,
-                grasas: primeraReceta.grasas,
-                custom: true,
-              })
               .select('id')
-              .single()
-
-            if (alError || !nuevoAlimento) {
-              console.error(`Error al crear alimento para receta "${primeraReceta.nombre}":`, alError)
-              continue
+              .eq('nombre', primeraReceta.nombre)
+              .eq('categoria', 'receta_ia')
+              .maybeSingle()
+            let alimentoId: string
+            if (alimentoExistente) {
+              alimentoId = alimentoExistente.id
+            } else {
+              const { data: nuevoAlimento, error: alError } = await supabase
+                .from('alimentos')
+                .insert({
+                  nombre: primeraReceta.nombre,
+                  categoria: 'receta_ia',
+                  calorias: primeraReceta.kcal,
+                  proteinas: primeraReceta.proteinas,
+                  carbohidratos: primeraReceta.carbohidratos,
+                  grasas: primeraReceta.grasas,
+                  custom: true,
+                })
+                .select('id')
+                .single()
+              if (alError || !nuevoAlimento) {
+                console.error(`Error al crear alimento para receta "${primeraReceta.nombre}":`, alError)
+                continue
+              }
+              alimentoId = nuevoAlimento.id
             }
-            alimentoId = nuevoAlimento.id
+            await supabase.from('comida_alimentos').insert({
+              comida_id: comida.id,
+              alimento_id: alimentoId,
+              cantidad_gramos: 100,
+            })
+          } catch (err) {
+            console.error(`Error al persistir receta en comida "${comida.nombre}":`, err)
           }
+          continue
+        }
 
-          // Vincular a la comida (100g = 1 porción como base)
-          await supabase.from('comida_alimentos').insert({
-            comida_id: comida.id,
-            alimento_id: alimentoId,
-            cantidad_gramos: 100,
-          })
-        } catch (err) {
-          console.error(`Error al persistir receta en comida "${comida.nombre}":`, err)
-          // No bloqueamos — el coach siempre puede editar manualmente desde /dietas
+        // Usar las recetas que DeepSeek seleccionó
+        for (const r of recetasDeepSeek) {
+          try {
+            // Buscar si ya existe el alimento con ese nombre
+            const { data: alimentoExistente } = await supabase
+              .from('alimentos')
+              .select('id')
+              .eq('nombre', r.receta_nombre)
+              .eq('categoria', 'receta_ia')
+              .maybeSingle()
+
+            let alimentoId: string
+            if (alimentoExistente) {
+              alimentoId = alimentoExistente.id
+            } else {
+              const { data: nuevoAlimento, error: alError } = await supabase
+                .from('alimentos')
+                .insert({
+                  nombre: r.receta_nombre,
+                  categoria: 'receta_ia',
+                  custom: true,
+                })
+                .select('id')
+                .single()
+              if (alError || !nuevoAlimento) {
+                console.error(`Error al crear alimento para receta IA "${r.receta_nombre}":`, alError)
+                continue
+              }
+              alimentoId = nuevoAlimento.id
+            }
+
+            const gramos = Math.round((r.cantidad_porciones ?? 1) * 100)
+            await supabase.from('comida_alimentos').insert({
+              comida_id: comida.id,
+              alimento_id: alimentoId,
+              cantidad_gramos: gramos,
+            })
+          } catch (err) {
+            console.error(`Error al persistir receta IA en comida "${comida.nombre}":`, err)
+          }
         }
       }
 
@@ -774,7 +836,9 @@ export default function RevisarPlanPage() {
               </p>
               <div className="flex flex-col gap-2">
                 {plan.distribucion_comidas.map((comida, idx) => {
-                  const recetas = recetasPorComida[idx] ?? []
+                  const sugeridas = recetasPorComida[idx] ?? []
+                  const deepSeekRecetas = comida.recetas ?? []
+                  const mostrarDeepSeek = deepSeekRecetas.length > 0
                   return (
                     <div key={idx} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.75rem' }}>
                       <div className="flex items-center justify-between mb-1">
@@ -785,9 +849,23 @@ export default function RevisarPlanPage() {
                         <div className="flex gap-2 mt-1">
                           {[1, 2, 3].map(i => <div key={i} className="h-6 w-20 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.06)' }} />)}
                         </div>
-                      ) : recetas.length > 0 ? (
+                      ) : mostrarDeepSeek ? (
                         <div className="flex flex-wrap gap-1.5 mt-1">
-                          {recetas.map(r => (
+                          {deepSeekRecetas.map((r, ri) => (
+                            <span
+                              key={ri}
+                              className="text-xs px-2 py-0.5 rounded-full border"
+                              style={{ borderColor: 'var(--primary)/30', color: 'var(--primary)', background: 'var(--primary)/8' }}
+                              title={`${r.cantidad_porciones} porción(es) · seleccionada por IA`}
+                            >
+                              {r.receta_nombre}
+                            </span>
+                          ))}
+                          <span className="text-[10px] text-[var(--text-muted)] self-center ml-1">🤖 IA</span>
+                        </div>
+                      ) : sugeridas.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          {sugeridas.map(r => (
                             <a
                               key={r.id}
                               href={`/recetas/${r.id}`}
@@ -938,13 +1016,13 @@ export default function RevisarPlanPage() {
               <div className="flex items-center justify-between">
                 <p className="text-sm text-[var(--text-muted)]">No hay plantilla seleccionada</p>
                 <button
-                    type="button"
-                    onClick={() => setShowSelectorEntreno(true)}
-                    className="btn-secondary flex items-center gap-2 text-sm"
-                  >
-                    <Dumbbell size={14} />
-                    Seleccionar plantilla
-                  </button>
+                  type="button"
+                  onClick={() => setShowSelectorEntreno(true)}
+                  className="btn-secondary flex items-center gap-2 text-sm"
+                >
+                  <Dumbbell size={14} />
+                  Seleccionar plantilla
+                </button>
               </div>
               {errorPropuestaIA && (
                 <p className="text-sm text-red-600 dark:text-red-400">{errorPropuestaIA}</p>

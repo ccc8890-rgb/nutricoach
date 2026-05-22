@@ -1,8 +1,8 @@
 # ESTADO — NutriCoach Training Pro
 
-**Última actualización:** 22-05-2026 (sesión 33b — limpieza de 957 productos no comestibles de la BD)
+**Última actualización:** 22-05-2026 (sesión 33c — auditoría de bugs + 7 fixes)
 
-**Auditoría completada:** 22-05-2026 — Sistema de filtrado de no comestibles documentado en [`docs/scraping-no-comestibles.md`](docs/scraping-no-comestibles.md). Fuga detectada en post-scraping.ts línea 124. 957 productos eliminados (6.6% del total). Script [`scripts/delete-no-comestibles.ts`](scripts/delete-no-comestibles.ts) mejorado con batch processing.
+**Hito:** 22-05-2026 — Auditoría de bugs completa. 7 bugs encontrados y corregidos (2 🔴, 2 🟠, 2 🟡, 1 🟢). Documentado en [`docs/auditoria-bugs-2026-05-22.md`](docs/auditoria-bugs-2026-05-22.md). Sistema de no comestibles documentado en [`docs/scraping-no-comestibles.md`](docs/scraping-no-comestibles.md). 957 productos no comestibles eliminados de la BD.
 
 ---
 

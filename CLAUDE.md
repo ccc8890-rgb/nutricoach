@@ -327,3 +327,49 @@ git add -A && git commit -m "Sesion [FECHA]: [RESUMEN]" && git push
 5. Manejar 416 en toda paginación.
 6. Siempre tener plan B.
 7. Documentar en CALIENTE.
+
+---
+
+### ✅ SESIÓN 22-05-2026 — FIX: Recetas DeepSeek no se persistían en plan de dieta 🔴
+
+**Bug crítico**: Las recetas que DeepSeek seleccionaba en `distribucion_comidas[].recetas` no se guardaban en la BD. [`crearPlan()`](app/clientes/[id]/revisar-plan/page.tsx:324) usaba `recetasPorComida[index]` (recetas sugeridas al azar por rango de kcal) en vez de las recetas reales de DeepSeek.
+
+**Causa raíz**: La interfaz [`PlanInicial`](app/clientes/[id]/revisar-plan/page.tsx:32-44) no definía el campo `recetas` en `distribucion_comidas`, aunque [`generar-plan-inicial/route.ts`](app/api/generar-plan-inicial/route.ts:463-490) sí lo incluía en el JSON persistido.
+
+**Fix (2 cambios)** en [`app/clientes/[id]/revisar-plan/page.tsx`](app/clientes/[id]/revisar-plan/page.tsx):
+
+| # | Cambio | Líneas | Detalle |
+|---|--------|--------|---------|
+| 1 | Interfaz `PlanInicial` | 35-40 | Añadido `recetas?: { receta_id; receta_nombre; cantidad_porciones }[]` |
+| 2a | Detectar plan existente | 340-355 | `crearPlan()` consulta `planes_nutricion` activo primero. Si existe (persistido por server route), redirige sin duplicar |
+| 2b | Usar recetas DeepSeek | 397-490 | Persiste `plan.distribucion_comidas[].recetas`. Fallback a `recetasPorComida` solo si DeepSeek no asignó ninguna |
+
+**Flujo corregido**:
+1. `generar-plan-inicial/route.ts:648-800` ya persiste plan + comidas + alimentos en BD con recetas reales de DeepSeek
+2. El frontend carga `registros_ia.respuesta_json` que contiene `distribucion_comidas[].recetas`
+3. Al hacer clic "Crear plan de dieta", `crearPlan()` detecta el plan existente → `setDietaCreada({ id })` → UI muestra "Ver dieta →"
+4. El coach ve las recetas que DeepSeek asignó a cada comida
+
+**Archivo modificado**: solo [`app/clientes/[id]/revisar-plan/page.tsx`](app/clientes/[id]/revisar-plan/page.tsx) (+62 líneas efectivas)
+
+**Auditoría de bugs (22-05-2026)**:
+
+| # | Gravedad | Bug | Archivo | Estado |
+|---|----------|-----|---------|--------|
+| 1 | 🔴 CRÍTICO | `crearPlan()` usaba `recetasPorComida[idx]` (aleatorias por kcal) en vez de `distribucion_comidas[].recetas` (DeepSeek). Las recetas seleccionadas por IA nunca llegaban a la BD | [`revisar-plan/page.tsx:400-490`](app/clientes/[id]/revisar-plan/page.tsx:400-490) | ✅ FIXED |
+| 2 | 🟡 MEDIO | `revisar-rapido/page.tsx` interfaz `PlanInicial` sin campo `recetas`. La UI muestra `recetasPorComida` (aleatorias) en vez de las recetas de DeepSeek | [`revisar-rapido/page.tsx:15-28`](app/clientes/[id]/revisar-rapido/page.tsx:15-28) + línea 325 | ❌ PENDIENTE |
+| 3 | 🟡 MEDIO | `revisar-plan/page.tsx` UI preview muestra `recetasPorComida[idx]` (aleatorias) en vez de `comida.recetas` de DeepSeek en la card de distribución | [`revisar-plan/page.tsx:839`](app/clientes/[id]/revisar-plan/page.tsx:839) | ❌ PENDIENTE |
+
+**Auditoría de bugs (22-05-2026) — TODOS CORREGIDOS ✅**:
+
+| # | Gravedad | Bug | Archivo | Estado |
+|---|----------|-----|---------|--------|
+| 1 | 🔴 CRÍTICO | `crearPlan()` usaba `recetasPorComida[idx]` (aleatorias por kcal) en vez de `distribucion_comidas[].recetas` (DeepSeek). Las recetas seleccionadas por IA nunca llegaban a la BD | [`revisar-plan/page.tsx:400-490`](app/clientes/[id]/revisar-plan/page.tsx:400-490) | ✅ FIXED |
+| 2 | 🟡 MEDIO | `revisar-rapido/page.tsx` interfaz `PlanInicial` sin campo `recetas`. UI mostraba recetas aleatorias en vez de DeepSeek | [`revisar-rapido/page.tsx:15-28`](app/clientes/[id]/revisar-rapido/page.tsx:15-28) + línea 325 | ✅ FIXED |
+| 3 | 🟡 MEDIO | `revisar-plan/page.tsx` UI preview mostraba `recetasPorComida[idx]` (aleatorias) en vez de `comida.recetas` de DeepSeek | [`revisar-plan/page.tsx:839`](app/clientes/[id]/revisar-plan/page.tsx:839) | ✅ FIXED |
+
+**Arquitectura de la solución**: Las recetas DeepSeek fluyen desde `generar-plan-inicial/route.ts:463-490` (donde se construye `distribucion_comidas[].recetas`) hasta el frontend que las lee del `respuesta_json` persistido en `registros_ia`. El fix asegura que en todos los puntos (persistencia en BD + UI preview + creación de plan) se usen las recetas reales de DeepSeek.
+
+**Archivos modificados** (22-05-2026):
+- [`app/clientes/[id]/revisar-plan/page.tsx`](app/clientes/[id]/revisar-plan/page.tsx) — Interfaz + lógica + UI (~+90 líneas)
+- [`app/clientes/[id]/revisar-rapido/page.tsx`](app/clientes/[id]/revisar-rapido/page.tsx) — Interfaz + UI (~+30 líneas)
