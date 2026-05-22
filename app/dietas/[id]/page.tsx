@@ -7,6 +7,7 @@ import BackButton from '@/components/BackButton'
 import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Download, Power, PowerOff, Copy, Check, BookOpen } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { calcularMacrosPorCantidad, sumarMacros, COMIDAS_PREDEFINIDAS } from '@/lib/utils'
+import { KNOWN_TAGS } from '@/lib/auto-tag'
 import type { Macros, PlanNutricion, Alimento } from '@/types'
 
 type ResultadoBusqueda = Alimento & { imagen?: string; _fuente?: string }
@@ -62,6 +63,7 @@ export default function EditarDietaPage() {
   const [fuente, setFuente] = useState<Fuente>('local')
   const [recetasIngredientes, setRecetasIngredientes] = useState<{ [recetaId: string]: RecetaConIngredientes }>({})
   const [queryReceta, setQueryReceta] = useState('')
+  const [tagReceta, setTagReceta] = useState<string | null>(null)
   const [resultadosRecetas, setResultadosRecetas] = useState<{ id: string; nombre: string; categoria: string | null; imagen_url: string | null; porciones: number | null }[]>([])
   const [buscandoRecetas, setBuscandoRecetas] = useState(false)
   const [queryAlimento, setQueryAlimento] = useState('')
@@ -157,11 +159,19 @@ export default function EditarDietaPage() {
   }, [queryAlimento, fuente])
 
   // Limpiar resultados al cambiar fuente
-  useEffect(() => { setResultados([]); setQueryAlimento('') }, [fuente])
+  useEffect(() => { setResultados([]); setQueryAlimento(''); setQueryReceta(''); setTagReceta(null); setResultadosRecetas([]) }, [fuente])
 
   // Búsqueda de recetas (solo cuando fuente === 'recetas')
   useEffect(() => {
     if (fuente !== 'recetas') return
+    // Si hay tag activo, buscar por tag; si no, por nombre
+    if (tagReceta) {
+      setBuscandoRecetas(true)
+      supabase.from('recetas').select('id, nombre, categoria, imagen_url, porciones')
+        .eq('estado', 'aprobada').contains('tags', [tagReceta]).order('nombre').limit(20)
+        .then(({ data }) => { setResultadosRecetas(data ?? []); setBuscandoRecetas(false) })
+      return
+    }
     if (!queryReceta || queryReceta.length < 2) { setResultadosRecetas([]); return }
     setBuscandoRecetas(true)
     const timer = setTimeout(async () => {
@@ -171,7 +181,7 @@ export default function EditarDietaPage() {
       setBuscandoRecetas(false)
     }, 300)
     return () => clearTimeout(timer)
-  }, [queryReceta, fuente])
+  }, [queryReceta, tagReceta, fuente])
 
   async function seleccionarReceta(receta: { id: string; nombre: string; categoria: string | null; imagen_url: string | null; porciones: number | null }) {
     // Si ya la tenemos en caché, reusar
@@ -218,6 +228,7 @@ export default function EditarDietaPage() {
     setBusquedaAbierta(null)
     setQueryAlimento('')
     setQueryReceta('')
+    setTagReceta(null)
     setResultados([])
     setResultadosRecetas([])
 
@@ -687,7 +698,7 @@ export default function EditarDietaPage() {
                             </button>
                           ))}
                           <button
-                            onClick={() => { setBusquedaAbierta(null); setQueryAlimento(''); setQueryReceta(''); setResultados([]); setResultadosRecetas([]) }}
+                            onClick={() => { setBusquedaAbierta(null); setQueryAlimento(''); setQueryReceta(''); setTagReceta(null); setResultados([]); setResultadosRecetas([]) }}
                             className="ml-auto p-1"
                             style={{ color: 'var(--text-muted)' }}
                             onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
@@ -700,19 +711,30 @@ export default function EditarDietaPage() {
                         {/* Input */}
                         <div className="flex items-center rounded-lg overflow-hidden" style={{ border: '1px solid var(--primary)', boxShadow: '0 0 0 3px var(--primary-ring)' }}>
                           <Search size={15} className="ml-3 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                          {/* Chip de tag activo */}
+                          {fuente === 'recetas' && tagReceta && (
+                            <span className="flex items-center gap-1 ml-1 pl-2 pr-1 py-0.5 rounded-full text-xs font-semibold flex-shrink-0"
+                              style={{ background: '#A3E635', color: '#1C1C1E' }}>
+                              {tagReceta}
+                              <button onMouseDown={e => { e.preventDefault(); setTagReceta(null); setResultadosRecetas([]) }}
+                                className="rounded-full p-0.5 hover:bg-black/10">
+                                <X size={11} />
+                              </button>
+                            </span>
+                          )}
                           <input
                             autoFocus
                             className="flex-1 px-3 py-2 outline-none text-sm"
-                            placeholder={fuente === 'local' ? 'Buscar en mi base de datos…' : fuente === 'off' ? 'Buscar producto de supermercado…' : 'Buscar receta…'}
+                            placeholder={tagReceta ? `Filtrar dentro de ${tagReceta}…` : fuente === 'local' ? 'Buscar en mi base de datos…' : fuente === 'off' ? 'Buscar producto de supermercado…' : 'Buscar receta o tipo…'}
                             value={fuente === 'recetas' ? queryReceta : queryAlimento}
                             onChange={e => {
-                              if (fuente === 'recetas') setQueryReceta(e.target.value)
+                              if (fuente === 'recetas') { setQueryReceta(e.target.value); if (tagReceta) setTagReceta(null) }
                               else setQueryAlimento(e.target.value)
                             }}
                           />
-                          {(fuente === 'recetas' ? queryReceta : queryAlimento) && (
+                          {(fuente === 'recetas' ? (queryReceta || tagReceta) : queryAlimento) && (
                             <button onClick={() => {
-                              if (fuente === 'recetas') { setQueryReceta(''); setResultadosRecetas([]) }
+                              if (fuente === 'recetas') { setQueryReceta(''); setTagReceta(null); setResultadosRecetas([]) }
                               else { setQueryAlimento(''); setResultados([]) }
                             }} className="px-3"
                               style={{ color: 'var(--text-muted)' }}
@@ -722,6 +744,26 @@ export default function EditarDietaPage() {
                             </button>
                           )}
                         </div>
+
+                        {/* Sugerencias de tags al escribir */}
+                        {fuente === 'recetas' && !tagReceta && queryReceta.length >= 2 && (() => {
+                          const q = queryReceta.toLowerCase()
+                          const matches = KNOWN_TAGS.filter(t => t.toLowerCase().includes(q))
+                          if (!matches.length) return null
+                          return (
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              <span className="text-xs w-full" style={{ color: 'var(--text-muted)' }}>Filtrar por tipo:</span>
+                              {matches.slice(0, 6).map(tag => (
+                                <button key={tag}
+                                  onMouseDown={e => { e.preventDefault(); setTagReceta(tag); setQueryReceta('') }}
+                                  className="text-xs px-2.5 py-1 rounded-full border transition-all"
+                                  style={{ background: 'rgba(163,230,53,0.12)', color: '#A3E635', borderColor: 'rgba(163,230,53,0.3)' }}>
+                                  {tag}
+                                </button>
+                              ))}
+                            </div>
+                          )
+                        })()}
 
                         {/* Resultados */}
                         {fuente === 'recetas' ? (
@@ -829,7 +871,7 @@ export default function EditarDietaPage() {
                       </div>
                     ) : (
                       <button
-                        onClick={() => { setBusquedaAbierta(comida.id); setQueryAlimento(''); setQueryReceta(''); setResultados([]); setResultadosRecetas([]); setFuente('local') }}
+                        onClick={() => { setBusquedaAbierta(comida.id); setQueryAlimento(''); setQueryReceta(''); setTagReceta(null); setResultados([]); setResultadosRecetas([]); setFuente('local') }}
                         className="w-full border border-dashed rounded-lg py-2.5 text-sm transition-colors flex items-center justify-center gap-2"
                         style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary)' }}
