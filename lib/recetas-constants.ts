@@ -8,13 +8,13 @@ export const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'S
 // Matching: tags[] de la receta O nombre contiene el sub-tag (case-insensitive).
 export const SUBCATEGORIAS: Partial<Record<string, string[]>> = {
   Desayuno: ['Tortitas', 'Pancakes', 'Gofre', 'Tostada', 'Bowl', 'Batido', 'Granola', 'Bizcocho', 'Yogur'],
-  Comida:   ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Burrito', 'Wrap', 'Sandwich', 'Pollo', 'Carne', 'Pescado'],
-  Cena:     ['Ensalada', 'Pasta', 'Bowl', 'Pollo', 'Carne', 'Pescado', 'Wok', 'Sopa'],
+  Comida:   ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Burrito', 'Wrap', 'Sandwich', 'Pollo', 'Carne', 'Pescado'],
+  Cena:     ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Pollo', 'Carne', 'Pescado', 'Wok', 'Sopa'],
   Merienda: ['Batido', 'Bizcocho', 'Galleta', 'Tortitas', 'Tostada', 'Yogur'],
   Snack:    ['Proteico', 'Fit', 'Crujiente', 'Salado', 'Dulce', 'Fruta'],
   Postre:        ['Bizcocho', 'Tortitas', 'Pancakes', 'Mousse', 'Galleta', 'Tarta', 'Helado', 'Brownie', 'Cookie', 'Pudding', 'Crepe'],
-  Salsa:         ['Mayonesa', 'Pesto', 'Tomate', 'Barbacoa', 'Alioli', 'Vinagreta', 'Hummus', 'Guacamole', 'Tzatziki'],
-  Acompañamiento: ['Arroz', 'Patata', 'Verdura', 'Legumbre', 'Ensalada', 'Pan', 'Crema'],
+  Salsa:          ['Mayonesa', 'Pesto', 'Tomate', 'Barbacoa', 'Alioli', 'Vinagreta', 'Hummus', 'Guacamole', 'Tzatziki'],
+  Acompañamiento: ['Patata', 'Verdura', 'Cuscús', 'Pan', 'Crema', 'Puré'],
 }
 
 // ─── Métodos de cocción (unificados) ───
