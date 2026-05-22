@@ -107,44 +107,82 @@ export async function DELETE(
         if (!cliente) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
         if (cliente.coach_id !== user.id) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
-        // Delete dependent records first (in case FK cascades are not set)
-        await supabase.from('onboarding_responses').delete().eq('cliente_id', id)
-        await supabase.from('onboarding_perfil_profundo').delete().eq('cliente_id', id)
-        await supabase.from('intercambios_historial').delete().eq('cliente_id', id)
-        await supabase.from('perfil_alimentario_cliente').delete().eq('cliente_id', id)
-        await supabase.from('perfil_entreno_cliente').delete().eq('cliente_id', id)
-        await supabase.from('notas_coach').delete().eq('cliente_id', id)
-        await supabase.from('checkins').delete().eq('cliente_id', id)
-        await supabase.from('seguimiento_peso').delete().eq('cliente_id', id)
-        await supabase.from('invitaciones').delete().eq('coach_id', user.id).eq('email', cliente.profile_id)
+        // Obtener email del profile para limpiar invitaciones (la tabla invitaciones no tiene cliente_id)
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', cliente.profile_id)
+            .maybeSingle()
 
-        // Delete plans (comidas cascade from planes_nutricion if FK set, otherwise manual)
+        // Helper: delete con verificación de error, retorna mensaje de error o null
+        async function borrar(tabla: string, columna: string, valor: string): Promise<string | null> {
+            const { error } = await supabase.from(tabla).delete().eq(columna, valor)
+            return error ? `Error al borrar ${tabla}: ${error.message}` : null
+        }
+
+        const errores: string[] = []
+
+        // Delete dependent records first (in case FK cascades are not set)
+        for (const [tabla, col] of [
+            ['onboarding_responses', 'cliente_id'],
+            ['onboarding_perfil_profundo', 'cliente_id'],
+            ['intercambios_historial', 'cliente_id'],
+            ['perfil_alimentario_cliente', 'cliente_id'],
+            ['perfil_entreno_cliente', 'cliente_id'],
+            ['notas_coach', 'cliente_id'],
+            ['checkins', 'cliente_id'],
+            ['seguimiento_peso', 'cliente_id'],
+        ] as const) {
+            const err = await borrar(tabla, col, id)
+            if (err) errores.push(err)
+        }
+
+        // Invitaciones: filtrar por coach_id + email (si se pudo obtener)
+        if (profile?.email) {
+            const { error: errInv } = await supabase
+                .from('invitaciones')
+                .delete()
+                .eq('coach_id', user.id)
+                .eq('email', profile.email)
+            if (errInv) errores.push(`Error al borrar invitaciones: ${errInv.message}`)
+        }
+
+        // Delete nutrition plans (comidas cascade from planes_nutricion)
         const { data: planes } = await supabase.from('planes_nutricion').select('id').eq('cliente_id', id)
         for (const plan of planes ?? []) {
             const { data: comidas } = await supabase.from('comidas').select('id').eq('plan_id', plan.id)
             for (const comida of comidas ?? []) {
-                await supabase.from('comida_alimentos').delete().eq('comida_id', comida.id)
+                const err = await borrar('comida_alimentos', 'comida_id', comida.id)
+                if (err) errores.push(err)
             }
-            await supabase.from('comidas').delete().eq('plan_id', plan.id)
+            const err = await borrar('comidas', 'plan_id', plan.id)
+            if (err) errores.push(err)
         }
-        await supabase.from('planes_nutricion').delete().eq('cliente_id', id)
+        const errPlan = await borrar('planes_nutricion', 'cliente_id', id)
+        if (errPlan) errores.push(errPlan)
 
         // Delete training plans
         const { data: entrenosPlanes } = await supabase.from('planes_entrenamiento').select('id').eq('cliente_id', id)
         for (const ep of entrenosPlanes ?? []) {
             const { data: sesiones } = await supabase.from('sesiones_entrenamiento').select('id').eq('plan_id', ep.id)
             for (const s of sesiones ?? []) {
-                await supabase.from('sesion_ejercicios').delete().eq('sesion_id', s.id)
+                const err = await borrar('sesion_ejercicios', 'sesion_id', s.id)
+                if (err) errores.push(err)
             }
-            await supabase.from('sesiones_entrenamiento').delete().eq('plan_id', ep.id)
+            const err = await borrar('sesiones_entrenamiento', 'plan_id', ep.id)
+            if (err) errores.push(err)
         }
-        await supabase.from('planes_entrenamiento').delete().eq('cliente_id', id)
+        const errEntreno = await borrar('planes_entrenamiento', 'cliente_id', id)
+        if (errEntreno) errores.push(errEntreno)
 
         // Finally delete the client record
         const { error: deleteError } = await supabase.from('clientes').delete().eq('id', id)
-        if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 })
+        if (deleteError) {
+            errores.push(`Error al eliminar cliente: ${deleteError.message}`)
+            return NextResponse.json({ ok: false, errores }, { status: 500 })
+        }
 
-        return NextResponse.json({ ok: true })
+        return NextResponse.json({ ok: true, errores: errores.length > 0 ? errores : undefined })
     } catch (error) {
         console.error('Error en DELETE /api/clientes/[id]:', error)
         return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })

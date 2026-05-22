@@ -384,10 +384,8 @@ export default function ClienteDetallePage() {
               </div>
             )}
 
-            {/* Danger zone */}
+            {/* Eliminar cliente */}
             <div className="rounded-2xl p-4" style={{ border: '1px solid rgba(255,69,58,0.2)', background: 'rgba(255,69,58,0.04)' }}>
-              <p className="text-xs font-semibold mb-1" style={{ color: '#FF453A' }}>Zona de peligro</p>
-              <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>Eliminar el cliente borrará su perfil, planes, check-ins y todos sus datos. Esta acción no se puede deshacer.</p>
               {!confirmandoEliminar ? (
                 <button className="text-xs px-3 py-1.5 rounded-xl border font-medium transition-colors" style={{ borderColor: 'rgba(255,69,58,0.3)', color: '#FF453A' }} onClick={() => setConfirmandoEliminar(true)}>
                   Eliminar cliente
@@ -403,6 +401,7 @@ export default function ClienteDetallePage() {
                   </button>
                 </div>
               )}
+              <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Eliminar el cliente borrará su perfil, planes, check-ins y todos sus datos. Esta acción no se puede deshacer.</p>
             </div>
           </div>
 

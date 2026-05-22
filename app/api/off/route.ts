@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { esProductoNoComestible } from '@/lib/scraping/guard-no-comestible'
 
 interface OFFProduct {
   code?: string
@@ -31,9 +32,10 @@ export async function GET(req: NextRequest) {
 
     const normalizado = products
       .filter(p => {
+        // 🚫 Rechazar productos no comestibles (delegado a guard-no-comestible.ts)
+        if (!p.product_name?.trim() || esProductoNoComestible(p.product_name)) return false
         const n = p.nutriments
         return (
-          p.product_name?.trim() &&
           (n['energy-kcal_100g'] != null || n['energy-kcal'] != null) &&
           n.proteins_100g != null &&
           n.carbohydrates_100g != null &&

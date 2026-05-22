@@ -145,7 +145,7 @@ export default function EditarDietaPage() {
     setBuscando(true)
     const timer = setTimeout(async () => {
       if (fuente === 'local') {
-        const { data } = await supabase.from('alimentos').select('*').ilike('nombre', `%${queryAlimento}%`).limit(12)
+        const { data } = await supabase.from('alimentos').select('*').eq('es_comestible', true).ilike('nombre', `%${queryAlimento}%`).limit(12)
         setResultados(data ?? [])
       } else {
         const res = await fetch(`/api/off?q=${encodeURIComponent(queryAlimento)}`)
@@ -166,7 +166,7 @@ export default function EditarDietaPage() {
     setBuscandoRecetas(true)
     const timer = setTimeout(async () => {
       const { data } = await supabase.from('recetas').select('id, nombre, categoria, imagen_url, porciones')
-        .ilike('nombre', `%${queryReceta}%`).order('nombre').limit(12)
+        .eq('estado', 'aprobada').ilike('nombre', `%${queryReceta}%`).order('nombre').limit(12)
       setResultadosRecetas(data ?? [])
       setBuscandoRecetas(false)
     }, 300)
@@ -337,19 +337,19 @@ export default function EditarDietaPage() {
 
   // IDR de referencia (adulto general, EFSA / RDA estándar)
   const IDR: Record<string, { label: string; idr: number; unit: string; color: string }> = {
-    vitamina_d_ug:    { label: 'Vit D',  idr: 15,   unit: 'µg',  color: '#F59E0B' },
-    vitamina_c_mg:    { label: 'Vit C',  idr: 80,   unit: 'mg',  color: '#F97316' },
-    vitamina_b12_ug:  { label: 'B12',    idr: 2.4,  unit: 'µg',  color: '#10B981' },
-    vitamina_a_ug:    { label: 'Vit A',  idr: 800,  unit: 'µg',  color: '#6366F1' },
-    vitamina_e_mg:    { label: 'Vit E',  idr: 12,   unit: 'mg',  color: '#8B5CF6' },
-    calcio_mg:        { label: 'Calcio', idr: 1000, unit: 'mg',  color: '#3B82F6' },
-    hierro_mg:        { label: 'Hierro', idr: 14,   unit: 'mg',  color: '#EF4444' },
-    zinc_mg:          { label: 'Zinc',   idr: 10,   unit: 'mg',  color: '#A855F7' },
-    magnesio_mg:      { label: 'Magnesio', idr: 375, unit: 'mg', color: '#06B6D4' },
-    potasio_mg:       { label: 'Potasio', idr: 3500, unit: 'mg', color: '#22C55E' },
-    sodio_mg:         { label: 'Sodio',  idr: 2000, unit: 'mg',  color: '#F43F5E' },
-    poliinsaturados_g:{ label: 'Ω-3/6', idr: 2,    unit: 'g',   color: '#0EA5E9' },
-    saturados_g:      { label: 'Sat',   idr: 20,   unit: 'g',   color: '#EF4444' },
+    vitamina_d_ug: { label: 'Vit D', idr: 15, unit: 'µg', color: '#F59E0B' },
+    vitamina_c_mg: { label: 'Vit C', idr: 80, unit: 'mg', color: '#F97316' },
+    vitamina_b12_ug: { label: 'B12', idr: 2.4, unit: 'µg', color: '#10B981' },
+    vitamina_a_ug: { label: 'Vit A', idr: 800, unit: 'µg', color: '#6366F1' },
+    vitamina_e_mg: { label: 'Vit E', idr: 12, unit: 'mg', color: '#8B5CF6' },
+    calcio_mg: { label: 'Calcio', idr: 1000, unit: 'mg', color: '#3B82F6' },
+    hierro_mg: { label: 'Hierro', idr: 14, unit: 'mg', color: '#EF4444' },
+    zinc_mg: { label: 'Zinc', idr: 10, unit: 'mg', color: '#A855F7' },
+    magnesio_mg: { label: 'Magnesio', idr: 375, unit: 'mg', color: '#06B6D4' },
+    potasio_mg: { label: 'Potasio', idr: 3500, unit: 'mg', color: '#22C55E' },
+    sodio_mg: { label: 'Sodio', idr: 2000, unit: 'mg', color: '#F43F5E' },
+    poliinsaturados_g: { label: 'Ω-3/6', idr: 2, unit: 'g', color: '#0EA5E9' },
+    saturados_g: { label: 'Sat', idr: 20, unit: 'g', color: '#EF4444' },
   }
 
   function calcMicrosTotales() {

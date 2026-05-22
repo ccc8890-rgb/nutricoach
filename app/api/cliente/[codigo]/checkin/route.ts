@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { evaluarCheckin } from '@/lib/periodizacion/arbol-decision'
-import { calcularAjusteCaloricoSemanal, type AjusteMacros } from '@/lib/periodizacion/motor-macros'
+import { calcularAjusteCaloricoSemanal } from '@/lib/periodizacion/motor-macros'
 import { generarFeedbackCheckinIA } from '@/lib/feedback-checkin-ia'
+import type { AjusteMacros } from '@/lib/periodizacion/motor-macros'
 
 export async function POST(
     request: Request,
@@ -147,9 +148,6 @@ async function dispararEvaluacionPeriodizacion(
         })
     )
     const semanas_en_deficit = semanas.size
-
-    const { evaluarCheckin } = await import('@/lib/periodizacion/arbol-decision')
-    const { calcularAjusteCaloricoSemanal } = await import('@/lib/periodizacion/motor-macros')
 
     const input = {
         energia: checkinData.energia,

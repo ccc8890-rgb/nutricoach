@@ -46,7 +46,7 @@ select distinct on (ps.alimento_id, ps.supermercado_id)
 from public.productos_supermercado ps
 join public.supermercados s on s.id = ps.supermercado_id
 join public.alimentos a on a.id = ps.alimento_id
-where a.es_comestible = true  -- ← FILTRO NUEVO
+where (a.es_comestible = true OR a.es_comestible IS NULL)  -- ← FILTRO: true o sin asignar (COALESCE)
 order by
   ps.alimento_id,
   ps.supermercado_id,
@@ -82,7 +82,7 @@ with ranked as (
   from public.productos_supermercado ps
   join public.supermercados s on s.id = ps.supermercado_id
   join public.alimentos a on a.id = ps.alimento_id
-  where a.es_comestible = true  -- ← FILTRO NUEVO
+  where (a.es_comestible = true OR a.es_comestible IS NULL)  -- ← FILTRO: true o sin asignar (COALESCE)
 )
 select * from ranked where ranking <= 3;
 
@@ -111,5 +111,5 @@ select distinct on (ps.alimento_id, ps.supermercado_id)
 from public.productos_supermercado ps
 join public.supermercados s on s.id = ps.supermercado_id
 join public.alimentos a on a.id = ps.alimento_id
-where a.es_comestible = true  -- ← FILTRO NUEVO
+where (a.es_comestible = true OR a.es_comestible IS NULL)  -- ← FILTRO: true o sin asignar (COALESCE)
 order by ps.alimento_id, ps.supermercado_id, ps.fecha_precio desc;

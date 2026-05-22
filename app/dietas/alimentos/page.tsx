@@ -226,13 +226,14 @@ export default function AlimentosPage() {
         if (debouncedSearch) params.set('q', debouncedSearch)
         if (categoriaFiltro) params.set('categoria', categoriaFiltro)
         if (soloCustom) params.set('custom', 'true')
+        if (soloIA) params.set('fuente', 'ia')
         if (soloConDatos) params.set('soloConDatos', 'true')
 
         const res = await fetch(`/api/alimentos?${params.toString()}`)
         const data = await res.json()
         if (Array.isArray(data)) setAlimentos(data)
         setLoading(false)
-    }, [debouncedSearch, categoriaFiltro, soloCustom, soloConDatos])
+    }, [debouncedSearch, categoriaFiltro, soloCustom, soloIA, soloConDatos])
 
     // Cargar OFF en paralelo cuando hay búsqueda
     useEffect(() => {
@@ -353,7 +354,11 @@ export default function AlimentosPage() {
             })
             const result = await res.json()
             if (!res.ok) {
-                addToast({ type: 'error', title: 'Error', message: result.error ?? 'No se pudo importar' })
+                const msg = result.error ?? 'No se pudo importar'
+                // 🛡️ Mensaje claro para productos no comestibles
+                const tipoError = msg.includes('no comestible') ? 'warning' : 'error'
+                const tituloError = msg.includes('no comestible') ? 'Producto no apto' : 'Error'
+                addToast({ type: tipoError, title: tituloError, message: msg })
             } else {
                 addToast({
                     type: 'success',
@@ -373,7 +378,8 @@ export default function AlimentosPage() {
     const filtradas = alimentos.filter(a =>
         (!categoriaFiltro || a.categoria === categoriaFiltro) &&
         (!soloCustom || a.custom) &&
-        (!soloIA || a.fuente === 'ia')
+        (!soloIA || a.fuente === 'ia') &&
+        (!soloConDatos || (a.calorias ?? 0) > 0)
     )
 
     // Agrupar por categoría

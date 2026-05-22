@@ -1,6 +1,8 @@
 # ESTADO — NutriCoach Training Pro
 
-**Última actualización:** 18-05-2026 (sesión 33 — lista de la compra portal + nota coach en check-in, commit `d69ce58`)
+**Última actualización:** 22-05-2026 (sesión 33b — limpieza de 957 productos no comestibles de la BD)
+
+**Auditoría completada:** 22-05-2026 — Sistema de filtrado de no comestibles documentado en [`docs/scraping-no-comestibles.md`](docs/scraping-no-comestibles.md). Fuga detectada en post-scraping.ts línea 124. 957 productos eliminados (6.6% del total). Script [`scripts/delete-no-comestibles.ts`](scripts/delete-no-comestibles.ts) mejorado con batch processing.
 
 ---
 
@@ -166,10 +168,12 @@ El flujo completo desde que un cliente se registra vía invitación hasta que el
 
 ---
 
-## Estado de la BD (17-05-2026)
+## Estado de la BD (22-05-2026)
 
 | Tabla | Filas | Notas |
 |-------|-------|-------|
+| `alimentos` | ~13,426 | 957 no comestibles eliminados (22-05-2026). Quedan 0 pendientes. |
+| `productos_supermercado` | ~50,000+ | Precios históricos por supermercado |
 | `plantillas_entrenamiento` | 29 | 8 con sport_modality, 21 legacy |
 | `plantilla_sesiones` | ~120 | — |
 | `plantilla_sesion_ejercicios` | ~500 | Nuevas cols: unidad, carga_tipo, carga_valor, notas_tecnicas, sustituciones |

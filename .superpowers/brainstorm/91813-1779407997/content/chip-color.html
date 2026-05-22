@@ -1,0 +1,164 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .recipe-ui {
+    background: #111113;
+    border-radius: 12px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255,255,255,0.06);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .chips-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .chip {
+    padding: 5px 13px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+  }
+  .chip.inactive { background: transparent; }
+
+  /* A — Lima vivo original */
+  .chip-a-active {
+    background: #A3E635;
+    color: #1C1C1E;
+    border-color: #A3E635;
+    font-weight: 600;
+  }
+  .tag-a { background: rgba(163,230,53,0.14); color: #A3E635; border-color: rgba(163,230,53,0.35); }
+
+  /* B — Lima bajado de brillo */
+  .chip-b-active {
+    background: #7FB832;
+    color: #fff;
+    border-color: #7FB832;
+    font-weight: 600;
+  }
+  .tag-b { background: rgba(127,184,50,0.13); color: #91CC3A; border-color: rgba(127,184,50,0.32); }
+
+  /* C — Oliva elegante */
+  .chip-c-active {
+    background: #6B9E2A;
+    color: #fff;
+    border-color: #6B9E2A;
+    font-weight: 600;
+  }
+  .tag-c { background: rgba(107,158,42,0.12); color: #87C234; border-color: rgba(107,158,42,0.3); }
+
+  /* D — Sage / verde grisáceo */
+  .chip-d-active {
+    background: #8DB87A;
+    color: #1C1C1E;
+    border-color: #8DB87A;
+    font-weight: 600;
+  }
+  .tag-d { background: rgba(141,184,122,0.12); color: #9DC98A; border-color: rgba(141,184,122,0.3); }
+
+  .swatch {
+    width: 18px; height: 18px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle;
+  }
+</style>
+
+<h2>Color de chips activos — ¿cuánto bajas el brillo?</h2>
+<p class="subtitle">Los chips inactivos quedan siempre igual (gris oscuro). Solo cambia el color activo.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="recipe-ui">
+        <div class="chips-row">
+          <div class="chip chip-a-active">Todos</div>
+          <div class="chip inactive">Comida</div>
+          <div class="chip inactive">Cena</div>
+          <div class="chip inactive">Snack</div>
+        </div>
+        <div class="chips-row">
+          <div class="chip tag-a" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Pasta</div>
+          <div class="chip tag-a" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Bowl</div>
+          <div class="chip inactive" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Burrito</div>
+          <div class="chip inactive" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Tosta</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3><span class="swatch" style="background:#A3E635;"></span>A — Lima vivo <code style="font-size:10px;opacity:0.6;">#A3E635</code></h3>
+      <p>El original del mockup. Máximo contraste, muy legible, quizá demasiado neón.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="recipe-ui">
+        <div class="chips-row">
+          <div class="chip chip-b-active">Todos</div>
+          <div class="chip inactive">Comida</div>
+          <div class="chip inactive">Cena</div>
+          <div class="chip inactive">Snack</div>
+        </div>
+        <div class="chips-row">
+          <div class="chip tag-b" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Pasta</div>
+          <div class="chip tag-b" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Bowl</div>
+          <div class="chip inactive" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Burrito</div>
+          <div class="chip inactive" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Tosta</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3><span class="swatch" style="background:#7FB832;"></span>B — Lima rebajado <code style="font-size:10px;opacity:0.6;">#7FB832</code></h3>
+      <p>Un paso menos de brillo. Sigue siendo verde-lima pero más maduro. Texto blanco sobre fondo.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="recipe-ui">
+        <div class="chips-row">
+          <div class="chip chip-c-active">Todos</div>
+          <div class="chip inactive">Comida</div>
+          <div class="chip inactive">Cena</div>
+          <div class="chip inactive">Snack</div>
+        </div>
+        <div class="chips-row">
+          <div class="chip tag-c" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Pasta</div>
+          <div class="chip tag-c" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Bowl</div>
+          <div class="chip inactive" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Burrito</div>
+          <div class="chip inactive" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Tosta</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3><span class="swatch" style="background:#6B9E2A;"></span>C — Oliva <code style="font-size:10px;opacity:0.6;">#6B9E2A</code></h3>
+      <p>Verde más oscuro y terroso. Muy elegante, tono herbal/nutrition. El más alejado del neón.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="d" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="recipe-ui">
+        <div class="chips-row">
+          <div class="chip chip-d-active">Todos</div>
+          <div class="chip inactive">Comida</div>
+          <div class="chip inactive">Cena</div>
+          <div class="chip inactive">Snack</div>
+        </div>
+        <div class="chips-row">
+          <div class="chip tag-d" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Pasta</div>
+          <div class="chip tag-d" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Bowl</div>
+          <div class="chip inactive" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Burrito</div>
+          <div class="chip inactive" style="border-radius:7px;padding:4px 10px;font-size:10.5px;">Tosta</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3><span class="swatch" style="background:#8DB87A;"></span>D — Sage / verde grisáceo <code style="font-size:10px;opacity:0.6;">#8DB87A</code></h3>
+      <p>Verde muy desaturado, casi grisáceo. Sofisticado y discreto, combina bien con el gris del resto de la UI.</p>
+    </div>
+  </div>
+
+</div>

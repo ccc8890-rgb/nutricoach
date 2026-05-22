@@ -15,7 +15,7 @@
 // recomendaciones automáticas basadas en reglas heurísticas + IA.
 // ═══════════════════════════════════════════════════════════════
 
-import { supabase } from './supabase'
+import { createServiceSupabase } from './supabase-server'
 import type { RecomendacionAutoCoach, AnalisisAutoCoach, AutoCoachDashboard, TipoRecomendacion, NivelUrgencia } from '@/types'
 
 // ── Helpers ─────────────────────────────────────────────────
@@ -63,6 +63,8 @@ export async function analizarCliente(
   clienteId: string,
   coachId: string
 ): Promise<AnalisisAutoCoach | null> {
+  const supabase = createServiceSupabase()
+
   // 1. Obtener datos del cliente
   const { data: cliente } = await supabase
     .from('clientes')
@@ -466,6 +468,8 @@ export async function analizarCliente(
 export async function analizarTodosClientes(
   coachId: string
 ): Promise<AutoCoachDashboard> {
+  const supabase = createServiceSupabase()
+
   // Obtener clientes activos del coach
   const { data: clientes } = await supabase
     .from('clientes')

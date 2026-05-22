@@ -189,9 +189,21 @@ Objetivo:
 
 ---
 
+## 🔴 Pendiente técnico: Productos no comestibles
+
+Se ha documentado el sistema completo en [`docs/scraping-no-comestibles.md`](docs/scraping-no-comestibles.md).
+
+### Para revisar / ejecutar
+
+1. **Ejecutar dry-run** → `npx tsx scripts/delete-no-comestibles.ts --dry-run` para ver cuántos hay
+2. **Cerrar fuga** en [`post-scraping.ts`](lib/scraping/post-scraping.ts:124) — validar también en rama match
+3. **Decidir si eliminar** o mantener filtro en vistas
+
+---
+
 ## Siguiente acción recomendada
 
-Ejecutar **Bloque 1 — QA Cerebro del Coach** antes de añadir nuevas funcionalidades.  
+Ejecutar **Bloque 1 — QA Cerebro del Coach** antes de añadir nuevas funcionalidades.
 Después, elegir entre:
 
 - **Bloque 2 — Revisión express móvil**, si la prioridad es acelerar entrega de planes.

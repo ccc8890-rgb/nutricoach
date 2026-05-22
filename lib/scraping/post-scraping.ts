@@ -21,6 +21,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { completarAlimentoConIA } from '@/lib/deepseek'
+import { esProductoNoComestible } from '@/lib/scraping/guard-no-comestible'
 
 const MAX_POR_LOTE = 5
 const PAUSA_MS = 1000
@@ -124,6 +125,21 @@ export async function clasificarPendientes(
 
       // Si no hay match, crear alimento
       if (!alimentoId) {
+        // 🛡️ Validar que el producto sea comestible antes de crearlo
+        // (el scraper principal ya filtra, pero por si acaso algún producto se cuela)
+        if (esProductoNoComestible(nombreNormalizado)) {
+          console.log(`[Clasificar] 🚫 Rechazado producto no comestible: "${nombreNormalizado}"`)
+          // Marcar los productos como clasificados (no volver a procesarlos)
+          const { error: skipError } = await supabase
+            .from('productos_supermercado')
+            .update({ pendiente_clasificacion: false })
+            .in('id', ids)
+          if (skipError) {
+            console.warn(`[Clasificar] Error al saltar productos no comestibles: ${skipError.message}`)
+          }
+          continue
+        }
+
         const categoria = categorizarAlimento(nombreNormalizado) || 'Supermercado'
         const { data: creado, error: cError } = await supabase
           .from('alimentos')

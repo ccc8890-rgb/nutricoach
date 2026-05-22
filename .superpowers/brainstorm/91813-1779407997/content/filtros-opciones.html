@@ -1,0 +1,534 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+  .preview-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* Dark recipe UI simulation */
+  .recipe-ui {
+    background: #111113;
+    border-radius: 14px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255,255,255,0.06);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* Search bar */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1C1C1E;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 7px 12px;
+    margin-bottom: 12px;
+    width: 100%;
+    max-width: 340px;
+  }
+  .search-bar span { color: rgba(255,255,255,0.4); font-size: 13px; flex: 1; }
+  .search-icon { width: 14px; height: 14px; opacity: 0.4; }
+
+  /* Chip styles */
+  .chips-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    margin-bottom: 8px;
+  }
+  .chip {
+    white-space: nowrap;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.55);
+    cursor: pointer;
+    background: transparent;
+  }
+  .chip.active {
+    background: #A3E635;
+    color: #1C1C1E;
+    border-color: #A3E635;
+    font-weight: 600;
+  }
+  .chip.tag-chip {
+    padding: 4px 9px;
+    font-size: 10.5px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+  }
+  .chip.tag-chip.active {
+    background: rgba(163, 230, 53, 0.15);
+    color: #A3E635;
+    border-color: rgba(163, 230, 53, 0.35);
+  }
+  .row-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    padding-right: 4px;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 10px 0;
+  }
+
+  /* Mini filter button */
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    background: rgba(255,255,255,0.04);
+  }
+  .filter-btn .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #A3E635;
+  }
+  .filter-btn.has-active {
+    border-color: rgba(163, 230, 53, 0.35);
+    color: #A3E635;
+    background: rgba(163, 230, 53, 0.08);
+  }
+
+  /* Active filter pills (inline) */
+  .active-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: rgba(163, 230, 53, 0.12);
+    border: 1px solid rgba(163, 230, 53, 0.3);
+    color: #A3E635;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  /* Segment control */
+  .segment {
+    display: inline-flex;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .seg-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .seg-btn.active {
+    background: rgba(163, 230, 53, 0.2);
+    color: #A3E635;
+  }
+
+  /* Inline label+chips row */
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  /* Popover-style */
+  .popover-sim {
+    background: #1C1C1E;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 6px;
+  }
+  .popover-section { margin-bottom: 12px; }
+  .popover-section:last-child { margin-bottom: 0; }
+  .popover-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  /* Recipe card mini previews */
+  .mini-cards {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .mini-card {
+    width: 80px;
+    height: 108px;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #2C2C2E 0%, #1C1C1E 100%);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .mini-card-img {
+    width: 100%;
+    height: 65%;
+    object-fit: cover;
+    opacity: 0.7;
+  }
+  .mini-card-img-placeholder {
+    width: 100%;
+    height: 65%;
+    background: linear-gradient(135deg, #2C2C2E, #3A3A3C);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .mini-card-info {
+    padding: 5px 6px;
+  }
+  .mini-card-name {
+    font-size: 8.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.2;
+    margin-bottom: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .mini-card-kcal {
+    font-size: 7.5px;
+    color: rgba(255,255,255,0.45);
+  }
+  .mini-card-tag {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    padding: 1px 4px;
+    font-size: 7px;
+    color: rgba(255,255,255,0.6);
+  }
+  .mini-card-categoria {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 2px 5px;
+    font-size: 7px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 600;
+    backdrop-filter: blur(6px);
+  }
+
+  .option-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .option-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .badge-rec {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: rgba(163, 230, 53, 0.2);
+    color: #A3E635;
+    border: 1px solid rgba(163, 230, 53, 0.3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+</style>
+
+<h2>¿Cómo organizamos los filtros del recetario?</h2>
+<p class="subtitle">3 propuestas de layout. Los tags (#biscocho, #fajita…) aparecen siempre de forma limpia. Las tags en las cards se eliminan en todas las opciones.</p>
+
+<div class="cards">
+
+  <!-- OPCIÓN A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="recipe-ui">
+        <div class="option-label">
+          Tipo de plato siempre visible · Tags scrollables · "Más filtros" para el resto
+          <span class="badge-rec">Recomendada</span>
+        </div>
+        <div class="option-desc">2 filas fijas + botón secundario. Limpio y rápido en móvil.</div>
+
+        <!-- Search + filtros btn -->
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+          <div class="search-bar" style="margin-bottom:0; flex:1;">
+            <span>🔍</span>
+            <span>Buscar receta…</span>
+          </div>
+          <div class="filter-btn has-active">
+            <div class="dot"></div>
+            Filtros
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-size:10.5px;">
+            Reciente ↓
+          </div>
+        </div>
+
+        <!-- Fila 1: Tipo de plato -->
+        <div class="chips-row">
+          <span class="row-label">TIPO</span>
+          <div class="chip active">Todos</div>
+          <div class="chip">Desayuno</div>
+          <div class="chip">Comida</div>
+          <div class="chip">Cena</div>
+          <div class="chip">Snack</div>
+          <div class="chip">Postre</div>
+        </div>
+
+        <!-- Fila 2: Tags temáticos -->
+        <div class="chips-row">
+          <span class="row-label">TIPO</span>
+          <div class="chip tag-chip active">Pasta</div>
+          <div class="chip tag-chip">Ensalada</div>
+          <div class="chip tag-chip">Burrito</div>
+          <div class="chip tag-chip">Tosta</div>
+          <div class="chip tag-chip">Bowl</div>
+          <div class="chip tag-chip">Bizcocho</div>
+          <div class="chip tag-chip">Fajita</div>
+          <div class="chip tag-chip">Sandwich</div>
+        </div>
+
+        <!-- Mini cards sin tags -->
+        <div class="mini-cards">
+          <div class="mini-card">
+            <div class="mini-card-img-placeholder">🥗</div>
+            <div class="mini-card-categoria">Comida</div>
+            <!-- Sin tags -->
+            <div class="mini-card-info">
+              <div class="mini-card-name">Bowl Salmón Aguacate</div>
+              <div class="mini-card-kcal">472 kcal · 30g P</div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-img-placeholder">🌯</div>
+            <div class="mini-card-categoria">Comida</div>
+            <div class="mini-card-info">
+              <div class="mini-card-name">Burrito Pollo Chipotle</div>
+              <div class="mini-card-kcal">493 kcal · 42g P</div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-img-placeholder">🥞</div>
+            <div class="mini-card-categoria">Desayuno</div>
+            <div class="mini-card-info">
+              <div class="mini-card-name">Waffle Batata</div>
+              <div class="mini-card-kcal">458 kcal · 22g P</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Opción A — 2 filas + "Filtros" colapsado</h3>
+      <p>Tipo de plato y tags siempre visibles. Cocción, Kcal, Tiempo, Alérgenos y Fecha dentro de un popover. Orden inline junto al buscador. Mínimo espacio, máxima claridad.</p>
+    </div>
+  </div>
+
+  <!-- OPCIÓN B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="recipe-ui">
+        <div class="option-label">Secciones etiquetadas siempre visibles, sin colapsado</div>
+        <div class="option-desc">Todo a la vista. Pesado en pantalla pero zero clicks para filtrar.</div>
+
+        <div style="margin-bottom:10px;">
+          <div class="search-bar" style="margin-bottom:0; max-width:100%;">
+            <span>🔍</span>
+            <span>Buscar receta…</span>
+          </div>
+        </div>
+
+        <div class="filter-row">
+          <span class="row-label">TIPO</span>
+          <div class="chip active">Todos</div>
+          <div class="chip">Desayuno</div>
+          <div class="chip">Comida</div>
+          <div class="chip">Cena</div>
+          <div class="chip">Snack</div>
+        </div>
+        <div class="filter-row">
+          <span class="row-label">PLATO</span>
+          <div class="chip tag-chip">Pasta</div>
+          <div class="chip tag-chip">Bowl</div>
+          <div class="chip tag-chip">Burrito</div>
+          <div class="chip tag-chip">Tosta</div>
+          <div class="chip tag-chip">Bizcocho</div>
+          <div class="chip tag-chip">Fajita</div>
+        </div>
+        <div class="filter-row">
+          <span class="row-label">COCCIÓN</span>
+          <div class="chip tag-chip">🔥 Horno</div>
+          <div class="chip tag-chip">🍳 Sartén</div>
+          <div class="chip tag-chip active">❄️ No Bake</div>
+        </div>
+        <div class="filter-row">
+          <span class="row-label">KCAL</span>
+          <div class="chip tag-chip">&lt;300</div>
+          <div class="chip tag-chip active">300–600</div>
+          <div class="chip tag-chip">&gt;600</div>
+          <span class="row-label" style="margin-left:8px;">TIEMPO</span>
+          <div class="chip tag-chip">&lt;15min</div>
+          <div class="chip tag-chip active">15–30min</div>
+        </div>
+
+        <div class="mini-cards">
+          <div class="mini-card">
+            <div class="mini-card-img-placeholder">🥗</div>
+            <div class="mini-card-categoria">Comida</div>
+            <div class="mini-card-info">
+              <div class="mini-card-name">Bowl Salmón Aguacate</div>
+              <div class="mini-card-kcal">472 kcal</div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-img-placeholder">🌯</div>
+            <div class="mini-card-categoria">Comida</div>
+            <div class="mini-card-info">
+              <div class="mini-card-name">Burrito Chipotle</div>
+              <div class="mini-card-kcal">493 kcal</div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-img-placeholder">🥞</div>
+            <div class="mini-card-categoria">Desayuno</div>
+            <div class="mini-card-info">
+              <div class="mini-card-name">Waffle Batata</div>
+              <div class="mini-card-kcal">458 kcal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Opción B — Todo siempre visible con etiquetas</h3>
+      <p>4-5 filas etiquetadas, todo expandido. Zero clics para llegar a cualquier filtro, pero ocupa mucho espacio vertical antes de ver las recetas.</p>
+    </div>
+  </div>
+
+  <!-- OPCIÓN C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="recipe-ui">
+        <div class="option-label">Tipo de plato + botón "Filtrar +" con drawer lateral</div>
+        <div class="option-desc">Máxima limpieza. Tags en drawer. Filtros activos como pills inline.</div>
+
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+          <div class="search-bar" style="margin-bottom:0; flex:1;">
+            <span>🔍</span>
+            <span>Buscar receta…</span>
+          </div>
+          <div class="filter-btn has-active" style="gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filtrar
+            <span style="background:#A3E635;color:#1C1C1E;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
+          </div>
+        </div>
+
+        <!-- Solo tipo de plato fijo -->
+        <div class="chips-row" style="margin-bottom:8px;">
+          <div class="chip active">Todos</div>
+          <div class="chip">Desayuno</div>
+          <div class="chip">Comida</div>
+          <div class="chip">Cena</div>
+          <div class="chip">Snack</div>
+          <div class="chip">Postre</div>
+        </div>
+
+        <!-- Active filters pills -->
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">
+          <div class="active-pill">Pasta ✕</div>
+          <div class="active-pill">No Bake ✕</div>
+          <div class="active-pill">300–600 kcal ✕</div>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3);align-self:center;">Limpiar todo</span>
+        </div>
+
+        <div class="mini-cards">
+          <div class="mini-card">
+            <div class="mini-card-img-placeholder">🥗</div>
+            <div class="mini-card-categoria">Comida</div>
+            <div class="mini-card-info">
+              <div class="mini-card-name">Bowl Salmón Aguacate</div>
+              <div class="mini-card-kcal">472 kcal</div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-img-placeholder">🌯</div>
+            <div class="mini-card-categoria">Comida</div>
+            <div class="mini-card-info">
+              <div class="mini-card-name">Burrito Chipotle</div>
+              <div class="mini-card-kcal">493 kcal</div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-img-placeholder">🥞</div>
+            <div class="mini-card-categoria">Desayuno</div>
+            <div class="mini-card-info">
+              <div class="mini-card-name">Waffle Batata</div>
+              <div class="mini-card-kcal">458 kcal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Opción C — Mínimo + drawer de filtros</h3>
+      <p>Solo tipo de plato visible. Todo lo demás (tags, cocción, kcal, tiempo, alérgenos) en un drawer lateral. Los filtros activos se muestran como pills inline removibles.</p>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:16px;padding:14px;background:rgba(163,230,53,0.06);border:1px solid rgba(163,230,53,0.15);border-radius:10px;">
+  <p style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;">
+    <strong style="color:rgba(163,230,53,0.9);">En todas las opciones:</strong> los <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px;font-size:11px;">#tags</code> desaparecen de las cards. Solo queda el pill de categoría (Comida, Desayuno…) en la esquina superior de la imagen.
+  </p>
+</div>

@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     .from('metodologia_coach')
     .select('*')
     .eq('coach_id', cliente.coach_id)
-    .maybeSingle() as { data: MetodologiaCoach | null }
+    .maybeSingle()
 
   // ── 1b. Fetch perfil de entreno (Gap #9) ──────────────────────────────────
   const { data: perfilEntreno } = await supabase
@@ -315,16 +315,16 @@ ${perfil?.comidas_favoritas ? `- COMIDAS FAVORITAS (incluir): ${perfil.comidas_f
 ${perfil?.suplementos ? `- Suplementos: ${perfil.suplementos}` : ''}
 ${perfil?.alcohol_semanal ? `- Alcohol: ${perfil.alcohol_semanal} ud/semana` : ''}
 ${(() => {
-  const rechazados: string[] = perfilAlimentario?.ingredientes_rechazados ?? []
-  const preferidos: string[] = perfilAlimentario?.ingredientes_preferidos ?? []
-  const total = perfilAlimentario?.total_interacciones ?? 0
-  if (total < 2) return ''
-  return `
+      const rechazados: string[] = perfilAlimentario?.ingredientes_rechazados ?? []
+      const preferidos: string[] = perfilAlimentario?.ingredientes_preferidos ?? []
+      const total = perfilAlimentario?.total_interacciones ?? 0
+      if (total < 2) return ''
+      return `
 ═══ PREFERENCIAS APRENDIDAS (comportamiento real del cliente) ═══
 ${rechazados.length > 0 ? `- Alimentos que rechaza habitualmente: ${rechazados.join(', ')} — EVITAR en el plan` : ''}
 ${preferidos.length > 0 ? `- Alimentos preferidos como sustitutos: ${preferidos.join(', ')} — PRIORIZAR si encajan con los macros` : ''}
 - Intercambios registrados: ${total} (datos reales de adherencia)`
-})()}
+    })()}
 
 ═══ ALIMENTACIÓN ACTUAL ═══
 ${perfil?.dia_tipico ? `- Día típico: ${perfil.dia_tipico}` : '- Sin datos de alimentación actual'}
@@ -645,7 +645,161 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
   }
   planJson = planJsonConEnriquecimiento as Record<string, unknown>
 
-  // ── 13. Save to registros_ia ───────────────────────────────────────────────
+  // ── 13. PERSISTIR plan en tablas reales ──────────────────────────────────────
+  // Sin esto, alimentos y recetas NO aparecen en la UI del coach/cliente
+  let planId: string | null = null
+  try {
+    const codigoPublico = crypto.randomUUID().slice(0, 10)
+    const comidasData = (planJson.distribucion_comidas as Array<Record<string, unknown>> ?? [])
+    const descripcion = (planJson.notas_dieta as string) ||
+      (planJson.notas_coach as string) ||
+      ('Plan nutricional para ' + onboarding.objetivo.replace(/_/g, ' '))
+
+    // 13a. Crear el plan en BD
+    const { data: planDb, error: planDbError } = await supabase
+      .from('planes_nutricion')
+      .insert({
+        coach_id: cliente.coach_id,
+        cliente_id: cliente_id,
+        nombre: 'Plan ' + onboarding.objetivo.replace(/_/g, ' '),
+        descripcion: descripcion,
+        kcal_objetivo: planJson.kcal_objetivo as number,
+        proteinas_objetivo: (planJson.macros as any)?.proteinas_g ?? null,
+        carbohidratos_objetivo: (planJson.macros as any)?.carbos_g ?? null,
+        grasas_objetivo: (planJson.macros as any)?.grasas_g ?? null,
+        activo: true,
+        generado_por_ia: true,
+        codigo_publico: codigoPublico,
+      })
+      .select()
+      .single()
+
+    if (planDbError) throw planDbError
+    planId = planDb.id
+
+    // 13b. Crear comidas y vincular recetas como alimentos
+    for (const comida of comidasData) {
+      const { data: comidaDb, error: comidaError } = await supabase
+        .from('comidas')
+        .insert({
+          plan_id: planDb.id,
+          nombre: comida.nombre as string,
+          orden: (comida.orden as number) ?? 0,
+          hora_sugerida: (comida.hora_sugerida as string) || null,
+        })
+        .select()
+        .single()
+
+      if (comidaError || !comidaDb) {
+        console.error('Error creando comida:', comida.nombre, comidaError)
+        continue
+      }
+
+      const recetas = (comida.recetas as Array<Record<string, unknown>> | undefined)
+      if (!recetas || recetas.length === 0) continue
+
+      // Calcular kcal total estimadas para esta comida (para el fallback de recetas no encontradas)
+      const kcalEstimadasComida = comidasData.find(c => c.nombre === comida.nombre)
+        ? (planJson.kcal_objetivo as number) / comidasData.length
+        : kcalObjetivo / Math.max(comidasData.length, 1)
+      const protEstimadaComida = comidasData.find(c => c.nombre === comida.nombre)
+        ? distribucionProteina.total / comidasData.length
+        : distribucionProteina.total / Math.max(comidasData.length, 1)
+
+      for (const r of recetas) {
+        const recetaId = r.receta_id as string
+        const recetaNombre = r.receta_nombre as string
+        const cantPorciones = (r.cantidad_porciones as number) ?? 1
+        const recetaFull = recetasPorId.get(recetaId) ??
+          recetasPorNombre.get(recetaNombre.toLowerCase().trim()) ??
+          [...recetasPorNombre.entries()].find((e) =>
+            e[0].includes(recetaNombre.toLowerCase().split(' ')[0])
+          )?.[1]
+
+        if (!recetaFull) {
+          console.warn('[generar-plan-inicial] Receta IA no encontrada en recetario, creando alimento con datos IA:', recetaNombre)
+          // Cuando la IA inventa una receta que no existe, estimamos macros
+          const kcalPorPorcion = Math.round(kcalEstimadasComida / Math.max(recetas.length, 1) / cantPorciones)
+          const protPorPorcion = Math.round(protEstimadaComida / Math.max(recetas.length, 1) / cantPorciones)
+          const { data: newAlData } = await supabase
+            .from('alimentos')
+            .insert({
+              nombre: recetaNombre,
+              categoria: 'receta_ia',
+              calorias: kcalPorPorcion,
+              proteinas: protPorPorcion,
+              custom: true,
+              coach_id: cliente.coach_id,
+            })
+            .select()
+            .single()
+          if (!newAlData) {
+            console.error('[generar-plan-inicial] Error creando alimento fallback para:', recetaNombre)
+            continue
+          }
+          const gramos = Math.round(cantPorciones * 100)
+          try {
+            await supabase.from('comida_alimentos').insert({
+              comida_id: comidaDb.id,
+              alimento_id: newAlData.id,
+              cantidad_gramos: gramos,
+            })
+          } catch (err) {
+            console.error('[generar-plan-inicial] Error vinculando alimento fallback:', err instanceof Error ? err.message : err)
+          }
+          continue
+        }
+
+        let alimentoId: string
+        const { data: alExistenteData } = await supabase
+          .from('alimentos')
+          .select('id')
+          .eq('nombre', recetaFull.nombre)
+          .maybeSingle()
+
+        if (alExistenteData) {
+          alimentoId = alExistenteData.id
+        } else {
+          const { data: newAlData, error: alError } = await supabase
+            .from('alimentos')
+            .insert({
+              nombre: recetaFull.nombre,
+              categoria: 'receta_ia',
+              calorias: recetaFull.kcal,
+              proteinas: recetaFull.proteinas,
+              carbohidratos: recetaFull.carbohidratos,
+              grasas: recetaFull.grasas,
+              custom: true,
+              coach_id: cliente.coach_id,
+            })
+            .select()
+            .single()
+
+          if (alError || !newAlData) {
+            console.error('Error creando alimento para receta:', alError)
+            continue
+          }
+          alimentoId = newAlData.id
+        }
+
+        const gramos = Math.round(cantPorciones * 100)
+        const { error: caError } = await supabase
+          .from('comida_alimentos')
+          .insert({
+            comida_id: comidaDb.id,
+            alimento_id: alimentoId,
+            cantidad_gramos: gramos,
+          })
+        if (caError) {
+          console.error('[generar-plan-inicial] Error vinculando alimento a comida:', recetaFull.nombre, caError.message)
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[generar-plan-inicial] Error persistiendo plan en BD:', err)
+  }
+
+  // ── 14. Save to registros_ia ───────────────────────────────────────────────
   try {
     await supabase.from('registros_ia').insert({
       coach_id: cliente.coach_id,
@@ -663,7 +817,7 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
     // Non-critical
   }
 
-  // ── 14. Mark cliente as pending review ──────────────────────────────────────
+  // ── 15. Mark cliente as pending review ──────────────────────────────────────
   await supabase
     .from('clientes')
     .update({ revisado_por_coach: false })

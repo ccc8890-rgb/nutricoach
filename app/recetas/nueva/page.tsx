@@ -54,7 +54,7 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
     if (!queryAlimento || queryAlimento.length < 2) { setResultados([]); return }
     setBuscando(true)
     const timer = setTimeout(async () => {
-      const { data } = await supabase.from('alimentos').select('*').ilike('nombre', `%${queryAlimento}%`).limit(10)
+      const { data } = await supabase.from('alimentos').select('*').eq('es_comestible', true).ilike('nombre', `%${queryAlimento}%`).limit(10)
       setResultados(data ?? [])
       setBuscando(false)
     }, 300)

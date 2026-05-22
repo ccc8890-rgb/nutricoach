@@ -121,14 +121,16 @@ const PATRONES_NO_COMESTIBLE: RegExp[] = [
   /limpia(hornos|ban|os|coches|tapicerias)/i,
   /estropajo|bayeta|fregona|mopa|recambio mopa/i,
   /bolsa basura|bolsas basura|bolsas reutilizables/i,
-  /papel (higienico|cocina|aluminio|vegetal|film)/i,
+  /papel (higienico|cocina|hogar|aluminio|vegetal|film)/i,
   /abrillantador|desengrasante|desincrustante|antical|quitacal/i,
   /desatascador|limpiajuntas|sosa caustica|alcohol 96/i,
   /agua oxigenada|amoniaco|blanqueador juntas/i,
   /cera multisuperficies|borrador magico/i,
   /colgador wc|perlas perfume ropa|ropa frescor/i,
   /insecticida|trampa ratas|repelente (insectos|mosquitos)/i,
-  /antipolilla|antipolillas|absorbeolores/i,
+  /antipolilla|antipolillas|absorbeolor(es)?|absorbe olor/i,
+  /elimina olor(es)?|neutraliza olor(es)?/i,
+  /lavanda.*(reposapies|colgador|aceite esencial perfumado)/i,
   /citronela (colgador|pulsera)/i,
 
   // ── Menaje / Descartables / No comida ─────────────────────────
@@ -145,7 +147,7 @@ const PATRONES_NO_COMESTIBLE: RegExp[] = [
   /barreno|barren|bolsa isotermica/i,
 
   // ── Bebés / Infantil no comida ────────────────────────────────
-  /panal|panales|panal bebe|toallitas bebe/i,
+  /panal|panales|panal bebe|toallitas bebe|protector absorbente|discos (absorbentes|lactancia)/i,
   /biberon|chupete|tetina|cepillo limpiabiberon/i,
   /infantil talla|junior talla/i,
 
@@ -180,13 +182,14 @@ const PATRONES_NO_COMESTIBLE: RegExp[] = [
   /ron (anejo|blanco|negro|dorado|caribeno|dominicano)|rom (blanc|negre|anyenc|ane|dorat)/i,
   /licor (cafe|menta|hierbas|naranja|almendra|anis)/i,
   /anís|anisete|anis seco|vermut|vermouth|moscatel/i,
-  /oporto|sangria|tinto de verano|champan|champagne/i,
+  /vino de oporto|oporto (fine|tawny|reserva|ruby|crusted|l.b.v|lbv|vintage|colheita|garrafeira)/i,
+  /sangria|tinto de verano|champan|champagne/i,
   /sidra|mosto de uva/i,
   /bebida preparada de (ron|vodka|gin)/i,
   /bebida espirituosa|beguda espirituosa/i,
   /bacardi|brugal|havana club|ron barcelo|barcelo|absolut|smirnoff|beefeater|larios|tanqueray|ballantines/i,
   /coctel mojito|mojito|daiquiri|pin?a colada|pin colada|combinado (gin|whisky|vodka|ron)|combinat/i,
-  /cocktail whisky|crema whisky/i,
+  /cocktail whisky|crema whisky|orujo/i,
 
   // ── Bebidas energéticas ────────────────────────────────────────
   /monster energy|red bull|redbull|burn energy|rockstar energy/i,
@@ -227,6 +230,9 @@ const EXCEPCIONES: RegExp[] = [
   /vinagre/i,                        // vinagre de vino NO es alcohol
   /vitamina/i,                       // "vino con vitaminas"
   /pasas/i,                          // "pasas al ron"
+  // Excepciones — platos cocinados con Oporto (NO son alcohol)
+  /oporto.*(carne|carrillera|cerdo|ternera|pollo|salsa|sals[ao]|estofado|guiso|lomo)/i,
+  /aceite.*crema|crema.*oliva|crema.*balsamico/i,
   /pasa moscatel/i,
   /uva moscatel|uvas moscatel/i,
   /levadura cerveza/i,

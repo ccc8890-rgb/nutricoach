@@ -6,7 +6,28 @@
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Sesión 33 completada. **Sección Entrenos mejorada en 3 frentes:** dashboard con stats de actividad, modal de demo de ejercicio en portal cliente, y asignación de plantillas a cliente directamente desde /entrenos/plantillas. Build 0 errores. Push a Vercel.
+**Fase:** Sesión 34 completada. **Bugfix planes:** AI genera recetas/alimentos pero no persistían en BD relacional. Añadido Step 13 en [`app/api/generar-plan-inicial/route.ts`](app/api/generar-plan-inicial/route.ts) que persiste `planes_nutricion` → `comidas` → `comida_alimentos` para que la UI del coach/cliente muestre los datos. ✅ Build 0 errores. Deploy a Vercel.
+
+---
+
+## ✅ COMPLETADO (22-05-2026) — Sesión 34 — Bugfix persistencia plan IA en BD relacional
+
+### 🔷 Diagnóstico ✅
+- El endpoint `POST /api/generar-plan-inicial` llamaba a DeepSeek, generaba `planJson` con `distribucion_comidas[]` conteniendo `recetas[]`, pero **sólo guardaba en `registros_ia`** como JSON blob
+- La UI del coach/cliente consulta `planes_nutricion → comidas → comida_alimentos → alimentos` — no encontraba nada
+- **Raíz**: faltaba persistencia en tablas relacionales
+
+### 🔷 Fix: Step 13 — Persistencia del plan ✅
+- **13a** (línea 659): Crea `planes_nutricion` con `codigo_publico`, macros, objetivo y enlace `cliente_id`/`coach_id`
+- **13b** (línea 681): Itera `distribucion_comidas` creando registros en `comidas` con `hora_sugerida`
+- **13b cont** (línea 701): Por cada receta, busca el `alimento` por nombre o lo crea como `custom=true`, y vincula via `comida_alimentos` con 100g = 1 porción
+
+### 🔷 Quality fixes aplicados ✅
+- `function (e)` → arrow function `(e) =>`
+- `var` → `let`/`const` (3 vars corregidas)
+- Destructuring incorrecto de Supabase corregido (`var x = await supabase...` → `const { data, error } = await supabase...`)
+- Captura de error en `comida_alimentos.insert()`
+- Comentario de step duplicado corregido (14→15)
 
 ---
 

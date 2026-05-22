@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
                 })
                 if (precioKg > 0 && precioKg < entry.precio_mas_barato) {
                     entry.precio_mas_barato = precioKg
-                    entry.mas_barato = sm.id  // ← usar UUID, no nombre
+                    entry.mas_barato = sm.nombre
                 }
             }
 

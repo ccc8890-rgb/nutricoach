@@ -326,3 +326,26 @@ export async function scrapearElCorteIngles() {
 **Regla:** Antes de escribir un scraper nuevo, verificar si comparte plataforma con otro ya existente. Señales: mismo HTML structure, mismas clases CSS (`food-*`), misma protección WAF, mismo grupo empresarial.
 
 **Archivo de referencia:** [`el-corte-ingles.ts`](lib/scraping/supermercados/el-corte-ingles.ts) — delega completamente en Hipercor.
+
+---
+
+## 🔴 15. Productos no comestibles: 3 capas de defensa + 1 fuga
+
+**Problema:** Los scrapers devuelven cosmética, limpieza, alcohol, etc. que contaminan escandallos y vistas de precios.
+
+**Arquitectura (3 capas):**
+1. **Filtro en caliente** → `guard-no-comestible.ts` durante el bucle de scraping (único punto de verdad, ~210 regex)
+2. **Filtro en clasificador** → `post-scraping.ts` al crear alimentos nuevos desde productos pendientes
+3. **Filtro en vistas SQL** → `supabase_es_comestible.sql` en `mejores_precios_por_alimento`, `top_precios_escandallo`, `precios_actuales`
+
+**Fuga conocida (⚠️ por arreglar):** En `post-scraping.ts`, la validación de `esProductoNoComestible()` solo ocurre cuando NO hay match (`!alimentoId`). En la rama del match (`alimentoId` existe), no se re-valida. Si un no comestible hace match con un alimento existente, se cuela sin pasar por el guard.
+
+**Script de limpieza:** `scripts/delete-no-comestibles.ts` — barre toda la tabla `alimentos`, modo `--dry-run` disponible.
+
+**Regla:**
+- `guard-no-comestible.ts` es el ÚNICO sitio donde definir patrones de no comestibles
+- NO duplicar listas en otros archivos
+- Al añadir patrón nuevo, verificar excepciones por falsos positivos
+- Siempre que se modifique el flujo de scraping, validar que las 3 capas sigan activas
+
+**Documento completo:** [`docs/scraping-no-comestibles.md`](docs/scraping-no-comestibles.md)

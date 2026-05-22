@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   // Verify session belongs to this client
   const { data: sesionData } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, plan:planes_entrenamiento(cliente_id)')
+    .select('id, plan:planes_entrenamiento!inner(cliente_id)')
     .eq('id', sesion_id)
     .single()
 
@@ -64,11 +64,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Sesión no encontrada' }, { status: 404 })
   }
 
-  const planClienteId = Array.isArray(sesionData.plan)
-    ? sesionData.plan[0]?.cliente_id
-    : (sesionData.plan as { cliente_id: string } | null)?.cliente_id
-
-  if (planClienteId !== cliente_id) {
+  const sesionPlan = sesionData.plan as unknown as { cliente_id: string } | null
+  if (!sesionPlan || sesionPlan.cliente_id !== cliente_id) {
     return NextResponse.json({ error: 'Sin acceso a esta sesión' }, { status: 403 })
   }
 
