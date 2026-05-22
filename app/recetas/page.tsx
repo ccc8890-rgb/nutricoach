@@ -243,10 +243,6 @@ export default function RecetasPage() {
     !!(fechaDesde || fechaHasta),
   ].filter(Boolean).length
 
-  // Estadísticas rápidas
-  const totalKcal = recetas.reduce((acc, r) => acc + (r.kcal ?? 0), 0)
-  const totalProtein = recetas.reduce((acc, r) => acc + (r.proteinas ?? 0), 0)
-
   return (
     <PageTransition>
       {/* ═══════ HERO SECTION ═══════ */}
@@ -302,20 +298,6 @@ export default function RecetasPage() {
                 >
                   <Plus size={15} /> Nueva
                 </Link>
-              </div>
-            </div>
-          </FadeIn>
-
-          {/* Stats rápidas */}
-          <FadeIn delay={0.05}>
-            <div className="flex gap-4 mb-5">
-              <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
-                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--macro-calories)' }} />
-                {totalKcal > 0 && <span className="tabular-nums">{Math.round(totalKcal).toLocaleString()} kcal totales</span>}
-              </div>
-              <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
-                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--macro-protein)' }} />
-                {totalProtein > 0 && <span className="tabular-nums">{Math.round(totalProtein).toLocaleString()}g proteína</span>}
               </div>
             </div>
           </FadeIn>
