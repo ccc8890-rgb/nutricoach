@@ -94,9 +94,68 @@ const KEYWORDS = {
         'fruto seco', 'frutos secos', 'mix de frutos secos',
         'turrón', 'mazapán', 'nogada', 'pesto',
     ],
-    VEGANO: [] as string[],  // Se rellena en detección
-    VEGETARIANO: [] as string[],  // Se rellena en detección
+    VEGANO: [] as string[],
+    VEGETARIANO: [] as string[],
 }
+
+// ─── Mapa ingrediente → alérgeno POSITIVO (lo que la receta CONTIENE) ───
+// Se usa para generar etiquetas como "Gluten", "Lácteos", "Pescado", etc.
+const POSITIVOS: [string, string][] = [
+    // Gluten
+    ['trigo', 'Gluten'], ['harina', 'Gluten'], ['pan', 'Gluten'], ['pasta', 'Gluten'],
+    ['espagueti', 'Gluten'], ['macarrón', 'Gluten'], ['fideo', 'Gluten'], ['tallarín', 'Gluten'],
+    ['canelón', 'Gluten'], ['lasaña', 'Gluten'], ['galleta', 'Gluten'], ['bizcocho', 'Gluten'],
+    ['croissant', 'Gluten'], ['donut', 'Gluten'], ['muffin', 'Gluten'], ['pizza', 'Gluten'],
+    ['empanada', 'Gluten'], ['seitán', 'Gluten'], ['gluten', 'Gluten'], ['sémola', 'Gluten'],
+    ['cuscús', 'Gluten'], ['cereales', 'Gluten'], ['centeno', 'Gluten'], ['cebada', 'Gluten'],
+    ['espelta', 'Gluten'], ['pan rallado', 'Gluten'], ['bagel', 'Gluten'], ['brioche', 'Gluten'],
+    ['churro', 'Gluten'], ['pretzel', 'Gluten'],
+    // Lácteos
+    ['leche', 'Lácteos'], ['queso', 'Lácteos'], ['yogur', 'Lácteos'], ['yogurt', 'Lácteos'],
+    ['nata', 'Lácteos'], ['crema de leche', 'Lácteos'], ['lactosa', 'Lácteos'],
+    ['mantequilla', 'Lácteos'], ['ghee', 'Lácteos'], ['requesón', 'Lácteos'],
+    ['cuajada', 'Lácteos'], ['natilla', 'Lácteos'], ['batido de leche', 'Lácteos'],
+    ['helado de leche', 'Lácteos'], ['kéfir', 'Lácteos'],
+    // Huevos
+    ['huevo', 'Huevos'], ['clara de huevo', 'Huevos'], ['yema', 'Huevos'],
+    ['mayonesa', 'Huevos'], ['mahonesa', 'Huevos'], ['tortilla', 'Huevos'],
+    ['merengue', 'Huevos'], ['suflé', 'Huevos'], ['crema pastelera', 'Huevos'],
+    ['albúmina', 'Huevos'],
+    // Soja
+    ['soja', 'Soja'], ['tofu', 'Soja'], ['edamame', 'Soja'], ['tempeh', 'Soja'],
+    ['salsa de soja', 'Soja'], ['sillao', 'Soja'],
+    // Cacahuetes
+    ['cacahuete', 'Cacahuetes'], ['crema de cacahuete', 'Cacahuetes'],
+    ['mantequilla de cacahuete', 'Cacahuetes'],
+    // Frutos Secos
+    ['almendra', 'Frutos Secos'], ['nuez', 'Frutos Secos'], ['avellana', 'Frutos Secos'],
+    ['pistacho', 'Frutos Secos'], ['anacardo', 'Frutos Secos'], ['piñón', 'Frutos Secos'],
+    ['macadamia', 'Frutos Secos'], ['pecana', 'Frutos Secos'], ['pecan', 'Frutos Secos'],
+    ['harina de almendra', 'Frutos Secos'], ['leche de almendra', 'Frutos Secos'],
+    ['pesto', 'Frutos Secos'], ['turrón', 'Frutos Secos'], ['mazapán', 'Frutos Secos'],
+    // Pescado
+    ['pescado', 'Pescado'], ['salmón', 'Pescado'], ['atún', 'Pescado'], ['merluza', 'Pescado'],
+    ['bacalao', 'Pescado'], ['lubina', 'Pescado'], ['dorada', 'Pescado'], ['rape', 'Pescado'],
+    ['rodabajo', 'Pescado'], ['trucha', 'Pescado'], ['sardina', 'Pescado'], ['boquerón', 'Pescado'],
+    ['boqueron', 'Pescado'], ['anchoa', 'Pescado'], ['caballa', 'Pescado'], ['lenguado', 'Pescado'],
+    ['corvina', 'Pescado'], ['besugo', 'Pescado'], ['urta', 'Pescado'],
+    // Crustáceos
+    ['gamba', 'Crustáceos'], ['langostino', 'Crustáceos'], ['camarón', 'Crustáceos'],
+    ['camaron', 'Crustáceos'], ['cangrejo', 'Crustáceos'], ['nécora', 'Crustáceos'],
+    ['bogavante', 'Crustáceos'], ['langosta', 'Crustáceos'],
+    // Moluscos
+    ['mejillón', 'Moluscos'], ['mejillon', 'Moluscos'], ['almeja', 'Moluscos'],
+    ['berberecho', 'Moluscos'], ['vieira', 'Moluscos'], ['navaja', 'Moluscos'],
+    ['pulpo', 'Moluscos'], ['calamar', 'Moluscos'], ['sepia', 'Moluscos'],
+    // Sésamo
+    ['sésamo', 'Sésamo'], ['sesamo', 'Sésamo'], ['ajonjolí', 'Sésamo'], ['ajonjoli', 'Sésamo'],
+    ['tahini', 'Sésamo'], ['gomasio', 'Sésamo'],
+    // Mostaza
+    ['mostaza', 'Mostaza'],
+    // Sulfitos
+    ['vino', 'Sulfitos'], ['vinagre', 'Sulfitos'], ['sidra', 'Sulfitos'], ['cerveza', 'Sulfitos'],
+    ['orejón', 'Sulfitos'], ['orejon', 'Sulfitos'],
+]
 
 // Para vegano/vegetariano, detectamos ingredientes de origen animal
 const ANIMAL_KEYWORDS = [
@@ -299,29 +358,42 @@ async function faseIntolerancias() {
 
         // Determinar intolerancias
         const tags: string[] = []
+        const nombresAnalizar = ings.map(ing => {
+            const n = ing.alimento_id ? alimentosMap.get(ing.alimento_id) : null
+            return normalizar(n || ing.nombre_libre || '')
+        }).filter(Boolean)
 
-        // Sin Gluten: si ningún ingrediente contiene gluten
+        // ─── Etiquetas NEGATIVAS ("Sin X"): lo que la receta NO contiene ───
         const tieneGluten = detecciones.some(d => d.sinGluten === false)
         if (!tieneGluten) tags.push('Sin Gluten')
 
-        // Sin Lactosa: si ningún ingrediente es lácteo
         const tieneLactosa = detecciones.some(d => d.sinLactosa === false)
         if (!tieneLactosa) tags.push('Sin Lactosa')
 
-        // Sin Huevo: si ningún ingrediente es huevo
         const tieneHuevo = detecciones.some(d => d.sinHuevo === false)
         if (!tieneHuevo) tags.push('Sin Huevo')
 
-        // Sin Frutos Secos: si ningún ingrediente es fruto seco
         const tieneFrutosSecos = detecciones.some(d => d.sinFrutosSecos === false)
         if (!tieneFrutosSecos) tags.push('Sin Frutos Secos')
 
-        // Vegano: si no tiene ningún ingrediente animal
+        // ─── Etiquetas POSITIVAS (alérgenos EU): lo que la receta SÍ contiene ───
+        const positivosEncontrados = new Set<string>()
+        for (const n of nombresAnalizar) {
+            for (const [kw, alergeno] of POSITIVOS) {
+                if (n.includes(kw)) {
+                    positivosEncontrados.add(alergeno)
+                }
+            }
+        }
+        for (const p of positivosEncontrados) {
+            tags.push(p)
+        }
+
+        // ─── Clasificación dietética ───
         if (!tuvoCarne && !tuvoLacteoOHuevo && !receta.nombre.toLowerCase().includes('miel')) {
             tags.push('Vegano')
         }
 
-        // Vegetariano: si no tiene carne/pescado
         if (!tuvoCarne) {
             tags.push('Vegetariano')
         }

@@ -7,14 +7,14 @@ export const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'S
 // Se muestran en la segunda fila solo cuando hay una categoría activa.
 // Matching: tags[] de la receta O nombre contiene el sub-tag (case-insensitive).
 export const SUBCATEGORIAS: Partial<Record<string, string[]>> = {
-  Desayuno:       ['Tortitas', 'Pancakes', 'Gofre', 'Tostada', 'Bowl', 'Batido', 'Granola', 'Bizcocho', 'Yogur', 'Crepe', 'Pudding'],
-  Comida:         ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Burrito', 'Wrap', 'Sandwich', 'Pollo', 'Carne', 'Pescado'],
-  Cena:           ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Pollo', 'Carne', 'Pescado', 'Wok', 'Sopa'],
-  Merienda:       ['Batido', 'Bizcocho', 'Galleta', 'Tortitas', 'Tostada', 'Yogur', 'Donut', 'Crepe', 'Cookie', 'Pudding'],
-  Snack:          ['Galleta', 'Donut', 'Cookie', 'Yogur', 'Chocolate', 'Batido', 'Granola'],
-  Postre:         ['Bizcocho', 'Tortitas', 'Pancakes', 'Mousse', 'Galleta', 'Tarta', 'Helado', 'Brownie', 'Cookie', 'Pudding', 'Crepe', 'Donut'],
-  Salsa:          ['Mayonesa', 'Pesto', 'Salsa', 'Barbacoa', 'Alioli', 'Hummus', 'Guacamole', 'Tzatziki'],
-  Acompañamiento: ['Patata', 'Arroz', 'Pasta', 'Pan', 'Legumbre'],
+    Desayuno: ['Tortitas', 'Pancakes', 'Gofre', 'Tostada', 'Bowl', 'Batido', 'Granola', 'Bizcocho', 'Yogur', 'Crepe', 'Pudding'],
+    Comida: ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Burrito', 'Wrap', 'Sandwich', 'Pollo', 'Carne', 'Pescado'],
+    Cena: ['Ensalada', 'Pasta', 'Bowl', 'Arroz', 'Legumbre', 'Pollo', 'Carne', 'Pescado', 'Wok', 'Sopa'],
+    Merienda: ['Batido', 'Bizcocho', 'Galleta', 'Tortitas', 'Tostada', 'Yogur', 'Donut', 'Crepe', 'Cookie', 'Pudding'],
+    Snack: ['Galleta', 'Donut', 'Cookie', 'Yogur', 'Chocolate', 'Batido', 'Granola'],
+    Postre: ['Bizcocho', 'Tortitas', 'Pancakes', 'Mousse', 'Galleta', 'Tarta', 'Helado', 'Brownie', 'Cookie', 'Pudding', 'Crepe', 'Donut'],
+    Salsa: ['Mayonesa', 'Pesto', 'Salsa', 'Barbacoa', 'Alioli', 'Hummus', 'Guacamole', 'Tzatziki'],
+    Acompañamiento: ['Patata', 'Arroz', 'Pasta', 'Pan', 'Legumbre'],
 }
 
 // ─── Métodos de cocción (unificados) ───
@@ -71,6 +71,82 @@ export const INTOLERANCIAS = [
     'Vegetariano',
     'Vegano',
 ] as const
+
+// Alérgenos EU de declaración positiva (lo que la receta CONTIENE)
+export const ALERGENOS_POSITIVOS = [
+    'Gluten', 'Lácteos', 'Huevos', 'Soja', 'Cacahuetes',
+    'Frutos Secos', 'Pescado', 'Crustáceos', 'Moluscos',
+    'Sésamo', 'Mostaza', 'Sulfitos',
+] as const
+
+// Etiquetas de "libre de" (lo que la receta NO contiene)
+export const ALERGENOS_NEGATIVOS = [
+    'Sin Gluten', 'Sin Lactosa', 'Sin Huevo',
+    'Sin Frutos Secos', 'Sin Soja', 'Sin Pescado',
+] as const
+
+// Clasificación dietética
+export const DIETETICOS = ['Vegetariano', 'Vegano'] as const
+
+// Normaliza un valor de intolerancia a su forma canónica (case-insensitive)
+export function normalizarIntolerancia(raw: string): string {
+    const trimmed = raw.trim()
+    const lower = trimmed.toLowerCase()
+    // Buscar match case-insensitive en todas las categorías
+    const todasLasOpciones = [
+        ...ALERGENOS_POSITIVOS,
+        ...ALERGENOS_NEGATIVOS,
+        ...DIETETICOS,
+    ] as readonly string[]
+    for (const valido of todasLasOpciones) {
+        if (valido.toLowerCase() === lower) return valido
+    }
+    // Fallback: devolver con capitalización correcta si parece "sin algo"
+    if (lower.startsWith('sin ')) {
+        const resto = trimmed.slice(4).trim()
+        return `Sin ${resto.charAt(0).toUpperCase() + resto.slice(1).toLowerCase()}`
+    }
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase()
+}
+
+// Normaliza un array completo de intolerancias (deduplica)
+export function normalizarIntolerancias(raw: string[]): string[] {
+    const vistos = new Set<string>()
+    return raw
+        .map(normalizarIntolerancia)
+        .filter(t => {
+            if (vistos.has(t)) return false
+            vistos.add(t)
+            return true
+        })
+}
+
+// Clasifica una etiqueta de intolerancias en su categoría (case-insensitive)
+export function clasificarIntolerancia(tag: string): 'positivo' | 'negativo' | 'dietetico' {
+    const lower = tag.toLowerCase()
+    for (const d of DIETETICOS) {
+        if (d.toLowerCase() === lower) return 'dietetico'
+    }
+    for (const n of ALERGENOS_NEGATIVOS) {
+        if (n.toLowerCase() === lower) return 'negativo'
+    }
+    return 'positivo'
+}
+
+// Comprueba si un tag negativo ("Sin Gluten") coincide con un filtro positivo ("Gluten")
+export function negativoCoincideCon(negativo: string, positivo: string): boolean {
+    const extraer = negativo.replace(/^Sin\s+/i, '')
+    return extraer.toLowerCase() === positivo.toLowerCase()
+}
+
+// Obtiene el alérgeno positivo correspondiente a un negativo ("Sin Gluten" → "Gluten")
+export function negativoAPositivo(negativo: string): string | null {
+    const extraer = negativo.replace(/^Sin\s+/i, '').trim()
+    for (const p of ALERGENOS_POSITIVOS) {
+        if (p.toLowerCase() === extraer.toLowerCase()) return p
+    }
+    return null
+}
 
 // ─── Dificultades ───
 export const DIFICULTADES = ['Fácil', 'Medio', 'Difícil'] as const

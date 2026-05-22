@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, AlertTriangle, Clock, Users, ChevronLeft, Euro, Copy, Check } from 'lucide-react'
 import EscandalloReceta from '@/components/EscandalloReceta'
-import { normalizarReceta } from '@/lib/recetas-constants'
+import { normalizarReceta, clasificarIntolerancia, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
 import { MacroRing, IngredientChecklist, StepByStep } from '@/components/premium'
@@ -243,7 +243,7 @@ export default function DetalleRecetaPage() {
   })()
 
   const tiempoTotal = (receta.tiempo_prep_min ?? 0) + (receta.tiempo_coccion_min ?? 0)
-  const intolerancias = receta.intolerancias ?? []
+  const intolerancias = receta.intolerancias ? normalizarIntolerancias(receta.intolerancias) : []
 
   // Ingredientes para el checklist
   const checklistItems = ingredientes.map(ing => ({
@@ -654,58 +654,87 @@ export default function DetalleRecetaPage() {
           )}
         </FadeIn>
 
-        {/* ═══════ ALÉRGENOS EU (Regl. 1169/2011) ═══════ */}
-        {intolerancias.length > 0 && (
-          <FadeIn delay={0.3}>
-            <div
-              className="mb-6 rounded-xl px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-            >
-              {/* Etiqueta fija */}
-              <span className="text-[10px] font-bold uppercase tracking-widest shrink-0" style={{ color: 'var(--text-muted)' }}>
-                Contiene
-              </span>
+        {/* ═══════ ALÉRGENOS Y ETIQUETAS DIETÉTICAS ═══════ */}
+        {intolerancias.length > 0 && (() => {
+          const positivos = intolerancias.filter(t => clasificarIntolerancia(t) === 'positivo')
+          const negativos = intolerancias.filter(t => clasificarIntolerancia(t) === 'negativo')
+          const dieteticos = intolerancias.filter(t => clasificarIntolerancia(t) === 'dietetico')
+          const hayAlgo = positivos.length > 0 || negativos.length > 0 || dieteticos.length > 0
+          if (!hayAlgo) return null
+          return (
+            <FadeIn delay={0.3}>
+              <div
+                className="mb-6 rounded-xl px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+              >
+                {/* ─── Contiene (rojo) ─── */}
+                {positivos.length > 0 && (
+                  <>
+                    <span className="text-[10px] font-bold uppercase tracking-widest shrink-0" style={{ color: 'var(--text-muted)' }}>
+                      Contiene
+                    </span>
+                    {positivos.map(t => (
+                      <span
+                        key={t}
+                        className="text-xs font-semibold px-2 py-0.5 rounded"
+                        style={{
+                          background: 'rgba(239,68,68,0.07)',
+                          color: 'rgb(185,28,28)',
+                          border: '1px solid rgba(239,68,68,0.18)',
+                        }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </>
+                )}
 
-              {/* Alérgenos EU — declaración positiva */}
-              {intolerancias
-                .filter(t => !['Vegetariano', 'Vegano'].includes(t))
-                .map(t => (
-                  <span
-                    key={t}
-                    className="text-xs font-semibold px-2 py-0.5 rounded"
-                    style={{
-                      background: 'rgba(239,68,68,0.07)',
-                      color: 'rgb(185,28,28)',
-                      border: '1px solid rgba(239,68,68,0.18)',
-                    }}
-                  >
-                    {t}
-                  </span>
-                ))}
+                {/* ─── Libre de (verde) ─── */}
+                {negativos.length > 0 && (
+                  <>
+                    {positivos.length > 0 && <span style={{ color: 'var(--border)' }}>·</span>}
+                    <span className="text-[10px] font-bold uppercase tracking-widest shrink-0" style={{ color: 'var(--text-muted)' }}>
+                      Libre de
+                    </span>
+                    {negativos.map(t => (
+                      <span
+                        key={t}
+                        className="text-xs font-semibold px-2 py-0.5 rounded"
+                        style={{
+                          background: 'rgba(34,197,94,0.07)',
+                          color: 'rgb(21,128,61)',
+                          border: '1px solid rgba(34,197,94,0.18)',
+                        }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </>
+                )}
 
-              {/* Clasificación dietética — separador visual si hay ambos */}
-              {intolerancias.some(t => !['Vegetariano', 'Vegano'].includes(t)) &&
-               intolerancias.some(t => ['Vegetariano', 'Vegano'].includes(t)) && (
-                <span style={{ color: 'var(--border)' }}>·</span>
-              )}
-              {intolerancias
-                .filter(t => ['Vegetariano', 'Vegano'].includes(t))
-                .map(t => (
-                  <span
-                    key={t}
-                    className="text-xs font-semibold px-2 py-0.5 rounded"
-                    style={{
-                      background: 'rgba(34,197,94,0.07)',
-                      color: 'rgb(21,128,61)',
-                      border: '1px solid rgba(34,197,94,0.18)',
-                    }}
-                  >
-                    {t}
-                  </span>
-                ))}
-            </div>
-          </FadeIn>
-        )}
+                {/* ─── Clasificación dietética (verde) ─── */}
+                {dieteticos.length > 0 && (
+                  <>
+                    {(positivos.length > 0 || negativos.length > 0) && <span style={{ color: 'var(--border)' }}>·</span>}
+                    {dieteticos.map(t => (
+                      <span
+                        key={t}
+                        className="text-xs font-semibold px-2 py-0.5 rounded"
+                        style={{
+                          background: 'rgba(34,197,94,0.07)',
+                          color: 'rgb(21,128,61)',
+                          border: '1px solid rgba(34,197,94,0.18)',
+                        }}
+                      >
+                        ✓ {t}
+                      </span>
+                    ))}
+                  </>
+                )}
+              </div>
+            </FadeIn>
+          )
+        })()}
 
         {/* ═══════ PASOS (StepByStep estilo Crouton) ═══════ */}
         <FadeIn delay={0.35}>

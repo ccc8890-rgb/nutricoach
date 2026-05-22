@@ -1,6 +1,50 @@
-# ESTADO NutriCoach — 20-05-2026 (Sesión 33 — Mejoras sección Entrenos ✅)
+# ESTADO NutriCoach — 22-05-2026 (Sesión 35 — Filtros intolerancias + corrección alérgenos IA ✅)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (20-05-2026).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (22-05-2026).
+
+---
+
+## 📍 DÓNDE ESTAMOS
+
+**Fase:** Sesión 35 completada. **Filtros de intolerancias + corrección visualización alérgenos en recetas IA.** Añadidos chips de filtro rápido (Sin Gluten, Sin Lácteos, Sin Huevo, Vegano, Vegetariano) en `/recetas`. Corregido el sistema de normalización de intolerancias para que la IA genere valores canónicos. ✅ Build 0 errores. Deploy a Vercel.
+
+---
+
+## ✅ COMPLETADO (22-05-2026) — Sesión 35 — Filtros de intolerancias + corrección alérgenos IA
+
+### 🔷 Diagnóstico ✅
+- El filtro general de recetas no mostraba opciones rápidas de "Sin Gluten", "Sin Lácteos" — había que navegar menús anidados
+- Las recetas generadas por IA (healthify) escribían `"sin gluten"` (minúscula, sin normalizar) en el array `intolerancias`, rompiendo la clasificación en positivo/negativo/dietético
+- La UI mostraba `contiene: sin gluten sin lactosa` en rojo como si fueran alérgenos, en lugar de mostrar `Libre de: gluten, lácteos` en verde
+
+### 🔷 Fix: `normalizarIntolerancia()` / `normalizarIntolerancias()` en [`lib/recetas-constants.ts`](lib/recetas-constants.ts) ✅
+- **`normalizarIntolerancia(raw)`**: normaliza case-insensitive contra los arrays `ALERGENOS_POSITIVOS`, `ALERGENOS_NEGATIVOS`, `DIETETICOS` — si coincide devuelve el valor canónico exacto; si empieza por "sin " capitaliza automáticamente `Sin {Resto}`
+- **`normalizarIntolerancias(raw[])`**: aplica la anterior a cada elemento + elimina duplicados
+- **`clasificarIntolerancia()`**: ahora compara con `.toLowerCase()` en ambos lados para ser case-insensitive
+
+### 🔷 Fix: Heathify IA prompt — [`app/api/recetas/[id]/healthify/route.ts`](app/api/recetas/[id]/healthify/route.ts) ✅
+- **SYSTEM_PROMPT actualizado**: reglas explícitas — `intolerancias` solo acepta valores positivos canónicos (`Gluten`, `Lácteos`, `Frutos Secos`, etc.), prohibido "Sin Gluten" como valor; ejemplos concretos en el prompt
+- **Safety net en runtime**: `intolerancias: normalizarIntolerancias(recetaGenerada.intolerancias || [])` al persistir
+
+### 🔷 Fix: Normalización en vista detalle — [`app/recetas/[id]/page.tsx`](app/recetas/[id]/page.tsx) ✅
+- Cambiado `const intolerancias = receta.intolerancias ?? []` → `normalizarIntolerancias(receta.intolerancias ?? [])` para que la UI siempre muestre valores canónicos
+
+### 🔷 Fix: Carga de recetas — [`app/recetas/page.tsx`](app/recetas/page.tsx) ✅
+- **Nuevo estado `filtroRapido`**: string | null para chips de filtro rápido
+- **Normalización en carga**: `normalizarIntolerancias(r.intolerancias ?? [])` al obtener datos de Supabase
+- **Filtro combinado**: el `useMemo` de filtrado ahora evalúa `filtroRapido || intoleranciaFilter` y compara con `.toLowerCase()` para case-insensitive matching
+- **5 chips de filtro rápido** sobre el grid de recetas: 🌾 Sin Gluten, 🥛 Sin Lácteos, 🥚 Sin Huevo, 🌱 Vegano, 🥬 Vegetariano — azules con iconos, activos se iluminan en blanco
+- **activeFilterCount** incluye `filtroRapido`; "Limpiar filtros" resetea ambos
+
+### 🔷 Build ✅
+- `npx tsc --noEmit` → ✅ 0 errores
+- Todos los cambios compilados y listos para deploy
+
+---
+
+## ✅ COMPLETADO ANTERIORMENTE (22-05-2026) — Sesión 34 — Bugfix persistencia plan IA en BD relacional
+
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (22-05-2026).
 
 ---
 
@@ -348,4 +392,3 @@ Estrategia de caché SW v2:
 - **16 imágenes ai_gen** generadas con GPT-4o image edit y subidas a Storage ✅
 - **~59 recetas pendientes** de generar (bloqueado por OpenAI billing)
 - **37 con url_origen** (34 con og_image en disco) para posible Plan B
-- **35 sin url_origen** → seguirán con flux_txt2img como base

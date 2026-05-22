@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { normalizarIntolerancias, normalizarIntolerancia } from '@/lib/recetas-constants'
 
 const SYSTEM_PROMPT = `Eres un dietista y chef experto en versiones healthy/fit de recetas.
 Crea una receta healthificada completa, apetecible y con macros realistas.
@@ -20,6 +21,18 @@ SALSAS FIT:
 - Bechamel fit: leche desnatada + maicena + queso fresco 0%
 - Carbonara fit: cottage + huevo + parmesano
 - Alioli fit: yogur griego + ajo + limón
+
+REGLAS PARA EL CAMPO "intolerancias":
+- USA SOLO valores positivos: los alérgenos que la receta CONTIENE de verdad.
+- VALORES VÁLIDOS: "Gluten", "Lácteos", "Huevos", "Soja", "Cacahuetes", "Frutos Secos", "Pescado", "Crustáceos", "Moluscos", "Sésamo", "Mostaza", "Sulfitos", "Vegetariano", "Vegano"
+- NO uses "Sin Gluten", "Sin Lactosa" ni ningún formato negativo. ¡ESO ESTÁ PROHIBIDO!
+- Si la receta NO contiene gluten, simplemente NO pongas "Gluten" en el array.
+- Para clasificación dietética usa "Vegetariano" o "Vegano" si aplica.
+- Pon siempre al menos un valor relevante. Ejemplos correctos:
+  * Una tortilla de patatas: ["Huevos"]
+  * Un bowl vegano sin gluten: ["Vegano"]
+  * Un pollo al curry con arroz: []
+  * Una pizza de queso: ["Gluten", "Lácteos"]
 
 RESPONDE ÚNICAMENTE con JSON válido, sin markdown:
 {
@@ -198,7 +211,7 @@ ${specs ? `ESPECIFICACIONES: ${specs}` : ''}`
     proteinas: Math.round(totalProt / porciones * 10) / 10,
     carbohidratos: Math.round(totalCarbs / porciones * 10) / 10,
     grasas: Math.round(totalGrasas / porciones * 10) / 10,
-    intolerancias: recetaGenerada.intolerancias || [],
+    intolerancias: normalizarIntolerancias(recetaGenerada.intolerancias || []),
     estado: 'aprobada',
     coach_id: user.id,
     receta_original_id: id,

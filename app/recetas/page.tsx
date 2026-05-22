@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Plus, Search, BookOpen, Inbox, AlertTriangle, Sparkles, SlidersHorizontal } from 'lucide-react'
 import { StaggerList, StaggerItem, FadeIn, PageTransition } from '@/components/ui/Motion'
-import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, SUBCATEGORIAS, normalizarReceta, type RecetaNormalizada } from '@/lib/recetas-constants'
+import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, SUBCATEGORIAS, ALERGENOS_POSITIVOS, ALERGENOS_NEGATIVOS, DIETETICOS, normalizarReceta, normalizarIntolerancias, type RecetaNormalizada } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
@@ -97,6 +97,9 @@ export default function RecetasPage() {
   const filterBtnRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
 
+  // Filtros rápidos: negativo (ej. "Sin Gluten") y dietético (ej. "Vegano")
+  const [filtroRapido, setFiltroRapido] = useState<string | null>(null)
+
   useEffect(() => {
     async function load() {
       try {
@@ -117,7 +120,12 @@ export default function RecetasPage() {
           console.log(`[recetas] ${data?.length ?? 0} recetas cargadas`)
         }
 
-        setRecetas(data ?? [])
+        // Normalizar intolerancias al cargar (tolerar "sin gluten" → "Sin Gluten")
+        const normalizadas = (data ?? []).map(r => ({
+          ...r,
+          intolerancias: r.intolerancias ? normalizarIntolerancias(r.intolerancias) : null,
+        }))
+        setRecetas(normalizadas)
       } catch (e) {
         console.error('[recetas] Excepción inesperada:', e)
       }
@@ -166,11 +174,13 @@ export default function RecetasPage() {
         else if (tiempoPrep === '>30') matchTiempo = totalMin > 30
       }
 
-      // Filtro intolerancia
+      // Filtro intolerancia — soporta etiquetas positivas (ej. "Gluten") y negativas (ej. "Sin Gluten")
       let matchIntolerancia = true
-      if (intoleranciaFilter) {
+      // El filtro rápido es un atajo: "Sin Gluten" busca recetas que tengan "Sin Gluten" en intolerancias
+      const filtroActivo = filtroRapido || intoleranciaFilter
+      if (filtroActivo) {
         const recetaIntolerancias = r.intolerancias ?? []
-        matchIntolerancia = recetaIntolerancias.includes(intoleranciaFilter)
+        matchIntolerancia = recetaIntolerancias.some(t => t.toLowerCase() === filtroActivo.toLowerCase())
       }
 
       let matchFecha = true
@@ -193,7 +203,7 @@ export default function RecetasPage() {
         const db = new Date(b.created_at).getTime()
         return orden === 'reciente' ? db - da : da - db
       })
-  }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter])
+  }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter, filtroRapido])
 
   // Sugerencias de tags que coinciden con la búsqueda actual
   const tagSugeridos = useMemo(() => {
@@ -240,6 +250,7 @@ export default function RecetasPage() {
     rangoKcal !== null,
     tiempoPrep !== null,
     intoleranciaFilter !== null,
+    filtroRapido !== null,
     !!(fechaDesde || fechaHasta),
   ].filter(Boolean).length
 
@@ -463,20 +474,64 @@ export default function RecetasPage() {
                     </div>
                   </div>
 
-                  {/* Alérgenos */}
+                  {/* Contiene (alérgenos positivos) */}
                   <div className="mb-4">
                     <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
-                      Alérgenos / Dieta
+                      Contiene
                     </p>
                     <div className="flex gap-1.5 flex-wrap">
-                      {INTOLERANCIAS.map(i => (
+                      {ALERGENOS_POSITIVOS.map(i => (
                         <button
                           key={i}
                           onClick={() => setIntoleranciaFilter(intoleranciaFilter === i ? null : i)}
                           className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
-                          style={intoleranciaFilter === i ? chipActive : chipInactive}
+                          style={intoleranciaFilter === i
+                            ? { background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.3)', color: 'rgb(185,28,28)' }
+                            : chipInactive}
                         >
                           {i}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Libre de (alérgenos negativos) */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
+                      Libre de
+                    </p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {ALERGENOS_NEGATIVOS.map(i => (
+                        <button
+                          key={i}
+                          onClick={() => setIntoleranciaFilter(intoleranciaFilter === i ? null : i)}
+                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
+                          style={intoleranciaFilter === i
+                            ? { background: 'rgba(34,197,94,0.12)', borderColor: 'rgba(34,197,94,0.3)', color: 'rgb(21,128,61)' }
+                            : chipInactive}
+                        >
+                          {i}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Clasificación dietética */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'var(--text-muted)' }}>
+                      Dieta
+                    </p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {DIETETICOS.map(i => (
+                        <button
+                          key={i}
+                          onClick={() => setIntoleranciaFilter(intoleranciaFilter === i ? null : i)}
+                          className="text-xs whitespace-nowrap px-2.5 py-1 rounded-full border font-medium transition-all duration-150"
+                          style={intoleranciaFilter === i
+                            ? { background: 'rgba(34,197,94,0.12)', borderColor: 'rgba(34,197,94,0.3)', color: 'rgb(21,128,61)' }
+                            : chipInactive}
+                        >
+                          ✓ {i}
                         </button>
                       ))}
                     </div>
@@ -516,6 +571,7 @@ export default function RecetasPage() {
                         setIntoleranciaFilter(null)
                         setFechaDesde('')
                         setFechaHasta('')
+                        setFiltroRapido(null)
                       }}
                       className="w-full text-xs py-2 rounded-xl border font-medium transition-all duration-150 mt-1"
                       style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
@@ -576,6 +632,40 @@ export default function RecetasPage() {
               ))}
             </div>
           )}
+          {/* ═══════ FILTROS RÁPIDOS ═══════ */}
+          {/* Atajos prominentes para las búsquedas más comunes */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-5 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+            {[
+              { label: '🌾 Sin Gluten', value: 'Sin Gluten' },
+              { label: '🥛 Sin Lactosa', value: 'Sin Lactosa' },
+              { label: '🥚 Sin Huevo', value: 'Sin Huevo' },
+              { label: '🌱 Vegano', value: 'Vegano' },
+              { label: '🥬 Vegetariano', value: 'Vegetariano' },
+            ].map(f => (
+              <button
+                key={f.value}
+                onClick={() => {
+                  const nuevo = filtroRapido === f.value ? null : f.value
+                  setFiltroRapido(nuevo)
+                  setIntoleranciaFilter(null)
+                }}
+                className="text-xs whitespace-nowrap px-3 py-1.5 rounded-full border font-semibold transition-all duration-150 flex items-center gap-1"
+                style={filtroRapido === f.value
+                  ? {
+                    background: f.value === 'Sin Gluten' || f.value === 'Sin Lactosa' || f.value === 'Sin Huevo'
+                      ? 'rgba(34,197,94,0.12)'
+                      : 'rgba(34,197,94,0.12)',
+                    borderColor: 'rgba(34,197,94,0.3)',
+                    color: 'rgb(21,128,61)',
+                  }
+                  : chipInactive}
+                onMouseEnter={e => { if (filtroRapido !== f.value) { e.currentTarget.style.borderColor = 'rgba(34,197,94,0.4)'; e.currentTarget.style.color = 'rgb(21,128,61)' } }}
+                onMouseLeave={e => { if (filtroRapido !== f.value) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' } }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </FadeIn>
 
         {/* ═══════ CONTENIDO ═══════ */}
