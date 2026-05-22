@@ -411,3 +411,34 @@ git add -A && git commit -m "Sesion [FECHA]: [RESUMEN]" && git push
 **Archivos modificados** (22-05-2026):
 - [`app/clientes/[id]/revisar-plan/page.tsx`](app/clientes/[id]/revisar-plan/page.tsx) — Interfaz + lógica + UI (~+90 líneas)
 - [`app/clientes/[id]/revisar-rapido/page.tsx`](app/clientes/[id]/revisar-rapido/page.tsx) — Interfaz + UI (~+30 líneas)
+
+---
+
+### ✅ SESIÓN 22-05-2026 (tarde) — FIX: Buscadores mostraban contactos del móvil 📱
+
+**Bug**: Al escribir en cualquier buscador de la app (recetas, dietas, entrenos, alimentos), Safari/Chrome en iOS mostraba la agenda de contactos en lugar de sugerencias de búsqueda.
+
+**Causa raíz**: Los `<input>` de búsqueda no tenían el atributo `autoComplete="off"`. Los navegadores móviles detectan placeholders como "Buscar por nombre…" y asumen que es un campo de contacto, mostrando la agenda del teléfono.
+
+**Fix**: Añadir `autoComplete="off"` a todos los inputs de búsqueda (6 archivos):
+
+| Archivo | Línea | Input |
+|---------|-------|-------|
+| [`app/recetas/page.tsx`](app/recetas/page.tsx:335) | Buscador principal de recetas |
+| [`app/entrenos/page.tsx`](app/entrenos/page.tsx:130) | Buscador de planes de entreno |
+| [`app/dietas/page.tsx`](app/dietas/page.tsx:67) | Buscador de dietas |
+| [`app/dietas/alimentos/page.tsx`](app/dietas/alimentos/page.tsx:425) | Buscador de alimentos (OFF) |
+| [`app/recetas/nueva/page.tsx`](app/recetas/nueva/page.tsx:262) | Buscador de ingredientes al crear receta |
+| [`app/recetas/[id]/editar/page.tsx`](app/recetas/[id]/editar/page.tsx:463) | Buscador de ingredientes al editar receta |
+
+**Fix adicional**: Dropdown de sugerencias de tags en [`app/recetas/page.tsx`](app/recetas/page.tsx:338) se cortaba — añadido `minWidth: 260px` al contenedor, `min-w-0` + `truncate max-w-[180px]` al chip del tag.
+
+**Archivos modificados** (22-05-2026 tarde):
+- `app/recetas/page.tsx` — `autoComplete="off"` + fix visual dropdown tags
+- `app/entrenos/page.tsx` — `autoComplete="off"`
+- `app/dietas/page.tsx` — `autoComplete="off"`
+- `app/dietas/alimentos/page.tsx` — `autoComplete="off"`
+- `app/recetas/nueva/page.tsx` — `autoComplete="off"`
+- `app/recetas/[id]/editar/page.tsx` — `autoComplete="off"`
+
+**Lección aprendida**: Todos los `<input>` con placeholder que incluya "nombre" o "buscar" deben llevar `autoComplete="off"` para evitar que Safari/Chrome móvil los confunda con campos de contacto.

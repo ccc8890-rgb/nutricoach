@@ -332,12 +332,13 @@ export default function RecetasPage() {
                 style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text)' }}
                 onFocus={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-ring)'; setShowSearchDrop(true) }}
                 onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
+                autoComplete="off"
               />
               {/* Dropdown sugerencias de tags */}
               {showSearchDrop && tagSugeridos.length > 0 && (
                 <div
-                  className="absolute z-30 left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-xl"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                  className="absolute z-30 left-0 right-0 mt-1 rounded-xl shadow-xl"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', minWidth: '260px' }}
                 >
                   <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                     Filtrar por tipo
@@ -358,9 +359,9 @@ export default function RecetasPage() {
                       onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-bg)' }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 min-w-0">
                         <span
-                          className="text-xs px-2 py-0.5 rounded-full font-medium"
+                          className="text-xs px-2 py-0.5 rounded-full font-medium truncate max-w-[180px]"
                           style={{ background: 'rgba(163,230,53,0.15)', color: '#A3E635' }}
                         >
                           {tag}

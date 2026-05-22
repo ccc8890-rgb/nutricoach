@@ -460,6 +460,7 @@ export default function EditarRecetaPage() {
                                                                 placeholder="Buscar alimento…"
                                                                 value={queryAlimento}
                                                                 onChange={e => setQueryAlimento(e.target.value)}
+                                                                autoComplete="off"
                                                             />
                                                             <button onClick={() => { setBuscadorAbierto(null); setQueryAlimento(''); setResultados([]) }} className="px-2" style={{ color: 'var(--text-muted)' }}>
                                                                 <X size={13} />

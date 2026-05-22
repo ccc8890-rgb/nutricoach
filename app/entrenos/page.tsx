@@ -127,7 +127,7 @@ export default function EntrenosPage() {
 
       <div className="relative mb-6">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-        <input className="input search-input" placeholder="Buscar por nombre o cliente…" value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+        <input className="input search-input" placeholder="Buscar por nombre o cliente…" value={busqueda} onChange={e => setBusqueda(e.target.value)} autoComplete="off" />
       </div>
 
       {loading ? (

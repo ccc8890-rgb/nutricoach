@@ -422,6 +422,7 @@ export default function AlimentosPage() {
                         placeholder="Buscar alimentos (incluye Open Food Facts)..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
+                        autoComplete="off"
                     />
                 </div>
                 <select className="input w-auto" value={categoriaFiltro} onChange={e => setCategoriaFiltro(e.target.value)}>

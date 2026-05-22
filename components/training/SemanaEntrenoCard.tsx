@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { ChevronRight, Dumbbell, Zap } from 'lucide-react'
+import { ChevronRight, Dumbbell, Zap, CheckCircle2, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
 interface SesionSemana {
@@ -24,13 +24,15 @@ const DIA_ORDER: Record<string, number> = {
 }
 const DIA_ABR: Record<string, string> = {
   Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J',
-  Viernes: 'V', Sábado: 'S', Domingo: 'D',
+  Viernes: 'V', Sábado: 'D', Domingo: 'D',
 }
 const TODAY_NAME = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][new Date().getDay()]
 
 export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoCardProps) {
   const [sesiones, setSesiones] = useState<SesionSemana[]>([])
   const [loading, setLoading] = useState(true)
+  const [completadasHoy, setCompletadasHoy] = useState<Set<string>>(new Set())
+  const [completandoId, setCompletandoId] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -57,6 +59,47 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
     load()
   }, [planId])
 
+  // Fetch today's completions
+  useEffect(() => {
+    async function fetchEstado() {
+      try {
+        const res = await fetch(`/api/entrenos/estado-sesiones?plan_id=${planId}`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.completadas_hoy) {
+          setCompletadasHoy(new Set(data.completadas_hoy))
+        }
+      } catch {
+        // silent
+      }
+    }
+    if (planId) fetchEstado()
+  }, [planId])
+
+  async function completarSesion(sesionId: string) {
+    setCompletandoId(sesionId)
+    try {
+      const res = await fetch('/api/entrenos/completar-sesion-rapida', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sesion_id: sesionId }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        console.error('[completar]', err)
+        return
+      }
+      const data = await res.json()
+      if (data.ok) {
+        setCompletadasHoy(prev => new Set(prev).add(sesionId))
+      }
+    } catch {
+      // silent
+    } finally {
+      setCompletandoId(null)
+    }
+  }
+
   if (loading) return (
     <div className="rounded-2xl p-4 animate-pulse" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
       <div className="h-4 w-40 rounded mb-3" style={{ background: 'rgba(128,128,128,0.15)' }} />
@@ -79,9 +122,41 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
 
   const todaySession = sesionesOrdenadas.find(s => s.dia_semana === TODAY_NAME)
   const nextSession = todaySession ?? sesionesOrdenadas[0]
+  const nextSessionCompleted = nextSession ? completadasHoy.has(nextSession.id) : false
 
   // Days that have a session this week
   const diasConSesion = new Set(sesionesOrdenadas.map(s => s.dia_semana))
+
+  // Day dot color: check if completed
+  function dayDotStyle(dia: string) {
+    const hasSesion = diasConSesion.has(dia)
+    const isToday = dia === TODAY_NAME
+    const sesionDelDia = sesionesOrdenadas.find(s => s.dia_semana === dia)
+    const estaCompletada = sesionDelDia ? completadasHoy.has(sesionDelDia.id) : false
+
+    if (isToday && hasSesion && estaCompletada) {
+      return { background: 'rgba(72,199,142,0.2)', color: '#48C78E' }
+    }
+    if (isToday && hasSesion) {
+      return { background: 'rgb(168,85,247)', color: 'white' }
+    }
+    if (hasSesion && estaCompletada) {
+      return { background: 'rgba(72,199,142,0.15)', color: '#48C78E' }
+    }
+    if (hasSesion) {
+      return { background: 'rgba(168,85,247,0.15)', color: 'rgb(192,132,252)' }
+    }
+    return { background: 'rgba(128,128,128,0.08)', color: 'var(--text-muted)' }
+  }
+
+  function dayDotIcon(dia: string) {
+    const sesionDelDia = sesionesOrdenadas.find(s => s.dia_semana === dia)
+    if (!sesionDelDia) return null
+    if (completadasHoy.has(sesionDelDia.id)) {
+      return <CheckCircle2 size={12} style={{ color: '#48C78E' }} />
+    }
+    return null
+  }
 
   return (
     <div
@@ -104,6 +179,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{planNombre}</p>
             <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
               {sesionesOrdenadas.length} sesión{sesionesOrdenadas.length !== 1 ? 'es' : ''} / semana
+              {completadasHoy.size > 0 && ` · ${completadasHoy.size} hecha${completadasHoy.size !== 1 ? 's' : ''} hoy`}
             </p>
           </div>
         </div>
@@ -115,6 +191,8 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
           {(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const).map(dia => {
             const hasSesion = diasConSesion.has(dia)
             const isToday = dia === TODAY_NAME
+            const sesionDelDia = sesionesOrdenadas.find(s => s.dia_semana === dia)
+            const estaCompletada = sesionDelDia ? completadasHoy.has(sesionDelDia.id) : false
             return (
               <div
                 key={dia}
@@ -123,15 +201,9 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
               >
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all"
-                  style={
-                    isToday && hasSesion
-                      ? { background: 'rgb(168,85,247)', color: 'white' }
-                      : hasSesion
-                        ? { background: 'rgba(168,85,247,0.15)', color: 'rgb(192,132,252)' }
-                        : { background: 'rgba(128,128,128,0.08)', color: 'var(--text-muted)' }
-                  }
+                  style={dayDotStyle(dia)}
                 >
-                  {DIA_ABR[dia]}
+                  {estaCompletada ? <CheckCircle2 size={14} /> : DIA_ABR[dia]}
                 </div>
                 {/* activity dot */}
                 <div
@@ -145,66 +217,154 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
 
         {/* Next session CTA */}
         {nextSession && (
-          <Link
-            href={`/cliente/sesion/${nextSession.id}`}
-            className="flex items-center gap-3 rounded-xl px-3.5 py-3 transition-opacity hover:opacity-80 active:scale-[0.98]"
-            style={{
-              background: 'rgba(168,85,247,0.1)',
-              border: '1px solid rgba(168,85,247,0.2)',
-            }}
-          >
-            <div
-              className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
-              style={{ background: 'rgba(168,85,247,0.2)' }}
+          <div className="rounded-xl" style={{
+            background: nextSessionCompleted ? 'rgba(72,199,142,0.08)' : 'rgba(168,85,247,0.1)',
+            border: `1px solid ${nextSessionCompleted ? 'rgba(72,199,142,0.2)' : 'rgba(168,85,247,0.2)'}`,
+          }}>
+            {/* Session info row */}
+            <Link
+              href={`/cliente/sesion/${nextSession.id}`}
+              className="flex items-center gap-3 px-3.5 pt-3 pb-2 transition-opacity hover:opacity-80"
             >
-              <Zap size={16} style={{ color: 'rgb(192,132,252)' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
-                {nextSession.nombre}
-              </p>
-              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                {nextSession.dia_semana || 'Sesión'}
-                {nextSession.ejercicios_count > 0 && ` · ${nextSession.ejercicios_count} ej.`}
-                {nextSession.duracion_estimada_min && ` · ${nextSession.duracion_estimada_min} min`}
-              </p>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span
-                className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                style={{ background: 'rgba(168,85,247,0.2)', color: 'rgb(192,132,252)' }}
+              <div
+                className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
+                style={{ background: nextSessionCompleted ? 'rgba(72,199,142,0.2)' : 'rgba(168,85,247,0.2)' }}
               >
-                {nextSession.dia_semana === TODAY_NAME ? 'Hoy' : 'Iniciar'}
-              </span>
-              <ChevronRight size={14} style={{ color: 'rgba(168,85,247,0.7)' }} />
-            </div>
-          </Link>
+                {nextSessionCompleted ? (
+                  <CheckCircle2 size={16} style={{ color: '#48C78E' }} />
+                ) : (
+                  <Zap size={16} style={{ color: 'rgb(192,132,252)' }} />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
+                  {nextSession.nombre}
+                </p>
+                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  {nextSession.dia_semana || 'Sesión'}
+                  {nextSession.ejercicios_count > 0 && ` · ${nextSession.ejercicios_count} ej.`}
+                  {nextSession.duracion_estimada_min && ` · ${nextSession.duracion_estimada_min} min`}
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {nextSessionCompleted ? (
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1"
+                    style={{ background: 'rgba(72,199,142,0.15)', color: '#48C78E' }}
+                  >
+                    <CheckCircle2 size={11} />
+                    Hecha
+                  </span>
+                ) : (
+                  <span
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{ background: 'rgba(168,85,247,0.2)', color: 'rgb(192,132,252)' }}
+                  >
+                    {nextSession.dia_semana === TODAY_NAME ? 'Hoy' : 'Iniciar'}
+                  </span>
+                )}
+                <ChevronRight size={14} style={{ color: nextSessionCompleted ? 'rgba(72,199,142,0.5)' : 'rgba(168,85,247,0.7)' }} />
+              </div>
+            </Link>
+
+            {/* Quick-complete button for next session (only if not completed and has exercises) */}
+            {!nextSessionCompleted && nextSession.ejercicios_count > 0 && (
+              <div className="px-3.5 pb-3 pt-1">
+                <button
+                  onClick={() => completarSesion(nextSession.id)}
+                  disabled={completandoId === nextSession.id}
+                  className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg font-medium transition-all active:scale-[0.98]"
+                  style={{
+                    background: 'transparent',
+                    border: '1px dashed rgba(168,85,247,0.3)',
+                    color: 'rgb(192,132,252)',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'rgba(168,85,247,0.08)'
+                      ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed rgba(168,85,247,0.5)'
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                      ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed rgba(168,85,247,0.3)'
+                  }}
+                >
+                  {completandoId === nextSession.id ? (
+                    <><Loader2 size={12} className="animate-spin" /> Completando…</>
+                  ) : (
+                    <><CheckCircle2 size={12} /> Completar sesión rápida</>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {/* All sessions list */}
         {sesionesOrdenadas.length > 1 && (
           <div className="mt-2 flex flex-col gap-1">
-            {sesionesOrdenadas.filter(s => s.id !== nextSession?.id).map(s => (
-              <Link
-                key={s.id}
-                href={`/cliente/sesion/${s.id}`}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-opacity hover:opacity-70"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                <span
-                  className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
-                  style={{ background: 'rgba(128,128,128,0.1)' }}
-                >
-                  {DIA_ABR[s.dia_semana] ?? '?'}
-                </span>
-                <span className="flex-1 text-sm truncate" style={{ color: 'var(--text)' }}>
-                  {s.nombre}
-                </span>
-                {s.ejercicios_count > 0 && (
-                  <span className="text-[11px]">{s.ejercicios_count} ej.</span>
-                )}
-              </Link>
-            ))}
+            {sesionesOrdenadas.filter(s => s.id !== nextSession?.id).map(s => {
+              const completada = completadasHoy.has(s.id)
+              return (
+                <div key={s.id} className="flex flex-col">
+                  <Link
+                    href={`/cliente/sesion/${s.id}`}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-opacity hover:opacity-70"
+                    style={{ color: completada ? '#48C78E' : 'var(--text-muted)' }}
+                  >
+                    <span
+                      className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
+                      style={{
+                        background: completada
+                          ? 'rgba(72,199,142,0.15)'
+                          : 'rgba(128,128,128,0.1)',
+                      }}
+                    >
+                      {completada ? <CheckCircle2 size={12} /> : (DIA_ABR[s.dia_semana] ?? '?')}
+                    </span>
+                    <span className="flex-1 text-sm truncate" style={{ color: completada ? '#48C78E' : 'var(--text)' }}>
+                      {s.nombre}
+                      {completada && ' ✓'}
+                    </span>
+                    {s.ejercicios_count > 0 && !completada && (
+                      <span className="text-[11px]">{s.ejercicios_count} ej.</span>
+                    )}
+                    {completada && (
+                      <span className="text-[10px] font-medium" style={{ color: '#48C78E' }}>Completada</span>
+                    )}
+                  </Link>
+
+                  {/* Quick-complete for non-completed sessions */}
+                  {!completada && s.ejercicios_count > 0 && (
+                    <button
+                      onClick={() => completarSesion(s.id)}
+                      disabled={completandoId === s.id}
+                      className="ml-9 mr-2 mb-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg font-medium transition-all active:scale-[0.98]"
+                      style={{
+                        background: 'rgba(128,128,128,0.04)',
+                        border: '1px dashed rgba(128,128,128,0.2)',
+                        color: 'var(--text-muted)',
+                      }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(168,85,247,0.06)'
+                          ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed rgba(168,85,247,0.3)'
+                          ; (e.currentTarget as HTMLButtonElement).style.color = 'rgb(192,132,252)'
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(128,128,128,0.04)'
+                          ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed rgba(128,128,128,0.2)'
+                          ; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'
+                      }}
+                    >
+                      {completandoId === s.id ? (
+                        <><Loader2 size={10} className="animate-spin" /> Completando…</>
+                      ) : (
+                        <><CheckCircle2 size={10} /> Completar</>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

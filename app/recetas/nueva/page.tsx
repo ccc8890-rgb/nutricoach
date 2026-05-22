@@ -259,7 +259,7 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
                       <div className="flex items-center rounded-lg overflow-hidden" style={{ border: '1px solid var(--primary)', background: 'var(--surface)' }}>
                         <Search size={13} className="ml-2" style={{ color: 'var(--text-muted)' }} />
                         <input autoFocus className="flex-1 px-2 py-1.5 text-sm outline-none" style={{ background: 'transparent' }}
-                          placeholder="Buscar alimento…" value={queryAlimento} onChange={e => setQueryAlimento(e.target.value)} />
+                          placeholder="Buscar alimento…" value={queryAlimento} onChange={e => setQueryAlimento(e.target.value)} autoComplete="off" />
                         <button onClick={() => { setBuscadorAbierto(null); setQueryAlimento(''); setResultados([]) }} className="px-2" style={{ color: 'var(--text-muted)' }}>
                           <X size={13} />
                         </button>
