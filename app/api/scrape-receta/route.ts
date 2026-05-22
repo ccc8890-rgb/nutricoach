@@ -5,6 +5,7 @@ import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { completarAlimentoConIA, refinarRecetaConIA } from '@/lib/deepseek'
 import { esProductoNoComestible } from '@/lib/scraping/guard-no-comestible'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
+import { autoTagReceta } from '@/lib/auto-tag'
 
 const execAsync = promisify(exec)
 
@@ -1462,6 +1463,22 @@ export async function POST(req: NextRequest) {
       await auditarRecetaProfesional(supabaseService, receta.id, 'post_importacion', 'api_scrape_receta')
     } catch (auditErr) {
       console.error('Error auditando receta post-importación:', auditErr)
+    }
+
+    // ── Auto-etiquetado por ingredientes ──
+    try {
+      const tags = autoTagReceta({
+        nombre: extracted.nombre,
+        receta_ingredientes: capitalizedIngredients.map((ing: ParsedIngredient) => ({
+          nombre_libre: ing.nombre,
+          alimento: null,
+        })),
+      })
+      if (tags.length > 0) {
+        await supabaseService.from('recetas').update({ tags }).eq('id', receta.id)
+      }
+    } catch (tagErr) {
+      console.error('Error auto-etiquetando receta:', tagErr)
     }
 
     // ── Captura de imagen en background si no hay imagen_url ──
