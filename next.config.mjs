@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // Configuración de imágenes (permitir dominios externos si es necesario)
   images: {
     remotePatterns: [
