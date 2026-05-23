@@ -58,7 +58,7 @@ export async function ejecutarAgenteMotivacion(clienteId: string): Promise<void>
 
   const checkinsTexto = ultimosCheckins
     .map(
-      (c, i) =>
+      (c: { fecha_checkin: string; peso_kg?: number | null; adherencia_dieta?: number | null; nivel_energia?: number | null; calidad_sueno?: number | null; notas_cliente?: string | null }, i: number) =>
         `Checkin ${i + 1}: fecha=${c.fecha_checkin}, peso=${c.peso_kg ?? 'N/A'} kg, adherencia=${c.adherencia_dieta ?? 'N/A'}/10, energía=${c.nivel_energia ?? 'N/A'}/10, sueño=${c.calidad_sueno ?? 'N/A'}/10, notas="${c.notas_cliente ?? ''}"`
     )
     .join('\n')

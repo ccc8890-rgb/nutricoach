@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { registrarAprendizaje } from '@/lib/agentes/executor'
+import { aplicarTarea } from '@/lib/agentes/aplicar'
+import type { AgenteTarea } from '@/lib/agentes/types'
 
 export async function GET(request: NextRequest) {
   try {
@@ -85,17 +87,26 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Error al actualizar tarea' }, { status: 500 })
     }
 
-    // Registrar aprendizaje (fire-and-forget)
-    supabase.from('agente_tareas').select('*').eq('id', tarea_id).single().then(({ data: t }) => {
-      if (t) {
-        registrarAprendizaje(
-          t as Parameters<typeof registrarAprendizaje>[0],
-          decision,
-          propuesta_final,
-          comentario_coach
-        ).catch(() => null)
+    // Cargar tarea completa para aplicar + aprendizaje
+    const { data: tareaCompleta } = await supabase
+      .from('agente_tareas')
+      .select('*')
+      .eq('id', tarea_id)
+      .single()
+
+    if (tareaCompleta) {
+      const tarea = tareaCompleta as AgenteTarea
+
+      // Si aprobado → ejecutar acción real en BD (fire-and-forget)
+      if (decision === 'aprobado') {
+        aplicarTarea(tarea).catch(err =>
+          console.error('[tareas] Error aplicando tarea:', err)
+        )
       }
-    })
+
+      // Registrar señal de aprendizaje (fire-and-forget)
+      registrarAprendizaje(tarea, decision, propuesta_final, comentario_coach).catch(() => null)
+    }
 
     return NextResponse.json({ ok: true })
   } catch (error) {

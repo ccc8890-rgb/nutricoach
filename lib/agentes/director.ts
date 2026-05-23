@@ -8,6 +8,7 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 import { actualizarPerfilAprendizaje } from './executor'
 import { ejecutarRevisorSemanal } from './revisor-semanal'
 import { ejecutarAgenteRiesgo } from './riesgo'
+import { ejecutarAgenteMotivacion } from './motivacion'
 
 export interface ResultadoDirector {
   clientes_procesados: number
@@ -45,9 +46,10 @@ export async function ejecutarDirector(
       // Siempre: agente de riesgo (solo actúa si detecta riesgo real)
       await ejecutarAgenteRiesgo(id)
 
-      // Solo lunes (semanal): revisor semanal
+      // Solo lunes (semanal): revisor + motivación
       if (modo === 'semanal') {
         await ejecutarRevisorSemanal(id)
+        await ejecutarAgenteMotivacion(id)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)

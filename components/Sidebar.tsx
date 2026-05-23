@@ -32,6 +32,7 @@ import {
   Sparkles,
   SlidersHorizontal,
   Library,
+  Bot,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -43,6 +44,7 @@ const NAV_ITEMS = [
   { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
   { href: '/coach/metodologia', label: 'Mi metodología', icon: SlidersHorizontal },
   { href: '/conocimiento', label: 'Conocimiento', icon: BrainCircuit },
+  { href: '/agentes', label: 'Agentes IA', icon: Bot },
   { href: '/ia-test', label: 'Probador IA', icon: FlaskConical },
 ]
 
@@ -74,6 +76,7 @@ export default function Sidebar() {
   const { theme, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [recetasPendientes, setRecetasPendientes] = useState(0)
+  const [agentesPendientes, setAgentesPendientes] = useState(0)
 
   // Cerrar mobile al navegar
   useEffect(() => { setMobileOpen(false) }, [pathname])
@@ -84,6 +87,18 @@ export default function Sidebar() {
       .select('id', { count: 'exact', head: true })
       .eq('estado', 'en_revision')
       .then(({ count }) => { if (count) setRecetasPendientes(count) })
+
+    // Tareas de agentes pendientes de aprobación del coach
+    const fetchAgentes = () => {
+      supabase
+        .from('agente_tareas')
+        .select('id', { count: 'exact', head: true })
+        .eq('estado', 'pendiente')
+        .then(({ count }) => setAgentesPendientes(count ?? 0))
+    }
+    fetchAgentes()
+    const interval = setInterval(fetchAgentes, 60_000)
+    return () => clearInterval(interval)
   }, [])
 
   const nutricionActiva = NUTRICION_SUBITEMS.some(
@@ -160,6 +175,14 @@ export default function Sidebar() {
                   style={{ background: 'var(--error)' }}
                 >
                   {noLeidas > 99 ? '99+' : noLeidas}
+                </span>
+              )}
+              {href === '/agentes' && agentesPendientes > 0 && (
+                <span
+                  className="ml-auto text-[11px] font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
+                  style={{ background: 'var(--accent)', color: '#1C1C1E' }}
+                >
+                  {agentesPendientes > 99 ? '99+' : agentesPendientes}
                 </span>
               )}
               {isActive && href !== '/respuestas' && (

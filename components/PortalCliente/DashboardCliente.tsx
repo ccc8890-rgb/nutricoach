@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell, MessageCircle } from 'lucide-react'
 import MiPlan from './MiPlan'
+import MensajeCoach from './MensajeCoach'
 import CheckInForm from './CheckInForm'
 import ProgresoCharts from './ProgresoCharts'
 import NotasCoach from './NotasCoach'
@@ -316,6 +317,8 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
 
             {/* Contenido */}
             <div className="max-w-2xl mx-auto p-4 space-y-4">
+                <MensajeCoach codigo={codigo} />
+
                 {tab === 'plan' && (
                     <MiPlan
                         codigo={codigo}
