@@ -374,6 +374,125 @@ Estado actual (~mayo 2026): ~6.179 alimentos totales, ~4.844 enriquecidos, ~1.33
 
 ---
 
+## 10. Normalización de `nombre_libre` en Recetas
+
+### Problema
+
+1.120 ingredientes (de 2.567 totales) comenzaban con **minúscula**: `"aceite de oliva"`, `"sal"`, `"pimienta negra"`, etc. Esto rompía la consistencia visual del recetario profesional.
+
+### Corrección aplicada
+
+```sql
+UPDATE receta_ingredientes
+SET nombre_libre = upper(substring(nombre_libre from 1 for 1)) || substring(nombre_libre from 2)
+WHERE nombre_libre ~ '^[a-z]';
+```
+
+### Edge cases adicionales
+
+| Problema | Cantidad | Corrección |
+|----------|----------|------------|
+| Leading whitespace (`" Aceite oliva"`) | 3 | `TRIM(nombre_libre)` |
+| HTML entity `'` (`"7 a '5 claras de huevo"`) | 1 | Reemplazar con `'` vía Node.js |
+| Double spaces (`"7 a  '5  claras..."`) | 1 (misma fila) | `regexp_replace(nombre_libre, '\s{2,}', ' ', 'g')` |
+
+### Dificultades técnicas
+
+1. **Shell escaping**: Ejecutar SQL inline con `supabase db query` fallaba con caracteres especiales como `'`. Solución: usar scripts Node.js con `npx tsx`.
+2. **Top-level await**: `esbuild` no soporta top-level await con CommonJS. Solución: envolver en `async function main()`.
+3. **Caracteres especiales en source code**: Para evitar que `'` se interpretara como HTML entity en el propio script, se usó `String.fromCharCode(51) + String.fromCharCode(57)`.
+4. **Paginación en Supabase**: `.select()` sin `.range()` solo devuelve 1.000 filas. Para procesar 2.567 hubo que paginar.
+
+### Verificación final
+
+```sql
+SELECT
+  COUNT(*) AS total,
+  COUNT(*) FILTER (WHERE nombre_libre ~ '^[a-z]') AS minusculas,
+  COUNT(*) FILTER (WHERE nombre_libre ~ '&#') AS html_entities,
+  COUNT(*) FILTER (WHERE nombre_libre LIKE ' %') AS leading_space,
+  COUNT(*) FILTER (WHERE nombre_libre ~ '\s{2,}') AS double_space
+FROM receta_ingredientes;
+-- Resultado: total=2567, minusculas=0, html_entities=0, leading_space=0, double_space=0 ✅
+```
+
+### 🛡️ CÓMO MANTENERLO EN EL FUTURO
+
+- Al insertar recetas nuevas, aplicar `upper(substring(...))` como parte del trigger o pipeline.
+- Si se importan recetas de fuentes externas, normalizar `nombre_libre` antes de insertar.
+- Monitorear con la query de verificación en auditorías periódicas.
+
+---
+
+## 11. Bug #7: FK Join Ambiguo en PostgREST (CRÍTICO)
+
+### Síntoma
+
+El recetario aparecía completamente vacío en producción, mostrando el empty state con icono de libro.
+
+### Error real (oculto por el frontend)
+
+```
+Could not embed because more than one relationship was found
+for 'recetas' and 'receta_ingredientes'
+```
+
+### Causa
+
+La tabla `receta_ingredientes` tiene **DOS foreign keys** que apuntan a `recetas`:
+
+| FK | Columna | Destino |
+|----|---------|---------|
+| `receta_ingredientes_receta_id_fkey` | `receta_id` | `recetas.id` |
+| `receta_ingredientes_receta_vinculada_id_fkey` | `receta_vinculada_id` | `recetas.id` |
+
+PostgREST (el API REST de Supabase) **no puede resolver automáticamente** qué FK usar cuando se usa la sintaxis de join implícito:
+
+```typescript
+// ❌ ROMPE: PostgREST no sabe qué FK usar
+.select('..., receta_ingredientes(nombre_libre)')
+// → Error: "more than one relationship"
+```
+
+### Cómo se corrigió
+
+Usar sintaxis explícita con el nombre de la FK:
+
+```typescript
+// ✅ FUNCIONA: se especifica la FK exacta
+.select('..., receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+```
+
+### Por qué el error pasó desapercibido
+
+1. El `try/catch` en [`app/recetas/page.tsx`](app/recetas/page.tsx:129) silencia la excepción
+2. Solo se loguea `console.error('[recetas] Excepción inesperada:', e)` en consola
+3. El estado `loading` se desactiva y las recetas quedan como `[]`
+4. La UI muestra el empty state "Tu recetario está vacío" en vez del error
+
+### 🛡️ CÓMO DETECTARLO EN EL FUTURO
+
+- **Buscar patrones**: Cualquier `.select()` con nested resources sin `!nombre_fk` explícito en tablas con múltiples FK hacia el mismo destino.
+- **Verificar FK duplicadas**: `pg_constraint` query para listar relaciones.
+- **No silenciar errores de fetching**: Si `try/catch` traga errores de PostgREST, la UI mostrará datos vacíos sin indicación visual del fallo.
+- **React DevTools / Network tab**: Ver la respuesta HTTP real de PostgREST (debería ser 400 con el mensaje de error).
+
+### 🔍 Consultas SQL útiles para diagnosticar FK ambiguas
+
+```sql
+-- Encontrar FK duplicadas entre mismas tablas
+SELECT conname AS constraint_name,
+       conrelid::regclass AS table_name,
+       confrelid::regclass AS foreign_table,
+       pg_get_constraintdef(oid) AS constraint_def
+FROM pg_constraint
+WHERE contype = 'f'
+  AND confrelid::regclass = 'recetas'::regclass
+  AND conrelid::regclass = 'receta_ingredientes'::regclass;
+```
+
+---
+
 ## Historial de Cambios
 
 | Fecha | Cambio | Autor |
@@ -384,3 +503,5 @@ Estado actual (~mayo 2026): ~6.179 alimentos totales, ~4.844 enriquecidos, ~1.33
 | 2026-05-23 | Fix #4: Error handling en FASE 2 | Claude Codex |
 | 2026-05-23 | Fix #5: [...tokensN].sort() en vez de mutación | Claude Codex |
 | 2026-05-23 | Creación del documento legacy | Claude Codex |
+| 2026-05-23 | Fix nombre_libre: 1.120 minúsculas→mayúsculas + HTML entities + leading spaces | Claude Codex |
+| 2026-05-23 | Fix #7: FK join explícito en app/recetas/page.tsx para resolver recetario vacío | Claude Codex |
