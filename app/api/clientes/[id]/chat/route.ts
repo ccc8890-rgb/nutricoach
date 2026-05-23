@@ -47,8 +47,7 @@ export async function POST(
       .from('chat_mensajes')
       .insert({
         cliente_id: clienteId,
-        coach_id: user.id,
-        emisor: 'coach',
+        remitente: 'coach',
         contenido: contenido.trim(),
         leido: false,
       })
@@ -80,7 +79,7 @@ export async function HEAD(
       .from('chat_mensajes')
       .select('*', { count: 'exact', head: true })
       .eq('cliente_id', clienteId)
-      .eq('emisor', 'cliente')
+      .eq('remitente', 'cliente')
       .eq('leido', false)
 
     return NextResponse.json({ no_leidos: count ?? 0 })

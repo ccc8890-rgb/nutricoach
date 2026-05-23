@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { createServiceSupabase } from '@/lib/supabase-server'
 import { evaluarCheckin } from '@/lib/periodizacion/arbol-decision'
 import { calcularAjusteCaloricoSemanal } from '@/lib/periodizacion/motor-macros'
 import { generarFeedbackCheckinIA } from '@/lib/feedback-checkin-ia'
@@ -10,7 +10,7 @@ export async function POST(
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createServiceSupabase()
         const { codigo } = await params
         const body = await request.json()
         const { peso, adherencia, energia, sueno, notas, foto_url, cintura_cm, cadera_cm, pecho_cm, brazo_cm, muslo_cm } = body

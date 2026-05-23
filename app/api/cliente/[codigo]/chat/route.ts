@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase-server'
+import { createServiceSupabase } from '@/lib/supabase-server'
 
 // GET: Obtener mensajes del chat (cliente)
 export async function GET(
@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = createServiceSupabase()
     const { codigo } = await params
 
     // Buscar cliente por código del plan
@@ -42,7 +42,7 @@ export async function POST(
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   try {
-    const supabase = await createServerSupabase()
+    const supabase = createServiceSupabase()
     const { codigo } = await params
     const { contenido } = await request.json()
 
@@ -65,7 +65,7 @@ export async function POST(
       .from('chat_mensajes')
       .insert({
         cliente_id: plan.cliente_id,
-        emisor: 'cliente',
+        remitente: 'cliente',
         contenido: contenido.trim(),
         leido: false,
       })

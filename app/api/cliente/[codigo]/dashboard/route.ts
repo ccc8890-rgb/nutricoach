@@ -32,10 +32,17 @@ export async function GET(
         if (clienteId) {
             const { data: c } = await supabase
                 .from('clientes')
-                .select('id, nombre, objetivo, peso_inicial, fecha_proxima_revision, onboarding_completado')
+                .select('id, objetivo, peso_inicial, fecha_proxima_revision, onboarding_completado, profiles(nombre, apellidos)')
                 .eq('id', clienteId)
                 .single()
-            cliente = c
+            if (c) {
+                const p = c.profiles as { nombre?: string; apellidos?: string } | null
+                cliente = {
+                    ...c,
+                    nombre: p?.nombre ?? null,
+                    apellidos: p?.apellidos ?? null,
+                }
+            }
         }
 
         // 3. Plan de entrenamiento activo (si tiene cliente)

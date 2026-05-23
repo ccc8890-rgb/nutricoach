@@ -497,23 +497,21 @@ export interface NotaCoach {
 export interface ChatMensaje {
   id: string
   cliente_id: string
-  coach_id?: string
-  emisor: 'cliente' | 'coach'
+  remitente: 'cliente' | 'coach'
   contenido: string
   leido: boolean
   created_at: string
 }
 
 export interface RegistroComidaDia {
-  id: string
-  cliente_id: string
-  fecha: string
+  id?: string
+  cliente_id?: string
+  plan_id?: string
+  fecha?: string
   comida_id: string
-  comida_nombre: string
-  hecho: boolean
-  cambio?: string
-  created_at: string
-  updated_at: string
+  estado: 'hecha' | 'cambiada' | 'saltada'
+  notas?: string | null
+  created_at?: string
 }
 
 export interface DashboardPortalResponse {

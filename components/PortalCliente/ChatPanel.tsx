@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { Send, Loader2, MessageSquareText, ChevronDown } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Send, Loader2, MessageSquareText } from 'lucide-react'
 import type { ChatMensaje } from '@/types'
 
 interface ChatPanelProps {
@@ -27,7 +27,7 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
       ? `/api/cliente/${codigo}/chat`
       : null
 
-  async function cargarMensajes() {
+  const cargarMensajes = useCallback(async () => {
     if (!baseUrl) return
     try {
       const res = await fetch(baseUrl)
@@ -39,7 +39,7 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
     } finally {
       setCargando(false)
     }
-  }
+  }, [baseUrl])
 
   // Cargar inicial y polling
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current)
     }
-  }, [baseUrl, pollingInterval])
+  }, [cargarMensajes, pollingInterval])
 
   // Scroll automático al nuevo mensaje
   useEffect(() => {
@@ -153,23 +153,23 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
               </div>
 
               {grupo.mensajes.map(m => (
-                <div key={m.id} className={`flex ${m.emisor === 'cliente' ? 'justify-end' : 'justify-start'}`}>
+                <div key={m.id} className={`flex ${m.remitente === 'cliente' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${m.emisor === 'cliente'
+                    className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${m.remitente === 'cliente'
                       ? 'rounded-br-md'
                       : 'rounded-bl-md'
                       }`}
                     style={{
-                      background: m.emisor === 'cliente'
+                      background: m.remitente === 'cliente'
                         ? 'var(--primary)'
                         : 'var(--bg)',
-                      color: m.emisor === 'cliente' ? 'white' : 'var(--text)',
+                      color: m.remitente === 'cliente' ? 'white' : 'var(--text)',
                     }}
                   >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.contenido}</p>
-                    <div className={`flex items-center justify-end gap-1 mt-1 ${m.emisor === 'cliente' ? '' : ''}`}>
+                    <div className={`flex items-center justify-end gap-1 mt-1 ${m.remitente === 'cliente' ? '' : ''}`}>
                       <span className="text-[10px] opacity-60">{fmtHora(m.created_at)}</span>
-                      {m.emisor === 'cliente' && (
+                      {m.remitente === 'cliente' && (
                         <span className={`text-[10px] ${m.leido ? 'opacity-80' : 'opacity-40'}`}>
                           {m.leido ? '✓✓' : '✓'}
                         </span>

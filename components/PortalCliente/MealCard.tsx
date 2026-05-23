@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { ChevronDown, ChevronUp, RefreshCw, Eye, EyeOff } from 'lucide-react'
+import { RefreshCw, Eye, EyeOff } from 'lucide-react'
 
 const FRANJA_COLORES: Record<string, string> = {
   'Desayuno': '#F59E0B',

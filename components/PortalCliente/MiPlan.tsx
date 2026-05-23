@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw, Circle, PencilLine } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw, PencilLine } from 'lucide-react'
 import RecetaDelDia from './RecetaDelDia'
 import ListaCompraPortal from './ListaCompraPortal'
 import MicronutrientesPortal from './MicronutrientesPortal'
@@ -276,18 +276,20 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
         }
     }, [registros_comidas])
 
-    async function handleRegistrar(comidaId: string, comidaNombre: string, hecho: boolean, cambio?: string) {
+    async function handleRegistrar(comidaId: string, estado: 'hecha' | 'cambiada' | 'saltada', notas?: string) {
         setRegistrando(comidaId)
         try {
             const res = await fetch(`/api/cliente/${codigo}/registrar-comida`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ comida_id: comidaId, comida_nombre: comidaNombre, hecho, cambio: cambio ?? null }),
+                body: JSON.stringify({ comida_id: comidaId, estado, notas: notas ?? null }),
             })
             if (!res.ok) throw new Error('Error al registrar')
-            const data = await res.json()
-            setRegistros(prev => ({ ...prev, [comidaId]: data.registro }))
-            addToast({ type: 'success', title: hecho ? '✅ Comida registrada' : '✏️ Cambio anotado', message: '' })
+            setRegistros(prev => ({
+                ...prev,
+                [comidaId]: { ...(prev[comidaId] ?? {}), comida_id: comidaId, estado, notas: notas ?? null } as RegistroComidaDia,
+            }))
+            addToast({ type: 'success', title: estado === 'hecha' ? '✅ Comida registrada' : '✏️ Cambio anotado', message: '' })
         } catch {
             addToast({ type: 'error', title: 'Error', message: 'No se pudo registrar la comida' })
         } finally {
@@ -578,8 +580,8 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
                     const expanded = expandidas[comida.id]
 
                     const registro = registros[comida.id]
-                    const yaHecho = registro?.hecho === true
-                    const tieneCambio = registro?.cambio
+                    const yaHecho = registro?.estado === 'hecha'
+                    const tieneCambio = registro?.estado === 'cambiada' ? registro?.notas : null
 
                     return (
                         <div key={comida.id} className="card overflow-hidden !p-0">
@@ -628,7 +630,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
                                     <button
                                         type="button"
                                         disabled={registrando === comida.id}
-                                        onClick={(e) => { e.stopPropagation(); handleRegistrar(comida.id, comida.nombre, true) }}
+                                        onClick={(e) => { e.stopPropagation(); handleRegistrar(comida.id, 'hecha') }}
                                         className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
                                         style={{ background: '#DCFCE7', color: '#16A34A' }}
                                     >
@@ -637,7 +639,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={(e) => { e.stopPropagation(); setAnotandoCambio(comida.id); setTextoCambio(registro?.cambio ?? '') }}
+                                        onClick={(e) => { e.stopPropagation(); setAnotandoCambio(comida.id); setTextoCambio(registro?.notas ?? '') }}
                                         className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
                                         style={{ background: '#FEF3C7', color: '#D97706' }}
                                     >
@@ -662,7 +664,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
                                         <button
                                             type="button"
                                             disabled={registrando === comida.id || !textoCambio.trim()}
-                                            onClick={() => handleRegistrar(comida.id, comida.nombre, false, textoCambio.trim())}
+                                            onClick={() => handleRegistrar(comida.id, 'cambiada', textoCambio.trim())}
                                             className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
                                             style={{ background: '#FEF3C7', color: '#D97706', opacity: !textoCambio.trim() ? 0.5 : 1 }}
                                         >
