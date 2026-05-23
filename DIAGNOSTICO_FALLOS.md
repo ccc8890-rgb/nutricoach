@@ -586,6 +586,65 @@ Antes de cada deploy, verificar:
 
 ---
 
+## FALLO #22 — CRÍTICO: Ingredientes de recetas vinculados a alimentos incorrectos (Huevos cocidos, Chocolates, Leches)
+
+### Síntoma
+4 recetas usaban "Huevo entero" como ingrediente pero estaban vinculadas a "Huevos cocidos" (155 kcal/100g). 1 receta (Brownie de 3 chocolates) tenía 3 tipos de chocolate mal vinculados a frutas/leche. 1 receta (Dulce de Leche Saludable) tenía leches semidesnatada/desnatada vinculadas a "Leche entera". 1 ingrediente (dátil medjool) estaba completamente huérfano sin `alimento_id`.
+
+### Causa raíz
+El sistema de vinculación de ingredientes (`receta_ingredientes.alimento_id`) se pobló inicialmente con un algoritmo de matching automático que priorizaba coincidencias parciales de nombre sobre el contexto culinario. Específicamente:
+1. **Huevos**: El algoritmo encontró "huevo" en el nombre y lo vinculó al primer alimento que contenía "huevo" en la tabla `alimentos`, que resultó ser "Huevos cocidos" en vez de "Huevo entero".
+2. **Chocolates**: El algoritmo de matching encontró "chocolate" en ingredientes como "Chocolate negro 70%" y los vinculó a productos "Fresas Chocolate..." (chocolate como cobertura de fresa) en vez de chocolates puros de repostería.
+3. **Leches**: "Leche semidesnatada" y "Leche desnatada" matchearon con "Leche entera" porque el algoritmo priorizó el match parcial `leche` sobre la especificidad.
+4. **Dátil medjool**: No existía en la tabla `alimentos` como tal (el registro `Dátiles medjool` sí existía pero con nombre diferente), por lo que el algoritmo no encontró match y dejó `alimento_id = null`.
+
+### Solución aplicada
+1. **Script [`scripts/fix-bugs-recetario-v2.mjs`](scripts/fix-bugs-recetario-v2.mjs)** con `findAlimento()` dinámico via `ilike` search:
+   - Busca en `alimentos` por `nombre ilike '%' + ingrediente + '%'`
+   - Usa nombres específicos para cada fix (ej: "Chocolate negro 85%" no "chocolate")
+   - Modo `--dry-run` para previsualizar y `--apply` para ejecutar
+2. **12 bugs corregidos** en 4 recetas + Dátil medjool:
+   - 4 huevos → Huevo entero
+   - 4 chocolates → Chocolate negro 85%, Chocolate Blanco Postres, Chocolate con leche Milka
+   - 2 leches → Leche semidesnatada, Leche desnatada
+   - 1 dátil → Dátiles medjool + precio referencia coach 19.07 €/kg
+3. **Precio Dátiles medjool** insertado manualmente via SQL en `precios_historico` con `supermercado_id = 11111111-1111-4111-8111-111111111111` (Precio referencia coach)
+
+### Archivos afectados
+| Archivo | Cambio |
+|---------|--------|
+| [`scripts/fix-bugs-recetario-v2.mjs`](scripts/fix-bugs-recetario-v2.mjs) | Script nuevo con detección + corrección de 12 bugs |
+| `receta_ingredientes` (BD) | 12 registros actualizados con `alimento_id` corregido |
+| `precios_historico` (BD) | 1 inserción para Dátiles medjool a 19.07 €/kg |
+
+### Cómo evitar en el futuro
+1. **El algoritmo de matching inicial debe priorizar especificidad**: "Huevo entero" debe matchear antes que "Huevos cocidos" cuando el ingrediente es "huevos" en crudo.
+2. **Contexto culinario**: "Chocolate negro 70%" no puede vincularse a un producto que contiene "fresas" — implementar filtro semántico por categoría de alimento.
+3. **Validación post-matching**: Script de auditoría que detecte discrepancias obvias (ej: "chocolate" → "fresa", "huevo" → receta de horno sin cocción previa).
+4. **Fallback para huérfanos**: Si `alimento_id = null` después del matching, registrar en tabla de pendientes para revisión manual.
+5. **Usar `findAlimento()` dinámico**: En vez de UUIDs hardcodeados, buscar por `ilike` con nombres específicos para evitar rotura si cambian los IDs.
+
+---
+
+## CHECKLIST DE VERIFICACIÓN
+
+Antes de cada deploy, verificar:
+
+| # | Verificación | Estado |
+|---|-------------|--------|
+| 1 | Landing page carga sin JS (Server Component) | ✓ |
+| 2 | Login funciona en Safari | ✓ |
+| 3 | Dashboard muestra datos reales | ✓ |
+| 4 | Clientes se listan correctamente | ✓ |
+| 5 | Recetas se listan correctamente | ✓ |
+| 6 | Dietas se listan correctamente | ✓ |
+| 7 | Sin errores en consola del navegador | ✓ |
+| 8 | Sin errores en terminal del servidor | ✓ |
+| 9 | Service Worker no interfiere | ✓ |
+| 10 | Sesión persiste entre recargas | ✓ |
+
+---
+
 ## REFERENCIAS
 
 - [`lib/supabase.ts`](nutricoach/lib/supabase.ts) — Cliente browser con `createBrowserClient`

@@ -1,5 +1,74 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 23-05-2026 (madrugada) — AUDITORÍA INGREDIENTES RECETARIO + FIX 12 BUGS + PRECIOS 🐛✅
+
+##### ✅ Bugs corregidos (12 bugs en 5 recetas/ingredientes)
+
+**Script**: [`scripts/fix-bugs-recetario-v2.mjs`](scripts/fix-bugs-recetario-v2.mjs) (idempotente, `findAlimento()` dinámico via ilike)
+
+**Detalle de bugs por categoría:**
+
+| Categoría | Bugs | Recetas afectadas | Fix |
+|-----------|------|-------------------|-----|
+| 🔴 Huevos crudos → Huevos cocidos | 4 | Tarta chocolate fundente, Brownie 3 chocolates, Shakshuka, Revuelto espárragos | Re-vincular a `Huevo entero` |
+| 🔴 Chocolates mal vinculados (Brownie) | 4 | Brownie de 3 chocolates | Chocolate negro→85%, blanco→Blanco Postres, leche→Milka, blanco base→Blanco Postres |
+| 🟡 Dátil medjool huérfano | 1 | Dátiles rellenos almendra y chocolate negro | Vincular a `Dátiles medjool` + crear precio ref. 19.07 €/kg |
+| 🟡 Harina avena huérfana | 1 | Brownie de 3 chocolates | Vincular a `Harina de avena` |
+| 🟠 Leches mal vinculadas (Dulce de Leche) | 2 | Dulce de Leche Saludable | Semidesnatada y desnatada estaban vinculadas a `Leche entera` |
+
+**Ejecución**: `node scripts/fix-bugs-recetario-v2.mjs --apply` ✅ — 12/12 corregidos
+
+**Precio Dátiles medjool**: Insertado en `precios_historico` con `supermercado_id = 11111111-1111-4111-8111-111111111111` (Precio referencia coach) a 19.07 €/kg, basado en "Dátiles Medjoul con hueso" Mercadona (3.99 €/209g).
+
+##### 🧪 Verificación ejecutada
+
+```bash
+node scripts/fix-bugs-recetario-v2.mjs --dry-run  # verificar detección
+node scripts/fix-bugs-recetario-v2.mjs --apply     # aplicar correcciones
+# Verificación manual: query a receta_ingredientes confirmando alimento_id correcto
+```
+
+Resultado: 12/12 bugs corregidos, 0 errores residuales.
+
+##### 📌 Lección aprendida
+⚠️ **Siempre revisar sistemas existentes antes de crear soluciones desde cero.** El sistema `mejores_precios_por_alimento` + `Precio referencia coach` + [`AdminPrecios.tsx`](components/AdminPrecios.tsx) ya existía y operativo. Revisar `CLAUDE.md`, `ESTADO_Y_PROXIMOS_PASOS.md`, schemas SQL y componentes UI antes de diseñar nuevas soluciones.
+
+##### 🔲 Pendiente para próximas sesiones
+- 56 ingredientes huérfanos adicionales sin `alimento_id` (no corregidos en esta sesión)
+- Malas prácticas de mapping en [`scripts/fix-ingredientes.mjs`](scripts/fix-ingredientes.mjs:140-189) (~10 reglas documentadas)
+- 59 alimentos sin ningún match directo ni semántico para precios
+- Regenerar 147 imágenes malas
+
+---
+
+## Sesión 23-05-2026 (noche) — RECÁLCULO PRECIOS COACH v2 (24 REFS ACTUALIZADAS) ✅
+
+##### ✅ Completado
+
+**Script [`scripts/calcular-precios-coach-desde-reales.mjs`](scripts/calcular-precios-coach-desde-reales.mjs) reescrito a v2**
+- Ahora procesa **todos** los alimentos con ref coach (no solo los que no tienen productos directos)
+- Pipeline completo documentado en [`docs/recalculo-precios-coach-2026-05-23.md`](docs/recalculo-precios-coach-2026-05-23.md)
+
+**Mejoras implementadas en el script:**
+1. **Filtro red flag por palabras contenedor** (`lata`, `frasco`, `caja`, `botella`, `pack`, `bote`, `tarrina`, `bandeja`, `pastillas`, `sobre`, `bolsa`) — descarta productos mal vinculados por nombre compartido (ej: "Atún en aceite de oliva" → "Aceite de oliva 0,4º")
+2. **Sanity check directo vs semántico** (`SANITY_DIRECT_SEMANTIC_RATIO = 5`): si mediana directa > 5× mediana semántica → descarta directos como corruptos
+3. **Q1 fallback**: cuando solo hay directos de 1 supermercado y ningún semántico → percentil 25 (Q1) en vez de mediana (caso pan rallado)
+4. **Ponderación compuesta por recencia**: peso = confianza (directo 1.0, semántico 0.6) × recencia (30d=1.0 → 365d+=0.25) × ratio_semántico
+5. **`weightedMedian()`**: mediana ponderada con pesos acumulados, interpolación lineal
+
+**24 precios de referencia actualizados en Supabase** (`--apply`):
+- 8 con precio directo, 16 solo semántico
+- Casos dudosos investigados y corregidos uno por uno
+- 0 errores en la actualización
+
+##### 🔲 Pendiente
+- 59 alimentos sin ningún match directo ni semántico — requerirían vinculación manual
+- Normalizar por formato (especias, pastillas → excluir precio/kg inflado)
+- Añadir más supermercados (Aldi, Lidl, Dia) para mejor cobertura
+- Regenerar 147 imágenes malas (`node scripts/regenerar-imagenes-malas.mjs --genera`, ~$5)
+
+---
+
 ## Sesión 23-05-2026 — VINCULACIÓN EJERCICIOS IA + TRACKING COMPLETO ✅
 
 ##### ✅ Completado

@@ -442,6 +442,7 @@ git add -A && git commit -m "Sesion [FECHA]: [RESUMEN]" && git push
 3. **Typos en variables**: `grasa` vs `grasas`. Usar `node --check` antes de ejecutar.
 4. **No verificar 416 en paginación**: Manejar 416 en toda paginación con Supabase REST API.
 5. **Asumir que ingredientes de recetas tienen `alimento_id` vinculado**: El primer intento de fix usó `/api/recetas/[id]/ingredientes` para obtener ingredientes con `alimento_id`, pero muchas recetas en BD solo tienen `nombre_libre` (sin vínculo a la tabla `alimentos`). El filtro `ing.alimento_id && ing.cantidad_gramos > 0` resultaba en array vacío y no se guardaba nada.
+6. **No revisar sistemas/planes existentes antes de crear soluciones**: En la sesión de bugs del recetario, se asumió que no había infraestructura de precios y que "Dátiles medjool" no tendría cómo asignarle precio. Pero el sistema `mejores_precios_por_alimento` + `Precio referencia coach` + [`AdminPrecios.tsx`](components/AdminPrecios.tsx) ya existía completamente operativo. Se perdió tiempo diseñando soluciones desde cero que ya existían.
 
 ### ⚡ REGLAS PARA PRÓXIMAS SESIONES
 1. Preguntar siempre antes de consumir APIs externas.
@@ -451,6 +452,10 @@ git add -A && git commit -m "Sesion [FECHA]: [RESUMEN]" && git push
 5. Manejar 416 en toda paginación.
 6. Siempre tener plan B.
 7. Documentar en CALIENTE.
+8. **Antes de crear código nuevo, revisar sistemas existentes**: Leer `CLAUDE.md`, `ESTADO_Y_PROXIMOS_PASOS.md`, `DIAGNOSTICO_FALLOS.md`, schemas SQL, vistas Supabase, y componentes UI relacionados antes de diseñar cualquier solución.
+9. Verificar existencia de vistas/funciones/tablas relacionadas en Supabase antes de diseñar soluciones desde cero.
+10. Consultar [`supabase_productos_vs_alimentos.sql`](supabase_productos_vs_alimentos.sql) y otros SQL de schema para conocer la arquitectura real de datos.
+11. Usar `--dry-run` siempre antes de `--apply` en scripts de modificación masiva.
 
 ---
 
@@ -529,7 +534,41 @@ git add -A && git commit -m "Sesion [FECHA]: [RESUMEN]" && git push
 
 **Lección aprendida**: Todos los `<input>` con placeholder que incluya "nombre" o "buscar" deben llevar `autoComplete="off"` para evitar que Safari/Chrome móvil los confunda con campos de contacto.
 
-<!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
-<!-- SPECKIT END -->
+---
+
+### ✅ SESIÓN 23-05-2026 — Auditoría Ingredientes Recetario + Fix 12 Bugs 🐛🔴
+
+**Auditoría completa de ingredientes mal vinculados en el recetario.** Se detectaron 12 bugs en 4 recetas + 1 ingrediente huérfano.
+
+| # | Gravedad | Receta | Ingrediente | Problema | Fix |
+|---|----------|--------|-------------|----------|-----|
+| 1 | 🔴 CRÍTICO | Tarta de chocolate fundente | `huevos 200g` | Vinculado a "Huevos cocidos" en vez de "Huevo entero" | Re-vinculado a [`Huevo entero`](seed_alimentos.sql) |
+| 2 | 🔴 CRÍTICO | Brownie de 3 chocolates | `huevo 55g` | Vinculado a "Huevos cocidos" | Re-vinculado a `Huevo entero` |
+| 3 | 🔴 CRÍTICO | Shakshuka de piquillos asados | `huevos 200g` | Vinculado a "Huevos cocidos" | Re-vinculado a `Huevo entero` |
+| 4 | 🔴 CRÍTICO | Revuelto cremoso de espárragos | `huevo 150g` | Vinculado a "Huevos cocidos" | Re-vinculado a `Huevo entero` |
+| 5 | 🔴 CRÍTICO | Brownie de 3 chocolates | `Chocolate negro 70%` | Vinculado a "Fresas Chocolate Blanco Chocolate Negro" | Re-vinculado a [`Chocolate negro 85%`](seed_alimentos.sql) (598 kcal, 12.50 €/kg Consum) |
+| 6 | 🟠 GRAVE | Brownie de 3 chocolates | `Chocolate con leche (decorar)` | Vinculado a "Leche líquida entera" | Re-vinculado a [`Chocolate con leche Milka`](seed_alimentos.sql) (540 kcal, 2 precios supermercado) |
+| 7 | 🟠 GRAVE | Brownie de 3 chocolates | `Chocolate blanco` | Vinculado a "Fresas Chocolate producto" | Re-vinculado a [`Chocolate Blanco Postres`](seed_alimentos.sql) (540 kcal, 11.25 €/kg Consum) |
+| 8 | 🟠 GRAVE | Brownie de 3 chocolates | `Chocolate blanco 50g (base)` | Vinculado a "Fresas Chocolate Blanco Chocolate Negro" | Re-vinculado a `Chocolate Blanco Postres` |
+| 9 | 🟡 MEDIO | Dátiles rellenos de almendra y chocolate negro | `dátil medjool 60g` | `alimento_id = null` (huérfano, sin kcal ni precio) | Vinculado a [`Dátiles medjool`](seed_alimentos.sql) (277 kcal, precio ref. 19.07 €/kg creado) |
+| 10 | 🟡 MEDIO | Brownie de 3 chocolates | `harina de avena 45g` | `alimento_id = null` (huérfano) | Vinculado a [`Harina de avena`](seed_alimentos.sql) |
+| 11 | 🟠 GRAVE | Dulce de Leche Saludable | `Leche semidesnatada` | Vinculado a "Leche entera" | Re-vinculado a [`Leche semidesnatada`](seed_alimentos.sql) |
+| 12 | 🟠 GRAVE | Dulce de Leche Saludable | `Leche desnatada` | Vinculado a "Leche entera" | Re-vinculado a [`Leche desnatada`](seed_alimentos.sql) |
+
+**Script**: [`scripts/fix-bugs-recetario-v2.mjs`](scripts/fix-bugs-recetario-v2.mjs) — idempotente, usa `findAlimento()` dinámico via `ilike` search en runtime, modo `--dry-run` y `--apply`.
+
+**Ejecución**: `node scripts/fix-bugs-recetario-v2.mjs --apply` ✅ — 12/12 bugs corregidos exitosamente.
+
+**Verificación post-fix**: Todos los ingredientes corregidos muestran kcal correctas y vinculación a precios de supermercado. Para Dátiles medjool se creó precio referencia coach a 19.07 €/kg basado en "Dátiles Medjoul con hueso" de Mercadona (3.99 €/209g).
+
+**⚠️ Lección aprendida — Siempre revisar sistemas existentes antes de crear soluciones desde cero**:
+- El sistema de precios (`mejores_precios_por_alimento`, `Precio referencia coach`, `AdminPrecios.tsx`) ya existía pero NO se consultó. Se asumió incorrectamente que no había infraestructura para asignar precios a alimentos raros.
+- **REGLAS para próximas sesiones**:
+  1. Antes de crear código nuevo, revisar `CLAUDE.md`, `ESTADO_Y_PROXIMOS_PASOS.md`, `DIAGNOSTICO_FALLOS.md` y archivos SQL de schema para entender sistemas existentes
+  2. Verificar existencia de vistas, funciones y tablas relacionadas en Supabase antes de diseñar soluciones
+  3. Consultar componentes UI existentes (`AdminPrecios.tsx`, `EscandalloReceta.tsx`) antes de crear nuevos flujos de gestión
+  4. Ejecutar `--dry-run` siempre antes de `--apply` en scripts de modificación masiva
+
+---
+
+## 🔀 Historial de Worktrees — Ya unificados en main
