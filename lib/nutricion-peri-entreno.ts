@@ -270,3 +270,94 @@ export function formatearPeriEntrenoParaPrompt(rec: RecomendacionPeriEntreno): s
 
   return output
 }
+
+export interface AjustePeriEntreno {
+  slot_nombre: string
+  tipo: 'pre' | 'post'
+  minutos_antes_despues: number
+  ajuste_carbos_g: number
+  ajuste_proteina_g: number
+  nota: string
+  receta_tipo_preferido: 'carbos_rapidos' | 'proteina_magra' | 'equilibrado'
+}
+
+export function calcularAjustesPeriEntreno(params: {
+  horaEntreno?: string | null
+  sportModality?: string | null
+  duracionMin?: number
+  kcalObjetivo: number
+  numComidas: number
+}): AjustePeriEntreno[] {
+  const { horaEntreno, sportModality, duracionMin = 45, kcalObjetivo: _kcal, numComidas: _n } = params
+  if (!horaEntreno) return []
+
+  const [h, m] = horaEntreno.split(':').map(Number)
+  const minutosEntreno = h * 60 + (m ?? 0)
+  const ajustes: AjustePeriEntreno[] = []
+
+  const isCardio = ['running', 'ciclismo', 'natacion', 'triatlon', 'hyrox'].includes(sportModality ?? '')
+  const isFuerza = ['gym_fuerza', 'gym_estetica', 'calistenia', 'powerlifting'].includes(sportModality ?? '')
+
+  const minPre = isCardio ? 90 : 75
+  const minutosSlotPre = minutosEntreno - minPre
+
+  let slotPreNombre = 'Comida'
+  if (minutosSlotPre < 7 * 60) slotPreNombre = 'Desayuno'
+  else if (minutosSlotPre < 12 * 60) slotPreNombre = 'Media mañana'
+  else if (minutosSlotPre < 15 * 60) slotPreNombre = 'Comida'
+  else slotPreNombre = 'Merienda'
+
+  if (isCardio) {
+    ajustes.push({
+      slot_nombre: slotPreNombre,
+      tipo: 'pre',
+      minutos_antes_despues: minPre,
+      ajuste_carbos_g: 20,
+      ajuste_proteina_g: 0,
+      nota: `Pre-entreno ${sportModality ?? 'cardio'}: +carbos rápidos, bajo en fibra y grasa. ${minPre}min antes.`,
+      receta_tipo_preferido: 'carbos_rapidos',
+    })
+  } else if (isFuerza) {
+    ajustes.push({
+      slot_nombre: slotPreNombre,
+      tipo: 'pre',
+      minutos_antes_despues: minPre,
+      ajuste_carbos_g: 15,
+      ajuste_proteina_g: 10,
+      nota: `Pre-entreno fuerza: proteína moderada + carbos complejos. ${minPre}min antes.`,
+      receta_tipo_preferido: 'equilibrado',
+    })
+  } else {
+    ajustes.push({
+      slot_nombre: slotPreNombre,
+      tipo: 'pre',
+      minutos_antes_despues: minPre,
+      ajuste_carbos_g: 10,
+      ajuste_proteina_g: 5,
+      nota: `Pre-entreno: comida equilibrada. ${minPre}min antes.`,
+      receta_tipo_preferido: 'equilibrado',
+    })
+  }
+
+  const minutosSlotPost = minutosEntreno + duracionMin + 30
+  let slotPostNombre = 'Comida'
+  if (minutosSlotPost < 12 * 60) slotPostNombre = 'Comida'
+  else if (minutosSlotPost < 14 * 60) slotPostNombre = 'Comida'
+  else if (minutosSlotPost < 18 * 60) slotPostNombre = 'Merienda'
+  else slotPostNombre = 'Cena'
+
+  const ajusteProtPost = isCardio ? 30 : 35
+  const ajusteCarbPost = isCardio ? 40 : 20
+
+  ajustes.push({
+    slot_nombre: slotPostNombre,
+    tipo: 'post',
+    minutos_antes_despues: 30,
+    ajuste_carbos_g: ajusteCarbPost,
+    ajuste_proteina_g: ajusteProtPost,
+    nota: `Post-entreno: proteína prioritaria (${ajusteProtPost}g), ventana 30-45min tras sesión.`,
+    receta_tipo_preferido: 'proteina_magra',
+  })
+
+  return ajustes
+}

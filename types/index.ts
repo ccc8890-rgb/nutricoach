@@ -1040,3 +1040,86 @@ export interface MetodologiaCoach {
   superavit_maximo_kcal: number
   updated_at: string
 }
+
+// ============================================================
+// Tipos plan-generation-portal (23-05-2026)
+// ============================================================
+
+export type RolIngrediente =
+  | 'proteina_principal'
+  | 'carbohidrato_base'
+  | 'verdura_volumen'
+  | 'grasa_saludable'
+  | 'salsa_condimento'
+  | 'especias_aromaticos'
+  | 'estructural'
+  | 'lacteo_complemento'
+  | 'fruta_complemento'
+
+export type TipoReceta =
+  | 'completa'
+  | 'guarnicion'
+  | 'salsa_base'
+  | 'snack_postre'
+  | 'bebida'
+  | 'desayuno'
+
+export type FuenteReceta =
+  | 'manual'
+  | 'scraping'
+  | 'ia_generada'
+  | 'ia_personalizada'
+
+export interface RecetaIngredienteConRol {
+  id: string
+  receta_id: string
+  alimento_id?: string | null
+  nombre_libre?: string | null
+  cantidad_gramos: number
+  unidad?: string | null
+  rol_ingrediente?: RolIngrediente | null
+  es_cantidad_fija?: boolean
+  receta_vinculada_id?: string | null
+  alimento?: {
+    id: string
+    nombre: string
+    calorias: number
+    proteinas: number
+    carbohidratos: number
+    grasas: number
+    categoria?: string | null
+  }
+  receta_vinculada?: {
+    id: string
+    nombre: string
+    imagen_url?: string | null
+  }
+}
+
+export interface RecetaCandidata {
+  id: string
+  nombre: string
+  kcal: number
+  proteinas: number
+  carbohidratos: number
+  grasas: number
+  tiempo_prep_min?: number | null
+  tipo_receta?: TipoReceta | null
+  imagen_url?: string | null
+  url_origen?: string | null
+  intolerancias?: string[] | null
+  _dist?: number
+}
+
+export interface ComidaConAlternativas extends Comida {
+  alternativas_receta_ids?: string[] | null
+  kcal_target?: number | null
+  proteinas_target?: number | null
+  carbos_target?: number | null
+  grasas_target?: number | null
+  notas_peri_entreno?: string | null
+}
+
+export interface ComidaAlimentoConFactor extends ComidaAlimento {
+  factor_ajuste?: number
+}
