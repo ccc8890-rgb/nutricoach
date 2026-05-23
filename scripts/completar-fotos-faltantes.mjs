@@ -153,7 +153,7 @@ async function subirYActualizar(recetaId, buffer) {
 async function main() {
     const { data: recetas, error } = await supabase
         .from('recetas')
-        .select('id, nombre, tipo_plato, receta_ingredientes(nombre_libre, alimento:alimentos(nombre))')
+        .select('id, nombre, tipo_plato, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
         .is('imagen_url', null)
         .eq('estado', 'aprobada')
         .order('nombre')

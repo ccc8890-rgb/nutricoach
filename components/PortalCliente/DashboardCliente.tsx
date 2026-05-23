@@ -9,6 +9,7 @@ import NotasCoach from './NotasCoach'
 import HistorialCheckins from './HistorialCheckins'
 import TLSGauge from './TLSGauge'
 import RegistrarEntrenoModal from './RegistrarEntrenoModal'
+import MicronutrientesPortal from './MicronutrientesPortal'
 import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach } from '@/types'
 
 interface DashboardData {
@@ -295,12 +296,15 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                 )}
 
                 {tab === 'progreso' && (
-                    <ProgresoCharts
-                        checkins={data.checkins}
-                        peso={data.peso}
-                        pesoInicial={data.cliente?.peso_inicial}
-                        objetivo={data.cliente?.objetivo}
-                    />
+                    <div className="space-y-4">
+                        <ProgresoCharts
+                            checkins={data.checkins}
+                            peso={data.peso}
+                            pesoInicial={data.cliente?.peso_inicial}
+                            objetivo={data.cliente?.objetivo}
+                        />
+                        <MicronutrientesPortal codigo={codigo} />
+                    </div>
                 )}
             </div>
 

@@ -305,7 +305,7 @@ async function main() {
 
         let query = sb
             .from('recetas')
-            .select('id, nombre, tipo_plato, categoria, imagen_url, receta_ingredientes(nombre_libre)')
+            .select('id, nombre, tipo_plato, categoria, imagen_url, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre)')
             .eq('fuente_tipo', 'ia_generada')
             .is('imagen_url', null)
             .order('tipo_plato', { ascending: true })
@@ -360,7 +360,7 @@ async function main() {
 
         let query = sb
             .from('recetas')
-            .select('id, nombre, tipo_plato, categoria, imagen_url, receta_ingredientes(nombre_libre)')
+            .select('id, nombre, tipo_plato, categoria, imagen_url, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre)')
             .order('nombre')
 
         if (!FORZAR) {

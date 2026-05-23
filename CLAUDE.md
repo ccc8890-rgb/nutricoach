@@ -571,4 +571,79 @@ git add -A && git commit -m "Sesion [FECHA]: [RESUMEN]" && git push
 
 ---
 
+---
+
+### ✅ SESIÓN 23-05-2026 — Auditoría completa de recetario (12 anomalías) + FALLO #24 🕵️
+
+**Auditoría exhaustiva** de toda la BD: 353 recetas, 2.569 ingredientes, 13.349 alimentos. 12 tipos de anomalías analizadas.
+
+**Hallazgos reales vs falsos positivos**:
+
+| Código | Tipo | Hallazgos | ¿Real? | Acción |
+|--------|------|-----------|--------|--------|
+| F01+F06 | Receta duplicada vacía (Solomillo pistachos, 0 ingredientes) | 1 | ✅ Real | Eliminada |
+| F02+F12 | Alimentos duplicados por acento (sin tilde → 0kcal) | 133 | ✅ Real | Macros copiados |
+| F03 | Valores imposibles (kcal>2000, prot>100) | 45 | ✅ Real (aceites/especias) | Bajo impacto |
+| F04 | Macros incompletos | 113 | ⚠️ Bajo | Diferido |
+| F05 | Recetas sin tags/categoría | 220/104 | ⚠️ Cosméticos | Diferido |
+| F09 | Macros incoherentes | 275 | **❌ FALSO POSITIVO** | Bug en script |
+| F10 | Alimentos con nombre de receta | 1.046 | ❌ Ruido (supermercado) | 0 usados en recetas |
+| F11 | Ingrediente duplicado (aceite oliva x2) | 2 | ✅ Real | Fusionado 30+60=90g |
+| F12 | Mismo nombre, macros distintos | 25 | ⚠️ 1 corregible | Litines Caja ✅ |
+
+**Scripts creados**:
+- [`scripts/auditar-recetario-completo.mjs`](scripts/auditar-recetario-completo.mjs) — Auditoría 12 anomalías, paginación 1000, `norm()` para normalizar nombres
+- [`scripts/fix-hallazgos-auditoria.mjs`](scripts/fix-hallazgos-auditoria.mjs) — 3 fixes: receta duplicada, 133 acentos, aceite duplicado
+- [`scripts/auditar-y-corregir-f09-f12.mjs`](scripts/auditar-y-corregir-f09-f12.mjs) — Fix F09 (división por porciones) + F12 (Litines Caja)
+
+**Documentación**: [`DIAGNOSTICO_FALLOS.md`](DIAGNOSTICO_FALLOS.md) — FALLO #23 (fase 1) y FALLO #24 (fase 2 auditoría completa)
+
+---
+
+## 🧠 LECCIONES APRENDIDAS — Auditoría de datos (23-05-2026)
+
+### 📌 Conocimiento crítico del schema
+1. **`recetas.kcal` es POR RACIÓN, no total**. Si comparas suma de ingredientes (total receta) vs `recetas.kcal`, obtienes falsos positivos. Siempre dividir por `recetas.porciones` antes de comparar. Verificado con "Cookies de mantequilla tostada": 72.69 kcal × 32 porciones = 2.326 ≈ suma ingredientes ✅
+2. **Columnas de `recetas`**: `kcal`, `proteinas`, `carbohidratos`, `grasas`, `porciones` (NO `calorias`, NO `raciones`)
+3. **Columnas de `alimentos`**: `calorias`, `proteinas`, `carbohidratos`, `grasas` (por 100g)
+4. **`receta_ingredientes`**: `alimento_id`, `nombre_libre`, `cantidad_gramos`
+
+### 📌 Patrones técnicos probados
+1. **Paginación Supabase (>1000 rows)**: Usar `pag(table, select, filters, pageSize)` con `.range(from, from+pageSize-1)`. El SDK de Supabase lanza 416 si pides `range(0, 999)` cuando solo hay 500 rows — eso no es error, es que `data.length < pageSize` → break.
+2. **Normalización de nombres**: `norm(str)` = `.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')` → quita acentos. Útil para detectar duplicados.
+3. **Detección de duplicados por acento**: Si dos alimentos tienen el mismo `norm(nombre)` pero distinto nombre exacto, y uno tiene `calorias=0` mientras el otro tiene macros reales, la variante sin acento es un error de importación.
+4. **Dry-run siempre**: Todo script de modificación masiva debe tener `DRY = !process.argv.includes('--apply')` por defecto.
+5. **Carga de .env.local**: Leer línea por línea, parsear `clave=valor`, quitar comillas. `createClient()` con `{ auth: { persistSession: false } }` para scripts.
+
+### 📌 Fallos conocidos y cómo evitarlos
+1. **Scraper sin normalizar acentos**: El scraper de alimentos importó productos sin normalizar. Cuando se añadió normalización, se crearon duplicados. **Solución**: Antes de insertar, `norm()` el nombre y verificar si ya existe variante.
+2. **Recetas huérfanas**: La generación masiva crea registro en `recetas` pero a veces no llena `receta_ingredientes`. **Solución**: Trigger/scheduled check `SELECT r.id FROM recetas r LEFT JOIN receta_ingredientes ri ON ri.receta_id = r.id WHERE ri.id IS NULL`.
+3. **Ingrediente fantasma (IA alucina)**: La IA lista ingredientes en cabecera que no aparecen en instrucciones. **Solución**: Cross-check nombre_libre vs pasos de elaboración.
+4. **Mal match de ingredientes**: Alimentos con nombre de receta (ej: "Espaguetis Bolonesa") vinculados como ingredientes base. **Solución**: Blacklist de palabras recetáceas.
+
+### 📌 Scripts de diagnóstico disponibles
+| Script | Qué hace | Última ejecución |
+|--------|----------|-----------------|
+| [`scripts/auditar-recetario-completo.mjs`](scripts/auditar-recetario-completo.mjs) | 12 anomalías en recetas+alimentos | 23-05-2026 |
+| [`scripts/fix-hallazgos-auditoria.mjs`](scripts/fix-hallazgos-auditoria.mjs) | Corrige hallazgos reales | 23-05-2026 |
+| [`scripts/auditar-y-corregir-f09-f12.mjs`](scripts/auditar-y-corregir-f09-f12.mjs) | F09 corregido + F12 investigación | 23-05-2026 |
+| [`scripts/diagnosticar-recetas-fallos.mjs`](scripts/diagnosticar-recetas-fallos.mjs) | 4 tipos de fallos (fase 1) | 23-05-2026 |
+| [`scripts/fix-fallos-recetas.mjs`](scripts/fix-fallos-recetas.mjs) | Fase 1 fixes | 23-05-2026 |
+
+### 📌 Outputs de diagnóstico guardados
+| Archivo | Contenido |
+|---------|-----------|
+| [`salidas/auditoria-recetario-2026-05-23.json`](salidas/auditoria-recetario-2026-05-23.json) | Auditoría completa 12 anomalías |
+| [`salidas/auditoria-f09-f12-2026-05-23.json`](salidas/auditoria-f09-f12-2026-05-23.json) | F09+F12 corregido |
+| [`salidas/diagnostico-recetas-fallos.json`](salidas/diagnostico-recetas-fallos.json) | Fase 1 diagnóstico |
+| [`salidas/fix-fallos-2026-05-23.json`](salidas/fix-fallos-2026-05-23.json) | Fase 1 fixes aplicados |
+
+### 📌 Qué NO hacer
+1. **NO** asumir que `kcal` en recetas es total — siempre verificar si es por ración consultando la columna `porciones`.
+2. **NO** ejecutar scripts de IA/scraping sin preguntar antes.
+3. **NO** re-crear sistemas que ya existen (precios, tags, etc.) — revisar CLAUDE.md y componentes existentes primero.
+4. **NO** modificar BD en producción sin `--dry-run` primero.
+
+---
+
 ## 🔀 Historial de Worktrees — Ya unificados en main

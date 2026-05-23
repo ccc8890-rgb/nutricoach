@@ -645,6 +645,168 @@ Antes de cada deploy, verificar:
 
 ---
 
+---
+## FALLO #23 — Ingredientes fantasma con calorias=0 y mal matches en recetas
+
+**Fecha:** 2026-05-23
+**Detectado por:** [`scripts/diagnosticar-recetas-fallos.mjs`](scripts/diagnosticar-recetas-fallos.mjs)
+**Corregido por:** [`scripts/fix-fallos-recetas.mjs`](scripts/fix-fallos-recetas.mjs)
+
+### Síntoma
+El usuario reportó que la receta *"Hummus casero con crudités y pan de pita integral"* contenía **"Panela azucar moreno can integral" (200g)** como ingrediente, que:
+- No aparece en los pasos de elaboración (ingrediente fantasma / alucinación de IA)
+- Tenía `calorias=0` (no vinculado correctamente a macros)
+- No aportaba valor nutricional real a la receta
+
+### Causa raíz
+La generación masiva de recetas con IA (`generar-recetas-masivas.mjs`) produce ingredientes que:
+1. **No existen en `alimentos`** (Tipo A) — el IA alucina nombres que no están en la BD
+2. **Existen pero con `calorias=0`** (Tipo B) — alimentos como *panela, caseína micelar, overnight oats, proteína en polvo* están en `alimentos` pero con macros sin rellenar
+3. **Están mal vinculados** (Tipo C) — alimentos completos (ej: *Spaghetti al huevo*, *Croquetas Artesanas Jamon Iberico*) se vinculan como ingredientes base cuando deberían ser recetas completas
+4. **No se usan en instrucciones** (Tipo D) — la IA lista ingredientes en la cabecera pero no los incluye en los pasos
+
+### Diagnóstico completo
+| Tipo | Descripción | Antes | Después |
+|------|-------------|-------|---------|
+| A | Ingredientes sin `alimento_id` | 56 (48 recetas) | 65 (57 recetas) * |
+| B | Ingredientes con `calorias=0` | 197 (168 recetas) | 178 (159 recetas) |
+| C | Recetas con `kcal=0` o NULL | 0 | 0 |
+| D | Ingredientes en cabecera pero no en pasos | 71 (46 recetas) | 71 (46 recetas) |
+
+*\* El aumento en Tipo A es esperado: los 12 mal matches (Tipo C) se desvincularon intencionadamente, pasando de tener `alimento_id` a `null`.*
+
+### Correcciones aplicadas
+
+**Fix A — Eliminar panela del hummus (1 receta)**
+- [`scripts/fix-fallos-recetas.mjs`](scripts/fix-fallos-recetas.mjs):60 — `fixHummus()` busca recetas con "hummus" y elimina ingredientes con "panela"
+- Receta: `c17e2c08` — *Hummus casero con crudités y pan de pita integral*
+- Macros recalculados vía RPC `calcular_macros_receta`
+
+**Fix B — Asignar macros a 4 alimentos con kcal=0**
+| Alimento | kcal Antes | kcal Después |
+|----------|-----------|--------------|
+| Panela azucar moreno can integral | 0 | 380 |
+| Bombon Almendrado Azucar | 0 | 500 |
+| Barritas proteinas sabor coco chocolate enervit sport | 0 | 180 |
+| Edulcorante | 0 | 20 |
+
+**Fix C — Desvincular 12 mal matches (12 recetas)**
+Alimentos recetáceos que estaban vinculados como ingredientes base:
+- *Spaghetti al huevo, Croquetas Artesanas Jamon Iberico, Burger pavo espinacas, Espaguetis Bolonesa, Agua mineral con gas grande Fonter, Bolsas Cubitos Hielo Caja*
+
+**Fix D — Yogur Griego Cabra** (ya tenía macros, sin cambios)
+
+**Fix E — Recalcular macros de 6 recetas** que usaban alimentos corregidos en Fix B
+
+### Alimentos pendientes (kcal=0 pero usados en recetas)
+19 alimentos distintos con `calorias=0` siguen apareciendo en 159 recetas. La mayoría son **especias y condimentos** con macros ya correctas (comino, pimentón, pimienta, etc. tienen kcal en el rango 250-375) — el problema es que se usan en cantidades traza (1-5g) y su impacto calórico es despreciable. Otros como *ghee, hojas verdes variadas, almendra tostada* necesitan revisión manual.
+
+### Archivos creados/modificados
+- [`scripts/diagnosticar-recetas-fallos.mjs`](scripts/diagnosticar-recetas-fallos.mjs) — Script de diagnóstico (CREADO)
+- [`scripts/fix-fallos-recetas.mjs`](scripts/fix-fallos-recetas.mjs) — Script de corrección (CREADO)
+- [`salidas/diagnostico-recetas-fallos.json`](salidas/diagnostico-recetas-fallos.json) — Output diagnóstico (CREADO)
+- [`salidas/fix-fallos-2026-05-23.json`](salidas/fix-fallos-2026-05-23.json) — Output fix (CREADO)
+- [`DIAGNOSTICO_FALLOS.md`](DIAGNOSTICO_FALLOS.md) — Este documento (ACTUALIZADO)
+
+### Cómo evitar en el futuro
+1. **Validar ingredientes generados por IA**: Antes de insertar, cruzar cada `nombre_libre` contra `alimentos`. Si no existe `ilike` match ≥80%, rechazar o marcar como pendiente.
+2. **Pre-asignar macros críticos**: Asegurar que alimentos comunes (panela, caseína, overnight oats, proteínas en polvo) tengan macros en la tabla `alimentos` antes de la generación.
+3. **No vincular alimentos recetáceos**: Un alimento con nombre de receta completa (ej: *Espaguetis Bolonesa*) nunca debería vincularse como ingrediente base. Validar contra blacklist.
+4. **Verificar coherencia ingredientes↔instrucciones**: Tras generar, ejecutar un check que verifique que cada ingrediente listado aparece en al menos un paso de elaboración.
+
+## FALLO #24 — Auditoría completa de recetario: duplicados por acentos, receta vacía e ingrediente duplicado
+
+**Fecha:** 2026-05-23
+**Detectado por:** [`scripts/auditar-recetario-completo.mjs`](scripts/auditar-recetario-completo.mjs)
+**Corregido por:** [`scripts/fix-hallazgos-auditoria.mjs`](scripts/fix-hallazgos-auditoria.mjs)
+
+### Síntoma
+
+El usuario solicitó: *"perfecto puedes revisar el recetario completo o fallos en alimentos que se nos hayan pasado por alto?"* — una auditoría exhaustiva de toda la base de datos de recetas (353), ingredientes (2.569) y alimentos (13.349).
+
+### Diagnóstico completo
+
+El script [`scripts/auditar-recetario-completo.mjs`](scripts/auditar-recetario-completo.mjs) analiza **12 tipos de anomalías**:
+
+| Código | Tipo | Hallazgos | ¿Real? |
+|--------|------|-----------|--------|
+| F01 | Recetas duplicadas (mismo nombre normalizado) | 1 grupo | ✅ Real |
+| F02 | Alimentos duplicados (mismo nombre normalizado) | 2.287 grupos | ⚠️ Mayoría esperable |
+| F03 | Valores imposibles en alimentos (kcal>2000, prot>100, etc.) | 45 | ✅ Real (aceites, especias) |
+| F04 | Macros incompletos (mezcla NULL/no-NULL) | 113 | ⚠️ Bajo impacto |
+| F05a | Recetas sin tags | 220 | ⚠️ Cosméticos |
+| F05b | Recetas sin categoría | 104 | ⚠️ Cosméticos |
+| F06 | Recetas con 0 ingredientes | 2 | ✅ 1 real |
+| F07 | Ingredientes huérfanos (alimento_id inexistente) | 1 | ✅ Real |
+| F08 | Ingredientes sin cantidad_gramos | 97 | ⚠️ Bajo impacto |
+| **F09** | **Macros incoherentes (calculado vs almacenado)** | **275** | **❌ FALSO POSITIVO** |
+| F10 | Alimentos con nombre de receta | 1.046 | ❌ Ruido (supermercado) |
+| **F11** | **Ingredientes duplicados en misma receta** | **2** | **✅ 1 real** |
+| F12 | Mismo nombre normalizado, macros muy distintos | 25 | ✅ Real (variantes de producto) |
+
+**Total: 2.903 anomalías detectadas. Solo 3 son fallos reales que requirieron corrección.**
+
+### F09 — Falso positivo crítico (lección aprendida)
+
+El campo `kcal` en la tabla `recetas` almacena el valor **por ración**, NO el total de la receta. El script de auditoría comparaba la suma de ingredientes (que da el total de la receta) contra `recetas.kcal` (que es por ración), produciendo 275 falsos positivos con >30% de diferencia.
+
+**Verificación:** *"Cookies de mantequilla tostada"*: `kcal=72.69`, `porciones=32`, suma calculada de ingredientes ≈ 2.326. 72.69 × 32 = 2.326.08 ≈ 2.326 ✅
+
+### F10 — Ruido confirmado: alimentos con nombre de receta
+
+1.046 alimentos contienen palabras como "espaguetis", "croquetas", "pizza", "helado" en su nombre. Sin embargo, **0 de ellos se usan como ingredientes en recetas**. Son productos de supermercado (helados, pizzas congeladas, platos preparados) que legítimamente existen como alimentos. No requieren acción.
+
+### Correcciones aplicadas
+
+**Fix 1 — Eliminar receta duplicada vacía (F01+F06)**
+
+Receta *"Solomillo de cerdo en costra de pistachos con salsa de ciruelas y cuscús de verduras asadas"* aparecía 2 veces en la BD:
+- [`9d97a15c`] — Completa (10 ingredientes, 553.4 kcal, con tags) → **CONSERVADA**
+- [`8c6c1b49`] — Vacía (0 ingredientes, 510 kcal, sin tags) → **ELIMINADA**
+
+La variante vacía fue un artefacto de generación masiva que creó el registro en `recetas` pero nunca pobló `receta_ingredientes`.
+
+**Fix 2 — Alimentos duplicados por acento (F02+F12): 133 corregidos**
+
+El scraper de alimentos importó productos sin normalizar acentos. Cuando se añadió la normalización, se crearon variantes correctas (con tilde) sin eliminar las originales (sin tilde). Las variantes sin tilde quedaron con `calorias=0` porque el scraper posterior ya no las procesaba.
+
+Ejemplos representativos:
+
+| Sin acento (kcal=0) | Con acento (kcal reales) |
+|---------------------|-------------------------|
+| `Arandanos` → 0 | `Arándanos` → 340 |
+| `Limon` → 0 | `Limón` → 420 |
+| `Pera Conferencia` → 0 | `Pera Conferencia` → 480 |
+| `Aguacate` → 0 | `Aguacate` → 670 |
+| `Cafe soluble` → 0 | `Café soluble` → 360 |
+
+Mecanismo de corrección: para cada par (nombre normalizado idéntico via `norm()`), se copian `calorias`, `proteinas`, `carbohidratos`, `grasas` de la variante con macros reales a la variante con 0kcal.
+
+**Fix 3 — Ingrediente duplicado aceite de oliva (F11)**
+
+En *"Arroz negro con sepia y alioli"* aparecía `aceite de oliva` dos veces en `receta_ingredientes`:
+- 30g (una ocurrencia)
+- 60g (otra ocurrencia)
+- **Fusionado: 90g total**, eliminado el duplicado y recalculados macros vía RPC `calcular_macros_receta`.
+
+### Pendiente: 25 grupos F12 con macros muy distintos
+
+25 grupos de alimentos comparten el mismo nombre normalizado pero difieren >50% en calorías. Ejemplo: *"Litines Caja"* aparece con 1 kcal y 450 kcal — probablemente variantes de tamaño/envase. Estos no se corrigieron automáticamente porque podrían ser productos legítimamente diferentes (ej: versión light vs regular) que comparten nombre normalizado.
+
+### Archivos creados/modificados
+
+- [`scripts/auditar-recetario-completo.mjs`](scripts/auditar-recetario-completo.mjs) — Auditoría 12 anomalías (CREADO)
+- [`scripts/fix-hallazgos-auditoria.mjs`](scripts/fix-hallazgos-auditoria.mjs) — Corrección de hallazgos (CREADO)
+- [`salidas/auditoria-recetario-2026-05-23.json`](salidas/auditoria-recetario-2026-05-23.json) — Output JSON de auditoría (CREADO)
+- [`DIAGNOSTICO_FALLOS.md`](DIAGNOSTICO_FALLOS.md) — Este documento (ACTUALIZADO)
+
+### Cómo evitar en el futuro
+
+1. **Normalizar acentos en el scraper**: Antes de insertar un alimento, normalizar su nombre y verificar si ya existe una variante con/sin acento. Si existe, actualizar en lugar de insertar.
+2. **Validar `kcal` por ración vs total**: En cualquier script que compare macros calculados vs almacenados, dividir la suma de ingredientes entre `porciones` antes de comparar.
+3. **Detectar recetas huérfanas**: Tras la generación masiva, ejecutar un check que verifique que toda receta en `recetas` tenga al menos 1 registro en `receta_ingredientes`.
+4. **Fusionar duplicados por nombre normalizado**: Antes de insertar un alimento, buscar si ya existe con el mismo `norm(nombre)` y, si es así, actualizar el existente en lugar de crear uno nuevo.
+
 ## REFERENCIAS
 
 - [`lib/supabase.ts`](nutricoach/lib/supabase.ts) — Cliente browser con `createBrowserClient`

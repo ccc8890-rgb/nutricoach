@@ -173,7 +173,7 @@ async function main() {
   loadEnv()
   if (!existsSync(DIR)) mkdirSync(DIR, { recursive: true })
   const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
-  const { data, error } = await sb.from('recetas').select('id,nombre,imagen_url,receta_ingredientes(nombre_libre, alimento:alimentos(nombre))').in('nombre', RECETAS)
+  const { data, error } = await sb.from('recetas').select('id,nombre,imagen_url,receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))').in('nombre', RECETAS)
   if (error) throw new Error(error.message)
   const byName = new Map((data || []).map(r => [r.nombre, r]))
   const recetas = RECETAS.map(n => byName.get(n)).filter(Boolean)

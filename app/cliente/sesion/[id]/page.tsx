@@ -19,6 +19,7 @@ interface EjercicioSesion {
     grupo_muscular: string
     tipo: string
     video_url?: string
+    foto_url?: string
   }
 }
 
@@ -84,7 +85,7 @@ export default function EjecucionSesionPage() {
         plan:planes_entrenamiento(nombre, cliente_id),
         ejercicios:sesion_ejercicios(
           id, orden, series, repeticiones, descanso_segundos, peso_sugerido, notas,
-          ejercicio:ejercicios(id, nombre, grupo_muscular, tipo, video_url)
+          ejercicio:ejercicios(id, nombre, grupo_muscular, tipo, video_url, foto_url)
         )
       `)
       .eq('id', id)
@@ -697,8 +698,14 @@ export default function EjecucionSesionPage() {
                   >
                     {videoUrl}
                   </a>
+                ) : ejercicio.foto_url ? (
+                  <img
+                    src={ejercicio.foto_url}
+                    alt={ejercicio.nombre}
+                    className="w-full rounded-lg object-cover max-h-64"
+                  />
                 ) : (
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin video disponible</p>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin demo disponible</p>
                 )}
               </div>
             </div>

@@ -142,7 +142,7 @@ async function main() {
     // Get all recetas
     const { data: recetas, error } = await supabase
         .from('recetas')
-        .select('id, nombre, categoria, url_origen, receta_ingredientes(nombre_libre, alimento:alimentos(nombre))')
+        .select('id, nombre, categoria, url_origen, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
         .order('nombre')
     if (error) { console.error('Error:', error.message); process.exit(1) }
 

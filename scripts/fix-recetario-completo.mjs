@@ -405,7 +405,7 @@ const MAPA_INTOLERANCIAS = {
     'Harina Almendra': 'Sin Frutos Secos',
     'Huevo': 'Sin Huevo',
     'Yogur': 'Sin Lactosa',
-    'Sin Mariscos': null,             // No estándar
+    'Sin Mariscos': null,             // AHORA ES ESTÁNDAR — se conserva (ver ALERGENOS_NEGATIVOS en lib/recetas-constants.ts)
     'Cacao en Polvo': null,           // No es intolerancia
     'Leche Almendra': 'Sin Lactosa',
     'Tortita Trigo': 'Sin Gluten',

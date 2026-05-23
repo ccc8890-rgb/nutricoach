@@ -133,7 +133,7 @@ async function main() {
 
     let query = supabase
         .from('recetas')
-        .select('id, nombre, categoria, receta_ingredientes(nombre_libre, alimento:alimentos(nombre))')
+        .select('id, nombre, categoria, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
         .is('url_origen', null)
         .is('imagen_url', null)
 

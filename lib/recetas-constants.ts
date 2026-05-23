@@ -83,6 +83,7 @@ export const ALERGENOS_POSITIVOS = [
 export const ALERGENOS_NEGATIVOS = [
     'Sin Gluten', 'Sin Lactosa', 'Sin Huevo',
     'Sin Frutos Secos', 'Sin Soja', 'Sin Pescado',
+    'Sin Mariscos', 'Sin Cerdo',
 ] as const
 
 // Clasificación dietética
@@ -127,6 +128,8 @@ export function clasificarIntolerancia(tag: string): 'positivo' | 'negativo' | '
     for (const d of DIETETICOS) {
         if (d.toLowerCase() === lower) return 'dietetico'
     }
+    // Cualquier tag que empiece con "Sin " es negativo, independientemente del listado explícito
+    if (lower.startsWith('sin ')) return 'negativo'
     for (const n of ALERGENOS_NEGATIVOS) {
         if (n.toLowerCase() === lower) return 'negativo'
     }

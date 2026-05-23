@@ -126,7 +126,7 @@ export async function POST(
 
   // Cargar receta original
   const { data: recetaBase } = await sbService.from('recetas')
-    .select('nombre, instrucciones, descripcion, porciones, tipo_plato, receta_ingredientes(nombre_libre, cantidad_gramos)')
+    .select('nombre, instrucciones, descripcion, porciones, tipo_plato, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, cantidad_gramos)')
     .eq('id', id).single()
 
   if (!recetaBase) return NextResponse.json({ error: 'Receta no encontrada' }, { status: 404 })

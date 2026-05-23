@@ -284,7 +284,7 @@ async function main() {
 
     if (BASE) {
         const { data: recetaBase } = await supabase.from('recetas')
-            .select('nombre, instrucciones, descripcion, receta_ingredientes(nombre_libre, cantidad_gramos)')
+            .select('nombre, instrucciones, descripcion, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, cantidad_gramos)')
             .ilike('nombre', `%${BASE}%`).limit(1).single()
         if (recetaBase) {
             const ings = (recetaBase.receta_ingredientes || []).map(i => `${i.nombre_libre} (${i.cantidad_gramos}g)`).join(', ')

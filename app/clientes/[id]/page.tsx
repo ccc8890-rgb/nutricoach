@@ -27,6 +27,7 @@ const PerfilEntrenoForm = dynamic(() => import('@/components/training/PerfilEntr
 const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const HistorialEntreno = dynamic(() => import('@/components/training/HistorialEntreno'), { ssr: false, loading: () => <TabSkeleton /> })
 const CompeticionesManager = dynamic(() => import('@/components/CompeticionesManager'), { ssr: false, loading: () => <TabSkeleton /> })
+const CosteSemanalCard = dynamic(() => import('@/components/clientes/CosteSemanal'), { ssr: false, loading: () => <div className="lg:col-span-2 h-12 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 
 function TabSkeleton() {
   return <div className="animate-pulse rounded-2xl h-48 w-full" style={{ background: 'var(--surface)' }} />
@@ -473,6 +474,11 @@ export default function ClienteDetallePage() {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Coste semanal */}
+            <div className="lg:col-span-2">
+              <CosteSemanalCard clienteId={id} />
             </div>
 
             {/* Peso */}

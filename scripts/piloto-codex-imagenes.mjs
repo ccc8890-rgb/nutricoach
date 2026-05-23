@@ -237,7 +237,7 @@ async function main() {
   })
   const { data, error } = await sb
     .from('recetas')
-    .select('id,nombre,categoria,tipo_plato,imagen_url,receta_ingredientes(nombre_libre, alimento:alimentos(nombre))')
+    .select('id,nombre,categoria,tipo_plato,imagen_url,receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
     .in('nombre', PILOTO)
   if (error) throw new Error(error.message)
 

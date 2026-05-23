@@ -94,6 +94,21 @@ const KEYWORDS = {
         'fruto seco', 'frutos secos', 'mix de frutos secos',
         'turrón', 'mazapán', 'nogada', 'pesto',
     ],
+    SIN_MARISCOS: [
+        'gamba', 'langostino', 'camarón', 'mejillón', 'almeja', 'berberecho',
+        'pulpo', 'calamar', 'sepia', 'cangrejo', 'nécora', 'bogavante', 'langosta',
+        'vieira', 'navaja', 'ostra', 'surimi', 'marisco', 'crustáceo',
+    ],
+    SIN_CERDO: [
+        'cerdo', 'panceta', 'bacon', 'beicon', 'chorizo', 'salchichón',
+        'morcilla', 'fuet', 'longaniza', 'sobrasada', 'jamón', 'jamón serrano',
+        'jamón cocido', 'lomo embuchado', 'lomo de cerdo', 'costilla de cerdo',
+        'chicharrón', 'tocino', 'butifarra',
+    ],
+    SIN_SOJA: [
+        'soja', 'tofu', 'tempeh', 'edamame', 'miso', 'tamari',
+        'salsa de soja', 'leche de soja', 'soja texturizada',
+    ],
     VEGANO: [] as string[],
     VEGETARIANO: [] as string[],
 }
@@ -193,6 +208,9 @@ interface IntoleranciaSet {
     sinLactosa: boolean
     sinHuevo: boolean
     sinFrutosSecos: boolean
+    sinMariscos: boolean
+    sinCerdo: boolean
+    sinSoja: boolean
     vegano: boolean
     vegetariano: boolean
 }
@@ -220,6 +238,21 @@ function detectarIntoleranciasPorNombre(nombreNormalizado: string): Partial<Into
         result.sinFrutosSecos = false
     }
 
+    // Sin Mariscos
+    if (KEYWORDS.SIN_MARISCOS.some(kw => nombreNormalizado.includes(kw))) {
+        result.sinMariscos = false
+    }
+
+    // Sin Cerdo
+    if (KEYWORDS.SIN_CERDO.some(kw => nombreNormalizado.includes(kw))) {
+        result.sinCerdo = false
+    }
+
+    // Sin Soja
+    if (KEYWORDS.SIN_SOJA.some(kw => nombreNormalizado.includes(kw))) {
+        result.sinSoja = false
+    }
+
     // Origen animal (para vegano/vegetariano)
     const esAnimal = ANIMAL_KEYWORDS.some(kw => nombreNormalizado.includes(kw))
     if (esAnimal) {
@@ -236,6 +269,9 @@ function combinarDetecciones(resultados: Partial<IntoleranciaSet>[]): string[] {
         sinLactosa: true,
         sinHuevo: true,
         sinFrutosSecos: true,
+        sinMariscos: true,
+        sinCerdo: true,
+        sinSoja: true,
         vegano: true,
         vegetariano: true,
     }
@@ -245,6 +281,9 @@ function combinarDetecciones(resultados: Partial<IntoleranciaSet>[]): string[] {
         if (r.sinLactosa === false) final.sinLactosa = false
         if (r.sinHuevo === false) final.sinHuevo = false
         if (r.sinFrutosSecos === false) final.sinFrutosSecos = false
+        if (r.sinMariscos === false) final.sinMariscos = false
+        if (r.sinCerdo === false) final.sinCerdo = false
+        if (r.sinSoja === false) final.sinSoja = false
         if (r.vegano === false) final.vegano = false
         if (r.vegetariano === false) final.vegetariano = false
     }
@@ -272,6 +311,9 @@ function combinarDetecciones(resultados: Partial<IntoleranciaSet>[]): string[] {
     if (!final.sinLactosa) tags.push('Sin Lactosa')
     if (!final.sinHuevo) tags.push('Sin Huevo')
     if (!final.sinFrutosSecos) tags.push('Sin Frutos Secos')
+    if (!final.sinMariscos) tags.push('Sin Mariscos')
+    if (!final.sinCerdo) tags.push('Sin Cerdo')
+    if (!final.sinSoja) tags.push('Sin Soja')
     if (final.vegano) tags.push('Vegano')
     if (final.vegetariano) tags.push('Vegetariano')
 
@@ -375,6 +417,15 @@ async function faseIntolerancias() {
 
         const tieneFrutosSecos = detecciones.some(d => d.sinFrutosSecos === false)
         if (!tieneFrutosSecos) tags.push('Sin Frutos Secos')
+
+        const tieneMariscos = detecciones.some(d => d.sinMariscos === false)
+        if (!tieneMariscos) tags.push('Sin Mariscos')
+
+        const tieneCerdo = detecciones.some(d => d.sinCerdo === false)
+        if (!tieneCerdo) tags.push('Sin Cerdo')
+
+        const tieneSoja = detecciones.some(d => d.sinSoja === false)
+        if (!tieneSoja) tags.push('Sin Soja')
 
         // ─── Etiquetas POSITIVAS (alérgenos EU): lo que la receta SÍ contiene ───
         const positivosEncontrados = new Set<string>()

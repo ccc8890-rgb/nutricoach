@@ -24,61 +24,61 @@ const dryRun = process.argv.includes('--dry-run')
 const todas = process.argv.includes('--todas')
 const PAGE_SIZE = 50
 
-;(async () => {
-  let page = 0
-  let totalVistas = 0
-  let totalActualizadas = 0
-  const sinTags: string[] = []
+  ; (async () => {
+    let page = 0
+    let totalVistas = 0
+    let totalActualizadas = 0
+    const sinTags: string[] = []
 
-  console.log(`\n🏷️  Auto-etiquetado de recetas ${dryRun ? '[DRY RUN — no escribe]' : '[MODO REAL]'}\n`)
+    console.log(`\n🏷️  Auto-etiquetado de recetas ${dryRun ? '[DRY RUN — no escribe]' : '[MODO REAL]'}\n`)
 
-  while (true) {
-    let query = supabase
-      .from('recetas')
-      .select('id, nombre, receta_ingredientes(nombre_libre, alimento:alimentos(nombre))')
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
-      .order('nombre')
+    while (true) {
+      let query = supabase
+        .from('recetas')
+        .select('id, nombre, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
+        .order('nombre')
 
-    if (!todas) query = query.eq('estado', 'aprobada')
+      if (!todas) query = query.eq('estado', 'aprobada')
 
-    const { data: recetas, error } = await query
-    if (error) { console.error('Error BD:', error.message); break }
-    if (!recetas || recetas.length === 0) break
+      const { data: recetas, error } = await query
+      if (error) { console.error('Error BD:', error.message); break }
+      if (!recetas || recetas.length === 0) break
 
-    for (const receta of recetas) {
-      const tags = autoTagReceta(receta as Parameters<typeof autoTagReceta>[0])
-      const tagsStr = tags.length ? tags.join(', ') : '(sin tags)'
+      for (const receta of recetas) {
+        const tags = autoTagReceta(receta as Parameters<typeof autoTagReceta>[0])
+        const tagsStr = tags.length ? tags.join(', ') : '(sin tags)'
 
-      if (dryRun) {
-        const estado = tags.length ? '✅' : '⚠️ '
-        console.log(`${estado} ${receta.nombre.padEnd(52)} → [${tagsStr}]`)
-      } else {
-        const { error: err } = await supabase
-          .from('recetas')
-          .update({ tags })
-          .eq('id', receta.id)
-        if (err) {
-          console.error(`  ❌ ${receta.nombre}: ${err.message}`)
+        if (dryRun) {
+          const estado = tags.length ? '✅' : '⚠️ '
+          console.log(`${estado} ${receta.nombre.padEnd(52)} → [${tagsStr}]`)
         } else {
-          totalActualizadas++
-          if (tags.length === 0) sinTags.push(receta.nombre)
+          const { error: err } = await supabase
+            .from('recetas')
+            .update({ tags })
+            .eq('id', receta.id)
+          if (err) {
+            console.error(`  ❌ ${receta.nombre}: ${err.message}`)
+          } else {
+            totalActualizadas++
+            if (tags.length === 0) sinTags.push(receta.nombre)
+          }
         }
       }
+
+      totalVistas += recetas.length
+      page++
+      if (recetas.length < PAGE_SIZE) break
     }
 
-    totalVistas += recetas.length
-    page++
-    if (recetas.length < PAGE_SIZE) break
-  }
-
-  console.log(`\n${'─'.repeat(60)}`)
-  if (dryRun) {
-    console.log(`📋 Preview: ${totalVistas} recetas procesadas`)
-  } else {
-    console.log(`✅ Actualizadas: ${totalActualizadas} de ${totalVistas} recetas`)
-    if (sinTags.length > 0) {
-      console.log(`\n⚠️  ${sinTags.length} recetas sin tags detectados (revisar manualmente):`)
-      sinTags.forEach(n => console.log(`   • ${n}`))
+    console.log(`\n${'─'.repeat(60)}`)
+    if (dryRun) {
+      console.log(`📋 Preview: ${totalVistas} recetas procesadas`)
+    } else {
+      console.log(`✅ Actualizadas: ${totalActualizadas} de ${totalVistas} recetas`)
+      if (sinTags.length > 0) {
+        console.log(`\n⚠️  ${sinTags.length} recetas sin tags detectados (revisar manualmente):`)
+        sinTags.forEach(n => console.log(`   • ${n}`))
+      }
     }
-  }
-})()
+  })()

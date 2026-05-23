@@ -28,7 +28,7 @@ export async function GET(
         .from('recetas')
         .select(`
             id, nombre, kcal, proteinas, carbohidratos, grasas, porciones,
-            receta_ingredientes(
+            receta_ingredientes!receta_ingredientes_receta_id_fkey(
                 id, nombre_libre, cantidad_gramos, orden,
                 alimento:alimentos(id, nombre, calorias, proteinas, carbohidratos, grasas, fibra)
             )

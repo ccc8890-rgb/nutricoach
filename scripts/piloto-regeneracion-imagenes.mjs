@@ -423,7 +423,7 @@ async function main() {
   const nombres = PILOTO.map(r => r.nombre)
   const { data, error } = await supabase
     .from('recetas')
-    .select('id,nombre,categoria,tipo_plato,url_origen,imagen_url,receta_ingredientes(nombre_libre, alimento:alimentos(nombre))')
+    .select('id,nombre,categoria,tipo_plato,url_origen,imagen_url,receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
     .in('nombre', nombres)
 
   if (error) throw new Error(error.message)

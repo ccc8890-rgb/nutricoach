@@ -31,6 +31,7 @@ import {
   TrendingUp,
   Sparkles,
   SlidersHorizontal,
+  Library,
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -49,6 +50,7 @@ const ENTRENOS_SUBITEMS = [
   { href: '/entrenos', label: 'Planes', icon: Dumbbell },
   { href: '/entrenos/plantillas', label: 'Planificación', icon: Calendar },
   { href: '/entrenos/generar-ia', label: 'Generar con IA', icon: BrainCircuit },
+  { href: '/entrenos/ejercicios', label: 'Librería', icon: Library },
 ]
 
 const NUTRICION_SUBITEMS = [

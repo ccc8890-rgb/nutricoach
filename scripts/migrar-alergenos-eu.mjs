@@ -125,7 +125,7 @@ async function main() {
     while (true) {
         const { data, error } = await supabase
             .from('recetas')
-            .select('id, nombre, descripcion, intolerancias, receta_ingredientes(nombre_libre)')
+            .select('id, nombre, descripcion, intolerancias, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre)')
             .eq('estado', 'aprobada')
             .range(from, from + 99)
         if (error) { console.error('Error:', error.message); process.exit(1) }
