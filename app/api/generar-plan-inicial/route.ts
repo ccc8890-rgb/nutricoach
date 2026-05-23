@@ -388,7 +388,11 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
 
   for (const slot of slots) {
     const { targetKcal, targetProt } = calcularTargetSlot(slot, kcalObjetivo, distribucionProteina.total, numComidas)
-    const candidatas = await filtrarRecetasPorSlot(supabase, slot, targetKcal, targetProt, filtroCliente, 6)
+    const candidatas = await filtrarRecetasPorSlot(
+      supabase, slot, targetKcal, targetProt, filtroCliente, 6,
+      cliente_id,
+      onboarding.objetivo
+    )
     candidatasPorSlot.set(slot, candidatas)
   }
 
@@ -773,6 +777,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
 
     // 13b. Crear comidas y vincular recetas como alimentos
     for (const comida of comidasData) {
+      const recetaIdPrincipal = (comida.recetas as Array<Record<string, unknown>> | undefined)?.[0]?.receta_id as string | undefined
       const { data: comidaDb, error: comidaError } = await supabase
         .from('comidas')
         .insert({
@@ -786,6 +791,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           kcal_target: (comida.kcal_target as number) || null,
           proteinas_target: (comida.proteinas_target as number) || null,
           notas_peri_entreno: (comida.notas_peri_entreno as string) || null,
+          receta_id: recetaIdPrincipal || null,
         })
         .select()
         .single()
@@ -896,6 +902,16 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           })
         if (caError) {
           console.error('[generar-plan-inicial] Error vinculando alimento a comida:', recetaFull.nombre, caError.message)
+        }
+        // Registrar interacción asignada_plan (fire-and-forget)
+        if (recetaFull.id) {
+          void supabase.from('receta_interacciones_cliente').insert({
+            cliente_id,
+            receta_id: recetaFull.id,
+            tipo: 'asignada_plan',
+            plan_id: planDb.id,
+            comida_slot: comida.nombre as string,
+          })
         }
       }
     }
