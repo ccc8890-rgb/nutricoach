@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabase } from '@/lib/supabase-server'
+import { createServiceSupabase, createApiSupabase } from '@/lib/supabase-server'
 import { seleccionarProtocolos, formatearEvidenciaParaPrompt } from '@/lib/knowledge-base'
 import { construirPrompt, generarDietaConIA, type DietaGenerada } from '@/lib/deepseek'
 import { distribuirProteinas, verificarLeucina } from '@/lib/distribucion-proteinas'
@@ -53,6 +53,12 @@ function calcularTDEE(peso: number, altura: number, edad: number, sexo: string, 
 }
 
 export async function POST(request: NextRequest) {
+  const supabaseAuth = createApiSupabase(request)
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   const { cliente_id } = await request.json()
   if (!cliente_id) return NextResponse.json({ error: 'cliente_id requerido' }, { status: 400 })
 

@@ -807,7 +807,32 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={() => setDrawerComidaId(null)}
+                                            onClick={() => {
+                                                setPlanLocal(prev => ({
+                                                    ...prev,
+                                                    comidas: (prev.comidas ?? []).map(c =>
+                                                        c.id === drawerComidaId
+                                                            ? {
+                                                                ...c,
+                                                                alimentos: [{
+                                                                    id: alt.id,
+                                                                    cantidad_gramos: 1,
+                                                                    alimento: {
+                                                                        nombre: alt.nombre,
+                                                                        calorias: alt.kcal,
+                                                                        proteinas: alt.proteinas,
+                                                                        carbohidratos: alt.carbohidratos,
+                                                                        grasas: alt.grasas,
+                                                                        fibra: 0,
+                                                                    },
+                                                                }],
+                                                            }
+                                                            : c
+                                                    ),
+                                                }))
+                                                addToast({ title: `"${alt.nombre}" seleccionado`, type: 'success' })
+                                                setDrawerComidaId(null)
+                                            }}
                                             className="text-xs font-medium px-3 py-1.5 rounded-lg border shrink-0"
                                             style={{ color: 'var(--primary)', borderColor: 'var(--primary)' }}
                                         >

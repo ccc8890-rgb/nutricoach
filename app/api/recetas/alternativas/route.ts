@@ -1,8 +1,14 @@
 // app/api/recetas/alternativas/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabase } from '@/lib/supabase-server'
+import { createServiceSupabase, createApiSupabase } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
+  const supabaseAuth = createApiSupabase(request)
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   const { searchParams } = new URL(request.url)
   const comidaId = searchParams.get('comida_id')
   const clienteId = searchParams.get('cliente_id')

@@ -81,7 +81,6 @@ export async function filtrarRecetasPorSlot(
     .or(`tipo_receta.is.null,tipo_receta.in.(${tiposPermitidos.join(',')})`)
 
   if (tiempoMaximo && tiempoMaximo > 0) {
-    // each .or() call is ANDed with the others by PostgREST
     query = query.or(`tiempo_prep_min.is.null,tiempo_prep_min.lte.${tiempoMaximo}`)
   }
 
