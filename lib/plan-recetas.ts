@@ -59,22 +59,53 @@ interface FiltroCliente {
   alimentos_base?: string[] | null
 }
 
+// Mapeo objetivo → valores apta_cliente aceptados
+const OBJETIVO_APTA: Record<string, string[]> = {
+  perder_grasa:  ['perdida_grasa', 'general'],
+  ganar_musculo: ['ganancia_muscular', 'atleta', 'general'],
+  rendimiento:   ['atleta', 'ganancia_muscular', 'general'],
+  salud_general: ['general', 'clinica'],
+  mantener:      ['mantenimiento', 'general'],
+  recomposicion: ['perdida_grasa', 'ganancia_muscular', 'general'],
+}
+
 export async function filtrarRecetasPorSlot(
   supabase: SupabaseClient,
   slotNombre: string,
   targetKcal: number,
   targetProt: number,
   filtroCliente: FiltroCliente,
-  limit = 6
+  limit = 6,
+  clienteId?: string,
+  objetivoCliente?: string
 ): Promise<RecetaCandidata[]> {
   const categorias = SLOT_CATEGORIAS[slotNombre] ?? SLOT_CATEGORIAS['Comida']
   const tiposPermitidos = SLOT_TIPOS_PERMITIDOS[slotNombre] ?? ['completa']
   const restricciones = filtroCliente.restricciones ?? []
   const tiempoMaximo = filtroCliente.tiempo_cocina_min
 
+  // Cargar interacciones recientes del cliente (si hay clienteId)
+  const recientesIds = new Set<string>()
+  const dislikeIds = new Set<string>()
+
+  if (clienteId) {
+    const hace2semanas = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+    const { data: interacciones } = await supabase
+      .from('receta_interacciones_cliente')
+      .select('receta_id, tipo')
+      .eq('cliente_id', clienteId)
+      .or(`tipo.eq.asignada_plan,tipo.eq.dislike`)
+      .gte('created_at', hace2semanas)
+
+    for (const i of interacciones ?? []) {
+      if (i.tipo === 'dislike') dislikeIds.add(i.receta_id)
+      else recientesIds.add(i.receta_id)
+    }
+  }
+
   let query = supabase
     .from('recetas')
-    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias')
+    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, apta_cliente')
     .eq('estado', 'aprobada')
     .gt('kcal', 0)
     .in('categoria', categorias)
@@ -84,15 +115,17 @@ export async function filtrarRecetasPorSlot(
     query = query.or(`tiempo_prep_min.is.null,tiempo_prep_min.lte.${tiempoMaximo}`)
   }
 
-  const { data: recetas } = await query.limit(50)
+  const { data: recetas } = await query.limit(80)
   if (!recetas || recetas.length === 0) return []
 
+  // Filtro duro: intolerancias
   let candidatas = recetas.filter(r => {
     if (!restricciones.length) return true
     const recetaIntol: string[] = r.intolerancias ?? []
     return !restricciones.some(intol => recetaIntol.includes(intol))
   })
 
+  // Filtro duro: alimentos a evitar
   const evitarRaw = filtroCliente.alimentos_evitar_extra
   const evitarArr: string[] = Array.isArray(evitarRaw)
     ? evitarRaw
@@ -107,14 +140,41 @@ export async function filtrarRecetasPorSlot(
     )
   }
 
-  return candidatas
-    .map(r => ({
-      ...r,
-      _dist: distanciaEuclidiana(r.kcal, r.proteinas ?? 0, targetKcal, targetProt),
-    }))
-    .sort((a, b) => (a._dist ?? 0) - (b._dist ?? 0))
+  // Filtro duro: dislikes del cliente
+  candidatas = candidatas.filter(r => !dislikeIds.has(r.id))
+
+  // Filtro blando: score_calidad mínimo (solo si quedan >=3)
+  const aptasCalidad = candidatas.filter(r => (r.score_calidad ?? 50) >= 50)
+  if (aptasCalidad.length >= 3) candidatas = aptasCalidad
+
+  // Filtro blando: excluir recientes si quedan >=3
+  const sinRecientes = candidatas.filter(r => !recientesIds.has(r.id))
+  if (sinRecientes.length >= 3) candidatas = sinRecientes
+
+  // Sort score compuesto
+  const aptasObjetivo = objetivoCliente ? (OBJETIVO_APTA[objetivoCliente] ?? ['general']) : ['general']
+
+  const scored = candidatas.map(r => {
+    const dist = distanciaEuclidiana(r.kcal, r.proteinas ?? 0, targetKcal, targetProt)
+    const distNorm = Math.min(dist, 2) / 2
+
+    const scoreNorm = (r.score_calidad ?? 60) / 100
+
+    const aptaMatch = r.apta_cliente
+      ? aptasObjetivo.includes(r.apta_cliente) ? 1.0
+        : r.apta_cliente === 'general' ? 0.5
+        : 0.0
+      : 0.5
+
+    const sortScore = scoreNorm * 0.40 + aptaMatch * 0.35 + (1 - distNorm) * 0.25
+
+    return { ...r, _dist: dist, _sort_score: sortScore }
+  })
+
+  return scored
+    .sort((a, b) => (b._sort_score ?? 0) - (a._sort_score ?? 0))
     .slice(0, limit)
-    .map(({ _dist: _, ...r }) => r)
+    .map(({ _dist: _, _sort_score: __, ...r }) => r)
 }
 
 interface ComidaDeepSeek {

@@ -1108,7 +1108,20 @@ export interface RecetaCandidata {
   imagen_url?: string | null
   url_origen?: string | null
   intolerancias?: string[] | null
+  score_calidad?: number | null
+  apta_cliente?: string | null
   _dist?: number
+  _sort_score?: number
+}
+
+export interface RecetaInteraccionCliente {
+  id: string
+  cliente_id: string
+  receta_id: string
+  tipo: 'asignada_plan' | 'swap_elegida' | 'swap_rechazada' | 'like' | 'dislike' | 'favorita'
+  plan_id?: string | null
+  comida_slot?: string | null
+  created_at: string
 }
 
 export interface ComidaConAlternativas extends Comida {
