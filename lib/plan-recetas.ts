@@ -81,6 +81,7 @@ export async function filtrarRecetasPorSlot(
     .or(`tipo_receta.is.null,tipo_receta.in.(${tiposPermitidos.join(',')})`)
 
   if (tiempoMaximo && tiempoMaximo > 0) {
+    // each .or() call is ANDed with the others by PostgREST
     query = query.or(`tiempo_prep_min.is.null,tiempo_prep_min.lte.${tiempoMaximo}`)
   }
 
@@ -93,7 +94,7 @@ export async function filtrarRecetasPorSlot(
     return !restricciones.some(intol => recetaIntol.includes(intol))
   })
 
-  const evitarRaw = filtroCliente?.alimentos_evitar_extra
+  const evitarRaw = filtroCliente.alimentos_evitar_extra
   const evitarArr: string[] = Array.isArray(evitarRaw)
     ? evitarRaw
     : typeof evitarRaw === 'string' && evitarRaw.trim()

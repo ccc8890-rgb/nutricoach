@@ -285,11 +285,9 @@ export function calcularAjustesPeriEntreno(params: {
   horaEntreno?: string | null
   sportModality?: string | null
   duracionMin?: number
-  kcalObjetivo: number
-  numComidas: number
   fase_deportiva?: string | null
 }): AjustePeriEntreno[] {
-  const { horaEntreno, sportModality, duracionMin = 45, kcalObjetivo: _kcal, numComidas: _n, fase_deportiva } = params
+  const { horaEntreno, sportModality, duracionMin = 45, fase_deportiva } = params
   if (!horaEntreno) return []
 
   const [h, m] = horaEntreno.split(':').map(Number)
@@ -305,8 +303,7 @@ export function calcularAjustesPeriEntreno(params: {
   let slotPreNombre = 'Comida'
   if (minutosSlotPre < 7 * 60) slotPreNombre = 'Desayuno'
   else if (minutosSlotPre < 12 * 60) slotPreNombre = 'Media mañana'
-  else if (minutosSlotPre < 15 * 60) slotPreNombre = 'Comida'
-  else slotPreNombre = 'Merienda'
+  else if (minutosSlotPre >= 15 * 60) slotPreNombre = 'Merienda'
 
   if (isCardio) {
     ajustes.push({
@@ -342,10 +339,8 @@ export function calcularAjustesPeriEntreno(params: {
 
   const minutosSlotPost = minutosEntreno + duracionMin + 30
   let slotPostNombre = 'Comida'
-  if (minutosSlotPost < 12 * 60) slotPostNombre = 'Comida'
-  else if (minutosSlotPost < 14 * 60) slotPostNombre = 'Comida'
-  else if (minutosSlotPost < 18 * 60) slotPostNombre = 'Merienda'
-  else slotPostNombre = 'Cena'
+  if (minutosSlotPost >= 18 * 60) slotPostNombre = 'Cena'
+  else if (minutosSlotPost >= 14 * 60) slotPostNombre = 'Merienda'
 
   const ajusteProtPost = isCardio ? 30 : 35
   const ajusteCarbPost = isCardio ? 40 : 20
