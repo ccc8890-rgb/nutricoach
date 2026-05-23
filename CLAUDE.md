@@ -411,6 +411,31 @@ No hay conflictos entre worktrees.
 
 ---
 
+### ✅ SESIÓN 23-05-2026 (tarde) — Recetario Capa 1 + Portal S1 + Batch Audit
+
+**Recetario Capa 1 — completado** (commits `e45a6ff`, `74008d7`, `54d3120`, `a18a971`):
+- SQL: `comidas.receta_id` + tabla `receta_interacciones_cliente` aplicado en Supabase
+- `lib/plan-recetas.ts` v2: `filtrarRecetasPorSlot` con score compuesto (calidad×0.40 + apta×0.35 + macro×0.25)
+- `generar-plan-inicial`: guarda `receta_id` en comidas + fire-and-forget tracking en `receta_interacciones_cliente`
+- `scripts/batch-audit-profesional.ts`: audita recetas con `score_calidad` null, con contador `[N/total]` por ítem
+
+**Batch audit ejecutado**: 62/62 recetas auditadas — **score medio 95.1/100**, min 76, max 100, 0 errores.
+
+**Portal cliente S1 — Pantalla bienvenida** (`da711b2`):
+- `DashboardCliente.tsx`: tarjeta de bienvenida en primer acceso detectada por `localStorage`
+- Lista de 3 features con iconos + botón "Empezar →" que cierra y no vuelve a aparecer
+
+**SQL aplicado en Supabase (listo para DeepSeek S2-S5)**:
+- `checkins`: +5 columnas de medidas corporales (cintura, cadera, pecho, brazo, muslo)
+- `registro_comidas_dia`: nueva tabla para S3
+- `chat_mensajes`: nueva tabla para S5
+
+**Briefs DeepSeek actualizados**: S2/S3/S5 tienen nota "⚠️ YA APLICADO" en Paso 1 SQL.
+
+**Emails** (`cbd0d8f`): asuntos personalizados (plan-listo + welcome con nombre del cliente).
+
+---
+
 ## 🔀 Historial de Worktrees — Ya unificados en main
 
 Todos los worktrees han sido mergeados y unificados en `main`. No hay worktrees activos.
