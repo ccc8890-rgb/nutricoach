@@ -9,6 +9,9 @@ import { generarRecomendacionPeriEntreno, formatearPeriEntrenoParaPrompt } from 
 import { validarMicronutrientes } from '@/lib/validacion-micronutrientes'
 import { seleccionarPildoras } from '@/lib/micro-learning'
 import type { MetodologiaCoach } from '@/types'
+import { filtrarRecetasPorSlot, validarYResolverRecetas, calcularFactorGramaje, calcularTargetSlot, type PlanDeepSeekValidado } from '@/lib/plan-recetas'
+import { calcularGramajeAjustado } from '@/lib/ingredient-roles'
+import { calcularAjustesPeriEntreno } from '@/lib/nutricion-peri-entreno'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
@@ -364,28 +367,97 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
     .eq('coach_id', cliente.coach_id)
     .limit(20)
 
-  const { data: recetas } = await supabase
-    .from('recetas')
-    .select('id, nombre, categoria, kcal, proteinas, carbohidratos, grasas, azucares, sodio_mg, fibra')
-    .eq('estado', 'aprobada')
-    .gt('kcal', 0)
+  // ── 9b. Pre-filtrar recetas por slot del cliente ─────────────────────────────
+  const numComidas = metodologia?.num_comidas_default ?? 4
+  const slots = ['Desayuno', 'Comida', 'Merienda', 'Cena']
 
-  // Limitar a 8 recetas por categoría para no inflar el prompt (evita que DeepSeek ignore la lista)
-  const recetasFiltradas: typeof recetas = []
-  const contadorCategoria: Record<string, number> = {}
-  for (const r of recetas ?? []) {
-    const cat = r.categoria || 'Otras'
-    contadorCategoria[cat] = (contadorCategoria[cat] ?? 0) + 1
-    if (contadorCategoria[cat] <= 8) recetasFiltradas.push(r)
+  const filtroCliente = {
+    restricciones: onboarding.restricciones,
+    alimentos_evitar_extra: (onboarding as Record<string, unknown>).alimentos_evitar_extra as string[] | null,
+    tiempo_cocina_min: onboarding.tiempo_cocina_min,
+    alimentos_base: (onboarding as Record<string, unknown>).alimentos_base as string[] | null,
   }
-  const recetasDisponibles = recetasFiltradas
-  const recetasPorId = new Map(recetasDisponibles.map(r => [r.id, r]))
-  // Índice por nombre normalizado para recuperar IDs cuando DeepSeek inventa nombres
+
+  const candidatasPorSlot = new Map<string, import('@/types').RecetaCandidata[]>()
+
+  for (const slot of slots) {
+    const { targetKcal, targetProt } = calcularTargetSlot(slot, kcalObjetivo, distribucionProteina.total, numComidas)
+    const candidatas = await filtrarRecetasPorSlot(supabase, slot, targetKcal, targetProt, filtroCliente, 6)
+    candidatasPorSlot.set(slot, candidatas)
+  }
+
+  // Compatibilidad con código posterior que usa recetasPorId / recetasPorNombre
+  const recetasPorId = new Map(
+    [...candidatasPorSlot.values()].flat().map(r => [r.id, r])
+  )
   const recetasPorNombre = new Map(
-    recetasDisponibles.map(r => [r.nombre.toLowerCase().trim(), r])
+    [...candidatasPorSlot.values()].flat().map(r => [r.nombre.toLowerCase().trim(), r])
   )
 
   // ── 10. Construir el prompt final con recetas ──────────────────────────────
+  // Candidatas por slot para el prompt mejorado
+  const candidatasBlock = slots.map(slot => {
+    const lista = candidatasPorSlot.get(slot) ?? []
+    if (lista.length === 0) return ''
+    const { targetKcal, targetProt } = calcularTargetSlot(slot, kcalObjetivo, distribucionProteina.total, numComidas)
+    const listaStr = lista.map(r =>
+      `  {"id":"${r.id}","nombre":"${r.nombre}","kcal":${r.kcal},"prot":${r.proteinas}}`
+    ).join(',\n')
+    return `${slot.toUpperCase()}_TARGET: ${targetKcal} kcal / ${targetProt}g prot\n${slot.toUpperCase()}_CANDIDATAS: [\n${listaStr}\n]`
+  }).filter(Boolean).join('\n\n')
+
+  const ajustesPeriEntreno = calcularAjustesPeriEntreno({
+    horaEntreno: (onboarding as Record<string, unknown>).horario_comidas
+      ? ((onboarding as Record<string, unknown>).horario_comidas as Array<{ nombre: string; hora: string }>)?.find(h => h.nombre === 'Comida')?.hora
+      : null,
+    sportModality: perfilEntreno?.sport_modality ?? null,
+    duracionMin: onboarding.duracion_sesion_min ?? 45,
+    fase_deportiva: null,
+  })
+
+  const ajustesPeriBlock = ajustesPeriEntreno.length > 0
+    ? `\n═══ AJUSTES PERI-ENTRENO ═══\n${ajustesPeriEntreno.map(a =>
+        `- ${a.slot_nombre} (${a.tipo === 'pre' ? 'PRE' : 'POST'}): ${a.nota}`
+      ).join('\n')}`
+    : ''
+
+  const alimentosBaseOnb = (onboarding as Record<string, unknown>).alimentos_base as string[] | null
+  const comeFueraDias = (onboarding as Record<string, unknown>).come_fuera_dias as number | null
+
+  const contextoExtendido = `${contextoCompleto}
+
+═══ ALIMENTOS BASE DEL CLIENTE ═══
+${alimentosBaseOnb?.join(', ') || 'No especificados'}
+
+${(comeFueraDias ?? 0) >= 3 ? `⚠️ Come fuera ${comeFueraDias} días/semana — priorizar recetas portables o de preparación rápida` : ''}
+
+${ajustesPeriBlock}
+
+═══ RECETAS DISPONIBLES POR SLOT (USAR SOLO ESTOS IDs) ═══
+${candidatasBlock}
+
+═══ INSTRUCCIÓN DE SALIDA — JSON ESTRICTO ═══
+Devuelve ÚNICAMENTE el siguiente JSON sin texto adicional:
+{
+  "distribucion_comidas": [
+    {
+      "nombre": "Desayuno",
+      "hora": "08:00",
+      "orden": 1,
+      "kcal_target": 400,
+      "proteinas_target": 30,
+      "receta_id": "uuid-exacto-de-la-lista",
+      "receta_nombre": "nombre",
+      "cantidad_porciones": 1,
+      "alternativas": ["uuid-alternativa-1", "uuid-alternativa-2"],
+      "notas_peri_entreno": "nota si aplica"
+    }
+  ],
+  "notas_generales": "...",
+  "evidencia_cientifica": ["paper1"]
+}
+REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.`
+
   // Combina el contexto completo del cliente con las recetas disponibles
   const promptDieta = construirPrompt(
     {
@@ -414,19 +486,16 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
       carbohidratos_objetivo: p.carbohidratos_objetivo,
       grasas_objetivo: p.grasas_objetivo,
     })),
-    recetasDisponibles.map(r => ({
+    [...recetasPorId.values()].map(r => ({
       id: r.id,
       nombre: r.nombre,
-      categoria: r.categoria || 'Otras',
+      categoria: (r as unknown as Record<string, unknown>).categoria as string || 'Otras',
       kcal: r.kcal,
       proteinas: r.proteinas,
       carbohidratos: r.carbohidratos,
       grasas: r.grasas,
-      azucares: r.azucares,
-      sodio_mg: r.sodio_mg,
-      fibra: r.fibra,
     })),
-    contextoCompleto, // ← Aquí se inyecta TODO: evidencia, flags, mesociclo, proteína
+    contextoExtendido, // ← Aquí se inyecta TODO: evidencia, flags, mesociclo, proteína + candidatas por slot
   )
 
   // ── 11. Llamar a DeepSeek ──────────────────────────────────────────────────
@@ -529,6 +598,28 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
         ],
         notas_coach: `Cliente nuevo. Objetivo: ${onboarding.objetivo}. TDEE: ${tdee} kcal → objetivo: ${kcalObjetivo} kcal. Proteína: ${distribucionProteina.total}g/día (${distribucionProteina.g_por_kg.toFixed(1)}g/kg) — ref. ${onboarding.objetivo === 'rendimiento' ? 'ISSN 2017' : onboarding.objetivo === 'perder_grasa' ? 'Helms et al. 2014' : 'Morton 2018 BJSM'}. Mesociclo: ${mesociclo.duracion_total_dias} días. ${metodologia ? 'Metodología del coach aplicada.' : 'Modo evidence-based puro — sin metodología coach activa.'}`,
       }
+
+      // ── 11b. Validar y resolver recetas DeepSeek (garantizar IDs válidos) ──────
+      try {
+        const planValidado = validarYResolverRecetas(
+          planJson as unknown as PlanDeepSeekValidado,
+          candidatasPorSlot
+        )
+        if (planValidado.distribucion_comidas) {
+          const comidasActuales = planJson.distribucion_comidas as Array<Record<string, unknown>>
+          planValidado.distribucion_comidas.forEach((validada, i) => {
+            if (comidasActuales[i]) {
+              comidasActuales[i].receta_id = validada.receta_id
+              comidasActuales[i].receta_nombre = validada.receta_nombre
+              comidasActuales[i].alternativas = validada.alternativas
+              comidasActuales[i].kcal_target = validada.kcal_target
+              comidasActuales[i].proteinas_target = validada.proteinas_target
+            }
+          })
+        }
+      } catch {
+        // Validation failed — continue with original planJson
+      }
     }
   } catch (err) {
     // DeepSeek failed — use fallback
@@ -606,9 +697,6 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
         proteinas: recetaFull?.proteinas ?? 0,
         carbohidratos: recetaFull?.carbohidratos ?? 0,
         grasas: recetaFull?.grasas ?? 0,
-        fibra: recetaFull?.fibra,
-        azucares: recetaFull?.azucares,
-        sodio_mg: recetaFull?.sodio_mg,
         cantidad_porciones: (r.cantidad_porciones as number) ?? 1,
       }
     }),
@@ -686,6 +774,12 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
           nombre: comida.nombre as string,
           orden: (comida.orden as number) ?? 0,
           hora_sugerida: (comida.hora_sugerida as string) || null,
+          alternativas_receta_ids: ((comida.alternativas as string[] | undefined) ?? []).length > 0
+            ? (comida.alternativas as string[])
+            : null,
+          kcal_target: (comida.kcal_target as number) || null,
+          proteinas_target: (comida.proteinas_target as number) || null,
+          notas_peri_entreno: (comida.notas_peri_entreno as string) || null,
         })
         .select()
         .single()
@@ -783,12 +877,16 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
         }
 
         const gramos = Math.round(cantPorciones * 100)
+        const targetKcalComida = (comida.kcal_target as number) || Math.round(kcalObjetivo / (comidasData?.length ?? 4))
+        const factorGramaje = calcularFactorGramaje(recetaFull?.kcal ?? 0, targetKcalComida)
+        const factorFinal = factorGramaje ?? 1.0
         const { error: caError } = await supabase
           .from('comida_alimentos')
           .insert({
             comida_id: comidaDb.id,
             alimento_id: alimentoId,
             cantidad_gramos: gramos,
+            factor_ajuste: factorFinal,
           })
         if (caError) {
           console.error('[generar-plan-inicial] Error vinculando alimento a comida:', recetaFull.nombre, caError.message)
