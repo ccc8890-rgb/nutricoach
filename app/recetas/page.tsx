@@ -109,7 +109,7 @@ export default function RecetasPage() {
 
         const { data, error } = await supabase
           .from('recetas')
-          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, intolerancias, created_at, receta_ingredientes(nombre_libre, alimento:alimentos(nombre))')
+          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, intolerancias, created_at, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
           .or(`coach_id.eq.${user.id},coach_id.is.null`)
           .eq('estado', 'aprobada')
           .order('created_at', { ascending: false })
