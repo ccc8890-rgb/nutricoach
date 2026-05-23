@@ -287,8 +287,9 @@ export function calcularAjustesPeriEntreno(params: {
   duracionMin?: number
   kcalObjetivo: number
   numComidas: number
+  fase_deportiva?: string | null
 }): AjustePeriEntreno[] {
-  const { horaEntreno, sportModality, duracionMin = 45, kcalObjetivo: _kcal, numComidas: _n } = params
+  const { horaEntreno, sportModality, duracionMin = 45, kcalObjetivo: _kcal, numComidas: _n, fase_deportiva } = params
   if (!horaEntreno) return []
 
   const [h, m] = horaEntreno.split(':').map(Number)
@@ -358,6 +359,25 @@ export function calcularAjustesPeriEntreno(params: {
     nota: `Post-entreno: proteína prioritaria (${ajusteProtPost}g), ventana 30-45min tras sesión.`,
     receta_tipo_preferido: 'proteina_magra',
   })
+
+  // ── Ajustes por fase deportiva ────────────────────────────────────────────
+  if (fase_deportiva === 'tapering' || fase_deportiva === 'race_day') {
+    // Nunca reducir carbohidratos en tapering ni en race week
+    return ajustes.map(a => ({
+      ...a,
+      ajuste_carbos_g: Math.max(a.ajuste_carbos_g, 0),
+      nota: a.nota + ' (tapering: CHO mantenidos)',
+    }))
+  }
+
+  if (fase_deportiva === 'recuperacion') {
+    return ajustes.map(a => ({
+      ...a,
+      ajuste_carbos_g: Math.round(a.ajuste_carbos_g * 0.5),
+      ajuste_proteina_g: Math.round(a.ajuste_proteina_g * 1.2),
+      nota: a.nota + ' (recuperación: +proteína, -carbos)',
+    }))
+  }
 
   return ajustes
 }

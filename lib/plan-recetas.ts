@@ -54,7 +54,7 @@ export function calcularTargetSlot(
 
 interface FiltroCliente {
   restricciones?: string[] | null
-  alimentos_evitar_extra?: string | null
+  alimentos_evitar_extra?: string[] | string | null
   tiempo_cocina_min?: number | null
   alimentos_base?: string[] | null
 }
@@ -87,11 +87,25 @@ export async function filtrarRecetasPorSlot(
   const { data: recetas } = await query.limit(50)
   if (!recetas || recetas.length === 0) return []
 
-  const candidatas = recetas.filter(r => {
+  let candidatas = recetas.filter(r => {
     if (!restricciones.length) return true
     const recetaIntol: string[] = r.intolerancias ?? []
     return !restricciones.some(intol => recetaIntol.includes(intol))
   })
+
+  const evitarRaw = filtroCliente?.alimentos_evitar_extra
+  const evitarArr: string[] = Array.isArray(evitarRaw)
+    ? evitarRaw
+    : typeof evitarRaw === 'string' && evitarRaw.trim()
+      ? evitarRaw.split(',').map(s => s.trim()).filter(Boolean)
+      : []
+
+  if (evitarArr.length > 0) {
+    const evitarLower = evitarArr.map(a => a.toLowerCase())
+    candidatas = candidatas.filter(r =>
+      !evitarLower.some(term => r.nombre.toLowerCase().includes(term))
+    )
+  }
 
   return candidatas
     .map(r => ({
@@ -167,11 +181,12 @@ export function calcularFactorGramaje(
 }
 
 export function esPlataCompleto(
-  roles: Array<string | null | undefined>
+  roles: Array<string | null | undefined>,
+  kcal?: number
 ): boolean {
   const tieneProteina = roles.some(r => r === 'proteina_principal')
   const tieneCarbOVerdura = roles.some(r =>
     r === 'carbohidrato_base' || r === 'verdura_volumen'
   )
-  return tieneProteina && tieneCarbOVerdura
+  return tieneProteina && tieneCarbOVerdura && (kcal === undefined || kcal >= 200)
 }
