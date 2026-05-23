@@ -44,6 +44,15 @@ const TIPO_LABELS: Record<string, string> = {
   revision_plan: 'Revisión plan',
   feedback_positivo: 'Feedback +',
   checkin_recordatorio: 'Check-in',
+  // Nutrición
+  revision_semanal: 'Revisión semanal 🥗',
+  alerta_riesgo: 'Riesgo abandono 🚨',
+  mensaje_motivacion: 'Motivación 💪',
+  propuesta_receta: 'Receta sugerida 🍽️',
+  actualizacion_plan: 'Actualizar plan',
+  // Entrenamiento
+  alerta_riesgo_entreno: 'Inactividad entreno 🏋️',
+  revision_semanal_entreno: 'Revisión entreno 📊',
 }
 
 function getPrioridadColor(p: number): string {

@@ -9,6 +9,8 @@ import { actualizarPerfilAprendizaje } from './executor'
 import { ejecutarRevisorSemanal } from './revisor-semanal'
 import { ejecutarAgenteRiesgo } from './riesgo'
 import { ejecutarAgenteMotivacion } from './motivacion'
+import { ejecutarAgenteRiesgoEntreno } from './riesgo-entreno'
+import { ejecutarRevisorSemanalEntreno } from './revisor-semanal-entreno'
 
 export interface ResultadoDirector {
   clientes_procesados: number
@@ -43,13 +45,15 @@ export async function ejecutarDirector(
       // Siempre: actualizar perfil de aprendizaje
       await actualizarPerfilAprendizaje(id)
 
-      // Siempre: agente de riesgo (solo actúa si detecta riesgo real)
+      // Siempre: agente de riesgo nutrición + entrenamiento
       await ejecutarAgenteRiesgo(id)
+      await ejecutarAgenteRiesgoEntreno(id)
 
-      // Solo lunes (semanal): revisor + motivación
+      // Solo lunes (semanal): revisores + motivación
       if (modo === 'semanal') {
         await ejecutarRevisorSemanal(id)
         await ejecutarAgenteMotivacion(id)
+        await ejecutarRevisorSemanalEntreno(id)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)

@@ -11,6 +11,8 @@ export type TipoTarea =
   | 'mensaje_motivacion'
   | 'propuesta_receta'
   | 'actualizacion_plan'
+  | 'alerta_riesgo_entreno'
+  | 'revision_semanal_entreno'
 
 export type EstadoTarea =
   | 'pendiente'

@@ -17,7 +17,9 @@ export async function aplicarTarea(tarea: AgenteTarea): Promise<{ ok: boolean; m
       return aplicarAjusteMacros(db, tarea)
 
     case 'alerta_riesgo':
+    case 'alerta_riesgo_entreno':
     case 'mensaje_motivacion':
+    case 'revision_semanal_entreno':
       return aplicarMensajeCliente(db, tarea)
 
     case 'actualizacion_plan':
