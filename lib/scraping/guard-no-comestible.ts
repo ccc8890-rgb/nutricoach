@@ -85,7 +85,9 @@ const PATRONES_NO_COMESTIBLE: RegExp[] = [
   /crema (manos|cara|ban|o|dia|noche)/i,
   /crema y barra protectora/i,
   /lotion|locion (corporal|reafirmante)/i,
-  /aceite corporal|manteca corporal|sorbete corporal/i,
+  /aceite (corporal|.*hidratante)/i,
+  /oil.?&.?go\b/i,
+  /manteca corporal|sorbete corporal/i,
   /balsamo (corporal|reparador)/i,
 
   // ── Facial / Cosmética facial ─────────────────────────────────
