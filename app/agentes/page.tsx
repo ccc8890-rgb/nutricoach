@@ -237,7 +237,7 @@ export default function AgentesKanbanPage() {
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {tareas
-                .filter((t) => col.estados.includes(t.estado))
+                .filter((t) => (col.estados as readonly string[]).includes(t.estado))
                 .map((tarea) => (
                   <TareaCard
                     key={tarea.id}

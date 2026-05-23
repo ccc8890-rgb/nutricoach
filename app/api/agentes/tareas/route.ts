@@ -85,12 +85,17 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Error al actualizar tarea' }, { status: 500 })
     }
 
-    // Registrar aprendizaje
-    try {
-      await registrarAprendizaje(tarea_id, decision, comentario_coach)
-    } catch (err) {
-      console.error('Error al registrar aprendizaje (no bloqueante):', err)
-    }
+    // Registrar aprendizaje (fire-and-forget)
+    supabase.from('agente_tareas').select('*').eq('id', tarea_id).single().then(({ data: t }) => {
+      if (t) {
+        registrarAprendizaje(
+          t as Parameters<typeof registrarAprendizaje>[0],
+          decision,
+          propuesta_final,
+          comentario_coach
+        ).catch(() => null)
+      }
+    })
 
     return NextResponse.json({ ok: true })
   } catch (error) {

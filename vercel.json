@@ -7,6 +7,14 @@
         {
             "path": "/api/cron/ingesta-papers",
             "schedule": "30 8 * * 1"
+        },
+        {
+            "path": "/api/agentes/ejecutar?modo=diario",
+            "schedule": "0 7 * * *"
+        },
+        {
+            "path": "/api/agentes/ejecutar?modo=semanal",
+            "schedule": "0 6 * * 1"
         }
     ],
     "buildCommand": "next build"
