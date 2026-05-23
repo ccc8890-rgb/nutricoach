@@ -777,7 +777,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
 
     // 13b. Crear comidas y vincular recetas como alimentos
     for (const comida of comidasData) {
-      const recetaIdPrincipal = (comida.recetas as Array<Record<string, unknown>> | undefined)?.[0]?.receta_id as string | undefined
+      const recetaIdPrincipal = ((comida.recetas as Array<Record<string, unknown>> | undefined)?.[0]?.receta_id as string | undefined) ?? null
       const { data: comidaDb, error: comidaError } = await supabase
         .from('comidas')
         .insert({
@@ -905,13 +905,19 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
         }
         // Registrar interacción asignada_plan (fire-and-forget)
         if (recetaFull.id) {
-          void supabase.from('receta_interacciones_cliente').insert({
-            cliente_id,
-            receta_id: recetaFull.id,
-            tipo: 'asignada_plan',
-            plan_id: planDb.id,
-            comida_slot: comida.nombre as string,
-          })
+          void (async () => {
+            try {
+              await supabase.from('receta_interacciones_cliente').insert({
+                cliente_id,
+                receta_id: recetaFull.id,
+                tipo: 'asignada_plan',
+                plan_id: planDb.id,
+                comida_slot: comida.nombre as string,
+              })
+            } catch (err: unknown) {
+              console.warn('[generar-plan-inicial] Interacción no logged:', err instanceof Error ? err.message : err)
+            }
+          })()
         }
       }
     }
