@@ -16,11 +16,24 @@ async function main() {
 
   const pageSize = 50
   let from = 0
-  let total = 0
   let auditadas = 0
   let errores = 0
 
-  console.log(DRY ? '[DRY-RUN] No se aplicarán cambios. Usa --apply para ejecutar.' : '[APPLY] Auditando recetas...')
+  // Pre-count para mostrar progreso N/total
+  const { count, error: countError } = await supabase
+    .from('recetas')
+    .select('id', { count: 'exact', head: true })
+    .eq('estado', 'aprobada')
+    .is('score_calidad', null)
+
+  if (countError) {
+    console.error('Error contando recetas:', countError.message)
+    return
+  }
+
+  const grandTotal = count ?? 0
+
+  console.log(DRY ? `[DRY-RUN] No se aplicarán cambios. Usa --apply para ejecutar.` : `[APPLY] Auditando recetas...`)
 
   while (true) {
     const { data: recetas, error } = await supabase
@@ -37,15 +50,12 @@ async function main() {
 
     if (!recetas || recetas.length === 0) break
 
-    total += recetas.length
-    console.log(`\nLote ${Math.floor(from / pageSize) + 1}: ${recetas.length} recetas sin score`)
-
     if (!DRY) {
       for (const r of recetas) {
         try {
           const resultado = await auditarRecetaProfesional(supabase, r.id)
           auditadas++
-          process.stdout.write(`  ✓ ${r.nombre} → score ${resultado.score.score ?? '?'}\n`)
+          process.stdout.write(`  [${auditadas}/${grandTotal}] ✓ ${r.nombre} → score ${resultado.score.score ?? '?'}\n`)
         } catch (err) {
           errores++
           console.error(`  ✗ ${r.nombre}:`, err instanceof Error ? err.message : err)
@@ -63,9 +73,9 @@ async function main() {
 
   console.log(`\n─────────────────────────────`)
   if (DRY) {
-    console.log(`Total sin score: ${total}. Ejecuta con --apply para auditar.`)
+    console.log(`Total sin score: ${grandTotal}. Ejecuta con --apply para auditar.`)
   } else {
-    console.log(`Auditadas: ${auditadas} | Errores: ${errores} | Total: ${total}`)
+    console.log(`Auditadas: ${auditadas}/${grandTotal} | Errores: ${errores}`)
   }
 }
 
