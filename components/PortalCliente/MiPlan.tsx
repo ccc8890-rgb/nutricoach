@@ -103,6 +103,18 @@ interface RecetaSugerida {
     tiempo_prep_min: number | null
 }
 
+interface AlternativaReceta {
+    id: string
+    nombre: string
+    imagen_url?: string | null
+    tiene_foto_real?: boolean
+    kcal: number
+    proteinas: number
+    carbohidratos: number
+    grasas: number
+    tiempo_prep_min?: number
+}
+
 const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 const DIAS_KEYS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
 
@@ -259,6 +271,9 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
     const [microsAbiertos, setMicrosAbiertos] = useState(false)
     const [listaAbierta, setListaAbierta] = useState(false)
     const [usandoReceta, setUsandoReceta] = useState<string | null>(null)
+    const [drawerComidaId, setDrawerComidaId] = useState<string | null>(null)
+    const [alternativas, setAlternativas] = useState<AlternativaReceta[]>([])
+    const [cargandoAlt, setCargandoAlt] = useState(false)
     const { addToast } = useToast()
 
     function inferirTipoPlato(nombreComida: string): string | null {
@@ -398,6 +413,22 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
         }
     }
 
+    async function abrirDrawerAlternativas(comidaId: string) {
+        setDrawerComidaId(comidaId)
+        setCargandoAlt(true)
+        setAlternativas([])
+        try {
+            const clienteParam = planLocal.cliente_id ? `&cliente_id=${planLocal.cliente_id}` : ''
+            const res = await fetch(`/api/recetas/alternativas?comida_id=${comidaId}${clienteParam}`)
+            const data = await res.json() as { alternativas?: AlternativaReceta[] }
+            setAlternativas(data.alternativas ?? [])
+        } catch {
+            // drawer mostrará vacío
+        } finally {
+            setCargandoAlt(false)
+        }
+    }
+
     // Usar plan original (no planLocal) para PlanSemanal — evita re-ejecutar
     // el useEffect cada vez que el usuario hace swap en la vista Hoy
     const comidasParaSemana = useMemo(() => plan.comidas ?? [], [plan.comidas])
@@ -526,10 +557,20 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                                     </div>
                                     <div className="text-left">
                                         <p className="font-semibold" style={{ color: 'var(--text)' }}>{comida.nombre}</p>
-                                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                            {macros.calorias.toFixed(0)} kcal
-                                            {comida.hora_sugerida && ` · ${comida.hora_sugerida.slice(0, 5)}`}
-                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                                {macros.calorias.toFixed(0)} kcal
+                                                {comida.hora_sugerida && ` · ${comida.hora_sugerida.slice(0, 5)}`}
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={e => { e.stopPropagation(); abrirDrawerAlternativas(comida.id) }}
+                                                className="text-[10px] font-medium"
+                                                style={{ color: 'var(--primary)' }}
+                                            >
+                                                Cambiar plato
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 {expanded ? <ChevronUp size={18} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={18} style={{ color: 'var(--text-muted)' }} />}
@@ -722,6 +763,62 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                     onAceptar={handleAceptarComida}
                     onCerrar={() => setModalGenerar(null)}
                 />
+            )}
+
+            {/* Drawer alternativas por comida */}
+            {drawerComidaId && (
+                <div
+                    className="fixed inset-0 z-50 flex items-end bg-black/40"
+                    onClick={() => setDrawerComidaId(null)}
+                >
+                    <div
+                        className="w-full rounded-t-2xl p-5 pb-safe max-h-[80vh] overflow-y-auto shadow-2xl"
+                        style={{ background: 'var(--surface)' }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="w-12 h-1 rounded-full mx-auto mb-4" style={{ background: 'var(--border)' }} />
+                        <h3 className="text-base font-semibold mb-3" style={{ color: 'var(--text)' }}>Cambiar plato</h3>
+                        {cargandoAlt ? (
+                            <div className="flex justify-center py-8">
+                                <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
+                            </div>
+                        ) : alternativas.length === 0 ? (
+                            <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>No hay alternativas disponibles</p>
+                        ) : (
+                            <div className="flex flex-col gap-3">
+                                {alternativas.map(alt => (
+                                    <div key={alt.id} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface-2)' }}>
+                                        {alt.imagen_url ? (
+                                            <img
+                                                src={alt.imagen_url}
+                                                alt={alt.nombre}
+                                                width={56}
+                                                height={56}
+                                                className="rounded-lg object-cover shrink-0 w-14 h-14"
+                                            />
+                                        ) : (
+                                            <div className="w-14 h-14 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #ecfdf5, #ccfbf1)' }}>
+                                                <span className="text-xl">🍽️</span>
+                                            </div>
+                                        )}
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{alt.nombre}</p>
+                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{alt.kcal} kcal · {alt.proteinas}g P</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDrawerComidaId(null)}
+                                            className="text-xs font-medium px-3 py-1.5 rounded-lg border shrink-0"
+                                            style={{ color: 'var(--primary)', borderColor: 'var(--primary)' }}
+                                        >
+                                            Usar
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     )
