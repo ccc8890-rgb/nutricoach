@@ -11,9 +11,10 @@ import {
   Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2,
   Zap, Bot, Trophy, CopyPlus, X, Activity, PersonStanding,
   ChevronRight, RefreshCw, Pencil, Flame, Beef, Wheat, Droplets,
-  ExternalLink, Send, AlertTriangle,
+  ExternalLink, Send, AlertTriangle, MessageCircle,
 } from 'lucide-react'
-import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
+import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, ChatMensaje } from '@/types'
+import ChatPanel from '@/components/PortalCliente/ChatPanel'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import { OBJETIVO_LABELS, NIVEL_LABELS } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
@@ -35,7 +36,7 @@ function TabSkeleton() {
 }
 
 type NotaCoachRow = { id: string; cliente_id: string; mensaje: string; created_at: string }
-type Tab = 'resumen' | 'planes' | 'checkins' | 'notas' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion' | 'perfil_atleta' | 'historial_entreno'
+type Tab = 'resumen' | 'planes' | 'checkins' | 'notas' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion' | 'perfil_atleta' | 'historial_entreno' | 'chat'
 type ClienteConExtra = Cliente & { fecha_proxima_revision?: string; revisado_por_coach?: boolean | null; profile?: { nombre?: string; apellidos?: string; email?: string; telefono?: string } }
 
 // ── MacroBar ──────────────────────────────────────────────────────────────────
@@ -90,6 +91,23 @@ export default function ClienteDetallePage() {
   const [showSelectorPlantilla, setShowSelectorPlantilla] = useState(false)
   const [plantillaSeleccionada, setPlantillaSeleccionada] = useState<PlantillaEntrenamiento | null>(null)
   const [creandoPlan, setCreandoPlan] = useState(false)
+  const [noLeidosChat, setNoLeidosChat] = useState(0)
+
+  // Polling de mensajes no leídos (cada 30s)
+  useEffect(() => {
+    async function checkNoLeidos() {
+      try {
+        const res = await fetch(`/api/clientes/${id}/chat`, { method: 'HEAD' })
+        if (res.ok) {
+          const json = await res.json()
+          setNoLeidosChat(json.no_leidos ?? 0)
+        }
+      } catch { /* silencioso */ }
+    }
+    checkNoLeidos()
+    const interval = setInterval(checkNoLeidos, 30000)
+    return () => clearInterval(interval)
+  }, [id])
 
   async function loadData() {
     const [clienteRes, dietasRes, entrenosRes, seguRes, checkinsRes, notasRes] = await Promise.all([
@@ -109,7 +127,11 @@ export default function ClienteDetallePage() {
     setLoading(false)
   }
 
-  useEffect(() => { loadData() }, [id])
+  // También refrescar noLeidosChat cuando se carga la página
+  useEffect(() => {
+    loadData()
+    fetch(`/api/clientes/${id}/chat`, { method: 'HEAD' }).then(r => { if (r.ok) r.json().then(j => setNoLeidosChat(j.no_leidos ?? 0)) }).catch(() => { })
+  }, [id])
 
   async function recargarCliente() {
     const { data } = await supabase.from('clientes').select('*, profile:profiles!profile_id(nombre, apellidos, email, telefono)').eq('id', id).single()
@@ -191,6 +213,7 @@ export default function ClienteDetallePage() {
     { key: 'periodizacion', label: 'Periodización', icon: Activity },
     { key: 'historial_ia', label: 'Historial IA', icon: Brain },
     { key: 'conversaciones_ia', label: 'Chat IA', icon: Bot },
+    { key: 'chat', label: 'Chat', icon: MessageCircle, badge: noLeidosChat },
     { key: 'perfil_atleta', label: 'Perfil atleta', icon: PersonStanding },
     { key: 'historial_entreno', label: 'Entreno realizado', icon: Dumbbell },
     { key: 'ajuste_macros', label: 'Ajuste macros', icon: Zap },
@@ -615,6 +638,14 @@ export default function ClienteDetallePage() {
           <HistorialDietasIA clienteId={id as string} />
         ) : tabActiva === 'conversaciones_ia' ? (
           <ConversacionesIA clienteId={id as string} />
+        ) : tabActiva === 'chat' ? (
+          <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <ChatPanel
+              clienteId={id as string}
+              pollingInterval={30000}
+              esCoach={true}
+            />
+          </div>
         ) : (
           <div className="max-w-xl mx-auto"><AjusteMacrosIA clienteId={id as string} onApplied={loadData} /></div>
         )}

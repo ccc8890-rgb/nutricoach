@@ -88,6 +88,18 @@ export async function GET(
             notas = n ?? []
         }
 
+        // 7. Registros de comidas de hoy (S3)
+        let registros_comidas: unknown[] = []
+        if (clienteId) {
+            const hoy = new Date().toLocaleDateString('en-CA')
+            const { data: r } = await supabase
+                .from('registro_comidas_dia')
+                .select('*')
+                .eq('cliente_id', clienteId)
+                .eq('fecha', hoy)
+            registros_comidas = r ?? []
+        }
+
         return NextResponse.json({
             plan: {
                 ...plan,
@@ -98,6 +110,7 @@ export async function GET(
             checkins,
             peso,
             notas,
+            registros_comidas,
         })
     } catch (err) {
         console.error('Error en dashboard:', err)

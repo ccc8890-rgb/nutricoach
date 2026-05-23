@@ -81,6 +81,12 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
     const [foto, setFoto] = useState<File | null>(null)
     const [fotoPreview, setFotoPreview] = useState<string | null>(null)
     const [guardando, setGuardando] = useState(false)
+    const [mostrarMedidas, setMostrarMedidas] = useState(false)
+    const [cintura, setCintura] = useState('')
+    const [cadera, setCadera] = useState('')
+    const [pecho, setPecho] = useState('')
+    const [brazo, setBrazo] = useState('')
+    const [muslo, setMuslo] = useState('')
     const fotoInputRef = useRef<HTMLInputElement>(null)
     const { addToast } = useToast()
 
@@ -135,6 +141,11 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                     sueno,
                     notas: notas || null,
                     foto_url,
+                    cintura_cm: cintura ? parseFloat(cintura) : null,
+                    cadera_cm: cadera ? parseFloat(cadera) : null,
+                    pecho_cm: pecho ? parseFloat(pecho) : null,
+                    brazo_cm: brazo ? parseFloat(brazo) : null,
+                    muslo_cm: muslo ? parseFloat(muslo) : null,
                 }),
             })
             if (!res.ok) throw new Error('Error al guardar')
@@ -320,6 +331,42 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                         className="hidden"
                         onChange={handleFotoChange}
                     />
+                </div>
+
+                {/* 📐 Medidas corporales (opcional) — colapsable */}
+                <div>
+                    <button
+                        type="button"
+                        onClick={() => setMostrarMedidas(!mostrarMedidas)}
+                        className="flex items-center gap-2 w-full text-sm font-medium text-[var(--text-secondary)] py-2"
+                    >
+                        <span style={{ transform: mostrarMedidas ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>▶</span>
+                        📐 Medidas corporales (opcional)
+                    </button>
+                    {mostrarMedidas && (
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                            <div>
+                                <label className="text-xs text-[var(--text-muted)]">Cintura (cm)</label>
+                                <input type="number" step="0.1" className="input mt-1" placeholder="Ej: 78" value={cintura} onChange={e => setCintura(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="text-xs text-[var(--text-muted)]">Cadera (cm)</label>
+                                <input type="number" step="0.1" className="input mt-1" placeholder="Ej: 94" value={cadera} onChange={e => setCadera(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="text-xs text-[var(--text-muted)]">Pecho (cm)</label>
+                                <input type="number" step="0.1" className="input mt-1" placeholder="Ej: 100" value={pecho} onChange={e => setPecho(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="text-xs text-[var(--text-muted)]">Brazo (cm)</label>
+                                <input type="number" step="0.1" className="input mt-1" placeholder="Ej: 35" value={brazo} onChange={e => setBrazo(e.target.value)} />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="text-xs text-[var(--text-muted)]">Muslo (cm)</label>
+                                <input type="number" step="0.1" className="input mt-1" placeholder="Ej: 55" value={muslo} onChange={e => setMuslo(e.target.value)} />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <button type="submit" className="btn btn-primary w-full justify-center" disabled={guardando || !!yaHizoCheckinHoy}>

@@ -475,6 +475,12 @@ export interface CheckIn {
   foto_url?: string
   nota_coach?: string
   created_at: string
+  // Medidas corporales (S2)
+  cintura_cm?: number
+  cadera_cm?: number
+  pecho_cm?: number
+  brazo_cm?: number
+  muslo_cm?: number
 }
 
 export type SeguimientoPesoConFecha = SeguimientoPeso
@@ -488,6 +494,28 @@ export interface NotaCoach {
   leida?: boolean
 }
 
+export interface ChatMensaje {
+  id: string
+  cliente_id: string
+  coach_id?: string
+  emisor: 'cliente' | 'coach'
+  contenido: string
+  leido: boolean
+  created_at: string
+}
+
+export interface RegistroComidaDia {
+  id: string
+  cliente_id: string
+  fecha: string
+  comida_id: string
+  comida_nombre: string
+  hecho: boolean
+  cambio?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface DashboardPortalResponse {
   plan: PlanNutricion
   cliente: Pick<Cliente, 'id' | 'peso_inicial' | 'objetivo'> & { nombre?: string; fecha_proxima_revision?: string }
@@ -495,6 +523,7 @@ export interface DashboardPortalResponse {
   checkins: CheckIn[]
   peso: SeguimientoPeso[]
   notas: NotaCoach[]
+  registros_comidas?: RegistroComidaDia[]
 }
 
 // ============================================================

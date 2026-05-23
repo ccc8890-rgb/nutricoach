@@ -10,6 +10,11 @@ interface CheckIn {
     adherencia?: number
     energia?: number
     sueno?: number
+    cintura_cm?: number
+    cadera_cm?: number
+    pecho_cm?: number
+    brazo_cm?: number
+    muslo_cm?: number
 }
 
 interface SeguimientoPeso {
@@ -385,6 +390,40 @@ export default function ProgresoCharts({ checkins, peso, pesoInicial, objetivo }
                 </div>
                 <EnergiaSuenoChart data={checkins} />
             </div>
+
+            {/* Medidas corporales (S2) */}
+            {checkins.some(c => c.cintura_cm || c.cadera_cm || c.pecho_cm || c.brazo_cm || c.muslo_cm) && (
+                <div className="card">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Activity size={16} style={{ color: '#0D9488' }} />
+                        <h3 className="font-semibold text-[var(--text)] text-sm">📐 Medidas corporales</h3>
+                    </div>
+                    <div className="space-y-3">
+                        {(['cintura_cm', 'cadera_cm', 'pecho_cm', 'brazo_cm', 'muslo_cm'] as const).map(key => {
+                            const valores = checkins
+                                .filter(c => c[key])
+                                .map(c => ({ fecha: c.fecha, valor: c[key] as number }))
+                                .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+                            if (valores.length < 2) return null
+                            const primero = valores[0].valor
+                            const ultimo = valores[valores.length - 1].valor
+                            const diff = (ultimo - primero).toFixed(1)
+                            const labels: Record<string, string> = { cintura_cm: 'Cintura', cadera_cm: 'Cadera', pecho_cm: 'Pecho', brazo_cm: 'Brazo', muslo_cm: 'Muslo' }
+                            return (
+                                <div key={key} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+                                    <span className="text-sm text-[var(--text-secondary)]">{labels[key]}</span>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-semibold text-[var(--text)]">{ultimo.toFixed(1)} cm</span>
+                                        <span className={`text-xs ${diff.startsWith('-') ? 'text-green-500' : diff === '0.0' ? 'text-gray-400' : 'text-red-400'}`}>
+                                            {diff.startsWith('-') ? '↓' : diff === '0.0' ? '=' : '↑'} {Math.abs(parseFloat(diff))} cm
+                                        </span>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Totales */}
             <div className="card">

@@ -13,7 +13,7 @@ export async function POST(
         const supabase = await createServerSupabase()
         const { codigo } = await params
         const body = await request.json()
-        const { peso, adherencia, energia, sueno, notas, foto_url } = body
+        const { peso, adherencia, energia, sueno, notas, foto_url, cintura_cm, cadera_cm, pecho_cm, brazo_cm, muslo_cm } = body
 
         // Buscar cliente por código del plan
         const { data: plan } = await supabase
@@ -42,6 +42,11 @@ export async function POST(
                 sueno: sueno || null,
                 notas: notas || null,
                 foto_url: foto_url || null,
+                cintura_cm: cintura_cm || null,
+                cadera_cm: cadera_cm || null,
+                pecho_cm: pecho_cm || null,
+                brazo_cm: brazo_cm || null,
+                muslo_cm: muslo_cm || null,
             })
             .select()
             .single()

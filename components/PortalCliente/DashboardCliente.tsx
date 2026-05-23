@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell } from 'lucide-react'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell, MessageCircle } from 'lucide-react'
 import MiPlan from './MiPlan'
 import CheckInForm from './CheckInForm'
 import ProgresoCharts from './ProgresoCharts'
@@ -10,6 +10,7 @@ import HistorialCheckins from './HistorialCheckins'
 import TLSGauge from './TLSGauge'
 import RegistrarEntrenoModal from './RegistrarEntrenoModal'
 import MicronutrientesPortal from './MicronutrientesPortal'
+import ChatPanel from './ChatPanel'
 import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach } from '@/types'
 
 interface DashboardData {
@@ -25,7 +26,7 @@ interface DashboardClienteProps {
     codigo: string
 }
 
-type Tab = 'plan' | 'checkin' | 'entreno' | 'progreso' | 'historial'
+type Tab = 'plan' | 'checkin' | 'entreno' | 'progreso' | 'historial' | 'chat'
 
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: 'plan', label: 'Mi plan', icon: UtensilsCrossed },
@@ -33,6 +34,7 @@ const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: 'entreno', label: 'Carga', icon: Dumbbell },
     { key: 'historial', label: 'Historial', icon: History },
     { key: 'progreso', label: 'Progreso', icon: BarChart3 },
+    { key: 'chat', label: 'Chat', icon: MessageCircle },
 ]
 
 /* ── Helper: calcular racha ── */
@@ -75,7 +77,7 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
 
     const loadData = useCallback(async () => {
         try {
-            fetch(`/api/cliente/${codigo}/registrar-acceso`, { method: 'POST' }).catch(() => {})
+            fetch(`/api/cliente/${codigo}/registrar-acceso`, { method: 'POST' }).catch(() => { })
 
             const res = await fetch(`/api/cliente/${codigo}/dashboard`)
             if (!res.ok) {
@@ -160,88 +162,96 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
         ? Math.floor((new Date().getTime() - new Date(ultimoCheckin.fecha).getTime()) / (1000 * 60 * 60 * 24))
         : null
 
+    // Iniciales para avatar
+    const iniciales = (data.cliente?.nombre ?? '?').split(' ').map(s => s[0]).join('').toUpperCase().slice(0, 2)
+    const nombreCliente = data.cliente?.nombre?.split(' ')[0] ?? 'Campeón'
+
     return (
         <div className="min-h-screen pb-nav-safe" style={{ background: 'var(--bg)' }}>
-            {/* Header con gradiente teal */}
-            <div style={{ background: 'linear-gradient(135deg, #0D9488, #14B8A6)' }}>
-                <div className="max-w-2xl mx-auto px-4 pt-safe pb-5 sm:py-6">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                            <p className="text-teal-100 text-xs sm:text-sm font-medium mb-1">
-                                {data.cliente?.nombre ? `👋 ¡Hola, ${data.cliente.nombre}!` : '🍽️ Tu plan personalizado'}
-                            </p>
-                            <h1 className="text-xl sm:text-2xl font-bold text-white truncate">{data.plan.nombre}</h1>
-                            {data.plan.descripcion && (
-                                <p className="text-teal-100 mt-1 text-xs sm:text-sm line-clamp-2">{data.plan.descripcion}</p>
-                            )}
+            {/* Header premium con avatar */}
+            <div style={{ background: 'linear-gradient(135deg, #0F172A, #1E293B)' }}>
+                <div className="max-w-2xl mx-auto px-4 pt-safe pb-4 sm:py-6">
+                    <div className="flex items-center gap-4">
+                        {/* Avatar con iniciales */}
+                        <div
+                            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-bold text-lg shrink-0"
+                            style={{ background: 'linear-gradient(135deg, #0D9488, #14B8A6)', color: 'white' }}
+                        >
+                            {iniciales}
                         </div>
 
-                        {/* Indicador de racha y notas no leídas */}
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            {racha > 0 && (
-                                <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium"
-                                    style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
-                                    <Flame size={12} />
-                                    <span>{racha}</span>
-                                </div>
-                            )}
-                            {notasNoLeidas > 0 && (
-                                <div className="relative">
-                                    <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium"
-                                        style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
-                                        <MessageSquareText size={12} />
-                                        <span className="hidden sm:inline">Nuevas</span>
-                                    </div>
-                                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 text-white text-[8px] flex items-center justify-center font-bold">
-                                        {notasNoLeidas}
+                        <div className="min-w-0 flex-1">
+                            <p className="text-white/70 text-xs sm:text-sm font-medium mb-0.5">
+                                👋 ¡Hola, {nombreCliente}!
+                            </p>
+                            <h1 className="text-lg sm:text-xl font-bold text-white truncate">{data.plan.nombre}</h1>
+                            <div className="flex items-center gap-2 mt-1">
+                                {racha > 0 && (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full"
+                                        style={{ background: 'rgba(251,146,60,0.25)', color: '#FB923C' }}>
+                                        <Flame size={11} />
+                                        {racha} días
                                     </span>
-                                </div>
-                            )}
+                                )}
+                                {notasNoLeidas > 0 && (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full relative"
+                                        style={{ background: 'rgba(239,68,68,0.25)', color: '#FCA5A5' }}>
+                                        <MessageSquareText size={11} />
+                                        {notasNoLeidas} nuevas
+                                    </span>
+                                )}
+                                {data.cliente?.fecha_proxima_revision && (
+                                    <span className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full"
+                                        style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
+                                        📅 {new Date(data.cliente.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Badges informativos */}
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-3">
-                        {data.cliente?.fecha_proxima_revision && (
-                            <div className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium"
-                                style={{ background: 'rgba(255,255,255,0.15)', color: 'white' }}>
-                                📅 Revisión: {new Date(data.cliente.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                            </div>
-                        )}
-                        {ultimoCheckin && diasDesdeUltimoCheckin !== null && (
-                            <div className={`inline-flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium`}
-                                style={{ background: diasDesdeUltimoCheckin <= 2 ? 'rgba(34,197,94,0.2)' : 'rgba(161,161,166,0.2)', color: 'white' }}>
-                                <ClipboardCheck size={10} className="sm:hidden" />
-                                <ClipboardCheck size={12} className="hidden sm:block" />
-                                {diasDesdeUltimoCheckin === 0 ? 'Check-in hoy' :
-                                    diasDesdeUltimoCheckin === 1 ? 'Ayer' :
+                    {/* Check-in badge */}
+                    {ultimoCheckin && diasDesdeUltimoCheckin !== null && (
+                        <div className="mt-3">
+                            <div
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
+                                style={{
+                                    background: diasDesdeUltimoCheckin <= 2 ? 'rgba(34,197,94,0.15)' : 'rgba(161,161,166,0.15)',
+                                    color: diasDesdeUltimoCheckin <= 2 ? '#4ADE80' : '#A1A1A6',
+                                }}
+                            >
+                                <ClipboardCheck size={12} />
+                                {diasDesdeUltimoCheckin === 0 ? 'Check-in completado hoy' :
+                                    diasDesdeUltimoCheckin === 1 ? 'Último check-in: ayer' :
                                         `${diasDesdeUltimoCheckin}d sin check-in`}
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Tabs — más compactos en mobile */}
-            <div className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                <div className="max-w-2xl mx-auto flex">
-                    {TABS.map(({ key, label, icon: Icon }) => (
-                        <button
-                            key={key}
-                            onClick={() => setTab(key)}
-                            className={`flex-1 flex items-center justify-center gap-1 sm:gap-2 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors`}
-                            style={{
-                                color: tab === key ? 'var(--primary)' : 'var(--text-secondary)',
-                                borderBottomColor: tab === key ? 'var(--primary)' : 'transparent',
-                            }}
-                        >
-                            <Icon size={14} className="sm:size-4" />
-                            <span className="sm:inline">{label}</span>
-                            {key === 'progreso' && notasNoLeidas > 0 && (
-                                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full" />
-                            )}
-                        </button>
-                    ))}
+            {/* Tabs — estilo pill */}
+            <div className="sticky top-0 z-10 border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <div className="max-w-2xl mx-auto px-4 py-2 overflow-x-auto no-scrollbar">
+                    <div className="flex gap-1.5">
+                        {TABS.map(({ key, label, icon: Icon }) => (
+                            <button
+                                key={key}
+                                onClick={() => setTab(key)}
+                                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all`}
+                                style={{
+                                    background: tab === key ? 'var(--primary)' : 'var(--bg)',
+                                    color: tab === key ? 'white' : 'var(--text-secondary)',
+                                }}
+                            >
+                                <Icon size={14} />
+                                {label}
+                                {key === 'progreso' && notasNoLeidas > 0 && (
+                                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -308,6 +318,7 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                         codigo={codigo}
                         plan={data.plan}
                         entreno={data.entreno}
+                        registros_comidas={(data as any).registros_comidas}
                         onMarcarSesionHecha={(nombre) => {
                             setSesionPendiente(nombre)
                             setMostrarRegistrarEntreno(true)
@@ -344,6 +355,12 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                             objetivo={data.cliente?.objetivo}
                         />
                         <MicronutrientesPortal codigo={codigo} />
+                    </div>
+                )}
+
+                {tab === 'chat' && (
+                    <div className="card !p-0 overflow-hidden">
+                        <ChatPanel codigo={codigo} pollingInterval={10000} />
                     </div>
                 )}
             </div>

@@ -297,7 +297,10 @@ body {
 }
 
 /* Variants are self-contained — work with or without the .btn base class */
-.btn-primary, .btn-secondary, .btn-ghost, .btn-danger {
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-danger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -314,15 +317,20 @@ body {
   transition: background-color 0.16s var(--ease-out-strong), border-color 0.16s var(--ease-out-strong), box-shadow 0.2s var(--ease-out-strong), transform 0.16s var(--ease-out-strong), opacity 0.16s var(--ease-out-strong);
 }
 
-.btn-primary:disabled, .btn-secondary:disabled, .btn-ghost:disabled, .btn-danger:disabled {
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-ghost:disabled,
+.btn-danger:disabled {
   opacity: 0.4;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none !important;
 }
 
-.btn-primary:active:not(:disabled), .btn-secondary:active:not(:disabled),
-.btn-ghost:active:not(:disabled), .btn-danger:active:not(:disabled) {
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled),
+.btn-ghost:active:not(:disabled),
+.btn-danger:active:not(:disabled) {
   transform: scale(0.97);
   transition-duration: 0.1s;
 }
@@ -366,7 +374,7 @@ body {
 
 .btn-danger {
   background: var(--error-bg);
-  border: 1.5px solid rgba(255,69,58,0.25);
+  border: 1.5px solid rgba(255, 69, 58, 0.25);
   color: var(--error);
 }
 
@@ -982,21 +990,41 @@ body {
   justify-content: center;
   width: 100%;
 }
+
 .meal-placeholder--bowl {
   background: linear-gradient(135deg, #ecfdf5, #ccfbf1);
 }
+
 .meal-placeholder--pasta {
   background: linear-gradient(135deg, #fffbeb, #fed7aa);
 }
+
 .meal-placeholder--ensalada {
   background: linear-gradient(135deg, #f0fdf4, #dcfce7);
 }
+
 .meal-placeholder--desayuno {
   background: linear-gradient(135deg, #fefce8, #fde68a);
 }
+
 .meal-placeholder--snack {
   background: linear-gradient(135deg, #faf5ff, #ede9fe);
 }
+
 .meal-placeholder--carne {
   background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+}
+
+/* ── S4: Utilidades de scroll ── */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  scroll-behavior: smooth;
 }

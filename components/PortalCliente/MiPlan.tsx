@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw, Circle, PencilLine } from 'lucide-react'
 import RecetaDelDia from './RecetaDelDia'
 import ListaCompraPortal from './ListaCompraPortal'
 import MicronutrientesPortal from './MicronutrientesPortal'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
-import type { Macros } from '@/types'
+import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import AlternativasModal from '@/components/personalizacion/AlternativasModal'
 import GenerarComidaModal from '@/components/personalizacion/GenerarComidaModal'
@@ -75,6 +75,7 @@ interface MiPlanProps {
     plan: PlanData
     entreno: EntrenoData | null
     onMarcarSesionHecha?: (sesionNombre: string) => void
+    registros_comidas?: RegistroComidaDia[]
 }
 
 interface ModalAlternativasState {
@@ -256,11 +257,45 @@ function SemanaEntreno({
     )
 }
 
-export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: MiPlanProps) {
+export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, registros_comidas }: MiPlanProps) {
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>(
         Object.fromEntries((plan.comidas ?? []).map(c => [c.id, true]))
     )
     const [planLocal, setPlanLocal] = useState<PlanData>(plan)
+    const [registros, setRegistros] = useState<Record<string, RegistroComidaDia>>({})
+    const [registrando, setRegistrando] = useState<string | null>(null)
+    const [anotandoCambio, setAnotandoCambio] = useState<string | null>(null)
+    const [textoCambio, setTextoCambio] = useState('')
+
+    // Inicializar registros desde props
+    useEffect(() => {
+        if (registros_comidas) {
+            const map: Record<string, RegistroComidaDia> = {}
+            registros_comidas.forEach(r => { map[r.comida_id] = r })
+            setRegistros(map)
+        }
+    }, [registros_comidas])
+
+    async function handleRegistrar(comidaId: string, comidaNombre: string, hecho: boolean, cambio?: string) {
+        setRegistrando(comidaId)
+        try {
+            const res = await fetch(`/api/cliente/${codigo}/registrar-comida`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ comida_id: comidaId, comida_nombre: comidaNombre, hecho, cambio: cambio ?? null }),
+            })
+            if (!res.ok) throw new Error('Error al registrar')
+            const data = await res.json()
+            setRegistros(prev => ({ ...prev, [comidaId]: data.registro }))
+            addToast({ type: 'success', title: hecho ? '✅ Comida registrada' : '✏️ Cambio anotado', message: '' })
+        } catch {
+            addToast({ type: 'error', title: 'Error', message: 'No se pudo registrar la comida' })
+        } finally {
+            setRegistrando(null)
+            setAnotandoCambio(null)
+            setTextoCambio('')
+        }
+    }
     const [modalAlternativas, setModalAlternativas] = useState<ModalAlternativasState | null>(null)
     const [modalGenerar, setModalGenerar] = useState<ModalGenerarState | null>(null)
     const [descargando, setDescargando] = useState(false)
@@ -542,21 +577,32 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                     const macros = calcMacrosComida(alimentos)
                     const expanded = expandidas[comida.id]
 
+                    const registro = registros[comida.id]
+                    const yaHecho = registro?.hecho === true
+                    const tieneCambio = registro?.cambio
+
                     return (
                         <div key={comida.id} className="card overflow-hidden !p-0">
                             <button
                                 onClick={() => setExpandidas(prev => ({ ...prev, [comida.id]: !prev[comida.id] }))}
-                                className="w-full px-5 py-4 flex items-center justify-between transition-colors"
+                                className="w-full px-5 py-3 flex items-center justify-between transition-colors"
                                 style={{ backgroundColor: 'transparent' }}
                                 onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg)' }}
                                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--primary-bg)' }}>
-                                        <UtensilsCrossed size={18} style={{ color: 'var(--primary)' }} />
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: yaHecho ? '#DCFCE7' : 'var(--primary-bg)' }}>
+                                        {yaHecho
+                                            ? <CheckCircle2 size={18} style={{ color: '#16A34A' }} />
+                                            : <UtensilsCrossed size={18} style={{ color: 'var(--primary)' }} />
+                                        }
                                     </div>
                                     <div className="text-left">
-                                        <p className="font-semibold" style={{ color: 'var(--text)' }}>{comida.nombre}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-semibold" style={{ color: 'var(--text)' }}>{comida.nombre}</p>
+                                            {yaHecho && <span className="text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded">✅ Hecho</span>}
+                                            {tieneCambio && !yaHecho && <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">✏️ Cambio</span>}
+                                        </div>
                                         <div className="flex items-center gap-2">
                                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                                 {macros.calorias.toFixed(0)} kcal
@@ -575,6 +621,65 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                                 </div>
                                 {expanded ? <ChevronUp size={18} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={18} style={{ color: 'var(--text-muted)' }} />}
                             </button>
+
+                            {/* S3 — Botones Hecho / Anotar cambio */}
+                            {!yaHecho && !anotandoCambio && (
+                                <div className="px-5 pb-3 pt-0 flex gap-2 no-print">
+                                    <button
+                                        type="button"
+                                        disabled={registrando === comida.id}
+                                        onClick={(e) => { e.stopPropagation(); handleRegistrar(comida.id, comida.nombre, true) }}
+                                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
+                                        style={{ background: '#DCFCE7', color: '#16A34A' }}
+                                    >
+                                        {registrando === comida.id ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                                        Hecho ✓
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setAnotandoCambio(comida.id); setTextoCambio(registro?.cambio ?? '') }}
+                                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
+                                        style={{ background: '#FEF3C7', color: '#D97706' }}
+                                    >
+                                        <PencilLine size={14} />
+                                        Anotar cambio
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Input para anotar cambio */}
+                            {anotandoCambio === comida.id && (
+                                <div className="px-5 pb-3 pt-0 flex flex-col gap-2 no-print">
+                                    <input
+                                        type="text"
+                                        value={textoCambio}
+                                        onChange={e => setTextoCambio(e.target.value)}
+                                        placeholder="¿Qué has comido en lugar de esto?"
+                                        className="input text-sm py-2"
+                                        autoFocus
+                                    />
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            disabled={registrando === comida.id || !textoCambio.trim()}
+                                            onClick={() => handleRegistrar(comida.id, comida.nombre, false, textoCambio.trim())}
+                                            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
+                                            style={{ background: '#FEF3C7', color: '#D97706', opacity: !textoCambio.trim() ? 0.5 : 1 }}
+                                        >
+                                            {registrando === comida.id ? <Loader2 size={13} className="animate-spin" /> : <PencilLine size={14} />}
+                                            Guardar cambio
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setAnotandoCambio(null); setTextoCambio('') }}
+                                            className="px-3 text-xs font-medium rounded-lg transition-all"
+                                            style={{ color: 'var(--text-muted)' }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             {expanded && alimentos.length > 0 && (
                                 <div className="border-t px-5 py-3 space-y-2" style={{ borderColor: 'var(--border)' }}>
