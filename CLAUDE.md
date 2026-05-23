@@ -646,4 +646,72 @@ git add -A && git commit -m "Sesion [FECHA]: [RESUMEN]" && git push
 
 ---
 
+## 14. ✅ 23-05-2026 — 13.385 alimentos con micronutrientes completos (100%)
+
+### Estado final
+
+| Métrica | Valor |
+|---------|-------|
+| Total alimentos | 13,385 |
+| Con micronutrientes | 13,385 (**100%**) |
+| Sin micronutrientes | **0** |
+| Alimentos en recetas | Todos disponibles con perfil completo |
+
+### Script clave
+
+[`scripts/enriquecer-masivo-tanda3.ts`](scripts/enriquecer-masivo-tanda3.ts) — Procesa 5 alimentos por llamada DeepSeek, recibe respuesta en array JSON `[{index, vitamina_a_ug, ...}]`, mapea cada uno a su fila en BD.
+
+### Estrategia
+
+1. **Tanda 1** (prototipo): [`enriquecer-segunda-pasada.ts`](scripts/enriquecer-segunda-pasada.ts) — 25 alimentos individuales vía DeepSeek
+2. **Tanda 2 — Run 1**: [`enriquecer-masivo-tanda3.ts`](scripts/enriquecer-masivo-tanda3.ts) — ~1,000 alimentos en 200 batches de 5 → cobertura 94.2%
+3. **Tanda 2 — Run 2**: Mismo script — ~783 alimentos restantes en 157 batches de 5 → **100%**
+
+### Fallback cascade
+
+1. Batch (5 alimentos, temp 0.2)
+2. Reintento batch (temp 0.5, 2º intento)
+3. Procesamiento individual (1 alimento/llamada)
+- **Resultado: 0 errores** en ~357 llamadas combinadas
+
+### 24 campos poblados por alimento
+
+| Categoría | Campos |
+|-----------|--------|
+| Vitaminas | `vitamina_a_ug`, `vitamina_c_mg`, `vitamina_d_ug`, `vitamina_e_mg`, `vitamina_k_ug`, `vitamina_b6_mg`, `vitamina_b12_ug`, `tiamina_mg`, `riboflavina_mg`, `niacina_mg`, `folato_ug` |
+| Minerales | `calcio_mg`, `hierro_mg`, `magnesio_mg`, `fosforo_mg`, `potasio_mg`, `sodio_mg`, `zinc_mg`, `cobre_mg`, `selenio_ug` |
+| Perfil lipídico | `saturados_g`, `monoinsaturados_g`, `poliinsaturados_g`, `colesterol_mg` |
+
+### Columnas que NO existen en la tabla
+
+NO usar nunca: `acido_folico_ug`, `acido_pantotenico_mg`, `biotina_ug`, `manganeso_mg`, `fibra_g`, `agua_g`, `azucar_g`, `azucares_anadidos_g`.
+
+### Para alimentos nuevos
+
+Usar [`lib/deepseek.ts`](lib/deepseek.ts:607) → `completarAlimentoConIA()` para poblar micros de un solo alimento. NO volver a ejecutar enriquecimiento masivo.
+
+---
+
+## 🏷️ Corrección masiva de categorías (23-05-2026)
+
+Se ejecutó [`supabase/migrations/fix_categorias_masivo_v2.sql`](supabase/migrations/fix_categorias_masivo_v2.sql) contra producción.
+
+### Problema raíz
+[`lib/scraping/categorizador.ts`](lib/scraping/categorizador.ts:308) usa `CATEGORIAS_POR_KEYWORD` con regex `\bkeyword\b`. Cualquier alimento cuyo nombre contuviera "anchoa", "papa", "sal", "aceituna", etc. se colaba en la categoría incorrecta.
+
+### Lo que se hizo
+1. **B0**: Aceitunas de Pescados → Condimentos
+2. **B1**: Categorías no alimenticias → `es_comestible = false`
+3. **B2**: ~350+ alimentos re-categorizados a categorías nutricionales correctas
+4. **B3**: Categorías inválidas sin mapear → `es_comestible = false`
+5. **B4**: Supermercado: re-categorizar por keyword + marcar sin kcal → 0 registros restantes
+
+### Frontend
+- [`app/dietas/alimentos/page.tsx`](app/dietas/alimentos/page.tsx:160): constante `CATEGORIAS_ALFABETICO` para desplegables en orden alfabético
+
+### Si se añaden alimentos nuevos
+El categorizador automático puede colocar en categorías incorrectas si el nombre coincide con keywords de otra categoría. Revisar manualmente.
+
+---
+
 ## 🔀 Historial de Worktrees — Ya unificados en main

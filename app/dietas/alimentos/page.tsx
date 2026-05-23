@@ -8,13 +8,18 @@ import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
 import { SkeletonCard } from '@/components/ui/Skeleton'
 
-// Categorías en orden lógico de grupos alimenticios
+// Categorías en orden lógico de grupos alimenticios (para display agrupado)
 const CATEGORIAS = [
     'Carnes', 'Pescados', 'Huevos', 'Lácteos',
     'Verduras', 'Frutas', 'Legumbres', 'Cereales', 'Tubérculos',
     'Grasas', 'Frutos secos', 'Semillas', 'Condimentos',
     'Bebidas', 'Suplementos', 'Otros', 'Supermercado',
 ]
+
+// Orden alfabético para desplegables del buscador y formularios
+const CATEGORIAS_ALFABETICO = [...CATEGORIAS].sort((a, b) =>
+    a.localeCompare(b, 'es', { sensitivity: 'base' })
+)
 
 // Orden de display de categorías (el mismo array define la prioridad)
 const CATEGORY_ORDER = CATEGORIAS
@@ -427,7 +432,7 @@ export default function AlimentosPage() {
                 </div>
                 <select className="input w-auto" value={categoriaFiltro} onChange={e => setCategoriaFiltro(e.target.value)}>
                     <option value="">Todas las categorías</option>
-                    {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+                    {CATEGORIAS_ALFABETICO.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     <input
@@ -806,7 +811,7 @@ export default function AlimentosPage() {
                             value={form.categoria}
                             onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}
                         >
-                            {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+                            {CATEGORIAS_ALFABETICO.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
