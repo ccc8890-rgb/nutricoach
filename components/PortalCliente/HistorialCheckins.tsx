@@ -122,6 +122,13 @@ export default function HistorialCheckins({ codigo }: HistorialCheckinsProps) {
         load()
     }, [load])
 
+    // Auto-expandir el más reciente si tiene nota del coach
+    useEffect(() => {
+        if (!data?.checkins?.length) return
+        const conNota = data.checkins.find(c => c.nota_coach || c.mensaje_coach_ia)
+        if (conNota && expandedId === null) setExpandedId(conNota.id)
+    }, [data])
+
     // Filtrar y ordenar
     let checkinsVisibles = data?.checkins ?? []
     if (filtroNotas) {

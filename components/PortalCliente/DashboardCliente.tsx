@@ -110,9 +110,9 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
         loadData()
     }, [loadData])
 
-    // Marcar notas como leídas al visitar la pestaña de progreso (donde se muestran)
+    // Marcar notas como leídas al visitar historial (donde se muestran las notas del coach)
     useEffect(() => {
-        if (tab === 'progreso' && data?.notas) {
+        if (tab === 'historial' && data?.notas) {
             const ids = data.notas.map(n => n.id)
             setNotasVistas(prev => {
                 const nuevas = ids.filter(id => !prev.includes(id))
@@ -194,11 +194,14 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                                     </span>
                                 )}
                                 {notasNoLeidas > 0 && (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full relative"
-                                        style={{ background: 'rgba(239,68,68,0.25)', color: '#FCA5A5' }}>
+                                    <button
+                                        onClick={() => setTab('historial')}
+                                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full"
+                                        style={{ background: 'rgba(239,68,68,0.25)', color: '#FCA5A5' }}
+                                    >
                                         <MessageSquareText size={11} />
-                                        {notasNoLeidas} nuevas
-                                    </span>
+                                        {notasNoLeidas} nueva{notasNoLeidas > 1 ? 's' : ''}
+                                    </button>
                                 )}
                                 {data.cliente?.fecha_proxima_revision && (
                                     <span className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full"
@@ -246,7 +249,7 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                             >
                                 <Icon size={14} />
                                 {label}
-                                {key === 'progreso' && notasNoLeidas > 0 && (
+                                {key === 'historial' && notasNoLeidas > 0 && (
                                     <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
                                 )}
                             </button>
