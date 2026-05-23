@@ -57,7 +57,7 @@ export async function ejecutarRevisorSemanal(clienteId: string): Promise<void> {
     payload: {
       ajustes: parsed.ajustes ?? {},
       checkins_analizados: ctx.checkins_recientes.length,
-      peso_actual: ctx.checkins_recientes[0]?.peso_kg,
+      peso_actual: ctx.checkins_recientes[0]?.peso,
       adherencia_media: ctx.perfil_aprendizaje?.adherencia_media ?? null,
     },
     fuentes: (parsed.fuentes as ResultadoAgente['fuentes']) ?? [],
@@ -73,9 +73,9 @@ function construirPrompt(ctx: ContextoCliente): string {
   const { cliente, plan_activo, checkins_recientes, perfil_aprendizaje, metodologia_coach } = ctx
 
   const pesoInicial = cliente.peso_inicial ?? '?'
-  const pesoActual = checkins_recientes[0]?.peso_kg ?? '?'
+  const pesoActual = checkins_recientes[0]?.peso ?? '?'
   const adherenciaMedia =
-    checkins_recientes.reduce((s, c) => s + (c.adherencia_dieta ?? 0), 0) /
+    checkins_recientes.reduce((s, c) => s + (c.adherencia ?? 0), 0) /
     Math.max(checkins_recientes.length, 1)
 
   const metodologiaStr = metodologia_coach
@@ -96,7 +96,7 @@ ${checkins_recientes
   .slice(0, 6)
   .map(
     c =>
-      `• ${c.fecha_checkin}: peso=${c.peso_kg ?? 'N/A'}kg, adherencia=${c.adherencia_dieta ?? 'N/A'}%, energía=${c.nivel_energia ?? 'N/A'}/10, sueño=${c.calidad_sueno ?? 'N/A'}/10`
+      `• ${c.fecha}: peso=${c.peso ?? 'N/A'}kg, adherencia=${c.adherencia ?? 'N/A'}%, energía=${c.energia ?? 'N/A'}/10, sueño=${c.sueno ?? 'N/A'}/10`
   )
   .join('\n')}
 

@@ -91,7 +91,7 @@ function calcularRiesgoRapido(ctx: ContextoCliente): number {
 
   const ultimo = ctx.checkins_recientes[0]
   const diasSin = Math.floor(
-    (Date.now() - new Date(ultimo.fecha_checkin).getTime()) / 86_400_000
+    (Date.now() - new Date(ultimo.fecha).getTime()) / 86_400_000
   )
 
   return Math.min(1, diasSin / 21)
@@ -102,7 +102,7 @@ function construirPrompt(ctx: ContextoCliente, riesgo: number): string {
 
   const ultimoCheckin = checkins_recientes[0]
   const diasSin = ultimoCheckin
-    ? Math.floor((Date.now() - new Date(ultimoCheckin.fecha_checkin).getTime()) / 86_400_000)
+    ? Math.floor((Date.now() - new Date(ultimoCheckin.fecha).getTime()) / 86_400_000)
     : 99
 
   return `CLIENTE EN RIESGO: ${cliente.nombre ?? 'Sin nombre'}
@@ -114,7 +114,7 @@ ${checkins_recientes
   .slice(0, 4)
   .map(
     c =>
-      `• ${c.fecha_checkin}: adherencia=${c.adherencia_dieta ?? 'N/A'}%, notas="${c.notas_cliente ?? 'sin notas'}"`
+      `• ${c.fecha}: adherencia=${c.adherencia ?? 'N/A'}%, notas="${c.notas ?? 'sin notas'}"`
   )
   .join('\n') || '• Sin check-ins recientes'}
 

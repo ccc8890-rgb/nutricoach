@@ -127,12 +127,12 @@ export interface ContextoCliente {
 
 export interface CheckinResumen {
   id: string
-  fecha_checkin: string
-  peso_kg: number | null
-  adherencia_dieta: number | null
-  nivel_energia: number | null
-  calidad_sueno: number | null
-  notas_cliente: string | null
+  fecha: string
+  peso: number | null
+  adherencia: number | null
+  energia: number | null
+  sueno: number | null
+  notas: string | null
 }
 
 // ── Resultado que devuelve cada agente ────────────────────────

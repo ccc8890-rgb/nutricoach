@@ -141,9 +141,9 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
 
   const { data: checkins } = await db
     .from('checkins')
-    .select('id, fecha_checkin, peso_kg, adherencia_dieta, nivel_energia, calidad_sueno, notas_cliente')
+    .select('id, fecha, peso, adherencia, energia, sueno, notas')
     .eq('cliente_id', clienteId)
-    .order('fecha_checkin', { ascending: false })
+    .order('fecha', { ascending: false })
     .limit(8)
 
   const { data: perfil } = await db
@@ -237,17 +237,17 @@ export async function actualizarPerfilAprendizaje(clienteId: string): Promise<vo
   // Calcular métricas desde checkins reales
   const { data: checkins } = await db
     .from('checkins')
-    .select('fecha_checkin, peso_kg, adherencia_dieta, nivel_energia, calidad_sueno')
+    .select('fecha, peso, adherencia, energia, sueno')
     .eq('cliente_id', clienteId)
-    .order('fecha_checkin', { ascending: false })
+    .order('fecha', { ascending: false })
     .limit(30)
 
   if (!checkins?.length) return
 
   const adherenciaMedia =
-    checkins.reduce((s, c) => s + (c.adherencia_dieta ?? 0), 0) / checkins.length
+    checkins.reduce((s, c) => s + (c.adherencia ?? 0), 0) / checkins.length
 
-  const pesos = checkins.filter(c => c.peso_kg).map(c => c.peso_kg as number)
+  const pesos = checkins.filter(c => c.peso).map(c => c.peso as number)
   let pesoTendencia: 'bajando' | 'subiendo' | 'estable' = 'estable'
   if (pesos.length >= 2) {
     const diff = pesos[0] - pesos[pesos.length - 1]
@@ -263,7 +263,7 @@ export async function actualizarPerfilAprendizaje(clienteId: string): Promise<vo
       : 0
 
   // Detección de riesgo de abandono: días sin check-in
-  const ultimoCheckin = checkins[0]?.fecha_checkin
+  const ultimoCheckin = checkins[0]?.fecha
   const diasSinCheckin = ultimoCheckin
     ? Math.floor((Date.now() - new Date(ultimoCheckin).getTime()) / 86_400_000)
     : 99
