@@ -8,12 +8,13 @@ import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
 import { SkeletonCard } from '@/components/ui/Skeleton'
 
-// Categorías en orden lógico de grupos alimenticios (para display agrupado)
+// Todas las categorías existentes en la BD (en orden lógico para display)
 const CATEGORIAS = [
-    'Carnes', 'Pescados', 'Huevos', 'Lácteos',
-    'Verduras', 'Frutas', 'Legumbres', 'Cereales', 'Tubérculos',
-    'Grasas', 'Frutos secos', 'Semillas', 'Condimentos',
-    'Bebidas', 'Suplementos', 'Otros', 'Supermercado',
+    'Carnes', 'Pescados', 'Lácteos', 'Verduras y hortalizas', 'Huevos',  // más usados primero
+    'Frutas', 'Cereales', 'Legumbres', 'Tubérculos', 'Pastas',
+    'Frutos secos y semillas', 'Grasas y aceites',
+    'Dulces y bollería', 'Platos preparados', 'Snacks',
+    'Condimentos', 'Bebidas', 'Mariscos', 'Suplementos',
 ]
 
 // Orden alfabético para desplegables del buscador y formularios
@@ -29,39 +30,43 @@ const CATEGORIA_ICON: Record<string, typeof Beef> = {
     Pescados: Fish,
     Huevos: Egg,
     Lácteos: Milk,
-    Suplementos: FlaskConical,
+    'Verduras y hortalizas': Sun,
+    Frutas: Apple,
+    Legumbres: CircleDot,
     Cereales: Wheat,
     Tubérculos: CircleDot,
-    Legumbres: CircleDot,
-    Verduras: Sun,
-    Frutas: Apple,
-    Grasas: Cookie,
-    'Frutos secos': CircleDot,
-    Semillas: CircleDot,
+    Pastas: CircleDot,
+    'Frutos secos y semillas': CircleDot,
+    'Grasas y aceites': Cookie,
+    'Dulces y bollería': Cookie,
+    'Platos preparados': UtensilsCrossed,
+    Snacks: Cookie,
     Condimentos: Coffee,
-    Otros: UtensilsCrossed,
     Bebidas: Coffee,
-    Supermercado: CircleDot,
+    Mariscos: Fish,
+    Suplementos: FlaskConical,
 }
 
 const CATEGORIA_COLOR: Record<string, string> = {
     Carnes: '#EF4444',
     Pescados: '#3B82F6',
-    Huevos: '#A1A1A6',
     Lácteos: '#8B5CF6',
-    Suplementos: '#1C1C1E',
-    Cereales: '#8E8E93',
-    Tubérculos: '#92400E',
-    Legumbres: '#65A30D',
-    Verduras: '#22C55E',
+    'Verduras y hortalizas': '#22C55E',
+    Huevos: '#A1A1A6',
     Frutas: '#F97316',
-    Grasas: '#EC4899',
-    'Frutos secos': '#A855F7',
-    Semillas: '#06B6D4',
+    Cereales: '#8E8E93',
+    Legumbres: '#65A30D',
+    Tubérculos: '#92400E',
+    Pastas: '#EAB308',
+    'Frutos secos y semillas': '#A855F7',
+    'Grasas y aceites': '#EC4899',
+    'Dulces y bollería': '#F472B6',
+    'Platos preparados': '#78716C',
+    Snacks: '#FB923C',
     Condimentos: '#6B7280',
-    Otros: '#78716C',
     Bebidas: '#0EA5E9',
-    Supermercado: '#9CA3AF',
+    Mariscos: '#14B8A6',
+    Suplementos: '#1C1C1E',
 }
 
 const NUTRI_LABELS = [
@@ -78,7 +83,7 @@ const AZUCAR_SODIO_HIGHLIGHTS: { key: keyof Alimento; label: string; unit: strin
     { key: 'sodio_mg', label: 'Sal', unit: 'mg', color: '#06B6D4' },
 ]
 
-const FORM_VACIO = { nombre: '', categoria: 'Supermercado', calorias: '', proteinas: '', carbohidratos: '', grasas: '', fibra: '' }
+const FORM_VACIO = { nombre: '', categoria: 'Carnes', calorias: '', proteinas: '', carbohidratos: '', grasas: '', fibra: '' }
 
 // Perfil lipídico visible directamente en la card (cuando el alimento tiene datos)
 const LIPID_HIGHLIGHTS: { key: keyof Alimento; label: string; color: string }[] = [
