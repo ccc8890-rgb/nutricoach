@@ -109,7 +109,7 @@ export async function sendWelcomeEmail(params: {
         await resend.emails.send({
             from: `${fromName} <${fromEmail}>`,
             to: params.to,
-            subject: '¡Bienvenido a NutriCoach! 🏋️',
+            subject: `¡Bienvenido a NutriCoach, ${params.nombre}! Tu camino empieza aquí`,
             html: welcomeEmailHtml(params.nombre, params.appUrl),
         })
         console.log(`[sendWelcomeEmail] ✅ Bienvenida enviada a ${params.to}`)

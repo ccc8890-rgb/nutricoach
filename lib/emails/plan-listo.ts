@@ -79,7 +79,7 @@ export async function sendPlanListoEmail(params: {
         await resend.emails.send({
             from: `${fromName} <${fromEmail}>`,
             to: params.to,
-            subject: '¡Tu plan nutricional está listo! 🎉',
+            subject: 'Tu plan personalizado ya está listo — ¡a por tus objetivos!',
             html: planListoEmailHtml(params.nombre, portalUrl),
         })
         console.log(`[sendPlanListoEmail] ✅ Email enviado a ${params.to}`)
