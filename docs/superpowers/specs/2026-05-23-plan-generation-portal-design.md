@@ -461,6 +461,100 @@ Coach abre revisar-plan del cliente
 
 ---
 
+### 9. Platos IA personalizados — creación, foto y presentación
+
+Cuando DeepSeek no encuentra una receta adecuada en el recetario y crea un plato a medida del cliente, ese plato se trata como una **receta privada** del cliente:
+
+```sql
+-- Columnas nuevas en recetas:
+ALTER TABLE recetas
+  ADD COLUMN cliente_id uuid REFERENCES clientes(id),  -- NULL = pública
+  ADD COLUMN fuente text DEFAULT 'manual' CHECK (fuente IN (
+    'manual',           -- creada por Carlos
+    'scraping',         -- importada de portal web
+    'ia_generada',      -- generación masiva (pipeline actual)
+    'ia_personalizada'  -- creada por DeepSeek para un cliente concreto
+  ));
+```
+
+Las recetas `ia_personalizada` con `cliente_id` definido:
+- **No aparecen en el recetario público** de Carlos
+- **Sí aparecen en el historial de recetas del cliente** en su portal ("Mis platos")
+- Se acumulan como preferencias → `feedback_comidas_generadas` registra si el cliente las repitió o no → DeepSeek las prioriza en generaciones futuras
+
+**Estrategia de foto para platos personalizados:**
+
+```
+1. Buscar en recetario receta con misma proteina_principal + mismo tipo_plato
+   → si imagen_tipo = 'propia' o foto real (url_origen IS NOT NULL)
+   → usar esa imagen_url (siempre foto real, nunca IA)
+
+2. Si no hay match con foto real:
+   → Placeholder por categoría (diseño bonito, no foto falsa)
+   → 6 placeholders base: bowl, pasta, ensalada, desayuno, snack, carne/pescado
+   → Fondo degradado suave del color de la categoría + icono + nombre del plato
+```
+
+**Nunca generar una imagen IA nueva para un plato personalizado** — el coste y el riesgo estético no lo justifican.
+
+---
+
+### 10. Presentación visual del plan — diseño del portal cliente
+
+**Principio:** el plan diario del cliente debe sentirse como una app de salud premium, no como una hoja de dieta clínica. La foto es protagonista cuando es real; el diseño sostiene cuando no la hay.
+
+#### Vista diaria (tab "Mi Plan")
+
+Cada comida como **MealCard**:
+
+```
+┌─────────────────────────────────────────┐
+│  [FOTO — ancho completo, 180px alto]    │  ← Tier 1: foto real → hero
+│  [o PLACEHOLDER bonito si no hay foto] │  ← Tier 3: degradado + icono
+├─────────────────────────────────────────┤
+│  🕗 08:30  Desayuno                     │
+│  Bowl de avena con frutas del bosque    │  ← nombre en bold
+│                                         │
+│  [420 kcal] [38g P] [52g C] [12g G]    │  ← pills de color
+│                                         │
+│  [Ver ingredientes ∨]  [Cambiar plato →]│
+└─────────────────────────────────────────┘
+```
+
+- Foto real (Tier 1) → `height: 200px`, bordes redondeados arriba
+- Foto IA buena (Tier 2) → `height: 160px`, ligeramente más compacta
+- Placeholder (Tier 3) → `height: 120px`, degradado `from-emerald-50 to-teal-100`, icono SVG centrado, nombre del plato en tipografía elegante
+
+**"Ver ingredientes"** → acordeón que muestra la lista de ingredientes con gramajes ajustados. Si algún ingrediente tiene `receta_vinculada_id` → aparece como chip clicable "Mayonesa healthy →".
+
+**"Cambiar plato"** → bottom sheet con 2 alternativas en cards horizontales scrollables.
+
+#### Vista semanal (tab "Semana")
+
+Grid 7 días × franjas:
+- Cada celda: foto pequeña (48×48px) + nombre truncado
+- Celda vacía (sin comida planificada): borde punteado + "+"
+- Día con entreno: badge naranja pequeño en la esquina
+- Click en celda → expande la MealCard del día
+
+#### Estrategia de color por franja horaria
+
+| Franja | Color acento |
+|---|---|
+| Desayuno | Ámbar cálido `#F59E0B` |
+| Media mañana | Verde lima `#84CC16` |
+| Comida | Teal `#0D9488` (color principal de la app) |
+| Merienda | Naranja suave `#F97316` |
+| Cena | Índigo oscuro `#4F46E5` |
+
+Los pills de macros y la franja horaria usan este color — da identidad visual sin necesitar fotos para cada comida.
+
+#### "Mis platos" — historial de platos personalizados
+
+Sección nueva en el portal: lista de recetas `ia_personalizada` del cliente, ordenadas por frecuencia de uso. El cliente puede marcarlas como favoritas. Carlos las ve en la ficha del cliente como referencia para generaciones futuras.
+
+---
+
 ## Archivos afectados
 
 | Archivo | Tipo de cambio |
@@ -479,7 +573,11 @@ Coach abre revisar-plan del cliente
 | `scripts/inferir-roles-ingredientes.mjs` | **Nuevo** — auto-clasifica ingredientes de todas las recetas |
 | `components/recetas/RecetaIngredienteItem.tsx` | **Nuevo** — item con link "Ver receta →" si tiene `receta_vinculada_id` |
 | `app/recetas/[id]/page.tsx` | Sección "Salsas recomendadas" si `salsas_recomendadas` no vacío |
-| Migración SQL | ALTER TABLE: `onboarding_responses` (+4 cols), `comidas` (+`alternativas_receta_ids`), `comida_alimentos` (+`factor_ajuste`), `recetas` (+`tipo_receta`, +`salsas_recomendadas`), `receta_ingredientes` (+`rol_ingrediente`, +`es_cantidad_fija`, +`receta_vinculada_id`) |
+| `components/PortalCliente/MealCard.tsx` | **Nuevo** — card de comida con foto tier 1/2/3, macros pills, acordeón ingredientes |
+| `components/PortalCliente/PlanSemanal.tsx` | Refactor — grid 7 días con miniaturas y badges entreno |
+| `components/PortalCliente/MisPlatos.tsx` | **Nuevo** — historial recetas `ia_personalizada` del cliente |
+| `app/globals.css` | Placeholders por categoría (6 degradados base) |
+| Migración SQL | ALTER TABLE: `onboarding_responses` (+4 cols), `comidas` (+`alternativas_receta_ids`), `comida_alimentos` (+`factor_ajuste`), `recetas` (+`tipo_receta`, +`salsas_recomendadas`, +`cliente_id`, +`fuente`), `receta_ingredientes` (+`rol_ingrediente`, +`es_cantidad_fija`, +`receta_vinculada_id`) |
 
 ---
 
@@ -507,6 +605,12 @@ Coach abre revisar-plan del cliente
 - [ ] Un ingrediente con `receta_vinculada_id` muestra un enlace "Ver receta →" en el portal del cliente
 - [ ] Las recetas `tipo_receta = 'salsa_base'` aparecen en sección "Salsas & Bases" separada del recetario, no como platos principales
 - [ ] `salsas_recomendadas` de una receta aparecen como sugerencias opcionales en la vista del plan del cliente
+
+**Presentación visual:**
+- [ ] Un plan con foto real (Tier 1) muestra la imagen a 200px de alto como hero
+- [ ] Un plato `ia_personalizada` nunca usa imagen generada por IA — usa foto de receta similar o placeholder de categoría
+- [ ] Los 6 placeholders de categoría son visualmente consistentes y reconocibles
+- [ ] La vista semanal muestra miniaturas para todos los slots con foto y placeholder bonito si no hay imagen
 
 **Técnico:**
 - [ ] `npm run build` sin errores tras todos los cambios
