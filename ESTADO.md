@@ -1,394 +1,183 @@
-# ESTADO NutriCoach — 22-05-2026 (Sesión 35 — Filtros intolerancias + corrección alérgenos IA ✅)
+# ESTADO NutriCoach — 24-05-2026 (Sesión 36 — Sistema Multi-Agente IA Completo ✅)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (22-05-2026).
-
----
-
-## 📍 DÓNDE ESTAMOS
-
-**Fase:** Sesión 35 completada. **Filtros de intolerancias + corrección visualización alérgenos en recetas IA.** Añadidos chips de filtro rápido (Sin Gluten, Sin Lácteos, Sin Huevo, Vegano, Vegetariano) en `/recetas`. Corregido el sistema de normalización de intolerancias para que la IA genere valores canónicos. ✅ Build 0 errores. Deploy a Vercel.
-
----
-
-## ✅ COMPLETADO (22-05-2026) — Sesión 35 — Filtros de intolerancias + corrección alérgenos IA
-
-### 🔷 Diagnóstico ✅
-- El filtro general de recetas no mostraba opciones rápidas de "Sin Gluten", "Sin Lácteos" — había que navegar menús anidados
-- Las recetas generadas por IA (healthify) escribían `"sin gluten"` (minúscula, sin normalizar) en el array `intolerancias`, rompiendo la clasificación en positivo/negativo/dietético
-- La UI mostraba `contiene: sin gluten sin lactosa` en rojo como si fueran alérgenos, en lugar de mostrar `Libre de: gluten, lácteos` en verde
-
-### 🔷 Fix: `normalizarIntolerancia()` / `normalizarIntolerancias()` en [`lib/recetas-constants.ts`](lib/recetas-constants.ts) ✅
-- **`normalizarIntolerancia(raw)`**: normaliza case-insensitive contra los arrays `ALERGENOS_POSITIVOS`, `ALERGENOS_NEGATIVOS`, `DIETETICOS` — si coincide devuelve el valor canónico exacto; si empieza por "sin " capitaliza automáticamente `Sin {Resto}`
-- **`normalizarIntolerancias(raw[])`**: aplica la anterior a cada elemento + elimina duplicados
-- **`clasificarIntolerancia()`**: ahora compara con `.toLowerCase()` en ambos lados para ser case-insensitive
-
-### 🔷 Fix: Heathify IA prompt — [`app/api/recetas/[id]/healthify/route.ts`](app/api/recetas/[id]/healthify/route.ts) ✅
-- **SYSTEM_PROMPT actualizado**: reglas explícitas — `intolerancias` solo acepta valores positivos canónicos (`Gluten`, `Lácteos`, `Frutos Secos`, etc.), prohibido "Sin Gluten" como valor; ejemplos concretos en el prompt
-- **Safety net en runtime**: `intolerancias: normalizarIntolerancias(recetaGenerada.intolerancias || [])` al persistir
-
-### 🔷 Fix: Normalización en vista detalle — [`app/recetas/[id]/page.tsx`](app/recetas/[id]/page.tsx) ✅
-- Cambiado `const intolerancias = receta.intolerancias ?? []` → `normalizarIntolerancias(receta.intolerancias ?? [])` para que la UI siempre muestre valores canónicos
-
-### 🔷 Fix: Carga de recetas — [`app/recetas/page.tsx`](app/recetas/page.tsx) ✅
-- **Nuevo estado `filtroRapido`**: string | null para chips de filtro rápido
-- **Normalización en carga**: `normalizarIntolerancias(r.intolerancias ?? [])` al obtener datos de Supabase
-- **Filtro combinado**: el `useMemo` de filtrado ahora evalúa `filtroRapido || intoleranciaFilter` y compara con `.toLowerCase()` para case-insensitive matching
-- **5 chips de filtro rápido** sobre el grid de recetas: 🌾 Sin Gluten, 🥛 Sin Lácteos, 🥚 Sin Huevo, 🌱 Vegano, 🥬 Vegetariano — azules con iconos, activos se iluminan en blanco
-- **activeFilterCount** incluye `filtroRapido`; "Limpiar filtros" resetea ambos
-
-### 🔷 Build ✅
-- `npx tsc --noEmit` → ✅ 0 errores
-- Todos los cambios compilados y listos para deploy
-
----
-
-## ✅ COMPLETADO ANTERIORMENTE (22-05-2026) — Sesión 34 — Bugfix persistencia plan IA en BD relacional
-
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (22-05-2026).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (24-05-2026).
 
 ---
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Sesión 34 completada. **Bugfix planes:** AI genera recetas/alimentos pero no persistían en BD relacional. Añadido Step 13 en [`app/api/generar-plan-inicial/route.ts`](app/api/generar-plan-inicial/route.ts) que persiste `planes_nutricion` → `comidas` → `comida_alimentos` para que la UI del coach/cliente muestre los datos. ✅ Build 0 errores. Deploy a Vercel.
+**Fase:** Sesión 36 completada. **Sistema multi-agente IA operativo — nutrición + entrenamiento.** 8 agentes, kanban coach, motor de decisiones activo, portal cliente con mensajes del coach. ✅ Build 0 errores. Deploy en Vercel. Crons configurados.
 
 ---
 
-## ✅ COMPLETADO (22-05-2026) — Sesión 34 — Bugfix persistencia plan IA en BD relacional
+## ✅ COMPLETADO (24-05-2026) — Sesión 36 — Sistema multi-agente IA
 
-### 🔷 Diagnóstico ✅
-- El endpoint `POST /api/generar-plan-inicial` llamaba a DeepSeek, generaba `planJson` con `distribucion_comidas[]` conteniendo `recetas[]`, pero **sólo guardaba en `registros_ia`** como JSON blob
-- La UI del coach/cliente consulta `planes_nutricion → comidas → comida_alimentos → alimentos` — no encontraba nada
-- **Raíz**: faltaba persistencia en tablas relacionales
+### 🤖 Arquitectura de agentes (todos en `lib/agentes/`)
 
-### 🔷 Fix: Step 13 — Persistencia del plan ✅
-- **13a** (línea 659): Crea `planes_nutricion` con `codigo_publico`, macros, objetivo y enlace `cliente_id`/`coach_id`
-- **13b** (línea 681): Itera `distribucion_comidas` creando registros en `comidas` con `hora_sugerida`
-- **13b cont** (línea 701): Por cada receta, busca el `alimento` por nombre o lo crea como `custom=true`, y vincula via `comida_alimentos` con 100g = 1 porción
+| Archivo | Agente | Frecuencia | Modelo | Qué hace |
+|---------|--------|-----------|--------|---------|
+| `executor.ts` | Base | — | — | Routing modelos, contexto cliente, guardar tareas |
+| `director.ts` | Director | Cron | — | Orquesta todos los agentes por cliente |
+| `riesgo.ts` | Riesgo Nutrición | Diario | Gemini Flash | Detecta riesgo abandono >45% |
+| `riesgo-entreno.ts` | Riesgo Entreno | Diario | Gemini Flash | Detecta inactividad >10 días con plan activo |
+| `revisor-semanal.ts` | Revisor Nutrición | Lunes | DeepSeek V3 | Analiza macros, adherencia, tendencia peso |
+| `revisor-semanal-entreno.ts` | Revisor Entreno | Lunes | Gemini Flash | Analiza TLS, RPE, sesiones realizadas vs planificadas |
+| `motivacion.ts` | Motivación | Lunes | Gemini Flash | Genera mensaje motivacional semanal personalizado |
+| `memoria.ts` | Memoria | Semanal | DeepSeek V3 | Aprende de decisiones del coach |
+| `aplicar.ts` | Motor decisiones | On-approve | — | Ejecuta acciones reales en BD al aprobar |
 
-### 🔷 Quality fixes aplicados ✅
-- `function (e)` → arrow function `(e) =>`
-- `var` → `let`/`const` (3 vars corregidas)
-- Destructuring incorrecto de Supabase corregido (`var x = await supabase...` → `const { data, error } = await supabase...`)
-- Captura de error en `comida_alimentos.insert()`
-- Comentario de step duplicado corregido (14→15)
+### 🔄 Crons Vercel (`vercel.json`)
+- `0 7 * * *` → `/api/agentes/ejecutar?modo=diario` — todos los días 7am
+- `0 6 * * 1` → `/api/agentes/ejecutar?modo=semanal` — lunes 6am
 
----
+### 🎯 Motor de decisiones (`aplicar.ts`)
+Cuando el coach aprueba una tarea en el kanban, se ejecuta:
+- `ajuste_macros` / `revision_semanal` → `UPDATE planes_nutricion SET kcal_objetivo=X...`
+- `alerta_riesgo` / `alerta_riesgo_entreno` / `mensaje_motivacion` / `revision_semanal_entreno` → `INSERT INTO chat_mensajes (remitente='coach'...)`
+- `actualizacion_plan` → registra aprobación
 
-## ✅ COMPLETADO (20-05-2026) — Sesión 33 — Mejoras sección Entrenos
+### 🃏 Kanban coach (`/agentes`)
+- 3 columnas: Pendiente / En revisión / Resuelto
+- Cards con tipo, cliente, propuesta, razonamiento
+- Botones: Aprobar / Rechazar / Modificar (con textarea inline)
+- Badge con cuenta de pendientes en el sidebar
+- Polling cada 60s
 
-### 🔷 Dashboard /entrenos con stats de actividad (commit `72aec9b` + `6a0e7d0`) ✅
+### 💬 Portal cliente
+- `MensajeCoach.tsx`: muestra mensaje del coach (remitente='coach', no leído, últimos 7 días)
+- Auto-marca leído tras 5 segundos + localStorage para no re-mostrar
+- Integrado en `DashboardCliente.tsx` sobre el contenido de todos los tabs
 
-- **3 chips de resumen** en cabecera: Planes activos / Sesiones 30d (púrpura) / Clientes activos (verde)
-- **Cards mejoradas**: dot verde pulsante si cliente entrenó en últimos 7 días, "Hoy/Ayer/Hace X días" de última sesión, nº sesiones en 30d
-- **Query eficiente**: carga `registros_sets` filtrado por `cliente_id` de los planes del coach, agrupa en JS
+### 📊 Routing de modelos por coste
+| Modelo | Coste | Usado para |
+|--------|-------|-----------|
+| Gemini 2.5 Flash | $0.075/M | Riesgo diario, riesgo entreno, revisor entreno, motivación |
+| DeepSeek V3 | $0.27/M | Revisor semanal nutrición, memoria |
+| DeepSeek R1 | $0.55/M | Onboarding (plan inicial, 2-3×/mes) |
 
-### 🔷 Sprint 4 Exercise Library — Modal demo en ejecución cliente (commit `b13f7cc`) ✅
+**Coste estimado a 100 clientes: ~$1.50/mes total.**
 
-- **Icono ⓘ** junto al nombre del ejercicio en `/cliente/sesion/[id]` si tiene `video_url`
-- **Modal YouTube**: extrae video ID con regex, renderiza iframe embed (aspect 16:9)
-- **Fallback**: link directo si la URL no es de YouTube
+### 🔧 API endpoints
+- `GET/POST /api/agentes/ejecutar` — cron + trigger manual (auth: CRON_SECRET)
+- `GET /api/agentes/tareas` — listado kanban con join clientes+profiles
+- `PATCH /api/agentes/tareas` — aprobar/rechazar/modificar + aplicar + aprendizaje
+- `PATCH /api/cliente/[codigo]/chat/leer` — marcar mensaje leído (portal cliente)
 
-### 🔷 Asignar plantilla a cliente desde /entrenos/plantillas (commit `3fe97b4`) ✅
-
-- **Botón "Asignar"** en cada card de plantilla con icono UserPlus
-- **Modal**: selector de clientes activos del coach + nombre editable del plan (prefilled)
-- **API `POST /api/plantillas-entreno/[id]/asignar`**: copia `plantilla_sesiones` + `plantilla_sesion_ejercicios` → `sesiones_entrenamiento` + `sesion_ejercicios` del plan nuevo
-
----
-
-## 🔴 PRÓXIMAS MEJORAS PROPUESTAS (ver sección al final del ESTADO)
-
-| Prioridad | Tarea |
-|-----------|-------|
-| 🟠 Media | **Adherencia semanal en ficha cliente**: tab Historial Entreno muestra PRs pero no gráfico de adherencia semana a semana |
-| 🟠 Media | **Completar sesión desde SemanaEntrenoCard**: marcar sesión como "completada hoy" sin abrir toda la pantalla de ejecución |
-| 🟡 Baja | **Historial de sesiones en /entrenos/[id]**: ver qué días completó el cliente cada sesión del plan |
-| 🟡 Baja | **Editar ejercicios desde /entrenos/plantillas**: ahora son read-only (solo expandibles), añadir edición inline |
-
----
-
-## ✅ COMPLETADO ANTERIORMENTE (17-05-2026) — Sesión 17 — Limpieza BD + Enriquecimiento 100% + Fix vista pendientes ✅
-
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (17-05-2026).
-
----
-
-## 📍 DÓNDE ESTAMOS
-
-**Fase:** Sesión 17 completada. **Base de datos limpia y enriquecimiento al 100%.** 0 no-alimentos en BD (filtros masivos en pipeline), 0 pendientes de enriquecimiento, vista `alimentos_pendientes_enriquecer` corregida para no crear falsos positivos.
+### ✅ Build y TypeScript
+- `npx tsc --noEmit` → 0 errores
+- Commits: `e0f8b20`, `09a6151`
 
 ---
 
-## ✅ COMPLETADO (17-05-2026) — Sesión 17 — Limpieza BD + Enriquecimiento completo
+## 🎯 PRÓXIMA SESIÓN — Test E2E + Recetario
 
-### 🔷 Filtros no-comestibles masivos en pipeline ✅
+### PRIORIDAD 1 — Test end-to-end del sistema completo
 
-- **`esNoComestible()` en `lib/scraping/index.ts`** ampliada con ~80 keywords nuevas:
-  - Cosmética: aftersun, agua micelar, bálsamo labial, barra labios, body spray, protector solar, bastoncillos, bandas depilatorias, desmaquillante, autobronceador
-  - Sanidad/farmacia: apósitos, tiritas, suero fisiológico, clorhexidina, irrigador dental
-  - Limpieza hogar: absorbeolores, antipolilla, repelente insectos, blanqueador juntas, gamuzas, desincrustante, posavajillas, escoba, escobilla, plumero, recogedor, aditivo textil
-  - Mascotas: arena gatos, cepillo mascotas, empapadores mascotas
-  - Bebé no alimenticio: bañador desechable, babero desechable, anillo dentición
-  - Aparatos eléctricos: aparato eléctrico, recambio eléctrico
-- **`ALCOHOL_KEYWORDS`** ampliado: destilados (whisky, vodka, gin, tequila, brandy), licores, vinos fortificados, cava, champán, sidra, combinados RTD, anís seco/dulce, jerez
-- **`ALCOHOL_FOOD_EXCEPTIONS`** añadidas: pasas, uva moscatel (evitan falsos positivos)
-- Commit `75b125c` en feature/modulos
+**Objetivo:** verificar que todo funciona desde cero con un cliente real (Carlos mismo).
 
-### 🔷 Limpieza BD: 219 no-alimentos eliminados ✅
+**Pasos del test:**
+1. **Crear cliente de prueba** → invitar `ccc8890@gmail.com` como cliente (o usar código de portal existente)
+2. **Completar onboarding** → rellenar todos los campos (objetivo, actividad, restricciones, etc.)
+3. **Generar plan inicial** → verificar que DeepSeek genera dieta + entreno correctamente
+4. **Aprobar plan** → flujo coach: revisar-plan → aprobar → email al cliente
+5. **Acceder al portal cliente** → verificar DashboardCliente, MiPlan, MensajeCoach
+6. **Hacer check-in** → registrar peso, adherencia, energía, sueño
+7. **Registrar sesión de entreno** → desde portal cliente tab Entreno
+8. **Trigger manual agentes** → `POST /api/agentes/ejecutar` con CRON_SECRET
+9. **Verificar kanban** → `/agentes` debe mostrar tareas generadas
+10. **Aprobar tarea** → verificar que el mensaje llega al portal cliente
+11. **Verificar MensajeCoach** → el banner aparece en el portal y se marca leído
 
-Script `eliminar-no-alimentos.mjs` ejecutado con las keywords expandidas:
-- **219 productos eliminados**: labiales, aftersun, apósitos, bastoncillos, antipolillas, repelente insectos, barreños, arena gatos, bañadores desechables, gel fijador cabello, dentifricio, protegeslips, etc.
-- **4 alcoholes conservados** (están en recetas — FK protegida): licor amaretto, Vino tinto Bobal, Vodka, Anís seco Cassalla Cerveró
-- 33 precios también eliminados, cola de enriquecimiento limpiada
+**Bugs esperados a encontrar:**
+- Verificar que `chat_mensajes` tiene columna `cliente_id` (si no → error en aplicar.ts)
+- Verificar que `registros_sets` retorna datos correctos para agente entreno
+- Verificar que el cron funciona en Vercel (logs en Vercel Dashboard → Functions)
 
-### 🔷 Enriquecimiento nutricional: 0 pendientes ✅
+### PRIORIDAD 2 — Recetario: más recetas y calidad
 
-13 pases de 500 alimentos (6.500 enriquecidos esta sesión), 0 errores salvo 1 timeout de DeepSeek que se recuperó automáticamente.
+- **147 imágenes malas** → ejecutar `node scripts/regenerar-imagenes-malas.mjs --genera` (~$5)
+- **Recetas nuevas via Content Radar** → testear bridge_nutricoach.py con 1 reel real
+- **10 recetas Serie Chef** → Carlos aprueba en `/recetas` estado `en_revision`
 
-| Métrica | Valor |
-|---------|-------|
-| Alimentos en BD | ~11.955 (todos comestibles) |
-| Pendientes enriquecimiento | **0** ✅ |
-| Pases ejecutados hoy | 13 × 500 = 6.500 alimentos |
+### PRIORIDAD 3 — Mejoras detectadas en E2E
 
-### 🔷 Fix vista `alimentos_pendientes_enriquecer` ✅
-
-- **Problema**: La vista usaba `OR` en todos los macros → aceites (proteinas=0), carnes/pescados (carbohidratos=0), azúcar (proteinas=0) aparecían permanentemente como "pendientes" aunque sus macros son correctos
-- **Fix**: Condición simplificada a `calorias = 0 OR calorias IS NULL` — solo requiere enriquecimiento si no hay dato calórico
-- **Resultado**: 0 pendientes (antes 142 bloqueados)
-- Migración aplicada en Supabase: `fix_vista_pendientes_enriquecer_v2`
+*(Se rellenarán tras el test)*
 
 ---
 
-## 📍 PRÓXIMAS SESIONES (orden de prioridad)
+## 🗂️ BACKLOG PENDIENTE
 
-| Prioridad | Tarea |
-|-----------|-------|
-| 🔴 Alta | **Fase 1 — Onboarding automático** (sub-plan `2026-05-16-fase1-onboarding.md`) |
-| 🟠 Media | **7 recetas con macros altas** — Carlos revisa porciones desde UI `/recetas/[id]` |
-| 🟡 Baja | **Imágenes recetas**: `node scripts/regenerar-flux-masivo.mjs --genera` (cuando OpenAI billing lo permita) |
+### 🔴 Alta prioridad
+| Tarea | Contexto |
+|-------|---------|
+| Test E2E completo (ver arriba) | Sin test real no sabemos qué falla |
+| Verificar SQL `chat_mensajes` tiene `cliente_id` | `aplicar.ts` hace INSERT con `cliente_id` |
+| Crons Vercel: verificar que se disparan | Vercel Dashboard → Functions → Cron Jobs |
 
----
+### 🟠 Media prioridad
+| Tarea | Contexto |
+|-------|---------|
+| Bug `prs_por_ejercicio` usa `sets_ejecutados -> 0` | Siempre lee el primer set, no el más pesado |
+| 147 imágenes malas regenerar con gpt-image-1 | `node scripts/regenerar-imagenes-malas.mjs --genera` |
+| Registro comidas (S3) pendiente | DEEPSEEK_S3_registro_comidas.md en salidas/ |
+| Estética portal S4 | DEEPSEEK_S4_estetica_portal.md en salidas/ |
 
-## ✅ COMPLETADO (16-05-2026) — Sesión 12 — Migraciones BD + Reconciliación
-
-### 🔷 SelectorComparativa ✅
-- **`SelectorComparativa.tsx`** creado e integrado en `ListaCompra.tsx`
-  - Ranking visual 🥇 más barato → más caro con badges, ahorro potencial
-  - Botón "Seleccionar [Supermercado] para todos los alimentos" con aplicación masiva
-  - Detección de supermercado más usado como referencia
-
-### 🔷 PWA / Offline ✅
-| Componente | Antes | Después |
-|-----------|-------|---------|
-| `sw.js` | v1 (nunca registrado) | v2 con caching estratégico: static assets, API routes, pages |
-| `manifest.json` | `display: "browser"` | `display: "standalone"`, nombre "Casanova Nutrition", iconos maskable |
-| `layout.tsx` | Sin registro SW | Script `afterInteractive` registrando `/sw.js` |
-
-Estrategia de caché SW v2:
-- **Cache first:** `/recetas`, `/login`, assets estáticos, `/api/recetas`, `/api/alimentos`
-- **Network first (fallback cache):** resto de API routes
-- **Fallback:** navegación → `/`
-
-### 🔷 Seed Precios + Reconciliación ✅
-| Archivo | Propósito |
-|---------|-----------|
-| `seed_precios_supermercado.sql` | 20+ alimentos básicos (carnes, pescados, huevos, lácteos) con precios realistas en Mercadona, Carrefour, Consum, Lidl, Día, Alcampo, Eroski |
-| `supabase_reconciliacion_vinculacion.sql` | Detecta duplicados genéricos creados por scraping, los re-vincula a alimentos semilla con 5-level matching, y elimina huérfanos |
-
-### 🔷 Bug crítico corregido: `comidas_alimentos` → `comida_alimentos` ✅
-**Problema:** 4 API routes usaban `comidas_alimentos` (plural) pero la tabla real en Supabase es `comida_alimentos` (singular). Causaba 500 en todas las rutas de precios.
-
-| Archivo | Referencias corregidas |
-|---------|----------------------|
-| `app/api/precios/ahorro/route.ts` | 2 (`.select()` + property access) |
-| `app/api/precios/ahorro/proyeccion/route.ts` | 2 (`.select()` + property access) |
-| `app/api/precios/escandallo/route.ts` | 4 (2× `.select()` + 2× property access) |
-| `app/api/precios/escandallo/detalle/route.ts` | 2 (`.select()` + property access) |
-| **Total** | **10 referencias corregidas en 4 archivos** |
-
-#### Build
-- `npx tsc --noEmit` → ✅ exit 0 sin errores
-- `grep -r comidas_alimentos --include="*.ts"` → 0 resultados (ninguna referencia residual)
+### 🟡 Baja prioridad
+| Tarea | Contexto |
+|-------|---------|
+| Revisar 5 avisos quality gate no bloqueantes | Recetas simples con 2 ingredientes |
+| 7 recetas con macros altas | Carlos revisa porciones desde `/recetas/[id]` |
+| Página bienvenida onboarding | Banner "Tu coach ha preparado tu plan" |
 
 ---
 
-## ✅ COMPLETADO (16-05-2026) — Detalle
+## 🏗️ ARQUITECTURA ACTUAL
 
-### 🔷 Migraciones SQL pendientes — Auditoría completa ✅
-- **Verificados 29 archivos SQL** contra BD real columna a columna
-- **Ejecutados 3 scripts** que estaban pendientes:
-  - [`supabase_productos_vs_alimentos.sql`](nutricoach-modulos/supabase_productos_vs_alimentos.sql) — columna `preferido`, índices URL únicos, vistas `mejores_precios_por_alimento`, `top_precios_escandallo`, `precios_actuales` actualizada
-  - [`seed_precios_supermercado.sql`](nutricoach-modulos/seed_precios_supermercado.sql) — precios básicos para 20+ alimentos en 7 supermercados
-  - [`supabase_fix_rls_alimentos.sql`](nutricoach-modulos/supabase_fix_rls_alimentos.sql) — políticas RLS para lectura pública de alimentos compartidos
+```
+Coach (web) ──→ /agentes (kanban) ──→ PATCH tareas → aplicarTarea() → BD
+                                                     ↓
+                                             chat_mensajes OR
+                                             planes_nutricion UPDATE
 
-### 🔷 Reconciliación de Vinculación (Scraping → Alimentos) ✅
-- **Ejecutado [`supabase_reconciliacion_vinculacion.sql`](nutricoach-modulos/supabase_reconciliacion_vinculacion.sql)**
-  - ✅ Creada función `reconciliar_alimento()` — matching progresivo 5 niveles
-  - ✅ Re-apuntados productos_supermercado a alimentos seed correctos
-  - ✅ Eliminados **1.206 duplicados huérfanos** (sin referencias)
-  - ✅ **`match_alimento` actualizada** — versión mejorada con 6 pasos:
-    1. Exacto (prioriza seed)
-    2. Sin acentos (prioriza seed)
-    3. Contiene bidireccional (solo seed)
-    4. Palabra clave más larga (solo seed)
-    5. Fuzzy similarity > 0.3 (solo seed)
-    6. Fallback genérico
-  - ✅ **Extensión `unaccent` instalada** para matching sin acentos
+Cron (Vercel) ──→ ejecutarDirector()
+                    ├─ actualizarPerfilAprendizaje() → cliente_perfil_aprendizaje
+                    ├─ ejecutarAgenteRiesgo() → agente_tareas (nutrición)
+                    ├─ ejecutarAgenteRiesgoEntreno() → agente_tareas (entreno)
+                    └─ [lunes] ejecutarRevisorSemanal()
+                              ejecutarAgenteMotivacion()
+                              ejecutarRevisorSemanalEntreno()
 
-### 🔷 Estado final BD
-| Métrica | Antes | Después |
-|---------|-------|---------|
-| Productos vinculados | 7.528 | 7.528 (100%) |
-| Productos → alimentos sin macros | 4.274 (56.8%) | 4.269 (alimentos legítimos sin macros: sal, especias, agua) |
-| Productos → alimentos con macros | 3.254 | 3.259 |
-| Duplicados genéricos (es_generico=true) | 2.831 | 1.625 |
-| Productos → duplicados scraping | 84 | 84 (requieren re-scrape) |
-
-### 🔷 Verificaciones adicionales
-- 43 tablas en schema público ✅
-- 114 entries en `knowledge_base` ✅
-- 25 categorías IA en `alimento_categorias_ia` ✅
-- 11.106 alimentos en cola de enriquecimiento ✅
-- 12 supermercados ✅
-- `calcular_macros_receta` con columnas correctas (post-fix trigger) ✅
+Portal cliente ──→ DashboardCliente
+                    ├─ MensajeCoach → chat/leer PATCH
+                    ├─ MiPlan (dieta)
+                    ├─ TLSGauge (entreno)
+                    ├─ CheckInForm
+                    └─ HistorialCheckins
+```
 
 ---
 
-## 🐛 Auditoría de Bugs (16-05-2026) ✅
-### Build verificado
-- `npx tsc --noEmit` (nutricoach): **0 errores** (3 corregidos)
-- `npx next build` (nutricoach): **0 errores** ✅
-- `npx tsc --noEmit` (nutricoach-modulos): Solo errores en scripts/ de diagnóstico (32, todos one-shot)
+## 📋 TABLAS SUPABASE CLAVE (sistema agentes)
 
-### Bugs corregidos
-1. **`addToast` con 2 args en lugar de objeto** — [`MiPlan.tsx`](nutricoach/components/PortalCliente/MiPlan.tsx:152)
-2. **`total_interacciones` no existe en interfaz** — [`actualizar-perfil.ts`](nutricoach/lib/personalizacion/actualizar-perfil.ts:49)
-
-### Patrón débil detectado
-- **21 `.catch(() => {})` silenciosos** sin logging en scrapers, modales y componentes
-- Documentado en [`salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md`](salidas/16-05-2026_AUDITORIA_POST_RECONCILIACION.md)
+| Tabla | Uso |
+|-------|-----|
+| `agente_tareas` | Cola de tareas kanban |
+| `cliente_perfil_aprendizaje` | Perfil de aprendizaje por cliente (riesgo, adherencia, tendencias) |
+| `agente_aprendizaje` | Señales de aprendizaje (decisiones del coach) |
+| `coach_memoria` | Reglas extraídas de las decisiones del coach |
+| `chat_mensajes` | Mensajes coach ↔ cliente (remitente: 'coach' o 'cliente') |
 
 ---
 
-## ✅ COMPLETADO (17-05-2026) — Sesión 18 — Enriquecimiento + Categorías + Fase 0 limpieza BD
+## 🔐 VARIABLES DE ENTORNO REQUERIDAS (Vercel)
 
-### 🔷 Enriquecimiento nutricional — avance
-- Ejecutados ~25+ pases de `node scripts/enriquecer-alimentos.mjs --limite=100`
-- Progreso real: **10.218/14.600 → 10.239/14.188** alimentos con `calorias > 0` (72%)
-- La vista `alimentos_pendientes_enriquecer` alcanzó su **floor permanente de ~1.439** (zeros legítimos: agua, vinagre, sal, etc.)
-- Los ~4.382 alimentos restantes sin calorías incluyen zeros legítimos + nuevos de scrapers aún sin procesar
-
-### 🔷 Corrección de categorías
-- Ejecutado `scripts/corregir-categorias.mjs --aplicar`
-- **11.335 alimentos actualizados**: subcategorías IA → categorías UI (Carnes rojas → Carnes, Verduras y hortalizas → Verduras, etc.)
-
-### 🔷 Fase 0 — Limpieza BD (`eliminar-no-alimentos.mjs`)
-- **1.390 eliminados** (950 higiene/hogar + 444 alcohol)
-- 4 conservados por estar en recetas activas: licor amaretto, Vino tinto, Vodka, Anís seco
-- 1.483 registros de precios también eliminados
-- BD tras limpieza: **14.188 alimentos**, 10.239 con calorías (72%)
-
-### 🔷 Algoritmo de filtrado — verificado sincronizado
-- `lib/scraping/index.ts` y `scripts/eliminar-no-alimentos.mjs` ya tienen SYNC comment y listas sincronizadas
-- ~260+ keywords cubriendo: higiene, limpieza, ropa, ferretería, electrodomésticos, juguetes, hogar/decoración, plantas, alcohol
-- Prevención activa en `esNoComestible()` antes de insertar en BD
-
-### 🔷 Fase 1 (onboarding_completado) — verificada COMPLETADA
-- Columna `onboarding_completado BOOLEAN DEFAULT false` en tabla `clientes` ✅
-- API `/api/onboarding/perfil` marca `onboarding_completado = true` ✅
-- Dashboard cuenta `clientesSinOnboarding` ✅
-- Ficha cliente muestra badge cuando `onboarding_completado === false` ✅
-
----
-
-## 🔜 PRÓXIMA SESIÓN (prioridades)
-
-1. **Email bienvenida (Resend)** — `sendWelcomeEmail()` ya existe, Carlos configura `RESEND_API_KEY` en `.env.local` + Vercel
-2. **Re-scrapear supermercados** para que los nuevos productos usen `match_alimento` mejorado (versión 6 pasos)
-3. **Verificar Dashboard de Rentabilidad en vivo** — seleccionar cliente con precios
-4. **Enriquecimiento restante** — ~4.382 alimentos sin calorías (floor legítimo + nuevos de scrapers)
-5. **Despliegue en Vercel**
-
----
-
-
-# ESTADO NutriCoach — 10-05-2026 (Sesión 8 — Clausurada)
-
-> Estado anterior. Mantenido como referencia histórica.
-
----
-
-## 📍 DÓNDE ESTAMOS
-
-**Fase activa:** Tareas técnicas completadas. Pendiente despliegue en Vercel + producto.
-
----
-
-## ✅ COMPLETADO (10-05-2026) — Sesión 8 (Roo Code)
-
-### 🔷 Tarea 1 — Migración SQL en Supabase ✅
-- **Archivo:** [`supabase_lista_compra_migration.sql`](supabase_lista_compra_migration.sql)
-- **Ejecución:** `supabase link --project-ref hopeqzwzmlrpktoeygxz` → `supabase db query --linked` ✅
-- Tablas creadas: `selecciones_lista_compra`, `dedup_revision`
-- Columna añadida: `es_generico` en `alimentos`
-
-### 🔷 Tarea 2 — Backfill de recetas ✅
-- **Comando:** `npx tsx scripts/backfill-recetas.ts`
-- **Resultado:** 2/2 recetas completadas
-
-### 🔷 Tarea 3 — Scrapers reparados (6 supermercados) ✅
-| Scraper | Estrategia | Detalle |
-|---------|-----------|---------|
-| **Consum** | API REST (Angular SPA) | API real descubierta: `tienda.consum.es/api/rest/V1.0/` — 683 cat. hojas, 8000+ productos |
-| **Alcampo** | API REST (Ocado Technology) | API en `compraonline.alcampo.es/api/` — categorías predefinidas + regionId |
-| **Carrefour** | Playwright (DOM) | Cloudflare bloquea todo HTTP — navegador headless |
-| **Día** | Playwright (DOM) | Access Denied en HTTP — navegador headless |
-| **Eroski** | Playwright (DOM) | Apache Tapestry sin REST API — navegador headless |
-| **Lidl** | Playwright (DOM) | Ya usaba Playwright — selectores mejorados |
-
-**Fix crítico Consum:** precio en `priceData.prices[0].value.centAmount` (no en `productData.price`). Dividir entre 100.
-
-### 🔷 Tarea 4 — Aldi ⏭️ Saltado
-- **Motivo:** aldi.es no tiene e-commerce — solo catálogos semanales (Adobe Experience Manager)
-
-### 🔷 Tarea 5 — Enriquecer 70 alimentos sin macros ✅
-- **Comando:** `node scripts/enriquecer-alimentos.mjs --limite=70`
-- **Resultado:** 70/70 procesados
-
-### 🔷 Tarea 6 — Merge feature/modulos → main + build ✅
-- **Merge:** commit `4973187` — 17 archivos, conflicto CLAUDE.md resuelto con `--theirs`
-- **Build:** `npx next build` → **exit 0** ✅
-- **Worktrees sincronizados:** nutricoach-modulos + nutricoach-ui fast-forward
-
-### 🔷 Extra — Perfilado DeepSeek 135/135 recetas ✅
-- **Comando:** `node scripts/perfilar-recetas-final.mjs --todas`
-- **Resultado:** 135/135 con instrucciones ✅ — 0 sin instrucciones, 0 sin kcal
-- Problemas corregidos: `🔀orden` ingredientes, `¶párrafo→pasos`, `⚖️cantidades`
-
----
-
-## 🛠️ Scripts disponibles (resumen)
-
-| Script | Uso |
-|--------|-----|
-| `node scripts/perfilar-recetas-final.mjs --todas` | Perfilar todas las recetas |
-| `node scripts/perfilar-recetas-final.mjs --slug "nombre"` | Perfilar una sola |
-| `node scripts/refinar-imagenes-og.mjs --todas` | Refinar fotos reales con GPT-4o (og_image → flux_img2img) |
-| `node scripts/refinar-imagenes-og.mjs --slug "nombre"` | Refinar una sola |
-| `node scripts/scrapear-imagenes-recetas.mjs --todas` | Scraping fotos reales |
-| `node scripts/subir-imagenes-aprobadas.mjs` | Subir mejores fotos a Supabase |
-| `node scripts/subir-imagenes-aprobadas.mjs --forzar` | Sobreescribir imágenes existentes |
-| `node scripts/regenerar-flux-masivo.mjs --genera` | **NUEVO** — GPT-4o image edit desde flux_txt2img |
-| `node scripts/regenerar-flux-masivo.mjs --candidatas` | **NUEVO** — Generar HTML de revisión |
-| `node scripts/analizar-urls-pendientes.mjs` | **NUEVO** — Analizar url_origen de recetas pendientes |
-
----
-
-## 📊 Estado de la BD (imágenes)
-
-- **135 recetas** en Supabase (todas perfiladas ✅)
-- **16 imágenes ai_gen** generadas con GPT-4o image edit y subidas a Storage ✅
-- **~59 recetas pendientes** de generar (bloqueado por OpenAI billing)
-- **37 con url_origen** (34 con og_image en disco) para posible Plan B
+```
+GEMINI_API_KEY        → Google AI Studio
+DEEPSEEK_API_KEY      → platform.deepseek.com
+CRON_SECRET           → string secreto para autenticar crons
+SUPABASE_URL          → proyecto Supabase
+SUPABASE_SERVICE_ROLE_KEY → para bypass RLS en agentes
+CLOUDINARY_*          → imágenes recetas
+RESEND_API_KEY        → emails
+OPENAI_API_KEY        → gpt-image-1 para imágenes
+```

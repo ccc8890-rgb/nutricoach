@@ -1,5 +1,40 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 24-05-2026 (Sesión 36) — Sistema Multi-Agente IA Completo
+
+### Qué se construyó
+
+Sistema de 8 agentes IA autónomos que monitorizan todos los clientes a diario y proponen acciones al coach mediante un kanban de aprobación.
+
+**Archivos creados/modificados:**
+
+| Archivo | Rol |
+|---------|-----|
+| `lib/agentes/types.ts` | Tipos TypeScript compartidos del sistema |
+| `lib/agentes/executor.ts` | Routing inteligente de modelos (Gemini/DeepSeek) |
+| `lib/agentes/director.ts` | Orquestador — cron entry point |
+| `lib/agentes/riesgo.ts` | Riesgo abandono nutrición (Gemini Flash, diario) |
+| `lib/agentes/riesgo-entreno.ts` | Inactividad entrenamiento (Gemini Flash, diario) |
+| `lib/agentes/revisor-semanal.ts` | Revisión macros/adherencia (DeepSeek V3, lunes) |
+| `lib/agentes/revisor-semanal-entreno.ts` | Revisión TLS/RPE/sesiones (Gemini Flash, lunes) |
+| `lib/agentes/motivacion.ts` | Mensaje motivacional semanal (Gemini Flash, lunes) |
+| `lib/agentes/memoria.ts` | Aprendizaje de decisiones coach (DeepSeek V3) |
+| `lib/agentes/aplicar.ts` | Motor decisiones — ejecuta acciones reales en BD |
+| `app/api/agentes/ejecutar/route.ts` | Endpoint cron GET+POST con CRON_SECRET |
+| `app/api/agentes/tareas/route.ts` | Kanban GET+PATCH con aplicarTarea() |
+| `app/api/cliente/[codigo]/chat/leer/route.ts` | Marcar mensajes leídos (portal) |
+| `app/agentes/page.tsx` | UI kanban 3 columnas + badge sidebar |
+| `components/PortalCliente/MensajeCoach.tsx` | Banner mensajes coach en portal |
+| `components/PortalCliente/DashboardCliente.tsx` | MensajeCoach integrado |
+| `components/Sidebar.tsx` | Link /agentes + badge pendientes con polling |
+| `vercel.json` | Crons: diario 7am + semanal lunes 6am |
+
+### Coste estimado a 100 clientes: ~$1.50/mes
+
+### Commits: `e0f8b20`, `09a6151`
+
+---
+
 ## 0. Spec-Kit + Superpowers — Flujo de desarrollo estructurado (instalado 23-05-2026)
 
 ### Qué es
