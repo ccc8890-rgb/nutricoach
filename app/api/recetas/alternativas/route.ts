@@ -41,18 +41,20 @@ export async function GET(request: NextRequest) {
       restricciones = onb?.restricciones ?? []
     }
 
-    // Suppress unused variable warning
-    void restricciones
-
     const { data: recetas } = await supabase
       .from('recetas')
-      .select('id, kcal, proteinas')
+      .select('id, kcal, proteinas, intolerancias')
       .eq('estado', 'aprobada')
       .gt('kcal', 0)
       .limit(50)
 
     if (recetas) {
       alternativaIds = recetas
+        .filter(r => {
+          if (restricciones.length === 0) return true
+          const recetaIntol: string[] = r.intolerancias ?? []
+          return !restricciones.some(res => recetaIntol.includes(res))
+        })
         .map(r => ({
           id: r.id,
           dist: Math.abs((r.kcal - targetKcal) / targetKcal) +

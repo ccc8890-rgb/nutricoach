@@ -808,15 +808,16 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                                         <button
                                             type="button"
                                             onClick={() => {
+                                                const comidaIdActual = drawerComidaId
                                                 setPlanLocal(prev => ({
                                                     ...prev,
                                                     comidas: (prev.comidas ?? []).map(c =>
-                                                        c.id === drawerComidaId
+                                                        c.id === comidaIdActual
                                                             ? {
                                                                 ...c,
                                                                 alimentos: [{
                                                                     id: alt.id,
-                                                                    cantidad_gramos: 1,
+                                                                    cantidad_gramos: 100,
                                                                     alimento: {
                                                                         nombre: alt.nombre,
                                                                         calorias: alt.kcal,
@@ -830,6 +831,17 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha }: M
                                                             : c
                                                     ),
                                                 }))
+                                                // Persistir elección en feedback_comidas_generadas (fire-and-forget)
+                                                fetch('/api/cliente/feedback-comida', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({
+                                                        comida_id: comidaIdActual,
+                                                        receta_id: alt.id,
+                                                        accion: 'alternativa_elegida',
+                                                        cliente_id: planLocal.cliente_id,
+                                                    }),
+                                                }).catch(console.error)
                                                 addToast({ title: `"${alt.nombre}" seleccionado`, type: 'success' })
                                                 setDrawerComidaId(null)
                                             }}
