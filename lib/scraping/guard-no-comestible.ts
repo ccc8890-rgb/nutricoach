@@ -25,8 +25,32 @@ const PATRONES_NO_COMESTIBLE: RegExp[] = [
   // ── Mascotas ──────────────────────────────────────────────────
   /comida (gato|gatos|perro|perros|perr[oa])/i,
   /comida (seca|humeda) (gatos|perros)/i,
+  /comida\s+(humeda|seca|semihumeda)\s+(gato|gatos|perro|perros|conejo|conejos)/i,
+  /comida\s+(para\s+)?(conejo|conejos|roedor|roedores|hamster|cobaya|chinchilla|hur[oó]n|hurones|agapornis)/i,
+  /comida\s+(de\s+)?(conejo|conejos)\s+enanos/i,
+  /alimento\s+completo\s+(para\s+)?(conejo|conejos|roedor|roedores|hamster|cobaya|chinchilla|hur[oó]n|hurones|agapornis)/i,
+  /snacks?\s+(para\s+)?(gato|gatos|perro|perros|conejo|conejos)/i,
   /pienso|arena (para )?gato|snack (para )?(perro|gato)/i,
   /mascotas|empapadores mascotas|lecho mascotas/i,
+
+  // ── Marcas de mascotas / pienso ──────────────────────────────
+  /\bgranzoo\b/i,
+  /\bcompy\b/i,
+  /\bdelikuit\b/i,
+  /\bdentastix\b/i,
+  /\bfuntastix\b/i,
+  /\bbocabits\b/i,
+  /\bquartett\b/i,
+
+  // ── Paté / bocaditos / trozos / gelatina para mascotas ──────
+  /(pate|bocaditos|trozos)\s+(en\s+)?(salsa|gelatina)\s+(gato|perro)\s+(adulto|adultos|esterilizado|senior|cachorro|gattino)/i,
+  /(pate|bocaditos|gelatina)\s+gato\s+adulto/i,
+  /(pate|bocaditos|trozos)\s+perro\s+adulto/i,
+  /gelatina\s+gato\s+adulto/i,
+  /perlas\s+silice\s+gatos/i,
+  /menu\s+agapornis/i,
+  /barritas?\s+vitaminas?\s+(canarios|periquitos|loros|agapornis|ninfa)/i,
+  /special\s+dogs?\s+excellence/i,
 
   // ── Higiene femenina / íntima ─────────────────────────────────
   /compresa|salvaslip|protegeslip|tampon|copa menstrual/i,

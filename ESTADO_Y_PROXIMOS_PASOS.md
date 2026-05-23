@@ -1,5 +1,42 @@
 # 🧠 Estado del Proyecto y Próximos Pasos — NutriCoach
 
+## Sesión 23-05-2026 (tarde) — ENRIQUECIMIENTO MASIVO MICRONUTRIENTES: 13.385 AL ✅
+
+##### ✅ Completado
+
+**Población masiva de micronutrientes para TODOS los alimentos de la BD** — desde ~86.5% hasta **100% de cobertura**.
+
+| Fase | Script | Alimentos | Método | Resultado |
+|------|--------|-----------|--------|-----------|
+| Tanda 1 (prototipo) | [`scripts/enriquecer-segunda-pasada.ts`](scripts/enriquecer-segunda-pasada.ts) | 25 | 1 alimento/llamada DeepSeek | ✅ 25/25 |
+| Tanda 2 — Run 1 | [`scripts/enriquecer-masivo-tanda3.ts`](scripts/enriquecer-masivo-tanda3.ts) | ~1,000 | 5 alimentos/llamada (200 batches) | ✅ 94.2% |
+| Tanda 2 — Run 2 | mismo script | ~783 | 5 alimentos/llamada (157 batches) | ✅ **100%** |
+
+**Estrategia técnica**:
+- **Batching de 5 alimentos por llamada** DeepSeek (`deepseek-chat`) con respuesta en array JSON: `[{index: 1, vitamina_a_ug: ..., ...}, {index: 2, ...}]`
+- **Fallback cascade**: batch (temp 0.2) → reintento batch (temp 0.5) → individual (1 alimento/llamada)
+- **0 errores** en ~357 llamadas combinadas (0 batches fallidos en toda la tanda 2)
+- **Delay 600ms entre batches** para evitar rate limiting
+- **Smart skip**: si el alimento ya tiene macros, solo estima micros; si no, estima ambos
+- Columna `micros_actualizados_en` actualizada con timestamp para tracking
+
+**24 campos poblados por alimento**: vitaminas A, C, D, E, K, B6, B12, tiamina, riboflavina, niacina, folato; minerales Ca, Fe, Mg, P, K, Na, Zn, Cu, Se; perfil lipídico (saturados, monoinsaturados, poliinsaturados, colesterol).
+
+**Archivos creados**:
+- [`scripts/enriquecer-masivo-tanda3.ts`](scripts/enriquecer-masivo-tanda3.ts) — Script principal de batching (289 líneas)
+- [`scripts/diagnosticar-pendientes-micros.ts`](scripts/diagnosticar-pendientes-micros.ts) — Diagnóstico inicial
+- [`scripts/diagnosticar-783-restantes.ts`](scripts/diagnosticar-783-restantes.ts) — Diagnóstico segunda ronda
+
+**Documentación para agentes**:
+- [`AGENTS.md`](AGENTS.md) → bloque `micronutrientes-completos` con columnas, qué NO hacer
+- [`CLAUDE.md`](CLAUDE.md) → sección 14 con tabla de campos y fallback cascade
+
+##### 🔲 Pendiente
+- Ninguno relacionado con micronutrientes (100% completado)
+- Pendientes generales: regenerar 147 imágenes malas, scraper Aldi
+
+---
+
 ## Sesión 23-05-2026 (madrugada) — AUDITORÍA INGREDIENTES RECETARIO + FIX 12 BUGS + PRECIOS 🐛✅
 
 ##### ✅ Bugs corregidos (12 bugs en 5 recetas/ingredientes)

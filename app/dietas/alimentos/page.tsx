@@ -11,7 +11,7 @@ import { SkeletonCard } from '@/components/ui/Skeleton'
 // Todas las categorías existentes en la BD (en orden lógico para display)
 const CATEGORIAS = [
     'Carnes', 'Pescados', 'Lácteos', 'Verduras y hortalizas', 'Huevos',  // más usados primero
-    'Frutas', 'Cereales', 'Legumbres', 'Tubérculos', 'Pastas',
+    'Frutas', 'Cereales', 'Legumbres', 'Tubérculos', 'Pastas y arroces',
     'Frutos secos y semillas', 'Grasas y aceites',
     'Dulces y bollería', 'Platos preparados', 'Snacks',
     'Condimentos', 'Bebidas', 'Mariscos', 'Suplementos',
@@ -35,7 +35,7 @@ const CATEGORIA_ICON: Record<string, typeof Beef> = {
     Legumbres: CircleDot,
     Cereales: Wheat,
     Tubérculos: CircleDot,
-    Pastas: CircleDot,
+    'Pastas y arroces': CircleDot,
     'Frutos secos y semillas': CircleDot,
     'Grasas y aceites': Cookie,
     'Dulces y bollería': Cookie,
@@ -57,7 +57,7 @@ const CATEGORIA_COLOR: Record<string, string> = {
     Cereales: '#8E8E93',
     Legumbres: '#65A30D',
     Tubérculos: '#92400E',
-    Pastas: '#EAB308',
+    'Pastas y arroces': '#EAB308',
     'Frutos secos y semillas': '#A855F7',
     'Grasas y aceites': '#EC4899',
     'Dulces y bollería': '#F472B6',
