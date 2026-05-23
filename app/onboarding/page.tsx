@@ -53,6 +53,10 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState<FormState>(INITIAL)
   const [loading, setLoading] = useState(false)
+  const [comeFueraDias, setComeFueraDias] = useState(0)
+  const [alimentosBase, setAlimentosBase] = useState<string[]>([])
+  const [horarioComidas, setHorarioComidas] = useState<Array<{ nombre: string; hora: string }>>([])
+  const [objetivoDeportivo, setObjetivoDeportivo] = useState('')
   const [error, setError] = useState('')
   const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward')
   const [visible, setVisible] = useState(true)
@@ -138,6 +142,10 @@ export default function OnboardingPage() {
           nivel_cocina: form.nivelCocina,
           tiempo_cocina_min: form.tiempoCocinaMin,
           presupuesto_semanal_eur: form.presupuestoSemanal || null,
+          come_fuera_dias: comeFueraDias,
+          alimentos_base: alimentosBase.length > 0 ? alimentosBase : null,
+          horario_comidas: horarioComidas.length > 0 ? horarioComidas : null,
+          objetivo_deportivo: objetivoDeportivo || null,
         }),
       })
       const data = await res.json()
@@ -217,10 +225,12 @@ export default function OnboardingPage() {
               diasEntreno={form.diasEntreno}
               tipoEntreno={form.tipoEntreno}
               duracionSesionMin={form.duracionSesionMin}
+              horarioComidas={horarioComidas}
               onActividadChange={v => setForm(f => ({ ...f, actividad: v }))}
               onDiasChange={v => setForm(f => ({ ...f, diasEntreno: v }))}
               onTipoChange={v => setForm(f => ({ ...f, tipoEntreno: v }))}
               onDuracionChange={v => setForm(f => ({ ...f, duracionSesionMin: v }))}
+              onHorarioChange={setHorarioComidas}
             />
           )}
           {step === 4 && (

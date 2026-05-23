@@ -21,15 +21,17 @@ interface Props {
   diasEntreno: number
   tipoEntreno: string[]
   duracionSesionMin: number
+  horarioComidas: Array<{ nombre: string; hora: string }>
   onActividadChange: (v: ActividadBase) => void
   onDiasChange: (v: number) => void
   onTipoChange: (v: string[]) => void
   onDuracionChange: (v: number) => void
+  onHorarioChange: (v: Array<{ nombre: string; hora: string }>) => void
 }
 
 export default function StepActivity({
-  actividad, diasEntreno, tipoEntreno, duracionSesionMin,
-  onActividadChange, onDiasChange, onTipoChange, onDuracionChange,
+  actividad, diasEntreno, tipoEntreno, duracionSesionMin, horarioComidas,
+  onActividadChange, onDiasChange, onTipoChange, onDuracionChange, onHorarioChange,
 }: Props) {
   const toggleTipo = (t: string) =>
     onTipoChange(tipoEntreno.includes(t) ? tipoEntreno.filter(x => x !== t) : [...tipoEntreno, t])
@@ -128,6 +130,37 @@ export default function StepActivity({
             </button>
           )
         })}
+      </div>
+
+      {/* Horario de comidas */}
+      <div className="mt-6">
+        <label className="block text-sm font-medium text-[var(--text)] mb-2">
+          ¿A qué hora haces cada comida? <span className="text-[var(--text-muted)]">(aproximado)</span>
+        </label>
+        <p className="text-xs text-[var(--text-muted)] mb-3">
+          Importante para calcular el timing pre/post entreno.
+        </p>
+        <div className="flex flex-col gap-2">
+          {['Desayuno','Comida','Merienda','Cena'].map(comidaNombre => {
+            const entrada = horarioComidas.find(h => h.nombre === comidaNombre)
+            return (
+              <div key={comidaNombre} className="flex items-center gap-3">
+                <span className="text-sm text-[var(--text)] w-24">{comidaNombre}</span>
+                <input
+                  type="time"
+                  autoComplete="off"
+                  value={entrada?.hora ?? ''}
+                  onChange={e => {
+                    const nuevo = horarioComidas.filter(h => h.nombre !== comidaNombre)
+                    if (e.target.value) nuevo.push({ nombre: comidaNombre, hora: e.target.value })
+                    onHorarioChange(nuevo)
+                  }}
+                  className="input w-28 text-sm"
+                />
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

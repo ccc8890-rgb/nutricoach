@@ -13,17 +13,22 @@ interface Props {
   alimentosEvitarExtra: string
   alcoholSemanal: string
   suplementos: string
+  comeFueraDias: number
+  alimentosBase: string[]
   onDiaTipicoChange: (v: string) => void
   onComidasFavoritasChange: (v: string) => void
   onAlimentosEvitarChange: (v: string) => void
   onAlcoholChange: (v: string) => void
   onSuplementosChange: (v: string) => void
+  onComeFueraDiasChange: (v: number) => void
+  onAlimentosBaseChange: (v: string[]) => void
 }
 
 export default function StepRealFood({
   diaTipico, comidasFavoritas, alimentosEvitarExtra, alcoholSemanal, suplementos,
+  comeFueraDias, alimentosBase,
   onDiaTipicoChange, onComidasFavoritasChange, onAlimentosEvitarChange,
-  onAlcoholChange, onSuplementosChange,
+  onAlcoholChange, onSuplementosChange, onComeFueraDiasChange, onAlimentosBaseChange,
 }: Props) {
   return (
     <div>
@@ -103,6 +108,63 @@ export default function StepRealFood({
           className="input w-full"
           placeholder="Ej: proteína en polvo, creatina, omega-3, multivitamínico..."
         />
+      </div>
+
+      {/* Come fuera */}
+      <div className="mb-5">
+        <label className="block text-sm font-medium text-[var(--text)] mb-1">
+          ¿Cuántos días a la semana comes fuera de casa?
+        </label>
+        <div className="flex gap-2 flex-wrap">
+          {[0,1,2,3,4,5,6,7].map(n => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => onComeFueraDiasChange(n)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                comeFueraDias === n
+                  ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
+                  : 'border-[var(--border)] text-[var(--text)] bg-[var(--surface)]'
+              }`}
+            >
+              {n === 0 ? 'Ninguno' : n === 7 ? 'Todos' : `${n} días`}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-[var(--text-muted)] mt-1">
+          Si comes fuera ≥3 días, priorizamos recetas portables o de preparación rápida.
+        </p>
+      </div>
+
+      {/* Alimentos base */}
+      <div className="mb-5">
+        <label className="block text-sm font-medium text-[var(--text)] mb-1">
+          ¿Qué alimentos tienes siempre en casa? <span className="text-[var(--text-muted)]">(opcionales)</span>
+        </label>
+        <div className="flex gap-2 flex-wrap mb-2">
+          {['Arroz','Pasta','Avena','Huevos','Pollo','Atún en lata','Yogur griego','Plátano','Espinacas','Tomate','Patata'].map(al => (
+            <button
+              key={al}
+              type="button"
+              onClick={() => {
+                const nuevo = alimentosBase.includes(al)
+                  ? alimentosBase.filter(x => x !== al)
+                  : [...alimentosBase, al]
+                onAlimentosBaseChange(nuevo)
+              }}
+              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                alimentosBase.includes(al)
+                  ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
+                  : 'border-[var(--border)] text-[var(--text-muted)] bg-[var(--surface)]'
+              }`}
+            >
+              {al}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-[var(--text-muted)]">
+          La IA los prioriza en tu plan para que no tengas que comprar nada especial.
+        </p>
       </div>
     </div>
   )

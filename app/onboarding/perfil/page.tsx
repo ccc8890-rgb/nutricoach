@@ -28,6 +28,8 @@ interface FormState {
   alimentosEvitarExtra: string
   alcoholSemanal: string
   suplementos: string
+  comeFueraDias: number
+  alimentosBase: string[]
   // D
   horaPrimeraIngesta: string
   horaComidaPrincipal: string
@@ -65,6 +67,7 @@ const INITIAL: FormState = {
   triggerOnboarding: '', autoeficacia: 0,
   historialDietas: [], razonesAbandono: [], relacionComida: '', todoONada: '',
   diaTipico: '', comidasFavoritas: '', alimentosEvitarExtra: '', alcoholSemanal: '', suplementos: '',
+  comeFueraDias: 0, alimentosBase: [],
   horaPrimeraIngesta: '', horaComidaPrincipal: '', horaUltimaIngesta: '', horaEntreno: '',
   patronesEnergia: [],
   conQuienCome: [], frecuenciaFuera: '', comidaTrampa: '',
@@ -141,6 +144,8 @@ export default function PerfilProfundoPage() {
           alimentos_evitar_extra: form.alimentosEvitarExtra,
           alcohol_semanal: form.alcoholSemanal,
           suplementos: form.suplementos,
+          come_fuera_dias: form.comeFueraDias,
+          alimentos_base: form.alimentosBase.length > 0 ? form.alimentosBase : null,
           hora_primera_ingesta: form.horaPrimeraIngesta,
           hora_comida_principal: form.horaComidaPrincipal,
           hora_ultima_ingesta: form.horaUltimaIngesta,
@@ -224,11 +229,15 @@ export default function PerfilProfundoPage() {
                 alimentosEvitarExtra={form.alimentosEvitarExtra}
                 alcoholSemanal={form.alcoholSemanal}
                 suplementos={form.suplementos}
+                comeFueraDias={form.comeFueraDias}
+                alimentosBase={form.alimentosBase}
                 onDiaTipicoChange={v => set('diaTipico', v)}
                 onComidasFavoritasChange={v => set('comidasFavoritas', v)}
                 onAlimentosEvitarChange={v => set('alimentosEvitarExtra', v)}
                 onAlcoholChange={v => set('alcoholSemanal', v)}
                 onSuplementosChange={v => set('suplementos', v)}
+                onComeFueraDiasChange={v => set('comeFueraDias', v)}
+                onAlimentosBaseChange={v => set('alimentosBase', v)}
               />
             )}
             {currentStepLabel === 'D' && (
