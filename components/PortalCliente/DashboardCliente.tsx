@@ -66,6 +66,12 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     const [mostrarRegistrarEntreno, setMostrarRegistrarEntreno] = useState(false)
     const [sesionPendiente, setSesionPendiente] = useState<string | null>(null)
     const [tlsKey, setTlsKey] = useState(0)
+    const [mostrarBienvenida, setMostrarBienvenida] = useState(false)
+
+    function cerrarBienvenida() {
+        localStorage.setItem(`bienvenida_vista_${codigo}`, '1')
+        setMostrarBienvenida(false)
+    }
 
     const loadData = useCallback(async () => {
         try {
@@ -80,6 +86,10 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
             }
             const json = await res.json()
             setData(json)
+
+            if (!localStorage.getItem(`bienvenida_vista_${codigo}`)) {
+                setMostrarBienvenida(true)
+            }
 
             // Detectar notas nuevas (no vistas)
             if (json.notas?.length > 0) {
@@ -258,6 +268,36 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                             Tu coach necesita tus datos para personalizar tu plan. Toca aquí para continuar el onboarding.
                         </span>
                     </a>
+                </div>
+            )}
+
+            {/* Bienvenida primer acceso */}
+            {mostrarBienvenida && data?.cliente && (
+                <div className="max-w-2xl mx-auto px-4 pt-4">
+                    <div className="rounded-2xl border p-5 mb-2" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                        <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
+                            ¡Hola, {data.cliente.nombre?.split(' ')[0] ?? 'campeón'}! 👋
+                        </h2>
+                        <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>Tu plan personalizado está listo.</p>
+                        <ul className="space-y-2.5 mb-4 mt-3">
+                            {[
+                                { icon: '🍽️', titulo: 'Mi plan', desc: 'Tu dieta de hoy con ingredientes y recetas' },
+                                { icon: '💪', titulo: 'Carga', desc: 'Tu entrenamiento de la semana' },
+                                { icon: '📊', titulo: 'Check-in', desc: 'Reporta tu peso y estado cada semana' },
+                            ].map(item => (
+                                <li key={item.titulo} className="flex items-start gap-3">
+                                    <span className="text-lg leading-tight">{item.icon}</span>
+                                    <div>
+                                        <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{item.titulo}</span>
+                                        <span className="text-sm" style={{ color: 'var(--text-muted)' }}> — {item.desc}</span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                        <button onClick={cerrarBienvenida} className="w-full py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: 'var(--primary)' }}>
+                            Empezar →
+                        </button>
+                    </div>
                 </div>
             )}
 
