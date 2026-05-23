@@ -212,35 +212,107 @@ function validarYResolverRecetas(
 
 ---
 
-### 5. Ajuste de gramajes automático
+### 5. Sistema inteligente de ajuste de gramajes
 
-**Para cada receta asignada a un slot:**
+El scaling simplista (×factor en todos los ingredientes) destruye la coherencia de las recetas. Una salsa, un condimento o una especia no se duplica cuando subes la proteína. El sistema clasifica cada ingrediente por su **rol nutricional** y aplica reglas distintas.
+
+#### 5a. Clasificación de ingredientes por rol
+
+Nueva columna `receta_ingredientes.rol_ingrediente`:
+
+```sql
+ALTER TABLE receta_ingredientes 
+  ADD COLUMN rol_ingrediente text CHECK (rol_ingrediente IN (
+    'proteina_principal',   -- pollo, atún, huevo, tofu, legumbre principal
+    'carbohidrato_base',    -- arroz, pasta, patata, pan, avena
+    'verdura_volumen',      -- lechuga, tomate, pepino, espinacas, pimiento
+    'grasa_saludable',      -- aguacate, aceite, frutos secos, queso
+    'salsa_condimento',     -- salsa de yogur, pesto, hummus, mayonesa, ketchup
+    'especias_aromaticos',  -- sal, pimienta, ajo, hierbas, especias
+    'estructural',          -- tortilla de wrap, pan de hamburguesa, base de pizza
+    'lacteo_complemento',   -- yogur como acompañamiento, queso rallado encima
+    'fruta_complemento'     -- frutas en ensalada, topping de porridge
+  ));
+```
+
+**Auto-clasificación:** al guardar o editar un ingrediente de receta, un helper `inferirRolIngrediente(alimento)` asigna el rol automáticamente basándose en las macros del alimento (`alimentos.proteinas`, `alimentos.carbohidratos`, `alimentos.grasas`, `alimentos.categoria`). El coach puede corregirlo manualmente desde el editor de receta.
+
+#### 5b. Reglas de scaling por rol
 
 ```typescript
-function calcularFactorGramaje(
-  receta: Receta,
-  targetKcal: number
-): number {
-  const factor = targetKcal / receta.kcal
-  // Si el factor es extremo, no escalar — usar segunda opción
-  if (factor > 1.6 || factor < 0.55) return 1.0 // señal de usar alternativa
-  return Math.round(factor * 100) / 100
+const SCALING_RULES: Record<RolIngrediente, (factor: number) => number> = {
+  proteina_principal:  (f) => f,                          // escala libre
+  carbohidrato_base:   (f) => f,                          // escala libre
+  verdura_volumen:     (f) => f,                          // escala libre
+  grasa_saludable:     (f) => 1 + (f - 1) * 0.5,         // escala amortiguada
+  salsa_condimento:    (f) => Math.min(f, 1.25),          // máx +25%
+  especias_aromaticos: (_) => 1.0,                        // fijo siempre
+  estructural:         (f) => Math.min(f, 1.15),          // máx +15%
+  lacteo_complemento:  (f) => Math.min(f, 1.30),          // máx +30%
+  fruta_complemento:   (f) => Math.min(f, 1.20),          // máx +20%
 }
 
-// Al crear comida_alimentos:
-const factorAjuste = calcularFactorGramaje(receta, comida.kcal_target)
-for (const ing of receta.receta_ingredientes) {
-  await supabase.from('comida_alimentos').insert({
-    comida_id: comidaCreada.id,
-    alimento_id: ing.alimento_id,
-    cantidad_gramos: Math.round(ing.cantidad_gramos * factorAjuste),
-    receta_id: receta.id,
-    factor_ajuste: factorAjuste,
-  })
+function calcularGramajeAjustado(
+  ing: RecetaIngrediente,
+  factorBase: number
+): number {
+  const ruleFn = SCALING_RULES[ing.rol_ingrediente ?? 'proteina_principal']
+  const factorAplicado = ruleFn(factorBase)
+  return Math.round(ing.cantidad_gramos * factorAplicado)
 }
 ```
 
-**Nueva columna en `comida_alimentos`:** `factor_ajuste float` — para que el portal pueda mostrar "Plan ajustado a tu objetivo" si `factor_ajuste != 1`.
+**Factor base:** `factor = targetKcal / receta.kcal`. Si `factor > 1.6` o `< 0.55` → descartar receta y usar la siguiente candidata. No forzar scaling extremo.
+
+**Recalcular macros reales** tras el ajuste (no usar los macros de la receta base — sumar desde los ingredientes ajustados × macros/100g del alimento).
+
+#### 5c. Clasificación de recetas por tipo
+
+Nueva columna `recetas.tipo_receta`:
+
+```sql
+ALTER TABLE recetas 
+  ADD COLUMN tipo_receta text DEFAULT 'completa' CHECK (tipo_receta IN (
+    'completa',      -- plato principal con proteína + carbohidrato/verdura
+    'guarnicion',    -- acompañamiento solo (ensalada simple, patatas asadas)
+    'salsa_base',    -- salsa, condimento, aliño — NUNCA slot principal
+    'snack_postre',  -- snack, postre, merienda ligera
+    'bebida',        -- smoothie, batido, infusión
+    'desayuno'       -- desayuno específico (porridge, tostadas, tortitas)
+  ));
+```
+
+**Auto-clasificación:** script `scripts/clasificar-tipo-receta.mjs` que recorre las 257 recetas y asigna `tipo_receta` basándose en `categoria`, `tipo_plato` y composición de ingredientes. Revisión manual para los casos ambiguos.
+
+**Regla de asignación:** el pre-filtrado por slot solo permite:
+
+| Slot | `tipo_receta` permitidos |
+|---|---|
+| Desayuno | `desayuno`, `completa` |
+| Media mañana / Snack | `snack_postre`, `desayuno`, `guarnicion` |
+| Comida | `completa` |
+| Merienda | `snack_postre`, `desayuno` |
+| Cena | `completa`, `guarnicion` (si acompañada de proteína) |
+
+`salsa_base` y `bebida` **nunca** se asignan como plato principal de un slot.
+
+#### 5d. Validación de coherencia de plato completo
+
+Antes de confirmar una receta para slot `Comida` o `Cena`, verificar:
+
+```typescript
+function esPlataCompleto(receta: Receta): boolean {
+  const roles = receta.receta_ingredientes.map(i => i.rol_ingrediente)
+  const tieneProteina = roles.some(r => r === 'proteina_principal')
+  const tieneCarbOVerdura = roles.some(r => 
+    r === 'carbohidrato_base' || r === 'verdura_volumen'
+  )
+  const kcalMinimas = receta.kcal >= 200 // evitar "platos" de 80 kcal
+  return tieneProteina && tieneCarbOVerdura && kcalMinimas
+}
+```
+
+Si no pasa → receta marcada como `tipo_receta = 'guarnicion'` automáticamente y excluida de slots principales.
 
 ---
 
@@ -351,6 +423,8 @@ Coach abre revisar-plan del cliente
 | Archivo | Tipo de cambio |
 |---|---|
 | `app/api/generar-plan-inicial/route.ts` | Refactor principal — contexto, pre-filtrado, validación |
+| `lib/plan-recetas.ts` | **Nuevo** — `filtrarRecetasPorSlot()`, `validarYResolverRecetas()`, `calcularGramajeAjustado()`, `esPlataCompleto()` |
+| `lib/ingredient-roles.ts` | **Nuevo** — `inferirRolIngrediente()`, `SCALING_RULES` |
 | `app/onboarding/page.tsx` | +4 campos nuevos |
 | `components/onboarding/StepRealFood.tsx` | +`come_fuera_dias`, `alimentos_base` |
 | `components/onboarding/StepActivity.tsx` | +`horario_comidas` |
@@ -358,16 +432,32 @@ Coach abre revisar-plan del cliente
 | `lib/nutricion-peri-entreno.ts` | Nueva función `calcularAjustesPeriEntreno()` |
 | `app/api/recetas/alternativas/route.ts` | **Nuevo endpoint** |
 | `components/PortalCliente/MiPlan.tsx` | Drawer alternativas por comida |
-| Migración SQL | 3 ALTER TABLE (onboarding, comidas, comida_alimentos) |
+| `scripts/clasificar-tipo-receta.mjs` | **Nuevo** — clasifica las 257 recetas existentes |
+| `scripts/inferir-roles-ingredientes.mjs` | **Nuevo** — auto-clasifica ingredientes de todas las recetas |
+| Migración SQL | ALTER TABLE: `onboarding_responses` (+4 cols), `comidas` (+`alternativas_receta_ids`), `comida_alimentos` (+`factor_ajuste`), `recetas` (+`tipo_receta`), `receta_ingredientes` (+`rol_ingrediente`) |
 
 ---
 
 ## Criterios de aceptación
 
+**Calidad del plan:**
 - [ ] Un plan generado para un cliente con intolerancias no contiene ninguna receta que las vulnere
+- [ ] Todos los slots `Comida` y `Cena` tienen `tipo_receta = 'completa'` — nunca una salsa o guarnición como plato principal
+- [ ] Las `especias_aromaticos` (sal, pimienta, ajo) nunca escalan con el factor base
+- [ ] Las `salsa_condimento` no superan ×1.25 de su gramaje original
+- [ ] Los macros reales del plan (calculados desde ingredientes ajustados) están dentro del ±10% del target del cliente
+
+**Vinculación portal:**
 - [ ] Todas las `comida_alimentos` insertadas tienen `alimento_id != NULL`
 - [ ] El portal del cliente muestra el plan con alimentos y cantidades tras aprobar
 - [ ] Cada comida muestra al menos 2 alternativas macroequivalentes (±20% kcal, ±25% proteína)
-- [ ] Para un cliente deportista con `hora_entreno` definida, el slot previo refleja el ajuste peri-entreno en notas
+
+**Deportistas:**
+- [ ] Para un cliente con `hora_entreno` definida, el slot previo refleja el ajuste peri-entreno en notas
 - [ ] Para un cliente en fase `tapering`, el plan no reduce carbohidratos (alert si lo intenta)
+- [ ] El tipo de ajuste peri-entreno varía según `tipo_entreno` (running ≠ gym ≠ crossfit)
+
+**Técnico:**
 - [ ] `npm run build` sin errores tras todos los cambios
+- [ ] Script `clasificar-tipo-receta.mjs` clasifica las 257 recetas sin revisión manual excepto casos ambiguos
+- [ ] Script `inferir-roles-ingredientes.mjs` asigna rol a ≥85% de los ingredientes de todas las recetas
