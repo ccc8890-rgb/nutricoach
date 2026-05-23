@@ -266,6 +266,49 @@ function calcularGramajeAjustado(
 
 **Recalcular macros reales** tras el ajuste (no usar los macros de la receta base — sumar desde los ingredientes ajustados × macros/100g del alimento).
 
+#### 5b-bis. Ingredientes con cantidad fija y recetas vinculadas
+
+Algunas recetas contienen salsas o condimentos que tienen **su propia receta** en el recetario. Por ejemplo: una burger de pollo lleva "Mayonesa healthy" — esa mayonesa es una receta completa con pasos e ingredientes propios, y además sus gramos son **absolutamente fijos** (15g siempre, independientemente de cómo escale el resto del plato).
+
+**Nuevas columnas en `receta_ingredientes`:**
+
+```sql
+ALTER TABLE receta_ingredientes
+  ADD COLUMN es_cantidad_fija boolean DEFAULT false,
+  ADD COLUMN receta_vinculada_id uuid REFERENCES recetas(id);
+```
+
+- `es_cantidad_fija = true` → el scaling ignora este ingrediente completamente. Ni la regla `salsa_condimento` aplica — los gramos son inmutables. Úsase cuando alterar la cantidad rompería la lógica de la receta (una salsa de topping, un aliño específico, una cucharada de tahini).
+- `receta_vinculada_id` → este ingrediente tiene su propia receta en el recetario. El portal muestra un enlace "Ver receta →" al lado del ingrediente.
+
+**Prioridad de scaling** (de mayor a menor):
+1. `es_cantidad_fija = true` → gramos fijos, sin excepción
+2. `rol_ingrediente = 'especias_aromaticos'` → factor 1.0
+3. `SCALING_RULES[rol_ingrediente]` → regla por rol
+4. Resto → factor base
+
+**`recetas.salsas_recomendadas`** — lista de IDs de salsas del recetario que Carlos recomienda con este plato (sin ser obligatorias). El cliente las ve como "También puedes añadir":
+
+```sql
+ALTER TABLE recetas ADD COLUMN salsas_recomendadas uuid[];
+```
+
+**Flujo en el portal del cliente para una receta con salsa vinculada:**
+
+```
+Mi Plan — Comida
+├── Burger de pollo (450 kcal)
+│   ├── Pechuga de pollo picada — 180g  [escala con factor]
+│   ├── Pan integral — 1 ud (90g)       [estructural — max +15%]
+│   ├── Lechuga, tomate — 60g           [verdura — escala]
+│   └── Mayonesa healthy — 15g  🔗 Ver receta →   [fijo, vinculado]
+│
+└── También puedes añadir:
+    └── Ketchup de tomate casero 🔗 Ver receta →
+```
+
+**Recetario UI:** las recetas con `tipo_receta = 'salsa_base'` aparecen en una sección separada "Salsas & Bases" dentro del recetario, no mezcladas con platos principales. Carlos las gestiona igual que cualquier receta pero están marcadas visualmente como "no es plato completo".
+
 #### 5c. Clasificación de recetas por tipo
 
 Nueva columna `recetas.tipo_receta`:
@@ -434,7 +477,9 @@ Coach abre revisar-plan del cliente
 | `components/PortalCliente/MiPlan.tsx` | Drawer alternativas por comida |
 | `scripts/clasificar-tipo-receta.mjs` | **Nuevo** — clasifica las 257 recetas existentes |
 | `scripts/inferir-roles-ingredientes.mjs` | **Nuevo** — auto-clasifica ingredientes de todas las recetas |
-| Migración SQL | ALTER TABLE: `onboarding_responses` (+4 cols), `comidas` (+`alternativas_receta_ids`), `comida_alimentos` (+`factor_ajuste`), `recetas` (+`tipo_receta`), `receta_ingredientes` (+`rol_ingrediente`) |
+| `components/recetas/RecetaIngredienteItem.tsx` | **Nuevo** — item con link "Ver receta →" si tiene `receta_vinculada_id` |
+| `app/recetas/[id]/page.tsx` | Sección "Salsas recomendadas" si `salsas_recomendadas` no vacío |
+| Migración SQL | ALTER TABLE: `onboarding_responses` (+4 cols), `comidas` (+`alternativas_receta_ids`), `comida_alimentos` (+`factor_ajuste`), `recetas` (+`tipo_receta`, +`salsas_recomendadas`), `receta_ingredientes` (+`rol_ingrediente`, +`es_cantidad_fija`, +`receta_vinculada_id`) |
 
 ---
 
@@ -456,6 +501,12 @@ Coach abre revisar-plan del cliente
 - [ ] Para un cliente con `hora_entreno` definida, el slot previo refleja el ajuste peri-entreno en notas
 - [ ] Para un cliente en fase `tapering`, el plan no reduce carbohidratos (alert si lo intenta)
 - [ ] El tipo de ajuste peri-entreno varía según `tipo_entreno` (running ≠ gym ≠ crossfit)
+
+**Salsas vinculadas:**
+- [ ] Un ingrediente con `es_cantidad_fija = true` nunca cambia de gramaje aunque el factor base sea 1.8
+- [ ] Un ingrediente con `receta_vinculada_id` muestra un enlace "Ver receta →" en el portal del cliente
+- [ ] Las recetas `tipo_receta = 'salsa_base'` aparecen en sección "Salsas & Bases" separada del recetario, no como platos principales
+- [ ] `salsas_recomendadas` de una receta aparecen como sugerencias opcionales en la vista del plan del cliente
 
 **Técnico:**
 - [ ] `npm run build` sin errores tras todos los cambios
