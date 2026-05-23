@@ -1,5 +1,13 @@
 // ================================================================
-// EXECUTOR BASE — Llama a DeepSeek y guarda resultado en BD
+// EXECUTOR BASE — Routing inteligente de modelos IA
+//
+// Modelo por tipo de tarea:
+//   Gemini 2.5 Flash  → tareas diarias simples (riesgo, feedback)
+//                        Muy barato ($0.075/M), rápido, 1M contexto
+//   DeepSeek V3       → análisis semanal estructurado (revisor, memoria)
+//                        Mejor en JSON estricto y razonamiento nutricional
+//   DeepSeek R1       → plan inicial onboarding (2-3/mes, alta calidad)
+//                        Reasoning model, vale el coste extra en 1ª impresión
 // ================================================================
 
 import { createServiceSupabase } from '@/lib/supabase-server'
@@ -13,30 +21,82 @@ import type {
   CoachMemoria,
 } from './types'
 
+// ── Configuración de modelos ──────────────────────────────────
 const DEEPSEEK_API = 'https://api.deepseek.com/v1/chat/completions'
-const DEEPSEEK_MODEL = 'deepseek-chat'
+const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models'
 
-// ── Llamada raw a DeepSeek ────────────────────────────────────
+export const MODELOS = {
+  // Tareas diarias simples: alertas, feedback, mensajes motivación
+  FLASH: 'gemini-2.5-flash',
+  // Análisis semanal estructurado: revisión macros, extracción reglas
+  ANALISIS: 'deepseek-chat',
+  // Plan inicial onboarding: máxima calidad, solo 2-3 veces/mes
+  RAZONAMIENTO: 'deepseek-reasoner',
+} as const
+
+// ── Gemini 2.5 Flash — tareas ligeras diarias ─────────────────
+export async function llamarGemini(
+  prompt: string,
+  temperature = 0.4
+): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('GEMINI_API_KEY no configurada')
+
+  const res = await fetch(
+    `${GEMINI_API}/${MODELOS.FLASH}:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature,
+          responseMimeType: 'application/json',
+        },
+      }),
+    }
+  )
+
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Gemini error ${res.status}: ${err}`)
+  }
+
+  const data = await res.json()
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{}'
+}
+
+// ── DeepSeek V3 — análisis semanal estructurado ───────────────
 export async function llamarDeepSeek(
   systemPrompt: string,
   userPrompt: string,
-  temperature = 0.3
+  temperature = 0.3,
+  modelo: 'deepseek-chat' | 'deepseek-reasoner' = 'deepseek-chat'
 ): Promise<string> {
+  const apiKey = process.env.DEEPSEEK_API_KEY
+  if (!apiKey) throw new Error('DEEPSEEK_API_KEY no configurada')
+
+  const body: Record<string, unknown> = {
+    model: modelo,
+    temperature,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+  }
+
+  // R1 (reasoner) no acepta response_format JSON
+  if (modelo === 'deepseek-chat') {
+    body.response_format = { type: 'json_object' }
+  }
+
   const res = await fetch(DEEPSEEK_API, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model: DEEPSEEK_MODEL,
-      temperature,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!res.ok) {
@@ -45,7 +105,15 @@ export async function llamarDeepSeek(
   }
 
   const data = await res.json()
-  return data.choices?.[0]?.message?.content ?? '{}'
+  const content = data.choices?.[0]?.message?.content ?? '{}'
+
+  // R1 devuelve texto con posible razonamiento antes del JSON — extraer solo el JSON
+  if (modelo === 'deepseek-reasoner') {
+    const match = content.match(/\{[\s\S]*\}/)
+    return match ? match[0] : '{}'
+  }
+
+  return content
 }
 
 // ── Cargar contexto completo de un cliente ────────────────────

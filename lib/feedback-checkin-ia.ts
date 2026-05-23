@@ -1,17 +1,20 @@
 // lib/feedback-checkin-ia.ts
-// Genera un mensaje corto de feedback personalizado tras un check-in
+// Gemini 2.5 Flash: feedback post-checkin — tarea diaria simple
+// Baratísimo ($0.075/M tokens), rápido, calidad suficiente para mensajes cortos
+
+const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash'
 
 interface DatosCheckin {
-    nombre: string        // nombre del cliente
+    nombre: string
     peso?: number | null
     adherencia?: number | null  // 1-10
     energia?: number | null     // 1-10
     sueno?: number | null       // 1-10
-    objetivo?: string | null    // objetivo del cliente (perder_grasa, ganar_musculo, etc.)
+    objetivo?: string | null
 }
 
 export async function generarFeedbackCheckinIA(datos: DatosCheckin): Promise<string | null> {
-    const apiKey = process.env.DEEPSEEK_API_KEY
+    const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) return null
 
     const partes = []
@@ -21,43 +24,34 @@ export async function generarFeedbackCheckinIA(datos: DatosCheckin): Promise<str
     if (datos.sueno != null) partes.push(`sueño: ${datos.sueno}/10`)
     if (datos.objetivo != null) partes.push(`objetivo: ${datos.objetivo}`)
 
-    const resumenCheckin = partes.join(', ')
+    const prompt = `Eres el coach nutricional personal de ${datos.nombre}. Responde en español, tono cálido y motivador. Máximo 3 frases cortas. Sin emojis en exceso (máximo 1). Sin saludos como "¡Hola!" — ir directo al feedback.
 
-    const payload = {
-        model: 'deepseek-chat',
-        temperature: 0.7,
-        max_tokens: 120,
-        messages: [
-            {
-                role: 'system',
-                content: `Eres el coach nutricional personal de ${datos.nombre}. Responde siempre en español, con tono cálido y motivador. Máximo 3 frases cortas. Sin emojis en exceso (máximo 1). Sin saludos como "¡Hola!" — ir directo al feedback.`,
-            },
-            {
-                role: 'user',
-                content: `Datos del check-in de esta semana: ${resumenCheckin}. Dame un feedback breve y personalizado.`,
-            },
-        ],
-    }
+Datos del check-in: ${partes.join(', ')}.
+
+Escribe el feedback breve y personalizado.`
 
     try {
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 9000) // 9s timeout
+        const timeout = setTimeout(() => controller.abort(), 9000)
 
-        const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify(payload),
-            signal: controller.signal,
-        })
+        const res = await fetch(
+            `${GEMINI_API}:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 150 },
+                }),
+                signal: controller.signal,
+            }
+        )
         clearTimeout(timeout)
 
         if (!res.ok) return null
         const json = await res.json()
-        return json.choices?.[0]?.message?.content?.trim() ?? null
+        return json.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? null
     } catch {
-        return null // timeout o error de red → silencioso
+        return null
     }
 }

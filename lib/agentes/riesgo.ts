@@ -4,7 +4,7 @@
 // Se ejecuta diariamente. Solo genera tarea si riesgo > umbral.
 // ================================================================
 
-import { llamarDeepSeek, cargarContextoCliente, guardarTareaAgente } from './executor'
+import { llamarGemini, cargarContextoCliente, guardarTareaAgente } from './executor'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import type { ContextoCliente, ResultadoAgente } from './types'
 
@@ -56,8 +56,9 @@ export async function ejecutarAgenteRiesgo(clienteId: string): Promise<void> {
 
   if (existente?.length) return  // Ya hay una alerta pendiente
 
-  const userPrompt = construirPrompt(ctx, riesgo)
-  const raw = await llamarDeepSeek(SYSTEM_PROMPT, userPrompt, 0.4)
+  // Gemini Flash: tarea diaria simple, barato y suficientemente preciso
+  const userPrompt = `${SYSTEM_PROMPT}\n\n${construirPrompt(ctx, riesgo)}`
+  const raw = await llamarGemini(userPrompt, 0.4)
 
   let parsed: Record<string, unknown>
   try {
