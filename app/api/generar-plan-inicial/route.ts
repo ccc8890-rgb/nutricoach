@@ -13,6 +13,7 @@ import type { MetodologiaCoach } from '@/types'
 import { filtrarRecetasPorSlot, validarYResolverRecetas, calcularFactorGramaje, calcularTargetSlot, type PlanDeepSeekValidado } from '@/lib/plan-recetas'
 import { calcularGramajeAjustado } from '@/lib/ingredient-roles'
 import { calcularAjustesPeriEntreno } from '@/lib/nutricion-peri-entreno'
+import { getContextoCoach, getContextoClienteClinico, getTargetsComidas } from '@/lib/metodologia-recetario'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
@@ -399,6 +400,33 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
     alimentos_base: (onboarding as Record<string, unknown>).alimentos_base as string[] | null,
   }
 
+  // Tags clínicos derivados del perfil del cliente (filtro blando en recetario)
+  const condicionSalud = ((perfil as Record<string, unknown>)?.condiciones_salud as string ?? '').toLowerCase()
+  const tieneSOP = condicionSalud.includes('sop') || (onboarding.restricciones ?? []).includes('sop')
+  const tieneHashimoto = condicionSalud.includes('hashimoto') || condicionSalud.includes('hipotiroidismo')
+  const esAtleta = onboarding.objetivo === 'rendimiento' || (onboarding.dias_entreno ?? 0) >= 4
+  const tagsClinicosRequeridos: Parameters<typeof filtrarRecetasPorSlot>[8] = {
+    ...(tieneSOP && { apto_sop: true }),
+    ...(tieneHashimoto && { apto_hashimoto: true }),
+    ...(esAtleta && { apto_rendimiento: true }),
+  }
+
+  // Contexto clínico para el sistema prompt de IA
+  const contextoClinico = [
+    getContextoCoach({ incluirIngredientes: true }),
+    getContextoClienteClinico({
+      objetivo: onboarding.objetivo,
+      restricciones: onboarding.restricciones ?? [],
+      condiciones_salud: (perfil as Record<string, unknown>)?.condiciones_salud as string | undefined,
+      actividad: onboarding.actividad_base,
+      peso_kg: cliente.peso_inicial ?? undefined,
+      altura_cm: cliente.altura ?? undefined,
+      edad: cliente.edad ?? undefined,
+      sexo: cliente.sexo ?? undefined,
+    }),
+    `TARGETS POR COMIDA:\n${getTargetsComidas()}`,
+  ].filter(Boolean).join('\n\n')
+
   const candidatasPorSlot = new Map<string, import('@/types').RecetaCandidata[]>()
 
   for (const slot of slots) {
@@ -406,7 +434,8 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
     const candidatas = await filtrarRecetasPorSlot(
       supabase, slot, targetKcal, targetProt, filtroCliente, 6,
       cliente_id,
-      onboarding.objetivo
+      onboarding.objetivo,
+      tagsClinicosRequeridos && Object.keys(tagsClinicosRequeridos).length > 0 ? tagsClinicosRequeridos : undefined
     )
     candidatasPorSlot.set(slot, candidatas)
   }
@@ -533,7 +562,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
   try {
     if (apiKey) {
       // Estrategia: primero intentar generar dieta con recetas
-      const resultado = await generarDietaConIA(promptDieta)
+      const resultado = await generarDietaConIA(promptDieta, contextoClinico || undefined)
       const dietaGenerada = resultado.data
       dietaIA = dietaGenerada
       tokensUsados = resultado.total_tokens

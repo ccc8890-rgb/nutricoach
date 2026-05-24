@@ -77,7 +77,8 @@ export async function filtrarRecetasPorSlot(
   filtroCliente: FiltroCliente,
   limit = 6,
   clienteId?: string,
-  objetivoCliente?: string
+  objetivoCliente?: string,
+  tagsClinicosRequeridos?: Partial<Record<'apto_sop' | 'apto_hashimoto' | 'apto_rendimiento' | 'es_post_entreno' | 'es_pre_entreno', boolean>>
 ): Promise<RecetaCandidata[]> {
   const categorias = SLOT_CATEGORIAS[slotNombre] ?? SLOT_CATEGORIAS['Comida']
   const tiposPermitidos = SLOT_TIPOS_PERMITIDOS[slotNombre] ?? ['completa']
@@ -150,6 +151,16 @@ export async function filtrarRecetasPorSlot(
   // Filtro blando: excluir recientes si quedan >=3
   const sinRecientes = candidatas.filter(r => !recientesIds.has(r.id))
   if (sinRecientes.length >= 3) candidatas = sinRecientes
+
+  // Filtro blando: tags clínicos (SOP, Hashimoto, Rendimiento, peri-entreno)
+  // Solo se aplica si hay tags requeridos Y quedan >=3 candidatas tras el filtro
+  if (tagsClinicosRequeridos && Object.keys(tagsClinicosRequeridos).length > 0) {
+    const conTags = candidatas.filter(r => {
+      const rec = r as Record<string, unknown>
+      return Object.entries(tagsClinicosRequeridos).every(([tag, val]) => rec[tag] === val)
+    })
+    if (conTags.length >= 3) candidatas = conTags
+  }
 
   // Sort score compuesto
   const aptasObjetivo = objetivoCliente ? (OBJETIVO_APTA[objetivoCliente] ?? ['general']) : ['general']

@@ -165,7 +165,7 @@ SCHEMA DE SALIDA JSON (respeta todos los campos):
  * Lanza error si la API falla o el JSON de respuesta no es válido.
  * Devuelve { data, total_tokens } para poder loguear el consumo.
  */
-export async function generarDietaConIA(prompt: string): Promise<{ data: DietaGenerada; total_tokens: number }> {
+export async function generarDietaConIA(prompt: string, contextoClinico?: string): Promise<{ data: DietaGenerada; total_tokens: number }> {
     const apiKey = process.env.DEEPSEEK_API_KEY
 
     if (!apiKey) {
@@ -207,8 +207,12 @@ FILOSOFÍA: Cada plan que generas es el que un nutricionista de 150-200€/sesi�
 
 RESPONDE ÚNICAMENTE EN JSON VÁLIDO. Sin markdown, sin explicaciones fuera del JSON.`
 
+    const systemContent = contextoClinico
+        ? `${SYSTEM_PROMPT_ELITE}\n\n${contextoClinico}`
+        : SYSTEM_PROMPT_ELITE
+
     const messages: DeepSeekMessage[] = [
-        { role: 'system', content: SYSTEM_PROMPT_ELITE },
+        { role: 'system', content: systemContent },
         { role: 'user', content: prompt },
     ]
 
