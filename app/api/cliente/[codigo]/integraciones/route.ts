@@ -5,9 +5,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
   const { codigo } = await params
   const db = createServiceSupabase()
 
-  const { data: cliente } = await db
-    .from('clientes').select('id').eq('codigo_portal', codigo).single()
-  if (!cliente) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
+  const { data: plan } = await db
+    .from('planes_nutricion').select('cliente_id').eq('codigo_publico', codigo).eq('activo', true).single()
+  if (!plan) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
+  const cliente = { id: plan.cliente_id }
 
   const { data: integraciones } = await db
     .from('integraciones_cliente')

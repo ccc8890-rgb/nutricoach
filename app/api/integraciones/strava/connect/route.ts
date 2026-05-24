@@ -11,10 +11,10 @@ export async function GET(req: NextRequest) {
   // Soporte para llamada desde portal cliente (sin sesión de coach)
   if (!resolvedClienteId && codigo) {
     const db = createServiceSupabase()
-    const { data: cliente } = await db
-      .from('clientes').select('id').eq('codigo_portal', codigo).single()
-    if (!cliente) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
-    resolvedClienteId = cliente.id
+    const { data: plan } = await db
+      .from('planes_nutricion').select('cliente_id').eq('codigo_publico', codigo).eq('activo', true).single()
+    if (!plan) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
+    resolvedClienteId = plan.cliente_id
   }
 
   if (!resolvedClienteId) return NextResponse.json({ error: 'cliente_id requerido' }, { status: 400 })
