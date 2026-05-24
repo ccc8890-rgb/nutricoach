@@ -1,5 +1,46 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 24-05-2026 (Sesión 41) — Auditoría E2E + 2 SQL migrations + arranque Fase B/C
+
+### Qué se hizo
+
+**Auditoría completa del estado E2E de la app** — revisión de todos los bugs y pendientes acumulados desde sesión 22 hasta 40. Resultado: la mayoría ya estaban resueltos en sesiones anteriores.
+
+**2 SQL aplicadas en Supabase:**
+| Migration | Resultado |
+|-----------|-----------|
+| `20260524_garmin_connect_perclient.sql` | ✅ Aplicada — CHECK ampliado + columna `credenciales_json TEXT` en `integraciones_cliente` |
+| `fix_prs_por_ejercicio_v2.sql` | ✅ Aplicada — vista `prs_por_ejercicio` ahora lee `s.set_data ->> 'peso_kg'` (el set más pesado, no el primero) |
+
+**Verificaciones de código (ya resueltos en sesiones anteriores):**
+- `getSummaryLast7d` ya reconoce `garmin_connect` — query sin filtro de proveedor, `garmin_connect` en el tipo `Proveedor`
+- `IntegracionesPanel` ya correcto — form credenciales (no OAuth), badge "Sync automático"
+- `revisar-rapido` ya correcto — interfaz `PlanInicial` con `recetas[]`, chips púrpura DeepSeek
+- BUG-T01 ya correcto — `entrenos/plantillas` filtra por `sport_modality` desde sesión 25
+
+**Arranque Fase B/C — brainstorming iniciado:**
+- Decisión: empezar por **adherencia** (Fase C) — más impacto inmediato como coach
+- Siguiente paso: registro de comidas en portal (tabla `registro_comidas_dia` ya existe: id, cliente_id, plan_id, comida_id, fecha, estado, notas)
+- Pendiente decidir granularidad del registro (binario / 3 estados / porcentaje) — sesión parada en esa pregunta
+
+### ⚠️ PRÓXIMA SESIÓN — Continuación Fase C: Adherencia
+
+**Punto exacto donde se paró el brainstorming:**
+> Cuando el cliente marca una comida, ¿qué registra?
+> A) Solo "completada / saltada" (binario)
+> B) Completada / parcialmente / saltada + motivo opcional
+> C) Completada + porcentaje de porciones
+
+Carlos elige A, B o C → a partir de ahí se diseña el sistema completo y se implementa.
+
+**Piezas a construir (en orden):**
+1. **Portal cliente**: botón/checkbox en cada comida de `MiPlan.tsx` → llama `POST /api/cliente/[codigo]/registro-comidas`
+2. **API registro**: inserta/actualiza `registro_comidas_dia` (tabla ya existe en BD)
+3. **Cálculo adherencia**: `%_adherencia = comidas_completadas / comidas_totales` por semana
+4. **Vista coach**: en ficha cliente (`/clientes/[id]`) — tab o sección con adherencia semanal + histórico
+
+---
+
 ## ✅ SESIÓN 24-05-2026 (Sesión 40) — Garmin Connect por cliente + GARMIN_CREDENTIALS_KEY
 
 ### Qué se construyó
