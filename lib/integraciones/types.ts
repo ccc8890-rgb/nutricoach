@@ -1,6 +1,6 @@
 // lib/integraciones/types.ts
 
-export type Proveedor = 'strava' | 'garmin' | 'google_fit' | 'whoop' | 'manual'
+export type Proveedor = 'strava' | 'garmin' | 'garmin_connect' | 'google_fit' | 'whoop' | 'manual'
 
 export interface IntegracionCliente {
   id: string
@@ -55,6 +55,11 @@ export interface ResumenActividadSemanal {
   dia_mas_activo: string | null      // 'lunes', 'martes', etc.
   fuentes: Proveedor[]
   tiene_datos: boolean
+  // Garmin Connect específicos
+  body_battery_media: number | null  // promedio body battery end-of-day
+  stress_avg_media: number | null    // promedio estrés diario
+  training_readiness_media: number | null  // promedio training readiness score
+  rhr_media: number | null           // promedio resting heart rate
 }
 
 // Contrato que cada conector debe implementar

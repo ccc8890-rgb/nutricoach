@@ -53,6 +53,8 @@ export async function getSummaryLast7d(
       tss_semanal: 0, hrv_media: null, sesiones_entreno: 0,
       minutos_alta_intensidad_total: 0, dia_mas_activo: null,
       fuentes: [], tiene_datos: false,
+      body_battery_media: null, stress_avg_media: null,
+      training_readiness_media: null, rhr_media: null,
     }
   }
 
@@ -74,6 +76,11 @@ export async function getSummaryLast7d(
   }
   const diaMasActivo = Object.entries(pasosPorDia).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
 
+  const bodyBattery = rows.map(r => r.body_battery_end).filter(v => v != null) as number[]
+  const stressVals = rows.map(r => r.stress_avg).filter(v => v != null) as number[]
+  const readiness = rows.map(r => r.training_readiness).filter(v => v != null) as number[]
+  const rhrVals = rows.map(r => r.rhr).filter(v => v != null) as number[]
+
   return {
     pasos_media: Math.round(avg(pasos)),
     calorias_activas_total: sum(rows.map(r => r.calorias_activas)),
@@ -85,5 +92,9 @@ export async function getSummaryLast7d(
     dia_mas_activo: diaMasActivo,
     fuentes: [...new Set(rows.map(r => r.proveedor))] as Proveedor[],
     tiene_datos: true,
+    body_battery_media: bodyBattery.length ? Math.round(avg(bodyBattery)) : null,
+    stress_avg_media: stressVals.length ? Math.round(avg(stressVals)) : null,
+    training_readiness_media: readiness.length ? Math.round(avg(readiness)) : null,
+    rhr_media: rhrVals.length ? Math.round(avg(rhrVals)) : null,
   }
 }

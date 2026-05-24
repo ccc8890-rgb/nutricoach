@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Activity, Watch, Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { Activity, Watch, Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp } from 'lucide-react'
+
+// ─── Tipos ──────────────────────────────────────────────────────────────────
 
 interface IntegracionInfo {
   proveedor: string
@@ -9,21 +11,102 @@ interface IntegracionInfo {
   error_ultimo: string | null
 }
 
-const PROVEEDORES_CONFIG = [
+interface GarminConnectStatus {
+  activa: boolean
+  ultima_sync: string | null
+  datos_hoy: {
+    body_battery_end: number | null
+    training_readiness: number | null
+    pasos: number | null
+    stress_avg: number | null
+    rhr: number | null
+    hrv: number | null
+    calorias_totales: number | null
+  } | null
+}
+
+interface GarminDia {
+  fecha: string
+  pasos: number | null
+  calorias_totales: number | null
+  rhr: number | null
+  hrv: number | null
+  body_battery_max: number | null
+  body_battery_min: number | null
+  body_battery_end: number | null
+  stress_avg: number | null
+  training_readiness: number | null
+  distancia_km: number | null
+  sueno_h: number | null
+  minutos_activo: number | null
+  minutos_alta_intensidad: number | null
+}
+
+interface GarminPromedios {
+  pasos: number
+  calorias_totales: number
+  rhr: number
+  hrv: number | null
+  body_battery_end: number | null
+  stress_avg: number | null
+  training_readiness: number | null
+}
+
+// ─── Helpers visuales ────────────────────────────────────────────────────────
+
+function bodyBatteryColor(val: number) {
+  if (val >= 70) return '#22c55e'
+  if (val >= 40) return '#f59e0b'
+  return '#ef4444'
+}
+
+function readinessColor(val: number) {
+  if (val >= 70) return '#22c55e'
+  if (val >= 40) return '#f59e0b'
+  return '#ef4444'
+}
+
+function stressLabel(val: number) {
+  if (val < 26) return 'Bajo'
+  if (val < 51) return 'Medio'
+  if (val < 76) return 'Alto'
+  return 'Muy alto'
+}
+
+function stressColor(val: number) {
+  if (val < 26) return '#22c55e'
+  if (val < 51) return '#f59e0b'
+  return '#ef4444'
+}
+
+function StatPill({ label, value, unit, color }: { label: string; value: string | number; unit?: string; color?: string }) {
+  return (
+    <div className="flex flex-col items-center bg-[var(--bg)] rounded-xl px-3 py-2 min-w-[72px]">
+      <span className="text-[10px] text-[var(--text-muted)] mb-0.5">{label}</span>
+      <span className="text-base font-bold" style={{ color: color ?? 'var(--text)' }}>{value}</span>
+      {unit && <span className="text-[9px] text-[var(--text-muted)]">{unit}</span>}
+    </div>
+  )
+}
+
+function GaugeBar({ value, max = 100, color }: { value: number; max?: number; color: string }) {
+  const pct = Math.min(100, Math.round((value / max) * 100))
+  return (
+    <div className="w-full h-2 rounded-full bg-[var(--bg)] overflow-hidden">
+      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
+    </div>
+  )
+}
+
+// ─── Proveedores OAuth (Strava, Garmin API oficial, Google Fit) ────────────
+
+const OAUTH_PROVEEDORES = [
   {
     key: 'strava',
     nombre: 'Strava',
     descripcion: 'Actividades de running, ciclismo y natación',
     icono: Activity,
     color: '#FC4C02',
-    disponible: true,
-  },
-  {
-    key: 'garmin',
-    nombre: 'Garmin',
-    descripcion: 'Pasos, HRV, sueño y carga de entrenamiento',
-    icono: Watch,
-    color: '#007CC3',
     disponible: true,
   },
   {
@@ -40,7 +123,7 @@ const PROVEEDORES_CONFIG = [
     descripcion: 'HRV, recuperación y strain diario',
     icono: Heart,
     color: '#111111',
-    disponible: false, // pendiente aprobación partner
+    disponible: false,
   },
 ]
 
@@ -49,15 +132,23 @@ interface Props {
   clienteId: string
 }
 
+// ─── Componente principal ────────────────────────────────────────────────────
+
 export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   const [integraciones, setIntegraciones] = useState<IntegracionInfo[]>([])
+  const [garminConnect, setGarminConnect] = useState<GarminConnectStatus | null>(null)
+  const [garminResumen, setGarminResumen] = useState<{ dias: GarminDia[]; promedios: GarminPromedios; tiene_datos: boolean } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/cliente/${codigo}/integraciones`)
-      .then(r => r.json())
-      .then(d => setIntegraciones(d.integraciones ?? []))
-      .finally(() => setLoading(false))
+    Promise.all([
+      fetch(`/api/cliente/${codigo}/integraciones`).then(r => r.json()),
+      fetch(`/api/cliente/${codigo}/garmin-resumen`).then(r => r.json()),
+    ]).then(([intData, garminData]) => {
+      setIntegraciones(intData.integraciones ?? [])
+      setGarminConnect(intData.garmin_connect ?? null)
+      setGarminResumen(garminData)
+    }).finally(() => setLoading(false))
   }, [codigo])
 
   const getEstado = (key: string) => integraciones.find(i => i.proveedor === key)
@@ -78,6 +169,9 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
     </div>
   )
 
+  const hoy = garminConnect?.datos_hoy
+  const promedios = garminResumen?.promedios
+
   return (
     <div className="space-y-4">
       <div className="mb-4">
@@ -87,7 +181,167 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
         </p>
       </div>
 
-      {PROVEEDORES_CONFIG.map(({ key, nombre, descripcion, icono: Icono, color, disponible }) => {
+      {/* ── Garmin Connect (unofficial sync automático) ─────────────────── */}
+      <div className="card p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#007CC320' }}>
+              <Watch size={20} style={{ color: '#007CC3' }} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-[var(--text)]">Garmin Connect</span>
+                {garminConnect?.activa
+                  ? <CheckCircle size={14} className="text-green-500" />
+                  : <XCircle size={14} className="text-[var(--text-muted)]" />}
+              </div>
+              <p className="text-xs text-[var(--text-muted)]">Pasos, HRV, sueño y carga de entrenamiento</p>
+              {garminConnect?.ultima_sync && (
+                <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
+                  Última sync: {new Date(garminConnect.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                </p>
+              )}
+            </div>
+          </div>
+          {garminConnect?.activa ? (
+            <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5 shrink-0">
+              Sync automático
+            </span>
+          ) : (
+            <span className="text-[10px] text-[var(--text-muted)] bg-[var(--surface)] rounded-full px-2 py-0.5 shrink-0">
+              Sin datos
+            </span>
+          )}
+        </div>
+
+        {/* Datos del último día disponible */}
+        {hoy && (
+          <div className="mt-4 pt-4 border-t border-[var(--border)]">
+            <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">
+              Último registro · {garminConnect?.ultima_sync ? new Date(garminConnect.ultima_sync).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }) : ''}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {hoy.body_battery_end != null && (
+                <div className="flex-1 min-w-[80px] bg-[var(--bg)] rounded-xl p-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <BatteryMedium size={12} style={{ color: bodyBatteryColor(hoy.body_battery_end) }} />
+                    <span className="text-[10px] text-[var(--text-muted)]">Body Battery</span>
+                  </div>
+                  <span className="text-xl font-bold" style={{ color: bodyBatteryColor(hoy.body_battery_end) }}>
+                    {hoy.body_battery_end}
+                  </span>
+                  <GaugeBar value={hoy.body_battery_end} color={bodyBatteryColor(hoy.body_battery_end)} />
+                </div>
+              )}
+              {hoy.training_readiness != null && (
+                <div className="flex-1 min-w-[80px] bg-[var(--bg)] rounded-xl p-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Brain size={12} style={{ color: readinessColor(hoy.training_readiness) }} />
+                    <span className="text-[10px] text-[var(--text-muted)]">Preparación</span>
+                  </div>
+                  <span className="text-xl font-bold" style={{ color: readinessColor(hoy.training_readiness) }}>
+                    {hoy.training_readiness}
+                  </span>
+                  <GaugeBar value={hoy.training_readiness} color={readinessColor(hoy.training_readiness)} />
+                </div>
+              )}
+              {hoy.stress_avg != null && (
+                <div className="flex-1 min-w-[80px] bg-[var(--bg)] rounded-xl p-3">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Wind size={12} style={{ color: stressColor(hoy.stress_avg) }} />
+                    <span className="text-[10px] text-[var(--text-muted)]">Estrés</span>
+                  </div>
+                  <span className="text-xl font-bold" style={{ color: stressColor(hoy.stress_avg) }}>
+                    {hoy.stress_avg}
+                  </span>
+                  <span className="text-[10px]" style={{ color: stressColor(hoy.stress_avg) }}>{stressLabel(hoy.stress_avg)}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {hoy.pasos != null && (
+                <StatPill label="Pasos" value={hoy.pasos.toLocaleString('es-ES')} />
+              )}
+              {hoy.rhr != null && (
+                <StatPill label="FC reposo" value={hoy.rhr} unit="ppm" color="#ef4444" />
+              )}
+              {hoy.hrv != null && (
+                <StatPill label="HRV" value={hoy.hrv} unit="ms" color="#8b5cf6" />
+              )}
+              {hoy.calorias_totales != null && (
+                <StatPill label="TDEE" value={hoy.calorias_totales.toLocaleString('es-ES')} unit="kcal" color="#f97316" />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Promedios 7 días */}
+        {garminResumen?.tiene_datos && promedios && garminResumen.dias.length > 1 && (
+          <div className="mt-3 pt-3 border-t border-[var(--border)]">
+            <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">
+              Media últimos {garminResumen.dias.length} días
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {promedios.pasos > 0 && (
+                <div className="flex items-center gap-1.5 bg-[var(--bg)] rounded-lg px-2.5 py-1.5">
+                  <Footprints size={11} className="text-[var(--primary)]" />
+                  <span className="text-xs text-[var(--text)]">{promedios.pasos.toLocaleString('es-ES')} pasos/día</span>
+                </div>
+              )}
+              {promedios.calorias_totales > 0 && (
+                <div className="flex items-center gap-1.5 bg-[var(--bg)] rounded-lg px-2.5 py-1.5">
+                  <Flame size={11} className="text-orange-500" />
+                  <span className="text-xs text-[var(--text)]">{promedios.calorias_totales.toLocaleString('es-ES')} kcal TDEE/día</span>
+                </div>
+              )}
+              {promedios.hrv != null && (
+                <div className="flex items-center gap-1.5 bg-[var(--bg)] rounded-lg px-2.5 py-1.5">
+                  <TrendingUp size={11} className="text-purple-500" />
+                  <span className="text-xs text-[var(--text)]">HRV media {promedios.hrv} ms</span>
+                </div>
+              )}
+              {promedios.training_readiness != null && (
+                <div className="flex items-center gap-1.5 bg-[var(--bg)] rounded-lg px-2.5 py-1.5">
+                  <Brain size={11} style={{ color: readinessColor(promedios.training_readiness) }} />
+                  <span className="text-xs text-[var(--text)]">Preparación media {promedios.training_readiness}/100</span>
+                </div>
+              )}
+            </div>
+            {/* Mini sparkline de body battery */}
+            {garminResumen.dias.some(d => d.body_battery_end != null) && (
+              <div className="mt-3">
+                <p className="text-[10px] text-[var(--text-muted)] mb-1">Body Battery — últimos días</p>
+                <div className="flex items-end gap-1 h-8">
+                  {[...garminResumen.dias].reverse().map((d, i) => {
+                    const val = d.body_battery_end
+                    if (val == null) return <div key={i} className="flex-1 h-1 rounded-sm bg-[var(--border)]" />
+                    const h = Math.max(4, Math.round((val / 100) * 32))
+                    return (
+                      <div key={i} className="flex flex-col items-center gap-0.5 flex-1">
+                        <div
+                          className="w-full rounded-sm"
+                          style={{ height: h, background: bodyBatteryColor(val) }}
+                          title={`${d.fecha}: ${val}`}
+                        />
+                        <span className="text-[8px] text-[var(--text-muted)] hidden sm:block">
+                          {new Date(d.fecha).toLocaleDateString('es-ES', { weekday: 'narrow' })}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            {/* Nota sobre sueño */}
+            <p className="text-[10px] text-[var(--text-muted)] mt-2 italic">
+              Los datos de sueño aparecerán cuando duermas con el reloj puesto.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Proveedores OAuth ────────────────────────────────────────────── */}
+      {OAUTH_PROVEEDORES.map(({ key, nombre, descripcion, icono: Icono, color, disponible }) => {
         const estado = getEstado(key)
         const conectado = estado?.activa ?? false
         const ultimaSync = estado?.ultima_sync
