@@ -79,7 +79,7 @@ export default function LoginPage() {
             className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl mb-3 sm:mb-4 text-xl sm:text-2xl font-bold tracking-tight"
             style={{
               background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
-              color: '#1C1C1E',
+              color: '#ffffff',
               boxShadow: '0 0 30px var(--accent-glow)',
             }}
           >

@@ -217,7 +217,7 @@ function PortalClientePageContent() {
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 rounded-2xl flex items-center justify-center"
           style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', boxShadow: '0 0 30px var(--accent-glow)' }}>
-          <span className="text-sm font-bold" style={{ color: '#1C1C1E' }}>CN</span>
+          <span className="text-sm font-bold" style={{ color: '#ffffff' }}>CN</span>
         </div>
         <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
           style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
@@ -249,7 +249,7 @@ function PortalClientePageContent() {
           {/* Avatar + name */}
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', color: '#1C1C1E' }}>
+              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', color: '#ffffff' }}>
               {iniciales}
             </div>
             <div>

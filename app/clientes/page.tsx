@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useDebounce } from '@/lib/useDebounce'
 import Link from 'next/link'
-import { Plus, Search, Users, Link2, Check, Loader2 } from 'lucide-react'
+import { Plus, Search, Users, Link2, Check, Loader2, AlertTriangle, Clock, Calendar } from 'lucide-react'
 import { StaggerList, StaggerItem } from '@/components/ui/Motion'
 import { OBJETIVO_LABELS, NIVEL_LABELS } from '@/lib/utils'
 
@@ -160,7 +160,7 @@ export default function ClientesPage() {
           className={`btn btn-sm ${mostrarSinCheckin ? 'btn-primary' : 'btn-ghost'}`}
           style={{ flexShrink: 0 }}
         >
-          ⚠️ Sin check-in
+          <AlertTriangle size={13} /> Sin check-in
         </button>
       </div>
 
@@ -214,19 +214,19 @@ export default function ClientesPage() {
                   <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>{c.profile?.email}</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {(c.dias_sin_checkin ?? 0) > 7 && (
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#FEE2E2', color: '#DC2626' }}>
-                        ⚠️ {c.dias_sin_checkin}d sin check-in
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-1" style={{ background: '#FEE2E2', color: '#DC2626' }}>
+                        <AlertTriangle size={9} strokeWidth={2.5} /> {c.dias_sin_checkin}d sin check-in
                       </span>
                     )}
                     {(c.dias_sin_checkin ?? 0) >= 4 && (c.dias_sin_checkin ?? 0) <= 7 && (
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: '#FEF3C7', color: '#D97706' }}>
-                        {c.dias_sin_checkin}d sin check-in
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex items-center gap-1" style={{ background: '#FEF3C7', color: '#D97706' }}>
+                        <Clock size={9} strokeWidth={2.5} /> {c.dias_sin_checkin}d sin check-in
                       </span>
                     )}
                   </div>
                   {c.fecha_proxima_revision && (
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      📅 Revisión: {new Date(c.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                    <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                      <Calendar size={10} strokeWidth={2} /> Revisión: {new Date(c.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                     </p>
                   )}
                 </div>

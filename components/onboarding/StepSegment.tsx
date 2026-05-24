@@ -56,7 +56,7 @@ export default function StepSegment({ value, onChange }: Props) {
                   border: `1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'}`,
                 }}
               >
-                {sel && <Check size={11} strokeWidth={3} style={{ color: '#1C1C1E' }} />}
+                {sel && <Check size={11} strokeWidth={3} style={{ color: '#ffffff' }} />}
               </div>
             </button>
           )

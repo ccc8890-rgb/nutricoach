@@ -41,7 +41,7 @@ export function StepByStep({ pasos, className = '' }: StepByStepProps) {
                                 className="absolute left-0 top-2 w-[30px] h-[30px] rounded-full flex items-center justify-center text-xs font-bold z-10"
                                 style={{
                                     background: 'var(--accent)',
-                                    color: '#1C1C1E',
+                                    color: '#ffffff',
                                     border: '2px solid var(--accent)',
                                 }}
                             >

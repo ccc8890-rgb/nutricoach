@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
@@ -47,6 +47,8 @@ type Fuente = 'local' | 'off' | 'recetas'
 
 export default function EditarDietaPage() {
   const { id } = useParams<{ id: string }>()
+  const searchParams = useSearchParams()
+  const backHref = searchParams.get('returnTo') ?? '/dietas'
   const { addToast } = useToast()
   const [plan, setPlan] = useState<PlanNutricion | null>(null)
   const [comidas, setComidas] = useState<ComidaLocal[]>([])
@@ -390,11 +392,11 @@ export default function EditarDietaPage() {
 
   return (
     <>
-      <BackButton href="/dietas" />
+      <BackButton href={backHref} />
       <div className="p-6 max-w-4xl mx-auto pt-16 lg:pt-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <Link href="/dietas" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
+          <Link href={backHref} className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{plan?.nombre}</h1>

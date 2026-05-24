@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell, MessageCircle, Smartphone } from 'lucide-react'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle } from 'lucide-react'
 import MiPlan from './MiPlan'
 import MensajeCoach from './MensajeCoach'
 import CheckInForm from './CheckInForm'
@@ -150,7 +150,7 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                 <div className="max-w-md w-full mx-4 text-center">
                     <div className="card p-12">
                         <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'var(--error-bg)' }}>
-                            <span className="text-3xl">😕</span>
+                            <AlertCircle size={32} style={{ color: 'var(--error)' }} />
                         </div>
                         <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Plan no disponible</h1>
                         <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
@@ -213,9 +213,9 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                                     </button>
                                 )}
                                 {data.cliente?.fecha_proxima_revision && (
-                                    <span className="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full"
+                                    <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full"
                                         style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
-                                        📅 {new Date(data.cliente.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                                        <Calendar size={10} strokeWidth={2} /> {new Date(data.cliente.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                                     </span>
                                 )}
                             </div>

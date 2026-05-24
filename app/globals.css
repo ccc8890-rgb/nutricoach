@@ -1,11 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   Casanova Nutrition — Design System v6 (Graphite Apple Pro)
+   Casanova Nutrition — Design System v7 (Indigo Pro)
    ═══════════════════════════════════════════════════════════════
-   Inspirado en Apple Pro / Space Gray
-   - Dark mode profundo con acento graphite plateado (#A1A1A6)
-   - Light mode limpio con acento gris neutro
-   - Glassmorphism, glows sutiles blancos/plateados
-   - Micro-interacciones con spring physics
+   - Dark mode profundo con acento índigo (#6366F1)
+   - Light mode limpio con el mismo índigo contrastado
+   - Flat design con sombras sutiles
+   - Micro-interacciones 150-200ms
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Tailwind v4 ── */
@@ -23,13 +22,13 @@
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ── Acento Graphite (Apple Pro / Space Gray) ── */
-  --accent: #A1A1A6;
-  --accent-dark: #8E8E93;
-  --accent-light: #C7C7CC;
-  --accent-bg: rgba(161, 161, 166, 0.08);
-  --accent-glow: rgba(161, 161, 166, 0.12);
-  --accent-ring: rgba(161, 161, 166, 0.2);
+  /* ── Acento Indigo ── */
+  --accent: #6366F1;
+  --accent-dark: #4F46E5;
+  --accent-light: #818CF8;
+  --accent-bg: rgba(99, 102, 241, 0.1);
+  --accent-glow: rgba(99, 102, 241, 0.2);
+  --accent-ring: rgba(99, 102, 241, 0.3);
 
   /* ── Neutral — Deep Dark Apple ── */
   --bg: #0A0A0B;
@@ -94,13 +93,13 @@
 .light {
   color-scheme: light;
 
-  /* ── Acento Graphite (más contrastado en light) ── */
-  --accent: #8E8E93;
-  --accent-dark: #636366;
-  --accent-light: #AEAEB2;
-  --accent-bg: rgba(142, 142, 147, 0.07);
-  --accent-glow: rgba(142, 142, 147, 0.1);
-  --accent-ring: rgba(142, 142, 147, 0.15);
+  /* ── Acento Indigo ── */
+  --accent: #6366F1;
+  --accent-dark: #4F46E5;
+  --accent-light: #818CF8;
+  --accent-bg: rgba(99, 102, 241, 0.08);
+  --accent-glow: rgba(99, 102, 241, 0.12);
+  --accent-ring: rgba(99, 102, 241, 0.2);
 
   /* ── Neutral — Apple Light ── */
   --bg: #F2F2F4;
@@ -337,7 +336,7 @@ body {
 
 .btn-primary {
   background: var(--accent);
-  color: #1C1C1E;
+  color: #ffffff;
 }
 
 .btn-primary:hover:not(:disabled) {

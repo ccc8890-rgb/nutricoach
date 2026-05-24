@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
@@ -40,6 +40,8 @@ interface SesionLocal {
 
 export default function EditarEntrenoPage() {
   const { id } = useParams<{ id: string }>()
+  const searchParams = useSearchParams()
+  const backHref = searchParams.get('returnTo') ?? '/entrenos'
   const [plan, setPlan] = useState<PlanEntrenamiento | null>(null)
   const [sesiones, setSesiones] = useState<SesionLocal[]>([])
   const [loading, setLoading] = useState(true)
@@ -163,7 +165,7 @@ export default function EditarEntrenoPage() {
 
   return (
     <>
-      <BackButton href="/entrenos" />
+      <BackButton href={backHref} />
 
       {/* Two-panel layout — fills viewport below the mobile nav */}
       <div
@@ -182,7 +184,7 @@ export default function EditarEntrenoPage() {
           {/* Plan header */}
           <div className="px-4 pt-5 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
             <Link
-              href="/entrenos"
+              href={backHref}
               className="flex items-center gap-1.5 text-xs mb-3 opacity-60 hover:opacity-100 transition-opacity"
               style={{ color: 'var(--text-muted)' }}
             >

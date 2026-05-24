@@ -303,7 +303,7 @@ export default function RecetasPage() {
                 </Link>
                 <Link href="/recetas/nueva"
                   className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200"
-                  style={{ background: 'var(--accent)', color: '#1C1C1E' }}
+                  style={{ background: 'var(--accent)', color: '#ffffff' }}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px var(--accent-glow)' }}
                   onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
                 >
@@ -698,7 +698,7 @@ export default function RecetasPage() {
               {recetas.length === 0 && (
                 <Link href="/recetas/nueva"
                   className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200"
-                  style={{ background: 'var(--accent)', color: '#1C1C1E' }}
+                  style={{ background: 'var(--accent)', color: '#ffffff' }}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 20px var(--accent-glow)' }}
                   onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
                 >

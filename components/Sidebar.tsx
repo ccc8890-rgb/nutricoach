@@ -128,7 +128,7 @@ export default function Sidebar() {
             className="w-10 h-10 rounded-xl flex items-center justify-center text-base font-bold tracking-tight animate-breathe"
             style={{
               background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
-              color: '#1C1C1E',
+              color: '#ffffff',
             }}
           >
             CN
@@ -180,7 +180,7 @@ export default function Sidebar() {
               {href === '/agentes' && agentesPendientes > 0 && (
                 <span
                   className="ml-auto text-[11px] font-bold text-white px-1.5 py-0.5 rounded-full min-w-[20px] text-center"
-                  style={{ background: 'var(--accent)', color: '#1C1C1E' }}
+                  style={{ background: 'var(--accent)', color: '#ffffff' }}
                 >
                   {agentesPendientes > 99 ? '99+' : agentesPendientes}
                 </span>

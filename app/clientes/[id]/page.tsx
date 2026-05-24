@@ -583,7 +583,7 @@ export default function ClienteDetallePage() {
                   Plan activo — {dietaActiva.nombre}
                 </span>
                 <div className="flex gap-2">
-                  <Link href={`/dietas/${dietaActiva.id}`} className="text-xs flex items-center gap-1 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
+                  <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="text-xs flex items-center gap-1 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
                     Ver dieta <ExternalLink size={11} />
                   </Link>
                   <span style={{ color: 'var(--border)' }}>·</span>
@@ -743,7 +743,7 @@ export default function ClienteDetallePage() {
               ) : (
                 <div className="space-y-2">
                   {dietas.map(d => (
-                    <Link key={d.id} href={`/dietas/${d.id}`} className="flex items-center gap-3 p-3 rounded-xl transition-all" style={{ border: '1px solid var(--border)' }}
+                    <Link key={d.id} href={`/dietas/${d.id}?returnTo=/clientes/${id}`} className="flex items-center gap-3 p-3 rounded-xl transition-all" style={{ border: '1px solid var(--border)' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-elevated, var(--border))')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                       <div className="flex-1 min-w-0">
@@ -781,7 +781,7 @@ export default function ClienteDetallePage() {
               ) : (
                 <div className="space-y-2">
                   {entrenos.map(e => (
-                    <Link key={e.id} href={`/entrenos/${e.id}`} className="flex items-center gap-3 p-3 rounded-xl transition-all" style={{ border: '1px solid var(--border)' }}
+                    <Link key={e.id} href={`/entrenos/${e.id}?returnTo=/clientes/${id}`} className="flex items-center gap-3 p-3 rounded-xl transition-all" style={{ border: '1px solid var(--border)' }}
                       onMouseEnter={e2 => (e2.currentTarget.style.background = 'var(--surface-elevated, var(--border))')}
                       onMouseLeave={e2 => (e2.currentTarget.style.background = 'transparent')}>
                       <div className="flex-1 min-w-0">

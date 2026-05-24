@@ -519,7 +519,7 @@ export default function SelectorComparativa({
                                             className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-150"
                                             style={{
                                                 background: 'var(--accent)',
-                                                color: '#1C1C1E',
+                                                color: '#ffffff',
                                                 opacity: aplicando ? 0.6 : 1,
                                             }}
                                         >

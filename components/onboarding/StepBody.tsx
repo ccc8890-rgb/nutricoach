@@ -55,7 +55,7 @@ export default function StepBody({ value, onChange }: Props) {
                   border: `1.5px solid ${sel ? 'var(--accent)' : 'var(--border)'}`,
                 }}
               >
-                {sel && <Check size={9} strokeWidth={3} style={{ color: '#1C1C1E' }} />}
+                {sel && <Check size={9} strokeWidth={3} style={{ color: '#ffffff' }} />}
               </div>
             </button>
           )
