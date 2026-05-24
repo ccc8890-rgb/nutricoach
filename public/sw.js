@@ -1,4 +1,4 @@
-const CACHE = 'nutricoach-v3'
+const CACHE = 'nutricoach-v4'
 const STATIC_ASSETS = [
     '/',
     '/cliente',
@@ -80,25 +80,51 @@ self.addEventListener('fetch', (event) => {
         return
     }
 
-    // Páginas y assets estáticos → cache first, network fallback
+    // Navegaciones HTML → network first (chunks Next.js son hasheados, no reutilizar HTML viejo)
+    if (request.mode === 'navigate') {
+        event.respondWith(
+            fetch(request)
+                .then(res => {
+                    if (res.ok) {
+                        const clone = res.clone()
+                        caches.open(CACHE).then(cache => cache.put(request, clone))
+                    }
+                    return res
+                })
+                .catch(() => caches.match(request).then(c => c || caches.match('/')))
+        )
+        return
+    }
+
+    // Assets estáticos Next.js (_next/static/**) → cache first (son inmutables por hash)
+    if (pathname.startsWith('/_next/static/')) {
+        event.respondWith(
+            caches.match(request).then(cached => {
+                if (cached) return cached
+                return fetch(request).then(res => {
+                    if (res.ok) {
+                        const clone = res.clone()
+                        caches.open(CACHE).then(cache => cache.put(request, clone))
+                    }
+                    return res
+                })
+            })
+        )
+        return
+    }
+
+    // Resto de assets (iconos, manifest…) → cache first, network fallback
     event.respondWith(
         caches.match(request).then(cached => {
             const fetchPromise = fetch(request)
                 .then(res => {
-                    // Solo cachear respuestas válidas
                     if (res.ok || res.type === 'basic') {
                         const clone = res.clone()
                         caches.open(CACHE).then(cache => cache.put(request, clone))
                     }
                     return res
                 })
-                .catch(() => {
-                    // Si es navegación y no hay cache, mostrar página offline
-                    if (request.mode === 'navigate') {
-                        return caches.match('/')
-                    }
-                    return cached
-                })
+                .catch(() => cached)
             return cached || fetchPromise
         })
     )
