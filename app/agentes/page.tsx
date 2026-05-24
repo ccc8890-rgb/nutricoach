@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createServerSupabase } from '@/lib/supabase-server'
 
 type AgenteTarea = {
   id: string
@@ -324,6 +323,13 @@ function TareaCard({
 
   const isEditing = editandoId === tarea.id
 
+  const payloadObj = (tarea.payload as Record<string, unknown>) ?? {}
+  const mensajeCliente =
+    typeof payloadObj.mensaje_cliente === 'string' ? payloadObj.mensaje_cliente : null
+  const senalesProxSemana = Array.isArray(payloadObj.senales_proxima_semana)
+    ? (payloadObj.senales_proxima_semana as string[])
+    : []
+
   return (
     <div
       style={{
@@ -388,6 +394,71 @@ function TareaCard({
         <p style={{ fontSize: '0.8rem', margin: 0, color: 'var(--text)' }}>
           {tarea.propuesta}
         </p>
+      )}
+
+      {/* Mensaje sugerido al cliente — copia directa */}
+      {mensajeCliente && (
+        <div
+          style={{
+            background: 'rgba(59,130,246,0.08)',
+            border: '1px solid rgba(59,130,246,0.25)',
+            borderRadius: '8px',
+            padding: '0.6rem 0.75rem',
+          }}
+        >
+          <p
+            style={{
+              fontSize: '0.65rem',
+              fontWeight: 700,
+              color: 'rgb(59,130,246)',
+              margin: '0 0 0.25rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            💬 Mensaje para el cliente
+          </p>
+          <p
+            style={{
+              fontSize: '0.78rem',
+              margin: 0,
+              color: 'var(--text)',
+              fontStyle: 'italic',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            &ldquo;{mensajeCliente}&rdquo;
+          </p>
+          <button
+            onClick={() => navigator.clipboard.writeText(mensajeCliente)}
+            style={{
+              marginTop: '0.4rem',
+              padding: '0.2rem 0.6rem',
+              borderRadius: '6px',
+              border: '1px solid rgba(59,130,246,0.3)',
+              background: 'transparent',
+              color: 'rgb(59,130,246)',
+              fontSize: '0.7rem',
+              cursor: 'pointer',
+            }}
+          >
+            Copiar
+          </button>
+        </div>
+      )}
+
+      {/* Señales próxima semana */}
+      {senalesProxSemana.length > 0 && (
+        <details style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          <summary style={{ cursor: 'pointer' }}>📍 Vigilar próxima semana</summary>
+          <ul style={{ margin: '0.25rem 0 0 1rem', padding: 0 }}>
+            {senalesProxSemana.map((s, i) => (
+              <li key={i} style={{ marginBottom: '0.2rem' }}>
+                {s}
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
 
       {/* Razonamiento colapsable */}

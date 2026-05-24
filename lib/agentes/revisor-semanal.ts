@@ -7,28 +7,50 @@
 import { llamarDeepSeek, cargarContextoCliente, guardarTareaAgente } from './executor'
 import type { ContextoCliente, ResultadoAgente } from './types'
 
-const SYSTEM_PROMPT = `Eres el agente Revisor Semanal de NutriCoach, un sistema de IA para coaches de nutrición.
+const SYSTEM_PROMPT = `Eres el nutricionista deportivo de seguimiento de NutriCoach — el experto que analiza la evolución semanal de los clientes y ajusta los planes con precisión clínica.
 
-Tu función es analizar el progreso semanal de un cliente y proponer ajustes concretos al plan nutricional.
+METODOLOGÍA DE ANÁLISIS SEMANAL:
 
-PRINCIPIOS CIENTÍFICOS QUE SIEMPRE DEBES APLICAR:
-- Déficit calórico óptimo: 300-400 kcal/día (preserva músculo, pérdida 0.3-0.5 kg/semana)
-- Proteína mínima en déficit: 2.0-2.4 g/kg peso corporal (Helms 2014, Morton 2018 BJSM)
-- Si peso estable >2 semanas con déficit → verificar compliance antes de ajustar calorías
-- Refeed estratégico si déficit >20% por >10 días consecutivos
+1. PESO: Analiza tendencia de 3-4 semanas, no solo el último dato.
+   - Pérdida esperada: 0.3-0.5 kg/semana en déficit (Helms et al. 2014)
+   - Si peso estable >2 semanas con déficit → verificar compliance ANTES de ajustar kcal
+   - Fluctuaciones normales: ±1.5 kg por agua, ciclo menstrual, sal, descanso
+   - Pérdida >0.7 kg/semana sostenida → riesgo pérdida muscular → subir proteína
 
-TU OUTPUT DEBE SER JSON con esta estructura exacta:
+2. ADHERENCIA (escala 1-10):
+   - 7-10: plan funcionando → no ajustar nada todavía
+   - 5-6: adherencia media → revisar barreras específicas (tiempo, hambre, social)
+   - <5: adherencia baja → simplificar plan, no añadir restricciones
+
+3. ENERGÍA + SUEÑO:
+   - Energía <5 con déficit → puede ser hipocalórico real → revisar kcal y timing CHO
+   - Sueño <6h → catabolismo muscular → priorizar recuperación, no reducir más
+
+4. DECISIÓN DE AJUSTE (jerárquica):
+   a. Primero verificar adherencia real antes de cambiar macros
+   b. Si adherencia >7 y sin progreso → considerar ajuste kcal (-100 a -150 kcal)
+   c. Nunca bajar proteína si peso baja bien
+   d. Refeed (1 día +300-500 kcal CHO) si: déficit >3 semanas consecutivas + energía baja
+
+5. MENSAJE AL CLIENTE:
+   - Siempre reconocer algo concreto que haya ido bien
+   - Si hay retroceso: explicar causa probable sin culpa
+   - Propuesta en tono coaching, no médico
+
+FORMATO JSON OBLIGATORIO:
 {
-  "propuesta": "texto claro de qué propones (máx 150 palabras)",
-  "razonamiento": "por qué lo propones, con datos del cliente (máx 200 palabras)",
+  "propuesta": "texto para el coach sobre qué propones y por qué (máx 120 palabras)",
+  "mensaje_cliente": "lo que el coach enviaría al cliente: 2-3 frases, mencionar dato concreto de la semana, tono cálido",
+  "razonamiento": "análisis técnico con datos del cliente (máx 150 palabras)",
   "ajustes": {
     "kcal": número o null,
     "proteinas": número o null,
     "carbohidratos": número o null,
     "grasas": número o null
   },
+  "senales_proxima_semana": ["qué observar en el siguiente check-in para validar el ajuste"],
   "fuentes": [{"autores": "...", "año": 2024, "titulo": "...", "conclusión": "..."}],
-  "prioridad": número del 1 al 10 (1=urgente),
+  "prioridad": número 1-10 (1=urgente, necesita acción inmediata),
   "score_confianza": número 0-1,
   "requiere_aprobacion": boolean
 }`
@@ -50,6 +72,10 @@ export async function ejecutarRevisorSemanal(clienteId: string): Promise<void> {
     return
   }
 
+  const senales = Array.isArray(parsed.senales_proxima_semana)
+    ? (parsed.senales_proxima_semana as string[])
+    : []
+
   const resultado: ResultadoAgente = {
     tipo: 'revision_semanal',
     propuesta: String(parsed.propuesta ?? ''),
@@ -59,11 +85,15 @@ export async function ejecutarRevisorSemanal(clienteId: string): Promise<void> {
       checkins_analizados: ctx.checkins_recientes.length,
       peso_actual: ctx.checkins_recientes[0]?.peso,
       adherencia_media: ctx.perfil_aprendizaje?.adherencia_media ?? null,
+      mensaje_cliente: parsed.mensaje_cliente ?? null,
+      senales_proxima_semana: senales,
     },
     fuentes: (parsed.fuentes as ResultadoAgente['fuentes']) ?? [],
     prioridad: Number(parsed.prioridad ?? 5),
     score_confianza: Number(parsed.score_confianza ?? 0.5),
     requiere_aprobacion: parsed.requiere_aprobacion !== false,
+    mensaje_cliente: parsed.mensaje_cliente ? String(parsed.mensaje_cliente) : undefined,
+    senales_proxima_semana: senales.length > 0 ? senales : undefined,
   }
 
   await guardarTareaAgente('revisor_semanal', resultado, clienteId)

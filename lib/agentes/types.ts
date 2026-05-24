@@ -145,4 +145,7 @@ export interface ResultadoAgente {
   prioridad: number
   score_confianza: number  // 0-1
   requiere_aprobacion: boolean  // false = auto-aplica (ajuste menor)
+  // Campos pro opcionales (agentes semanal + motivación)
+  mensaje_cliente?: string        // Texto listo para enviar al cliente
+  senales_proxima_semana?: string[] // Qué observar en el siguiente check-in
 }
