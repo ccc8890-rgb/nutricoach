@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   if (!resolvedClienteId && codigo) {
     const db = createServiceSupabase()
     const { data: cliente } = await db
-      .from('clientes').select('id').eq('codigo_publico', codigo).single()
+      .from('clientes').select('id').eq('codigo_portal', codigo).single()
     if (!cliente) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
     resolvedClienteId = cliente.id
   }
