@@ -1,5 +1,89 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 24-05-2026 (Sesión 37) — Integraciones dispositivos fitness (Strava, Garmin, Google Fit, Whoop)
+
+### Qué se construyó
+
+Arquitectura completa de integraciones con apps y wearables. Todos los providers escriben en una tabla normalizada `actividad_externa_cliente` que los agentes IA leen directamente — nunca llaman a APIs externas.
+
+**Archivos creados/modificados (29 ficheros, +3.321 líneas):**
+
+| Archivo | Rol |
+|---------|-----|
+| `supabase/migrations/20260524_integraciones_dispositivos.sql` | Tablas BD + RLS (⚠️ aplicar manualmente) |
+| `lib/integraciones/types.ts` | Tipos: Proveedor, IntegracionCliente, ActividadExterna, ResumenActividadSemanal, ProveedorIntegracion |
+| `lib/integraciones/normalizer.ts` | `persistirActividades()` + `getSummaryLast7d()` |
+| `lib/integraciones/strava.ts` | Conector Strava: OAuth2, refresh, sync 14d, webhook push, TSS = suffer_score × 0.4 |
+| `lib/integraciones/garmin.ts` | Conector Garmin: wellness-api dailies, steps/rhr/sleep |
+| `lib/integraciones/google-fit.ts` | Conector Google Fit: 3 data streams, timestamps nanosegundos |
+| `lib/integraciones/whoop.ts` | Skeleton Whoop (pendiente partner approval) |
+| `lib/integraciones/sync.ts` | `sincronizarTodosProveedores()` — excluye strava/manual (push) |
+| `app/api/integraciones/strava/{connect,callback,disconnect}/route.ts` | OAuth Strava |
+| `app/api/integraciones/strava-webhook/route.ts` | GET hub.challenge + POST push |
+| `app/api/integraciones/garmin/{connect,callback,disconnect}/route.ts` | OAuth Garmin |
+| `app/api/integraciones/google-fit/{connect,callback,disconnect}/route.ts` | OAuth Google Fit |
+| `app/api/cron/sync-integraciones/route.ts` | Cron horario CRON_SECRET-protected |
+| `app/api/cliente/[codigo]/integraciones/route.ts` | Estado integraciones para portal |
+| `components/PortalCliente/IntegracionesPanel.tsx` | UI 4 providers + Whoop "Próximamente" |
+| `components/PortalCliente/DashboardCliente.tsx` | Tab "Apps" (Smartphone icon) añadido |
+| `components/PortalCliente/CheckInForm.tsx` | Sección manual pasos/kcal/HRV (colapsable) |
+| `app/api/cliente/[codigo]/checkin/route.ts` | Persiste datos manuales en actividad_externa_cliente |
+| `lib/agentes/types.ts` | `actividad_semanal: ResumenActividadSemanal | null` en ContextoCliente |
+| `lib/agentes/executor.ts` | `getSummaryLast7d()` cargado en `cargarContextoCliente()` |
+| `lib/agentes/revisor-semanal.ts` | 4 nuevos nodos árbol: N_TDEE, N_TSS, N_HRV, N_PASOS |
+| `vercel.json` | Cron `sync-integraciones` cada hora añadido |
+
+### Arquitectura
+
+```
+Strava (webhook push) ──→┐
+Garmin (polling horario) ─┼→ actividad_externa_cliente (tabla normalizada)
+Google Fit (polling)  ──→┤      ↓
+Manual (check-in form)──→┘  getSummaryLast7d()
+                                ↓
+                     ContextoCliente.actividad_semanal
+                                ↓
+                     revisor-semanal árbol 4 nodos nuevos:
+                     N_TDEE / N_TSS / N_HRV / N_PASOS
+```
+
+### Coste estimado
+- Strava webhook: 0 (push, no polling)
+- Garmin + Google Fit: sync horario = ~24 llamadas/día/cliente (batch de todos los activos)
+- Whoop: pendiente activar
+
+### ⚠️ PENDIENTE MANUAL — Antes del primer uso
+
+**1. Aplicar SQL en Supabase** → Dashboard → SQL Editor → ejecutar:
+`supabase/migrations/20260524_integraciones_dispositivos.sql`
+
+**2. Variables de entorno en Vercel** (Production):
+```
+STRAVA_CLIENT_ID
+STRAVA_CLIENT_SECRET
+STRAVA_WEBHOOK_VERIFY_TOKEN    ← string secreto que tú eliges
+GARMIN_CLIENT_ID
+GARMIN_CLIENT_SECRET
+GOOGLE_FIT_CLIENT_ID
+GOOGLE_FIT_CLIENT_SECRET
+```
+
+**3. Registrar webhook Strava** (una vez, tras deploy con vars):
+```bash
+curl -X POST https://www.strava.com/api/v3/push_subscriptions \
+  -d "client_id=$STRAVA_CLIENT_ID&client_secret=$STRAVA_CLIENT_SECRET&callback_url=https://nutricoach-delta.vercel.app/api/integraciones/strava-webhook&verify_token=$STRAVA_WEBHOOK_VERIFY_TOKEN"
+```
+
+**4. Configurar OAuth redirect URIs** en cada consola de developer:
+- Strava: `https://nutricoach-delta.vercel.app/api/integraciones/strava/callback`
+- Garmin: `https://nutricoach-delta.vercel.app/api/integraciones/garmin/callback`
+- Google Fit: `https://nutricoach-delta.vercel.app/api/integraciones/google-fit/callback`
+
+### Commit
+`b356ea0` — feat: integraciones dispositivos
+
+---
+
 ## ✅ SESIÓN 24-05-2026 (Sesión 36) — Sistema Multi-Agente IA Completo
 
 ### Qué se construyó
