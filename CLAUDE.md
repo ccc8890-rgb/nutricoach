@@ -24,12 +24,17 @@
 ### Nota sueño (confirmado por Carlos)
 Carlos no duerme con el Garmin aún → `sueno_h` y `sueno_calidad` serán null en todos los días. El panel muestra: "Los datos de sueño aparecerán cuando duermas con el reloj puesto."
 
-### ⚠️ PENDIENTE MANUAL (sigue igual de sesión 38)
+### ✅ PRODUCCIÓN 100% OPERATIVA
 
-| # | Tarea | Cómo |
-|---|-------|------|
-| 🔴 | **Añadir GARMIN_EMAIL + GARMIN_PASSWORD a Vercel Production** | Dashboard Vercel → Settings → Environment Variables |
-| 🔴 | **Registrar webhook Strava** | `curl -X POST https://www.strava.com/api/v3/push_subscriptions -d "client_id=$STRAVA_CLIENT_ID&client_secret=$STRAVA_CLIENT_SECRET&callback_url=https://nutricoach-delta.vercel.app/api/integraciones/strava-webhook&verify_token=$STRAVA_WEBHOOK_VERIFY_TOKEN"` |
+| Tarea | Estado |
+|-------|--------|
+| `GARMIN_EMAIL` en Vercel Production | ✅ Añadida sesión 39 |
+| `GARMIN_PASSWORD` en Vercel Production | ✅ Añadida sesión 39 |
+| `STRAVA_CLIENT_ID=250183` en Vercel | ✅ Ya estaba |
+| `STRAVA_CLIENT_SECRET` en Vercel | ✅ Ya estaba |
+| `STRAVA_WEBHOOK_VERIFY_TOKEN=nutricoach-webhook-2026` | ✅ Actualizado sesión 39 |
+| Webhook Strava ID 348546 registrado | ✅ Ya estaba activo (`nutricoach-delta.vercel.app/api/integraciones/strava-webhook`) |
+| Redeploy producción con nuevos env vars | ✅ `nutricoach-otjku4whh` — sesión 39 |
 
 ### Commits sesión 39
 - `61b808f` — docs: sesión 38 CLAUDE.md
