@@ -31,9 +31,9 @@ interface DashboardClienteProps {
 type Tab = 'plan' | 'checkin' | 'entreno' | 'progreso' | 'historial' | 'chat' | 'integraciones'
 
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'plan', label: 'Mi plan', icon: UtensilsCrossed },
+    { key: 'plan', label: 'Plan', icon: UtensilsCrossed },
     { key: 'checkin', label: 'Check-in', icon: ClipboardCheck },
-    { key: 'entreno', label: 'Carga', icon: Dumbbell },
+    { key: 'entreno', label: 'Entreno', icon: Dumbbell },
     { key: 'historial', label: 'Historial', icon: History },
     { key: 'progreso', label: 'Progreso', icon: BarChart3 },
     { key: 'chat', label: 'Chat', icon: MessageCircle },
@@ -238,14 +238,16 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
 
             {/* Tabs — estilo pill */}
             <div className="sticky top-0 z-10 border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                <div className="max-w-2xl mx-auto px-4 py-2 overflow-x-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <div className="flex gap-1.5 w-max min-w-full">
+                <div className="px-2 py-2" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <div style={{ display: 'flex', gap: '6px', width: 'max-content', minWidth: '100%', paddingLeft: '4px', paddingRight: '4px' }}>
                         {TABS.map(({ key, label, icon: Icon }) => (
                             <button
                                 key={key}
                                 onClick={() => setTab(key)}
-                                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all`}
+                                className="flex items-center gap-1.5 rounded-xl font-medium whitespace-nowrap transition-all"
                                 style={{
+                                    padding: '7px 12px',
+                                    fontSize: '12px',
                                     background: tab === key ? 'var(--primary)' : 'var(--bg)',
                                     color: tab === key ? 'white' : 'var(--text-secondary)',
                                 }}

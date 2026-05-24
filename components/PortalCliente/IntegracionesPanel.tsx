@@ -63,7 +63,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   const getEstado = (key: string) => integraciones.find(i => i.proveedor === key)
 
   const handleConnect = (proveedor: string) => {
-    window.location.href = `/api/integraciones/${proveedor}/connect?cliente_id=${clienteId}`
+    window.location.href = `/api/integraciones/${proveedor}/connect?cliente_id=${clienteId}&codigo=${codigo}`
   }
 
   const handleDisconnect = async (proveedor: string) => {

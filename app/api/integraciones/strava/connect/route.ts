@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createApiSupabase } from '@/lib/supabase-server'
+import { createServiceSupabase } from '@/lib/supabase-server'
 import { stravaProvider } from '@/lib/integraciones/strava'
 
 export async function GET(req: NextRequest) {
-  const supabase = createApiSupabase(req)
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
-
   const clienteId = req.nextUrl.searchParams.get('cliente_id')
-  if (!clienteId) return NextResponse.json({ error: 'cliente_id requerido' }, { status: 400 })
+  const codigo = req.nextUrl.searchParams.get('codigo')
 
-  const url = stravaProvider.getAuthUrl(clienteId, user.id)
+  let resolvedClienteId = clienteId
+
+  // Soporte para llamada desde portal cliente (sin sesión de coach)
+  if (!resolvedClienteId && codigo) {
+    const db = createServiceSupabase()
+    const { data: cliente } = await db
+      .from('clientes').select('id').eq('codigo_publico', codigo).single()
+    if (!cliente) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
+    resolvedClienteId = cliente.id
+  }
+
+  if (!resolvedClienteId) return NextResponse.json({ error: 'cliente_id requerido' }, { status: 400 })
+
+  const url = stravaProvider.getAuthUrl(resolvedClienteId, 'portal')
   return NextResponse.redirect(url)
 }
