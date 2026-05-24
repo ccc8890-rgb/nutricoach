@@ -51,9 +51,14 @@ CREATE TABLE IF NOT EXISTS actividad_externa_cliente (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Constraint único separado para manejar el COALESCE
-CREATE UNIQUE INDEX IF NOT EXISTS idx_aec_unique_activity
-  ON actividad_externa_cliente (cliente_id, proveedor, fecha, COALESCE(proveedor_activity_id, fecha::TEXT));
+-- Dos índices parciales para deduplicar: con y sin proveedor_activity_id
+CREATE UNIQUE INDEX IF NOT EXISTS idx_aec_unique_with_id
+  ON actividad_externa_cliente (cliente_id, proveedor, fecha, proveedor_activity_id)
+  WHERE proveedor_activity_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_aec_unique_without_id
+  ON actividad_externa_cliente (cliente_id, proveedor, fecha)
+  WHERE proveedor_activity_id IS NULL;
 
 -- Índices de consulta frecuente
 CREATE INDEX IF NOT EXISTS idx_aec_cliente_fecha ON actividad_externa_cliente (cliente_id, fecha DESC);

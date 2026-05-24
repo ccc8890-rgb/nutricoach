@@ -22,7 +22,7 @@ export async function persistirActividades(
   const { error } = await db
     .from('actividad_externa_cliente')
     .upsert(limpias, {
-      onConflict: 'cliente_id,proveedor,fecha,proveedor_activity_id',
+      onConflict: 'cliente_id,proveedor,fecha',
       ignoreDuplicates: false,
     })
 
