@@ -1,5 +1,78 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 24-05-2026 (Sesión 38) — Strava OAuth real + Garmin Connect wellness sync completo
+
+### Qué se construyó / arregló
+
+**Bugs críticos corregidos:**
+
+| Bug | Causa raíz | Fix |
+|-----|-----------|-----|
+| "This page couldn't load" al clickar tab Apps | `dashboard/route.ts` devolvía `cliente:null` por join inline Supabase fallido → `data.cliente.id` TypeError | Split en 2 queries separadas + null guard en DashboardCliente |
+| `clientes.codigo_portal` no existe | Columna incorrecta en 3 rutas | Siempre buscar por `planes_nutricion.codigo_publico` |
+| Strava callback redirigía a `/cliente/integraciones` | Ruta inexistente (se trataba como `[codigo]='integraciones'`) | Lookup `planes_nutricion.codigo_publico` desde `cliente_id` |
+| SW cache servía HTML viejo con chunks viejos tras deploy | service worker cache-first en navegaciones | Cambiado a network-first para navegaciones, cache-first solo para `_next/static/` |
+
+**Strava real conectado:**
+- Athlete ID: `62828992` → cliente `b18d795f-d416-485b-aeca-8144f004420b` (portal `nyv4l1Vm`)
+- SQL migration `20260524_integraciones_dispositivos.sql` aplicada en Supabase (índices únicos + RLS)
+- 9 actividades Strava sincronizadas (25-mar → 24-may) con datos COMPLETOS:
+  - Splits por km (pace + FC + zona + desnivel), potencia media/NP/max watts, cadencia
+  - Mejores esfuerzos (400m, 1mi, 5K...), elevación, kilojoules, suffer_score
+  - Todo en `raw_data` JSONB para análisis posterior
+
+**Garmin Connect wellness sync (nuevo, unofficial API):**
+- Paquete: `garmin-connect` npm (v1.6.2) — login con email/password, sin OAuth partner
+- `lib/integraciones/garmin-connect-sync.ts` — módulo completo con `syncGarminDay()` + `persistirGarminDays()`
+- `scripts/backfill-garmin-connect.mjs` — backfill configurable con `--dias N --cliente-id UUID`
+- 61 días sincronizados (24-mar → 23-may) con:
+  - Pasos, TDEE, BMR, calorías activas, RHR, distancia diaria
+  - Body Battery (máximo, mínimo, final del día)
+  - Estrés medio + porcentaje bajo/medio/alto
+  - Training Readiness (score 0-100 + nivel + feedback + tiempo recuperación)
+  - HRV semanal media (en ms, desde hrvWeeklyAverage / 10)
+  - Sueño cuando disponible (horas totales + deep/REM/light/despertar + SpO2 + respiración)
+- Cron horario actualizado para sincronizar hoy+ayer de Garmin Connect automáticamente
+- Nuevas columnas en BD: `body_battery_max`, `body_battery_min`, `body_battery_end`, `stress_avg`, `training_readiness`, `vo2max`, `distancia_km`
+- Portal auto-abre tab Apps cuando URL tiene `?connected=strava` (o garmin/google_fit)
+
+**Credenciales Garmin Connect:**
+- `GARMIN_EMAIL=ccc8890@gmail.com` — en `.env.local` y pendiente añadir a Vercel
+- `GARMIN_PASSWORD` — en `.env.local`, pendiente añadir a Vercel Production
+
+### ⚠️ PENDIENTE MANUAL — Próxima sesión (prioritario)
+
+| # | Tarea | Cómo |
+|---|-------|------|
+| 🔴 | **Añadir GARMIN_EMAIL + GARMIN_PASSWORD a Vercel Production** | Dashboard Vercel → Settings → Environment Variables |
+| 🔴 | **Registrar webhook Strava** (para push en tiempo real de nuevos entrenos) | `curl -X POST https://www.strava.com/api/v3/push_subscriptions -d "client_id=$STRAVA_CLIENT_ID&client_secret=$STRAVA_CLIENT_SECRET&callback_url=https://nutricoach-delta.vercel.app/api/integraciones/strava-webhook&verify_token=$STRAVA_WEBHOOK_VERIFY_TOKEN"` |
+| 🟠 | **Usar datos integraciones en agentes IA** | `getSummaryLast7d()` en `normalizer.ts` no reconoce `proveedor='garmin_connect'` — añadir a la query |
+| 🟠 | **Capa de análisis: TDEE recalibrado** | Usar `calorias_totales` real de Garmin para ajustar macro targets del plan de dieta |
+| 🟠 | **Panel resumen en tab Apps del portal** | Mostrar body battery, training readiness, pasos, sueño del día (datos ya en BD, solo UI) |
+| 🟡 | **Nodos N_TDEE/N_TSS/N_HRV/N_PASOS del revisor-semanal** | Leer de `actividad_externa_cliente` para calcular ajustes automáticos |
+| 🟡 | **IntegracionesPanel: mostrar Garmin Connect como "sincronizado"** | Actualmente muestra botón OAuth de Garmin Health API oficial — confuso. Cambiar a "Garmin Connect activo (sync automático)" |
+| 🟡 | **Sleep tracking Garmin** | La mayoría de días sin datos de sueño — verificar si el reloj registra sueño automáticamente o necesita configuración |
+
+### Lecciones aprendidas esta sesión
+
+1. **Supabase inline join falla silenciosamente** cuando PostgREST no detecta la FK automáticamente → siempre hacer queries separadas para tablas no directamente relacionadas
+2. **`clientes` NO tiene `codigo_publico` ni `codigo_portal`** — el código público siempre está en `planes_nutricion.codigo_publico`
+3. **Strava sandbox = límite 1 atleta** — si ya hay uno conectado con token manual, hay que revocar en strava.com/settings/apps antes de reconectar
+4. **`garmin-connect` npm usa URL absoluta en `gc.get()`** — pasar `https://connectapi.garmin.com/...` completo
+5. **Garmin daily summary tiene body battery integrado** — no hace falta endpoint separado de body battery (devuelve 404), todo está en `usersummary-service/usersummary/daily/{displayName}?calendarDate={date}`
+6. **Training readiness devuelve array** (múltiples lecturas del día) — coger `[0]` = más reciente
+7. **HRV direct endpoint devuelve `""`** — el HRV diario no está disponible; usar `hrvWeeklyAverage` de training readiness (dividir por 10 para obtener ms)
+8. **Analizar ANTES de codificar** — esta sesión hubo 7 iteraciones antes de encontrar la causa raíz del bug del tab Apps. La próxima: testear el endpoint directamente con curl/node primero, trazar el flujo completo antes de tocar código
+
+### Commits sesión 38
+- `e8d8713` — fix: service worker network-first para navegaciones
+- `fe12eda` — fix: dashboard cliente query profiles separada + null guard
+- `d2b4327` — fix: strava callback redirige a /cliente/[codigo] correcto
+- `083fa1c` — fix: portal auto-abre tab Apps tras OAuth
+- `57cc2c8` — feat: Garmin Connect sync completo (wellness 60d) + columnas BD
+
+---
+
 ## ✅ SESIÓN 24-05-2026 (Sesión 37) — Integraciones dispositivos fitness (Strava, Garmin, Google Fit, Whoop)
 
 ### Qué se construyó
