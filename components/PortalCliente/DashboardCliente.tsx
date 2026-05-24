@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell, MessageCircle, Smartphone } from 'lucide-react'
 import MiPlan from './MiPlan'
 import MensajeCoach from './MensajeCoach'
@@ -62,10 +63,15 @@ function calcularRacha(checkins: CheckIn[]): number {
 }
 
 export default function DashboardCliente({ codigo }: DashboardClienteProps) {
+    const searchParams = useSearchParams()
     const [data, setData] = useState<DashboardData | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [tab, setTab] = useState<Tab>('plan')
+    const [tab, setTab] = useState<Tab>(() => {
+        const connected = searchParams.get('connected')
+        if (connected === 'strava' || connected === 'garmin' || connected === 'google_fit') return 'integraciones'
+        return 'plan'
+    })
     const [notasNoLeidas, setNotasNoLeidas] = useState(0)
     const [notasVistas, setNotasVistas] = useState<string[]>([])
     const [mostrarRegistrarEntreno, setMostrarRegistrarEntreno] = useState(false)
