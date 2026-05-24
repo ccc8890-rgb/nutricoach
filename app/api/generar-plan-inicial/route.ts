@@ -446,8 +446,9 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
       ).join('\n')}`
     : ''
 
-  const alimentosBaseOnb = (onboarding as Record<string, unknown>).alimentos_base as string[] | null
-  const comeFueraDias = (onboarding as Record<string, unknown>).come_fuera_dias as number | null
+  // Leer de perfil_profundo (fuente correcta tras el flujo unificado)
+  const alimentosBaseOnb = (perfil?.alimentos_base ?? (onboarding as Record<string, unknown>).alimentos_base) as string[] | null
+  const comeFueraDias = (perfil?.come_fuera_dias ?? (onboarding as Record<string, unknown>).come_fuera_dias) as number | null
 
   const contextoExtendido = `${contextoCompleto}
 
