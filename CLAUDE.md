@@ -1,5 +1,42 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 24-05-2026 (Sesión 39) — Panel wellness Garmin + normalizer garmin fields
+
+### Qué se construyó
+
+| Archivo | Cambio |
+|---------|--------|
+| `lib/integraciones/types.ts` | `garmin_connect` en `Proveedor` union; 4 campos nuevos en `ResumenActividadSemanal`: `body_battery_media`, `stress_avg_media`, `training_readiness_media`, `rhr_media` |
+| `lib/integraciones/normalizer.ts` | `getSummaryLast7d()` calcula los 4 nuevos campos de las filas garmin_connect; empty-state inicializado |
+| `app/api/cliente/[codigo]/integraciones/route.ts` | Detecta garmin_connect en `actividad_externa_cliente` (no OAuth). Devuelve `garmin_connect: { activa, ultima_sync, datos_hoy }` separado del array integraciones OAuth |
+| `app/api/cliente/[codigo]/garmin-resumen/route.ts` | **NUEVO** — devuelve últimos 7 días de garmin_connect + promedios (pasos, TDEE, RHR, HRV, body_battery, stress, training_readiness) |
+| `components/PortalCliente/IntegracionesPanel.tsx` | **Reescrito** — card Garmin Connect con badge "Sync automático", datos último día (body battery gauge, training readiness gauge, estrés con label semántico, pasos, RHR, HRV, TDEE), promedios 7 días con chips, sparkline body battery 7 días, nota "datos de sueño aparecerán cuando duermas con el reloj" |
+
+### Comportamiento Garmin Connect en UI
+
+- Si hay datos en BD → badge verde "Sync automático", datos del último día visibles
+- Body Battery: gauge de color (verde ≥70, naranja ≥40, rojo <40)
+- Training Readiness: gauge igual + score /100
+- Estrés: Bajo (<26), Medio (<51), Alto (<76), Muy alto (≥76)
+- Sparkline: barras por día de body_battery_end, colores por valor
+- No tiene botón "Conectar" (no es OAuth) — sync lo hace el cron del coach
+
+### Nota sueño (confirmado por Carlos)
+Carlos no duerme con el Garmin aún → `sueno_h` y `sueno_calidad` serán null en todos los días. El panel muestra: "Los datos de sueño aparecerán cuando duermas con el reloj puesto."
+
+### ⚠️ PENDIENTE MANUAL (sigue igual de sesión 38)
+
+| # | Tarea | Cómo |
+|---|-------|------|
+| 🔴 | **Añadir GARMIN_EMAIL + GARMIN_PASSWORD a Vercel Production** | Dashboard Vercel → Settings → Environment Variables |
+| 🔴 | **Registrar webhook Strava** | `curl -X POST https://www.strava.com/api/v3/push_subscriptions -d "client_id=$STRAVA_CLIENT_ID&client_secret=$STRAVA_CLIENT_SECRET&callback_url=https://nutricoach-delta.vercel.app/api/integraciones/strava-webhook&verify_token=$STRAVA_WEBHOOK_VERIFY_TOKEN"` |
+
+### Commits sesión 39
+- `61b808f` — docs: sesión 38 CLAUDE.md
+- `06e1889` — feat: Garmin Connect panel wellness + normalizer garmin fields
+
+---
+
 ## ✅ SESIÓN 24-05-2026 (Sesión 38) — Strava OAuth real + Garmin Connect wellness sync completo
 
 ### Qué se construyó / arregló
