@@ -41,6 +41,18 @@ interface PlanInicial {
   }[]
   recomendaciones: string[]
   notas_coach: string
+  // ── Campos pro (plan de élite) ────────────────────────────────
+  notas_cliente?: string
+  protocolo_semana?: {
+    dia_entreno: string
+    dia_descanso: string
+    timing_clave: string
+  }
+  justificacion_coach?: {
+    razonamiento_macros: string
+    senales_seguimiento: string[]
+    proxima_revision: string
+  }
 }
 
 interface RegistroIA {
@@ -814,7 +826,47 @@ export default function RevisarPlanPage() {
             </div>
           </div>
 
-          {plan.notas_coach && (
+          {/* ── Mensaje para el cliente (campo pro) ────────────── */}
+          {plan.notas_cliente && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm mb-3">
+              <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1">💬 Mensaje sugerido al cliente</p>
+              <p className="text-blue-900 dark:text-blue-100 italic">"{plan.notas_cliente}"</p>
+            </div>
+          )}
+
+          {/* ── Protocolo semanal (campo pro) ───────────────────── */}
+          {plan.protocolo_semana && (
+            <div className="p-3 border rounded-lg text-sm mb-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">📅 Protocolo semanal</p>
+              <div className="space-y-1.5">
+                <div className="flex gap-2"><span className="text-xs font-medium text-green-600 dark:text-green-400 w-24 shrink-0">Día entreno</span><span className="text-xs text-[var(--text)]">{plan.protocolo_semana.dia_entreno}</span></div>
+                <div className="flex gap-2"><span className="text-xs font-medium text-slate-500 w-24 shrink-0">Día descanso</span><span className="text-xs text-[var(--text)]">{plan.protocolo_semana.dia_descanso}</span></div>
+                <div className="flex gap-2"><span className="text-xs font-medium text-amber-600 dark:text-amber-400 w-24 shrink-0">⭐ Clave</span><span className="text-xs text-[var(--text)] font-medium">{plan.protocolo_semana.timing_clave}</span></div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Justificación para el coach (campo pro) ─────────── */}
+          {plan.justificacion_coach && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm mb-3">
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-2">🔬 Justificación científica (solo coach)</p>
+              <p className="text-amber-900 dark:text-amber-200 mb-2">{plan.justificacion_coach.razonamiento_macros}</p>
+              {plan.justificacion_coach.senales_seguimiento?.length > 0 && (
+                <div className="mb-1.5">
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">📊 Señales a monitorizar en 2-4 semanas:</p>
+                  <ul className="space-y-0.5">
+                    {plan.justificacion_coach.senales_seguimiento.map((s, i) => (
+                      <li key={i} className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-1"><span>•</span>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <p className="text-xs text-amber-700 dark:text-amber-400"><span className="font-medium">Si no hay progreso en 3 semanas:</span> {plan.justificacion_coach.proxima_revision}</p>
+            </div>
+          )}
+
+          {/* ── Nota IA fallback (si no hay campos pro) ─────────── */}
+          {plan.notas_coach && !plan.notas_cliente && (
             <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-300 mb-3">
               <span className="font-semibold">Nota IA:</span> {plan.notas_coach}
             </div>

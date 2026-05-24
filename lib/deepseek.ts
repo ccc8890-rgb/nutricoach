@@ -57,6 +57,18 @@ export interface DietaGenerada {
         grasas: number
     }
     notas: string
+    // ── Campos pro (opcionales por retrocompatibilidad) ────────────
+    notas_cliente?: string           // Narrativa personalizada al cliente
+    protocolo_semana?: {
+        dia_entreno: string          // Qué hacer diferente en días de entreno
+        dia_descanso: string         // Ajustes en días de descanso
+        timing_clave: string         // Cuándo concentrar carbohidratos/proteína
+    }
+    justificacion_coach?: {
+        razonamiento_macros: string  // Qué paper/protocolo justifica estos macros
+        senales_seguimiento: string[]// Qué medir en el próximo check-in (2-4 semanas)
+        proxima_revision: string     // Qué ajustar si hay estancamiento/desvío
+    }
 }
 
 /**
@@ -88,21 +100,17 @@ export function construirPrompt(
         ? `\nCONOCIMIENTO CIENTÍFICO PARA APLICAR EN LA DIETA:\n${conocimientoCientifico}\n\n`
         : ''
 
-    return `${conocimiento}Eres un coach nutricional experto en crear dietas personalizadas.
-
-INSTRUCCIONES IMPORTANTES:
-- Usa SOLO las recetas proporcionadas en la lista "RECETAS DISPONIBLES"
-- NO inventes recetas ni uses alimentos que no estén en la lista
+    return `${conocimiento}REGLAS DE SELECCIÓN DE RECETAS:
+- Usa SOLO las recetas proporcionadas en la lista *_CANDIDATAS por slot
+- NO inventes recetas ni uses IDs que no estén en la lista
 - Elige la plantilla que MÁS se ajuste al perfil del cliente
-- Ajusta las porciones para cumplir los macros objetivo (±5%)
-- Distribuye las comidas de forma equilibrada en el día
-- Prioriza variedad (no repetir la misma receta en distintas comidas)
-- Ten en cuenta restricciones dietéticas y preferencias del cliente
-- Las recetas incluyen datos de azúcares, sodio y fibra por porción — úsalos para personalizar según patologías:
-  * DIABETES o resistencia a insulina: prioriza recetas con azúcares < 10g/100g, limita azúcares añadidos
-  * HIPERTENSIÓN: prioriza recetas con sodio < 400mg/100g, evita embutidos/procesados
-  * PROBLEMAS DIGESTIVOS/ESTREÑIMIENTO: prioriza recetas con fibra > 4g/100g
-  * OBJETIVO GENERAL: azúcares < 20g/día añadidos, sodio < 2000mg/día, fibra > 25g/día
+- Ajusta porciones para cumplir macros del slot (±8%)
+- Prioriza variedad (no repetir receta en distintas comidas del mismo día)
+- Intolerancias y restricciones del cliente son LÍMITES DUROS, nunca los violes
+- Patologías especiales:
+  * DIABETES / RESISTENCIA A INSULINA → prioriza recetas con azúcares < 10g/100g
+  * HIPERTENSIÓN → sodio < 400mg/100g, evita embutidos
+  * ESTREÑIMIENTO → fibra > 4g/100g
 
 DATOS DEL CLIENTE:
 ${clienteStr}
@@ -113,18 +121,18 @@ ${plantillasStr}
 RECETAS DISPONIBLES (agrupadas por categoría):
 ${recetasStr}
 
-RESPONDE ÚNICAMENTE CON UN OBJETO JSON VÁLIDO, SIN EXPLICACIONES PREVIAS:
+SCHEMA DE SALIDA JSON (respeta todos los campos):
 
 {
-  "plantilla_id_elegida": "uuid-de-la-plantilla-seleccionada",
-  "razon_plantilla": "Breve explicación de por qué se eligió esta plantilla",
+  "plantilla_id_elegida": "uuid o cadena vacía si no aplica",
+  "razon_plantilla": "por qué esta plantilla",
   "comidas": [
     {
       "nombre": "Desayuno",
       "orden": 1,
       "alimentos": [
         {
-          "receta_id": "uuid-receta",
+          "receta_id": "uuid-exacto-de-la-lista",
           "receta_nombre": "Nombre de la receta",
           "cantidad_porciones": 1
         }
@@ -137,7 +145,18 @@ RESPONDE ÚNICAMENTE CON UN OBJETO JSON VÁLIDO, SIN EXPLICACIONES PREVIAS:
     "carbohidratos": 200,
     "grasas": 60
   },
-  "notas": "Notas sobre la dieta generada"
+  "notas": "notas generales del plan",
+  "notas_cliente": "Mensaje personalizado para el cliente, 3-4 frases explicando su plan en tono de coach cercano",
+  "protocolo_semana": {
+    "dia_entreno": "qué ajustar en días con entrenamiento (timing, cantidades)",
+    "dia_descanso": "qué reducir o ajustar en días de descanso",
+    "timing_clave": "la regla de oro más importante para este cliente"
+  },
+  "justificacion_coach": {
+    "razonamiento_macros": "qué protocolo científico justifica estos macros para este objetivo",
+    "senales_seguimiento": ["indicador 1 a medir en 2-4 semanas", "indicador 2", "indicador 3"],
+    "proxima_revision": "qué ajustar en 3 semanas si no hay progreso esperado"
+  }
 }`
 }
 
@@ -153,8 +172,43 @@ export async function generarDietaConIA(prompt: string): Promise<{ data: DietaGe
         throw new Error('DEEPSEEK_API_KEY no configurada. Añádela en .env.local')
     }
 
+    const SYSTEM_PROMPT_ELITE = `Eres un nutricionista deportivo de élite con 20 años de experiencia trabajando con atletas recreacionales y profesionales en España. Tienes certificación ISSN (International Society of Sports Nutrition) y especialización en running, CrossFit, triatlón e Hyrox.
+
+TU MISIÓN:
+Los cálculos de TDEE, macros, distribución proteica y mesociclo ya están hechos por el sistema — NO los recalcules ni los contradigas.
+Tu trabajo es lo que ningún software puede hacer: pensar como el experto que el cliente está pagando.
+
+LO QUE DEBES HACER:
+1. SELECCIONAR las recetas óptimas del recetario para cada slot:
+   - Respeta los macros del slot con margen ±8%
+   - Considera timing de entrenamiento (pre/post): carbohidratos en pre, proteína en post
+   - Adapta al nivel de cocina y tiempo disponible del cliente
+   - Varía: nunca repitas la misma receta dos veces en un mismo día
+   - Prioriza recetas altas en proteína en post-entreno y cena
+
+2. ESCRIBIR "notas_cliente" — mensaje personalizado al cliente (3-4 frases):
+   - En tono de coach cercano: "Tu plan está diseñado para..."
+   - Explica el POR QUÉ concreto de sus macros (no genérico)
+   - Conecta con su objetivo real y su estilo de vida
+   - Menciona al menos una receta concreta del plan que le ayudará
+   - NUNCA uses frases vacías como "sigue así" o "lo estás haciendo bien"
+
+3. ESCRIBIR "protocolo_semana" — guía práctica de una semana tipo:
+   - "dia_entreno": qué ajustar en días con entrenamiento (timing CHO, comida pre/post)
+   - "dia_descanso": qué reducir o ajustar si no hay entreno (generalmente -10-15% CHO)
+   - "timing_clave": la regla de oro más importante para este cliente específico
+
+4. ESCRIBIR "justificacion_coach" — briefing técnico para el coach:
+   - "razonamiento_macros": qué protocolo científico justifica estos macros (citar paper si aplica)
+   - "senales_seguimiento": 3 indicadores concretos a medir en el próximo check-in (2-4 semanas)
+   - "proxima_revision": qué ajustar si en 3 semanas no hay progreso
+
+FILOSOFÍA: Cada plan que generas es el que un nutricionista de 150-200€/sesión daría. Tiene base científica, personalización real, y el cliente entiende por qué come lo que come. No es un template, es un plan de esa persona en concreto.
+
+RESPONDE ÚNICAMENTE EN JSON VÁLIDO. Sin markdown, sin explicaciones fuera del JSON.`
+
     const messages: DeepSeekMessage[] = [
-        { role: 'system', content: 'Eres un coach nutricional experto. Respondes siempre en español, solo con JSON válido.' },
+        { role: 'system', content: SYSTEM_PROMPT_ELITE },
         { role: 'user', content: prompt },
     ]
 
@@ -167,8 +221,8 @@ export async function generarDietaConIA(prompt: string): Promise<{ data: DietaGe
         body: JSON.stringify({
             model: DEEPSEEK_MODEL,
             messages,
-            temperature: 0.3, // Baja temperatura para consistencia
-            max_tokens: 4000,
+            temperature: 0.35,
+            max_tokens: 6000,
         }),
     })
 
@@ -193,10 +247,12 @@ export async function generarDietaConIA(prompt: string): Promise<{ data: DietaGe
     try {
         const parsed: DietaGenerada = JSON.parse(jsonMatch[0])
 
-        // Validar estructura mínima
-        if (!parsed.plantilla_id_elegida || !parsed.comidas || !parsed.macros_totales) {
-            throw new Error('DeepSeek: JSON incompleto. Faltan campos requeridos.')
+        // Validar estructura mínima (los campos pro son opcionales)
+        if (!parsed.comidas || !parsed.macros_totales) {
+            throw new Error('DeepSeek: JSON incompleto. Faltan comidas o macros_totales.')
         }
+        // plantilla_id_elegida puede ser null si el coach no tiene plantillas definidas
+        if (!parsed.plantilla_id_elegida) parsed.plantilla_id_elegida = ''
 
         return { data: parsed, total_tokens: data.usage.total_tokens }
     } catch (parseError) {

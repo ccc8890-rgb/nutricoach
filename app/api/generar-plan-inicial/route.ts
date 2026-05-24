@@ -606,7 +606,16 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           ...(leucinaCheck.alerta ? [leucinaCheck.alerta] : []),
           ...(mesociclo.alertas.length > 0 ? mesociclo.alertas : []),
         ],
-        notas_coach: `Cliente nuevo. Objetivo: ${onboarding.objetivo}. TDEE: ${tdee} kcal → objetivo: ${kcalObjetivo} kcal. Proteína: ${distribucionProteina.total}g/día (${distribucionProteina.g_por_kg.toFixed(1)}g/kg) — ref. ${onboarding.objetivo === 'rendimiento' ? 'ISSN 2017' : onboarding.objetivo === 'perder_grasa' ? 'Helms et al. 2014' : 'Morton 2018 BJSM'}. Mesociclo: ${mesociclo.duracion_total_dias} días. ${metodologia ? 'Metodología del coach aplicada.' : 'Modo evidence-based puro — sin metodología coach activa.'}`,
+        notas_cliente: dietaIA?.notas_cliente ?? null,
+        protocolo_semana: dietaIA?.protocolo_semana ?? null,
+        justificacion_coach: dietaIA?.justificacion_coach ?? null,
+        notas_coach: [
+          `TDEE: ${tdee} kcal → objetivo: ${kcalObjetivo} kcal`,
+          `Proteína: ${distribucionProteina.total}g/día (${distribucionProteina.g_por_kg.toFixed(1)}g/kg) — ref. ${onboarding.objetivo === 'rendimiento' ? 'ISSN 2017' : onboarding.objetivo === 'perder_grasa' ? 'Helms et al. 2014' : 'Morton 2018 BJSM'}`,
+          `Mesociclo: ${mesociclo.duracion_total_dias} días — ${mesociclo.objetivo_mesociclo}`,
+          metodologia ? 'Metodología del coach aplicada.' : 'Modo evidence-based puro.',
+          dietaIA?.justificacion_coach?.razonamiento_macros ?? '',
+        ].filter(Boolean).join('\n'),
       }
 
       // ── 11b. Validar y resolver recetas DeepSeek (garantizar IDs válidos) ──────
