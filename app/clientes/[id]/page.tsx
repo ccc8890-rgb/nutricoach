@@ -31,6 +31,7 @@ const HistorialEntreno = dynamic(() => import('@/components/training/HistorialEn
 const CompeticionesManager = dynamic(() => import('@/components/CompeticionesManager'), { ssr: false, loading: () => <TabSkeleton /> })
 const CosteSemanalCard = dynamic(() => import('@/components/clientes/CosteSemanal'), { ssr: false, loading: () => <div className="lg:col-span-2 h-12 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const AdherenciaScoreCard = dynamic(() => import('@/components/clientes/AdherenciaScore'), { ssr: false, loading: () => <div className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
+const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAdherenciaHeatmap'), { ssr: false, loading: () => <div className="h-32 rounded-2xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 
 function TabSkeleton() {
   return <div className="animate-pulse rounded-2xl h-48 w-full" style={{ background: 'var(--surface)' }} />
@@ -645,6 +646,9 @@ export default function ClienteDetallePage() {
           <div className="space-y-4">
             {/* Score de adherencia */}
             <AdherenciaScoreCard clienteId={id} />
+
+            {/* Heatmap de adherencia diaria de comidas */}
+            <MealAdherenciaHeatmap clienteId={id} />
 
             {/* Last check-in + weight snapshot */}
             {(ultimoCheckin || ultimoPeso) && (

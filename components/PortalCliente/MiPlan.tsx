@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw, PencilLine } from 'lucide-react'
 import RecetaDelDia from './RecetaDelDia'
+import GarminMiniCard from './GarminMiniCard'
 import ListaCompraPortal from './ListaCompraPortal'
 import MicronutrientesPortal from './MicronutrientesPortal'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -474,6 +475,26 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
         (planLocal.comidas ?? []).map(c => calcMacrosComida(c.alimentos ?? []))
     )
 
+    // Progreso de adherencia del día
+    const totalComidas = planLocal.comidas?.length ?? 0
+    const comidasHechas = Object.values(registros).filter(r => r.estado === 'hecha' || r.estado === 'cambiada').length
+    const pctAdherencia = totalComidas > 0 ? Math.round((comidasHechas / totalComidas) * 100) : 0
+
+    // SVG ring helpers
+    const RING_R = 26
+    const RING_C = 32
+    const RING_STROKE = 5
+    const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R
+    const ringOffset = RING_CIRCUMFERENCE - (pctAdherencia / 100) * RING_CIRCUMFERENCE
+    const ringColor = pctAdherencia >= 80 ? '#22c55e' : pctAdherencia >= 50 ? '#f59e0b' : pctAdherencia > 0 ? '#0D9488' : 'var(--border)'
+
+    const saludo = (() => {
+        const h = new Date().getHours()
+        if (h < 12) return 'Buenos días'
+        if (h < 20) return 'Buenas tardes'
+        return 'Buenas noches'
+    })()
+
     return (
         <div className="space-y-4 print-area">
             {/* Toggle Hoy / Semana */}
@@ -502,28 +523,100 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
             {/* Vista diaria */}
             {vistaActual === 'hoy' && (<>
 
-            {/* Resumen macros del día */}
-            <div className="card !p-5" style={{ borderTop: '3px solid var(--primary)' }}>
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Total del día</p>
-                <p className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
-                    {totalDia.calorias.toFixed(0)}{' '}
-                    <span className="text-lg font-normal" style={{ color: 'var(--text-muted)' }}>kcal</span>
-                </p>
-                <div className="flex gap-4 mt-3">
-                    <div className="macro-pill macro-pill-protein">
-                        <span className="text-lg font-bold" style={{ color: 'var(--error)' }}>{totalDia.proteinas.toFixed(0)}g</span>
-                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Proteínas</span>
+            {/* Resumen macros + adherencia del día */}
+            <div className="card !p-5" style={{ borderTop: `3px solid ${ringColor}` }}>
+                {/* Saludo + fecha */}
+                <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+                        {saludo}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-5">
+                    {/* Anillo de progreso de adherencia */}
+                    <div className="relative flex-shrink-0" style={{ width: 64, height: 64 }}>
+                        <svg width="64" height="64" viewBox={`0 0 ${RING_C * 2} ${RING_C * 2}`}>
+                            {/* Track */}
+                            <circle
+                                cx={RING_C} cy={RING_C} r={RING_R}
+                                fill="none" stroke="var(--border)"
+                                strokeWidth={RING_STROKE}
+                            />
+                            {/* Progress */}
+                            <circle
+                                cx={RING_C} cy={RING_C} r={RING_R}
+                                fill="none" stroke={ringColor}
+                                strokeWidth={RING_STROKE}
+                                strokeLinecap="round"
+                                strokeDasharray={RING_CIRCUMFERENCE}
+                                strokeDashoffset={ringOffset}
+                                transform={`rotate(-90 ${RING_C} ${RING_C})`}
+                                style={{ transition: 'stroke-dashoffset 0.4s ease' }}
+                            />
+                        </svg>
+                        {/* Text inside ring */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-sm font-bold leading-none" style={{ color: ringColor }}>
+                                {comidasHechas}/{totalComidas}
+                            </span>
+                            <span className="text-[9px] leading-tight mt-0.5" style={{ color: 'var(--text-muted)' }}>comidas</span>
+                        </div>
                     </div>
-                    <div className="macro-pill macro-pill-carbs">
-                        <span className="text-lg font-bold" style={{ color: 'var(--warning)' }}>{totalDia.carbohidratos.toFixed(0)}g</span>
-                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Carbohidratos</span>
-                    </div>
-                    <div className="macro-pill macro-pill-fat">
-                        <span className="text-lg font-bold" style={{ color: '#7C3AED' }}>{totalDia.grasas.toFixed(0)}g</span>
-                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Grasas</span>
+
+                    {/* Kcal + macros */}
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-1.5 mb-3">
+                            <span className="text-3xl font-bold" style={{ color: 'var(--text)' }}>
+                                {totalDia.calorias.toFixed(0)}
+                            </span>
+                            <span className="text-sm font-normal" style={{ color: 'var(--text-muted)' }}>kcal hoy</span>
+                            {pctAdherencia > 0 && (
+                                <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full"
+                                    style={{ background: ringColor + '20', color: ringColor }}>
+                                    {pctAdherencia}% ✓
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex gap-3">
+                            <div className="flex-1 text-center">
+                                <p className="text-base font-bold" style={{ color: '#ef4444' }}>{totalDia.proteinas.toFixed(0)}g</p>
+                                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Proteína</p>
+                            </div>
+                            <div className="flex-1 text-center">
+                                <p className="text-base font-bold" style={{ color: '#f59e0b' }}>{totalDia.carbohidratos.toFixed(0)}g</p>
+                                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Carbos</p>
+                            </div>
+                            <div className="flex-1 text-center">
+                                <p className="text-base font-bold" style={{ color: '#7c3aed' }}>{totalDia.grasas.toFixed(0)}g</p>
+                                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Grasas</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                {/* Barra progreso de adherencia */}
+                {totalComidas > 0 && (
+                    <div className="mt-4">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                                {comidasHechas === totalComidas ? '🎉 ¡Todas las comidas completadas!' : `${totalComidas - comidasHechas} comida${totalComidas - comidasHechas !== 1 ? 's' : ''} por registrar`}
+                            </span>
+                        </div>
+                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                            <div
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{ width: `${pctAdherencia}%`, background: ringColor }}
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
+
+            {/* Garmin mini-card (solo si tiene integración activa) */}
+            <GarminMiniCard codigo={codigo} />
 
             {/* Receta del día */}
             <RecetaDelDia kcal={totalDia.calorias} proteinas={totalDia.proteinas} clienteId={planLocal.cliente_id} />
