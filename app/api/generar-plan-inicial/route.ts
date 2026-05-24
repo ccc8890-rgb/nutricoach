@@ -594,12 +594,17 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
             return total + ((receta?.kcal ?? 0) * alimento.cantidad_porciones)
           }, 0)
           const proteinaComida = distribucionProteina.comidas[index]?.proteinas_g ?? Math.round((kcalComida * 0.30) / 4)
+          const kcalFinal = Math.round(kcalComida || kcalObjetivo / Math.max(dietaGenerada.comidas.length, 1))
           return {
             nombre: c.nombre,
             orden: c.orden,
             porcentaje_kcal: kcalComida > 0 ? Math.round((kcalComida / dietaGenerada.macros_totales.kcal) * 100) : undefined,
-            kcal: Math.round(kcalComida || kcalObjetivo / Math.max(dietaGenerada.comidas.length, 1)),
-            hora_sugerida: distribucionProteina.comidas[index]?.hora_sugerida || undefined,
+            kcal: kcalFinal,
+            kcal_target: kcalFinal,
+            proteinas_target: proteinaComida,
+            hora_sugerida: distribucionProteina.comidas[index]?.hora_sugerida ||
+              ({ Desayuno: '08:00', Comida: '13:30', Merienda: '17:00', Cena: '20:30' } as Record<string, string>)[c.nombre] ||
+              undefined,
             proteinas_g: proteinaComida,
             notas: `Proteína objetivo: ${proteinaComida}g`,
             recetas: c.alimentos.map(a => {
@@ -858,55 +863,22 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
       const recetas = (comida.recetas as Array<Record<string, unknown>> | undefined)
       if (!recetas || recetas.length === 0) continue
 
-      // Calcular kcal total estimadas para esta comida (para el fallback de recetas no encontradas)
-      const kcalEstimadasComida = comidasData.find(c => c.nombre === comida.nombre)
-        ? (planJson.kcal_objetivo as number) / comidasData.length
-        : kcalObjetivo / Math.max(comidasData.length, 1)
-      const protEstimadaComida = comidasData.find(c => c.nombre === comida.nombre)
-        ? distribucionProteina.total / comidasData.length
-        : distribucionProteina.total / Math.max(comidasData.length, 1)
-
       for (const r of recetas) {
         const recetaId = r.receta_id as string
         const recetaNombre = r.receta_nombre as string
         const cantPorciones = (r.cantidad_porciones as number) ?? 1
-        const recetaFull = recetasPorId.get(recetaId) ??
+        const recetaResolved = recetasPorId.get(recetaId) ??
           recetasPorNombre.get(recetaNombre.toLowerCase().trim()) ??
           [...recetasPorNombre.entries()].find((e) =>
             e[0].includes(recetaNombre.toLowerCase().split(' ')[0])
           )?.[1]
 
+        // Si la IA devuelve ID/nombre inválido, usar el mejor candidato real del slot
+        const recetaFull = recetaResolved ??
+          (candidatasPorSlot.get(comida.nombre as string) ?? [...candidatasPorSlot.values()].flat())[0]
+
         if (!recetaFull) {
-          console.warn('[generar-plan-inicial] Receta IA no encontrada en recetario, creando alimento con datos IA:', recetaNombre)
-          // Cuando la IA inventa una receta que no existe, estimamos macros
-          const kcalPorPorcion = Math.round(kcalEstimadasComida / Math.max(recetas.length, 1) / cantPorciones)
-          const protPorPorcion = Math.round(protEstimadaComida / Math.max(recetas.length, 1) / cantPorciones)
-          const { data: newAlData } = await supabase
-            .from('alimentos')
-            .insert({
-              nombre: recetaNombre,
-              categoria: 'receta_ia',
-              calorias: kcalPorPorcion,
-              proteinas: protPorPorcion,
-              custom: true,
-              coach_id: cliente.coach_id,
-            })
-            .select()
-            .single()
-          if (!newAlData) {
-            console.error('[generar-plan-inicial] Error creando alimento fallback para:', recetaNombre)
-            continue
-          }
-          const gramos = Math.round(cantPorciones * 100)
-          try {
-            await supabase.from('comida_alimentos').insert({
-              comida_id: comidaDb.id,
-              alimento_id: newAlData.id,
-              cantidad_gramos: gramos,
-            })
-          } catch (err) {
-            console.error('[generar-plan-inicial] Error vinculando alimento fallback:', err instanceof Error ? err.message : err)
-          }
+          console.warn('[generar-plan-inicial] Sin candidatos para slot, omitiendo:', comida.nombre, recetaNombre)
           continue
         }
 
@@ -944,7 +916,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
 
         const gramos = Math.round(cantPorciones * 100)
         const targetKcalComida = (comida.kcal_target as number) || Math.round(kcalObjetivo / (comidasData?.length ?? 4))
-        const factorGramaje = calcularFactorGramaje(recetaFull?.kcal ?? 0, targetKcalComida)
+        const factorGramaje = calcularFactorGramaje(recetaFull.kcal ?? 0, targetKcalComida)
         const factorFinal = factorGramaje ?? 1.0
         const { error: caError } = await supabase
           .from('comida_alimentos')
