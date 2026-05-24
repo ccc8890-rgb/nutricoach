@@ -238,8 +238,8 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
 
             {/* Tabs — estilo pill */}
             <div className="sticky top-0 z-10 border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                <div className="max-w-2xl mx-auto px-4 py-2 overflow-x-auto no-scrollbar">
-                    <div className="flex gap-1.5">
+                <div className="max-w-2xl mx-auto px-4 py-2 overflow-x-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <div className="flex gap-1.5 w-max min-w-full">
                         {TABS.map(({ key, label, icon: Icon }) => (
                             <button
                                 key={key}
