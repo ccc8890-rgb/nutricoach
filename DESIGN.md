@@ -1,6 +1,6 @@
 ---
 name: Casanova Nutrition
-description: Plataforma profesional de coaching nutricional minimalista — Graphite Apple Pro
+description: Plataforma profesional de coaching nutricional y entrenamiento — Instrumento clínico deportivo premium
 colors:
   accent: "#A1A1A6"
   accent-dark: "#8E8E93"
@@ -22,22 +22,22 @@ colors:
   info: "#0A84FF"
 typography:
   display:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Plus Jakarta Sans, Geist, system-ui, sans-serif"
     fontSize: "1.75rem"
     fontWeight: 700
     lineHeight: 1.2
   title:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Plus Jakarta Sans, Geist, system-ui, sans-serif"
     fontSize: "1.25rem"
     fontWeight: 600
     lineHeight: 1.3
   body:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Plus Jakarta Sans, Geist, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Plus Jakarta Sans, Geist, system-ui, sans-serif"
     fontSize: "0.8125rem"
     fontWeight: 500
     lineHeight: 1.25
@@ -82,15 +82,15 @@ components:
     padding: "0.625rem 0.875rem"
 ---
 
-# Design System v6 — Graphite Apple Pro
+# Design System v7 — Health OS
 
-> Inspirado en Apple Pro / Space Gray. Dark mode profundo con acento graphite plateado, glassmorphism, y micro-interacciones con spring physics.
+> Instrumento clínico deportivo premium. Sobrio como Apple Salud, rápido como Linear, con jerarquía de datos pensada para nutrición, entrenamiento y seguimiento real.
 
 ## 1. Overview
 
-**Creative North Star: "The Health Chart"**
+**Creative North Star: "The Coaching Instrument"**
 
-Una aplicación de coaching nutricional que se siente como abrir la app Salud de Apple. Sereno, preciso, sin adornos. Cada pantalla comunica competencia a través del orden, no de la decoración.
+Una aplicación de coaching nutricional y entrenamiento que se siente como abrir un instrumento bien calibrado. Sereno, preciso, sin adornos. Cada pantalla comunica competencia a través del orden, no de la decoración.
 
 El diseño rechaza explícitamente la estética de MyFitnessPal y clones: sin saturación de color, sin cards apiladas sin jerarquía, sin gradientes decorativos. La información nutricional —macros, calorías, ingredientes— es el contenido principal, y el diseño se limita a organizarla con jerarquía tipográfica clara y espaciado generoso.
 
@@ -102,6 +102,8 @@ El sistema es **flat por defecto**: sin sombras, sin profundidad fingida. El ord
 - Jerarquía por tipografía y espaciado, no por color ni sombras
 - Macros con color funcional Apple System Colors (rojo proteína, graphite carbos, azul grasas, naranja calorías)
 - Dark mode como default; light mode como variante
+- IA como copiloto sobrio: recomendaciones accionables, no estética robot ni panel técnico
+- Coach app orientada a cola de trabajo: quién requiere acción, por qué, y cuál es el siguiente paso
 
 ## 2. Colors
 
@@ -158,11 +160,13 @@ Apple System Colors, con su variante bg al 10%:
 
 ## 3. Typography
 
-**Display & Body Font:** Inter (con system-ui y sans-serif como fallback)
+**Display & Body Font:** Plus Jakarta Sans + Geist (con system-ui y sans-serif como fallback)
 
-Inter se usa por su legibilidad técnica, su amplio soporte de pesos, y su familiaridad en entornos profesionales.
+Plus Jakarta Sans se usa como voz principal por su carácter técnico y humano. Geist se mantiene como respaldo de sistema y Geist Mono para números, métricas, kcal, gramos, fechas y porcentajes.
 
-**Character:** Funcional, serena, legible. Inter en pesos medios-ligeros comunica precisión sin llamar la atención.
+**Character:** Funcional, serena, legible. Pesos medios-ligeros comunican precisión sin llamar la atención.
+
+**Iconography:** Phosphor Icons es el estándar para nuevas pantallas y rediseños. Lucide queda permitido solo en componentes legacy hasta su migración. Iconos en `regular` o `duotone` con tamaño contenido; nada de emojis en UI de producción.
 
 ### Hierarchy
 
@@ -254,6 +258,33 @@ Borde exterior de 14px radius. Cabeceras: 12px, uppercase, 600 weight, 0.05em le
 ### Sidebar Navigation
 
 Links con 10px radius, padding 0.6rem 0.875rem, 14px, weight 500. Hover/active: `--accent-bg`, color `--accent`, active con weight 600.
+
+#### Coach IA
+
+La navegación del coach se organiza por trabajo real, no por tablas internas:
+
+1. **Radar** — vista diaria de clientes que requieren atención.
+2. **Clientes** — cartera completa con filtros operativos.
+3. **Inbox IA** — acciones generadas por agentes pendientes de decisión.
+4. **Nutrición** — planes, alimentos, costes y lista de compra.
+5. **Entrenamiento** — planes, plantillas, ejercicios y perfil atleta.
+6. **Recetario** — recetas, cola de revisión y calidad.
+7. **Conocimiento** — metodología, papers y memoria del coach.
+8. **Sistema** — herramientas técnicas, scraping, pruebas IA e integraciones.
+
+La IA nunca debe sentirse como una sección técnica aislada. Cada recomendación debe aparecer también dentro del cliente afectado y debe responder a: `qué pasa`, `por qué importa`, `qué haría Carlos ahora`.
+
+#### Cliente Profile IA
+
+La ficha de cliente usa 5 pestañas máximas:
+
+- **Resumen** — estado semanal, alertas, próxima acción, inteligencia clínica resumida.
+- **Plan** — nutrición activa, entrenamiento activo, cambios pendientes, coste semanal.
+- **Seguimiento** — check-ins, peso, fotos, adherencia y entrenos completados.
+- **Comunicación** — chat, notas, feedback y mensajes IA sugeridos.
+- **Perfil** — onboarding, restricciones, perfil atleta, competición e integraciones.
+
+Las capacidades avanzadas (`historial IA`, `ajuste macros`, `periodización`, `clínico IA`) viven como módulos dentro de esas pestañas, no como pestañas principales.
 
 ### Loading (Skeleton)
 

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase-server'
 
 export default async function HomePage() {
@@ -24,20 +25,10 @@ export default async function HomePage() {
 
   // Si hay sesión válida, redirigir
   if (user && role === 'coach') {
-    return (
-      <html>
-        <head><meta httpEquiv="refresh" content={`0;url=/dashboard`} /></head>
-        <body><p>Redirigiendo...</p></body>
-      </html>
-    )
+    redirect('/dashboard')
   }
   if (user && role === 'cliente') {
-    return (
-      <html>
-        <head><meta httpEquiv="refresh" content={`0;url=/cliente`} /></head>
-        <body><p>Redirigiendo...</p></body>
-      </html>
-    )
+    redirect('/cliente')
   }
 
   // Sin sesión → landing estática aesthetic

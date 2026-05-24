@@ -81,17 +81,11 @@ export async function proxy(request: NextRequest) {
         return res
     }
 
-    // Refrescar sesión si existe — esto sincroniza cookies
-    // Capturamos errores silenciosamente para evitar bucles por tokens inválidos
+    // Refrescar sesión si existe — esto sincroniza cookies.
+    // No redirigimos /login desde aquí: si una cookie queda a medias,
+    // bloquearía la recuperación manual de sesión.
     try {
-        const { data: { user } } = await supabase.auth.getUser()
-
-        // Solo redirigir si el usuario está realmente autenticado
-        if (user && request.nextUrl.pathname === '/login') {
-            const url = request.nextUrl.clone()
-            url.pathname = '/'
-            return NextResponse.redirect(url)
-        }
+        await supabase.auth.getUser()
     } catch {
         // Ignorar errores de auth (token inválido, etc.) para evitar bucles
     }

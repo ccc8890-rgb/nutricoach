@@ -3,10 +3,10 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
-  Home, BookOpen, ClipboardCheck, BarChart2, LogOut,
-  UtensilsCrossed, Dumbbell, Weight, Trophy, Sun, Moon,
-  Flame, Zap, ChevronRight, X, TrendingDown, TrendingUp,
-} from 'lucide-react'
+  House, BookOpen, ClipboardText, ChartLineUp, SignOut,
+  ForkKnife, Barbell, Scales, Trophy, Sun, Moon,
+  CaretRight, X, TrendDown, TrendUp,
+} from '@phosphor-icons/react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
@@ -99,6 +99,31 @@ function EmptyState({ icon: Icon, text }: { icon: React.ElementType; text: strin
         <Icon size={22} style={{ color: 'var(--text-muted)' }} />
       </div>
       <p className="text-sm max-w-[220px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{text}</p>
+    </div>
+  )
+}
+
+function LoadingPortal() {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
+      <div className="w-full max-w-sm space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl animate-pulse" style={{ background: 'var(--surface-elevated)' }} />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-28 rounded-full animate-pulse" style={{ background: 'var(--surface-elevated)' }} />
+            <div className="h-2 w-20 rounded-full animate-pulse" style={{ background: 'var(--surface)' }} />
+          </div>
+        </div>
+        <div className="rounded-[1.75rem] p-5 space-y-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="h-3 w-36 rounded-full animate-pulse" style={{ background: 'var(--surface-elevated)' }} />
+          <div className="h-12 w-40 rounded-2xl animate-pulse" style={{ background: 'var(--surface-elevated)' }} />
+          <div className="grid grid-cols-3 gap-3">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="h-20 rounded-2xl animate-pulse" style={{ background: 'var(--bg-subtle)' }} />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -212,31 +237,24 @@ function PortalClientePageContent() {
     router.push('/login')
   }
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', boxShadow: '0 0 30px var(--accent-glow)' }}>
-          <span className="text-sm font-bold" style={{ color: '#ffffff' }}>CN</span>
-        </div>
-        <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
-      </div>
-    </div>
-  )
+  if (loading) return <LoadingPortal />
 
   const totalDia = calcMacrosDia()
   const codigo = dieta?.codigo_publico ?? ''
   const iniciales = profile?.nombre?.[0]?.toUpperCase() ?? '?'
+  const primerNombre = profile?.nombre?.split(' ')[0] ?? 'cliente'
   const ultimoPeso = historialPeso[0]?.peso
   const penultimoPeso = historialPeso[1]?.peso
   const diffPeso = ultimoPeso && penultimoPeso ? ultimoPeso - penultimoPeso : null
+  const sesionesSemana = entreno?.sesiones?.length ?? 0
+  const comidasDia = dieta?.comidas?.length ?? 0
+  const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 
   const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'hoy',      label: 'Hoy',      icon: Home },
+    { key: 'hoy',      label: 'Hoy',      icon: House },
     { key: 'plan',     label: 'Mi Plan',  icon: BookOpen },
-    { key: 'checkin',  label: 'Check-in', icon: ClipboardCheck },
-    { key: 'progreso', label: 'Progreso', icon: BarChart2 },
+    { key: 'checkin',  label: 'Check-in', icon: ClipboardText },
+    { key: 'progreso', label: 'Progreso', icon: ChartLineUp },
   ]
 
   return (
@@ -244,20 +262,20 @@ function PortalClientePageContent() {
 
       {/* ── Header ── */}
       <div className="sticky top-0 z-20 px-4 pt-safe"
-        style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-xl mx-auto flex items-center justify-between h-14">
+        style={{ background: 'color-mix(in srgb, var(--bg) 88%, transparent)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', borderBottom: '1px solid var(--border)' }}>
+        <div className="max-w-2xl mx-auto flex items-center justify-between h-16">
           {/* Avatar + name */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))', color: '#ffffff' }}>
+            <div className="w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-bold flex-shrink-0"
+              style={{ background: 'var(--surface-elevated)', color: 'var(--text)', border: '1px solid var(--border)' }}>
               {iniciales}
             </div>
             <div>
               <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--text)' }}>
                 {profile?.nombre}
               </p>
-              <p className="text-[10px] leading-tight" style={{ color: 'var(--text-muted)' }}>
-                Portal de cliente
+              <p className="text-[11px] leading-tight first-letter:uppercase" style={{ color: 'var(--text-muted)' }}>
+                {fechaHoy}
               </p>
             </div>
           </div>
@@ -269,7 +287,7 @@ function PortalClientePageContent() {
               style={{ color: 'var(--text-secondary)' }}
               aria-label="Cambiar tema"
             >
-              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <button
               onClick={handleLogout}
@@ -277,7 +295,7 @@ function PortalClientePageContent() {
               style={{ color: 'var(--text-muted)' }}
               aria-label="Cerrar sesión"
             >
-              <LogOut size={15} />
+              <SignOut size={16} />
             </button>
           </div>
         </div>
@@ -285,11 +303,11 @@ function PortalClientePageContent() {
 
       {/* ── Bienvenida banner ── */}
       {showBienvenida && (
-        <div className="px-4 pt-3 max-w-xl mx-auto">
+        <div className="px-4 pt-3 max-w-2xl mx-auto">
           <div className="flex items-start justify-between gap-3 px-4 py-3 rounded-2xl text-sm"
-            style={{ background: 'var(--success-bg)', border: '1px solid rgba(48,209,88,0.2)' }}>
-            <p style={{ color: 'var(--success)' }} className="font-medium text-sm">
-              ¡Bienvenido/a! Tu plan ya está listo. Tu coach ha preparado todo para ti. 🎉
+            style={{ background: 'var(--success-bg)', border: '1px solid rgba(48,209,88,0.22)' }}>
+            <p style={{ color: 'var(--success)' }} className="font-medium text-sm leading-relaxed">
+              Tu plan ya está listo. Carlos ha preparado la dieta, el entrenamiento y el seguimiento semanal.
             </p>
             <button onClick={() => setShowBienvenida(false)} className="flex-shrink-0 cursor-pointer"
               style={{ color: 'var(--success)' }}>
@@ -300,71 +318,107 @@ function PortalClientePageContent() {
       )}
 
       {/* ── Content ── */}
-      <div className="max-w-xl mx-auto px-4 pt-4 pb-28">
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-28">
 
         {/* ─── HOY ─── */}
         {tab === 'hoy' && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
 
             {/* Hero: Calorías */}
             {totalDia ? (
-              <div className="rounded-3xl p-5 overflow-hidden relative"
+              <section className="rounded-[1.75rem] p-5 overflow-hidden relative"
                 style={{
-                  background: 'linear-gradient(135deg, #1a1a1f 0%, #0f1117 100%)',
+                  background: 'var(--surface)',
                   border: '1px solid var(--border)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                  boxShadow: 'var(--shadow-md)',
                 }}>
-                {/* Glow orb */}
-                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20"
-                  style={{ background: 'radial-gradient(circle, var(--accent) 0%, transparent 70%)' }} />
-
-                <div className="relative">
-                  <p className="text-xs font-medium uppercase tracking-widest mb-1"
-                    style={{ color: 'var(--text-muted)' }}>
-                    Plan: {dieta?.nombre ?? 'Mi dieta'}
-                  </p>
-                  <div className="flex items-end gap-2 mb-5">
-                    <span className="text-5xl font-black tracking-tight" style={{ color: 'var(--text)' }}>
-                      {totalDia.calorias.toFixed(0)}
-                    </span>
-                    <span className="text-base mb-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>
-                      kcal / día
-                    </span>
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div>
+                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>
+                      Plan de hoy
+                    </p>
+                    <h1 className="text-2xl font-extrabold leading-tight tracking-tight" style={{ color: 'var(--text)' }}>
+                      {primerNombre}, foco en cumplir lo básico
+                    </h1>
                   </div>
-
-                  {/* Macro rings */}
-                  <div className="flex justify-around">
-                    <MacroPill
-                      label="Proteínas"
-                      value={totalDia.proteinas}
-                      target={dieta?.proteinas_objetivo ?? totalDia.proteinas}
-                      color="#52B788"
-                    />
-                    <MacroPill
-                      label="Carbos"
-                      value={totalDia.carbohidratos}
-                      target={dieta?.carbohidratos_objetivo ?? totalDia.carbohidratos}
-                      color="#74B9E0"
-                    />
-                    <MacroPill
-                      label="Grasas"
-                      value={totalDia.grasas}
-                      target={dieta?.grasas_objetivo ?? totalDia.grasas}
-                      color="#F4A261"
-                    />
-                    {totalDia.fibra > 0 && (
-                      <MacroPill
-                        label="Fibra"
-                        value={totalDia.fibra}
-                        target={30}
-                        color="#C47AC0"
-                      />
-                    )}
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-4xl font-black leading-none font-data" style={{ color: 'var(--text)' }}>
+                      {totalDia.calorias.toFixed(0)}
+                    </p>
+                    <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>
+                      kcal/día
+                    </p>
                   </div>
                 </div>
-              </div>
+
+                <div className="grid grid-cols-3 gap-2 mb-5">
+                  <div className="rounded-2xl px-3 py-3" style={{ background: 'var(--bg-subtle)' }}>
+                    <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Comidas</p>
+                    <p className="font-data text-xl font-bold" style={{ color: 'var(--text)' }}>{comidasDia}</p>
+                  </div>
+                  <div className="rounded-2xl px-3 py-3" style={{ background: 'var(--bg-subtle)' }}>
+                    <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Entrenos</p>
+                    <p className="font-data text-xl font-bold" style={{ color: 'var(--text)' }}>{sesionesSemana}</p>
+                  </div>
+                  <div className="rounded-2xl px-3 py-3" style={{ background: 'var(--bg-subtle)' }}>
+                    <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Peso</p>
+                    <p className="font-data text-xl font-bold" style={{ color: 'var(--text)' }}>{ultimoPeso ? `${ultimoPeso}` : '—'}</p>
+                  </div>
+                </div>
+
+                {/* Macro rings */}
+                <div className="grid grid-cols-3 gap-3">
+                  <MacroPill
+                    label="Proteínas"
+                    value={totalDia.proteinas}
+                    target={dieta?.proteinas_objetivo ?? totalDia.proteinas}
+                    color="#52B788"
+                  />
+                  <MacroPill
+                    label="Carbos"
+                    value={totalDia.carbohidratos}
+                    target={dieta?.carbohidratos_objetivo ?? totalDia.carbohidratos}
+                    color="#4A9FCC"
+                  />
+                  <MacroPill
+                    label="Grasas"
+                    value={totalDia.grasas}
+                    target={dieta?.grasas_objetivo ?? totalDia.grasas}
+                    color="#E07C3A"
+                  />
+                </div>
+              </section>
             ) : (
-              <EmptyState icon={UtensilsCrossed} text="Tu coach aún no ha asignado un plan de dieta" />
+              <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
+            )}
+
+            {codigo && (
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => setTab('plan')}
+                  className="rounded-2xl px-3 py-3 text-left transition-all active:scale-[0.98]"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <ForkKnife size={17} style={{ color: 'var(--accent)' }} />
+                  <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>Comidas</p>
+                </button>
+                <button
+                  onClick={() => setTab('plan')}
+                  className="rounded-2xl px-3 py-3 text-left transition-all active:scale-[0.98]"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <Barbell size={17} style={{ color: '#4A9FCC' }} />
+                  <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>Entreno</p>
+                </button>
+                <button
+                  onClick={() => setTab('checkin')}
+                  className="rounded-2xl px-3 py-3 text-left transition-all active:scale-[0.98]"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <ClipboardText size={17} style={{ color: '#52B788' }} />
+                  <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>Check-in</p>
+                </button>
+              </div>
             )}
 
             {/* Bento grid: stats rápidos */}
@@ -372,7 +426,7 @@ function PortalClientePageContent() {
               <div className="grid grid-cols-2 gap-3">
                 {ultimoPeso && (
                   <StatBadge
-                    icon={Weight}
+                    icon={Scales}
                     label="Último peso"
                     value={`${ultimoPeso} kg`}
                     sub={diffPeso !== null
@@ -389,12 +443,12 @@ function PortalClientePageContent() {
                   >
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                       style={{ background: 'rgba(116,185,224,0.12)' }}>
-                      <Dumbbell size={16} style={{ color: '#74B9E0' }} />
+                      <Barbell size={16} style={{ color: '#74B9E0' }} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] uppercase tracking-wide font-medium" style={{ color: 'var(--text-muted)' }}>Entreno</p>
                       <p className="font-bold text-sm leading-tight truncate" style={{ color: 'var(--text)' }}>{entreno.nombre}</p>
-                      <p className="text-[10px]" style={{ color: '#74B9E0' }}>Ver plan →</p>
+                      <p className="text-[10px]" style={{ color: '#74B9E0' }}>Ver plan</p>
                     </div>
                   </button>
                 )}
@@ -424,14 +478,14 @@ function PortalClientePageContent() {
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                     style={{ background: 'rgba(82,183,136,0.15)' }}>
-                    <ClipboardCheck size={16} style={{ color: '#52B788' }} />
+                    <ClipboardText size={16} style={{ color: '#52B788' }} />
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Check-in semanal</p>
                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Registra tu progreso</p>
                   </div>
                 </div>
-                <ChevronRight size={16} style={{ color: '#52B788' }} />
+                <CaretRight size={16} style={{ color: '#52B788' }} />
               </button>
             )}
           </div>
@@ -444,14 +498,14 @@ function PortalClientePageContent() {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <MiPlan codigo={codigo} plan={dieta as any} entreno={entreno} />
             ) : (
-              <EmptyState icon={UtensilsCrossed} text="Tu coach aún no ha asignado un plan de dieta" />
+              <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
 
             {/* Separador */}
             <div className="flex items-center gap-3 my-1">
               <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
               <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-                <Dumbbell size={11} />
+                <Barbell size={11} />
                 Entrenamiento
               </div>
               <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
@@ -460,7 +514,7 @@ function PortalClientePageContent() {
             {entreno ? (
               <SemanaEntrenoCard planId={entreno.id} planNombre={entreno.nombre} />
             ) : (
-              <EmptyState icon={Dumbbell} text="Tu coach aún no ha asignado un plan de entrenamiento" />
+              <EmptyState icon={Barbell} text="Tu coach aún no ha asignado un plan de entrenamiento" />
             )}
           </div>
         )}
@@ -474,7 +528,7 @@ function PortalClientePageContent() {
                 <HistorialCheckins key={checkinKey} codigo={codigo} />
               </>
             ) : (
-              <EmptyState icon={ClipboardCheck} text="Necesitas tener un plan activo para hacer check-ins" />
+              <EmptyState icon={ClipboardText} text="Necesitas tener un plan activo para hacer check-ins" />
             )}
           </div>
         )}
@@ -486,7 +540,7 @@ function PortalClientePageContent() {
             {/* Registrar peso */}
             <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <h2 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                <Weight size={15} style={{ color: 'var(--accent)' }} />
+                <Scales size={15} style={{ color: 'var(--accent)' }} />
                 Registrar peso
               </h2>
               <div className="flex gap-2 mb-3">
@@ -544,9 +598,9 @@ function PortalClientePageContent() {
                         <div className="text-right flex items-center gap-2">
                           {diff !== null && (
                             diff < 0
-                              ? <TrendingDown size={13} style={{ color: '#52B788' }} />
+                              ? <TrendDown size={13} style={{ color: '#52B788' }} />
                               : diff > 0
-                              ? <TrendingUp size={13} style={{ color: '#F4A261' }} />
+                              ? <TrendUp size={13} style={{ color: '#F4A261' }} />
                               : null
                           )}
                           <div>
@@ -588,7 +642,7 @@ function PortalClientePageContent() {
           borderTop: '1px solid var(--glass-border)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}>
-        <div className="max-w-xl mx-auto flex">
+        <div className="max-w-2xl mx-auto flex">
           {TABS.map(({ key, label, icon: Icon }) => {
             const active = tab === key
             return (
@@ -603,7 +657,7 @@ function PortalClientePageContent() {
                     <div className="absolute inset-0 rounded-full scale-[2.5] opacity-10"
                       style={{ background: 'var(--accent)' }} />
                   )}
-                  <Icon size={20} strokeWidth={active ? 2.5 : 1.75} />
+                  <Icon size={20} weight={active ? 'fill' : 'regular'} />
                 </div>
                 <span className="text-[10px] font-medium tracking-tight">{label}</span>
               </button>
@@ -620,10 +674,7 @@ function PortalClientePageContent() {
 export default function PortalClientePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-        <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
-      </div>
+      <LoadingPortal />
     }>
       <PortalClientePageContent />
     </Suspense>

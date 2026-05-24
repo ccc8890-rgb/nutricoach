@@ -531,7 +531,7 @@ export default function RecetasPage() {
                             ? { background: 'rgba(34,197,94,0.12)', borderColor: 'rgba(34,197,94,0.3)', color: 'rgb(21,128,61)' }
                             : chipInactive}
                         >
-                          ✓ {i}
+                          {i}
                         </button>
                       ))}
                     </div>
@@ -636,11 +636,11 @@ export default function RecetasPage() {
           {/* Atajos prominentes para las búsquedas más comunes */}
           <div className="flex gap-1.5 overflow-x-auto pb-2 mb-5 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
             {[
-              { label: '🌾 Sin Gluten', value: 'Sin Gluten' },
-              { label: '🥛 Sin Lactosa', value: 'Sin Lactosa' },
-              { label: '🥚 Sin Huevo', value: 'Sin Huevo' },
-              { label: '🌱 Vegano', value: 'Vegano' },
-              { label: '🥬 Vegetariano', value: 'Vegetariano' },
+              { label: 'Sin gluten', value: 'Sin Gluten' },
+              { label: 'Sin lactosa', value: 'Sin Lactosa' },
+              { label: 'Sin huevo', value: 'Sin Huevo' },
+              { label: 'Vegano', value: 'Vegano' },
+              { label: 'Vegetariano', value: 'Vegetariano' },
             ].map(f => (
               <button
                 key={f.value}

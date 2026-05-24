@@ -19,9 +19,8 @@ interface RecipeCardPremiumProps {
 }
 
 /**
- * RecipeCardPremium — Card full-bleed estilo Mela/Drizzle
- * Imagen como protagonista, overlay gradiente, info sobre la imagen
- * Sin bordes de card, solo sombra sutil
+ * RecipeCardPremium — Card editorial estilo recetario premium.
+ * Imagen protagonista, información en franja inferior para no tapar la foto.
  * Micro-interacción: lift + glow al hover
  */
 export function RecipeCardPremium({
@@ -43,9 +42,10 @@ export function RecipeCardPremium({
     return (
         <Link
             href={`/recetas/${id}`}
-            className={`group relative block overflow-hidden rounded-2xl ${className}`}
+            className={`group relative flex flex-col overflow-hidden rounded-2xl ${className}`}
             style={{
                 aspectRatio: '3/4',
+                background: 'var(--surface)',
                 boxShadow: '0 2px 16px rgba(0,0,0,0.12)',
                 transition: 'box-shadow 0.3s ease, transform 0.25s ease',
             }}
@@ -58,68 +58,74 @@ export function RecipeCardPremium({
                 e.currentTarget.style.boxShadow = '0 2px 16px rgba(0,0,0,0.12)'
             }}
         >
-            {/* Imagen full-bleed */}
-            {imagen_url ? (
-                <img
-                    src={imagen_url}
-                    alt={nombre}
-                    className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'
-                        }`}
-                    onLoad={() => setImgLoaded(true)}
-                />
-            ) : (
+            <div className="relative flex-1 min-h-0 overflow-hidden">
+                {/* Imagen */}
+                {imagen_url ? (
+                    <img
+                        src={imagen_url}
+                        alt={nombre}
+                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'
+                            }`}
+                        onLoad={() => setImgLoaded(true)}
+                    />
+                ) : (
+                    <div
+                        className="absolute inset-0 flex items-center justify-center text-sm font-black tracking-tight"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--accent-bg), var(--bg-subtle))',
+                            color: 'var(--accent)',
+                        }}
+                    >
+                        CN
+                    </div>
+                )}
+
+                {/* Skeleton shimmer mientras carga la imagen */}
+                {imagen_url && !imgLoaded && (
+                    <div className="absolute inset-0 skeleton" />
+                )}
+
                 <div
-                    className="absolute inset-0 flex items-center justify-center text-6xl"
+                    className="absolute inset-0"
                     style={{
-                        background: 'linear-gradient(135deg, var(--accent-bg), var(--bg-subtle))',
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.2) 0%, transparent 42%)',
                     }}
-                >
-                    🥗
-                </div>
-            )}
+                />
 
-            {/* Skeleton shimmer mientras carga la imagen */}
-            {imagen_url && !imgLoaded && (
-                <div className="absolute inset-0 skeleton" />
-            )}
+                {/* Categoría pill — esquina superior */}
+                {categoria && (
+                    <span
+                        className="absolute top-3 left-3 max-w-[calc(100%-1.5rem)] truncate text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                        style={{
+                            background: 'rgba(0,0,0,0.36)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            color: '#FFFFFF',
+                            border: '1px solid rgba(255,255,255,0.14)',
+                        }}
+                    >
+                        {categoria}
+                    </span>
+                )}
+            </div>
 
-            {/* Overlay gradiente oscuro de abajo a arriba */}
+            {/* Info inferior — fuera de la imagen */}
             <div
-                className="absolute inset-0"
+                className="shrink-0 p-3 sm:p-4"
                 style={{
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.1) 70%, transparent 100%)',
+                    borderTop: '1px solid var(--border)',
+                    background: 'color-mix(in srgb, var(--surface) 92%, var(--bg) 8%)',
                 }}
-            />
-
-            {/* Categoría pill — esquina superior */}
-            {categoria && (
-                <span
-                    className="absolute top-3 left-3 text-[11px] font-semibold px-2.5 py-1 rounded-full"
-                    style={{
-                        background: 'rgba(255,255,255,0.15)',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
-                        color: '#FFFFFF',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                    }}
-                >
-                    {categoria}
-                </span>
-            )}
-
-            {/* Info inferior — sobre el overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-4">
+            >
                 <h3
-                    className="text-lg font-bold leading-tight text-white mb-2"
-                    style={{
-                        textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                    }}
+                    className="text-sm sm:text-base font-bold leading-tight mb-2 line-clamp-2"
+                    style={{ color: 'var(--text)' }}
                 >
                     {nombre}
                 </h3>
 
                 {/* Stats row */}
-                <div className="flex items-center gap-3 text-[11px] text-white/80 flex-wrap">
+                <div className="flex items-center gap-x-3 gap-y-1 text-[11px] flex-wrap" style={{ color: 'var(--text-muted)' }}>
                     {tiempoTotal !== undefined && tiempoTotal > 0 && (
                         <span className="flex items-center gap-1">
                             <Clock size={12} />
@@ -133,7 +139,7 @@ export function RecipeCardPremium({
                         </span>
                     )}
                     {kcal !== null && kcal !== undefined && kcal > 0 && (
-                        <span className="flex items-center gap-1 font-semibold text-white">
+                        <span className="flex items-center gap-1 font-semibold" style={{ color: 'var(--text)' }}>
                             <Flame size={12} />
                             {Math.round(kcal)} kcal/p.
                         </span>
@@ -157,12 +163,12 @@ export function RecipeCardPremium({
 function MacroMini({ value, max, color, label }: { value: number; max: number; color: string; label: string }) {
     const pct = Math.min((value / max) * 100, 100)
     return (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 min-w-0">
             <span className="text-[10px] font-semibold" style={{ color }}>{label}</span>
-            <span className="text-[10px] text-white/80">{Math.round(value)}g</span>
+            <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{Math.round(value)}g</span>
             <div
                 className="h-1 rounded-full overflow-hidden"
-                style={{ width: 24, background: 'rgba(255,255,255,0.15)' }}
+                style={{ width: 24, background: 'var(--surface-hover)' }}
             >
                 <div
                     className="h-full rounded-full"

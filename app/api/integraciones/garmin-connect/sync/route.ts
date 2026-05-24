@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceSupabase } from '@/lib/supabase-server'
+import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { syncGarminDay, persistirGarminDays, dateRange } from '@/lib/integraciones/garmin-connect-sync'
 
 // POST /api/integraciones/garmin-connect/sync
@@ -8,10 +8,6 @@ export async function POST(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`
 
-  if (!isCron) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  }
-
   const body = await req.json().catch(() => ({}))
   const clienteId: string = body.cliente_id
   const dias: number = body.dias ?? 7
@@ -19,6 +15,23 @@ export async function POST(req: NextRequest) {
   if (!clienteId) return NextResponse.json({ error: 'cliente_id requerido' }, { status: 400 })
 
   const db = createServiceSupabase()
+
+  if (!isCron) {
+    const authDb = createApiSupabase(req)
+    const { data: { user } } = await authDb.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+    const { data: cliente } = await db
+      .from('clientes')
+      .select('id, coach_id')
+      .eq('id', clienteId)
+      .single()
+
+    if (!cliente || cliente.coach_id !== user.id) {
+      return NextResponse.json({ error: 'Sin acceso' }, { status: 403 })
+    }
+  }
+
   const hasta = new Date()
   const desde = new Date(Date.now() - dias * 24 * 60 * 60 * 1000)
   const fechas = dateRange(desde, hasta)

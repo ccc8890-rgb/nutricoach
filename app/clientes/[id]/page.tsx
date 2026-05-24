@@ -7,17 +7,17 @@ import { supabase } from '@/lib/supabase'
 import ClienteEditar from '@/components/ClienteEditar'
 import Link from 'next/link'
 import {
-  ArrowLeft, UtensilsCrossed, Dumbbell, Weight, CalendarDays,
+  ArrowLeft, UtensilsCrossed, Dumbbell, Weight,
   Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2,
-  Zap, Bot, Trophy, CopyPlus, X, Activity, PersonStanding,
+  Bot, CopyPlus, X, Activity, PersonStanding,
   ChevronRight, RefreshCw, Pencil, Flame, Beef, Wheat, Droplets,
   ExternalLink, Send, AlertTriangle, MessageCircle, HeartPulse,
   ShieldCheck, BookOpen, Target, Copy, RotateCcw,
 } from 'lucide-react'
-import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, ChatMensaje } from '@/types'
+import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 import ChatPanel from '@/components/PortalCliente/ChatPanel'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
-import { OBJETIVO_LABELS, NIVEL_LABELS } from '@/lib/utils'
+import { OBJETIVO_LABELS } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
 
 const PlanificacionCalendario = dynamic(() => import('@/components/PlanificacionCalendario'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -32,13 +32,14 @@ const CompeticionesManager = dynamic(() => import('@/components/CompeticionesMan
 const CosteSemanalCard = dynamic(() => import('@/components/clientes/CosteSemanal'), { ssr: false, loading: () => <div className="lg:col-span-2 h-12 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const AdherenciaScoreCard = dynamic(() => import('@/components/clientes/AdherenciaScore'), { ssr: false, loading: () => <div className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAdherenciaHeatmap'), { ssr: false, loading: () => <div className="h-32 rounded-2xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
+const ActividadClientePanel = dynamic(() => import('@/components/clientes/ActividadClientePanel'), { ssr: false, loading: () => <TabSkeleton /> })
 
 function TabSkeleton() {
   return <div className="animate-pulse rounded-2xl h-48 w-full" style={{ background: 'var(--surface)' }} />
 }
 
 type NotaCoachRow = { id: string; cliente_id: string; mensaje: string; created_at: string }
-type Tab = 'resumen' | 'planes' | 'checkins' | 'notas' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion' | 'perfil_atleta' | 'historial_entreno' | 'chat' | 'inteligencia_clinica'
+type Tab = 'resumen' | 'nutricion' | 'entrenamiento' | 'seguimiento' | 'comunicacion' | 'perfil'
 
 interface FlagClinico {
   codigo: string
@@ -98,6 +99,74 @@ function StatPill({ label, value }: { label: string; value: string }) {
     <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--surface-elevated, var(--border))' }}>
       <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-sm font-bold mt-0.5" style={{ color: 'var(--text)' }}>{value}</span>
+    </div>
+  )
+}
+
+function WorkCard({ title, kicker, icon: Icon, children, action }: {
+  title: string
+  kicker?: string
+  icon: React.ElementType
+  children: React.ReactNode
+  action?: React.ReactNode
+}) {
+  return (
+    <section className="rounded-2xl p-4 sm:p-5 min-w-0" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text)' }}>
+            <Icon size={17} />
+          </div>
+          <div className="min-w-0">
+            {kicker && <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>{kicker}</p>}
+            <h2 className="font-bold leading-tight" style={{ color: 'var(--text)' }}>{title}</h2>
+          </div>
+        </div>
+        {action}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function PlanListItem({ href, title, meta, active }: {
+  href: string
+  title: string
+  meta?: string
+  active?: boolean
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 p-3 rounded-xl transition-all min-w-0"
+      style={{ border: '1px solid var(--border)' }}
+      onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-elevated, var(--border))')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+    >
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-sm truncate" style={{ color: 'var(--text)' }}>{title}</p>
+        {meta && <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>{meta}</p>}
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <span className={`badge ${active ? 'badge-green' : 'badge-gray'}`}>{active ? 'Activo' : 'Inactivo'}</span>
+        <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
+      </div>
+    </Link>
+  )
+}
+
+function EmptyModule({ icon: Icon, title, text, action }: {
+  icon: React.ElementType
+  title: string
+  text: string
+  action?: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl px-4 py-8 text-center" style={{ background: 'var(--bg)', border: '1px dashed var(--border)' }}>
+      <Icon size={30} className="mx-auto mb-3 opacity-40" style={{ color: 'var(--text-muted)' }} />
+      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{title}</p>
+      <p className="text-xs mt-1 mb-4 max-w-sm mx-auto" style={{ color: 'var(--text-muted)' }}>{text}</p>
+      {action}
     </div>
   )
 }
@@ -377,9 +446,9 @@ export default function ClienteDetallePage() {
     }
   }
 
-  // Cargar informe clínico al entrar en la tab
+  // Cargar informe clínico al entrar en la tab de perfil
   useEffect(() => {
-    if (tabActiva === 'inteligencia_clinica' && !informe && !cargandoInforme) {
+    if (tabActiva === 'perfil' && !informe && !cargandoInforme) {
       cargarInforme()
     }
   }, [tabActiva])
@@ -494,26 +563,19 @@ export default function ClienteDetallePage() {
   const ultimoCheckin = checkins[0]
   const ultimoPeso = seguimiento[0]?.peso ?? cliente.peso_inicial
 
+  const alertasClinicas = informe?.flags_activos?.filter(f => f.severidad === 'critico' || f.severidad === 'alto').length
   const TABS: { key: Tab; label: string; icon: React.ElementType; badge?: number }[] = [
     { key: 'resumen', label: 'Resumen', icon: Info },
-    { key: 'planes', label: 'Planes', icon: UtensilsCrossed, badge: dietas.length + entrenos.length },
-    { key: 'checkins', label: 'Check-ins', icon: ClipboardCheck, badge: checkins.length },
-    { key: 'notas', label: 'Notas', icon: MessageSquareText, badge: notasCoach.length },
-    { key: 'planificacion', label: 'Planificación', icon: CalendarDays },
-    { key: 'competicion', label: 'Competición', icon: Trophy },
-    { key: 'periodizacion', label: 'Periodización', icon: Activity },
-    { key: 'historial_ia', label: 'Historial IA', icon: Brain },
-    { key: 'conversaciones_ia', label: 'Chat IA', icon: Bot },
-    { key: 'chat', label: 'Chat', icon: MessageCircle, badge: noLeidosChat },
-    { key: 'perfil_atleta', label: 'Perfil atleta', icon: PersonStanding },
-    { key: 'historial_entreno', label: 'Entreno realizado', icon: Dumbbell },
-    { key: 'ajuste_macros', label: 'Ajuste macros', icon: Zap },
-    { key: 'inteligencia_clinica', label: 'Clínico IA', icon: HeartPulse, badge: informe?.flags_activos?.filter(f => f.severidad === 'critico' || f.severidad === 'alto').length },
+    { key: 'nutricion', label: 'Nutrición', icon: UtensilsCrossed, badge: dietas.length },
+    { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, badge: entrenos.length },
+    { key: 'seguimiento', label: 'Seguimiento', icon: ClipboardCheck, badge: checkins.length },
+    { key: 'comunicacion', label: 'Comunicación', icon: MessageCircle, badge: noLeidosChat || notasCoach.length },
+    { key: 'perfil', label: 'Perfil', icon: PersonStanding, badge: alertasClinicas },
   ]
 
   return (
     <>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pt-16 lg:pt-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 pt-16 lg:pt-6 overflow-x-hidden">
 
         {/* ── Back ── */}
         <Link href="/clientes" className="inline-flex items-center gap-1.5 text-sm mb-5 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
@@ -552,7 +614,7 @@ export default function ClienteDetallePage() {
                 {ultimoPeso && <StatPill label="Peso" value={`${ultimoPeso} kg`} />}
                 {cliente.altura && <StatPill label="Altura" value={`${cliente.altura} cm`} />}
                 {cliente.edad && <StatPill label="Edad" value={`${cliente.edad} a`} />}
-                {cliente.sexo && <StatPill label="Sexo" value={cliente.sexo === 'hombre' ? '♂' : '♀'} />}
+                {cliente.sexo && <StatPill label="Sexo" value={cliente.sexo === 'hombre' ? 'Hombre' : 'Mujer'} />}
               </div>
             </div>
 
@@ -728,89 +790,162 @@ export default function ClienteDetallePage() {
             </div>
           </div>
 
-        ) : tabActiva === 'planes' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Nutrición */}
-            <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                  <UtensilsCrossed size={16} style={{ color: '#30D158' }} /> Nutrición
-                </h2>
-                <Link href={`/dietas/nueva?cliente=${id}`} className="btn-primary btn-sm">+ Nuevo</Link>
+        ) : tabActiva === 'nutricion' ? (
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-4">
+            <WorkCard
+              title="Plan nutricional"
+              kicker="Trabajo activo"
+              icon={UtensilsCrossed}
+              action={<Link href={`/dietas/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>}
+            >
+              {dietaActiva ? (
+                <div className="space-y-4">
+                  <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{dietaActiva.nombre}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Plan activo · macros diarios</p>
+                      </div>
+                      <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm flex-shrink-0">
+                        Abrir <ExternalLink size={12} />
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <MacroBar label="Kcal" value={dietaActiva.kcal_objetivo ?? 0} max={3500} color="var(--accent)" icon={Flame} />
+                      <MacroBar label="Prot" value={dietaActiva.proteinas_objetivo ?? 0} max={250} color="#30D158" icon={Beef} />
+                      <MacroBar label="Carbs" value={dietaActiva.carbohidratos_objetivo ?? 0} max={400} color="#FF9F0A" icon={Wheat} />
+                      <MacroBar label="Grasas" value={dietaActiva.grasas_objetivo ?? 0} max={150} color="#64D2FF" icon={Droplets} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Link href={`/clientes/${id}/revisar-plan`} className="btn-secondary btn-sm justify-center">
+                      <RefreshCw size={13} /> Revisar o regenerar
+                    </Link>
+                    {dietaActiva.codigo_publico && (
+                      <button
+                        className="btn-secondary btn-sm justify-center"
+                        onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/cliente/${dietaActiva.codigo_publico}`); addToast({ type: 'success', title: 'Enlace copiado', message: 'Portal del cliente copiado' }) }}
+                      >
+                        <Link2 size={13} /> Copiar portal
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <EmptyModule
+                  icon={UtensilsCrossed}
+                  title="Sin dieta activa"
+                  text="Crea un plan desde cero o revisa el plan IA antes de activar el cliente."
+                  action={<Link href={`/clientes/${id}/revisar-plan`} className="btn-primary btn-sm">Generar dieta IA</Link>}
+                />
+              )}
+            </WorkCard>
+
+            <WorkCard title="Control de cambios" kicker="IA y versiones" icon={Brain}>
+              <div className="space-y-3">
+                <AjusteMacrosIA clienteId={id as string} onApplied={loadData} />
+                <div className="pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+                  <HistorialDietasIA clienteId={id as string} />
+                </div>
               </div>
+            </WorkCard>
+
+            <WorkCard title="Planes guardados" kicker={`${dietas.length} versiones`} icon={ClipboardCheck}>
               {dietas.length === 0 ? (
-                <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>Sin planes asignados</p>
+                <EmptyModule icon={ClipboardCheck} title="Sin planes guardados" text="Las dietas creadas para este cliente aparecerán aquí." />
               ) : (
                 <div className="space-y-2">
                   {dietas.map(d => (
-                    <Link key={d.id} href={`/dietas/${d.id}?returnTo=/clientes/${id}`} className="flex items-center gap-3 p-3 rounded-xl transition-all" style={{ border: '1px solid var(--border)' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-elevated, var(--border))')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate" style={{ color: 'var(--text)' }}>{d.nombre}</p>
-                        {d.kcal_objetivo && <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{d.kcal_objetivo} kcal · {d.proteinas_objetivo ?? '?'}g prot</p>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`badge ${d.activo ? 'badge-green' : 'badge-gray'}`}>{d.activo ? 'Activo' : 'Inactivo'}</span>
-                        <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
-                      </div>
-                    </Link>
+                    <PlanListItem
+                      key={d.id}
+                      href={`/dietas/${d.id}?returnTo=/clientes/${id}`}
+                      title={d.nombre}
+                      meta={d.kcal_objetivo ? `${d.kcal_objetivo} kcal · ${d.proteinas_objetivo ?? '?'}g proteína` : undefined}
+                      active={d.activo}
+                    />
                   ))}
                 </div>
               )}
-              <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
-                <Link href={`/clientes/${id}/revisar-plan`} className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
-                  <RefreshCw size={13} /> Revisar / regenerar plan IA
-                </Link>
-              </div>
-            </div>
+            </WorkCard>
 
-            {/* Entrenamiento */}
-            <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                  <Dumbbell size={16} style={{ color: '#BF5AF2' }} /> Entrenamiento
-                </h2>
+            <div className="space-y-4">
+              <CosteSemanalCard clienteId={id} />
+              <ErrorBoundary><PeriodizacionPanel clienteId={id as string} /></ErrorBoundary>
+            </div>
+          </div>
+
+        ) : tabActiva === 'entrenamiento' ? (
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.9fr)] gap-4">
+            <WorkCard
+              title="Plan de entrenamiento"
+              kicker="Programación"
+              icon={Dumbbell}
+              action={
                 <div className="flex gap-2">
                   <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
-                  <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-primary btn-sm">+ Nuevo</Link>
+                  <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>
                 </div>
-              </div>
-              {entrenos.length === 0 ? (
-                <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>Sin planes asignados</p>
+              }
+            >
+              {entrenoActivo ? (
+                <div className="rounded-2xl p-4 mb-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{entrenoActivo.nombre}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        {entrenoActivo.duracion_semanas ? `${entrenoActivo.duracion_semanas} semanas` : 'Plan activo'}
+                      </p>
+                    </div>
+                    <Link href={`/entrenos/${entrenoActivo.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm flex-shrink-0">
+                      Abrir <ExternalLink size={12} />
+                    </Link>
+                  </div>
+                </div>
               ) : (
+                <EmptyModule icon={Dumbbell} title="Sin entrenamiento activo" text="Asigna una plantilla o crea una programación específica para este cliente." />
+              )}
+              {entrenos.length > 0 && (
                 <div className="space-y-2">
                   {entrenos.map(e => (
-                    <Link key={e.id} href={`/entrenos/${e.id}?returnTo=/clientes/${id}`} className="flex items-center gap-3 p-3 rounded-xl transition-all" style={{ border: '1px solid var(--border)' }}
-                      onMouseEnter={e2 => (e2.currentTarget.style.background = 'var(--surface-elevated, var(--border))')}
-                      onMouseLeave={e2 => (e2.currentTarget.style.background = 'transparent')}>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate" style={{ color: 'var(--text)' }}>{e.nombre}</p>
-                        {e.duracion_semanas && <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{e.duracion_semanas} semanas</p>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`badge ${e.activo ? 'badge-green' : 'badge-gray'}`}>{e.activo ? 'Activo' : 'Inactivo'}</span>
-                        <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
-                      </div>
-                    </Link>
+                    <PlanListItem
+                      key={e.id}
+                      href={`/entrenos/${e.id}?returnTo=/clientes/${id}`}
+                      title={e.nombre}
+                      meta={e.duracion_semanas ? `${e.duracion_semanas} semanas` : undefined}
+                      active={e.activo}
+                    />
                   ))}
                 </div>
               )}
+            </WorkCard>
+
+            <WorkCard title="Perfil atleta" kicker="Motor de decisión" icon={PersonStanding}>
+              <ErrorBoundary><PerfilEntrenoForm clienteId={id as string} /></ErrorBoundary>
+            </WorkCard>
+
+            <WorkCard title="Historial de ejecución" kicker="Rendimiento real" icon={Activity}>
+              <ErrorBoundary><HistorialEntreno clienteId={id as string} /></ErrorBoundary>
+            </WorkCard>
+
+            <div className="space-y-4">
+              <ErrorBoundary><CompeticionesManager clienteId={id as string} pesoKg={cliente?.peso_inicial ?? undefined} /></ErrorBoundary>
+              <ErrorBoundary><ProtocoloCompeticion clienteId={id as string} /></ErrorBoundary>
+            </div>
+          </div>
+
+        ) : tabActiva === 'seguimiento' ? (
+          <div className="space-y-3">
+            <ActividadClientePanel clienteId={id as string} />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <AdherenciaScoreCard clienteId={id} />
+              <MealAdherenciaHeatmap clienteId={id} />
             </div>
 
-            {/* Coste semanal */}
-            <div className="lg:col-span-2">
-              <CosteSemanalCard clienteId={id} />
-            </div>
-
-            {/* Peso */}
             {seguimiento.length > 0 && (
-              <div className="lg:col-span-2 rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <h2 className="font-semibold flex items-center gap-2 mb-4" style={{ color: 'var(--text)' }}>
-                  <Weight size={16} style={{ color: '#64D2FF' }} /> Seguimiento de peso
-                </h2>
+              <WorkCard title="Peso y tendencia" kicker="Últimos registros" icon={Weight}>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm min-w-[520px]">
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border)' }}>
                         <th className="pb-2 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Fecha</th>
@@ -829,12 +964,10 @@ export default function ClienteDetallePage() {
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </WorkCard>
             )}
-          </div>
 
-        ) : tabActiva === 'checkins' ? (
-          <div className="space-y-3">
+            <WorkCard title="Check-ins" kicker="Feedback semanal" icon={ClipboardCheck}>
             {checkins.length === 0 ? (
               <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
                 <ClipboardCheck size={40} className="mx-auto mb-3 opacity-30" />
@@ -885,71 +1018,119 @@ export default function ClienteDetallePage() {
                 </div>
               </div>
             ))}
+            </WorkCard>
           </div>
 
-        ) : tabActiva === 'notas' ? (
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <input className="input flex-1" placeholder="Escribe una nota para el cliente…" value={nuevaNota} onChange={e => setNuevaNota(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && nuevaNota.trim()) document.getElementById('btn-nota')?.click() }} />
-              <button id="btn-nota" className="btn-primary btn-sm flex-shrink-0" disabled={!nuevaNota.trim() || guardandoNota}
-                onClick={async () => {
-                  if (!nuevaNota.trim()) return
-                  setGuardandoNota(true)
-                  const { data } = await supabase.from('notas_coach').insert({ cliente_id: id, mensaje: nuevaNota.trim() }).select().single()
-                  if (data) { setNotasCoach(prev => [data, ...prev]); setNuevaNota('') }
-                  setGuardandoNota(false)
-                }}>
-                {guardandoNota ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-              </button>
-            </div>
-            {notasCoach.length === 0 ? (
-              <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>Aún no hay notas para este cliente</p>
-            ) : (
-              <div className="space-y-2">
-                {notasCoach.map(n => (
-                  <div key={n.id} className="p-3.5 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    <p className="text-sm" style={{ color: 'var(--text)' }}>{n.mensaje}</p>
-                    <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
-                      {new Date(n.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                ))}
+        ) : tabActiva === 'comunicacion' ? (
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] gap-4">
+            <WorkCard title="Chat con cliente" kicker="Conversación directa" icon={MessageCircle}>
+              <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <ChatPanel clienteId={id as string} pollingInterval={30000} esCoach={true} />
               </div>
-            )}
+            </WorkCard>
+
+            <WorkCard title="Notas internas" kicker="Memoria del coach" icon={MessageSquareText}>
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <input className="input flex-1 min-w-0" placeholder="Escribe una nota privada…" value={nuevaNota} onChange={e => setNuevaNota(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && nuevaNota.trim()) document.getElementById('btn-nota')?.click() }} />
+                  <button id="btn-nota" className="btn-primary btn-sm flex-shrink-0" disabled={!nuevaNota.trim() || guardandoNota}
+                    onClick={async () => {
+                      if (!nuevaNota.trim()) return
+                      setGuardandoNota(true)
+                      const { data } = await supabase.from('notas_coach').insert({ cliente_id: id, mensaje: nuevaNota.trim() }).select().single()
+                      if (data) { setNotasCoach(prev => [data, ...prev]); setNuevaNota('') }
+                      setGuardandoNota(false)
+                    }}>
+                    {guardandoNota ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                  </button>
+                </div>
+                {notasCoach.length === 0 ? (
+                  <EmptyModule icon={MessageSquareText} title="Sin notas internas" text="Añade contexto privado para futuras revisiones del cliente." />
+                ) : (
+                  <div className="space-y-2">
+                    {notasCoach.map(n => (
+                      <div key={n.id} className="p-3.5 rounded-2xl" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                        <p className="text-sm" style={{ color: 'var(--text)' }}>{n.mensaje}</p>
+                        <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
+                          {new Date(n.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </WorkCard>
+
+            <div className="xl:col-span-2">
+              <WorkCard title="Conversaciones IA" kicker="Contexto generado" icon={Bot}>
+                <ConversacionesIA clienteId={id as string} />
+              </WorkCard>
+            </div>
           </div>
 
-        ) : tabActiva === 'planificacion' ? (
-          <ErrorBoundary><PlanificacionCalendario clienteId={id as string} fechaRevision={cliente.fecha_proxima_revision ?? null} dietas={dietas.map(d => ({ id: d.id, nombre: d.nombre, activo: d.activo, created_at: d.created_at }))} entrenos={entrenos.map(e => ({ id: e.id, nombre: e.nombre, activo: e.activo, duracion_semanas: e.duracion_semanas ?? 0, created_at: e.created_at }))} onUpdateRevision={recargarCliente} /></ErrorBoundary>
-        ) : tabActiva === 'competicion' ? (
-          <ErrorBoundary><div className="space-y-4"><CompeticionesManager clienteId={id as string} pesoKg={cliente?.peso_inicial ?? undefined} /><ProtocoloCompeticion clienteId={id as string} /></div></ErrorBoundary>
-        ) : tabActiva === 'periodizacion' ? (
-          <ErrorBoundary><PeriodizacionPanel clienteId={id as string} /></ErrorBoundary>
-        ) : tabActiva === 'perfil_atleta' ? (
-          <ErrorBoundary><PerfilEntrenoForm clienteId={id as string} /></ErrorBoundary>
-        ) : tabActiva === 'historial_entreno' ? (
-          <ErrorBoundary><HistorialEntreno clienteId={id as string} /></ErrorBoundary>
-        ) : tabActiva === 'historial_ia' ? (
-          <HistorialDietasIA clienteId={id as string} />
-        ) : tabActiva === 'conversaciones_ia' ? (
-          <ConversacionesIA clienteId={id as string} />
-        ) : tabActiva === 'chat' ? (
-          <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <ChatPanel
-              clienteId={id as string}
-              pollingInterval={30000}
-              esCoach={true}
-            />
+        ) : tabActiva === 'perfil' ? (
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-4">
+            <WorkCard title="Perfil y planificación" kicker="Datos base" icon={PersonStanding}>
+              <div className="space-y-4">
+                {(cliente.notas || cliente.restricciones_alimentarias) && (
+                  <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                    {cliente.restricciones_alimentarias && (
+                      <div className="mb-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Restricciones</p>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{cliente.restricciones_alimentarias}</p>
+                      </div>
+                    )}
+                    {cliente.notas && (
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Notas privadas</p>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{cliente.notas}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <ErrorBoundary>
+                  <PlanificacionCalendario
+                    clienteId={id as string}
+                    fechaRevision={cliente.fecha_proxima_revision ?? null}
+                    dietas={dietas.map(d => ({ id: d.id, nombre: d.nombre, activo: d.activo, created_at: d.created_at }))}
+                    entrenos={entrenos.map(e => ({ id: e.id, nombre: e.nombre, activo: e.activo, duracion_semanas: e.duracion_semanas ?? 0, created_at: e.created_at }))}
+                    onUpdateRevision={recargarCliente}
+                  />
+                </ErrorBoundary>
+              </div>
+            </WorkCard>
+
+            <WorkCard title="Inteligencia clínica" kicker="Flags y criterios" icon={HeartPulse}>
+              <InformeClinicoPanel
+                informe={informe}
+                cargando={cargandoInforme}
+                regenerando={regenerandoInforme}
+                onRegenerar={() => cargarInforme(true)}
+              />
+            </WorkCard>
+
+            <div className="xl:col-span-2 rounded-2xl p-4" style={{ border: '1px solid rgba(255,69,58,0.2)', background: 'rgba(255,69,58,0.04)' }}>
+              {!confirmandoEliminar ? (
+                <button className="text-xs px-3 py-1.5 rounded-xl border font-medium transition-colors" style={{ borderColor: 'rgba(255,69,58,0.3)', color: '#FF453A' }} onClick={() => setConfirmandoEliminar(true)}>
+                  Eliminar cliente
+                </button>
+              ) : (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>¿Seguro? No se puede deshacer.</span>
+                  <button className="text-xs px-3 py-1.5 rounded-xl font-medium" style={{ background: '#FF453A', color: '#fff' }} disabled={eliminando} onClick={handleEliminarCliente}>
+                    {eliminando ? 'Eliminando…' : 'Sí, eliminar'}
+                  </button>
+                  <button className="text-xs px-3 py-1.5 rounded-xl" style={{ background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }} onClick={() => setConfirmandoEliminar(false)}>
+                    Cancelar
+                  </button>
+                </div>
+              )}
+              <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Eliminar el cliente borrará su perfil, planes, check-ins y todos sus datos. Esta acción no se puede deshacer.</p>
+            </div>
           </div>
-        ) : tabActiva === 'inteligencia_clinica' ? (
-          <InformeClinicoPanel
-            informe={informe}
-            cargando={cargandoInforme}
-            regenerando={regenerandoInforme}
-            onRegenerar={() => cargarInforme(true)}
-          />
         ) : (
-          <div className="max-w-xl mx-auto"><AjusteMacrosIA clienteId={id as string} onApplied={loadData} /></div>
+          null
         )}
 
         {/* ── Modal plantilla entrenamiento ── */}

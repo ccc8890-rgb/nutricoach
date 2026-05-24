@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const estado = searchParams.get('estado')
+    const tipo = searchParams.get('tipo')
+    const agente = searchParams.get('agente')
     const limite = parseInt(searchParams.get('limite') || '50', 10)
 
     let query = supabase
@@ -31,6 +33,12 @@ export async function GET(request: NextRequest) {
 
     if (estado) {
       query = query.eq('estado', estado)
+    }
+    if (tipo) {
+      query = query.eq('tipo', tipo)
+    }
+    if (agente) {
+      query = query.eq('agente', agente)
     }
 
     const { data: tareas, error } = await query
