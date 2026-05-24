@@ -120,9 +120,15 @@ export interface GarminDayData {
   raw_data: Record<string, unknown>
 }
 
-export async function syncGarminDay(date: string): Promise<GarminDayData | null> {
-  const gc = await getGarminClient()
-  const displayName = await getDailyDisplayName(gc)
+// gc y displayName opcionales: si se pasan se reutiliza el cliente (per-client sync)
+// Si no se pasan, se crea un cliente con las credenciales del coach (GARMIN_EMAIL/GARMIN_PASSWORD)
+export async function syncGarminDay(
+  date: string,
+  gcInstance?: Awaited<ReturnType<typeof getGarminClient>>,
+  displayNameOverride?: string
+): Promise<GarminDayData | null> {
+  const gc = gcInstance ?? await getGarminClient()
+  const displayName = displayNameOverride ?? await getDailyDisplayName(gc)
 
   const [summary, readiness, sleep] = await Promise.all([
     getDailySummary(gc, displayName, date),

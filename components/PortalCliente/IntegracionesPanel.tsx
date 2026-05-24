@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Activity, Watch, Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp } from 'lucide-react'
+import { Activity, Watch, Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp, Lock, Eye, EyeOff } from 'lucide-react'
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -140,6 +140,11 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   const [garminResumen, setGarminResumen] = useState<{ dias: GarminDia[]; promedios: GarminPromedios; tiene_datos: boolean } | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Garmin Connect credentials form
+  const [gcForm, setGcForm] = useState({ email: '', password: '', showPassword: false })
+  const [gcSaving, setGcSaving] = useState(false)
+  const [gcError, setGcError] = useState<string | null>(null)
+
   useEffect(() => {
     Promise.all([
       fetch(`/api/cliente/${codigo}/integraciones`).then(r => r.json()),
@@ -161,6 +166,41 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
     if (!confirm(`¿Desconectar ${proveedor}?`)) return
     await fetch(`/api/integraciones/${proveedor}/disconnect?cliente_id=${clienteId}`, { method: 'DELETE' })
     setIntegraciones(prev => prev.filter(i => i.proveedor !== proveedor))
+  }
+
+  const handleGarminConnectSave = async () => {
+    if (!gcForm.email || !gcForm.password) return
+    setGcSaving(true)
+    setGcError(null)
+    try {
+      const res = await fetch('/api/integraciones/garmin-connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: gcForm.email, password: gcForm.password, codigo }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setGcError(data.error ?? 'Error desconocido')
+      } else {
+        setGarminConnect({ activa: true, ultima_sync: null, datos_hoy: null })
+        setGcForm({ email: '', password: '', showPassword: false })
+      }
+    } catch {
+      setGcError('Error de red')
+    } finally {
+      setGcSaving(false)
+    }
+  }
+
+  const handleGarminConnectDisconnect = async () => {
+    if (!confirm('¿Desconectar Garmin Connect? Se borrarán tus credenciales guardadas.')) return
+    await fetch('/api/integraciones/garmin-connect', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codigo }),
+    })
+    setGarminConnect(null)
+    setGarminResumen(null)
   }
 
   if (loading) return (
@@ -204,15 +244,78 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
             </div>
           </div>
           {garminConnect?.activa ? (
-            <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5 shrink-0">
-              Sync automático
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
+                Sync automático
+              </span>
+              <button
+                onClick={handleGarminConnectDisconnect}
+                className="text-xs text-red-500 border border-red-200 rounded-lg px-2 py-1 hover:bg-red-50 transition-colors"
+              >
+                Desconectar
+              </button>
+            </div>
           ) : (
             <span className="text-[10px] text-[var(--text-muted)] bg-[var(--surface)] rounded-full px-2 py-0.5 shrink-0">
-              Sin datos
+              Sin vincular
             </span>
           )}
         </div>
+
+        {/* Formulario de credenciales cuando no está conectado */}
+        {!garminConnect?.activa && (
+          <div className="mt-4 pt-4 border-t border-[var(--border)]">
+            <p className="text-xs text-[var(--text-muted)] mb-3">
+              Introduce las credenciales de tu cuenta Garmin Connect para sincronizar pasos, Body Battery, HRV y carga de entrenamiento automáticamente.
+            </p>
+            <div className="flex flex-col gap-2">
+              <input
+                type="email"
+                placeholder="Email de Garmin Connect"
+                value={gcForm.email}
+                onChange={e => setGcForm(f => ({ ...f, email: e.target.value }))}
+                className="input text-sm"
+                autoComplete="off"
+              />
+              <div className="relative">
+                <input
+                  type={gcForm.showPassword ? 'text' : 'password'}
+                  placeholder="Contraseña de Garmin Connect"
+                  value={gcForm.password}
+                  onChange={e => setGcForm(f => ({ ...f, password: e.target.value }))}
+                  className="input text-sm w-full pr-10"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setGcForm(f => ({ ...f, showPassword: !f.showPassword }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
+                  aria-label="Ver contraseña"
+                >
+                  {gcForm.showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+              {gcError && (
+                <p className="text-xs text-red-500 flex items-center gap-1">
+                  <XCircle size={12} /> {gcError}
+                </p>
+              )}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleGarminConnectSave}
+                  disabled={gcSaving || !gcForm.email || !gcForm.password}
+                  className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {gcSaving ? <Loader2 size={12} className="animate-spin" /> : <Lock size={12} />}
+                  {gcSaving ? 'Verificando…' : 'Vincular cuenta'}
+                </button>
+                <p className="text-[10px] text-[var(--text-muted)]">
+                  Tus credenciales se guardan cifradas.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Datos del último día disponible */}
         {hoy && (
