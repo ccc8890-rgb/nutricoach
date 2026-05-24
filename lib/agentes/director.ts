@@ -11,12 +11,15 @@ import { ejecutarAgenteRiesgo } from './riesgo'
 import { ejecutarAgenteMotivacion } from './motivacion'
 import { ejecutarAgenteRiesgoEntreno } from './riesgo-entreno'
 import { ejecutarRevisorSemanalEntreno } from './revisor-semanal-entreno'
+import { actualizarPerfilGusto } from './perfil-gusto'
+import { ejecutarAprendizajeColectivo } from './aprendizaje-colectivo'
 
 export interface ResultadoDirector {
   clientes_procesados: number
   tareas_generadas: number
   errores: string[]
   duracion_ms: number
+  aprendizaje_colectivo?: { patrones_extraidos: number; resumen: string }
 }
 
 // ── Entry point del cron job ──────────────────────────────────
@@ -42,8 +45,9 @@ export async function ejecutarDirector(
 
   for (const { id } of clientes) {
     try {
-      // Siempre: actualizar perfil de aprendizaje
+      // Siempre: actualizar perfil de aprendizaje + perfil de gusto
       await actualizarPerfilAprendizaje(id)
+      await actualizarPerfilGusto(id)  // aprendizaje individual de recetas/gustos
 
       // Siempre: agente de riesgo nutrición + entrenamiento
       await ejecutarAgenteRiesgo(id)
@@ -64,11 +68,24 @@ export async function ejecutarDirector(
   const tareasAhora = await contarTareasPendientes(db)
   tareasGeneradas = Math.max(0, tareasAhora - tareasPrevias)
 
+  // Aprendizaje colectivo: solo el 1er día del mes (en ejecución semanal)
+  let aprendizajeColectivo: ResultadoDirector['aprendizaje_colectivo']
+  if (modo === 'semanal' && new Date().getDate() <= 7) {
+    try {
+      const res = await ejecutarAprendizajeColectivo()
+      aprendizajeColectivo = { patrones_extraidos: res.patrones_extraidos, resumen: res.resumen }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      errores.push(`aprendizaje_colectivo: ${msg}`)
+    }
+  }
+
   return {
     clientes_procesados: clientes.length,
     tareas_generadas: tareasGeneradas,
     errores,
     duracion_ms: Date.now() - inicio,
+    aprendizaje_colectivo: aprendizajeColectivo,
   }
 }
 

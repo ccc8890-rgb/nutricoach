@@ -1,6 +1,7 @@
 // lib/plan-recetas.ts
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RecetaCandidata, TipoReceta } from '@/types'
+import { obtenerPerfilCliente } from '@/lib/agentes/perfil-gusto'
 
 const SLOT_KCAL_PCT: Record<string, [number, number]> = {
   'Desayuno':       [0.20, 0.25],
@@ -162,22 +163,84 @@ export async function filtrarRecetasPorSlot(
     if (conTags.length >= 3) candidatas = conTags
   }
 
-  // Sort score compuesto
+  // Cargar perfil de gusto del cliente (puede ser null si no hay datos aún)
+  const perfilGusto = clienteId ? await obtenerPerfilCliente(clienteId) : null
+
+  // Conjuntos para scoring personalizado
+  const recetasPreferidas = new Set<string>(perfilGusto?.recetas_preferidas_ids ?? [])
+  const recetasRechazadas = new Set<string>(perfilGusto?.recetas_sistematicamente_rechazadas ?? [])
+  const categoriasPreferidas = new Set<string>(perfilGusto?.categorias_preferidas ?? [])
+  const nivelCocinaCliente = perfilGusto?.nivel_cocina_real ?? 3
+  const confianzaPerfil = perfilGusto?.confianza_perfil ?? 0
+
+  // Filtro duro adicional: recetas sistemáticamente rechazadas (>= 3 dislikes)
+  if (recetasRechazadas.size > 0) {
+    candidatas = candidatas.filter(r => !recetasRechazadas.has(r.id))
+  }
+
+  // Filtro blando: nivel de elaboración vs nivel cocina del cliente
+  // nivel_elaboracion: 1=ultrafast, 2=fácil, 3=medio, 4=avanzado, 5=chef
+  if (confianzaPerfil > 0.3 && nivelCocinaCliente < 3) {
+    const nivelMax = Math.min(5, nivelCocinaCliente + 1) // tolerancia +1
+    const porNivel = candidatas.filter(r => {
+      const nivel = (r as Record<string, unknown>).nivel_elaboracion as number | undefined
+      return nivel === undefined || nivel === null || nivel <= nivelMax
+    })
+    if (porNivel.length >= 3) candidatas = porNivel
+  }
+
+  // Sort score compuesto ARAG (Agentic Retrieval-Augmented Generation)
   const aptasObjetivo = objetivoCliente ? (OBJETIVO_APTA[objetivoCliente] ?? ['general']) : ['general']
 
   const scored = candidatas.map(r => {
+    const rec = r as Record<string, unknown>
+
+    // ── Componente 1: calidad de receta (25%) ─────────────────
+    const scoreNorm = (r.score_calidad ?? 60) / 100
+
+    // ── Componente 2: proximidad macro objetivo (20%) ─────────
     const dist = distanciaEuclidiana(r.kcal, r.proteinas ?? 0, targetKcal, targetProt)
     const distNorm = Math.min(dist, 2) / 2
 
-    const scoreNorm = (r.score_calidad ?? 60) / 100
+    // ── Componente 3: alineación con perfil de gusto (30%) ────
+    // Solo pesa si hay confianza de perfil >= 0.2 (mínimo 5 eventos)
+    let alineacionPerfil = 0.5 // neutral por defecto
+    if (confianzaPerfil >= 0.2) {
+      if (recetasPreferidas.has(r.id)) alineacionPerfil = 1.0
+      else if (categoriasPreferidas.has((rec.categoria as string) ?? '')) alineacionPerfil = 0.75
+      else alineacionPerfil = 0.4
 
+      // Bonus popularidad colectiva (normalizado 0-1)
+      const popScore = ((rec.score_popularidad as number) ?? 50) / 100
+      alineacionPerfil = alineacionPerfil * 0.7 + popScore * 0.3
+    }
+
+    // ── Componente 4: novedad apropiada (15%) ─────────────────
+    // Receta nueva (nunca asignada) = ligero bonus; muy popular = ligero malus
+    const nAsignada = (rec.n_veces_asignada as number) ?? 0
+    const novedadScore = nAsignada === 0 ? 0.8 : nAsignada <= 2 ? 0.6 : 0.4
+
+    // ── Componente 5: tag clínico match + apta_objetivo (10%) ─
     const aptaMatch = r.apta_cliente
       ? aptasObjetivo.includes(r.apta_cliente) ? 1.0
         : r.apta_cliente === 'general' ? 0.5
         : 0.0
       : 0.5
 
-    const sortScore = scoreNorm * 0.40 + aptaMatch * 0.35 + (1 - distNorm) * 0.25
+    // Pesos ARAG: si hay perfil confiable, usamos los pesos enriquecidos
+    // Si no, usamos pesos legacy (calidad + macro + apta)
+    let sortScore: number
+    if (confianzaPerfil >= 0.2) {
+      sortScore =
+        scoreNorm      * 0.25 +
+        (1 - distNorm) * 0.20 +
+        alineacionPerfil * 0.30 +
+        novedadScore   * 0.15 +
+        aptaMatch      * 0.10
+    } else {
+      // Legacy weights (sin datos de perfil)
+      sortScore = scoreNorm * 0.40 + aptaMatch * 0.35 + (1 - distNorm) * 0.25
+    }
 
     return { ...r, _dist: dist, _sort_score: sortScore }
   })
