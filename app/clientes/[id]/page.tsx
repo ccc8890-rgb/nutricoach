@@ -11,7 +11,8 @@ import {
   Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2,
   Zap, Bot, Trophy, CopyPlus, X, Activity, PersonStanding,
   ChevronRight, RefreshCw, Pencil, Flame, Beef, Wheat, Droplets,
-  ExternalLink, Send, AlertTriangle, MessageCircle,
+  ExternalLink, Send, AlertTriangle, MessageCircle, HeartPulse,
+  ShieldCheck, BookOpen, Target, Copy, RotateCcw,
 } from 'lucide-react'
 import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, ChatMensaje } from '@/types'
 import ChatPanel from '@/components/PortalCliente/ChatPanel'
@@ -36,7 +37,39 @@ function TabSkeleton() {
 }
 
 type NotaCoachRow = { id: string; cliente_id: string; mensaje: string; created_at: string }
-type Tab = 'resumen' | 'planes' | 'checkins' | 'notas' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion' | 'perfil_atleta' | 'historial_entreno' | 'chat'
+type Tab = 'resumen' | 'planes' | 'checkins' | 'notas' | 'planificacion' | 'historial_ia' | 'conversaciones_ia' | 'ajuste_macros' | 'competicion' | 'periodizacion' | 'perfil_atleta' | 'historial_entreno' | 'chat' | 'inteligencia_clinica'
+
+interface FlagClinico {
+  codigo: string
+  tipo: string
+  severidad: 'critico' | 'alto' | 'medio' | 'bajo'
+  titulo: string
+  descripcion: string
+  evidencia: string
+  accion_recomendada: string
+  fuente?: string
+}
+
+interface ParametrosObjetivo {
+  proteina_g_kg?: number
+  kcal_floor?: number
+  cho_g_kg?: number
+  suplementos_prioritarios?: string[]
+  restricciones_absolutas?: string[]
+  observaciones?: string
+}
+
+interface InformeCasoClinico {
+  id: string
+  version: number
+  flags_activos: FlagClinico[]
+  protocolos_aplicados: string[]
+  parametros_objetivo: ParametrosObjetivo
+  narrativa_clinica: string
+  instrucciones_ia: string
+  checkins_analizados: number
+  updated_at: string
+}
 type ClienteConExtra = Cliente & { fecha_proxima_revision?: string; revisado_por_coach?: boolean | null; profile?: { nombre?: string; apellidos?: string; email?: string; telefono?: string } }
 
 // ── MacroBar ──────────────────────────────────────────────────────────────────
@@ -68,6 +101,237 @@ function StatPill({ label, value }: { label: string; value: string }) {
   )
 }
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const SEVERIDAD_CONFIG = {
+  critico: { label: 'Crítico', dot: '#FF453A', bg: 'rgba(255,69,58,0.08)', border: 'rgba(255,69,58,0.25)', text: '#FF453A' },
+  alto:    { label: 'Alto',    dot: '#FF9F0A', bg: 'rgba(255,159,10,0.08)', border: 'rgba(255,159,10,0.25)', text: '#FF9F0A' },
+  medio:   { label: 'Medio',   dot: '#FFD60A', bg: 'rgba(255,214,10,0.08)', border: 'rgba(255,214,10,0.2)', text: '#B59300' },
+  bajo:    { label: 'Bajo',    dot: '#30D158', bg: 'rgba(48,209,88,0.06)',  border: 'rgba(48,209,88,0.2)', text: '#30D158' },
+}
+
+function FlagCard({ flag }: { flag: FlagClinico }) {
+  const cfg = SEVERIDAD_CONFIG[flag.severidad] ?? SEVERIDAD_CONFIG.bajo
+  const [expandido, setExpandido] = useState(false)
+  return (
+    <div className="rounded-xl p-3.5 cursor-pointer select-none transition-all" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }} onClick={() => setExpandido(v => !v)}>
+      <div className="flex items-start gap-3">
+        <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: cfg.dot }} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{flag.titulo}</span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}` }}>{cfg.label}</span>
+          </div>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{flag.descripcion}</p>
+          {expandido && (
+            <div className="mt-3 space-y-2">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Acción recomendada</p>
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{flag.accion_recomendada}</p>
+              </div>
+              {flag.evidencia && (
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Evidencia</p>
+                  <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>{flag.evidencia}</p>
+                </div>
+              )}
+              {flag.fuente && (
+                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Fuente: {flag.fuente}</p>
+              )}
+            </div>
+          )}
+        </div>
+        <ChevronRight size={13} className="flex-shrink-0 transition-transform mt-0.5" style={{ color: 'var(--text-muted)', transform: expandido ? 'rotate(90deg)' : 'rotate(0deg)' }} />
+      </div>
+    </div>
+  )
+}
+
+function InformeClinicoPanel({ informe, cargando, regenerando, onRegenerar }: {
+  informe: InformeCasoClinico | null
+  cargando: boolean
+  regenerando: boolean
+  onRegenerar: () => void
+}) {
+  const [copiandoIA, setCopiandoIA] = useState(false)
+
+  if (cargando) return (
+    <div className="space-y-3">
+      {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />)}
+    </div>
+  )
+
+  if (!informe) return (
+    <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <HeartPulse size={40} className="mx-auto mb-3 opacity-30" style={{ color: 'var(--text-muted)' }} />
+      <p className="font-semibold mb-1" style={{ color: 'var(--text)' }}>Sin informe clínico</p>
+      <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>El cliente necesita al menos 1 check-in para generar el análisis clínico.</p>
+      <button className="btn-primary btn-sm" onClick={onRegenerar} disabled={regenerando}>
+        {regenerando ? <><Loader2 size={13} className="animate-spin" /> Generando…</> : <><RotateCcw size={13} /> Generar ahora</>}
+      </button>
+    </div>
+  )
+
+  const flagsBySeveridad = {
+    critico: informe.flags_activos.filter(f => f.severidad === 'critico'),
+    alto: informe.flags_activos.filter(f => f.severidad === 'alto'),
+    medio: informe.flags_activos.filter(f => f.severidad === 'medio'),
+    bajo: informe.flags_activos.filter(f => f.severidad === 'bajo'),
+  }
+  const flagsOrdenados = [...flagsBySeveridad.critico, ...flagsBySeveridad.alto, ...flagsBySeveridad.medio, ...flagsBySeveridad.bajo]
+  const params = informe.parametros_objetivo ?? {}
+
+  return (
+    <div className="space-y-4">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-bold text-base flex items-center gap-2" style={{ color: 'var(--text)' }}>
+            <HeartPulse size={16} style={{ color: '#FF6B6B' }} /> Análisis Clínico — v{informe.version}
+          </h2>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+            {informe.checkins_analizados} check-ins analizados · actualizado {new Date(informe.updated_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+          </p>
+        </div>
+        <button className="btn-secondary btn-sm" onClick={onRegenerar} disabled={regenerando}>
+          {regenerando ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}
+          {regenerando ? 'Analizando…' : 'Regenerar'}
+        </button>
+      </div>
+
+      {/* Flags */}
+      {flagsOrdenados.length > 0 ? (
+        <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text)' }}>
+              <AlertTriangle size={14} style={{ color: '#FF9F0A' }} /> Alertas clínicas detectadas
+            </h3>
+            <div className="flex gap-2 text-[10px]">
+              {flagsBySeveridad.critico.length > 0 && <span className="px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,69,58,0.12)', color: '#FF453A' }}>{flagsBySeveridad.critico.length} crítico{flagsBySeveridad.critico.length > 1 ? 's' : ''}</span>}
+              {flagsBySeveridad.alto.length > 0 && <span className="px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>{flagsBySeveridad.alto.length} alto{flagsBySeveridad.alto.length > 1 ? 's' : ''}</span>}
+              {flagsBySeveridad.medio.length > 0 && <span className="px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,214,10,0.1)', color: '#B59300' }}>{flagsBySeveridad.medio.length} medio{flagsBySeveridad.medio.length > 1 ? 's' : ''}</span>}
+            </div>
+          </div>
+          <div className="space-y-2">
+            {flagsOrdenados.map(f => <FlagCard key={f.codigo} flag={f} />)}
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl p-4 flex items-center gap-3" style={{ background: 'rgba(48,209,88,0.06)', border: '1px solid rgba(48,209,88,0.2)' }}>
+          <ShieldCheck size={20} style={{ color: '#30D158' }} />
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sin alertas clínicas activas</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No se detectaron flags de riesgo en este cliente.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Parámetros objetivo */}
+      {Object.keys(params).length > 0 && (
+        <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <h3 className="text-sm font-semibold flex items-center gap-2 mb-3" style={{ color: 'var(--text)' }}>
+            <Target size={14} style={{ color: '#64D2FF' }} /> Parámetros objetivo (evidencia científica)
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {params.proteina_g_kg && (
+              <div className="p-3 rounded-xl" style={{ background: 'var(--surface-elevated, var(--border))' }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Proteína</p>
+                <p className="text-base font-bold mt-0.5" style={{ color: 'var(--text)' }}>{params.proteina_g_kg} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>g/kg</span></p>
+              </div>
+            )}
+            {params.kcal_floor && (
+              <div className="p-3 rounded-xl" style={{ background: 'var(--surface-elevated, var(--border))' }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Mínimo kcal</p>
+                <p className="text-base font-bold mt-0.5" style={{ color: 'var(--text)' }}>{params.kcal_floor} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>kcal/día</span></p>
+              </div>
+            )}
+            {params.cho_g_kg && (
+              <div className="p-3 rounded-xl" style={{ background: 'var(--surface-elevated, var(--border))' }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Carbohidratos</p>
+                <p className="text-base font-bold mt-0.5" style={{ color: 'var(--text)' }}>{params.cho_g_kg} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>g/kg</span></p>
+              </div>
+            )}
+          </div>
+          {params.suplementos_prioritarios && params.suplementos_prioritarios.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Suplementos prioritarios</p>
+              <div className="flex flex-wrap gap-1.5">
+                {params.suplementos_prioritarios.map((s: string) => (
+                  <span key={s} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(100,210,255,0.1)', color: '#64D2FF', border: '1px solid rgba(100,210,255,0.2)' }}>{s}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {params.restricciones_absolutas && params.restricciones_absolutas.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Restricciones absolutas</p>
+              <div className="flex flex-wrap gap-1.5">
+                {params.restricciones_absolutas.map((r: string) => (
+                  <span key={r} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(255,69,58,0.08)', color: '#FF453A', border: '1px solid rgba(255,69,58,0.2)' }}>{r}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {params.observaciones && (
+            <p className="text-xs mt-3 italic" style={{ color: 'var(--text-muted)' }}>{params.observaciones}</p>
+          )}
+        </div>
+      )}
+
+      {/* Narrativa clínica */}
+      {informe.narrativa_clinica && (
+        <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <h3 className="text-sm font-semibold flex items-center gap-2 mb-3" style={{ color: 'var(--text)' }}>
+            <BookOpen size={14} style={{ color: '#BF5AF2' }} /> Narrativa clínica
+          </h3>
+          <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>{informe.narrativa_clinica}</p>
+        </div>
+      )}
+
+      {/* Protocolos aplicados */}
+      {informe.protocolos_aplicados && informe.protocolos_aplicados.length > 0 && (
+        <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Protocolos KB aplicados</h3>
+          <div className="flex flex-wrap gap-1.5">
+            {informe.protocolos_aplicados.map((p: string) => (
+              <span key={p} className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'var(--surface-elevated, var(--border))', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>{p}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* instrucciones_ia — para el coach, collapsable */}
+      {informe.instrucciones_ia && (
+        <details className="rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <summary className="flex items-center justify-between p-4 cursor-pointer list-none">
+            <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Brief IA (inyectado en prompts)</span>
+            <div className="flex items-center gap-2">
+              <button
+                className="text-xs px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-colors"
+                style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text-muted)' }}
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  setCopiandoIA(true)
+                  await navigator.clipboard.writeText(informe.instrucciones_ia)
+                  setTimeout(() => setCopiandoIA(false), 1500)
+                }}
+              >
+                <Copy size={11} /> {copiandoIA ? '¡Copiado!' : 'Copiar'}
+              </button>
+              <ChevronRight size={13} style={{ color: 'var(--text-muted)' }} className="transition-transform details-arrow" />
+            </div>
+          </summary>
+          <div className="px-4 pb-4">
+            <pre className="text-xs font-mono leading-relaxed whitespace-pre-wrap overflow-x-auto p-3 rounded-xl" style={{ background: 'var(--surface-elevated,var(--bg))', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+              {informe.instrucciones_ia}
+            </pre>
+          </div>
+        </details>
+      )}
+    </div>
+  )
+}
+
 export default function ClienteDetallePage() {
   const { id } = useParams<{ id: string }>()
   const { addToast } = useToast()
@@ -92,6 +356,32 @@ export default function ClienteDetallePage() {
   const [plantillaSeleccionada, setPlantillaSeleccionada] = useState<PlantillaEntrenamiento | null>(null)
   const [creandoPlan, setCreandoPlan] = useState(false)
   const [noLeidosChat, setNoLeidosChat] = useState(0)
+  const [informe, setInforme] = useState<InformeCasoClinico | null>(null)
+  const [cargandoInforme, setCargandoInforme] = useState(false)
+  const [regenerandoInforme, setRegenerandoInforme] = useState(false)
+
+  async function cargarInforme(forzar = false) {
+    if (forzar) setRegenerandoInforme(true)
+    else setCargandoInforme(true)
+    try {
+      const url = `/api/clientes/${id}/informe-clinico${forzar ? '?regenerar=1' : ''}`
+      const res = await fetch(url)
+      if (res.ok) {
+        const data = await res.json()
+        setInforme(data.informe ?? null)
+      }
+    } catch { /* silencioso */ } finally {
+      setCargandoInforme(false)
+      setRegenerandoInforme(false)
+    }
+  }
+
+  // Cargar informe clínico al entrar en la tab
+  useEffect(() => {
+    if (tabActiva === 'inteligencia_clinica' && !informe && !cargandoInforme) {
+      cargarInforme()
+    }
+  }, [tabActiva])
 
   // Polling de mensajes no leídos (cada 30s)
   useEffect(() => {
@@ -217,6 +507,7 @@ export default function ClienteDetallePage() {
     { key: 'perfil_atleta', label: 'Perfil atleta', icon: PersonStanding },
     { key: 'historial_entreno', label: 'Entreno realizado', icon: Dumbbell },
     { key: 'ajuste_macros', label: 'Ajuste macros', icon: Zap },
+    { key: 'inteligencia_clinica', label: 'Clínico IA', icon: HeartPulse, badge: informe?.flags_activos?.filter(f => f.severidad === 'critico' || f.severidad === 'alto').length },
   ]
 
   return (
@@ -646,6 +937,13 @@ export default function ClienteDetallePage() {
               esCoach={true}
             />
           </div>
+        ) : tabActiva === 'inteligencia_clinica' ? (
+          <InformeClinicoPanel
+            informe={informe}
+            cargando={cargandoInforme}
+            regenerando={regenerandoInforme}
+            onRegenerar={() => cargarInforme(true)}
+          />
         ) : (
           <div className="max-w-xl mx-auto"><AjusteMacrosIA clienteId={id as string} onApplied={loadData} /></div>
         )}
