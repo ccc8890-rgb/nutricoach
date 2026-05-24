@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase, createApiSupabase } from '@/lib/supabase-server'
 import { seleccionarProtocolos, formatearEvidenciaParaPrompt } from '@/lib/knowledge-base'
+import { obtenerInformeVigente, necesitaRegeneracion, generarInformeCasoClinico } from '@/lib/inteligencia-clinica'
 import { construirPrompt, generarDietaConIA, type DietaGenerada } from '@/lib/deepseek'
 import { distribuirProteinas, verificarLeucina } from '@/lib/distribucion-proteinas'
 import { planificarMesociclo, formatearMesociclo } from '@/lib/periodizacion/mesociclo'
@@ -225,6 +226,20 @@ export async function POST(request: NextRequest) {
     tipoEntreno: onboarding.tipo_entreno,
   })
 
+  // ── 5c. Informe de caso clínico (inteligencia clínica) ───────────────────────
+  // Si el cliente tiene checkins, inyectamos el informe clínico estructurado.
+  // El informe se regenera automáticamente si hay 4+ checkins nuevos.
+  let informeClinico = await obtenerInformeVigente(cliente_id)
+  if (!informeClinico) {
+    const debeReg = await necesitaRegeneracion(cliente_id)
+    if (debeReg) {
+      informeClinico = await generarInformeCasoClinico(cliente_id)
+    }
+  }
+  const informeClinicoBlock = informeClinico?.instrucciones_ia
+    ? `\n${informeClinico.instrucciones_ia}\n`
+    : ''
+
   // ── 6. Build methodology prompt block ──────────────────────────────────────
   // La ciencia es la base. El coach sólo añade ajustes si tiene metodología configurada.
   const metodologiaBlock = metodologia
@@ -285,7 +300,7 @@ No añadas restricciones subjetivas — sólo ciencia.`
   const contextoCompleto = `
 ═══ CONTEXTO COMPLETO DEL CLIENTE ═══
 
-${evidenciaBlock ? `\n${evidenciaBlock}\n` : ''}${metodologiaBlock ? `\n${metodologiaBlock}\n` : ''}
+${informeClinicoBlock}${evidenciaBlock ? `\n${evidenciaBlock}\n` : ''}${metodologiaBlock ? `\n${metodologiaBlock}\n` : ''}
 
 ═══ SEGMENTO DE CLIENTE ═══
 - Segmento: ${SEGMENTO_LABELS[segmento] || segmento}

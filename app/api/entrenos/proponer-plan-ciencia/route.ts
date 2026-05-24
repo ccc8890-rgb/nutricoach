@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { evaluarPerfilEntreno } from '@/lib/motor-entreno'
+import { obtenerInformeVigente } from '@/lib/inteligencia-clinica'
 import type { PerfilEntrenoCliente } from '@/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -100,6 +101,12 @@ export async function POST(req: NextRequest) {
     const evidenciasTexto = papers.length > 0
       ? papers.map(p => `• ${p.titulo}\n  ${p.resumen?.slice(0, 200) ?? ''}\n  Refs: ${(p.referencias as string[])?.slice(0, 2).join('; ')}`).join('\n\n')
       : 'Sin papers específicos — usar principios ACSM/NSCA generales.'
+
+    // Informe clínico del cliente (inyectar si existe)
+    const informeClinico = await obtenerInformeVigente(cliente_id)
+    const informeClinicoBlock = informeClinico?.instrucciones_ia
+      ? `\n${informeClinico.instrucciones_ia}\n`
+      : ''
 
     // Perfil del cliente
     const perfil = cliente.profiles as { nombre?: string; apellidos?: string; edad?: number } | null
@@ -210,6 +217,9 @@ ${recomendacion ? `
 
 ## FEEDBACK REAL DE SESIONES PREVIAS
 ${ajusteRpe || '→ Sin sesiones previas registradas. Empezar conservador (RPE 6-7 primeras 2 semanas).'}
+
+## ANÁLISIS CLÍNICO DEL CLIENTE
+${informeClinicoBlock || '→ Sin informe clínico previo. Aplicar protocolos estándar.'}
 
 ## EVIDENCIA CIENTÍFICA BASE
 ${evidenciasTexto}

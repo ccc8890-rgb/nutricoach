@@ -5,6 +5,7 @@
 // ================================================================
 
 import { llamarDeepSeek, cargarContextoCliente, guardarTareaAgente } from './executor'
+import { obtenerInformeVigente } from '@/lib/inteligencia-clinica'
 import type { ContextoCliente, ResultadoAgente } from './types'
 
 const SYSTEM_PROMPT = `Eres el nutricionista deportivo de seguimiento de NutriCoach — el experto que analiza la evolución semanal de los clientes y ajusta los planes con precisión clínica.
@@ -61,7 +62,13 @@ export async function ejecutarRevisorSemanal(clienteId: string): Promise<void> {
 
   if (ctx.checkins_recientes.length < 2) return // Sin datos suficientes
 
-  const userPrompt = construirPrompt(ctx)
+  // Inyectar informe clínico vigente como contexto adicional para el revisor
+  const informeClinico = await obtenerInformeVigente(clienteId)
+  const informeBlock = informeClinico?.instrucciones_ia
+    ? `\n\n═══ INFORME CLÍNICO VIGENTE (usa esto para contextualizar la revisión) ═══\n${informeClinico.instrucciones_ia}\n═══════════════════════════════════════════════════════`
+    : ''
+
+  const userPrompt = construirPrompt(ctx) + informeBlock
   const raw = await llamarDeepSeek(SYSTEM_PROMPT, userPrompt, 0.2)
 
   let parsed: Record<string, unknown>
