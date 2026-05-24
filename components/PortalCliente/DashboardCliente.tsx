@@ -374,7 +374,7 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                     </div>
                 )}
 
-                {tab === 'integraciones' && (
+                {tab === 'integraciones' && data.cliente && (
                     <IntegracionesPanel codigo={codigo} clienteId={data.cliente.id} />
                 )}
             </div>

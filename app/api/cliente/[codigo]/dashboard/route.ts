@@ -32,16 +32,22 @@ export async function GET(
         if (clienteId) {
             const { data: c } = await supabase
                 .from('clientes')
-                .select('id, objetivo, peso_inicial, fecha_proxima_revision, onboarding_completado, profiles(nombre, apellidos)')
+                .select('id, objetivo, peso_inicial, fecha_proxima_revision, onboarding_completado, profile_id')
                 .eq('id', clienteId)
                 .single()
             if (c) {
-                const p = c.profiles as { nombre?: string; apellidos?: string } | null
-                cliente = {
-                    ...c,
-                    nombre: p?.nombre ?? null,
-                    apellidos: p?.apellidos ?? null,
+                let nombre = null
+                let apellidos = null
+                if (c.profile_id) {
+                    const { data: p } = await supabase
+                        .from('profiles')
+                        .select('nombre, apellidos')
+                        .eq('id', c.profile_id)
+                        .single()
+                    nombre = p?.nombre ?? null
+                    apellidos = p?.apellidos ?? null
                 }
+                cliente = { ...c, nombre, apellidos }
             }
         }
 
