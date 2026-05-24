@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell, MessageCircle } from 'lucide-react'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell, MessageCircle, Smartphone } from 'lucide-react'
 import MiPlan from './MiPlan'
 import MensajeCoach from './MensajeCoach'
 import CheckInForm from './CheckInForm'
@@ -12,6 +12,7 @@ import TLSGauge from './TLSGauge'
 import RegistrarEntrenoModal from './RegistrarEntrenoModal'
 import MicronutrientesPortal from './MicronutrientesPortal'
 import ChatPanel from './ChatPanel'
+import IntegracionesPanel from './IntegracionesPanel'
 import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach } from '@/types'
 
 interface DashboardData {
@@ -27,7 +28,7 @@ interface DashboardClienteProps {
     codigo: string
 }
 
-type Tab = 'plan' | 'checkin' | 'entreno' | 'progreso' | 'historial' | 'chat'
+type Tab = 'plan' | 'checkin' | 'entreno' | 'progreso' | 'historial' | 'chat' | 'integraciones'
 
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: 'plan', label: 'Mi plan', icon: UtensilsCrossed },
@@ -36,6 +37,7 @@ const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: 'historial', label: 'Historial', icon: History },
     { key: 'progreso', label: 'Progreso', icon: BarChart3 },
     { key: 'chat', label: 'Chat', icon: MessageCircle },
+    { key: 'integraciones', label: 'Apps', icon: Smartphone },
 ]
 
 /* ── Helper: calcular racha ── */
@@ -368,6 +370,10 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                     <div className="card !p-0 overflow-hidden">
                         <ChatPanel codigo={codigo} pollingInterval={10000} />
                     </div>
+                )}
+
+                {tab === 'integraciones' && (
+                    <IntegracionesPanel codigo={codigo} clienteId={data.cliente.id} />
                 )}
             </div>
 

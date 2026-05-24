@@ -11,6 +11,7 @@
 // ================================================================
 
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { getSummaryLast7d } from '@/lib/integraciones/normalizer'
 import type {
   TipoAgente,
   ContextoCliente,
@@ -158,6 +159,8 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
     .order('peso', { ascending: false })
     .limit(20)
 
+  const actividadSemanal = await getSummaryLast7d(db, clienteId).catch(() => null)
+
   return {
     cliente: {
       id: cliente.id,
@@ -173,6 +176,7 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
     checkins_recientes: (checkins as CheckinResumen[]) ?? [],
     perfil_aprendizaje: perfil as ClientePerfilAprendizaje | null,
     metodologia_coach: (metodologia as CoachMemoria[]) ?? [],
+    actividad_semanal: actividadSemanal,
   }
 }
 

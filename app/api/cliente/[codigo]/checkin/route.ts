@@ -13,7 +13,7 @@ export async function POST(
         const supabase = createServiceSupabase()
         const { codigo } = await params
         const body = await request.json()
-        const { peso, adherencia, energia, sueno, notas, foto_url, cintura_cm, cadera_cm, pecho_cm, brazo_cm, muslo_cm } = body
+        const { peso, adherencia, energia, sueno, notas, foto_url, cintura_cm, cadera_cm, pecho_cm, brazo_cm, muslo_cm, pasos_manual, calorias_activas_manual, hrv_manual } = body
 
         // Buscar cliente por código del plan
         const { data: plan } = await supabase
@@ -54,6 +54,20 @@ export async function POST(
         if (error) {
             console.error('Error al crear check-in:', error)
             return NextResponse.json({ error: 'Error al guardar' }, { status: 500 })
+        }
+
+        // Si hay datos manuales de dispositivo, persistir en actividad_externa_cliente
+        if (pasos_manual || calorias_activas_manual || hrv_manual) {
+            const hoy = new Date().toISOString().split('T')[0]
+            await supabase.from('actividad_externa_cliente').upsert({
+                cliente_id: plan.cliente_id,
+                proveedor: 'manual',
+                fecha: hoy,
+                pasos: pasos_manual ?? null,
+                calorias_activas: calorias_activas_manual ?? null,
+                hrv: hrv_manual ?? null,
+                proveedor_activity_id: `manual_${hoy}`,
+            }, { onConflict: 'cliente_id,proveedor,fecha,proveedor_activity_id', ignoreDuplicates: false })
         }
 
         // Si también envió peso, guardarlo en seguimiento_peso

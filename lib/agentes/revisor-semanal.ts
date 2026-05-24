@@ -236,6 +236,9 @@ function evaluarArbolDecision(
   // (indicador de si hay conocimiento colectivo relevante — se usa en el prompt)
   nodos.push({ nodo: 'N19_patron_colectivo', resultado: 'pendiente_enriquecimiento', confianza: 0.5 })
 
+  // ─ N_TDEE / N_TSS / N_HRV / N_PASOS — datos de dispositivo ──
+  scoreAccion += evaluarNodosActividad(ctx, nodos, intervenciones)
+
   // ── Determinar urgencia ──────────────────────────────────────
   let urgencia: DecisionArbol['urgencia']
   if (n3_rapida && n11_objetivoDeficit) urgencia = 'critica'
@@ -259,6 +262,85 @@ function evaluarArbolDecision(
     score_accion: Math.min(10, scoreAccion),
     contexto_aprendizaje: ctxAprendizaje.join(' | '),
   }
+}
+
+// ── Árbol de 4 nodos de actividad externa (dispositivos) ─────
+function evaluarNodosActividad(
+  ctx: ContextoCliente,
+  nodos: EvaluacionNodo[],
+  intervenciones: string[]
+): number {
+  const act = ctx.actividad_semanal
+  if (!act || !act.tiene_datos) {
+    nodos.push({ nodo: 'N_DISPOSITIVO', resultado: 'sin_datos', confianza: 0 })
+    return 0
+  }
+
+  let scoreExtra = 0
+
+  // N_TDEE: TDEE estimado vs kcal objetivo → ¿el plan está por debajo de lo necesario?
+  const tdee = act.tdee_estimado
+  const kcalObj = ctx.plan_activo?.kcal_objetivo ?? 0
+  const deficit = tdee > 0 ? tdee - kcalObj : 0
+  const n_tdee_agresivo = deficit > 700
+  nodos.push({
+    nodo: 'N_TDEE',
+    resultado: tdee > 0 ? `TDEE≈${Math.round(tdee)} kcal, déficit≈${Math.round(deficit)} kcal` : 'sin_tdee',
+    valor: deficit,
+    umbral: 700,
+    confianza: tdee > 0 ? 0.75 : 0,
+  })
+  if (n_tdee_agresivo) {
+    intervenciones.push('revisar_deficit_calorico')
+    scoreExtra += 2
+  }
+
+  // N_TSS: Training Stress Score semanal alto → riesgo sobreentrenamiento
+  const tss = act.tss_semanal
+  const n_tss_alto = tss > 400
+  nodos.push({
+    nodo: 'N_TSS',
+    resultado: `TSS_semanal=${tss.toFixed(0)}`,
+    valor: tss,
+    umbral: 400,
+    confianza: tss > 0 ? 0.7 : 0,
+  })
+  if (n_tss_alto) {
+    intervenciones.push('ajustar_cho_entreno')
+    scoreExtra += 1.5
+  }
+
+  // N_HRV: HRV baja → fatiga acumulada → no recortar más calorías
+  const hrv = act.hrv_media ?? 0
+  const n_hrv_baja = hrv > 0 && hrv < 50
+  nodos.push({
+    nodo: 'N_HRV',
+    resultado: hrv > 0 ? `HRV_media=${hrv.toFixed(0)} ms` : 'sin_hrv',
+    valor: hrv,
+    umbral: 50,
+    confianza: hrv > 0 ? 0.8 : 0,
+  })
+  if (n_hrv_baja) {
+    intervenciones.push('recuperacion_activa')
+    scoreExtra += 1.5
+  }
+
+  // N_PASOS: Pasos medios bajos → TDEE estimado puede estar inflado o estilo de vida sedentario
+  const pasos = act.pasos_media
+  const n_pasos_bajo = pasos > 0 && pasos < 5000
+  nodos.push({
+    nodo: 'N_PASOS',
+    resultado: pasos > 0 ? `pasos_media=${Math.round(pasos)}/día` : 'sin_pasos',
+    valor: pasos,
+    umbral: 5000,
+    confianza: pasos > 0 ? 0.65 : 0,
+  })
+  if (n_pasos_bajo) {
+    intervenciones.push('aumentar_neat')
+    scoreExtra += 1
+  }
+
+  return scoreExtra
 }
 
 // ── Entry point principal ─────────────────────────────────────
@@ -329,7 +411,7 @@ function construirPrompt(
   patronesColectivos: string,
   instruccionesClinicas?: string
 ): string {
-  const { cliente, plan_activo, checkins_recientes, perfil_aprendizaje, metodologia_coach } = ctx
+  const { cliente, plan_activo, checkins_recientes, perfil_aprendizaje, metodologia_coach, actividad_semanal } = ctx
 
   const pesoInicial = cliente.peso_inicial ?? '?'
   const pesoActual = checkins_recientes[0]?.peso ?? '?'
@@ -377,7 +459,15 @@ PERFIL APRENDIZAJE:
 - Adherencia media 30d: ${perfil_aprendizaje?.adherencia_media ?? 'desconocida'}%
 - Riesgo abandono: ${perfil_aprendizaje?.riesgo_abandono ?? 'desconocido'}
 - Semanas sin mejora: ${perfil_aprendizaje?.semanas_sin_mejora ?? 0}
-
+${actividad_semanal?.tiene_datos ? `
+DATOS DISPOSITIVO (últimos 7 días — ${actividad_semanal.fuentes.join(', ')}):
+- Pasos media: ${actividad_semanal.pasos_media > 0 ? Math.round(actividad_semanal.pasos_media) + '/día' : 'sin datos'}
+- Calorías activas total: ${actividad_semanal.calorias_activas_total > 0 ? Math.round(actividad_semanal.calorias_activas_total) + ' kcal' : 'sin datos'}
+- TDEE estimado: ${actividad_semanal.tdee_estimado > 0 ? Math.round(actividad_semanal.tdee_estimado) + ' kcal/día' : 'sin datos'}
+- TSS semanal: ${actividad_semanal.tss_semanal > 0 ? actividad_semanal.tss_semanal.toFixed(0) : 'sin datos'}
+- HRV media: ${(actividad_semanal.hrv_media ?? 0) > 0 ? (actividad_semanal.hrv_media as number).toFixed(0) + ' ms' : 'sin datos'}
+- Sesiones entreno: ${actividad_semanal.sesiones_entreno}
+- Minutos alta intensidad: ${actividad_semanal.minutos_alta_intensidad_total > 0 ? actividad_semanal.minutos_alta_intensidad_total + ' min' : 'sin datos'}` : ''}
 METODOLOGÍA DEL COACH:
 ${metodologiaStr}
 ${patronesColectivos}${infClinicoBlock}

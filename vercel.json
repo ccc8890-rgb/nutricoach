@@ -15,6 +15,10 @@
         {
             "path": "/api/agentes/ejecutar?modo=semanal",
             "schedule": "0 6 * * 1"
+        },
+        {
+            "path": "/api/cron/sync-integraciones",
+            "schedule": "0 * * * *"
         }
     ],
     "buildCommand": "next build"

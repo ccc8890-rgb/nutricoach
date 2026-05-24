@@ -87,6 +87,10 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
     const [pecho, setPecho] = useState('')
     const [brazo, setBrazo] = useState('')
     const [muslo, setMuslo] = useState('')
+    const [mostrarDatosDispositivo, setMostrarDatosDispositivo] = useState(false)
+    const [pasosManual, setPasosManual] = useState('')
+    const [kcalQuemadasManual, setKcalQuemadasManual] = useState('')
+    const [hrvManual, setHrvManual] = useState('')
     const fotoInputRef = useRef<HTMLInputElement>(null)
     const { addToast } = useToast()
 
@@ -146,6 +150,9 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                     pecho_cm: pecho ? parseFloat(pecho) : null,
                     brazo_cm: brazo ? parseFloat(brazo) : null,
                     muslo_cm: muslo ? parseFloat(muslo) : null,
+                    ...(pasosManual ? { pasos_manual: parseInt(pasosManual) } : {}),
+                    ...(kcalQuemadasManual ? { calorias_activas_manual: parseInt(kcalQuemadasManual) } : {}),
+                    ...(hrvManual ? { hrv_manual: parseFloat(hrvManual) } : {}),
                 }),
             })
             if (!res.ok) throw new Error('Error al guardar')
@@ -364,6 +371,41 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                             <div className="col-span-2">
                                 <label className="text-xs text-[var(--text-muted)]">Muslo (cm)</label>
                                 <input type="number" step="0.1" className="input mt-1" placeholder="Ej: 55" value={muslo} onChange={e => setMuslo(e.target.value)} />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Datos opcionales de dispositivo */}
+                <div>
+                    <button
+                        type="button"
+                        onClick={() => setMostrarDatosDispositivo(v => !v)}
+                        className="text-sm text-[var(--text-muted)] underline"
+                    >
+                        {mostrarDatosDispositivo ? '▲ Ocultar datos de dispositivo' : '▼ Añadir datos de dispositivo (opcional)'}
+                    </button>
+                    {mostrarDatosDispositivo && (
+                        <div className="mt-3 space-y-3 border border-[var(--border)] rounded-xl p-3">
+                            <p className="text-xs text-[var(--text-muted)]">
+                                Si no tienes vinculado tu dispositivo, puedes introducir los datos manualmente.
+                            </p>
+                            <div className="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label className="text-xs text-[var(--text-muted)]">Pasos</label>
+                                    <input type="number" className="input mt-1 text-sm" placeholder="8500" autoComplete="off"
+                                        value={pasosManual} onChange={e => setPasosManual(e.target.value)} />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[var(--text-muted)]">Kcal quemadas</label>
+                                    <input type="number" className="input mt-1 text-sm" placeholder="450" autoComplete="off"
+                                        value={kcalQuemadasManual} onChange={e => setKcalQuemadasManual(e.target.value)} />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[var(--text-muted)]">HRV (ms)</label>
+                                    <input type="number" className="input mt-1 text-sm" placeholder="65" autoComplete="off"
+                                        value={hrvManual} onChange={e => setHrvManual(e.target.value)} />
+                                </div>
                             </div>
                         </div>
                     )}

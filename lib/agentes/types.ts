@@ -102,6 +102,8 @@ export interface CoachMemoria {
 }
 
 // ── Contexto que recibe cada agente al ejecutarse ──────────────
+import type { ResumenActividadSemanal } from '@/lib/integraciones/types'
+
 export interface ContextoCliente {
   cliente: {
     id: string
@@ -123,6 +125,7 @@ export interface ContextoCliente {
   checkins_recientes: CheckinResumen[]
   perfil_aprendizaje: ClientePerfilAprendizaje | null
   metodologia_coach: CoachMemoria[]
+  actividad_semanal: ResumenActividadSemanal | null
 }
 
 export interface CheckinResumen {
