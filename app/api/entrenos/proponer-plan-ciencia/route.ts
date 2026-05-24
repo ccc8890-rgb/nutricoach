@@ -59,9 +59,10 @@ export async function POST(req: NextRequest) {
         .eq('id', cliente_id).single(),
       sb.from('perfil_entreno_cliente').select('*').eq('cliente_id', cliente_id).maybeSingle(),
       sb.from('onboarding_responses').select('*').eq('cliente_id', cliente_id).maybeSingle(),
-      sb.from('sesiones_completadas')
+      sb.from('registros_entreno')
         .select('rpe, created_at')
         .eq('cliente_id', cliente_id)
+        .not('rpe', 'is', null)
         .order('created_at', { ascending: false })
         .limit(20),
     ])
