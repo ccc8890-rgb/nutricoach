@@ -108,9 +108,77 @@ export async function POST(req: NextRequest) {
     const objetivo = cliente.objetivo ?? 'salud_general'
     const nivel = cliente.nivel ?? 'principiante'
 
-    const promptSistema = `Eres un entrenador personal de élite especializado en periodización científica.
-Generas planes de entrenamiento personalizados basados en evidencia científica peer-reviewed.
-SIEMPRE respondes en JSON válido con la estructura especificada. NUNCA añades texto fuera del JSON.`
+    // Protocolos específicos por modalidad deportiva
+    const SPORT_PROTOCOLS: Record<string, string> = {
+      running: `RUNNING — Metodología Daniels (VDOT):
+• Zonas: Easy Z2 (60-70% HRmax), Tempo Z3-4 (88-92%), Intervals Z5 (95-100%)
+• Regla 80/20: 80% volumen en Z1-Z2, 20% calidad (tempo/intervals)
+• Progresión: +10% volumen semanal máximo, semana de descarga cada 4ª semana
+• Si VDOT disponible: calcular ritmos de entrenamiento precisos por zona
+• Prioridad: construir base aeróbica antes de añadir velocidad`,
+
+      gym: `GYM / FUERZA — Metodología Schoenfeld (2010, 2017):
+• Hipertrofia: 6-12 reps, 60-75% 1RM, 3-4 sets, 60-90s descanso
+• Frecuencia óptima: cada grupo muscular 2x/semana mínimo
+• Progresión doble: aumentar reps hasta límite, luego subir peso
+• RIR (Reps in Reserve): mantener 2-3 RIR en trabajo base, 0-1 RIR en últimas series
+• Periodización ondulada diaria (DUP): variar estímulo entre sesiones`,
+
+      crossfit: `CROSSFIT / FUNCIONAL — GPP (General Physical Preparedness):
+• Estructura: Strength + WOD (Workout of the Day)
+• Energéticos: ATP-PCr (fuerza), glucolítico (AMRAP/EMOM), aeróbico (Chipper)
+• WODs cortos (< 10 min): alta intensidad, escalado para mantener > 85% esfuerzo
+• WODs largos (> 15 min): ritmo sostenible, nunca ir al límite en la primera ronda
+• Recuperación crítica: 48h entre sesiones de alta intensidad del mismo patrón`,
+
+      hyrox: `HYROX — Protocolo específico (Laursen & Buchheit):
+• 8 estaciones: SkiErg, Sled Push, Sled Pull, Burpee Broad Jumps, Row, Farmers Carry, Sandbag Lunges, Wall Balls
+• Entrenamiento: combinar resistencia cardiovascular + fuerza funcional
+• Simulaciones de carrera: 1km a ritmo objetivo + estación inmediatamente después
+• Fuerza base: sentadilla, peso muerto, press militar — base para las estaciones
+• 50/50 split: 50% trabajo cardiovascular, 50% fuerza funcional con carga`,
+
+      cycling: `CICLISMO — Metodología Coggan (Training Peaks):
+• Zonas FTP: Z1 (<55%), Z2 (56-75%), Z3 (76-90%), Z4 (91-105%), Z5 (>106%)
+• Modelo polarizado: >80% en Z1-Z2, bloques Z4-Z5 en días específicos
+• Intervalos: 2x20min Z4 (Threshold), 5x5min Z5 (VO2max)
+• Progresión TSS: aumentar carga semanal 10% máximo, semana de descarga cada 4ª`,
+
+      natacion: `NATACIÓN — Principios FINA/ASCA:
+• Técnica primero: sin técnica correcta el volumen empeora los patrones
+• Zonas: A1 (recuperación), A2 (base aeróbica), A3 (umbral), An (anaeróbico)
+• Grupos de nado: 50-200m para velocidad, 400m-1km para fondo
+• Variedad de estilos para equilibrio muscular y prevención lesiones`,
+
+      funcional: `ENTRENAMIENTO FUNCIONAL — ACSM/NSCA Guidelines:
+• Patrones fundamentales: push, pull, squat, hinge, carry, core
+• Progresión: peso corporal → carga externa → velocidad → complejidad
+• HIIT: 1:2 work:rest ratio para principiante, 1:1 intermedio, 2:1 avanzado
+• Movilidad integrada: 5-10 min al inicio, no al final cuando hay fatiga`,
+    }
+
+    const protocoloDeporte = SPORT_PROTOCOLS[modalidadFoco] ?? SPORT_PROTOCOLS.funcional
+
+    const promptSistema = `Eres un preparador físico y entrenador personal de élite con 20 años de experiencia en España. Tienes certificación NSCA-CSCS (Certified Strength and Conditioning Specialist) y ACSM. Has preparado atletas recreacionales y semi-profesionales en running, CrossFit, Hyrox y triatlón.
+
+TU MISIÓN:
+Generar el plan de entrenamiento que un preparador físico de 150-200€/sesión daría — con base científica, periodización real, y explicaciones que el cliente entiende.
+
+LO QUE DEBES HACER:
+1. DISEÑAR cada sesión con propósito claro: qué sistema energético trabaja, por qué ese día, cómo encaja en el ciclo semanal
+2. ESPECIFICAR carga exacta: RPE objetivo por ejercicio, series/reps precisas, descansos calculados (no genéricos)
+3. INCLUIR semana de descarga automáticamente (cada 4ª semana: -30-40% volumen)
+4. ESCRIBIR "notas_cliente_entreno": mensaje motivador al cliente explicando su plan (3-4 frases, tono de entrenador cercano)
+5. ESCRIBIR "senales_ajuste_coach": 3 indicadores concretos que el coach revisará en 4 semanas
+
+REGLAS ABSOLUTAS:
+- Nombres de ejercicios en español (Sentadilla, Press Banca, Peso Muerto, Remo con Barra...)
+- RPE nunca > 9 en semanas 1-2 (adaptación inicial)
+- Siempre incluir calentamiento implícito en notas del primer ejercicio
+- Deload explícito: al menos una sesión de recuperación activa por semana
+- Las notas de cada ejercicio deben decir el POR QUÉ, no solo el cómo
+
+RESPONDE ÚNICAMENTE EN JSON VÁLIDO. Sin texto fuera del JSON.`
 
     const promptUsuario = `Genera un plan de entrenamiento personalizado para este cliente.
 
@@ -120,62 +188,72 @@ SIEMPRE respondes en JSON válido con la estructura especificada. NUNCA añades 
 - Nivel: ${nivel}
 - Días disponibles: ${diasSemana}/semana
 - Modalidad principal: ${modalidadFoco}
-${perfilEntreno?.vo2max_estimado ? `- VO2max: ${perfilEntreno.vo2max_estimado} ml/kg/min` : ''}
-${perfilEntreno?.ftp_watts ? `- FTP cycling: ${perfilEntreno.ftp_watts}W` : ''}
-${perfilEntreno?.vdot ? `- VDOT running: ${perfilEntreno.vdot}` : ''}
+${perfilEntreno?.vo2max_estimado ? `- VO2max estimado: ${perfilEntreno.vo2max_estimado} ml/kg/min` : ''}
+${perfilEntreno?.ftp_watts ? `- FTP ciclismo: ${perfilEntreno.ftp_watts}W` : ''}
+${perfilEntreno?.vdot ? `- VDOT running: ${perfilEntreno.vdot} → ritmos de entrenamiento calculables` : ''}
 ${perfilEntreno?.rm_sentadilla_kg ? `- RM sentadilla: ${perfilEntreno.rm_sentadilla_kg}kg` : ''}
 ${perfilEntreno?.rm_banca_kg ? `- RM press banca: ${perfilEntreno.rm_banca_kg}kg` : ''}
+${perfilEntreno?.rm_peso_muerto_kg ? `- RM peso muerto: ${perfilEntreno.rm_peso_muerto_kg}kg` : ''}
+${perfilEntreno?.patron_lesiones?.length ? `- ⚠️ LESIONES: ${perfilEntreno.patron_lesiones.map((l) => `${l.zona} (${l.frecuencia})`).join(', ')} — EVITAR ejercicios que comprometan estas zonas` : ''}
 
-## ANÁLISIS MOTOR ENTRENAMIENTO
+## PROTOCOLO CIENTÍFICO PARA ESTA MODALIDAD
+${protocoloDeporte}
+
+## ANÁLISIS MOTOR ENTRENAMIENTO (sistema automatizado)
 ${recomendacion ? `
 - Volumen recomendado: ${recomendacion.volumen}
-- Intensidad: ${recomendacion.intensidad}
+- Intensidad base: ${recomendacion.intensidad}
 - Foco principal: ${recomendacion.foco_principal}
-- Advertencias: ${recomendacion.advertencias.join('; ') || 'Ninguna'}
-- Ajustes: ${recomendacion.ajustes_adicionales.join('; ') || 'Ninguno'}
-` : 'Sin perfil atleta configurado — usar criterios estándar ACSM.'}
+- Advertencias específicas: ${recomendacion.advertencias.join('; ') || 'Ninguna'}
+- Ajustes adicionales: ${recomendacion.ajustes_adicionales.join('; ') || 'Ninguno'}
+` : '→ Sin perfil atleta configurado. Usar criterios ACSM para nivel principiante-intermedio.'}
 
-## AJUSTE POR FEEDBACK REAL
-${ajusteRpe || 'Sin sesiones completadas previas — empezar conservador.'}
+## FEEDBACK REAL DE SESIONES PREVIAS
+${ajusteRpe || '→ Sin sesiones previas registradas. Empezar conservador (RPE 6-7 primeras 2 semanas).'}
 
-## EVIDENCIA CIENTÍFICA APLICABLE
+## EVIDENCIA CIENTÍFICA BASE
 ${evidenciasTexto}
 
 ## INSTRUCCIONES DE GENERACIÓN
-1. Crea un plan de ${Math.min(diasSemana, 5)} sesiones/semana durante 8-12 semanas
-2. Cada sesión debe tener nombre descriptivo, día de la semana, y 4-6 ejercicios
-3. Incluye series, repeticiones/duración, descanso en segundos y notas técnicas
-4. Fundamenta la periodización en los papers proporcionados
-5. Adapta la intensidad según el ajuste RPE indicado
+1. Plan de ${Math.min(diasSemana, 5)} sesiones/semana, 8-12 semanas de duración
+2. Semana tipo: distribución coherente (no 2 días fuerza seguidos sin recuperación)
+3. Cada sesión: nombre descriptivo, 4-6 ejercicios ordenados (compuestos primero)
+4. Cada ejercicio: series, reps exactas, descanso calculado, RPE objetivo, nota con el POR QUÉ
+5. Incluir progresión: cómo escalar cada 2 semanas
 
-## FORMATO DE RESPUESTA (JSON EXACTO)
+## FORMATO JSON EXACTO
 {
-  "nombre_plan": "string — nombre descriptivo del plan",
+  "nombre_plan": "nombre descriptivo y específico para este cliente",
   "objetivo": "string",
   "duracion_semanas": number,
-  "fundamentacion": "string — 2-3 frases explicando el enfoque científico",
+  "fundamentacion": "2-3 frases del enfoque científico específico para ${modalidadFoco}",
+  "notas_cliente_entreno": "Mensaje personal al cliente (3-4 frases): qué va a conseguir, por qué este plan, qué sentirá en las primeras semanas",
   "sesiones": [
     {
-      "nombre": "string",
+      "nombre": "string — nombre evocador ej: 'Fuerza base tren inferior'",
       "dia_semana": "Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo",
-      "tipo": "string — fuerza|cardio|hiit|tecnica|recuperacion",
+      "tipo": "fuerza|cardio|hiit|tecnica|recuperacion|mixto",
       "duracion_min": number,
       "ejercicios": [
         {
-          "nombre": "string — nombre exacto del ejercicio",
+          "nombre": "string — nombre español exacto",
           "series": number,
-          "repeticiones": "string — ej: '8-10' o '30s' o '400m'",
+          "repeticiones": "string — '8-10' o '30s' o '400m' o '3x5min'",
           "descanso_segundos": number,
-          "rpe_objetivo": "string — ej: '7-8'",
-          "notas": "string — clave técnica + por qué basado en ciencia"
+          "rpe_objetivo": "string — '7-8' o '8 RIR 2'",
+          "notas": "string — técnica clave + justificación científica de POR QUÉ este ejercicio aquí"
         }
       ]
     }
   ],
-  "progresion_semanal": "string — cómo progresar cada semana",
-  "indicadores_mejora": ["string — métricas a seguir para ajuste dinámico"],
-  "ajuste_si_rpe_alto": "string — qué hacer si RPE > 8.5 dos semanas seguidas",
-  "ajuste_si_rpe_bajo": "string — qué hacer si RPE < 6 dos semanas seguidas"
+  "progresion_semanal": "string — modelo exacto de progresión (ej: +2 reps semana 2-3, +2.5kg semana 4)",
+  "semana_deload": "string — descripción de la semana de descarga (cuándo y cómo)",
+  "indicadores_mejora": ["métrica 1 medible en 4 semanas", "métrica 2", "métrica 3"],
+  "senales_ajuste_coach": {
+    "si_rpe_alto": "qué hacer si RPE > 8.5 dos semanas seguidas",
+    "si_rpe_bajo": "qué hacer si RPE < 6 dos semanas seguidas",
+    "proxima_revision_4_semanas": "qué evaluar específicamente en el check-in de 4 semanas"
+  }
 }`
 
     const response = await fetch(DEEPSEEK_BASE, {
@@ -191,8 +269,8 @@ ${evidenciasTexto}
           { role: 'user', content: promptUsuario },
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.3,
-        max_tokens: 4000,
+        temperature: 0.35,
+        max_tokens: 6000,
       }),
     })
 
