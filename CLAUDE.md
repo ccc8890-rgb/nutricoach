@@ -1,5 +1,38 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 24-05-2026 (Sesión 40) — Garmin Connect por cliente + GARMIN_CREDENTIALS_KEY
+
+### Qué se construyó
+
+Arquitectura completa para que cada cliente vincule su propia cuenta Garmin Connect usando sus credenciales personales, cifradas con AES-256-CBC.
+
+| Archivo | Cambio |
+|---------|--------|
+| `supabase/migrations/20260524_garmin_connect_perclient.sql` | CHECK ampliado para incluir `garmin_connect`; columna `credenciales_json TEXT` en `integraciones_cliente` |
+| `lib/integraciones/garmin-connect-perclient.ts` | `cifrarCredenciales()`, `descifrarCredenciales()`, `verificarCredencialesGarmin()`, `syncGarminClientDays()` |
+| `lib/integraciones/garmin-connect-sync.ts` | `syncGarminDay(date, gc?, displayName?)` — acepta cliente pre-autenticado opcional (per-client sync) o usa credenciales del coach (legacy) |
+| `app/api/integraciones/garmin-connect/route.ts` | **NUEVO** — POST: verifica login Garmin, cifra y guarda en BD. DELETE: borra integración |
+| `app/api/cron/sync-integraciones/route.ts` | Itera `integraciones_cliente` con `proveedor='garmin_connect'`, descifra credenciales, llama `syncGarminClientDays` por cliente |
+| `components/PortalCliente/IntegracionesPanel.tsx` | Form email+password cuando no vinculado; muestra "Sync automático" + botón Desconectar cuando activo |
+
+### Infraestructura
+
+- `GARMIN_CREDENTIALS_KEY` (64 hex chars) generada y añadida a `.env.local` + Vercel Production
+- Cifrado: AES-256-CBC, IV aleatorio por credencial, almacenado como `iv_hex:encrypted_hex`
+- Cron horario: sincroniza hoy+ayer para todos los clientes con garmin_connect activo
+
+### ⚠️ PENDIENTE MANUAL
+
+| # | Tarea | Cómo |
+|---|-------|------|
+| 🔴 | **Aplicar SQL migration** `20260524_garmin_connect_perclient.sql` en Supabase | Dashboard → SQL Editor → ejecutar el archivo |
+| 🟠 | **Google Fit**: crear proyecto en Google Cloud Console, habilitar Fitness API, crear OAuth credentials, añadir `GOOGLE_FIT_CLIENT_ID` + `GOOGLE_FIT_CLIENT_SECRET` a Vercel | El código está listo en `lib/integraciones/google-fit.ts` |
+
+### Commits sesión 40
+- `2028736` — feat: Garmin Connect por cliente + form credenciales en portal
+
+---
+
 ## ✅ SESIÓN 24-05-2026 (Sesión 39) — Panel wellness Garmin + normalizer garmin fields
 
 ### Qué se construyó
