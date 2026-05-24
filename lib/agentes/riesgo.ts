@@ -8,7 +8,7 @@ import { llamarGemini, cargarContextoCliente, guardarTareaAgente } from './execu
 import { createServiceSupabase } from '@/lib/supabase-server'
 import type { ContextoCliente, ResultadoAgente } from './types'
 
-const UMBRAL_RIESGO = 0.45  // >45% → genera alerta
+const UMBRAL_RIESGO = 0.35  // >35% → genera alerta (~7 días sin checkin)
 
 const SYSTEM_PROMPT = `Eres el agente de Riesgo de Abandono de NutriCoach.
 

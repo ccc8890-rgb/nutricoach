@@ -86,7 +86,7 @@ export async function obtenerResumenAgentes(): Promise<{
     db.from('agente_tareas').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente'),
     db.from('agente_tareas').select('*', { count: 'exact', head: true }).eq('estado', 'aprobado').gte('revisado_at', hoy),
     db.from('agente_tareas').select('*', { count: 'exact', head: true }).eq('estado', 'rechazado').gte('revisado_at', hoy),
-    db.from('cliente_perfil_aprendizaje').select('*', { count: 'exact', head: true }).gte('riesgo_abandono', 0.45),
+    db.from('cliente_perfil_aprendizaje').select('*', { count: 'exact', head: true }).gte('riesgo_abandono', 0.35),
   ])
 
   return {
