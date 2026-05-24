@@ -18,6 +18,7 @@
     "apify-client": "^2.23.2",
     "cloudinary": "^2.10.0",
     "framer-motion": "^12.38.0",
+    "garmin-connect": "^1.6.2",
     "geist": "^1.7.0",
     "lightningcss": "^1.32.0",
     "lucide-react": "^1.8.0",
