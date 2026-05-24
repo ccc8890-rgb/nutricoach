@@ -20,10 +20,22 @@ export async function GET(req: NextRequest) {
     const decoded = JSON.parse(Buffer.from(state, 'base64url').toString())
     clienteId = decoded.clienteId
   } catch {
-    return NextResponse.redirect(`${APP_URL}/cliente/integraciones?error=state_invalido`)
+    return NextResponse.redirect(`${APP_URL}/?error=state_invalido`)
   }
 
   const db = createServiceSupabase()
+
+  // Buscar codigo_publico del portal para redirigir de vuelta al cliente correcto
+  const { data: plan } = await db
+    .from('planes_nutricion')
+    .select('codigo_publico')
+    .eq('cliente_id', clienteId)
+    .eq('activo', true)
+    .single()
+  const portalUrl = plan?.codigo_publico
+    ? `${APP_URL}/cliente/${plan.codigo_publico}`
+    : `${APP_URL}/`
+
   try {
     const tokens = await stravaProvider.handleCallback(code, state)
     await db.from('integraciones_cliente').upsert(
@@ -43,8 +55,8 @@ export async function GET(req: NextRequest) {
     }
   } catch (err) {
     console.error('[strava-callback]', err)
-    return NextResponse.redirect(`${APP_URL}/cliente/integraciones?error=strava_error`)
+    return NextResponse.redirect(`${portalUrl}?error=strava_error`)
   }
 
-  return NextResponse.redirect(`${APP_URL}/cliente/integraciones?connected=strava`)
+  return NextResponse.redirect(`${portalUrl}?connected=strava`)
 }
