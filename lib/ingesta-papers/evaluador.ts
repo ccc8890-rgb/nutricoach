@@ -129,10 +129,48 @@ function scoreRelevancia(extraido: PaperExtraido): number {
   return Math.min(score, 5) // Máximo 5 puntos
 }
 
+function motivoExclusionDominio(extraido: PaperExtraido): string | null {
+  const texto = [
+    extraido.titulo,
+    extraido.abstract,
+    extraido.poblacion,
+    extraido.intervencion,
+    extraido.resultado_principal,
+    ...(extraido.keywords ?? []),
+  ].join(' ').toLowerCase()
+
+  const animales = [
+    'horse', 'horses', 'racehorse', 'racehorses', 'equine',
+    'rat', 'rats', 'mouse', 'mice', 'murine',
+  ]
+  if (animales.some(term => new RegExp(`\\b${term}\\b`, 'i').test(texto))) {
+    return 'Modelo animal o veterinario no aplicable al coaching humano.'
+  }
+
+  const poblacionesClinicasFueraScope = [
+    'cerebral palsy',
+    'autism spectrum',
+    'breast cancer',
+    'cancer survivors',
+    'stroke survivors',
+    'parkinson',
+    'multiple sclerosis',
+  ]
+  const condicionesPermitidas = extraido.condiciones_relacionadas.some(c =>
+    ['diabetes', 'hta', 'hipertension', 'dislipemia', 'higado_graso', 'obesidad', 'sarcopenia'].includes(c.toLowerCase())
+  )
+  if (!condicionesPermitidas && poblacionesClinicasFueraScope.some(term => texto.includes(term))) {
+    return 'Población clínica fuera del alcance principal de NutriCoach.'
+  }
+
+  return null
+}
+
 /**
  * Evalúa un paper extraído y devuelve el resultado con score.
  */
 export function evaluarPaper(extraido: PaperExtraido): PaperEvaluado {
+  const exclusionDominio = motivoExclusionDominio(extraido)
   const score_revista = scoreRevista(extraido.revista)
   const score_diseno = scoreDiseno(extraido.diseno_estudio)
   const score_muestra = scoreMuestra(extraido.tamano_muestral)
@@ -143,7 +181,10 @@ export function evaluarPaper(extraido: PaperExtraido): PaperEvaluado {
   let recomendacion: PaperEvaluado['recomendacion'] = 'descartar'
   let motivo_rechazo: string | undefined
 
-  if (score_total >= 7) {
+  if (exclusionDominio) {
+    recomendacion = 'descartar'
+    motivo_rechazo = exclusionDominio
+  } else if (score_total >= 7) {
     recomendacion = 'incluir'
   } else if (score_total >= 5) {
     recomendacion = 'revisar'
