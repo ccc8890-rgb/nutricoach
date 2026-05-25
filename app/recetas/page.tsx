@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, Search, BookOpen, Inbox, AlertTriangle, Sparkles, SlidersHorizontal } from 'lucide-react'
+import { Plus, Search, BookOpen, Inbox, AlertTriangle, Sparkles, SlidersHorizontal, ChefHat, PackageCheck, Trophy, Zap } from 'lucide-react'
 import { StaggerList, StaggerItem, FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, SUBCATEGORIAS, ALERGENOS_POSITIVOS, ALERGENOS_NEGATIVOS, DIETETICOS, normalizarReceta, normalizarIntolerancias, type RecetaNormalizada } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
@@ -71,8 +71,16 @@ type RecetaRow = {
   instrucciones?: string | null
   tags?: string[] | null
   objetivos?: string[] | null
+  deportes?: string[] | null
+  momentos?: string[] | null
   estilos?: string[] | null
   premium_chef?: boolean | null
+  batch_cooking?: boolean | null
+  tupper?: boolean | null
+  digestibilidad?: string | null
+  adherencia_score?: number | null
+  coste_estimado_nivel?: string | null
+  nivel_elaboracion?: number | null
   created_at?: string | null
   receta_ingredientes?: Array<{
     nombre_libre?: string | null
@@ -92,6 +100,7 @@ export default function RecetasPage() {
   const [tiempoPrep, setTiempoPrep] = useState<string | null>(null)
   const [intoleranciaFilter, setIntoleranciaFilter] = useState<string | null>(null)
   const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [curacionFilter, setCuracionFilter] = useState<string | null>(null)
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente')
   const [loading, setLoading] = useState(true)
   const [showFilterPanel, setShowFilterPanel] = useState(false)
@@ -112,7 +121,7 @@ export default function RecetasPage() {
 
         const { data, error } = await supabase
           .from('recetas')
-          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, objetivos, estilos, premium_chef, intolerancias, created_at, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, objetivos, deportes, momentos, estilos, premium_chef, batch_cooking, tupper, digestibilidad, adherencia_score, coste_estimado_nivel, nivel_elaboracion, intolerancias, created_at, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
           .or(`coach_id.eq.${user.id},coach_id.is.null`)
           .eq('estado', 'aprobada')
           .order('created_at', { ascending: false })
@@ -137,6 +146,11 @@ export default function RecetasPage() {
     load()
   }, [])
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('curacion') === 'chef') setCuracionFilter('chef')
+  }, [])
+
 
   const filtradas = useMemo(() => {
     return recetas.map(r => ({ ...r, ...normalizarReceta(r) })).filter(r => {
@@ -157,6 +171,13 @@ export default function RecetasPage() {
       // Cuando hay sub-tag activo, el tag es la clasificación real → ignorar categoría principal
       const matchCategoria = categoria === 'Todos' || tagFilter !== null || r.categoria === categoria
       const matchCoccion = metodoCoccion === 'Todos' || r.tipo_coccion === metodoCoccion
+      const matchCuracion = !curacionFilter
+        || (curacionFilter === 'chef' && (r.premium_chef || r.estilos?.includes('chef_healthy') || r.estilos?.includes('comfort_healthy') || r.estilos?.includes('gourmet_simple')))
+        || (curacionFilter === 'adherencia' && (r.adherencia_score ?? 0) >= 80)
+        || (curacionFilter === 'batch' && (r.batch_cooking || r.tupper || r.estilos?.includes('batch_cooking') || r.estilos?.includes('tupper')))
+        || (curacionFilter === 'prepost' && (r.momentos?.includes('pre_entreno') || r.momentos?.includes('post_entreno') || r.momentos?.includes('carga_cho')))
+        || (curacionFilter === 'endurance' && (r.deportes?.includes('running') || r.deportes?.includes('hyrox') || r.deportes?.includes('endurance') || r.deportes?.includes('triatlon') || r.deportes?.includes('ciclismo')))
+        || (curacionFilter === 'rapidas' && (((r.tiempo_prep_min ?? 0) + (r.tiempo_coccion_min ?? 0)) > 0 && ((r.tiempo_prep_min ?? 0) + (r.tiempo_coccion_min ?? 0)) <= 20))
 
       // Filtro rango kcal
       let matchKcal = true
@@ -198,7 +219,7 @@ export default function RecetasPage() {
           matchFecha = matchFecha && fechaReceta <= hasta
         }
       }
-      return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchKcal && matchTiempo && matchIntolerancia && matchFecha
+      return matchBusqueda && matchCategoria && matchCoccion && matchTag && matchCuracion && matchKcal && matchTiempo && matchIntolerancia && matchFecha
     })
       .sort((a, b) => {
         if (!a.created_at || !b.created_at) return 0
@@ -206,7 +227,7 @@ export default function RecetasPage() {
         const db = new Date(b.created_at).getTime()
         return orden === 'reciente' ? db - da : da - db
       })
-  }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter, filtroRapido])
+  }, [recetas, busqueda, categoria, metodoCoccion, fechaDesde, fechaHasta, tagFilter, curacionFilter, orden, rangoKcal, tiempoPrep, intoleranciaFilter, filtroRapido])
 
   // Sugerencias de tags que coinciden con la búsqueda actual
   const tagSugeridos = useMemo(() => {
@@ -250,12 +271,30 @@ export default function RecetasPage() {
 
   const activeFilterCount = [
     metodoCoccion !== 'Todos',
+    curacionFilter !== null,
     rangoKcal !== null,
     tiempoPrep !== null,
     intoleranciaFilter !== null,
     filtroRapido !== null,
     !!(fechaDesde || fechaHasta),
   ].filter(Boolean).length
+
+  const statsCuracion = useMemo(() => {
+    const chef = recetas.filter(r => r.premium_chef || r.estilos?.includes('chef_healthy') || r.estilos?.includes('comfort_healthy')).length
+    const batch = recetas.filter(r => r.batch_cooking || r.tupper || r.estilos?.includes('batch_cooking') || r.estilos?.includes('tupper')).length
+    const performance = recetas.filter(r => r.objetivos?.includes('rendimiento') || r.deportes?.some(d => ['running', 'hyrox', 'endurance', 'triatlon', 'ciclismo'].includes(d))).length
+    const altaAdherencia = recetas.filter(r => (r.adherencia_score ?? 0) >= 80).length
+    return { chef, batch, performance, altaAdherencia }
+  }, [recetas])
+
+  const filtrosCuracion = [
+    { id: 'chef', label: 'Chef healthy', detail: 'Atractivas', icon: ChefHat },
+    { id: 'adherencia', label: 'Alta adherencia', detail: 'Score 80+', icon: Sparkles },
+    { id: 'batch', label: 'Batch/tupper', detail: 'Semana real', icon: PackageCheck },
+    { id: 'prepost', label: 'Pre/Post', detail: 'Timing entreno', icon: Zap },
+    { id: 'endurance', label: 'Endurance/Hyrox', detail: 'Rendimiento', icon: Trophy },
+    { id: 'rapidas', label: 'Rápidas', detail: '≤20 min', icon: SlidersHorizontal },
+  ]
 
   return (
     <PageTransition>
@@ -304,6 +343,13 @@ export default function RecetasPage() {
                 >
                   <AlertTriangle size={13} /> Auditoría
                 </Link>
+                <Link href="/recetas/cobertura" className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                >
+                  <Sparkles size={13} /> Cobertura
+                </Link>
                 <Link href="/recetas/nueva"
                   className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200"
                   style={{ background: 'var(--accent)', color: '#ffffff' }}
@@ -313,6 +359,36 @@ export default function RecetasPage() {
                   <Plus size={15} /> Nueva
                 </Link>
               </div>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.08}>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { label: 'Chef healthy', value: statsCuracion.chef, icon: ChefHat },
+                { label: 'Alta adherencia', value: statsCuracion.altaAdherencia, icon: Sparkles },
+                { label: 'Batch/tupper', value: statsCuracion.batch, icon: PackageCheck },
+                { label: 'Rendimiento', value: statsCuracion.performance, icon: Trophy },
+              ].map(stat => {
+                const Icon = stat.icon
+                return (
+                  <div
+                    key={stat.label}
+                    className="rounded-2xl border px-4 py-3"
+                    style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
+                        <p className="mt-1 text-xl font-semibold tabular-nums" style={{ color: 'var(--text)' }}>{stat.value}</p>
+                      </div>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}>
+                        <Icon size={17} />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </FadeIn>
 
@@ -572,6 +648,7 @@ export default function RecetasPage() {
                         setRangoKcal(null)
                         setTiempoPrep(null)
                         setIntoleranciaFilter(null)
+                        setCuracionFilter(null)
                         setFechaDesde('')
                         setFechaHasta('')
                         setFiltroRapido(null)
@@ -600,6 +677,31 @@ export default function RecetasPage() {
               <option value="reciente">Más reciente</option>
               <option value="antiguo">Más antiguo</option>
             </select>
+          </div>
+
+          <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {filtrosCuracion.map(filter => {
+              const Icon = filter.icon
+              const active = curacionFilter === filter.id
+              return (
+                <button
+                  key={filter.id}
+                  onClick={() => setCuracionFilter(active ? null : filter.id)}
+                  className="flex items-center gap-3 rounded-2xl border p-3 text-left transition-all duration-150 active:scale-[0.98]"
+                  style={active
+                    ? { borderColor: 'rgba(163,230,53,0.48)', background: 'rgba(163,230,53,0.10)', color: '#A3E635' }
+                    : { borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" style={{ background: active ? 'rgba(163,230,53,0.14)' : 'var(--surface-hover)' }}>
+                    <Icon size={16} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xs font-semibold leading-tight">{filter.label}</span>
+                    <span className="mt-0.5 block text-[11px]" style={{ color: active ? '#A3E635' : 'var(--text-muted)' }}>{filter.detail}</span>
+                  </span>
+                </button>
+              )
+            })}
           </div>
 
           {/* Tipo de plato */}
@@ -727,7 +829,11 @@ export default function RecetasPage() {
                   grasas={r.grasas ?? 0}
                   premium_chef={r.premium_chef}
                   objetivos={r.objetivos}
+                  deportes={r.deportes}
+                  momentos={r.momentos}
                   estilos={r.estilos}
+                  adherencia_score={r.adherencia_score}
+                  digestibilidad={r.digestibilidad}
                 />
               ))}
             </div>

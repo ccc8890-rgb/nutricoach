@@ -16,6 +16,7 @@ import {
   Utensils,
   X,
 } from 'lucide-react'
+import { RECETA_CHEF_COLECCIONES, RECETA_LABELS } from '@/lib/recetario-taxonomia'
 
 type EstadoCobertura = 'cubierto' | 'medio' | 'bajo' | 'critico'
 
@@ -28,9 +29,16 @@ type CoverageItem = {
 }
 
 type Recomendacion = {
-  tipo: 'slot' | 'objetivo' | 'deporte'
+  tipo: 'slot' | 'objetivo' | 'deporte' | 'manual'
   clave: string
   faltan: number
+  cantidad?: number
+  objetivo?: string
+  deporte?: string
+  momento?: string
+  estilo?: string
+  titulo?: string
+  direccion?: string[]
 }
 
 type CoberturaResponse = {
@@ -48,44 +56,6 @@ type CoberturaResponse = {
     estilos: Record<string, number>
   }
   recomendacion: Recomendacion[]
-}
-
-const LABELS: Record<string, string> = {
-  desayuno: 'Desayuno',
-  media_manana: 'Media mañana',
-  comida: 'Comida',
-  merienda: 'Merienda',
-  cena: 'Cena',
-  pre_entreno: 'Pre-entreno',
-  post_entreno: 'Post-entreno',
-  intra_entreno: 'Intra-entreno',
-  descanso: 'Descanso',
-  refeed: 'Refeed',
-  tapering: 'Tapering',
-  carga_cho: 'Carga CHO',
-  perdida_grasa: 'Pérdida grasa',
-  recomposicion: 'Recomposición',
-  ganancia_muscular: 'Ganancia muscular',
-  mantenimiento: 'Mantenimiento',
-  rendimiento: 'Rendimiento',
-  salud_general: 'Salud general',
-  fuerza: 'Fuerza',
-  running: 'Running',
-  hyrox: 'Hyrox',
-  ciclismo: 'Ciclismo',
-  triatlon: 'Triatlón',
-  crossfit: 'CrossFit',
-  endurance: 'Endurance',
-  general: 'General',
-  funcional: 'Funcional',
-  chef_healthy: 'Chef healthy',
-  batch_cooking: 'Batch cooking',
-  tupper: 'Tupper',
-  mediterranea: 'Mediterránea',
-  alto_volumen: 'Alto volumen',
-  comfort_healthy: 'Comfort healthy',
-  rapida: 'Rápida',
-  gourmet_simple: 'Gourmet simple',
 }
 
 const ESTADO_STYLE: Record<EstadoCobertura, { label: string; bg: string; color: string; border: string }> = {
@@ -116,7 +86,7 @@ const ESTADO_STYLE: Record<EstadoCobertura, { label: string; bg: string; color: 
 }
 
 function label(clave: string) {
-  return LABELS[clave] ?? clave.replaceAll('_', ' ')
+  return RECETA_LABELS[clave] ?? clave.replaceAll('_', ' ')
 }
 
 function pct(actual: number, minimo: number) {
@@ -125,9 +95,12 @@ function pct(actual: number, minimo: number) {
 }
 
 function buildRecipeBrief(item: Recomendacion) {
-  const bloque = label(item.clave)
+  const bloque = item.titulo ?? label(item.clave)
   const tipo = item.tipo === 'slot' ? 'momento de comida' : item.tipo
-  const cantidad = Math.min(Math.max(item.faltan, 8), 20)
+  const cantidad = item.cantidad ?? Math.min(Math.max(item.faltan, 8), 20)
+  const direccionExtra = item.direccion?.length
+    ? item.direccion.map(line => `- ${line}`).join('\n')
+    : '- Crear recetas funcionales y versión chef healthy para cubrir adherencia, variedad y uso en planes IA.'
 
   return [
     `OBJETIVO: crear ${cantidad} recetas para cubrir el bloque "${bloque}" (${tipo}) en NutriCoach.`,
@@ -137,6 +110,7 @@ function buildRecipeBrief(item: Recomendacion) {
     '- Evitar estética de dieta hospitalaria o platos secos/restrictivos.',
     '- Reinterpretar comida normal en versión funcional: bowls, tacos, woks, burgers, crepes, tostas, pasta, wraps, curry, poke, comfort food ligero.',
     '- Priorizar adherencia: ingredientes reconocibles, montaje apetecible, sabores claros y preparación realista.',
+    direccionExtra,
     '',
     'REQUISITOS NUTRICIONALES:',
     '- Incluir kcal, proteína, carbohidratos, grasas, fibra y porción redondeada para cliente.',
@@ -312,6 +286,84 @@ function ProductionBrief({
   )
 }
 
+function ChefCollectionsPanel({ onSelect }: { onSelect: (item: Recomendacion) => void }) {
+  return (
+    <section className="rounded-2xl border p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <ChefHat size={18} style={{ color: 'var(--accent)' }} />
+            <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Líneas chef healthy</h2>
+          </div>
+          <p className="mt-1 max-w-3xl text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            Colecciones pensadas para diferenciar el recetario: platos atractivos, realistas y útiles para que la IA no genere dietas planas.
+          </p>
+        </div>
+        <Link
+          href="/recetas?curacion=chef"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold"
+          style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--bg)' }}
+        >
+          Ver chef healthy
+          <ArrowUpRight size={14} />
+        </Link>
+      </div>
+
+      <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        {RECETA_CHEF_COLECCIONES.map(collection => (
+          <article
+            key={collection.id}
+            className="flex min-h-[220px] flex-col justify-between rounded-2xl border p-4"
+            style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+          >
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+                {collection.subtitulo}
+              </p>
+              <h3 className="mt-2 text-base font-semibold leading-tight" style={{ color: 'var(--text)' }}>
+                {collection.titulo}
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                {collection.descripcion}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1">
+                {collection.tags.slice(0, 3).map(tag => (
+                  <span
+                    key={tag}
+                    className="rounded-full border px-2 py-0.5 text-[10px] font-semibold"
+                    style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={() => onSelect({
+                tipo: 'manual',
+                clave: collection.bloque,
+                faltan: collection.cantidad,
+                cantidad: collection.cantidad,
+                objetivo: collection.objetivo,
+                deporte: collection.deporte,
+                momento: collection.momento,
+                estilo: collection.estilo,
+                titulo: collection.titulo,
+                direccion: collection.direccion,
+              })}
+              className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-transform active:scale-[0.98]"
+              style={{ background: 'var(--text)', color: 'var(--bg)' }}
+            >
+              Preparar línea
+              <ArrowUpRight size={13} />
+            </button>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function BriefModal({
   item,
   onClose,
@@ -348,11 +400,11 @@ function BriefModal({
         body: JSON.stringify({
           bloque: item.clave,
           tipo: item.tipo,
-          cantidad: Math.min(Math.max(item.faltan, 4), 8),
-          objetivo: item.tipo === 'objetivo' ? item.clave : undefined,
-          deporte: item.tipo === 'deporte' ? item.clave : undefined,
-          momento: item.tipo === 'slot' ? item.clave : undefined,
-          estilo: 'chef_healthy',
+          cantidad: item.cantidad ?? Math.min(Math.max(item.faltan, 4), 8),
+          objetivo: item.objetivo ?? (item.tipo === 'objetivo' ? item.clave : undefined),
+          deporte: item.deporte ?? (item.tipo === 'deporte' ? item.clave : undefined),
+          momento: item.momento ?? (item.tipo === 'slot' ? item.clave : undefined),
+          estilo: item.estilo ?? 'chef_healthy',
           confirmar: true,
           proveedor: 'deepseek',
         }),
@@ -605,6 +657,8 @@ export default function CoberturaRecetarioPage() {
         </section>
 
         <ProductionBrief recomendacion={data.recomendacion} onSelect={setBriefItem} />
+
+        <ChefCollectionsPanel onSelect={setBriefItem} />
 
         <div className="grid gap-5 xl:grid-cols-3">
           <CoveragePanel

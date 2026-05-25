@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Clock, Users, Flame } from 'lucide-react'
+import { Clock, Users, Flame, Sparkles } from 'lucide-react'
 
 interface RecipeCardPremiumProps {
     id: string
@@ -17,7 +17,11 @@ interface RecipeCardPremiumProps {
     grasas?: number
     premium_chef?: boolean | null
     objetivos?: string[] | null
+    deportes?: string[] | null
+    momentos?: string[] | null
     estilos?: string[] | null
+    adherencia_score?: number | null
+    digestibilidad?: string | null
     className?: string
 }
 
@@ -28,6 +32,13 @@ const LABELS: Record<string, string> = {
     mantenimiento: 'Mantener',
     rendimiento: 'Rendimiento',
     salud_general: 'Salud',
+    running: 'Running',
+    hyrox: 'Hyrox',
+    endurance: 'Endurance',
+    post_entreno: 'Post',
+    pre_entreno: 'Pre',
+    batch_cooking: 'Batch',
+    tupper: 'Tupper',
     chef_healthy: 'Chef healthy',
     comfort_healthy: 'Comfort',
     gourmet_simple: 'Gourmet',
@@ -51,7 +62,11 @@ export function RecipeCardPremium({
     grasas = 0,
     premium_chef,
     objetivos,
+    deportes,
+    momentos,
     estilos,
+    adherencia_score,
+    digestibilidad,
     className = '',
 }: RecipeCardPremiumProps) {
     const [imgLoaded, setImgLoaded] = useState(false)
@@ -138,6 +153,20 @@ export function RecipeCardPremium({
                         Chef healthy
                     </span>
                 )}
+
+                {adherencia_score !== null && adherencia_score !== undefined && adherencia_score >= 80 && (
+                    <span
+                        className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                        style={{
+                            background: 'rgba(255,255,255,0.88)',
+                            color: '#1C1C1E',
+                            border: '1px solid rgba(255,255,255,0.34)',
+                        }}
+                    >
+                        <Sparkles size={11} />
+                        {adherencia_score}
+                    </span>
+                )}
             </div>
 
             {/* Info inferior — fuera de la imagen */}
@@ -186,17 +215,25 @@ export function RecipeCardPremium({
                     </div>
                 )}
 
-                {objetivos && objetivos.length > 0 && (
+                {(objetivos?.length || deportes?.length || momentos?.length || estilos?.length || digestibilidad) && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                        {objetivos.slice(0, 2).map(objetivo => (
+                        {[...(momentos ?? []), ...(deportes ?? []), ...(objetivos ?? []), ...(estilos ?? [])].slice(0, 3).map(item => (
                             <span
-                                key={objetivo}
+                                key={item}
                                 className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
                                 style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
                             >
-                                {LABELS[objetivo] ?? objetivo}
+                                {LABELS[item] ?? item}
                             </span>
                         ))}
+                        {digestibilidad && (
+                            <span
+                                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                style={{ background: 'rgba(34,197,94,0.10)', color: 'rgb(21,128,61)' }}
+                            >
+                                Digest. {digestibilidad}
+                            </span>
+                        )}
                     </div>
                 )}
             </div>

@@ -45,6 +45,146 @@ export const RECETA_ESTILOS = [
   'gourmet_simple',
 ] as const
 
+export const RECETA_LABELS: Record<string, string> = {
+  desayuno: 'Desayuno',
+  media_manana: 'Media mañana',
+  comida: 'Comida',
+  merienda: 'Merienda',
+  cena: 'Cena',
+  pre_entreno: 'Pre-entreno',
+  post_entreno: 'Post-entreno',
+  intra_entreno: 'Intra-entreno',
+  descanso: 'Descanso',
+  refeed: 'Refeed',
+  tapering: 'Tapering',
+  carga_cho: 'Carga CHO',
+  perdida_grasa: 'Pérdida grasa',
+  recomposicion: 'Recomposición',
+  ganancia_muscular: 'Ganancia muscular',
+  mantenimiento: 'Mantenimiento',
+  rendimiento: 'Rendimiento',
+  salud_general: 'Salud general',
+  fuerza: 'Fuerza',
+  running: 'Running',
+  hyrox: 'Hyrox',
+  ciclismo: 'Ciclismo',
+  triatlon: 'Triatlón',
+  crossfit: 'CrossFit',
+  endurance: 'Endurance',
+  general: 'General',
+  funcional: 'Funcional',
+  chef_healthy: 'Chef healthy',
+  batch_cooking: 'Batch cooking',
+  tupper: 'Tupper',
+  mediterranea: 'Mediterránea',
+  alto_volumen: 'Alto volumen',
+  comfort_healthy: 'Comfort healthy',
+  rapida: 'Rápida',
+  gourmet_simple: 'Gourmet simple',
+}
+
+export type RecetaChefColeccion = {
+  id: string
+  titulo: string
+  subtitulo: string
+  descripcion: string
+  bloque: string
+  objetivo?: string
+  deporte?: string
+  momento?: string
+  estilo: string
+  cantidad: number
+  tags: string[]
+  direccion: string[]
+}
+
+export const RECETA_CHEF_COLECCIONES: RecetaChefColeccion[] = [
+  {
+    id: 'comfort-healthy',
+    titulo: 'Comfort healthy',
+    subtitulo: 'Comida normal reinterpretada',
+    descripcion: 'Recetas que no parecen dieta: pasta, burgers, tacos, cremas, wraps y platos de cuchara con macros útiles.',
+    bloque: 'comfort healthy de alta adherencia',
+    objetivo: 'recomposicion',
+    estilo: 'comfort_healthy',
+    cantidad: 8,
+    tags: ['adherencia', 'vida real', 'antojos controlados'],
+    direccion: [
+      'Reinterpretar platos cotidianos sin que parezcan restrictivos.',
+      'Priorizar salsas ligeras, texturas crujientes y nombres apetecibles.',
+      'Mantener cantidades redondeadas y fáciles de pesar.',
+    ],
+  },
+  {
+    id: 'street-fit',
+    titulo: 'Street fit',
+    subtitulo: 'Tacos, kebab, pizza, burger',
+    descripcion: 'Platos sociales en versión funcional para fines de semana, cenas atractivas y clientes con baja adherencia.',
+    bloque: 'street food saludable',
+    objetivo: 'perdida_grasa',
+    estilo: 'chef_healthy',
+    cantidad: 8,
+    tags: ['social', 'cena', 'saciedad'],
+    direccion: [
+      'Inspirarse en street food, manteniendo digestibilidad y control calórico.',
+      'Evitar ultraprocesados como base, pero permitir atajos realistas.',
+      'Crear versiones que el cliente enseñaría con ganas.',
+    ],
+  },
+  {
+    id: 'performance-bowls',
+    titulo: 'Performance bowls',
+    subtitulo: 'Running, Hyrox y endurance',
+    descripcion: 'Bowls, arroces, noodles y platos post-entreno con carbohidratos útiles, proteína clara y digestibilidad media/alta.',
+    bloque: 'bowls de rendimiento',
+    objetivo: 'rendimiento',
+    deporte: 'endurance',
+    momento: 'post_entreno',
+    estilo: 'funcional',
+    cantidad: 8,
+    tags: ['post-entreno', 'carbohidratos', 'recuperación'],
+    direccion: [
+      'Priorizar carbohidrato útil y proteína suficiente.',
+      'Incluir opciones con arroz, patata, pasta, pan, fruta o legumbre bien tolerada.',
+      'Justificar brevemente por qué encaja tras sesiones exigentes.',
+    ],
+  },
+  {
+    id: 'batch-gourmet',
+    titulo: 'Batch gourmet',
+    subtitulo: 'Tupper sin tristeza',
+    descripcion: 'Recetas que aguantan nevera, recalientan bien y permiten preparar varias raciones sin perder atractivo.',
+    bloque: 'batch cooking gourmet',
+    objetivo: 'mantenimiento',
+    estilo: 'batch_cooking',
+    cantidad: 8,
+    tags: ['tupper', 'meal prep', 'semana laboral'],
+    direccion: [
+      'Diseñar recetas con buena conservación y salsas separables.',
+      'Indicar cómo guardar, recalentar y ajustar guarnición.',
+      'Evitar ensaladas acuosas o platos que se degraden rápido.',
+    ],
+  },
+  {
+    id: 'pre-race',
+    titulo: 'Pre-competición',
+    subtitulo: 'Digestivo y útil',
+    descripcion: 'Opciones simples para tapering, carga de carbohidratos y comidas previas a entrenos o carreras.',
+    bloque: 'pre competición y tapering',
+    objetivo: 'rendimiento',
+    deporte: 'running',
+    momento: 'pre_entreno',
+    estilo: 'rapida',
+    cantidad: 6,
+    tags: ['digestibilidad', 'tapering', 'carga CHO'],
+    direccion: [
+      'Priorizar digestibilidad y baja complejidad.',
+      'Evitar exceso de grasa y fibra en pre-entreno inmediato.',
+      'Incluir timing recomendado y variantes según tolerancia.',
+    ],
+  },
+]
+
 export const RECETA_SLOT_MINIMOS: Record<string, number> = {
   desayuno: 50,
   media_manana: 30,

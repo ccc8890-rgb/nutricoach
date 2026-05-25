@@ -3,47 +3,10 @@
 import {
   RECETA_DEPORTES,
   RECETA_ESTILOS,
+  RECETA_LABELS,
   RECETA_MOMENTOS,
   RECETA_OBJETIVOS,
 } from '@/lib/recetario-taxonomia'
-
-const LABELS: Record<string, string> = {
-  perdida_grasa: 'Pérdida grasa',
-  recomposicion: 'Recomposición',
-  ganancia_muscular: 'Ganancia muscular',
-  mantenimiento: 'Mantenimiento',
-  rendimiento: 'Rendimiento',
-  salud_general: 'Salud general',
-  fuerza: 'Fuerza',
-  running: 'Running',
-  hyrox: 'Hyrox',
-  ciclismo: 'Ciclismo',
-  triatlon: 'Triatlón',
-  crossfit: 'CrossFit',
-  endurance: 'Endurance',
-  general: 'General',
-  desayuno: 'Desayuno',
-  media_manana: 'Media mañana',
-  comida: 'Comida',
-  merienda: 'Merienda',
-  cena: 'Cena',
-  pre_entreno: 'Pre-entreno',
-  post_entreno: 'Post-entreno',
-  intra_entreno: 'Intra-entreno',
-  descanso: 'Descanso',
-  refeed: 'Refeed',
-  tapering: 'Tapering',
-  carga_cho: 'Carga CHO',
-  funcional: 'Funcional',
-  chef_healthy: 'Chef healthy',
-  batch_cooking: 'Batch cooking',
-  tupper: 'Tupper',
-  mediterranea: 'Mediterránea',
-  alto_volumen: 'Alto volumen',
-  comfort_healthy: 'Comfort healthy',
-  rapida: 'Rápida',
-  gourmet_simple: 'Gourmet simple',
-}
 
 type TaxonomiaReceta = {
   objetivos: string[]
@@ -115,7 +78,7 @@ function ChipGroup({
       <div className="flex flex-wrap gap-2">
         {items.map(item => (
           <Chip key={item} active={selected.includes(item)} onClick={() => onChange(toggle(selected, item))}>
-            {LABELS[item] ?? item}
+            {RECETA_LABELS[item] ?? item}
           </Chip>
         ))}
       </div>
