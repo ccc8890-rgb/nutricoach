@@ -1,9 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, AlertTriangle, Clock, Users, ChevronLeft, Euro, Copy, Check } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, AlertTriangle, Clock, Users, ChevronLeft, Euro, Copy, Check, UtensilsCrossed } from 'lucide-react'
 import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta, clasificarIntolerancia, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -100,6 +100,8 @@ function parsePasos(text: string | null | undefined): { number: number; content:
 
 export default function DetalleRecetaPage() {
   const { id } = useParams<{ id: string }>()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo') || '/recetas'
   const [receta, setReceta] = useState<RecetaDetalle | null>(null)
   const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
   const [loading, setLoading] = useState(true)
@@ -191,7 +193,7 @@ export default function DetalleRecetaPage() {
   if (!receta) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
       <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Receta no encontrada</p>
-      <Link href="/recetas" className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--accent)' }}>
+      <Link href={returnTo} className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--accent)' }}>
         <ChevronLeft size={16} /> Volver al recetario
       </Link>
     </div>
@@ -292,14 +294,14 @@ export default function DetalleRecetaPage() {
             className="w-full h-[30vh] min-h-[240px] flex items-center justify-center"
             style={{ background: 'linear-gradient(135deg, var(--accent-bg), var(--bg-subtle))' }}
           >
-            <span className="text-7xl">🥗</span>
+            <UtensilsCrossed size={56} style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
           </div>
         )}
 
         {/* Navegación flotante sobre la imagen */}
         <div className="absolute top-4 left-4 right-4 flex items-center gap-2 z-10">
           <Link
-            href="/recetas"
+            href={returnTo}
             className="flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200"
             style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}

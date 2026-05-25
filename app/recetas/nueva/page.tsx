@@ -8,6 +8,7 @@ import type { Alimento } from '@/types'
 import { CATEGORIAS, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
+import TaxonomiaRecetaPanel, { type TaxonomiaReceta } from '@/components/recetas/TaxonomiaRecetaPanel'
 
 interface Ingrediente {
   tempId: string
@@ -28,6 +29,21 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
   })
   const [intolerancias, setIntolerancias] = useState<string[]>([])
   const [tags, setTags] = useState<string[]>([])
+  const [taxonomia, setTaxonomia] = useState<TaxonomiaReceta>({
+    objetivos: [],
+    deportes: [],
+    momentos: [],
+    estilos: [],
+    premium_chef: false,
+    uso_personal: false,
+    batch_cooking: false,
+    tupper: false,
+    digestibilidad: '',
+    densidad_energetica: '',
+    nivel_elaboracion: 2,
+    adherencia_score: 70,
+    coste_estimado_nivel: '',
+  })
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([])
   const [ingredientes, setIngredientes] = useState<Ingrediente[]>([])
   const [imagenFile, setImagenFile] = useState<File | null>(null)
@@ -132,6 +148,21 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
       imagen_url, fuente: form.url_origen ? 'url' : 'manual', url_origen: form.url_origen || null,
       kcal: macrosTotales?.kcal ?? null, proteinas: macrosTotales?.proteinas ?? null,
       carbohidratos: macrosTotales?.carbohidratos ?? null, grasas: macrosTotales?.grasas ?? null, fibra: macrosTotales?.fibra ?? null,
+      objetivos: taxonomia.objetivos,
+      deportes: taxonomia.deportes,
+      momentos: taxonomia.momentos,
+      estilos: taxonomia.estilos,
+      premium_chef: taxonomia.premium_chef,
+      uso_personal: taxonomia.uso_personal,
+      batch_cooking: taxonomia.batch_cooking,
+      tupper: taxonomia.tupper,
+      digestibilidad: taxonomia.digestibilidad || null,
+      densidad_energetica: taxonomia.densidad_energetica || null,
+      nivel_elaboracion: taxonomia.nivel_elaboracion,
+      adherencia_score: taxonomia.adherencia_score,
+      coste_estimado_nivel: taxonomia.coste_estimado_nivel || null,
+      taxonomia_version: 2,
+      taxonomia_actualizada_at: new Date().toISOString(),
     }).select().single()
     if (error || !receta) {
       addToast({ type: 'error', title: 'Error', message: error?.message || 'No se pudo guardar la receta' })
@@ -238,6 +269,8 @@ function FormularioCompleto({ onVolver }: { onVolver: () => void }) {
           />
         </div>
       </div>
+
+      <TaxonomiaRecetaPanel value={taxonomia} onChange={setTaxonomia} />
 
       {/* Ingredientes */}
       <div className="card">

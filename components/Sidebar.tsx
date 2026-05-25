@@ -13,6 +13,7 @@ import {
   ChatCircleText,
   ChefHat,
   ClipboardText,
+  ChartPieSlice,
   Database,
   Flask,
   ForkKnife,
@@ -75,6 +76,7 @@ const ENTRENAMIENTO_ITEMS: NavItem[] = [
 
 const RECETARIO_ITEMS: NavItem[] = [
   { href: '/recetas', label: 'Biblioteca', icon: ChefHat },
+  { href: '/recetas/cobertura', label: 'Cobertura', icon: ChartPieSlice },
   { href: '/recetas/cola', label: 'Pendientes', icon: ClipboardText },
   { href: '/recetas/revisar', label: 'Revisión', icon: ListChecks },
 ]

@@ -11,6 +11,7 @@ import { CATEGORIAS, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constant
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
+import TaxonomiaRecetaPanel, { type TaxonomiaReceta } from '@/components/recetas/TaxonomiaRecetaPanel'
 
 interface Ingrediente {
     id?: string
@@ -44,6 +45,21 @@ export default function EditarRecetaPage() {
     })
     const [intolerancias, setIntolerancias] = useState<string[]>([])
     const [tags, setTags] = useState<string[]>([])
+    const [taxonomia, setTaxonomia] = useState<TaxonomiaReceta>({
+        objetivos: [],
+        deportes: [],
+        momentos: [],
+        estilos: [],
+        premium_chef: false,
+        uso_personal: false,
+        batch_cooking: false,
+        tupper: false,
+        digestibilidad: '',
+        densidad_energetica: '',
+        nivel_elaboracion: 2,
+        adherencia_score: 70,
+        coste_estimado_nivel: '',
+    })
     const [ingredientes, setIngredientes] = useState<Ingrediente[]>([])
     const [imagenFile, setImagenFile] = useState<File | null>(null)
     const [imagenPreview, setImagenPreview] = useState<string | null>(null)
@@ -86,6 +102,21 @@ export default function EditarRecetaPage() {
 
             setIntolerancias(receta.intolerancias ?? [])
             setTags(receta.tags ?? [])
+            setTaxonomia({
+                objetivos: receta.objetivos ?? [],
+                deportes: receta.deportes ?? [],
+                momentos: receta.momentos ?? [],
+                estilos: receta.estilos ?? [],
+                premium_chef: Boolean(receta.premium_chef),
+                uso_personal: Boolean(receta.uso_personal),
+                batch_cooking: Boolean(receta.batch_cooking),
+                tupper: Boolean(receta.tupper),
+                digestibilidad: receta.digestibilidad ?? '',
+                densidad_energetica: receta.densidad_energetica ?? '',
+                nivel_elaboracion: receta.nivel_elaboracion ?? 2,
+                adherencia_score: receta.adherencia_score ?? 70,
+                coste_estimado_nivel: receta.coste_estimado_nivel ?? '',
+            })
             setImagenExistente(receta.imagen_url ?? '')
             setImagenUrlExterna(receta.imagen_url ?? '')
 
@@ -222,6 +253,21 @@ export default function EditarRecetaPage() {
             carbohidratos: macrosTotales?.carbohidratos ?? null,
             grasas: macrosTotales?.grasas ?? null,
             fibra: macrosTotales?.fibra ?? null,
+            objetivos: taxonomia.objetivos,
+            deportes: taxonomia.deportes,
+            momentos: taxonomia.momentos,
+            estilos: taxonomia.estilos,
+            premium_chef: taxonomia.premium_chef,
+            uso_personal: taxonomia.uso_personal,
+            batch_cooking: taxonomia.batch_cooking,
+            tupper: taxonomia.tupper,
+            digestibilidad: taxonomia.digestibilidad || null,
+            densidad_energetica: taxonomia.densidad_energetica || null,
+            nivel_elaboracion: taxonomia.nivel_elaboracion,
+            adherencia_score: taxonomia.adherencia_score,
+            coste_estimado_nivel: taxonomia.coste_estimado_nivel || null,
+            taxonomia_version: 2,
+            taxonomia_actualizada_at: new Date().toISOString(),
         }).eq('id', id)
 
         if (error) { addToast({ type: 'error', title: 'Error', message: error.message || 'No se pudieron guardar los cambios' }); setGuardando(false); return }
@@ -423,6 +469,10 @@ export default function EditarRecetaPage() {
                                 <input className="input" placeholder="https://..." value={form.url_origen} onChange={e => setForm(p => ({ ...p, url_origen: e.target.value }))} />
                             </div>
                         </div>
+                    </FadeIn>
+
+                    <FadeIn delay={0.12}>
+                        <TaxonomiaRecetaPanel value={taxonomia} onChange={setTaxonomia} />
                     </FadeIn>
 
                     {/* Ingredientes */}

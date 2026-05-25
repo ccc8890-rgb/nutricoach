@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { inferirMomentoDesdeTipo, scoreRecetaParaAgente } from '@/lib/recetario-taxonomia'
 
 // Mapeo: restricción del onboarding → alérgenos EU que la receta NO debe contener
 // Modelo positivo: excluimos recetas donde intolerancias SOLAPA con los alérgenos del cliente
@@ -21,8 +22,13 @@ export async function GET(request: NextRequest) {
     const limite = Math.min(parseInt(searchParams.get('limite') ?? '3'), 7)
     const tipo_plato = searchParams.get('tipo_plato') ?? null
     const cliente_id = searchParams.get('cliente_id') ?? null
+    const qText = searchParams.get('q')?.trim() ?? ''
+    const objetivo = searchParams.get('objetivo') ?? null
+    const deporte = searchParams.get('deporte') ?? null
+    const momento = searchParams.get('momento') ?? inferirMomentoDesdeTipo(tipo_plato)
+    const preferirChefHealthy = searchParams.get('chef') === '1'
 
-    if (kcal <= 0) return NextResponse.json({ recetas: [] })
+    if (kcal <= 0 && !qText) return NextResponse.json({ recetas: [] })
 
     const tolerancia = 0.35  // ±35%
     const db = createServiceSupabase()
@@ -43,19 +49,34 @@ export async function GET(request: NextRequest) {
         }
     }
 
-    const buildQuery = (extraFilters?: { tipos?: string[]; excludeIds?: string[] }) => {
+    const buildQuery = (extraFilters?: { tipos?: string[]; excludeIds?: string[]; relaxedMacros?: boolean }) => {
         let q = db
             .from('recetas')
-            .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min')
+            .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min, score_calidad, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score')
             .eq('estado', 'aprobada')
-            .gte('kcal', Math.round(kcal * (1 - tolerancia)))
-            .lte('kcal', Math.round(kcal * (1 + tolerancia)))
-            .gte('proteinas', Math.round(proteinas * (1 - tolerancia)))
             .order('kcal', { ascending: true })
             .limit(extraFilters?.excludeIds ? limite * 2 : limite * 4)
 
+        if (!extraFilters?.relaxedMacros && kcal > 0) {
+            q = q
+                .gte('kcal', Math.round(kcal * (1 - tolerancia)))
+                .lte('kcal', Math.round(kcal * (1 + tolerancia)))
+                .gte('proteinas', Math.round(proteinas * (1 - tolerancia)))
+        }
+        if (qText) {
+            q = q.ilike('nombre', `%${qText}%`)
+        }
         if (extraFilters?.tipos?.length) {
             q = q.in('tipo_plato', extraFilters.tipos)
+        }
+        if (objetivo) {
+            q = q.or(`objetivos.cs.{${objetivo}},objetivos.eq.{}`)
+        }
+        if (deporte) {
+            q = q.or(`deportes.cs.{${deporte}},deportes.cs.{general},deportes.eq.{}`)
+        }
+        if (momento) {
+            q = q.or(`momentos.cs.{${momento}},momentos.eq.{}`)
         }
         if (extraFilters?.excludeIds?.length) {
             q = q.not('id', 'in', `(${extraFilters.excludeIds.join(',')})`)
@@ -92,18 +113,38 @@ export async function GET(request: NextRequest) {
         pool = [...pool, ...(sinFiltro ?? [])]
     }
 
+    if (qText && pool.length < limite) {
+        const fallbackQuery = buildQuery({
+            relaxedMacros: true,
+            excludeIds: pool.length ? pool.map(r => r.id) : undefined,
+        })
+        const { data: sinMacros } = await fallbackQuery
+        pool = [...pool, ...(sinMacros ?? [])]
+    }
+
     if (!pool.length) return NextResponse.json({ recetas: [] })
 
-    // Ordenar por distancia euclidiana a los macros objetivo
+    // Ordenar por score compuesto: macros + taxonomía + adherencia + calidad.
     const sorted = pool
         .map(r => ({
             ...r,
-            _dist: Math.abs(r.kcal - kcal) / kcal + Math.abs((r.proteinas ?? 0) - proteinas) / (proteinas || 1)
+            _dist: kcal > 0
+                ? Math.abs(r.kcal - kcal) / kcal + Math.abs((r.proteinas ?? 0) - proteinas) / (proteinas || 1)
+                : Math.abs((r.proteinas ?? 0) - proteinas),
+            _agent_score: scoreRecetaParaAgente(r, {
+                objetivo,
+                deporte,
+                momento,
+                targetKcal: kcal,
+                targetProteinas: proteinas,
+                preferirChefHealthy,
+            }),
         }))
-        .sort((a, b) => a._dist - b._dist)
+        .sort((a, b) => b._agent_score - a._agent_score || a._dist - b._dist)
         .slice(0, limite)
-        .map(({ _dist, ...r }) => {
+        .map(({ _dist, _agent_score, ...r }) => {
             void _dist
+            void _agent_score
             return r
         })
 

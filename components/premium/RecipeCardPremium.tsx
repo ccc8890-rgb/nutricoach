@@ -15,7 +15,22 @@ interface RecipeCardPremiumProps {
     proteinas?: number
     carbohidratos?: number
     grasas?: number
+    premium_chef?: boolean | null
+    objetivos?: string[] | null
+    estilos?: string[] | null
     className?: string
+}
+
+const LABELS: Record<string, string> = {
+    perdida_grasa: 'Pérdida grasa',
+    recomposicion: 'Recomposición',
+    ganancia_muscular: 'Ganancia',
+    mantenimiento: 'Mantener',
+    rendimiento: 'Rendimiento',
+    salud_general: 'Salud',
+    chef_healthy: 'Chef healthy',
+    comfort_healthy: 'Comfort',
+    gourmet_simple: 'Gourmet',
 }
 
 /**
@@ -34,6 +49,9 @@ export function RecipeCardPremium({
     proteinas = 0,
     carbohidratos = 0,
     grasas = 0,
+    premium_chef,
+    objetivos,
+    estilos,
     className = '',
 }: RecipeCardPremiumProps) {
     const [imgLoaded, setImgLoaded] = useState(false)
@@ -107,6 +125,19 @@ export function RecipeCardPremium({
                         {categoria}
                     </span>
                 )}
+
+                {(premium_chef || estilos?.includes('chef_healthy')) && (
+                    <span
+                        className="absolute right-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                        style={{
+                            background: 'rgba(255,255,255,0.88)',
+                            color: '#1C1C1E',
+                            border: '1px solid rgba(255,255,255,0.34)',
+                        }}
+                    >
+                        Chef healthy
+                    </span>
+                )}
             </div>
 
             {/* Info inferior — fuera de la imagen */}
@@ -152,6 +183,20 @@ export function RecipeCardPremium({
                         <MacroMini value={proteinas} max={60} color="var(--macro-protein)" label="P" />
                         <MacroMini value={carbohidratos} max={100} color="var(--macro-carbs)" label="C" />
                         <MacroMini value={grasas} max={40} color="var(--macro-fat)" label="G" />
+                    </div>
+                )}
+
+                {objetivos && objetivos.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                        {objetivos.slice(0, 2).map(objetivo => (
+                            <span
+                                key={objetivo}
+                                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                            >
+                                {LABELS[objetivo] ?? objetivo}
+                            </span>
+                        ))}
                     </div>
                 )}
             </div>
