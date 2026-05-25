@@ -46,6 +46,7 @@ const ARGS = process.argv.slice(2)
 const MODO_JSON = ARGS.includes('--json')
 const TODAS = ARGS.includes('--todas')
 const LIMITE = TODAS ? 9999 : (parseInt(ARGS.find(a => a.startsWith('--limite='))?.split('=')[1]) || 50)
+const ESTADO = ARGS.find(a => a.startsWith('--estado='))?.split('=')[1] || 'aprobada'
 
 // ── Sinónimos validados (match correcto aunque las palabras difieran) ────────
 // Aprendidos de auditoría 14-05-2026 y sesiones previas
@@ -195,7 +196,7 @@ const ESPECIAS_MULTI = ['nuez moscada', 'chile en polvo', 'pimiento rojo seco']
 const NO_ESPECIA_PRIMERA_PALABRA = new Set([
   'yogur', 'yogurt', 'kefir', 'leche', 'queso', 'proteina', 'batido',
   'cereales', 'granola', 'barrita', 'helado', 'mousse',
-  'salsa', 'mantequilla', 'manteca', 'overnight',
+  'salsa', 'mantequilla', 'manteca', 'overnight', 'hummus',
 ])
 
 // Palabras ancla de alimento complejo — si aparecen EN CUALQUIER LUGAR del nombre
@@ -309,7 +310,7 @@ function checkCantidadSospechosa(nombre, gramos) {
     'condimento', 'bagel', 'goma xantana', 'xantana',
     'sazonador',   // mezcla de especias en sobre/bote → siempre pequeña cantidad
     'concentrado', // concentrado de tomate/caldo → 1-15g es normal
-    'mezcla de especias',
+    'mezcla de especias', 'semillas', 'sesamo', 'sésamo',
   ].some(k => n2.includes(k))
   if (!esEspecia(nombre) && !esFormatoMinimo && gramos < 5 && gramos > 0) {
     return `cantidad muy pequeña (${gramos}g — ¿error de extracción?)`
@@ -365,19 +366,22 @@ async function main() {
   }
 
   // Cargar recetas con ingredientes
-  const { data: recetas, error } = await sb
+  let query = sb
     .from('recetas')
     .select(`
       id, nombre, tipo_plato, kcal, porciones, imagen_url,
       instrucciones, descripcion, intolerancias, estado,
-      receta_ingredientes (
+      receta_ingredientes!receta_ingredientes_receta_id_fkey (
         id, nombre_libre, cantidad_gramos,
         alimentos ( id, nombre, calorias )
       )
     `)
-    .eq('estado', 'aprobada')
     .order('created_at', { ascending: false })
     .limit(LIMITE)
+
+  if (ESTADO !== 'todas') query = query.eq('estado', ESTADO)
+
+  const { data: recetas, error } = await query
 
   if (error) { console.error('Error:', error.message); process.exit(1) }
 

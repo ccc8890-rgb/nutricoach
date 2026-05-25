@@ -85,6 +85,56 @@ function diaComida(comida: Pick<ComidaLocal, 'dia_semana'>) {
   return comida.dia_semana || DIA_DEFAULT
 }
 
+function macroStatus(value: number, target?: number | null) {
+  const t = Number(target ?? 0)
+  if (t <= 0) return { pct: 0, delta: 0, label: 'sin objetivo', tone: 'neutral' as const }
+  const delta = Math.round(value - t)
+  const pct = Math.round((value / t) * 100)
+  const abs = Math.abs(delta)
+  const unit = t > 999 ? 'kcal' : 'g'
+  const tolerance = Math.max(5, t * 0.05)
+  return {
+    pct,
+    delta,
+    label: abs <= tolerance ? 'en rango' : `${abs}${unit} ${delta > 0 ? 'sobre' : 'faltan'}`,
+    tone: abs <= tolerance ? 'ok' as const : delta > 0 ? 'over' as const : 'under' as const,
+  }
+}
+
+function MacroDial({ label, value, target, color, icon: Icon, unit }: {
+  label: string
+  value: number
+  target?: number | null
+  color: string
+  icon: ElementType
+  unit: 'kcal' | 'g'
+}) {
+  const s = macroStatus(value, target)
+  const pctCapped = Math.min(Math.max(s.pct, 0), 125)
+  const barWidth = Math.min(pctCapped, 100)
+  const toneColor = s.tone === 'ok' ? '#10B981' : s.tone === 'over' ? '#F59E0B' : s.tone === 'under' ? '#64748B' : 'var(--text-muted)'
+  return (
+    <div className="rounded-2xl p-3" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Icon size={14} style={{ color }} />
+          <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{label}</span>
+        </div>
+        <span className="text-[11px] font-semibold tabular-nums" style={{ color: toneColor }}>{s.pct || '—'}%</span>
+      </div>
+      <div className="flex items-baseline gap-1">
+        <span className="text-xl font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(value)}</span>
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{unit}</span>
+        {target ? <span className="text-xs ml-auto tabular-nums" style={{ color: 'var(--text-muted)' }}>/ {Math.round(target)}</span> : null}
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden mt-2" style={{ background: 'var(--border)' }}>
+        <div className="h-full rounded-full transition-all" style={{ width: `${barWidth}%`, background: color }} />
+      </div>
+      <p className="text-[11px] mt-1.5 truncate" style={{ color: toneColor }}>{s.label}</p>
+    </div>
+  )
+}
+
 export default function EditarDietaPage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
@@ -620,56 +670,6 @@ export default function EditarDietaPage() {
     proteinas: plan?.proteinas_objetivo ?? 0,
     carbohidratos: plan?.carbohidratos_objetivo ?? 0,
     grasas: plan?.grasas_objetivo ?? 0,
-  }
-
-  function macroStatus(value: number, target?: number | null) {
-    const t = Number(target ?? 0)
-    if (t <= 0) return { pct: 0, delta: 0, label: 'sin objetivo', tone: 'neutral' as const }
-    const delta = Math.round(value - t)
-    const pct = Math.round((value / t) * 100)
-    const abs = Math.abs(delta)
-    const unit = t > 999 ? 'kcal' : 'g'
-    const tolerance = Math.max(5, t * 0.05)
-    return {
-      pct,
-      delta,
-      label: abs <= tolerance ? 'en rango' : `${abs}${unit} ${delta > 0 ? 'sobre' : 'faltan'}`,
-      tone: abs <= tolerance ? 'ok' as const : delta > 0 ? 'over' as const : 'under' as const,
-    }
-  }
-
-  function MacroDial({ label, value, target, color, icon: Icon, unit }: {
-    label: string
-    value: number
-    target?: number | null
-    color: string
-    icon: ElementType
-    unit: 'kcal' | 'g'
-  }) {
-    const s = macroStatus(value, target)
-    const pctCapped = Math.min(Math.max(s.pct, 0), 125)
-    const barWidth = Math.min(pctCapped, 100)
-    const toneColor = s.tone === 'ok' ? '#10B981' : s.tone === 'over' ? '#F59E0B' : s.tone === 'under' ? '#64748B' : 'var(--text-muted)'
-    return (
-      <div className="rounded-2xl p-3" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Icon size={14} style={{ color }} />
-            <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{label}</span>
-          </div>
-          <span className="text-[11px] font-semibold tabular-nums" style={{ color: toneColor }}>{s.pct || '—'}%</span>
-        </div>
-        <div className="flex items-baseline gap-1">
-          <span className="text-xl font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(value)}</span>
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{unit}</span>
-          {target ? <span className="text-xs ml-auto tabular-nums" style={{ color: 'var(--text-muted)' }}>/ {Math.round(target)}</span> : null}
-        </div>
-        <div className="h-1.5 rounded-full overflow-hidden mt-2" style={{ background: 'var(--border)' }}>
-          <div className="h-full rounded-full transition-all" style={{ width: `${barWidth}%`, background: color }} />
-        </div>
-        <p className="text-[11px] mt-1.5 truncate" style={{ color: toneColor }}>{s.label}</p>
-      </div>
-    )
   }
 
   if (loading) return <div className="flex justify-center py-16"><div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" /></div>

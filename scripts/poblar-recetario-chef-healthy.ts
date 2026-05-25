@@ -176,6 +176,35 @@ function normalizarTipoPlato(tipoPlato: string | null, categoria: string | null,
   return 'Comida'
 }
 
+function formatearInstrucciones(instrucciones: string | null) {
+  if (!instrucciones) return instrucciones
+  return instrucciones
+    .replace(/\s+(\d+[\.)]\s+)/g, '\n$1')
+    .replace(/^\n+/, '')
+    .trim()
+}
+
+function inferirIntolerancias(receta: RecetaImportable) {
+  const texto = `${receta.nombre} ${receta.descripcion ?? ''} ${receta.ingredientes.map(i => i.nombre_libre).join(' ')}`.toLowerCase()
+  const tags = new Set<string>()
+
+  const tieneGluten = /\b(trigo|pan|tortilla|wrap|pasta|cuscus|couscous|harina|seitan|seitán|cebada|centeno|bulgur|pan rallado)\b/.test(texto)
+  const tieneLactosa = /\b(yogur|yogurt|leche|queso|nata|mantequilla|kefir|kéfir|mozzarella|parmesano|ricotta)\b/.test(texto)
+  const tieneHuevo = /\b(huevo|claras|yema)\b/.test(texto)
+  const tienePescadoOMarisco = /\b(salmon|salmón|atun|atún|merluza|bacalao|gamba|langostino|sepia|pulpo|rape|dorada|lubina)\b/.test(texto)
+  const tieneCarne = /\b(pollo|pavo|ternera|cerdo|jamon|jamón|lomo|carne|bacon|beicon)\b/.test(texto)
+  const tieneFrutosSecos = /\b(almendra|nuez|nueces|avellana|pistacho|cacahuete|anacardo|tahini|sesamo|sésamo)\b/.test(texto)
+
+  if (!tieneGluten) tags.add('Sin Gluten')
+  if (!tieneLactosa) tags.add('Sin Lactosa')
+  if (!tieneHuevo) tags.add('Sin Huevo')
+  if (!tieneFrutosSecos) tags.add('Sin Frutos Secos')
+  if (!tieneCarne && !tienePescadoOMarisco) tags.add('Vegetariano')
+  if (!tieneCarne && !tienePescadoOMarisco && !tieneLactosa && !tieneHuevo) tags.add('Vegano')
+
+  return [...tags]
+}
+
 async function insertarReceta(receta: RecetaImportable, coachId: string, collectionId: string) {
   const existente = await recetaExiste(receta.nombre, coachId)
   if (existente) {
@@ -194,6 +223,8 @@ async function insertarReceta(receta: RecetaImportable, coachId: string, collect
     .from('recetas')
     .insert({
       ...recetaBase,
+      instrucciones: formatearInstrucciones(receta.instrucciones),
+      intolerancias: inferirIntolerancias(receta),
       tipo_plato: normalizarTipoPlato(receta.tipo_plato, receta.categoria, collectionId),
       tags: [...new Set([...tags, 'chef_healthy_batch', collectionId])],
       coach_id: coachId,

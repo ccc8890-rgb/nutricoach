@@ -773,7 +773,7 @@ export default function RevisarPlanPage() {
           {plan.notas_cliente && (
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm mb-3">
               <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1">💬 Mensaje sugerido al cliente</p>
-              <p className="text-blue-900 dark:text-blue-100 italic">"{plan.notas_cliente}"</p>
+              <p className="text-blue-900 dark:text-blue-100 italic">&ldquo;{plan.notas_cliente}&rdquo;</p>
             </div>
           )}
 
