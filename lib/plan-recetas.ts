@@ -107,7 +107,7 @@ export async function filtrarRecetasPorSlot(
 
   let query = supabase
     .from('recetas')
-    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad')
+    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, recipe_intelligence_score, macro_flex_score, planning_roles, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad')
     .eq('estado', 'aprobada')
     .gt('kcal', 0)
     .in('categoria', categorias)
@@ -196,7 +196,9 @@ export async function filtrarRecetasPorSlot(
     const rec = r as Record<string, unknown>
 
     // ── Componente 1: calidad de receta (25%) ─────────────────
-    const scoreNorm = (r.score_calidad ?? 60) / 100
+    const scoreNorm = ((rec.recipe_intelligence_score as number | undefined) ?? r.score_calidad ?? 60) / 100
+    const macroFlexScore = ((rec.macro_flex_score as number | undefined) ?? 55) / 100
+    const planningRoles = new Set((rec.planning_roles as string[] | undefined) ?? [])
 
     // ── Componente 2: proximidad macro objetivo (20%) ─────────
     const dist = distanciaEuclidiana(r.kcal, r.proteinas ?? 0, targetKcal, targetProt)
@@ -247,16 +249,18 @@ export async function filtrarRecetasPorSlot(
         alineacionPerfil * 0.30 +
         novedadScore   * 0.10 +
         Math.max(aptaMatch, objetivoTaxonomia) * 0.10 +
-        adherenciaScore * 0.04 +
-        chefHealthyScore * 0.01
+        adherenciaScore * 0.03 +
+        macroFlexScore * 0.015 +
+        (planningRoles.has('portion_scalable') ? 1 : 0.4) * 0.005
     } else {
       // Legacy weights (sin datos de perfil)
       sortScore =
         scoreNorm * 0.30 +
         Math.max(aptaMatch, objetivoTaxonomia) * 0.30 +
         (1 - distNorm) * 0.25 +
-        adherenciaScore * 0.10 +
-        chefHealthyScore * 0.05
+        adherenciaScore * 0.08 +
+        macroFlexScore * 0.04 +
+        chefHealthyScore * 0.03
     }
 
     return { ...r, _dist: dist, _sort_score: sortScore }

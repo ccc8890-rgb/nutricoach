@@ -79,6 +79,10 @@ type RecetaRow = {
   tupper?: boolean | null
   digestibilidad?: string | null
   adherencia_score?: number | null
+  recipe_intelligence_score?: number | null
+  recipe_intelligence_tier?: string | null
+  macro_flex_score?: number | null
+  planning_roles?: string[] | null
   coste_estimado_nivel?: string | null
   nivel_elaboracion?: number | null
   created_at?: string | null
@@ -121,7 +125,7 @@ export default function RecetasPage() {
 
         const { data, error } = await supabase
           .from('recetas')
-          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, objetivos, deportes, momentos, estilos, premium_chef, batch_cooking, tupper, digestibilidad, adherencia_score, coste_estimado_nivel, nivel_elaboracion, intolerancias, created_at, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+          .select('id, nombre, descripcion, imagen_url, categoria, tipo_coccion, dificultad, porciones, descripcion_porcion, tiempo_prep_min, tiempo_coccion_min, kcal, proteinas, carbohidratos, grasas, url_origen, tipo_plato, estado, tags, objetivos, deportes, momentos, estilos, premium_chef, batch_cooking, tupper, digestibilidad, adherencia_score, recipe_intelligence_score, recipe_intelligence_tier, macro_flex_score, planning_roles, coste_estimado_nivel, nivel_elaboracion, intolerancias, created_at, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
           .or(`coach_id.eq.${user.id},coach_id.is.null`)
           .eq('estado', 'aprobada')
           .order('created_at', { ascending: false })
@@ -833,6 +837,10 @@ export default function RecetasPage() {
                   momentos={r.momentos}
                   estilos={r.estilos}
                   adherencia_score={r.adherencia_score}
+                  recipe_intelligence_score={r.recipe_intelligence_score}
+                  recipe_intelligence_tier={r.recipe_intelligence_tier}
+                  macro_flex_score={r.macro_flex_score}
+                  planning_roles={r.planning_roles}
                   digestibilidad={r.digestibilidad}
                 />
               ))}

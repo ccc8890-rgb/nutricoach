@@ -21,6 +21,10 @@ interface RecipeCardPremiumProps {
     momentos?: string[] | null
     estilos?: string[] | null
     adherencia_score?: number | null
+    recipe_intelligence_score?: number | null
+    recipe_intelligence_tier?: string | null
+    macro_flex_score?: number | null
+    planning_roles?: string[] | null
     digestibilidad?: string | null
     className?: string
 }
@@ -66,6 +70,10 @@ export function RecipeCardPremium({
     momentos,
     estilos,
     adherencia_score,
+    recipe_intelligence_score,
+    recipe_intelligence_tier,
+    macro_flex_score,
+    planning_roles,
     digestibilidad,
     className = '',
 }: RecipeCardPremiumProps) {
@@ -167,6 +175,19 @@ export function RecipeCardPremium({
                         {adherencia_score}
                     </span>
                 )}
+
+                {recipe_intelligence_score !== null && recipe_intelligence_score !== undefined && recipe_intelligence_score >= 70 && (
+                    <span
+                        className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                        style={{
+                            background: recipe_intelligence_tier === 'elite' ? 'rgba(16,185,129,0.92)' : 'rgba(15,23,42,0.78)',
+                            color: '#FFFFFF',
+                            border: '1px solid rgba(255,255,255,0.22)',
+                        }}
+                    >
+                        IQ {recipe_intelligence_score}
+                    </span>
+                )}
             </div>
 
             {/* Info inferior — fuera de la imagen */}
@@ -226,6 +247,22 @@ export function RecipeCardPremium({
                                 {LABELS[item] ?? item}
                             </span>
                         ))}
+                        {macro_flex_score !== null && macro_flex_score !== undefined && macro_flex_score >= 75 && (
+                            <span
+                                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                style={{ background: 'rgba(14,165,233,0.12)', color: 'rgb(2,132,199)' }}
+                            >
+                                Ajustable
+                            </span>
+                        )}
+                        {planning_roles?.includes('performance_fuel') && (
+                            <span
+                                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                style={{ background: 'rgba(249,115,22,0.12)', color: 'rgb(194,65,12)' }}
+                            >
+                                Performance
+                            </span>
+                        )}
                         {digestibilidad && (
                             <span
                                 className="rounded-full px-2 py-0.5 text-[10px] font-semibold"

@@ -11,6 +11,7 @@ import {
 } from '../lib/recetas/generacion-lote'
 import { normalizarRecetasGeneradas, type RecetaImportable } from '../lib/recetas/importar-lote'
 import { construirPromptImagenReceta, inferirPresetImagenReceta } from '../lib/recetas/imagen-prompts'
+import { calcularRecipeIntelligence } from '../lib/recetas/intelligence'
 import { RECETA_CHEF_COLECCIONES } from '../lib/recetario-taxonomia'
 
 dotenv.config({ path: resolve(process.cwd(), '.env.local') })
@@ -210,6 +211,7 @@ async function insertarReceta(receta: RecetaImportable, coachId: string, collect
   if (existente) {
     if (!(await recetaTieneIngredientes(existente)) && receta.ingredientes.length) {
       await insertarIngredientes(existente, receta)
+      await actualizarIntelligence(existente)
       return { id: existente, nombre: receta.nombre, skipped: false, repaired: true }
     }
     return { id: existente, nombre: receta.nombre, skipped: true }
@@ -249,6 +251,7 @@ async function insertarReceta(receta: RecetaImportable, coachId: string, collect
   if (error || !data) throw new Error(error?.message || `No se pudo insertar ${receta.nombre}`)
 
   if (ingredientes.length) await insertarIngredientes(data.id as string, receta)
+  await actualizarIntelligence(data.id as string)
 
   return { id: data.id as string, nombre: data.nombre as string, skipped: false, preset }
 }
@@ -259,12 +262,64 @@ async function insertarIngredientes(recetaId: string, receta: RecetaImportable) 
     .insert(receta.ingredientes.map(ing => ({
       receta_id: recetaId,
       alimento_id: null,
-      nombre_libre: ing.nombre_libre,
+      nombre_libre: normalizarIngredienteAlias(ing.nombre_libre),
       cantidad_gramos: ing.cantidad_gramos,
       orden: ing.orden,
     })))
 
   if (error) throw new Error(`Ingredientes fallaron para ${receta.nombre}: ${error.message}`)
+}
+
+function normalizarIngredienteAlias(nombre: string) {
+  const n = nombre.toLowerCase()
+  if (n.includes('arroz jazmín cocido')) return 'Arroz blanco (cocido)'
+  if (n.includes('mango maduro')) return 'Mango'
+  if (n.includes('zumo de lima')) return 'Jugo de lima'
+  if (n.includes('jengibre fresco rallado')) return 'Jengibre fresco'
+  if (n.includes('pan de burger')) return 'Maxi pan de burger'
+  if (n.includes('mostaza antigua')) return 'Gran Salsa Mostaza Bote'
+  return nombre
+}
+
+async function actualizarIntelligence(recetaId: string) {
+  const { data, error } = await supabase
+    .from('recetas')
+    .select(`
+      id, nombre, descripcion, instrucciones, tipo_plato, categoria,
+      kcal, proteinas, carbohidratos, grasas, fibra, porciones,
+      tiempo_prep_min, tiempo_coccion_min, score_calidad, adherencia_score,
+      imagen_url, imagen_estado, imagen_quality_score, imagen_realismo_score, imagen_match_receta_score,
+      premium_chef, batch_cooking, tupper, digestibilidad, densidad_energetica,
+      coste_estimado_nivel, nivel_elaboracion, objetivos, deportes, momentos, estilos, intolerancias,
+      receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento_id, cantidad_gramos)
+    `)
+    .eq('id', recetaId)
+    .single()
+
+  if (error || !data) throw new Error(error?.message || `No se pudo cargar intelligence para ${recetaId}`)
+
+  const receta = data as typeof data & {
+    receta_ingredientes?: Array<{ nombre_libre?: string | null; alimento_id?: string | null; cantidad_gramos?: number | null }> | null
+  }
+  const result = calcularRecipeIntelligence({
+    ...receta,
+    ingredientes: receta.receta_ingredientes ?? [],
+  })
+
+  const { error: updateError } = await supabase
+    .from('recetas')
+    .update({
+      recipe_intelligence_score: result.score,
+      recipe_intelligence_tier: result.tier,
+      recipe_intelligence_detail: result.detail,
+      recipe_intelligence_flags: result.flags,
+      macro_flex_score: result.macro_flex_score,
+      planning_roles: result.planning_roles,
+      recipe_intelligence_updated_at: new Date().toISOString(),
+    })
+    .eq('id', recetaId)
+
+  if (updateError) throw new Error(updateError.message)
 }
 
 async function main() {

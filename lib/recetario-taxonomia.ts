@@ -220,6 +220,9 @@ type RecetaScoringInput = {
   carbohidratos?: number | null
   grasas?: number | null
   score_calidad?: number | null
+  recipe_intelligence_score?: number | null
+  macro_flex_score?: number | null
+  planning_roles?: string[] | null
   objetivos?: string[] | null
   deportes?: string[] | null
   momentos?: string[] | null
@@ -251,11 +254,14 @@ export function scoreRecetaParaAgente(
   }
 ) {
   const calidad = Math.min(Math.max((receta.score_calidad ?? 60) / 100, 0), 1)
+  const intelligence = Math.min(Math.max((receta.recipe_intelligence_score ?? receta.score_calidad ?? 60) / 100, 0), 1)
+  const macroFlex = Math.min(Math.max((receta.macro_flex_score ?? 55) / 100, 0), 1)
   const adherencia = Math.min(Math.max((receta.adherencia_score ?? 65) / 100, 0), 1)
   const objetivos = new Set(receta.objetivos ?? [])
   const deportes = new Set(receta.deportes ?? [])
   const momentos = new Set(receta.momentos ?? [])
   const estilos = new Set(receta.estilos ?? [])
+  const roles = new Set(receta.planning_roles ?? [])
 
   const objetivoScore = contexto.objetivo
     ? objetivos.has(contexto.objetivo) ? 1 : objetivos.has('salud_general') ? 0.55 : 0.25
@@ -284,14 +290,23 @@ export function scoreRecetaParaAgente(
     ? receta.premium_chef || estilos.has('chef_healthy') || estilos.has('comfort_healthy') ? 1 : 0.45
     : receta.premium_chef ? 0.75 : 0.6
 
+  const roleScore =
+    (roles.has('portion_scalable') ? 0.35 : 0) +
+    (roles.has('chef_signature') ? 0.25 : 0) +
+    (roles.has('performance_fuel') && contexto.deporte ? 0.25 : 0) +
+    (roles.has('quick_weekday') ? 0.15 : 0)
+
   return (
-    calidad * 0.20 +
-    adherencia * 0.15 +
-    objetivoScore * 0.18 +
-    deporteScore * 0.12 +
-    momentoScore * 0.15 +
-    macroScore * 0.15 +
-    chefScore * 0.05
+    intelligence * 0.24 +
+    calidad * 0.10 +
+    adherencia * 0.13 +
+    objetivoScore * 0.15 +
+    deporteScore * 0.10 +
+    momentoScore * 0.12 +
+    macroScore * 0.10 +
+    macroFlex * 0.03 +
+    chefScore * 0.02 +
+    Math.min(roleScore, 1) * 0.01
   )
 }
 

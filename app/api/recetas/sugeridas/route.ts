@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     const buildQuery = (extraFilters?: { tipos?: string[]; excludeIds?: string[]; relaxedMacros?: boolean }) => {
         let q = db
             .from('recetas')
-            .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min, score_calidad, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score')
+            .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min, score_calidad, recipe_intelligence_score, macro_flex_score, planning_roles, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score')
             .eq('estado', 'aprobada')
             .order('kcal', { ascending: true })
             .limit(extraFilters?.excludeIds ? limite * 2 : limite * 4)
