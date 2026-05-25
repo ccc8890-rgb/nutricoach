@@ -39,6 +39,15 @@ const accionesCarga = crearAccionesSupercoach({
     adherencia_7d_pct: 100,
     rpe_media_7d: 8.1,
   },
+  evidencia: [
+    {
+      id: 'kb_1',
+      titulo: 'Carbohydrate periodization for endurance performance',
+      tags: ['carbohidratos', 'rendimiento'],
+      resumen: 'Los carbohidratos alrededor de sesiones clave sostienen disponibilidad energética y calidad de entrenamiento.',
+      referencias: ['Burke LM et al. Sports nutrition guidelines. 2019.'],
+    },
+  ],
 })
 
 const ajusteNutricion = accionesCarga.find(a => a.tipo === 'ajuste_nutricion_carga')
@@ -48,6 +57,8 @@ assert.equal(ajusteNutricion?.payload.accion_aplicable, 'actualizar_macros')
 assert.equal((ajusteNutricion?.payload.ajustes as { kcal?: number }).kcal, 2400)
 assert.equal((ajusteNutricion?.payload.ajustes as { carbohidratos?: number }).carbohidratos, 290)
 assert.equal(ajusteNutricion?.prioridad, 2)
+assert.equal(ajusteNutricion?.fuentes[0].año, 2019)
+assert.deepEqual(ajusteNutricion?.payload.evidencia_aplicada, ['Carbohydrate periodization for endurance performance'])
 
 const accionesAdherencia = crearAccionesSupercoach({
   clienteId: 'cliente-2',

@@ -1,5 +1,6 @@
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { cargarActividadCoach } from '@/lib/actividad/coach-insights'
+import { seleccionarProtocolos } from '@/lib/knowledge-base'
 import { guardarTareaAgente } from './executor'
 import { crearAccionesSupercoach } from './supercoach-engine'
 import type { PerfilEntrenoCliente } from '@/types'
@@ -16,6 +17,9 @@ export async function ejecutarDirectorSupercoachCliente(clienteId: string): Prom
     planNutricionRes,
     planEntrenoRes,
     perfilEntrenoRes,
+    clienteRes,
+    onboardingRes,
+    perfilProfundoRes,
     registros7Res,
     pendientesRes,
   ] = await Promise.all([
@@ -41,6 +45,21 @@ export async function ejecutarDirectorSupercoachCliente(clienteId: string): Prom
       .eq('cliente_id', clienteId)
       .maybeSingle(),
     db
+      .from('clientes')
+      .select('objetivo, edad, sexo, restricciones_alimentarias')
+      .eq('id', clienteId)
+      .maybeSingle(),
+    db
+      .from('onboarding_responses')
+      .select('objetivo, tipo_entreno')
+      .eq('cliente_id', clienteId)
+      .maybeSingle(),
+    db
+      .from('onboarding_perfil_profundo')
+      .select('condiciones_salud')
+      .eq('cliente_id', clienteId)
+      .maybeSingle(),
+    db
       .from('registros_sets')
       .select('fecha, esfuerzo_percibido')
       .eq('cliente_id', clienteId)
@@ -56,6 +75,9 @@ export async function ejecutarDirectorSupercoachCliente(clienteId: string): Prom
   if (planNutricionRes.error && planNutricionRes.error.code !== 'PGRST116') throw new Error(planNutricionRes.error.message)
   if (planEntrenoRes.error && planEntrenoRes.error.code !== 'PGRST116') throw new Error(planEntrenoRes.error.message)
   if (perfilEntrenoRes.error && perfilEntrenoRes.error.code !== 'PGRST116') throw new Error(perfilEntrenoRes.error.message)
+  if (clienteRes.error && clienteRes.error.code !== 'PGRST116') throw new Error(clienteRes.error.message)
+  if (onboardingRes.error && onboardingRes.error.code !== 'PGRST116') throw new Error(onboardingRes.error.message)
+  if (perfilProfundoRes.error && perfilProfundoRes.error.code !== 'PGRST116') throw new Error(perfilProfundoRes.error.message)
 
   const actividad = await cargarActividadCoach(db, clienteId, 14).catch(() => null)
   const sesiones7 = new Set((registros7Res.data ?? []).map(r => r.fecha)).size
@@ -69,6 +91,21 @@ export async function ejecutarDirectorSupercoachCliente(clienteId: string): Prom
   const sesionesObjetivo = planEntreno?.sesiones_por_semana ?? perfilEntreno?.dias_disponibles ?? null
   const adherencia = sesionesObjetivo ? Math.round((sesiones7 / sesionesObjetivo) * 100) : null
   const tiposPendientes = new Set((pendientesRes.data ?? []).map(t => t.tipo))
+  const cliente = clienteRes.data as { objetivo?: string | null; edad?: number | null; sexo?: 'hombre' | 'mujer' | 'otro' | null; restricciones_alimentarias?: string | null } | null
+  const onboarding = onboardingRes.data as { objetivo?: string | null; tipo_entreno?: string[] | string | null } | null
+  const perfilProfundo = perfilProfundoRes.data as { condiciones_salud?: string | null } | null
+  const tipoEntreno = Array.isArray(onboarding?.tipo_entreno)
+    ? onboarding?.tipo_entreno.join(', ')
+    : onboarding?.tipo_entreno
+
+  const evidencia = await seleccionarProtocolos(db, {
+    objetivo: onboarding?.objetivo ?? cliente?.objetivo,
+    tipo_entreno: perfilEntreno?.sport_modality ?? tipoEntreno,
+    condiciones_salud: perfilProfundo?.condiciones_salud,
+    restricciones_alimentarias: cliente?.restricciones_alimentarias,
+    edad: cliente?.edad,
+    sexo: cliente?.sexo,
+  }, 5)
 
   const acciones = crearAccionesSupercoach({
     clienteId,
@@ -76,6 +113,7 @@ export async function ejecutarDirectorSupercoachCliente(clienteId: string): Prom
     planEntreno,
     perfilEntreno,
     actividad,
+    evidencia,
     rendimiento: {
       sesiones_7d: sesiones7,
       sesiones_objetivo_semana: sesionesObjetivo,

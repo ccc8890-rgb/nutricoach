@@ -85,6 +85,38 @@ export const FUENTES_PUBMED: FuentePubMed[] = [
     categoria: 'hiit',
     activa: true,
   },
+  {
+    id: 'pubmed-readiness-recovery',
+    nombre: 'PubMed — Readiness, HRV y Recuperación',
+    query: '(heart rate variability[Title/Abstract] OR HRV[Title/Abstract] OR recovery status[Title/Abstract] OR training readiness[Title/Abstract]) AND (athlete OR endurance OR resistance training) AND (english[Filter])',
+    disciplina: 'recuperacion',
+    categoria: 'recuperacion',
+    activa: true,
+  },
+  {
+    id: 'pubmed-endurance-fueling',
+    nombre: 'PubMed — Fueling de Resistencia y Carbohidratos',
+    query: '(carbohydrate intake[Title/Abstract] OR carbohydrate availability[Title/Abstract] OR endurance fueling[Title/Abstract]) AND (endurance performance OR running OR cycling OR triathlon) AND (english[Filter])',
+    disciplina: 'nutricion',
+    categoria: 'periodizacion',
+    activa: true,
+  },
+  {
+    id: 'pubmed-tapering-competition',
+    nombre: 'PubMed — Tapering, Competición y Puesta a Punto',
+    query: '(tapering[Title/Abstract] OR peaking[Title/Abstract] OR competition preparation[Title/Abstract]) AND (endurance OR resistance training OR athletes) AND (english[Filter])',
+    disciplina: 'recuperacion',
+    categoria: 'competicion',
+    activa: true,
+  },
+  {
+    id: 'pubmed-concurrent-hybrid-training',
+    nombre: 'PubMed — Entrenamiento Concurrente e Híbrido',
+    query: '(concurrent training[Title/Abstract] OR hybrid training[Title/Abstract]) AND (strength OR endurance OR interference effect) AND (athlete OR trained) AND (english[Filter])',
+    disciplina: 'hibrido',
+    categoria: 'periodizacion',
+    activa: true,
+  },
   // ── Fuentes clínicas especializadas (MeSH queries específicas) ──
   {
     id: 'pubmed-tiroides',

@@ -1,4 +1,5 @@
 import type { TipoAgente, TipoTarea, ResultadoAgente } from './types'
+import type { ProtocoloCientifico } from '@/lib/knowledge-base'
 
 type Severidad = 'alta' | 'media' | 'baja'
 
@@ -37,6 +38,7 @@ export interface SupercoachInput {
     adherencia_7d_pct: number | null
     rpe_media_7d: number | null
   }
+  evidencia?: ProtocoloCientifico[]
 }
 
 export type SupercoachAction = ResultadoAgente & {
@@ -68,12 +70,32 @@ function modalidadLabel(value?: string | null): string {
   return value ? labels[value] ?? value : 'sin modalidad definida'
 }
 
+function extraerAnyo(texto: string): number {
+  const match = texto.match(/\b(19|20)\d{2}\b/)
+  return match ? Number(match[0]) : new Date().getFullYear()
+}
+
+function fuentesDesdeEvidencia(evidencia: ProtocoloCientifico[] | undefined, limite = 3) {
+  return (evidencia ?? []).slice(0, limite).map(p => ({
+    autores: p.referencias[0]?.split('.')[0]?.slice(0, 80) || 'Knowledge Base',
+    año: extraerAnyo(`${p.titulo} ${p.referencias.join(' ')}`),
+    titulo: p.titulo,
+    conclusión: p.resumen.replace(/\s+/g, ' ').slice(0, 220),
+  }))
+}
+
+function resumenEvidencia(evidencia: ProtocoloCientifico[] | undefined): string[] {
+  return (evidencia ?? []).slice(0, 3).map(p => p.titulo)
+}
+
 export function crearAccionesSupercoach(input: SupercoachInput): SupercoachAction[] {
   const acciones: SupercoachAction[] = []
   const actividad = input.actividad
   const resumen = actividad?.resumen
   const flags = actividad?.flags ?? []
   const modalidad = modalidadLabel(input.perfilEntreno?.sport_modality)
+  const fuentes = fuentesDesdeEvidencia(input.evidencia)
+  const evidenciaTitulos = resumenEvidencia(input.evidencia)
 
   const cargaAlta = Boolean(
     flags.some(f => f.tipo === 'carga_alta' || f.severidad === 'alta') ||
@@ -116,17 +138,11 @@ export function crearAccionesSupercoach(input: SupercoachInput): SupercoachActio
           tss_total: resumen.tss_total,
           readiness_media: resumen.readiness_media,
         },
+        evidencia_aplicada: evidenciaTitulos,
         mensaje_cliente: `Esta semana vamos a reforzar un poco los carbohidratos alrededor de los entrenos para sostener rendimiento y recuperación. Mantén el resto del plan igual y dime si notas más energía o menos hambre.`,
         senales_proxima_semana: ['Energía en sesiones clave', 'Hambre nocturna', 'HRV/readiness', 'Peso medio semanal'],
       },
-      fuentes: [
-        {
-          autores: 'ISSN',
-          año: 2018,
-          titulo: 'Nutrient timing and exercise performance',
-          conclusión: 'El timing de carbohidratos ayuda a sostener rendimiento en semanas de alta carga.',
-        },
-      ],
+      fuentes,
       prioridad: cargaAlta || recuperacionBaja ? 2 : 4,
       score_confianza: 0.78,
       requiere_aprobacion: true,
@@ -150,10 +166,11 @@ export function crearAccionesSupercoach(input: SupercoachInput): SupercoachActio
         plan_update: {
           sesiones_por_semana: sesionesAjustadas,
         },
+        evidencia_aplicada: evidenciaTitulos,
         mensaje_cliente: `Esta semana simplificamos el plan para asegurar cumplimiento: menos sesiones, mejor ejecutadas. Prioridad a completar lo pactado y salir con buenas sensaciones.`,
         senales_proxima_semana: ['Sesiones completadas', 'RPE medio', 'Motivación', 'Dolor o molestias'],
       },
-      fuentes: [],
+      fuentes,
       prioridad: adherencia < 50 ? 3 : 5,
       score_confianza: 0.74,
       requiere_aprobacion: true,
@@ -169,10 +186,11 @@ export function crearAccionesSupercoach(input: SupercoachInput): SupercoachActio
       payload: {
         accion_aplicable: 'mensaje_cliente',
         origen: 'supercoach_director',
+        evidencia_aplicada: evidenciaTitulos,
         mensaje_cliente: 'Veo señales de recuperación baja. Hoy prioriza intensidad baja, sueño y sensaciones. Prefiero que acumulemos bien antes que forzar una sesión mala.',
         senales_proxima_semana: ['Sueño', 'HRV/readiness', 'Dolor muscular', 'RPE de calentamiento'],
       },
-      fuentes: [],
+      fuentes,
       prioridad: 3,
       score_confianza: 0.7,
       requiere_aprobacion: true,
