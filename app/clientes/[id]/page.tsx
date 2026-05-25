@@ -33,6 +33,7 @@ const CosteSemanalCard = dynamic(() => import('@/components/clientes/CosteSemana
 const AdherenciaScoreCard = dynamic(() => import('@/components/clientes/AdherenciaScore'), { ssr: false, loading: () => <div className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAdherenciaHeatmap'), { ssr: false, loading: () => <div className="h-32 rounded-2xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const ActividadClientePanel = dynamic(() => import('@/components/clientes/ActividadClientePanel'), { ssr: false, loading: () => <TabSkeleton /> })
+const TrainingCoachPanel = dynamic(() => import('@/components/clientes/TrainingCoachPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 
 function TabSkeleton() {
   return <div className="animate-pulse rounded-2xl h-48 w-full" style={{ background: 'var(--surface)' }} />
@@ -875,61 +876,65 @@ export default function ClienteDetallePage() {
           </div>
 
         ) : tabActiva === 'entrenamiento' ? (
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.9fr)] gap-4">
-            <WorkCard
-              title="Plan de entrenamiento"
-              kicker="Programación"
-              icon={Dumbbell}
-              action={
-                <div className="flex gap-2">
-                  <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
-                  <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>
-                </div>
-              }
-            >
-              {entrenoActivo ? (
-                <div className="rounded-2xl p-4 mb-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{entrenoActivo.nombre}</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                        {entrenoActivo.duracion_semanas ? `${entrenoActivo.duracion_semanas} semanas` : 'Plan activo'}
-                      </p>
-                    </div>
-                    <Link href={`/entrenos/${entrenoActivo.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm flex-shrink-0">
-                      Abrir <ExternalLink size={12} />
-                    </Link>
+          <div className="space-y-4">
+            <ErrorBoundary><TrainingCoachPanel clienteId={id as string} /></ErrorBoundary>
+
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.9fr)] gap-4">
+              <WorkCard
+                title="Plan de entrenamiento"
+                kicker="Programación"
+                icon={Dumbbell}
+                action={
+                  <div className="flex gap-2">
+                    <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
+                    <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>
                   </div>
-                </div>
-              ) : (
-                <EmptyModule icon={Dumbbell} title="Sin entrenamiento activo" text="Asigna una plantilla o crea una programación específica para este cliente." />
-              )}
-              {entrenos.length > 0 && (
-                <div className="space-y-2">
-                  {entrenos.map(e => (
-                    <PlanListItem
-                      key={e.id}
-                      href={`/entrenos/${e.id}?returnTo=/clientes/${id}`}
-                      title={e.nombre}
-                      meta={e.duracion_semanas ? `${e.duracion_semanas} semanas` : undefined}
-                      active={e.activo}
-                    />
-                  ))}
-                </div>
-              )}
-            </WorkCard>
+                }
+              >
+                {entrenoActivo ? (
+                  <div className="rounded-2xl p-4 mb-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{entrenoActivo.nombre}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                          {entrenoActivo.duracion_semanas ? `${entrenoActivo.duracion_semanas} semanas` : 'Plan activo'}
+                        </p>
+                      </div>
+                      <Link href={`/entrenos/${entrenoActivo.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm flex-shrink-0">
+                        Abrir <ExternalLink size={12} />
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <EmptyModule icon={Dumbbell} title="Sin entrenamiento activo" text="Asigna una plantilla o crea una programación específica para este cliente." />
+                )}
+                {entrenos.length > 0 && (
+                  <div className="space-y-2">
+                    {entrenos.map(e => (
+                      <PlanListItem
+                        key={e.id}
+                        href={`/entrenos/${e.id}?returnTo=/clientes/${id}`}
+                        title={e.nombre}
+                        meta={e.duracion_semanas ? `${e.duracion_semanas} semanas` : undefined}
+                        active={e.activo}
+                      />
+                    ))}
+                  </div>
+                )}
+              </WorkCard>
 
-            <WorkCard title="Perfil atleta" kicker="Motor de decisión" icon={PersonStanding}>
-              <ErrorBoundary><PerfilEntrenoForm clienteId={id as string} /></ErrorBoundary>
-            </WorkCard>
+              <WorkCard title="Perfil atleta" kicker="Motor de decisión" icon={PersonStanding}>
+                <ErrorBoundary><PerfilEntrenoForm clienteId={id as string} /></ErrorBoundary>
+              </WorkCard>
 
-            <WorkCard title="Historial de ejecución" kicker="Rendimiento real" icon={Activity}>
-              <ErrorBoundary><HistorialEntreno clienteId={id as string} /></ErrorBoundary>
-            </WorkCard>
+              <WorkCard title="Historial de ejecución" kicker="Rendimiento real" icon={Activity}>
+                <ErrorBoundary><HistorialEntreno clienteId={id as string} /></ErrorBoundary>
+              </WorkCard>
 
-            <div className="space-y-4">
-              <ErrorBoundary><CompeticionesManager clienteId={id as string} pesoKg={cliente?.peso_inicial ?? undefined} /></ErrorBoundary>
-              <ErrorBoundary><ProtocoloCompeticion clienteId={id as string} /></ErrorBoundary>
+              <div className="space-y-4">
+                <ErrorBoundary><CompeticionesManager clienteId={id as string} pesoKg={cliente?.peso_inicial ?? undefined} /></ErrorBoundary>
+                <ErrorBoundary><ProtocoloCompeticion clienteId={id as string} /></ErrorBoundary>
+              </div>
             </div>
           </div>
 
