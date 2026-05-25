@@ -19,6 +19,7 @@ import {
   ForkKnife,
   GearSix,
   House,
+  Images,
   ListChecks,
   Moon,
   Pulse,
@@ -77,6 +78,7 @@ const ENTRENAMIENTO_ITEMS: NavItem[] = [
 const RECETARIO_ITEMS: NavItem[] = [
   { href: '/recetas', label: 'Biblioteca', icon: ChefHat },
   { href: '/recetas/cobertura', label: 'Cobertura', icon: ChartPieSlice },
+  { href: '/recetas/imagenes', label: 'Imágenes', icon: Images },
   { href: '/recetas/cola', label: 'Pendientes', icon: ClipboardText },
   { href: '/recetas/revisar', label: 'Revisión', icon: ListChecks },
 ]
