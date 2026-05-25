@@ -877,61 +877,95 @@ export default function ClienteDetallePage() {
 
         ) : tabActiva === 'entrenamiento' ? (
           <div className="space-y-4">
-            <ErrorBoundary><TrainingCoachPanel clienteId={id as string} /></ErrorBoundary>
-
-            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.9fr)] gap-4">
-              <WorkCard
-                title="Plan de entrenamiento"
-                kicker="Programación"
-                icon={Dumbbell}
-                action={
-                  <div className="flex gap-2">
-                    <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
-                    <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>
-                  </div>
-                }
-              >
-                {entrenoActivo ? (
-                  <div className="rounded-2xl p-4 mb-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{entrenoActivo.nombre}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                          {entrenoActivo.duracion_semanas ? `${entrenoActivo.duracion_semanas} semanas` : 'Plan activo'}
-                        </p>
-                      </div>
-                      <Link href={`/entrenos/${entrenoActivo.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm flex-shrink-0">
-                        Abrir <ExternalLink size={12} />
-                      </Link>
+            <section className="rounded-2xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+                <div className="p-4 sm:p-5 xl:p-6" style={{ borderRight: '1px solid var(--border)' }}>
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: 'var(--text-muted)' }}>Training desk</p>
+                      <h2 className="text-xl sm:text-2xl font-semibold leading-tight" style={{ color: 'var(--text)' }}>Planificación, ejecución y ajustes en una sola vista</h2>
+                      <p className="text-sm mt-2 max-w-2xl" style={{ color: 'var(--text-muted)' }}>
+                        Área de trabajo para revisar la semana, asignar bloques, comprobar carga externa y decidir si el plan necesita progresar, descargar o cambiar estímulo.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
+                      <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link>
                     </div>
                   </div>
-                ) : (
-                  <EmptyModule icon={Dumbbell} title="Sin entrenamiento activo" text="Asigna una plantilla o crea una programación específica para este cliente." />
-                )}
-                {entrenos.length > 0 && (
-                  <div className="space-y-2">
-                    {entrenos.map(e => (
-                      <PlanListItem
-                        key={e.id}
-                        href={`/entrenos/${e.id}?returnTo=/clientes/${id}`}
-                        title={e.nombre}
-                        meta={e.duracion_semanas ? `${e.duracion_semanas} semanas` : undefined}
-                        active={e.activo}
-                      />
-                    ))}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+                    <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Plan activo</p>
+                      <p className="text-sm font-semibold mt-2 line-clamp-2" style={{ color: 'var(--text)' }}>{entrenoActivo?.nombre ?? 'Sin plan asignado'}</p>
+                      <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{entrenoActivo?.duracion_semanas ? `${entrenoActivo.duracion_semanas} semanas programadas` : 'Pendiente de programación'}</p>
+                    </div>
+                    <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Historial</p>
+                      <p className="text-2xl font-semibold mt-2 tabular-nums" style={{ color: 'var(--text)' }}>{entrenos.length}</p>
+                      <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>versiones guardadas</p>
+                    </div>
+                    <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Siguiente acción</p>
+                      <p className="text-sm font-semibold mt-2" style={{ color: 'var(--text)' }}>{entrenoActivo ? 'Revisar ejecución' : 'Asignar plantilla'}</p>
+                      <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{entrenoActivo ? 'Cruzar sesiones internas, Strava y Garmin' : 'El motor usará el perfil atleta'}</p>
+                    </div>
                   </div>
-                )}
-              </WorkCard>
+                </div>
 
-              <WorkCard title="Perfil atleta" kicker="Motor de decisión" icon={PersonStanding}>
-                <ErrorBoundary><PerfilEntrenoForm clienteId={id as string} /></ErrorBoundary>
-              </WorkCard>
+                <aside className="p-4 sm:p-5 xl:p-6 flex flex-col justify-between gap-4" style={{ background: 'var(--bg)' }}>
+                  {entrenoActivo ? (
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: 'var(--text-muted)' }}>Acceso rápido</p>
+                      <p className="text-sm font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{entrenoActivo.nombre}</p>
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        <Link href={`/entrenos/${entrenoActivo.id}?returnTo=/clientes/${id}`} className="btn-primary btn-sm">Abrir plan <ExternalLink size={12} /></Link>
+                        <Link href={`/clientes/${id}/revisar-plan`} className="btn-secondary btn-sm"><RefreshCw size={12} /> Regenerar</Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <EmptyModule
+                      icon={Dumbbell}
+                      title="Sin entrenamiento activo"
+                      text="Asigna una plantilla o crea una programación específica para activar el seguimiento."
+                      action={<button className="btn-primary btn-sm" onClick={() => setShowSelectorPlantilla(true)}>Asignar plantilla</button>}
+                    />
+                  )}
+                </aside>
+              </div>
+            </section>
 
-              <WorkCard title="Historial de ejecución" kicker="Rendimiento real" icon={Activity}>
-                <ErrorBoundary><HistorialEntreno clienteId={id as string} /></ErrorBoundary>
-              </WorkCard>
+            <ErrorBoundary><TrainingCoachPanel clienteId={id as string} /></ErrorBoundary>
+
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] gap-4">
+              <div className="space-y-4">
+                <WorkCard title="Programación guardada" kicker="Planes y bloques" icon={Dumbbell}>
+                  {entrenos.length > 0 ? (
+                    <div className="space-y-2">
+                      {entrenos.map(e => (
+                        <PlanListItem
+                          key={e.id}
+                          href={`/entrenos/${e.id}?returnTo=/clientes/${id}`}
+                          title={e.nombre}
+                          meta={e.duracion_semanas ? `${e.duracion_semanas} semanas` : undefined}
+                          active={e.activo}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyModule icon={Dumbbell} title="Sin planes guardados" text="Cuando asignes una plantilla o crees un plan, aparecerá en este timeline." />
+                  )}
+                </WorkCard>
+
+                <WorkCard title="Historial de ejecución" kicker="Rendimiento real" icon={Activity}>
+                  <ErrorBoundary><HistorialEntreno clienteId={id as string} /></ErrorBoundary>
+                </WorkCard>
+              </div>
 
               <div className="space-y-4">
+                <WorkCard title="Perfil atleta" kicker="Motor de decisión" icon={PersonStanding}>
+                  <ErrorBoundary><PerfilEntrenoForm clienteId={id as string} /></ErrorBoundary>
+                </WorkCard>
                 <ErrorBoundary><CompeticionesManager clienteId={id as string} pesoKg={cliente?.peso_inicial ?? undefined} /></ErrorBoundary>
                 <ErrorBoundary><ProtocoloCompeticion clienteId={id as string} /></ErrorBoundary>
               </div>

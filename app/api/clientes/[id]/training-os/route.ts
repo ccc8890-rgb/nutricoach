@@ -47,7 +47,7 @@ export async function GET(
       .maybeSingle(),
     admin
       .from('planes_entrenamiento')
-      .select('id, nombre, duracion_semanas, sesiones_por_semana, activo')
+      .select('id, nombre, duracion_semanas, activo')
       .eq('cliente_id', clienteId)
       .eq('activo', true)
       .order('created_at', { ascending: false })
@@ -93,7 +93,11 @@ export async function GET(
     ? Math.round((rpeValues.reduce((a, b) => a + b, 0) / rpeValues.length) * 10) / 10
     : null
 
-  const plan = planRes.data as { id: string; nombre: string; duracion_semanas?: number | null; sesiones_por_semana?: number | null } | null
+  const planRaw = planRes.data as { id: string; nombre: string; duracion_semanas?: number | null } | null
+  const { count: sesionesPlan } = planRaw?.id
+    ? await admin.from('sesiones_entrenamiento').select('id', { count: 'exact', head: true }).eq('plan_id', planRaw.id)
+    : { count: null }
+  const plan = planRaw ? { ...planRaw, sesiones_por_semana: sesionesPlan ?? null } : null
   const sesionesObjetivo = plan?.sesiones_por_semana ?? perfil?.dias_disponibles ?? null
   const adherencia7 = sesionesObjetivo ? pct(sesiones7, sesionesObjetivo) : null
 

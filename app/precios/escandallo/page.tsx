@@ -168,7 +168,7 @@ export default function EscandalloPage() {
             {/* Cabecera */}
             <div className="flex items-start justify-between flex-wrap gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold">📊 Escandallo de Costes</h1>
+                    <h1 className="text-2xl font-bold">Escandallo de Costes</h1>
                     <p className="text-sm mt-1" style={{ color: 'var(--muted-foreground)' }}>
                         Coste semanal de la compra por cliente según precios de supermercado
                     </p>

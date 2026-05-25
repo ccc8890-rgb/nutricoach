@@ -126,9 +126,6 @@ async function aplicarActualizacionPlan(
   }
 
   const update: Record<string, number> = {}
-  if (payload.plan_update?.sesiones_por_semana != null) {
-    update.sesiones_por_semana = payload.plan_update.sesiones_por_semana
-  }
   if (payload.plan_update?.duracion_semanas != null) {
     update.duracion_semanas = payload.plan_update.duracion_semanas
   }

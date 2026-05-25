@@ -290,7 +290,7 @@ export default function PlantillasEntrenoPage() {
                         {sesiones.length > 0 && (
                             <div className="flex flex-col gap-2">
                                 <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
-                                    🏋️ Sesiones
+                                    Sesiones
                                 </p>
                                 {sesiones.sort((a, b) => a.orden - b.orden).map(sesion => {
                                     const ejercicios = (sesion.ejercicios ?? []) as PlantillaSesionEjercicio[]

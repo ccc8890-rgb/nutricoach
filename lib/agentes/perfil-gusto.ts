@@ -79,7 +79,7 @@ interface ContextoCliente {
   feedbacks_recientes: RecetaFeedback[]
   checkins_recientes: Checkin[]
   semana_actual: number
-  onboarding: { nivel_cocina?: number; restricciones?: string[]; objetivo?: string }
+    onboarding: { nivel_cocina?: number | string; restricciones?: string[]; objetivo?: string }
   plan_activo_recetas: { nombre: string; slot: string; nivel_elaboracion: number; es_apta_mealprep: boolean }[]
 }
 
@@ -92,8 +92,8 @@ async function cargarContexto(supabase: SupabaseClient, clienteId: string): Prom
   const [perfilRes, feedbackRes, checkinRes, onboardingRes, planRes, onboardingDateRes] = await Promise.all([
     supabase.from('agente_perfil_cliente').select('*').eq('cliente_id', clienteId).maybeSingle(),
     supabase
-      .from('receta_feedback')
-      .select('receta_id, tipo, slot, created_at, recetas(nombre, categoria, nivel_elaboracion, proteinas, kcal)')
+      .from('receta_interacciones_cliente')
+      .select('receta_id, tipo, comida_slot, created_at, recetas(nombre, categoria, nivel_elaboracion, proteinas, kcal)')
       .eq('cliente_id', clienteId)
       .gte('created_at', hace8semanas)
       .order('created_at', { ascending: false })
@@ -111,11 +111,12 @@ async function cargarContexto(supabase: SupabaseClient, clienteId: string): Prom
       .eq('cliente_id', clienteId)
       .maybeSingle(),
     supabase
-      .from('comidas')
-      .select('receta_id, nombre, slot, recetas(nivel_elaboracion, es_apta_mealprep)')
+      .from('planes_nutricion')
+      .select('id, comidas(nombre, receta_id, recetas(nivel_elaboracion, es_apta_mealprep))')
       .eq('cliente_id', clienteId)
-      .not('receta_id', 'is', null)
-      .limit(30),
+      .eq('activo', true)
+      .order('created_at', { ascending: false })
+      .limit(1),
     supabase.from('clientes').select('created_at').eq('id', clienteId).single(),
   ])
 
@@ -125,16 +126,20 @@ async function cargarContexto(supabase: SupabaseClient, clienteId: string): Prom
 
   return {
     perfil_existente: perfilRes.data as PerfilCliente | null,
-    feedbacks_recientes: ((feedbackRes.data ?? []) as unknown[]) as RecetaFeedback[],
+    feedbacks_recientes: ((feedbackRes.data ?? []) as unknown as Array<RecetaFeedback & { comida_slot?: string | null }>).map(f => ({
+      ...f,
+      tipo: f.tipo === 'asignada_plan' ? 'asignada' : f.tipo,
+      slot: f.slot ?? f.comida_slot ?? null,
+    })),
     checkins_recientes: (checkinRes.data ?? []) as Checkin[],
     semana_actual: semanaActual,
     onboarding: onboardingRes.data ?? {},
-    plan_activo_recetas: ((planRes.data ?? []) as Record<string, unknown>[]).map(c => ({
+    plan_activo_recetas: (((planRes.data?.[0]?.comidas ?? []) as Record<string, unknown>[]).map(c => ({
       nombre: c.nombre as string,
-      slot: c.slot as string,
+      slot: c.nombre as string,
       nivel_elaboracion: ((c.recetas as Record<string, unknown> | null)?.nivel_elaboracion as number) ?? 2,
       es_apta_mealprep: ((c.recetas as Record<string, unknown> | null)?.es_apta_mealprep as boolean) ?? false,
-    })),
+    }))),
   }
 }
 
@@ -172,7 +177,8 @@ function analizarFeedbacks(ctx: ContextoCliente) {
   const nivelesHechos = ctx.feedbacks_recientes
     .filter(f => f.tipo === 'hecha')
     .map(f => f.recetas?.nivel_elaboracion ?? 2)
-  const nivelMaxHecho = nivelesHechos.length > 0 ? Math.max(...nivelesHechos) : ctx.onboarding.nivel_cocina ?? 2
+  const nivelDeclarado = normalizarNivelCocina(ctx.onboarding.nivel_cocina)
+  const nivelMaxHecho = nivelesHechos.length > 0 ? Math.max(...nivelesHechos) : nivelDeclarado
 
   // Adherencia promedio
   const adherencias = ctx.checkins_recientes.map(c => c.adherencia_pct ?? 0).filter(a => a > 0)
@@ -289,7 +295,7 @@ export async function actualizarPerfilGusto(clienteId: string): Promise<{
 
   const perfil_previo = ctx.perfil_existente
   const n_eventos = ctx.feedbacks_recientes.length + ctx.checkins_recientes.length
-  const n_eventos_total = (perfil_previo?.n_eventos_total ?? 0) + n_eventos
+  const n_eventos_total = Math.max(perfil_previo?.n_eventos_total ?? 0, n_eventos)
 
   // Confianza del perfil: crece logarítmicamente con los eventos
   // 10 eventos = 0.30, 50 eventos = 0.60, 200 eventos = 0.85
@@ -335,26 +341,18 @@ export async function actualizarPerfilGusto(clienteId: string): Promise<{
     proteinas_favoritas: mergeArrays(perfil_previo?.proteinas_favoritas, sintesisIA.proteinas_favoritas),
     texturas_favoritas: mergeArrays(perfil_previo?.texturas_favoritas, sintesisIA.texturas_favoritas),
     categorias_favoritas: categorias_favoritas_merged,
-    categorias_preferidas: categorias_favoritas_merged,      // alias sincronizado
     ingredientes_evitar: mergeArrays(perfil_previo?.ingredientes_evitar, sintesisIA.ingredientes_evitar),
     categorias_evitar: categorias_evitar_merged,
-    alimentos_rechazados_categorias: categorias_evitar_merged, // alias sincronizado
     aversiones_blandas: mergeArrays(perfil_previo?.aversiones_blandas, sintesisIA.aversiones_blandas),
     mejor_dia_semana: analisis.mejor_dia ?? perfil_previo?.mejor_dia_semana,
     peor_dia_semana: analisis.peor_dia ?? perfil_previo?.peor_dia_semana,
     adherencia_promedio_30d: analisis.adherencia_promedio ?? perfil_previo?.adherencia_promedio_30d,
-    adherencia_historica_media: analisis.adherencia_promedio ?? perfil_previo?.adherencia_historica_media,
-    tasa_ejecucion_media: ctx.feedbacks_recientes.filter(f => f.tipo === 'hecha').length > 0
-      ? ctx.feedbacks_recientes.filter(f => f.tipo === 'hecha').length / Math.max(ctx.feedbacks_recientes.filter(f => f.tipo === 'asignada').length, 1) * 100
-      : perfil_previo?.tasa_ejecucion_media ?? null,
-    nivel_cocina_declarado: ctx.onboarding.nivel_cocina ?? perfil_previo?.nivel_cocina_declarado ?? 2,
+    nivel_cocina_declarado: normalizarNivelCocina(ctx.onboarding.nivel_cocina ?? perfil_previo?.nivel_cocina_declarado),
     nivel_cocina_real: calibrarNivelCocina(analisis.nivel_cocina_real, analisis.niveles_rechazados, perfil_previo?.nivel_cocina_real ?? 2),
     preferencia_mealprep: sintesisIA.preferencia_mealprep ?? perfil_previo?.preferencia_mealprep ?? false,
     novedad_deseada: calcularNovedadDeseada(analisis, perfil_previo),
     semanas_misma_receta: calcularSemanasMismaReceta(ctx, perfil_previo),
     ultimas_recetas_ids: ultimas_recetas,
-    recetas_preferidas_ids: mergeArrays(perfil_previo?.recetas_preferidas_ids, recetasPreferidas),
-    recetas_sistematicamente_rechazadas: mergeArrays(perfil_previo?.recetas_sistematicamente_rechazadas, recetasRechazadas),
     semanas_con_mejora: analisis.semanas_con_mejora,
     semanas_sin_mejora: analisis.semanas_sin_mejora,
     hora_pico_hambre: sintesisIA.hora_pico_hambre ?? perfil_previo?.hora_pico_hambre,
@@ -381,8 +379,22 @@ export async function actualizarPerfilGusto(clienteId: string): Promise<{
     semana_numero: ctx.semana_actual,
   })
 
-  // Upsert del perfil
-  await supabase.from('agente_perfil_cliente').upsert(perfilActualizado, { onConflict: 'cliente_id' })
+  const { data: perfilGuardado, error: guardarError } = perfil_previo
+    ? await supabase
+        .from('agente_perfil_cliente')
+        .update(perfilActualizado)
+        .eq('cliente_id', clienteId)
+        .select('id')
+        .maybeSingle()
+    : await supabase
+        .from('agente_perfil_cliente')
+        .insert(perfilActualizado)
+        .select('id')
+        .maybeSingle()
+
+  if (guardarError || !perfilGuardado) {
+    throw new Error(`No se pudo guardar agente_perfil_cliente: ${guardarError?.message ?? 'sin fila devuelta'}`)
+  }
 
   // Actualizar stats de popularidad en recetas (fire-and-forget)
   actualizarPopularidadRecetas(supabase).catch(() => {})
@@ -397,6 +409,17 @@ function mergeArrays(existente?: string[], nuevo?: string[]): string[] {
   if (!existente && !nuevo) return []
   const combined = [...(existente ?? []), ...(nuevo ?? [])]
   return [...new Set(combined)].slice(0, 20) // máximo 20 items
+}
+
+function normalizarNivelCocina(valor: number | string | null | undefined): number {
+  if (typeof valor === 'number' && Number.isFinite(valor)) return Math.max(1, Math.min(5, Math.round(valor)))
+  const v = String(valor ?? '').toLowerCase()
+  if (['no_cocina', 'muy_simple', 'basico', 'principiante'].some(x => v.includes(x))) return 1
+  if (['simple', 'facil', 'fácil'].some(x => v.includes(x))) return 2
+  if (['intermedio', 'normal'].some(x => v.includes(x))) return 3
+  if (['avanzado'].some(x => v.includes(x))) return 4
+  if (['chef', 'experto'].some(x => v.includes(x))) return 5
+  return 2
 }
 
 function calibrarNivelCocina(
@@ -455,23 +478,27 @@ async function actualizarPopularidadRecetas(supabase: SupabaseClient): Promise<v
   // Recalcular score_popularidad para recetas con actividad reciente
   const hace30dias = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
   const { data: activas } = await supabase
-    .from('receta_feedback')
+    .from('receta_interacciones_cliente')
     .select('receta_id')
     .gte('created_at', hace30dias)
-    .in('tipo', ['like', 'favorita', 'repetir_siempre', 'foto_subida', 'hecha'])
+    .in('tipo', ['like', 'favorita', 'swap_elegida', 'asignada_plan'])
 
   const recetasConActividad = [...new Set((activas ?? []).map(r => r.receta_id))]
   if (recetasConActividad.length === 0) return
 
   for (const recetaId of recetasConActividad) {
     const { data: stats } = await supabase
-      .from('receta_feedback')
+      .from('receta_interacciones_cliente')
       .select('tipo')
       .eq('receta_id', recetaId)
 
     const pesos: Record<string, number> = {
-      favorita: 3, foto_subida: 2.5, repetir_siempre: 2,
-      like: 1, hecha: 0.5, dislike: -2, no_me_gusto: -1.5, muy_dificil: -1,
+      favorita: 3,
+      like: 1.5,
+      swap_elegida: 1.2,
+      asignada_plan: 0.2,
+      swap_rechazada: -1.5,
+      dislike: -2,
     }
     const score = (stats ?? []).reduce((acc, s) => acc + (pesos[s.tipo] ?? 0), 0)
     const scoreClamped = Math.max(0, Math.min(10, score))
@@ -480,9 +507,9 @@ async function actualizarPopularidadRecetas(supabase: SupabaseClient): Promise<v
       .from('recetas')
       .update({
         score_popularidad: scoreClamped,
-        n_veces_asignada: (stats ?? []).filter(s => s.tipo === 'asignada').length,
-        n_veces_hecha: (stats ?? []).filter(s => s.tipo === 'hecha').length,
-        n_dislikes: (stats ?? []).filter(s => ['dislike', 'no_me_gusto'].includes(s.tipo)).length,
+        n_veces_asignada: (stats ?? []).filter(s => s.tipo === 'asignada_plan').length,
+        n_veces_hecha: (stats ?? []).filter(s => s.tipo === 'swap_elegida').length,
+        n_dislikes: (stats ?? []).filter(s => ['dislike', 'swap_rechazada'].includes(s.tipo)).length,
       })
       .eq('id', recetaId)
   }
@@ -497,5 +524,34 @@ export async function obtenerPerfilCliente(clienteId: string): Promise<PerfilCli
     .select('*')
     .eq('cliente_id', clienteId)
     .maybeSingle()
-  return data as PerfilCliente | null
+  if (!data) return null
+  const perfil = data as PerfilCliente
+
+  const { data: interacciones } = await supabase
+    .from('receta_interacciones_cliente')
+    .select('receta_id, tipo')
+    .eq('cliente_id', clienteId)
+    .order('created_at', { ascending: false })
+    .limit(200)
+
+  const preferidas = new Set<string>()
+  const dislikes: Record<string, number> = {}
+  for (const i of interacciones ?? []) {
+    if (['like', 'favorita'].includes(i.tipo)) preferidas.add(i.receta_id)
+    if (['dislike', 'swap_rechazada'].includes(i.tipo)) {
+      dislikes[i.receta_id] = (dislikes[i.receta_id] ?? 0) + 1
+    }
+  }
+
+  return {
+    ...perfil,
+    categorias_preferidas: perfil.categorias_favoritas ?? [],
+    alimentos_rechazados_categorias: perfil.categorias_evitar ?? [],
+    adherencia_historica_media: perfil.adherencia_promedio_30d,
+    tasa_ejecucion_media: null,
+    recetas_preferidas_ids: [...preferidas],
+    recetas_sistematicamente_rechazadas: Object.entries(dislikes)
+      .filter(([, n]) => n >= 3)
+      .map(([id]) => id),
+  }
 }

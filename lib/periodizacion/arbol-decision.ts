@@ -49,6 +49,12 @@ export interface ResultadoEvaluacion {
     input_snapshot: InputCheckin
 }
 
+export function normalizarAdherenciaPct(value: number | null | undefined): number {
+    if (value == null || !Number.isFinite(value)) return 80
+    if (value <= 10) return Math.round(value * 10)
+    return Math.round(Math.max(0, Math.min(100, value)))
+}
+
 export function evaluarCheckin(
     input: InputCheckin,
     umbrales: UmbralesPeriodizacion = UMBRALES_DEFAULT
@@ -56,11 +62,12 @@ export function evaluarCheckin(
     const {
         energia,
         horas_sueno,
-        adherencia,
+        adherencia: adherenciaRaw,
         tls_semanal,
         semanas_en_deficit,
         umbral_carga_alta,
     } = input
+    const adherencia = normalizarAdherenciaPct(adherenciaRaw)
 
     const fatiga_alta = energia <= umbrales.energia_fatiga
 

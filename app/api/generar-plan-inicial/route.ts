@@ -10,10 +10,12 @@ import { generarRecomendacionPeriEntreno, formatearPeriEntrenoParaPrompt } from 
 import { validarMicronutrientes } from '@/lib/validacion-micronutrientes'
 import { seleccionarPildoras } from '@/lib/micro-learning'
 import type { MetodologiaCoach } from '@/types'
-import { filtrarRecetasPorSlot, validarYResolverRecetas, calcularFactorGramaje, calcularTargetSlot, type PlanDeepSeekValidado } from '@/lib/plan-recetas'
+import { filtrarRecetasPorSlot, validarYResolverRecetas, calcularTargetSlot, type PlanDeepSeekValidado } from '@/lib/plan-recetas'
 import { calcularGramajeAjustado } from '@/lib/ingredient-roles'
 import { calcularAjustesPeriEntreno } from '@/lib/nutricion-peri-entreno'
 import { getContextoCoach, getContextoClienteClinico, getTargetsComidas } from '@/lib/metodologia-recetario'
+import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
+import type { PerfilEntrenoCliente, RecetaCandidata, SportModality } from '@/types'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
@@ -45,6 +47,31 @@ const PROTEINA_OBJETIVO: Record<string, number> = {
   recomposicion: 2.0,
 }
 
+type PerfilEntrenoInferido = Partial<PerfilEntrenoCliente> & {
+  cliente_id: string
+  sport_modality?: SportModality
+}
+
+type PlantillaSesionRow = {
+  nombre: string
+  dia_semana?: string | null
+  orden?: number | null
+  notas?: string | null
+  descripcion?: string | null
+  duracion_estimada_min?: number | null
+  ejercicios?: Array<{
+    ejercicio_id: string
+    series?: number | null
+    repeticiones?: string | null
+    descanso_segundos?: number | null
+    peso_sugerido?: string | null
+    carga_valor?: number | null
+    notas?: string | null
+    notas_tecnicas?: string | null
+    orden?: number | null
+  }>
+}
+
 function calcularTDEE(peso: number, altura: number, edad: number, sexo: string, actividad: string): number {
   const tmb =
     sexo === 'mujer'
@@ -52,6 +79,128 @@ function calcularTDEE(peso: number, altura: number, edad: number, sexo: string, 
       : 10 * peso + 6.25 * altura - 5 * edad + 5
   const factor = ACTIVIDAD_FACTOR[actividad] ?? 1.55
   return Math.round(tmb * factor)
+}
+
+function inferirModalidadEntreno(onboarding: Record<string, any>, perfil?: Record<string, any> | null): SportModality | undefined {
+  const texto = [
+    ...(Array.isArray(onboarding.tipo_entreno) ? onboarding.tipo_entreno : []),
+    onboarding.objetivo_deportivo,
+    perfil?.tipo_competicion,
+    perfil?.descripcion_semana_entreno,
+    perfil?.trigger_onboarding,
+  ].filter(Boolean).join(' ').toLowerCase()
+
+  const tieneHyrox = texto.includes('hyrox')
+  const tieneRunning = texto.includes('running') || texto.includes('correr') || texto.includes('carrera') || texto.includes('10k') || texto.includes('5k') || texto.includes('marat')
+  const tieneGym = texto.includes('gym') || texto.includes('muscul') || texto.includes('fuerza') || texto.includes('crossfit')
+  const tieneCiclismo = texto.includes('ciclismo') || texto.includes('bici') || texto.includes('ftp')
+  const tieneTriatlon = texto.includes('triat')
+
+  if (tieneTriatlon) return 'triatlon'
+  if ((tieneHyrox || tieneRunning) && tieneGym) return 'hibrido'
+  if (tieneHyrox) return 'hyrox'
+  if (tieneRunning) return 'running'
+  if (tieneCiclismo) return 'ciclismo'
+  if (tieneGym) return 'gym_fuerza'
+  return undefined
+}
+
+function inferirPerfilEntreno(clienteId: string, onboarding: Record<string, any>, perfil?: Record<string, any> | null): PerfilEntrenoInferido {
+  return {
+    cliente_id: clienteId,
+    sport_modality: inferirModalidadEntreno(onboarding, perfil),
+    objetivo_especifico: perfil?.tipo_competicion || perfil?.trigger_onboarding || onboarding.objetivo_deportivo || onboarding.objetivo,
+    nivel: onboarding.segmento === 'elite' ? 'avanzado' : 'intermedio',
+    dias_disponibles: Math.max(1, Math.min(7, onboarding.dias_entreno ?? 3)),
+    mejor_momento_sesion: perfil?.hora_entreno ? 'variable' : undefined,
+    vo2max_estimado: perfil?.vo2max ?? undefined,
+    capacidad_recuperacion: (perfil?.calidad_sueno ?? 3) <= 2 || (perfil?.nivel_estres ?? 0) >= 4 ? 'baja' : 'media',
+    respuesta_a_volumen: (onboarding.dias_entreno ?? 3) >= 5 ? 'alto' : 'medio',
+    respuesta_psicologica: perfil?.tipo_competicion || perfil?.fecha_competicion ? 'competicion' : 'rutina',
+    plateau_detectado: false,
+    semanas_sin_progresion: 0,
+    equipo_disponible: ['Barra olímpica', 'Mancuernas', 'Máquinas cardio', 'Barras dominadas', 'Kettlebell'],
+    patron_lesiones: [],
+    fisio_informe: [],
+    analisis_sangre: [],
+    apple_health_enabled: false,
+  }
+}
+
+async function crearPlanEntrenoDesdePlantilla(
+  supabase: ReturnType<typeof createServiceSupabase>,
+  input: { clienteId: string; coachId: string; plantillaId: string; nombre?: string }
+): Promise<string | null> {
+  const { data: plantilla } = await supabase
+    .from('plantillas_entrenamiento')
+    .select('id, nombre, descripcion, duracion_semanas')
+    .eq('id', input.plantillaId)
+    .single()
+
+  if (!plantilla) return null
+
+  const { data: sesiones } = await supabase
+    .from('plantilla_sesiones')
+    .select('*, ejercicios:plantilla_sesion_ejercicios(*)')
+    .eq('plantilla_id', input.plantillaId)
+    .order('orden')
+
+  if (!sesiones?.length) return null
+
+  const { data: plan, error: planError } = await supabase
+    .from('planes_entrenamiento')
+    .insert({
+      coach_id: input.coachId,
+      cliente_id: input.clienteId,
+      nombre: input.nombre ?? plantilla.nombre,
+      descripcion: plantilla.descripcion ?? null,
+      duracion_semanas: plantilla.duracion_semanas ?? null,
+      activo: true,
+    })
+    .select('id')
+    .single()
+
+  if (planError || !plan) return null
+
+  for (const sesion of sesiones as PlantillaSesionRow[]) {
+    const { data: nuevaSesion, error: sesionError } = await supabase
+      .from('sesiones_entrenamiento')
+      .insert({
+        plan_id: plan.id,
+        nombre: sesion.nombre,
+        dia_semana: sesion.dia_semana ?? null,
+        orden: sesion.orden ?? null,
+        notas: sesion.notas ?? sesion.descripcion ?? null,
+        duracion_estimada_min: sesion.duracion_estimada_min ?? null,
+      })
+      .select('id')
+      .single()
+
+    if (sesionError || !nuevaSesion) {
+      await supabase.from('planes_entrenamiento').delete().eq('id', plan.id)
+      return null
+    }
+
+    for (const ejercicio of sesion.ejercicios ?? []) {
+      const { error: ejercicioError } = await supabase.from('sesion_ejercicios').insert({
+        sesion_id: nuevaSesion.id,
+        ejercicio_id: ejercicio.ejercicio_id,
+        series: ejercicio.series ?? null,
+        repeticiones: ejercicio.repeticiones ?? null,
+        descanso_segundos: ejercicio.descanso_segundos ?? null,
+        peso_sugerido: ejercicio.peso_sugerido ?? ejercicio.carga_valor?.toString() ?? null,
+        notas: ejercicio.notas ?? ejercicio.notas_tecnicas ?? null,
+        orden: ejercicio.orden ?? null,
+      })
+
+      if (ejercicioError) {
+        await supabase.from('planes_entrenamiento').delete().eq('id', plan.id)
+        return null
+      }
+    }
+  }
+
+  return plan.id
 }
 
 export async function POST(request: NextRequest) {
@@ -96,11 +245,22 @@ export async function POST(request: NextRequest) {
     .maybeSingle()
 
   // ── 1b. Fetch perfil de entreno (Gap #9) ──────────────────────────────────
-  const { data: perfilEntreno } = await supabase
+  const { data: perfilEntrenoExistente } = await supabase
     .from('perfil_entreno_cliente')
     .select('*')
     .eq('cliente_id', cliente_id)
     .maybeSingle()
+  let perfilEntreno = perfilEntrenoExistente as PerfilEntrenoCliente | null
+
+  if (!perfilEntreno) {
+    const inferido = inferirPerfilEntreno(cliente_id, onboarding, perfil)
+    const { data: perfilCreado } = await supabase
+      .from('perfil_entreno_cliente')
+      .insert(inferido)
+      .select('*')
+      .maybeSingle()
+    perfilEntreno = (perfilCreado as PerfilEntrenoCliente | null) ?? (inferido as PerfilEntrenoCliente)
+  }
 
   // ── 1e. Fetch perfil alimentario aprendido (intercambios) ─────────────────
   const { data: perfilAlimentario } = await supabase
@@ -116,8 +276,8 @@ export async function POST(request: NextRequest) {
     .eq('coach_id', cliente.coach_id)
 
   // ── 1d. Evaluar motor de entreno (Gap #9) ─────────────────────────────────
-  let recomendacionEntreno = null
-  let plantillasEntrenoRecomendadas = null
+  let recomendacionEntreno: ReturnType<typeof evaluarPerfilEntreno> | null = null
+  let plantillasEntrenoRecomendadas: typeof plantillasEntreno | null = null
   if (perfilEntreno) {
     const perfilEntrenoMapped = {
       ...perfilEntreno,
@@ -683,6 +843,11 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
               comidasActuales[i].alternativas = validada.alternativas
               comidasActuales[i].kcal_target = validada.kcal_target
               comidasActuales[i].proteinas_target = validada.proteinas_target
+              comidasActuales[i].recetas = [{
+                receta_id: validada.receta_id,
+                receta_nombre: validada.receta_nombre,
+                cantidad_porciones: 1,
+              }]
             }
           })
         }
@@ -719,7 +884,22 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
         { nombre: 'Comida', orden: 2, porcentaje_kcal: 35, kcal: Math.round(kcalObjetivo * 0.35), hora_sugerida: '13:30', notas: `Proteína: ${distribucionProteina.comidas[1]?.proteinas_g ?? 35}g${distribucionProteina.comidas[1]?.es_post_entreno ? ' [POST-ENTRENO]' : ''}` },
         { nombre: 'Merienda', orden: 3, porcentaje_kcal: 15, kcal: Math.round(kcalObjetivo * 0.15), hora_sugerida: '17:00', notas: `Proteína: ${distribucionProteina.comidas[2]?.proteinas_g ?? 20}g` },
         { nombre: 'Cena', orden: 4, porcentaje_kcal: 25, kcal: Math.round(kcalObjetivo * 0.25), hora_sugerida: perfil?.hora_ultima_ingesta ?? '20:30', notas: `Proteína: ${distribucionProteina.comidas[3]?.proteinas_g ?? 25}g para MPS nocturna` },
-      ],
+      ].map((comida) => {
+        const candidata = candidatasPorSlot.get(comida.nombre)?.[0]
+        return {
+          ...comida,
+          kcal_target: comida.kcal,
+          proteinas_target: distribucionProteina.comidas[(comida.orden as number) - 1]?.proteinas_g ?? null,
+          receta_id: candidata?.id,
+          receta_nombre: candidata?.nombre,
+          alternativas: candidatasPorSlot.get(comida.nombre)?.slice(1, 3).map(r => r.id) ?? [],
+          recetas: candidata ? [{
+            receta_id: candidata.id,
+            receta_nombre: candidata.nombre,
+            cantidad_porciones: 1,
+          }] : [],
+        }
+      }),
       mesociclo_plan: {
         objetivo: mesociclo.objetivo_mesociclo,
         semanas: mesociclo.semanas.map(s => ({
@@ -834,9 +1014,22 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
     if (planDbError) throw planDbError
     planId = planDb.id
 
-    // 13b. Crear comidas y vincular recetas como alimentos
+    // 13b. Crear comidas y expandir recetas en ingredientes reales
     for (const comida of comidasData) {
-      const recetaIdPrincipal = ((comida.recetas as Array<Record<string, unknown>> | undefined)?.[0]?.receta_id as string | undefined) ?? null
+      const recetasNormalizadas = (() => {
+        const directas = (comida.recetas as Array<Record<string, unknown>> | undefined) ?? []
+        if (directas.length > 0) return directas
+        const recetaId = comida.receta_id as string | undefined
+        const recetaNombre = comida.receta_nombre as string | undefined
+        return recetaId || recetaNombre
+          ? [{
+              receta_id: recetaId,
+              receta_nombre: recetaNombre,
+              cantidad_porciones: comida.cantidad_porciones ?? 1,
+            }]
+          : []
+      })()
+      const recetaIdPrincipal = (recetasNormalizadas[0]?.receta_id as string | undefined) ?? null
       const { data: comidaDb, error: comidaError } = await supabase
         .from('comidas')
         .insert({
@@ -860,14 +1053,12 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
         continue
       }
 
-      const recetas = (comida.recetas as Array<Record<string, unknown>> | undefined)
-      if (!recetas || recetas.length === 0) continue
-
-      for (const r of recetas) {
-        const recetaId = r.receta_id as string
-        const recetaNombre = r.receta_nombre as string
+      for (let recetaIndex = 0; recetaIndex < recetasNormalizadas.length; recetaIndex++) {
+        const r = recetasNormalizadas[recetaIndex]
+        const recetaId = r.receta_id as string | undefined
+        const recetaNombre = (r.receta_nombre as string | undefined) ?? ''
         const cantPorciones = (r.cantidad_porciones as number) ?? 1
-        const recetaResolved = recetasPorId.get(recetaId) ??
+        const recetaResolved = (recetaId ? recetasPorId.get(recetaId) : undefined) ??
           recetasPorNombre.get(recetaNombre.toLowerCase().trim()) ??
           [...recetasPorNombre.entries()].find((e) =>
             e[0].includes(recetaNombre.toLowerCase().split(' ')[0])
@@ -882,73 +1073,50 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           continue
         }
 
-        let alimentoId: string
-        const { data: alExistenteData } = await supabase
-          .from('alimentos')
-          .select('id')
-          .eq('nombre', recetaFull.nombre)
-          .maybeSingle()
-
-        if (alExistenteData) {
-          alimentoId = alExistenteData.id
-        } else {
-          const { data: newAlData, error: alError } = await supabase
-            .from('alimentos')
-            .insert({
-              nombre: recetaFull.nombre,
-              categoria: 'receta_ia',
-              calorias: recetaFull.kcal,
-              proteinas: recetaFull.proteinas,
-              carbohidratos: recetaFull.carbohidratos,
-              grasas: recetaFull.grasas,
-              custom: true,
-              coach_id: cliente.coach_id,
-            })
-            .select()
-            .single()
-
-          if (alError || !newAlData) {
-            console.error('Error creando alimento para receta:', alError)
-            continue
-          }
-          alimentoId = newAlData.id
-        }
-
-        const gramos = Math.round(cantPorciones * 100)
         const targetKcalComida = (comida.kcal_target as number) || Math.round(kcalObjetivo / (comidasData?.length ?? 4))
-        const factorGramaje = calcularFactorGramaje(recetaFull.kcal ?? 0, targetKcalComida)
-        const factorFinal = factorGramaje ?? 1.0
-        const { error: caError } = await supabase
-          .from('comida_alimentos')
-          .insert({
-            comida_id: comidaDb.id,
-            alimento_id: alimentoId,
-            cantidad_gramos: gramos,
-            factor_ajuste: factorFinal,
+        try {
+          await aplicarRecetaAComida(supabase, {
+            comidaId: comidaDb.id,
+            recetaId: recetaFull.id,
+            clienteId: cliente_id,
+            planId: planDb.id,
+            comidaSlot: comida.nombre as string,
+            targetKcal: targetKcalComida * cantPorciones,
+            tipoInteraccion: 'asignada_plan',
+            reemplazar: recetaIndex === 0,
           })
-        if (caError) {
-          console.error('[generar-plan-inicial] Error vinculando alimento a comida:', recetaFull.nombre, caError.message)
-        }
-        // Registrar interacción asignada_plan (fire-and-forget)
-        if (recetaFull.id) {
-          void (async () => {
-            try {
-              await supabase.from('receta_interacciones_cliente').insert({
-                cliente_id,
-                receta_id: recetaFull.id,
-                tipo: 'asignada_plan',
-                plan_id: planDb.id,
-                comida_slot: comida.nombre as string,
-              })
-            } catch (err: unknown) {
-              console.warn('[generar-plan-inicial] Interacción no logged:', err instanceof Error ? err.message : err)
-            }
-          })()
+        } catch (err) {
+          console.error('[generar-plan-inicial] Error expandiendo receta en ingredientes:', recetaFull.nombre, err)
         }
       }
     }
   } catch (err) {
     console.error('[generar-plan-inicial] Error persistiendo plan en BD:', err)
+  }
+
+  // ── 13c. Crear entrenamiento inicial si el cliente aún no tiene plan activo ──
+  let planEntrenoId: string | null = null
+  try {
+    const { data: entrenoActivo } = await supabase
+      .from('planes_entrenamiento')
+      .select('id')
+      .eq('cliente_id', cliente_id)
+      .eq('activo', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const plantillaRecomendada = plantillasEntrenoRecomendadas?.[0]
+    if (!entrenoActivo && plantillaRecomendada?.id) {
+      planEntrenoId = await crearPlanEntrenoDesdePlantilla(supabase, {
+        clienteId: cliente_id,
+        coachId: cliente.coach_id,
+        plantillaId: plantillaRecomendada.id,
+        nombre: `Plan inicial — ${plantillaRecomendada.nombre}`,
+      })
+    }
+  } catch (err) {
+    console.error('[generar-plan-inicial] Error creando entrenamiento inicial:', err)
   }
 
   // ── 14. Save to registros_ia ───────────────────────────────────────────────
@@ -961,6 +1129,8 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
       respuesta_json: {
         ...planJson,
         dieta_ia_raw: dietaIA ?? undefined, // Guardar la respuesta cruda de la IA
+        plan_nutricion_id: planId,
+        plan_entrenamiento_id: planEntrenoId,
       },
       modelo: DEEPSEEK_MODEL,
       tokens_usados: tokensUsados,

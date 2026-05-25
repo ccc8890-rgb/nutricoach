@@ -33,7 +33,7 @@ export async function ejecutarDirectorSupercoachCliente(clienteId: string): Prom
       .maybeSingle(),
     db
       .from('planes_entrenamiento')
-      .select('nombre, sesiones_por_semana')
+      .select('id, nombre')
       .eq('cliente_id', clienteId)
       .eq('activo', true)
       .order('created_at', { ascending: false })
@@ -87,7 +87,13 @@ export async function ejecutarDirectorSupercoachCliente(clienteId: string): Prom
   const rpeMedia7 = rpeValues.length ? Math.round((rpeValues.reduce((a, b) => a + b, 0) / rpeValues.length) * 10) / 10 : null
 
   const perfilEntreno = perfilEntrenoRes.data as PerfilEntrenoCliente | null
-  const planEntreno = planEntrenoRes.data as { nombre: string; sesiones_por_semana?: number | null } | null
+  const planEntrenoRaw = planEntrenoRes.data as { id: string; nombre: string } | null
+  const { count: sesionesPlan } = planEntrenoRaw?.id
+    ? await db.from('sesiones_entrenamiento').select('id', { count: 'exact', head: true }).eq('plan_id', planEntrenoRaw.id)
+    : { count: null }
+  const planEntreno = planEntrenoRaw
+    ? { nombre: planEntrenoRaw.nombre, sesiones_por_semana: sesionesPlan ?? null }
+    : null
   const sesionesObjetivo = planEntreno?.sesiones_por_semana ?? perfilEntreno?.dias_disponibles ?? null
   const adherencia = sesionesObjetivo ? Math.round((sesiones7 / sesionesObjetivo) * 100) : null
   const tiposPendientes = new Set((pendientesRes.data ?? []).map(t => t.tipo))

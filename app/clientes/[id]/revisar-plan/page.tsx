@@ -418,39 +418,10 @@ export default function RevisarPlanPage() {
           if (!recetasSugeridas?.length) continue
           const primeraReceta = recetasSugeridas[0]
           try {
-            const { data: alimentoExistente } = await supabase
-              .from('alimentos')
-              .select('id')
-              .eq('nombre', primeraReceta.nombre)
-              .eq('categoria', 'receta_ia')
-              .maybeSingle()
-            let alimentoId: string
-            if (alimentoExistente) {
-              alimentoId = alimentoExistente.id
-            } else {
-              const { data: nuevoAlimento, error: alError } = await supabase
-                .from('alimentos')
-                .insert({
-                  nombre: primeraReceta.nombre,
-                  categoria: 'receta_ia',
-                  calorias: primeraReceta.kcal,
-                  proteinas: primeraReceta.proteinas,
-                  carbohidratos: primeraReceta.carbohidratos,
-                  grasas: primeraReceta.grasas,
-                  custom: true,
-                })
-                .select('id')
-                .single()
-              if (alError || !nuevoAlimento) {
-                console.error(`Error al crear alimento para receta "${primeraReceta.nombre}":`, alError)
-                continue
-              }
-              alimentoId = nuevoAlimento.id
-            }
-            await supabase.from('comida_alimentos').insert({
-              comida_id: comida.id,
-              alimento_id: alimentoId,
-              cantidad_gramos: 100,
+            await fetch(`/api/comidas/${comida.id}/receta`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ receta_id: primeraReceta.id }),
             })
           } catch (err) {
             console.error(`Error al persistir receta en comida "${comida.nombre}":`, err)
@@ -461,39 +432,11 @@ export default function RevisarPlanPage() {
         // Usar las recetas que DeepSeek seleccionó
         for (const r of recetasDeepSeek) {
           try {
-            // Buscar si ya existe el alimento con ese nombre
-            const { data: alimentoExistente } = await supabase
-              .from('alimentos')
-              .select('id')
-              .eq('nombre', r.receta_nombre)
-              .eq('categoria', 'receta_ia')
-              .maybeSingle()
-
-            let alimentoId: string
-            if (alimentoExistente) {
-              alimentoId = alimentoExistente.id
-            } else {
-              const { data: nuevoAlimento, error: alError } = await supabase
-                .from('alimentos')
-                .insert({
-                  nombre: r.receta_nombre,
-                  categoria: 'receta_ia',
-                  custom: true,
-                })
-                .select('id')
-                .single()
-              if (alError || !nuevoAlimento) {
-                console.error(`Error al crear alimento para receta IA "${r.receta_nombre}":`, alError)
-                continue
-              }
-              alimentoId = nuevoAlimento.id
-            }
-
-            const gramos = Math.round((r.cantidad_porciones ?? 1) * 100)
-            await supabase.from('comida_alimentos').insert({
-              comida_id: comida.id,
-              alimento_id: alimentoId,
-              cantidad_gramos: gramos,
+            if (!r.receta_id) continue
+            await fetch(`/api/comidas/${comida.id}/receta`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ receta_id: r.receta_id }),
             })
           } catch (err) {
             console.error(`Error al persistir receta IA en comida "${comida.nombre}":`, err)
@@ -837,11 +780,11 @@ export default function RevisarPlanPage() {
           {/* ── Protocolo semanal (campo pro) ───────────────────── */}
           {plan.protocolo_semana && (
             <div className="p-3 border rounded-lg text-sm mb-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">📅 Protocolo semanal</p>
+              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">Protocolo semanal</p>
               <div className="space-y-1.5">
                 <div className="flex gap-2"><span className="text-xs font-medium text-green-600 dark:text-green-400 w-24 shrink-0">Día entreno</span><span className="text-xs text-[var(--text)]">{plan.protocolo_semana.dia_entreno}</span></div>
                 <div className="flex gap-2"><span className="text-xs font-medium text-slate-500 w-24 shrink-0">Día descanso</span><span className="text-xs text-[var(--text)]">{plan.protocolo_semana.dia_descanso}</span></div>
-                <div className="flex gap-2"><span className="text-xs font-medium text-amber-600 dark:text-amber-400 w-24 shrink-0">⭐ Clave</span><span className="text-xs text-[var(--text)] font-medium">{plan.protocolo_semana.timing_clave}</span></div>
+                <div className="flex gap-2"><span className="text-xs font-medium text-amber-600 dark:text-amber-400 w-24 shrink-0">Clave</span><span className="text-xs text-[var(--text)] font-medium">{plan.protocolo_semana.timing_clave}</span></div>
               </div>
             </div>
           )}
@@ -853,7 +796,7 @@ export default function RevisarPlanPage() {
               <p className="text-amber-900 dark:text-amber-200 mb-2">{plan.justificacion_coach.razonamiento_macros}</p>
               {plan.justificacion_coach.senales_seguimiento?.length > 0 && (
                 <div className="mb-1.5">
-                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">📊 Señales a monitorizar en 2-4 semanas:</p>
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">Señales a monitorizar en 2-4 semanas:</p>
                   <ul className="space-y-0.5">
                     {plan.justificacion_coach.senales_seguimiento.map((s, i) => (
                       <li key={i} className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-1"><span>•</span>{s}</li>

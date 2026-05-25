@@ -101,9 +101,10 @@ export async function POST(request: NextRequest) {
         if (resultado.accion === 'ajuste_calorico_10pct') {
             // Obtener macros base del plan activo
             const { data: dieta } = await serviceSupabase
-                .from('dietas')
-                .select('kcal_objetivo, proteinas_objetivo, carbos_objetivo, grasas_objetivo')
+                .from('planes_nutricion')
+                .select('kcal_objetivo, proteinas_objetivo, carbohidratos_objetivo, grasas_objetivo')
                 .eq('cliente_id', cliente_id)
+                .eq('activo', true)
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .single()
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
                 ajuste_macros = calcularAjusteCaloricoSemanal({
                     kcal: dieta.kcal_objetivo ?? 2000,
                     proteinas: dieta.proteinas_objetivo ?? 150,
-                    carbohidratos: dieta.carbos_objetivo ?? 200,
+                    carbohidratos: dieta.carbohidratos_objetivo ?? 200,
                     grasas: dieta.grasas_objetivo ?? 70,
                 })
             }

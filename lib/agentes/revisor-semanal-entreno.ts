@@ -35,7 +35,7 @@ export async function ejecutarRevisorSemanalEntreno(clienteId: string): Promise<
   // 1. Verificar plan activo
   const { data: plan } = await db
     .from('planes_entrenamiento')
-    .select('id, nombre, sesiones_por_semana')
+    .select('id, nombre')
     .eq('cliente_id', clienteId)
     .eq('activo', true)
     .single()
@@ -81,7 +81,11 @@ export async function ejecutarRevisorSemanalEntreno(clienteId: string): Promise<
     return acc + durMin * Math.pow(rpe / 10, 2)
   }, 0)
 
-  const sesionesPlaneadas = (plan as any).sesiones_por_semana ?? 3
+  const { count: sesionesPlan } = await db
+    .from('sesiones_entrenamiento')
+    .select('id', { count: 'exact', head: true })
+    .eq('plan_id', plan.id)
+  const sesionesPlaneadas = sesionesPlan ?? 3
   const adherencia = sesionesRealizadas / sesionesPlaneadas
 
   // 5. Solo generar tarea si hay datos útiles o adherencia baja
