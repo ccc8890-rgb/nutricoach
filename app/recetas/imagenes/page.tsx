@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChefHat,
+  Clipboard,
   ImageOff,
   Images,
   Loader2,
@@ -13,6 +14,8 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Wand2,
+  X,
   XCircle,
 } from 'lucide-react'
 
@@ -45,6 +48,7 @@ type RecetaImagen = {
   imagen_needs_review?: boolean | null
   imagen_review_notes?: string | null
   imagen_estilo_preset?: string | null
+  imagen_prompt_base?: string | null
   created_at?: string | null
 }
 
@@ -60,6 +64,13 @@ type ImagenesResponse = {
     sospechosas: number
   }
   filtro: FiltroImagen
+}
+
+type PromptResponse = {
+  receta_id: string
+  preset: string
+  presets: Array<{ value: string; label: string }>
+  prompt: string
 }
 
 const filtros: Array<{ id: FiltroImagen; label: string; detail: string; icon: React.ElementType }> = [
@@ -93,10 +104,15 @@ function ImagenCard({
   onUpdate,
 }: {
   receta: RecetaImagen
-  onUpdate: (id: string, patch: Partial<RecetaImagen>) => Promise<void>
+  onUpdate: (id: string, patch: Partial<RecetaImagen> & Record<string, unknown>) => Promise<void>
 }) {
   const [notes, setNotes] = useState(receta.imagen_review_notes ?? '')
   const [saving, setSaving] = useState(false)
+  const [promptOpen, setPromptOpen] = useState(false)
+  const [promptData, setPromptData] = useState<PromptResponse | null>(null)
+  const [promptPreset, setPromptPreset] = useState(receta.imagen_estilo_preset ?? '')
+  const [promptLoading, setPromptLoading] = useState(false)
+  const [promptCopied, setPromptCopied] = useState(false)
   const quality = receta.imagen_quality_score ?? 0
   const realismo = receta.imagen_realismo_score ?? 0
   const match = receta.imagen_match_receta_score ?? 0
@@ -108,6 +124,29 @@ function ImagenCard({
     } finally {
       setSaving(false)
     }
+  }
+
+  async function loadPrompt(nextPreset = promptPreset) {
+    setPromptOpen(true)
+    setPromptLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (nextPreset) params.set('preset', nextPreset)
+      const res = await fetch(`/api/recetas/${receta.id}/imagen?${params.toString()}`, { cache: 'no-store' })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'No se pudo preparar el prompt')
+      setPromptData(json)
+      setPromptPreset(json.preset)
+    } finally {
+      setPromptLoading(false)
+    }
+  }
+
+  async function copyPrompt() {
+    if (!promptData?.prompt) return
+    await navigator.clipboard.writeText(promptData.prompt)
+    setPromptCopied(true)
+    window.setTimeout(() => setPromptCopied(false), 1600)
   }
 
   return (
@@ -148,6 +187,15 @@ function ImagenCard({
               </p>
             </div>
             <div className="flex shrink-0 gap-2">
+              <button
+                disabled={saving}
+                onClick={() => loadPrompt()}
+                className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold disabled:opacity-60"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--bg)' }}
+              >
+                <Wand2 size={14} />
+                Prompt
+              </button>
               <button
                 disabled={saving}
                 onClick={() => act({ imagen_estado: 'aprobada', imagen_quality_score: Math.max(quality, 82), imagen_realismo_score: Math.max(realismo, 82), imagen_match_receta_score: Math.max(match, 78), imagen_review_notes: notes })}
@@ -206,6 +254,87 @@ function ImagenCard({
           </div>
         </div>
       </div>
+      {promptOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-3 backdrop-blur-sm sm:items-center">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl border shadow-2xl" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <div className="flex items-start justify-between gap-4 border-b p-4" style={{ borderColor: 'var(--border)' }}>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+                  Prompt fotográfico
+                </p>
+                <h3 className="mt-1 text-lg font-semibold leading-tight" style={{ color: 'var(--text)' }}>{receta.nombre}</h3>
+              </div>
+              <button
+                onClick={() => setPromptOpen(false)}
+                className="rounded-xl border p-2"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                aria-label="Cerrar"
+              >
+                <X size={17} />
+              </button>
+            </div>
+
+            <div className="max-h-[66vh] overflow-y-auto p-4">
+              {promptLoading ? (
+                <div className="flex min-h-[220px] items-center justify-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <Loader2 className="animate-spin" size={18} />
+                  Preparando prompt con ingredientes reales
+                </div>
+              ) : (
+                <>
+                  {promptData?.presets && (
+                    <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      {promptData.presets.map(preset => (
+                        <button
+                          key={preset.value}
+                          onClick={() => loadPrompt(preset.value)}
+                          className="rounded-xl border px-3 py-2 text-left text-xs font-semibold transition-transform active:scale-[0.98]"
+                          style={promptPreset === preset.value
+                            ? { borderColor: 'rgba(163,230,53,0.45)', color: '#A3E635', background: 'rgba(163,230,53,0.10)' }
+                            : { borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--bg)' }}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <textarea
+                    readOnly
+                    value={promptData?.prompt ?? ''}
+                    className="min-h-[420px] w-full resize-none rounded-xl border p-4 font-mono text-xs leading-relaxed outline-none"
+                    style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                  />
+                </>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2 border-t p-4 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: 'var(--border)' }}>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                No genera imagen. Solo prepara dirección fotográfica para usar después con el proveedor que decidamos.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  disabled={!promptData?.prompt || saving}
+                  onClick={() => act({ imagen_prompt_base: promptData?.prompt, imagen_estilo_preset: promptPreset, imagen_estado: 'revisar', imagen_needs_review: true })}
+                  className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold disabled:opacity-60"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--bg)' }}
+                >
+                  Guardar base
+                </button>
+                <button
+                  disabled={!promptData?.prompt}
+                  onClick={copyPrompt}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:opacity-60"
+                  style={{ background: 'var(--text)', color: 'var(--bg)' }}
+                >
+                  <Clipboard size={15} />
+                  {promptCopied ? 'Copiado' : 'Copiar prompt'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   )
 }
@@ -239,7 +368,7 @@ export default function RecetasImagenesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtro])
 
-  async function updateRecipe(id: string, patch: Partial<RecetaImagen>) {
+  async function updateRecipe(id: string, patch: Partial<RecetaImagen> & Record<string, unknown>) {
     const res = await fetch(`/api/recetas/${id}/imagen`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

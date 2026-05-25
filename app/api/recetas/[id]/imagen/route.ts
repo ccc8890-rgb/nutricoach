@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { construirPromptImagenReceta, inferirPresetImagenReceta, PRESETS_IMAGEN_RECETA, type PresetImagenReceta } from '@/lib/recetas/imagen-prompts'
 
 const ESTADOS = ['pendiente', 'revisar', 'aprobada', 'rechazada', 'sin_imagen'] as const
 const ORIGENES = ['missing', 'scraped', 'uploaded', 'ai', 'desconocida'] as const
@@ -9,6 +10,48 @@ function clampScore(value: unknown) {
   const n = Number(value)
   if (!Number.isFinite(n)) return null
   return Math.max(0, Math.min(100, Math.round(n)))
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const auth = createApiSupabase(request)
+  const { data: { user } } = await auth.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  const presetParam = new URL(request.url).searchParams.get('preset') as PresetImagenReceta | null
+  const db = createServiceSupabase()
+  const { data: receta, error } = await db
+    .from('recetas')
+    .select(`
+      id, nombre, descripcion, categoria, tipo_plato, coach_id,
+      kcal, proteinas, carbohidratos, grasas, premium_chef,
+      objetivos, deportes, momentos, estilos, digestibilidad,
+      imagen_review_notes, imagen_estilo_preset,
+      receta_ingredientes!receta_ingredientes_receta_id_fkey(
+        nombre_libre, cantidad_gramos, alimento:alimentos(nombre)
+      )
+    `)
+    .eq('id', id)
+    .or(`coach_id.eq.${user.id},coach_id.is.null`)
+    .single()
+
+  if (error || !receta) return NextResponse.json({ error: 'Receta no encontrada' }, { status: 404 })
+
+  const allowedPreset = PRESETS_IMAGEN_RECETA.some(p => p.value === presetParam)
+    ? presetParam
+    : undefined
+  const preset = allowedPreset ?? inferirPresetImagenReceta(receta)
+  const prompt = construirPromptImagenReceta(receta, preset)
+
+  return NextResponse.json({
+    receta_id: id,
+    preset,
+    presets: PRESETS_IMAGEN_RECETA,
+    prompt,
+  })
 }
 
 export async function PATCH(
