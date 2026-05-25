@@ -1,69 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { createServiceSupabase } from '@/lib/supabase-server'
 
-export async function GET(request: NextRequest) {
-  const supabaseAuth = createApiSupabase(request)
-  const { data: { user } } = await supabaseAuth.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
-
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ codigo: string }> }
+) {
+  const { codigo } = await params
   const { searchParams } = new URL(request.url)
-  const alimento_id = searchParams.get('alimento_id')
+  const alimentoId = searchParams.get('alimento_id')
   const kcal = parseFloat(searchParams.get('kcal') ?? '0')
   const proteinas = parseFloat(searchParams.get('proteinas') ?? '0')
 
-  if (!alimento_id || !kcal) {
+  if (!alimentoId || !kcal) {
     return NextResponse.json({ error: 'alimento_id y kcal requeridos' }, { status: 400 })
   }
 
-  const supabase = createServiceSupabase()
+  const db = createServiceSupabase()
+  const { data: plan } = await db
+    .from('planes_nutricion')
+    .select('id')
+    .eq('codigo_publico', codigo)
+    .eq('activo', true)
+    .single()
 
-  // Obtener categoría del alimento original
-  const { data: original } = await supabase
+  if (!plan) return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 })
+
+  const { data: original } = await db
     .from('alimentos')
     .select('id, nombre, calorias, proteinas, carbohidratos, grasas, categoria')
-    .eq('id', alimento_id)
+    .eq('id', alimentoId)
     .eq('es_comestible', true)
     .single()
 
   if (!original) return NextResponse.json({ error: 'Alimento no encontrado' }, { status: 404 })
 
-  // Buscar alternativas homólogas por categoría + macros ±15%
   const margenKcal = kcal * 0.15
   const margenProt = proteinas > 0 ? proteinas * 0.20 : 5
+  const kcalCol = 'calorias'
 
-  const { data: alternativas } = await supabase
+  const { data: alternativasBase } = await db
     .from('alimentos')
     .select('id, nombre, calorias, proteinas, carbohidratos, grasas, categoria')
     .eq('categoria', original.categoria)
     .eq('es_comestible', true)
-    .gte('calorias', kcal - margenKcal)
-    .lte('calorias', kcal + margenKcal)
+    .gte(kcalCol, kcal - margenKcal)
+    .lte(kcalCol, kcal + margenKcal)
     .gte('proteinas', proteinas - margenProt)
     .lte('proteinas', proteinas + margenProt)
-    .neq('id', alimento_id)
-    .gt('calorias', 0)
+    .neq('id', alimentoId)
+    .gt(kcalCol, 0)
     .order('proteinas', { ascending: false })
     .limit(4)
 
-  // Si no hay suficientes por categoría, ampliar la búsqueda por kcal sola
-  let resultado = alternativas ?? []
-  if (resultado.length < 2) {
-    const { data: ampliado } = await supabase
+  let alternativas = alternativasBase ?? []
+  if (alternativas.length < 2) {
+    const { data: ampliadas } = await db
       .from('alimentos')
       .select('id, nombre, calorias, proteinas, carbohidratos, grasas, categoria')
       .eq('es_comestible', true)
-      .gte('calorias', kcal - margenKcal * 1.5)
-      .lte('calorias', kcal + margenKcal * 1.5)
+      .gte(kcalCol, kcal - margenKcal * 1.5)
+      .lte(kcalCol, kcal + margenKcal * 1.5)
       .gte('proteinas', proteinas - margenProt * 1.5)
       .lte('proteinas', proteinas + margenProt * 1.5)
-      .neq('id', alimento_id)
-      .gt('calorias', 0)
+      .neq('id', alimentoId)
+      .gt(kcalCol, 0)
       .order('proteinas', { ascending: false })
       .limit(4)
 
-    resultado = [
-      ...resultado,
-      ...(ampliado ?? []).filter(a => !resultado.some(r => r.id === a.id)),
+    alternativas = [
+      ...alternativas,
+      ...(ampliadas ?? []).filter(a => !alternativas.some(r => r.id === a.id)),
     ].slice(0, 3)
   }
 
@@ -79,6 +85,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     original: normalizar(original),
-    alternativas: resultado.slice(0, 3).map(normalizar),
+    alternativas: alternativas.slice(0, 3).map(normalizar),
   })
 }

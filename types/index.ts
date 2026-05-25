@@ -1137,6 +1137,14 @@ export interface RecetaCandidata {
   intolerancias?: string[] | null
   score_calidad?: number | null
   apta_cliente?: string | null
+  objetivos?: string[] | null
+  deportes?: string[] | null
+  momentos?: string[] | null
+  estilos?: string[] | null
+  premium_chef?: boolean | null
+  adherencia_score?: number | null
+  densidad_energetica?: string | null
+  digestibilidad?: string | null
   _dist?: number
   _sort_score?: number
 }

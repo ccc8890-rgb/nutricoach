@@ -16,7 +16,14 @@ export async function GET(
         // 1. Buscar plan por código público
         const { data: plan, error: planError } = await supabase
             .from('planes_nutricion')
-            .select('*, comidas(*, alimentos:comida_alimentos(*, alimento:alimentos(*)))')
+            .select(`
+                *,
+                comidas(
+                    *,
+                    receta:recetas(id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min),
+                    alimentos:comida_alimentos(*, alimento:alimentos(*))
+                )
+            `)
             .eq('codigo_publico', codigo)
             .eq('activo', true)
             .single()

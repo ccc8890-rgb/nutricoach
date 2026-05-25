@@ -107,7 +107,7 @@ export async function filtrarRecetasPorSlot(
 
   let query = supabase
     .from('recetas')
-    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, apta_cliente')
+    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad')
     .eq('estado', 'aprobada')
     .gt('kcal', 0)
     .in('categoria', categorias)
@@ -227,6 +227,16 @@ export async function filtrarRecetasPorSlot(
         : 0.0
       : 0.5
 
+    const objetivosReceta = new Set((r.objetivos ?? []) as string[])
+    const objetivoTaxonomia = objetivoCliente
+      ? objetivosReceta.has(objetivoCliente) ? 1.0
+        : objetivosReceta.has('salud_general') || objetivosReceta.has('mantenimiento') ? 0.5
+          : 0.15
+      : 0.5
+
+    const adherenciaScore = ((r.adherencia_score ?? 65) / 100)
+    const chefHealthyScore = r.premium_chef ? 0.85 : 0.6
+
     // Pesos ARAG: si hay perfil confiable, usamos los pesos enriquecidos
     // Si no, usamos pesos legacy (calidad + macro + apta)
     let sortScore: number
@@ -235,11 +245,18 @@ export async function filtrarRecetasPorSlot(
         scoreNorm      * 0.25 +
         (1 - distNorm) * 0.20 +
         alineacionPerfil * 0.30 +
-        novedadScore   * 0.15 +
-        aptaMatch      * 0.10
+        novedadScore   * 0.10 +
+        Math.max(aptaMatch, objetivoTaxonomia) * 0.10 +
+        adherenciaScore * 0.04 +
+        chefHealthyScore * 0.01
     } else {
       // Legacy weights (sin datos de perfil)
-      sortScore = scoreNorm * 0.40 + aptaMatch * 0.35 + (1 - distNorm) * 0.25
+      sortScore =
+        scoreNorm * 0.30 +
+        Math.max(aptaMatch, objetivoTaxonomia) * 0.30 +
+        (1 - distNorm) * 0.25 +
+        adherenciaScore * 0.10 +
+        chefHealthyScore * 0.05
     }
 
     return { ...r, _dist: dist, _sort_score: sortScore }

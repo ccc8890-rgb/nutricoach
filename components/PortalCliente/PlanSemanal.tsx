@@ -44,6 +44,12 @@ interface RecetaSlot {
 interface PlanSemanalProps {
     comidas: Comida[]
     clienteId?: string
+    targets?: {
+        kcal?: number | null
+        proteinas?: number | null
+        carbohidratos?: number | null
+        grasas?: number | null
+    }
 }
 
 function calcMacros(alimentos: AlimentoEnComida[]) {
@@ -69,7 +75,7 @@ function inferirTipoPlato(nombre: string): string | null {
     return null
 }
 
-export default function PlanSemanal({ comidas, clienteId }: PlanSemanalProps) {
+export default function PlanSemanal({ comidas, clienteId, targets }: PlanSemanalProps) {
     const [diaSeleccionado, setDiaSeleccionado] = useState(0)
     // pool: comida.id → lista de recetas disponibles para esa franja
     const [pool, setPool] = useState<Record<string, RecetaSlot[]>>({})
@@ -196,18 +202,27 @@ export default function PlanSemanal({ comidas, clienteId }: PlanSemanalProps) {
 
             {/* Resumen macros del día */}
             {totalDia.kcal > 0 && (
-                <div className="card !p-4" style={{ borderTop: '3px solid var(--primary)' }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-secondary)' }}>
-                        {DIAS[diaSeleccionado]}
-                    </p>
-                    <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
-                        {totalDia.kcal.toFixed(0)}{' '}
-                        <span className="text-base font-normal" style={{ color: 'var(--text-muted)' }}>kcal</span>
-                    </p>
-                    <div className="flex gap-4 mt-2 text-xs font-medium">
-                        <span style={{ color: 'var(--error)' }}>P {totalDia.proteinas.toFixed(0)}g</span>
-                        <span style={{ color: 'var(--warning)' }}>C {totalDia.carbohidratos.toFixed(0)}g</span>
-                        <span style={{ color: '#7C3AED' }}>G {totalDia.grasas.toFixed(0)}g</span>
+                <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-secondary)' }}>
+                                {DIAS[diaSeleccionado]}
+                            </p>
+                            <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
+                                {totalDia.kcal.toFixed(0)}{' '}
+                                <span className="text-base font-normal" style={{ color: 'var(--text-muted)' }}>kcal</span>
+                            </p>
+                        </div>
+                        {targets?.kcal ? (
+                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--primary-bg)', color: 'var(--primary)' }}>
+                                {Math.round((totalDia.kcal / targets.kcal) * 100)}%
+                            </span>
+                        ) : null}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-3 text-xs font-medium">
+                        <span className="rounded-xl px-2 py-1.5 text-center" style={{ color: '#FF3B30', background: 'var(--bg)' }}>P {totalDia.proteinas.toFixed(0)}g</span>
+                        <span className="rounded-xl px-2 py-1.5 text-center" style={{ color: '#FF9500', background: 'var(--bg)' }}>C {totalDia.carbohidratos.toFixed(0)}g</span>
+                        <span className="rounded-xl px-2 py-1.5 text-center" style={{ color: '#0A84FF', background: 'var(--bg)' }}>G {totalDia.grasas.toFixed(0)}g</span>
                     </div>
                 </div>
             )}
@@ -241,7 +256,7 @@ export default function PlanSemanal({ comidas, clienteId }: PlanSemanalProps) {
                                         <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
                                             {receta.imagen_url
                                                 ? <Image src={receta.imagen_url} alt={receta.nombre} width={64} height={64} className="w-full h-full object-cover" sizes="64px" />
-                                                : <div className="w-full h-full flex items-center justify-center text-2xl">🍽</div>
+                                                : <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>—</div>
                                             }
                                         </div>
                                         <div className="flex-1 min-w-0">

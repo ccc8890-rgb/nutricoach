@@ -20,6 +20,7 @@ interface Props {
   kcalPor100g: number
   protPor100g: number
   clienteId: string
+  codigo?: string
   onElegir: (alternativa: Alimento, gramosAlternativa: number) => void
   onCerrar: () => void
 }
@@ -31,6 +32,7 @@ export default function AlternativasModal({
   kcalPor100g,
   protPor100g,
   clienteId,
+  codigo,
   onElegir,
   onCerrar,
 }: Props) {
@@ -43,7 +45,11 @@ export default function AlternativasModal({
     const kcalPorcion = (kcalPor100g * gramosOriginal) / 100
     const protPorcion = (protPor100g * gramosOriginal) / 100
 
-    fetch(`/api/intercambios?alimento_id=${alimentoId}&kcal=${kcalPorcion}&proteinas=${protPorcion}`)
+    const endpoint = codigo
+      ? `/api/cliente/${codigo}/intercambios?alimento_id=${alimentoId}&kcal=${kcalPorcion}&proteinas=${protPorcion}`
+      : `/api/intercambios?alimento_id=${alimentoId}&kcal=${kcalPorcion}&proteinas=${protPorcion}`
+
+    fetch(endpoint)
       .then(r => r.json())
       .then(data => {
         setOriginal(data.original)
@@ -51,7 +57,7 @@ export default function AlternativasModal({
         setCargando(false)
       })
       .catch(() => setCargando(false))
-  }, [alimentoId, kcalPor100g, protPor100g, gramosOriginal])
+  }, [alimentoId, kcalPor100g, protPor100g, gramosOriginal, codigo])
 
   const elegir = async (alternativa: Alimento) => {
     setGuardando(alternativa.id)
@@ -61,7 +67,9 @@ export default function AlternativasModal({
       ? Math.round((kcalPor100g * gramosOriginal) / alternativa.kcal)
       : gramosOriginal
 
-    await fetch('/api/intercambios/elegir', {
+    const endpoint = codigo ? `/api/cliente/${codigo}/intercambios/elegir` : '/api/intercambios/elegir'
+
+    await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

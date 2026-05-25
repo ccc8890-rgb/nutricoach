@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { RefreshCw, Eye, EyeOff } from 'lucide-react'
+import { RefreshCw, Eye, EyeOff, Sun, Coffee, Utensils, Apple, Moon, Leaf, Clock } from 'lucide-react'
 
 const FRANJA_COLORES: Record<string, string> = {
   'Desayuno': '#F59E0B',
@@ -14,13 +14,13 @@ const FRANJA_COLORES: Record<string, string> = {
   'Snack': '#84CC16',
 }
 
-const FRANJA_EMOJIS: Record<string, string> = {
-  'Desayuno': '🌅',
-  'Media mañana': '🍎',
-  'Comida': '🍽️',
-  'Merienda': '🍪',
-  'Cena': '🌙',
-  'Snack': '🥜',
+const FRANJA_ICONS: Record<string, React.FC<{ size?: number; strokeWidth?: number }>> = {
+  'Desayuno': Sun,
+  'Media mañana': Coffee,
+  'Comida': Utensils,
+  'Merienda': Apple,
+  'Cena': Moon,
+  'Snack': Leaf,
 }
 
 function detectarGradiente(nombre: string): string {
@@ -72,7 +72,7 @@ export default function MealCard({
 }: Props) {
   const [expandido, setExpandido] = useState(false)
   const color = FRANJA_COLORES[nombreSlot] ?? FRANJA_COLORES['Comida']
-  const emoji = FRANJA_EMOJIS[nombreSlot] ?? '🍽️'
+  const SlotIcon = FRANJA_ICONS[nombreSlot] ?? Utensils
 
   const tieneFotoReal = tieneImagenReal && imagenUrl
   const tieneImagenIA = !tieneImagenReal && imagenUrl
@@ -130,7 +130,7 @@ export default function MealCard({
           style={{ height: alturaTier }}
         >
           <div className="text-center px-4">
-            <div className="text-4xl mb-2">🍽️</div>
+            <div className="flex justify-center mb-2 opacity-30"><Utensils size={48} /></div>
             <p className="text-sm font-medium line-clamp-2" style={{ color: 'var(--text-muted)' }}>{recetaNombre}</p>
           </div>
         </div>
@@ -143,11 +143,11 @@ export default function MealCard({
             className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg"
             style={{ color: 'white', backgroundColor: color }}
           >
-            {emoji} {nombreSlot}
+            <SlotIcon size={11} strokeWidth={2.5} /> {nombreSlot}
           </span>
           {horaSlot && (
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              🕐 {horaSlot}
+              <Clock size={11} strokeWidth={2} className="inline mr-0.5" />{horaSlot}
             </span>
           )}
         </div>
@@ -185,7 +185,7 @@ export default function MealCard({
         {notas_peri_entreno && (
           <p className="text-xs font-medium rounded-lg px-3 py-2 mb-3"
             style={{ background: '#FEF3C7', color: '#92400E' }}>
-            ⚡ {notas_peri_entreno}
+            {notas_peri_entreno}
           </p>
         )}
 

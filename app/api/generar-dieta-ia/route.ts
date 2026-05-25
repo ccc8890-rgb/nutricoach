@@ -4,6 +4,7 @@ import { construirPrompt, generarDietaConIA } from '@/lib/deepseek'
 import type { DietaGenerada } from '@/lib/deepseek'
 import { registrarInteraccionIA } from '@/lib/ia-logger'
 import { fetchKnowledgeContext } from '@/lib/knowledge'
+import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 
 /**
  * POST /api/generar-dieta-ia
@@ -163,14 +164,28 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Error al crear el plan de nutrición' }, { status: 500 })
         }
 
-        // 10. Crear comidas + asociar recetas (como alimentos por porción)
+        // 10. Crear comidas + expandir recetas en ingredientes reales
         for (const comida of dietaGenerada.comidas) {
+            const recetaPrincipal = comida.alimentos
+                .map(alimento => recetas.find(r => r.id === alimento.receta_id))
+                .find(Boolean)
+            const alternativas = comida.alimentos
+                .map(alimento => alimento.receta_id)
+                .filter((id): id is string => !!id && id !== recetaPrincipal?.id)
+                .slice(0, 3)
+
             const { data: comidaDb, error: comidaError } = await supabase
                 .from('comidas')
                 .insert({
                     plan_id: plan.id,
                     nombre: comida.nombre,
                     orden: comida.orden,
+                    receta_id: recetaPrincipal?.id ?? null,
+                    alternativas_receta_ids: alternativas.length > 0 ? alternativas : null,
+                    kcal_target: recetaPrincipal?.kcal ? Math.round(recetaPrincipal.kcal) : null,
+                    proteinas_target: recetaPrincipal?.proteinas ? Math.round(recetaPrincipal.proteinas) : null,
+                    carbos_target: recetaPrincipal?.carbohidratos ? Math.round(recetaPrincipal.carbohidratos) : null,
+                    grasas_target: recetaPrincipal?.grasas ? Math.round(recetaPrincipal.grasas) : null,
                 })
                 .select()
                 .single()
@@ -180,62 +195,24 @@ export async function POST(request: Request) {
                 continue
             }
 
-            // Asociar recetas como "alimentos" en comida_alimentos
-            // Las recetas tienen macros por porción, las tratamos como alimentos
-            for (const alimento of comida.alimentos) {
+            for (let index = 0; index < comida.alimentos.length; index++) {
+                const alimento = comida.alimentos[index]
                 const receta = recetas.find(r => r.id === alimento.receta_id)
                 if (!receta) continue
 
-                // Verificar si la receta existe como alimento en la tabla alimentos
-                const { data: alimentoExistente } = await supabase
-                    .from('alimentos')
-                    .select('id')
-                    .eq('nombre', receta.nombre)
-                    .maybeSingle()
-
-                let alimentoId: string
-
-                if (alimentoExistente) {
-                    alimentoId = alimentoExistente.id
-                } else {
-                    // Crear un alimento temporal para esta receta
-                    // (en el futuro, las recetas deberían estar en la tabla recetas y linkearse)
-                    const { data: nuevoAlimento, error: alError } = await supabase
-                        .from('alimentos')
-                        .insert({
-                            nombre: receta.nombre,
-                            categoria: 'receta_ia',
-                            calorias: receta.kcal,
-                            proteinas: receta.proteinas,
-                            carbohidratos: receta.carbohidratos,
-                            grasas: receta.grasas,
-                            custom: true,
-                            coach_id: user.id,
-                        })
-                        .select()
-                        .single()
-
-                    if (alError || !nuevoAlimento) {
-                        console.error('Error al crear alimento para receta:', alError)
-                        continue
-                    }
-                    alimentoId = nuevoAlimento.id
-                }
-
-                // Calcular gramos equivalentes a la porción
-                // Asumimos 100g = 1 porción como base
-                const gramos = Math.round(alimento.cantidad_porciones * 100)
-
-                const { error: caError } = await supabase
-                    .from('comida_alimentos')
-                    .insert({
-                        comida_id: comidaDb.id,
-                        alimento_id: alimentoId,
-                        cantidad_gramos: gramos,
+                try {
+                    await aplicarRecetaAComida(serviceSupabase, {
+                        comidaId: comidaDb.id,
+                        recetaId: receta.id,
+                        clienteId: respuesta.cliente_id ?? null,
+                        planId: plan.id,
+                        comidaSlot: comida.nombre,
+                        targetKcal: Number(receta.kcal ?? 0) * (alimento.cantidad_porciones ?? 1),
+                        tipoInteraccion: respuesta.cliente_id ? 'asignada_plan' : undefined,
+                        reemplazar: index === 0,
                     })
-
-                if (caError) {
-                    console.error('Error al asociar alimento a comida:', caError)
+                } catch (error) {
+                    console.error('Error al expandir receta en comida:', receta.nombre, error)
                 }
             }
         }

@@ -1,10 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
+import type { ElementType } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
-import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Download, Power, PowerOff, Copy, Check, BookOpen } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Download, Power, PowerOff, Copy, Check, BookOpen, UtensilsCrossed, RefreshCw, Target, Flame, Beef, Wheat, Droplets, Loader2, ExternalLink, CalendarDays } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { calcularMacrosPorCantidad, sumarMacros, COMIDAS_PREDEFINIDAS } from '@/lib/utils'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
@@ -34,16 +35,55 @@ interface AlimentoEnComida {
   alimento: Alimento
 }
 
+interface RecetaAsignada {
+  id: string
+  nombre: string
+  imagen_url: string | null
+  kcal: number
+  proteinas: number
+  carbohidratos: number
+  grasas: number
+  tiempo_prep_min: number | null
+}
+
 interface ComidaLocal {
   id: string
   nombre: string
   orden: number
   hora_sugerida: string
+  dia_semana?: string | null
+  receta_id?: string | null
+  kcal_target?: number | null
+  proteinas_target?: number | null
+  carbos_target?: number | null
+  grasas_target?: number | null
+  alternativas_receta_ids?: string[] | null
+  receta?: RecetaAsignada | null
   alimentos: AlimentoEnComida[]
   expandida: boolean
 }
 
+type RecetaEquivalente = RecetaAsignada & {
+  tipo_plato?: string | null
+}
+
 type Fuente = 'local' | 'off' | 'recetas'
+
+const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const
+const DIA_DEFAULT = DIAS_SEMANA[0]
+const DIA_ABR: Record<string, string> = {
+  Lunes: 'L',
+  Martes: 'M',
+  Miércoles: 'X',
+  Jueves: 'J',
+  Viernes: 'V',
+  Sábado: 'S',
+  Domingo: 'D',
+}
+
+function diaComida(comida: Pick<ComidaLocal, 'dia_semana'>) {
+  return comida.dia_semana || DIA_DEFAULT
+}
 
 export default function EditarDietaPage() {
   const { id } = useParams<{ id: string }>()
@@ -56,6 +96,8 @@ export default function EditarDietaPage() {
   const [toggling, setToggling] = useState(false)
   const [copiadoId, setCopiadoId] = useState(false)
   const [porcionesVis, setPorcionesVis] = useState(1)
+  const [diaActivo, setDiaActivo] = useState<string>(DIA_DEFAULT)
+  const [copiandoDia, setCopiandoDia] = useState<string | null>(null)
 
   const [nombreCustomComida, setNombreCustomComida] = useState('')
   const [mostrarInputCustom, setMostrarInputCustom] = useState(false)
@@ -73,14 +115,25 @@ export default function EditarDietaPage() {
   const [buscando, setBuscando] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [descargandoPDF, setDescargandoPDF] = useState(false)
+  const [alternativasPorComida, setAlternativasPorComida] = useState<Record<string, RecetaEquivalente[]>>({})
+  const [cargandoAlternativas, setCargandoAlternativas] = useState<Record<string, boolean>>({})
+  const [recetaAplicando, setRecetaAplicando] = useState<string | null>(null)
+  const [exploradorComida, setExploradorComida] = useState<string | null>(null)
+  const [queryAlternativas, setQueryAlternativas] = useState('')
+  const [resultadosAlternativas, setResultadosAlternativas] = useState<RecetaEquivalente[]>([])
+  const [buscandoAlternativas, setBuscandoAlternativas] = useState(false)
 
   async function loadPlan() {
     const [planRes, comidasRes] = await Promise.all([
       supabase.from('planes_nutricion').select('*, cliente:clientes(id, profile:profiles!profile_id(nombre, apellidos))').eq('id', id).single(),
-      supabase.from('comidas').select('*, alimentos:comida_alimentos(id, cantidad_gramos, alimento:alimentos(*))').eq('plan_id', id).order('orden'),
+      supabase
+        .from('comidas')
+        .select('*, receta:recetas(id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min), alimentos:comida_alimentos(id, cantidad_gramos, alimento:alimentos(*))')
+        .eq('plan_id', id)
+        .order('orden'),
     ])
     setPlan(planRes.data)
-    setComidas((comidasRes.data ?? []).map(c => ({ ...c, expandida: true })))
+    setComidas((comidasRes.data ?? []).map(c => ({ ...c, dia_semana: c.dia_semana ?? DIA_DEFAULT, expandida: true })))
     setLoading(false)
   }
 
@@ -220,6 +273,11 @@ export default function EditarDietaPage() {
   async function añadirIngredientesReceta(recetaId: string, recetaCompleta: RecetaConIngredientes) {
     if (!busquedaAbierta) return
     const comidaId = busquedaAbierta
+    await aplicarRecetaAComida(comidaId, recetaId, recetaCompleta.nombre)
+  }
+
+  async function aplicarRecetaAComida(comidaId: string, recetaId: string, recetaNombre: string) {
+    setRecetaAplicando(recetaId)
 
     // Cerrar buscador inmediatamente para mejor UX
     setBusquedaAbierta(null)
@@ -229,50 +287,53 @@ export default function EditarDietaPage() {
     setResultados([])
     setResultadosRecetas([])
 
-    const ingredientesValidos = recetaCompleta.ingredientes.filter(ing => ing.alimento_id && ing.cantidad_gramos > 0)
-    const sinAlimento = recetaCompleta.ingredientes.filter(ing => !ing.alimento_id)
+    try {
+      const res = await fetch(`/api/comidas/${comidaId}/receta`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receta_id: recetaId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'No se pudo aplicar la receta')
 
-    if (ingredientesValidos.length === 0) {
+      setComidas(prev => prev.map(c =>
+        c.id === comidaId
+          ? {
+            ...c,
+            receta_id: data.receta?.id ?? recetaId,
+            receta: data.receta ?? c.receta,
+            alimentos: data.ingredientes,
+            alternativas_receta_ids: (c.alternativas_receta_ids ?? []).filter(id => id !== recetaId),
+          }
+          : c
+      ))
+      setAlternativasPorComida(prev => {
+        const next = { ...prev }
+        delete next[comidaId]
+        return next
+      })
+
+      const msg = data.sin_vincular > 0
+        ? `${data.ingredientes.length} ingredientes aplicados. ${data.sin_vincular} sin vincular.`
+        : `${data.ingredientes.length} ingredientes aplicados.`
+      addToast({ type: 'success', title: 'Plato reemplazado', message: msg })
+    } catch (error) {
       addToast({
         type: 'error',
-        title: 'No se pudo añadir',
-        message: `Ningún ingrediente de "${recetaCompleta.nombre}" está vinculado a la base de datos`,
+        title: 'No se pudo reemplazar',
+        message: error instanceof Error ? error.message : `Error aplicando "${recetaNombre}"`,
       })
-      return
+    } finally {
+      setRecetaAplicando(null)
     }
-
-    // Insertar cada ingrediente como comida_alimento
-    let insertados = 0
-    for (const ing of ingredientesValidos) {
-      const { data } = await supabase.from('comida_alimentos').insert({
-        comida_id: comidaId,
-        alimento_id: ing.alimento_id!,
-        cantidad_gramos: ing.cantidad_gramos,
-      }).select().single()
-
-      if (data && ing.alimento) {
-        setComidas(prev => prev.map(c =>
-          c.id === comidaId
-            ? { ...c, alimentos: [...c.alimentos, { id: data.id, cantidad_gramos: ing.cantidad_gramos, alimento: ing.alimento! }] }
-            : c
-        ))
-        insertados++
-      }
-    }
-
-    const msgPartes = [`${insertados} ingredientes de "${recetaCompleta.nombre}" añadidos`]
-    if (sinAlimento.length > 0) {
-      msgPartes.push(`${sinAlimento.length} sin vincular (añádelos manualmente)`)
-    }
-    addToast({ type: 'success', title: 'Receta añadida', message: msgPartes.join('. ') })
   }
 
   async function añadirComida(nombre?: string) {
     const nombreFinal = nombre?.trim() || 'Comida ' + (comidas.length + 1)
     const { data } = await supabase.from('comidas').insert({
-      plan_id: id, nombre: nombreFinal, orden: comidas.length, hora_sugerida: null,
+      plan_id: id, nombre: nombreFinal, orden: comidas.length, hora_sugerida: null, dia_semana: diaActivo,
     }).select().single()
-    if (data) setComidas(prev => [...prev, { ...data, alimentos: [], expandida: true }])
+    if (data) setComidas(prev => [...prev, { ...data, dia_semana: data.dia_semana ?? diaActivo, alimentos: [], expandida: true }])
     setNombreCustomComida('')
     setMostrarInputCustom(false)
   }
@@ -285,6 +346,70 @@ export default function EditarDietaPage() {
   async function actualizarNombreComida(comidaId: string, nombre: string) {
     setComidas(prev => prev.map(c => c.id === comidaId ? { ...c, nombre } : c))
     await supabase.from('comidas').update({ nombre }).eq('id', comidaId)
+  }
+
+  async function copiarDiaADestino(diaDestino: string) {
+    const origen = comidas.filter(c => diaComida(c) === diaActivo)
+    if (!origen.length || diaDestino === diaActivo) return
+
+    setCopiandoDia(diaDestino)
+    try {
+      const comidasExistentesDestino = comidas.filter(c => diaComida(c) === diaDestino)
+      const offsetOrden = comidas.length + comidasExistentesDestino.length
+      const nuevasComidas: ComidaLocal[] = []
+
+      for (const [idx, comida] of origen.entries()) {
+        const { data: nuevaComida, error: comidaError } = await supabase
+          .from('comidas')
+          .insert({
+            plan_id: id,
+            nombre: comida.nombre,
+            orden: offsetOrden + idx,
+            hora_sugerida: comida.hora_sugerida || null,
+            dia_semana: diaDestino,
+            receta_id: comida.receta_id ?? null,
+            kcal_target: comida.kcal_target ?? null,
+            proteinas_target: comida.proteinas_target ?? null,
+            carbos_target: comida.carbos_target ?? null,
+            grasas_target: comida.grasas_target ?? null,
+            alternativas_receta_ids: comida.alternativas_receta_ids ?? [],
+          })
+          .select('*, receta:recetas(id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min)')
+          .single()
+
+        if (comidaError || !nuevaComida) throw new Error(comidaError?.message ?? 'No se pudo copiar la comida')
+
+        let alimentosCopiados: AlimentoEnComida[] = []
+        if (comida.alimentos.length > 0) {
+          const { data: nuevosAlimentos, error: alimentosError } = await supabase
+            .from('comida_alimentos')
+            .insert(comida.alimentos.map(af => ({
+              comida_id: nuevaComida.id,
+              alimento_id: af.alimento.id,
+              cantidad_gramos: af.cantidad_gramos,
+            })))
+            .select('id, cantidad_gramos, alimento:alimentos(*)')
+
+          if (alimentosError) throw new Error(alimentosError.message)
+          alimentosCopiados = (nuevosAlimentos ?? []) as unknown as AlimentoEnComida[]
+        }
+
+        nuevasComidas.push({
+          ...nuevaComida,
+          dia_semana: diaDestino,
+          alimentos: alimentosCopiados,
+          expandida: true,
+        } as ComidaLocal)
+      }
+
+      setComidas(prev => [...prev, ...nuevasComidas])
+      setDiaActivo(diaDestino)
+      addToast({ type: 'success', title: 'Día copiado', message: `${origen.length} comidas copiadas a ${diaDestino}` })
+    } catch (error) {
+      addToast({ type: 'error', title: 'No se pudo copiar el día', message: error instanceof Error ? error.message : 'Error copiando comidas' })
+    } finally {
+      setCopiandoDia(null)
+    }
   }
 
   async function añadirAlimento(comidaId: string, alimento: Alimento & { imagen?: string }) {
@@ -343,6 +468,83 @@ export default function EditarDietaPage() {
     ))
   }
 
+  function inferirTipoPlato(nombreComida: string): string | null {
+    const n = nombreComida.toLowerCase()
+    if (n.includes('desayuno')) return 'Desayuno'
+    if (n.includes('almuerzo') || n.includes('media mañana')) return 'Almuerzo'
+    if (n.includes('comida')) return 'Comida'
+    if (n.includes('merienda') || n.includes('snack')) return 'Merienda'
+    if (n.includes('cena')) return 'Cena'
+    return null
+  }
+
+  async function cargarAlternativasComida(comida: ComidaLocal, macros: Macros) {
+    setCargandoAlternativas(prev => ({ ...prev, [comida.id]: true }))
+    try {
+      const existentesParams = new URLSearchParams({
+        comida_id: comida.id,
+        ...(plan?.cliente_id ? { cliente_id: plan.cliente_id } : {}),
+      })
+      const existentesRes = await fetch(`/api/recetas/alternativas?${existentesParams}`)
+      const existentesData = existentesRes.ok ? await existentesRes.json() as { alternativas?: RecetaEquivalente[] } : { alternativas: [] }
+
+      const tipo = inferirTipoPlato(comida.nombre)
+      const params = new URLSearchParams({
+        kcal: String(Math.round(macros.calorias || comida.kcal_target || 0)),
+        proteinas: String(Math.round(macros.proteinas || comida.proteinas_target || 0)),
+        limite: '4',
+        ...(plan?.cliente_id ? { cliente_id: plan.cliente_id } : {}),
+        ...(tipo ? { tipo_plato: tipo } : {}),
+      })
+      const res = await fetch(`/api/recetas/sugeridas?${params}`)
+      const data = await res.json() as { recetas?: RecetaEquivalente[] }
+      const merged = [...(existentesData.alternativas ?? []), ...(data.recetas ?? [])]
+      const unique = Array.from(new Map(merged.map(r => [r.id, r])).values())
+      setAlternativasPorComida(prev => ({
+        ...prev,
+        [comida.id]: unique.filter(r => r.id !== comida.receta_id).slice(0, 8),
+      }))
+    } finally {
+      setCargandoAlternativas(prev => ({ ...prev, [comida.id]: false }))
+    }
+  }
+
+  async function guardarAlternativasCliente(comida: ComidaLocal, ids: string[]) {
+    const idsLimpios = [...new Set(ids.filter(id => id && id !== comida.receta_id))].slice(0, 3)
+    const res = await fetch(`/api/comidas/${comida.id}/alternativas`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alternativa_ids: idsLimpios }),
+    })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) {
+      addToast({ type: 'error', title: 'No se pudieron guardar las opciones', message: data?.error ?? 'Error guardando alternativas' })
+      return
+    }
+    setComidas(prev => prev.map(c => c.id === comida.id ? { ...c, alternativas_receta_ids: idsLimpios } : c))
+    addToast({ type: 'success', title: 'Opciones del cliente actualizadas', message: `${idsLimpios.length}/3 opciones asignadas` })
+  }
+
+  async function buscarMasAlternativas(comida: ComidaLocal, macros: Macros, query?: string) {
+    setBuscandoAlternativas(true)
+    try {
+      const tipo = inferirTipoPlato(comida.nombre)
+      const params = new URLSearchParams({
+        kcal: String(Math.round(macros.calorias || comida.kcal_target || 0)),
+        proteinas: String(Math.round(macros.proteinas || comida.proteinas_target || 0)),
+        limite: '7',
+        ...(query?.trim() ? { q: query.trim() } : {}),
+        ...(plan?.cliente_id ? { cliente_id: plan.cliente_id } : {}),
+        ...(tipo ? { tipo_plato: tipo } : {}),
+      })
+      const res = await fetch(`/api/recetas/sugeridas?${params}`)
+      const data = await res.json() as { recetas?: RecetaEquivalente[] }
+      setResultadosAlternativas((data.recetas ?? []).filter(r => r.id !== comida.receta_id))
+    } finally {
+      setBuscandoAlternativas(false)
+    }
+  }
+
   // IDR de referencia (adulto general, EFSA / RDA estándar)
   const IDR: Record<string, { label: string; idr: number; unit: string; color: string }> = {
     vitamina_d_ug: { label: 'Vit D', idr: 15, unit: 'µg', color: '#F59E0B' },
@@ -362,7 +564,7 @@ export default function EditarDietaPage() {
 
   function calcMicrosTotales() {
     const totales: Record<string, number> = {}
-    for (const comida of comidas) {
+    for (const comida of comidasDia) {
       for (const a of comida.alimentos) {
         const factor = a.cantidad_gramos / 100
         for (const key of Object.keys(IDR)) {
@@ -376,16 +578,98 @@ export default function EditarDietaPage() {
     return totales
   }
 
+  const comidasDia = comidas.filter(c => diaComida(c) === diaActivo)
+  const resumenSemana = DIAS_SEMANA.map(dia => {
+    const comidasDelDia = comidas.filter(c => diaComida(c) === dia)
+    const macros = sumarMacros(comidasDelDia.map(c => calcMacrosComida(c.alimentos)))
+    return { dia, comidas: comidasDelDia, macros }
+  })
+  const diasConComidas = resumenSemana.filter(d => d.comidas.length > 0).length
+  const promedioSemana = diasConComidas > 0
+    ? resumenSemana.reduce((acc, d) => ({
+      calorias: acc.calorias + d.macros.calorias / diasConComidas,
+      proteinas: acc.proteinas + d.macros.proteinas / diasConComidas,
+      carbohidratos: acc.carbohidratos + d.macros.carbohidratos / diasConComidas,
+      grasas: acc.grasas + d.macros.grasas / diasConComidas,
+      fibra: acc.fibra + d.macros.fibra / diasConComidas,
+    }), { calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0, fibra: 0 })
+    : { calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0, fibra: 0 }
   const microsTotales = calcMicrosTotales()
   const tieneMicrosDieta = Object.values(microsTotales).some(v => v > 0)
 
-  const totalDiaBase = sumarMacros(comidas.map(c => calcMacrosComida(c.alimentos)))
+  const totalDiaBase = sumarMacros(comidasDia.map(c => calcMacrosComida(c.alimentos)))
   const totalDia = {
     calorias: totalDiaBase.calorias * porcionesVis,
     proteinas: totalDiaBase.proteinas * porcionesVis,
     carbohidratos: totalDiaBase.carbohidratos * porcionesVis,
     grasas: totalDiaBase.grasas * porcionesVis,
     fibra: totalDiaBase.fibra * porcionesVis,
+  }
+
+  useEffect(() => {
+    if (!plan || comidas.length === 0) return
+    for (const comida of comidasDia) {
+      if (alternativasPorComida[comida.id] || cargandoAlternativas[comida.id]) continue
+      cargarAlternativasComida(comida, calcMacrosComida(comida.alimentos))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan?.id, diaActivo, comidasDia.length])
+
+  const macroObjetivos = {
+    calorias: plan?.kcal_objetivo ?? 0,
+    proteinas: plan?.proteinas_objetivo ?? 0,
+    carbohidratos: plan?.carbohidratos_objetivo ?? 0,
+    grasas: plan?.grasas_objetivo ?? 0,
+  }
+
+  function macroStatus(value: number, target?: number | null) {
+    const t = Number(target ?? 0)
+    if (t <= 0) return { pct: 0, delta: 0, label: 'sin objetivo', tone: 'neutral' as const }
+    const delta = Math.round(value - t)
+    const pct = Math.round((value / t) * 100)
+    const abs = Math.abs(delta)
+    const unit = t > 999 ? 'kcal' : 'g'
+    const tolerance = Math.max(5, t * 0.05)
+    return {
+      pct,
+      delta,
+      label: abs <= tolerance ? 'en rango' : `${abs}${unit} ${delta > 0 ? 'sobre' : 'faltan'}`,
+      tone: abs <= tolerance ? 'ok' as const : delta > 0 ? 'over' as const : 'under' as const,
+    }
+  }
+
+  function MacroDial({ label, value, target, color, icon: Icon, unit }: {
+    label: string
+    value: number
+    target?: number | null
+    color: string
+    icon: ElementType
+    unit: 'kcal' | 'g'
+  }) {
+    const s = macroStatus(value, target)
+    const pctCapped = Math.min(Math.max(s.pct, 0), 125)
+    const barWidth = Math.min(pctCapped, 100)
+    const toneColor = s.tone === 'ok' ? '#10B981' : s.tone === 'over' ? '#F59E0B' : s.tone === 'under' ? '#64748B' : 'var(--text-muted)'
+    return (
+      <div className="rounded-2xl p-3" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Icon size={14} style={{ color }} />
+            <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{label}</span>
+          </div>
+          <span className="text-[11px] font-semibold tabular-nums" style={{ color: toneColor }}>{s.pct || '—'}%</span>
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span className="text-xl font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(value)}</span>
+          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{unit}</span>
+          {target ? <span className="text-xs ml-auto tabular-nums" style={{ color: 'var(--text-muted)' }}>/ {Math.round(target)}</span> : null}
+        </div>
+        <div className="h-1.5 rounded-full overflow-hidden mt-2" style={{ background: 'var(--border)' }}>
+          <div className="h-full rounded-full transition-all" style={{ width: `${barWidth}%`, background: color }} />
+        </div>
+        <p className="text-[11px] mt-1.5 truncate" style={{ color: toneColor }}>{s.label}</p>
+      </div>
+    )
   }
 
   if (loading) return <div className="flex justify-center py-16"><div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" /></div>
@@ -448,42 +732,98 @@ export default function EditarDietaPage() {
         </div>
 
         {/* Totales del día */}
-        <div className="card mb-6" style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', border: 'none', color: 'white' }}>
-          <div className="flex items-center justify-between flex-wrap gap-4">
+        <section className="rounded-3xl p-4 sm:p-5 mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div>
-              <p className="text-green-100 text-sm mb-1">Total del día</p>
-              <p className="text-3xl font-bold">{totalDia.calorias.toFixed(0)} <span className="text-xl font-normal" style={{ color: 'var(--primary-bg)' }}>kcal</span></p>
-              {plan?.kcal_objetivo && (
-                <p className="text-sm mt-1" style={{ color: 'var(--primary-bg)' }}>Objetivo: {plan.kcal_objetivo} kcal</p>
-              )}
+              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Plan nutricional</p>
+              <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Objetivo diario vs dieta aplicada</h2>
             </div>
-            <div className="flex gap-6">
-              {[
-                { label: 'Proteínas', value: totalDia.proteinas, obj: plan?.proteinas_objetivo, color: '#bbf7d0' },
-                { label: 'Carbos', value: totalDia.carbohidratos, obj: plan?.carbohidratos_objetivo, color: '#fef08a' },
-                { label: 'Grasas', value: totalDia.grasas, obj: plan?.grasas_objetivo, color: '#fed7aa' },
-              ].map(({ label, value, obj, color }) => (
-                <div key={label} className="text-center">
-                  <p className="text-2xl font-bold" style={{ color }}>{value.toFixed(0)}g</p>
-                  <p className="text-xs" style={{ color: 'var(--primary-bg)' }}>{label}</p>
-                  {obj && <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>/ {obj}g</p>}
-                </div>
+            <div className="hidden sm:flex items-center gap-2 text-xs px-3 py-1.5 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+              <Target size={13} />
+              {comidasDia.length} comidas · {diaActivo}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <MacroDial label="Kcal" value={totalDia.calorias} target={macroObjetivos.calorias} color="#34C759" icon={Flame} unit="kcal" />
+            <MacroDial label="Proteína" value={totalDia.proteinas} target={macroObjetivos.proteinas} color="#FF3B30" icon={Beef} unit="g" />
+            <MacroDial label="Carbos" value={totalDia.carbohidratos} target={macroObjetivos.carbohidratos} color="#FF9500" icon={Wheat} unit="g" />
+            <MacroDial label="Grasas" value={totalDia.grasas} target={macroObjetivos.grasas} color="#0A84FF" icon={Droplets} unit="g" />
+          </div>
+          <div className="mt-4 rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span style={{ color: 'var(--text-muted)' }}>Distribución calórica aplicada</span>
+              <span className="tabular-nums font-semibold" style={{ color: 'var(--text)' }}>{totalDia.calorias.toFixed(0)} kcal</span>
+            </div>
+            <div className="flex rounded-full overflow-hidden h-2" style={{ background: 'var(--border)' }}>
+              <div style={{ width: `${Math.min((totalDia.proteinas * 4 / Math.max(totalDia.calorias, 1)) * 100, 100)}%`, background: '#FF3B30' }} />
+              <div style={{ width: `${Math.min((totalDia.carbohidratos * 4 / Math.max(totalDia.calorias, 1)) * 100, 100)}%`, background: '#FF9500' }} />
+              <div style={{ width: `${Math.min((totalDia.grasas * 9 / Math.max(totalDia.calorias, 1)) * 100, 100)}%`, background: '#0A84FF' }} />
+            </div>
+          </div>
+        </section>
+
+        {/* Vista semanal */}
+        <section className="rounded-3xl p-4 sm:p-5 mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Semana nutricional</p>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Construcción por días</h2>
+            </div>
+            <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full w-fit" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+              <CalendarDays size={13} />
+              Media días creados: {Math.round(promedioSemana.calorias)} kcal
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            {resumenSemana.map(({ dia, comidas: comidasDelDia, macros }) => {
+              const activo = dia === diaActivo
+              const pct = macroObjetivos.calorias ? Math.round((macros.calorias / macroObjetivos.calorias) * 100) : 0
+              return (
+                <button
+                  key={dia}
+                  type="button"
+                  onClick={() => setDiaActivo(dia)}
+                  className="text-left rounded-2xl p-3 border transition-all active:scale-[0.98]"
+                  style={{
+                    borderColor: activo ? 'var(--primary)' : 'var(--border)',
+                    background: activo ? 'var(--primary-bg)' : 'var(--bg)',
+                    boxShadow: activo ? '0 12px 28px -18px var(--primary)' : 'none',
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold" style={{ color: activo ? 'var(--primary)' : 'var(--text)' }}>{DIA_ABR[dia]}</span>
+                    <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{pct || '—'}%</span>
+                  </div>
+                  <p className="text-sm font-semibold mt-1 truncate" style={{ color: 'var(--text)' }}>{dia}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    {comidasDelDia.length ? `${comidasDelDia.length} comidas · ${Math.round(macros.calorias)} kcal` : 'vacío'}
+                  </p>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              Trabajando {diaActivo}. Puedes copiar este día a otro y después cambiar platos concretos.
+            </p>
+            <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
+              {DIAS_SEMANA.filter(dia => dia !== diaActivo).map(dia => (
+                <button
+                  key={dia}
+                  type="button"
+                  onClick={() => copiarDiaADestino(dia)}
+                  disabled={copiandoDia !== null || comidasDia.length === 0}
+                  className="text-xs font-semibold rounded-full px-3 py-1.5 border whitespace-nowrap disabled:opacity-50"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}
+                >
+                  {copiandoDia === dia ? 'Copiando…' : `Copiar a ${dia}`}
+                </button>
               ))}
             </div>
           </div>
-          {plan?.kcal_objetivo && totalDia.calorias > 0 && (
-            <div className="mt-4">
-              <div className="flex rounded-full overflow-hidden h-2" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                <div style={{ width: `${Math.min((totalDia.proteinas * 4 / totalDia.calorias) * 100, 100)}%`, background: '#86efac' }} />
-                <div style={{ width: `${Math.min((totalDia.carbohidratos * 4 / totalDia.calorias) * 100, 100)}%`, background: '#fde047' }} />
-                <div style={{ width: `${Math.min((totalDia.grasas * 9 / totalDia.calorias) * 100, 100)}%`, background: '#fb923c' }} />
-              </div>
-              <div className="flex gap-4 mt-2 text-xs" style={{ color: 'var(--primary-bg)' }}>
-                <span>🟢 Proteínas</span><span>🟡 Carbos</span><span>🟠 Grasas</span>
-              </div>
-            </div>
-          )}
-        </div>
+        </section>
 
         {/* Panel micronutrientes */}
         {tieneMicrosDieta && (
@@ -527,7 +867,7 @@ export default function EditarDietaPage() {
 
         {/* Recalculadora de porciones */}
         <div className="card mb-4 flex items-center gap-3 py-3 px-4">
-          <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>🍽️ Porciones:</span>
+          <span className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}><UtensilsCrossed size={15} /> Porciones:</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPorcionesVis(p => Math.max(0.25, p - 0.25))}
@@ -573,43 +913,240 @@ export default function EditarDietaPage() {
         )}
 
         <div className="flex flex-col gap-4">
-          {comidas.map((comida) => {
+          {comidasDia.map((comida) => {
             const macrosComida = calcMacrosComida(comida.alimentos)
+            const kcalDelta = macroStatus(macrosComida.calorias, comida.kcal_target)
+            const recetaNombre = comida.receta?.nombre ?? 'Sin receta asignada'
+            const alternativas = alternativasPorComida[comida.id] ?? []
+            const opcionesCliente = comida.alternativas_receta_ids ?? []
             return (
               <div key={comida.id} className="card">
                 {/* Header comida */}
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-start gap-3 mb-4">
                   <button onClick={() => setComidas(prev => prev.map(c => c.id === comida.id ? { ...c, expandida: !c.expandida } : c))}
+                    className="mt-1"
                     style={{ color: 'var(--text-muted)' }}
                     onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
                     onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}>
                     {comida.expandida ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </button>
-                  <select
-                    className="font-semibold bg-transparent border-none outline-none cursor-pointer text-base flex-1"
-                    style={{ color: 'var(--text)' }}
-                    value={comida.nombre}
-                    onChange={e => actualizarNombreComida(comida.id, e.target.value)}
+                  <Link
+                    href={comida.receta_id ? `/recetas/${comida.receta_id}?returnTo=/dietas/${id}` : '#'}
+                    className={`w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 block ${comida.receta_id ? 'transition-transform active:scale-[0.98]' : 'pointer-events-none'}`}
+                    style={{ background: 'var(--bg)' }}
+                    title={comida.receta_id ? 'Ver receta completa' : undefined}
                   >
-                    {COMIDAS_PREDEFINIDAS.map(n => <option key={n} value={n}>{n}</option>)}
-                    {!COMIDAS_PREDEFINIDAS.includes(comida.nombre) && <option value={comida.nombre}>{comida.nombre}</option>}
-                  </select>
-                  <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                    <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>{macrosComida.calorias.toFixed(0)} kcal</span>
-                    <span>P:{macrosComida.proteinas.toFixed(0)}g</span>
-                    <span>C:{macrosComida.carbohidratos.toFixed(0)}g</span>
-                    <span>G:{macrosComida.grasas.toFixed(0)}g</span>
+                    {comida.receta?.imagen_url ? (
+                      <img src={comida.receta.imagen_url} alt={recetaNombre} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+                        <UtensilsCrossed size={22} />
+                      </div>
+                    )}
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <select
+                          className="text-[11px] font-semibold uppercase tracking-wide bg-transparent border-none outline-none cursor-pointer"
+                          style={{ color: 'var(--text-muted)' }}
+                          value={comida.nombre}
+                          onChange={e => actualizarNombreComida(comida.id, e.target.value)}
+                        >
+                          {COMIDAS_PREDEFINIDAS.map(n => <option key={n} value={n}>{n}</option>)}
+                          {!COMIDAS_PREDEFINIDAS.includes(comida.nombre) && <option value={comida.nombre}>{comida.nombre}</option>}
+                        </select>
+                        {comida.receta_id ? (
+                          <Link
+                            href={`/recetas/${comida.receta_id}?returnTo=/dietas/${id}`}
+                            className="group inline-flex items-start gap-1.5 mt-0.5"
+                            title="Ver receta completa"
+                          >
+                            <h3 className="font-bold leading-tight line-clamp-2 group-hover:underline" style={{ color: 'var(--text)' }}>{recetaNombre}</h3>
+                            <ExternalLink size={13} className="mt-0.5 shrink-0 opacity-60" style={{ color: 'var(--text-muted)' }} />
+                          </Link>
+                        ) : (
+                          <h3 className="font-bold leading-tight line-clamp-2 mt-0.5" style={{ color: 'var(--text)' }}>{recetaNombre}</h3>
+                        )}
+                      </div>
+                      <button onClick={() => eliminarComida(comida.id)} className="p-1 shrink-0"
+                        style={{ color: 'var(--text-muted)' }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--error)' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}>
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
+                      {[
+                        { label: 'Kcal', value: macrosComida.calorias, target: comida.kcal_target, color: '#34C759', unit: '' },
+                        { label: 'P', value: macrosComida.proteinas, target: comida.proteinas_target, color: '#FF3B30', unit: 'g' },
+                        { label: 'C', value: macrosComida.carbohidratos, target: comida.carbos_target, color: '#FF9500', unit: 'g' },
+                        { label: 'G', value: macrosComida.grasas, target: comida.grasas_target, color: '#0A84FF', unit: 'g' },
+                      ].map(m => {
+                        const st = macroStatus(m.value, m.target)
+                        return (
+                          <div key={m.label} className="rounded-xl px-2.5 py-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[10px] font-semibold" style={{ color: m.color }}>{m.label}</span>
+                              <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{st.pct || '—'}%</span>
+                            </div>
+                            <p className="text-sm font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(m.value)}{m.unit}</p>
+                            <p className="text-[9px] truncate" style={{ color: st.tone === 'ok' ? '#10B981' : st.tone === 'over' ? '#F59E0B' : 'var(--text-muted)' }}>{st.label}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <p className="text-[11px] mt-2" style={{ color: kcalDelta.tone === 'ok' ? '#10B981' : kcalDelta.tone === 'over' ? '#F59E0B' : 'var(--text-muted)' }}>
+                      {comida.kcal_target ? `Objetivo comida: ${Math.round(comida.kcal_target)} kcal, ${kcalDelta.label}` : 'Sin objetivo específico por comida'}
+                    </p>
                   </div>
-                  <button onClick={() => eliminarComida(comida.id)} className="ml-2"
-                    style={{ color: 'var(--text-muted)' }}
-                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--error)' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}>
-                    <Trash2 size={15} />
-                  </button>
                 </div>
 
                 {comida.expandida && (
                   <>
+                    <div className="mb-4 rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Opciones del cliente</p>
+                          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{opcionesCliente.length}/3 visibles como equivalentes en el portal</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExploradorComida(exploradorComida === comida.id ? null : comida.id)
+                              setQueryAlternativas('')
+                              setResultadosAlternativas([])
+                            }}
+                            className="text-xs font-semibold"
+                            style={{ color: 'var(--primary)' }}
+                          >
+                            Explorar más
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => cargarAlternativasComida(comida, macrosComida)}
+                            disabled={!!cargandoAlternativas[comida.id]}
+                            className="text-xs font-semibold flex items-center gap-1.5"
+                            style={{ color: 'var(--primary)' }}
+                          >
+                            {cargandoAlternativas[comida.id] ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                            Sugerir
+                          </button>
+                        </div>
+                      </div>
+                      {alternativas.length > 0 ? (
+                        <div className="flex gap-2 overflow-x-auto pb-1">
+                          {alternativas.map(r => (
+                            <button
+                              key={r.id}
+                              type="button"
+                              onClick={() => {
+                                const next = opcionesCliente.includes(r.id)
+                                  ? opcionesCliente.filter(id => id !== r.id)
+                                  : [...opcionesCliente, r.id]
+                                guardarAlternativasCliente(comida, next)
+                              }}
+                              className="min-w-[190px] max-w-[220px] text-left rounded-xl border p-2.5 transition-colors"
+                              style={{
+                                borderColor: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--border)',
+                                background: opcionesCliente.includes(r.id) ? 'var(--primary-bg)' : 'var(--surface)',
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--bg)' }}>
+                                  {r.imagen_url ? <img src={r.imagen_url} alt={r.nombre} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><BookOpen size={14} /></div>}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
+                                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)}g</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between gap-2 mt-2">
+                                <span className="text-[10px] font-semibold" style={{ color: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--text-muted)' }}>
+                                  {opcionesCliente.includes(r.id) ? 'Asignada' : 'Asignar opción'}
+                                </span>
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    aplicarRecetaAComida(comida.id, r.id, r.nombre)
+                                  }}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.stopPropagation()
+                                      aplicarRecetaAComida(comida.id, r.id, r.nombre)
+                                    }
+                                  }}
+                                  className="text-[10px] font-semibold underline"
+                                  style={{ color: 'var(--text-secondary)' }}
+                                >
+                                  usar como principal
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                          Carga sugerencias para ver platos compatibles por kcal, proteína y tipo de comida.
+                        </p>
+                      )}
+
+                      {exploradorComida === comida.id && (
+                        <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <div className="relative flex-1 min-w-0">
+                              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+                              <input
+                                value={queryAlternativas}
+                                onChange={e => setQueryAlternativas(e.target.value)}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') buscarMasAlternativas(comida, macrosComida, queryAlternativas)
+                                }}
+                                className="input w-full pl-9 text-sm"
+                                placeholder="Buscar receta equivalente por nombre"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => buscarMasAlternativas(comida, macrosComida, queryAlternativas)}
+                              className="btn-secondary text-sm"
+                              disabled={buscandoAlternativas}
+                            >
+                              {buscandoAlternativas ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+                              Buscar
+                            </button>
+                          </div>
+                          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {resultadosAlternativas.map(r => (
+                              <button
+                                key={r.id}
+                                type="button"
+                                onClick={() => {
+                                  const next = opcionesCliente.includes(r.id)
+                                    ? opcionesCliente.filter(id => id !== r.id)
+                                    : [...opcionesCliente, r.id]
+                                  guardarAlternativasCliente(comida, next)
+                                }}
+                                className="text-left rounded-xl border p-2 transition-colors"
+                                style={{
+                                  borderColor: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--border)',
+                                  background: opcionesCliente.includes(r.id) ? 'var(--primary-bg)' : 'var(--bg)',
+                                }}
+                              >
+                                <p className="text-xs font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
+                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                  {Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)}g · C {Math.round(r.carbohidratos)}g · G {Math.round(r.grasas)}g
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Tabla de alimentos */}
                     {comida.alimentos.length > 0 && (
                       <div className="mb-3 border rounded-lg overflow-hidden">
@@ -669,7 +1206,7 @@ export default function EditarDietaPage() {
                       <div className="relative">
                         {/* Tabs fuente */}
                         <div className="flex gap-1 mb-2">
-                          {([['local', '📋 Mi base de datos'], ['off', '🛒 Supermercado'], ['recetas', '🍳 Recetas']] as [Fuente, string][]).map(([f, label]) => (
+                          {([['local', 'Base de datos'], ['off', 'Supermercado'], ['recetas', 'Recetas']] as [Fuente, string][]).map(([f, label]) => (
                             <button
                               key={f}
                               onClick={() => setFuente(f as Fuente)}
@@ -887,7 +1424,7 @@ export default function EditarDietaPage() {
           <div className="card">
             <p className="text-sm font-medium mb-3" style={{ color: 'var(--text-secondary)' }}>Añadir comida</p>
             <div className="flex flex-wrap gap-2 mb-3">
-              {COMIDAS_PREDEFINIDAS.filter(p => !comidas.find(c => c.nombre === p)).map(p => (
+              {COMIDAS_PREDEFINIDAS.filter(p => !comidasDia.find(c => c.nombre === p)).map(p => (
                 <button
                   key={p}
                   onClick={() => añadirComida(p)}

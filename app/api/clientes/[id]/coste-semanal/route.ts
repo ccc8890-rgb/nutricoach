@@ -73,16 +73,16 @@ export async function GET(
 
   const alimentoIds = [...agg.keys()]
 
-  // 5. Precios actuales (vista precios_actuales: alimento_id, precio_por_kg, supermercado)
+  // 5. Precios actuales
   const { data: precios } = await db
     .from('precios_actuales')
-    .select('alimento_id, precio_por_kg, supermercado')
+    .select('alimento_id, precio_por_kg, supermercado_nombre')
     .in('alimento_id', alimentoIds)
 
   const precioMap = new Map<string, { precio_kg: number; supermercado: string }>()
   for (const p of (precios ?? [])) {
     if (!precioMap.has(p.alimento_id) && p.precio_por_kg > 0) {
-      precioMap.set(p.alimento_id, { precio_kg: p.precio_por_kg, supermercado: p.supermercado })
+      precioMap.set(p.alimento_id, { precio_kg: p.precio_por_kg, supermercado: p.supermercado_nombre })
     }
   }
 
