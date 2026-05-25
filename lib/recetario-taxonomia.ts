@@ -277,13 +277,15 @@ export function scoreRecetaParaAgente(
 
   const kcal = Number(receta.kcal ?? 0)
   const prot = Number(receta.proteinas ?? 0)
+  const carbs = Number(receta.carbohidratos ?? 0)
+  const fat = Number(receta.grasas ?? 0)
   const targetKcal = Number(contexto.targetKcal ?? 0)
   const targetProt = Number(contexto.targetProteinas ?? 0)
+  const macroDistance = targetKcal > 0
+    ? Math.abs(kcal - targetKcal) / targetKcal + Math.abs(prot - targetProt) / Math.max(targetProt, 1)
+    : 0
   const macroScore = targetKcal > 0
-    ? Math.max(0, 1 - Math.min(
-      Math.abs(kcal - targetKcal) / targetKcal + Math.abs(prot - targetProt) / Math.max(targetProt, 1),
-      1
-    ))
+    ? Math.max(0, 1 - Math.min(macroDistance, 1))
     : 0.5
 
   const chefScore = contexto.preferirChefHealthy
@@ -296,17 +298,38 @@ export function scoreRecetaParaAgente(
     (roles.has('performance_fuel') && contexto.deporte ? 0.25 : 0) +
     (roles.has('quick_weekday') ? 0.15 : 0)
 
-  return (
-    intelligence * 0.24 +
-    calidad * 0.10 +
-    adherencia * 0.13 +
-    objetivoScore * 0.15 +
-    deporteScore * 0.10 +
-    momentoScore * 0.12 +
-    macroScore * 0.10 +
-    macroFlex * 0.03 +
-    chefScore * 0.02 +
-    Math.min(roleScore, 1) * 0.01
+  let contextNutritionScore = 0.6
+  if (contexto.momento === 'pre_entreno') {
+    const carbScore = carbs >= 35 ? 1 : carbs >= 25 ? 0.75 : carbs >= 15 ? 0.45 : 0.2
+    const fatScore = fat <= 12 ? 1 : fat <= 18 ? 0.75 : fat <= 25 ? 0.4 : 0.15
+    const proteinScore = prot <= 30 ? 1 : prot <= 40 ? 0.65 : 0.3
+    const energyScore = targetKcal > 0 && kcal <= targetKcal * 1.3 ? 1 : 0.55
+    contextNutritionScore = carbScore * 0.38 + fatScore * 0.28 + proteinScore * 0.2 + energyScore * 0.14
+  } else if (contexto.momento === 'post_entreno' || contexto.deporte && contexto.deporte !== 'general') {
+    const carbScore = carbs >= 45 ? 1 : carbs >= 30 ? 0.75 : carbs >= 20 ? 0.5 : 0.25
+    const proteinScore = prot >= 30 ? 1 : prot >= 22 ? 0.7 : 0.35
+    const fatScore = fat <= 30 ? 1 : fat <= 40 ? 0.65 : 0.35
+    contextNutritionScore = carbScore * 0.34 + proteinScore * 0.42 + fatScore * 0.24
+  } else if (contexto.objetivo === 'perdida_grasa' || contexto.objetivo === 'recomposicion') {
+    const proteinDensity = kcal > 0 ? prot * 4 / kcal : 0
+    contextNutritionScore = Math.min(Math.max(proteinDensity * 2.4, 0.25), 1)
+  }
+
+  const distancePenalty = macroDistance > 0.65 ? 0.08 : macroDistance > 0.45 ? 0.04 : 0
+
+  return Math.max(0, (
+    intelligence * 0.20 +
+    calidad * 0.08 +
+    adherencia * 0.10 +
+    objetivoScore * 0.12 +
+    deporteScore * 0.08 +
+    momentoScore * 0.10 +
+    macroScore * 0.20 +
+    contextNutritionScore * 0.08 +
+    macroFlex * 0.02 +
+    chefScore * 0.015 +
+    Math.min(roleScore, 1) * 0.005
+  ) - distancePenalty
   )
 }
 
