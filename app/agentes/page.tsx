@@ -49,6 +49,7 @@ const AGENTE_LABELS: Record<string, string> = {
   riesgo_entreno: 'Riesgo entreno',
   revisor_semanal_entreno: 'Revisor entreno',
   readiness: 'Readiness',
+  supercoach: 'Director SuperCoach',
   director: 'Director',
 }
 
@@ -454,7 +455,7 @@ function TareaCard({
                 </button>
               ) : (
                 <button className="btn-primary btn-sm w-full sm:w-auto" onClick={() => onDecision(tarea.id, 'modificado', comentario, editandoPropuesta)}>
-                  <Check size={13} /> Guardar cambio
+                  <Check size={13} /> Guardar y aplicar
                 </button>
               )}
             </div>

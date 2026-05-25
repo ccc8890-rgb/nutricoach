@@ -3,6 +3,7 @@ import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { ejecutarAgenteReadiness } from '@/lib/agentes/readiness'
 import { ejecutarAgenteRiesgoEntreno } from '@/lib/agentes/riesgo-entreno'
 import { ejecutarRevisorSemanalEntreno } from '@/lib/agentes/revisor-semanal-entreno'
+import { ejecutarDirectorSupercoachCliente } from '@/lib/agentes/supercoach'
 
 export async function POST(
   request: NextRequest,
@@ -30,7 +31,8 @@ export async function POST(
 
   await ejecutarAgenteReadiness(clienteId)
   await ejecutarAgenteRiesgoEntreno(clienteId)
+  const supercoach = await ejecutarDirectorSupercoachCliente(clienteId)
   if (semanal) await ejecutarRevisorSemanalEntreno(clienteId)
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, supercoach })
 }

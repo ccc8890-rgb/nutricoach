@@ -14,12 +14,14 @@ export async function aplicarTarea(tarea: AgenteTarea): Promise<{ ok: boolean; m
   switch (tarea.tipo) {
     case 'ajuste_macros':
     case 'revision_semanal':
+    case 'ajuste_nutricion_carga':
       return aplicarAjusteMacros(db, tarea)
 
     case 'alerta_riesgo':
     case 'alerta_riesgo_entreno':
     case 'mensaje_motivacion':
     case 'revision_semanal_entreno':
+    case 'alerta_readiness':
       return aplicarMensajeCliente(db, tarea)
 
     case 'actualizacion_plan':
@@ -84,12 +86,14 @@ async function aplicarMensajeCliente(
   tarea: AgenteTarea
 ): Promise<{ ok: boolean; mensaje?: string }> {
   if (!tarea.cliente_id) return { ok: false, mensaje: 'Sin cliente_id' }
-  if (!tarea.propuesta) return { ok: false, mensaje: 'Sin propuesta/mensaje' }
+  const payload = tarea.payload as { mensaje_cliente?: string }
+  const contenido = payload.mensaje_cliente || tarea.propuesta
+  if (!contenido) return { ok: false, mensaje: 'Sin propuesta/mensaje' }
 
   const { error } = await db.from('chat_mensajes').insert({
     cliente_id: tarea.cliente_id,
     remitente: 'coach',
-    contenido: tarea.propuesta,
+    contenido,
     leido: false,
   })
 
@@ -111,11 +115,50 @@ async function aplicarActualizacionPlan(
   db: ReturnType<typeof createServiceSupabase>,
   tarea: AgenteTarea
 ): Promise<{ ok: boolean; mensaje?: string }> {
-  // Por ahora registra la aprobación — expansión futura para cambios de estructura
+  if (!tarea.cliente_id) return { ok: false, mensaje: 'Sin cliente_id' }
+
+  const payload = tarea.payload as {
+    plan_update?: {
+      sesiones_por_semana?: number
+      duracion_semanas?: number
+    }
+    mensaje_cliente?: string
+  }
+
+  const update: Record<string, number> = {}
+  if (payload.plan_update?.sesiones_por_semana != null) {
+    update.sesiones_por_semana = payload.plan_update.sesiones_por_semana
+  }
+  if (payload.plan_update?.duracion_semanas != null) {
+    update.duracion_semanas = payload.plan_update.duracion_semanas
+  }
+
+  if (Object.keys(update).length) {
+    const { error } = await db
+      .from('planes_entrenamiento')
+      .update(update)
+      .eq('cliente_id', tarea.cliente_id)
+      .eq('activo', true)
+
+    if (error) {
+      console.error('[aplicar] Error actualizacion plan:', error)
+      return { ok: false, mensaje: error.message }
+    }
+  }
+
+  if (payload.mensaje_cliente) {
+    await db.from('chat_mensajes').insert({
+      cliente_id: tarea.cliente_id,
+      remitente: 'coach',
+      contenido: payload.mensaje_cliente,
+      leido: false,
+    })
+  }
+
   await db
     .from('agente_tareas')
     .update({ estado: 'aplicado', aplicado_at: new Date().toISOString() })
     .eq('id', tarea.id)
 
-  return { ok: true, mensaje: 'Actualización de plan registrada' }
+  return { ok: true, mensaje: Object.keys(update).length ? 'Plan de entrenamiento actualizado' : 'Actualización de plan registrada' }
 }

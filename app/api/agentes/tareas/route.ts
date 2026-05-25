@@ -105,8 +105,8 @@ export async function PATCH(request: NextRequest) {
     if (tareaCompleta) {
       const tarea = tareaCompleta as AgenteTarea
 
-      // Si aprobado → ejecutar acción real en BD (fire-and-forget)
-      if (decision === 'aprobado') {
+      // Si aprobado o modificado → ejecutar acción real en BD (fire-and-forget)
+      if (decision === 'aprobado' || decision === 'modificado') {
         aplicarTarea(tarea).catch(err =>
           console.error('[tareas] Error aplicando tarea:', err)
         )

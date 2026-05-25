@@ -12,6 +12,7 @@ import { ejecutarAgenteMotivacion } from './motivacion'
 import { ejecutarAgenteRiesgoEntreno } from './riesgo-entreno'
 import { ejecutarRevisorSemanalEntreno } from './revisor-semanal-entreno'
 import { ejecutarAgenteReadiness } from './readiness'
+import { ejecutarDirectorSupercoachCliente } from './supercoach'
 import { actualizarPerfilGusto } from './perfil-gusto'
 import { ejecutarAprendizajeColectivo } from './aprendizaje-colectivo'
 
@@ -54,6 +55,7 @@ export async function ejecutarDirector(
       await ejecutarAgenteRiesgo(id)
       await ejecutarAgenteRiesgoEntreno(id)
       await ejecutarAgenteReadiness(id)
+      await ejecutarDirectorSupercoachCliente(id)
 
       // Solo lunes (semanal): revisores + motivación
       if (modo === 'semanal') {
