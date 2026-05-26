@@ -584,17 +584,17 @@ export default function ClienteDetallePage() {
         </Link>
 
         {/* ── Hero card ── */}
-        <div className="rounded-2xl p-5 mb-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="flex items-start gap-4">
+        <div className="rounded-2xl p-3 sm:p-5 mb-3 sm:mb-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex items-start gap-3 sm:gap-4">
             {/* Avatar */}
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold flex-shrink-0" style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
+            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-base sm:text-lg font-bold flex-shrink-0" style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
               {initials}
             </div>
 
             {/* Name + meta */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{nombre}</h1>
+                <h1 className="text-lg sm:text-xl font-bold truncate" style={{ color: 'var(--text)' }}>{nombre}</h1>
                 {cliente.activo ? (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,199,89,0.12)', color: '#34C759' }}>Activo</span>
                 ) : (
@@ -607,23 +607,23 @@ export default function ClienteDetallePage() {
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>Pendiente de revisión</span>
                 )}
               </div>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.email}</p>
+              <p className="hidden sm:block text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.email}</p>
 
               {/* Stats row */}
-              <div className="flex gap-2 flex-wrap mt-3">
+              <div className="flex gap-1.5 sm:gap-2 flex-wrap mt-2 sm:mt-3">
                 {cliente.objetivo && <StatPill label="Objetivo" value={OBJETIVO_LABELS[cliente.objetivo] ?? cliente.objetivo} />}
                 {ultimoPeso && <StatPill label="Peso" value={`${ultimoPeso} kg`} />}
-                {cliente.altura && <StatPill label="Altura" value={`${cliente.altura} cm`} />}
-                {cliente.edad && <StatPill label="Edad" value={`${cliente.edad} a`} />}
-                {cliente.sexo && <StatPill label="Sexo" value={cliente.sexo === 'hombre' ? 'Hombre' : 'Mujer'} />}
+                {cliente.altura && <div className="hidden sm:block"><StatPill label="Altura" value={`${cliente.altura} cm`} /></div>}
+                {cliente.edad && <div className="hidden sm:block"><StatPill label="Edad" value={`${cliente.edad} a`} /></div>}
+                {cliente.sexo && <div className="hidden sm:block"><StatPill label="Sexo" value={cliente.sexo === 'hombre' ? 'Hombre' : 'Mujer'} /></div>}
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               {dietaActiva?.codigo_publico && (
                 <button
-                  className="btn-secondary btn-sm"
+                  className="btn-secondary btn-sm px-2 sm:px-3"
                   onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/cliente/${dietaActiva.codigo_publico}`); addToast({ type: 'success', title: 'Enlace copiado', message: 'Portal del cliente copiado' }) }}
                   title="Copiar portal cliente"
                 >
@@ -631,7 +631,7 @@ export default function ClienteDetallePage() {
                   <span className="hidden sm:inline">Portal</span>
                 </button>
               )}
-              <button className="btn-secondary btn-sm" onClick={() => setIsEditando(true)}>
+              <button className="btn-secondary btn-sm px-2 sm:px-3" onClick={() => setIsEditando(true)}>
                 <Pencil size={14} />
                 <span className="hidden sm:inline">Editar</span>
               </button>
@@ -640,12 +640,12 @@ export default function ClienteDetallePage() {
 
           {/* ── Macros del plan activo ── */}
           {dietaActiva && (dietaActiva.kcal_objetivo || dietaActiva.proteinas_objetivo) ? (
-            <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-              <div className="flex items-center justify-between mb-3">
+            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="flex items-center justify-between mb-2 sm:mb-3 gap-3">
                 <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                   Plan activo — {dietaActiva.nombre}
                 </span>
-                <div className="flex gap-2">
+                <div className="hidden sm:flex gap-2">
                   <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="text-xs flex items-center gap-1 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
                     Ver dieta <ExternalLink size={11} />
                   </Link>
@@ -655,7 +655,18 @@ export default function ClienteDetallePage() {
                   </Link>
                 </div>
               </div>
-              <div className="flex gap-4">
+              <div className="flex items-center justify-between gap-2 sm:hidden">
+                <div className="flex flex-wrap gap-1.5 min-w-0">
+                  {dietaActiva.kcal_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: 'var(--text)' }}>{dietaActiva.kcal_objetivo} kcal</span> : null}
+                  {dietaActiva.proteinas_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#30D158' }}>P {dietaActiva.proteinas_objetivo}g</span> : null}
+                  {dietaActiva.carbohidratos_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#FF9F0A' }}>C {dietaActiva.carbohidratos_objetivo}g</span> : null}
+                  {dietaActiva.grasas_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#64D2FF' }}>G {dietaActiva.grasas_objetivo}g</span> : null}
+                </div>
+                <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm flex-shrink-0">
+                  Abrir
+                </Link>
+              </div>
+              <div className="hidden sm:flex gap-4">
                 <MacroBar label="Kcal" value={dietaActiva.kcal_objetivo ?? 0} max={3500} color="var(--accent)" icon={Flame} />
                 <MacroBar label="Prot" value={dietaActiva.proteinas_objetivo ?? 0} max={250} color="#30D158" icon={Beef} />
                 <MacroBar label="Carbs" value={dietaActiva.carbohidratos_objetivo ?? 0} max={400} color="#FF9F0A" icon={Wheat} />

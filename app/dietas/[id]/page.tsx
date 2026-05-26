@@ -1067,42 +1067,86 @@ export default function EditarDietaPage() {
 
         {/* Panel micronutrientes */}
         {tieneMicrosDieta && (
-          <div className="card mb-4 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
-              Micronutrientes del plan · % IDR
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-              {Object.entries(IDR).map(([key, { label, idr, unit, color }]) => {
-                const val = microsTotales[key]
-                if (!val || val === 0) return null
-                const pct = Math.min((val / idr) * 100, 150)
-                const pctDisplay = Math.round((val / idr) * 100)
-                const barColor = pctDisplay >= 80 ? '#22C55E' : pctDisplay >= 50 ? '#F97316' : '#EF4444'
-                return (
-                  <div key={key}>
-                    <div className="flex items-center justify-between text-xs mb-0.5">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                        <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                      </span>
-                      <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>
-                        {val.toFixed(1)}{unit} <span className="font-semibold" style={{ color: barColor }}>{pctDisplay}%</span>
-                      </span>
+          <>
+            <details className="card mb-4 p-0 overflow-hidden sm:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4">
+                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                  Micronutrientes del plan · % IDR
+                </span>
+                <ChevronDown size={15} style={{ color: 'var(--text-muted)' }} />
+              </summary>
+              <div className="px-4 pb-4">
+                <div className="grid grid-cols-1 gap-y-2">
+                  {Object.entries(IDR).map(([key, { label, idr, unit, color }]) => {
+                    const val = microsTotales[key]
+                    if (!val || val === 0) return null
+                    const pct = Math.min((val / idr) * 100, 150)
+                    const pctDisplay = Math.round((val / idr) * 100)
+                    const barColor = pctDisplay >= 80 ? '#22C55E' : pctDisplay >= 50 ? '#F97316' : '#EF4444'
+                    return (
+                      <div key={key}>
+                        <div className="flex items-center justify-between text-xs mb-0.5">
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                            <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                          </span>
+                          <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                            {val.toFixed(1)}{unit} <span className="font-semibold" style={{ color: barColor }}>{pctDisplay}%</span>
+                          </span>
+                        </div>
+                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
+                  IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
+                </p>
+              </div>
+            </details>
+
+            <div className="card mb-4 p-4 hidden sm:block">
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+                Micronutrientes del plan · % IDR
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                {Object.entries(IDR).map(([key, { label, idr, unit, color }]) => {
+                  const val = microsTotales[key]
+                  if (!val || val === 0) return null
+                  const pct = Math.min((val / idr) * 100, 150)
+                  const pctDisplay = Math.round((val / idr) * 100)
+                  const barColor = pctDisplay >= 80 ? '#22C55E' : pctDisplay >= 50 ? '#F97316' : '#EF4444'
+                  return (
+                    <div key={key}>
+                      <div className="flex items-center justify-between text-xs mb-0.5">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                          <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                        </span>
+                        <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                          {val.toFixed(1)}{unit} <span className="font-semibold" style={{ color: barColor }}>{pctDisplay}%</span>
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
+              <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
+                IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
+              </p>
             </div>
-            <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
-              IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
-            </p>
-          </div>
+          </>
         )}
 
         {/* Auditoría semanal */}
