@@ -4,72 +4,73 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import type { LucideIcon } from 'lucide-react'
 import {
-  Barbell,
+  Activity,
+  Bot,
   Brain,
-  CaretDown,
-  CaretRight,
-  ChartLineUp,
-  ChatCircleText,
   ChefHat,
-  ClipboardText,
-  ChartPieSlice,
+  ChartPie,
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
   Database,
-  Flask,
-  ForkKnife,
-  GearSix,
+  Dumbbell,
+  FlaskConical,
   House,
   Images,
   ListChecks,
+  LogOut,
+  Menu,
+  MessageCircle,
   Moon,
-  Pulse,
-  Robot,
+  Settings,
   ShoppingCart,
-  SignOut,
   SlidersHorizontal,
-  Storefront,
+  Store,
   Sun,
-  UsersThree,
+  TrendingUp,
+  Utensils,
+  UsersRound,
   X,
-  List,
-} from '@phosphor-icons/react'
+} from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
 
 type NavItem = {
   href: string
   label: string
-  icon: React.ElementType
+  icon: LucideIcon
   badge?: number
 }
 
 type NavSection = {
   key: string
   label: string
-  icon: React.ElementType
+  icon: LucideIcon
   items: NavItem[]
   badge?: number
 }
 
 const PRIMARY_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Radar', icon: House },
-  { href: '/clientes', label: 'Clientes', icon: UsersThree },
-  { href: '/agentes', label: 'Inbox IA', icon: Robot },
-  { href: '/respuestas', label: 'Consultas', icon: ChatCircleText },
+  { href: '/clientes', label: 'Clientes', icon: UsersRound },
+  { href: '/agentes', label: 'Inbox IA', icon: Bot },
+  { href: '/respuestas', label: 'Consultas', icon: MessageCircle },
 ]
 
 const NUTRICION_ITEMS: NavItem[] = [
-  { href: '/dietas', label: 'Dietas activas', icon: ForkKnife },
+  { href: '/dietas', label: 'Dietas activas', icon: Utensils },
   { href: '/dietas/plantillas', label: 'Plantillas', icon: ListChecks },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
   { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
-  { href: '/precios', label: 'Precios', icon: Storefront },
-  { href: '/precios/escandallo', label: 'Escandallo', icon: ChartLineUp },
-  { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: Pulse },
+  { href: '/precios', label: 'Precios', icon: Store },
+  { href: '/precios/escandallo', label: 'Escandallo', icon: TrendingUp },
+  { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: Activity },
 ]
 
 const ENTRENAMIENTO_ITEMS: NavItem[] = [
-  { href: '/entrenos', label: 'Planes', icon: Barbell },
+  { href: '/entrenos', label: 'Planes', icon: Dumbbell },
   { href: '/entrenos/plantillas', label: 'Planificación', icon: ListChecks },
   { href: '/entrenos/generar-ia', label: 'Generador IA', icon: Brain },
   { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Database },
@@ -77,9 +78,9 @@ const ENTRENAMIENTO_ITEMS: NavItem[] = [
 
 const RECETARIO_ITEMS: NavItem[] = [
   { href: '/recetas', label: 'Biblioteca', icon: ChefHat },
-  { href: '/recetas/cobertura', label: 'Cobertura', icon: ChartPieSlice },
+  { href: '/recetas/cobertura', label: 'Cobertura', icon: ChartPie },
   { href: '/recetas/imagenes', label: 'Imágenes', icon: Images },
-  { href: '/recetas/cola', label: 'Pendientes', icon: ClipboardText },
+  { href: '/recetas/cola', label: 'Pendientes', icon: ClipboardList },
   { href: '/recetas/revisar', label: 'Revisión', icon: ListChecks },
 ]
 
@@ -89,10 +90,10 @@ const CONOCIMIENTO_ITEMS: NavItem[] = [
 ]
 
 const SISTEMA_ITEMS: NavItem[] = [
-  { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardText },
-  { href: '/ia-test', label: 'Probador IA', icon: Flask },
+  { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
+  { href: '/ia-test', label: 'Probador IA', icon: FlaskConical },
   { href: '/precios/scraping', label: 'Scraping', icon: Database },
-  { href: '/precios/enriquecer', label: 'Enriquecer', icon: GearSix },
+  { href: '/precios/enriquecer', label: 'Enriquecer', icon: Settings },
 ]
 
 function isActivePath(pathname: string, href: string) {
@@ -138,11 +139,11 @@ function NavLink({
           style={{ background: 'var(--accent)' }}
         />
       )}
-      <Icon size={18} weight={active ? 'duotone' : 'regular'} />
+      <Icon size={18} strokeWidth={active ? 2.35 : 1.8} />
       <span className="truncate">{item.label}</span>
       {item.badge ? <Badge value={item.badge} tone={badgeTone} /> : null}
       {active && !item.badge && (
-        <CaretRight size={14} className="ml-auto" style={{ color: 'var(--accent)' }} />
+        <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--accent)' }} />
       )}
     </Link>
   )
@@ -175,13 +176,13 @@ function SidebarSection({
             style={{ background: 'var(--accent)' }}
           />
         )}
-        <Icon size={18} weight={active ? 'duotone' : 'regular'} />
+        <Icon size={18} strokeWidth={active ? 2.35 : 1.8} />
         <span>{section.label}</span>
         {section.badge ? <Badge value={section.badge} tone="danger" /> : null}
         {expanded ? (
-          <CaretDown size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
+          <ChevronDown size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
         ) : (
-          <CaretRight size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
+          <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
         )}
       </button>
 
@@ -240,8 +241,8 @@ export default function Sidebar() {
   })
 
   const sections: NavSection[] = [
-    { key: 'nutricion', label: 'Nutrición', icon: ForkKnife, items: NUTRICION_ITEMS },
-    { key: 'entrenamiento', label: 'Entrenamiento', icon: Barbell, items: ENTRENAMIENTO_ITEMS },
+    { key: 'nutricion', label: 'Nutrición', icon: Utensils, items: NUTRICION_ITEMS },
+    { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
     {
       key: 'recetario',
       label: 'Recetario',
@@ -250,7 +251,7 @@ export default function Sidebar() {
       items: RECETARIO_ITEMS.map(item => item.href === '/recetas/cola' ? { ...item, badge: recetasPendientes } : item),
     },
     { key: 'conocimiento', label: 'Conocimiento', icon: Brain, items: CONOCIMIENTO_ITEMS },
-    { key: 'sistema', label: 'Sistema', icon: GearSix, items: SISTEMA_ITEMS },
+    { key: 'sistema', label: 'Sistema', icon: Settings, items: SISTEMA_ITEMS },
   ]
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
@@ -334,7 +335,7 @@ export default function Sidebar() {
           className="sidebar-link w-full"
           style={{ color: 'var(--text-muted)' }}
         >
-          <SignOut size={18} />
+          <LogOut size={18} />
           <span>Cerrar sesión</span>
         </button>
       </div>
@@ -355,7 +356,7 @@ export default function Sidebar() {
           }}
           aria-label={mobileOpen ? 'Cerrar menú' : 'Abrir menú'}
         >
-          {mobileOpen ? <X size={18} style={{ color: 'var(--text)' }} /> : <List size={18} style={{ color: 'var(--text)' }} />}
+          {mobileOpen ? <X size={18} style={{ color: 'var(--text)' }} /> : <Menu size={18} style={{ color: 'var(--text)' }} />}
         </button>
       )}
 
