@@ -44,6 +44,15 @@ type Recomendacion = {
 type CoberturaResponse = {
   total: number
   premium_chef: number
+  intelligence: {
+    iq_medio: number
+    macro_flex_medio: number
+    elite: number
+    pro: number
+    revisar: number
+    roles: CoverageItem[]
+    roles_conteos: Record<string, number>
+  }
   cobertura: {
     slots: CoverageItem[]
     objetivos: CoverageItem[]
@@ -85,8 +94,19 @@ const ESTADO_STYLE: Record<EstadoCobertura, { label: string; bg: string; color: 
   },
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  chef_signature: 'Chef signature',
+  high_protein_cut: 'Alta proteína',
+  performance_fuel: 'Fuel rendimiento',
+  pre_training: 'Pre-entreno',
+  post_training: 'Post-entreno',
+  batch_tupper: 'Batch/tupper',
+  quick_weekday: 'Rápidas',
+  portion_scalable: 'Porcionables',
+}
+
 function label(clave: string) {
-  return RECETA_LABELS[clave] ?? clave.replaceAll('_', ' ')
+  return ROLE_LABELS[clave] ?? RECETA_LABELS[clave] ?? clave.replaceAll('_', ' ')
 }
 
 function pct(actual: number, minimo: number) {
@@ -359,6 +379,67 @@ function ChefCollectionsPanel({ onSelect }: { onSelect: (item: Recomendacion) =>
             </button>
           </article>
         ))}
+      </div>
+    </section>
+  )
+}
+
+function RecipeIntelligencePanel({ data }: { data: CoberturaResponse }) {
+  const roles = [...data.intelligence.roles].sort((a, b) => b.faltan - a.faltan || a.clave.localeCompare(b.clave))
+  const bloqueoPct = data.total ? Math.round((data.intelligence.revisar / data.total) * 100) : 0
+
+  return (
+    <section className="rounded-2xl border p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <BarChart3 size={18} style={{ color: 'var(--accent)' }} />
+            <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Recipe Intelligence</h2>
+          </div>
+          <p className="mt-1 max-w-3xl text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            Lectura operativa para agentes: calidad media, flexibilidad de macros y roles reales de planificación.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-2 sm:min-w-[360px]">
+          <div className="rounded-xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>IQ medio</p>
+            <p className="mt-2 text-xl font-semibold tabular-nums" style={{ color: 'var(--text)' }}>{data.intelligence.iq_medio}</p>
+          </div>
+          <div className="rounded-xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>Macro flex</p>
+            <p className="mt-2 text-xl font-semibold tabular-nums" style={{ color: 'var(--text)' }}>{data.intelligence.macro_flex_medio}</p>
+          </div>
+          <div className="rounded-xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>Revisar</p>
+            <p className="mt-2 text-xl font-semibold tabular-nums" style={{ color: bloqueoPct >= 20 ? '#dc2626' : 'var(--text)' }}>{bloqueoPct}%</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.55fr)]">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {roles.map(role => <CoverageRow key={role.clave} item={role} />)}
+        </div>
+        <aside className="rounded-xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Estado para agentes</p>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Recetas elite</span>
+              <strong style={{ color: 'var(--text)' }}>{data.intelligence.elite}</strong>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Elite + pro</span>
+              <strong style={{ color: 'var(--text)' }}>{data.intelligence.pro}</strong>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Necesitan revisión</span>
+              <strong style={{ color: bloqueoPct >= 20 ? '#dc2626' : 'var(--text)' }}>{data.intelligence.revisar}</strong>
+            </div>
+          </div>
+          <p className="mt-4 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            Prioridad: subir recetas porcionables, rápidas y de fuel deportivo para que la IA pueda cuadrar semanas con menos ajustes manuales.
+          </p>
+        </aside>
       </div>
     </section>
   )
@@ -652,9 +733,11 @@ export default function CoberturaRecetarioPage() {
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard icon={BarChart3} label="Recetas aprobadas" value={data.total} detail="Base disponible para planes, swaps y agentes." />
           <StatCard icon={Sparkles} label="Chef healthy" value={data.premium_chef} detail="Recetas atractivas para adherencia y diferenciación." />
-          <StatCard icon={Target} label="Cobertura media" value={`${coberturaMedia}%`} detail="Media de slots, objetivos y deportes frente al mínimo." />
+          <StatCard icon={Target} label="Cobertura media" value={`${coberturaMedia}%`} detail="Slots, objetivos y deportes frente al mínimo." />
           <StatCard icon={AlertTriangle} label="Gaps prioritarios" value={data.recomendacion.length} detail="Bloques que conviene rellenar primero." />
         </section>
+
+        <RecipeIntelligencePanel data={data} />
 
         <ProductionBrief recomendacion={data.recomendacion} onSelect={setBriefItem} />
 
