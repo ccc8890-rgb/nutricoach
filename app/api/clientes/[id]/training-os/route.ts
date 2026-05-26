@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { cargarActividadCoach } from '@/lib/actividad/coach-insights'
 import { evaluarPerfilEntreno } from '@/lib/motor-entreno'
+import { crearDecisionTrainingOS } from '@/lib/training/training-os'
 import type { PerfilEntrenoCliente } from '@/types'
 
 function pct(real: number, objetivo: number): number | null {
@@ -100,6 +101,17 @@ export async function GET(
   const plan = planRaw ? { ...planRaw, sesiones_por_semana: sesionesPlan ?? null } : null
   const sesionesObjetivo = plan?.sesiones_por_semana ?? perfil?.dias_disponibles ?? null
   const adherencia7 = sesionesObjetivo ? pct(sesiones7, sesionesObjetivo) : null
+  const rendimiento = {
+    sesiones_7d: sesiones7,
+    sesiones_28d: sesiones28,
+    sesiones_objetivo_semana: sesionesObjetivo,
+    adherencia_7d_pct: adherencia7,
+    rpe_media_7d: rpeMedia7,
+  }
+  const decisionTraining = crearDecisionTrainingOS({
+    actividad,
+    rendimiento,
+  })
 
   const decisiones: Array<{ titulo: string; detalle: string; tono: 'critico' | 'atencion' | 'ok' | 'neutro' }> = []
 
@@ -131,6 +143,19 @@ export async function GET(
       tono: 'atencion',
     })
   }
+  if (decisionTraining.estado === 'descarga') {
+    decisiones.push({
+      titulo: 'Microciclo de descarga',
+      detalle: decisionTraining.microciclo.foco,
+      tono: 'critico',
+    })
+  } else if (decisionTraining.estado === 'progresar') {
+    decisiones.push({
+      titulo: 'Progresión disponible',
+      detalle: decisionTraining.microciclo.foco,
+      tono: 'ok',
+    })
+  }
   if (decisiones.length === 0) {
     decisiones.push({
       titulo: 'Sistema estable',
@@ -144,13 +169,8 @@ export async function GET(
     plan,
     recomendacion,
     actividad,
-    rendimiento: {
-      sesiones_7d: sesiones7,
-      sesiones_28d: sesiones28,
-      sesiones_objetivo_semana: sesionesObjetivo,
-      adherencia_7d_pct: adherencia7,
-      rpe_media_7d: rpeMedia7,
-    },
+    rendimiento,
+    decision_training: decisionTraining,
     decisiones,
     tareas_pendientes: tareasRes.data ?? [],
   })

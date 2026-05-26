@@ -69,6 +69,25 @@ interface TrainingOSData {
     adherencia_7d_pct: number | null
     rpe_media_7d: number | null
   }
+  decision_training: {
+    estado: 'descarga' | 'ajustar' | 'progresar' | 'base'
+    tono: Tone
+    score: number
+    microciclo: {
+      foco: string
+      sesiones_recomendadas: number | null
+      intensidad: 'baja' | 'moderada' | 'alta'
+      ajuste_volumen_pct: number
+    }
+    fuentes: {
+      externas_sesiones: number
+      internas_sesiones: number
+      fuentes_activas: string[]
+      usar_externo_para_adherencia: boolean
+    }
+    acciones: string[]
+    senales: string[]
+  }
   decisiones: Array<{ titulo: string; detalle: string; tono: Tone }>
   tareas_pendientes: Array<{ id: string; tipo: string; prioridad: number; propuesta: string }>
 }
@@ -187,6 +206,10 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
   const resumen = data.actividad?.resumen
   const ready = resumen?.readiness_media ?? null
   const hrv = resumen?.hrv_media ?? null
+  const decisionTraining = data.decision_training
+  const decisionTone = toneStyle(decisionTraining.tono)
+  const ajusteVolumen = decisionTraining.microciclo.ajuste_volumen_pct
+  const ajusteLabel = ajusteVolumen > 0 ? `+${ajusteVolumen}%` : `${ajusteVolumen}%`
 
   return (
     <section className="rounded-2xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -230,6 +253,39 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
             <Metric label="Semana" value={`${data.rendimiento.sesiones_7d}/${data.rendimiento.sesiones_objetivo_semana ?? '-'} sesiones`} icon={Dumbbell} />
             <Metric label="Readiness" value={metricLabel(ready, ready !== null ? '/100' : '')} icon={Activity} />
             <Metric label="HRV" value={metricLabel(hrv, hrv !== null ? ' ms' : '')} icon={BarChart3} />
+          </div>
+
+          <div className="rounded-xl p-4" style={{ background: decisionTone.bg, border: `1px solid ${decisionTone.border}` }}>
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-4 lg:items-center">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="px-2 py-1 rounded-lg text-[11px] font-bold uppercase tracking-[0.12em]" style={{ background: 'var(--surface)', color: decisionTone.fg, border: `1px solid ${decisionTone.border}` }}>
+                    {decisionTraining.estado}
+                  </span>
+                  <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+                    Score {decisionTraining.score}/100
+                  </span>
+                </div>
+                <p className="text-base font-semibold leading-tight" style={{ color: 'var(--text)' }}>
+                  {decisionTraining.microciclo.foco}
+                </p>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <span className="px-2 py-1 rounded-lg text-xs" style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                    {decisionTraining.microciclo.sesiones_recomendadas ?? '-'} sesiones
+                  </span>
+                  <span className="px-2 py-1 rounded-lg text-xs" style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                    Intensidad {decisionTraining.microciclo.intensidad}
+                  </span>
+                  <span className="px-2 py-1 rounded-lg text-xs" style={{ background: 'var(--surface)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                    Volumen {ajusteLabel}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 min-w-[220px]">
+                <Metric label="App" value={`${decisionTraining.fuentes.internas_sesiones} ses.`} icon={Dumbbell} />
+                <Metric label="Garmin/Strava" value={`${decisionTraining.fuentes.externas_sesiones} ses.`} icon={Route} />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -287,6 +343,33 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
               <Metric label="Pasos/día" value={metricLabel(resumen?.pasos_media)} icon={Activity} />
               <Metric label="Distancia" value={metricLabel(resumen?.distancia_entreno_km_total, resumen?.distancia_entreno_km_total ? ' km' : '')} icon={Route} />
             </div>
+          </div>
+
+          <div className="rounded-xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+            <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Acciones sugeridas</p>
+            <div className="space-y-2">
+              {decisionTraining.acciones.slice(0, 4).map((accion, index) => (
+                <div key={`${accion}-${index}`} className="flex gap-2 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  <CheckCircle2 size={13} className="mt-0.5 shrink-0" style={{ color: decisionTone.fg }} />
+                  <span>{accion}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-2" style={{ color: 'var(--text-muted)' }}>Señales próximas</p>
+              <div className="flex flex-wrap gap-1.5">
+                {decisionTraining.senales.slice(0, 5).map(senal => (
+                  <span key={senal} className="px-2 py-1 rounded-lg text-[11px]" style={{ background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                    {senal}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {decisionTraining.fuentes.fuentes_activas.length > 0 && (
+              <p className="text-[11px] mt-3" style={{ color: 'var(--text-muted)' }}>
+                Fuentes: {decisionTraining.fuentes.fuentes_activas.join(', ')}
+              </p>
+            )}
           </div>
 
           <div className="rounded-xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
