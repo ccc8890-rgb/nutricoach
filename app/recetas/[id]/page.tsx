@@ -103,6 +103,7 @@ export default function DetalleRecetaPage() {
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo') || '/recetas'
   const isClientView = returnTo.startsWith('/cliente')
+  const clienteCodigo = isClientView ? returnTo.split('/').filter(Boolean)[1] : null
   const [receta, setReceta] = useState<RecetaDetalle | null>(null)
   const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
   const [loading, setLoading] = useState(true)
@@ -151,6 +152,20 @@ export default function DetalleRecetaPage() {
 
   useEffect(() => {
     async function load() {
+      if (isClientView && clienteCodigo) {
+        const res = await fetch(`/api/cliente/${clienteCodigo}/recetas/${id}`)
+        if (res.ok) {
+          const json = await res.json()
+          setReceta(json.receta)
+          setIngredientes(json.ingredientes ?? [])
+        } else {
+          setReceta(null)
+          setIngredientes([])
+        }
+        setLoading(false)
+        return
+      }
+
       const [recetaRes, ingRes] = await Promise.all([
         supabase.from('recetas').select('*').eq('id', id).single(),
         supabase.from('receta_ingredientes').select('*, alimento:alimentos(*)').eq('receta_id', id).order('cantidad_gramos', { ascending: false }),
@@ -160,10 +175,11 @@ export default function DetalleRecetaPage() {
       setLoading(false)
     }
     load()
-  }, [id])
+  }, [clienteCodigo, id, isClientView])
 
   useEffect(() => {
     async function loadQuality() {
+      if (isClientView) return
       try {
         const res = await fetch(`/api/recetas/${id}/quality`)
         const json = await res.json()
@@ -173,7 +189,7 @@ export default function DetalleRecetaPage() {
       }
     }
     loadQuality()
-  }, [id])
+  }, [id, isClientView])
 
   async function borrar() {
     if (!confirm('¿Borrar esta receta? Esta acción no se puede deshacer.')) return
@@ -800,7 +816,7 @@ export default function DetalleRecetaPage() {
         <FadeIn delay={0.45}>
           <div className="flex items-center justify-between py-6 border-t" style={{ borderColor: 'var(--border)' }}>
             <Link
-              href="/recetas"
+              href={returnTo}
               className="flex items-center gap-1.5 text-sm font-medium transition-all duration-200"
               style={{ color: 'var(--text-secondary)' }}
               onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}

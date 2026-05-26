@@ -1,5 +1,10 @@
-import CoachShell from '@/components/CoachShell'
+import { Suspense } from 'react'
+import RecetasShell from '@/components/RecetasShell'
 
 export default function RecetasLayout({ children }: { children: React.ReactNode }) {
-  return <CoachShell>{children}</CoachShell>
+  return (
+    <Suspense fallback={null}>
+      <RecetasShell>{children}</RecetasShell>
+    </Suspense>
+  )
 }
