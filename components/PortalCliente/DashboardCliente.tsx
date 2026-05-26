@@ -692,62 +692,69 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
 
     return (
         <div className="min-h-screen pb-nav-safe" style={{ background: 'var(--bg)' }}>
-            <div className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                <div className="max-w-3xl mx-auto px-4 pt-safe pb-3">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Casanova Nutrition</p>
-                            <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: 'var(--text)' }}>{nombreCliente}</h1>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={toggleTheme}
-                                className="inline-flex h-8 items-center rounded-full border p-1 transition-colors"
-                                style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-muted)' }}
-                                aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                            >
-                                <span
-                                    className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
-                                    style={{ background: theme === 'light' ? 'var(--surface)' : 'transparent', color: theme === 'light' ? 'var(--text)' : 'var(--text-muted)' }}
-                                >
-                                    <Sun size={13} />
-                                </span>
-                                <span
-                                    className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
-                                    style={{ background: theme === 'dark' ? 'var(--surface)' : 'transparent', color: theme === 'dark' ? 'var(--text)' : 'var(--text-muted)' }}
-                                >
-                                    <Moon size={13} />
-                                </span>
-                            </button>
-                            {proximaRevision && (
-                                <span className="hidden sm:inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
-                                    <Calendar size={12} /> {proximaRevision}
-                                </span>
-                            )}
-                            {notasNoLeidas > 0 && (
+            <div
+                className="sticky top-0 z-30 border-b backdrop-blur-xl"
+                style={{
+                    borderColor: 'var(--border)',
+                    background: 'color-mix(in srgb, var(--surface) 92%, transparent)',
+                    WebkitBackdropFilter: 'blur(18px)',
+                }}
+            >
+                <div className="border-b" style={{ borderColor: 'var(--border)' }}>
+                    <div className="max-w-3xl mx-auto px-4 pt-safe pb-3">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                                <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Casanova Nutrition</p>
+                                <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: 'var(--text)' }}>{nombreCliente}</h1>
+                            </div>
+                            <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => setTab('chat')}
-                                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
-                                    style={{ background: 'rgba(239,68,68,0.10)', color: '#EF4444' }}
+                                    type="button"
+                                    onClick={toggleTheme}
+                                    className="inline-flex h-8 items-center rounded-full border p-1 transition-colors"
+                                    style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-muted)' }}
+                                    aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                                 >
-                                    <MessageSquareText size={12} />
-                                    {notasNoLeidas}
+                                    <span
+                                        className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
+                                        style={{ background: theme === 'light' ? 'var(--surface)' : 'transparent', color: theme === 'light' ? 'var(--text)' : 'var(--text-muted)' }}
+                                    >
+                                        <Sun size={13} />
+                                    </span>
+                                    <span
+                                        className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
+                                        style={{ background: theme === 'dark' ? 'var(--surface)' : 'transparent', color: theme === 'dark' ? 'var(--text)' : 'var(--text-muted)' }}
+                                    >
+                                        <Moon size={13} />
+                                    </span>
                                 </button>
-                            )}
-                            {ultimoCheckin && diasDesdeUltimoCheckin !== null && (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
-                                    <ClipboardCheck size={12} />
-                                    {diasDesdeUltimoCheckin === 0 ? 'Hoy' : `${diasDesdeUltimoCheckin}d`}
-                                </span>
-                            )}
+                                {proximaRevision && (
+                                    <span className="hidden sm:inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                                        <Calendar size={12} /> {proximaRevision}
+                                    </span>
+                                )}
+                                {notasNoLeidas > 0 && (
+                                    <button
+                                        onClick={() => setTab('chat')}
+                                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                                        style={{ background: 'rgba(239,68,68,0.10)', color: '#EF4444' }}
+                                    >
+                                        <MessageSquareText size={12} />
+                                        {notasNoLeidas}
+                                    </button>
+                                )}
+                                {ultimoCheckin && diasDesdeUltimoCheckin !== null && (
+                                    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                                        <ClipboardCheck size={12} />
+                                        {diasDesdeUltimoCheckin === 0 ? 'Hoy' : `${diasDesdeUltimoCheckin}d`}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Tabs — estilo pill */}
-            <div className="sticky top-0 z-10 border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                {/* Tabs — estilo pill */}
                 <div className="px-2 py-2" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <div style={{ display: 'flex', gap: '6px', width: 'max-content', minWidth: '100%', paddingLeft: '4px', paddingRight: '4px' }}>
                         {TABS.map(({ key, label, icon: Icon }) => (
