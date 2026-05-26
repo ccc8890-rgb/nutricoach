@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useToast } from '@/components/ui/Toast'
-import { Loader2, Send, Clock, Flame, ClipboardCheck, Camera, X } from 'lucide-react'
+import { Loader2, Send, Clock, Flame, ClipboardCheck, Camera, X, ChevronRight } from 'lucide-react'
 
 interface CheckInFormProps {
     codigo: string
@@ -17,8 +17,6 @@ interface CheckInFormProps {
     } | null
 }
 
-const EMOTICONOS = ['😞', '😐', '🙂', '😊', '🔥']
-
 interface SliderGroupProps {
     label: string
     value: number
@@ -32,7 +30,7 @@ function SliderGroup({ label, value, onChange, leftLabel, rightLabel }: SliderGr
         <div className="space-y-1.5">
             <div className="flex items-center justify-between">
                 <label className="!mb-0 text-sm">{label}</label>
-                <span className="text-lg">{EMOTICONOS[Math.min(value - 1, 4)]}</span>
+                <span className="text-xs font-semibold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{value}/10</span>
             </div>
             <input
                 type="range"
@@ -49,27 +47,6 @@ function SliderGroup({ label, value, onChange, leftLabel, rightLabel }: SliderGr
             </div>
         </div>
     )
-}
-
-/* ── Helper: racha de check-ins ── */
-function calcularRacha(checkins: { fecha: string }[]): number {
-    if (!checkins || checkins.length === 0) return 0
-    const sorted = [...checkins]
-        .map(c => new Date(c.fecha))
-        .sort((a, b) => b.getTime() - a.getTime())
-
-    let racha = 1
-    const hoy = new Date()
-    hoy.setHours(0, 0, 0, 0)
-    const diffHoy = Math.floor((hoy.getTime() - sorted[0].getTime()) / (1000 * 60 * 60 * 24))
-    if (diffHoy > 2) return 0
-
-    for (let i = 1; i < sorted.length; i++) {
-        const diff = Math.floor((sorted[i - 1].getTime() - sorted[i].getTime()) / (1000 * 60 * 60 * 24))
-        if (diff === 1) racha++
-        else break
-    }
-    return racha
 }
 
 export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: CheckInFormProps) {
@@ -236,7 +213,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
             <form onSubmit={handleSubmit} className="card space-y-5">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="font-semibold text-[var(--text)] text-lg">📋 Check-in semanal</h2>
+                        <h2 className="font-semibold text-[var(--text)] text-lg">Check-in semanal</h2>
                         <p className="text-sm text-[var(--text-muted)] mt-0.5">Cuéntame cómo fue tu semana</p>
                     </div>
                     {yaHizoCheckinHoy && (
@@ -262,7 +239,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
 
                 {/* Sliders */}
                 <SliderGroup
-                    label="🥗 Adherencia a la dieta"
+                    label="Adherencia a la dieta"
                     value={adherencia}
                     onChange={setAdherencia}
                     leftLabel="Mal"
@@ -270,7 +247,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                 />
 
                 <SliderGroup
-                    label="⚡ Nivel de energía"
+                    label="Nivel de energía"
                     value={energia}
                     onChange={setEnergia}
                     leftLabel="Baja"
@@ -278,7 +255,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                 />
 
                 <SliderGroup
-                    label="😴 Calidad del sueño"
+                    label="Calidad del sueño"
                     value={sueno}
                     onChange={setSueno}
                     leftLabel="Mala"
@@ -299,7 +276,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
 
                 {/* Foto de progreso */}
                 <div>
-                    <label className="text-sm font-medium text-[var(--text-secondary)]">📷 Foto de progreso (opcional)</label>
+                    <label className="text-sm font-medium text-[var(--text-secondary)]">Foto de progreso (opcional)</label>
                     <p className="text-xs text-gray-400 mb-2">Solo la ve tu coach</p>
                     {fotoPreview ? (
                         <div className="relative inline-block">
@@ -340,15 +317,15 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                     />
                 </div>
 
-                {/* 📐 Medidas corporales (opcional) — colapsable */}
+                {/* Medidas corporales (opcional) — colapsable */}
                 <div>
                     <button
                         type="button"
                         onClick={() => setMostrarMedidas(!mostrarMedidas)}
                         className="flex items-center gap-2 w-full text-sm font-medium text-[var(--text-secondary)] py-2"
                     >
-                        <span style={{ transform: mostrarMedidas ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>▶</span>
-                        📐 Medidas corporales (opcional)
+                        <ChevronRight size={14} style={{ transform: mostrarMedidas ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+                        Medidas corporales (opcional)
                     </button>
                     {mostrarMedidas && (
                         <div className="grid grid-cols-2 gap-3 mt-2">

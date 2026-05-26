@@ -363,10 +363,10 @@ export default function ProgresoCharts({ checkins, peso, pesoInicial, objetivo }
             <div className="card">
                 <div className="flex items-center gap-2 mb-3">
                     <Activity size={16} style={{ color: '#0D9488' }} />
-                    <h3 className="font-semibold text-[var(--text)] text-sm">📉 Evolución del peso</h3>
+                    <h3 className="font-semibold text-[var(--text)] text-sm">Evolución del peso</h3>
                     {objetivo && (
                         <span className="badge text-[10px] ml-auto" style={{ background: '#F0FDFA', color: '#0D9488' }}>
-                            🎯 {objetivo.replace('_', ' ')}
+                            {objetivo.replace('_', ' ')}
                         </span>
                     )}
                 </div>
@@ -377,7 +377,7 @@ export default function ProgresoCharts({ checkins, peso, pesoInicial, objetivo }
             <div className="card">
                 <div className="flex items-center gap-2 mb-3">
                     <Target size={16} style={{ color: '#0D9488' }} />
-                    <h3 className="font-semibold text-[var(--text)] text-sm">📊 Adherencia semanal</h3>
+                    <h3 className="font-semibold text-[var(--text)] text-sm">Adherencia semanal</h3>
                 </div>
                 <AdherenciaChart data={checkins} />
             </div>
@@ -386,7 +386,7 @@ export default function ProgresoCharts({ checkins, peso, pesoInicial, objetivo }
             <div className="card">
                 <div className="flex items-center gap-2 mb-3">
                     <Zap size={16} style={{ color: '#A1A1A6' }} />
-                    <h3 className="font-semibold text-[var(--text)] text-sm">⚡ Energía y sueño</h3>
+                    <h3 className="font-semibold text-[var(--text)] text-sm">Energía y sueño</h3>
                 </div>
                 <EnergiaSuenoChart data={checkins} />
             </div>
@@ -396,7 +396,7 @@ export default function ProgresoCharts({ checkins, peso, pesoInicial, objetivo }
                 <div className="card">
                     <div className="flex items-center gap-2 mb-3">
                         <Activity size={16} style={{ color: '#0D9488' }} />
-                        <h3 className="font-semibold text-[var(--text)] text-sm">📐 Medidas corporales</h3>
+                        <h3 className="font-semibold text-[var(--text)] text-sm">Medidas corporales</h3>
                     </div>
                     <div className="space-y-3">
                         {(['cintura_cm', 'cadera_cm', 'pecho_cm', 'brazo_cm', 'muslo_cm'] as const).map(key => {
@@ -429,7 +429,7 @@ export default function ProgresoCharts({ checkins, peso, pesoInicial, objetivo }
             <div className="card">
                 <div className="flex items-center gap-2 mb-3">
                     <CalendarCheck size={16} style={{ color: '#0D9488' }} />
-                    <h3 className="font-semibold text-[var(--text)] text-sm">📋 Historial de check-ins</h3>
+                    <h3 className="font-semibold text-[var(--text)] text-sm">Historial de check-ins</h3>
                     <span className="text-xs text-gray-400 ml-auto">{checkins.length} totales</span>
                 </div>
                 <TimelineCheckins checkins={checkins} />

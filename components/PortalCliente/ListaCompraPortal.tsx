@@ -11,19 +11,19 @@ interface ListaCompraPortalProps {
     codigo: string
 }
 
-const CATEGORIA_ICONOS: Record<string, string> = {
-    'Carnes y aves': '🥩',
-    'Pescados y mariscos': '🐟',
-    'Lácteos y huevos': '🥛',
-    'Frutas': '🍎',
-    'Verduras y hortalizas': '🥦',
-    'Legumbres': '🫘',
-    'Cereales y harinas': '🌾',
-    'Aceites y grasas': '🫙',
-    'Frutos secos': '🥜',
-    'Condimentos y salsas': '🧂',
-    'Bebidas': '🥤',
-    'Otros': '📦',
+const CATEGORIA_ABBR: Record<string, string> = {
+    'Carnes y aves': 'CA',
+    'Pescados y mariscos': 'PM',
+    'Lácteos y huevos': 'LH',
+    'Frutas': 'FR',
+    'Verduras y hortalizas': 'VH',
+    'Legumbres': 'LG',
+    'Cereales y harinas': 'CH',
+    'Aceites y grasas': 'AG',
+    'Frutos secos': 'FS',
+    'Condimentos y salsas': 'CS',
+    'Bebidas': 'BE',
+    'Otros': 'OT',
 }
 const DIAS_COMPRA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
@@ -244,7 +244,7 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
             {/* Lista por categoría */}
             {Object.entries(porCategoria).map(([cat, catItems]) => {
                 const colapsar = colapsadas.has(cat)
-                const icono = CATEGORIA_ICONOS[cat] ?? '📦'
+                const abbr = CATEGORIA_ABBR[cat] ?? 'OT'
                 const todosMarcados = catItems.every(i => marcados.has(i.alimento_id))
 
                 return (
@@ -256,7 +256,12 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
                             style={{ background: todosMarcados ? 'var(--bg)' : 'var(--surface)' }}
                         >
                             <div className="flex items-center gap-2">
-                                <span className="text-base">{icono}</span>
+                                <span
+                                    className="inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold"
+                                    style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+                                >
+                                    {abbr}
+                                </span>
                                 <span
                                     className="text-sm font-semibold"
                                     style={{ color: todosMarcados ? 'var(--text-muted)' : 'var(--text)', textDecoration: todosMarcados ? 'line-through' : 'none' }}

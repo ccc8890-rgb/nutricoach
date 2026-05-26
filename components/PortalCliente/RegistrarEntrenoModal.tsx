@@ -4,15 +4,15 @@ import { useState } from 'react'
 import { X, Loader2 } from 'lucide-react'
 
 const TIPOS = [
-    { value: 'running', label: '🏃 Running' },
-    { value: 'gym', label: '🏋️ Gym' },
-    { value: 'hyrox', label: '⚡ Hyrox' },
-    { value: 'crossfit', label: '🔥 CrossFit' },
-    { value: 'ciclismo', label: '🚴 Ciclismo' },
-    { value: 'natacion', label: '🏊 Natación' },
-    { value: 'trail', label: '⛰️ Trail' },
-    { value: 'yoga', label: '🧘 Yoga' },
-    { value: 'otro', label: '🎯 Otro' },
+    { value: 'running', label: 'Running' },
+    { value: 'gym', label: 'Gym' },
+    { value: 'hyrox', label: 'Hyrox' },
+    { value: 'crossfit', label: 'CrossFit' },
+    { value: 'ciclismo', label: 'Ciclismo' },
+    { value: 'natacion', label: 'Natación' },
+    { value: 'trail', label: 'Trail' },
+    { value: 'yoga', label: 'Yoga' },
+    { value: 'otro', label: 'Otro' },
 ]
 
 const RPE_LABELS: Record<number, string> = {
