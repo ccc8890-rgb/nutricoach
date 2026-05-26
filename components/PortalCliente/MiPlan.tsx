@@ -79,6 +79,17 @@ function diaActualEspana() {
     return DIAS_NUTRICION[idx === 0 ? 6 : idx - 1]
 }
 
+function fechaParaDiaSemana(dia: string) {
+    const idx = DIAS_NUTRICION.findIndex(d => d === dia)
+    const hoy = new Date()
+    const day = hoy.getDay()
+    const monday = new Date(hoy)
+    monday.setDate(hoy.getDate() - (day === 0 ? 6 : day - 1))
+    const target = new Date(monday)
+    target.setDate(monday.getDate() + Math.max(0, idx))
+    return target.toLocaleDateString('en-CA')
+}
+
 function diaComida(comida: Pick<Comida, 'dia_semana'>) {
     return comida.dia_semana || DIAS_NUTRICION[0]
 }
@@ -224,25 +235,28 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
     useEffect(() => {
         if (registros_comidas) {
             const map: Record<string, RegistroComidaDia> = {}
-            registros_comidas.forEach(r => { map[r.comida_id] = r })
+            registros_comidas.forEach(r => { map[`${r.comida_id}:${r.fecha ?? ''}`] = r })
             setRegistros(map)
         }
     }, [registros_comidas])
 
     async function handleRegistrar(comidaId: string, estado: 'hecha' | 'cambiada' | 'saltada', notas?: string) {
         setRegistrando(comidaId)
+        const fecha = fechaParaDiaSemana(diaActivo)
+        const key = `${comidaId}:${fecha}`
         try {
             const res = await fetch(`/api/cliente/${codigo}/registrar-comida`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ comida_id: comidaId, estado, notas: notas ?? null }),
+                body: JSON.stringify({ comida_id: comidaId, estado, notas: notas ?? null, fecha }),
             })
             if (!res.ok) throw new Error('Error al registrar')
             setRegistros(prev => ({
                 ...prev,
-                [comidaId]: { ...(prev[comidaId] ?? {}), comida_id: comidaId, estado, notas: notas ?? null } as RegistroComidaDia,
+                [key]: { ...(prev[key] ?? {}), comida_id: comidaId, fecha, estado, notas: notas ?? null } as RegistroComidaDia,
             }))
-            addToast({ type: 'success', title: estado === 'hecha' ? 'Comida registrada' : 'Cambio anotado', message: '' })
+            const title = estado === 'hecha' ? 'Comida registrada' : estado === 'saltada' ? 'Comida marcada como no hecha' : 'Cambio anotado'
+            addToast({ type: 'success', title, message: '' })
         } catch {
             addToast({ type: 'error', title: 'Error', message: 'No se pudo registrar la comida' })
         } finally {
@@ -538,7 +552,8 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
     // Progreso de adherencia del día
     const comidaIdsDia = new Set(comidasDia.map(c => c.id))
     const totalComidas = comidasDia.length
-    const comidasHechas = Object.values(registros).filter(r => comidaIdsDia.has(r.comida_id) && (r.estado === 'hecha' || r.estado === 'cambiada')).length
+    const fechaDiaActivo = fechaParaDiaSemana(diaActivo)
+    const comidasHechas = Object.values(registros).filter(r => comidaIdsDia.has(r.comida_id) && r.fecha === fechaDiaActivo && (r.estado === 'hecha' || r.estado === 'cambiada')).length
     const pctAdherencia = totalComidas > 0 ? Math.round((comidasHechas / totalComidas) * 100) : 0
 
     const ringColor = pctAdherencia >= 80 ? '#22c55e' : pctAdherencia >= 50 ? '#f59e0b' : pctAdherencia > 0 ? '#0D9488' : 'var(--border)'
@@ -672,8 +687,9 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                     const macros = calcMacrosComida(alimentos)
                     const expanded = expandidas[comida.id]
 
-                    const registro = registros[comida.id]
+                    const registro = registros[`${comida.id}:${fechaDiaActivo}`]
                     const yaHecho = registro?.estado === 'hecha'
+                    const saltada = registro?.estado === 'saltada'
                     const tieneCambio = registro?.estado === 'cambiada' ? registro?.notas : null
                     const recetaNombre = comida.receta?.nombre ?? comida.nombre
 
@@ -711,6 +727,7 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                             </p>
                                             {yaHecho && <span className="text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded">Hecho</span>}
                                             {tieneCambio && !yaHecho && <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Cambio</span>}
+                                            {saltada && <span className="text-[10px] font-medium text-red-600 bg-red-50 px-1.5 py-0.5 rounded">No hecha</span>}
                                         </div>
                                         <p className="font-semibold leading-tight line-clamp-2 mt-0.5" style={{ color: 'var(--text)' }}>
                                             {recetaNombre}
@@ -744,7 +761,7 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                             </div>
 
                             {/* S3 — Botones Hecho / Anotar cambio */}
-                            {!yaHecho && !anotandoCambio && (
+                            {!yaHecho && !tieneCambio && !saltada && !anotandoCambio && (
                                 <div className="px-5 pb-3 pt-0 flex gap-2 no-print">
                                     <button
                                         type="button"
@@ -764,6 +781,31 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                     >
                                         <PencilLine size={14} />
                                         Anotar cambio
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={registrando === comida.id}
+                                        onClick={(e) => { e.stopPropagation(); handleRegistrar(comida.id, 'saltada') }}
+                                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
+                                        style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+                                    >
+                                        No hecha
+                                    </button>
+                                </div>
+                            )}
+
+                            {(yaHecho || tieneCambio || saltada) && !anotandoCambio && (
+                                <div className="px-5 pb-3 pt-0 flex items-center justify-between gap-2 no-print">
+                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                        {yaHecho ? 'Registrada como hecha.' : saltada ? 'Marcada como no hecha.' : `Cambio: ${tieneCambio}`}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setAnotandoCambio(comida.id); setTextoCambio(registro?.notas ?? '') }}
+                                        className="text-xs font-semibold rounded-lg px-3 py-1.5"
+                                        style={{ color: 'var(--primary)', background: 'var(--primary-bg)' }}
+                                    >
+                                        Cambiar estado
                                     </button>
                                 </div>
                             )}
@@ -789,6 +831,15 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                         >
                                             {registrando === comida.id ? <Loader2 size={13} className="animate-spin" /> : <PencilLine size={14} />}
                                             Guardar cambio
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={registrando === comida.id}
+                                            onClick={() => handleRegistrar(comida.id, 'hecha')}
+                                            className="px-3 text-xs font-medium rounded-lg transition-all"
+                                            style={{ background: '#DCFCE7', color: '#16A34A' }}
+                                        >
+                                            Hecha
                                         </button>
                                         <button
                                             type="button"

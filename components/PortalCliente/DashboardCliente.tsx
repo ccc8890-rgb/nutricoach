@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, MessageSquareText, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle, ShoppingCart, BookOpen } from 'lucide-react'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, MessageSquareText, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle, ShoppingCart, BookOpen, Clock, CheckCircle2 } from 'lucide-react'
 import MiPlan from './MiPlan'
 import CheckInForm from './CheckInForm'
 import ProgresoCharts from './ProgresoCharts'
@@ -65,22 +65,50 @@ function EntrenoCliente({
 }) {
     const hoy = new Date().getDay()
     const hoyIdx = hoy === 0 ? 6 : hoy - 1
+    const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+    const [diaActivo, setDiaActivo] = useState(hoyIdx)
+    const [sesionesHechas, setSesionesHechas] = useState<Set<string>>(() => {
+        if (typeof window === 'undefined') return new Set()
+        try {
+            return new Set(JSON.parse(localStorage.getItem(`nutricoach:training:${codigo}`) ?? '[]') as string[])
+        } catch {
+            return new Set()
+        }
+    })
     const sesiones = (entreno?.sesiones ?? []) as Array<{
         id: string
         nombre: string
         dia_semana?: string | null
         duracion_min?: number | null
+        duracion_estimada_min?: number | null
+        notas?: string | null
         ejercicios?: Array<{
             id: string
             orden: number
             series?: number | null
             repeticiones?: string | null
             descanso_seg?: number | null
+            descanso_segundos?: number | null
+            peso_sugerido?: string | null
+            notas?: string | null
             ejercicio?: { nombre?: string | null; grupo_muscular?: string | null }
         }>
     }>
+    const sesionesDia = sesiones.filter(s => normalizarDia(s.dia_semana) === diaActivo)
     const sesionesHoy = sesiones.filter(s => normalizarDia(s.dia_semana) === hoyIdx)
-    const visibles = sesionesHoy.length ? sesionesHoy : sesiones
+    const visibles = sesionesDia.length ? sesionesDia : sesionesHoy.length ? sesionesHoy : sesiones
+    const totalEjercicios = visibles.reduce((acc, s) => acc + (s.ejercicios?.length ?? 0), 0)
+    const duracionDia = visibles.reduce((acc, s) => acc + Number(s.duracion_min ?? s.duracion_estimada_min ?? 0), 0)
+
+    function marcarSesion(sesionId: string, nombre: string) {
+        setSesionesHechas(prev => {
+            const next = new Set(prev)
+            next.add(sesionId)
+            localStorage.setItem(`nutricoach:training:${codigo}`, JSON.stringify(Array.from(next)))
+            return next
+        })
+        onSesion(nombre)
+    }
 
     return (
         <div className="space-y-4">
@@ -98,36 +126,83 @@ function EntrenoCliente({
                     <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Tu coach todavía no ha asignado sesiones de entrenamiento.</p>
                 ) : (
                     <div className="space-y-3">
+                        <div className="grid grid-cols-7 gap-1.5">
+                            {dias.map((dia, idx) => {
+                                const count = sesiones.filter(s => normalizarDia(s.dia_semana) === idx).length
+                                const active = idx === diaActivo
+                                const today = idx === hoyIdx
+                                return (
+                                    <button
+                                        key={dia}
+                                        type="button"
+                                        onClick={() => setDiaActivo(idx)}
+                                        className="rounded-2xl border py-2 text-center transition-colors"
+                                        style={{
+                                            borderColor: active ? 'var(--primary)' : 'var(--border)',
+                                            background: active ? 'var(--primary-bg)' : 'var(--bg)',
+                                            color: active ? 'var(--primary)' : 'var(--text-muted)',
+                                        }}
+                                    >
+                                        <span className="block text-xs font-bold">{dia.slice(0, 1)}</span>
+                                        <span className="block text-[9px] tabular-nums mt-0.5">{today ? 'Hoy' : count}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                            <div className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Sesiones</p>
+                                <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{visibles.length}</p>
+                            </div>
+                            <div className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Ejercicios</p>
+                                <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{totalEjercicios}</p>
+                            </div>
+                            <div className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Tiempo</p>
+                                <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{duracionDia || '—'}{duracionDia ? 'm' : ''}</p>
+                            </div>
+                        </div>
+
                         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                            {sesionesHoy.length ? 'Entrenamiento previsto para hoy' : 'Semana de entrenamiento'}
+                            {sesionesDia.length ? `Entrenamiento de ${dias[diaActivo]}` : sesionesHoy.length ? 'No hay sesión para ese día. Mostrando hoy.' : 'Semana de entrenamiento'}
                         </p>
                         {visibles.map(sesion => (
                             <div key={sesion.id} className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
-                                        <p className="font-semibold" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
-                                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                                            {sesion.dia_semana ?? 'Sin día'}{sesion.duracion_min ? ` · ${sesion.duracion_min} min` : ''}
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-semibold" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+                                            {sesionesHechas.has(sesion.id) && <CheckCircle2 size={14} style={{ color: '#16A34A' }} />}
+                                        </div>
+                                        <p className="text-xs mt-0.5 inline-flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                                            <Clock size={12} /> {sesion.dia_semana ?? 'Sin día'}{(sesion.duracion_min ?? sesion.duracion_estimada_min) ? ` · ${sesion.duracion_min ?? sesion.duracion_estimada_min} min` : ''}
                                         </p>
+                                        {sesion.notas && <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{sesion.notas}</p>}
                                     </div>
                                     <button
-                                        onClick={() => onSesion(sesion.nombre)}
+                                        onClick={() => marcarSesion(sesion.id, sesion.nombre)}
                                         className="shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold"
-                                        style={{ background: 'var(--primary-bg)', color: 'var(--primary)' }}
+                                        style={{ background: sesionesHechas.has(sesion.id) ? '#DCFCE7' : 'var(--primary-bg)', color: sesionesHechas.has(sesion.id) ? '#16A34A' : 'var(--primary)' }}
                                     >
-                                        Hecho
+                                        {sesionesHechas.has(sesion.id) ? 'Hecha' : 'Hecho'}
                                     </button>
                                 </div>
                                 {(sesion.ejercicios ?? []).length > 0 && (
                                     <div className="mt-3 space-y-2">
                                         {(sesion.ejercicios ?? []).slice().sort((a, b) => a.orden - b.orden).map(ej => (
-                                            <div key={ej.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2" style={{ background: 'var(--surface)' }}>
+                                            <div key={ej.id} className="grid grid-cols-[1fr_auto] gap-3 rounded-xl px-3 py-2" style={{ background: 'var(--surface)' }}>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
-                                                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{ej.ejercicio?.grupo_muscular ?? 'Trabajo principal'}</p>
+                                                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                                                        {ej.ejercicio?.grupo_muscular ?? 'Trabajo principal'}
+                                                        {(ej.descanso_seg ?? ej.descanso_segundos) ? ` · descanso ${ej.descanso_seg ?? ej.descanso_segundos}s` : ''}
+                                                    </p>
+                                                    {ej.notas && <p className="text-[11px] mt-0.5 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{ej.notas}</p>}
                                                 </div>
                                                 <p className="text-xs font-semibold text-right shrink-0" style={{ color: 'var(--text-secondary)' }}>
-                                                    {ej.series ? `${ej.series}x` : ''}{ej.repeticiones ?? 'programado'}
+                                                    {ej.series ? `${ej.series}x` : ''}{ej.repeticiones ?? 'programado'}{ej.peso_sugerido ? ` · ${ej.peso_sugerido}` : ''}
                                                 </p>
                                             </div>
                                         ))}

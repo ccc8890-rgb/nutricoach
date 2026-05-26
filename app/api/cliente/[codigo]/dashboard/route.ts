@@ -108,15 +108,23 @@ export async function GET(
             notas = n ?? []
         }
 
-        // 7. Registros de comidas de hoy (S3)
+        // 7. Registros de comidas de la semana actual (S3)
         let registros_comidas: unknown[] = []
         if (clienteId) {
-            const hoy = new Date().toLocaleDateString('en-CA')
+            const hoy = new Date()
+            const day = hoy.getDay()
+            const monday = new Date(hoy)
+            monday.setDate(hoy.getDate() - (day === 0 ? 6 : day - 1))
+            const sunday = new Date(monday)
+            sunday.setDate(monday.getDate() + 6)
+            const desde = monday.toLocaleDateString('en-CA')
+            const hasta = sunday.toLocaleDateString('en-CA')
             const { data: r } = await supabase
                 .from('registro_comidas_dia')
                 .select('*')
                 .eq('cliente_id', clienteId)
-                .eq('fecha', hoy)
+                .gte('fecha', desde)
+                .lte('fecha', hasta)
             registros_comidas = r ?? []
         }
 

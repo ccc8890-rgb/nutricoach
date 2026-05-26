@@ -59,6 +59,7 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
     const [marcados, setMarcados] = useState<Set<string>>(new Set())
     const [colapsadas, setColapsadas] = useState<Set<string>>(new Set())
     const [dia, setDia] = useState<string>('Semana')
+    const storageKey = `nutricoach:lista-compra:${codigo}:${dia}`
 
     useEffect(() => {
         setLoading(true)
@@ -69,11 +70,21 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
             .then((res: ListaCompraResponse) => {
                 setData(res)
                 setItems(res.items ?? [])
-                setMarcados(new Set())
+                try {
+                    const raw = localStorage.getItem(storageKey)
+                    setMarcados(new Set(raw ? JSON.parse(raw) as string[] : []))
+                } catch {
+                    setMarcados(new Set())
+                }
             })
             .catch(() => setError(true))
             .finally(() => setLoading(false))
-    }, [codigo, dia])
+    }, [codigo, dia, storageKey])
+
+    useEffect(() => {
+        if (loading) return
+        localStorage.setItem(storageKey, JSON.stringify(Array.from(marcados)))
+    }, [loading, marcados, storageKey])
 
     const selector = (
         <div className="flex gap-1.5 overflow-x-auto pb-1">
@@ -338,7 +349,10 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
                 <button
                     className="w-full text-xs py-2 rounded-xl border transition-colors"
                     style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                    onClick={() => setMarcados(new Set())}
+                    onClick={() => {
+                        setMarcados(new Set())
+                        localStorage.removeItem(storageKey)
+                    }}
                 >
                     Limpiar selección
                 </button>
