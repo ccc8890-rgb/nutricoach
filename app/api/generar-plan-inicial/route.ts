@@ -224,6 +224,10 @@ export async function POST(request: NextRequest) {
 
   if (!cliente) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
 
+  if (cliente.coach_id !== user.id) {
+    return NextResponse.json({ error: 'Acceso restringido al coach del cliente' }, { status: 403 })
+  }
+
   const { data: onboarding } = await supabase
     .from('onboarding_responses')
     .select('*')

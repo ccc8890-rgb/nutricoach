@@ -34,6 +34,16 @@ function inferVideoTipo(videoUrl: string | null) {
   return 'externo'
 }
 
+async function isCoach(db: ReturnType<typeof createServiceSupabase>, userId: string) {
+  const { data } = await db
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle()
+
+  return data?.role === 'coach'
+}
+
 /**
  * PATCH /api/ejercicios/[id]/media
  * Actualiza los campos de media de un ejercicio:
@@ -50,6 +60,11 @@ export async function PATCH(
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
+  const db = createServiceSupabase()
+  if (!await isCoach(db, user.id)) {
+    return NextResponse.json({ error: 'Acceso restringido al coach' }, { status: 403 })
   }
 
   let body: Record<string, unknown>
@@ -115,7 +130,6 @@ export async function PATCH(
     updates.video_tipo = inferVideoTipo(updates.video_url as string | null)
   }
 
-  const db = createServiceSupabase()
   const { data, error } = await db
     .from('ejercicios')
     .update(updates)
@@ -148,6 +162,10 @@ export async function GET(
   }
 
   const db = createServiceSupabase()
+  if (!await isCoach(db, user.id)) {
+    return NextResponse.json({ error: 'Acceso restringido al coach' }, { status: 403 })
+  }
+
   const { data, error } = await db
     .from('ejercicios')
     .select('id, nombre, foto_url, video_url, video_tipo, dificultad_nivel, equipamiento, musculos_secundarios')

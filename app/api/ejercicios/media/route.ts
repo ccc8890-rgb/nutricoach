@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
+async function isCoach(db: ReturnType<typeof createServiceSupabase>, userId: string) {
+  const { data } = await db
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle()
+
+  return data?.role === 'coach'
+}
+
 export async function GET(request: NextRequest) {
   const authClient = createApiSupabase(request)
   const { data: { user } } = await authClient.auth.getUser()
@@ -13,6 +23,10 @@ export async function GET(request: NextRequest) {
   const grupo = searchParams.get('grupo')?.trim()
 
   const db = createServiceSupabase()
+  if (!await isCoach(db, user.id)) {
+    return NextResponse.json({ error: 'Acceso restringido al coach' }, { status: 403 })
+  }
+
   let q = db
     .from('ejercicios')
     .select('id, nombre, grupo_muscular, tipo, descripcion, foto_url, video_url, video_tipo, dificultad_nivel, equipamiento, musculos_secundarios')
