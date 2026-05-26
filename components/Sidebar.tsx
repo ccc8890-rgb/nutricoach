@@ -289,17 +289,35 @@ export default function Sidebar() {
             </p>
           </div>
           <button
+            type="button"
             onClick={toggleTheme}
-            className="ml-auto w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+            className="ml-auto inline-flex h-8 items-center rounded-full border p-1 transition-colors"
             style={{
-              color: 'var(--text-muted)',
+              borderColor: 'var(--glass-border)',
               background: 'var(--surface)',
-              border: '1px solid var(--glass-border)',
+              color: 'var(--text-muted)',
             }}
             title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
             aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           >
-            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            <span
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
+              style={{
+                background: theme === 'light' ? 'var(--surface-elevated)' : 'transparent',
+                color: theme === 'light' ? 'var(--text)' : 'var(--text-muted)',
+              }}
+            >
+              <Sun size={13} />
+            </span>
+            <span
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
+              style={{
+                background: theme === 'dark' ? 'var(--surface-elevated)' : 'transparent',
+                color: theme === 'dark' ? 'var(--text)' : 'var(--text-muted)',
+              }}
+            >
+              <Moon size={13} />
+            </span>
           </button>
         </div>
       </div>
