@@ -14,11 +14,44 @@ import type { IngredienteSemanal, PrecioOpcion } from '@/types'
 
 export interface ItemListaCompra {
     alimento_id: string
+    alimento_ids?: string[]
     nombre: string
     categoria: string
     cantidad_gramos: number
     cantidad_compra?: string
     comidas_origen: string[]
+}
+
+function normalizarCompra(value: string | null | undefined) {
+    return String(value ?? '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+}
+
+function esNoComestibleLista(nombre: string, categoria: string) {
+    const text = `${normalizarCompra(nombre)} ${normalizarCompra(categoria)}`
+    return /\b(cepillo|cepillos|dientes|dental|dentifrico|pasta dental|higiene|champu|gel ducha|desodorante|compresa|panal|pañal|toallita|mascota|arena gato|detergente|limpieza)\b/.test(text)
+}
+
+function canonicalItem(alimento: { id: string; nombre: string; categoria?: string | null }) {
+    const nombre = normalizarCompra(alimento.nombre)
+    if (/\b(huevo|huevos)\b/.test(nombre)) {
+        return {
+            key: 'canon:huevos',
+            nombre: 'Huevos',
+            categoria: 'Huevos',
+        }
+    }
+
+    return {
+        key: alimento.id,
+        nombre: alimento.nombre,
+        categoria: alimento.categoria ?? 'Otros',
+    }
 }
 
 export async function GET(
@@ -59,19 +92,24 @@ export async function GET(
         for (const ca of alimentos ?? []) {
             if (!ca.alimento) continue
             const { id, nombre, categoria } = ca.alimento
-            if (mapa.has(id)) {
-                const existing = mapa.get(id)!
+            if (esNoComestibleLista(nombre, categoria ?? '')) continue
+
+            const canonical = canonicalItem({ id, nombre, categoria })
+            if (mapa.has(canonical.key)) {
+                const existing = mapa.get(canonical.key)!
                 existing.cantidad_gramos += ca.cantidad_gramos
+                existing.alimento_ids = Array.from(new Set([...(existing.alimento_ids ?? [existing.alimento_id]), id]))
                 const origen = comida.dia_semana ? `${comida.dia_semana} · ${comida.nombre}` : comida.nombre
                 if (!existing.comidas_origen.includes(origen)) {
                     existing.comidas_origen.push(origen)
                 }
             } else {
                 const origen = comida.dia_semana ? `${comida.dia_semana} · ${comida.nombre}` : comida.nombre
-                mapa.set(id, {
+                mapa.set(canonical.key, {
                     alimento_id: id,
-                    nombre,
-                    categoria: categoria ?? 'Otros',
+                    alimento_ids: [id],
+                    nombre: canonical.nombre,
+                    categoria: canonical.categoria,
                     cantidad_gramos: ca.cantidad_gramos,
                     comidas_origen: [origen],
                 })
@@ -87,7 +125,7 @@ export async function GET(
         cantidad_compra: convertirGramosACompra(item.cantidad_gramos, item.nombre),
     }))
 
-    const alimentoIds = items.map(item => item.alimento_id)
+    const alimentoIds = Array.from(new Set(items.flatMap(item => item.alimento_ids ?? [item.alimento_id])))
     const { data: preciosActuales } = await db
         .from('precios_actuales')
         .select('alimento_id, supermercado_id, supermercado_nombre, supermercado_slug, supermercado_color, precio_por_kg, url_producto')
@@ -117,7 +155,9 @@ export async function GET(
     }
 
     const ingredientes: IngredienteSemanal[] = items.map(item => {
-        const preciosOrdenados = [...(preciosPorAlimento.get(item.alimento_id) ?? [])]
+        const ids = item.alimento_ids ?? [item.alimento_id]
+        const preciosOrdenados = ids
+            .flatMap(id => preciosPorAlimento.get(id) ?? [])
             .sort((a, b) => a.precio_por_kg - b.precio_por_kg)
         const precioMin = preciosOrdenados[0]?.precio_por_kg ?? null
         const precios: PrecioOpcion[] = preciosOrdenados.map(precio => ({

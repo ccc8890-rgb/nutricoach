@@ -92,6 +92,17 @@ type SesionCliente = {
     notas?: string | null
 }
 
+type RecetaPlanCliente = {
+    id: string
+    nombre: string
+    imagen_url?: string | null
+    kcal?: number | null
+    proteinas?: number | null
+    tiempo_prep_min?: number | null
+    comida?: string
+    tipo: 'asignada' | 'alternativa'
+}
+
 function calcMacrosComida(comida: ComidaCliente) {
     return sumarMacros((comida.alimentos ?? []).map(a =>
         calcularMacrosPorCantidad(
@@ -103,6 +114,44 @@ function calcMacrosComida(comida: ComidaCliente) {
             Number(a.cantidad_gramos ?? 0)
         )
     ))
+}
+
+function RecipeGridCliente({ items, codigo }: { items: RecetaPlanCliente[]; codigo: string }) {
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {items.map(receta => (
+                <Link
+                    key={receta.id}
+                    href={`/recetas/${receta.id}?returnTo=/cliente/${codigo}`}
+                    className="group rounded-2xl border overflow-hidden"
+                    style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+                >
+                    <div className="aspect-[16/9]" style={{ background: 'var(--surface)' }}>
+                        {receta.imagen_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={receta.imagen_url} alt={receta.nombre} className="h-full w-full object-cover" />
+                        ) : (
+                            <div className="h-full w-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+                                <BookOpen size={22} />
+                            </div>
+                        )}
+                    </div>
+                    <div className="p-3">
+                        <div className="mb-1 flex items-center gap-2">
+                            <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: receta.tipo === 'asignada' ? 'var(--primary-bg)' : 'var(--surface)', color: receta.tipo === 'asignada' ? 'var(--primary)' : 'var(--text-muted)' }}>
+                                {receta.tipo === 'asignada' ? 'Plan' : 'Alternativa'}
+                            </span>
+                            {receta.comida && <span className="truncate text-[10px]" style={{ color: 'var(--text-muted)' }}>{receta.comida}</span>}
+                        </div>
+                        <p className="text-sm font-semibold line-clamp-2 group-hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                            {Math.round(Number(receta.kcal ?? 0))} kcal{receta.proteinas ? ` · P ${Math.round(Number(receta.proteinas))}g` : ''}{receta.tiempo_prep_min ? ` · ${receta.tiempo_prep_min} min` : ''}
+                        </p>
+                    </div>
+                </Link>
+            ))}
+        </div>
+    )
 }
 
 function EntrenoCliente({
@@ -475,47 +524,63 @@ function HoyCliente({
 }
 
 function RecetarioCliente({ plan, codigo }: { plan: PlanNutricion; codigo: string }) {
-    const recetas = Array.from(new Map(((plan.comidas ?? []) as Array<{
+    const comidas = (plan.comidas ?? []) as Array<{
         nombre: string
         receta_id?: string | null
         receta?: { id: string; nombre: string; imagen_url?: string | null; kcal?: number | null; proteinas?: number | null; tiempo_prep_min?: number | null } | null
-    }>).filter(c => c.receta_id && c.receta).map(c => [c.receta_id, { ...c.receta!, comida: c.nombre }])).values())
+        alternativa_recetas?: Array<{ id: string; nombre: string; imagen_url?: string | null; kcal?: number | null; proteinas?: number | null; tiempo_prep_min?: number | null }>
+    }>
+    const recetasMap = new Map<string, RecetaPlanCliente>()
+
+    comidas.forEach(comida => {
+        if (comida.receta_id && comida.receta) {
+            recetasMap.set(comida.receta_id, { ...comida.receta, comida: comida.nombre, tipo: 'asignada' })
+        }
+    })
+
+    comidas.forEach(comida => {
+        ; (comida.alternativa_recetas ?? []).forEach(receta => {
+            if (!recetasMap.has(receta.id)) {
+                recetasMap.set(receta.id, { ...receta, comida: comida.nombre, tipo: 'alternativa' })
+            }
+        })
+    })
+
+    const recetas = Array.from(recetasMap.values())
+    const asignadas = recetas.filter(r => r.tipo === 'asignada')
+    const alternativas = recetas.filter(r => r.tipo === 'alternativa')
 
     return (
         <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <div className="mb-4">
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Recetario del plan</p>
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Recetario desbloqueado</p>
                 <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>{recetas.length} recetas disponibles</h2>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    Recetas principales y opciones alternativas que tu coach ha dejado disponibles en tu plan.
+                </p>
             </div>
             {recetas.length === 0 ? (
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Todavía no hay recetas vinculadas a tu plan.</p>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {recetas.map(receta => (
-                        <Link
-                            key={receta.id}
-                            href={`/recetas/${receta.id}?returnTo=/cliente/${codigo}`}
-                            className="group rounded-2xl border overflow-hidden"
-                            style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
-                        >
-                            <div className="aspect-[16/9]" style={{ background: 'var(--surface)' }}>
-                                {receta.imagen_url ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={receta.imagen_url} alt={receta.nombre} className="h-full w-full object-cover" />
-                                ) : (
-                                    <div className="h-full w-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
-                                        <BookOpen size={22} />
-                                    </div>
-                                )}
+                <div className="space-y-5">
+                    {asignadas.length > 0 && (
+                        <div>
+                            <div className="mb-2 flex items-center justify-between">
+                                <h3 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Asignadas por el coach</h3>
+                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{asignadas.length}</span>
                             </div>
-                            <div className="p-3">
-                                <p className="text-sm font-semibold line-clamp-2 group-hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
-                                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                                    {Math.round(Number(receta.kcal ?? 0))} kcal · P {Math.round(Number(receta.proteinas ?? 0))}g{receta.tiempo_prep_min ? ` · ${receta.tiempo_prep_min} min` : ''}
-                                </p>
+                            <RecipeGridCliente items={asignadas} codigo={codigo} />
+                        </div>
+                    )}
+                    {alternativas.length > 0 && (
+                        <div>
+                            <div className="mb-2 flex items-center justify-between">
+                                <h3 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Opciones alternativas</h3>
+                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{alternativas.length}</span>
                             </div>
-                        </Link>
-                    ))}
+                            <RecipeGridCliente items={alternativas} codigo={codigo} />
+                        </div>
+                    )}
                 </div>
             )}
         </section>
@@ -679,27 +744,6 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div className="fixed right-3 z-20 flex flex-col gap-2 sm:hidden" style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}>
-                <button
-                    type="button"
-                    onClick={() => setTab('plan')}
-                    className="h-11 w-11 rounded-2xl border flex items-center justify-center"
-                    style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--surface) 92%, transparent)', color: 'var(--text)', backdropFilter: 'blur(14px)' }}
-                    aria-label="Ir a hoy"
-                >
-                    <Home size={17} />
-                </button>
-                <button
-                    type="button"
-                    onClick={toggleTheme}
-                    className="h-11 w-11 rounded-2xl border flex items-center justify-center"
-                    style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--surface) 92%, transparent)', color: 'var(--text)', backdropFilter: 'blur(14px)' }}
-                    aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                >
-                    {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-                </button>
             </div>
 
             {/* Tabs — estilo pill */}
