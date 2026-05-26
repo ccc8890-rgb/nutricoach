@@ -114,8 +114,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (qText && pool.length < limite) {
+        const tiposExtra = tipo_plato ? (TIPOS_COMPATIBLES[tipo_plato] ?? [tipo_plato]) : undefined
         const fallbackQuery = buildQuery({
             relaxedMacros: true,
+            tipos: tiposExtra,
             excludeIds: pool.length ? pool.map(r => r.id) : undefined,
         })
         const { data: sinMacros } = await fallbackQuery

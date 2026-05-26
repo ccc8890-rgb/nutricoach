@@ -9,6 +9,7 @@ import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Download, P
 import { useToast } from '@/components/ui/Toast'
 import { calcularMacrosPorCantidad, sumarMacros, COMIDAS_PREDEFINIDAS } from '@/lib/utils'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
+import { inferirSlotComida } from '@/lib/tipos-comida'
 import type { Macros, PlanNutricion, Alimento } from '@/types'
 
 type ResultadoBusqueda = Alimento & { imagen?: string; _fuente?: string }
@@ -635,13 +636,9 @@ export default function EditarDietaPage() {
   }
 
   function inferirTipoPlato(nombreComida: string): string | null {
-    const n = nombreComida.toLowerCase()
-    if (n.includes('desayuno')) return 'Desayuno'
-    if (n.includes('almuerzo') || n.includes('media mañana')) return 'Almuerzo'
-    if (n.includes('comida')) return 'Comida'
-    if (n.includes('merienda') || n.includes('snack')) return 'Merienda'
-    if (n.includes('cena')) return 'Cena'
-    return null
+    const slot = inferirSlotComida(nombreComida)
+    if (slot === 'Media mañana') return 'Merienda'
+    return slot
   }
 
   async function cargarAlternativasComida(comida: ComidaLocal, macros: Macros) {

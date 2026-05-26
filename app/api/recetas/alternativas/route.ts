@@ -1,6 +1,7 @@
 // app/api/recetas/alternativas/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase, createApiSupabase } from '@/lib/supabase-server'
+import { inferirSlotComida, tipoPlatoCompatibleConSlot, tiposPermitidosPorSlot } from '@/lib/tipos-comida'
 
 export async function GET(request: NextRequest) {
   const supabaseAuth = createApiSupabase(request)
@@ -20,11 +21,13 @@ export async function GET(request: NextRequest) {
   // 1. Cargar alternativas pre-calculadas desde la comida
   const { data: comida } = await supabase
     .from('comidas')
-    .select('alternativas_receta_ids, kcal_target, proteinas_target')
+    .select('nombre, receta_id, alternativas_receta_ids, kcal_target, proteinas_target')
     .eq('id', comidaId)
     .single()
 
-  let alternativaIds: string[] = comida?.alternativas_receta_ids ?? []
+  const slot = inferirSlotComida(comida?.nombre)
+  const tiposPermitidos = tiposPermitidosPorSlot(slot)
+  let alternativaIds: string[] = (comida?.alternativas_receta_ids ?? []).filter((id: string) => id !== comida?.receta_id)
 
   // 2. Si no hay alternativas pre-calculadas, calcular en tiempo real
   if (alternativaIds.length === 0 && comida?.kcal_target) {
@@ -43,8 +46,9 @@ export async function GET(request: NextRequest) {
 
     const { data: recetas } = await supabase
       .from('recetas')
-      .select('id, kcal, proteinas, intolerancias')
+      .select('id, kcal, proteinas, intolerancias, tipo_plato')
       .eq('estado', 'aprobada')
+      .in('tipo_plato', tiposPermitidos.length ? tiposPermitidos : ['Comida', 'Cena', 'Desayuno', 'Merienda', 'Snack', 'Postre'])
       .gt('kcal', 0)
       .limit(50)
 
@@ -55,6 +59,7 @@ export async function GET(request: NextRequest) {
           const recetaIntol: string[] = r.intolerancias ?? []
           return !restricciones.some(res => recetaIntol.includes(res))
         })
+        .filter(r => tipoPlatoCompatibleConSlot(slot, r.tipo_plato))
         .map(r => ({
           id: r.id,
           dist: Math.abs((r.kcal - targetKcal) / targetKcal) +
@@ -73,20 +78,22 @@ export async function GET(request: NextRequest) {
   // 3. Cargar datos completos de las alternativas
   const { data: recetas } = await supabase
     .from('recetas')
-    .select('id, nombre, imagen_url, url_origen, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta')
+    .select('id, nombre, imagen_url, url_origen, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, tipo_plato')
     .in('id', alternativaIds)
 
-  const alternativas = (recetas ?? []).map(r => ({
-    id: r.id,
-    nombre: r.nombre,
-    imagen_url: r.imagen_url,
-    tiene_foto_real: !!r.url_origen,
-    kcal: r.kcal,
-    proteinas: r.proteinas,
-    carbohidratos: r.carbohidratos,
-    grasas: r.grasas,
-    tiempo_prep_min: r.tiempo_prep_min,
-  }))
+  const alternativas = (recetas ?? [])
+    .filter(r => tipoPlatoCompatibleConSlot(slot, r.tipo_plato))
+    .map(r => ({
+      id: r.id,
+      nombre: r.nombre,
+      imagen_url: r.imagen_url,
+      tiene_foto_real: !!r.url_origen,
+      kcal: r.kcal,
+      proteinas: r.proteinas,
+      carbohidratos: r.carbohidratos,
+      grasas: r.grasas,
+      tiempo_prep_min: r.tiempo_prep_min,
+    }))
 
   return NextResponse.json({ alternativas })
 }

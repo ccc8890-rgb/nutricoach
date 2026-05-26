@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { inferirSlotComida, tipoPlatoCompatibleConSlot, tiposPermitidosPorSlot } from '@/lib/tipos-comida'
 
 export async function GET(
   _request: Request,
@@ -26,7 +27,21 @@ export async function GET(
 
   if (!comida) return NextResponse.json({ error: 'Comida no encontrada' }, { status: 404 })
 
+  const slot = inferirSlotComida(comida.nombre)
+  const tiposPermitidos = tiposPermitidosPorSlot(slot)
+
   let alternativaIds: string[] = (comida.alternativas_receta_ids ?? []).filter((id: string) => id !== comida.receta_id)
+
+  if (alternativaIds.length > 0) {
+    const { data: existentes } = await db
+      .from('recetas')
+      .select('id, tipo_plato')
+      .in('id', alternativaIds)
+    const compatibles = new Set((existentes ?? [])
+      .filter(r => tipoPlatoCompatibleConSlot(slot, r.tipo_plato))
+      .map(r => r.id))
+    alternativaIds = alternativaIds.filter(id => compatibles.has(id))
+  }
 
   if (alternativaIds.length < 3) {
     const { data: onboarding } = await db
@@ -41,13 +56,15 @@ export async function GET(
 
     const { data: recetas } = await db
       .from('recetas')
-      .select('id, kcal, proteinas, intolerancias')
+      .select('id, kcal, proteinas, intolerancias, tipo_plato')
       .eq('estado', 'aprobada')
+      .in('tipo_plato', tiposPermitidos.length ? tiposPermitidos : ['Comida', 'Cena', 'Desayuno', 'Merienda', 'Snack', 'Postre'])
       .gt('kcal', 0)
       .limit(120)
 
     const nuevas = (recetas ?? [])
       .filter(r => r.id !== comida.receta_id && !alternativaIds.includes(r.id))
+      .filter(r => tipoPlatoCompatibleConSlot(slot, r.tipo_plato))
       .filter(r => {
         if (!restricciones.length) return true
         const intolerancias: string[] = r.intolerancias ?? []
@@ -74,12 +91,13 @@ export async function GET(
 
   const { data: recetas } = await db
     .from('recetas')
-    .select('id, nombre, imagen_url, url_origen, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min')
+    .select('id, nombre, imagen_url, url_origen, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_plato')
     .in('id', alternativaIds.slice(0, 3))
 
   const orden = new Map(alternativaIds.map((id, index) => [id, index]))
   const alternativas = (recetas ?? [])
     .sort((a, b) => (orden.get(a.id) ?? 99) - (orden.get(b.id) ?? 99))
+    .filter(r => tipoPlatoCompatibleConSlot(slot, r.tipo_plato))
     .map(r => ({
       id: r.id,
       nombre: r.nombre,

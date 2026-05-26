@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { inferirSlotComida, tipoPlatoCompatibleConSlot } from '@/lib/tipos-comida'
 
 export async function PATCH(
   request: NextRequest,
@@ -16,7 +17,7 @@ export async function PATCH(
   const db = createServiceSupabase()
   const { data: comida } = await db
     .from('comidas')
-    .select('id, receta_id, plan:planes_nutricion(id, coach_id)')
+    .select('id, nombre, receta_id, plan:planes_nutricion(id, coach_id)')
     .eq('id', comidaId)
     .single()
 
@@ -26,9 +27,10 @@ export async function PATCH(
 
   const idsLimpios = alternativaIds.filter(id => id !== comida.receta_id)
   if (idsLimpios.length > 0) {
+    const slot = inferirSlotComida(comida.nombre)
     const { data: recetas, error: recetasError } = await db
       .from('recetas')
-      .select('id')
+      .select('id, tipo_plato')
       .eq('estado', 'aprobada')
       .in('id', idsLimpios)
     if (recetasError) return NextResponse.json({ error: recetasError.message }, { status: 400 })
@@ -37,6 +39,11 @@ export async function PATCH(
     const invalidas = idsLimpios.filter(id => !aprobadas.has(id))
     if (invalidas.length > 0) {
       return NextResponse.json({ error: 'Alguna alternativa no existe o no está aprobada' }, { status: 400 })
+    }
+
+    const incompatibles = (recetas ?? []).filter(r => !tipoPlatoCompatibleConSlot(slot, r.tipo_plato))
+    if (incompatibles.length > 0) {
+      return NextResponse.json({ error: 'Alguna alternativa no encaja con ese momento de comida' }, { status: 400 })
     }
   }
 

@@ -11,7 +11,7 @@ export async function GET(
 
     const { data: plan, error: planError } = await supabase
       .from('planes_nutricion')
-      .select('id, comidas(id, receta_id)')
+      .select('id, comidas(id, receta_id, alternativas_receta_ids)')
       .eq('codigo_publico', codigo)
       .eq('activo', true)
       .single()
@@ -20,7 +20,9 @@ export async function GET(
       return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 })
     }
 
-    const recetaPermitida = (plan.comidas ?? []).some((comida: { receta_id?: string | null }) => comida.receta_id === recetaId)
+    const recetaPermitida = (plan.comidas ?? []).some((comida: { receta_id?: string | null; alternativas_receta_ids?: string[] | null }) =>
+      comida.receta_id === recetaId || (comida.alternativas_receta_ids ?? []).includes(recetaId)
+    )
     if (!recetaPermitida) {
       return NextResponse.json({ error: 'Receta no vinculada al plan' }, { status: 403 })
     }

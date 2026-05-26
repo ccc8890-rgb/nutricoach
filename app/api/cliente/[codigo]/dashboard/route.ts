@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { inferirSlotComida, tipoPlatoCompatibleConSlot } from '@/lib/tipos-comida'
 
 interface ComidaOrdenable {
     orden: number
+    nombre?: string | null
     receta_id?: string | null
     alternativas_receta_ids?: string[] | null
+}
+
+interface RecetaAlternativaCliente {
+    id: string
+    nombre: string
+    imagen_url?: string | null
+    kcal?: number | null
+    proteinas?: number | null
+    tiempo_prep_min?: number | null
+    tipo_plato?: string | null
 }
 
 export async function GET(
@@ -135,23 +147,28 @@ export async function GET(
             comidas.flatMap(comida => (comida.alternativas_receta_ids ?? []).filter(id => id && id !== comida.receta_id)).slice(0, 60)
         ))
 
-        let recetasAlternativas = new Map<string, unknown>()
+        let recetasAlternativas = new Map<string, RecetaAlternativaCliente>()
         if (alternativaIds.length > 0) {
             const { data: recetasAlt } = await supabase
                 .from('recetas')
-                .select('id, nombre, imagen_url, kcal, tiempo_prep_min')
+                .select('id, nombre, imagen_url, kcal, proteinas, tiempo_prep_min, tipo_plato')
                 .in('id', alternativaIds)
             recetasAlternativas = new Map((recetasAlt ?? []).map(receta => [receta.id, receta]))
         }
 
-        const comidasConAlternativas = comidas.map(comida => ({
-            ...comida,
-            alternativa_recetas: (comida.alternativas_receta_ids ?? [])
+        const comidasConAlternativas = comidas.map(comida => {
+            const slot = inferirSlotComida(comida.nombre)
+            return {
+                ...comida,
+                alternativa_recetas: (comida.alternativas_receta_ids ?? [])
                 .filter(id => id && id !== comida.receta_id)
-                .slice(0, 3)
                 .map(id => recetasAlternativas.get(id))
-                .filter(Boolean),
-        }))
+                .filter((receta): receta is RecetaAlternativaCliente =>
+                    Boolean(receta) && tipoPlatoCompatibleConSlot(slot, receta?.tipo_plato)
+                )
+                .slice(0, 3),
+            }
+        })
 
         return NextResponse.json({
             plan: {
