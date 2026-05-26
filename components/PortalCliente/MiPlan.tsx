@@ -3,13 +3,11 @@
 import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, RefreshCw, PencilLine, Search, Plus, Trash2, ExternalLink } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, CheckCircle2, PencilLine, ExternalLink } from 'lucide-react'
 import GarminMiniCard from './GarminMiniCard'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
-import AlternativasModal from '@/components/personalizacion/AlternativasModal'
-import GenerarComidaModal from '@/components/personalizacion/GenerarComidaModal'
 import PlanSemanal from './PlanSemanal'
 
 interface AlimentoEnComida {
@@ -47,6 +45,13 @@ interface Comida {
         grasas: number
         tiempo_prep_min: number | null
     } | null
+    alternativa_recetas?: Array<{
+        id: string
+        nombre: string
+        imagen_url: string | null
+        kcal: number | null
+        tiempo_prep_min: number | null
+    }>
     alimentos?: AlimentoEnComida[]
 }
 
@@ -99,60 +104,6 @@ interface MiPlanProps {
     plan: PlanData
     registros_comidas?: RegistroComidaDia[]
 }
-
-interface ModalAlternativasState {
-    afId: string
-    alimentoId: string
-    alimentoNombre: string
-    gramosOriginal: number
-    kcalPor100g: number
-    protPor100g: number
-}
-
-interface ModalGenerarState {
-    tipoComida: string
-    macrosObjetivo: { kcal: number; proteinas: number; carbohidratos: number; grasas: number }
-}
-
-interface RecetaSugerida {
-    id: string
-    nombre: string
-    imagen_url: string | null
-    kcal: number
-    proteinas: number
-    carbohidratos: number
-    grasas: number
-    tipo_plato: string | null
-    tiempo_prep_min: number | null
-}
-
-interface AlternativaReceta {
-    id: string
-    nombre: string
-    imagen_url?: string | null
-    tiene_foto_real?: boolean
-    kcal: number
-    proteinas: number
-    carbohidratos: number
-    grasas: number
-    tiempo_prep_min?: number
-}
-
-interface AlimentoBusqueda {
-    id: string
-    nombre: string
-    calorias: number
-    proteinas: number
-    carbohidratos: number
-    grasas: number
-    fibra?: number | null
-}
-
-type BusquedaComidaState = {
-    comidaId: string
-    modo: 'receta' | 'alimento'
-    query: string
-} | null
 
 function MacroRing({
     label,
@@ -225,7 +176,7 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>(
         Object.fromEntries((plan.comidas ?? []).map(c => [c.id, true]))
     )
-    const [planLocal, setPlanLocal] = useState<PlanData>(plan)
+    const planLocal = plan
     const [registros, setRegistros] = useState<Record<string, RegistroComidaDia>>({})
     const [registrando, setRegistrando] = useState<string | null>(null)
     const [anotandoCambio, setAnotandoCambio] = useState<string | null>(null)
@@ -265,66 +216,10 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
             setTextoCambio('')
         }
     }
-    const [modalAlternativas, setModalAlternativas] = useState<ModalAlternativasState | null>(null)
-    const [modalGenerar, setModalGenerar] = useState<ModalGenerarState | null>(null)
     const [descargando, setDescargando] = useState(false)
-    const [recetasComida, setRecetasComida] = useState<Record<string, RecetaSugerida[]>>({})
-    const [loadingRecetas, setLoadingRecetas] = useState<Record<string, boolean>>({})
-    const [showRecetas, setShowRecetas] = useState<Record<string, boolean>>({})
     const [vistaActual, setVistaActual] = useState<'hoy' | 'semana'>('hoy')
     const [diaActivo, setDiaActivo] = useState<string>(() => diaActualEspana())
-    const [usandoReceta, setUsandoReceta] = useState<string | null>(null)
-    const [drawerComidaId, setDrawerComidaId] = useState<string | null>(null)
-    const [alternativas, setAlternativas] = useState<AlternativaReceta[]>([])
-    const [cargandoAlt, setCargandoAlt] = useState(false)
-    const [busquedaComida, setBusquedaComida] = useState<BusquedaComidaState>(null)
-    const [resultadosRecetas, setResultadosRecetas] = useState<RecetaSugerida[]>([])
-    const [resultadosAlimentos, setResultadosAlimentos] = useState<AlimentoBusqueda[]>([])
-    const [buscando, setBuscando] = useState(false)
-    const [editandoAlimento, setEditandoAlimento] = useState<string | null>(null)
     const { addToast } = useToast()
-
-    function inferirTipoPlato(nombreComida: string): string | null {
-        const n = nombreComida.toLowerCase()
-        if (n.includes('desayuno') || n.includes('mañana') && n.includes('primera')) return 'Desayuno'
-        if (n.includes('almuerzo') || n.includes('media mañana')) return 'Almuerzo'
-        if (n.includes('comida') || n.includes('mediodía') || n.includes('almuerzo principal')) return 'Comida'
-        if (n.includes('merienda') || n.includes('post') || n.includes('snack')) return 'Merienda'
-        if (n.includes('cena')) return 'Cena'
-        return null
-    }
-
-    async function usarReceta(comidaId: string, recetaId: string, recetaNombre: string) {
-        setUsandoReceta(recetaId)
-        try {
-            const res = await fetch(`/api/cliente/${codigo}/comidas/${comidaId}/receta`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ receta_id: recetaId }),
-            })
-            if (!res.ok) throw new Error('Error al aplicar la receta')
-            const { ingredientes, receta } = await res.json() as { ingredientes: AlimentoEnComida[]; receta?: Comida['receta'] }
-
-            setPlanLocal(prev => ({
-                ...prev,
-                comidas: (prev.comidas ?? []).map(c =>
-                    c.id === comidaId ? { ...c, receta_id: receta?.id ?? recetaId, receta: receta ?? c.receta, alimentos: ingredientes } : c
-                )
-            }))
-
-            // Invalidar caché de sugerencias para esta comida (la composición cambió)
-            setRecetasComida(prev => { const next = { ...prev }; delete next[comidaId]; return next })
-            setShowRecetas(prev => ({ ...prev, [comidaId]: false }))
-            setDrawerComidaId(null)
-            setBusquedaComida(null)
-
-            addToast({ title: `"${recetaNombre}" aplicada para hoy`, type: 'success' })
-        } catch {
-            addToast({ title: 'Error al aplicar la receta', type: 'error' })
-        } finally {
-            setUsandoReceta(null)
-        }
-    }
 
     function calcMacrosComida(alimentos: AlimentoEnComida[]): Macros {
         return sumarMacros((alimentos ?? []).map(a =>
@@ -345,195 +240,6 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
             window.open(`/api/cliente/${codigo}/plan-pdf`, '_blank')
         } finally {
             setDescargando(false)
-        }
-    }
-
-    async function handleElegirAlternativa(
-        alternativa: { id: string; nombre: string; kcal: number; proteinas: number; carbohidratos: number; grasas: number; categoria: string | null },
-        gramosAlternativa: number
-    ) {
-        if (!modalAlternativas) return
-        const targetAfId = modalAlternativas.afId
-        const comida = (planLocal.comidas ?? []).find(c => (c.alimentos ?? []).some(af => af.id === targetAfId))
-        if (!comida) return
-
-        setEditandoAlimento(targetAfId)
-        try {
-            const res = await fetch(`/api/cliente/${codigo}/comidas/${comida.id}/alimentos/${targetAfId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ alimento_id: alternativa.id, cantidad_gramos: gramosAlternativa }),
-            })
-            if (!res.ok) throw new Error('No se pudo guardar el intercambio')
-        } catch {
-            addToast({ title: 'No se pudo guardar el intercambio', type: 'error' })
-            setEditandoAlimento(null)
-            return
-        }
-        setPlanLocal(prev => ({
-            ...prev,
-            comidas: (prev.comidas ?? []).map(comida => ({
-                ...comida,
-                alimentos: (comida.alimentos ?? []).map(af =>
-                    af.id === targetAfId
-                        ? {
-                            ...af,
-                            alimento_id: alternativa.id,
-                            cantidad_gramos: gramosAlternativa,
-                            alimento: {
-                                nombre: alternativa.nombre,
-                                calorias: alternativa.kcal,
-                                proteinas: alternativa.proteinas,
-                                carbohidratos: alternativa.carbohidratos,
-                                grasas: alternativa.grasas,
-                                fibra: 0,
-                            }
-                        }
-                        : af
-                )
-            }))
-        }))
-        setModalAlternativas(null)
-        setEditandoAlimento(null)
-        addToast({ title: 'Alternativa seleccionada', type: 'success' })
-    }
-
-    function handleAceptarComida() {
-        setModalGenerar(null)
-        addToast({ title: 'Comida guardada como preferencia', type: 'success' })
-    }
-
-    async function toggleRecetasComida(comidaId: string, comidaNombre: string, macros: { calorias: number; proteinas: number }) {
-        if (showRecetas[comidaId]) {
-            setShowRecetas(prev => ({ ...prev, [comidaId]: false }))
-            return
-        }
-        setShowRecetas(prev => ({ ...prev, [comidaId]: true }))
-        if (recetasComida[comidaId]) return  // ya cargadas
-        setLoadingRecetas(prev => ({ ...prev, [comidaId]: true }))
-        try {
-            const tipo = inferirTipoPlato(comidaNombre)
-            const params = new URLSearchParams({
-                kcal: String(Math.round(macros.calorias)),
-                proteinas: String(Math.round(macros.proteinas)),
-                limite: '4',
-                ...(planLocal.cliente_id ? { cliente_id: planLocal.cliente_id } : {}),
-                ...(tipo ? { tipo_plato: tipo } : {}),
-            })
-            const res = await fetch(`/api/recetas/sugeridas?${params}`)
-            const { recetas } = await res.json() as { recetas: RecetaSugerida[] }
-            setRecetasComida(prev => ({ ...prev, [comidaId]: recetas }))
-        } finally {
-            setLoadingRecetas(prev => ({ ...prev, [comidaId]: false }))
-        }
-    }
-
-    async function abrirDrawerAlternativas(comidaId: string) {
-        setDrawerComidaId(comidaId)
-        setCargandoAlt(true)
-        setAlternativas([])
-        try {
-            const res = await fetch(`/api/cliente/${codigo}/comidas/${comidaId}/alternativas`)
-            const data = await res.json() as { alternativas?: AlternativaReceta[] }
-            setAlternativas(data.alternativas ?? [])
-        } catch {
-            // drawer mostrará vacío
-        } finally {
-            setCargandoAlt(false)
-        }
-    }
-
-    function abrirBusqueda(comidaId: string, modo: 'receta' | 'alimento') {
-        setBusquedaComida({ comidaId, modo, query: '' })
-        setResultadosRecetas([])
-        setResultadosAlimentos([])
-    }
-
-    async function ejecutarBusqueda(nextState?: BusquedaComidaState) {
-        const state = nextState ?? busquedaComida
-        if (!state) return
-        const comida = (planLocal.comidas ?? []).find(c => c.id === state.comidaId)
-        if (!comida) return
-
-        const query = state.query.trim()
-        if (query.length < 2) {
-            setResultadosRecetas([])
-            setResultadosAlimentos([])
-            return
-        }
-
-        setBuscando(true)
-        try {
-            if (state.modo === 'receta') {
-                const macros = calcMacrosComida(comida.alimentos ?? [])
-                const tipo = inferirTipoPlato(comida.nombre)
-                const params = new URLSearchParams({
-                    q: query,
-                    kcal: String(Math.round(macros.calorias || comida.kcal_target || 0)),
-                    proteinas: String(Math.round(macros.proteinas || comida.proteinas_target || 0)),
-                    limite: '7',
-                    ...(planLocal.cliente_id ? { cliente_id: planLocal.cliente_id } : {}),
-                    ...(tipo ? { tipo_plato: tipo } : {}),
-                })
-                const res = await fetch(`/api/recetas/sugeridas?${params}`)
-                const data = await res.json() as { recetas?: RecetaSugerida[] }
-                setResultadosRecetas(data.recetas ?? [])
-            } else {
-                const res = await fetch(`/api/alimentos?q=${encodeURIComponent(query)}&soloConDatos=true`)
-                const data = await res.json() as AlimentoBusqueda[]
-                setResultadosAlimentos((data ?? []).slice(0, 10))
-            }
-        } finally {
-            setBuscando(false)
-        }
-    }
-
-    async function añadirAlimentoManual(comidaId: string, alimento: AlimentoBusqueda, gramos = 100) {
-        setEditandoAlimento(alimento.id)
-        try {
-            const res = await fetch(`/api/cliente/${codigo}/comidas/${comidaId}/alimentos`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ alimento_id: alimento.id, cantidad_gramos: gramos }),
-            })
-            if (!res.ok) throw new Error('No se pudo añadir el alimento')
-            const data = await res.json() as { alimento: AlimentoEnComida }
-            setPlanLocal(prev => ({
-                ...prev,
-                comidas: (prev.comidas ?? []).map(c =>
-                    c.id === comidaId
-                        ? { ...c, receta_id: null, receta: null, alimentos: [...(c.alimentos ?? []), data.alimento] }
-                        : c
-                )
-            }))
-            setBusquedaComida(null)
-            addToast({ title: 'Alimento añadido a la comida', type: 'success' })
-        } catch {
-            addToast({ title: 'No se pudo añadir el alimento', type: 'error' })
-        } finally {
-            setEditandoAlimento(null)
-        }
-    }
-
-    async function eliminarAlimento(comidaId: string, itemId: string) {
-        setEditandoAlimento(itemId)
-        try {
-            const res = await fetch(`/api/cliente/${codigo}/comidas/${comidaId}/alimentos/${itemId}`, {
-                method: 'DELETE',
-            })
-            if (!res.ok) throw new Error('No se pudo eliminar')
-            setPlanLocal(prev => ({
-                ...prev,
-                comidas: (prev.comidas ?? []).map(c =>
-                    c.id === comidaId
-                        ? { ...c, receta_id: null, receta: null, alimentos: (c.alimentos ?? []).filter(af => af.id !== itemId) }
-                        : c
-                )
-            }))
-        } catch {
-            addToast({ title: 'No se pudo eliminar el alimento', type: 'error' })
-        } finally {
-            setEditandoAlimento(null)
         }
     }
 
@@ -734,16 +440,8 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                         </p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <p className="text-xs whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
-                                                {macros.calorias.toFixed(0)} kcal · P {macros.proteinas.toFixed(0)}g
+                                                {macros.calorias.toFixed(0)} kcal
                                             </p>
-                                            <button
-                                                type="button"
-                                                onClick={e => { e.stopPropagation(); abrirDrawerAlternativas(comida.id) }}
-                                                className="text-[10px] font-medium"
-                                                style={{ color: 'var(--primary)' }}
-                                            >
-                                                Cambiar plato
-                                            </button>
                                             {comida.receta_id && (
                                                 <Link
                                                     href={`/recetas/${comida.receta_id}?returnTo=/cliente/${codigo}`}
@@ -759,6 +457,22 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                 </div>
                                 {expanded ? <ChevronUp size={18} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={18} style={{ color: 'var(--text-muted)' }} />}
                             </div>
+
+                            {(comida.alternativa_recetas ?? []).length > 0 && (
+                                <div className="px-5 pb-3 -mt-1 flex flex-wrap gap-2">
+                                    {(comida.alternativa_recetas ?? []).slice(0, 3).map(alt => (
+                                        <Link
+                                            key={alt.id}
+                                            href={`/recetas/${alt.id}?returnTo=/cliente/${codigo}`}
+                                            className="inline-flex max-w-full items-center gap-2 rounded-full border px-2.5 py-1.5 text-[11px] font-medium"
+                                            style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)' }}
+                                        >
+                                            <span className="truncate max-w-[180px]">{alt.nombre}</span>
+                                            {alt.kcal ? <span className="shrink-0 tabular-nums" style={{ color: 'var(--text-muted)' }}>{Math.round(alt.kcal)} kcal</span> : null}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
 
                             {/* S3 — Botones Hecho / Anotar cambio */}
                             {!yaHecho && !tieneCambio && !saltada && !anotandoCambio && (
@@ -872,270 +586,13 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                                 </div>
                                                 <div className="text-right text-xs flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>
                                                     <p className="font-semibold" style={{ color: 'var(--text)' }}>{m.calorias.toFixed(0)} kcal</p>
-                                                    <p>P:{m.proteinas.toFixed(1)} C:{m.carbohidratos.toFixed(1)} G:{m.grasas.toFixed(1)}</p>
                                                 </div>
-                                                {af.alimento_id && (
-                                                    <div className="flex items-center gap-1 shrink-0">
-                                                        <button
-                                                            type="button"
-                                                            disabled={editandoAlimento === af.id}
-                                                            onClick={() => setModalAlternativas({
-                                                                afId: af.id,
-                                                                alimentoId: af.alimento_id!,
-                                                                alimentoNombre: af.alimento?.nombre ?? '',
-                                                                gramosOriginal: af.cantidad_gramos,
-                                                                kcalPor100g: af.alimento?.calorias ?? 0,
-                                                                protPor100g: af.alimento?.proteinas ?? 0,
-                                                            })}
-                                                            className="p-1.5 rounded-lg transition-colors"
-                                                            style={{ color: 'var(--text-muted)' }}
-                                                            onMouseEnter={e => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.backgroundColor = 'var(--bg)' }}
-                                                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent' }}
-                                                            title="Ver alternativas"
-                                                        >
-                                                            {editandoAlimento === af.id ? <Loader2 size={14} className="animate-spin" /> : <ArrowLeftRight size={14} />}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            disabled={editandoAlimento === af.id}
-                                                            onClick={() => eliminarAlimento(comida.id, af.id)}
-                                                            className="p-1.5 rounded-lg transition-colors"
-                                                            style={{ color: 'var(--text-muted)' }}
-                                                            title="Quitar ingrediente"
-                                                        >
-                                                            <Trash2 size={13} />
-                                                        </button>
-                                                    </div>
-                                                )}
                                             </div>
                                         )
                                     })}
                                     <div className="pt-2 border-t text-right text-sm font-medium text-[var(--text-secondary)]" style={{ borderColor: '#F1F5F9' }}>
-                                        Total: {macros.calorias.toFixed(0)} kcal · P:{macros.proteinas.toFixed(1)}g · C:{macros.carbohidratos.toFixed(1)}g · G:{macros.grasas.toFixed(1)}g
+                                        Total: {macros.calorias.toFixed(0)} kcal
                                     </div>
-                                    <div className="flex gap-2 no-print">
-                                        <button
-                                            type="button"
-                                            onClick={() => abrirBusqueda(comida.id, 'receta')}
-                                            className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
-                                            style={{ color: 'var(--text)' }}
-                                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg)' }}
-                                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
-                                        >
-                                            <Search size={13} />
-                                            Buscar receta
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => abrirBusqueda(comida.id, 'alimento')}
-                                            className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
-                                            style={{ color: 'var(--text)' }}
-                                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg)' }}
-                                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
-                                        >
-                                            <Plus size={13} />
-                                            Añadir alimento
-                                        </button>
-                                    </div>
-                                    <div className="flex gap-2 no-print">
-                                        <button
-                                            type="button"
-                                            onClick={() => setModalGenerar({
-                                                tipoComida: comida.nombre,
-                                                macrosObjetivo: {
-                                                    kcal: Math.round(macros.calorias),
-                                                    proteinas: Math.round(macros.proteinas),
-                                                    carbohidratos: Math.round(macros.carbohidratos),
-                                                    grasas: Math.round(macros.grasas),
-                                                }
-                                            })}
-                                            className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
-                                            style={{ color: 'var(--primary)' }}
-                                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--primary-bg)' }}
-                                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
-                                        >
-                                            <Sparkles size={13} />
-                                            Generar con IA
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => toggleRecetasComida(comida.id, comida.nombre, macros)}
-                                            className="flex-1 flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
-                                            style={{ color: 'var(--text-muted)' }}
-                                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg)' }}
-                                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent' }}
-                                        >
-                                            {loadingRecetas[comida.id]
-                                                ? <Loader2 size={13} className="animate-spin" />
-                                                : <BookOpen size={13} />}
-                                            {showRecetas[comida.id] ? 'Ocultar alternativas' : 'Ver alternativas'}
-                                        </button>
-                                    </div>
-
-                                    {busquedaComida?.comidaId === comida.id && (
-                                        <div className="rounded-2xl border p-3 space-y-3 no-print" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex rounded-xl overflow-hidden border shrink-0" style={{ borderColor: 'var(--border)' }}>
-                                                    {(['receta', 'alimento'] as const).map(modo => (
-                                                        <button
-                                                            key={modo}
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const next = { ...busquedaComida, modo, query: busquedaComida.query }
-                                                                setBusquedaComida(next)
-                                                                setResultadosRecetas([])
-                                                                setResultadosAlimentos([])
-                                                            }}
-                                                            className="px-3 py-2 text-[11px] font-semibold"
-                                                            style={{
-                                                                background: busquedaComida.modo === modo ? 'var(--primary)' : 'transparent',
-                                                                color: busquedaComida.modo === modo ? 'white' : 'var(--text-muted)',
-                                                            }}
-                                                        >
-                                                            {modo === 'receta' ? 'Receta' : 'Alimento'}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                <div className="relative flex-1 min-w-0">
-                                                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-                                                    <input
-                                                        value={busquedaComida.query}
-                                                        onChange={e => setBusquedaComida({ ...busquedaComida, query: e.target.value })}
-                                                        onKeyDown={e => {
-                                                            if (e.key === 'Enter') ejecutarBusqueda()
-                                                        }}
-                                                        placeholder={busquedaComida.modo === 'receta' ? 'Buscar en recetario' : 'Buscar alimento'}
-                                                        className="input w-full pl-9 pr-3 py-2 text-sm"
-                                                        autoFocus
-                                                    />
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => ejecutarBusqueda()}
-                                                    disabled={buscando || busquedaComida.query.trim().length < 2}
-                                                    className="px-3 py-2 rounded-xl text-xs font-semibold"
-                                                    style={{
-                                                        background: 'var(--primary)',
-                                                        color: 'white',
-                                                        opacity: buscando || busquedaComida.query.trim().length < 2 ? 0.55 : 1,
-                                                    }}
-                                                >
-                                                    {buscando ? <Loader2 size={14} className="animate-spin" /> : 'Buscar'}
-                                                </button>
-                                            </div>
-
-                                            {busquedaComida.modo === 'receta' && (
-                                                <div className="space-y-2">
-                                                    {resultadosRecetas.map(receta => (
-                                                        <div key={receta.id} className="flex items-center gap-3 rounded-xl p-2 border" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                                                            <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0" style={{ background: 'var(--surface-2)' }}>
-                                                                {receta.imagen_url
-                                                                    ? <Image src={receta.imagen_url} alt={receta.nombre} width={48} height={48} className="w-full h-full object-cover" sizes="48px" />
-                                                                    : <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}><UtensilsCrossed size={16} /></div>
-                                                                }
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="text-xs font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
-                                                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{receta.kcal} kcal · P {receta.proteinas}g · C {receta.carbohidratos}g · G {receta.grasas}g</p>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                disabled={usandoReceta === receta.id}
-                                                                onClick={() => usarReceta(comida.id, receta.id, receta.nombre)}
-                                                                className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-semibold"
-                                                                style={{ background: 'var(--primary)', color: 'white', opacity: usandoReceta === receta.id ? 0.6 : 1 }}
-                                                            >
-                                                                {usandoReceta === receta.id ? 'Aplicando' : 'Usar'}
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                    {!buscando && busquedaComida.query.trim().length >= 2 && resultadosRecetas.length === 0 && (
-                                                        <p className="text-xs text-center py-2" style={{ color: 'var(--text-muted)' }}>Sin recetas para esa búsqueda</p>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {busquedaComida.modo === 'alimento' && (
-                                                <div className="space-y-2">
-                                                    {resultadosAlimentos.map(alimento => (
-                                                        <div key={alimento.id} className="flex items-center gap-3 rounded-xl p-2 border" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="text-xs font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{alimento.nombre}</p>
-                                                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>100g · {Math.round(alimento.calorias)} kcal · P {Math.round(alimento.proteinas)}g</p>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                disabled={editandoAlimento === alimento.id}
-                                                                onClick={() => añadirAlimentoManual(comida.id, alimento)}
-                                                                className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-semibold"
-                                                                style={{ background: 'var(--primary)', color: 'white', opacity: editandoAlimento === alimento.id ? 0.6 : 1 }}
-                                                            >
-                                                                {editandoAlimento === alimento.id ? 'Añadiendo' : 'Añadir'}
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                    {!buscando && busquedaComida.query.trim().length >= 2 && resultadosAlimentos.length === 0 && (
-                                                        <p className="text-xs text-center py-2" style={{ color: 'var(--text-muted)' }}>Sin alimentos para esa búsqueda</p>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Alternativas de recetas accionables */}
-                                    {showRecetas[comida.id] && !loadingRecetas[comida.id] && (
-                                        <div className="pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-                                            <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-muted)' }}>
-                                                Alternativas para hoy
-                                            </p>
-                                            {(recetasComida[comida.id] ?? []).length === 0 ? (
-                                                <p className="text-xs text-center py-2" style={{ color: 'var(--text-muted)' }}>
-                                                    No hay recetas con macros similares en el recetario
-                                                </p>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    {(recetasComida[comida.id] ?? []).map(receta => (
-                                                        <div
-                                                            key={receta.id}
-                                                            className="flex items-center gap-3 rounded-xl p-2 border"
-                                                            style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
-                                                        >
-                                                            <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                                                                {receta.imagen_url
-                                                                    ? <Image src={receta.imagen_url} alt={receta.nombre} width={56} height={56} className="w-full h-full object-cover" sizes="56px" />
-                                                                    : <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}><UtensilsCrossed size={18} /></div>
-                                                                }
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-xs font-medium leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
-                                                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                                                                    {receta.kcal} kcal · {receta.proteinas}g P
-                                                                    {receta.tiempo_prep_min ? ` · ${receta.tiempo_prep_min} min` : ''}
-                                                                </p>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                disabled={usandoReceta === receta.id}
-                                                                onClick={() => usarReceta(comida.id, receta.id, receta.nombre)}
-                                                                className="flex-shrink-0 flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors"
-                                                                style={{
-                                                                    background: 'var(--primary)',
-                                                                    color: 'white',
-                                                                    opacity: usandoReceta === receta.id ? 0.6 : 1,
-                                                                }}
-                                                            >
-                                                                {usandoReceta === receta.id
-                                                                    ? <Loader2 size={10} className="animate-spin" />
-                                                                    : <RefreshCw size={10} />
-                                                                }
-                                                                Usar
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
                                 </div>
                             )}
 
@@ -1161,88 +618,6 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
 
             </>)}
 
-            {/* Modal alternativas */}
-            {modalAlternativas && (
-                <AlternativasModal
-                    alimentoId={modalAlternativas.alimentoId}
-                    alimentoNombre={modalAlternativas.alimentoNombre}
-                    gramosOriginal={modalAlternativas.gramosOriginal}
-                    kcalPor100g={modalAlternativas.kcalPor100g}
-                    protPor100g={modalAlternativas.protPor100g}
-                    clienteId={planLocal.cliente_id}
-                    codigo={codigo}
-                    onElegir={handleElegirAlternativa}
-                    onCerrar={() => setModalAlternativas(null)}
-                />
-            )}
-
-            {/* Modal generar comida IA */}
-            {modalGenerar && (
-                <GenerarComidaModal
-                    clienteId={planLocal.cliente_id}
-                    tipoComida={modalGenerar.tipoComida}
-                    macrosObjetivo={modalGenerar.macrosObjetivo}
-                    onAceptar={handleAceptarComida}
-                    onCerrar={() => setModalGenerar(null)}
-                />
-            )}
-
-            {/* Drawer alternativas por comida */}
-            {drawerComidaId && (
-                <div
-                    className="fixed inset-0 z-50 flex items-end bg-black/40"
-                    onClick={() => setDrawerComidaId(null)}
-                >
-                    <div
-                        className="w-full rounded-t-2xl p-5 pb-safe max-h-[80vh] overflow-y-auto shadow-2xl"
-                        style={{ background: 'var(--surface)' }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div className="w-12 h-1 rounded-full mx-auto mb-4" style={{ background: 'var(--border)' }} />
-                        <h3 className="text-base font-semibold mb-3" style={{ color: 'var(--text)' }}>Cambiar plato</h3>
-                        {cargandoAlt ? (
-                            <div className="flex justify-center py-8">
-                                <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
-                            </div>
-                        ) : alternativas.length === 0 ? (
-                            <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>No hay alternativas disponibles</p>
-                        ) : (
-                            <div className="flex flex-col gap-3">
-                                {alternativas.map(alt => (
-                                    <div key={alt.id} className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface-2)' }}>
-                                        {alt.imagen_url ? (
-                                            <img
-                                                src={alt.imagen_url}
-                                                alt={alt.nombre}
-                                                width={56}
-                                                height={56}
-                                                className="rounded-lg object-cover shrink-0 w-14 h-14"
-                                            />
-                                        ) : (
-                                            <div className="w-14 h-14 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #ecfdf5, #ccfbf1)' }}>
-                                                <UtensilsCrossed size={20} style={{ color: 'var(--text-muted)' }} />
-                                            </div>
-                                        )}
-                                        <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{alt.nombre}</p>
-                                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{alt.kcal} kcal · {alt.proteinas}g P</p>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            disabled={usandoReceta === alt.id}
-                                            onClick={() => drawerComidaId && usarReceta(drawerComidaId, alt.id, alt.nombre)}
-                                            className="text-xs font-medium px-3 py-1.5 rounded-lg border shrink-0"
-                                            style={{ color: 'var(--primary)', borderColor: 'var(--primary)', opacity: usandoReceta === alt.id ? 0.6 : 1 }}
-                                        >
-                                            {usandoReceta === alt.id ? 'Aplicando' : 'Usar'}
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     )
 }

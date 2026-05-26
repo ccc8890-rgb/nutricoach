@@ -3,6 +3,8 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 
 interface ComidaOrdenable {
     orden: number
+    receta_id?: string | null
+    alternativas_receta_ids?: string[] | null
 }
 
 export async function GET(
@@ -128,10 +130,33 @@ export async function GET(
             registros_comidas = r ?? []
         }
 
+        const comidas = ((plan.comidas ?? []) as ComidaOrdenable[]).sort((a, b) => a.orden - b.orden)
+        const alternativaIds = Array.from(new Set(
+            comidas.flatMap(comida => (comida.alternativas_receta_ids ?? []).filter(id => id && id !== comida.receta_id)).slice(0, 60)
+        ))
+
+        let recetasAlternativas = new Map<string, unknown>()
+        if (alternativaIds.length > 0) {
+            const { data: recetasAlt } = await supabase
+                .from('recetas')
+                .select('id, nombre, imagen_url, kcal, tiempo_prep_min')
+                .in('id', alternativaIds)
+            recetasAlternativas = new Map((recetasAlt ?? []).map(receta => [receta.id, receta]))
+        }
+
+        const comidasConAlternativas = comidas.map(comida => ({
+            ...comida,
+            alternativa_recetas: (comida.alternativas_receta_ids ?? [])
+                .filter(id => id && id !== comida.receta_id)
+                .slice(0, 3)
+                .map(id => recetasAlternativas.get(id))
+                .filter(Boolean),
+        }))
+
         return NextResponse.json({
             plan: {
                 ...plan,
-                comidas: ((plan.comidas ?? []) as ComidaOrdenable[]).sort((a, b) => a.orden - b.orden),
+                comidas: comidasConAlternativas,
             },
             cliente,
             entreno,
