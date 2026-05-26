@@ -12,7 +12,7 @@ function CoachFloatingControls() {
   const { theme, toggleTheme } = useTheme()
 
   return (
-    <div className="fixed right-3 z-30 flex flex-col gap-2 lg:hidden" style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}>
+    <div className="fixed right-3 z-30 flex gap-2 lg:hidden" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}>
       <Link
         href="/dashboard"
         className="h-11 w-11 rounded-2xl border flex items-center justify-center"
