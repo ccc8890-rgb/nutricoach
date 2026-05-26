@@ -316,15 +316,20 @@ export default function DetalleRecetaPage() {
         )}
 
         {/* Navegación flotante sobre la imagen */}
-        <div className="absolute top-4 left-4 right-4 flex items-center gap-2 z-10">
+        <div
+          className="absolute left-4 right-4 flex items-center gap-2 z-10"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+        >
           <Link
             href={returnTo}
-            className="flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200"
+            className={`flex items-center justify-center rounded-full transition-all duration-200 ${isClientView ? 'h-11 px-3 gap-1.5 text-sm font-semibold' : 'w-9 h-9'}`}
             style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
+            aria-label={isClientView ? 'Volver al plan' : 'Volver al recetario'}
           >
             <ArrowLeft size={18} />
+            {isClientView && <span>Volver</span>}
           </Link>
           <div className="flex-1" />
           {!isClientView && (
