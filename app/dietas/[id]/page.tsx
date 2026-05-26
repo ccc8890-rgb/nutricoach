@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
-import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Download, Power, PowerOff, Copy, Check, BookOpen, UtensilsCrossed, RefreshCw, Target, Flame, Beef, Wheat, Droplets, Loader2, ExternalLink, CalendarDays } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Download, Power, PowerOff, Copy, Check, BookOpen, UtensilsCrossed, RefreshCw, Target, Flame, Beef, Wheat, Droplets, Loader2, ExternalLink, CalendarDays, AlertTriangle, CheckCircle2, ClipboardCheck, Activity } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { calcularMacrosPorCantidad, sumarMacros, COMIDAS_PREDEFINIDAS } from '@/lib/utils'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
@@ -99,6 +99,35 @@ function macroStatus(value: number, target?: number | null) {
     label: abs <= tolerance ? 'en rango' : `${abs}${unit} ${delta > 0 ? 'sobre' : 'faltan'}`,
     tone: abs <= tolerance ? 'ok' as const : delta > 0 ? 'over' as const : 'under' as const,
   }
+}
+
+type AuditSeverity = 'critico' | 'aviso' | 'ok'
+type AuditIssue = {
+  id: string
+  severity: AuditSeverity
+  title: string
+  detail: string
+  scope: string
+}
+
+function auditTone(severity: AuditSeverity) {
+  if (severity === 'critico') return { bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.22)', text: '#EF4444' }
+  if (severity === 'aviso') return { bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.24)', text: '#D97706' }
+  return { bg: 'rgba(16,185,129,0.10)', border: 'rgba(16,185,129,0.22)', text: '#10B981' }
+}
+
+function scoreAuditoria(issues: AuditIssue[]) {
+  if (issues.some(issue => issue.id.endsWith('-empty'))) return 0
+  return Math.max(0, 100 - issues.reduce((acc, issue) => acc + (issue.severity === 'critico' ? 18 : issue.severity === 'aviso' ? 8 : 0), 0))
+}
+
+function rangoMacro(value: number, target?: number | null, tolerancePct = 0.08) {
+  const t = Number(target ?? 0)
+  if (t <= 0) return null
+  const delta = value - t
+  const pct = delta / t
+  if (Math.abs(pct) <= tolerancePct) return null
+  return { delta, pct }
 }
 
 function MacroDial({ label, value, target, color, icon: Icon, unit }: {
@@ -672,16 +701,118 @@ export default function EditarDietaPage() {
     grasas: plan?.grasas_objetivo ?? 0,
   }
 
+  function auditarDia(dia: string, comidasDelDia: ComidaLocal[], macros: Macros): AuditIssue[] {
+    const issues: AuditIssue[] = []
+    if (comidasDelDia.length === 0) {
+      issues.push({
+        id: `${dia}-empty`,
+        severity: 'critico',
+        title: 'Día sin construir',
+        detail: 'No hay comidas creadas para este día.',
+        scope: dia,
+      })
+      return issues
+    }
+
+    const kcal = rangoMacro(macros.calorias, macroObjetivos.calorias, 0.08)
+    if (kcal) issues.push({
+      id: `${dia}-kcal`,
+      severity: Math.abs(kcal.pct) > 0.15 ? 'critico' : 'aviso',
+      title: kcal.delta > 0 ? 'Kcal por encima' : 'Kcal insuficientes',
+      detail: `${Math.abs(Math.round(kcal.delta))} kcal ${kcal.delta > 0 ? 'sobre' : 'por debajo'} del objetivo diario.`,
+      scope: dia,
+    })
+
+    const protein = rangoMacro(macros.proteinas, macroObjetivos.proteinas, 0.10)
+    if (protein) issues.push({
+      id: `${dia}-protein`,
+      severity: protein.delta < 0 && Math.abs(protein.pct) > 0.15 ? 'critico' : 'aviso',
+      title: protein.delta > 0 ? 'Proteína alta' : 'Proteína baja',
+      detail: `${Math.abs(Math.round(protein.delta))}g ${protein.delta > 0 ? 'sobre' : 'por debajo'} del objetivo.`,
+      scope: dia,
+    })
+
+    const carbs = rangoMacro(macros.carbohidratos, macroObjetivos.carbohidratos, 0.15)
+    if (carbs) issues.push({
+      id: `${dia}-carbs`,
+      severity: carbs.delta < 0 && Math.abs(carbs.pct) > 0.25 ? 'critico' : 'aviso',
+      title: carbs.delta > 0 ? 'Carbohidratos altos' : 'Carbohidratos bajos',
+      detail: `${Math.abs(Math.round(carbs.delta))}g ${carbs.delta > 0 ? 'sobre' : 'por debajo'} del objetivo.`,
+      scope: dia,
+    })
+
+    const fats = rangoMacro(macros.grasas, macroObjetivos.grasas, 0.15)
+    if (fats && fats.delta > 0) issues.push({
+      id: `${dia}-fat`,
+      severity: fats.pct > 0.30 ? 'critico' : 'aviso',
+      title: 'Grasa por encima',
+      detail: `${Math.round(fats.delta)}g sobre el objetivo diario.`,
+      scope: dia,
+    })
+
+    for (const comida of comidasDelDia) {
+      const macrosComida = calcMacrosComida(comida.alimentos)
+      if (!comida.receta_id) {
+        issues.push({
+          id: `${comida.id}-no-recipe`,
+          severity: 'aviso',
+          title: 'Comida sin receta',
+          detail: 'Tiene alimentos manuales pero no una receta asignada.',
+          scope: comida.nombre,
+        })
+      }
+      if ((comida.alternativas_receta_ids ?? []).length < 3) {
+        issues.push({
+          id: `${comida.id}-alts`,
+          severity: 'aviso',
+          title: 'Faltan equivalentes',
+          detail: `${(comida.alternativas_receta_ids ?? []).length}/3 opciones visibles para el cliente.`,
+          scope: comida.nombre,
+        })
+      }
+      const mealKcal = rangoMacro(macrosComida.calorias, comida.kcal_target, 0.15)
+      if (mealKcal) {
+        issues.push({
+          id: `${comida.id}-meal-kcal`,
+          severity: Math.abs(mealKcal.pct) > 0.30 ? 'critico' : 'aviso',
+          title: 'Comida fuera de rango',
+          detail: `${Math.abs(Math.round(mealKcal.delta))} kcal ${mealKcal.delta > 0 ? 'sobre' : 'por debajo'} del target de la comida.`,
+          scope: comida.nombre,
+        })
+      }
+    }
+
+    return issues
+  }
+
+  const auditoriaSemana = resumenSemana.map(day => {
+    const issues = auditarDia(day.dia, day.comidas, day.macros)
+    return {
+      ...day,
+      issues,
+      score: scoreAuditoria(issues),
+      criticos: issues.filter(i => i.severity === 'critico').length,
+      avisos: issues.filter(i => i.severity === 'aviso').length,
+    }
+  })
+  const auditoriaDia = auditoriaSemana.find(d => d.dia === diaActivo)
+  const issuesSemana = auditoriaSemana.flatMap(d => d.issues)
+  const criticosSemana = issuesSemana.filter(i => i.severity === 'critico').length
+  const avisosSemana = issuesSemana.filter(i => i.severity === 'aviso').length
+  const scoreSemana = auditoriaSemana.length
+    ? Math.round(auditoriaSemana.reduce((acc, d) => acc + d.score, 0) / auditoriaSemana.length)
+    : 0
+
   if (loading) return <div className="flex justify-center py-16"><div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" /></div>
 
   return (
     <>
       <BackButton href={backHref} />
-      <div className="p-6 max-w-4xl mx-auto pt-16 lg:pt-6">
+      <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto pt-16 lg:pt-6">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-6">
           <Link href={backHref} className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{plan?.nombre}</h1>
               <span className={`badge ${plan?.activo ? 'badge-green' : 'badge-gray'}`}>
@@ -690,7 +821,7 @@ export default function EditarDietaPage() {
             </div>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{plan?.cliente?.profile?.nombre} {plan?.cliente?.profile?.apellidos}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             {/* Toggle activo */}
             <button
               onClick={toggleActivo}
@@ -776,9 +907,11 @@ export default function EditarDietaPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-            {resumenSemana.map(({ dia, comidas: comidasDelDia, macros }) => {
+            {auditoriaSemana.map(({ dia, comidas: comidasDelDia, macros, score, criticos, avisos }) => {
               const activo = dia === diaActivo
               const pct = macroObjetivos.calorias ? Math.round((macros.calorias / macroObjetivos.calorias) * 100) : 0
+              const status = criticos > 0 ? 'critico' : avisos > 0 ? 'aviso' : 'ok'
+              const tone = auditTone(status)
               return (
                 <button
                   key={dia}
@@ -793,12 +926,15 @@ export default function EditarDietaPage() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold" style={{ color: activo ? 'var(--primary)' : 'var(--text)' }}>{DIA_ABR[dia]}</span>
-                    <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{pct || '—'}%</span>
+                    <span className="text-[10px] tabular-nums rounded-full px-1.5 py-0.5" style={{ color: tone.text, background: tone.bg }}>{score}</span>
                   </div>
                   <p className="text-sm font-semibold mt-1 truncate" style={{ color: 'var(--text)' }}>{dia}</p>
                   <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                     {comidasDelDia.length ? `${comidasDelDia.length} comidas · ${Math.round(macros.calorias)} kcal` : 'vacío'}
                   </p>
+                  <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                    <div className="h-full rounded-full" style={{ width: `${Math.min(Math.max(pct, 0), 120)}%`, background: tone.text }} />
+                  </div>
                 </button>
               )
             })}
@@ -821,6 +957,103 @@ export default function EditarDietaPage() {
                   {copiandoDia === dia ? 'Copiando…' : `Copiar a ${dia}`}
                 </button>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Auditoría semanal */}
+        <section className="rounded-3xl p-4 sm:p-5 mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-5">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <ClipboardCheck size={16} style={{ color: 'var(--primary)' }} />
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Auditoría del plan semanal</p>
+              </div>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Semáforo de revisión antes de aprobar</h2>
+              <p className="text-sm mt-1 max-w-2xl" style={{ color: 'var(--text-muted)' }}>
+                Detecta desviaciones de macros, comidas sin receta, días vacíos y equivalentes insuficientes para que el coach ajuste rápido.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 w-full xl:w-auto">
+              <div className="rounded-2xl px-3 py-2" style={{ background: auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').bg, border: `1px solid ${auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').border}` }}>
+                <p className="text-[10px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Score</p>
+                <p className="text-2xl font-bold tabular-nums" style={{ color: auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').text }}>{scoreSemana}</p>
+              </div>
+              <div className="rounded-2xl px-3 py-2" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
+                <p className="text-[10px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Críticos</p>
+                <p className="text-2xl font-bold tabular-nums" style={{ color: '#EF4444' }}>{criticosSemana}</p>
+              </div>
+              <div className="rounded-2xl px-3 py-2" style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.20)' }}>
+                <p className="text-[10px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Avisos</p>
+                <p className="text-2xl font-bold tabular-nums" style={{ color: '#D97706' }}>{avisosSemana}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 lg:grid-cols-[0.9fr_1.4fr] gap-4">
+            <div className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Día activo</p>
+                <span
+                  className="text-xs font-semibold tabular-nums rounded-full px-2 py-1"
+                  style={{
+                    background: auditTone(auditoriaDia?.criticos ? 'critico' : auditoriaDia?.avisos ? 'aviso' : 'ok').bg,
+                    border: `1px solid ${auditTone(auditoriaDia?.criticos ? 'critico' : auditoriaDia?.avisos ? 'aviso' : 'ok').border}`,
+                    color: auditTone(auditoriaDia?.criticos ? 'critico' : auditoriaDia?.avisos ? 'aviso' : 'ok').text,
+                  }}
+                >
+                  {auditoriaDia?.score ?? 0}/100
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl p-2" style={{ background: 'var(--surface)' }}>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Kcal</p>
+                  <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(totalDia.calorias)}</p>
+                </div>
+                <div className="rounded-xl p-2" style={{ background: 'var(--surface)' }}>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Proteína</p>
+                  <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(totalDia.proteinas)}g</p>
+                </div>
+                <div className="rounded-xl p-2" style={{ background: 'var(--surface)' }}>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Carbos</p>
+                  <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(totalDia.carbohidratos)}g</p>
+                </div>
+                <div className="rounded-xl p-2" style={{ background: 'var(--surface)' }}>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Grasas</p>
+                  <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(totalDia.grasas)}g</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Acciones sugeridas</p>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{auditoriaDia?.issues.length ?? 0} del día</span>
+              </div>
+              {auditoriaDia && auditoriaDia.issues.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {auditoriaDia.issues.slice(0, 6).map(issue => {
+                    const tone = auditTone(issue.severity)
+                    const Icon = issue.severity === 'critico' ? AlertTriangle : Activity
+                    return (
+                      <div key={issue.id} className="rounded-xl p-3 border" style={{ background: tone.bg, borderColor: tone.border }}>
+                        <div className="flex items-start gap-2">
+                          <Icon size={15} className="mt-0.5 shrink-0" style={{ color: tone.text }} />
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>{issue.title}</p>
+                            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{issue.scope} · {issue.detail}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-xl p-4 flex items-center gap-3" style={{ background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.18)' }}>
+                  <CheckCircle2 size={18} style={{ color: '#10B981' }} />
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Este día está listo para revisión final.</p>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -1149,8 +1382,8 @@ export default function EditarDietaPage() {
 
                     {/* Tabla de alimentos */}
                     {comida.alimentos.length > 0 && (
-                      <div className="mb-3 border rounded-lg overflow-hidden">
-                        <table className="w-full text-sm">
+                      <div className="mb-3 border rounded-lg overflow-x-auto" style={{ borderColor: 'var(--border)' }}>
+                        <table className="w-full min-w-[720px] text-sm">
                           <thead>
                             <tr style={{ background: 'var(--bg)' }}>
                               <th className="text-left px-3 py-2 font-medium" style={{ color: 'var(--text-secondary)' }}>Alimento</th>
