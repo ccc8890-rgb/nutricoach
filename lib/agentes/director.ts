@@ -15,18 +15,20 @@ import { ejecutarAgenteReadiness } from './readiness'
 import { ejecutarDirectorSupercoachCliente } from './supercoach'
 import { actualizarPerfilGusto } from './perfil-gusto'
 import { ejecutarAprendizajeColectivo } from './aprendizaje-colectivo'
+import { crearPlanDirectorCliente, type ModoDirector, type PlanDirectorCliente } from './orquestador'
 
 export interface ResultadoDirector {
   clientes_procesados: number
   tareas_generadas: number
   errores: string[]
   duracion_ms: number
+  planes_director?: PlanDirectorCliente[]
   aprendizaje_colectivo?: { patrones_extraidos: number; resumen: string }
 }
 
 // ── Entry point del cron job ──────────────────────────────────
 export async function ejecutarDirector(
-  modo: 'diario' | 'semanal' = 'diario'
+  modo: ModoDirector = 'diario'
 ): Promise<ResultadoDirector> {
   const inicio = Date.now()
   const db = createServiceSupabase()
@@ -44,25 +46,24 @@ export async function ejecutarDirector(
   }
 
   const tareasPrevias = await contarTareasPendientes(db)
+  const planesDirector: PlanDirectorCliente[] = []
 
   for (const { id } of clientes) {
     try {
-      // Siempre: actualizar perfil de aprendizaje + perfil de gusto
-      await actualizarPerfilAprendizaje(id)
-      await actualizarPerfilGusto(id)  // aprendizaje individual de recetas/gustos
+      const plan = crearPlanDirectorCliente(await cargarSenalesDirectorCliente(id), modo)
+      planesDirector.push(plan)
 
-      // Siempre: agente de riesgo nutrición + entrenamiento
-      await ejecutarAgenteRiesgo(id)
-      await ejecutarAgenteRiesgoEntreno(id)
-      await ejecutarAgenteReadiness(id)
-      await ejecutarDirectorSupercoachCliente(id)
+      if (plan.ejecutar.perfil_aprendizaje) await actualizarPerfilAprendizaje(id)
+      if (plan.ejecutar.perfil_gusto) await actualizarPerfilGusto(id)
 
-      // Solo lunes (semanal): revisores + motivación
-      if (modo === 'semanal') {
-        await ejecutarRevisorSemanal(id)
-        await ejecutarAgenteMotivacion(id)
-        await ejecutarRevisorSemanalEntreno(id)
-      }
+      if (plan.ejecutar.riesgo_nutricion) await ejecutarAgenteRiesgo(id)
+      if (plan.ejecutar.riesgo_entreno) await ejecutarAgenteRiesgoEntreno(id)
+      if (plan.ejecutar.readiness) await ejecutarAgenteReadiness(id)
+      if (plan.ejecutar.supercoach) await ejecutarDirectorSupercoachCliente(id)
+
+      if (plan.ejecutar.revisor_semanal) await ejecutarRevisorSemanal(id)
+      if (plan.ejecutar.motivacion) await ejecutarAgenteMotivacion(id)
+      if (plan.ejecutar.revisor_semanal_entreno) await ejecutarRevisorSemanalEntreno(id)
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       errores.push(`cliente ${id}: ${msg}`)
@@ -89,6 +90,7 @@ export async function ejecutarDirector(
     tareas_generadas: tareasGeneradas,
     errores,
     duracion_ms: Date.now() - inicio,
+    planes_director: planesDirector,
     aprendizaje_colectivo: aprendizajeColectivo,
   }
 }
@@ -124,4 +126,76 @@ async function contarTareasPendientes(db: ReturnType<typeof createServiceSupabas
     .select('*', { count: 'exact', head: true })
     .eq('estado', 'pendiente')
   return count ?? 0
+}
+
+function diasDesde(fecha?: string | null): number | null {
+  if (!fecha) return null
+  return Math.floor((Date.now() - new Date(fecha).getTime()) / 86_400_000)
+}
+
+function desdeDias(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString().split('T')[0]
+}
+
+async function cargarSenalesDirectorCliente(clienteId: string) {
+  const db = createServiceSupabase()
+  const desde7 = desdeDias(7)
+
+  const [
+    planNutricion,
+    planEntreno,
+    ultimoCheckin,
+    ultimaSesion,
+    sesiones7d,
+    pendientes,
+  ] = await Promise.all([
+    db
+      .from('planes_nutricion')
+      .select('id')
+      .eq('cliente_id', clienteId)
+      .eq('activo', true)
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('planes_entrenamiento')
+      .select('id')
+      .eq('cliente_id', clienteId)
+      .eq('activo', true)
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('checkins')
+      .select('fecha')
+      .eq('cliente_id', clienteId)
+      .order('fecha', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('registros_sets')
+      .select('fecha')
+      .eq('cliente_id', clienteId)
+      .order('fecha', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('registros_sets')
+      .select('fecha', { count: 'exact', head: true })
+      .eq('cliente_id', clienteId)
+      .gte('fecha', desde7),
+    db
+      .from('agente_tareas')
+      .select('tipo, agente')
+      .eq('cliente_id', clienteId)
+      .eq('estado', 'pendiente'),
+  ])
+
+  return {
+    clienteId,
+    tienePlanNutricion: Boolean(planNutricion.data),
+    tienePlanEntreno: Boolean(planEntreno.data),
+    diasSinCheckin: diasDesde(ultimoCheckin.data?.fecha),
+    diasSinSesion: diasDesde(ultimaSesion.data?.fecha),
+    sesiones7d: sesiones7d.count ?? 0,
+    pendientes: (pendientes.data ?? []) as Array<{ tipo: string; agente: string }>,
+  }
 }
