@@ -288,6 +288,19 @@ export default function Sidebar() {
               Health OS
             </p>
           </div>
+          <button
+            onClick={toggleTheme}
+            className="ml-auto w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+            style={{
+              color: 'var(--text-muted)',
+              background: 'var(--surface)',
+              border: '1px solid var(--glass-border)',
+            }}
+            title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+            aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          >
+            {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
         </div>
       </div>
 
@@ -321,15 +334,6 @@ export default function Sidebar() {
       </nav>
 
       <div className="flex-shrink-0 p-3 border-t space-y-1" style={{ borderColor: 'var(--glass-border)' }}>
-        <button
-          onClick={toggleTheme}
-          className="sidebar-link w-full"
-          style={{ color: 'var(--text-muted)' }}
-          title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-        >
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-          <span>{theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
-        </button>
         <button
           onClick={handleLogout}
           className="sidebar-link w-full"
