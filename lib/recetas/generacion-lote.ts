@@ -69,6 +69,9 @@ REGLAS NUTRICIONALES:
 - Incluye kcal, proteinas, carbohidratos, grasas y fibra por porción.
 - Usa cantidades redondeadas para cliente: 15g, 20g, 30g, 50g, 75g, 100g, 125g, 150g, 200g.
 - Evita cantidades raras tipo 27g o 107g salvo suplementos, especias o salsas muy concretas.
+- No incluyas "sal y pimienta" como ingrediente combinado. Si aporta a lista de compra, usa "Pimienta negra" y cantidad 1-2g; la sal puede omitirse o ir en instrucciones.
+- Distingue siempre cereal cocido/crudo: "arroz integral cocido", "quinoa cocida", "arroz basmati en seco". No uses nombres ambiguos.
+- Evita nombres comerciales o productos preparados si quieres un ingrediente base: usa "zanahoria", "kale", "limón", "yogur griego natural 0%".
 - Añade digestibilidad, densidad_energetica, coste_estimado_nivel, nivel_elaboracion y adherencia_score.
 
 SEGURIDAD DE PRODUCTO:
