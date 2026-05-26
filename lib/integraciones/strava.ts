@@ -123,9 +123,9 @@ function normalizeStravaActivity(
     tipo_entreno: TIPO_MAP[a.type as string] ?? String(a.type ?? ''),
     duracion_min: Math.round(duracionS / 60),
     distancia_entreno_km: a.distance ? parseFloat(((a.distance as number) / 1000).toFixed(2)) : undefined,
-    calorias_activas: a.calories as number | undefined,
-    fc_media: a.average_heartrate as number | undefined,
-    fc_max: a.max_heartrate as number | undefined,
+    calorias_activas: typeof a.calories === 'number' ? Math.round(a.calories) : undefined,
+    fc_media: typeof a.average_heartrate === 'number' ? Math.round(a.average_heartrate) : undefined,
+    fc_max: typeof a.max_heartrate === 'number' ? Math.round(a.max_heartrate) : undefined,
     tss,
     pace_min_km: a.average_speed && (a.type === 'Run')
       ? parseFloat((1000 / (a.average_speed as number) / 60).toFixed(2))

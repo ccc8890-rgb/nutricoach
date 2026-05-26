@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Activity, Watch, Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp, Lock, Eye, EyeOff } from 'lucide-react'
+import { Activity, Watch, Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp, Lock, Eye, EyeOff, RefreshCw, Route, Clock } from 'lucide-react'
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -9,6 +9,25 @@ interface IntegracionInfo {
   activa: boolean
   ultima_sync: string | null
   error_ultimo: string | null
+}
+
+interface StravaActividad {
+  fecha: string
+  tipo_entreno: string | null
+  duracion_min: number | null
+  distancia_entreno_km: number | null
+  calorias_activas: number | null
+  fc_media: number | null
+  fc_max: number | null
+  tss: number | null
+  pace_min_km: number | null
+}
+
+interface StravaResumen {
+  actividades: StravaActividad[]
+  sesiones_14d: number
+  minutos_14d: number
+  distancia_14d: number
 }
 
 interface GarminConnectStatus {
@@ -138,22 +157,30 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   const [integraciones, setIntegraciones] = useState<IntegracionInfo[]>([])
   const [garminConnect, setGarminConnect] = useState<GarminConnectStatus | null>(null)
   const [garminResumen, setGarminResumen] = useState<{ dias: GarminDia[]; promedios: GarminPromedios; tiene_datos: boolean } | null>(null)
+  const [stravaResumen, setStravaResumen] = useState<StravaResumen | null>(null)
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [syncMessage, setSyncMessage] = useState<string | null>(null)
 
   // Garmin Connect credentials form
   const [gcForm, setGcForm] = useState({ email: '', password: '', showPassword: false })
   const [gcSaving, setGcSaving] = useState(false)
   const [gcError, setGcError] = useState<string | null>(null)
 
-  useEffect(() => {
-    Promise.all([
+  async function cargarDatos() {
+    const [intData, garminData] = await Promise.all([
       fetch(`/api/cliente/${codigo}/integraciones`).then(r => r.json()),
       fetch(`/api/cliente/${codigo}/garmin-resumen`).then(r => r.json()),
-    ]).then(([intData, garminData]) => {
-      setIntegraciones(intData.integraciones ?? [])
-      setGarminConnect(intData.garmin_connect ?? null)
-      setGarminResumen(garminData)
-    }).finally(() => setLoading(false))
+    ])
+    setIntegraciones(intData.integraciones ?? [])
+    setGarminConnect(intData.garmin_connect ?? null)
+    setStravaResumen(intData.strava_resumen ?? null)
+    setGarminResumen(garminData)
+  }
+
+  useEffect(() => {
+    cargarDatos().finally(() => setLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [codigo])
 
   const getEstado = (key: string) => integraciones.find(i => i.proveedor === key)
@@ -166,6 +193,27 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
     if (!confirm(`¿Desconectar ${proveedor}?`)) return
     await fetch(`/api/integraciones/${proveedor}/disconnect?cliente_id=${clienteId}`, { method: 'DELETE' })
     setIntegraciones(prev => prev.filter(i => i.proveedor !== proveedor))
+  }
+
+  const handleSyncNow = async () => {
+    setSyncing(true)
+    setSyncMessage(null)
+    try {
+      const res = await fetch(`/api/cliente/${codigo}/sync-integraciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dias: 3 }),
+      })
+      const data = await res.json().catch(() => null) as { results?: Array<{ proveedor: string; ok: boolean; sincronizados: number; error?: string }> } | null
+      if (!res.ok) throw new Error(data?.results?.find(r => !r.ok)?.error ?? 'No se pudo sincronizar')
+      await cargarDatos()
+      const total = (data?.results ?? []).reduce((acc, r) => acc + (r.sincronizados ?? 0), 0)
+      setSyncMessage(total > 0 ? `${total} registros actualizados` : 'Sin datos nuevos por ahora')
+    } catch (error) {
+      setSyncMessage(error instanceof Error ? error.message : 'Error sincronizando')
+    } finally {
+      setSyncing(false)
+    }
   }
 
   const handleGarminConnectSave = async () => {
@@ -215,10 +263,28 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   return (
     <div className="space-y-4">
       <div className="mb-4">
-        <h2 className="text-base font-bold text-[var(--text)]">Mis apps y dispositivos</h2>
-        <p className="text-sm text-[var(--text-muted)] mt-1">
-          Conecta tus apps para que tu coach tenga datos más precisos y tus planes se adapten mejor a tu actividad real.
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-[var(--text)]">Mis apps y dispositivos</h2>
+            <p className="text-sm text-[var(--text-muted)] mt-1">
+              Conecta tus apps para que tu coach tenga datos más precisos y tus planes se adapten mejor a tu actividad real.
+            </p>
+          </div>
+          <button
+            onClick={handleSyncNow}
+            disabled={syncing || (!garminConnect?.activa && !getEstado('strava')?.activa)}
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition disabled:opacity-45"
+            style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
+          >
+            {syncing ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+            Actualizar
+          </button>
+        </div>
+        {syncMessage && (
+          <p className="mt-2 text-xs" style={{ color: syncMessage.includes('Error') || syncMessage.includes('No se pudo') ? '#ef4444' : 'var(--text-muted)' }}>
+            {syncMessage}
+          </p>
+        )}
       </div>
 
       {/* ── Garmin Connect (unofficial sync automático) ─────────────────── */}
@@ -235,10 +301,10 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                   ? <CheckCircle size={14} className="text-green-500" />
                   : <XCircle size={14} className="text-[var(--text-muted)]" />}
               </div>
-              <p className="text-xs text-[var(--text-muted)]">Pasos, HRV, sueño y carga de entrenamiento</p>
+              <p className="text-xs text-[var(--text-muted)]">Pasos, HRV, sueño, TDEE y recuperación</p>
               {garminConnect?.ultima_sync && (
                 <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
-                  Última sync: {new Date(garminConnect.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                  Última sync: {new Date(garminConnect.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               )}
             </div>
@@ -246,7 +312,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
           {garminConnect?.activa ? (
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
-                Sync automático
+                Activo
               </span>
               <button
                 onClick={handleGarminConnectDisconnect}
@@ -378,6 +444,17 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
           </div>
         )}
 
+        {garminConnect?.activa && !hoy && (
+          <div className="mt-4 pt-4 border-t border-[var(--border)]">
+            <div className="rounded-xl border px-3 py-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+              <p className="text-xs font-medium text-[var(--text)]">Garmin conectado sin datos recientes</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                Pulsa Actualizar para traer hoy y ayer. Si acabas de entrenar, Garmin puede tardar unos minutos en publicar el dato.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Promedios 7 días */}
         {garminResumen?.tiene_datos && promedios && garminResumen.dias.length > 1 && (
           <div className="mt-3 pt-3 border-t border-[var(--border)]">
@@ -443,8 +520,78 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
         )}
       </div>
 
+      {/* ── Resumen Strava ──────────────────────────────────────────────── */}
+      {getEstado('strava')?.activa && (
+        <div className="card p-4">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#FC4C0220' }}>
+                <Activity size={20} style={{ color: '#FC4C02' }} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-[var(--text)]">Strava</span>
+                  <CheckCircle size={14} className="text-green-500" />
+                </div>
+                <p className="text-xs text-[var(--text-muted)]">Entrenos registrados que el coach tendrá en cuenta</p>
+              </div>
+            </div>
+            <span className="text-[10px] font-medium rounded-full px-2 py-0.5" style={{ background: '#FC4C021A', color: '#FC4C02' }}>
+              {stravaResumen?.sesiones_14d ?? 0} sesiones
+            </span>
+            <button
+              onClick={() => handleDisconnect('strava')}
+              className="text-xs text-red-500 border border-red-200 rounded-lg px-2 py-1 hover:bg-red-50 transition-colors"
+            >
+              Desconectar
+            </button>
+          </div>
+
+          {(stravaResumen?.actividades?.length ?? 0) > 0 ? (
+            <>
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <StatPill label="Sesiones" value={stravaResumen?.sesiones_14d ?? 0} color="#FC4C02" />
+                <StatPill label="Tiempo" value={stravaResumen?.minutos_14d ?? 0} unit="min" />
+                <StatPill label="Distancia" value={stravaResumen?.distancia_14d ?? 0} unit="km" />
+              </div>
+              <div className="space-y-2">
+                {(stravaResumen?.actividades ?? []).slice(0, 4).map((actividad, index) => (
+                  <div key={`${actividad.fecha}-${index}`} className="flex items-center gap-3 rounded-xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                    <Route size={14} style={{ color: '#FC4C02' }} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-[var(--text)] capitalize">
+                        {actividad.tipo_entreno ?? 'Entreno'} · {new Date(actividad.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                      </p>
+                      <p className="text-[10px] text-[var(--text-muted)]">
+                        {actividad.duracion_min ? `${actividad.duracion_min} min` : 'Duración no disponible'}
+                        {actividad.distancia_entreno_km ? ` · ${actividad.distancia_entreno_km} km` : ''}
+                        {actividad.fc_media ? ` · FC ${actividad.fc_media}` : ''}
+                      </p>
+                    </div>
+                    {actividad.pace_min_km ? (
+                      <span className="text-[10px] text-[var(--text-muted)] tabular-nums">{actividad.pace_min_km}/km</span>
+                    ) : actividad.calorias_activas ? (
+                      <span className="text-[10px] text-[var(--text-muted)] tabular-nums">{actividad.calorias_activas} kcal</span>
+                    ) : (
+                      <Clock size={12} className="text-[var(--text-muted)]" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="rounded-xl border px-3 py-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+              <p className="text-xs font-medium text-[var(--text)]">Strava conectado, sin entrenos recientes importados</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                Pulsa Actualizar después de subir una actividad para que aparezca aquí y entre en los cálculos del coach.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Proveedores OAuth ────────────────────────────────────────────── */}
-      {OAUTH_PROVEEDORES.map(({ key, nombre, descripcion, icono: Icono, color, disponible }) => {
+      {OAUTH_PROVEEDORES.filter(provider => provider.key !== 'strava' || !getEstado('strava')?.activa).map(({ key, nombre, descripcion, icono: Icono, color, disponible }) => {
         const estado = getEstado(key)
         const conectado = estado?.activa ?? false
         const ultimaSync = estado?.ultima_sync

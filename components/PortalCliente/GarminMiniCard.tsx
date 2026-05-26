@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Watch, Footprints, BatteryMedium, Brain, Flame } from 'lucide-react'
+import { Watch, Footprints, BatteryMedium, Brain, Flame, RefreshCw, Loader2 } from 'lucide-react'
 
 interface GarminDatos {
   body_battery_end: number | null
@@ -43,15 +43,34 @@ function readinessLabel(v: number) {
 export default function GarminMiniCard({ codigo }: Props) {
   const [garmin, setGarmin] = useState<GarminStatus | null>(null)
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
 
-  useEffect(() => {
-    fetch(`/api/cliente/${codigo}/integraciones`)
+  async function load() {
+    await fetch(`/api/cliente/${codigo}/integraciones`)
       .then(r => r.ok ? r.json() as Promise<IntegracionesResponse> : null)
       .then(d => {
         if (d?.garmin_connect?.activa) setGarmin(d.garmin_connect)
       })
-      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    load().finally(() => setLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [codigo])
+
+  async function syncNow() {
+    setSyncing(true)
+    try {
+      await fetch(`/api/cliente/${codigo}/sync-integraciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dias: 2 }),
+      })
+      await load()
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   if (loading || !garmin || !garmin.datos_hoy) return null
 
@@ -62,8 +81,20 @@ export default function GarminMiniCard({ codigo }: Props) {
       <div className="px-4 py-3 flex items-center gap-2 border-b" style={{ borderColor: 'var(--border)' }}>
         <Watch size={14} style={{ color: '#0D9488' }} />
         <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Garmin hoy</span>
-        <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-          style={{ background: 'rgba(13,148,136,0.1)', color: '#0D9488' }}>Sincronizado</span>
+        {garmin.ultima_sync && (
+          <span className="ml-auto text-[10px]" style={{ color: 'var(--text-muted)' }}>
+            {new Date(garmin.ultima_sync).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+        <button
+          onClick={syncNow}
+          disabled={syncing}
+          className="rounded-full border p-1 transition disabled:opacity-50"
+          style={{ borderColor: 'var(--border)', color: '#0D9488' }}
+          aria-label="Actualizar Garmin"
+        >
+          {syncing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-0 divide-x divide-y" style={{ borderColor: 'var(--border)' }}>

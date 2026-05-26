@@ -10,7 +10,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
   if (!plan) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
   const clienteId = plan.cliente_id
 
-  const [{ data: integraciones }, { data: garminRow }] = await Promise.all([
+  const desde14dias = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+  const [{ data: integraciones }, { data: garminRow }, { data: stravaRows }] = await Promise.all([
     db.from('integraciones_cliente')
       .select('proveedor, activa, ultima_sync, error_ultimo')
       .eq('cliente_id', clienteId),
@@ -23,12 +25,21 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
       .order('fecha', { ascending: false })
       .limit(1)
       .single(),
+    db.from('actividad_externa_cliente')
+      .select('fecha, tipo_entreno, duracion_min, distancia_entreno_km, calorias_activas, fc_media, fc_max, tss, pace_min_km')
+      .eq('cliente_id', clienteId)
+      .eq('proveedor', 'strava')
+      .gte('fecha', desde14dias)
+      .order('fecha', { ascending: false })
+      .limit(6),
   ])
 
+  const garminIntegration = (integraciones ?? []).find(i => i.proveedor === 'garmin_connect')
   const garminConnect = garminRow
     ? {
         activa: true,
-        ultima_sync: garminRow.fecha,
+        ultima_sync: garminIntegration?.ultima_sync ?? garminRow.fecha,
+        error_ultimo: garminIntegration?.error_ultimo ?? null,
         datos_hoy: {
           body_battery_end: garminRow.body_battery_end,
           training_readiness: garminRow.training_readiness,
@@ -39,7 +50,19 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
           calorias_totales: garminRow.calorias_totales,
         },
       }
-    : { activa: false, ultima_sync: null, datos_hoy: null }
+    : {
+        activa: garminIntegration?.activa ?? false,
+        ultima_sync: garminIntegration?.ultima_sync ?? null,
+        error_ultimo: garminIntegration?.error_ultimo ?? null,
+        datos_hoy: null,
+      }
 
-  return NextResponse.json({ integraciones: integraciones ?? [], garmin_connect: garminConnect })
+  const stravaResumen = {
+    actividades: stravaRows ?? [],
+    sesiones_14d: stravaRows?.length ?? 0,
+    minutos_14d: (stravaRows ?? []).reduce((acc, row) => acc + (row.duracion_min ?? 0), 0),
+    distancia_14d: Number((stravaRows ?? []).reduce((acc, row) => acc + Number(row.distancia_entreno_km ?? 0), 0).toFixed(1)),
+  }
+
+  return NextResponse.json({ integraciones: integraciones ?? [], garmin_connect: garminConnect, strava_resumen: stravaResumen })
 }

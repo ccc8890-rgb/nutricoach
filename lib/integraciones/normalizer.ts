@@ -19,14 +19,31 @@ export async function persistirActividades(
     return obj
   })
 
+  for (const actividad of limpias) {
+    let deleteQuery = db
+      .from('actividad_externa_cliente')
+      .delete()
+      .eq('cliente_id', actividad.cliente_id as string)
+      .eq('proveedor', actividad.proveedor as string)
+
+    if (actividad.proveedor_activity_id) {
+      deleteQuery = deleteQuery.eq('proveedor_activity_id', actividad.proveedor_activity_id as string)
+    } else {
+      deleteQuery = deleteQuery
+        .eq('fecha', actividad.fecha as string)
+        .is('proveedor_activity_id', null)
+    }
+
+    const { error: deleteError } = await deleteQuery
+    if (deleteError) throw new Error(`persistirActividades delete: ${deleteError.message}`)
+  }
+
   const { error } = await db
     .from('actividad_externa_cliente')
-    .upsert(limpias, {
-      onConflict: 'cliente_id,proveedor,fecha',
-      ignoreDuplicates: false,
-    })
+    .insert(limpias)
 
-  if (error) throw new Error(`persistirActividades: ${error.message}`)
+  if (error) throw new Error(`persistirActividades insert: ${error.message}`)
+
   return actividades.length
 }
 
