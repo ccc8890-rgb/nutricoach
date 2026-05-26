@@ -2,7 +2,7 @@
     "name": "Casanova Nutrition",
     "short_name": "Casanova",
     "description": "Tu plan nutricional, check-ins y progreso desde cualquier lugar",
-    "start_url": "/",
+    "start_url": "/dashboard",
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#0A0A0B",

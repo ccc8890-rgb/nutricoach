@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, MessageSquareText, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle, ShoppingCart, BookOpen, Clock, CheckCircle2 } from 'lucide-react'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, MessageSquareText, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle, ShoppingCart, BookOpen, Clock, CheckCircle2, Moon, Sun, Home } from 'lucide-react'
 import MiPlan from './MiPlan'
 import CheckInForm from './CheckInForm'
 import ProgresoCharts from './ProgresoCharts'
@@ -14,6 +14,7 @@ import ChatPanel from './ChatPanel'
 import IntegracionesPanel from './IntegracionesPanel'
 import ListaCompraPortal from './ListaCompraPortal'
 import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach, RegistroComidaDia } from '@/types'
+import { useTheme } from '@/components/ThemeProvider'
 
 interface DashboardData {
     plan: PlanNutricion
@@ -267,6 +268,7 @@ function RecetarioCliente({ plan, codigo }: { plan: PlanNutricion; codigo: strin
 
 export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     const searchParams = useSearchParams()
+    const { theme, toggleTheme } = useTheme()
     const [data, setData] = useState<DashboardData | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -377,6 +379,26 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                             <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: 'var(--text)' }}>{nombreCliente}</h1>
                         </div>
                         <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={toggleTheme}
+                                className="inline-flex h-8 items-center rounded-full border p-1 transition-colors"
+                                style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-muted)' }}
+                                aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                            >
+                                <span
+                                    className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
+                                    style={{ background: theme === 'light' ? 'var(--surface)' : 'transparent', color: theme === 'light' ? 'var(--text)' : 'var(--text-muted)' }}
+                                >
+                                    <Sun size={13} />
+                                </span>
+                                <span
+                                    className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
+                                    style={{ background: theme === 'dark' ? 'var(--surface)' : 'transparent', color: theme === 'dark' ? 'var(--text)' : 'var(--text-muted)' }}
+                                >
+                                    <Moon size={13} />
+                                </span>
+                            </button>
                             {proximaRevision && (
                                 <span className="hidden sm:inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
                                     <Calendar size={12} /> {proximaRevision}
@@ -401,6 +423,27 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="fixed right-3 z-20 flex flex-col gap-2 sm:hidden" style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)' }}>
+                <button
+                    type="button"
+                    onClick={() => setTab('plan')}
+                    className="h-11 w-11 rounded-2xl border flex items-center justify-center"
+                    style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--surface) 92%, transparent)', color: 'var(--text)', backdropFilter: 'blur(14px)' }}
+                    aria-label="Ir a hoy"
+                >
+                    <Home size={17} />
+                </button>
+                <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className="h-11 w-11 rounded-2xl border flex items-center justify-center"
+                    style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--surface) 92%, transparent)', color: 'var(--text)', backdropFilter: 'blur(14px)' }}
+                    aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                >
+                    {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+                </button>
             </div>
 
             {/* Tabs — estilo pill */}
