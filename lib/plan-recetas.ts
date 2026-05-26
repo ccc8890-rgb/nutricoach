@@ -2,6 +2,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RecetaCandidata, TipoReceta } from '@/types'
 import { obtenerPerfilCliente } from '@/lib/agentes/perfil-gusto'
+import { inferirMomentoDesdeTipo, scoreRecetaParaAgente } from '@/lib/recetario-taxonomia'
 
 const SLOT_KCAL_PCT: Record<string, [number, number]> = {
   'Desayuno':       [0.20, 0.25],
@@ -79,7 +80,8 @@ export async function filtrarRecetasPorSlot(
   limit = 6,
   clienteId?: string,
   objetivoCliente?: string,
-  tagsClinicosRequeridos?: Partial<Record<'apto_sop' | 'apto_hashimoto' | 'apto_rendimiento' | 'es_post_entreno' | 'es_pre_entreno', boolean>>
+  tagsClinicosRequeridos?: Partial<Record<'apto_sop' | 'apto_hashimoto' | 'apto_rendimiento' | 'es_post_entreno' | 'es_pre_entreno', boolean>>,
+  deporteCliente?: string | null
 ): Promise<RecetaCandidata[]> {
   const categorias = SLOT_CATEGORIAS[slotNombre] ?? SLOT_CATEGORIAS['Comida']
   const tiposPermitidos = SLOT_TIPOS_PERMITIDOS[slotNombre] ?? ['completa']
@@ -238,29 +240,44 @@ export async function filtrarRecetasPorSlot(
 
     const adherenciaScore = ((r.adherencia_score ?? 65) / 100)
     const chefHealthyScore = r.premium_chef ? 0.85 : 0.6
+    const momentoTaxonomia = tagsClinicosRequeridos?.es_pre_entreno
+      ? 'pre_entreno'
+      : tagsClinicosRequeridos?.es_post_entreno
+        ? 'post_entreno'
+        : inferirMomentoDesdeTipo(slotNombre)
+    const taxonomyScore = scoreRecetaParaAgente(r, {
+      objetivo: objetivoCliente,
+      deporte: deporteCliente,
+      momento: momentoTaxonomia,
+      targetKcal,
+      targetProteinas: targetProt,
+      preferirChefHealthy: true,
+    })
 
     // Pesos ARAG: si hay perfil confiable, usamos los pesos enriquecidos
     // Si no, usamos pesos legacy (calidad + macro + apta)
     let sortScore: number
     if (confianzaPerfil >= 0.2) {
       sortScore =
-        scoreNorm      * 0.25 +
-        (1 - distNorm) * 0.20 +
-        alineacionPerfil * 0.30 +
+        scoreNorm      * 0.20 +
+        (1 - distNorm) * 0.18 +
+        taxonomyScore  * 0.12 +
+        alineacionPerfil * 0.28 +
         novedadScore   * 0.10 +
-        Math.max(aptaMatch, objetivoTaxonomia) * 0.10 +
+        Math.max(aptaMatch, objetivoTaxonomia) * 0.07 +
         adherenciaScore * 0.03 +
         macroFlexScore * 0.015 +
         (planningRoles.has('portion_scalable') ? 1 : 0.4) * 0.005
     } else {
       // Legacy weights (sin datos de perfil)
       sortScore =
-        scoreNorm * 0.30 +
-        Math.max(aptaMatch, objetivoTaxonomia) * 0.30 +
-        (1 - distNorm) * 0.25 +
-        adherenciaScore * 0.08 +
-        macroFlexScore * 0.04 +
-        chefHealthyScore * 0.03
+        scoreNorm * 0.22 +
+        Math.max(aptaMatch, objetivoTaxonomia) * 0.22 +
+        (1 - distNorm) * 0.24 +
+        taxonomyScore * 0.20 +
+        adherenciaScore * 0.07 +
+        macroFlexScore * 0.03 +
+        chefHealthyScore * 0.02
     }
 
     return { ...r, _dist: dist, _sort_score: sortScore }
@@ -269,7 +286,12 @@ export async function filtrarRecetasPorSlot(
   return scored
     .sort((a, b) => (b._sort_score ?? 0) - (a._sort_score ?? 0))
     .slice(0, limit)
-    .map(({ _dist: _, _sort_score: __, ...r }) => r)
+    .map(row => {
+      const { _dist, _sort_score, ...r } = row
+      void _dist
+      void _sort_score
+      return r
+    })
 }
 
 interface ComidaDeepSeek {

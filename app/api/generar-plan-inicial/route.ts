@@ -595,7 +595,8 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
       supabase, slot, targetKcal, targetProt, filtroCliente, 6,
       cliente_id,
       onboarding.objetivo,
-      tagsClinicosRequeridos && Object.keys(tagsClinicosRequeridos).length > 0 ? tagsClinicosRequeridos : undefined
+      tagsClinicosRequeridos && Object.keys(tagsClinicosRequeridos).length > 0 ? tagsClinicosRequeridos : undefined,
+      perfilEntreno?.sport_modality ?? null
     )
     candidatasPorSlot.set(slot, candidatas)
   }

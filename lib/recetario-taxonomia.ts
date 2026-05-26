@@ -299,17 +299,24 @@ export function scoreRecetaParaAgente(
     (roles.has('quick_weekday') ? 0.15 : 0)
 
   let contextNutritionScore = 0.6
+  let contextPenalty = 0
   if (contexto.momento === 'pre_entreno') {
     const carbScore = carbs >= 35 ? 1 : carbs >= 25 ? 0.75 : carbs >= 15 ? 0.45 : 0.2
     const fatScore = fat <= 12 ? 1 : fat <= 18 ? 0.75 : fat <= 25 ? 0.4 : 0.15
     const proteinScore = prot <= 30 ? 1 : prot <= 40 ? 0.65 : 0.3
     const energyScore = targetKcal > 0 && kcal <= targetKcal * 1.3 ? 1 : 0.55
     contextNutritionScore = carbScore * 0.38 + fatScore * 0.28 + proteinScore * 0.2 + energyScore * 0.14
+    if (carbs < 20) contextPenalty += 0.06
+    if (fat > 20) contextPenalty += 0.06
+    if (targetKcal > 0 && kcal > targetKcal * 1.35) contextPenalty += 0.04
   } else if (contexto.momento === 'post_entreno' || contexto.deporte && contexto.deporte !== 'general') {
     const carbScore = carbs >= 45 ? 1 : carbs >= 30 ? 0.75 : carbs >= 20 ? 0.5 : 0.25
     const proteinScore = prot >= 30 ? 1 : prot >= 22 ? 0.7 : 0.35
     const fatScore = fat <= 30 ? 1 : fat <= 40 ? 0.65 : 0.35
     contextNutritionScore = carbScore * 0.34 + proteinScore * 0.42 + fatScore * 0.24
+    if (carbs < 20) contextPenalty += 0.10
+    if (prot < 30) contextPenalty += 0.05
+    if (targetKcal > 0 && kcal < targetKcal * 0.7) contextPenalty += 0.06
   } else if (contexto.objetivo === 'perdida_grasa' || contexto.objetivo === 'recomposicion') {
     const proteinDensity = kcal > 0 ? prot * 4 / kcal : 0
     contextNutritionScore = Math.min(Math.max(proteinDensity * 2.4, 0.25), 1)
@@ -318,18 +325,18 @@ export function scoreRecetaParaAgente(
   const distancePenalty = macroDistance > 0.65 ? 0.08 : macroDistance > 0.45 ? 0.04 : 0
 
   return Math.max(0, (
-    intelligence * 0.20 +
-    calidad * 0.08 +
+    intelligence * 0.17 +
+    calidad * 0.07 +
     adherencia * 0.10 +
     objetivoScore * 0.12 +
     deporteScore * 0.08 +
     momentoScore * 0.10 +
-    macroScore * 0.20 +
-    contextNutritionScore * 0.08 +
+    macroScore * 0.22 +
+    contextNutritionScore * 0.13 +
     macroFlex * 0.02 +
     chefScore * 0.015 +
     Math.min(roleScore, 1) * 0.005
-  ) - distancePenalty
+  ) - distancePenalty - contextPenalty
   )
 }
 
