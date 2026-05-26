@@ -12,6 +12,15 @@ interface ListaCompraPortalProps {
 }
 
 const CATEGORIA_ABBR: Record<string, string> = {
+    'Carnes': 'CA',
+    'Pescados': 'PE',
+    'Lácteos': 'LA',
+    'Lacteos': 'LA',
+    'Huevos': 'HU',
+    'Verduras': 'VE',
+    'Hortalizas': 'HO',
+    'Cereales': 'CE',
+    'Condimentos': 'CO',
     'Carnes y aves': 'CA',
     'Pescados y mariscos': 'PM',
     'Lácteos y huevos': 'LH',
@@ -24,6 +33,16 @@ const CATEGORIA_ABBR: Record<string, string> = {
     'Condimentos y salsas': 'CS',
     'Bebidas': 'BE',
     'Otros': 'OT',
+}
+
+function categoriaAbbr(categoria: string) {
+    if (CATEGORIA_ABBR[categoria]) return CATEGORIA_ABBR[categoria]
+    const words = categoria
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .split(/\s+/)
+        .filter(w => w.length > 2 && !['con', 'para', 'los', 'las'].includes(w.toLowerCase()))
+    return (words.length >= 2 ? `${words[0][0]}${words[1][0]}` : categoria.slice(0, 2)).toUpperCase()
 }
 const DIAS_COMPRA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
@@ -255,7 +274,7 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
             {/* Lista por categoría */}
             {Object.entries(porCategoria).map(([cat, catItems]) => {
                 const colapsar = colapsadas.has(cat)
-                const abbr = CATEGORIA_ABBR[cat] ?? 'OT'
+                const abbr = categoriaAbbr(cat)
                 const todosMarcados = catItems.every(i => marcados.has(i.alimento_id))
 
                 return (
