@@ -1,6 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
+const URL_FIELDS = new Set(['foto_url', 'video_url'])
+const VIDEO_TIPOS = new Set(['youtube', 'vimeo', 'instagram', 'tiktok', 'externo'])
+
+function normalizeNullableString(value: unknown) {
+  if (value === null || value === undefined) return null
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function isHttpUrl(value: string) {
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+function inferVideoTipo(videoUrl: string | null) {
+  if (!videoUrl) return null
+  try {
+    const host = new URL(videoUrl).hostname.replace(/^www\./, '')
+    if (host.includes('youtube.com') || host.includes('youtu.be')) return 'youtube'
+    if (host.includes('vimeo.com')) return 'vimeo'
+    if (host.includes('instagram.com')) return 'instagram'
+    if (host.includes('tiktok.com')) return 'tiktok'
+  } catch {
+    return null
+  }
+  return 'externo'
+}
+
 /**
  * PATCH /api/ejercicios/[id]/media
  * Actualiza los campos de media de un ejercicio:
@@ -26,17 +59,60 @@ export async function PATCH(
     return NextResponse.json({ error: 'JSON inválido' }, { status: 400 })
   }
 
-  // Only allow updating media fields
   const allowed = ['foto_url', 'video_url', 'video_tipo', 'dificultad_nivel', 'equipamiento', 'musculos_secundarios']
   const updates: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) {
-      updates[key] = body[key]
+      const value = body[key]
+
+      if (URL_FIELDS.has(key)) {
+        const normalized = normalizeNullableString(value)
+        if (normalized === undefined) {
+          return NextResponse.json({ error: `${key} debe ser texto o null` }, { status: 400 })
+        }
+        if (normalized && !isHttpUrl(normalized)) {
+          return NextResponse.json({ error: `${key} debe ser una URL http/https válida` }, { status: 400 })
+        }
+        updates[key] = normalized
+        continue
+      }
+
+      if (key === 'video_tipo') {
+        const normalized = normalizeNullableString(value)
+        if (normalized === undefined) {
+          return NextResponse.json({ error: 'video_tipo debe ser texto o null' }, { status: 400 })
+        }
+        if (normalized && !VIDEO_TIPOS.has(normalized)) {
+          return NextResponse.json({ error: 'video_tipo no válido' }, { status: 400 })
+        }
+        updates[key] = normalized
+        continue
+      }
+
+      if (key === 'dificultad_nivel') {
+        const difficulty = Number(value)
+        if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 5) {
+          return NextResponse.json({ error: 'dificultad_nivel debe estar entre 1 y 5' }, { status: 400 })
+        }
+        updates[key] = difficulty
+        continue
+      }
+
+      if (key === 'equipamiento' || key === 'musculos_secundarios') {
+        if (!Array.isArray(value) || !value.every(item => typeof item === 'string')) {
+          return NextResponse.json({ error: `${key} debe ser un array de texto` }, { status: 400 })
+        }
+        updates[key] = value.map(item => item.trim()).filter(Boolean)
+      }
     }
   }
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No hay campos válidos para actualizar' }, { status: 400 })
+  }
+
+  if ('video_url' in updates && !('video_tipo' in updates)) {
+    updates.video_tipo = inferVideoTipo(updates.video_url as string | null)
   }
 
   const db = createServiceSupabase()
