@@ -25,6 +25,7 @@ const CATEGORIA_ICONOS: Record<string, string> = {
     'Bebidas': '🥤',
     'Otros': '📦',
 }
+const DIAS_COMPRA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
 function formatGramos(g: number): string {
     if (g >= 1000) return `${(g / 1000).toFixed(g % 1000 === 0 ? 0 : 1)} kg`
@@ -57,33 +58,64 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
     const [error, setError] = useState(false)
     const [marcados, setMarcados] = useState<Set<string>>(new Set())
     const [colapsadas, setColapsadas] = useState<Set<string>>(new Set())
+    const [dia, setDia] = useState<string>('Semana')
 
     useEffect(() => {
-        fetch(`/api/cliente/${codigo}/lista-compra`)
+        setLoading(true)
+        setError(false)
+        const params = dia === 'Semana' ? '' : `?dia=${encodeURIComponent(dia)}`
+        fetch(`/api/cliente/${codigo}/lista-compra${params}`)
             .then(r => r.json())
             .then((res: ListaCompraResponse) => {
                 setData(res)
                 setItems(res.items ?? [])
+                setMarcados(new Set())
             })
             .catch(() => setError(true))
             .finally(() => setLoading(false))
-    }, [codigo])
+    }, [codigo, dia])
+
+    const selector = (
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {['Semana', ...DIAS_COMPRA].map(d => (
+                <button
+                    key={d}
+                    onClick={() => setDia(d)}
+                    className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold"
+                    style={{
+                        background: dia === d ? 'var(--primary)' : 'var(--bg)',
+                        color: dia === d ? 'white' : 'var(--text-muted)',
+                        border: `1px solid ${dia === d ? 'var(--primary)' : 'var(--border)'}`,
+                    }}
+                >
+                    {d === 'Semana' ? 'Semana' : d.slice(0, 3)}
+                </button>
+            ))}
+        </div>
+    )
 
     if (loading) return (
-        <div className="flex items-center justify-center py-8">
-            <Loader2 size={20} className="animate-spin" style={{ color: '#0D9488' }} />
+        <div>
+            {selector}
+            <div className="flex items-center justify-center py-8">
+                <Loader2 size={20} className="animate-spin" style={{ color: '#0D9488' }} />
+            </div>
         </div>
     )
 
     if (error) return (
         <div className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>
+            {selector}
             No se pudo cargar la lista. Inténtalo de nuevo.
         </div>
     )
 
     if (!items.length) return (
-        <div className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>
-            No hay ingredientes en tu plan.
+        <div>
+            {selector}
+            <div className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>
+                No hay ingredientes para esta vista.
+            </div>
         </div>
     )
 
@@ -126,6 +158,7 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
 
     return (
         <div className="space-y-2">
+            {selector}
             {optimizacion && (
                 <div className="rounded-xl border p-3 space-y-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                     <div className="grid grid-cols-3 gap-2">

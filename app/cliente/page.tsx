@@ -496,7 +496,7 @@ function PortalClientePageContent() {
           <div className="flex flex-col gap-4">
             {dieta ? (
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              <MiPlan codigo={codigo} plan={dieta as any} entreno={entreno} />
+              <MiPlan codigo={codigo} plan={dieta as any} />
             ) : (
               <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
             )}

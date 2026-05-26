@@ -2,11 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Dumbbell, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, ShoppingCart, RefreshCw, PencilLine, Search, Plus, Trash2 } from 'lucide-react'
-import RecetaDelDia from './RecetaDelDia'
+import Link from 'next/link'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, ArrowLeftRight, Sparkles, BookOpen, CheckCircle2, RefreshCw, PencilLine, Search, Plus, Trash2, ExternalLink } from 'lucide-react'
 import GarminMiniCard from './GarminMiniCard'
-import ListaCompraPortal from './ListaCompraPortal'
-import MicronutrientesPortal from './MicronutrientesPortal'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
@@ -85,37 +83,9 @@ function diaComida(comida: Pick<Comida, 'dia_semana'>) {
     return comida.dia_semana || DIAS_NUTRICION[0]
 }
 
-interface SesionEjercicio {
-    id: string
-    ejercicio?: { nombre: string; grupo_muscular?: string }
-    series?: number
-    repeticiones?: string
-    descanso_segundos?: number
-    peso_sugerido?: string
-    notas?: string
-    orden: number
-}
-
-interface Sesion {
-    id: string
-    nombre: string
-    dia_semana?: string
-    ejercicios?: SesionEjercicio[]
-}
-
-interface EntrenoData {
-    id: string
-    nombre: string
-    descripcion?: string
-    duracion_semanas?: number
-    sesiones?: Sesion[]
-}
-
 interface MiPlanProps {
     codigo: string
     plan: PlanData
-    entreno: EntrenoData | null
-    onMarcarSesionHecha?: (sesionNombre: string) => void
     registros_comidas?: RegistroComidaDia[]
 }
 
@@ -172,147 +142,6 @@ type BusquedaComidaState = {
     modo: 'receta' | 'alimento'
     query: string
 } | null
-
-const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
-const DIAS_KEYS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
-
-function normalizarDia(dia: string | undefined): number | null {
-    if (!dia) return null
-    const d = dia.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-    const idx = DIAS_KEYS.findIndex(k => d.includes(k))
-    if (idx >= 0) return idx
-    const n = parseInt(d)
-    if (!isNaN(n) && n >= 1 && n <= 7) return n - 1
-    return null
-}
-
-function SemanaEntreno({
-    entreno,
-    onMarcarHecha,
-}: {
-    entreno: EntrenoData
-    onMarcarHecha?: (nombre: string) => void
-}) {
-    const [diaSeleccionado, setDiaSeleccionado] = useState<number | null>(null)
-    const sesiones = entreno.sesiones ?? []
-
-    // Mapear sesiones a día de la semana (0=Lun … 6=Dom)
-    const porDia: Record<number, Sesion[]> = {}
-    const sinDia: Sesion[] = []
-    for (const s of sesiones) {
-        const idx = normalizarDia(s.dia_semana)
-        if (idx !== null) {
-            if (!porDia[idx]) porDia[idx] = []
-            porDia[idx].push(s)
-        } else {
-            sinDia.push(s)
-        }
-    }
-
-    const tieneCalendario = Object.keys(porDia).length > 0
-    const sesionesActivas = diaSeleccionado !== null ? (porDia[diaSeleccionado] ?? []) : sinDia
-
-    return (
-        <div className="card">
-            <div className="flex items-center gap-2 mb-4">
-                <Dumbbell size={18} style={{ color: '#0D9488' }} />
-                <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{entreno.nombre}</h3>
-                    {entreno.duracion_semanas && (
-                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{entreno.duracion_semanas} semanas</p>
-                    )}
-                </div>
-            </div>
-
-            {tieneCalendario && (
-                <div className="grid grid-cols-7 gap-1 mb-4">
-                    {DIAS_SEMANA.map((label, i) => {
-                        const tiene = !!porDia[i]?.length
-                        const activo = diaSeleccionado === i
-                        return (
-                            <button
-                                key={i}
-                                onClick={() => setDiaSeleccionado(activo ? null : i)}
-                                disabled={!tiene}
-                                className="flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-semibold transition-all"
-                                style={{
-                                    background: activo ? '#0D9488' : tiene ? 'var(--bg)' : 'transparent',
-                                    color: activo ? 'white' : tiene ? 'var(--text)' : 'var(--text-muted)',
-                                    border: `1px solid ${activo ? '#0D9488' : tiene ? 'var(--border)' : 'transparent'}`,
-                                    opacity: tiene ? 1 : 0.35,
-                                }}
-                            >
-                                {label}
-                                {tiene && (
-                                    <span
-                                        className="w-1.5 h-1.5 rounded-full"
-                                        style={{ background: activo ? 'rgba(255,255,255,0.7)' : '#0D9488' }}
-                                    />
-                                )}
-                            </button>
-                        )
-                    })}
-                </div>
-            )}
-
-            {/* Sesiones del día seleccionado (o todas si no hay calendario) */}
-            {(tieneCalendario ? sesionesActivas.length > 0 : true) && (
-                <div className="space-y-2">
-                    {(tieneCalendario ? sesionesActivas : sesiones).map(sesion => (
-                        <div key={sesion.id} className="rounded-xl p-3" style={{ background: 'var(--bg)' }}>
-                            <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
-                            {!tieneCalendario && sesion.dia_semana && (
-                                <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{sesion.dia_semana}</p>
-                            )}
-                            {sesion.ejercicios && sesion.ejercicios.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                    {sesion.ejercicios
-                                        .sort((a, b) => a.orden - b.orden)
-                                        .map(ej => (
-                                            <span key={ej.id} className="badge badge-gray text-[11px]">
-                                                {ej.ejercicio?.nombre}
-                                            </span>
-                                        ))}
-                                </div>
-                            )}
-                            {onMarcarHecha && (
-                                <button
-                                    type="button"
-                                    onClick={() => onMarcarHecha(sesion.nombre)}
-                                    className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg font-medium transition-colors"
-                                    style={{ color: '#0D9488', border: '1px solid #0D9488' }}
-                                    onMouseEnter={e => {
-                                        (e.currentTarget as HTMLButtonElement).style.background = '#0D9488'
-                                        ;(e.currentTarget as HTMLButtonElement).style.color = 'white'
-                                    }}
-                                    onMouseLeave={e => {
-                                        ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                                        ;(e.currentTarget as HTMLButtonElement).style.color = '#0D9488'
-                                    }}
-                                >
-                                    <CheckCircle2 size={13} />
-                                    Marcar como hecha
-                                </button>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {tieneCalendario && diaSeleccionado === null && (
-                <p className="text-xs text-center py-2" style={{ color: 'var(--text-muted)' }}>
-                    Toca un día para ver la sesión
-                </p>
-            )}
-
-            {tieneCalendario && diaSeleccionado !== null && sesionesActivas.length === 0 && (
-                <p className="text-xs text-center py-2" style={{ color: 'var(--text-muted)' }}>
-                    Día de descanso
-                </p>
-            )}
-        </div>
-    )
-}
 
 function MacroRing({
     label,
@@ -381,7 +210,7 @@ function MacroRing({
     )
 }
 
-export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, registros_comidas }: MiPlanProps) {
+export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps) {
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>(
         Object.fromEntries((plan.comidas ?? []).map(c => [c.id, true]))
     )
@@ -430,8 +259,6 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
     const [showRecetas, setShowRecetas] = useState<Record<string, boolean>>({})
     const [vistaActual, setVistaActual] = useState<'hoy' | 'semana'>('hoy')
     const [diaActivo, setDiaActivo] = useState<string>(() => diaActualEspana())
-    const [microsAbiertos, setMicrosAbiertos] = useState(false)
-    const [listaAbierta, setListaAbierta] = useState(false)
     const [usandoReceta, setUsandoReceta] = useState<string | null>(null)
     const [drawerComidaId, setDrawerComidaId] = useState<string | null>(null)
     const [alternativas, setAlternativas] = useState<AlternativaReceta[]>([])
@@ -751,7 +578,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
 
             {/* Vista semanal — usa comidasParaSemana (plan original, referencia estable) */}
             {vistaActual === 'semana' && (
-                <PlanSemanal comidas={comidasParaSemana} clienteId={planLocal.cliente_id} targets={targets} />
+                <PlanSemanal comidas={comidasParaSemana} clienteId={planLocal.cliente_id} codigo={codigo} targets={targets} />
             )}
 
             {/* Vista diaria */}
@@ -832,53 +659,6 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
             {/* Garmin mini-card (solo si tiene integración activa) */}
             <GarminMiniCard codigo={codigo} />
 
-            {/* Receta del día */}
-            <RecetaDelDia kcal={totalDia.calorias} proteinas={totalDia.proteinas} clienteId={planLocal.cliente_id} />
-
-            {/* ─── Micronutrientes ─── */}
-            <div className="card !p-0 overflow-hidden">
-                <button
-                    onClick={() => setMicrosAbiertos(p => !p)}
-                    className="w-full flex items-center justify-between px-4 py-3"
-                >
-                    <div className="flex items-center gap-2">
-                        <CheckCircle2 size={16} style={{ color: '#0D9488' }} />
-                        <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Micronutrientes</span>
-                    </div>
-                    {microsAbiertos
-                        ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} />
-                        : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
-                    }
-                </button>
-                {microsAbiertos && (
-                    <div className="px-4 pb-4">
-                        <MicronutrientesPortal codigo={codigo} />
-                    </div>
-                )}
-            </div>
-
-            {/* ─── Lista de la Compra ─── */}
-            <div className="card !p-0 overflow-hidden">
-                <button
-                    onClick={() => setListaAbierta(p => !p)}
-                    className="w-full flex items-center justify-between px-4 py-3"
-                >
-                    <div className="flex items-center gap-2">
-                        <ShoppingCart size={16} style={{ color: '#0D9488' }} />
-                        <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Lista de la compra</span>
-                    </div>
-                    {listaAbierta
-                        ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} />
-                        : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />
-                    }
-                </button>
-                {listaAbierta && (
-                    <div className="px-4 pb-4">
-                        <ListaCompraPortal codigo={codigo} />
-                    </div>
-                )}
-            </div>
-
             {/* Comidas */}
             <div className="space-y-3">
                 {comidasDia.length === 0 && (
@@ -947,6 +727,16 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
                                             >
                                                 Cambiar plato
                                             </button>
+                                            {comida.receta_id && (
+                                                <Link
+                                                    href={`/recetas/${comida.receta_id}?returnTo=/cliente/${codigo}`}
+                                                    onClick={e => e.stopPropagation()}
+                                                    className="inline-flex items-center gap-1 text-[10px] font-medium"
+                                                    style={{ color: 'var(--text-secondary)' }}
+                                                >
+                                                    Ver receta <ExternalLink size={10} />
+                                                </Link>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -1307,9 +1097,6 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
                     )
                 })}
             </div>
-
-            {/* Plan de entrenamiento — Vista semanal */}
-            {entreno && <SemanaEntreno entreno={entreno} onMarcarHecha={onMarcarSesionHecha} />}
 
             {/* Botón Descargar PDF */}
             <button

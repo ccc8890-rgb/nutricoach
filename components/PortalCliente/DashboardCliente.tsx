@@ -2,19 +2,18 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, Flame, MessageSquareText, History, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, MessageSquareText, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle, ShoppingCart, BookOpen } from 'lucide-react'
 import MiPlan from './MiPlan'
-import MensajeCoach from './MensajeCoach'
 import CheckInForm from './CheckInForm'
 import ProgresoCharts from './ProgresoCharts'
 import NotasCoach from './NotasCoach'
-import HistorialCheckins from './HistorialCheckins'
 import TLSGauge from './TLSGauge'
 import RegistrarEntrenoModal from './RegistrarEntrenoModal'
-import MicronutrientesPortal from './MicronutrientesPortal'
 import ChatPanel from './ChatPanel'
 import IntegracionesPanel from './IntegracionesPanel'
-import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach } from '@/types'
+import ListaCompraPortal from './ListaCompraPortal'
+import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach, RegistroComidaDia } from '@/types'
 
 interface DashboardData {
     plan: PlanNutricion
@@ -23,43 +22,172 @@ interface DashboardData {
     checkins: CheckIn[]
     peso: SeguimientoPeso[]
     notas: NotaCoach[]
+    registros_comidas?: RegistroComidaDia[]
 }
 
 interface DashboardClienteProps {
     codigo: string
 }
 
-type Tab = 'plan' | 'checkin' | 'entreno' | 'progreso' | 'historial' | 'chat' | 'integraciones'
+type Tab = 'plan' | 'entreno' | 'compra' | 'recetas' | 'checkin' | 'progreso' | 'chat' | 'integraciones'
 
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'plan', label: 'Plan', icon: UtensilsCrossed },
+    { key: 'plan', label: 'Hoy', icon: UtensilsCrossed },
+    { key: 'entreno', label: 'Training', icon: Dumbbell },
+    { key: 'compra', label: 'Compra', icon: ShoppingCart },
+    { key: 'recetas', label: 'Recetas', icon: BookOpen },
     { key: 'checkin', label: 'Check-in', icon: ClipboardCheck },
-    { key: 'entreno', label: 'Entreno', icon: Dumbbell },
-    { key: 'historial', label: 'Historial', icon: History },
     { key: 'progreso', label: 'Progreso', icon: BarChart3 },
     { key: 'chat', label: 'Chat', icon: MessageCircle },
     { key: 'integraciones', label: 'Apps', icon: Smartphone },
 ]
 
-/* ── Helper: calcular racha ── */
-function calcularRacha(checkins: CheckIn[]): number {
-    if (checkins.length === 0) return 0
-    const sorted = [...checkins]
-        .map(c => new Date(c.fecha))
-        .sort((a, b) => b.getTime() - a.getTime())
+function normalizarDia(dia: string | null | undefined): number | null {
+    if (!dia) return null
+    const keys = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
+    const d = dia.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    const idx = keys.findIndex(k => d.includes(k))
+    return idx >= 0 ? idx : null
+}
 
-    let racha = 1
-    const hoy = new Date()
-    hoy.setHours(0, 0, 0, 0)
-    const diffHoy = Math.floor((hoy.getTime() - sorted[0].getTime()) / (1000 * 60 * 60 * 24))
-    if (diffHoy > 2) return 0
+function EntrenoCliente({
+    entreno,
+    codigo,
+    tlsKey,
+    onRegistrar,
+    onSesion,
+}: {
+    entreno: PlanEntrenamiento | null
+    codigo: string
+    tlsKey: number
+    onRegistrar: () => void
+    onSesion: (nombre: string) => void
+}) {
+    const hoy = new Date().getDay()
+    const hoyIdx = hoy === 0 ? 6 : hoy - 1
+    const sesiones = (entreno?.sesiones ?? []) as Array<{
+        id: string
+        nombre: string
+        dia_semana?: string | null
+        duracion_min?: number | null
+        ejercicios?: Array<{
+            id: string
+            orden: number
+            series?: number | null
+            repeticiones?: string | null
+            descanso_seg?: number | null
+            ejercicio?: { nombre?: string | null; grupo_muscular?: string | null }
+        }>
+    }>
+    const sesionesHoy = sesiones.filter(s => normalizarDia(s.dia_semana) === hoyIdx)
+    const visibles = sesionesHoy.length ? sesionesHoy : sesiones
 
-    for (let i = 1; i < sorted.length; i++) {
-        const diff = Math.floor((sorted[i - 1].getTime() - sorted[i].getTime()) / (1000 * 60 * 60 * 24))
-        if (diff === 1) racha++
-        else break
-    }
-    return racha
+    return (
+        <div className="space-y-4">
+            <TLSGauge key={tlsKey} codigo={codigo} onRegistrar={onRegistrar} />
+            <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <div className="flex items-center justify-between gap-3 mb-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Plan de entrenamiento</p>
+                        <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>{entreno?.nombre ?? 'Sin plan activo'}</h2>
+                    </div>
+                    <button onClick={onRegistrar} className="btn-primary text-xs px-3 py-2">Registrar</button>
+                </div>
+
+                {!entreno || sesiones.length === 0 ? (
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Tu coach todavía no ha asignado sesiones de entrenamiento.</p>
+                ) : (
+                    <div className="space-y-3">
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            {sesionesHoy.length ? 'Entrenamiento previsto para hoy' : 'Semana de entrenamiento'}
+                        </p>
+                        {visibles.map(sesion => (
+                            <div key={sesion.id} className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <p className="font-semibold" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+                                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                            {sesion.dia_semana ?? 'Sin día'}{sesion.duracion_min ? ` · ${sesion.duracion_min} min` : ''}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => onSesion(sesion.nombre)}
+                                        className="shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold"
+                                        style={{ background: 'var(--primary-bg)', color: 'var(--primary)' }}
+                                    >
+                                        Hecho
+                                    </button>
+                                </div>
+                                {(sesion.ejercicios ?? []).length > 0 && (
+                                    <div className="mt-3 space-y-2">
+                                        {(sesion.ejercicios ?? []).slice().sort((a, b) => a.orden - b.orden).map(ej => (
+                                            <div key={ej.id} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2" style={{ background: 'var(--surface)' }}>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
+                                                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{ej.ejercicio?.grupo_muscular ?? 'Trabajo principal'}</p>
+                                                </div>
+                                                <p className="text-xs font-semibold text-right shrink-0" style={{ color: 'var(--text-secondary)' }}>
+                                                    {ej.series ? `${ej.series}x` : ''}{ej.repeticiones ?? 'programado'}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </section>
+        </div>
+    )
+}
+
+function RecetarioCliente({ plan, codigo }: { plan: PlanNutricion; codigo: string }) {
+    const recetas = Array.from(new Map(((plan.comidas ?? []) as Array<{
+        nombre: string
+        receta_id?: string | null
+        receta?: { id: string; nombre: string; imagen_url?: string | null; kcal?: number | null; proteinas?: number | null; tiempo_prep_min?: number | null } | null
+    }>).filter(c => c.receta_id && c.receta).map(c => [c.receta_id, { ...c.receta!, comida: c.nombre }])).values())
+
+    return (
+        <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <div className="mb-4">
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Recetario del plan</p>
+                <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>{recetas.length} recetas disponibles</h2>
+            </div>
+            {recetas.length === 0 ? (
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Todavía no hay recetas vinculadas a tu plan.</p>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {recetas.map(receta => (
+                        <Link
+                            key={receta.id}
+                            href={`/recetas/${receta.id}?returnTo=/cliente/${codigo}`}
+                            className="group rounded-2xl border overflow-hidden"
+                            style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+                        >
+                            <div className="aspect-[16/9]" style={{ background: 'var(--surface)' }}>
+                                {receta.imagen_url ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={receta.imagen_url} alt={receta.nombre} className="h-full w-full object-cover" />
+                                ) : (
+                                    <div className="h-full w-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+                                        <BookOpen size={22} />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="p-3">
+                                <p className="text-sm font-semibold line-clamp-2 group-hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</p>
+                                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                                    {Math.round(Number(receta.kcal ?? 0))} kcal · P {Math.round(Number(receta.proteinas ?? 0))}g{receta.tiempo_prep_min ? ` · ${receta.tiempo_prep_min} min` : ''}
+                                </p>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            )}
+        </section>
+    )
 }
 
 export default function DashboardCliente({ codigo }: DashboardClienteProps) {
@@ -77,12 +205,6 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     const [mostrarRegistrarEntreno, setMostrarRegistrarEntreno] = useState(false)
     const [sesionPendiente, setSesionPendiente] = useState<string | null>(null)
     const [tlsKey, setTlsKey] = useState(0)
-    const [mostrarBienvenida, setMostrarBienvenida] = useState(false)
-
-    function cerrarBienvenida() {
-        localStorage.setItem(`bienvenida_vista_${codigo}`, '1')
-        setMostrarBienvenida(false)
-    }
 
     const loadData = useCallback(async () => {
         try {
@@ -97,10 +219,6 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
             }
             const json = await res.json()
             setData(json)
-
-            if (!localStorage.getItem(`bienvenida_vista_${codigo}`)) {
-                setMostrarBienvenida(true)
-            }
 
             // Detectar notas nuevas (no vistas)
             if (json.notas?.length > 0) {
@@ -119,9 +237,9 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
         loadData()
     }, [loadData])
 
-    // Marcar notas como leídas al visitar historial (donde se muestran las notas del coach)
+    // Marcar notas como leídas al visitar chat.
     useEffect(() => {
-        if (tab === 'historial' && data?.notas) {
+        if (tab === 'chat' && data?.notas) {
             const ids = data.notas.map(n => n.id)
             setNotasVistas(prev => {
                 const nuevas = ids.filter(id => !prev.includes(id))
@@ -133,8 +251,6 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
             })
         }
     }, [tab, data?.notas])
-
-    const racha = data ? calcularRacha(data.checkins ?? []) : 0
 
     if (loading) {
         return (
@@ -171,74 +287,44 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
         ? Math.floor((new Date().getTime() - new Date(ultimoCheckin.fecha).getTime()) / (1000 * 60 * 60 * 24))
         : null
 
-    // Iniciales para avatar
-    const iniciales = (data.cliente?.nombre ?? '?').split(' ').map(s => s[0]).join('').toUpperCase().slice(0, 2)
-    const nombreCliente = data.cliente?.nombre?.split(' ')[0] ?? 'Campeón'
+    const nombreCliente = data.cliente?.nombre?.split(' ')[0] ?? 'Cliente'
+    const proximaRevision = data.cliente?.fecha_proxima_revision
+        ? new Date(data.cliente.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+        : null
 
     return (
         <div className="min-h-screen pb-nav-safe" style={{ background: 'var(--bg)' }}>
-            {/* Header premium con avatar */}
-            <div style={{ background: 'linear-gradient(135deg, #0F172A, #1E293B)' }}>
-                <div className="max-w-2xl mx-auto px-4 pt-safe pb-4 sm:py-6">
-                    <div className="flex items-center gap-4">
-                        {/* Avatar con iniciales */}
-                        <div
-                            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-bold text-lg shrink-0"
-                            style={{ background: 'linear-gradient(135deg, #0D9488, #14B8A6)', color: 'white' }}
-                        >
-                            {iniciales}
+            <div className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <div className="max-w-3xl mx-auto px-4 pt-safe py-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Casanova Nutrition</p>
+                            <h1 className="text-base sm:text-lg font-bold truncate" style={{ color: 'var(--text)' }}>{nombreCliente}</h1>
                         </div>
-
-                        <div className="min-w-0 flex-1">
-                            <p className="text-white/70 text-xs sm:text-sm font-medium mb-0.5">
-                                👋 ¡Hola, {nombreCliente}!
-                            </p>
-                            <h1 className="text-lg sm:text-xl font-bold text-white truncate">{data.plan.nombre}</h1>
-                            <div className="flex items-center gap-2 mt-1">
-                                {racha > 0 && (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full"
-                                        style={{ background: 'rgba(251,146,60,0.25)', color: '#FB923C' }}>
-                                        <Flame size={11} />
-                                        {racha} días
-                                    </span>
-                                )}
-                                {notasNoLeidas > 0 && (
-                                    <button
-                                        onClick={() => setTab('historial')}
-                                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full"
-                                        style={{ background: 'rgba(239,68,68,0.25)', color: '#FCA5A5' }}
-                                    >
-                                        <MessageSquareText size={11} />
-                                        {notasNoLeidas} nueva{notasNoLeidas > 1 ? 's' : ''}
-                                    </button>
-                                )}
-                                {data.cliente?.fecha_proxima_revision && (
-                                    <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full"
-                                        style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
-                                        <Calendar size={10} strokeWidth={2} /> {new Date(data.cliente.fecha_proxima_revision).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                                    </span>
-                                )}
-                            </div>
+                        <div className="flex items-center gap-2">
+                            {proximaRevision && (
+                                <span className="hidden sm:inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                                    <Calendar size={12} /> {proximaRevision}
+                                </span>
+                            )}
+                            {notasNoLeidas > 0 && (
+                                <button
+                                    onClick={() => setTab('chat')}
+                                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                                    style={{ background: 'rgba(239,68,68,0.10)', color: '#EF4444' }}
+                                >
+                                    <MessageSquareText size={12} />
+                                    {notasNoLeidas}
+                                </button>
+                            )}
+                            {ultimoCheckin && diasDesdeUltimoCheckin !== null && (
+                                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                                    <ClipboardCheck size={12} />
+                                    {diasDesdeUltimoCheckin === 0 ? 'Hoy' : `${diasDesdeUltimoCheckin}d`}
+                                </span>
+                            )}
                         </div>
                     </div>
-
-                    {/* Check-in badge */}
-                    {ultimoCheckin && diasDesdeUltimoCheckin !== null && (
-                        <div className="mt-3">
-                            <div
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
-                                style={{
-                                    background: diasDesdeUltimoCheckin <= 2 ? 'rgba(34,197,94,0.15)' : 'rgba(161,161,166,0.15)',
-                                    color: diasDesdeUltimoCheckin <= 2 ? '#4ADE80' : '#A1A1A6',
-                                }}
-                            >
-                                <ClipboardCheck size={12} />
-                                {diasDesdeUltimoCheckin === 0 ? 'Check-in completado hoy' :
-                                    diasDesdeUltimoCheckin === 1 ? 'Último check-in: ayer' :
-                                        `${diasDesdeUltimoCheckin}d sin check-in`}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
 
@@ -260,27 +346,12 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                             >
                                 <Icon size={14} />
                                 {label}
-                                {key === 'historial' && notasNoLeidas > 0 && (
-                                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                                )}
+                                {key === 'chat' && notasNoLeidas > 0 && <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />}
                             </button>
                         ))}
                     </div>
                 </div>
             </div>
-
-            {/* Banner racha */}
-            {racha >= 3 && (
-                <div className="max-w-2xl mx-auto px-4 pt-3 no-print">
-                    <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium"
-                        style={{ background: 'linear-gradient(135deg, #f97316 0%, #ef4444 100%)', color: 'white' }}>
-                        <Flame size={16} />
-                        {racha >= 7
-                            ? <span>¡Increíble! Llevas <strong>{racha} días</strong> de racha 🔥</span>
-                            : <span>¡Llevas <strong>{racha} días</strong> seguidos de check-in!</span>}
-                    </div>
-                </div>
-            )}
 
             {/* Banner onboarding pendiente */}
             {data.cliente?.onboarding_completado === false && (
@@ -295,50 +366,14 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                 </div>
             )}
 
-            {/* Bienvenida primer acceso */}
-            {mostrarBienvenida && data?.cliente && (
-                <div className="max-w-2xl mx-auto px-4 pt-4">
-                    <div className="rounded-2xl border p-5 mb-2" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                        <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-                            ¡Hola, {data.cliente.nombre?.split(' ')[0] ?? 'campeón'}! 👋
-                        </h2>
-                        <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>Tu plan personalizado está listo.</p>
-                        <ul className="space-y-2.5 mb-4 mt-3">
-                            {[
-                                { icon: '🍽️', titulo: 'Mi plan', desc: 'Tu dieta de hoy con ingredientes y recetas' },
-                                { icon: '💪', titulo: 'Carga', desc: 'Tu entrenamiento de la semana' },
-                                { icon: '📊', titulo: 'Check-in', desc: 'Reporta tu peso y estado cada semana' },
-                            ].map(item => (
-                                <li key={item.titulo} className="flex items-start gap-3">
-                                    <span className="text-lg leading-tight">{item.icon}</span>
-                                    <div>
-                                        <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{item.titulo}</span>
-                                        <span className="text-sm" style={{ color: 'var(--text-muted)' }}> — {item.desc}</span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                        <button onClick={cerrarBienvenida} className="w-full py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: 'var(--primary)' }}>
-                            Empezar →
-                        </button>
-                    </div>
-                </div>
-            )}
-
             {/* Contenido */}
-            <div className="max-w-2xl mx-auto p-4 space-y-4">
-                <MensajeCoach codigo={codigo} />
+            <div className="max-w-3xl mx-auto p-4 space-y-4">
 
                 {tab === 'plan' && (
                     <MiPlan
                         codigo={codigo}
                         plan={data.plan}
-                        entreno={data.entreno}
-                        registros_comidas={(data as any).registros_comidas}
-                        onMarcarSesionHecha={(nombre) => {
-                            setSesionPendiente(nombre)
-                            setMostrarRegistrarEntreno(true)
-                        }}
+                        registros_comidas={data.registros_comidas}
                     />
                 )}
 
@@ -351,15 +386,30 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                 )}
 
                 {tab === 'entreno' && (
-                    <TLSGauge
-                        key={tlsKey}
+                    <EntrenoCliente
+                        entreno={data.entreno}
                         codigo={codigo}
+                        tlsKey={tlsKey}
                         onRegistrar={() => setMostrarRegistrarEntreno(true)}
+                        onSesion={(nombre) => {
+                            setSesionPendiente(nombre)
+                            setMostrarRegistrarEntreno(true)
+                        }}
                     />
                 )}
 
-                {tab === 'historial' && (
-                    <HistorialCheckins codigo={codigo} />
+                {tab === 'compra' && (
+                    <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                        <div className="mb-4">
+                            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Lista de la compra</p>
+                            <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Semana actual</h2>
+                        </div>
+                        <ListaCompraPortal codigo={codigo} />
+                    </section>
+                )}
+
+                {tab === 'recetas' && (
+                    <RecetarioCliente plan={data.plan} codigo={codigo} />
                 )}
 
                 {tab === 'progreso' && (
@@ -370,7 +420,6 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                             pesoInicial={data.cliente?.peso_inicial}
                             objetivo={data.cliente?.objetivo}
                         />
-                        <MicronutrientesPortal codigo={codigo} />
                     </div>
                 )}
 

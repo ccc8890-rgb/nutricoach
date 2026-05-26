@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 
 const DIAS_SHORT = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -43,6 +44,7 @@ interface Comida {
 interface PlanSemanalProps {
     comidas: Comida[]
     clienteId?: string
+    codigo?: string
     targets?: {
         kcal?: number | null
         proteinas?: number | null
@@ -71,7 +73,7 @@ function normalizarDiaNutricion(dia: string | null | undefined): number {
     return idx >= 0 ? idx : 0
 }
 
-export default function PlanSemanal({ comidas, targets }: PlanSemanalProps) {
+export default function PlanSemanal({ comidas, targets, codigo }: PlanSemanalProps) {
     const [diaSeleccionado, setDiaSeleccionado] = useState(0)
     const comidasDia = comidas
         .filter(comida => normalizarDiaNutricion(comida.dia_semana) === diaSeleccionado)
@@ -184,6 +186,15 @@ export default function PlanSemanal({ comidas, targets }: PlanSemanalProps) {
                                                 {receta.tiempo_prep_min ? ` · ${receta.tiempo_prep_min} min` : ''}
                                             </p>
                                         </div>
+                                        {codigo && (
+                                            <Link
+                                                href={`/recetas/${receta.id}?returnTo=/cliente/${codigo}`}
+                                                className="shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold"
+                                                style={{ background: 'var(--primary-bg)', color: 'var(--primary)' }}
+                                            >
+                                                Ver
+                                            </Link>
+                                        )}
                                     </div>
                                 ) : (
                                     <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>

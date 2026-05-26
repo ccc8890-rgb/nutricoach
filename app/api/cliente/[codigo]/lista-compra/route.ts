@@ -22,10 +22,11 @@ export interface ItemListaCompra {
 }
 
 export async function GET(
-    _request: Request,
+    request: Request,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     const { codigo } = await params
+    const diaFiltro = new URL(request.url).searchParams.get('dia')
     const db = createServiceSupabase()
 
     const { data: plan } = await db
@@ -39,14 +40,18 @@ export async function GET(
 
     const { data: comidas } = await db
         .from('comidas')
-        .select('nombre, comida_alimentos(cantidad_gramos, alimento:alimentos(id, nombre, categoria, es_generico))')
+        .select('nombre, dia_semana, comida_alimentos(cantidad_gramos, alimento:alimentos(id, nombre, categoria, es_generico))')
         .eq('plan_id', plan.id)
 
-    if (!comidas?.length) return NextResponse.json({ items: [] })
+    const comidasFiltradas = diaFiltro
+        ? (comidas ?? []).filter(comida => comida.dia_semana === diaFiltro)
+        : (comidas ?? [])
+
+    if (!comidasFiltradas.length) return NextResponse.json({ items: [] })
 
     // Agregar cantidades por alimento
     const mapa = new Map<string, ItemListaCompra>()
-    for (const comida of comidas) {
+    for (const comida of comidasFiltradas) {
         const alimentos = comida.comida_alimentos as unknown as {
             cantidad_gramos: number
             alimento: { id: string; nombre: string; categoria: string; es_generico?: boolean } | null
@@ -57,16 +62,18 @@ export async function GET(
             if (mapa.has(id)) {
                 const existing = mapa.get(id)!
                 existing.cantidad_gramos += ca.cantidad_gramos
-                if (!existing.comidas_origen.includes(comida.nombre)) {
-                    existing.comidas_origen.push(comida.nombre)
+                const origen = comida.dia_semana ? `${comida.dia_semana} · ${comida.nombre}` : comida.nombre
+                if (!existing.comidas_origen.includes(origen)) {
+                    existing.comidas_origen.push(origen)
                 }
             } else {
+                const origen = comida.dia_semana ? `${comida.dia_semana} · ${comida.nombre}` : comida.nombre
                 mapa.set(id, {
                     alimento_id: id,
                     nombre,
                     categoria: categoria ?? 'Otros',
                     cantidad_gramos: ca.cantidad_gramos,
-                    comidas_origen: [comida.nombre],
+                    comidas_origen: [origen],
                 })
             }
         }
