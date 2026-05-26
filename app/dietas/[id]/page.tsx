@@ -213,6 +213,7 @@ export default function EditarDietaPage() {
   const [macroPct, setMacroPct] = useState({ proteinas: 30, carbohidratos: 40, grasas: 30 })
   const [alternativasPorComida, setAlternativasPorComida] = useState<Record<string, RecetaEquivalente[]>>({})
   const [cargandoAlternativas, setCargandoAlternativas] = useState<Record<string, boolean>>({})
+  const [alternativasStatus, setAlternativasStatus] = useState<Record<string, string>>({})
   const [recetaAplicando, setRecetaAplicando] = useState<string | null>(null)
   const [exploradorComida, setExploradorComida] = useState<string | null>(null)
   const [queryAlternativas, setQueryAlternativas] = useState('')
@@ -645,6 +646,7 @@ export default function EditarDietaPage() {
 
   async function cargarAlternativasComida(comida: ComidaLocal, macros: Macros) {
     setCargandoAlternativas(prev => ({ ...prev, [comida.id]: true }))
+    setAlternativasStatus(prev => ({ ...prev, [comida.id]: '' }))
     try {
       const existentesParams = new URLSearchParams({
         comida_id: comida.id,
@@ -671,13 +673,17 @@ export default function EditarDietaPage() {
         ...prev,
         [comida.id]: next,
       }))
-      addToast({
-        type: next.length ? 'success' : 'info',
-        title: next.length ? 'Sugerencias cargadas' : 'Sin equivalentes claros',
-        message: next.length ? `${next.length} recetas compatibles para ${comida.nombre}` : 'Prueba con el explorador o cambia filtros de la comida.',
-      })
+      setAlternativasStatus(prev => ({
+        ...prev,
+        [comida.id]: next.length
+          ? `${next.length} sugerencias compatibles cargadas`
+          : 'Sin equivalentes claros. Prueba con Explorar más.',
+      }))
     } catch (error) {
-      addToast({ type: 'error', title: 'No se pudo sugerir', message: error instanceof Error ? error.message : 'Error cargando sugerencias' })
+      setAlternativasStatus(prev => ({
+        ...prev,
+        [comida.id]: error instanceof Error ? error.message : 'Error cargando sugerencias',
+      }))
     } finally {
       setCargandoAlternativas(prev => ({ ...prev, [comida.id]: false }))
     }
@@ -712,8 +718,20 @@ export default function EditarDietaPage() {
         ...(tipo ? { tipo_plato: tipo } : {}),
       })
       const res = await fetch(`/api/recetas/sugeridas?${params}`)
+      if (!res.ok) throw new Error('No se pudieron explorar recetas')
       const data = await res.json() as { recetas?: RecetaEquivalente[] }
-      setResultadosAlternativas((data.recetas ?? []).filter(r => r.id !== comida.receta_id))
+      const next = (data.recetas ?? []).filter(r => r.id !== comida.receta_id)
+      setResultadosAlternativas(next)
+      setAlternativasStatus(prev => ({
+        ...prev,
+        [comida.id]: next.length ? `${next.length} recetas encontradas en el explorador` : 'No hay resultados con ese filtro.',
+      }))
+    } catch (error) {
+      setResultadosAlternativas([])
+      setAlternativasStatus(prev => ({
+        ...prev,
+        [comida.id]: error instanceof Error ? error.message : 'Error buscando recetas',
+      }))
     } finally {
       setBuscandoAlternativas(false)
     }
@@ -758,16 +776,6 @@ export default function EditarDietaPage() {
     const macros = sumarMacros(comidasDelDia.map(c => calcMacrosComida(c.alimentos)))
     return { dia, comidas: comidasDelDia, macros }
   })
-  const diasConComidas = resumenSemana.filter(d => d.comidas.length > 0).length
-  const promedioSemana = diasConComidas > 0
-    ? resumenSemana.reduce((acc, d) => ({
-      calorias: acc.calorias + d.macros.calorias / diasConComidas,
-      proteinas: acc.proteinas + d.macros.proteinas / diasConComidas,
-      carbohidratos: acc.carbohidratos + d.macros.carbohidratos / diasConComidas,
-      grasas: acc.grasas + d.macros.grasas / diasConComidas,
-      fibra: acc.fibra + d.macros.fibra / diasConComidas,
-    }), { calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0, fibra: 0 })
-    : { calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0, fibra: 0 }
   const microsTotales = calcMicrosTotales()
   const tieneMicrosDieta = Object.values(microsTotales).some(v => v > 0)
 
@@ -779,15 +787,6 @@ export default function EditarDietaPage() {
     grasas: totalDiaBase.grasas * porcionesVis,
     fibra: totalDiaBase.fibra * porcionesVis,
   }
-
-  useEffect(() => {
-    if (!plan || comidas.length === 0) return
-    for (const comida of comidasDia) {
-      if (alternativasPorComida[comida.id] || cargandoAlternativas[comida.id]) continue
-      cargarAlternativasComida(comida, calcMacrosComida(comida.alimentos))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plan?.id, diaActivo, comidasDia.length])
 
   const macroObjetivos = {
     calorias: plan?.kcal_objetivo ?? 0,
@@ -985,29 +984,12 @@ export default function EditarDietaPage() {
             <MacroDial label="Carbos" value={totalDia.carbohidratos} target={macroObjetivos.carbohidratos} color="#FF9500" icon={Wheat} unit="g" />
             <MacroDial label="Grasas" value={totalDia.grasas} target={macroObjetivos.grasas} color="#0A84FF" icon={Droplets} unit="g" />
           </div>
-          <div className="mt-4 rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-            <div className="flex items-center justify-between text-xs mb-2">
-              <span style={{ color: 'var(--text-muted)' }}>Distribución calórica de macronutrientes aplicada</span>
-              <span className="tabular-nums font-semibold" style={{ color: 'var(--text)' }}>{totalDia.calorias.toFixed(0)} kcal</span>
-            </div>
-            <div className="flex rounded-full overflow-hidden h-2" style={{ background: 'var(--border)' }}>
-              <div style={{ width: `${Math.min((totalDia.proteinas * 4 / Math.max(totalDia.calorias, 1)) * 100, 100)}%`, background: '#FF3B30' }} />
-              <div style={{ width: `${Math.min((totalDia.carbohidratos * 4 / Math.max(totalDia.calorias, 1)) * 100, 100)}%`, background: '#FF9500' }} />
-              <div style={{ width: `${Math.min((totalDia.grasas * 9 / Math.max(totalDia.calorias, 1)) * 100, 100)}%`, background: '#0A84FF' }} />
-            </div>
-            <div className="mt-2 flex flex-wrap gap-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-              <span>P {Math.round((totalDia.proteinas * 4 / Math.max(totalDia.calorias, 1)) * 100)}%</span>
-              <span>C {Math.round((totalDia.carbohidratos * 4 / Math.max(totalDia.calorias, 1)) * 100)}%</span>
-              <span>G {Math.round((totalDia.grasas * 9 / Math.max(totalDia.calorias, 1)) * 100)}%</span>
-            </div>
-          </div>
-
           <div className="mt-4 rounded-2xl p-3 sm:p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-3">
               <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ajuste manual de macros por porcentaje</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Distribución de macros objetivo</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  La IA propone la base; el coach puede ajustar proteína, carbohidratos y grasa sin tocar el timing de comidas.
+                  La franja es editable: mueve los porcentajes y guarda si quieres recalcular los gramos objetivo del plan.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -1038,6 +1020,23 @@ export default function EditarDietaPage() {
                 </button>
               </div>
             </div>
+            <div className="mb-3">
+              <div className="flex rounded-full overflow-hidden h-2.5" style={{ background: 'var(--border)' }}>
+                <div style={{ width: `${Math.max(macroPct.proteinas, 0)}%`, background: '#FF3B30' }} />
+                <div style={{ width: `${Math.max(macroPct.carbohidratos, 0)}%`, background: '#FF9500' }} />
+                <div style={{ width: `${Math.max(macroPct.grasas, 0)}%`, background: '#0A84FF' }} />
+              </div>
+              <div className="mt-2 flex flex-wrap gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                <span>Objetivo P {macroPct.proteinas}%</span>
+                <span>C {macroPct.carbohidratos}%</span>
+                <span>G {macroPct.grasas}%</span>
+                <span>
+                  Aplicado hoy P {Math.round((totalDia.proteinas * 4 / Math.max(totalDia.calorias, 1)) * 100)}%
+                  · C {Math.round((totalDia.carbohidratos * 4 / Math.max(totalDia.calorias, 1)) * 100)}%
+                  · G {Math.round((totalDia.grasas * 9 / Math.max(totalDia.calorias, 1)) * 100)}%
+                </span>
+              </div>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
               {[
                 { key: 'proteinas' as const, label: 'Proteína', color: '#FF3B30', kcalPerGram: 4 as const },
@@ -1066,73 +1065,45 @@ export default function EditarDietaPage() {
           </div>
         </section>
 
-        {/* Vista semanal */}
-        <section className="rounded-3xl p-4 sm:p-5 mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Mapa semanal</p>
-              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Resumen de construcción por días</h2>
-            </div>
-            <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full w-fit" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
-              <CalendarDays size={13} />
-              Media días creados: {Math.round(promedioSemana.calorias)} kcal
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-            {auditoriaSemana.map(({ dia, comidas: comidasDelDia, macros, score, criticos, avisos }) => {
-              const activo = dia === diaActivo
-              const pct = macroObjetivos.calorias ? Math.round((macros.calorias / macroObjetivos.calorias) * 100) : 0
-              const status = criticos > 0 ? 'critico' : avisos > 0 ? 'aviso' : 'ok'
-              const tone = auditTone(status)
-              return (
-                <button
-                  key={dia}
-                  type="button"
-                  onClick={() => setDiaActivo(dia)}
-                  className="text-left rounded-2xl p-3 border transition-all active:scale-[0.98]"
-                  style={{
-                    borderColor: activo ? 'var(--primary)' : 'var(--border)',
-                    background: activo ? 'var(--primary-bg)' : 'var(--bg)',
-                    boxShadow: activo ? '0 12px 28px -18px var(--primary)' : 'none',
-                  }}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold" style={{ color: activo ? 'var(--primary)' : 'var(--text)' }}>{DIA_ABR[dia]}</span>
-                    <span className="text-[10px] tabular-nums rounded-full px-1.5 py-0.5" style={{ color: tone.text, background: tone.bg }}>{score}</span>
-                  </div>
-                  <p className="text-sm font-semibold mt-1 truncate" style={{ color: 'var(--text)' }}>{dia}</p>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {comidasDelDia.length ? `${comidasDelDia.length} comidas · ${Math.round(macros.calorias)} kcal` : 'vacío'}
-                  </p>
-                  <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${Math.min(Math.max(pct, 0), 120)}%`, background: tone.text }} />
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              Trabajando {diaActivo}. Puedes copiar este día a otro y después cambiar platos concretos.
+        {/* Panel micronutrientes */}
+        {tieneMicrosDieta && (
+          <div className="card mb-4 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+              Micronutrientes del plan · % IDR
             </p>
-            <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
-              {DIAS_SEMANA.filter(dia => dia !== diaActivo).map(dia => (
-                <button
-                  key={dia}
-                  type="button"
-                  onClick={() => copiarDiaADestino(dia)}
-                  disabled={copiandoDia !== null || comidasDia.length === 0}
-                  className="text-xs font-semibold rounded-full px-3 py-1.5 border whitespace-nowrap disabled:opacity-50"
-                  style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}
-                >
-                  {copiandoDia === dia ? 'Copiando…' : `Copiar a ${dia}`}
-                </button>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+              {Object.entries(IDR).map(([key, { label, idr, unit, color }]) => {
+                const val = microsTotales[key]
+                if (!val || val === 0) return null
+                const pct = Math.min((val / idr) * 100, 150)
+                const pctDisplay = Math.round((val / idr) * 100)
+                const barColor = pctDisplay >= 80 ? '#22C55E' : pctDisplay >= 50 ? '#F97316' : '#EF4444'
+                return (
+                  <div key={key}>
+                    <div className="flex items-center justify-between text-xs mb-0.5">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                        <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                      </span>
+                      <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                        {val.toFixed(1)}{unit} <span className="font-semibold" style={{ color: barColor }}>{pctDisplay}%</span>
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
+            <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
+              IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
+            </p>
           </div>
-        </section>
+        )}
 
         {/* Auditoría semanal */}
         <section className="rounded-3xl p-4 sm:p-5 mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -1231,46 +1202,6 @@ export default function EditarDietaPage() {
           </div>
         </section>
 
-        {/* Panel micronutrientes */}
-        {tieneMicrosDieta && (
-          <div className="card mb-4 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
-              Micronutrientes del plan · % IDR
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-              {Object.entries(IDR).map(([key, { label, idr, unit, color }]) => {
-                const val = microsTotales[key]
-                if (!val || val === 0) return null
-                const pct = Math.min((val / idr) * 100, 150)
-                const pctDisplay = Math.round((val / idr) * 100)
-                const barColor = pctDisplay >= 80 ? '#22C55E' : pctDisplay >= 50 ? '#F97316' : '#EF4444'
-                return (
-                  <div key={key}>
-                    <div className="flex items-center justify-between text-xs mb-0.5">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                        <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                      </span>
-                      <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>
-                        {val.toFixed(1)}{unit} <span className="font-semibold" style={{ color: barColor }}>{pctDisplay}%</span>
-                      </span>
-                    </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
-              IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
-            </p>
-          </div>
-        )}
-
         <section className="rounded-3xl p-4 sm:p-5 mb-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
             <div>
@@ -1308,6 +1239,25 @@ export default function EditarDietaPage() {
                 </button>
               )
             })}
+          </div>
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              Trabajando {diaActivo}. Copia este día a otro si quieres usarlo como base y ajustar platos concretos.
+            </p>
+            <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
+              {DIAS_SEMANA.filter(dia => dia !== diaActivo).map(dia => (
+                <button
+                  key={dia}
+                  type="button"
+                  onClick={() => copiarDiaADestino(dia)}
+                  disabled={copiandoDia !== null || comidasDia.length === 0}
+                  className="text-xs font-semibold rounded-full px-3 py-1.5 border whitespace-nowrap disabled:opacity-50"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}
+                >
+                  {copiandoDia === dia ? 'Copiando...' : `Copiar a ${dia}`}
+                </button>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -1460,9 +1410,11 @@ export default function EditarDietaPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              setExploradorComida(exploradorComida === comida.id ? null : comida.id)
+                              const abrir = exploradorComida !== comida.id
+                              setExploradorComida(abrir ? comida.id : null)
                               setQueryAlternativas('')
                               setResultadosAlternativas([])
+                              if (abrir) buscarMasAlternativas(comida, macrosComida, '')
                             }}
                             className="text-xs font-semibold"
                             style={{ color: 'var(--primary)' }}
@@ -1481,17 +1433,24 @@ export default function EditarDietaPage() {
                           </button>
                         </div>
                       </div>
+                      {alternativasStatus[comida.id] && (
+                        <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>
+                          {alternativasStatus[comida.id]}
+                        </p>
+                      )}
                       {alternativas.length > 0 ? (
                         <div className="flex gap-2 overflow-x-auto pb-1">
-                          {alternativas.map(r => (
-                            <div
-                              key={r.id}
-                              className="min-w-[190px] max-w-[220px] text-left rounded-xl border p-2.5 transition-colors"
-                              style={{
-                                borderColor: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--border)',
-                                background: opcionesCliente.includes(r.id) ? 'var(--primary-bg)' : 'var(--surface)',
-                              }}
-                            >
+                          {alternativas.map(r => {
+                            const aplicandoEstaReceta = recetaAplicando === r.id
+                            return (
+                              <div
+                                key={r.id}
+                                className="min-w-[190px] max-w-[220px] text-left rounded-xl border p-2.5 transition-colors"
+                                style={{
+                                  borderColor: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--border)',
+                                  background: opcionesCliente.includes(r.id) ? 'var(--primary-bg)' : 'var(--surface)',
+                                }}
+                              >
                               <div className="flex items-center gap-2">
                                 <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--bg)' }}>
                                   {r.imagen_url ? <img src={r.imagen_url} alt={r.nombre} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><BookOpen size={14} /></div>}
@@ -1525,26 +1484,29 @@ export default function EditarDietaPage() {
                                   </Link>
                                   <span
                                     role="button"
-                                    tabIndex={0}
+                                    tabIndex={aplicandoEstaReceta ? -1 : 0}
                                     onClick={e => {
                                       e.stopPropagation()
+                                      if (aplicandoEstaReceta) return
                                       aplicarRecetaAComida(comida.id, r.id, r.nombre)
                                     }}
                                     onKeyDown={e => {
                                       if (e.key === 'Enter' || e.key === ' ') {
                                         e.stopPropagation()
+                                        if (aplicandoEstaReceta) return
                                         aplicarRecetaAComida(comida.id, r.id, r.nombre)
                                       }
                                     }}
                                     className="text-[10px] font-semibold underline"
-                                    style={{ color: 'var(--text-secondary)' }}
+                                    style={{ color: aplicandoEstaReceta ? 'var(--text-muted)' : 'var(--text-secondary)', pointerEvents: aplicandoEstaReceta ? 'none' : 'auto' }}
                                   >
-                                    principal
+                                    {aplicandoEstaReceta ? 'aplicando' : 'principal'}
                                   </span>
                                 </div>
                               </div>
                             </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       ) : (
                         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>

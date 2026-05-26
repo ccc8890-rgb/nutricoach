@@ -15,6 +15,8 @@ export interface CosteSemanal {
   cobertura_pct: number
   ingredientes: CosteIngrediente[]
   sin_precio: string[]
+  multiplicador_semana?: number
+  dias_construidos?: number
 }
 
 export async function GET(
@@ -44,7 +46,7 @@ export async function GET(
   // 2. Comidas del plan
   const { data: comidas } = await db
     .from('comidas')
-    .select('id')
+    .select('id, dia_semana')
     .eq('plan_id', plan.id)
 
   if (!comidas?.length) return NextResponse.json({ coste_total: 0, cobertura_pct: 0, ingredientes: [], sin_precio: [] })
@@ -59,7 +61,11 @@ export async function GET(
 
   if (!items?.length) return NextResponse.json({ coste_total: 0, cobertura_pct: 0, ingredientes: [], sin_precio: [] })
 
-  // 4. Agregar cantidades por alimento_id (diario → semanal ×7)
+  const diasConstruidos = new Set((comidas ?? []).map(c => c.dia_semana).filter(Boolean))
+  const multiplicadorSemana = diasConstruidos.size > 1 ? 1 : 7
+
+  // 4. Agregar cantidades por alimento_id. Si el plan ya tiene varios días construidos,
+  // las cantidades ya son semanales; solo multiplicamos x7 en planes legacy de un día.
   const agg = new Map<string, { nombre: string; gramos: number }>()
   for (const item of items) {
     const alimento = Array.isArray(item.alimento) ? item.alimento[0] : item.alimento
@@ -80,20 +86,20 @@ export async function GET(
     .in('alimento_id', alimentoIds)
 
   const precioMap = new Map<string, { precio_kg: number; supermercado: string }>()
-  for (const p of (precios ?? [])) {
+  for (const p of [...(precios ?? [])].sort((a, b) => a.precio_por_kg - b.precio_por_kg)) {
     if (!precioMap.has(p.alimento_id) && p.precio_por_kg > 0) {
       precioMap.set(p.alimento_id, { precio_kg: p.precio_por_kg, supermercado: p.supermercado_nombre })
     }
   }
 
-  // 6. Calcular coste semanal (×7 días)
+  // 6. Calcular coste semanal
   const ingredientes: CosteIngrediente[] = []
   const sin_precio: string[] = []
   let coste_total = 0
   let con_precio = 0
 
   for (const [alimento_id, { nombre, gramos }] of agg.entries()) {
-    const gramos_semana = gramos * 7
+    const gramos_semana = gramos * multiplicadorSemana
     const precio = precioMap.get(alimento_id)
     if (precio) {
       const coste = (gramos_semana / 1000) * precio.precio_kg
@@ -115,5 +121,7 @@ export async function GET(
     cobertura_pct,
     ingredientes,
     sin_precio,
+    multiplicador_semana: multiplicadorSemana,
+    dias_construidos: diasConstruidos.size,
   } satisfies CosteSemanal)
 }
