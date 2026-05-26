@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { esIngredienteBasicoNoCompra } from '@/lib/lista-compra/filtros'
 import { escapeHtml } from '@/lib/html/escape'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros } from '@/types'
@@ -111,6 +112,7 @@ export async function GET(
         if (listaData) {
             const vistos = new Set<string>()
             for (const item of listaData as ItemListaVista[]) {
+                if (esIngredienteBasicoNoCompra(item.alimento_nombre)) continue
                 if (!vistos.has(item.alimento_nombre)) {
                     vistos.add(item.alimento_nombre)
                     listaCompra.push({

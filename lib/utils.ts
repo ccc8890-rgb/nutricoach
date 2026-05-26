@@ -1,4 +1,5 @@
 import type { Macros, ComidaAlimento } from '@/types'
+import { esIngredienteBasicoNoCompra } from '@/lib/lista-compra/filtros'
 
 export function calcularMacrosPorCantidad(
   calorias100g: number,
@@ -157,6 +158,7 @@ export function generarListaCompra(
     for (const ca of comida.alimentos ?? []) {
       if (!ca.alimento?.nombre) continue
       const a = ca.alimento
+      if (esIngredienteBasicoNoCompra(a.nombre)) continue
       const id: string = a.id ?? a.nombre!
       const gramos = ca.cantidad_gramos ?? 0
 

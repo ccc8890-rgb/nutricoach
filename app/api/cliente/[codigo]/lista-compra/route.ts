@@ -10,6 +10,7 @@ import {
     convertirGramosACompra,
     sugerirSustitutosEconomicos,
 } from '@/lib/lista-compra/inteligente'
+import { esIngredienteBasicoNoCompra, normalizarNombreCompra } from '@/lib/lista-compra/filtros'
 import type { IngredienteSemanal, PrecioOpcion } from '@/types'
 
 export interface ItemListaCompra {
@@ -23,13 +24,7 @@ export interface ItemListaCompra {
 }
 
 function normalizarCompra(value: string | null | undefined) {
-    return String(value ?? '')
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
+    return normalizarNombreCompra(value)
 }
 
 function esNoComestibleLista(nombre: string, categoria: string) {
@@ -92,6 +87,7 @@ export async function GET(
         for (const ca of alimentos ?? []) {
             if (!ca.alimento) continue
             const { id, nombre, categoria } = ca.alimento
+            if (esIngredienteBasicoNoCompra(nombre)) continue
             if (esNoComestibleLista(nombre, categoria ?? '')) continue
 
             const canonical = canonicalItem({ id, nombre, categoria })

@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { esIngredienteBasicoNoCompra } from '@/lib/lista-compra/filtros'
 import type { IngredienteSemanal, PrecioOpcion, ResumenSupermercado } from '@/types'
 
 function getLunesActual(): string {
@@ -81,6 +82,7 @@ export async function GET(request: NextRequest) {
             for (const ca of (comida.comida_alimentos || []) as any[]) {
                 const a = ca.alimentos
                 if (!a) continue
+                if (esIngredienteBasicoNoCompra(a.nombre)) continue
                 const existing = mapaAlimentos.get(a.id)
                 if (existing) {
                     existing.cantidad_gramos_total += ca.cantidad_gramos || 0
