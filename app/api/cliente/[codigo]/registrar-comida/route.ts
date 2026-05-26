@@ -8,7 +8,13 @@ export async function POST(
   try {
     const supabase = createServiceSupabase()
     const { codigo } = await params
-    const { comida_id, estado, notas, fecha } = await request.json()
+    let body: { comida_id?: string; estado?: string; notas?: string | null; fecha?: string }
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Body inválido' }, { status: 400 })
+    }
+    const { comida_id, estado, notas, fecha } = body
 
     if (!comida_id || !estado) {
       return NextResponse.json({ error: 'comida_id y estado son requeridos' }, { status: 400 })
