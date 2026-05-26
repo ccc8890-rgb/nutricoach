@@ -10,6 +10,8 @@ import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import PlanSemanal from './PlanSemanal'
 
+type EstadoComida = RegistroComidaDia['estado']
+
 interface AlimentoEnComida {
     id: string
     alimento_id?: string
@@ -191,7 +193,7 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
         }
     }, [registros_comidas])
 
-    async function handleRegistrar(comidaId: string, estado: 'hecha' | 'cambiada' | 'saltada', notas?: string) {
+    async function handleRegistrar(comidaId: string, estado: EstadoComida, notas?: string) {
         setRegistrando(comidaId)
         const fecha = fechaParaDiaSemana(diaActivo)
         const key = `${comidaId}:${fecha}`
@@ -210,6 +212,32 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
             addToast({ type: 'success', title, message: '' })
         } catch {
             addToast({ type: 'error', title: 'Error', message: 'No se pudo registrar la comida' })
+        } finally {
+            setRegistrando(null)
+            setAnotandoCambio(null)
+            setTextoCambio('')
+        }
+    }
+
+    async function handleDeshacerRegistro(comidaId: string) {
+        setRegistrando(comidaId)
+        const fecha = fechaParaDiaSemana(diaActivo)
+        const key = `${comidaId}:${fecha}`
+        try {
+            const res = await fetch(`/api/cliente/${codigo}/registrar-comida`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ comida_id: comidaId, fecha }),
+            })
+            if (!res.ok) throw new Error('Error al deshacer')
+            setRegistros(prev => {
+                const next = { ...prev }
+                delete next[key]
+                return next
+            })
+            addToast({ type: 'success', title: 'Estado borrado', message: '' })
+        } catch {
+            addToast({ type: 'error', title: 'Error', message: 'No se pudo deshacer el registro' })
         } finally {
             setRegistrando(null)
             setAnotandoCambio(null)
@@ -474,55 +502,58 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                 </div>
                             )}
 
-                            {/* S3 — Botones Hecho / Anotar cambio */}
-                            {!yaHecho && !tieneCambio && !saltada && !anotandoCambio && (
-                                <div className="px-5 pb-3 pt-0 flex gap-2 no-print">
-                                    <button
-                                        type="button"
-                                        disabled={registrando === comida.id}
-                                        onClick={(e) => { e.stopPropagation(); handleRegistrar(comida.id, 'hecha') }}
-                                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
-                                        style={{ background: '#DCFCE7', color: '#16A34A' }}
-                                    >
-                                        {registrando === comida.id ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                                        Hecho
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => { e.stopPropagation(); setAnotandoCambio(comida.id); setTextoCambio(registro?.notas ?? '') }}
-                                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
-                                        style={{ background: '#FEF3C7', color: '#D97706' }}
-                                    >
-                                        <PencilLine size={14} />
-                                        Anotar cambio
-                                    </button>
-                                    <button
-                                        type="button"
-                                        disabled={registrando === comida.id}
-                                        onClick={(e) => { e.stopPropagation(); handleRegistrar(comida.id, 'saltada') }}
-                                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
-                                        style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
-                                    >
-                                        No hecha
-                                    </button>
+                            <div className="px-5 pb-3 pt-0 no-print">
+                                <div className="grid grid-cols-3 gap-1.5 rounded-2xl border p-1" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                                    {([
+                                        { key: 'hecha' as const, label: 'Hecha', color: '#16A34A', bg: '#DCFCE7' },
+                                        { key: 'cambiada' as const, label: 'Cambio', color: '#D97706', bg: '#FEF3C7' },
+                                        { key: 'saltada' as const, label: 'No hecha', color: 'var(--text-muted)', bg: 'var(--surface)' },
+                                    ]).map(option => {
+                                        const active = registro?.estado === option.key
+                                        return (
+                                            <button
+                                                key={option.key}
+                                                type="button"
+                                                disabled={registrando === comida.id}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    if (option.key === 'cambiada') {
+                                                        setAnotandoCambio(comida.id)
+                                                        setTextoCambio(registro?.estado === 'cambiada' ? registro.notas ?? '' : '')
+                                                        return
+                                                    }
+                                                    handleRegistrar(comida.id, option.key)
+                                                }}
+                                                className="min-h-10 rounded-xl text-xs font-semibold transition-all active:scale-[0.98]"
+                                                style={{
+                                                    background: active ? option.bg : 'transparent',
+                                                    color: active ? option.color : 'var(--text-muted)',
+                                                    boxShadow: active ? 'inset 0 0 0 1px color-mix(in srgb, currentColor 20%, transparent)' : 'none',
+                                                }}
+                                            >
+                                                {registrando === comida.id && active ? <Loader2 size={13} className="mx-auto animate-spin" /> : option.label}
+                                            </button>
+                                        )
+                                    })}
                                 </div>
-                            )}
 
-                            {(yaHecho || tieneCambio || saltada) && !anotandoCambio && (
-                                <div className="px-5 pb-3 pt-0 flex items-center justify-between gap-2 no-print">
-                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                        {yaHecho ? 'Registrada como hecha.' : saltada ? 'Marcada como no hecha.' : `Cambio: ${tieneCambio}`}
-                                    </p>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => { e.stopPropagation(); setAnotandoCambio(comida.id); setTextoCambio(registro?.notas ?? '') }}
-                                        className="text-xs font-semibold rounded-lg px-3 py-1.5"
-                                        style={{ color: 'var(--primary)', background: 'var(--primary-bg)' }}
-                                    >
-                                        Cambiar estado
-                                    </button>
-                                </div>
-                            )}
+                                {(yaHecho || tieneCambio || saltada) && !anotandoCambio && (
+                                    <div className="mt-2 flex items-center justify-between gap-2">
+                                        <p className="min-w-0 truncate text-xs" style={{ color: 'var(--text-muted)' }}>
+                                            {yaHecho ? 'Marcada como hecha' : saltada ? 'Marcada como no hecha' : `Cambio: ${tieneCambio}`}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            disabled={registrando === comida.id}
+                                            onClick={(e) => { e.stopPropagation(); handleDeshacerRegistro(comida.id) }}
+                                            className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all active:scale-[0.98]"
+                                            style={{ color: 'var(--text-muted)', background: 'var(--surface)', border: '1px solid var(--border)' }}
+                                        >
+                                            Deshacer
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Input para anotar cambio */}
                             {anotandoCambio === comida.id && (
@@ -531,17 +562,17 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                         type="text"
                                         value={textoCambio}
                                         onChange={e => setTextoCambio(e.target.value)}
-                                        placeholder="¿Qué has comido en lugar de esto?"
+                                        placeholder="¿Qué has comido en lugar de esto? Opcionalmente añade detalle"
                                         className="input text-sm py-2"
                                         autoFocus
                                     />
                                     <div className="flex gap-2">
                                         <button
                                             type="button"
-                                            disabled={registrando === comida.id || !textoCambio.trim()}
-                                            onClick={() => handleRegistrar(comida.id, 'cambiada', textoCambio.trim())}
+                                            disabled={registrando === comida.id}
+                                            onClick={() => handleRegistrar(comida.id, 'cambiada', textoCambio.trim() || undefined)}
                                             className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-all"
-                                            style={{ background: '#FEF3C7', color: '#D97706', opacity: !textoCambio.trim() ? 0.5 : 1 }}
+                                            style={{ background: '#FEF3C7', color: '#D97706' }}
                                         >
                                             {registrando === comida.id ? <Loader2 size={13} className="animate-spin" /> : <PencilLine size={14} />}
                                             Guardar cambio
@@ -549,11 +580,11 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                         <button
                                             type="button"
                                             disabled={registrando === comida.id}
-                                            onClick={() => handleRegistrar(comida.id, 'hecha')}
+                                            onClick={() => handleDeshacerRegistro(comida.id)}
                                             className="px-3 text-xs font-medium rounded-lg transition-all"
-                                            style={{ background: '#DCFCE7', color: '#16A34A' }}
+                                            style={{ color: 'var(--text-muted)', border: '1px solid var(--border)' }}
                                         >
-                                            Hecha
+                                            Deshacer
                                         </button>
                                         <button
                                             type="button"
