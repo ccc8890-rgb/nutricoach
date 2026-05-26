@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
 import {
   AlertCircle,
   Check,
@@ -58,14 +57,6 @@ function coveragePercent(value: number, total: number) {
 }
 
 export default function EjerciciosMediaPage() {
-  const supabase = useMemo(
-    () => createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    ),
-    []
-  )
-
   const [ejercicios, setEjercicios] = useState<Ejercicio[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
@@ -81,24 +72,21 @@ export default function EjerciciosMediaPage() {
     setLoading(true)
     setError(null)
 
-    let q = supabase
-      .from('ejercicios')
-      .select('id, nombre, grupo_muscular, tipo, descripcion, foto_url, video_url, video_tipo, dificultad_nivel, equipamiento, musculos_secundarios')
-      .order('nombre')
-      .limit(120)
+    const params = new URLSearchParams()
+    if (query.trim()) params.set('query', query.trim())
+    if (grupo) params.set('grupo', grupo)
 
-    if (query.trim()) q = q.ilike('nombre', `%${query.trim()}%`)
-    if (grupo) q = q.eq('grupo_muscular', grupo)
-
-    const { data, error: fetchError } = await q
-    if (fetchError) {
-      setError(fetchError.message)
+    const res = await fetch(`/api/ejercicios/media?${params.toString()}`)
+    if (!res.ok) {
+      const payload = await res.json().catch(() => null)
+      setError(payload?.error ?? 'No se pudo cargar la librería de ejercicios')
       setEjercicios([])
     } else {
-      setEjercicios(data ?? [])
+      const payload = await res.json()
+      setEjercicios(payload.ejercicios ?? [])
     }
     setLoading(false)
-  }, [grupo, query, supabase])
+  }, [grupo, query])
 
   useEffect(() => {
     loadEjercicios()
