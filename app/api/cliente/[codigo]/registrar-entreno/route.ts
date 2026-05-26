@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase-server'
+import { createServiceSupabase } from '@/lib/supabase-server'
 
 export async function POST(
     request: Request,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createServiceSupabase()
         const { codigo } = await params
         const body = await request.json().catch(() => ({}))
         const { tipo_actividad, duracion_min, rpe, notas, fecha } = body
@@ -59,7 +59,7 @@ export async function GET(
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     try {
-        const supabase = await createServerSupabase()
+        const supabase = createServiceSupabase()
         const { codigo } = await params
 
         const { data: plan } = await supabase

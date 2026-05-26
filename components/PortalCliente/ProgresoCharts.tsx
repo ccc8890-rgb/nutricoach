@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { TrendingDown, TrendingUp, Flame, Target, Activity, Moon, Zap, CalendarCheck } from 'lucide-react'
+import { TrendingDown, TrendingUp, Flame, Target, Activity, Zap, CalendarCheck } from 'lucide-react'
 
 interface CheckIn {
     id: string
@@ -206,7 +206,7 @@ function AdherenciaChart({ data }: { data: CheckIn[] }) {
                 <span>Últimos {BARS} registros</span>
                 <span className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Buena
-                    <span className="w-2 h-2 rounded-full" style={{ background: '#A1A1A6' }} inline-block /> Media
+                    <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#A1A1A6' }} /> Media
                     <span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> Baja
                 </span>
             </div>

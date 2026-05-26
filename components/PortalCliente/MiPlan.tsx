@@ -32,6 +32,7 @@ interface Comida {
     id: string
     nombre: string
     orden: number
+    dia_semana?: string | null
     hora_sugerida?: string
     receta_id?: string | null
     kcal_target?: number | null
@@ -62,6 +63,26 @@ interface PlanData {
     proteinas_objetivo?: number | null
     carbohidratos_objetivo?: number | null
     grasas_objetivo?: number | null
+}
+
+const DIAS_NUTRICION = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const
+const DIA_ABR: Record<string, string> = {
+    Lunes: 'L',
+    Martes: 'M',
+    Miércoles: 'X',
+    Jueves: 'J',
+    Viernes: 'V',
+    Sábado: 'S',
+    Domingo: 'D',
+}
+
+function diaActualEspana() {
+    const idx = new Date().getDay()
+    return DIAS_NUTRICION[idx === 0 ? 6 : idx - 1]
+}
+
+function diaComida(comida: Pick<Comida, 'dia_semana'>) {
+    return comida.dia_semana || DIAS_NUTRICION[0]
 }
 
 interface SesionEjercicio {
@@ -408,6 +429,7 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
     const [loadingRecetas, setLoadingRecetas] = useState<Record<string, boolean>>({})
     const [showRecetas, setShowRecetas] = useState<Record<string, boolean>>({})
     const [vistaActual, setVistaActual] = useState<'hoy' | 'semana'>('hoy')
+    const [diaActivo, setDiaActivo] = useState<string>(() => diaActualEspana())
     const [microsAbiertos, setMicrosAbiertos] = useState(false)
     const [listaAbierta, setListaAbierta] = useState(false)
     const [usandoReceta, setUsandoReceta] = useState<string | null>(null)
@@ -677,14 +699,19 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
     // Usar plan original (no planLocal) para PlanSemanal — evita re-ejecutar
     // el useEffect cada vez que el usuario hace swap en la vista Hoy
     const comidasParaSemana = useMemo(() => plan.comidas ?? [], [plan.comidas])
+    const comidasDia = useMemo(
+        () => (planLocal.comidas ?? []).filter(c => diaComida(c) === diaActivo).sort((a, b) => a.orden - b.orden),
+        [planLocal.comidas, diaActivo]
+    )
 
     const totalDia = sumarMacros(
-        (planLocal.comidas ?? []).map(c => calcMacrosComida(c.alimentos ?? []))
+        comidasDia.map(c => calcMacrosComida(c.alimentos ?? []))
     )
 
     // Progreso de adherencia del día
-    const totalComidas = planLocal.comidas?.length ?? 0
-    const comidasHechas = Object.values(registros).filter(r => r.estado === 'hecha' || r.estado === 'cambiada').length
+    const comidaIdsDia = new Set(comidasDia.map(c => c.id))
+    const totalComidas = comidasDia.length
+    const comidasHechas = Object.values(registros).filter(r => comidaIdsDia.has(r.comida_id) && (r.estado === 'hecha' || r.estado === 'cambiada')).length
     const pctAdherencia = totalComidas > 0 ? Math.round((comidasHechas / totalComidas) * 100) : 0
 
     const ringColor = pctAdherencia >= 80 ? '#22c55e' : pctAdherencia >= 50 ? '#f59e0b' : pctAdherencia > 0 ? '#0D9488' : 'var(--border)'
@@ -730,6 +757,30 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
             {/* Vista diaria */}
             {vistaActual === 'hoy' && (<>
 
+            <div className="grid grid-cols-7 gap-1.5">
+                {DIAS_NUTRICION.map(dia => {
+                    const activo = dia === diaActivo
+                    const totalDiaChip = (planLocal.comidas ?? []).filter(c => diaComida(c) === dia).length
+                    return (
+                        <button
+                            key={dia}
+                            type="button"
+                            onClick={() => setDiaActivo(dia)}
+                            className="rounded-2xl border py-2 text-center transition-colors"
+                            style={{
+                                borderColor: activo ? 'var(--primary)' : 'var(--border)',
+                                background: activo ? 'var(--primary-bg)' : 'var(--surface)',
+                                color: activo ? 'var(--primary)' : 'var(--text-muted)',
+                            }}
+                            aria-label={`Ver dieta de ${dia}`}
+                        >
+                            <span className="block text-xs font-bold">{DIA_ABR[dia]}</span>
+                            <span className="block text-[9px] tabular-nums mt-0.5">{totalDiaChip}</span>
+                        </button>
+                    )
+                })}
+            </div>
+
             {/* Resumen macros + adherencia del día */}
             <section className="rounded-3xl border p-4 sm:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <div className="flex items-start justify-between gap-3 mb-4">
@@ -738,12 +789,14 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
                             {saludo}
                         </p>
                         <h2 className="text-xl font-bold mt-1" style={{ color: 'var(--text)' }}>
-                            Dieta de hoy
+                            {diaActivo === diaActualEspana() ? 'Dieta de hoy' : `Dieta de ${diaActivo}`}
                         </h2>
                     </div>
                     <div className="text-right shrink-0">
                         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                            {new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })}
+                            {diaActivo === diaActualEspana()
+                                ? new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })
+                                : diaActivo}
                         </p>
                         <p className="text-xs font-semibold mt-1" style={{ color: ringColor }}>
                             {comidasHechas}/{totalComidas} comidas
@@ -828,7 +881,13 @@ export default function MiPlan({ codigo, plan, entreno, onMarcarSesionHecha, reg
 
             {/* Comidas */}
             <div className="space-y-3">
-                {(planLocal.comidas ?? []).map(comida => {
+                {comidasDia.length === 0 && (
+                    <div className="card p-6 text-center">
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>No hay comidas construidas para {diaActivo}</p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Revisa la vista semanal o pide a tu coach que complete este día.</p>
+                    </div>
+                )}
+                {comidasDia.map(comida => {
                     const alimentos = comida.alimentos ?? []
                     const macros = calcMacrosComida(alimentos)
                     const expanded = expandidas[comida.id]

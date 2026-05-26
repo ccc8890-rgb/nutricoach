@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
-import { Loader2, RefreshCw } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 
 const DIAS_SHORT = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -26,19 +25,19 @@ interface Comida {
     id: string
     nombre: string
     orden: number
+    dia_semana?: string | null
     hora_sugerida?: string
+    receta?: {
+        id: string
+        nombre: string
+        imagen_url: string | null
+        kcal: number
+        proteinas: number
+        carbohidratos: number
+        grasas: number
+        tiempo_prep_min: number | null
+    } | null
     alimentos?: AlimentoEnComida[]
-}
-
-interface RecetaSlot {
-    id: string
-    nombre: string
-    imagen_url: string | null
-    kcal: number
-    proteinas: number
-    carbohidratos: number
-    grasas: number
-    tiempo_prep_min: number | null
 }
 
 interface PlanSemanalProps {
@@ -65,119 +64,33 @@ function calcMacros(alimentos: AlimentoEnComida[]) {
     ))
 }
 
-function inferirTipoPlato(nombre: string): string | null {
-    const n = nombre.toLowerCase()
-    if (n.includes('desayuno')) return 'Desayuno'
-    if (n.includes('comida') || n.includes('mediodía') || n.includes('almuerzo principal')) return 'Comida'
-    if (n.includes('merienda') || n.includes('post') || n.includes('snack')) return 'Merienda'
-    if (n.includes('cena')) return 'Cena'
-    if (n.includes('almuerzo')) return 'Almuerzo'
-    return null
+function normalizarDiaNutricion(dia: string | null | undefined): number {
+    if (!dia) return 0
+    const d = dia.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    const idx = DIAS.map(x => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')).findIndex(k => d.includes(k))
+    return idx >= 0 ? idx : 0
 }
 
-export default function PlanSemanal({ comidas, clienteId, targets }: PlanSemanalProps) {
+export default function PlanSemanal({ comidas, targets }: PlanSemanalProps) {
     const [diaSeleccionado, setDiaSeleccionado] = useState(0)
-    // pool: comida.id → lista de recetas disponibles para esa franja
-    const [pool, setPool] = useState<Record<string, RecetaSlot[]>>({})
-    // semana: [diaIdx][comida.id] = RecetaSlot seleccionada para ese día
-    const [semana, setSemana] = useState<Record<string, RecetaSlot | null>[]>(
-        Array(7).fill(null).map(() => ({}))
-    )
-    const [loading, setLoading] = useState(true)
-
-    useEffect(() => {
-        let cancelled = false
-        if (comidas.length === 0) {
-            setPool({})
-            setSemana(Array(7).fill(null).map(() => ({})))
-            setLoading(false)
-            return
-        }
-
-        async function cargarSugerencias() {
-            setLoading(true)
-            const newPool: Record<string, RecetaSlot[]> = {}
-
-            await Promise.all(comidas.map(async (comida) => {
-                const macros = calcMacros(comida.alimentos ?? [])
-                if (macros.calorias <= 0) {
-                    newPool[comida.id] = []
-                    return
-                }
-                const tipo = inferirTipoPlato(comida.nombre)
-                const params = new URLSearchParams({
-                    kcal: String(Math.round(macros.calorias)),
-                    proteinas: String(Math.round(macros.proteinas)),
-                    limite: '7',
-                    ...(clienteId ? { cliente_id: clienteId } : {}),
-                    ...(tipo ? { tipo_plato: tipo } : {}),
-                })
-                try {
-                    const res = await fetch(`/api/recetas/sugeridas?${params}`)
-                    const { recetas } = await res.json() as { recetas: RecetaSlot[] }
-                    newPool[comida.id] = recetas ?? []
-                } catch {
-                    newPool[comida.id] = []
-                }
-            }))
-
-            if (cancelled) return
-            setPool(newPool)
-
-            // Distribuir una receta diferente por día (rotación circular por el pool)
-            const newSemana: Record<string, RecetaSlot | null>[] = Array(7).fill(null).map(() => ({}))
-            for (const comida of comidas) {
-                const recetas = newPool[comida.id] ?? []
-                for (let d = 0; d < 7; d++) {
-                    newSemana[d][comida.id] = recetas.length > 0
-                        ? recetas[d % recetas.length]
-                        : null
-                }
-            }
-            setSemana(newSemana)
-            setLoading(false)
-        }
-
-        cargarSugerencias()
-        return () => { cancelled = true }
-    }, [comidas, clienteId])
-
-    function swapReceta(diaIdx: number, comidaId: string) {
-        const recetas = pool[comidaId] ?? []
-        if (recetas.length <= 1) return
-        const actual = semana[diaIdx][comidaId]
-        const actualIdx = recetas.findIndex(r => r.id === actual?.id)
-        const nextIdx = (actualIdx + 1) % recetas.length
-        setSemana(prev => {
-            const next = [...prev]
-            next[diaIdx] = { ...next[diaIdx], [comidaId]: recetas[nextIdx] }
-            return next
-        })
-    }
+    const comidasDia = comidas
+        .filter(comida => normalizarDiaNutricion(comida.dia_semana) === diaSeleccionado)
+        .slice()
+        .sort((a, b) => a.orden - b.orden)
 
     // Macro totales del día seleccionado (suma de recetas asignadas)
-    const totalDia = comidas.reduce(
+    const totalDia = comidasDia.reduce(
         (acc, comida) => {
-            const r = semana[diaSeleccionado]?.[comida.id]
-            if (!r) return acc
+            const macros = calcMacros(comida.alimentos ?? [])
             return {
-                kcal: acc.kcal + r.kcal,
-                proteinas: acc.proteinas + r.proteinas,
-                carbohidratos: acc.carbohidratos + r.carbohidratos,
-                grasas: acc.grasas + r.grasas,
+                kcal: acc.kcal + macros.calorias,
+                proteinas: acc.proteinas + macros.proteinas,
+                carbohidratos: acc.carbohidratos + macros.carbohidratos,
+                grasas: acc.grasas + macros.grasas,
             }
         },
         { kcal: 0, proteinas: 0, carbohidratos: 0, grasas: 0 }
     )
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center py-12 gap-2">
-                <Loader2 size={20} className="animate-spin" style={{ color: 'var(--primary)' }} />
-                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Generando semana…</span>
-            </div>
-        )
-    }
 
     return (
         <div className="space-y-4">
@@ -229,13 +142,16 @@ export default function PlanSemanal({ comidas, clienteId, targets }: PlanSemanal
 
             {/* Comidas del día seleccionado */}
             <div className="space-y-3">
-                {comidas
-                    .slice()
-                    .sort((a, b) => a.orden - b.orden)
+                {comidasDia.length === 0 && (
+                    <div className="card !p-5 text-center">
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sin comidas asignadas</p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Este día todavía no tiene dieta construida.</p>
+                    </div>
+                )}
+                {comidasDia
                     .map(comida => {
-                        const receta = semana[diaSeleccionado]?.[comida.id]
+                        const receta = comida.receta
                         const macrosBase = calcMacros(comida.alimentos ?? [])
-                        const poolSize = (pool[comida.id] ?? []).length
 
                         return (
                             <div key={comida.id} className="card !p-3">
@@ -264,43 +180,20 @@ export default function PlanSemanal({ comidas, clienteId, targets }: PlanSemanal
                                                 {receta.nombre}
                                             </p>
                                             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                                                {receta.kcal} kcal · {receta.proteinas}g P
+                                                {macrosBase.calorias.toFixed(0)} kcal · {macrosBase.proteinas.toFixed(0)}g P
                                                 {receta.tiempo_prep_min ? ` · ${receta.tiempo_prep_min} min` : ''}
                                             </p>
                                         </div>
-                                        {poolSize > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => swapReceta(diaSeleccionado, comida.id)}
-                                                className="flex-shrink-0 p-2 rounded-lg transition-colors"
-                                                title="Cambiar receta"
-                                                style={{ color: 'var(--text-muted)' }}
-                                                onMouseEnter={e => {
-                                                    e.currentTarget.style.color = 'var(--primary)'
-                                                    e.currentTarget.style.backgroundColor = 'var(--primary-bg)'
-                                                }}
-                                                onMouseLeave={e => {
-                                                    e.currentTarget.style.color = 'var(--text-muted)'
-                                                    e.currentTarget.style.backgroundColor = 'transparent'
-                                                }}
-                                            >
-                                                <RefreshCw size={14} />
-                                            </button>
-                                        )}
                                     </div>
                                 ) : (
                                     <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>
-                                        Sin receta compatible en el recetario
+                                        Sin receta asignada. Revisa ingredientes y macros de esta comida.
                                     </p>
                                 )}
                             </div>
                         )
                     })}
             </div>
-
-            <p className="text-[10px] text-center pb-2" style={{ color: 'var(--text-muted)' }}>
-                Toca <RefreshCw size={9} className="inline mb-0.5" /> para cambiar la receta de cualquier franja
-            </p>
         </div>
     )
 }
