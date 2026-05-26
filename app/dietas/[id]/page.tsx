@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
-import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Download, Power, PowerOff, Copy, Check, BookOpen, UtensilsCrossed, RefreshCw, Target, Flame, Beef, Wheat, Droplets, Loader2, ExternalLink, CalendarDays, AlertTriangle, CheckCircle2, ClipboardCheck, Activity } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Download, Power, PowerOff, Copy, Check, BookOpen, UtensilsCrossed, RefreshCw, Target, Flame, Beef, Wheat, Droplets, Loader2, ExternalLink, CalendarDays, AlertTriangle, CheckCircle2, ClipboardCheck, Activity, Save, LayoutTemplate } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { calcularMacrosPorCantidad, sumarMacros, COMIDAS_PREDEFINIDAS } from '@/lib/utils'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
@@ -164,6 +164,20 @@ function MacroDial({ label, value, target, color, icon: Icon, unit }: {
   )
 }
 
+function macroPctFromPlan(plan: PlanNutricion | null) {
+  const kcal = Number(plan?.kcal_objetivo ?? 0)
+  if (kcal <= 0) return { proteinas: 30, carbohidratos: 40, grasas: 30 }
+  return {
+    proteinas: Math.round(((Number(plan?.proteinas_objetivo ?? 0) * 4) / kcal) * 100) || 30,
+    carbohidratos: Math.round(((Number(plan?.carbohidratos_objetivo ?? 0) * 4) / kcal) * 100) || 40,
+    grasas: Math.round(((Number(plan?.grasas_objetivo ?? 0) * 9) / kcal) * 100) || 30,
+  }
+}
+
+function gramsFromPct(kcal: number, pct: number, kcalPerGram: 4 | 9) {
+  return Math.round(((kcal * pct) / 100 / kcalPerGram) * 10) / 10
+}
+
 export default function EditarDietaPage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
@@ -194,6 +208,9 @@ export default function EditarDietaPage() {
   const [buscando, setBuscando] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [descargandoPDF, setDescargandoPDF] = useState(false)
+  const [guardandoMacros, setGuardandoMacros] = useState(false)
+  const [guardandoPlantilla, setGuardandoPlantilla] = useState(false)
+  const [macroPct, setMacroPct] = useState({ proteinas: 30, carbohidratos: 40, grasas: 30 })
   const [alternativasPorComida, setAlternativasPorComida] = useState<Record<string, RecetaEquivalente[]>>({})
   const [cargandoAlternativas, setCargandoAlternativas] = useState<Record<string, boolean>>({})
   const [recetaAplicando, setRecetaAplicando] = useState<string | null>(null)
@@ -217,6 +234,10 @@ export default function EditarDietaPage() {
   }
 
   useEffect(() => { loadPlan() }, [id])
+
+  useEffect(() => {
+    setMacroPct(macroPctFromPlan(plan))
+  }, [plan?.id, plan?.kcal_objetivo, plan?.proteinas_objetivo, plan?.carbohidratos_objetivo, plan?.grasas_objetivo])
 
   async function toggleActivo() {
     if (!plan) return
@@ -259,19 +280,84 @@ export default function EditarDietaPage() {
       if (!response.ok) throw new Error('Error al generar PDF')
 
       const blob = await response.blob()
+      const contentType = response.headers.get('content-type') ?? ''
+      const isHtml = contentType.includes('text/html')
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `Plan-${plan?.cliente?.profile?.nombre}-${new Date().toISOString().split('T')[0]}.pdf`
+      a.download = `Plan-${plan?.cliente?.profile?.nombre}-${new Date().toISOString().split('T')[0]}.${isHtml ? 'html' : 'pdf'}`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+      if (isHtml) {
+        addToast({
+          type: 'success',
+          title: 'Plan exportado',
+          message: 'Se ha descargado en HTML imprimible para abrirlo sin errores.',
+        })
+      }
     } catch (error) {
       console.error(error)
-      addToast({ type: 'error', title: 'Error', message: 'Error al descargar PDF' })
+      addToast({ type: 'error', title: 'Error', message: 'Error al exportar el plan' })
     } finally {
       setDescargandoPDF(false)
+    }
+  }
+
+  async function guardarDistribucionMacros() {
+    if (!plan?.kcal_objetivo) return
+    const totalPct = macroPct.proteinas + macroPct.carbohidratos + macroPct.grasas
+    if (totalPct !== 100) {
+      addToast({ type: 'error', title: 'Distribución incompleta', message: `Los porcentajes deben sumar 100%. Ahora suman ${totalPct}%.` })
+      return
+    }
+
+    const next = {
+      proteinas_objetivo: gramsFromPct(plan.kcal_objetivo, macroPct.proteinas, 4),
+      carbohidratos_objetivo: gramsFromPct(plan.kcal_objetivo, macroPct.carbohidratos, 4),
+      grasas_objetivo: gramsFromPct(plan.kcal_objetivo, macroPct.grasas, 9),
+    }
+
+    setGuardandoMacros(true)
+    const { error } = await supabase
+      .from('planes_nutricion')
+      .update(next)
+      .eq('id', id)
+
+    if (error) {
+      addToast({ type: 'error', title: 'No se pudieron guardar macros', message: error.message })
+    } else {
+      setPlan(prev => prev ? { ...prev, ...next } : prev)
+      addToast({ type: 'success', title: 'Macros actualizados', message: `${macroPct.proteinas}% P · ${macroPct.carbohidratos}% C · ${macroPct.grasas}% G` })
+    }
+    setGuardandoMacros(false)
+  }
+
+  async function guardarComoPlantilla() {
+    if (!plan) return
+    setGuardandoPlantilla(true)
+    try {
+      const res = await fetch('/api/plantillas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: `${plan.nombre} · referencia`,
+          descripcion: `Plantilla guardada desde la dieta ${plan.nombre}. Base macro y kcal para reutilizar como punto de partida.`,
+          tipo: 'normal',
+          kcal_objetivo: plan.kcal_objetivo,
+          proteinas_objetivo: plan.proteinas_objetivo,
+          carbohidratos_objetivo: plan.carbohidratos_objetivo,
+          grasas_objetivo: plan.grasas_objetivo,
+        }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) throw new Error(data?.error ?? 'No se pudo guardar plantilla')
+      addToast({ type: 'success', title: 'Plantilla guardada', message: 'Queda disponible en Dietas > Plantillas como referencia macro.' })
+    } catch (error) {
+      addToast({ type: 'error', title: 'No se pudo guardar plantilla', message: error instanceof Error ? error.message : 'Error guardando plantilla' })
+    } finally {
+      setGuardandoPlantilla(false)
     }
   }
 
@@ -571,18 +657,27 @@ export default function EditarDietaPage() {
       const params = new URLSearchParams({
         kcal: String(Math.round(macros.calorias || comida.kcal_target || 0)),
         proteinas: String(Math.round(macros.proteinas || comida.proteinas_target || 0)),
-        limite: '4',
+        limite: '8',
         ...(plan?.cliente_id ? { cliente_id: plan.cliente_id } : {}),
         ...(tipo ? { tipo_plato: tipo } : {}),
       })
       const res = await fetch(`/api/recetas/sugeridas?${params}`)
+      if (!res.ok) throw new Error('No se pudieron cargar recetas sugeridas')
       const data = await res.json() as { recetas?: RecetaEquivalente[] }
       const merged = [...(existentesData.alternativas ?? []), ...(data.recetas ?? [])]
       const unique = Array.from(new Map(merged.map(r => [r.id, r])).values())
+      const next = unique.filter(r => r.id !== comida.receta_id).slice(0, 8)
       setAlternativasPorComida(prev => ({
         ...prev,
-        [comida.id]: unique.filter(r => r.id !== comida.receta_id).slice(0, 8),
+        [comida.id]: next,
       }))
+      addToast({
+        type: next.length ? 'success' : 'info',
+        title: next.length ? 'Sugerencias cargadas' : 'Sin equivalentes claros',
+        message: next.length ? `${next.length} recetas compatibles para ${comida.nombre}` : 'Prueba con el explorador o cambia filtros de la comida.',
+      })
+    } catch (error) {
+      addToast({ type: 'error', title: 'No se pudo sugerir', message: error instanceof Error ? error.message : 'Error cargando sugerencias' })
     } finally {
       setCargandoAlternativas(prev => ({ ...prev, [comida.id]: false }))
     }
@@ -852,12 +947,22 @@ export default function EditarDietaPage() {
             )}
 
             <button
+              onClick={guardarComoPlantilla}
+              disabled={guardandoPlantilla || !plan}
+              className="btn-secondary flex items-center gap-1.5 text-sm"
+              title="Guardar los objetivos de esta dieta como plantilla de referencia"
+            >
+              {guardandoPlantilla ? <Loader2 size={14} className="animate-spin" /> : <LayoutTemplate size={14} />}
+              Plantilla
+            </button>
+
+            <button
               onClick={descargarPDF}
               disabled={descargandoPDF}
               className="btn-primary flex items-center gap-2 px-4 py-2"
             >
               <Download size={16} />
-              {descargandoPDF ? 'Descargando...' : 'PDF'}
+              {descargandoPDF ? 'Exportando...' : 'Exportar'}
             </button>
           </div>
         </div>
@@ -882,13 +987,81 @@ export default function EditarDietaPage() {
           </div>
           <div className="mt-4 rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between text-xs mb-2">
-              <span style={{ color: 'var(--text-muted)' }}>Distribución calórica aplicada</span>
+              <span style={{ color: 'var(--text-muted)' }}>Distribución calórica de macronutrientes aplicada</span>
               <span className="tabular-nums font-semibold" style={{ color: 'var(--text)' }}>{totalDia.calorias.toFixed(0)} kcal</span>
             </div>
             <div className="flex rounded-full overflow-hidden h-2" style={{ background: 'var(--border)' }}>
               <div style={{ width: `${Math.min((totalDia.proteinas * 4 / Math.max(totalDia.calorias, 1)) * 100, 100)}%`, background: '#FF3B30' }} />
               <div style={{ width: `${Math.min((totalDia.carbohidratos * 4 / Math.max(totalDia.calorias, 1)) * 100, 100)}%`, background: '#FF9500' }} />
               <div style={{ width: `${Math.min((totalDia.grasas * 9 / Math.max(totalDia.calorias, 1)) * 100, 100)}%`, background: '#0A84FF' }} />
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+              <span>P {Math.round((totalDia.proteinas * 4 / Math.max(totalDia.calorias, 1)) * 100)}%</span>
+              <span>C {Math.round((totalDia.carbohidratos * 4 / Math.max(totalDia.calorias, 1)) * 100)}%</span>
+              <span>G {Math.round((totalDia.grasas * 9 / Math.max(totalDia.calorias, 1)) * 100)}%</span>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-2xl p-3 sm:p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-3">
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ajuste manual de macros por porcentaje</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  La IA propone la base; el coach puede ajustar proteína, carbohidratos y grasa sin tocar el timing de comidas.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className="rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums"
+                  style={{
+                    background: macroPct.proteinas + macroPct.carbohidratos + macroPct.grasas === 100 ? 'rgba(16,185,129,0.10)' : 'rgba(245,158,11,0.10)',
+                    color: macroPct.proteinas + macroPct.carbohidratos + macroPct.grasas === 100 ? '#10B981' : '#D97706',
+                  }}
+                >
+                  Total {macroPct.proteinas + macroPct.carbohidratos + macroPct.grasas}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMacroPct(macroPctFromPlan(plan))}
+                  className="btn-secondary btn-sm"
+                >
+                  Restaurar IA
+                </button>
+                <button
+                  type="button"
+                  onClick={guardarDistribucionMacros}
+                  disabled={guardandoMacros || !plan?.kcal_objetivo}
+                  className="btn-primary btn-sm"
+                >
+                  {guardandoMacros ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                  Guardar macros
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+              {[
+                { key: 'proteinas' as const, label: 'Proteína', color: '#FF3B30', kcalPerGram: 4 as const },
+                { key: 'carbohidratos' as const, label: 'Carbohidratos', color: '#FF9500', kcalPerGram: 4 as const },
+                { key: 'grasas' as const, label: 'Grasas', color: '#0A84FF', kcalPerGram: 9 as const },
+              ].map(item => (
+                <div key={item.key} className="rounded-xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-xs font-semibold" style={{ color: item.color }}>{item.label}</span>
+                    <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--text)' }}>
+                      {macroPct[item.key]}% · {gramsFromPct(Number(plan?.kcal_objetivo ?? 0), macroPct[item.key], item.kcalPerGram)}g
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={item.key === 'proteinas' ? 10 : 15}
+                    max={item.key === 'grasas' ? 45 : 65}
+                    step={1}
+                    value={macroPct[item.key]}
+                    onChange={e => setMacroPct(prev => ({ ...prev, [item.key]: Number(e.target.value) }))}
+                    className="w-full accent-[var(--primary)]"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -897,8 +1070,8 @@ export default function EditarDietaPage() {
         <section className="rounded-3xl p-4 sm:p-5 mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Semana nutricional</p>
-              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Construcción por días</h2>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Mapa semanal</p>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Resumen de construcción por días</h2>
             </div>
             <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full w-fit" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
               <CalendarDays size={13} />
@@ -1098,6 +1271,46 @@ export default function EditarDietaPage() {
           </div>
         )}
 
+        <section className="rounded-3xl p-4 sm:p-5 mb-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Dieta del día</p>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Semana nutricional y comidas de {diaActivo}</h2>
+            </div>
+            <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full w-fit" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+              <CalendarDays size={13} />
+              {comidasDia.length} comidas · {Math.round(totalDia.calorias)} kcal
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+            {auditoriaSemana.map(({ dia, comidas: comidasDelDia, macros, score, criticos, avisos }) => {
+              const activo = dia === diaActivo
+              const status = criticos > 0 ? 'critico' : avisos > 0 ? 'aviso' : 'ok'
+              const tone = auditTone(status)
+              return (
+                <button
+                  key={`compact-${dia}`}
+                  type="button"
+                  onClick={() => setDiaActivo(dia)}
+                  className="rounded-2xl border px-3 py-2 text-left active:scale-[0.98]"
+                  style={{
+                    borderColor: activo ? 'var(--primary)' : 'var(--border)',
+                    background: activo ? 'var(--primary-bg)' : 'var(--bg)',
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold" style={{ color: activo ? 'var(--primary)' : 'var(--text)' }}>{DIA_ABR[dia]}</span>
+                    <span className="text-[10px] tabular-nums rounded-full px-1.5 py-0.5" style={{ color: tone.text, background: tone.bg }}>{score}</span>
+                  </div>
+                  <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    {comidasDelDia.length ? `${Math.round(macros.calorias)} kcal` : 'vacío'}
+                  </p>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
         {/* Recalculadora de porciones */}
         <div className="card mb-4 flex items-center gap-3 py-3 px-4">
           <span className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}><UtensilsCrossed size={15} /> Porciones:</span>
@@ -1271,15 +1484,8 @@ export default function EditarDietaPage() {
                       {alternativas.length > 0 ? (
                         <div className="flex gap-2 overflow-x-auto pb-1">
                           {alternativas.map(r => (
-                            <button
+                            <div
                               key={r.id}
-                              type="button"
-                              onClick={() => {
-                                const next = opcionesCliente.includes(r.id)
-                                  ? opcionesCliente.filter(id => id !== r.id)
-                                  : [...opcionesCliente, r.id]
-                                guardarAlternativasCliente(comida, next)
-                              }}
                               className="min-w-[190px] max-w-[220px] text-left rounded-xl border p-2.5 transition-colors"
                               style={{
                                 borderColor: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--border)',
@@ -1296,29 +1502,48 @@ export default function EditarDietaPage() {
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-2 mt-2">
-                                <span className="text-[10px] font-semibold" style={{ color: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--text-muted)' }}>
-                                  {opcionesCliente.includes(r.id) ? 'Asignada' : 'Asignar opción'}
-                                </span>
-                                <span
-                                  role="button"
-                                  tabIndex={0}
-                                  onClick={e => {
-                                    e.stopPropagation()
-                                    aplicarRecetaAComida(comida.id, r.id, r.nombre)
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const next = opcionesCliente.includes(r.id)
+                                      ? opcionesCliente.filter(id => id !== r.id)
+                                      : [...opcionesCliente, r.id]
+                                    guardarAlternativasCliente(comida, next)
                                   }}
-                                  onKeyDown={e => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
+                                  className="text-[10px] font-semibold"
+                                  style={{ color: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--text-muted)' }}
+                                >
+                                  {opcionesCliente.includes(r.id) ? 'Asignada' : 'Asignar opción'}
+                                </button>
+                                <div className="flex items-center gap-2">
+                                  <Link
+                                    href={`/recetas/${r.id}?returnTo=/dietas/${id}`}
+                                    className="text-[10px] font-semibold underline"
+                                    style={{ color: 'var(--text-secondary)' }}
+                                  >
+                                    ver
+                                  </Link>
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={e => {
                                       e.stopPropagation()
                                       aplicarRecetaAComida(comida.id, r.id, r.nombre)
-                                    }
-                                  }}
-                                  className="text-[10px] font-semibold underline"
-                                  style={{ color: 'var(--text-secondary)' }}
-                                >
-                                  usar como principal
-                                </span>
+                                    }}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter' || e.key === ' ') {
+                                        e.stopPropagation()
+                                        aplicarRecetaAComida(comida.id, r.id, r.nombre)
+                                      }
+                                    }}
+                                    className="text-[10px] font-semibold underline"
+                                    style={{ color: 'var(--text-secondary)' }}
+                                  >
+                                    principal
+                                  </span>
+                                </div>
                               </div>
-                            </button>
+                            </div>
                           ))}
                         </div>
                       ) : (
@@ -1354,15 +1579,8 @@ export default function EditarDietaPage() {
                           </div>
                           <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {resultadosAlternativas.map(r => (
-                              <button
+                              <div
                                 key={r.id}
-                                type="button"
-                                onClick={() => {
-                                  const next = opcionesCliente.includes(r.id)
-                                    ? opcionesCliente.filter(id => id !== r.id)
-                                    : [...opcionesCliente, r.id]
-                                  guardarAlternativasCliente(comida, next)
-                                }}
                                 className="text-left rounded-xl border p-2 transition-colors"
                                 style={{
                                   borderColor: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--border)',
@@ -1373,7 +1591,29 @@ export default function EditarDietaPage() {
                                 <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                                   {Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)}g · C {Math.round(r.carbohidratos)}g · G {Math.round(r.grasas)}g
                                 </p>
-                              </button>
+                                <div className="mt-1 flex items-center gap-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const next = opcionesCliente.includes(r.id)
+                                        ? opcionesCliente.filter(id => id !== r.id)
+                                        : [...opcionesCliente, r.id]
+                                      guardarAlternativasCliente(comida, next)
+                                    }}
+                                    className="text-[10px] font-semibold underline"
+                                    style={{ color: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--text-secondary)' }}
+                                  >
+                                    {opcionesCliente.includes(r.id) ? 'Quitar opción' : 'Asignar opción'}
+                                  </button>
+                                  <Link
+                                    href={`/recetas/${r.id}?returnTo=/dietas/${id}`}
+                                    className="inline-flex text-[10px] font-semibold underline"
+                                    style={{ color: 'var(--text-secondary)' }}
+                                  >
+                                    Revisar receta
+                                  </Link>
+                                </div>
+                              </div>
                             ))}
                           </div>
                         </div>

@@ -117,9 +117,9 @@ function metricLabel(value: number | null | undefined, suffix = '') {
   return `${value}${suffix}`
 }
 
-function Metric({ label, value, icon: Icon }: { label: string; value: string; icon: React.ElementType }) {
+function Metric({ label, value, icon: Icon, tooltip }: { label: string; value: string; icon: React.ElementType; tooltip?: string }) {
   return (
-    <div className="rounded-xl px-3 py-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+    <div className="rounded-xl px-3 py-3" title={tooltip} style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
       <div className="flex items-center gap-2 mb-2">
         <Icon size={14} style={{ color: 'var(--text-muted)' }} />
         <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{label}</span>
@@ -249,10 +249,10 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-4 p-4 sm:p-5">
         <div className="space-y-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-            <Metric label="Disciplina" value={modalidad} icon={Route} />
-            <Metric label="Semana" value={`${data.rendimiento.sesiones_7d}/${data.rendimiento.sesiones_objetivo_semana ?? '-'} sesiones`} icon={Dumbbell} />
-            <Metric label="Readiness" value={metricLabel(ready, ready !== null ? '/100' : '')} icon={Activity} />
-            <Metric label="HRV" value={metricLabel(hrv, hrv !== null ? ' ms' : '')} icon={BarChart3} />
+            <Metric label="Disciplina" value={modalidad} icon={Route} tooltip="Modalidad principal del perfil atleta. Sirve para filtrar plantillas y decidir qué tipo de carga priorizar." />
+            <Metric label="Semana" value={`${data.rendimiento.sesiones_7d}/${data.rendimiento.sesiones_objetivo_semana ?? '-'} sesiones`} icon={Dumbbell} tooltip="Sesiones registradas en los últimos 7 días frente al objetivo semanal del plan activo." />
+            <Metric label="Readiness" value={metricLabel(ready, ready !== null ? '/100' : '')} icon={Activity} tooltip="Media de preparación/recuperación externa. Valores bajos sugieren descarga, menos intensidad o más recuperación." />
+            <Metric label="HRV" value={metricLabel(hrv, hrv !== null ? ' ms' : '')} icon={BarChart3} tooltip="Variabilidad de frecuencia cardiaca media. Ayuda a detectar fatiga, estrés y tolerancia a la carga." />
           </div>
 
           <div className="rounded-xl p-4" style={{ background: decisionTone.bg, border: `1px solid ${decisionTone.border}` }}>
@@ -282,8 +282,8 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 min-w-[220px]">
-                <Metric label="App" value={`${decisionTraining.fuentes.internas_sesiones} ses.`} icon={Dumbbell} />
-                <Metric label="Garmin/Strava" value={`${decisionTraining.fuentes.externas_sesiones} ses.`} icon={Route} />
+                <Metric label="App" value={`${decisionTraining.fuentes.internas_sesiones} ses.`} icon={Dumbbell} tooltip="Sesiones registradas dentro de NutriCoach. Reflejan ejecución directa del plan prescrito." />
+                <Metric label="Garmin/Strava" value={`${decisionTraining.fuentes.externas_sesiones} ses.`} icon={Route} tooltip="Entrenos sincronizados desde wearables o plataformas externas. Se usan para no infravalorar carga real." />
               </div>
             </div>
           </div>
@@ -338,10 +338,10 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
           <div className="rounded-xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
             <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Lectura rápida</p>
             <div className="grid grid-cols-2 gap-2">
-              <Metric label="TSS 14d" value={metricLabel(resumen?.tss_total)} icon={Zap} />
-              <Metric label="TDEE medio" value={metricLabel(resumen?.tdee_media, resumen?.tdee_media ? ' kcal' : '')} icon={BarChart3} />
-              <Metric label="Pasos/día" value={metricLabel(resumen?.pasos_media)} icon={Activity} />
-              <Metric label="Distancia" value={metricLabel(resumen?.distancia_entreno_km_total, resumen?.distancia_entreno_km_total ? ' km' : '')} icon={Route} />
+              <Metric label="TSS 14d" value={metricLabel(resumen?.tss_total)} icon={Zap} tooltip="Carga de entrenamiento acumulada en 14 días. Sirve para detectar semanas de pico, fatiga o necesidad de descarga." />
+              <Metric label="TDEE medio" value={metricLabel(resumen?.tdee_media, resumen?.tdee_media ? ' kcal' : '')} icon={BarChart3} tooltip="Gasto energético medio estimado a partir de actividad externa. Ayuda a ajustar nutrición y carga." />
+              <Metric label="Pasos/día" value={metricLabel(resumen?.pasos_media)} icon={Activity} tooltip="Media diaria de pasos. Señal útil de NEAT, fatiga y actividad real fuera del entrenamiento." />
+              <Metric label="Distancia" value={metricLabel(resumen?.distancia_entreno_km_total, resumen?.distancia_entreno_km_total ? ' km' : '')} icon={Route} tooltip="Distancia total registrada en entrenamientos externos. Relevante para running, Hyrox, ciclismo y triatlón." />
             </div>
           </div>
 

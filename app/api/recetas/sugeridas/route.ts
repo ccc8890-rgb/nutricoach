@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const kcal = parseFloat(searchParams.get('kcal') ?? '0')
     const proteinas = parseFloat(searchParams.get('proteinas') ?? '0')
-    const limite = Math.min(parseInt(searchParams.get('limite') ?? '3'), 7)
+    const limite = Math.min(parseInt(searchParams.get('limite') ?? '3'), 12)
     const tipo_plato = searchParams.get('tipo_plato') ?? null
     const cliente_id = searchParams.get('cliente_id') ?? null
     const qText = searchParams.get('q')?.trim() ?? ''

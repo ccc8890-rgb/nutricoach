@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { NextRequest, NextResponse } from 'next/server'
+import { createApiSupabase } from '@/lib/supabase-server'
 
 // GET /api/plantillas — Listar plantillas de dieta del coach
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const supabase = createApiSupabase(request)
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         if (authError || !user) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -25,8 +26,9 @@ export async function GET() {
 }
 
 // POST /api/plantillas — Crear nueva plantilla
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        const supabase = createApiSupabase(request)
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         if (authError || !user) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
