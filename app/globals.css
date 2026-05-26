@@ -603,6 +603,15 @@ body {
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
 }
 
+/* Padding superior que respeta notch/status bar de iOS en PWA standalone */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
+}
+
+.pt-safe-top {
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
+}
+
 /* Padding superior en móvil: status bar + altura botón hamburguesa + margen */
 .layout-main {
   padding-top: 0;

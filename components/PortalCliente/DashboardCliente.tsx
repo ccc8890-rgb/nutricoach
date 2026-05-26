@@ -372,7 +372,7 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     return (
         <div className="min-h-screen pb-nav-safe" style={{ background: 'var(--bg)' }}>
             <div className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                <div className="max-w-3xl mx-auto px-4 pt-safe py-3">
+                <div className="max-w-3xl mx-auto px-4 pt-safe pb-3">
                     <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
                             <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Casanova Nutrition</p>

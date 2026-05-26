@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Sidebar from '@/components/Sidebar'
+import CoachShell from '@/components/CoachShell'
 
 export const metadata: Metadata = {
   title: 'Casanova Coach',
@@ -12,12 +12,5 @@ export const metadata: Metadata = {
 }
 
 export default function CoachLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex min-h-screen" style={{ background: 'var(--bg)' }}>
-      <Sidebar />
-      <main className="flex-1 overflow-auto pb-nav-safe layout-main">
-        {children}
-      </main>
-    </div>
-  )
+  return <CoachShell>{children}</CoachShell>
 }

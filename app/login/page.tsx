@@ -62,7 +62,8 @@ export default function LoginPage() {
     }
 
     await new Promise(r => setTimeout(r, 100))
-    window.location.href = '/'
+    const next = new URLSearchParams(window.location.search).get('next')
+    window.location.href = next && next.startsWith('/') ? next : '/dashboard'
   }
 
   return (
