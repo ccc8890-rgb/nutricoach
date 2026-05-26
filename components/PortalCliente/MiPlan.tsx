@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, CheckCircle2, PencilLine, ExternalLink } from 'lucide-react'
-import GarminMiniCard from './GarminMiniCard'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
@@ -404,9 +403,6 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                     </div>
                 )}
             </section>
-
-            {/* Garmin mini-card (solo si tiene integración activa) */}
-            <GarminMiniCard codigo={codigo} />
 
             {/* Comidas */}
             <div className="space-y-3">

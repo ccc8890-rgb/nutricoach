@@ -13,8 +13,10 @@ import RegistrarEntrenoModal from './RegistrarEntrenoModal'
 import ChatPanel from './ChatPanel'
 import IntegracionesPanel from './IntegracionesPanel'
 import ListaCompraPortal from './ListaCompraPortal'
+import GarminMiniCard from './GarminMiniCard'
 import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach, RegistroComidaDia } from '@/types'
 import { useTheme } from '@/components/ThemeProvider'
+import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 
 interface DashboardData {
     plan: PlanNutricion
@@ -30,10 +32,11 @@ interface DashboardClienteProps {
     codigo: string
 }
 
-type Tab = 'plan' | 'entreno' | 'compra' | 'recetas' | 'checkin' | 'progreso' | 'chat' | 'integraciones'
+type Tab = 'plan' | 'dieta' | 'entreno' | 'compra' | 'recetas' | 'checkin' | 'progreso' | 'chat' | 'integraciones'
 
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'plan', label: 'Hoy', icon: UtensilsCrossed },
+    { key: 'plan', label: 'Hoy', icon: Home },
+    { key: 'dieta', label: 'Dieta', icon: UtensilsCrossed },
     { key: 'entreno', label: 'Training', icon: Dumbbell },
     { key: 'compra', label: 'Compra', icon: ShoppingCart },
     { key: 'recetas', label: 'Recetas', icon: BookOpen },
@@ -49,6 +52,57 @@ function normalizarDia(dia: string | null | undefined): number | null {
     const d = dia.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     const idx = keys.findIndex(k => d.includes(k))
     return idx >= 0 ? idx : null
+}
+
+function fechaHoyLocal() {
+    return new Date().toLocaleDateString('en-CA')
+}
+
+type ComidaCliente = NonNullable<PlanNutricion['comidas']>[number] & {
+    dia_semana?: string | null
+    receta_id?: string | null
+    receta?: {
+        id: string
+        nombre: string
+        imagen_url?: string | null
+        kcal?: number | null
+        tiempo_prep_min?: number | null
+    } | null
+    alimentos?: Array<{
+        id: string
+        cantidad_gramos: number
+        alimento?: {
+            nombre?: string | null
+            calorias?: number | null
+            proteinas?: number | null
+            carbohidratos?: number | null
+            grasas?: number | null
+            fibra?: number | null
+        } | null
+    }>
+}
+
+type SesionCliente = {
+    id: string
+    nombre: string
+    dia_semana?: string | null
+    duracion_min?: number | null
+    duracion_estimada_min?: number | null
+    ejercicios?: unknown[]
+    notas?: string | null
+}
+
+function calcMacrosComida(comida: ComidaCliente) {
+    return sumarMacros((comida.alimentos ?? []).map(a =>
+        calcularMacrosPorCantidad(
+            Number(a.alimento?.calorias ?? 0),
+            Number(a.alimento?.proteinas ?? 0),
+            Number(a.alimento?.carbohidratos ?? 0),
+            Number(a.alimento?.grasas ?? 0),
+            Number(a.alimento?.fibra ?? 0),
+            Number(a.cantidad_gramos ?? 0)
+        )
+    ))
 }
 
 function EntrenoCliente({
@@ -213,6 +267,208 @@ function EntrenoCliente({
                         ))}
                     </div>
                 )}
+            </section>
+        </div>
+    )
+}
+
+function HoyCliente({
+    data,
+    codigo,
+    notasNoLeidas,
+    diasDesdeUltimoCheckin,
+    proximaRevision,
+    onAbrirDieta,
+    onAbrirEntreno,
+    onAbrirCheckin,
+    onAbrirChat,
+}: {
+    data: DashboardData
+    codigo: string
+    notasNoLeidas: number
+    diasDesdeUltimoCheckin: number | null
+    proximaRevision: string | null
+    onAbrirDieta: () => void
+    onAbrirEntreno: () => void
+    onAbrirCheckin: () => void
+    onAbrirChat: () => void
+}) {
+    const hoyIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
+    const fechaHoy = fechaHoyLocal()
+    const comidas = (data.plan.comidas ?? []) as ComidaCliente[]
+    const comidasHoy = comidas
+        .filter(comida => (normalizarDia(comida.dia_semana) ?? 0) === hoyIdx)
+        .slice()
+        .sort((a, b) => a.orden - b.orden)
+    const registrosHoy = new Map((data.registros_comidas ?? [])
+        .filter(r => r.fecha === fechaHoy)
+        .map(r => [r.comida_id, r]))
+    const completadas = comidasHoy.filter(c => {
+        const estado = registrosHoy.get(c.id)?.estado
+        return estado === 'hecha' || estado === 'cambiada'
+    }).length
+    const totalKcal = comidasHoy.reduce((acc, comida) => acc + calcMacrosComida(comida).calorias, 0)
+    const siguienteComida = comidasHoy.find(c => !registrosHoy.has(c.id)) ?? comidasHoy[0] ?? null
+    const siguienteMacros = siguienteComida ? calcMacrosComida(siguienteComida) : null
+
+    const sesiones = (data.entreno?.sesiones ?? []) as SesionCliente[]
+    const sesionesHoy = sesiones.filter(s => normalizarDia(s.dia_semana) === hoyIdx)
+    const sesionHoy = sesionesHoy[0] ?? null
+    const duracionSesion = sesionHoy ? Number(sesionHoy.duracion_min ?? sesionHoy.duracion_estimada_min ?? 0) : 0
+
+    const pendienteCheckin = diasDesdeUltimoCheckin === null || diasDesdeUltimoCheckin >= 7
+    const pendientes = [
+        data.cliente.onboarding_completado === false ? { label: 'Completar perfil', action: onAbrirCheckin } : null,
+        pendienteCheckin ? { label: 'Check-in semanal', action: onAbrirCheckin } : null,
+        notasNoLeidas > 0 ? { label: `${notasNoLeidas} nota${notasNoLeidas > 1 ? 's' : ''} del coach`, action: onAbrirChat } : null,
+    ].filter(Boolean) as Array<{ label: string; action: () => void }>
+
+    const consejo = sesionHoy
+        ? 'Hoy prioriza cumplir comida y entreno sin buscar perfección extra. Si cambias una comida, márcalo para que el coach tenga contexto.'
+        : completadas === 0
+            ? 'Empieza por la primera comida marcada. Mantener el plan visible y simple suele ganar a improvisar tarde.'
+            : 'Vas sumando adherencia. Revisa la siguiente comida antes de que llegue la hora y deja preparada la opción más fácil.'
+
+    return (
+        <div className="space-y-4">
+            <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Hoy</p>
+                        <h2 className="mt-1 text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
+                            {completadas}/{comidasHoy.length || 0} comidas
+                        </h2>
+                        <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+                            {Math.round(totalKcal)} kcal planificadas{sesionHoy ? ' · entreno programado' : ' · sin sesión marcada'}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onAbrirDieta}
+                        className="shrink-0 rounded-2xl px-3 py-2 text-xs font-semibold transition-all active:scale-[0.98]"
+                        style={{ background: 'var(--primary)', color: 'white' }}
+                    >
+                        Abrir dieta
+                    </button>
+                </div>
+
+                <div className="mt-4 h-2 overflow-hidden rounded-full" style={{ background: 'var(--bg)' }}>
+                    <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                            width: `${comidasHoy.length ? Math.round((completadas / comidasHoy.length) * 100) : 0}%`,
+                            background: completadas === comidasHoy.length && comidasHoy.length > 0 ? '#16A34A' : 'var(--primary)',
+                        }}
+                    />
+                </div>
+            </section>
+
+            <section className="rounded-3xl border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Dieta de hoy</p>
+                            <h3 className="mt-1 text-base font-bold" style={{ color: 'var(--text)' }}>
+                                {siguienteComida ? 'Siguiente comida' : 'Sin comidas para hoy'}
+                            </h3>
+                        </div>
+                        <button type="button" onClick={onAbrirDieta} className="text-xs font-semibold" style={{ color: 'var(--primary)' }}>
+                            Ver semana
+                        </button>
+                    </div>
+                </div>
+
+                {siguienteComida ? (
+                    <button
+                        type="button"
+                        onClick={onAbrirDieta}
+                        className="w-full p-4 text-left transition-colors active:scale-[0.99]"
+                        style={{ background: 'transparent' }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl" style={{ background: 'var(--bg)' }}>
+                                {siguienteComida.receta?.imagen_url ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={siguienteComida.receta.imagen_url} alt={siguienteComida.receta.nombre} className="h-full w-full object-cover" />
+                                ) : (
+                                    <div className="flex h-full w-full items-center justify-center" style={{ color: 'var(--primary)' }}>
+                                        <UtensilsCrossed size={18} />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                                    {siguienteComida.nombre}{siguienteComida.hora_sugerida ? ` · ${siguienteComida.hora_sugerida.slice(0, 5)}` : ''}
+                                </p>
+                                <p className="mt-0.5 line-clamp-2 text-base font-semibold" style={{ color: 'var(--text)' }}>
+                                    {siguienteComida.receta?.nombre ?? siguienteComida.nombre}
+                                </p>
+                                <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                                    {Math.round(siguienteMacros?.calorias ?? 0)} kcal · tocar para ver ingredientes
+                                </p>
+                            </div>
+                        </div>
+                    </button>
+                ) : (
+                    <p className="p-4 text-sm" style={{ color: 'var(--text-muted)' }}>Tu coach todavía no ha construido comidas para este día.</p>
+                )}
+            </section>
+
+            <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Entrenamiento</p>
+                        <h3 className="mt-1 line-clamp-1 text-base font-bold" style={{ color: 'var(--text)' }}>
+                            {sesionHoy?.nombre ?? 'Sin sesión para hoy'}
+                        </h3>
+                        <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                            {sesionHoy ? `${duracionSesion || '—'} min · ${sesionHoy.ejercicios?.length ?? 0} ejercicios` : 'Revisa la semana de training cuando toque entrenar.'}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onAbrirEntreno}
+                        className="shrink-0 rounded-2xl px-3 py-2 text-xs font-semibold"
+                        style={{ background: 'var(--primary-bg)', color: 'var(--primary)' }}
+                    >
+                        Ver training
+                    </button>
+                </div>
+            </section>
+
+            <GarminMiniCard codigo={codigo} />
+
+            <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Pendientes</p>
+                        <h3 className="mt-1 text-base font-bold" style={{ color: 'var(--text)' }}>
+                            {pendientes.length ? `${pendientes.length} acción${pendientes.length > 1 ? 'es' : ''}` : 'Todo al día'}
+                        </h3>
+                        {proximaRevision && <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>Próxima revisión: {proximaRevision}</p>}
+                    </div>
+                    {!pendientes.length && <CheckCircle2 size={20} style={{ color: '#16A34A' }} />}
+                </div>
+                {pendientes.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        {pendientes.map(p => (
+                            <button
+                                key={p.label}
+                                type="button"
+                                onClick={p.action}
+                                className="rounded-full border px-3 py-1.5 text-xs font-semibold"
+                                style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                            >
+                                {p.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Nota del día</p>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{consejo}</p>
             </section>
         </div>
     )
@@ -488,6 +744,20 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
             <div className="max-w-3xl mx-auto p-4 space-y-4">
 
                 {tab === 'plan' && (
+                    <HoyCliente
+                        data={data}
+                        codigo={codigo}
+                        notasNoLeidas={notasNoLeidas}
+                        diasDesdeUltimoCheckin={diasDesdeUltimoCheckin}
+                        proximaRevision={proximaRevision}
+                        onAbrirDieta={() => setTab('dieta')}
+                        onAbrirEntreno={() => setTab('entreno')}
+                        onAbrirCheckin={() => setTab('checkin')}
+                        onAbrirChat={() => setTab('chat')}
+                    />
+                )}
+
+                {tab === 'dieta' && (
                     <MiPlan
                         codigo={codigo}
                         plan={data.plan}
