@@ -1,9 +1,5 @@
-const CACHE = 'nutricoach-v4'
+const CACHE = 'nutricoach-v5'
 const STATIC_ASSETS = [
-    '/',
-    '/cliente',
-    '/recetas',
-    '/login',
     '/manifest.json',
     '/icon-192.svg',
     '/icon-512.svg',
@@ -47,6 +43,19 @@ self.addEventListener('fetch', (event) => {
 
     const pathname = url.pathname
 
+    // Next.js genera HTML/RSC/chunks que deben revalidarse en cada deploy.
+    // Cachearlos aquí puede mezclar módulos nuevos con chunks antiguos y romper
+    // imports del cliente ("module factory is not available").
+    if (
+        pathname.startsWith('/_next/') ||
+        pathname.endsWith('.js') ||
+        pathname.endsWith('.css') ||
+        pathname.endsWith('.map')
+    ) {
+        event.respondWith(fetch(request))
+        return
+    }
+
     // APIs cacheables → cache-first para lectura, network para escritura.
     // /api/alimentos no se cachea: el catálogo cambia por limpieza de BD y debe reflejarse al momento.
     const esApiCacheable = API_CACHE_ROUTES.some(route => pathname.startsWith(route))
@@ -80,35 +89,15 @@ self.addEventListener('fetch', (event) => {
         return
     }
 
-    // Navegaciones HTML → network first (chunks Next.js son hasheados, no reutilizar HTML viejo)
+    // Navegaciones HTML → solo red. Si no hay conexión, mostramos una pantalla mínima
+    // en vez de reutilizar HTML viejo incompatible con el build actual.
     if (request.mode === 'navigate') {
         event.respondWith(
             fetch(request)
-                .then(res => {
-                    if (res.ok) {
-                        const clone = res.clone()
-                        caches.open(CACHE).then(cache => cache.put(request, clone))
-                    }
-                    return res
-                })
-                .catch(() => caches.match(request).then(c => c || caches.match('/')))
-        )
-        return
-    }
-
-    // Assets estáticos Next.js (_next/static/**) → cache first (son inmutables por hash)
-    if (pathname.startsWith('/_next/static/')) {
-        event.respondWith(
-            caches.match(request).then(cached => {
-                if (cached) return cached
-                return fetch(request).then(res => {
-                    if (res.ok) {
-                        const clone = res.clone()
-                        caches.open(CACHE).then(cache => cache.put(request, clone))
-                    }
-                    return res
-                })
-            })
+                .catch(() => new Response(
+                    '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:system-ui;padding:24px;background:#0b0b0f;color:white"><h1>Sin conexión</h1><p>Vuelve a intentarlo cuando tengas internet.</p></body>',
+                    { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+                ))
         )
         return
     }
