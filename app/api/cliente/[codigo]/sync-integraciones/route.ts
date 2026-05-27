@@ -56,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   for (const integracion of integraciones ?? []) {
     if (integracion.proveedor === 'garmin_connect') {
       try {
-        if (!integracion.credenciales_json) throw new Error('Garmin Connect no tiene credenciales guardadas')
+        if (!integracion.credenciales_json) continue
         const sincronizados = await syncGarminClientDays(db, clienteId, integracion.credenciales_json, dias)
         await db
           .from('integraciones_cliente')

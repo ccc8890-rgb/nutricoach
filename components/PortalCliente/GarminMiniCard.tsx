@@ -10,7 +10,13 @@ interface GarminDatos {
   pasos: number | null
   stress_avg: number | null
   rhr: number | null
+  hrv: number | null
   calorias_totales: number | null
+  vo2max_running: number | null
+  vo2max_cycling: number | null
+  lactate_threshold_hr: number | null
+  training_acute_load: number | null
+  training_recovery_time_h: number | null
 }
 
 interface GarminStatus {
@@ -225,6 +231,66 @@ export default function GarminMiniCard({ codigo }: Props) {
                 <div>
                   <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{d.calorias_totales} kcal</p>
                   <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>TDEE hoy</p>
+                </div>
+              </div>
+            )}
+
+            {d.vo2max_running !== null && (
+              <div className="flex items-center gap-2.5 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(14,165,233,0.1)' }}>
+                  <Activity size={16} style={{ color: '#0EA5E9' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.vo2max_running)}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>VO2max</p>
+                </div>
+              </div>
+            )}
+
+            {d.hrv !== null && (
+              <div className="flex items-center gap-2.5 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)' }}>
+                  <HeartPulse size={16} style={{ color: '#10B981' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.hrv)} ms</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>VFC</p>
+                </div>
+              </div>
+            )}
+
+            {d.lactate_threshold_hr !== null && (
+              <div className="flex items-center gap-2.5 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(244,63,94,0.1)' }}>
+                  <HeartPulse size={16} style={{ color: '#F43F5E' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.lactate_threshold_hr)} ppm</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Umbral FC</p>
+                </div>
+              </div>
+            )}
+
+            {d.training_acute_load !== null && (
+              <div className="flex items-center gap-2.5 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.1)' }}>
+                  <Route size={16} style={{ color: '#A855F7' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.training_acute_load)}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Carga aguda</p>
+                </div>
+              </div>
+            )}
+
+            {d.training_recovery_time_h !== null && (
+              <div className="flex items-center gap-2.5 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(100,116,139,0.1)' }}>
+                  <Timer size={16} style={{ color: '#64748B' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.training_recovery_time_h)} h</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Recuperación</p>
                 </div>
               </div>
             )}

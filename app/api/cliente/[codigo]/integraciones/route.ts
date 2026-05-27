@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
     // Garmin Connect usa unofficial API (email/password), no tiene fila en integraciones_cliente
     // Detectamos su presencia por si hay filas en actividad_externa_cliente
     db.from('actividad_externa_cliente')
-      .select('fecha, body_battery_end, training_readiness, pasos, stress_avg, rhr, hrv, calorias_totales')
+      .select('fecha, body_battery_end, training_readiness, pasos, stress_avg, rhr, hrv, calorias_totales, raw_data')
       .eq('cliente_id', clienteId)
       .eq('proveedor', 'garmin_connect')
       .order('fecha', { ascending: false })
@@ -40,6 +40,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
   ])
 
   const garminIntegration = (integraciones ?? []).find(i => i.proveedor === 'garmin_connect')
+  const garminRaw = garminRow?.raw_data as Record<string, unknown> | null | undefined
   const garminConnect = garminRow
     ? {
         activa: true,
@@ -53,6 +54,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
           rhr: garminRow.rhr,
           hrv: garminRow.hrv,
           calorias_totales: garminRow.calorias_totales,
+          vo2max_running: asNumber(garminRaw?.vo2max_running),
+          vo2max_cycling: asNumber(garminRaw?.vo2max_cycling),
+          lactate_threshold_hr: asNumber(garminRaw?.lactate_threshold_hr),
+          training_acute_load: asNumber(garminRaw?.training_acute_load),
+          training_recovery_time_h: normalizeRecoveryHours(asNumber(garminRaw?.training_recovery_time_h)),
         },
       }
     : {
@@ -102,4 +108,16 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
   })
 
   return NextResponse.json({ integraciones: integraciones ?? [], garmin_connect: garminConnect, strava_resumen: stravaResumen, resumenes_proveedor })
+}
+
+function asNumber(value: unknown): number | null {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : null
+}
+
+function normalizeRecoveryHours(value: number | null): number | null {
+  if (value === null) return null
+  // Garmin suele devolver recoveryTime en minutos en Garmin Connect.
+  const hours = value > 300 ? value / 60 : value
+  return Math.round(hours)
 }

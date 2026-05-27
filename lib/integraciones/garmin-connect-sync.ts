@@ -55,6 +55,17 @@ interface GarminSleepData {
   }
 }
 
+interface GarminUserSettings {
+  userData?: {
+    vo2MaxRunning?: number | null
+    vo2MaxCycling?: number | null
+    lactateThresholdHeartRate?: number | null
+    lactateThresholdSpeed?: number | null
+    ftpAutoDetected?: boolean | null
+    thresholdHeartRateAutoDetected?: boolean | null
+  }
+}
+
 // Autenticación vía garmin-connect (unofficial, username/password)
 async function getGarminClient() {
   // Importación dinámica para evitar problemas en build de Next.js
@@ -100,6 +111,14 @@ async function getSleepData(gc: Awaited<ReturnType<typeof getGarminClient>>, dat
   }
 }
 
+async function getUserSettings(gc: Awaited<ReturnType<typeof getGarminClient>>): Promise<GarminUserSettings | null> {
+  try {
+    return await gc.getUserSettings() as GarminUserSettings
+  } catch {
+    return null
+  }
+}
+
 export interface GarminDayData {
   fecha: string
   pasos?: number
@@ -130,10 +149,11 @@ export async function syncGarminDay(
   const gc = gcInstance ?? await getGarminClient()
   const displayName = displayNameOverride ?? await getDailyDisplayName(gc)
 
-  const [summary, readiness, sleep] = await Promise.all([
+  const [summary, readiness, sleep, settings] = await Promise.all([
     getDailySummary(gc, displayName, date),
     getTrainingReadiness(gc, date),
     getSleepData(gc, date),
+    getUserSettings(gc),
   ])
 
   if (!summary) return null
@@ -197,6 +217,13 @@ export async function syncGarminDay(
       training_recovery_time_h: readiness?.recoveryTime,
       training_acute_load: readiness?.acuteLoad,
       hrv_weekly_avg_ms: readiness?.hrvWeeklyAverage ? readiness.hrvWeeklyAverage / 10 : null,
+      // Perfil de rendimiento Garmin
+      vo2max_running: settings?.userData?.vo2MaxRunning ?? null,
+      vo2max_cycling: settings?.userData?.vo2MaxCycling ?? null,
+      lactate_threshold_hr: settings?.userData?.lactateThresholdHeartRate ?? null,
+      lactate_threshold_speed: settings?.userData?.lactateThresholdSpeed ?? null,
+      ftp_auto_detected: settings?.userData?.ftpAutoDetected ?? null,
+      threshold_hr_auto_detected: settings?.userData?.thresholdHeartRateAutoDetected ?? null,
       // Sueño (si disponible)
       sueno_h: sueno_h ?? null,
       sueno_calidad: sleep?.sleepScores?.overall?.value ?? null,
