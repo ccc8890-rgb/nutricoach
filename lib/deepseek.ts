@@ -44,6 +44,8 @@ export interface DietaGenerada {
     comidas: {
         nombre: string
         orden: number
+        origen_adherencia?: 'recetario' | 'habitual_adaptado' | 'novedad_controlada' | 'manual'
+        adaptacion_habitual?: string
         alimentos: {
             receta_id: string
             receta_nombre: string
@@ -107,6 +109,8 @@ export function construirPrompt(
 - Ajusta porciones para cumplir macros del slot (±8%)
 - Prioriza variedad (no repetir receta en distintas comidas del mismo día)
 - Intolerancias y restricciones del cliente son LÍMITES DUROS, nunca los violes
+- Si el cliente declaró dieta habitual, escucha primero: respeta platos razonables, optimiza cantidades y usa recetas nuevas como alternativas progresivas
+- Cuando un slot venga de su dieta habitual, marca "origen_adherencia": "habitual_adaptado" y explica el ajuste en "adaptacion_habitual"
 - Patologías especiales:
   * DIABETES / RESISTENCIA A INSULINA → prioriza recetas con azúcares < 10g/100g
   * HIPERTENSIÓN → sodio < 400mg/100g, evita embutidos
@@ -130,6 +134,8 @@ SCHEMA DE SALIDA JSON (respeta todos los campos):
     {
       "nombre": "Desayuno",
       "orden": 1,
+      "origen_adherencia": "habitual_adaptado",
+      "adaptacion_habitual": "Mantengo café y tostada; ajusto pan, aceite y proteína para llegar al objetivo.",
       "alimentos": [
         {
           "receta_id": "uuid-exacto-de-la-lista",
@@ -185,6 +191,8 @@ LO QUE DEBES HACER:
    - Adapta al nivel de cocina y tiempo disponible del cliente
    - Varía: nunca repitas la misma receta dos veces en un mismo día
    - Prioriza recetas altas en proteína en post-entreno y cena
+   - Si el cliente indicó un plato habitual, NO lo ignores: mantén la idea base y selecciona la receta del recetario más parecida o una alternativa compatible
+   - Evita cambios bruscos: mezcla familiaridad + mejora nutricional + pequeñas novedades
 
 2. ESCRIBIR "notas_cliente" — mensaje personalizado al cliente (3-4 frases):
    - En tono de coach cercano: "Tu plan está diseñado para..."
@@ -204,6 +212,7 @@ LO QUE DEBES HACER:
    - "proxima_revision": qué ajustar si en 3 semanas no hay progreso
 
 FILOSOFÍA: Cada plan que generas es el que un nutricionista de 150-200€/sesión daría. Tiene base científica, personalización real, y el cliente entiende por qué come lo que come. No es un template, es un plan de esa persona en concreto.
+ADHERENCIA: El mejor plan no es el más perfecto en papel; es el que el cliente sigue. Escucha sus hábitos declarados y transfórmalos con criterio.
 
 RESPONDE ÚNICAMENTE EN JSON VÁLIDO. Sin markdown, sin explicaciones fuera del JSON.`
 

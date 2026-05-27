@@ -87,6 +87,16 @@ interface PerfilProfundo {
   alimentos_evitar_extra?: string
 }
 
+interface PlatoHabitual {
+  id: string
+  momento: string
+  texto_original: string
+  estrategia?: string
+  ingredientes_clave?: string[]
+  importancia_adherencia?: string
+  fuente?: string
+}
+
 interface RecetaSugerida {
   id: string
   nombre: string
@@ -158,6 +168,7 @@ export default function RevisarPlanPage() {
   const [versiones, setVersiones] = useState<RegistroIA[]>([])
   const [versionIdx, setVersionIdx] = useState(0)
   const [perfilProfundo, setPerfilProfundo] = useState<PerfilProfundo | null>(null)
+  const [dietaHabitual, setDietaHabitual] = useState<PlatoHabitual[]>([])
   const [showPerfilProfundo, setShowPerfilProfundo] = useState(false)
   const [recetasPorComida, setRecetasPorComida] = useState<Record<number, RecetaSugerida[]>>({})
   const [cargandoRecetas, setCargandoRecetas] = useState(false)
@@ -203,7 +214,7 @@ export default function RevisarPlanPage() {
       fetch(`/api/clientes/${id}/revisar-data`).then(r => r.json()),
       supabase.from('planes_entrenamiento').select('id').eq('cliente_id', id).eq('activo', true).limit(1),
     ])
-      .then(([{ cliente: c, onboarding: o, registros: rs, perfilProfundo: pp }, { data: planesExistentes }]) => {
+      .then(([{ cliente: c, onboarding: o, registros: rs, perfilProfundo: pp, dietaHabitual: dh }, { data: planesExistentes }]) => {
         setCliente(c as ClienteData)
         setOnboarding(o as OnboardingData)
         const registros = (rs ?? []) as RegistroIA[]
@@ -214,6 +225,7 @@ export default function RevisarPlanPage() {
           cargarRecetasPlan(registros[0].respuesta_json)
         }
         if (pp) setPerfilProfundo(pp as PerfilProfundo)
+        setDietaHabitual((dh ?? []) as PlatoHabitual[])
         setLoading(false)
 
         // Auto-generar plan de entrenamiento si no hay ninguno activo
@@ -586,6 +598,49 @@ export default function RevisarPlanPage() {
           </dl>
         )}
       </div>
+
+      {dietaHabitual.length > 0 && (
+        <div className="card p-4">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <h2 className="font-semibold text-[var(--text)]">Dieta habitual detectada</h2>
+              <p className="text-xs mt-1 text-[var(--text-muted)]">
+                El motor debe respetar estos hábitos, ajustar cantidades y proponer novedades de forma progresiva.
+              </p>
+            </div>
+            <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
+              Adherencia
+            </span>
+          </div>
+          <div className="space-y-2">
+            {dietaHabitual.map(plato => (
+              <div key={plato.id} className="rounded-xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                <div className="flex items-center justify-between gap-3 mb-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                    {plato.momento.replace('_', ' ')} · {plato.fuente === 'favoritos' ? 'favorito' : 'día típico'}
+                  </p>
+                  <span className="text-[10px] font-medium" style={{ color: 'var(--primary)' }}>
+                    {plato.importancia_adherencia ?? 'media'}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-[var(--text)]">{plato.texto_original}</p>
+                {plato.estrategia && (
+                  <p className="text-xs mt-1 text-[var(--text-muted)]">{plato.estrategia}</p>
+                )}
+                {(plato.ingredientes_clave?.length ?? 0) > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {plato.ingredientes_clave!.map(ing => (
+                      <span key={ing} className="text-[10px] px-2 py-1 rounded-full border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+                        {ing}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Perfil profundo — colapsable */}
       {perfilProfundo && (

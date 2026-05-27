@@ -20,6 +20,7 @@ export async function GET(
       { data: onboarding },
       { data: registros },
       { data: perfilProfundo },
+      { data: dietaHabitual },
     ] = await Promise.all([
       sb.from('clientes')
         .select('*, profiles!profile_id(nombre, apellidos, email)')
@@ -38,6 +39,10 @@ export async function GET(
         .select('*')
         .eq('cliente_id', id)
         .maybeSingle(),
+      sb.from('dieta_habitual_cliente')
+        .select('*')
+        .eq('cliente_id', id)
+        .order('created_at', { ascending: true }),
     ])
 
     if (!cliente) {
@@ -49,6 +54,7 @@ export async function GET(
       onboarding,
       registros: registros ?? [],
       perfilProfundo,
+      dietaHabitual: dietaHabitual ?? [],
     })
   } catch (error) {
     console.error('Error en GET /api/clientes/[id]/revisar-data:', error)

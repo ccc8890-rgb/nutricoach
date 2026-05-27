@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { guardarDietaHabitualCliente } from '@/lib/dieta-habitual'
 
 export async function POST(request: NextRequest) {
   const supabaseAuth = createApiSupabase(request)
@@ -106,6 +107,14 @@ export async function POST(request: NextRequest) {
     console.error('[onboarding/completo] Error perfil profundo:', profundoError)
     return NextResponse.json({ error: 'Error al guardar perfil profundo' }, { status: 500 })
   }
+
+  await guardarDietaHabitualCliente(db, cliente.id, {
+    dia_tipico: body.dia_tipico,
+    comidas_favoritas: body.comidas_favoritas,
+    alimentos_base: body.alimentos_base || null,
+  }).catch(error => {
+    console.error('[onboarding/completo] Error dieta habitual:', error)
+  })
 
   // 4. Marcar onboarding completado
   await db

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { guardarDietaHabitualCliente } from '@/lib/dieta-habitual'
 
 // GET — devuelve datos del onboarding básico para saber si es atleta y el cliente_id
 export async function GET(request: NextRequest) {
@@ -92,6 +93,14 @@ export async function POST(request: NextRequest) {
   if (upsertError) {
     return NextResponse.json({ error: 'Error al guardar perfil' }, { status: 500 })
   }
+
+  await guardarDietaHabitualCliente(supabase, cliente.id, {
+    dia_tipico: body.dia_tipico || null,
+    comidas_favoritas: body.comidas_favoritas || null,
+    alimentos_base: body.alimentos_base || null,
+  }).catch(error => {
+    console.error('[onboarding/perfil] Error dieta habitual:', error)
+  })
 
   // Marcar onboarding como completado
   await supabase

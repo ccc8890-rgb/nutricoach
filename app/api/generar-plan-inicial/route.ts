@@ -15,6 +15,7 @@ import { calcularGramajeAjustado } from '@/lib/ingredient-roles'
 import { calcularAjustesPeriEntreno } from '@/lib/nutricion-peri-entreno'
 import { getContextoCoach, getContextoClienteClinico, getTargetsComidas } from '@/lib/metodologia-recetario'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
+import { extraerDietaHabitual, formatearDietaHabitualParaPrompt, guardarDietaHabitualCliente, type PlatoHabitualCliente } from '@/lib/dieta-habitual'
 import type { PerfilEntrenoCliente, RecetaCandidata, SportModality } from '@/types'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
@@ -241,6 +242,30 @@ export async function POST(request: NextRequest) {
     .select('*')
     .eq('cliente_id', cliente_id)
     .single()
+
+  let dietaHabitual = [] as PlatoHabitualCliente[]
+  const { data: dietaHabitualDb } = await supabase
+    .from('dieta_habitual_cliente')
+    .select('*')
+    .eq('cliente_id', cliente_id)
+    .order('created_at', { ascending: true })
+
+  if (dietaHabitualDb?.length) {
+    dietaHabitual = dietaHabitualDb as PlatoHabitualCliente[]
+  } else if (perfil?.dia_tipico || perfil?.comidas_favoritas) {
+    dietaHabitual = extraerDietaHabitual({
+      dia_tipico: perfil?.dia_tipico,
+      comidas_favoritas: perfil?.comidas_favoritas,
+      alimentos_base: perfil?.alimentos_base,
+    })
+    if (dietaHabitual.length > 0) {
+      guardarDietaHabitualCliente(supabase, cliente_id, {
+        dia_tipico: perfil?.dia_tipico,
+        comidas_favoritas: perfil?.comidas_favoritas,
+        alimentos_base: perfil?.alimentos_base,
+      }).catch(error => console.error('[generar-plan-inicial] Error guardando dieta habitual:', error))
+    }
+  }
 
   const { data: metodologia } = await supabase
     .from('metodologia_coach')
@@ -518,6 +543,16 @@ ${preferidos.length > 0 ? `- Alimentos preferidos como sustitutos: ${preferidos.
 ═══ ALIMENTACIÓN ACTUAL ═══
 ${perfil?.dia_tipico ? `- Día típico: ${perfil.dia_tipico}` : '- Sin datos de alimentación actual'}
 
+═══ PLATOS HABITUALES A RESPETAR Y ADAPTAR ═══
+${formatearDietaHabitualParaPrompt(dietaHabitual)}
+
+REGLAS DE ADHERENCIA:
+- No impongas una dieta nueva si el cliente ya declaró platos habituales razonables.
+- Mantén la identidad del plato habitual y ajusta cantidades, proteína, fibra o timing.
+- Introduce recetas nuevas de forma progresiva como alternativas, no como sustitución brusca.
+- Si una comida habitual no encaja perfecta, ofrece una versión optimizada y dos alternativas similares del recetario.
+- Marca como "habitual_adaptado" cualquier slot que venga claramente del día típico o favoritos.
+
 ═══ LOGÍSTICA ═══
 - Nivel cocina: ${onboarding.nivel_cocina} | Tiempo: ${onboarding.tiempo_cocina_min} min/día
 ${onboarding.presupuesto_semanal_eur ? `- Presupuesto: ${onboarding.presupuesto_semanal_eur}€/semana` : ''}
@@ -670,6 +705,8 @@ Devuelve ÚNICAMENTE el siguiente JSON sin texto adicional:
       "receta_nombre": "nombre",
       "cantidad_porciones": 1,
       "alternativas": ["uuid-alternativa-1", "uuid-alternativa-2"],
+      "origen_adherencia": "habitual_adaptado|recetario|novedad_controlada",
+      "adaptacion_habitual": "qué se respetó del hábito y qué se ajustó",
       "notas_peri_entreno": "nota si aplica"
     }
   ],
@@ -770,6 +807,8 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
             hora_sugerida: distribucionProteina.comidas[index]?.hora_sugerida ||
               ({ Desayuno: '08:00', Comida: '13:30', Merienda: '17:00', Cena: '20:30' } as Record<string, string>)[c.nombre] ||
               undefined,
+            origen_adherencia: c.origen_adherencia ?? 'recetario',
+            adaptacion_habitual: c.adaptacion_habitual ?? null,
             proteinas_g: proteinaComida,
             notas: `Proteína objetivo: ${proteinaComida}g`,
             recetas: c.alimentos.map(a => {
@@ -1048,6 +1087,8 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           kcal_target: (comida.kcal_target as number) || null,
           proteinas_target: (comida.proteinas_target as number) || null,
           notas_peri_entreno: (comida.notas_peri_entreno as string) || null,
+          origen_adherencia: (comida.origen_adherencia as string) || 'recetario',
+          adaptacion_habitual: (comida.adaptacion_habitual as string) || null,
           receta_id: recetaIdPrincipal || null,
         })
         .select()
