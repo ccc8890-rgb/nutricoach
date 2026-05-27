@@ -1,0 +1,635 @@
+{
+  "recetas": [
+    {
+      "nombre": "Bowl proteico de yogur con frutos rojos y crujiente de avena",
+      "descripcion": "Desayuno completo y saciante que combina yogur griego cremoso con frutos rojos y un crujiente de avena horneado. Listo en 10 minutos, ideal para empezar el día con proteína de calidad.",
+      "categoria": "Desayuno",
+      "porciones": 1,
+      "descripcion_porcion": "1 bol mediano (400g aprox)",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 8,
+      "kcal": 380,
+      "proteinas": 32,
+      "carbohidratos": 38,
+      "grasas": 9,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Yogur griego natural desnatado",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Frutos rojos congelados",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Copos de avena",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Claras de huevo pasteurizadas",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Aceite de oliva virgen extra",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Mezcla los copos de avena con las claras de huevo y el aceite de oliva. Extiende sobre una bandeja con papel de horno. 2. Hornea 8 minutos a 180°C hasta que esté dorado y crujiente. Remueve a mitad de horneado. 3. Sirve el yogur griego en un bol, añade los frutos rojos congelados (se descongelarán con el calor del yogur). 4. Espolvorea el crujiente de avena por encima y termina con canela molida.",
+      "consejos": "Puedes preparar el crujiente de avena para varios días y guardarlo en un tarro hermético. Si prefieres más dulce, añade 2g de edulcorante al yogur.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "bajo_azucar",
+        "desayuno_rapido"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "desayuno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "uso_personal": false,
+      "batch_cooking": false,
+      "tupper": false,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "adherencia_score": 92,
+      "coste_estimado_nivel": "bajo",
+      "intolerancias": [
+        "Sin Gluten"
+      ],
+      "nota_adherencia": "Sabe a postre pero es un desayuno completo. El crujiente de avena casero elimina la necesidad de comprar granola procesada llena de azúcar.",
+      "imagen_prompt": "Fotografia realista de un bol con yogur griego blanco cremoso cubierto de frutos rojos brillantes arandanos frambuesas trocitos y un crujiente de avena dorado espolvoreado con canela. Luz natural de mañana, encimera de cocina blanca, texturas visibles, estilo foodie premium, sin aspecto IA."
+    },
+    {
+      "nombre": "Tostadas de pan integral con aguacate, huevo poché y tomate",
+      "descripcion": "Clásico brunch adaptado a nutrición deportiva. Pan integral crujiente, aguacate cremoso, huevo poché con yema líquida y tomate natural. Proteína de calidad y grasas saludables.",
+      "categoria": "Desayuno",
+      "porciones": 1,
+      "descripcion_porcion": "2 tostadas completas",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 8,
+      "kcal": 420,
+      "proteinas": 26,
+      "carbohidratos": 34,
+      "grasas": 20,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Pan integral de molde",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Aceite de oliva virgen extra",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Tuesta las rebanadas de pan integral hasta que estén doradas. 2. Pela el aguacate, retira el hueso y aplástalo con un tenedor. Unta sobre las tostadas. 3. Lleva agua a ebullición en un cazo, baja el fuego. Casca el huevo en un bol pequeño y deslízalo suavemente al agua. Cocina 4 minutos. Retira con espumadera. 4. Corta el tomate en rodajas finas y colócalo sobre el aguacate. 5. Coloca el huevo poché encima y aliña con un hilo de aceite de oliva virgen extra.",
+      "consejos": "Para un huevo poché perfecto, añade un chorrito de vinagre al agua. Si entrenas por la mañana, dobla la ración de huevo a 3 claras + 1 yema.",
+      "tags": [
+        "alta_proteina",
+        "grasas_saludables",
+        "chef_healthy",
+        "saciante",
+        "sin_gluten_opcional"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "desayuno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "mediterranea"
+      ],
+      "premium_chef": true,
+      "uso_personal": false,
+      "batch_cooking": false,
+      "tupper": false,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "adherencia_score": 94,
+      "coste_estimado_nivel": "medio",
+      "intolerancias": [],
+      "nota_adherencia": "Reinterpreta el brunch dominical en una versión equilibrada que el cliente puede tomar cualquier día sin sentir que está a dieta.",
+      "imagen_prompt": "Fotografia realista de dos tostadas de pan integral en plato blanco con aguacate verde machacado, rodajas de tomate rojo y un huevo poché con yema brillante a punto de romperse. Hilo de aceite de oliva. Luz natural, mantel de lino claro, estilo desayuno premium, ingredientes reconocibles, sin aspecto IA."
+    },
+    {
+      "nombre": "Bowl mediterráneo de pollo con quinoa y verduras asadas",
+      "descripcion": "Plato completo tipo bowl con pollo marinado, quinoa esponjosa, verduras asadas al punto y un toque de hummus. Ideal para comer de tupper o en casa con máxima adherencia.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande (550g aprox)",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 25,
+      "kcal": 520,
+      "proteinas": 42,
+      "carbohidratos": 45,
+      "grasas": 16,
+      "fibra": 10,
+      "ingredientes": [
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Quinoa",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Pimiento rojo",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Calabacín",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Tomate cherry",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Hummus",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Aceite de oliva virgen extra",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 4
+        }
+      ],
+      "instrucciones": "1. Lava la quinoa y cuécela en agua hirviendo con una pizca de sal durante 15 minutos. Escurre y reserva. 2. Corta el pimiento rojo y el calabacín en tiras. 3. Salpimienta la pechuga de pollo. En una sartén con 5g de aceite de oliva, cocina el pollo 4 minutos por cada lado. Retira y deja reposar. 4. En la misma sartén con 5g de aceite restante y el ajo picado, saltea las verduras 5-6 minutos hasta que estén tiernas pero firmes. 5. Monta el bowl: base de quinoa, pollo en tiras, verduras asadas, tomates cherry partidos por la mitad y una cucharada de hummus. 6. Aliña con un hilo de aceite de oliva virgen extra.",
+      "consejos": "Puedes duplicar las cantidades y preparar dos bowls para comida y cena. El hummus se puede sustituir por yogur griego especiado para variar el perfil de grasas.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "alto_volumen",
+        "tupper_amigable"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general",
+        "entreno_fuerza"
+      ],
+      "momentos": [
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "mediterranea",
+        "tupper"
+      ],
+      "premium_chef": true,
+      "uso_personal": false,
+      "batch_cooking": true,
+      "tupper": true,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "adherencia_score": 91,
+      "coste_estimado_nivel": "medio",
+      "intolerancias": [
+        "Sin Gluten"
+      ],
+      "nota_adherencia": "Un bowl completo que cubre todos los macronutrientes sin parecer un plato de dieta. La presentación por ingredientes separados invita a comerlo todo.",
+      "imagen_prompt": "Fotografia realista de un bowl blanco con quinoa esponjosa de base, tiras de pechuga de pollo doradas, pimiento rojo asado, calabacín salteado, tomates cherry rojos partidos y una cucharada de hummus cremoso. Luz natural, encimera de cocina, texturas visibles, estilo foodie saludable, sin aspecto IA."
+    },
+    {
+      "nombre": "Tacos de lechuga con carne picada de ternera y guacamole",
+      "descripcion": "Version fit de los tacos tradicionales. Hoja de lechuga crujiente como envoltorio, carne de ternera magra salteada con especias, guacamole casero y pico de gallo fresco.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "4 tacos grandes",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 10,
+      "kcal": 420,
+      "proteinas": 34,
+      "carbohidratos": 16,
+      "grasas": 24,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Carne picada de ternera magra",
+          "cantidad_gramos": 140
+        },
+        {
+          "nombre": "Lechuga Iceberg",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Cilantro fresco",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Aceite de oliva virgen extra",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Prepara el guacamole: machaca el aguacate con la mitad del tomate picado, 10g de cebolla picada, cilantro y zumo de limón. Reserva. 2. Prepara el pico de gallo: pica el tomate restante y la cebolla restante en cubitos pequeños. Mezcla. 3. Calienta el aceite de oliva en una sartén antiadherente. Añade la carne picada y cocina 6-8 minutos removiendo hasta que esté dorada y suelta. Condimenta con comino y pimentón. 4. Separa 4 hojas grandes enteras de lechuga Iceberg para usar como wraps. 5. Rellena cada hoja con carne, guacamole y pico de gallo. Sirve inmediatamente.",
+      "consejos": "Puedes sustituir la ternera por pollo picado o pavo. Para un toque extra de proteína, añade 30g de queso batido 0% al guacamole.",
+      "tags": [
+        "alta_proteina",
+        "bajo_carbohidratos",
+        "comfort_healthy",
+        "sin_gluten",
+        "divertido"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy"
+      ],
+      "premium_chef": true,
+      "uso_personal": false,
+      "batch_cooking": false,
+      "tupper": false,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "adherencia_score": 95,
+      "coste_estimado_nivel": "medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lactosa"
+      ],
+      "nota_adherencia": "Sabe a 'comida trampa' pero son ingredientes limpios. Los tacos de lechuga engañan al cerebro haciéndole creer que está comiendo algo prohibido.",
+      "imagen_prompt": "Fotografia realista de 4 tacos hechos con hojas verdes de lechuga Iceberg rellenas de carne picada de ternera dorada, guacamole cremoso verde y pico de gallo rojo. Sobre tabla de madera rústica, luz natural, gotas de limón visibles, estilo street food mexicano saludable, sin aspecto IA."
+    },
+    {
+      "nombre": "Wrap integral de pavo con queso fresco y verduras crujientes",
+      "descripcion": "Cena ligera y saciante con proteína magra, vegetales frescos y un toque cremoso. Se prepara en 5 minutos y no necesita cocción más allá del relleno.",
+      "categoria": "Cena",
+      "porciones": 1,
+      "descripcion_porcion": "1 wrap grande",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 3,
+      "kcal": 370,
+      "proteinas": 32,
+      "carbohidratos": 34,
+      "grasas": 10,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Tortilla de trigo integral",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Pechuga de pavo cocida",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Queso fresco batido 0% materia grasa",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Lechuga",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Zanahoria",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Aceite de oliva virgen extra",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Calienta la tortilla integral en una sartén seca 30 segundos por cada lado para que sea más manejable. 2. Unta el queso fresco batido sobre la tortilla caliente. 3. Coloca las hojas de lechuga lavadas, el pavo cocido en lonchas finas, el tomate en rodajas y la zanahoria rallada. 4. Aliña con el aceite de oliva virgen extra. 5. Cierra el wrap doblando los laterales hacia dentro y enrollando firmemente. Corta por la mitad en diagonal.",
+      "consejos": "Puedes preparar los ingredientes por la mañana y montar el wrap en la cena. Para más proteína, añade 30g de pechuga de pavo extra.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "rapido",
+        "bajo_calorias"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "uso_personal": false,
+      "batch_cooking": false,
+      "tupper": true,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "adherencia_score": 90,
+      "coste_estimado_nivel": "bajo",
+      "intolerancias": [],
+      "nota_adherencia": "Una cena que no parece de dieta porque sabe a sandwich enrollado. La textura crujiente de la verdura y el cremoso del queso fresco hacen que no se eche de menos la salsa.",
+      "imagen_prompt": "Fotografia realista de un wrap integral cortado por la mitad en diagonal, mostrando el interior con capas de pavo rosa claro, lechuga verde crujiente, tomate rojo y zanahoria rallada naranja. Sobre tabla de cortar de madera, luz natural de tarde, estilo cena saludable apetecible, sin aspecto IA."
+    },
+    {
+      "nombre": "Salmón al horno con espárragos y puré de boniato",
+      "descripcion": "Cena de chef healthy con salmón jugoso, espárragos al dente y puré cremoso de boniato. Rica en omega-3, vitamina A y fibra. Cocción en una sola bandeja, mínima limpieza.",
+      "categoria": "Cena",
+      "porciones": 1,
+      "descripcion_porcion": "1 ración de salmón con guarnición",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 30,
+      "kcal": 490,
+      "proteinas": 36,
+      "carbohidratos": 32,
+      "grasas": 22,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Salmón fresco",
+          "cantidad_gramos": 160
+        },
+        {
+          "nombre": "Boniato",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Espárragos verdes",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Aceite de oliva virgen extra",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 4
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 10
+        }
+      ],
+      "instrucciones": "1. Precalienta el horno a 200°C. 2. Pela el boniato, córtalo en cubos y hiérvelo 15 minutos hasta que esté tierno. 3. Mientras, coloca el salmón en una bandeja de horno con papel vegetal. Aliña con aceite de oliva, ajo picado y zumo de limón. 4. Añade los espárragos a la misma bandeja, rociados con un poco de aceite. 5. Hornea el salmón y los espárragos 12-15 minutos. 6. Escurre el boniato y tritúralo con un tenedor o pasapurés hasta obtener un puré cremoso. 7. Sirve el salmón con los espárragos y el puré de boniato.",
+      "consejos": "Puedes añadir una cucharada de yogur griego al puré de boniato para hacerlo más cremoso sin añadir mantequilla. El salmón sobrante se desmenuza frío sobre ensalada al día siguiente.",
+      "tags": [
+        "alta_proteina",
+        "omega_3",
+        "chef_healthy",
+        "saciante",
+        "cena_completa"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general",
+        "entreno_fuerza"
+      ],
+      "momentos": [
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "gourmet_simple"
+      ],
+      "premium_chef": true,
+      "uso_personal": false,
+      "batch_cooking": false,
+      "tupper": false,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "adherencia_score": 93,
+      "coste_estimado_nivel": "alto",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lactosa"
+      ],
+      "nota_adherencia": "Plato de restaurante convertido en cena fitness. El puré de boniato da esa textura reconfortante que se busca al final del día sin recurrir a hidratos refinados.",
+      "imagen_prompt": "Fotografia realista de un plato blanco con un filete de salmón al horno con costra dorada, espárragos verdes asados al lado y un puré de boniato cremoso de color naranja intenso. Rodaja de limón, luz natural de cocina, texturas visibles, estilo restaurante saludable, sin aspecto IA."
+    },
+    {
+      "nombre": "Tiramisú proteico de yogur griego y café",
+      "descripcion": "Versión fit del clásico italiano. Capas de yogur griego y queso batido con café, cacao y un toque crujiente de galleta de soja. Sin azúcar añadido ni nata montada.",
+      "categoria": "Postre",
+      "porciones": 1,
+      "descripcion_porcion": "1 vaso o copa individual (300ml)",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 0,
+      "kcal": 260,
+      "proteinas": 28,
+      "carbohidratos": 22,
+      "grasas": 5,
+      "fibra": 2,
+      "ingredientes": [
+        {
+          "nombre": "Yogur griego natural desnatado",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Queso fresco batido 0% materia grasa",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Café soluble",
+          "cantidad_gramos": 4
+        },
+        {
+          "nombre": "Bizcochos de soja",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Cacao en polvo desgrasado",
+          "cantidad_gramos": 6
+        },
+        {
+          "nombre": "Edulcorante apto cocina",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Mezcla el yogur griego con el queso batido y el edulcorante hasta obtener una crema homogénea. 2. Disuelve el café soluble en 30ml de agua caliente. Deja enfriar. 3. En un vaso o copa, coloca una capa de bizcochos de soja ligeramente humedecidos en café. 4. Añade una capa de crema de yogur. Repite: otra capa de bizcochos humedecidos y otra de crema. 5. Termina espolvoreando cacao en polvo desgrasado por encima con un colador fino. 6. Refrigera al menos 30 minutos para que los sabores se integren.",
+      "consejos": "Puedes preparar varios vasos y tener postre para 3-4 días. Si no encuentras bizcochos de soja, usa galleta de arroz inflada ligeramente humedecida.",
+      "tags": [
+        "alta_proteina",
+        "bajo_grasa",
+        "chef_healthy",
+        "postre_fit",
+        "sin_azucar"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "post_entreno",
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "gourmet_simple"
+      ],
+      "premium_chef": true,
+      "uso_personal": false,
+      "batch_cooking": true,
+      "tupper": false,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "adherencia_score": 96,
+      "coste_estimado_nivel": "bajo",
+      "intolerancias": [
+        "Sin Gluten"
+      ],
+      "nota_adherencia": "Sabe a pecado pero tiene 28g de proteína y 5g de grasa. Ideal para el antojo dulce post-cena o como premio post-entreno sin descarrilar la dieta.",
+      "imagen_prompt": "Fotografia realista de un vaso transparente mostrando capas alternas de crema blanca de yogur y bizcochos oscurecidos por café, con una capa superior de cacao en polvo espolvoreado. Cuchara de postre al lado, luz natural, texturas cremosas visibles, estilo pasteleria saludable, sin aspecto IA."
+    },
+    {
+      "nombre": "Mug cake proteico de chocolate",
+      "descripcion": "Bizcocho individual esponjoso listo en 2 minutos al microondas. Sin harinas refinadas ni azúcar, con proteína de suero y cacao. Satisface el antojo de chocolate al instante.",
+      "categoria": "Merienda",
+      "porciones": 1,
+      "descripcion_porcion": "1 mug cake (taza mediana)",
+      "tiempo_prep_min": 3,
+      "tiempo_coccion_min": 2,
+      "kcal": 230,
+      "proteinas": 28,
+      "carbohidratos": 12,
+      "grasas": 7,
+      "fibra": 3,
+      "ingredientes": [
+        {
+          "nombre": "Proteína de suero sabor chocolate",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Yogur griego natural desnatado",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Cacao en polvo desgrasado",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Levadura química",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. En una taza mediana (300ml), casca el huevo y bátelo con un tenedor. 2. Añade el yogur griego y mezcla hasta integrar. 3. Incorpora la proteína de suero, el cacao en polvo y la levadura química. Remueve hasta obtener una masa homogénea sin grumos. 4. Introduce la taza en el microondas y cocina 1 minuto y 30 segundos a máxima potencia. 5. Deja reposar 30 segundos antes de comer. El mug cake subirá y tendrá textura de bizcocho esponjoso.",
+      "consejos": "Puedes acompañarlo con 40g de yogur griego extra a modo de frosting. Si usas proteína sabor vainilla, añade 5g de cacao extra para potenciar el sabor chocolate.",
+      "tags": [
+        "alta_proteina",
+        "sin_azucar",
+        "rapido",
+        "postre_fit",
+        "chef_healthy"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "merienda",
+        "post_entreno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "uso_personal": false,
+      "batch_cooking": false,
+      "tupper": false,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "adherencia_score": 97,
+      "coste_estimado_nivel": "bajo",
+      "intolerancias": [
+        "Sin Gluten"
+      ],
+      "nota_adherencia": "El antojo de chocolate resuelto en 2 minutos sin romper la dieta. Saber que tienes esto disponible elimina la tentación de comprar bollería industrial.",
+      "imagen_prompt": "Fotografia realista de una taza de cerámica blanca con un bizcocho esponjoso de chocolate que ha subido por encima del borde. Textura esponjosa visible, espolvoreado ligero de cacao, cuchara al lado, luz natural de cocina, estilo merienda casera saludable, sin aspecto IA."
+    }
+  ]
+}
