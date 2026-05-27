@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { esIngredienteBasicoNoCompra } from '@/lib/lista-compra/filtros'
+import { canonicalizarItemCompra, esIngredienteBasicoNoCompra } from '@/lib/lista-compra/filtros'
 import type { IngredienteSemanal, PrecioOpcion, ResumenSupermercado } from '@/types'
 
 function getLunesActual(): string {
@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
         // 3. Agregar cantidades por alimento (sumar si aparece en varias comidas)
         const mapaAlimentos = new Map<string, {
             alimento_id: string
+            alimento_ids: string[]
             alimento_nombre: string
             categoria: string
             es_generico: boolean
@@ -83,17 +84,20 @@ export async function GET(request: NextRequest) {
                 const a = ca.alimentos
                 if (!a) continue
                 if (esIngredienteBasicoNoCompra(a.nombre)) continue
-                const existing = mapaAlimentos.get(a.id)
+                const canonical = canonicalizarItemCompra({ id: a.id, nombre: a.nombre, categoria: a.categoria })
+                const existing = mapaAlimentos.get(canonical.key)
                 if (existing) {
                     existing.cantidad_gramos_total += ca.cantidad_gramos || 0
+                    existing.alimento_ids = Array.from(new Set([...existing.alimento_ids, a.id]))
                     if (!existing.recetas_origen.includes(comida.nombre)) {
                         existing.recetas_origen.push(comida.nombre)
                     }
                 } else {
-                    mapaAlimentos.set(a.id, {
+                    mapaAlimentos.set(canonical.key, {
                         alimento_id: a.id,
-                        alimento_nombre: a.nombre,
-                        categoria: a.categoria || 'Otros',
+                        alimento_ids: [a.id],
+                        alimento_nombre: canonical.nombre,
+                        categoria: canonical.categoria,
                         es_generico: a.es_generico ?? false,
                         cantidad_gramos_total: ca.cantidad_gramos || 0,
                         recetas_origen: [comida.nombre],
@@ -102,7 +106,7 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        const alimentoIds = Array.from(mapaAlimentos.keys())
+        const alimentoIds = Array.from(new Set(Array.from(mapaAlimentos.values()).flatMap(item => item.alimento_ids)))
 
         // 4. Obtener todos los precios para estos alimentos en todos los supers
         const { data: todosPrecios } = await srv
@@ -150,7 +154,7 @@ export async function GET(request: NextRequest) {
         const ingredientes: IngredienteSemanal[] = []
 
         for (const [, item] of mapaAlimentos) {
-            const preciosRaw = mapaPrecios.get(item.alimento_id) || []
+            const preciosRaw = item.alimento_ids.flatMap(id => mapaPrecios.get(id) || [])
             const gramos = item.cantidad_gramos_total
 
             // Ordenar por precio ascendente y marcar el más barato
@@ -168,7 +172,7 @@ export async function GET(request: NextRequest) {
                 es_mas_barato: p.precio_por_kg === precioMin,
             }))
 
-            const selRaw = mapaSelecciones.get(item.alimento_id)
+            const selRaw = item.alimento_ids.map(id => mapaSelecciones.get(id)).find(Boolean)
             const seleccion = selRaw ? {
                 id: selRaw.id,
                 cliente_id: plan.cliente_id,

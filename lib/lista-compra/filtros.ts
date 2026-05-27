@@ -28,3 +28,38 @@ export function esIngredienteBasicoNoCompra(nombre: string | null | undefined) {
 
     return /^sal(?:\s+(?:fina|gruesa|marina|yodada|rosa|del himalaya|en escamas))?$/.test(text)
 }
+
+type AlimentoCompraBase = {
+    id: string
+    nombre: string
+    categoria?: string | null
+}
+
+export function canonicalizarItemCompra(alimento: AlimentoCompraBase) {
+    const nombre = normalizarNombreCompra(alimento.nombre)
+
+    if (/\b(huevo|huevos)\b/.test(nombre)) {
+        return {
+            key: 'canon:huevos',
+            nombre: 'Huevos',
+            categoria: 'Huevos',
+        }
+    }
+
+    if (
+        /\bajo\b/.test(nombre)
+        && !/\b(polvo|granulado|negro|tierno|ajete|aceite|salsa|crema|pasta)\b/.test(nombre)
+    ) {
+        return {
+            key: 'canon:ajo',
+            nombre: 'Ajo',
+            categoria: alimento.categoria ?? 'Verduras',
+        }
+    }
+
+    return {
+        key: alimento.id,
+        nombre: alimento.nombre,
+        categoria: alimento.categoria ?? 'Otros',
+    }
+}

@@ -10,7 +10,7 @@ import {
     convertirGramosACompra,
     sugerirSustitutosEconomicos,
 } from '@/lib/lista-compra/inteligente'
-import { esIngredienteBasicoNoCompra, normalizarNombreCompra } from '@/lib/lista-compra/filtros'
+import { canonicalizarItemCompra, esIngredienteBasicoNoCompra, normalizarNombreCompra } from '@/lib/lista-compra/filtros'
 import type { IngredienteSemanal, PrecioOpcion } from '@/types'
 
 export interface ItemListaCompra {
@@ -30,23 +30,6 @@ function normalizarCompra(value: string | null | undefined) {
 function esNoComestibleLista(nombre: string, categoria: string) {
     const text = `${normalizarCompra(nombre)} ${normalizarCompra(categoria)}`
     return /\b(cepillo|cepillos|dientes|dental|dentifrico|pasta dental|higiene|champu|gel ducha|desodorante|compresa|panal|pañal|toallita|mascota|arena gato|detergente|limpieza)\b/.test(text)
-}
-
-function canonicalItem(alimento: { id: string; nombre: string; categoria?: string | null }) {
-    const nombre = normalizarCompra(alimento.nombre)
-    if (/\b(huevo|huevos)\b/.test(nombre)) {
-        return {
-            key: 'canon:huevos',
-            nombre: 'Huevos',
-            categoria: 'Huevos',
-        }
-    }
-
-    return {
-        key: alimento.id,
-        nombre: alimento.nombre,
-        categoria: alimento.categoria ?? 'Otros',
-    }
 }
 
 export async function GET(
@@ -90,7 +73,7 @@ export async function GET(
             if (esIngredienteBasicoNoCompra(nombre)) continue
             if (esNoComestibleLista(nombre, categoria ?? '')) continue
 
-            const canonical = canonicalItem({ id, nombre, categoria })
+            const canonical = canonicalizarItemCompra({ id, nombre, categoria })
             if (mapa.has(canonical.key)) {
                 const existing = mapa.get(canonical.key)!
                 existing.cantidad_gramos += ca.cantidad_gramos
