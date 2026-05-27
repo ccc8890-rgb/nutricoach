@@ -596,6 +596,8 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     const [tab, setTab] = useState<Tab>(() => {
         const connected = searchParams.get('connected')
         if (connected === 'strava' || connected === 'garmin' || connected === 'google_fit') return 'integraciones'
+        const tabParam = searchParams.get('tab')
+        if (tabParam && TABS.some(t => t.key === tabParam)) return tabParam as Tab
         return 'plan'
     })
     const [notasNoLeidas, setNotasNoLeidas] = useState(0)

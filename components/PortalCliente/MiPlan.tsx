@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, CheckCircle2, PencilLine, ExternalLink } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, CheckCircle2, PencilLine, ExternalLink, Check } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
@@ -68,6 +68,8 @@ interface PlanData {
     carbohidratos_objetivo?: number | null
     grasas_objetivo?: number | null
 }
+
+type AlternativaReceta = NonNullable<Comida['alternativa_recetas']>[number]
 
 const DIAS_NUTRICION = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const
 const DIA_ABR: Record<string, string> = {
@@ -177,11 +179,19 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>(
         Object.fromEntries((plan.comidas ?? []).map(c => [c.id, true]))
     )
-    const planLocal = plan
+    const [planState, setPlanState] = useState(plan)
+    const planLocal = planState
     const [registros, setRegistros] = useState<Record<string, RegistroComidaDia>>({})
     const [registrando, setRegistrando] = useState<string | null>(null)
+    const [seleccionandoReceta, setSeleccionandoReceta] = useState<string | null>(null)
     const [anotandoCambio, setAnotandoCambio] = useState<string | null>(null)
     const [textoCambio, setTextoCambio] = useState('')
+    const dietReturnTo = `/cliente/${codigo}?tab=dieta`
+    const recetaHref = (recetaId: string) => `/recetas/${recetaId}?returnTo=${encodeURIComponent(dietReturnTo)}`
+
+    useEffect(() => {
+        setPlanState(plan)
+    }, [plan])
 
     // Inicializar registros desde props
     useEffect(() => {
@@ -241,6 +251,68 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
             setRegistrando(null)
             setAnotandoCambio(null)
             setTextoCambio('')
+        }
+    }
+
+    async function handleSeleccionarAlternativa(comida: Comida, alternativa: AlternativaReceta) {
+        const key = `${comida.id}:${alternativa.id}`
+        setSeleccionandoReceta(key)
+        try {
+            const res = await fetch(`/api/cliente/${codigo}/comidas/${comida.id}/receta`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receta_id: alternativa.id }),
+            })
+            const json = await res.json().catch(() => null) as {
+                receta?: Comida['receta']
+                ingredientes?: AlimentoEnComida[]
+                error?: string
+            } | null
+            if (!res.ok) throw new Error(json?.error || 'No se pudo seleccionar la receta')
+
+            setPlanState(prev => ({
+                ...prev,
+                comidas: (prev.comidas ?? []).map(c => {
+                    if (c.id !== comida.id) return c
+                    const recetaAnterior = c.receta
+                    const alternativas = [
+                        ...(recetaAnterior ? [{
+                            id: recetaAnterior.id,
+                            nombre: recetaAnterior.nombre,
+                            imagen_url: recetaAnterior.imagen_url,
+                            kcal: recetaAnterior.kcal,
+                            tiempo_prep_min: recetaAnterior.tiempo_prep_min,
+                        }] : []),
+                        ...((c.alternativa_recetas ?? []).filter(r => r.id !== alternativa.id)),
+                    ].filter((item, index, arr) => arr.findIndex(r => r.id === item.id) === index).slice(0, 3)
+
+                    return {
+                        ...c,
+                        receta_id: alternativa.id,
+                        receta: json?.receta ?? {
+                            id: alternativa.id,
+                            nombre: alternativa.nombre,
+                            imagen_url: alternativa.imagen_url,
+                            kcal: alternativa.kcal ?? c.receta?.kcal ?? 0,
+                            proteinas: c.receta?.proteinas ?? 0,
+                            carbohidratos: c.receta?.carbohidratos ?? 0,
+                            grasas: c.receta?.grasas ?? 0,
+                            tiempo_prep_min: alternativa.tiempo_prep_min ?? null,
+                        },
+                        alternativa_recetas: alternativas,
+                        alimentos: Array.isArray(json?.ingredientes) ? json.ingredientes : c.alimentos,
+                    }
+                }),
+            }))
+            addToast({
+                type: 'success',
+                title: 'Receta principal actualizada',
+                message: 'Se tendrá en cuenta como preferencia para futuras propuestas.',
+            })
+        } catch {
+            addToast({ type: 'error', title: 'Error', message: 'No se pudo cambiar la receta principal' })
+        } finally {
+            setSeleccionandoReceta(null)
         }
     }
     const [descargando, setDescargando] = useState(false)
@@ -468,7 +540,7 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                                             </p>
                                             {comida.receta_id && (
                                                 <Link
-                                                    href={`/recetas/${comida.receta_id}?returnTo=/cliente/${codigo}`}
+                                                    href={recetaHref(comida.receta_id)}
                                                     onClick={e => e.stopPropagation()}
                                                     className="inline-flex items-center gap-1 text-[10px] font-medium"
                                                     style={{ color: 'var(--text-secondary)' }}
@@ -484,17 +556,41 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
 
                             {(comida.alternativa_recetas ?? []).length > 0 && (
                                 <div className="px-5 pb-3 -mt-1 flex flex-wrap gap-2">
-                                    {(comida.alternativa_recetas ?? []).slice(0, 3).map(alt => (
-                                        <Link
-                                            key={alt.id}
-                                            href={`/recetas/${alt.id}?returnTo=/cliente/${codigo}`}
-                                            className="inline-flex max-w-full items-center gap-2 rounded-full border px-2.5 py-1.5 text-[11px] font-medium"
-                                            style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)' }}
-                                        >
-                                            <span className="truncate max-w-[180px]">{alt.nombre}</span>
-                                            {alt.kcal ? <span className="shrink-0 tabular-nums" style={{ color: 'var(--text-muted)' }}>{Math.round(alt.kcal)} kcal</span> : null}
-                                        </Link>
-                                    ))}
+                                    {(comida.alternativa_recetas ?? []).slice(0, 3).map(alt => {
+                                        const seleccionKey = `${comida.id}:${alt.id}`
+                                        const seleccionando = seleccionandoReceta === seleccionKey
+                                        return (
+                                            <div
+                                                key={alt.id}
+                                                className="inline-flex max-w-full overflow-hidden rounded-full border text-[11px] font-medium"
+                                                style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)' }}
+                                            >
+                                                <Link
+                                                    href={recetaHref(alt.id)}
+                                                    className="inline-flex min-w-0 items-center gap-2 px-2.5 py-1.5"
+                                                >
+                                                    <span className="truncate max-w-[160px]">{alt.nombre}</span>
+                                                    {alt.kcal ? <span className="shrink-0 tabular-nums" style={{ color: 'var(--text-muted)' }}>{Math.round(alt.kcal)} kcal</span> : null}
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    disabled={seleccionando}
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        e.stopPropagation()
+                                                        handleSeleccionarAlternativa(comida, alt)
+                                                    }}
+                                                    className="inline-flex items-center gap-1 border-l px-2 py-1.5 font-semibold transition-opacity disabled:opacity-60"
+                                                    style={{ borderColor: 'var(--border)', color: 'var(--primary)' }}
+                                                    aria-label={`Usar ${alt.nombre} como receta principal`}
+                                                    title="Usar como principal"
+                                                >
+                                                    {seleccionando ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                                                    <span>Usar</span>
+                                                </button>
+                                            </div>
+                                        )
+                                    })}
                                 </div>
                             )}
 

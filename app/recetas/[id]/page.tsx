@@ -102,8 +102,15 @@ export default function DetalleRecetaPage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo') || '/recetas'
-  const isClientView = returnTo.startsWith('/cliente')
-  const clienteCodigo = isClientView ? returnTo.split('/').filter(Boolean)[1] : null
+  const returnPath = (() => {
+    try {
+      return new URL(returnTo, 'http://localhost').pathname
+    } catch {
+      return returnTo.split('?')[0]
+    }
+  })()
+  const isClientView = returnPath.startsWith('/cliente')
+  const clienteCodigo = isClientView ? returnPath.split('/').filter(Boolean)[1] : null
   const [receta, setReceta] = useState<RecetaDetalle | null>(null)
   const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
   const [loading, setLoading] = useState(true)
