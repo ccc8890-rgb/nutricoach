@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Activity, Watch, Footprints, BatteryMedium, Brain, Flame, RefreshCw, Loader2, HeartPulse, Moon, Route, Timer } from 'lucide-react'
+import { Activity, Watch, Footprints, BatteryMedium, Brain, Flame, RefreshCw, Loader2, HeartPulse, Moon, Route, Timer, Info } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 interface GarminDatos {
@@ -79,6 +79,16 @@ type MiniStat = {
   icon: LucideIcon
 }
 
+type GarminStat = {
+  key: string
+  label: string
+  value: string | number
+  icon: LucideIcon
+  color: string
+  bg: string
+  description: string
+}
+
 function batteryColor(v: number) {
   if (v >= 70) return '#22c55e'
   if (v >= 40) return '#f59e0b'
@@ -119,6 +129,7 @@ export default function GarminMiniCard({ codigo }: Props) {
   const [data, setData] = useState<IntegracionesResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
+  const [openMetric, setOpenMetric] = useState<string | null>(null)
 
   async function load() {
     await fetch(`/api/cliente/${codigo}/integraciones`)
@@ -161,6 +172,7 @@ export default function GarminMiniCard({ codigo }: Props) {
   if (!hasGarminData && !hasStravaData && visibleProviders.length === 0) return null
 
   const d = garmin?.datos_hoy
+  const garminStats = d ? buildGarminStats(d) : []
 
   return (
     <div className="space-y-3">
@@ -186,114 +198,14 @@ export default function GarminMiniCard({ codigo }: Props) {
           </div>
 
           <div className="grid grid-cols-2 gap-0 divide-x divide-y" style={{ borderColor: 'var(--border)' }}>
-            {d.body_battery_end !== null && (
-              <div className="flex items-center gap-2.5 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{ background: batteryColor(d.body_battery_end) + '20' }}>
-                  <BatteryMedium size={16} style={{ color: batteryColor(d.body_battery_end) }} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{d.body_battery_end}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Body Battery</p>
-                </div>
-              </div>
-            )}
-
-            {d.training_readiness !== null && (
-              <div className="flex items-center gap-2.5 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(79,70,229,0.1)' }}>
-                  <Brain size={16} style={{ color: '#4f46e5' }} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{readinessLabel(d.training_readiness)}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Readiness</p>
-                </div>
-              </div>
-            )}
-
-            {d.pasos !== null && (
-              <div className="flex items-center gap-2.5 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.1)' }}>
-                  <Footprints size={16} style={{ color: '#f59e0b' }} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{d.pasos.toLocaleString('es-ES')}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Pasos</p>
-                </div>
-              </div>
-            )}
-
-            {d.calorias_totales !== null && (
-              <div className="flex items-center gap-2.5 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.1)' }}>
-                  <Flame size={16} style={{ color: '#ef4444' }} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{d.calorias_totales} kcal</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>TDEE hoy</p>
-                </div>
-              </div>
-            )}
-
-            {d.vo2max_running !== null && (
-              <div className="flex items-center gap-2.5 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(14,165,233,0.1)' }}>
-                  <Activity size={16} style={{ color: '#0EA5E9' }} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.vo2max_running)}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>VO2max</p>
-                </div>
-              </div>
-            )}
-
-            {d.hrv !== null && (
-              <div className="flex items-center gap-2.5 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)' }}>
-                  <HeartPulse size={16} style={{ color: '#10B981' }} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.hrv)} ms</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>VFC</p>
-                </div>
-              </div>
-            )}
-
-            {d.lactate_threshold_hr !== null && (
-              <div className="flex items-center gap-2.5 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(244,63,94,0.1)' }}>
-                  <HeartPulse size={16} style={{ color: '#F43F5E' }} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.lactate_threshold_hr)} ppm</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Umbral FC</p>
-                </div>
-              </div>
-            )}
-
-            {d.training_acute_load !== null && (
-              <div className="flex items-center gap-2.5 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.1)' }}>
-                  <Route size={16} style={{ color: '#A855F7' }} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.training_acute_load)}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Carga aguda</p>
-                </div>
-              </div>
-            )}
-
-            {d.training_recovery_time_h !== null && (
-              <div className="flex items-center gap-2.5 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(100,116,139,0.1)' }}>
-                  <Timer size={16} style={{ color: '#64748B' }} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{Math.round(d.training_recovery_time_h)} h</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Recuperación</p>
-                </div>
-              </div>
-            )}
+            {garminStats.map(stat => (
+              <GarminStatCell
+                key={stat.key}
+                stat={stat}
+                open={openMetric === stat.key}
+                onToggle={() => setOpenMetric(openMetric === stat.key ? null : stat.key)}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -335,6 +247,124 @@ export default function GarminMiniCard({ codigo }: Props) {
           />
         )
       })}
+    </div>
+  )
+}
+
+function buildGarminStats(d: GarminDatos): GarminStat[] {
+  return [
+    d.body_battery_end !== null ? {
+      key: 'body_battery',
+      label: 'Body Battery',
+      value: d.body_battery_end,
+      icon: BatteryMedium,
+      color: batteryColor(d.body_battery_end),
+      bg: `${batteryColor(d.body_battery_end)}20`,
+      description: 'Estimación de energía disponible según sueño, estrés y actividad. Alto = mejor margen para entrenar.',
+    } : null,
+    d.training_readiness !== null ? {
+      key: 'readiness',
+      label: 'Readiness',
+      value: readinessLabel(d.training_readiness),
+      icon: Brain,
+      color: '#4f46e5',
+      bg: 'rgba(79,70,229,0.1)',
+      description: 'Preparación para entrenar hoy. Combina sueño, recuperación, carga reciente, HRV y estrés.',
+    } : null,
+    d.pasos !== null ? {
+      key: 'pasos',
+      label: 'Pasos',
+      value: d.pasos.toLocaleString('es-ES'),
+      icon: Footprints,
+      color: '#f59e0b',
+      bg: 'rgba(245,158,11,0.1)',
+      description: 'Actividad diaria total. Ayuda a ajustar gasto, NEAT y adherencia fuera del entrenamiento.',
+    } : null,
+    d.calorias_totales !== null ? {
+      key: 'tdee',
+      label: 'TDEE hoy',
+      value: `${d.calorias_totales} kcal`,
+      icon: Flame,
+      color: '#ef4444',
+      bg: 'rgba(239,68,68,0.1)',
+      description: 'Gasto energético total estimado del día. Útil para ajustar déficit, mantenimiento o carga.',
+    } : null,
+    d.vo2max_running !== null ? {
+      key: 'vo2max',
+      label: 'VO2max',
+      value: Math.round(d.vo2max_running),
+      icon: Activity,
+      color: '#0EA5E9',
+      bg: 'rgba(14,165,233,0.1)',
+      description: 'Capacidad aeróbica estimada en ml/kg/min. Es una métrica clave de rendimiento en resistencia.',
+    } : null,
+    d.hrv !== null ? {
+      key: 'vfc',
+      label: 'VFC',
+      value: `${Math.round(d.hrv)} ms`,
+      icon: HeartPulse,
+      color: '#10B981',
+      bg: 'rgba(16,185,129,0.1)',
+      description: 'Variabilidad de frecuencia cardiaca. Tendencias bajas pueden indicar fatiga, estrés o mala recuperación.',
+    } : null,
+    d.lactate_threshold_hr !== null ? {
+      key: 'umbral_fc',
+      label: 'Umbral FC',
+      value: `${Math.round(d.lactate_threshold_hr)} ppm`,
+      icon: HeartPulse,
+      color: '#F43F5E',
+      bg: 'rgba(244,63,94,0.1)',
+      description: 'Frecuencia cardiaca estimada cerca del umbral de lactato. Sirve para ajustar ritmos y zonas intensas.',
+    } : null,
+    d.training_acute_load !== null ? {
+      key: 'carga_aguda',
+      label: 'Carga aguda',
+      value: Math.round(d.training_acute_load),
+      icon: Route,
+      color: '#A855F7',
+      bg: 'rgba(168,85,247,0.1)',
+      description: 'Carga acumulada reciente. Ayuda a decidir si toca apretar, mantener o descargar.',
+    } : null,
+    d.training_recovery_time_h !== null ? {
+      key: 'recuperacion',
+      label: 'Recuperación',
+      value: `${Math.round(d.training_recovery_time_h)} h`,
+      icon: Timer,
+      color: '#64748B',
+      bg: 'rgba(100,116,139,0.1)',
+      description: 'Horas estimadas para volver a estar listo tras la carga reciente. No es una orden, es una señal.',
+    } : null,
+  ].filter(Boolean) as GarminStat[]
+}
+
+function GarminStatCell({ stat, open, onToggle }: { stat: GarminStat; open: boolean; onToggle: () => void }) {
+  const Icon = stat.icon
+
+  return (
+    <div className="px-4 py-3">
+      <div className="flex items-start gap-2.5">
+        <div className="w-8 h-8 rounded-lg flex shrink-0 items-center justify-center" style={{ background: stat.bg }}>
+          <Icon size={16} style={{ color: stat.color }} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold leading-none" style={{ color: 'var(--text)' }}>{stat.value}</p>
+          <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onToggle}
+          className="rounded-full p-1 transition active:scale-95"
+          style={{ color: open ? stat.color : 'var(--text-muted)', background: open ? stat.bg : 'transparent' }}
+          aria-label={`Explicar ${stat.label}`}
+        >
+          <Info size={12} />
+        </button>
+      </div>
+      {open && (
+        <p className="mt-2 text-[11px] leading-snug" style={{ color: 'var(--text-secondary)' }}>
+          {stat.description}
+        </p>
+      )}
     </div>
   )
 }
