@@ -76,7 +76,7 @@ function extraerIngredientes(texto: string) {
 
 function construirEstrategia(momento: MomentoHabitual, texto: string, ingredientes: string[]) {
   const norm = normalizar(texto)
-  const estrategias: string[] = []
+  const estrategias: string[] = ['partir del plato declarado por el cliente, no de un ejemplo fijo']
 
   if (ingredientes.includes('café') || norm.includes('cafe')) {
     estrategias.push('respetar café si no hay contraindicación')
@@ -94,6 +94,10 @@ function construirEstrategia(momento: MomentoHabitual, texto: string, ingredient
     estrategias.push('priorizar digestibilidad y controlar grasa/fibra')
   }
   if (estrategias.length === 0) {
+    estrategias.push('mantener identidad del plato y optimizar cantidades/proteína')
+  }
+
+  if (estrategias.length === 1) {
     estrategias.push('mantener identidad del plato y optimizar cantidades/proteína')
   }
 

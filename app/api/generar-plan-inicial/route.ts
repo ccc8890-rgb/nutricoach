@@ -548,7 +548,8 @@ ${formatearDietaHabitualParaPrompt(dietaHabitual)}
 
 REGLAS DE ADHERENCIA:
 - No impongas una dieta nueva si el cliente ya declaró platos habituales razonables.
-- Mantén la identidad del plato habitual y ajusta cantidades, proteína, fibra o timing.
+- Mantén la identidad del plato habitual de ESTE cliente y ajusta cantidades, proteína, fibra o timing.
+- No reutilices patrones de otros clientes ni ejemplos previos; el ancla es siempre el texto real del onboarding actual.
 - Introduce recetas nuevas de forma progresiva como alternativas, no como sustitución brusca.
 - Si una comida habitual no encaja perfecta, ofrece una versión optimizada y dos alternativas similares del recetario.
 - Marca como "habitual_adaptado" cualquier slot que venga claramente del día típico o favoritos.

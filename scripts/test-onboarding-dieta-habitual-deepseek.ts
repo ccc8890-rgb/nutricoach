@@ -263,12 +263,13 @@ ${formatearDietaHabitualParaPrompt(dietaHabitual)}
 CANDIDATAS REALES POR MOMENTO:
 ${candidatasBlock}
 
-TEST DE ADHERENCIA:
+TEST DE ADHERENCIA PARA ESTE CASO CONCRETO:
 - Devuelve exactamente estos slots: Desayuno, Comida, Merienda, Cena.
 - Si aparece media mañana en la dieta habitual, intégrala dentro de Desayuno o Merienda; no crees un quinto slot.
 - En desayuno debe intentar respetar café + tostada/tomate/jamón si existe candidata compatible.
 - En merienda debe resolver el patrón de café + dulce con una opción fitness o alta en proteína.
 - En cena puede usar tacos/burger/tortilla si encaja, en versión healthy.
+- Estas comidas son solo el caso de prueba actual. En producción debes adaptarte al texto real de cada cliente, aunque coma otra cosa totalmente distinta.
 - Marca "habitual_adaptado" cuando mantenga la identidad del hábito.
 - Si no existe receta exacta, elige lo más cercano y explica qué falta en el recetario.`
 

@@ -109,7 +109,8 @@ export function construirPrompt(
 - Ajusta porciones para cumplir macros del slot (±8%)
 - Prioriza variedad (no repetir receta en distintas comidas del mismo día)
 - Intolerancias y restricciones del cliente son LÍMITES DUROS, nunca los violes
-- Si el cliente declaró dieta habitual, escucha primero: respeta platos razonables, optimiza cantidades y usa recetas nuevas como alternativas progresivas
+- Si el cliente declaró dieta habitual, escucha primero: respeta SUS platos razonables, optimiza cantidades y usa recetas nuevas como alternativas progresivas
+- No extrapoles desde ejemplos de otros clientes. Cada plan se adapta al texto real de ESTE onboarding
 - Cuando un slot venga de su dieta habitual, marca "origen_adherencia": "habitual_adaptado" y explica el ajuste en "adaptacion_habitual"
 - Patologías especiales:
   * DIABETES / RESISTENCIA A INSULINA → prioriza recetas con azúcares < 10g/100g
@@ -135,7 +136,7 @@ SCHEMA DE SALIDA JSON (respeta todos los campos):
       "nombre": "Desayuno",
       "orden": 1,
       "origen_adherencia": "habitual_adaptado",
-      "adaptacion_habitual": "Mantengo café y tostada; ajusto pan, aceite y proteína para llegar al objetivo.",
+      "adaptacion_habitual": "Mantengo la estructura del plato habitual declarado por el cliente y ajusto cantidades, proteína, fibra o timing para llegar al objetivo.",
       "alimentos": [
         {
           "receta_id": "uuid-exacto-de-la-lista",
@@ -191,7 +192,7 @@ LO QUE DEBES HACER:
    - Adapta al nivel de cocina y tiempo disponible del cliente
    - Varía: nunca repitas la misma receta dos veces en un mismo día
    - Prioriza recetas altas en proteína en post-entreno y cena
-   - Si el cliente indicó un plato habitual, NO lo ignores: mantén la idea base y selecciona la receta del recetario más parecida o una alternativa compatible
+   - Si el cliente indicó un plato habitual, NO lo ignores: mantén la idea base de ese cliente y selecciona la receta del recetario más parecida o una alternativa compatible
    - Evita cambios bruscos: mezcla familiaridad + mejora nutricional + pequeñas novedades
 
 2. ESCRIBIR "notas_cliente" — mensaje personalizado al cliente (3-4 frases):
