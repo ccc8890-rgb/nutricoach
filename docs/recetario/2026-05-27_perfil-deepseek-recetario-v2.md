@@ -110,10 +110,18 @@ ANTES DE RESPONDER:
 ## Flujo obligatorio tras recibir un lote
 
 ```bash
-npx tsx scripts/validar-lote-deepseek.ts scripts/NOMBRE_LOTE.json
-npx tsx scripts/importar-lote-deepseek.ts scripts/NOMBRE_LOTE.json
-npx tsx scripts/reparar-lote-deepseek-recetas.ts
-node scripts/quality-gate-recetas.mjs --json
+npm run recetas:pipeline -- scripts/NOMBRE_LOTE.json --coach-email coach@email.com
 ```
 
 Si el primer comando falla, no importar. Devolver a DeepSeek el JSON de errores y pedir una nueva versión del mismo lote.
+
+Comandos separados si se necesita depurar:
+
+```bash
+npm run recetas:validar -- scripts/NOMBRE_LOTE.json
+npm run recetas:importar -- scripts/NOMBRE_LOTE.json --coach-email coach@email.com
+npm run recetas:reparar -- scripts/NOMBRE_LOTE.json --coach-email coach@email.com
+node scripts/quality-gate-recetas.mjs --json
+```
+
+Ver guía escalable: `docs/recetario/2026-05-27_pipeline-escalable-recetario.md`.

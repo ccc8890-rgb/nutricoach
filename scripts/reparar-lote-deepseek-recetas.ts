@@ -6,7 +6,8 @@
  * - vincula ingredientes genéricos conocidos para lista de compra
  *
  * Uso:
- *   npx tsx scripts/reparar-lote-deepseek-recetas.ts
+ *   npx tsx scripts/reparar-lote-deepseek-recetas.ts scripts/lote.json --coach-email coach@email.com
+ *   npx tsx scripts/reparar-lote-deepseek-recetas.ts --coach-id uuid
  */
 import { createClient } from '@supabase/supabase-js'
 import { existsSync, readFileSync } from 'node:fs'
@@ -31,6 +32,12 @@ loadEnvLocal()
 const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
   auth: { persistSession: false },
 })
+
+type Args = {
+  files: string[]
+  coachId?: string
+  coachEmail?: string
+}
 
 type RawReceta = {
   nombre: string
@@ -64,6 +71,56 @@ const FILES = [
   'scripts/deepseek-lote-perdida-grasa-restantes.json',
   'scripts/deepseek-lote-rendimiento-funcional.json',
 ]
+
+function parseArgs(): Args {
+  const args = process.argv.slice(2)
+  const parsed: Args = { files: [] }
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+    if (arg === '--coach-id') {
+      parsed.coachId = args[++i]
+      continue
+    }
+    if (arg === '--coach-email') {
+      parsed.coachEmail = args[++i]
+      continue
+    }
+    if (arg === '--file') {
+      parsed.files.push(args[++i])
+      continue
+    }
+    if (!arg.startsWith('--')) {
+      parsed.files.push(arg)
+      continue
+    }
+    throw new Error(`Argumento no reconocido: ${arg}`)
+  }
+
+  if (parsed.files.length === 0) parsed.files = FILES
+  return parsed
+}
+
+async function resolverCoachId(args: Args) {
+  if (args.coachId) return args.coachId
+
+  if (args.coachEmail) {
+    const { data, error } = await db
+      .from('profiles')
+      .select('id,email,role')
+      .ilike('email', args.coachEmail.trim())
+      .maybeSingle()
+
+    if (error) throw new Error(`No se pudo resolver el coach por email: ${error.message}`)
+    if (!data?.id) throw new Error(`No existe ningún profile con email ${args.coachEmail}`)
+    if (data.role && data.role !== 'coach') {
+      throw new Error(`El profile ${args.coachEmail} existe, pero role=${data.role}. No reparo recetas de un no-coach.`)
+    }
+    return data.id as string
+  }
+
+  return process.env.NUTRICOACH_COACH_ID || null
+}
 
 const FALLBACK_ALIMENTOS: Record<string, { calorias: number; proteinas: number; carbohidratos: number; grasas: number; fibra?: number; categoria?: string }> = {
   'Piña natural': { calorias: 50, proteinas: 0.5, carbohidratos: 13, grasas: 0.1, fibra: 1.4, categoria: 'Frutas' },
@@ -99,9 +156,9 @@ function normalizarTexto(texto: string) {
     .trim()
 }
 
-function cargarRaw() {
+function cargarRaw(files: string[]) {
   const byName = new Map<string, RawReceta>()
-  for (const file of FILES) {
+  for (const file of files) {
     const raw = JSON.parse(readFileSync(resolve(process.cwd(), file), 'utf-8'))
     const recetas: RawReceta[] = Array.isArray(raw.recetas) ? raw.recetas : raw
     for (const receta of recetas) {
@@ -179,13 +236,29 @@ async function ensureAlimento(nombre: string) {
 }
 
 async function main() {
-  const rawByName = cargarRaw()
-  const { data: recetas, error } = await db
+  const args = parseArgs()
+  const coachId = await resolverCoachId(args)
+  const rawByName = cargarRaw(args.files)
+  const nombres = [...rawByName.values()].map(receta => receta.nombre).filter(Boolean)
+
+  let query = db
     .from('recetas')
     .select('id,nombre')
     .eq('fuente', 'ia_lote_deepseek')
 
+  if (coachId) query = query.eq('coach_id', coachId)
+  if (nombres.length > 0) query = query.in('nombre', nombres)
+
+  const { data: recetas, error } = await query
+
   if (error) throw error
+
+  console.log(JSON.stringify({
+    archivos: args.files,
+    coach_id: coachId ?? 'sin_scope_por_coach',
+    recetas_json: rawByName.size,
+    recetas_bd: recetas?.length ?? 0,
+  }, null, 2))
 
   let reparadas = 0
   let ingredientesActualizados = 0

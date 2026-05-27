@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "recetas:validar": "tsx scripts/validar-lote-deepseek.ts",
+    "recetas:importar": "tsx scripts/importar-lote-deepseek.ts",
+    "recetas:reparar": "tsx scripts/reparar-lote-deepseek-recetas.ts",
+    "recetas:pipeline": "tsx scripts/recetario-deepseek-pipeline.ts"
   },
   "dependencies": {
     "@ai-sdk/deepseek": "^2.0.34",

@@ -6,7 +6,8 @@
  * Valores permitidos en tipo_plato: Almuerzo|Cena|Comida|Desayuno|Merienda|Postre|Snack|null
  *
  * Uso:
- *   npx tsx scripts/importar-lote-deepseek.ts [archivo.json]
+ *   npx tsx scripts/importar-lote-deepseek.ts [archivo.json] --coach-email coach@email.com
+ *   npx tsx scripts/importar-lote-deepseek.ts [archivo.json] --coach-id uuid
  */
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync, existsSync } from 'node:fs'
@@ -38,21 +39,68 @@ loadEnvLocal()
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-const COACH_ID = process.env.NUTRICOACH_COACH_ID
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error('❌ Faltan variables: NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY')
   process.exit(1)
 }
 
-if (!COACH_ID) {
-  console.error('❌ Falta NUTRICOACH_COACH_ID en .env.local')
-  process.exit(1)
-}
-
 const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: { persistSession: false },
 })
+
+type Args = {
+  file: string
+  coachId?: string
+  coachEmail?: string
+}
+
+function parseArgs(): Args {
+  const args = process.argv.slice(2)
+  const parsed: Args = { file: 'scripts/deepseek-lote-perdida-grasa.json' }
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+    if (arg === '--coach-id') {
+      parsed.coachId = args[++i]
+      continue
+    }
+    if (arg === '--coach-email') {
+      parsed.coachEmail = args[++i]
+      continue
+    }
+    if (!arg.startsWith('--')) {
+      parsed.file = arg
+      continue
+    }
+    throw new Error(`Argumento no reconocido: ${arg}`)
+  }
+
+  return parsed
+}
+
+async function resolverCoachId(args: Args) {
+  if (args.coachId) return args.coachId
+
+  if (args.coachEmail) {
+    const { data, error } = await db
+      .from('profiles')
+      .select('id,email,role')
+      .ilike('email', args.coachEmail.trim())
+      .maybeSingle()
+
+    if (error) throw new Error(`No se pudo resolver el coach por email: ${error.message}`)
+    if (!data?.id) throw new Error(`No existe ningún profile con email ${args.coachEmail}`)
+    if (data.role && data.role !== 'coach') {
+      throw new Error(`El profile ${args.coachEmail} existe, pero role=${data.role}. No importo recetas a un no-coach.`)
+    }
+    return data.id as string
+  }
+
+  if (process.env.NUTRICOACH_COACH_ID) return process.env.NUTRICOACH_COACH_ID
+
+  throw new Error('Indica --coach-email coach@email.com o --coach-id uuid. Fallback opcional: NUTRICOACH_COACH_ID en .env.local')
+}
 
 // Mapeo de categoría a tipo_plato permitido por check constraint
 function categoriaATipoPlato(categoria: string | null): string | null {
@@ -95,11 +143,12 @@ function normalizarIngredienteAlias(nombre: string) {
 }
 
 async function main() {
-  // Si se pasa argumento, usarlo tal cual (ruta relativa al CWD).
-  // Si no, default al archivo original de 31 recetas.
-  const fileArg = process.argv[2] || 'scripts/deepseek-lote-perdida-grasa.json'
+  const args = parseArgs()
+  const coachId = await resolverCoachId(args)
+  const fileArg = args.file
   const filePath = fileArg.startsWith('/') ? fileArg : resolve(process.cwd(), fileArg)
   console.log(`📁 Leyendo: ${filePath}`)
+  console.log(`👤 Coach destino: ${coachId}`)
   const raw = JSON.parse(readFileSync(filePath, 'utf-8'))
   const recetasRaw = Array.isArray(raw.recetas) ? raw.recetas : Array.isArray(raw) ? raw : []
   console.log(`📦 Total recetas a importar: ${recetasRaw.length}`)
@@ -139,7 +188,7 @@ async function main() {
         .from('recetas')
         .insert({
           ...recetaBase,
-          coach_id: COACH_ID,
+          coach_id: coachId,
           estado: 'en_revision',
           fuente: 'ia_lote_deepseek',
           fuente_tipo: 'ia_generada',
