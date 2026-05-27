@@ -23,6 +23,7 @@ type Receta = {
   deportes?: string[]
   momentos?: string[]
   estilos?: string[]
+  intolerancias?: string[]
   imagen_prompt?: string
   nota_adherencia?: string
 }
@@ -33,6 +34,10 @@ const MOMENTOS_VALIDOS = new Set(['desayuno', 'media_manana', 'comida', 'meriend
 const ESTILOS_VALIDOS = new Set(['chef_healthy', 'comfort_healthy', 'funcional', 'batch_cooking', 'tupper', 'rapida', 'mediterranea', 'gourmet_simple', 'alto_volumen'])
 
 const ESPECIAS_RE = /\b(sal|pimienta|piment[oó]n|comino|curry|or[eé]gano|canela|vainilla|chile|guindilla|jengibre|cilantro|perejil|edulcorante|levadura)\b/i
+const GLUTEN_RE = /\b(pan|trigo|tortilla de trigo|wrap|avena|copos de avena|harina|pasta|cusc[uú]s|bulgur|cebada|centeno|galleta|bizcocho|seitan)\b/i
+const GLUTEN_OK_RE = /\b(sin gluten|certificad[ao] sin gluten|avena certificad[ao])\b/i
+const LACTOSA_RE = /\b(leche|yogur|yogh?urt|queso|reques[oó]n|ricotta|mozzarella|burrata|k[eé]fir|nata|mantequilla|whey|suero)\b/i
+const LACTOSA_OK_RE = /\b(sin lactosa|vegetal|soja|coco|almendra|avena)\b/i
 
 function arr(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
@@ -66,6 +71,7 @@ function validarReceta(receta: Receta, index: number) {
   }
 
   const ingredientes = receta.ingredientes ?? []
+  const intolerancias = arr(receta.intolerancias)
   if (ingredientes.length < 4) issues.push('menos de 4 ingredientes')
   if (ingredientes.length > 16) issues.push('demasiados ingredientes')
 
@@ -77,6 +83,25 @@ function validarReceta(receta: Receta, index: number) {
     if (ESPECIAS_RE.test(nombre) && gramos > 30) issues.push(`especia/condimento con gramos altos: ${nombre} ${gramos}g`)
     if (/dientes?/i.test(nombre) && gramos > 20) issues.push(`dientes de ajo mal expresados: ${nombre} ${gramos}g`)
     if (/\bagua\b/i.test(nombre) && gramos > 0 && ingredientes.length > 4) issues.push(`agua como ingrediente de compra: ${nombre}`)
+    if (intolerancias.includes('Sin Gluten') && GLUTEN_RE.test(nombre) && !GLUTEN_OK_RE.test(nombre)) {
+      issues.push(`intolerancia incoherente: "${nombre}" no puede marcarse Sin Gluten salvo versión certificada`)
+    }
+    if (intolerancias.includes('Sin Lactosa') && LACTOSA_RE.test(nombre) && !LACTOSA_OK_RE.test(nombre)) {
+      issues.push(`intolerancia incoherente: "${nombre}" no puede marcarse Sin Lactosa salvo versión sin lactosa/vegetal`)
+    }
+  }
+
+  if (receta.categoria === 'Desayuno' && !arr(receta.momentos).includes('desayuno')) {
+    issues.push('categoria Desayuno sin momento desayuno')
+  }
+  if (receta.categoria === 'Cena' && !arr(receta.momentos).includes('cena')) {
+    issues.push('categoria Cena sin momento cena')
+  }
+  if (receta.categoria === 'Comida' && !arr(receta.momentos).includes('comida')) {
+    issues.push('categoria Comida sin momento comida')
+  }
+  if ((receta.categoria === 'Postre' || receta.categoria === 'Merienda') && arr(receta.momentos).some(m => ['comida', 'cena'].includes(m))) {
+    issues.push(`${receta.categoria} no debe etiquetarse como comida/cena principal`)
   }
 
   if (!receta.instrucciones || receta.instrucciones.length < 80) issues.push('instrucciones demasiado pobres')

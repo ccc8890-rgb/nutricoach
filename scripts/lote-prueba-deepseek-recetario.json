@@ -71,9 +71,7 @@
       "nivel_elaboracion": 1,
       "adherencia_score": 92,
       "coste_estimado_nivel": "bajo",
-      "intolerancias": [
-        "Sin Gluten"
-      ],
+      "intolerancias": [],
       "nota_adherencia": "Sabe a postre pero es un desayuno completo. El crujiente de avena casero elimina la necesidad de comprar granola procesada llena de azúcar.",
       "imagen_prompt": "Fotografia realista de un bol con yogur griego blanco cremoso cubierto de frutos rojos brillantes arandanos frambuesas trocitos y un crujiente de avena dorado espolvoreado con canela. Luz natural de mañana, encimera de cocina blanca, texturas visibles, estilo foodie premium, sin aspecto IA."
     },

@@ -48,14 +48,38 @@ Para pruebas internas de Carlos se puede usar `--coach-id uuid`, pero en producc
 
 Usar el perfil completo en `docs/recetario/2026-05-27_perfil-deepseek-recetario-v2.md`.
 
-Brief mínimo:
+Brief recomendado:
 
 ```text
-Genera 10 recetas para NutriCoach siguiendo exactamente el contrato JSON del perfil v2.
-Objetivo: [perdida_grasa/recomposicion/rendimiento/salud_general].
-Momento: [desayuno/comida/cena/merienda/pre_entreno/post_entreno].
-Estilo: [chef_healthy/comfort_healthy/funcional/batch_cooking].
-Devuelve SOLO JSON válido. Antes de responder revisa cantidades, macros, momentos, tags, imagen_prompt y nota_adherencia.
+PROYECTO: NutriCoach
+ROL: Chef dietista + nutricionista deportivo. Creas activos para una app real, no recetas decorativas.
+
+LEE ANTES:
+- docs/recetario/2026-05-27_perfil-deepseek-recetario-v2.md
+- docs/recetario/2026-05-27_pipeline-escalable-recetario.md
+
+TAREA:
+Genera [8-12] recetas nuevas siguiendo exactamente el contrato JSON del perfil v2.
+
+CONTEXTO DEL LOTE:
+- Objetivo: [perdida_grasa/recomposicion/rendimiento/salud_general].
+- Cliente tipo: [bajada de peso con alta adherencia / atleta amateur / elite / clínico].
+- Momentos: [desayuno/comida/cena/merienda/pre_entreno/post_entreno].
+- Estilo: [chef_healthy/comfort_healthy/funcional/batch_cooking].
+
+REGLAS CRITICAS:
+- Devuelve SOLO JSON válido con clave "recetas".
+- Ingredientes genéricos de supermercado español.
+- Cantidades redondas y cocinables.
+- Macros plausibles por ración.
+- No incluyas agua como ingrediente de compra.
+- No uses AOVE; escribe Aceite de oliva virgen extra.
+- No uses dientes de ajo; usa Ajo en gramos.
+- No marques Sin Gluten si usas pan/trigo/wrap/tortilla de trigo/avena/harina/pasta/bizcocho/galleta normal.
+- No marques Sin Lactosa si usas leche/yogur/queso/kefir/mantequilla/nata/whey normal.
+- Categoria y momento deben coincidir.
+- Cada receta debe tener imagen_prompt realista y nota_adherencia útil.
+- Antes de responder revisa cantidades, macros, intolerancias, momentos, tags, imagen_prompt y nota_adherencia.
 ```
 
 ## Criterio de aprobación
@@ -67,5 +91,7 @@ Un lote solo pasa a revisión visual si:
 - No hay agua, sal o especias como compra principal.
 - Macros por ración son plausibles.
 - Las recetas tienen sentido para el momento del día.
+- Las intolerancias no contradicen los ingredientes.
+- El lote aporta variedad real, no ocho versiones del mismo bowl.
 
 Después Carlos revisa estética, adherencia y calidad culinaria antes de aprobarlas para clientes.

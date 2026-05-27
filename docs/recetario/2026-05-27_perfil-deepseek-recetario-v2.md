@@ -28,6 +28,10 @@ DeepSeek no debe crear “recetas bonitas” aisladas. Debe crear activos para u
 - No dejar ingredientes ambiguos: `pan integral de molde grande`, `pollo cocido desmenuzado`, `wrap integral`, `setas variadas`. Usar nombres genéricos: `Pan integral`, `Pechuga de pollo`, `Tortilla de Trigo`, `Champiñón`.
 - No entregar recetas sin `imagen_prompt` ni `nota_adherencia`.
 - No crear recetas de desayuno como cena, ni postres como comida principal.
+- No marcar `Sin Gluten` si hay pan, trigo, tortilla de trigo, wrap, avena, pasta, harina, bizcocho o galletas salvo que el ingrediente diga literalmente `sin gluten` o `certificado sin gluten`.
+- No marcar `Sin Lactosa` si hay leche, yogur, queso, kefir, mantequilla, nata, whey/suero o similares salvo que el ingrediente diga literalmente `sin lactosa` o sea vegetal.
+- No usar etiquetas de intolerancias como marketing. Solo se etiquetan cuando la receta completa cumple de verdad.
+- No repetir estructuras dentro del mismo lote. Debe haber variedad culinaria real: cuchara, bowl, horno, plancha, wrap, postre, tupper, etc.
 
 ## Contrato JSON obligatorio
 
@@ -66,7 +70,7 @@ DeepSeek no debe crear “recetas bonitas” aisladas. Debe crear activos para u
       "nivel_elaboracion": 2,
       "adherencia_score": 90,
       "coste_estimado_nivel": "medio",
-      "intolerancias": ["Sin Gluten"],
+      "intolerancias": [],
       "nota_adherencia": "Reinterpreta un plato habitual atractivo para que el cliente no sienta dieta restrictiva.",
       "imagen_prompt": "Fotografia realista de la receta terminada, luz natural, plato casero premium, ingredientes visibles, sin aspecto IA."
     }
@@ -98,13 +102,19 @@ REQUISITOS DUROS:
 - Especias, sal, pimienta, vainilla, chile, levadura o edulcorante: máximo 10g salvo justificación clara.
 - No incluyas agua como ingrediente de compra.
 - No inventes productos raros.
+- No marques Sin Gluten si usas pan, trigo, wrap, tortilla de trigo, avena, harina, pasta, bizcocho o galleta normal.
+- No marques Sin Lactosa si usas leche, yogur, queso, kefir, mantequilla, nata o whey normal.
+- Si quieres una receta Sin Gluten/Sin Lactosa, escribe el ingrediente explícito: "Pan sin gluten", "Avena certificada sin gluten", "Yogur sin lactosa", "Queso fresco sin lactosa".
+- La categoria y el momento deben coincidir: Desayuno→desayuno, Comida→comida, Cena→cena. Postre/Merienda no deben ser comida o cena principal.
+- Incluye una `nota_adherencia` útil: qué deseo/plato habitual resuelve y por qué ayuda al cliente a cumplir.
 
 ANTES DE RESPONDER:
 1. Revisa si cada receta tiene mínimo 4 ingredientes.
 2. Revisa que las kcal coinciden con el tipo de plato.
 3. Revisa que no hay ingredientes ambiguos.
 4. Revisa que tags/objetivos/momentos/estilos están completos.
-5. Revisa que el resultado es JSON parseable.
+5. Revisa que intolerancias no contradicen ingredientes.
+6. Revisa que el resultado es JSON parseable.
 ```
 
 ## Flujo obligatorio tras recibir un lote
