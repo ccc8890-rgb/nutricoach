@@ -692,6 +692,9 @@ ${ajustesPeriBlock}
 ${candidatasBlock}
 
 ═══ INSTRUCCIÓN DE SALIDA — JSON ESTRICTO ═══
+Devuelve exactamente estos slots, sin crear comidas adicionales: ${slots.join(', ')}.
+Si el cliente declara media mañana, almuerzo, snack o postre, intégralo como ajuste dentro de Desayuno o Merienda salvo que el sistema haya proporcionado ese slot explícitamente.
+
 Devuelve ÚNICAMENTE el siguiente JSON sin texto adicional:
 {
   "distribucion_comidas": [

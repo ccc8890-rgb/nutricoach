@@ -55,6 +55,11 @@ function limpiarTexto(texto: string) {
 
 function inferirMomento(texto: string): MomentoHabitual {
   const norm = normalizar(texto)
+  const prioridadExplicita: MomentoHabitual[] = ['media_manana', 'merienda', 'cena', 'comida', 'desayuno']
+  for (const key of prioridadExplicita) {
+    const momento = MOMENTOS.find(m => m.key === key)
+    if (momento && norm.includes(normalizar(momento.label))) return key
+  }
   const match = MOMENTOS.find(m => m.aliases.some(alias => norm.includes(normalizar(alias))))
   return match?.key ?? 'general'
 }
