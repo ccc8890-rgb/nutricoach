@@ -29,6 +29,8 @@ type RecetaGeneradaInput = {
   nivel_elaboracion?: unknown
   adherencia_score?: unknown
   coste_estimado_nivel?: unknown
+  imagen_prompt?: unknown
+  nota_adherencia?: unknown
 }
 
 export type RecetaImportable = {
@@ -61,6 +63,8 @@ export type RecetaImportable = {
   nivel_elaboracion: number
   adherencia_score: number
   coste_estimado_nivel: string | null
+  imagen_prompt: string | null
+  nota_adherencia: string | null
   ingredientes: Array<{ nombre_libre: string; cantidad_gramos: number; orden: number }>
 }
 
@@ -91,6 +95,40 @@ function asBool(value: unknown) {
   return Boolean(value)
 }
 
+function normalizarNombreIngrediente(nombre: string) {
+  const n = nombre.toLowerCase().trim()
+  if (n === 'aove' || n.includes('aove en spray') || n.includes('aceite de oliva virgen extra')) return 'Aceite de oliva virgen extra'
+  if (n.includes('pan integral de molde') || n.includes('pan integral en cubos')) return 'Pan integral'
+  if (n.includes('pan rallado integral')) return 'Pan rallado'
+  if (n.includes('piña natural')) return 'Piña natural'
+  if (n.includes('pollo cocido desmenuzado') || n.includes('pollo troceado')) return 'Pechuga de pollo'
+  if (n.includes('wrap de trigo integral')) return 'Tortilla de Trigo'
+  if (n.includes('plátano congelado') || n.includes('platano congelado')) return 'Plátano'
+  if (n.includes('setas variadas')) return 'Champiñón'
+  if (n.includes('calabacín') || n.includes('calabacin')) return 'Calabacín crudo'
+  if (n.includes('proteína whey')) return 'Proteína whey (polvo)'
+  if (n.includes('diente') && n.includes('ajo')) return 'Ajo'
+  return nombre.trim()
+}
+
+function normalizarCantidadIngrediente(nombre: string, value: unknown) {
+  const n = nombre.toLowerCase()
+  const raw = Number(value)
+  const cantidad = Number.isFinite(raw) ? raw : 100
+
+  if (n.includes('diente') && n.includes('ajo')) {
+    const dientes = cantidad > 20 ? Math.round(cantidad / 80) : Math.max(1, Math.round(cantidad))
+    return Math.min(20, Math.max(3, dientes * 4))
+  }
+
+  if (/\b(sal|pimienta|piment[oó]n|comino|curry|or[eé]gano|canela|vainilla|chile|guindilla|jengibre|cilantro|perejil|edulcorante|levadura)\b/.test(n)) {
+    if (cantidad >= 50) return 2
+    return asNumber(cantidad, 0, 30, 2) ?? 2
+  }
+
+  return asNumber(cantidad, 0, 3000, 100) ?? 100
+}
+
 function normalizarIngredientes(value: unknown) {
   if (!Array.isArray(value)) return []
   return value
@@ -99,9 +137,10 @@ function normalizarIngredientes(value: unknown) {
       const record = item as Record<string, unknown>
       const nombre = asString(record.nombre ?? record.nombre_libre, 120)
       if (!nombre) return null
+      const nombreNormalizado = normalizarNombreIngrediente(nombre)
       return {
-        nombre_libre: nombre,
-        cantidad_gramos: asNumber(record.cantidad_gramos, 0, 3000, 100) ?? 100,
+        nombre_libre: nombreNormalizado,
+        cantidad_gramos: normalizarCantidadIngrediente(nombreNormalizado, record.cantidad_gramos),
         orden: idx,
       }
     })
@@ -154,6 +193,8 @@ export function normalizarRecetasGeneradas(input: unknown) {
         nivel_elaboracion: Math.round(asNumber(receta.nivel_elaboracion, 1, 5, 2) ?? 2),
         adherencia_score: Math.round(asNumber(receta.adherencia_score, 0, 100, 70) ?? 70),
         coste_estimado_nivel: asString(receta.coste_estimado_nivel, 40),
+        imagen_prompt: asString(receta.imagen_prompt, 1000),
+        nota_adherencia: asString(receta.nota_adherencia, 700),
         ingredientes: normalizarIngredientes(receta.ingredientes),
       }
     })

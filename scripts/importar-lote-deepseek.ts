@@ -133,7 +133,7 @@ async function main() {
     console.log(`\n📋 Tanda ${t + 1}/${tandasRaw.length}: ${tanda.length} recetas`)
 
     for (const receta of tanda) {
-      const { ingredientes, ...recetaBase } = receta
+      const { ingredientes, imagen_prompt, nota_adherencia, ...recetaBase } = receta
       const rawReceta = rawPorNombre.get(receta.nombre.toLowerCase())
       const { data, error } = await db
         .from('recetas')
@@ -149,8 +149,10 @@ async function main() {
           imagen_estado: 'sin_imagen',
           imagen_origen: 'missing',
           imagen_needs_review: true,
-          imagen_prompt_base: typeof rawReceta?.imagen_prompt === 'string' ? rawReceta.imagen_prompt : null,
-          imagen_review_notes: 'Receta nueva generada por lote DeepSeek. Requiere imagen realista o revisión antes de aprobar.',
+          imagen_prompt_base: imagen_prompt ?? (typeof rawReceta?.imagen_prompt === 'string' ? rawReceta.imagen_prompt : null),
+          imagen_review_notes: nota_adherencia
+            ? `Nota de adherencia: ${nota_adherencia}`
+            : 'Receta nueva generada por lote DeepSeek. Requiere imagen realista o revisión antes de aprobar.',
         })
         .select('id, nombre')
         .single()

@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   const creadas: Array<{ id: string; nombre: string }> = []
 
   for (const receta of recetas) {
-    const { ingredientes, ...recetaBase } = receta
+    const { ingredientes, imagen_prompt, nota_adherencia, ...recetaBase } = receta
     const { data, error } = await db
       .from('recetas')
       .insert({
@@ -25,8 +25,16 @@ export async function POST(request: NextRequest) {
         coach_id: user.id,
         estado: 'en_revision',
         fuente: 'ia_lote_deepseek',
+        fuente_tipo: 'ia_generada',
         taxonomia_version: 2,
         taxonomia_actualizada_at: new Date().toISOString(),
+        imagen_estado: 'sin_imagen',
+        imagen_origen: 'missing',
+        imagen_needs_review: true,
+        imagen_prompt_base: imagen_prompt,
+        imagen_review_notes: nota_adherencia
+          ? `Nota de adherencia: ${nota_adherencia}`
+          : 'Receta generada por lote IA. Requiere imagen realista o revisión antes de aprobar.',
       })
       .select('id, nombre')
       .single()

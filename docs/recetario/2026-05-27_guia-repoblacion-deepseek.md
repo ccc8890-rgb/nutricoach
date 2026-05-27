@@ -107,6 +107,10 @@ Reglas:
 
 ## Brief Estándar para DeepSeek
 
+Usar primero el perfil estricto:
+
+[`2026-05-27_perfil-deepseek-recetario-v2.md`](./2026-05-27_perfil-deepseek-recetario-v2.md)
+
 Usar este briefing cuando se delegue por CLI o se copie a `/recetas/cobertura`:
 
 ```text
@@ -141,6 +145,14 @@ SALIDA:
 JSON válido con array `recetas`.
 ```
 
+Antes de importar cualquier lote externo:
+
+```bash
+npx tsx scripts/validar-lote-deepseek.ts scripts/NOMBRE_LOTE.json
+```
+
+Si falla, no importar. Pasar el informe de errores a DeepSeek y pedir corrección.
+
 ## Flujo de Trabajo Recomendado
 
 1. Ir a `/recetas/cobertura`.
@@ -150,6 +162,9 @@ JSON válido con array `recetas`.
 5. Ejecutar:
 
 ```bash
+npx tsx scripts/validar-lote-deepseek.ts scripts/NOMBRE_LOTE.json
+npx tsx scripts/importar-lote-deepseek.ts scripts/NOMBRE_LOTE.json
+npx tsx scripts/reparar-lote-deepseek-recetas.ts
 node scripts/pipeline-calidad.mjs --horas 24
 node scripts/quality-gate-recetas.mjs --json
 ```
