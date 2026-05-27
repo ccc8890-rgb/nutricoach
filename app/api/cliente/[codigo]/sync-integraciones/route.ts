@@ -3,14 +3,22 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 import { syncGarminClientDays } from '@/lib/integraciones/garmin-connect-perclient'
 import { syncGarminDay, persistirGarminDays } from '@/lib/integraciones/garmin-connect-sync'
 import { stravaProvider } from '@/lib/integraciones/strava'
+import { googleFitProvider } from '@/lib/integraciones/google-fit'
+import { whoopProvider } from '@/lib/integraciones/whoop'
 import { persistirActividades } from '@/lib/integraciones/normalizer'
-import type { IntegracionCliente } from '@/lib/integraciones/types'
+import type { IntegracionCliente, ProveedorIntegracion } from '@/lib/integraciones/types'
 
 type SyncResult = {
-  proveedor: 'garmin_connect' | 'strava'
+  proveedor: string
   ok: boolean
   sincronizados: number
   error?: string
+}
+
+const SYNC_PROVIDERS: Record<string, ProveedorIntegracion> = {
+  strava: stravaProvider,
+  google_fit: googleFitProvider,
+  whoop: whoopProvider,
 }
 
 async function resolverClientePorCodigo(codigo: string) {
@@ -40,7 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .select('*')
     .eq('cliente_id', clienteId)
     .eq('activa', true)
-    .in('proveedor', ['garmin_connect', 'strava'])
+    .in('proveedor', ['garmin_connect', 'strava', 'google_fit', 'whoop'])
 
   const results: SyncResult[] = []
   const now = new Date().toISOString()
@@ -65,23 +73,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }
     }
 
-    if (integracion.proveedor === 'strava') {
+    if (integracion.proveedor !== 'garmin_connect') {
+      const provider = SYNC_PROVIDERS[integracion.proveedor]
+      if (!provider) continue
       try {
         const desde = new Date(Date.now() - dias * 24 * 60 * 60 * 1000)
-        const actividades = await stravaProvider.syncActivities(integracion as IntegracionCliente, desde)
+        const actividades = await provider.syncActivities(integracion as IntegracionCliente, desde)
         const sincronizados = await persistirActividades(db, actividades)
         await db
           .from('integraciones_cliente')
           .update({ ultima_sync: now, error_ultimo: null })
           .eq('id', integracion.id)
-        results.push({ proveedor: 'strava', ok: true, sincronizados })
+        results.push({ proveedor: integracion.proveedor, ok: true, sincronizados })
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Error sincronizando Strava'
+        const message = error instanceof Error ? error.message : `Error sincronizando ${integracion.proveedor}`
         await db
           .from('integraciones_cliente')
           .update({ error_ultimo: message })
           .eq('id', integracion.id)
-        results.push({ proveedor: 'strava', ok: false, sincronizados: 0, error: message })
+        results.push({ proveedor: integracion.proveedor, ok: false, sincronizados: 0, error: message })
       }
     }
   }

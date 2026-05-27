@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
 
   const desde14dias = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const [{ data: integraciones }, { data: garminRow }, { data: stravaRows }] = await Promise.all([
+  const [{ data: integraciones }, { data: garminRow }, { data: stravaRows }, { data: actividadRows }] = await Promise.all([
     db.from('integraciones_cliente')
       .select('proveedor, activa, ultima_sync, error_ultimo')
       .eq('cliente_id', clienteId),
@@ -32,6 +32,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
       .gte('fecha', desde14dias)
       .order('fecha', { ascending: false })
       .limit(6),
+    db.from('actividad_externa_cliente')
+      .select('proveedor, fecha, pasos, distancia_km, calorias_activas, calorias_totales, minutos_activo, duracion_min, distancia_entreno_km, tipo_entreno, hrv, rhr, sueno_h, sueno_calidad')
+      .eq('cliente_id', clienteId)
+      .gte('fecha', desde14dias)
+      .order('fecha', { ascending: false }),
   ])
 
   const garminIntegration = (integraciones ?? []).find(i => i.proveedor === 'garmin_connect')
@@ -64,5 +69,37 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
     distancia_14d: Number((stravaRows ?? []).reduce((acc, row) => acc + Number(row.distancia_entreno_km ?? 0), 0).toFixed(1)),
   }
 
-  return NextResponse.json({ integraciones: integraciones ?? [], garmin_connect: garminConnect, strava_resumen: stravaResumen })
+  const integracionesPorProveedor = new Map((integraciones ?? []).map(i => [i.proveedor, i]))
+  const actividadPorProveedor = new Map<string, NonNullable<typeof actividadRows>>()
+
+  for (const row of actividadRows ?? []) {
+    const key = row.proveedor
+    const current = actividadPorProveedor.get(key) ?? []
+    current.push(row)
+    actividadPorProveedor.set(key, current)
+  }
+
+  const proveedores = new Set<string>([
+    ...Array.from(integracionesPorProveedor.keys()),
+    ...Array.from(actividadPorProveedor.keys()),
+  ])
+
+  const resumenes_proveedor = Array.from(proveedores).map(proveedor => {
+    const rows = actividadPorProveedor.get(proveedor) ?? []
+    const integracion = integracionesPorProveedor.get(proveedor)
+    const ultima = rows[0] ?? null
+    return {
+      proveedor,
+      activa: integracion?.activa ?? rows.length > 0,
+      ultima_sync: integracion?.ultima_sync ?? ultima?.fecha ?? null,
+      error_ultimo: integracion?.error_ultimo ?? null,
+      registros_14d: rows.length,
+      minutos_14d: rows.reduce((acc, row) => acc + (row.duracion_min ?? row.minutos_activo ?? 0), 0),
+      distancia_14d: Number(rows.reduce((acc, row) => acc + Number(row.distancia_entreno_km ?? row.distancia_km ?? 0), 0).toFixed(1)),
+      calorias_14d: rows.reduce((acc, row) => acc + (row.calorias_activas ?? 0), 0),
+      ultimo: ultima,
+    }
+  })
+
+  return NextResponse.json({ integraciones: integraciones ?? [], garmin_connect: garminConnect, strava_resumen: stravaResumen, resumenes_proveedor })
 }
