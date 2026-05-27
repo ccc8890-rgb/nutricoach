@@ -504,7 +504,7 @@
           "cantidad_gramos": 4
         },
         {
-          "nombre": "Bizcochos de soja",
+          "nombre": "Bizcochos de soja sin gluten",
           "cantidad_gramos": 20
         },
         {
@@ -623,9 +623,7 @@
       "nivel_elaboracion": 1,
       "adherencia_score": 97,
       "coste_estimado_nivel": "bajo",
-      "intolerancias": [
-        "Sin Gluten"
-      ],
+      "intolerancias": [],
       "nota_adherencia": "El antojo de chocolate resuelto en 2 minutos sin romper la dieta. Saber que tienes esto disponible elimina la tentación de comprar bollería industrial.",
       "imagen_prompt": "Fotografia realista de una taza de cerámica blanca con un bizcocho esponjoso de chocolate que ha subido por encima del borde. Textura esponjosa visible, espolvoreado ligero de cacao, cuchara al lado, luz natural de cocina, estilo merienda casera saludable, sin aspecto IA."
     }
