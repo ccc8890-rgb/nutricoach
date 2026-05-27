@@ -1,0 +1,978 @@
+{
+  "recetas": [
+    {
+      "nombre": "Pizza de Base de Coliflor y Mozzarella Light",
+      "descripcion": "Pizza con base de coliflor, cubierta con tomate, mozzarella light, pavo, champiñones y orégano. Crujiente por fuera, blandita por dentro. Sin harina.",
+      "categoria": "Cena",
+      "tipo_plato": "Pizza",
+      "porciones": 1,
+      "descripcion_porcion": "1 pizza individual (20cm)",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 25,
+      "tipo_coccion": "Horno",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 420,
+      "proteinas": 38,
+      "carbohidratos": 22,
+      "grasas": 19,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Coliflor (en arroz)",
+          "cantidad_gramos": 250
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Queso rallado light",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Tomate triturado natural",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Mozzarella light rallada",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Pechuga de pavo en lonchas",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Champiñones laminados",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Orégano seco",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Precalienta horno a 210°C. 2. Cocina el arroz de coliflor en microondas 5 min. Escurre bien con un paño limpio para eliminar toda el agua. 3. Mezcla la coliflor escurrida con huevo, queso rallado y sal. 4. Forma una base redonda sobre papel de horno (1 cm de grosor). Hornea 15 min. 5. Voltea la base, añade tomate, mozzarella, pavo y champiñones. Hornea 10 min más. Espolvorea orégano.",
+      "consejos": "Escurrir bien la coliflor es el paso clave: si queda húmeda, la base no se endurece. Puedes usar coliflor congelada (descongela y escurre). El pavo puede sustituirse por pepperoni de pavo.",
+      "tags": [
+        "bajo_cho",
+        "sin_gluten",
+        "alta_proteina",
+        "chef_healthy",
+        "saciante"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "cena",
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 87,
+      "digestibilidad": "media",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una pizza individual de base de coliflor sobre rejilla metálica. Base dorada y ligeramente crujiente, mozzarella light fundida con burbujas, pepperoni de pavo y champiñones laminados visibles. Orégano espolvoreado. Corte mostrando el grosor de la base. Luz natural lateral, encuadre 45°. Textura de la base de coliflor visible y natural. Fondo de encimera de madera. Imperfecciones del horneado casero. Estilo pizza saludable de restaurante artesanal. Evitar: imagen IA, base demasiado perfecta y blanca, queso artificialmente brillante."
+    },
+    {
+      "nombre": "Croquetas de Pollo al Horno (Sin Bechamel)",
+      "descripcion": "Croquetas de pollo con base de patata y calabacín horneadas. Cremosas por dentro, crujientes por fuera. Sin freír ni bechamel pesada.",
+      "categoria": "Cena",
+      "tipo_plato": "Acompañamiento",
+      "porciones": 1,
+      "descripcion_porcion": "6-8 croquetas",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 25,
+      "tipo_coccion": "Horno/Airfryer",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 395,
+      "proteinas": 35,
+      "carbohidratos": 30,
+      "grasas": 14,
+      "fibra": 5,
+      "ingredientes": [
+        {
+          "nombre": "Pollo cocido desmenuzado",
+          "cantidad_gramos": 130
+        },
+        {
+          "nombre": "Patata cocida",
+          "cantidad_gramos": 120
+        },
+        {
+          "nombre": "Calabacín rallado y escurrido",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Pan rallado integral",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Cebolla en polvo",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Ajo en polvo",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Perejil fresco picado",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Precalienta horno a 200°C. 2. Mezcla el pollo desmenuzado con patata machacada, calabacín rallado (bien escurrido), huevo, cebolla en polvo, ajo y perejil. 3. Forma croquetas alargadas. 4. Pásalas por pan rallado integral. 5. Coloca en bandeja con papel de horno, pulveriza con AOVE. 6. Hornea 20-25 min, girando a mitad. Hasta que estén doradas y crujientes.",
+      "consejos": "El calabacín rallado debe escurrirse bien con un paño para que no aporte humedad extra. Puedes usar pavo o atún en lugar de pollo. Congelan perfectamente antes de hornear.",
+      "tags": [
+        "alta_proteina",
+        "sin_gluten",
+        "chef_healthy",
+        "mealprep",
+        "comfort_healthy"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "cena",
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy",
+        "batch_cooking"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 85,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de croquetas de pollo caseras al horno sobre una bandeja con papel vegetal. Croquetas doradas y crujientes de forma ligeramente irregular. Al lado, un pequeño cuenco con salsa de yogur y mostaza. Luz natural lateral, encuadre overhead ligeramente inclinado. Textura crujiente del rebozado visible. Superficie de madera clara. Estilo croquetas caseras de restaurante de tapas moderno. Pequeñas grietas en el empanado natural. Evitar: imagen IA, croquetas perfectamente cilíndricas, empanado demasiado uniforme."
+    },
+    {
+      "nombre": "Tiramisú Fit Proteico",
+      "descripcion": "Tiramisú sin azúcar, sin nata y sin mascarpone. Capas de bizcocho proteico, crema de queso batido y café. Un postre que sabe a pecado pero suma proteína.",
+      "categoria": "Postre",
+      "tipo_plato": "Postre",
+      "porciones": 1,
+      "descripcion_porcion": "1 vaso mediano",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "kcal": 285,
+      "proteinas": 30,
+      "carbohidratos": 28,
+      "grasas": 6,
+      "fibra": 2,
+      "ingredientes": [
+        {
+          "nombre": "Queso fresco batido 0%",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Bizcochos de soja o proteicos",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Café expreso cargado",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Edulcorante tipo stevia/eritritol",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Cacao puro en polvo desgrasado",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Esencia de vainilla",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Mezcla queso batido con yogur griego, edulcorante y vainilla hasta crema homogénea. 2. Prepara café cargado y déjalo entibiar. 3. Moja ligeramente los bizcochos en café (1-2 segundos, no empaparlos). 4. Capa fina de crema, bizcochos, café, crema. 5. Repite hasta llenar el vaso. 6. Refrigera mínimo 4 horas (ideal 8h). 7. Antes de servir, espolvorea cacao desgrasado por encima.",
+      "consejos": "Los bizcochos de soja son más proteicos que los de café tradicionales. El reposo en nevera es clave para que los sabores se integren. Puedes usar café descafeinado si eres sensible a la cafeína.",
+      "tags": [
+        "alta_proteina",
+        "postre_fit",
+        "bajo_azucar",
+        "no_bake",
+        "chef_healthy"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "mantenimiento"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "gourmet_simple"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 95,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un vaso de cristal transparente con tiramisú fit en capas visibles: crema blanca de queso batido, bizcocho oscuro empapado en café, crema, y superficie cubierta de cacao en polvo. Cuchara de postre apoyada. Luz natural lateral suave, encuadre 45°. Textura cremosa visible, cacao ligeramente irregular. Fondo de madera clara con granos de café sueltos como decoración. Estilo postre de restaurante italiano moderno saludable. Imperfecciones naturales en la superficie de cacao. Evitar: imagen IA, capas perfectamente rectas, cacao demasiado uniforme."
+    },
+    {
+      "nombre": "Cheesecake Proteico Sin Horno",
+      "descripcion": "Cheesecake cremoso sin horno, sin azúcar, con base de dátiles y frutos secos, y relleno de queso batido y yogur griego. Firme pero ligero.",
+      "categoria": "Postre",
+      "tipo_plato": "Postre",
+      "porciones": 1,
+      "descripcion_porcion": "1 porción individual (molde 10cm)",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 310,
+      "proteinas": 28,
+      "carbohidratos": 30,
+      "grasas": 9,
+      "fibra": 4,
+      "ingredientes": [
+        {
+          "nombre": "Queso fresco batido 0%",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Dátiles medjool sin hueso",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Almendras crudas",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Gelatina neutra en hojas (4g)",
+          "cantidad_gramos": 4
+        },
+        {
+          "nombre": "Ralladura de limón",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Esencia de vainilla",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Base: tritura dátiles con almendras y canela hasta textura pegajosa. Forra el fondo de un molde pequeño. Presiona firme. 2. Hidrata la gelatina en agua fría 5 min. Escurre y disuelve en 3 cucharadas de agua caliente. 3. Mezcla queso batido, yogur, vainilla y ralladura de limón. Incorpora la gelatina líquida y mezcla bien. 4. Vierte sobre la base. 5. Refrigera mínimo 4 horas (ideal 8h). Desmolda con cuidado.",
+      "consejos": "Para desmoldar fácil, pasa un cuchillo fino por el borde y sumerge el molde en agua caliente 5 segundos. Puedes cubrir con coulis de frutos rojos sin azúcar.",
+      "tags": [
+        "alta_proteina",
+        "postre_fit",
+        "bajo_azucar",
+        "no_bake",
+        "sin_horno",
+        "sin_gluten"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "gourmet_simple"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 92,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una porción de cheesecake en un plato blanco. Corte limpio mostrando la base oscura de dátiles y almendras y el relleno cremoso blanco. Superficie lisa con ralladura de limón visible. Al lado, frutos rojos frescos decorativos. Luz natural lateral, encuadre 45°. Textura firme pero cremosa visible. Fondo de madera clara. Estilo tarta de restaurante de postres saludables. Imperfecciones naturales en el borde. Evitar: imagen IA, cheesecake perfectamente liso sin textura natural, base demasiado perfecta."
+    },
+    {
+      "nombre": "Brownie Fit de Chocolate",
+      "descripcion": "Brownie húmedo y chocolateoso sin azúcar, sin harina, sin mantequilla. Base de batata, cacao y claras. Sorprendentemente bueno.",
+      "categoria": "Postre",
+      "tipo_plato": "Postre",
+      "porciones": 1,
+      "descripcion_porcion": "1 brownie grande (cuadrado 8x8cm)",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 22,
+      "tipo_coccion": "Horno",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 295,
+      "proteinas": 18,
+      "carbohidratos": 38,
+      "grasas": 8,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Batata cocida y hecha puré",
+          "cantidad_gramos": 120
+        },
+        {
+          "nombre": "Claras de huevo pasteurizadas",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Cacao puro en polvo desgrasado",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Crema de cacahuete natural sin azúcar",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Edulcorante tipo eritritol",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Levadura química (tipo Royal)",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Esencia de vainilla",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Precalienta horno a 180°C. 2. Mezcla todos los ingredientes en un bol hasta masa homogénea. 3. Vierte en molde pequeño forrado con papel de horno. 4. Hornea 20-22 min (punto cuchillo: debe salir ligeramente húmedo). 5. Deja enfriar completamente antes de desmoldar. 6. Opcional: derrite el extra de crema de cacahuete por encima.",
+      "consejos": "El punto clave es NO hornear de más: 20 min para textura brownie húmeda. Si lo dejas más, queda más seco tipo bizcocho. Puedes añadir pepitas de chocolate 85% si quieres más indulgencia.",
+      "tags": [
+        "postre_fit",
+        "bajo_azucar",
+        "sin_gluten",
+        "sin_lactosa",
+        "chef_healthy",
+        "bajo_grasa"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 91,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un brownie de chocolate cortado en cuadrado sobre plato blanco. Superficie agrietada típica de brownie, interior húmedo y denso visible en el corte. Un hilo de crema de cacahuete derretida por encima. Migas sueltas. Luz natural lateral suave, encuadre overhead. Textura húmeda y chocolateosa evidente. Fondo de madera clara. Estilo brownie casero de repostería saludable premium. Pequeñas imperfecciones naturales. Evitar: imagen IA, brownie demasiado esponjoso tipo bizcocho, crema de cacahuete perfectamente simétrica."
+    },
+    {
+      "nombre": "Crepes Proteicos con Fruta y Yogur",
+      "descripcion": "Crepes finos de avena y claras de huevo, rellenos de yogur griego y fruta fresca. Dulces, saciantes y con proteína de verdad.",
+      "categoria": "Desayuno",
+      "tipo_plato": "Crepe",
+      "porciones": 1,
+      "descripcion_porcion": "2 crepes rellenos",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 8,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 380,
+      "proteinas": 30,
+      "carbohidratos": 38,
+      "grasas": 10,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Claras de huevo pasteurizadas",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Copos de avena finos molidos",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Fresas",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Plátano",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Mezcla claras de huevo con avena molida y canela hasta masa líquida homogénea. 2. Calienta sartén antiadherente con spray de AOVE. Vierte la mitad de la masa, extiende en círculo fino. 3. Cocina 2 min por lado. Repite. 4. Rellena cada crepe con yogur griego, fresas laminadas y rodajas de plátano. 5. Dobla en triángulos o enrolla. Espolvorea canela extra.",
+      "consejos": "Puedes preparar la masa la noche anterior. Si quieres más proteína añade un scoop de proteína sabor vainilla a la masa. Cambia la fruta según temporada.",
+      "tags": [
+        "alta_proteina",
+        "desayuno",
+        "sin_gluten",
+        "chef_healthy",
+        "rapida",
+        "bajo_azucar"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general",
+        "running",
+        "fuerza"
+      ],
+      "momentos": [
+        "desayuno",
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 90,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de dos crepes proteicos doblados en triángulo sobre plato blanco. Relleno de yogur griego blanco, fresas rojas y rodajas de plátano asomando por los bordes. Canela espolvoreada. Arándanos sueltos decorativos. Luz natural lateral suave, encuadre overhead. Textura de crepe fina y ligeramente dorada visible. Fondo de encimera de mármol blanco. Estilo brunch saludable de cafetería moderna. Pequeñas imperfecciones y migas. Evitar: imagen IA, crepes demasiado perfectos y simétricos, fruta artificialmente brillante."
+    },
+    {
+      "nombre": "Tortitas Proteicas de Avena y Plátano",
+      "descripcion": "Tortitas esponjosas de avena, claras de huevo y plátano. Sin azúcar, sin harina. Acompañadas de yogur, fruta y canela.",
+      "categoria": "Desayuno",
+      "tipo_plato": "Tortitas",
+      "porciones": 1,
+      "descripcion_porcion": "4-5 tortitas medianas",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 8,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 395,
+      "proteinas": 28,
+      "carbohidratos": 50,
+      "grasas": 7,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Plátano maduro",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Claras de huevo pasteurizadas",
+          "cantidad_gramos": 90
+        },
+        {
+          "nombre": "Copos de avena finos molidos",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Levadura química (tipo Royal)",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Arándanos o frutos rojos",
+          "cantidad_gramos": 40
+        }
+      ],
+      "instrucciones": "1. Machaca el plátano con tenedor. 2. Mezcla plátano, claras, avena molida, levadura y canela hasta masa homogénea (ligeramente espesa). 3. Calienta sartén antiadherente con spray de AOVE. 4. Vierte porciones pequeñas, cocina 2-3 min hasta burbujas, voltea y cocina 1-2 min. 5. Sirve apiladas con yogur griego y frutos rojos.",
+      "consejos": "El plátano debe estar muy maduro para que endulce naturalmente. Puedes sustituir avena por harina de almendra para versión keto. Congelan bien; solo tostar ligeramente para recuperar textura.",
+      "tags": [
+        "alta_proteina",
+        "desayuno",
+        "sin_gluten",
+        "chef_healthy",
+        "bajo_azucar",
+        "rapida"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general",
+        "running",
+        "fuerza"
+      ],
+      "momentos": [
+        "desayuno",
+        "merienda",
+        "pre_entreno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 93,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una pila de 4 tortitas de avena y plátano en un plato blanco. Tortitas doradas con bordes ligeramente irregulares, cubiertas con yogur griego blanco cayendo por los lados, arándanos y fresas frescas. Canela espolvoreada. Miel ligera o sirope opcional. Luz natural lateral, encuadre 45°. Textura esponjosa visible. Fondo de madera clara. Estilo tortitas caseras de brunch saludable. Pequeñas imperfecciones, bordes no perfectamente redondos. Evitar: imagen IA, tortitas perfectamente idénticas, sirope demasiado artificial."
+    },
+    {
+      "nombre": "Yogur Bowl Proteico con Granola Casera",
+      "descripcion": "Bow cremoso de yogur griego 0% con granola casera sin azúcar, fruta fresca y semillas. Desayuno rápido, saciante y personalizable.",
+      "categoria": "Desayuno",
+      "tipo_plato": "Bowl",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 365,
+      "proteinas": 30,
+      "carbohidratos": 34,
+      "grasas": 12,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Granola casera sin azúcar (avena, frutos secos, canela)",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Arándanos",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Fresas",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Semillas de chía",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Sirve el yogur griego en un bowl. 2. Añade la granola casera por encima. 3. Lava y corta las frutas (fresas en láminas, arándanos enteros). 4. Coloca la fruta decorativamente. 5. Espolvorea semillas de chía y canela. 6. Sirve inmediatamente para que la granola esté crujiente.",
+      "consejos": "La granola casera se hace mezclando copos de avena, nueces picadas, canela y un poco de claras de huevo + edulcorante, horneado 15 min a 170°C. Puedes preparar fruta variada y tenerla lista en la nevera.",
+      "tags": [
+        "alta_proteina",
+        "desayuno",
+        "chef_healthy",
+        "rapida",
+        "no_cook",
+        "saciante"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general",
+        "running"
+      ],
+      "momentos": [
+        "desayuno",
+        "merienda",
+        "post_entreno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 88,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de cerámica blanca con yogur griego, granola casera dorada y crujiente, arándanos azules, fresas rojas en láminas y semillas de chía. Canela espolvoreada. Cuchara apoyada. Luz natural lateral suave, encuadre overhead. Texturas: yogur cremoso, granola crujiente, fruta fresca. Fondo de encimera de madera clara. Estilo desayuno bowl de cafetería saludable. Imperfecciones naturales, granola no perfectamente distribuida. Evitar: imagen IA, bowl demasiado perfecto, frutas idénticas, granola artificialmente brillante."
+    },
+    {
+      "nombre": "Pudding de Chía y Proteína",
+      "descripcion": "Pudding cremoso de chía con leche de almendras, proteína y fruta. Prepáralo la noche anterior y tendrás desayuno o merienda listo al despertar.",
+      "categoria": "Desayuno",
+      "tipo_plato": "Pudding",
+      "porciones": 1,
+      "descripcion_porcion": "1 tarro mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 335,
+      "proteinas": 28,
+      "carbohidratos": 28,
+      "grasas": 12,
+      "fibra": 12,
+      "ingredientes": [
+        {
+          "nombre": "Bebida de almendras sin azúcar",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Semillas de chía",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Proteína en polvo sabor vainilla",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Mango maduro en cubos",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Frutos rojos",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Mezcla la bebida de almendras con las semillas de chía y la proteína en polvo. Remueve bien. 2. Vierte en un tarro de cristal. 3. Refrigera mínimo 4 horas (ideal toda la noche). 4. Antes de servir, remueve y añade mango en cubos y frutos rojos por encima. 5. Espolvorea canela.",
+      "consejos": "Las semillas de chía absorben 3-4 veces su peso, de ahí la textura de pudding. Sin proteína en polvo, queda igual de bueno pero con menos proteína. Puedes usar leche de coco para más cremosidad.",
+      "tags": [
+        "alta_proteina",
+        "alto_fibra",
+        "omega_3",
+        "no_cook",
+        "mealprep",
+        "desayuno",
+        "bajo_azucar"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general",
+        "running"
+      ],
+      "momentos": [
+        "desayuno",
+        "merienda",
+        "post_entreno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida",
+        "tupper"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 86,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un tarro de cristal transparente con pudding de chía. Capas visibles: pudding blanco cremoso con puntitos negros de chía, cubierto de mango amarillo en cubos y frutos rojos. Cuchara larga de postre. Luz natural lateral, encuadre 45°. Textura gelatinosa del pudding visible en los bordes del tarro. Fondo de encimera de madera clara. Estilo overnight oats/pudding de cafetería saludable. Imperfecciones naturales. Evitar: imagen IA, capas perfectamente rectas sin textura natural, fruta demasiado brillante."
+    },
+    {
+      "nombre": "Wrap de Pollo al Pesto con Verduras Asadas",
+      "descripcion": "Wrap integral relleno de pollo al pesto ligero, pimiento asado, rúcula y tomate seco. Frío o caliente, perfecto para tupper.",
+      "categoria": "Comida",
+      "tipo_plato": "Wrap",
+      "porciones": 1,
+      "descripcion_porcion": "1 wrap grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 12,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 475,
+      "proteinas": 38,
+      "carbohidratos": 38,
+      "grasas": 17,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Wrap de trigo integral grande",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Pimiento rojo asado (de bote)",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Rúcula",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Tomate seco en aceite (escurrido)",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Albahaca fresca",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Piñones",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Prepara el pesto: albahaca, piñones, ajo, AOVE y sal. 2. Cocina el pollo en sartén 6-7 min por lado, deja reposar y corta en tiras. 3. Calienta el wrap ligeramente. 4. Extiende el pesto sobre el wrap. 5. Coloca rúcula, pollo, pimiento asado en tiras y tomate seco picado. 6. Enrolla apretadamente (dobla los lados primero). 7. Corta por la mitad en diagonal.",
+      "consejos": "Si llevas el wrap de tupper, envuelve en papel de aluminio y calienta en sartén 2 min por lado. Para versión sin gluten, usa wrap de maíz o lechuga grande como envoltura.",
+      "tags": [
+        "alta_proteina",
+        "chef_healthy",
+        "tupper",
+        "mealprep",
+        "rapida"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida",
+        "tupper"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 89,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un wrap de pollo al pesto cortado por la mitad en diagonal, mostrando el interior colorido: pollo en tiras, pesto verde, pimiento rojo asado, rúcula y tomate seco. Rebanada sobre tabla de madera clara. Luz natural lateral, encuadre 45°. Textura del wrap ligeramente tostado. Pequeño cuenco con pesto extra al lado. Estilo wrap de restaurante de comida saludable. Imperfecciones naturales del relleno asomando. Evitar: imagen IA, wrap perfectamente enrollado sin textura, relleno demasiado perfecto."
+    },
+    {
+      "nombre": "Ensalada de Garbanzos, Atún y Aguacate",
+      "descripcion": "Ensalada completa y saciante con garbanzos, atún en conserva, aguacate, cherry, cebolla y aliño de mostaza y limón. Sin lechuga aburrida.",
+      "categoria": "Comida",
+      "tipo_plato": "Ensalada",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 490,
+      "proteinas": 34,
+      "carbohidratos": 32,
+      "grasas": 22,
+      "fibra": 12,
+      "ingredientes": [
+        {
+          "nombre": "Garbanzos cocidos escurridos",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Atún en conserva al natural",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Tomates cherry",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Cebolla morada",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Pepino",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Perejil fresco picado",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Escurre los garbanzos y pásalos por agua fría. 2. Corta el aguacate en cubos, los cherrys por la mitad, el pepino en medias lunas y la cebolla en aros finos. 3. Aliño: mostaza, zumo de limón, AOVE, sal y pimienta. 4. Mezcla todos los ingredientes en un bol grande. 5. Desmenuza el atún por encima y mezcla suavemente. Perejil fresco picado.",
+      "consejos": "Puedes sustituir atún por huevo duro picado para versión vegetariana. Esta ensalada aguanta bien varias horas en nevera, ideal para tupper. Los garbanzos aportan fibra y textura.",
+      "tags": [
+        "alta_proteina",
+        "alto_fibra",
+        "saciante",
+        "mediterranea",
+        "mealprep",
+        "no_cook",
+        "alto_volumen",
+        "rapida"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "mediterranea",
+        "chef_healthy",
+        "alto_volumen",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 88,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bol de cerámica beige con ensalada de garbanzos, atún y aguacate. Garbanzos dorados, atún desmenuzado, cubos de aguacate verde, cherrys rojos partidos, medias lunas de pepino y aros finos de cebolla morada. Aliño mostaza-limón ligeramente mezclado. Perejil fresco picado. Luz natural lateral suave, encuadre 45°. Texturas variadas visibles. Fondo de encimera de madera clara. Cuchara de servir. Estilo ensalada de restaurante mediterráneo. Imperfecciones naturales. Evitar: imagen IA, garbanzos idénticos, aliño demasiado perfecto."
+    }
+  ]
+}

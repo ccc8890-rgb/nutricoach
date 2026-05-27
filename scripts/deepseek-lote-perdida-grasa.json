@@ -1,0 +1,2939 @@
+{
+  "recetas": [
+    {
+      "nombre": "Tacos Big Mac Fit",
+      "descripcion": "La experiencia Big Mac en versión taco healthy. Carne picada magra, salsa especial ligera y vegetales frescos en tortilla de maíz.",
+      "categoria": "Cena",
+      "tipo_plato": "Tacos",
+      "porciones": 1,
+      "descripcion_porcion": "3 tacos",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 12,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 485,
+      "proteinas": 38,
+      "carbohidratos": 42,
+      "grasas": 16,
+      "fibra": 9,
+      "ingredientes": [
+        {
+          "nombre": "Carne picada de ternera magra (5-7% grasa)",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Tortillas de maíz pequeñas",
+          "cantidad_gramos": 75
+        },
+        {
+          "nombre": "Lechuga romana",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Cebolla morada",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Vinagre de manzana",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Pimentón dulce",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Ajo en polvo",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Cebolla en polvo",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Mezcla el yogur griego con mostaza, vinagre, pimentón, ajo y cebolla en polvo. Reserva la salsa especial. 2. Saltea la carne picada en sartén antiadherente 8-10 min a fuego medio-alto, desmenuzando con cuchara. Salpimienta. 3. Calienta las tortillas de maíz en sartén seca 30s por lado. 4. Monta: tortilla, carne, lechuga picada, tomate en cubos, cebolla en aros finos y salsa especial por encima.",
+      "consejos": "Puedes sustituir la ternera por pollo picado para reducir grasas. La salsa aguanta 4 días en nevera. Sirve con lima y cilantro fresco si te gusta.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "bajo_azucar",
+        "sin_gluten"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general",
+        "fuerza"
+      ],
+      "momentos": [
+        "cena",
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 92,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de tres tacos de maíz apilados en diagonal sobre superficie de madera clara. Relleno de carne picada jugosa, lechuga fresca, tomate cherry y salsa blanca cremosa cayendo. Encaje 45°, luz natural lateral de ventana, sombras suaves. Textura de tortilla ligeramente dorada, carne suelta y jugosa, lechuga crujiente. Vajilla de cerámica artesanal beige. Fondo limpio con ramita de cilantro fresco. Estilo food blogger español, tonos cálidos mediterráneos. Imperfecciones naturales, sin aspecto de estudio. Evitar: imagen IA, brillos irreales, simetría perfecta."
+    },
+    {
+      "nombre": "Wrap Pizza Alta Proteína",
+      "descripcion": "Wrap de trigo integral relleno de salsa de tomate casera, mozzarella light, pepperoni de pavo y orégano. Horneado para un acabado crujiente tipo pizza.",
+      "categoria": "Cena",
+      "tipo_plato": "Wrap",
+      "porciones": 1,
+      "descripcion_porcion": "1 wrap grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 12,
+      "tipo_coccion": "Horno/Airfryer",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "kcal": 465,
+      "proteinas": 39,
+      "carbohidratos": 38,
+      "grasas": 16,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Wrap de trigo integral grande",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Tomate triturado natural",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Mozzarella light rallada",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Pechuga de pavo en lonchas",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Champiñones laminados",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Pimiento verde italiano",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Orégano seco",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Precalienta horno a 200°C o airfryer a 180°C. 2. Extiende el wrap y úntalo con tomate triturado. 3. Añade mozzarella, pavo desmenuzado, champiñones laminados y pimiento en tiras finas. Espolvorea orégano. 4. Cierra el wrap tipo burrito o déjalo abierto tipo pizza. Hornea 10-12 min hasta que esté dorado y crujiente.",
+      "consejos": "Puedes usar base de coliflor congelada como wrap low-carb. Para más proteína, añade 50g de pechuga de pollo desmenuzada. Si usas airfryer, reduce a 8 min.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "mealprep"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "cena",
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 90,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un wrap pizza recién horneado sobre tabla de cortar de madera. Wrap dorado y crujiente con queso fundido, pepperoni de pavo y champiñones visibles. Corte transversal mostrando capas de ingredientes. Luz natural lateral, encuadre 45°. Superficie de madera clara, pequeño cuenco con orégano al lado. Estilo comida casera premium, textura crujiente evidente. Imperfecciones naturales de horneado casero. Evitar: aspecto de imagen IA, comida de plástico."
+    },
+    {
+      "nombre": "Burrito Bowl de Pollo al Chipotle",
+      "descripcion": "Todos los sabores de un burrito en bowl: arroz esponjoso, pollo jugoso, frijoles negros, maíz, pico de gallo y una crema de aguacate ligera.",
+      "categoria": "Comida",
+      "tipo_plato": "Bowl",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 18,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 545,
+      "proteinas": 44,
+      "carbohidratos": 52,
+      "grasas": 16,
+      "fibra": 13,
+      "ingredientes": [
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 170
+        },
+        {
+          "nombre": "Arroz basmati cocido",
+          "cantidad_gramos": 140
+        },
+        {
+          "nombre": "Frijoles negros cocidos",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Maíz dulce en grano",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Lima",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Cilantro fresco",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Comino molido",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Pimentón ahumado",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Cebolla morada",
+          "cantidad_gramos": 20
+        }
+      ],
+      "instrucciones": "1. Adoba el pollo con comino, pimentón, ajo en polvo, sal y zumo de lima. Cocina en sartén 6-7 min por lado. Deja reposar y trocea. 2. Prepara el pico de gallo: tomate en cubos, cebolla morada picada, cilantro y lima. 3. Mezcla yogur griego con un trozo de aguacate machacado y lima para la crema. 4. Monta el bowl: base de arroz, frijoles negros, maíz, pollo troceado, pico de gallo, crema de aguacate y el resto de aguacate en láminas.",
+      "consejos": "Para meal prep, guarda cada ingrediente por separado y monta al comer. Puedes sustituir el arroz por coliflor rallada para reducir carbohidratos.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "alto_volumen",
+        "chef_healthy",
+        "mealprep",
+        "alto_fibra"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general",
+        "fuerza"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "alto_volumen"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 94,
+      "digestibilidad": "media",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista overhead de un burrito bowl en bol de cerámica artesanal beige. Ingredientes alineados en sectores visibles: arroz basmati esponjoso, pollo troceado con costra oscura de especias, frijoles negros, maíz amarillo, pico de gallo rojo, crema verde de aguacate y láminas de aguacate fresco. Cilantro fresco espolvoreado. Luz natural cenital suave. Mesa de madera clara. Texturas claras y diferenciadas. Colorido vibrante pero realista. Estilo food blogger premium. Evitar: composición demasiado perfecta, colores sobresaturados, aspecto de render."
+    },
+    {
+      "nombre": "Tacos de Pescado con Salsa Cremosa de Cilantro",
+      "descripcion": "Tacos de merluza o bacalao fresco rebozados ligeramente, con salsa cremosa de yogur y cilantro, repollo morado crujiente y lima.",
+      "categoria": "Cena",
+      "tipo_plato": "Tacos",
+      "porciones": 1,
+      "descripcion_porcion": "3 tacos",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 10,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Lácteos",
+        "Sin Gluten"
+      ],
+      "kcal": 435,
+      "proteinas": 36,
+      "carbohidratos": 38,
+      "grasas": 14,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Merluza o bacalao fresco",
+          "cantidad_gramos": 160
+        },
+        {
+          "nombre": "Tortillas de maíz pequeñas",
+          "cantidad_gramos": 75
+        },
+        {
+          "nombre": "Repollo morado",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Cilantro fresco",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Lima",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Harina de maíz fina",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Ajo en polvo",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Corta el pescado en tiras de 3 cm. Pásalos por harina de maíz con ajo en polvo y sal. 2. Cocina en sartén con 5g de AOVE 3-4 min por lado, hasta dorado. 3. Prepara la salsa: yogur griego con cilantro picado fino, zumo de lima y sal. 4. Corta el repollo en juliana fina. 5. Calienta las tortillas en sartén seca. Monta: tortilla, repollo, pescado, salsa de cilantro y un chorrito extra de lima.",
+      "consejos": "El bacalao fresco funciona mejor que la merluza porque aguanta mejor la sartén. Si no encuentras tortillas de maíz, usa lechuga iceberg como wrap low-carb.",
+      "tags": [
+        "alta_proteina",
+        "chef_healthy",
+        "sin_gluten",
+        "bajo_azucar",
+        "pescado"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "cena",
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "mediterranea",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 88,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de tres tacos de pescado sobre tabla de madera clara. Pescado dorado y crujiente asomando, repollo morado en juliana fina, salsa verde cremosa de cilantro cayendo. Gajo de lima al lado. Luz natural lateral suave, encuadre 45°. Textura del pescado rebozado visible, gotas de lima. Cilantro fresco espolvoreado. Fondo de cocina real con textura de madera. Imperfecciones naturales. Estilo taco real de food truck gourmet. Evitar: imagen IA, brillos artificiales, pescado demasiado perfecto."
+    },
+    {
+      "nombre": "Kebab Bowl de Pollo con Salsa Blanca Ligera",
+      "descripcion": "El clásico kebab en formato bowl: pollo especiado al punto, lechuga, tomate, cebolla, pepino encurtido y salsa blanca de yogur. Sin pan de pita, todo el sabor.",
+      "categoria": "Comida",
+      "tipo_plato": "Bowl",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 465,
+      "proteinas": 45,
+      "carbohidratos": 28,
+      "grasas": 18,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Contramuslo de pollo sin piel",
+          "cantidad_gramos": 180
+        },
+        {
+          "nombre": "Lechuga iceberg",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Cebolla morada",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Pepino",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Vinagre de vino blanco",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Comino molido",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Pimentón ahumado",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Orégano seco",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Corta el pollo en tiras finas. Adoba con comino, pimentón, orégano, sal. 2. Cocina en sartén con AOVE 8-10 min a fuego fuerte, moviendo constantemente para que se dore por fuera y quede jugoso. 3. Encurtido rápido de pepino: láminas finas de pepino con vinagre y sal, reposar 5 min. 4. Salsa: yogur griego con ajo en polvo, zumo de limón y sal. 5. Base de lechuga picada, tomate en cubos, cebolla en aros, pepino encurtido, pollo caliente y salsa blanca por encima.",
+      "consejos": "El contramuslo de pollo es más jugoso que la pechuga para este plato. Puedes sustituir por falafel horneado para versión vegetariana.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "bajo_azucar",
+        "mealprep"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "alto_volumen",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 91,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de cerámica blanca con kebab de pollo. Pollo en tiras doradas y especiadas como protagonista sobre cama de lechuga iceberg picada, tomate cherry rojo, aros finos de cebolla morada, láminas de pepino translúcido y salsa blanca de yogur cayendo en hilos. Encaje 45°. Luz natural de ventana lateral. Texturas contrastantes: pollo jugoso, verdura crujiente, salsa cremosa. Fondo de encimera de mármol blanco. Imperfecciones naturales. Estilo street food mediterráneo saludable. Evitar: aspecto de dieta, plato beige sin color, imagen IA."
+    },
+    {
+      "nombre": "Burger Bowl con Salsa Especial",
+      "descripcion": "Todo el sabor de una hamburguesa en formato bowl: carne jugosa, queso fundido, pepinillos, lechuga, tomate, cebolla caramelizada y salsa especial baja en grasa.",
+      "categoria": "Cena",
+      "tipo_plato": "Bowl",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 495,
+      "proteinas": 44,
+      "carbohidratos": 24,
+      "grasas": 23,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Carne picada de ternera extra magra (5% grasa)",
+          "cantidad_gramos": 170
+        },
+        {
+          "nombre": "Lechuga romana",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Pepinillos en vinagre",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Queso cheddar light en loncha",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Kétchup sin azúcar",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Forma una hamburguesa con la carne, salpimienta. Cocina en sartén 5 min por lado. Pon la loncha de queso encima los últimos 2 min, tapa para que funda. 2. Carameliza la cebolla en la misma sartén con 5g AOVE y una cucharada de agua, 5-7 min a fuego medio. 3. Salsa especial: yogur, kétchup, mostaza y pepinillo picado muy fino. 4. Base de lechuga picada, tomate en rodajas, hamburguesa con queso fundido, cebolla caramelizada y salsa especial.",
+      "consejos": "Para más parecido a una burger, usa lechuga iceberg como 'pan' inferior y superior. Puedes añadir bacón de pavo crujiente para extra de sabor.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "bajo_azucar",
+        "sin_gluten"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "mantenimiento"
+      ],
+      "deportes": [
+        "general",
+        "fuerza"
+      ],
+      "momentos": [
+        "cena",
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 93,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un burger bowl en bol de cerámica oscura. Hamburguesa de carne jugosa con queso cheddar fundido visible, cebolla caramelizada brillante, rodajas de tomate rojo, lechuga romana crujiente y salsa especial cayendo en hilos. Pepinillos en vinagre como guarnición. Encaje 45°, luz natural lateral. Textura de la carne marcada a la plancha, queso ligeramente caído. Fondo de mármol gris. Toppings perfectamente imperfectos. Estilo comfort food reimaginado. Evitar: plato de dieta, imagen demasiado limpia o de stock, composición aséptica."
+    },
+    {
+      "nombre": "Chicken Burger de Avena y Queso Light",
+      "descripcion": "Hamburguesa casera de pollo picado con copos de avena, especias y un toque de queso light. Servida con pan proteico y verduras frescas.",
+      "categoria": "Comida",
+      "tipo_plato": "Burger",
+      "porciones": 1,
+      "descripcion_porcion": "1 burger grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 12,
+      "tipo_coccion": "Plancha",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "kcal": 490,
+      "proteinas": 46,
+      "carbohidratos": 32,
+      "grasas": 16,
+      "fibra": 5,
+      "ingredientes": [
+        {
+          "nombre": "Pechuga de pollo picada",
+          "cantidad_gramos": 160
+        },
+        {
+          "nombre": "Copos de avena finos",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Queso light en loncha",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Pan de proteína o integral",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Lechuga",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Cebolla morada",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Ajo en polvo",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Pimentón ahumado",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Mezcla el pollo picado con avena, huevo batido, ajo en polvo, pimentón y sal. Forma una hamburguesa. 2. Cocina en plancha o sartén antiadherente con AOVE 5-6 min por lado. Pon el queso encima los últimos 2 min. 3. Tuesta el pan ligeramente. 4. Monta: pan inferior, lechuga, burger con queso, tomate, cebolla y pan superior. 5. Acompaña con la guarnición que prefieras (ensalada o patatas al horno).",
+      "consejos": "Puedes hacer varias burgers y congelarlas. La avena ayuda a mantener la jugosidad. Para versión sin gluten, usa pan sin gluten y copos de avena certificados sin gluten.",
+      "tags": [
+        "alta_proteina",
+        "chef_healthy",
+        "mealprep",
+        "comfort_healthy"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "ganancia_muscular"
+      ],
+      "deportes": [
+        "general",
+        "fuerza"
+      ],
+      "momentos": [
+        "comida",
+        "cena",
+        "post_entreno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 89,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una hamburguesa casera de pollo en pan proteico ligeramente tostado. La burger se ve dorada por fuera con queso light fundido ligeramente cayendo. Lechuga verde fresca, rodaja de tomate rojo y aros finos de cebolla morada asoman entre el pan. Corte visible mostrando la textura jugosa del pollo. Luz natural de ventana lateral, encuadre 45°. Superficie de madera clara. Pequeño cuenco de salsa al lado. Textura casera, ligeramente imperfecta. Estilo burger de restaurante casual saludable. Evitar: imagen IA, pan demasiado perfecto, hamburguesa de plástico."
+    },
+    {
+      "nombre": "Sandwich Club Fit de Pavo y Aguacate",
+      "descripcion": "Sandwich triple capa con pan integral tostado, pavo, aguacate, huevo, lechuga, tomate y mostaza-miel ligera. El clásico club en versión saludable.",
+      "categoria": "Comida",
+      "tipo_plato": "Sandwich",
+      "porciones": 1,
+      "descripcion_porcion": "1 sandwich triple",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 5,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Huevos"
+      ],
+      "kcal": 475,
+      "proteinas": 38,
+      "carbohidratos": 40,
+      "grasas": 16,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Pan integral de molde",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Fiambre de pavo",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 55
+        },
+        {
+          "nombre": "Lechuga",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Miel",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Tuesta el pan ligeramente. 2. Cocina el huevo duro (10 min) o a la plancha (3 min). 3. Mezcla mostaza con miel para la salsa. 4. Monta por capas: pan, mostaza-miel, lechuga, pavo, tomate en rodajas, aguacate en láminas, huevo laminado, pan. Repite para la segunda capa. 5. Corta en triángulos y sirve con palillo decorativo.",
+      "consejos": "Para transportar, envuelve en papel film y corta en el momento de comer. Puedes sustituir el pavo por pollo a la plancha desmenuzado.",
+      "tags": [
+        "alta_proteina",
+        "chef_healthy",
+        "rapida",
+        "mealprep",
+        "tupper"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "mantenimiento"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "merienda",
+        "media_manana"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida",
+        "tupper"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 87,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un sandwich club triple cortado en triángulos mostrando las capas: pan tostado, pavo, aguacate verde, huevo, lechuga y tomate. Palillo decorativo sujetando las capas. Sobre tabla de madera clara, acompañado de unas hojas de rúcula sueltas. Luz natural lateral, encuadre overhead ligeramente inclinado. Textura del pan tostado visible. Estilo brunch casual premium. Imperfecciones naturales, migas de pan auténticas. Evitar: imagen IA, sandwich de plástico, capas demasiado perfectas."
+    },
+    {
+      "nombre": "Burger de Lentejas y Quinoa",
+      "descripcion": "Hamburguesa vegetal proteica hecha con lentejas, quinoa y especias. Servida con pan integral, aguacate y tomate. Saciantes y sabrosas incluso para no veganos.",
+      "categoria": "Comida",
+      "tipo_plato": "Burger",
+      "porciones": 1,
+      "descripcion_porcion": "1 burger grande",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Gluten"
+      ],
+      "kcal": 465,
+      "proteinas": 24,
+      "carbohidratos": 58,
+      "grasas": 14,
+      "fibra": 14,
+      "ingredientes": [
+        {
+          "nombre": "Lenteja cocida",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Quinoa cocida",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Pan de proteína o integral",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Lechuga",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Cebolla morada",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Comino molido",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Pimentón ahumado",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Pan rallado integral",
+          "cantidad_gramos": 15
+        }
+      ],
+      "instrucciones": "1. Escurre las lentejas y mézclalas con la quinoa, pan rallado, comino, pimentón, ajo en polvo y sal. Machaca ligeramente con tenedor sin hacer puré. 2. Forma una hamburguesa compacta. 3. Cocina en sartén con AOVE 5-6 min por lado, hasta que esté dorada y firme. 4. Tuesta el pan, monta con aguacate en láminas, tomate, lechuga y cebolla.",
+      "consejos": "Puedes hacer varias y congelarlas entre papeles de horno. La quinoa se puede sustituir por arroz integral cocido. El pan rallado ayuda a ligar, puedes usar copos de avena molidos.",
+      "tags": [
+        "alto_fibra",
+        "saciante",
+        "vegano",
+        "vegetariano",
+        "chef_healthy",
+        "mealprep",
+        "alto_volumen"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 85,
+      "digestibilidad": "media",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una hamburguesa vegetal de lentejas y quinoa en pan integral tostado. La burger se ve dorada y crujiente por fuera con textura rústica visible. Aguacate en láminas verdes, rodaja de tomate rojo, aros finos de cebolla morada y lechuga fresca. Fondo de madera clara, luz natural suave. Encaje 45°. Ligeras migas y pequeñas imperfecciones. Estilo comida real casera premium. Evitar: aspecto de imagen IA, burger que parece de plástico, colores sobresaturados."
+    },
+    {
+      "nombre": "Buddha Bowl de Salmón Teriyaki",
+      "descripcion": "Bowl colorido con salmón glaseado en teriyaki light, arroz basmati, edamame, zanahoria, pepino, aguacate y sésamo. Un plato completo, vistoso y lleno de omega-3.",
+      "categoria": "Comida",
+      "tipo_plato": "Bowl",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Lácteos",
+        "Sin Gluten"
+      ],
+      "kcal": 565,
+      "proteinas": 40,
+      "carbohidratos": 48,
+      "grasas": 19,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Salmón fresco en lomo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Arroz basmati cocido",
+          "cantidad_gramos": 140
+        },
+        {
+          "nombre": "Edamame (desgranado)",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Zanahoria",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Pepino",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Salsa de soja baja en sodio",
+          "cantidad_gramos": 12
+        },
+        {
+          "nombre": "Miel",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Jengibre rallado",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Semillas de sésamo",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Mezcla soja, miel y jengibre para el teriyaki. 2. Cocina el salmón en sartén con AOVE 4 min por lado, añade el teriyaki los últimos 2 min y baña el salmón. 3. Corta la zanahoria en bastones finos y el pepino en medias lunas. 4. Monta el bowl: arroz, edamame, zanahoria, pepino, aguacate en láminas y salmón glaseado. Espolvorea sésamo y un chorrito extra del jugo de la sartén.",
+      "consejos": "El edamame congelado se cocina en 3 min en agua hirviendo. Si no tienes, usa garbanzos especiados. El salmón puede sustituirse por pollo teriyaki.",
+      "tags": [
+        "alta_proteina",
+        "omega_3",
+        "chef_healthy",
+        "colorido",
+        "saciante"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "gourmet_simple"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 91,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista overhead de un buddha bowl en bol de cerámica artesanal color salvia. Salmón glaseado en teriyaki con brillo natural en el centro, arroz basmati blanco esponjoso, edamame verde brillante, bastones de zanahoria naranja, medias lunas de pepino verde claro, láminas de aguacate y semillas de sésamo espolvoreadas. Luz natural cenital suave. Superficie de madera clara. Texturas diferenciadas y colores vibrantes pero reales. Estilo food bowl premium de restaurante casual. Pequeñas imperfecciones naturales en los cortes. Evitar: imagen IA, composición demasiado perfecta, colores irreales."
+    },
+    {
+      "nombre": "Poke Bowl de Atún Fresco",
+      "descripcion": "Bowl hawaiano con atún fresco marinado en soja y sésamo, arroz integral, mango, pepino, aguacate, edamame y un toque de wasabi.",
+      "categoria": "Comida",
+      "tipo_plato": "Bowl",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl mediano",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Lácteos",
+        "Sin Gluten"
+      ],
+      "kcal": 485,
+      "proteinas": 36,
+      "carbohidratos": 42,
+      "grasas": 16,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Atún fresco para sashimi",
+          "cantidad_gramos": 130
+        },
+        {
+          "nombre": "Arroz integral cocido frío",
+          "cantidad_gramos": 130
+        },
+        {
+          "nombre": "Mango maduro",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Pepino",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Edamame desgranado",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Salsa de soja baja en sodio",
+          "cantidad_gramos": 12
+        },
+        {
+          "nombre": "Semillas de sésamo",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Jengibre encurtido",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Alga nori desmenuzada",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Wasabi",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Corta el atún en cubos de 1.5 cm. Marínalo 5 min con soja y sésamo. 2. Corta el mango y el pepino en cubos, el aguacate en láminas. 3. Monta el bowl: base de arroz, atún marinado en el centro, mango, pepino, aguacate, edamame en sectores. 4. Añade jengibre encurtido, alga nori y wasabi al lado. 5. Rocía con un hilo extra de soja si se desea.",
+      "consejos": "Compra atún de calidad sashimi en pescadería de confianza. El arroz debe estar frío para mejor textura. Si no encuentras mango, usa papaya o aguacate extra.",
+      "tags": [
+        "alta_proteina",
+        "omega_3",
+        "chef_healthy",
+        "no_cook",
+        "colorido"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "gourmet_simple",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 90,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista overhead de un poke bowl en bol cerámico blanco. Atún fresco en cubos de color rojo intenso brillante, arroz integral, mango amarillo, pepino verde, aguacate, edamame, jengibre encurtido rosa y wasabi verde. Semillas de sésamo y alga nori desmenuzada. Luz natural cenital suave. Superficie de madera clara. Colores vibrantes y contrastantes pero realistas. Texturas perfectamente diferenciadas. Estilo poke bowl de restaurante hawaiano real. Imperfecciones naturales. Evitar: imagen IA, comida de plástico, colores fluorescentes."
+    },
+    {
+      "nombre": "Bowl Mediterráneo de Pollo y Hummus",
+      "descripcion": "Bowl fresco y completo con pollo especiado, hummus casero, quinoa, pepino, tomate cherry, aceitunas y vinagreta de limón. Inspiración griega en versión fit.",
+      "categoria": "Comida",
+      "tipo_plato": "Bowl",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Plancha",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 525,
+      "proteinas": 42,
+      "carbohidratos": 40,
+      "grasas": 19,
+      "fibra": 9,
+      "ingredientes": [
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 160
+        },
+        {
+          "nombre": "Quinoa cocida",
+          "cantidad_gramos": 120
+        },
+        {
+          "nombre": "Hummus natural",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Pepino",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Tomates cherry",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Aceitunas negras sin hueso",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Cebolla morada",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Limón",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Orégano seco",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Perejil fresco",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Adoba el pollo con orégano, ajo en polvo, sal y un chorrito de AOVE. Cocina a la plancha 6-7 min por lado. Deja reposar y corta en tiras. 2. Corta el pepino en medias lunas, los cherrys por la mitad, la cebolla en aros finos. 3. Prepara la vinagreta: zumo de limón, AOVE, orégano, sal. 4. Monta el bowl: quinoa, pollo, pepino, cherrys, aceitunas, cebolla, un generoso punto de hummus y vinagreta. Perejil fresco picado por encima.",
+      "consejos": "El hummus casero es más ligero que el comercial. Mezcla garbanzos cocidos, tahini, limón, ajo y AOVE. Puedes sustituir quinoa por cuscús integral.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "mediterranea",
+        "alto_fibra"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "mediterranea",
+        "alto_volumen"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 90,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl mediterráneo de cerámica blanca. Pollo a la plancha en tiras con marcas de cocción, quinoa esponjosa, medias lunas de pepino fresco, cherrys rojos partidos, aceitunas negras, aros de cebolla morada y hummus cremoso con un hilo de AOVE y pimentón. Encaje 45°, luz natural lateral suave. Perejil fresco picado. Fondo de encimera de madera. Texturas reales: quinoa suelta, pollo marcado, hummus sedoso. Estilo comida mediterránea real. Evitar: imagen IA, colores irreales, plato aséptico."
+    },
+    {
+      "nombre": "César Bowl de Pollo Crujiente",
+      "descripcion": "La clásica ensalada César en formato bowl con pollo empanado al horno, crujiente de pan integral, parmesano y aliño ligero de yogur.",
+      "categoria": "Comida",
+      "tipo_plato": "Bowl",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 20,
+      "tipo_coccion": "Horno/Airfryer",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos",
+        "Huevos"
+      ],
+      "kcal": 490,
+      "proteinas": 44,
+      "carbohidratos": 30,
+      "grasas": 19,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 160
+        },
+        {
+          "nombre": "Lechuga romana",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Pan integral en cubos",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Queso parmesano rallado",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Anchoa en aceite",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Limón",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Ajo en polvo",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Pan rallado integral",
+          "cantidad_gramos": 15
+        }
+      ],
+      "instrucciones": "1. Corta el pollo en tiras. Reboza con pan rallado integral, ajo en polvo y sal. 2. Hornea 15-18 min a 200°C o airfryer 12 min a 180°C. 3. Tosta los cubos de pan en la misma bandeja 5 min. 4. Aliño: yogur, mostaza, anchoa machacada, zumo de limón, AOVE y mezcla bien. 5. Monta el bowl con lechuga troceada, pollo crujiente, croutons, parmesano y aliño.",
+      "consejos": "La anchoa es clave para el sabor César, no se salta. Si no te gustan, usa pasta de anchoa. Puedes usar claras de huevo para empanar si buscas más proteína.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "comfort_healthy"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 92,
+      "digestibilidad": "media",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de cerámica azul claro con ensalada César. Pollo crujiente dorado en tiras, lechuga romana verde fresca, croutons de pan integral tostados, lascas finas de parmesano y aliño cremoso blanco ligeramente mezclado. Encaje 45°, luz natural lateral suave. Textura crujiente del pollo y los croutons visible. Fondo de madera clara. Rodaja de limón al lado. Estilo ensalada César de restaurante gourmet. Imperfecciones naturales. Evitar: imagen IA, aliño demasiado blanco artificial, lechuga mustia."
+    },
+    {
+      "nombre": "Pasta Cremosa Ligera con Pollo y Brócoli",
+      "descripcion": "Pasta integral con una salsa cremosa ligera de queso batido 0%, mostaza y caldo. Brócoli al dente y pollo salteado. Cremosa sin nata ni mantequilla.",
+      "categoria": "Comida",
+      "tipo_plato": "Pasta",
+      "porciones": 1,
+      "descripcion_porcion": "1 plato grande",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Olla/Cazuela",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "kcal": 535,
+      "proteinas": 42,
+      "carbohidratos": 55,
+      "grasas": 13,
+      "fibra": 10,
+      "ingredientes": [
+        {
+          "nombre": "Pasta integral (penne o fusilli)",
+          "cantidad_gramos": 65
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Brócoli",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Queso fresco batido 0%",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Caldo de pollo",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Pimienta negra",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Perejil fresco",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Cocina la pasta según instrucciones, escúrrela reservando un poco de agua de cocción. 2. En la misma olla, saltea el pollo en cubos con ajo y AOVE 5-6 min. Reserva. 3. Saltea el brócoli en ramitos pequeños 3 min. 4. Añade queso batido, mostaza y caldo de pollo. Mezcla hasta salsa cremosa. 5. Incorpora la pasta y el pollo, mezcla bien. Si espesa demasiado, añade un poco de agua de cocción. Perejil picado por encima.",
+      "consejos": "El queso batido 0% es la clave de la cremosidad sin grasa. Puedes usar pasta de legumbres para más proteína. El brócoli puede sustituirse por espárragos verdes.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "comfort_healthy",
+        "alto_fibra"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general",
+        "fuerza"
+      ],
+      "momentos": [
+        "comida",
+        "cena",
+        "post_entreno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy",
+        "mediterranea"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 93,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato hondo de cerámica beige con pasta cremosa. Penne integral cubiertos de salsa blanca cremosa, trozos de pechuga de pollo dorada, ramitos de brócoli verde intenso. Perejil fresco picado y pimienta negra molida visible. Luz natural lateral, encuadre 45°. Textura cremosa de la salsa, pasta al dente. Fondo de encimera de mármol. Cuchara de madera apoyada en el plato. Estilo pasta casera de restaurante italiano saludable. Imperfecciones naturales. Evitar: imagen IA, salsa demasiado blancas o espesas artificialmente, pasta sobrecocinada."
+    },
+    {
+      "nombre": "Lasaña Ligera de Calabacín y Pollo",
+      "descripcion": "Lasaña sin pasta: capas de calabacín laminado con pollo picado, tomate natural y bechamel de queso batido. Gratinada al horno.",
+      "categoria": "Comida",
+      "tipo_plato": "Pasta",
+      "porciones": 1,
+      "descripcion_porcion": "1 ración grande (2-3 capas)",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 30,
+      "tipo_coccion": "Horno",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 435,
+      "proteinas": 42,
+      "carbohidratos": 22,
+      "grasas": 18,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Calabacín grande",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Pollo picado",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Tomate triturado natural",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Queso fresco batido 0%",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Queso rallado light (gratinado)",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Albahaca fresca",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Nuez moscada",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Corta el calabacín en láminas finas longitudinales (con mandolina o cuchillo). Sal ligeramente y deja reposar 5 min, seca con papel. 2. Cocina la cebolla y el ajo picados con AOVE. Añade pollo picado, dora 5 min. Incorpora tomate triturado y albahaca, cocina 5 min. 3. Bechamel ligera: queso batido con nuez moscada y sal. 4. Capas en fuente pequeña: calabacín, pollo, bechamel. Repite 2-3 veces. 5. Cubre con queso rallado light. Hornea 25 min a 190°C. Gratina 3 min final.",
+      "consejos": "El calabacín suelta agua; los 5 min de reposo con sal ayudan a que no se agüe la lasaña. Puedes añadir espinacas salteadas entre las capas.",
+      "tags": [
+        "alta_proteina",
+        "sin_gluten",
+        "bajo_cho",
+        "chef_healthy",
+        "mealprep",
+        "saciante"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy",
+        "mediterranea"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 88,
+      "digestibilidad": "media",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una lasaña ligera en fuente de cerámica blanca. Capas visibles de calabacín, pollo y bechamel. Superficie gratinada dorada con queso fundido ligeramente burbujeante. Corte mostrando las capas perfectamente definidas. Luz natural lateral suave, encuadre 45°. Salsa de tomate asomando entre capas. Fondo de encimera de madera. Cuchara de servir apoyada. Estilo lasaña casera de restaurante mediterráneo. Texturas reales de gratinado casero. Evitar: imagen IA, capas demasiado perfectas, gratinado artificial."
+    },
+    {
+      "nombre": "Arroz Meloso de Pollo y Verduras",
+      "descripcion": "Arroz cremoso con pollo, pimiento, guisantes y un toque de queso light. Cocinado como un risotto pero más ligero. Sin nata ni mantequilla.",
+      "categoria": "Comida",
+      "tipo_plato": "Arroz",
+      "porciones": 1,
+      "descripcion_porcion": "1 plato hondo generoso",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 22,
+      "tipo_coccion": "Olla/Cazuela",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 545,
+      "proteinas": 38,
+      "carbohidratos": 58,
+      "grasas": 14,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Arroz integral",
+          "cantidad_gramos": 70
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Pimiento rojo",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Guisantes congelados",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Caldo de pollo",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Queso rallado light",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Perejil fresco",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Pimentón dulce",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Cocina el pollo en cubos con AOVE 5 min. Reserva. 2. En la misma olla, pocha cebolla y ajo 3 min. Añade pimiento rojo en cubos 2 min. 3. Incorpora arroz y pimentón, remueve 1 min. 4. Vierte caldo caliente progresivamente, removiendo cada 3-4 min. 5. A los 15 min de cocción, añade guisantes, pollo y queso. 6. Cocina 5 min más hasta que el arroz esté meloso. Perejil picado.",
+      "consejos": "El arroz integral necesita más caldo y tiempo que el arroz normal. Puedes usar arroz bomba o arroz redondo integral. Si usas arroz blanco, reduce tiempo a 15 min total.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "mediterranea",
+        "mealprep"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "mantenimiento"
+      ],
+      "deportes": [
+        "general",
+        "fuerza"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "mediterranea"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 89,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato hondo de cerámica beige con arroz meloso de pollo y verduras. Arroz cremoso y caldoso, trozos de pollo, pimiento rojo, guisantes verdes. Perejil fresco picado. Textura melosa visible. Luz natural lateral, encuadre 45°. Cuchara de madera apoyada. Fondo de encimera de madera clara. Estilo arroz casero de restaurante mediterráneo. Vaho sutil del plato recién cocinado. Evitar: imagen IA, arroz demasiado seco o caldoso artificial, colores irreales."
+    },
+    {
+      "nombre": "Fideos de Calabacín con Gambas y Pesto Ligero",
+      "descripcion": "Zoodles (fideos de calabacín) salteados con gambas, tomates cherry y un pesto ligero de albahaca y piñones. Una pasta low-carb que no sabe a dieta.",
+      "categoria": "Comida",
+      "tipo_plato": "Pasta",
+      "porciones": 1,
+      "descripcion_porcion": "1 plato grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 8,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 385,
+      "proteinas": 34,
+      "carbohidratos": 18,
+      "grasas": 20,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Calabacín grande (en espiral)",
+          "cantidad_gramos": 250
+        },
+        {
+          "nombre": "Gambas peladas crudas",
+          "cantidad_gramos": 120
+        },
+        {
+          "nombre": "Tomates cherry",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Albahaca fresca",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Piñones",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Levadura nutricional (opcional)",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Prepara el pesto: albahaca, piñones, ajo, AOVE y sal en mortero o batidora. 2. Saltea las gambas en sartén con un hilo de AOVE 2-3 min por lado. Reserva. 3. En la misma sartén, saltea los cherrys partidos por la mitad 2 min. 4. Añade los fideos de calabacín y saltea 2-3 min a fuego fuerte para que suelten el agua y queden al dente. 5. Incorpora pesto y gambas, mezcla 1 min. Sirve con piñones extra por encima.",
+      "consejos": "No cocines los zoodles demasiado o soltarán mucha agua. Si no tienes espiralizador, usa pelador para hacer cintas de calabacín. Las gambas pueden sustituirse por pollo o tofu.",
+      "tags": [
+        "bajo_cho",
+        "bajo_azucar",
+        "sin_gluten",
+        "chef_healthy",
+        "rapida",
+        "alta_proteina"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "mediterranea",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 86,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato blanco con fideos de calabacín en espiral (zoodles) salteados con gambas rosadas y cherrys rojos. Pesto verde de albahaca recién hecho cubriendo ligeramente los fideos. Piñones tostados espolvoreados. Hojas de albahaca fresca decorando. Luz natural lateral, encuadre 45°. Textura de los zoodles al dente visible. Fondo de madera clara. Estilo pasta saludable de restaurante italiano moderno. Imperfecciones naturales. Evitar: imagen IA, zoodles demasiado acuosos, color artificial del pesto."
+    },
+    {
+      "nombre": "Nuggets Caseros de Pollo al Horno",
+      "descripcion": "Nuggets de pollo caseros empanados con copos de avena y especias, horneados hasta quedar crujientes. Acompañados de dip de yogur y mostaza.",
+      "categoria": "Comida",
+      "tipo_plato": "Pollo",
+      "porciones": 1,
+      "descripcion_porcion": "8-10 nuggets",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Horno/Airfryer",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 420,
+      "proteinas": 42,
+      "carbohidratos": 28,
+      "grasas": 14,
+      "fibra": 4,
+      "ingredientes": [
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 180
+        },
+        {
+          "nombre": "Copos de avena finos molidos",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Pimentón ahumado",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Ajo en polvo",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Precalienta horno a 210°C. 2. Corta el pollo en trozos de bocado (4-5 cm). 3. Prepara el empanado: mezcla avena molida, pimentón, ajo en polvo y sal. 4. Pasa cada trozo por huevo batido y después por el empanado. 5. Coloca en bandeja con papel de horno y pulveriza con AOVE. 6. Hornea 12-15 min girando a mitad. 7. Mezcla yogur con mostaza para el dip.",
+      "consejos": "Puedes hacer una tanda grande y congelarlos ya empanados. Al hornearlos congelados añade 3-4 min. Para versión airfryer: 180°C, 10 min.",
+      "tags": [
+        "alta_proteina",
+        "chef_healthy",
+        "mealprep",
+        "comfort_healthy",
+        "niños"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "mantenimiento"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena",
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 94,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de nuggets de pollo caseros dorados y crujientes en bandeja de horno con papel vegetal. Al lado, un pequeño cuenco de barro con dip blanco de yogur y mostaza. Nuggets irregulares, algunos con bordes crujientes extra, textura de empanado de avena visible. Luz natural lateral suave. Encaje overhead ligeramente inclinado. Superficie de madera clara. Estilo comida casera real, ligeramente imperfecta. Sin manos visibles. Evitar: imagen IA, nuggets demasiado perfectos y redondos, empanado artificialmente uniforme."
+    },
+    {
+      "nombre": "Chili Alto en Proteína con Pollo y Legumbres",
+      "descripcion": "Chili contundente con pollo, alubias rojas y garbanzos en base de tomate especiado. Perfecto para meal prep, congela y recalienta perfectamente.",
+      "categoria": "Comida",
+      "tipo_plato": "Legumbre",
+      "porciones": 2,
+      "descripcion_porcion": "1 ración de 400g aprox.",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 30,
+      "tipo_coccion": "Olla/Cazuela",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 510,
+      "proteinas": 42,
+      "carbohidratos": 46,
+      "grasas": 15,
+      "fibra": 16,
+      "ingredientes": [
+        {
+          "nombre": "Pollo picado",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Alubias rojas cocidas",
+          "cantidad_gramos": 120
+        },
+        {
+          "nombre": "Garbanzos cocidos",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Tomate triturado natural",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Pimiento rojo",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Comino molido",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Pimentón ahumado",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Guindilla opcional",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Cilantro fresco",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Pocha cebolla, ajo y pimiento en cubos con AOVE 5 min. 2. Añade pollo picado, dora 5-6 min. 3. Incorpora comino, pimentón y guindilla (opcional). 4. Vierte tomate triturado, alubias y garbanzos. 5. Cocina a fuego medio-bajo 20 min, removiendo de vez en cuando. 6. Rectifica sal y sirve con cilantro fresco.",
+      "consejos": "Este chili mejora de un día para otro. Puedes congelar en raciones individuales (aguanta 3 meses). Sirve con arroz basmati o solo si buscas bajo CHO.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "alto_fibra",
+        "mediterranea",
+        "mealprep",
+        "batch_cooking",
+        "alto_volumen"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "mantenimiento",
+        "salud_general"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "comfort_healthy",
+        "batch_cooking",
+        "mediterranea",
+        "alto_volumen"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 87,
+      "digestibilidad": "media",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un cuenco de barro con chili espeso y colorido. Alubias rojas, garbanzos, trozos de pollo picado visibles en la salsa de tomate especiada. Cilantro fresco picado por encima. Cuchara de madera apoyada. Vaho sutil. Luz natural lateral. Encuadre 45°. Fondo de madera rústica. Pequeño pan de tortilla al lado. Textura espesa y casera. Estilo comida de cuchara reconfortante pero saludable. Evitar: imagen IA, chili demasiado líquido o pastoso artificial, colores irreales."
+    },
+    {
+      "nombre": "Albóndigas Saludables en Salsa de Tomate Casera",
+      "descripcion": "Albóndigas de pollo y ternera con avena, horneadas en lugar de fritas, en una salsa de tomate casera con verduras. Plato de cuchara que no pesa.",
+      "categoria": "Comida",
+      "tipo_plato": "Carne",
+      "porciones": 1,
+      "descripcion_porcion": "6-7 albóndigas con salsa",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 25,
+      "tipo_coccion": "Horno",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 475,
+      "proteinas": 42,
+      "carbohidratos": 28,
+      "grasas": 18,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Carne picada de pollo",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Carne picada de ternera magra",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Copos de avena finos",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Zanahoria",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Tomate triturado natural",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Perejil fresco",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Orégano seco",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Precalienta horno a 200°C. 2. Mezcla las carnes picadas con avena, huevo, perejil picado, ajo en polvo y sal. Forma albóndigas pequeñas. 3. Coloca en bandeja con papel de horno. Hornea 15 min. 4. Para la salsa: pocha cebolla y zanahoria rallada con AOVE 5 min. Añade tomate triturado y orégano. Cocina 15 min a fuego suave. 5. Incorpora las albóndigas a la salsa, cocina 5 min más.",
+      "consejos": "Puedes hacer el doble y congelar la mitad. Las albóndigas horneadas quedan más jugosas y menos grasas que fritas. Sirve con arroz blanco o ensalada.",
+      "tags": [
+        "alta_proteina",
+        "saciante",
+        "chef_healthy",
+        "mediterranea",
+        "mealprep",
+        "batch_cooking"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "mediterranea",
+        "comfort_healthy",
+        "batch_cooking"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 90,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato hondo de cerámica beige con albóndigas en salsa de tomate casera. Albóndigas de tamaño irregular bañadas en salsa roja espesa con trocitos de verduras. Perejil fresco picado. Cuchara de madera. Luz natural lateral suave, encuadre 45°. Fondo de encimera de madera. Vaho sutil. Estilo comida casera mediterránea de la abuela pero más ligera. Textura de salsa sabrosa y albóndigas jugosas. Imperfecciones naturales. Evitar: imagen IA, albóndigas perfectamente esféricas, salsa demasiado brillante."
+    },
+    {
+      "nombre": "Pizza de Base de Coliflor y Mozzarella Light",
+      "descripcion": "Pizza con base de coliflor, cubierta con tomate, mozzarella light, pavo, champiñones y orégano. Crujiente por fuera, blandita por dentro. Sin harina.",
+      "categoria": "Cena",
+      "tipo_plato": "Pizza",
+      "porciones": 1,
+      "descripcion_porcion": "1 pizza individual (20cm)",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 25,
+      "tipo_coccion": "Horno",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 420,
+      "proteinas": 38,
+      "carbohidratos": 22,
+      "grasas": 19,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Coliflor (en arroz)",
+          "cantidad_gramos": 250
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Queso rallado light",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Tomate triturado natural",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Mozzarella light rallada",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Pechuga de pavo en lonchas",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Champiñones laminados",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Orégano seco",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Precalienta horno a 210°C. 2. Cocina el arroz de coliflor en microondas 5 min. Escurre bien con un paño limpio para eliminar toda el agua. 3. Mezcla la coliflor escurrida con huevo, queso rallado y sal. 4. Forma una base redonda sobre papel de horno (1 cm de grosor). Hornea 15 min. 5. Voltea la base, añade tomate, mozzarella, pavo y champiñones. Hornea 10 min más. Espolvorea orégano.",
+      "consejos": "Escurrir bien la coliflor es el paso clave: si queda húmeda, la base no se endurece. Puedes usar coliflor congelada (descongela y escurre). El pavo puede sustituirse por pepperoni de pavo.",
+      "tags": [
+        "bajo_cho",
+        "sin_gluten",
+        "alta_proteina",
+        "chef_healthy",
+        "saciante"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "cena",
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 87,
+      "digestibilidad": "media",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una pizza individual de base de coliflor sobre rejilla metálica. Base dorada y ligeramente crujiente, mozzarella light fundida con burbujas, pepperoni de pavo y champiñones laminados visibles. Orégano espolvoreado. Corte mostrando el grosor de la base. Luz natural lateral, encuadre 45°. Textura de la base de coliflor visible y natural. Fondo de encimera de madera. Imperfecciones del horneado casero. Estilo pizza saludable de restaurante artesanal. Evitar: imagen IA, base demasiado perfecta y blanca, queso artificialmente brillante."
+    },
+    {
+      "nombre": "Croquetas de Pollo al Horno (Sin Bechamel)",
+      "descripcion": "Croquetas de pollo con base de patata y calabacín horneadas. Cremosas por dentro, crujientes por fuera. Sin freír ni bechamel pesada.",
+      "categoria": "Cena",
+      "tipo_plato": "Acompañamiento",
+      "porciones": 1,
+      "descripcion_porcion": "6-8 croquetas",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 25,
+      "tipo_coccion": "Horno/Airfryer",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 395,
+      "proteinas": 35,
+      "carbohidratos": 30,
+      "grasas": 14,
+      "fibra": 5,
+      "ingredientes": [
+        {
+          "nombre": "Pollo cocido desmenuzado",
+          "cantidad_gramos": 130
+        },
+        {
+          "nombre": "Patata cocida",
+          "cantidad_gramos": 120
+        },
+        {
+          "nombre": "Calabacín rallado y escurrido",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Pan rallado integral",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Cebolla en polvo",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Ajo en polvo",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Perejil fresco picado",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Precalienta horno a 200°C. 2. Mezcla el pollo desmenuzado con patata machacada, calabacín rallado (bien escurrido), huevo, cebolla en polvo, ajo y perejil. 3. Forma croquetas alargadas. 4. Pásalas por pan rallado integral. 5. Coloca en bandeja con papel de horno, pulveriza con AOVE. 6. Hornea 20-25 min, girando a mitad. Hasta que estén doradas y crujientes.",
+      "consejos": "El calabacín rallado debe escurrirse bien con un paño para que no aporte humedad extra. Puedes usar pavo o atún en lugar de pollo. Congelan perfectamente antes de hornear.",
+      "tags": [
+        "alta_proteina",
+        "sin_gluten",
+        "chef_healthy",
+        "mealprep",
+        "comfort_healthy"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "cena",
+        "comida"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy",
+        "batch_cooking"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 85,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de croquetas de pollo caseras al horno sobre una bandeja con papel vegetal. Croquetas doradas y crujientes de forma ligeramente irregular. Al lado, un pequeño cuenco con salsa de yogur y mostaza. Luz natural lateral, encuadre overhead ligeramente inclinado. Textura crujiente del rebozado visible. Superficie de madera clara. Estilo croquetas caseras de restaurante de tapas moderno. Pequeñas grietas en el empanado natural. Evitar: imagen IA, croquetas perfectamente cilíndricas, empanado demasiado uniforme."
+    },
+    {
+      "nombre": "Tiramisú Fit Proteico",
+      "descripcion": "Tiramisú sin azúcar, sin nata y sin mascarpone. Capas de bizcocho proteico, crema de queso batido y café. Un postre que sabe a pecado pero suma proteína.",
+      "categoria": "Postre",
+      "tipo_plato": "Postre",
+      "porciones": 1,
+      "descripcion_porcion": "1 vaso mediano",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "kcal": 285,
+      "proteinas": 30,
+      "carbohidratos": 28,
+      "grasas": 6,
+      "fibra": 2,
+      "ingredientes": [
+        {
+          "nombre": "Queso fresco batido 0%",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Bizcochos de soja o proteicos",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Café expreso cargado",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Edulcorante tipo stevia/eritritol",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Cacao puro en polvo desgrasado",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Esencia de vainilla",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Mezcla queso batido con yogur griego, edulcorante y vainilla hasta crema homogénea. 2. Prepara café cargado y déjalo entibiar. 3. Moja ligeramente los bizcochos en café (1-2 segundos, no empaparlos). 4. Capa fina de crema, bizcochos, café, crema. 5. Repite hasta llenar el vaso. 6. Refrigera mínimo 4 horas (ideal 8h). 7. Antes de servir, espolvorea cacao desgrasado por encima.",
+      "consejos": "Los bizcochos de soja son más proteicos que los de café tradicionales. El reposo en nevera es clave para que los sabores se integren. Puedes usar café descafeinado si eres sensible a la cafeína.",
+      "tags": [
+        "alta_proteina",
+        "postre_fit",
+        "bajo_azucar",
+        "no_bake",
+        "chef_healthy"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "mantenimiento"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "gourmet_simple"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 95,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un vaso de cristal transparente con tiramisú fit en capas visibles: crema blanca de queso batido, bizcocho oscuro empapado en café, crema, y superficie cubierta de cacao en polvo. Cuchara de postre apoyada. Luz natural lateral suave, encuadre 45°. Textura cremosa visible, cacao ligeramente irregular. Fondo de madera clara con granos de café sueltos como decoración. Estilo postre de restaurante italiano moderno saludable. Imperfecciones naturales en la superficie de cacao. Evitar: imagen IA, capas perfectamente rectas, cacao demasiado uniforme."
+    },
+    {
+      "nombre": "Cheesecake Proteico Sin Horno",
+      "descripcion": "Cheesecake cremoso sin horno, sin azúcar, con base de dátiles y frutos secos, y relleno de queso batido y yogur griego. Firme pero ligero.",
+      "categoria": "Postre",
+      "tipo_plato": "Postre",
+      "porciones": 1,
+      "descripcion_porcion": "1 porción individual (molde 10cm)",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 310,
+      "proteinas": 28,
+      "carbohidratos": 30,
+      "grasas": 9,
+      "fibra": 4,
+      "ingredientes": [
+        {
+          "nombre": "Queso fresco batido 0%",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Dátiles medjool sin hueso",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Almendras crudas",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Gelatina neutra en hojas (4g)",
+          "cantidad_gramos": 4
+        },
+        {
+          "nombre": "Ralladura de limón",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Esencia de vainilla",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Base: tritura dátiles con almendras y canela hasta textura pegajosa. Forra el fondo de un molde pequeño. Presiona firme. 2. Hidrata la gelatina en agua fría 5 min. Escurre y disuelve en 3 cucharadas de agua caliente. 3. Mezcla queso batido, yogur, vainilla y ralladura de limón. Incorpora la gelatina líquida y mezcla bien. 4. Vierte sobre la base. 5. Refrigera mínimo 4 horas (ideal 8h). Desmolda con cuidado.",
+      "consejos": "Para desmoldar fácil, pasa un cuchillo fino por el borde y sumerge el molde en agua caliente 5 segundos. Puedes cubrir con coulis de frutos rojos sin azúcar.",
+      "tags": [
+        "alta_proteina",
+        "postre_fit",
+        "bajo_azucar",
+        "no_bake",
+        "sin_horno",
+        "sin_gluten"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "gourmet_simple"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 92,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una porción de cheesecake en un plato blanco. Corte limpio mostrando la base oscura de dátiles y almendras y el relleno cremoso blanco. Superficie lisa con ralladura de limón visible. Al lado, frutos rojos frescos decorativos. Luz natural lateral, encuadre 45°. Textura firme pero cremosa visible. Fondo de madera clara. Estilo tarta de restaurante de postres saludables. Imperfecciones naturales en el borde. Evitar: imagen IA, cheesecake perfectamente liso sin textura natural, base demasiado perfecta."
+    },
+    {
+      "nombre": "Brownie Fit de Chocolate",
+      "descripcion": "Brownie húmedo y chocolateoso sin azúcar, sin harina, sin mantequilla. Base de batata, cacao y claras. Sorprendentemente bueno.",
+      "categoria": "Postre",
+      "tipo_plato": "Postre",
+      "porciones": 1,
+      "descripcion_porcion": "1 brownie grande (cuadrado 8x8cm)",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 22,
+      "tipo_coccion": "Horno",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 295,
+      "proteinas": 18,
+      "carbohidratos": 38,
+      "grasas": 8,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Batata cocida y hecha puré",
+          "cantidad_gramos": 120
+        },
+        {
+          "nombre": "Claras de huevo pasteurizadas",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Cacao puro en polvo desgrasado",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Crema de cacahuete natural sin azúcar",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Edulcorante tipo eritritol",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Levadura química (tipo Royal)",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Esencia de vainilla",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Precalienta horno a 180°C. 2. Mezcla todos los ingredientes en un bol hasta masa homogénea. 3. Vierte en molde pequeño forrado con papel de horno. 4. Hornea 20-22 min (punto cuchillo: debe salir ligeramente húmedo). 5. Deja enfriar completamente antes de desmoldar. 6. Opcional: derrite el extra de crema de cacahuete por encima.",
+      "consejos": "El punto clave es NO hornear de más: 20 min para textura brownie húmeda. Si lo dejas más, queda más seco tipo bizcocho. Puedes añadir pepitas de chocolate 85% si quieres más indulgencia.",
+      "tags": [
+        "postre_fit",
+        "bajo_azucar",
+        "sin_gluten",
+        "sin_lactosa",
+        "chef_healthy",
+        "bajo_grasa"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "comfort_healthy"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 91,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un brownie de chocolate cortado en cuadrado sobre plato blanco. Superficie agrietada típica de brownie, interior húmedo y denso visible en el corte. Un hilo de crema de cacahuete derretida por encima. Migas sueltas. Luz natural lateral suave, encuadre overhead. Textura húmeda y chocolateosa evidente. Fondo de madera clara. Estilo brownie casero de repostería saludable premium. Pequeñas imperfecciones naturales. Evitar: imagen IA, brownie demasiado esponjoso tipo bizcocho, crema de cacahuete perfectamente simétrica."
+    },
+    {
+      "nombre": "Crepes Proteicos con Fruta y Yogur",
+      "descripcion": "Crepes finos de avena y claras de huevo, rellenos de yogur griego y fruta fresca. Dulces, saciantes y con proteína de verdad.",
+      "categoria": "Desayuno",
+      "tipo_plato": "Crepe",
+      "porciones": 1,
+      "descripcion_porcion": "2 crepes rellenos",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 8,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 380,
+      "proteinas": 30,
+      "carbohidratos": 38,
+      "grasas": 10,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Claras de huevo pasteurizadas",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Copos de avena finos molidos",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Fresas",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Plátano",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Mezcla claras de huevo con avena molida y canela hasta masa líquida homogénea. 2. Calienta sartén antiadherente con spray de AOVE. Vierte la mitad de la masa, extiende en círculo fino. 3. Cocina 2 min por lado. Repite. 4. Rellena cada crepe con yogur griego, fresas laminadas y rodajas de plátano. 5. Dobla en triángulos o enrolla. Espolvorea canela extra.",
+      "consejos": "Puedes preparar la masa la noche anterior. Si quieres más proteína añade un scoop de proteína sabor vainilla a la masa. Cambia la fruta según temporada.",
+      "tags": [
+        "alta_proteina",
+        "desayuno",
+        "sin_gluten",
+        "chef_healthy",
+        "rapida",
+        "bajo_azucar"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general",
+        "running",
+        "fuerza"
+      ],
+      "momentos": [
+        "desayuno",
+        "merienda"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 90,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de dos crepes proteicos doblados en triángulo sobre plato blanco. Relleno de yogur griego blanco, fresas rojas y rodajas de plátano asomando por los bordes. Canela espolvoreada. Arándanos sueltos decorativos. Luz natural lateral suave, encuadre overhead. Textura de crepe fina y ligeramente dorada visible. Fondo de encimera de mármol blanco. Estilo brunch saludable de cafetería moderna. Pequeñas imperfecciones y migas. Evitar: imagen IA, crepes demasiado perfectos y simétricos, fruta artificialmente brillante."
+    },
+    {
+      "nombre": "Tortitas Proteicas de Avena y Plátano",
+      "descripcion": "Tortitas esponjosas de avena, claras de huevo y plátano. Sin azúcar, sin harina. Acompañadas de yogur, fruta y canela.",
+      "categoria": "Desayuno",
+      "tipo_plato": "Tortitas",
+      "porciones": 1,
+      "descripcion_porcion": "4-5 tortitas medianas",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 8,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 395,
+      "proteinas": 28,
+      "carbohidratos": 50,
+      "grasas": 7,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Plátano maduro",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Claras de huevo pasteurizadas",
+          "cantidad_gramos": 90
+        },
+        {
+          "nombre": "Copos de avena finos molidos",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Levadura química (tipo Royal)",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Arándanos o frutos rojos",
+          "cantidad_gramos": 40
+        }
+      ],
+      "instrucciones": "1. Machaca el plátano con tenedor. 2. Mezcla plátano, claras, avena molida, levadura y canela hasta masa homogénea (ligeramente espesa). 3. Calienta sartén antiadherente con spray de AOVE. 4. Vierte porciones pequeñas, cocina 2-3 min hasta burbujas, voltea y cocina 1-2 min. 5. Sirve apiladas con yogur griego y frutos rojos.",
+      "consejos": "El plátano debe estar muy maduro para que endulce naturalmente. Puedes sustituir avena por harina de almendra para versión keto. Congelan bien; solo tostar ligeramente para recuperar textura.",
+      "tags": [
+        "alta_proteina",
+        "desayuno",
+        "sin_gluten",
+        "chef_healthy",
+        "bajo_azucar",
+        "rapida"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general",
+        "running",
+        "fuerza"
+      ],
+      "momentos": [
+        "desayuno",
+        "merienda",
+        "pre_entreno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 93,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una pila de 4 tortitas de avena y plátano en un plato blanco. Tortitas doradas con bordes ligeramente irregulares, cubiertas con yogur griego blanco cayendo por los lados, arándanos y fresas frescas. Canela espolvoreada. Miel ligera o sirope opcional. Luz natural lateral, encuadre 45°. Textura esponjosa visible. Fondo de madera clara. Estilo tortitas caseras de brunch saludable. Pequeñas imperfecciones, bordes no perfectamente redondos. Evitar: imagen IA, tortitas perfectamente idénticas, sirope demasiado artificial."
+    },
+    {
+      "nombre": "Yogur Bowl Proteico con Granola Casera",
+      "descripcion": "Bow cremoso de yogur griego 0% con granola casera sin azúcar, fruta fresca y semillas. Desayuno rápido, saciante y personalizable.",
+      "categoria": "Desayuno",
+      "tipo_plato": "Bowl",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 365,
+      "proteinas": 30,
+      "carbohidratos": 34,
+      "grasas": 12,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Granola casera sin azúcar (avena, frutos secos, canela)",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Arándanos",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Fresas",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Semillas de chía",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Sirve el yogur griego en un bowl. 2. Añade la granola casera por encima. 3. Lava y corta las frutas (fresas en láminas, arándanos enteros). 4. Coloca la fruta decorativamente. 5. Espolvorea semillas de chía y canela. 6. Sirve inmediatamente para que la granola esté crujiente.",
+      "consejos": "La granola casera se hace mezclando copos de avena, nueces picadas, canela y un poco de claras de huevo + edulcorante, horneado 15 min a 170°C. Puedes preparar fruta variada y tenerla lista en la nevera.",
+      "tags": [
+        "alta_proteina",
+        "desayuno",
+        "chef_healthy",
+        "rapida",
+        "no_cook",
+        "saciante"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general",
+        "running"
+      ],
+      "momentos": [
+        "desayuno",
+        "merienda",
+        "post_entreno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 88,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de cerámica blanca con yogur griego, granola casera dorada y crujiente, arándanos azules, fresas rojas en láminas y semillas de chía. Canela espolvoreada. Cuchara apoyada. Luz natural lateral suave, encuadre overhead. Texturas: yogur cremoso, granola crujiente, fruta fresca. Fondo de encimera de madera clara. Estilo desayuno bowl de cafetería saludable. Imperfecciones naturales, granola no perfectamente distribuida. Evitar: imagen IA, bowl demasiado perfecto, frutas idénticas, granola artificialmente brillante."
+    },
+    {
+      "nombre": "Pudding de Chía y Proteína",
+      "descripcion": "Pudding cremoso de chía con leche de almendras, proteína y fruta. Prepáralo la noche anterior y tendrás desayuno o merienda listo al despertar.",
+      "categoria": "Desayuno",
+      "tipo_plato": "Pudding",
+      "porciones": 1,
+      "descripcion_porcion": "1 tarro mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 335,
+      "proteinas": 28,
+      "carbohidratos": 28,
+      "grasas": 12,
+      "fibra": 12,
+      "ingredientes": [
+        {
+          "nombre": "Bebida de almendras sin azúcar",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Semillas de chía",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Proteína en polvo sabor vainilla",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Mango maduro en cubos",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Frutos rojos",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Mezcla la bebida de almendras con las semillas de chía y la proteína en polvo. Remueve bien. 2. Vierte en un tarro de cristal. 3. Refrigera mínimo 4 horas (ideal toda la noche). 4. Antes de servir, remueve y añade mango en cubos y frutos rojos por encima. 5. Espolvorea canela.",
+      "consejos": "Las semillas de chía absorben 3-4 veces su peso, de ahí la textura de pudding. Sin proteína en polvo, queda igual de bueno pero con menos proteína. Puedes usar leche de coco para más cremosidad.",
+      "tags": [
+        "alta_proteina",
+        "alto_fibra",
+        "omega_3",
+        "no_cook",
+        "mealprep",
+        "desayuno",
+        "bajo_azucar"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general",
+        "running"
+      ],
+      "momentos": [
+        "desayuno",
+        "merienda",
+        "post_entreno"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida",
+        "tupper"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 86,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un tarro de cristal transparente con pudding de chía. Capas visibles: pudding blanco cremoso con puntitos negros de chía, cubierto de mango amarillo en cubos y frutos rojos. Cuchara larga de postre. Luz natural lateral, encuadre 45°. Textura gelatinosa del pudding visible en los bordes del tarro. Fondo de encimera de madera clara. Estilo overnight oats/pudding de cafetería saludable. Imperfecciones naturales. Evitar: imagen IA, capas perfectamente rectas sin textura natural, fruta demasiado brillante."
+    },
+    {
+      "nombre": "Wrap de Pollo al Pesto con Verduras Asadas",
+      "descripcion": "Wrap integral relleno de pollo al pesto ligero, pimiento asado, rúcula y tomate seco. Frío o caliente, perfecto para tupper.",
+      "categoria": "Comida",
+      "tipo_plato": "Wrap",
+      "porciones": 1,
+      "descripcion_porcion": "1 wrap grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 12,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 475,
+      "proteinas": 38,
+      "carbohidratos": 38,
+      "grasas": 17,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Wrap de trigo integral grande",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Pimiento rojo asado (de bote)",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Rúcula",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Tomate seco en aceite (escurrido)",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Albahaca fresca",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Piñones",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Prepara el pesto: albahaca, piñones, ajo, AOVE y sal. 2. Cocina el pollo en sartén 6-7 min por lado, deja reposar y corta en tiras. 3. Calienta el wrap ligeramente. 4. Extiende el pesto sobre el wrap. 5. Coloca rúcula, pollo, pimiento asado en tiras y tomate seco picado. 6. Enrolla apretadamente (dobla los lados primero). 7. Corta por la mitad en diagonal.",
+      "consejos": "Si llevas el wrap de tupper, envuelve en papel de aluminio y calienta en sartén 2 min por lado. Para versión sin gluten, usa wrap de maíz o lechuga grande como envoltura.",
+      "tags": [
+        "alta_proteina",
+        "chef_healthy",
+        "tupper",
+        "mealprep",
+        "rapida"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "chef_healthy",
+        "rapida",
+        "tupper"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 89,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un wrap de pollo al pesto cortado por la mitad en diagonal, mostrando el interior colorido: pollo en tiras, pesto verde, pimiento rojo asado, rúcula y tomate seco. Rebanada sobre tabla de madera clara. Luz natural lateral, encuadre 45°. Textura del wrap ligeramente tostado. Pequeño cuenco con pesto extra al lado. Estilo wrap de restaurante de comida saludable. Imperfecciones naturales del relleno asomando. Evitar: imagen IA, wrap perfectamente enrollado sin textura, relleno demasiado perfecto."
+    },
+    {
+      "nombre": "Ensalada de Garbanzos, Atún y Aguacate",
+      "descripcion": "Ensalada completa y saciante con garbanzos, atún en conserva, aguacate, cherry, cebolla y aliño de mostaza y limón. Sin lechuga aburrida.",
+      "categoria": "Comida",
+      "tipo_plato": "Ensalada",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 490,
+      "proteinas": 34,
+      "carbohidratos": 32,
+      "grasas": 22,
+      "fibra": 12,
+      "ingredientes": [
+        {
+          "nombre": "Garbanzos cocidos escurridos",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Atún en conserva al natural",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Tomates cherry",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Cebolla morada",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Pepino",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Perejil fresco picado",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Escurre los garbanzos y pásalos por agua fría. 2. Corta el aguacate en cubos, los cherrys por la mitad, el pepino en medias lunas y la cebolla en aros finos. 3. Aliño: mostaza, zumo de limón, AOVE, sal y pimienta. 4. Mezcla todos los ingredientes en un bol grande. 5. Desmenuza el atún por encima y mezcla suavemente. Perejil fresco picado.",
+      "consejos": "Puedes sustituir atún por huevo duro picado para versión vegetariana. Esta ensalada aguanta bien varias horas en nevera, ideal para tupper. Los garbanzos aportan fibra y textura.",
+      "tags": [
+        "alta_proteina",
+        "alto_fibra",
+        "saciante",
+        "mediterranea",
+        "mealprep",
+        "no_cook",
+        "alto_volumen",
+        "rapida"
+      ],
+      "objetivos": [
+        "perdida_grasa",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "cena"
+      ],
+      "estilos": [
+        "mediterranea",
+        "chef_healthy",
+        "alto_volumen",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 88,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bol de cerámica beige con ensalada de garbanzos, atún y aguacate. Garbanzos dorados, atún desmenuzado, cubos de aguacate verde, cherrys rojos partidos, medias lunas de pepino y aros finos de cebolla morada. Aliño mostaza-limón ligeramente mezclado. Perejil fresco picado. Luz natural lateral suave, encuadre 45°. Texturas variadas visibles. Fondo de encimera de madera clara. Cuchara de servir. Estilo ensalada de restaurante mediterráneo. Imperfecciones naturales. Evitar: imagen IA, garbanzos idénticos, aliño demasiado perfecto."
+    }
+  ]
+}

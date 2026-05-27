@@ -1,0 +1,2579 @@
+{
+  "recetas": [
+    {
+      "nombre": "Arroz con Pollo al Curry y Mango",
+      "descripcion": "Arroz basmati con pollo salteado, curry suave, mango y un toque de coco. Post-entreno perfecto: carbohidrato de calidad + proteína magra + antioxidantes.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande (500g)",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 18,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 585,
+      "proteinas": 40,
+      "carbohidratos": 72,
+      "grasas": 12,
+      "fibra": 4,
+      "ingredientes": [
+        {
+          "nombre": "Arroz basmati",
+          "cantidad_gramos": 90
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 160
+        },
+        {
+          "nombre": "Mango maduro en cubos",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Leche de coco ligera",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Pasta de curry amarillo",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Cilantro fresco",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Cocer el arroz basmati según instrucciones. 2. Cortar el pollo en tiras y salpimentar. 3. En sartén con AOVE, pochar la cebolla picada 2 min. Añadir el pollo y saltear 4 min. 4. Agregar la pasta de curry, remover 30s. Incorporar la leche de coco y 2 cucharadas de agua. Cocer 2 min. 5. Servir el arroz, el pollo al curry y los cubos de mango fresco. Cilantro picado por encima.",
+      "consejos": "Para versión pre-entreno, reduce el curry (menos fibra/especias) y sirve el mango aparte. El mango aporta carbohidratos de rápida absorción ideales post-entreno.",
+      "tags": [
+        "post_entreno",
+        "alta_proteina",
+        "carga_cho",
+        "rendimiento",
+        "rapida"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "running",
+        "fuerza",
+        "endurance",
+        "crossfit"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 88,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de arroz basmati con pollo al curry amarillo, cubos de mango fresco y cilantro picado. Luz natural lateral, encuadre 45°. Textura del arroz suelta, salsa cremosa. Fondo de encimera de madera. Estilo comida funcional post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Tostadas de Pan Integral con Aguacate y Huevo Poché",
+      "descripcion": "Dos tostadas de pan integral con aguacate machacado, huevo poché y semillas. Pre-entreno equilibrado: carbohidrato lento + grasa saludable + proteína.",
+      "categoria": "Desayuno",
+      "porciones": 1,
+      "descripcion_porcion": "2 tostadas",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 5,
+      "tipo_coccion": "Sartén/Tostadora",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 475,
+      "proteinas": 28,
+      "carbohidratos": 38,
+      "grasas": 22,
+      "fibra": 9,
+      "ingredientes": [
+        {
+          "nombre": "Pan integral de molde",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 70
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Semillas de sésamo",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Vinagre",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Tostar el pan. 2. Machacar el aguacate con limón, sal y pimienta. 3. Hacer huevo poché: agua hirviendo con vinagre, remolino, cascar el huevo y cocer 3 min. 4. Untar el aguacate en las tostadas, colocar el huevo, semillas de sésamo y un toque de pimienta.",
+      "consejos": "Para pre-entreno temprano, prepara el aguacate la noche anterior (con limón para que no oxide). Si entrenas muy temprano, reduce el aguacate a 40g y añade 1 cucharada de mermelada sin azúcar para carbohidrato rápido.",
+      "tags": [
+        "pre_entreno",
+        "desayuno",
+        "rapida",
+        "saciante",
+        "alto_fibra",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "salud_general"
+      ],
+      "deportes": [
+        "running",
+        "fuerza",
+        "general",
+        "ciclismo"
+      ],
+      "momentos": [
+        "desayuno",
+        "pre_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 92,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de dos tostadas de pan integral tostado con aguacate machacado y huevo poché. Yema brillante a punto de romperse. Semillas de sésamo. Luz natural lateral, encuadre overhead. Fondo de madera clara. Estilo brunch saludable. Evitar imagen IA."
+    },
+    {
+      "nombre": "Pasta Integral con Pollo, Brócoli y Pesto Ligero",
+      "descripcion": "Pasta integral con pollo, brócoli al dente y pesto ligero de yogur. Carga de carbohidratos con proteína magra post-entreno de fuerza.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 plato grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 12,
+      "tipo_coccion": "Sartén/Hervir",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "kcal": 610,
+      "proteinas": 42,
+      "carbohidratos": 68,
+      "grasas": 16,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Pasta integral (penne o fusilli)",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Brócoli",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Albahaca fresca",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Piñones",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 6
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Cocer la pasta integral al dente. 2. Cocer el brócoli al vapor 4 min (al dente). 3. Cortar el pollo en tiras, salpimentar y cocinar en sartén con AOVE 5 min. 4. Pesto: triturar albahaca, piñones, ajo, AOVE, yogur y sal. 5. Mezclar pasta, brócoli y pollo con el pesto. Servir caliente.",
+      "consejos": "Para post-entreno inmediato, puedes usar pasta tradicional en lugar de integral (digestión más rápida). Añade un extra de pechuga si buscas hipertrofia. El yogur en el pesto aporta proteína extra sin grasa.",
+      "tags": [
+        "post_entreno",
+        "carga_cho",
+        "alta_proteina",
+        "rendimiento",
+        "fuerza"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "ganancia_muscular",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "crossfit",
+        "hyrox"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno",
+        "cena"
+      ],
+      "estilos": [
+        "funcional",
+        "mediterranea"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 90,
+      "digestibilidad": "media",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato de pasta integral con pollo, brócoli verde brillante y pesto cremoso. Pesto verde cubriendo la pasta. Luz natural lateral, encuadre overhead. Textura de la pasta integral visible. Fondo de encimera blanca. Estilo comida post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Batido Post-Entreno de Proteína y Plátano",
+      "descripcion": "Batido cremoso de proteína whey, plátano, leche y canela. Recuperación rápida post-entreno con carbohidrato de absorción rápida y proteína de alto valor biológico.",
+      "categoria": "Merienda",
+      "porciones": 1,
+      "descripcion_porcion": "1 vaso grande (400ml)",
+      "tiempo_prep_min": 3,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 330,
+      "proteinas": 35,
+      "carbohidratos": 38,
+      "grasas": 3,
+      "fibra": 2,
+      "ingredientes": [
+        {
+          "nombre": "Leche semidesnatada",
+          "cantidad_gramos": 250
+        },
+        {
+          "nombre": "Plátano maduro",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Proteína whey sabor vainilla",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Pelar y trocear el plátano. 2. Poner todos los ingredientes en la batidora. 3. Batir 30 segundos hasta textura cremosa. 4. Servir inmediatamente.",
+      "consejos": "Bébelo dentro de los 30 min post-entreno. Si entrenas dos horas seguidas o sesión de endurance, añade 20g de copos de avena para más carbohidrato. Puedes usar leche de almendras si eres intolerante.",
+      "tags": [
+        "post_entreno",
+        "rapida",
+        "alta_proteina",
+        "no_cook",
+        "recuperacion",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion",
+        "ganancia_muscular"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "crossfit",
+        "hyrox",
+        "ciclismo",
+        "endurance"
+      ],
+      "momentos": [
+        "post_entreno",
+        "merienda",
+        "desayuno"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 95,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un vaso de cristal alto con batido cremoso beige, plátano visible al fondo, canela espolvoreada. Toalla de deporte al lado. Luz natural lateral, encuadre frontal. Estilo batido post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Bowl de Patata Asada con Pollo y Salsa de Yogur",
+      "descripcion": "Patatas asadas crujientes con pollo desmenuzado, aguacate y salsa de yogur con hierbas. Carga de carbohidratos completa post-entreno de resistencia.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 30,
+      "tipo_coccion": "Horno",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 620,
+      "proteinas": 38,
+      "carbohidratos": 65,
+      "grasas": 20,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Patata",
+          "cantidad_gramos": 250
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Cebollino fresco",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Pimentón dulce",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Cortar las patatas en gajos, mezclar con AOVE, pimentón y sal. Asar a 200°C 30 min. 2. Cocinar el pollo en sartén 6 min por lado, desmenuzar. 3. Mezclar yogur con cebollino, sal y pimienta. 4. Servir: patatas, pollo, aguacate en cubos y salsa de yogur.",
+      "consejos": "Para tapering (día antes de competición), sirve con arroz extra en lugar de aguacate para reducir grasa. Para el día de la carrera, haz las patatas al microondas (más digestivas).",
+      "tags": [
+        "post_entreno",
+        "carga_cho",
+        "alta_proteina",
+        "rendimiento",
+        "saciante"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "ganancia_muscular"
+      ],
+      "deportes": [
+        "running",
+        "ciclismo",
+        "endurance",
+        "hyrox"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno",
+        "cena",
+        "carga_cho"
+      ],
+      "estilos": [
+        "funcional",
+        "alto_volumen"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 87,
+      "digestibilidad": "media",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de patatas asadas doradas, pollo desmenuzado, cubos de aguacate y salsa de yogur blanco. Cebollino verde picado. Luz natural lateral, encuadre 45°. Textura crujiente de patatas visible. Fondo de encimera de pizarra. Estilo comida funcional. Evitar imagen IA."
+    },
+    {
+      "nombre": "Wrap de Pavo, Queso Fresco y Espinacas (Pre-Entreno)",
+      "descripcion": "Wrap integral relleno de pavo, queso fresco batido, espinacas baby y tomate. Ligero pero saciante. Ideal 2h antes de entrenar.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 wrap grande",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "kcal": 395,
+      "proteinas": 32,
+      "carbohidratos": 32,
+      "grasas": 14,
+      "fibra": 5,
+      "ingredientes": [
+        {
+          "nombre": "Wrap de trigo integral",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Pechuga de pavo en lonchas",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Queso fresco batido 0%",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Espinacas baby",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Tomate",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Mostaza",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Extender el queso fresco batido sobre el wrap. 2. Colocar las espinacas, las lonchas de pavo, el tomate en rodajas finas. 3. Añadir un toque de mostaza. 4. Enrollar apretadamente, cortar por la mitad. 5. Consumir en los 90-120 min previos al entreno.",
+      "consejos": "Bajo en grasa y fibra moderada para no sobrecargar la digestión pre-entreno. Si entrenas a primera hora, prepara el wrap la noche anterior y consúmelo 2h antes. Para sesiones de más de 90 min, añade medio plátano de postre.",
+      "tags": [
+        "pre_entreno",
+        "rapida",
+        "alta_proteina",
+        "ligero",
+        "no_cook",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "running",
+        "fuerza",
+        "crossfit",
+        "hyrox",
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "pre_entreno",
+        "merienda"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 90,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un wrap integral cortado por la mitad mostrando el interior: pavo, espinacas verdes, tomate rojo y queso blanco. Luz natural lateral, encuadre 45°. Fondo de madera. Estilo wrap pre-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Gachas de Avena con Proteína y Fruta (Pre-Running)",
+      "descripcion": "Porridge de avena con proteína, plátano y arándanos. Digestivo, energético y personalizable. El clásico pre-running de fondo.",
+      "categoria": "Desayuno",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl mediano",
+      "tiempo_prep_min": 3,
+      "tiempo_coccion_min": 5,
+      "tipo_coccion": "Microondas",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 430,
+      "proteinas": 32,
+      "carbohidratos": 55,
+      "grasas": 7,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Copos de avena finos",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Leche semidesnatada",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Proteína whey sabor vainilla",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Plátano",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Arándanos",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        }
+      ],
+      "instrucciones": "1. Mezclar avena, leche y proteína en un bol. 2. Microondas 2 min, remover, 2 min más. 3. Cortar el plátano en rodajas. 4. Servir con plátano, arándanos y canela.",
+      "consejos": "Tómalo 2-3h antes de correr. Si eres sensible a la fibra pre-running, usa avena instantánea (más procesada, menos fibra). Para carreras largas (+15km), añade 10g de miel o sirope de arce.",
+      "tags": [
+        "pre_entreno",
+        "desayuno",
+        "rapida",
+        "carga_cho",
+        "running",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "salud_general"
+      ],
+      "deportes": [
+        "running",
+        "endurance",
+        "ciclismo",
+        "triatlon"
+      ],
+      "momentos": [
+        "desayuno",
+        "pre_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 93,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de porridge cremoso con plátano en rodajas, arándanos azules y canela espolvoreada. Cuchara apoyada. Luz natural lateral suave, encuadre overhead. Textura cremosa de la avena. Fondo de madera clara. Estilo desayuno pre-running. Evitar imagen IA."
+    },
+    {
+      "nombre": "Arroz con Salmón y Espárragos (Post-Entreno Fuerza)",
+      "descripcion": "Arroz blanco con salmón a la plancha, espárragos trigueros y huevo poché. Carbohidrato de rápida absorción + proteína de alto valor + omega-3.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 plato grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 590,
+      "proteinas": 42,
+      "carbohidratos": 55,
+      "grasas": 18,
+      "fibra": 4,
+      "ingredientes": [
+        {
+          "nombre": "Arroz blanco de grano largo",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Salmón fresco",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Espárragos trigueros",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Cocer el arroz blanco. 2. Salpimentar el salmón, cocinar en sartén con AOVE 3-4 min por lado (punto jugoso). 3. Hacer huevo poché. 4. Saltear los espárragos en la misma sartén 3 min. 5. Servir: arroz, salmón, espárragos y huevo poché. Limón.",
+      "consejos": "Usa arroz blanco (no integral) post-entreno — digestión más rápida, glucógeno se repone antes. El salmón aporta omega-3 antiinflamatorio ideal post-entreno de fuerza. Si entrenas de noche, reduce el arroz a 60g y añade verduras de hoja verde.",
+      "tags": [
+        "post_entreno",
+        "alta_proteina",
+        "omega_3",
+        "rendimiento",
+        "fuerza"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "ganancia_muscular",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "crossfit"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno",
+        "cena"
+      ],
+      "estilos": [
+        "funcional",
+        "mediterranea"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 89,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato blanco con arroz, salmón a la plancha con marcas de parrilla, espárragos trigueros verdes y huevo poché con yema brillante. Rodaja de limón. Luz natural lateral, encuadre 45°. Textura del salmón jugoso visible. Fondo de madera. Estilo comida post-entreno de restaurante. Evitar imagen IA."
+    },
+    {
+      "nombre": "Smoothie Bowl de Frutos Rojos y Granola (Post-Entreno)",
+      "descripcion": "Smoothie espeso de frutos rojos, plátano y proteína, cubierto con granola crujiente y semillas. Recuperación refrescante para después del gym.",
+      "categoria": "Desayuno",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 380,
+      "proteinas": 30,
+      "carbohidratos": 48,
+      "grasas": 7,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Frutos rojos congelados",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Plátano congelado",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Bebida de almendras sin azúcar",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Proteína whey sabor vainilla",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Granola sin azúcar",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Semillas de chía",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Triturar frutos rojos congelados, plátano congelado, bebida de almendras y proteína hasta textura espesa (similar a helado blando). 2. Servir en bowl. 3. Cubrir con granola, semillas de chía y fruta fresca si se desea.",
+      "consejos": "Congela el plátano la noche anterior para textura más cremosa sin necesidad de hielo. Perfecto para post-entreno inmediato (carbohidrato + proteína líquida). Añade un scoop extra de proteína si buscas hipertrofia.",
+      "tags": [
+        "post_entreno",
+        "rapida",
+        "alta_proteina",
+        "no_cook",
+        "recuperacion",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "crossfit",
+        "running",
+        "hyrox"
+      ],
+      "momentos": [
+        "post_entreno",
+        "desayuno",
+        "merienda"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 91,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de smoothie espeso de color fucsia/morado, cubierto con granola dorada crujiente, semillas de chía y algún arándano fresco. Cuchara. Luz natural lateral, encuadre overhead. Textura cremosa visible. Fondo de encimera blanca. Estilo smoothie bowl post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Arroz Meloso de Pollo y Setas (Bowl Carga CHO)",
+      "descripcion": "Arroz meloso cocinado con pollo, setas y caldo, terminado con perejil. Plato de carga de carbohidratos ideal antes de competición de resistencia.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 plato hondo grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 25,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 650,
+      "proteinas": 38,
+      "carbohidratos": 80,
+      "grasas": 16,
+      "fibra": 4,
+      "ingredientes": [
+        {
+          "nombre": "Arroz blanco redondo",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Pollo troceado",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Setas variadas (champiñón, shiitake)",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Caldo de pollo bajo en sal",
+          "cantidad_gramos": 250
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Perejil fresco picado",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Po char la cebolla picada en AOVE 3 min. 2. Añadir el pollo troceado, dorar 4 min. 3. Agregar las setas laminadas, saltear 2 min. 4. Incorporar el arroz, remover 1 min. 5. Añadir el caldo caliente, cocer a fuego medio 18 min removiendo de vez en cuando. 6. Dejar reposar 2 min, perejil picado.",
+      "consejos": "Plato ideal para carga de carbohidratos 2 días antes de competición de running/ciclismo. Si es para tapering (día antes), reduce el pollo a 100g y añade más arroz (120g). Congela bien las raciones individuales.",
+      "tags": [
+        "carga_cho",
+        "alta_proteina",
+        "rendimiento",
+        "mealprep",
+        "endurance"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "mantenimiento"
+      ],
+      "deportes": [
+        "running",
+        "ciclismo",
+        "endurance",
+        "triatlon"
+      ],
+      "momentos": [
+        "comida",
+        "carga_cho",
+        "cena"
+      ],
+      "estilos": [
+        "funcional",
+        "tupper"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 86,
+      "digestibilidad": "media",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato hondo de barro con arroz meloso de pollo y setas, textura caldosa. Perejil verde picado. Luz natural lateral, encuadre 45°. Textura cremosa del arroz. Fondo de madera rústica. Estilo arroz de cuchara. Evitar imagen IA."
+    },
+    {
+      "nombre": "Tortilla de Patata Fit (Solo Claras)",
+      "descripcion": "Tortilla de patata hecha solo con claras de huevo, cebolla pochada y pimiento. Tradición española versionada para rendimiento: alta proteína, baja grasa.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 tortilla mediana",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 380,
+      "proteinas": 35,
+      "carbohidratos": 32,
+      "grasas": 10,
+      "fibra": 4,
+      "ingredientes": [
+        {
+          "nombre": "Claras de huevo pasteurizadas",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Patata",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Pimiento verde",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Pelar y cortar la patata en dados finos. 2. Pocharla en sartén con AOVE y la cebolla picada 10 min a fuego medio-bajo. Añadir pimiento los últimos 3 min. 3. Batir las claras con sal. Mezclar con la patata pochada. 4. Cuajar en sartén antiadherente 3 min por lado (dar la vuelta con plato).",
+      "consejos": "Al usar solo claras, la tortalla es mucho más ligera que la tradicional. Perfecta para comida pre-entreno de fuerza (2-3h antes) o cena post-entreno. Puedes añadir espinacas para más volumen sin casi calorías.",
+      "tags": [
+        "alta_proteina",
+        "bajo_grasa",
+        "rapida",
+        "rendimiento",
+        "mediterranea"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion",
+        "perdida_grasa"
+      ],
+      "deportes": [
+        "fuerza",
+        "general",
+        "running",
+        "crossfit"
+      ],
+      "momentos": [
+        "comida",
+        "cena",
+        "merienda",
+        "pre_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "mediterranea",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 88,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una tortilla de patata con claras, dorada por fuera, mostrando el interior con patata y cebolla pochada. Cuarto de tortilla en plato blanco. Luz natural lateral, encuadre 45°. Textura firme y jugosa. Fondo de madera. Estilo tortilla española saludable. Evitar imagen IA."
+    },
+    {
+      "nombre": "Boniato Asado con Pollo al Limón y Salsa de Yogur",
+      "descripcion": "Boniato asado en gajos con pollo marinado al limón, acompañado de salsa de yogur y menta. Post-entreno de resistencia ideal.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 bandeja completa",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 30,
+      "tipo_coccion": "Horno",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 540,
+      "proteinas": 38,
+      "carbohidratos": 58,
+      "grasas": 16,
+      "fibra": 9,
+      "ingredientes": [
+        {
+          "nombre": "Boniato",
+          "cantidad_gramos": 250
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Menta fresca",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Pimentón dulce",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Ajo en polvo",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Pelar el boniato, cortar en gajos. Mezclar con AOVE, pimentón, ajo en polvo y sal. 2. Asar a 200°C 25 min (dar la vuelta a los 15). 3. Marinar el pollo con limón, sal y pimienta. Cocinar en sartén 6 min por lado. 4. Mezclar yogur con menta picada y un toque de limón. 5. Servir boniato, pollo en tiras y salsa de yogur.",
+      "consejos": "El boniato es ideal post-entreno de running/endurance por su índice glucémico moderado y alto contenido en potasio (previene calambres). Puedes preparar los gajos el día anterior y solo hornear.",
+      "tags": [
+        "post_entreno",
+        "alta_proteina",
+        "carga_cho",
+        "alto_fibra",
+        "rendimiento",
+        "endurance"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "running",
+        "ciclismo",
+        "endurance",
+        "triatlon",
+        "hyrox"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno",
+        "cena"
+      ],
+      "estilos": [
+        "funcional",
+        "alto_volumen"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 87,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una bandeja de horno con gajos de boniato asado anaranjados, pollo al limón dorado y un cuenco pequeño de salsa de yogur blanco con menta. Luz natural lateral, encuadre overhead. Textura asada del boniato. Fondo de encimera de pizarra. Estilo mealprep post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Pasta con Atún, Tomate Cherry y Albahaca (Post-Entreno Rápido)",
+      "descripcion": "Pasta integral con atún, tomates cherry salteados, albahaca fresca y un toque de limón. Cena post-entreno lista en 12 minutos.",
+      "categoria": "Cena",
+      "porciones": 1,
+      "descripcion_porcion": "1 plato mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 10,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 520,
+      "proteinas": 35,
+      "carbohidratos": 60,
+      "grasas": 13,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Pasta integral (spaghetti o penne)",
+          "cantidad_gramos": 90
+        },
+        {
+          "nombre": "Atún en lata al natural",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Tomates cherry",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Albahaca fresca",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Ajo",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Cocer la pasta al dente. 2. Mientras, calentar AOVE en sartén, sofreír el ajo laminado 1 min. 3. Añadir los cherrys partidos por la mitad, saltear 3 min hasta que empiecen a romperse. 4. Escurrir el atún, añadirlo a la sartén. 5. Incorporar la pasta escurrida, albahaca fresca, limón y mezclar. Servir caliente.",
+      "consejos": "La cena post-entreno perfecta cuando llegas tarde de entrenar. El atún es proteína de rápida absorción y los tomates cherry aportan licopeno antiinflamatorio. Para más proteína, usa atún en aceite de oliva (escurrido).",
+      "tags": [
+        "post_entreno",
+        "rapida",
+        "alta_proteina",
+        "carga_cho",
+        "recuperacion",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "general",
+        "crossfit"
+      ],
+      "momentos": [
+        "cena",
+        "post_entreno",
+        "comida"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida",
+        "mediterranea"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 90,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato de pasta integral con atún, tomates cherry rojos salteados y albahaca fresca verde. Luz natural lateral, encuadre overhead. Textura de la pasta. Fondo de encimera blanca. Estilo cena rápida post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Overnight Oats de Proteína, Coco y Mango (Pre-Running)",
+      "descripcion": "Avena remojada en leche de coco con proteína, mango y coco rallado. Prepáralo la noche anterior para desayunar 2h antes de correr.",
+      "categoria": "Desayuno",
+      "porciones": 1,
+      "descripcion_porcion": "1 tarro mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 450,
+      "proteinas": 28,
+      "carbohidratos": 55,
+      "grasas": 12,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Copos de avena finos",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Bebida de coco o almendras",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Proteína whey sabor vainilla",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Mango maduro en cubos",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Coco rallado",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Semillas de chía",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Mezclar los copos de avena con la bebida vegetal, la proteína y las semillas de chía. 2. Verter en un tarro de cristal. 3. Refrigerar toda la noche (mínimo 6h). 4. Por la mañana, remover, añadir mango en cubos y coco rallado.",
+      "consejos": "Al prepararse la noche anterior, la avena absorbe el líquido y es más digestiva. Ideal para carreras matutinas. Si eres muy sensible a la fibra pre-running, reduce la avena a 35g y añade un plátano.",
+      "tags": [
+        "pre_entreno",
+        "desayuno",
+        "mealprep",
+        "no_cook",
+        "carga_cho",
+        "running",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "salud_general"
+      ],
+      "deportes": [
+        "running",
+        "endurance",
+        "triatlon",
+        "ciclismo"
+      ],
+      "momentos": [
+        "desayuno",
+        "pre_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 92,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un tarro de cristal con overnight oats, capas de avena cremosa, mango amarillo en cubos y coco rallado blanco. Cuchara larga. Luz natural lateral, encuadre 45°. Textura cremosa de la avena. Fondo de madera clara. Estilo desayuno pre-running. Evitar imagen IA."
+    },
+    {
+      "nombre": "Bowl de Quinoa, Pavo y Verduras Asadas (Rendimiento)",
+      "descripcion": "Quinoa con pavo salteado, pimientos asados, calabacín y aliño de mostaza y miel. Proteína completa + carbohidrato complejo para entrenos de fuerza.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 20,
+      "tipo_coccion": "Horno/Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 540,
+      "proteinas": 40,
+      "carbohidratos": 50,
+      "grasas": 16,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Quinoa",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Pechuga de pavo",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Pimiento rojo",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Calabacín",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Miel",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        }
+      ],
+      "instrucciones": "1. Cocer la quinoa según instrucciones. 2. Cortar pimiento y calabacín en tiras, mezclar con AOVE y asar a 200°C 15 min. 3. Salpimentar el pavo y cocinar en sartén 4 min por lado, cortar en tiras. 4. Aliño: mezclar mostaza, miel, AOVE y sal. 5. Montar el bowl: quinoa, verduras, pavo y aliño.",
+      "consejos": "La quinoa aporta proteína completa con los 9 aminoácidos esenciales. Ideal para almuerzo post-entreno de fuerza. Puedes hacer mealprep para 3 días: la quinoa y verduras aguantan bien en nevera.",
+      "tags": [
+        "post_entreno",
+        "alta_proteina",
+        "rendimiento",
+        "mealprep",
+        "fuerza"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "ganancia_muscular"
+      ],
+      "deportes": [
+        "fuerza",
+        "crossfit",
+        "hyrox",
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "alto_volumen",
+        "tupper"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 86,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl con quinoa esponjosa, tiras de pavo doradas, pimiento rojo asado y calabacín. Aliño mostaza-miel visible. Luz natural lateral, encuadre 45°. Textura de la quinoa. Fondo de madera. Estilo bowl de rendimiento. Evitar imagen IA."
+    },
+    {
+      "nombre": "Crema de Calabaza con Pollo y Jengibre (Cena Post-Entreno)",
+      "descripcion": "Crema suave de calabaza con pollo desmenuzado y un toque de jengibre. Digestiva, antiinflamatoria y reconfortante para cenar después de entrenar.",
+      "categoria": "Cena",
+      "porciones": 1,
+      "descripcion_porcion": "1 plato hondo",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 20,
+      "tipo_coccion": "Olla",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 360,
+      "proteinas": 32,
+      "carbohidratos": 35,
+      "grasas": 10,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Calabaza",
+          "cantidad_gramos": 300
+        },
+        {
+          "nombre": "Pollo cocido desmenuzado",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Jengibre fresco rallado",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Caldo de pollo bajo en sal",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Po char la cebolla picada en AOVE 3 min. 2. Añadir la calabaza pelada y troceada, el jengibre rallado y el caldo. 3. Cocer 18 min hasta calabaza tierna. 4. Triturar hasta crema fina. 5. Servir con el pollo desmenuzado por encima.",
+      "consejos": "La calabaza aporta carbohidrato de bajo índice glucémico y betacarotenos (antioxidante post-entreno). El jengibre tiene efecto antiinflamatorio natural. Cenar esto post-entreno mejora la recuperación nocturna.",
+      "tags": [
+        "post_entreno",
+        "cena",
+        "digestiva",
+        "antiinflamatoria",
+        "alta_proteina",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "running",
+        "fuerza",
+        "general",
+        "endurance",
+        "ciclismo"
+      ],
+      "momentos": [
+        "cena",
+        "post_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "mediterranea"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 85,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato hondo de crema naranja de calabaza con pollo desmenuzado en el centro, un hilo de AOVE y perejil picado. Luz natural lateral, encuadre 45°. Textura cremosa. Fondo de madera rústica. Estilo cena reconfortante post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Wrap de Atún, Hummus y Verduras (Pre-Entreno Ligero)",
+      "descripcion": "Wrap ligero con atún, hummus, espinacas, pepino y zanahoria. Pre-entreno suave que no pesa en el estómago.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 wrap mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 365,
+      "proteinas": 28,
+      "carbohidratos": 32,
+      "grasas": 12,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Wrap de trigo integral",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Atún en lata al natural",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Hummus natural",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Espinacas baby",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Pepino",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Zanahoria rallada",
+          "cantidad_gramos": 20
+        }
+      ],
+      "instrucciones": "1. Extender el hummus sobre el wrap. 2. Escurrir el atún, desmenuzarlo sobre el hummus. 3. Añadir espinacas, pepino en tiras finas y zanahoria rallada. 4. Enrollar apretadamente y cortar por la mitad.",
+      "consejos": "Bajo en grasa, carbohidrato moderado y proteína suficiente para mantener la energía 2h de entreno. El hummus en lugar de mayonesa reduce grasa saturada. Tómalo 90 min antes de entrenar.",
+      "tags": [
+        "pre_entreno",
+        "rapida",
+        "alta_proteina",
+        "no_cook",
+        "ligero",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "perdida_grasa",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "general",
+        "crossfit"
+      ],
+      "momentos": [
+        "comida",
+        "pre_entreno",
+        "merienda"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 89,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un wrap integral cortado por la mitad, mostrando el interior de atún, hummus beige, espinacas verdes y verduras. Luz natural lateral, encuadre 45°. Fondo de madera clara. Estilo wrap ligero. Evitar imagen IA."
+    },
+    {
+      "nombre": "Arroz Integral con Pavo y Curry de Verduras",
+      "descripcion": "Arroz integral salteado con pavo, brócoli, zanahoria y salsa de curry suave. Plato único de recuperación post-entreno completo y equilibrado.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 20,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 560,
+      "proteinas": 38,
+      "carbohidratos": 62,
+      "grasas": 14,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Arroz integral cocido",
+          "cantidad_gramos": 180
+        },
+        {
+          "nombre": "Pechuga de pavo",
+          "cantidad_gramos": 140
+        },
+        {
+          "nombre": "Brócoli",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Zanahoria",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Leche de coco ligera",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Pasta de curry rojo",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Cortar el pavo en dados, salpimentar. 2. Saltear en sartén con AOVE 4 min, reservar. 3. En la misma sartén, saltear brócoli en ramitas y zanahoria en bastones 3 min. 4. Añadir la pasta de curry, remover 30s. Agregar la leche de coco. 5. Incorporar el arroz cocido y el pavo, saltear 2 min hasta integrado.",
+      "consejos": "Usa arroz integral cocido del día anterior (mealprep) para reducir tiempo. El curry tiene propiedades antiinflamatorias (cúrcuma) beneficiosas post-entreno. Ajusta la pasta de curry según tolerancia.",
+      "tags": [
+        "post_entreno",
+        "alta_proteina",
+        "mealprep",
+        "antiinflamatorio",
+        "rendimiento",
+        "fuerza"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion",
+        "ganancia_muscular"
+      ],
+      "deportes": [
+        "fuerza",
+        "crossfit",
+        "hyrox",
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "tupper"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 85,
+      "digestibilidad": "media",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de arroz integral salteado con pavo, brócoli verde, zanahoria naranja y salsa de curry ligera. Luz natural lateral, encuadre 45°. Textura del arroz integral. Fondo de madera. Estilo mealprep post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Salmón con Puré de Patata y Espárragos (Cena Post-Entreno)",
+      "descripcion": "Salmón a la plancha con puré de patata cremoso (sin mantequilla) y espárragos verdes. Omega-3 + carbohidrato + proteína para recuperación nocturna.",
+      "categoria": "Cena",
+      "porciones": 1,
+      "descripcion_porcion": "1 plato completo",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 20,
+      "tipo_coccion": "Sartén/Olla",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 510,
+      "proteinas": 38,
+      "carbohidratos": 40,
+      "grasas": 18,
+      "fibra": 5,
+      "ingredientes": [
+        {
+          "nombre": "Salmón fresco",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Patata",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Espárragos verdes",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Leche semidesnatada",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 6
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Pelar las patatas, cocerlas en agua con sal 18 min. 2. Hacer puré con la leche caliente (sin mantequilla). 3. Cocinar el salmón en sartén con AOVE 4 min por lado. 4. Cocer los espárragos al vapor 4 min. 5. Servir salmón con limón, puré y espárragos.",
+      "consejos": "El puré de patata sin mantequilla es una fuente limpia de carbohidrato post-entreno. El omega-3 del salmón reduce la inflamación muscular nocturna. Si entrenas fuerza, añade 50g de patata extra al puré.",
+      "tags": [
+        "post_entreno",
+        "alta_proteina",
+        "omega_3",
+        "recuperacion",
+        "cena",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "endurance",
+        "general",
+        "ciclismo"
+      ],
+      "momentos": [
+        "cena",
+        "post_entreno",
+        "comida"
+      ],
+      "estilos": [
+        "funcional",
+        "mediterranea"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 88,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "medio",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un plato blanco con salmón a la plancha, puré de patata cremoso y espárragos verdes. Rodaja de limón. Luz natural lateral, encuadre 45°. Textura del puré lisa. Fondo de encimera de mármol. Estilo cena de restaurante saludable post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Tupper de Pollo Teriyaki con Arroz y Verduras",
+      "descripcion": "Pollo salteado con salsa teriyaki ligera, arroz blanco y verduras salteadas. Plato de recuperación para llevar, perfecto para día de doble entreno.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 tupper grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 18,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 580,
+      "proteinas": 40,
+      "carbohidratos": 70,
+      "grasas": 10,
+      "fibra": 5,
+      "ingredientes": [
+        {
+          "nombre": "Arroz blanco",
+          "cantidad_gramos": 90
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 160
+        },
+        {
+          "nombre": "Salsa de soja baja en sal",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Jengibre fresco rallado",
+          "cantidad_gramos": 4
+        },
+        {
+          "nombre": "Pimiento rojo",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Calabacín",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Cocer el arroz blanco. 2. Cortar el pollo en tiras. Mezclar salsa de soja, jengibre rallado y un toque de edulcorante. 3. Marinar el pollo 5 min. 4. Saltear el pollo en sartén con AOVE 4 min. 5. Añadir pimiento y calabacín en tiras, saltear 3 min. 6. Servir sobre el arroz.",
+      "consejos": "Perfecto para día de doble entreno (mañana y tarde): buena carga de carbohidrato + proteína. Aguant 3 días en nevera. Recalentar en sartén con un chorrito de agua. Para versión sin gluten, usar tamari.",
+      "tags": [
+        "post_entreno",
+        "tupper",
+        "mealprep",
+        "alta_proteina",
+        "carga_cho",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "crossfit",
+        "hyrox",
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida",
+        "tupper"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 87,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un tupper de cristal abierto con arroz blanco, pollo teriyaki brillante y pimiento/calabacín salteados. Luz natural lateral, encuadre overhead. Fondo de encimera de madera. Estilo tupper mealprep. Evitar imagen IA."
+    },
+    {
+      "nombre": "Bowl de Pasta Integral con Albóndigas de Pavo",
+      "descripcion": "Pasta integral con albóndigas de pavo caseras en salsa de tomate ligera. Plato de entreno de fuerza que sabe a comfort food pero es funcional.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl grande",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 20,
+      "tipo_coccion": "Sartén/Horno",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 590,
+      "proteinas": 42,
+      "carbohidratos": 62,
+      "grasas": 16,
+      "fibra": 7,
+      "ingredientes": [
+        {
+          "nombre": "Pasta integral (spaghetti)",
+          "cantidad_gramos": 90
+        },
+        {
+          "nombre": "Carne de pavo picada",
+          "cantidad_gramos": 130
+        },
+        {
+          "nombre": "Tomate triturado natural",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Cebolla",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Orégano seco",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Pan rallado integral",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 8
+        }
+      ],
+      "instrucciones": "1. Mezclar pavo picado con pan rallado, ajo, orégano y sal. Formar albóndigas pequeñas. 2. Dorar albóndigas en sartén con AOVE 6 min (girando). Reservar. 3. En la misma sartén, pochar cebolla picada, añadir tomate triturado, orégano. Cocer 10 min. 4. Cocer la pasta al dente. 5. Servir pasta con salsa y albóndigas.",
+      "consejos": "Las albóndigas de pavo son mucho más magras que las de cerdo/ternera, ideales para rendimiento sin grasa saturada extra. Puedes hacer las albóndigas el fin de semana y congelarlas. La salsa de tomate casera aporta licopeno.",
+      "tags": [
+        "post_entreno",
+        "alta_proteina",
+        "carga_cho",
+        "mealprep",
+        "comfort_healthy",
+        "rendimiento",
+        "fuerza"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "ganancia_muscular",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "crossfit",
+        "hyrox",
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "comfort_healthy"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 91,
+      "digestibilidad": "media",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de pasta integral con salsa de tomate casera y albóndigas de pavo. Albahaca fresca y orégano espolvoreado. Luz natural lateral, encuadre overhead. Textura de la pasta y albóndigas doradas. Fondo de madera. Estilo comfort food saludable post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Tortitas de Avena y Proteína con Sirope (Post-Entreno)",
+      "descripcion": "Tortitas esponjosas de avena, claras y proteína, con sirope sin azúcar y fruta. Post-entreno que sabe a desayuno trampa pero suma proteína y carbohidrato.",
+      "categoria": "Desayuno",
+      "porciones": 1,
+      "descripcion_porcion": "4 tortitas medianas",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 8,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 420,
+      "proteinas": 35,
+      "carbohidratos": 48,
+      "grasas": 7,
+      "fibra": 5,
+      "ingredientes": [
+        {
+          "nombre": "Copos de avena finos molidos",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Claras de huevo pasteurizadas",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Proteína whey sabor vainilla",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 1
+        },
+        {
+          "nombre": "Edulcorante tipo stevia",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "AOVE en spray",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Arándanos",
+          "cantidad_gramos": 40
+        }
+      ],
+      "instrucciones": "1. Mezclar avena molida, claras, proteína, canela y edulcorante hasta masa homogénea (ligeramente espesa). 2. Calentar sartén antiadherente con spray de AOVE. 3. Verter porciones pequeñas, cocinar 2 min hasta burbujas, voltear y cocinar 1 min. 4. Servir apiladas con yogur y arándanos.",
+      "consejos": "Post-entreno de fuerza perfecto (carbohidrato + proteína de rápida absorción). Si entrenas muy temprano, puedes tomar esto como desayuno post-entreno. Añade una cucharada de mantequilla de cacahuete para más calorías de calidad.",
+      "tags": [
+        "post_entreno",
+        "desayuno",
+        "alta_proteina",
+        "carga_cho",
+        "rapida",
+        "rendimiento",
+        "fuerza"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "ganancia_muscular"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "crossfit",
+        "general"
+      ],
+      "momentos": [
+        "post_entreno",
+        "desayuno",
+        "merienda"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 93,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una pila de 4 tortitas de avena doradas con yogur blanco y arándanos azules. Sirope ligero cayendo por los lados. Luz natural lateral, encuadre 45°. Textura esponjosa. Fondo de madera clara. Estilo tortitas post-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Carga de CHO: Arroz con Plátano, Miel y Canela (Tapering)",
+      "descripcion": "Arroz blanco cremoso con leche, plátano, miel y canela. Carga de carbohidratos simples para tapering pre-competición. Fácil de digerir.",
+      "categoria": "Desayuno",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 12,
+      "tipo_coccion": "Olla",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 520,
+      "proteinas": 12,
+      "carbohidratos": 100,
+      "grasas": 6,
+      "fibra": 2,
+      "ingredientes": [
+        {
+          "nombre": "Arroz blanco redondo",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Leche semidesnatada",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Plátano maduro",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Miel",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Cocer el arroz en la leche a fuego medio 12 min, removiendo. (Añadir agua si espesa demasiado). 2. Servir en bowl. 3. Añadir plátano en rodajas, miel y canela.",
+      "consejos": "Plato específico de tapering (día antes de competición). Bajo en fibra y grasa para máxima digestibilidad y carga de glucógeno. Tómalo como desayuno el día antes de una carrera de 10k+, media maratón o competición de CrossFit.",
+      "tags": [
+        "carga_cho",
+        "tapering",
+        "pre_competicion",
+        "desayuno",
+        "digestivo",
+        "rendimiento",
+        "endurance"
+      ],
+      "objetivos": [
+        "rendimiento"
+      ],
+      "deportes": [
+        "running",
+        "ciclismo",
+        "endurance",
+        "triatlon",
+        "crossfit",
+        "hyrox"
+      ],
+      "momentos": [
+        "desayuno",
+        "carga_cho",
+        "tapering",
+        "refeed"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 78,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl con arroz con leche cremoso, rodajas de plátano, miel brillante y canela espolvoreada. Luz natural lateral, encuadre overhead. Textura cremosa del arroz. Fondo de madera clara. Estilo desayuno de carga. Evitar imagen IA."
+    },
+    {
+      "nombre": "Bowl de Arroz con Huevo, Aguacate y Sésamo (Pre-Entreno)",
+      "descripcion": "Arroz blanco con huevo poché, aguacate, semillas de sésamo y salsa de soja. Pre-entreno equilibrado que proporciona energía sostenida.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 10,
+      "tipo_coccion": "Sartén/Olla",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 480,
+      "proteinas": 25,
+      "carbohidratos": 50,
+      "grasas": 20,
+      "fibra": 4,
+      "ingredientes": [
+        {
+          "nombre": "Arroz blanco",
+          "cantidad_gramos": 75
+        },
+        {
+          "nombre": "Huevo",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Aguacate",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Salsa de soja baja en sal",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Semillas de sésamo",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Vinagre",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Cebollino fresco",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Cocer el arroz blanco. 2. Hacer huevo poché (agua+vinagre hirviendo, remolino, 3 min). 3. Cortar el aguacate en láminas. 4. Servir arroz, huevo poché encima, aguacate al lado. 5. Salsa de soja, sésamo y cebollino.",
+      "consejos": "Ideal 2-3h antes de entrenar. Bajo en fibra, grasa moderada de aguacate para energía sostenida. Si entrenas de fuerza, añade otra clara de huevo extra para más proteína.",
+      "tags": [
+        "pre_entreno",
+        "alta_proteina",
+        "rapida",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "general",
+        "crossfit"
+      ],
+      "momentos": [
+        "comida",
+        "pre_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 85,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de arroz blanco con huevo poché, aguacate en láminas, semillas de sésamo y cebollino verde. Luz natural lateral, encuadre 45°. Yema brillante del huevo. Fondo de madera oscura. Estilo bowl pre-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Lasaña de Berenjena con Pollo y Bechamel Ligera",
+      "descripcion": "Capas de berenjena, pollo picado, tomate y bechamel ligera de leche. Lasaña sin pasta para cena post-entreno baja en carbohidrato pero saciante.",
+      "categoria": "Cena",
+      "porciones": 1,
+      "descripcion_porcion": "1 porción individual",
+      "tiempo_prep_min": 15,
+      "tiempo_coccion_min": 30,
+      "tipo_coccion": "Horno",
+      "dificultad": "Medio",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 420,
+      "proteinas": 38,
+      "carbohidratos": 22,
+      "grasas": 19,
+      "fibra": 8,
+      "ingredientes": [
+        {
+          "nombre": "Berenjena",
+          "cantidad_gramos": 250
+        },
+        {
+          "nombre": "Pollo picado",
+          "cantidad_gramos": 120
+        },
+        {
+          "nombre": "Tomate triturado natural",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Leche semidesnatada",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Harina de maíz (maicena)",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Queso rallado light",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Albahaca",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Cortar la berenjena en láminas longitudinales. Salar y dejar reposar 10 min (sacar líquido). 2. Cocinar pollo picado en sartén 5 min. Añadir tomate, albahaca, cocer 5 min. 3. Bechamel: disolver maicena en leche fría, calentar hasta espesar, sal y nuez moscada. 4. Montar: berenjena, pollo, bechamel, repite. Queso rallado arriba. 5. Hornear 20 min a 200°C.",
+      "consejos": "Sin pasta ni gluten, cena post-entreno más ligera. Perfecta para pérdida grasa o definición. La berenjena aporta volumen y fibra. Puedes preparar 2-3 porciones y refrigerar.",
+      "tags": [
+        "post_entreno",
+        "cena",
+        "alta_proteina",
+        "sin_gluten",
+        "bajo_cho",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion",
+        "perdida_grasa"
+      ],
+      "deportes": [
+        "fuerza",
+        "general",
+        "crossfit"
+      ],
+      "momentos": [
+        "cena",
+        "post_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "mediterranea"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 84,
+      "digestibilidad": "media",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 3,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de una lasaña individual de berenjena en plato blanco, corte mostrando capas: berenjena, pollo, bechamel. Queso gratinado dorado arriba. Luz natural lateral, encuadre 45°. Textura gratinada. Fondo de madera. Estilo lasaña saludable. Evitar imagen IA."
+    },
+    {
+      "nombre": "Hummus de Boniato con Crudités (Merienda Pre-Entreno)",
+      "descripcion": "Hummus cremoso de boniato asado con tahini y limón, acompañado de bastones de verduras. Merienda pre-entreno vegetal, energética y digestiva.",
+      "categoria": "Merienda",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl de hummus + verduras",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 25,
+      "tipo_coccion": "Horno",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Sin Lácteos"
+      ],
+      "kcal": 340,
+      "proteinas": 14,
+      "carbohidratos": 40,
+      "grasas": 14,
+      "fibra": 10,
+      "ingredientes": [
+        {
+          "nombre": "Boniato",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Garbanzos cocidos",
+          "cantidad_gramos": 60
+        },
+        {
+          "nombre": "Tahini (pasta de sésamo)",
+          "cantidad_gramos": 10
+        },
+        {
+          "nombre": "Zumo de limón",
+          "cantidad_gramos": 8
+        },
+        {
+          "nombre": "Zanahoria",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Apio",
+          "cantidad_gramos": 30
+        },
+        {
+          "nombre": "Pimiento rojo",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Pimentón dulce",
+          "cantidad_gramos": 2
+        }
+      ],
+      "instrucciones": "1. Asar el boniato a 200°C 25 min (pinchar antes). 2. Triturar boniato, garbanzos, tahini, limón, AOVE y sal hasta crema. 3. Cortar zanahoria, apio y pimiento en bastones. 4. Servir hummus con pimentón por encima y crudités.",
+      "consejos": "Merienda pre-entreno ideal 1.5-2h antes. Los carbohidratos del boniato proporcionan energía sostenida, los garbanzos aportan proteína vegetal. Puedes preparar el hummus el día anterior.",
+      "tags": [
+        "pre_entreno",
+        "merienda",
+        "vegano",
+        "alto_fibra",
+        "no_cook",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "salud_general",
+        "recomposicion"
+      ],
+      "deportes": [
+        "running",
+        "ciclismo",
+        "general",
+        "endurance"
+      ],
+      "momentos": [
+        "merienda",
+        "pre_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "mediterranea",
+        "rapida"
+      ],
+      "premium_chef": true,
+      "adherencia_score": 82,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de hummus cremoso de boniato anaranjado con pimentón y AOVE, rodeado de bastones de zanahoria, apio y pimiento rojo. Luz natural lateral, encuadre overhead. Fondo de madera clara. Estilo merienda saludable pre-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Bocadillo Integral de Pollo, Queso Fresco y Rúcula (Pre-Entreno)",
+      "descripcion": "Bocadillo de pan integral con pollo a la plancha, queso fresco, rúcula y mostaza. Clásico pre-entreno que funciona, simple y transportable.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 bocadillo grande",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 6,
+      "tipo_coccion": "Sartén",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "kcal": 460,
+      "proteinas": 38,
+      "carbohidratos": 40,
+      "grasas": 14,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Pan integral de molde grande",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Pechuga de pollo",
+          "cantidad_gramos": 130
+        },
+        {
+          "nombre": "Queso fresco batido 0%",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Rúcula",
+          "cantidad_gramos": 20
+        },
+        {
+          "nombre": "Mostaza Dijon",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "AOVE",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Cocinar el pollo en sartén con AOVE 3 min por lado. Cortar en filetes finos. 2. Tostar ligeramente el pan. 3. Untar queso fresco y mostaza. 4. Colocar el pollo y la rúcula. 5. Cerrar y presionar ligeramente.",
+      "consejos": "Tómalo 2h antes de entrenar. Bajo en grasa, carbohidrato moderado de calidad. Si el entreno es de más de 90 min, añade medio aguacate para más energía. Perfecto para llevar al gym si entrenas después del trabajo.",
+      "tags": [
+        "pre_entreno",
+        "rapida",
+        "alta_proteina",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "crossfit",
+        "hyrox",
+        "general"
+      ],
+      "momentos": [
+        "comida",
+        "pre_entreno",
+        "merienda"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 90,
+      "digestibilidad": "alta",
+      "densidad_energetica": "media",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bocadillo de pan integral relleno de pollo, rúcula verde y mostaza. Cortado por la mitad mostrando el interior. Luz natural lateral, encuadre 45°. Fondo de encimera de madera. Estilo bocadillo pre-entreno. Evitar imagen IA."
+    },
+    {
+      "nombre": "Refeed: Arroz Dulce con Canela y Manzana",
+      "descripcion": "Arroz blanco cocido con leche, manzana asada, canela y pasas. Plato de refeed o recarga de glucógeno después de semana intensa de entrenos.",
+      "categoria": "Postre",
+      "porciones": 1,
+      "descripcion_porcion": "1 bowl mediano",
+      "tiempo_prep_min": 5,
+      "tiempo_coccion_min": 15,
+      "tipo_coccion": "Olla",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 480,
+      "proteinas": 10,
+      "carbohidratos": 95,
+      "grasas": 5,
+      "fibra": 4,
+      "ingredientes": [
+        {
+          "nombre": "Arroz blanco redondo",
+          "cantidad_gramos": 90
+        },
+        {
+          "nombre": "Leche semidesnatada",
+          "cantidad_gramos": 200
+        },
+        {
+          "nombre": "Manzana",
+          "cantidad_gramos": 100
+        },
+        {
+          "nombre": "Pasas",
+          "cantidad_gramos": 15
+        },
+        {
+          "nombre": "Canela molida",
+          "cantidad_gramos": 2
+        },
+        {
+          "nombre": "Edulcorante tipo eritritol",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Cocer el arroz en la leche con canela y edulcorante 12 min. 2. Cortar la manzana en dados y asar en microondas 2 min con canela. 3. Servir el arroz caliente, manzana asada, pasas y canela extra.",
+      "consejos": "Perfecto para día de refeed o después de una semana de déficit calórico. Alto en carbohidrato, muy bajo en grasa, fácil de digerir. Consumir como postre o merienda después del entreno más duro de la semana.",
+      "tags": [
+        "refeed",
+        "carga_cho",
+        "postre_fit",
+        "bajo_grasa",
+        "rendimiento",
+        "recuperacion"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "mantenimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "running",
+        "endurance",
+        "ciclismo",
+        "crossfit"
+      ],
+      "momentos": [
+        "refeed",
+        "merienda",
+        "post_entreno",
+        "carga_cho"
+      ],
+      "estilos": [
+        "funcional",
+        "comfort_healthy"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 80,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 2,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un bowl de arroz dulce cremoso con manzana asada, pasas y canela espolvoreada. Luz natural lateral, encuadre overhead. Textura cremosa del arroz. Fondo de madera clara. Estilo postre de refeed. Evitar imagen IA."
+    },
+    {
+      "nombre": "Ensalada de Pasta Integral con Pollo, Maíz y Pimiento",
+      "descripcion": "Ensalada fría de pasta integral con pollo, maíz, pimiento y aliño de yogur. Plato de recuperación para llevar al trabajo después del entreno matutino.",
+      "categoria": "Comida",
+      "porciones": 1,
+      "descripcion_porcion": "1 tupper grande",
+      "tiempo_prep_min": 10,
+      "tiempo_coccion_min": 10,
+      "tipo_coccion": "Hervir",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos"
+      ],
+      "kcal": 530,
+      "proteinas": 36,
+      "carbohidratos": 58,
+      "grasas": 14,
+      "fibra": 6,
+      "ingredientes": [
+        {
+          "nombre": "Pasta integral (farfalle)",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Pollo cocido desmenuzado",
+          "cantidad_gramos": 120
+        },
+        {
+          "nombre": "Maíz dulce escurrido",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Pimiento rojo",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Yogur griego natural 0%",
+          "cantidad_gramos": 40
+        },
+        {
+          "nombre": "Mostaza",
+          "cantidad_gramos": 5
+        },
+        {
+          "nombre": "Cebollino fresco",
+          "cantidad_gramos": 3
+        }
+      ],
+      "instrucciones": "1. Cocer la pasta, enfriar bajo el grifo. 2. Desmenuzar el pollo cocido. 3. Cortar el pimiento en dados. 4. Aliño: yogur, mostaza, sal, pimienta y cebollino. 5. Mezclar todos los ingredientes. 6. Refrigerar mínimo 30 min antes de consumir.",
+      "consejos": "Plato de recuperación que aguanta perfectamente 3 días en nevera. La combinación carbohidrato + proteína es ideal para la ventana post-entreno matutino. Puedes usar atún en lugar de pollo.",
+      "tags": [
+        "post_entreno",
+        "tupper",
+        "alta_proteina",
+        "mealprep",
+        "carga_cho",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion"
+      ],
+      "deportes": [
+        "fuerza",
+        "general",
+        "running",
+        "crossfit"
+      ],
+      "momentos": [
+        "comida",
+        "post_entreno"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida",
+        "tupper"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 86,
+      "digestibilidad": "alta",
+      "densidad_energetica": "alta",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un tupper de cristal abierto con ensalada de pasta integral, pollo desmenuzado, maíz amarillo, pimiento rojo y aliño de yogur. Luz natural lateral, encuadre overhead. Estilo tupper de recuperación. Evitar imagen IA."
+    },
+    {
+      "nombre": "Smoothie Verde de Recuperación con Espinacas y Proteína",
+      "descripcion": "Smoothie verde con espinacas, piña, proteína y jengibre. Antiinflamatorio, alcalino y recuperador. Perfecto después de sesión intensa de CrossFit o Hyrox.",
+      "categoria": "Merienda",
+      "porciones": 1,
+      "descripcion_porcion": "1 vaso grande (400ml)",
+      "tiempo_prep_min": 3,
+      "tiempo_coccion_min": 0,
+      "tipo_coccion": "No Bake",
+      "dificultad": "Fácil",
+      "intolerancias": [
+        "Sin Gluten",
+        "Lácteos"
+      ],
+      "kcal": 290,
+      "proteinas": 30,
+      "carbohidratos": 32,
+      "grasas": 3,
+      "fibra": 5,
+      "ingredientes": [
+        {
+          "nombre": "Espinacas baby",
+          "cantidad_gramos": 50
+        },
+        {
+          "nombre": "Piña natural troceada",
+          "cantidad_gramos": 80
+        },
+        {
+          "nombre": "Proteína whey sabor vainilla",
+          "cantidad_gramos": 25
+        },
+        {
+          "nombre": "Agua de coco",
+          "cantidad_gramos": 150
+        },
+        {
+          "nombre": "Jengibre fresco rallado",
+          "cantidad_gramos": 3
+        },
+        {
+          "nombre": "Semillas de chía",
+          "cantidad_gramos": 5
+        }
+      ],
+      "instrucciones": "1. Lavar las espinacas. 2. Poner todos los ingredientes en la batidora. 3. Batir 40 segundos hasta textura homogénea. 4. Servir inmediatamente.",
+      "consejos": "La piña contiene bromelina, enzima antiinflamatoria natural ideal post-entreno intenso. El agua de coco repone electrolitos (potasio, magnesio). Bébelo dentro de los 30 min post-entreno.",
+      "tags": [
+        "post_entreno",
+        "rapida",
+        "alta_proteina",
+        "antiinflamatorio",
+        "recuperacion",
+        "no_cook",
+        "rendimiento"
+      ],
+      "objetivos": [
+        "rendimiento",
+        "recomposicion",
+        "salud_general"
+      ],
+      "deportes": [
+        "crossfit",
+        "hyrox",
+        "fuerza",
+        "running",
+        "ciclismo"
+      ],
+      "momentos": [
+        "post_entreno",
+        "merienda",
+        "desayuno"
+      ],
+      "estilos": [
+        "funcional",
+        "rapida"
+      ],
+      "premium_chef": false,
+      "adherencia_score": 87,
+      "digestibilidad": "alta",
+      "densidad_energetica": "baja",
+      "nivel_elaboracion": 1,
+      "coste_estimado_nivel": "bajo",
+      "estado": "en_revision",
+      "imagen_prompt": "Fotografía realista de un vaso de cristal con smoothie verde espeso, espinacas visibles al fondo, semillas de chía flotando. Toalla de deporte y pesas desenfocadas al fondo. Luz natural lateral. Estilo smoothie de recuperación post-entreno. Evitar imagen IA."
+    }
+  ]
+}
