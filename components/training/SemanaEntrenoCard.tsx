@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ChevronRight, Dumbbell, Zap, CheckCircle2, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { getRecomendacionDescanso } from '@/lib/entrenos/descanso'
 
 interface SesionSemana {
   id: string
@@ -219,6 +220,30 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
           <span style={{ color: 'rgba(128,128,128,0.5)' }}>●</span> Descanso &nbsp;
           <span style={{ color: '#48C78E' }}>✓</span> Completado
         </p>
+
+        {/* Rest day mini panel — solo cuando hoy es día de descanso */}
+        {!todaySession && (() => {
+          const rec = getRecomendacionDescanso(sesionesOrdenadas.length, TODAY_NAME)
+          return (
+            <div
+              className="rounded-xl px-3.5 py-2.5 mb-2 flex items-start gap-2.5"
+              style={{
+                background: 'rgba(128,128,128,0.06)',
+                border: '1px solid rgba(128,128,128,0.12)',
+              }}
+            >
+              <span className="text-base leading-tight flex-shrink-0 mt-0.5">{rec.icono}</span>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--text)' }}>
+                  {rec.titulo}
+                </p>
+                <p className="text-[11px] leading-snug" style={{ color: 'var(--text-muted)' }}>
+                  {rec.consejo}
+                </p>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Next session CTA */}
         {nextSession && (

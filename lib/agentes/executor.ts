@@ -47,6 +47,7 @@ export async function llamarGemini(
     `${GEMINI_API}/${MODELOS.FLASH}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
+      signal: AbortSignal.timeout(60_000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
@@ -93,6 +94,7 @@ export async function llamarDeepSeek(
 
   const res = await fetch(DEEPSEEK_API, {
     method: 'POST',
+    signal: AbortSignal.timeout(60_000),
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,

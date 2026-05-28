@@ -351,7 +351,7 @@ export default function ClientesPage() {
         <StaggerList className="grid grid-cols-1 xl:grid-cols-2 gap-3">
           {filtrados.map((c) => {
             const estado = getEstadoCliente(c)
-            const href = c.revisado_por_coach === false ? `/clientes/${c.id}/revisar-plan` : `/clientes/${c.id}`
+            const href = c.revisado_por_coach === false ? `/clientes/${c.id}/revisar-rapido` : `/clientes/${c.id}`
             const dias = c.dias_sin_checkin ?? 999
             return (
               <StaggerItem key={c.id}>
