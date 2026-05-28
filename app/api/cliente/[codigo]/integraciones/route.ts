@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
     // Garmin Connect usa unofficial API (email/password), no tiene fila en integraciones_cliente
     // Detectamos su presencia por si hay filas en actividad_externa_cliente
     db.from('actividad_externa_cliente')
-      .select('fecha, body_battery_end, training_readiness, pasos, stress_avg, rhr, hrv, calorias_totales, raw_data')
+      .select('fecha, body_battery_end, training_readiness, pasos, stress_avg, rhr, hrv, calorias_totales, sueno_h, sueno_calidad, raw_data')
       .eq('cliente_id', clienteId)
       .eq('proveedor', 'garmin_connect')
       .order('fecha', { ascending: false })
@@ -54,6 +54,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
           rhr: garminRow.rhr,
           hrv: garminRow.hrv,
           calorias_totales: garminRow.calorias_totales,
+          sueno_h: garminRow.sueno_h,
+          sueno_calidad: garminRow.sueno_calidad,
           vo2max_running: asNumber(garminRaw?.vo2max_running),
           vo2max_cycling: asNumber(garminRaw?.vo2max_cycling),
           lactate_threshold_hr: asNumber(garminRaw?.lactate_threshold_hr),

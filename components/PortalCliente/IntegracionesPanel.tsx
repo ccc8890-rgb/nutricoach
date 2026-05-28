@@ -5,20 +5,13 @@ import { Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2, Footprints, Batt
 // ─── Brand icons ─────────────────────────────────────────────────────────────
 
 function GarminIcon({ size = 20 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="12" fill="#007CC3" />
-      <path fill="white" d="M14.8 10.8h-3.2v1.6h1.6v2.4c-.5.3-1.1.5-1.8.5-1.9 0-3.2-1.4-3.2-3.3s1.3-3.3 3.2-3.3c.9 0 1.8.4 2.5 1l1-1C13.8 7.5 12.6 7 11.2 7 8.4 7 6.4 9 6.4 12s2 5 4.8 5c1.4 0 2.7-.5 3.5-1.4v-4.8z" />
-    </svg>
-  )
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/garmin-connect.jpg" width={size} height={size} style={{ borderRadius: 6 }} alt="Garmin Connect" />
 }
 
 function StravaIcon({ size = 20 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="#FC4C02">
-      <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L8.41 0 3 10.172h4.173" />
-    </svg>
-  )
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/strava.jpg" width={size} height={size} style={{ borderRadius: 6 }} alt="Strava" />
 }
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
@@ -60,6 +53,8 @@ interface GarminConnectStatus {
     rhr: number | null
     hrv: number | null
     calorias_totales: number | null
+    sueno_h: number | null
+    sueno_calidad: number | null
   } | null
 }
 
@@ -471,6 +466,9 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
               {hoy.calorias_totales != null && (
                 <StatPill label="TDEE" value={hoy.calorias_totales.toLocaleString('es-ES')} unit="kcal" color="#f97316" />
               )}
+              {hoy.sueno_h != null && (
+                <StatPill label="Sueño" value={hoy.sueno_h.toFixed(1)} unit="h" color="#818CF8" />
+              )}
             </div>
           </div>
         )}
@@ -543,10 +541,12 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                 </div>
               </div>
             )}
-            {/* Nota sobre sueño */}
-            <p className="text-[10px] text-[var(--text-muted)] mt-2 italic">
-              Los datos de sueño aparecerán cuando duermas con el reloj puesto.
-            </p>
+            {/* Nota sobre sueño — solo si no hay datos */}
+            {!garminResumen?.dias.some(d => d.sueno_h != null) && (
+              <p className="text-[10px] text-[var(--text-muted)] mt-2 italic">
+                Los datos de sueño aparecerán cuando duermas con el reloj puesto.
+              </p>
+            )}
           </div>
         )}
       </div>

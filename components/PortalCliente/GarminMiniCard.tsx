@@ -7,20 +7,13 @@ import type { LucideIcon } from 'lucide-react'
 // ─── Brand icons ─────────────────────────────────────────────────────────────
 
 function GarminIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="12" fill="#007CC3" />
-      <path fill="white" d="M14.8 10.8h-3.2v1.6h1.6v2.4c-.5.3-1.1.5-1.8.5-1.9 0-3.2-1.4-3.2-3.3s1.3-3.3 3.2-3.3c.9 0 1.8.4 2.5 1l1-1C13.8 7.5 12.6 7 11.2 7 8.4 7 6.4 9 6.4 12s2 5 4.8 5c1.4 0 2.7-.5 3.5-1.4v-4.8z" />
-    </svg>
-  )
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/garmin-connect.jpg" width={size} height={size} style={{ borderRadius: 4 }} alt="Garmin Connect" />
 }
 
 function StravaIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="#FC4C02">
-      <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L8.41 0 3 10.172h4.173" />
-    </svg>
-  )
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/strava.jpg" width={size} height={size} style={{ borderRadius: 4 }} alt="Strava" />
 }
 
 interface GarminDatos {
@@ -31,6 +24,8 @@ interface GarminDatos {
   rhr: number | null
   hrv: number | null
   calorias_totales: number | null
+  sueno_h: number | null
+  sueno_calidad: number | null
   vo2max_running: number | null
   vo2max_cycling: number | null
   lactate_threshold_hr: number | null
@@ -352,6 +347,15 @@ function buildGarminStats(d: GarminDatos): GarminStat[] {
       color: '#64748B',
       bg: 'rgba(100,116,139,0.1)',
       description: 'Horas estimadas para volver a estar listo tras la carga reciente. No es una orden, es una señal.',
+    } : null,
+    d.sueno_h !== null ? {
+      key: 'sueno',
+      label: 'Sueño',
+      value: `${d.sueno_h.toFixed(1)} h`,
+      icon: Moon,
+      color: '#818CF8',
+      bg: 'rgba(129,140,248,0.1)',
+      description: 'Horas de sueño registradas. La recuperación muscular y la síntesis proteica ocurren principalmente durante el sueño profundo.',
     } : null,
   ].filter(Boolean) as GarminStat[]
 }
