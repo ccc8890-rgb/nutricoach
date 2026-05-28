@@ -1,452 +1,252 @@
+// app/clientes/page.tsx
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useDebounce } from '@/lib/useDebounce'
 import Link from 'next/link'
+import { ArrowLeft, Check, Link as LinkIcon, Plus, SpinnerGap, UsersThree } from '@phosphor-icons/react'
 import {
-  ArrowRight,
-  Check,
-  ClipboardText,
-  Link as LinkIcon,
-  MagnifyingGlass,
-  Plus,
-  Robot,
-  SpinnerGap,
-  TrendDown,
-  UserPlus,
-  UsersThree,
-  WarningCircle,
-} from '@phosphor-icons/react'
-import { StaggerList, StaggerItem } from '@/components/ui/Motion'
-import { OBJETIVO_LABELS, NIVEL_LABELS } from '@/lib/utils'
-
-type Filtro = 'todos' | 'atencion' | 'nuevos' | 'riesgo' | 'sin_checkin' | 'activos'
-
-type ClienteRow = {
-  id: string
-  activo: boolean
-  objetivo?: string
-  nivel?: string
-  peso_inicial?: number | null
-  fecha_proxima_revision?: string | null
-  revisado_por_coach?: boolean | null
-  profile?: { nombre?: string; apellidos?: string; email?: string }
-  dias_sin_checkin?: number
-  ultimo_checkin?: string | null
-  tareas_ia_pendientes?: number
-  tiene_dieta_activa?: boolean
-  tiene_entreno_activo?: boolean
-}
+  type ClienteRow, type Filtro, type FiltroAlta, type SortKey, type ToolbarCounts,
+  calcularScoreAdherencia, esPredictorBaja, calcularDeudaAtencion,
+  aplicarFiltros, aplicarSort, diasHastaCaducidad,
+} from '@/lib/clientes-utils'
+import ClientesToolbar from '@/components/clientes/ClientesToolbar'
+import ClientesTabla from '@/components/clientes/ClientesTabla'
+import ClientesListaMobile from '@/components/clientes/ClientesListaMobile'
 
 type PlanRow = { cliente_id: string }
 type TareaRow = { cliente_id: string | null }
 
-const FILTER_LABELS: Record<Filtro, string> = {
-  todos: 'Todos',
-  atencion: 'Atención',
-  nuevos: 'Nuevos',
-  riesgo: 'Riesgo',
-  sin_checkin: 'Sin check-in',
-  activos: 'Activos',
-}
-
-function nombreCliente(c: ClienteRow) {
-  return [c.profile?.nombre, c.profile?.apellidos].filter(Boolean).join(' ') || 'Sin nombre'
-}
-
-function getEstadoCliente(c: ClienteRow): { label: string; tone: 'danger' | 'warning' | 'success' | 'muted' } {
-  if (c.revisado_por_coach === false) return { label: 'Revisar plan', tone: 'warning' }
-  if ((c.tareas_ia_pendientes ?? 0) > 0) return { label: 'IA pendiente', tone: 'warning' }
-  if ((c.dias_sin_checkin ?? 0) > 10) return { label: 'Riesgo', tone: 'danger' }
-  if ((c.dias_sin_checkin ?? 0) > 4) return { label: 'Sin check-in', tone: 'warning' }
-  if (c.activo) return { label: 'Activo', tone: 'success' }
-  return { label: 'Inactivo', tone: 'muted' }
-}
-
-function estadoStyle(tone: 'danger' | 'warning' | 'success' | 'muted') {
-  if (tone === 'danger') return { background: 'var(--error-bg)', color: 'var(--error)', border: '1px solid rgba(255,69,58,0.24)' }
-  if (tone === 'warning') return { background: 'var(--warning-bg)', color: 'var(--warning)', border: '1px solid rgba(201,169,110,0.24)' }
-  if (tone === 'success') return { background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(48,209,88,0.2)' }
-  return { background: 'var(--surface-hover)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
-}
-
-function StatTile({ label, value, icon: Icon, active }: {
-  label: string
-  value: number
-  icon: React.ElementType
-  active?: boolean
-}) {
-  return (
-    <div
-      className="rounded-2xl p-3 sm:p-4 min-w-0"
-      style={{
-        background: active ? 'var(--text)' : 'var(--surface)',
-        color: active ? 'var(--bg)' : 'var(--text)',
-        border: '1px solid var(--border)',
-      }}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] sm:text-xs font-semibold truncate" style={{ color: active ? 'var(--bg)' : 'var(--text-muted)' }}>
-          {label}
-        </p>
-        <Icon size={17} weight="duotone" />
-      </div>
-      <p className="font-data text-2xl sm:text-3xl font-black mt-3 leading-none">{value}</p>
-    </div>
-  )
-}
-
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<ClienteRow[]>([])
-  const [busqueda, setBusqueda] = useState('')
-  const busquedaDebounced = useDebounce(busqueda, 250)
   const [loading, setLoading] = useState(true)
   const [invitando, setInvitando] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+
+  // Filtros
+  const [busqueda, setBusqueda] = useState('')
+  const busquedaDebounced = useDebounce(busqueda, 250)
   const [filtro, setFiltro] = useState<Filtro>('atencion')
+  const [caducaPronte, setCaducaPronte] = useState(false)
+  const [filtroAlta, setFiltroAlta] = useState<FiltroAlta>(null)
+  const [filtroRevisiones, setFiltroRevisiones] = useState(false)
+  const [filtroChats, setFiltroChats] = useState(false)
+  const [sort, setSort] = useState<SortKey>('checkin')
 
   async function handleInvitar() {
     setInvitando('loading')
     try {
-      const res = await fetch('/api/invitaciones', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      })
+      const res = await fetch('/api/invitaciones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
       const data = await res.json()
-      if (data.url) {
-        await navigator.clipboard.writeText(data.url)
-        setInvitando('done')
-        setTimeout(() => setInvitando('idle'), 2000)
-      } else {
-        setInvitando('error')
-        setTimeout(() => setInvitando('idle'), 2000)
-      }
-    } catch {
-      setInvitando('error')
-      setTimeout(() => setInvitando('idle'), 2000)
-    }
+      if (data.url) { await navigator.clipboard.writeText(data.url); setInvitando('done'); setTimeout(() => setInvitando('idle'), 2000) }
+      else { setInvitando('error'); setTimeout(() => setInvitando('idle'), 2000) }
+    } catch { setInvitando('error'); setTimeout(() => setInvitando('idle'), 2000) }
   }
 
   useEffect(() => {
     async function load() {
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
-        if (userError && userError.name !== 'AuthSessionMissingError') {
-          console.error('[clientes] Error auth.getUser:', userError)
-        }
+        const { data: { user } } = await supabase.auth.getUser()
         if (!user) { setLoading(false); return }
 
         const { data, error } = await supabase
           .from('clientes')
-          .select('id, activo, objetivo, nivel, peso_inicial, fecha_proxima_revision, revisado_por_coach, profile:profiles!profile_id(nombre, apellidos, email)')
+          .select('id, activo, objetivo, nivel, peso_inicial, fecha_proxima_revision, revisado_por_coach, tipo_membresia, fecha_inicio_membresia, fecha_fin_membresia, profile:profiles!profile_id(nombre, apellidos, email)')
           .eq('coach_id', user.id)
           .order('created_at', { ascending: false })
 
-        if (error) {
-          console.error('[clientes] Error en query clientes:', error.message, error.details, error.hint)
-        }
+        if (error) { console.error('[clientes] query error:', error.message); setLoading(false); return }
 
-        const clientesMapeados: ClienteRow[] = (data ?? []).map(c => ({
+        const mapped: ClienteRow[] = (data ?? []).map(c => ({
           ...c,
           profile: Array.isArray(c.profile) ? c.profile[0] : c.profile,
         }))
 
-        if (clientesMapeados.length > 0) {
-          const clienteIds = clientesMapeados.map(c => c.id)
-          const [checkinsRes, dietasRes, entrenosRes, tareasRes] = await Promise.all([
-            supabase
-              .from('checkins')
-              .select('cliente_id, fecha')
-              .in('cliente_id', clienteIds)
-              .order('fecha', { ascending: false }),
-            supabase
-              .from('planes_nutricion')
-              .select('cliente_id')
-              .in('cliente_id', clienteIds)
-              .eq('activo', true),
-            supabase
-              .from('planes_entrenamiento')
-              .select('cliente_id')
-              .in('cliente_id', clienteIds)
-              .eq('activo', true),
-            supabase
-              .from('agente_tareas')
-              .select('cliente_id')
-              .in('cliente_id', clienteIds)
-              .eq('estado', 'pendiente'),
+        if (mapped.length > 0) {
+          const ids = mapped.map(c => c.id)
+          const hace7d = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0]
+          const hace90d = new Date(Date.now() - 90 * 86_400_000).toISOString().split('T')[0]
+
+          const [checkinsRes, dietasRes, entrenosRes, tareasRes, chatsRes, comidasRes, sesionesRes, chatCoachRes] = await Promise.all([
+            supabase.from('checkins').select('cliente_id, fecha, peso').in('cliente_id', ids).gte('fecha', hace90d).order('fecha', { ascending: false }),
+            supabase.from('planes_nutricion').select('cliente_id').in('cliente_id', ids).eq('activo', true),
+            supabase.from('planes_entrenamiento').select('cliente_id').in('cliente_id', ids).eq('activo', true),
+            supabase.from('agente_tareas').select('cliente_id').in('cliente_id', ids).eq('estado', 'pendiente'),
+            supabase.from('chat_mensajes').select('cliente_id').in('cliente_id', ids).eq('remitente', 'cliente').eq('leido', false),
+            supabase.from('registro_comidas_dia').select('cliente_id').in('cliente_id', ids).gte('fecha', hace7d).in('estado', ['hecha', 'cambiada']),
+            supabase.from('registros_entreno').select('cliente_id').in('cliente_id', ids).gte('fecha', hace7d),
+            supabase.from('chat_mensajes').select('cliente_id').in('cliente_id', ids).eq('remitente', 'coach').gte('created_at', new Date(Date.now() - 7 * 86_400_000).toISOString()),
           ])
 
-          const ultimoCheckinMap = new Map<string, string>()
+          const ultimoCheckin = new Map<string, string>()
+          const tienePeso7d = new Set<string>()
           for (const ch of checkinsRes.data ?? []) {
-            if (!ultimoCheckinMap.has(ch.cliente_id)) ultimoCheckinMap.set(ch.cliente_id, ch.fecha)
+            if (!ultimoCheckin.has(ch.cliente_id)) ultimoCheckin.set(ch.cliente_id, ch.fecha)
+            if (ch.peso && ch.fecha >= hace7d) tienePeso7d.add(ch.cliente_id)
           }
 
           const dietasActivas = new Set(((dietasRes.data ?? []) as PlanRow[]).map(p => p.cliente_id))
           const entrenosActivos = new Set(((entrenosRes.data ?? []) as PlanRow[]).map(p => p.cliente_id))
-          const tareasPorCliente = new Map<string, number>()
-          for (const tarea of (tareasRes.data ?? []) as TareaRow[]) {
-            if (!tarea.cliente_id) continue
-            tareasPorCliente.set(tarea.cliente_id, (tareasPorCliente.get(tarea.cliente_id) ?? 0) + 1)
+
+          const tareasPor = new Map<string, number>()
+          for (const t of (tareasRes.data ?? []) as TareaRow[]) {
+            if (t.cliente_id) tareasPor.set(t.cliente_id, (tareasPor.get(t.cliente_id) ?? 0) + 1)
+          }
+
+          const chatsSinLeer = new Map<string, number>()
+          for (const m of chatsRes.data ?? []) {
+            chatsSinLeer.set(m.cliente_id, (chatsSinLeer.get(m.cliente_id) ?? 0) + 1)
+          }
+
+          const comidasHecha = new Map<string, number>()
+          for (const r of comidasRes.data ?? []) {
+            comidasHecha.set(r.cliente_id, (comidasHecha.get(r.cliente_id) ?? 0) + 1)
+          }
+
+          const sesionesComp = new Map<string, number>()
+          for (const s of sesionesRes.data ?? []) {
+            sesionesComp.set(s.cliente_id, (sesionesComp.get(s.cliente_id) ?? 0) + 1)
+          }
+
+          const interaccionesCoach = new Map<string, number>()
+          for (const m of chatCoachRes.data ?? []) {
+            interaccionesCoach.set(m.cliente_id, (interaccionesCoach.get(m.cliente_id) ?? 0) + 1)
           }
 
           const ahora = Date.now()
-          for (const c of clientesMapeados) {
-            const fechaCheckin = ultimoCheckinMap.get(c.id)
-            c.ultimo_checkin = fechaCheckin ?? null
-            c.dias_sin_checkin = fechaCheckin
-              ? Math.floor((ahora - new Date(fechaCheckin).getTime()) / 86_400_000)
-              : 999
-            c.tareas_ia_pendientes = tareasPorCliente.get(c.id) ?? 0
+          for (const c of mapped) {
+            const fechaCheck = ultimoCheckin.get(c.id)
+            c.ultimo_checkin = fechaCheck ?? null
+            c.dias_sin_checkin = fechaCheck ? Math.floor((ahora - new Date(fechaCheck).getTime()) / 86_400_000) : 999
             c.tiene_dieta_activa = dietasActivas.has(c.id)
             c.tiene_entreno_activo = entrenosActivos.has(c.id)
+            c.tareas_ia_pendientes = tareasPor.get(c.id) ?? 0
+            c.chats_sin_leer = chatsSinLeer.get(c.id) ?? 0
+            c.comidas_hecha_7d = comidasHecha.get(c.id) ?? 0
+            c.sesiones_completadas_7d = sesionesComp.get(c.id) ?? 0
+            c.tiene_peso_7d = tienePeso7d.has(c.id)
+            c.interacciones_coach_7d = interaccionesCoach.get(c.id) ?? 0
+            c.score_adherencia = calcularScoreAdherencia(c)
+            c.deuda_atencion = calcularDeudaAtencion(c)
+          }
+          // predictor baja necesita score_adherencia calculado
+          for (const c of mapped) {
+            c.es_predictor_baja = esPredictorBaja(c)
           }
         }
 
-        setClientes(clientesMapeados)
+        setClientes(mapped)
       } catch (e) {
-        console.error('[clientes] Excepción inesperada:', e)
+        console.error('[clientes] error:', e)
       }
       setLoading(false)
     }
     load()
   }, [])
 
-  const stats = useMemo(() => {
-    const atencion = clientes.filter(c =>
-      c.revisado_por_coach === false ||
-      (c.tareas_ia_pendientes ?? 0) > 0 ||
-      (c.dias_sin_checkin ?? 0) > 4
-    ).length
-    return {
-      total: clientes.length,
-      atencion,
-      nuevos: clientes.filter(c => c.revisado_por_coach === false).length,
-      riesgo: clientes.filter(c => (c.dias_sin_checkin ?? 0) > 10).length,
-      ia: clientes.reduce((sum, c) => sum + (c.tareas_ia_pendientes ?? 0), 0),
-    }
-  }, [clientes])
+  const hoy = Date.now()
 
-  const filtrados = clientes.filter(c => {
-    const textoMatch = `${c.profile?.nombre ?? ''} ${c.profile?.apellidos ?? ''} ${c.profile?.email ?? ''}`
-      .toLowerCase()
-      .includes(busquedaDebounced.toLowerCase())
-    if (!textoMatch) return false
+  const counts: ToolbarCounts = useMemo(() => ({
+    total: clientes.length,
+    atencion: clientes.filter(c => c.revisado_por_coach === false || (c.tareas_ia_pendientes ?? 0) > 0 || (c.dias_sin_checkin ?? 0) > 4).length,
+    nuevos: clientes.filter(c => c.revisado_por_coach === false).length,
+    riesgo: clientes.filter(c => (c.dias_sin_checkin ?? 0) > 10).length,
+    sin_checkin: clientes.filter(c => (c.dias_sin_checkin ?? 0) > 4).length,
+    activos: clientes.filter(c => c.activo).length,
+    caduca_pronto: clientes.filter(c => { const d = diasHastaCaducidad(c); return d !== null && d <= 30 }).length,
+    chats_sin_leer: clientes.filter(c => (c.chats_sin_leer ?? 0) > 0).length,
+    revisiones_proximas: clientes.filter(c => {
+      if (!c.fecha_proxima_revision) return false
+      const d = Math.floor((new Date(c.fecha_proxima_revision).getTime() - hoy) / 86_400_000)
+      return d >= 0 && d <= 14
+    }).length,
+  }), [clientes, hoy])
 
-    if (filtro === 'atencion') {
-      return c.revisado_por_coach === false || (c.tareas_ia_pendientes ?? 0) > 0 || (c.dias_sin_checkin ?? 0) > 4
-    }
-    if (filtro === 'nuevos') return c.revisado_por_coach === false
-    if (filtro === 'riesgo') return (c.dias_sin_checkin ?? 0) > 10
-    if (filtro === 'sin_checkin') return (c.dias_sin_checkin ?? 0) > 4
-    if (filtro === 'activos') return c.activo
-    return true
-  })
-
-  const filtros: { key: Filtro; count: number }[] = [
-    { key: 'atencion', count: stats.atencion },
-    { key: 'todos', count: stats.total },
-    { key: 'nuevos', count: stats.nuevos },
-    { key: 'riesgo', count: stats.riesgo },
-    { key: 'sin_checkin', count: clientes.filter(c => (c.dias_sin_checkin ?? 0) > 4).length },
-    { key: 'activos', count: clientes.filter(c => c.activo).length },
-  ]
+  const filtrados = useMemo(() =>
+    aplicarSort(
+      aplicarFiltros(clientes, filtro, busquedaDebounced, caducaPronte, filtroAlta, filtroRevisiones, filtroChats),
+      sort
+    ),
+    [clientes, filtro, busquedaDebounced, caducaPronte, filtroAlta, filtroRevisiones, filtroChats, sort]
+  )
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 overflow-x-hidden">
-      <header className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-5 mb-6">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold tracking-[0.14em] uppercase mb-2" style={{ color: 'var(--text-muted)' }}>
-            Radar de clientes
-          </p>
-          <h1 className="text-[clamp(1.85rem,8vw,2.5rem)] font-black tracking-tight leading-[1.05]" style={{ color: 'var(--text)' }}>
-            Decide a quién atender ahora.
-          </h1>
-          <p className="text-sm mt-2 max-w-2xl" style={{ color: 'var(--text-secondary)' }}>
-            Check-ins, planes pendientes e IA en una sola vista. La lista deja de ser archivo y pasa a ser cola de trabajo.
-          </p>
+      {/* Header */}
+      <header className="flex items-center justify-between gap-4 mb-5">
+        {/* Back button — visible en móvil */}
+        <Link
+          href="/dashboard"
+          className="lg:hidden flex items-center gap-1.5 text-sm font-semibold"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          <ArrowLeft size={16} />
+          <span>Dashboard</span>
+        </Link>
+
+        <div className="hidden lg:block">
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text)' }}>Clientes</h1>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-start lg:justify-end">
+
+        <div className="flex items-center gap-2">
           <button
             onClick={handleInvitar}
-            className="btn-secondary btn-sm w-full sm:w-auto"
+            className="btn-secondary btn-sm"
             disabled={invitando === 'loading'}
           >
-            {invitando === 'loading' ? (
-              <SpinnerGap size={14} className="animate-spin" />
-            ) : invitando === 'done' ? (
-              <Check size={14} />
-            ) : (
-              <LinkIcon size={14} />
-            )}
-            <span>{invitando === 'done' ? 'Copiado' : 'Invitar'}</span>
+            {invitando === 'loading' ? <SpinnerGap size={14} className="animate-spin" /> : invitando === 'done' ? <Check size={14} /> : <LinkIcon size={14} />}
+            <span className="hidden sm:inline">{invitando === 'done' ? 'Copiado' : 'Invitar'}</span>
           </button>
-          <Link href="/clientes/nuevo" className="btn-primary btn-sm w-full sm:w-auto">
-            <Plus size={14} /> Nuevo
+          <Link href="/clientes/nuevo" className="btn-primary btn-sm">
+            <Plus size={14} />
+            <span className="hidden sm:inline">Nuevo</span>
           </Link>
         </div>
       </header>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-5">
-        <StatTile label="Total" value={stats.total} icon={UsersThree} />
-        <StatTile label="Atención" value={stats.atencion} icon={WarningCircle} active={filtro === 'atencion'} />
-        <StatTile label="Acciones IA" value={stats.ia} icon={Robot} />
-        <StatTile label="Nuevos" value={stats.nuevos} icon={UserPlus} />
-      </div>
+      {/* Toolbar */}
+      <ClientesToolbar
+        busqueda={busqueda} onBusqueda={setBusqueda}
+        filtro={filtro} onFiltro={setFiltro}
+        caducaPronte={caducaPronte} onCaducaPronte={setCaducaPronte}
+        filtroAlta={filtroAlta} onFiltroAlta={setFiltroAlta}
+        filtroRevisiones={filtroRevisiones} onFiltroRevisiones={setFiltroRevisiones}
+        filtroChats={filtroChats} onFiltroChats={setFiltroChats}
+        sort={sort} onSort={setSort}
+        counts={counts}
+      />
 
-      <div className="rounded-3xl p-3 mb-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
-          <div className="relative flex-1">
-            <MagnifyingGlass size={17} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-            <input
-              className="input search-input pl-10"
-              placeholder="Buscar por nombre o email"
-              value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-1.5 overflow-x-auto pb-1 lg:pb-0 -mx-1 px-1">
-            {filtros.map(f => {
-              const active = filtro === f.key
-              return (
-                <button
-                  key={f.key}
-                  onClick={() => setFiltro(f.key)}
-                  className="px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all active:scale-[0.98]"
-                  style={active
-                    ? { background: 'var(--text)', color: 'var(--bg)' }
-                    : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
-                  }
-                >
-                  {FILTER_LABELS[f.key]} <span className="font-data">{f.count}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
+      {/* Lista */}
       {loading ? (
-        <div className="grid gap-3">
+        <div className="flex flex-col gap-2">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="rounded-3xl p-4 flex items-center gap-4 animate-pulse" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <div className="w-12 h-12 rounded-2xl skeleton flex-shrink-0" />
+            <div key={i} className="rounded-2xl p-3 flex items-center gap-3 animate-pulse" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <div className="w-7 h-7 rounded-lg skeleton flex-shrink-0" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 skeleton rounded w-40" />
-                <div className="h-3 skeleton rounded w-64 max-w-full" />
+                <div className="h-3 skeleton rounded w-40" />
+                <div className="h-2 skeleton rounded w-56 max-w-full" />
               </div>
             </div>
           ))}
         </div>
       ) : filtrados.length === 0 ? (
-        <div className="rounded-3xl text-center py-16" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="rounded-2xl text-center py-16" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <UsersThree size={42} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
           <p className="font-semibold" style={{ color: 'var(--text)' }}>No hay clientes en este filtro</p>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Cambia el filtro o crea un nuevo cliente.</p>
-          <Link href="/clientes/nuevo" className="btn-primary mt-4">
-            <Plus size={16} /> Añadir cliente
-          </Link>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Cambia el filtro o añade un nuevo cliente.</p>
+          <Link href="/clientes/nuevo" className="btn-primary mt-4"><Plus size={16} /> Añadir cliente</Link>
         </div>
       ) : (
-        <StaggerList className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-          {filtrados.map((c) => {
-            const estado = getEstadoCliente(c)
-            const href = c.revisado_por_coach === false ? `/clientes/${c.id}/revisar-rapido` : `/clientes/${c.id}`
-            const dias = c.dias_sin_checkin ?? 999
-            return (
-              <StaggerItem key={c.id}>
-                <Link
-                  href={href}
-                  className="group block rounded-3xl p-1 transition-all active:scale-[0.99]"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <div className="rounded-[1.35rem] p-4 transition-colors group-hover:bg-[var(--surface-hover)]">
-                    <div className="flex items-start gap-3 sm:gap-4 min-w-0">
-                      <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base flex-shrink-0"
-                        style={{ background: 'var(--bg-subtle)', color: 'var(--text)', border: '1px solid var(--border)' }}
-                      >
-                        {c.profile?.nombre?.[0]?.toUpperCase() ?? '?'}
-                      </div>
-
-                      <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h2 className="font-bold leading-tight truncate max-w-full" style={{ color: 'var(--text)' }}>
-                            {nombreCliente(c)}
-                          </h2>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={estadoStyle(estado.tone)}>
-                            {estado.label}
-                          </span>
-                        </div>
-                        <p className="text-sm truncate mt-1" style={{ color: 'var(--text-muted)' }}>
-                          {c.profile?.email}
-                        </p>
-
-                        <div className="grid grid-cols-2 min-[420px]:grid-cols-4 gap-2 mt-4">
-                          <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Check-in</p>
-                            <p className="text-sm font-bold font-data mt-0.5" style={{ color: dias > 10 ? 'var(--error)' : dias > 4 ? 'var(--warning)' : 'var(--text)' }}>
-                              {dias === 999 ? 'Nunca' : `${dias} d`}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>IA</p>
-                            <p className="text-sm font-bold font-data mt-0.5" style={{ color: (c.tareas_ia_pendientes ?? 0) > 0 ? 'var(--warning)' : 'var(--text)' }}>
-                              {c.tareas_ia_pendientes ?? 0}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Dieta</p>
-                            <p className="text-sm font-bold mt-0.5" style={{ color: c.tiene_dieta_activa ? 'var(--success)' : 'var(--text-muted)' }}>
-                              {c.tiene_dieta_activa ? 'Activa' : 'No'}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Entreno</p>
-                            <p className="text-sm font-bold mt-0.5" style={{ color: c.tiene_entreno_activo ? 'var(--success)' : 'var(--text-muted)' }}>
-                              {c.tiene_entreno_activo ? 'Activo' : 'No'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 flex-wrap mt-4">
-                          {c.objetivo && (
-                            <span className="badge badge-blue">{OBJETIVO_LABELS[c.objetivo] ?? c.objetivo}</span>
-                          )}
-                          {c.nivel && (
-                            <span className="badge badge-gray">{NIVEL_LABELS[c.nivel] ?? c.nivel}</span>
-                          )}
-                          {c.peso_inicial && (
-                            <span className="badge badge-gray">{c.peso_inicial} kg inicial</span>
-                          )}
-                          {dias > 10 && (
-                            <span className="badge badge-red inline-flex gap-1">
-                              <TrendDown size={12} /> Riesgo seguimiento
-                            </span>
-                          )}
-                          {(c.tareas_ia_pendientes ?? 0) > 0 && (
-                            <span className="badge badge-orange inline-flex gap-1">
-                              <Robot size={12} /> Acción IA
-                            </span>
-                          )}
-                          {c.revisado_por_coach === false && (
-                            <span className="badge badge-orange inline-flex gap-1">
-                              <ClipboardText size={12} /> Revisar onboarding
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="hidden sm:flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 transition-transform group-hover:translate-x-0.5" style={{ background: 'var(--bg-subtle)', color: 'var(--text-muted)' }}>
-                        <ArrowRight size={16} />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </StaggerItem>
-            )
-          })}
-        </StaggerList>
+        <>
+          {/* Desktop: tabla */}
+          <div className="hidden lg:block">
+            <ClientesTabla clientes={filtrados} sort={sort} onSort={setSort} />
+          </div>
+          {/* Mobile: lista */}
+          <div className="lg:hidden">
+            <ClientesListaMobile clientes={filtrados} />
+          </div>
+        </>
       )}
     </div>
   )
