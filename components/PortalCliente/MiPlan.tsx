@@ -3,11 +3,12 @@
 import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, CheckCircle2, PencilLine, ExternalLink, Check } from 'lucide-react'
+import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, CheckCircle2, PencilLine, ExternalLink, Check, Zap } from 'lucide-react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import PlanSemanal from './PlanSemanal'
+import { getAjusteDesdeNombreSesion } from '@/lib/periodizacion/dia-entreno-nutricion'
 
 type EstadoComida = RegistroComidaDia['estado']
 
@@ -106,6 +107,7 @@ interface MiPlanProps {
     codigo: string
     plan: PlanData
     registros_comidas?: RegistroComidaDia[]
+    sesion_hoy?: { nombre: string } | null
 }
 
 function MacroRing({
@@ -175,7 +177,7 @@ function MacroRing({
     )
 }
 
-export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps) {
+export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: MiPlanProps) {
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>(
         Object.fromEntries((plan.comidas ?? []).map(c => [c.id, true]))
     )
@@ -427,6 +429,32 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
                     )
                 })}
             </div>
+
+            {/* Card ajuste nutricional según entreno de hoy — solo en día actual */}
+            {diaActivo === diaActualEspana() && (() => {
+                const ajuste = getAjusteDesdeNombreSesion(sesion_hoy?.nombre, !!sesion_hoy)
+                const esDescanso = ajuste.tipo === 'descanso_activo' || ajuste.tipo === 'descanso_total'
+                const color = esDescanso ? '#6366f1' : '#f59e0b'
+                const bg = esDescanso ? 'rgba(99,102,241,0.08)' : 'rgba(245,158,11,0.08)'
+                const border = esDescanso ? 'rgba(99,102,241,0.2)' : 'rgba(245,158,11,0.2)'
+                return (
+                    <div className="rounded-2xl p-3 flex items-start gap-3" style={{ background: bg, border: `1px solid ${border}` }}>
+                        <Zap size={16} style={{ color, flexShrink: 0, marginTop: 2 }} />
+                        <div className="min-w-0">
+                            <p className="text-xs font-semibold" style={{ color }}>
+                                {ajuste.label}
+                                {ajuste.ajuste_cho_pct !== 0 && (
+                                    <span className="ml-2 font-normal" style={{ color: 'var(--text-muted)' }}>
+                                        CHO {ajuste.ajuste_cho_pct > 0 ? '+' : ''}{ajuste.ajuste_cho_pct}%
+                                        {ajuste.ajuste_kcal_pct !== 0 && ` · ${ajuste.ajuste_kcal_pct > 0 ? '+' : ''}${ajuste.ajuste_kcal_pct}% kcal`}
+                                    </span>
+                                )}
+                            </p>
+                            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{ajuste.consejo}</p>
+                        </div>
+                    </div>
+                )
+            })()}
 
             {/* Resumen macros + adherencia del día */}
             <section className="rounded-3xl border p-4 sm:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>

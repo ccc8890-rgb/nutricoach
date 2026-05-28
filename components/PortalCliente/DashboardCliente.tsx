@@ -814,6 +814,13 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
                         codigo={codigo}
                         plan={data.plan}
                         registros_comidas={data.registros_comidas}
+                        sesion_hoy={(() => {
+                            const hoy = new Date().getDay()
+                            const hoyIdx = hoy === 0 ? 6 : hoy - 1
+                            const sesiones = (data.entreno?.sesiones ?? []) as Array<{ nombre: string; dia_semana?: string | null }>
+                            const s = sesiones.find(s => normalizarDia(s.dia_semana) === hoyIdx)
+                            return s ? { nombre: s.nombre } : null
+                        })()}
                     />
                 )}
 
