@@ -1,4 +1,4 @@
-const CACHE = 'nutricoach-v5'
+const CACHE = 'nutricoach-v6'
 const STATIC_ASSETS = [
     '/manifest.json',
     '/icon-192.svg',
