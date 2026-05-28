@@ -16,6 +16,11 @@ function StravaIcon({ size = 14 }: { size?: number }) {
   return <img src="/icons/strava.jpg" width={size} height={size} style={{ borderRadius: 4 }} alt="Strava" />
 }
 
+function CorosIcon({ size = 14 }: { size?: number }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/coros.jpg" width={size} height={size} style={{ borderRadius: 4 }} alt="COROS" />
+}
+
 interface GarminDatos {
   body_battery_end: number | null
   training_readiness: number | null
@@ -121,7 +126,7 @@ const PROVIDER_LABELS: Record<string, { label: string; color: string; icon: Luci
   garmin: { label: 'Garmin', color: '#007CC3', icon: Watch, brandIcon: GarminIcon },
   strava: { label: 'Strava', color: '#FC4C02', icon: Activity, brandIcon: StravaIcon },
   whoop: { label: 'Whoop', color: '#111827', icon: HeartPulse },
-  coros: { label: 'Coros', color: '#2563EB', icon: Watch },
+  coros: { label: 'COROS', color: '#1A1A2E', icon: Watch, brandIcon: CorosIcon },
   google_fit: { label: 'Google Fit', color: '#4285F4', icon: Footprints },
 }
 

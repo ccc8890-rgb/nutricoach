@@ -1,6 +1,6 @@
 // lib/integraciones/types.ts
 
-export type Proveedor = 'strava' | 'garmin' | 'garmin_connect' | 'google_fit' | 'whoop' | 'manual'
+export type Proveedor = 'strava' | 'garmin' | 'garmin_connect' | 'google_fit' | 'whoop' | 'coros' | 'manual'
 
 export interface IntegracionCliente {
   id: string

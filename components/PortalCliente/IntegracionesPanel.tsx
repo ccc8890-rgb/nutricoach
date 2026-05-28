@@ -14,6 +14,11 @@ function StravaIcon({ size = 20 }: { size?: number }) {
   return <img src="/icons/strava.jpg" width={size} height={size} style={{ borderRadius: 6 }} alt="Strava" />
 }
 
+function CorosIcon({ size = 20 }: { size?: number }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/coros.jpg" width={size} height={size} style={{ borderRadius: 6 }} alt="COROS" />
+}
+
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
 interface IntegracionInfo {
@@ -148,6 +153,14 @@ const OAUTH_PROVEEDORES = [
     descripcion: 'Actividad diaria, pasos y calorías',
     icono: Smartphone,
     color: '#4285F4',
+    disponible: true,
+  },
+  {
+    key: 'coros',
+    nombre: 'COROS',
+    descripcion: 'Entrenos, GPS, HR y recuperación',
+    icono: Heart,
+    color: '#1A1A2E',
     disponible: true,
   },
   {
@@ -637,7 +650,9 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}20` }}>
-                {key === 'strava' ? <StravaIcon size={22} /> : <Icono size={20} style={{ color }} />}
+                {key === 'strava' ? <StravaIcon size={22} />
+                  : key === 'coros' ? <CorosIcon size={22} />
+                  : <Icono size={20} style={{ color }} />}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">

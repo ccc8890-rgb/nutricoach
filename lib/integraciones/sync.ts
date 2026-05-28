@@ -5,12 +5,14 @@ import { persistirActividades } from './normalizer'
 import { garminProvider } from './garmin'
 import { googleFitProvider } from './google-fit'
 import { whoopProvider } from './whoop'
+import { corosProvider } from './coros'
 import type { ProveedorIntegracion, IntegracionCliente } from './types'
 
 const PROVEEDORES: ProveedorIntegracion[] = [
   garminProvider,
   googleFitProvider,
   whoopProvider,
+  corosProvider,
   // stravaProvider usa webhook push, no polling
 ]
 
