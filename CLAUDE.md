@@ -1,5 +1,36 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 27-05-2026 (Sesión 42) — Auditoría de seguridad + hardening
+
+### Qué se hizo
+
+**Auditoría completa de seguridad** disparada por aviso del Security Advisor de Supabase (`rls_disabled_in_public`). Informe completo: [`salidas/27-05-2026_auditoria-seguridad.md`](salidas/27-05-2026_auditoria-seguridad.md)
+
+**5 problemas corregidos (commit `0152859`):**
+
+| # | Severidad | Problema | Fix |
+|---|-----------|----------|-----|
+| 1 | 🔴 CRÍTICO | `recetas_auditoria` sin RLS | Migration `20260527_fix_rls_recetas_auditoria.sql` aplicada en Supabase |
+| 2 | 🟠 ALTO | GET/PUT `/api/clientes/[id]` sin `getUser()` | Auth + verificación `coach_id` añadidos |
+| 3 | 🟠 ALTO | Seed endpoints sin protección en producción | Guard `NODE_ENV === 'production'` → 403 |
+| 4 | 🟠 ALTO | `/api/importar-receta` sin auth (SSRF potencial) | Auth check + SSRF guard (IPs privadas bloqueadas) |
+| 5 | 🟡 MEDIO | Sin HTTP security headers | `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `CSP` globales en `next.config.mjs` |
+
+**Estado actual de seguridad:**
+- ✅ 0 tablas Supabase sin RLS
+- ✅ Todos los endpoints de coach requieren auth explícita
+- ✅ Seed/import endpoints bloqueados en producción
+- ✅ SSRF guard activo en fetch de URLs externas
+- ✅ Security headers HTTP en todas las respuestas
+
+**Falso positivo confirmado:** Los endpoints `/api/cliente/[codigo]/*` del portal cliente usan `codigo_publico` UUID como token de acceso (diseño intencional, no bug).
+
+**Pendientes de seguridad (no urgentes):**
+- Rate limiting en endpoints de IA generativa (Vercel Edge o Upstash)
+- Review periódico de RLS en tablas nuevas (añadir al flujo de migrations)
+
+---
+
 ## ✅ SESIÓN 24-05-2026 (Sesión 41) — Auditoría E2E + 2 SQL migrations + arranque Fase B/C
 
 ### Qué se hizo
