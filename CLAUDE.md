@@ -1,5 +1,34 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 28-05-2026 (Sesión 43) — Revisión código Codex + lote recetas recomposición
+
+### Qué se hizo
+
+**Revisión y corrección de 3 bugs críticos introducidos por Codex en las últimas sesiones:**
+
+| Bug | Severidad | Fix | Commit |
+|-----|-----------|-----|--------|
+| `sync-integraciones`: fallback a credenciales Garmin del coach sincronizaba datos del **coach** bajo el ID del **cliente** (mezcla de datos privados) | 🔴 CRÍTICO | Fallback eliminado. Solo sincroniza si el cliente tiene sus propias credenciales. | `075ee23` |
+| `generar-plan-inicial`: `guardarDietaHabitualCliente()` sin `await` — datos del onboarding podían perderse si Vercel cortaba la función | 🟠 ALTO | Añadido `await` | `075ee23` |
+| `lib/deepseek.ts`: 5 llamadas a la API sin timeout — peticiones podían quedar colgadas hasta 300s | 🟠 ALTO | `AbortSignal.timeout(60_000)` en los 5 fetch calls | `075ee23` |
+
+**Lote de recetas importado:**
+- 10 recetas "recomposición Chef Healthy" → BD Supabase (`aae4fc6`)
+- Quality gate: 10/10 OK, 0 críticos, 0 avisos
+- Categorías: Desayuno (2), Comida (4), Cena (2), Postre (1), Merienda (1)
+
+**Lo que Codex dejó bien (no tocar):**
+- Aislamiento datos cliente-cliente correcto
+- Quality gate recetas robusto
+- Normalizador de alimentos sólido
+- Feature dieta habitual bien diseñada
+
+**Pendientes menores no urgentes (para Codex o próxima sesión):**
+- Test scripts con email del coach hardcodeado (`ccc8890@gmail.com`) → mover a env var `NUTRICOACH_TEST_COACH_EMAIL`
+- Validación alérgenos en `validar-lote-deepseek.ts` solo por regex — no cubre todos los casos de BD
+
+---
+
 ## ✅ SESIÓN 27-05-2026 (Sesión 42) — Auditoría de seguridad + hardening
 
 ### Qué se hizo
