@@ -24,7 +24,7 @@ const DIA_ORDER: Record<string, number> = {
 }
 const DIA_ABR: Record<string, string> = {
   Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J',
-  Viernes: 'V', Sábado: 'D', Domingo: 'D',
+  Viernes: 'V', Sábado: 'S', Domingo: 'D',
 }
 const TODAY_NAME = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][new Date().getDay()]
 
@@ -187,7 +187,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
 
       {/* Day dots row */}
       <div className="px-4 py-3">
-        <div className="flex items-center gap-1.5 mb-4">
+        <div className="flex items-center gap-1.5 mb-2">
           {(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const).map(dia => {
             const hasSesion = diasConSesion.has(dia)
             const isToday = dia === TODAY_NAME
@@ -202,10 +202,10 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all"
                   style={dayDotStyle(dia)}
+                  title={hasSesion ? sesionDelDia?.nombre : 'Descanso'}
                 >
                   {estaCompletada ? <CheckCircle2 size={14} /> : DIA_ABR[dia]}
                 </div>
-                {/* activity dot */}
                 <div
                   className="w-1 h-1 rounded-full"
                   style={{ background: hasSesion ? 'rgba(168,85,247,0.5)' : 'transparent' }}
@@ -214,6 +214,11 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             )
           })}
         </div>
+        <p className="text-[10px] mb-3" style={{ color: 'var(--text-muted)' }}>
+          <span style={{ color: 'rgb(192,132,252)' }}>●</span> Entreno &nbsp;
+          <span style={{ color: 'rgba(128,128,128,0.5)' }}>●</span> Descanso &nbsp;
+          <span style={{ color: '#48C78E' }}>✓</span> Completado
+        </p>
 
         {/* Next session CTA */}
         {nextSession && (

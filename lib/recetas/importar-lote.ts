@@ -129,6 +129,16 @@ function normalizarCantidadIngrediente(nombre: string, value: unknown) {
   return asNumber(cantidad, 0, 3000, 100) ?? 100
 }
 
+function normalizarInstrucciones(value: string | null): string | null {
+  if (!value) return value
+  // Si ya tiene saltos de línea entre pasos no hay nada que hacer
+  if (/\n\s*\d+\./.test(value)) return value
+  // Detectar pasos concatenados: " 2. " " 3. " etc. precedidos de texto
+  const conSaltos = value.replace(/\s+(\d+)\.\s+/g, '\n$1. ')
+  // Limpiar dobles saltos
+  return conSaltos.replace(/\n{3,}/g, '\n\n').trim()
+}
+
 function normalizarIngredientes(value: unknown) {
   if (!Array.isArray(value)) return []
   return value
@@ -177,7 +187,7 @@ export function normalizarRecetasGeneradas(input: unknown) {
         carbohidratos: asNumber(receta.carbohidratos, 0, 500, null),
         grasas: asNumber(receta.grasas, 0, 250, null),
         fibra: asNumber(receta.fibra, 0, 100, null),
-        instrucciones: asString(receta.instrucciones, 3000),
+        instrucciones: normalizarInstrucciones(asString(receta.instrucciones, 3000)),
         consejos: asString(receta.consejos, 1000),
         tags: asStringArray(receta.tags, 12),
         objetivos: asStringArray(receta.objetivos, 8),
