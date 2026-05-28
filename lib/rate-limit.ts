@@ -19,6 +19,14 @@ const buckets = new Map<string, Bucket>()
  */
 export function rateLimit(key: string, max: number, windowMs: number): boolean {
   const now = Date.now()
+
+  // Limpiar entradas expiradas cada 100 llamadas para evitar crecimiento indefinido
+  if (buckets.size > 100) {
+    for (const [k, b] of buckets) {
+      if (now > b.resetAt) buckets.delete(k)
+    }
+  }
+
   const bucket = buckets.get(key)
 
   if (!bucket || now > bucket.resetAt) {

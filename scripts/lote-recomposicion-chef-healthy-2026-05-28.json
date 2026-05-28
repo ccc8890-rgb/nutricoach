@@ -1,18 +1,18 @@
 {
   "recetas": [
     {
-      "nombre": "Tortilla de claras con espinacas y champiñones salteados",
-      "descripcion": "Desayuno salado hiperproteico con claras esponjosas, espinacas frescas y champiñones salteados con ajo. Se prepara en 8 minutos y mantiene la energía hasta la comida.",
+      "nombre": "Tortilla de claras y huevo con espinacas y champiñones salteados",
+      "descripcion": "Desayuno salado con claras y huevo esponjosos, espinacas frescas y champiñones salteados con ajo. Se prepara en pocos minutos y aporta proteína de calidad para empezar el día.",
       "categoria": "Desayuno",
       "porciones": 1,
       "descripcion_porcion": "1 tortilla grande (350g aprox)",
       "tiempo_prep_min": 3,
       "tiempo_coccion_min": 5,
-      "kcal": 320,
-      "proteinas": 32,
-      "carbohidratos": 7,
-      "grasas": 16,
-      "fibra": 4,
+      "kcal": 280,
+      "proteinas": 22,
+      "carbohidratos": 4,
+      "grasas": 14,
+      "fibra": 3,
       "ingredientes": [
         {
           "nombre": "Claras de huevo pasteurizadas",
@@ -20,7 +20,7 @@
         },
         {
           "nombre": "Huevo",
-          "cantidad_gramos": 50
+          "cantidad_gramos": 100
         },
         {
           "nombre": "Espinacas",
@@ -32,15 +32,15 @@
         },
         {
           "nombre": "Aceite de oliva virgen extra",
-          "cantidad_gramos": 5
+          "cantidad_gramos": 8
         },
         {
           "nombre": "Ajo",
           "cantidad_gramos": 4
         }
       ],
-      "instrucciones": "1. Lava los champiñones y córtalos en láminas finas. 2. Calienta 3g de aceite de oliva en una sartén antiadherente. Añade el ajo picado y los champiñones. Saltea 3 minutos hasta que estén dorados. 3. Añade las espinacas y saltea 1 minuto hasta que reduzcan. Retira el relleno y reserva. 4. Bate las claras con el huevo entero. Vierte en la misma sartén con el aceite restante. 5. Cuando empiece a cuajar, añade el relleno de champiñones y espinacas sobre un lado. Dobla la tortilla y cocina 1 minuto más. Sirve caliente.",
-      "consejos": "Puedes duplicar ingredientes y tener el relleno listo para 2 días. Si entrenas por la mañana, añade 30g de pavo picado al salteado.",
+      "instrucciones": "1. Lava los champiñones y córtalos en láminas finas.\n2. Calienta 4g de aceite en una sartén antiadherente. Añade el ajo picado y los champiñones. Saltea 3 minutos hasta que estén dorados.\n3. Añade las espinacas y saltea 1 minuto hasta que reduzcan. Retira el relleno y reserva.\n4. Bate las claras con los huevos enteros. Vierte en la misma sartén con el aceite restante.\n5. Cuando empiece a cuajar, añade el relleno de champiñones y espinacas sobre un lado. Dobla la tortilla y cocina 1 minuto más. Sirve caliente.",
+      "consejos": "Puedes duplicar ingredientes y tener el relleno listo para 2 días. Para más proteína, añade 50g de pavo picado al salteado.",
       "tags": [
         "alta_proteina",
         "bajo_carbohidratos",
@@ -72,23 +72,25 @@
       "nivel_elaboracion": 1,
       "adherencia_score": 90,
       "coste_estimado_nivel": "bajo",
-      "intolerancias": [],
-      "nota_adherencia": "Sabe a desayuno de hotel pero lo haces en 8 minutos. Al no tener hidratos apenas, evita el bajón de media mañana y mantiene la energía estable.",
+      "intolerancias": [
+        "Huevos"
+      ],
+      "nota_adherencia": "Opción salada que aporta proteína sin hidratos. Puede ayudar a mantener mayor saciedad durante la mañana en comparación con desayunos con más hidratos de absorción rápida.",
       "imagen_prompt": "Fotografia realista de una tortilla de claras doblada en un plato blanco, relleno visible de espinacas verde oscuro y champiñones dorados. Textura esponjosa, luz natural de mañana, estilo desayuno saludable casero, sin aspecto IA."
     },
     {
       "nombre": "Porridge cremoso de avena con manzana asada y nueces",
-      "descripcion": "Desayuno cálido y reconfortante. Copos de avena cocidos en leche desnatada con canela, coronados con manzana asada y nueces crujientes. Fibra y proteína para empezar el día.",
+      "descripcion": "Desayuno cálido con copos de avena cocidos en leche desnatada y canela, coronados con manzana asada y nueces. Fuente de hidratos de absorción lenta y fibra.",
       "categoria": "Desayuno",
       "porciones": 1,
       "descripcion_porcion": "1 bol mediano (350g aprox)",
       "tiempo_prep_min": 3,
       "tiempo_coccion_min": 10,
       "kcal": 410,
-      "proteinas": 22,
-      "carbohidratos": 48,
-      "grasas": 14,
-      "fibra": 8,
+      "proteinas": 16,
+      "carbohidratos": 54,
+      "grasas": 13,
+      "fibra": 7,
       "ingredientes": [
         {
           "nombre": "Copos de avena",
@@ -115,8 +117,8 @@
           "cantidad_gramos": 3
         }
       ],
-      "instrucciones": "1. Lava la manzana, córtala en cubos pequeños y colócala en un bol apto para microondas. Añade 1g de canela. Cocina 3 minutos a máxima potencia hasta que esté blanda. Reserva. 2. En un cazo, calienta la leche desnatada con los copos de avena y el edulcorante. Cocina a fuego medio 5-6 minutos removiendo constantemente hasta que espese. 3. Vierte el porridge en un bol. 4. Coloca la manzana asada por encima, las nueces troceadas y espolvorea con la canela restante.",
-      "consejos": "Puedes preparar la manzana asada para 3 días y guardarla en nevera. Para más proteína, mezcla 15g de proteína de suero sabor vainilla al final de la cocción.",
+      "instrucciones": "1. Lava la manzana, córtala en cubos pequeños y colócala en un bol apto para microondas. Añade 1g de canela. Cocina 3 minutos a máxima potencia hasta que esté blanda. Reserva.\n2. En un cazo, calienta la leche desnatada con los copos de avena y el edulcorante. Cocina a fuego medio 5-6 minutos removiendo constantemente hasta que espese.\n3. Vierte el porridge en un bol.\n4. Coloca la manzana asada por encima, las nueces troceadas y espolvorea con la canela restante.",
+      "consejos": "Puedes preparar la manzana asada para 3 días y guardarla en nevera. Para aumentar proteína, añade 15g de proteína de suero sabor vainilla al final de la cocción removiendo bien.",
       "tags": [
         "saciante",
         "alto_volumen",
@@ -148,23 +150,27 @@
       "nivel_elaboracion": 1,
       "adherencia_score": 93,
       "coste_estimado_nivel": "bajo",
-      "intolerancias": [],
-      "nota_adherencia": "Un desayuno caliente que parece un capricho de fin de semana, pero se hace en 10 minutos. La manzana asada elimina la necesidad de azúcar añadido.",
+      "intolerancias": [
+        "Gluten",
+        "Lácteos",
+        "Frutos Secos"
+      ],
+      "nota_adherencia": "Desayuno caliente que aporta dulzor natural gracias a la manzana asada, reduciendo la necesidad de edulcorar en exceso. Buena base para añadir proteína si se desea.",
       "imagen_prompt": "Fotografia realista de un bol con porridge cremoso de avena coronado con cubos de manzana asada dorada, nueces troceadas y canela espolvoreada. Luz natural de mañana, cuchara apoyada, textura cremosa visible, estilo desayuno reconfortante saludable, sin aspecto IA."
     },
     {
       "nombre": "Burger bowl de ternera con patatas asadas y salsa de yogur",
-      "descripcion": "La hamburguesa que no sabías que necesitabas en tu dieta. Carne de ternera jugosa sobre cama de lechuga, patatas asadas especiadas y salsa cremosa de yogur. Sin pan, sin culpa.",
+      "descripcion": "Hamburguesa en formato bowl: carne de ternera sobre cama de lechuga, patatas asadas especiadas y salsa cremosa de yogur. Sin pan, con verduras frescas.",
       "categoria": "Comida",
       "porciones": 1,
       "descripcion_porcion": "1 bol grande (500g aprox)",
       "tiempo_prep_min": 10,
       "tiempo_coccion_min": 25,
-      "kcal": 480,
-      "proteinas": 38,
-      "carbohidratos": 34,
+      "kcal": 450,
+      "proteinas": 35,
+      "carbohidratos": 38,
       "grasas": 18,
-      "fibra": 6,
+      "fibra": 4,
       "ingredientes": [
         {
           "nombre": "Carne picada de ternera magra",
@@ -203,8 +209,8 @@
           "cantidad_gramos": 2
         }
       ],
-      "instrucciones": "1. Precalienta el horno a 200°C. 2. Corta la patata en gajos con piel. Mézclalos con 4g de aceite, el ajo picado y el pimentón dulce. Hornea 25 minutos hasta que estén dorados. 3. Mientras, forma la carne picada en una hamburguesa. Cocina en sartén con 4g de aceite 4 minutos por cada lado. 4. Prepara la salsa mezclando el yogur griego con un poco de pimienta. 5. Monta el bowl: base de lechuga troceada, tomate en cubos, cebolla en aros finos, patatas asadas y la hamburguesa partida en trozos. 6. Añade la salsa de yogur por encima.",
-      "consejos": "Puedes hacer las patatas asadas para 3 días y recalentarlas en airfryer. Sustituye la ternera por pollo picado si buscas menos grasa.",
+      "instrucciones": "1. Precalienta el horno a 200°C.\n2. Corta la patata en gajos con piel. Mézclalos con 4g de aceite, el ajo picado y el pimentón dulce. Hornea 25 minutos hasta que estén dorados.\n3. Forma la carne picada en una hamburguesa. Cocina en sartén con 4g de aceite 4 minutos por cada lado.\n4. Prepara la salsa mezclando el yogur griego sin lactosa con un poco de pimienta.\n5. Monta el bowl: base de lechuga troceada, tomate en cubos, cebolla en aros finos, patatas asadas y la hamburguesa partida en trozos.\n6. Añade la salsa de yogur por encima.",
+      "consejos": "Puedes hacer las patatas asadas para 3 días y recalentarlas en airfryer. Sustituye la ternera por pollo picado para reducir contenido graso.",
       "tags": [
         "alta_proteina",
         "saciante",
@@ -237,32 +243,31 @@
       "adherencia_score": 94,
       "coste_estimado_nivel": "medio",
       "intolerancias": [
-        "Sin Gluten",
-        "Sin Lactosa"
+        "Lácteos"
       ],
-      "nota_adherencia": "Engaña al antojo de hamburguesa con queso usando ingredientes limpios y una salsa de yogur que sabe a thousand island saludable.",
-      "imagen_prompt": "Fotografia realista de un bol blanco con hamburguesa de ternera partida en trozos, gajos de patata asada dorados, lechuga fresca, tomate rojo en cubos y salsa de yogur blanco. Luz natural, texturas variadas, estilo burger bowl saludable, ingredientes reconocibles, sin aspecto IA."
+      "nota_adherencia": "Satisface el antojo de hamburguesa usando ingredientes limpios y una salsa de yogur con perfil similar a una salsa mil islas. Encaja bien en dietas de control calórico.",
+      "imagen_prompt": "Fotografia realista de un bol blanco con hamburguesa de ternera partida en trozos, gajos de patata asada dorados, lechuga fresca, tomate rojo en cubos y salsa de yogur blanco. Luz natural, texturas variadas, ingredientes reconocibles, sin aspecto IA."
     },
     {
       "nombre": "Pollo al ajillo con pimientos asados y arroz basmati",
-      "descripcion": "Versión ligera del clásico pollo al ajillo español. Pechuga dorada con ajo, pimientos asados al horno y arroz basmati esponjoso. Plato completo, sabroso y fácil de tupper.",
+      "descripcion": "Versión ligera del clásico pollo al ajillo. Pechuga dorada con ajo, pimientos asados y arroz basmati. Plato completo que se adapta bien a tupper y preparación anticipada.",
       "categoria": "Comida",
       "porciones": 1,
       "descripcion_porcion": "1 plato completo (450g aprox)",
       "tiempo_prep_min": 10,
       "tiempo_coccion_min": 25,
-      "kcal": 490,
-      "proteinas": 40,
-      "carbohidratos": 46,
-      "grasas": 14,
-      "fibra": 5,
+      "kcal": 460,
+      "proteinas": 39,
+      "carbohidratos": 48,
+      "grasas": 12,
+      "fibra": 4,
       "ingredientes": [
         {
           "nombre": "Pechuga de pollo",
           "cantidad_gramos": 150
         },
         {
-          "nombre": "Arroz basmati",
+          "nombre": "Arroz basmati en crudo",
           "cantidad_gramos": 50
         },
         {
@@ -286,8 +291,8 @@
           "cantidad_gramos": 3
         }
       ],
-      "instrucciones": "1. Pon el arroz basmati en un cazo con 100ml de agua hirviendo y un hilo de aceite. Cocina tapado 12 minutos a fuego bajo. 2. Corta los pimientos en tiras gruesas. Colócalos en una bandeja de horno con 3g de aceite. Hornea 20 minutos a 200°C. 3. Corta la pechuga de pollo en filetes finos. Calienta 5g de aceite en una sartén. Añade los ajos laminados y el pollo. Cocina 4 minutos por cada lado hasta que esté dorado. 4. Sirve el arroz de base, el pollo al ajillo encima y los pimientos asados al lado. Espolvorea perejil fresco picado.",
-      "consejos": "Ideal para batch cooking: prepara el arroz y los pimientos para 3 días. El pollo es mejor hacerlo fresco o recalentar en airfryer.",
+      "instrucciones": "1. Pon el arroz basmati en un cazo con 100ml de agua hirviendo y un hilo de aceite. Cocina tapado 12 minutos a fuego bajo.\n2. Corta los pimientos en tiras gruesas. Colócalos en una bandeja de horno con 3g de aceite. Hornea 20 minutos a 200°C.\n3. Corta la pechuga de pollo en filetes finos. Calienta 5g de aceite en una sartén. Añade los ajos laminados y el pollo. Cocina 4 minutos por cada lado hasta dorar.\n4. Sirve el arroz de base, el pollo al ajillo encima y los pimientos asados al lado. Espolvorea perejil fresco picado.",
+      "consejos": "Ideal para batch cooking: prepara el arroz y los pimientos para 3 días. El pollo es mejor hacerlo fresco o recalentarlo en airfryer para mantener textura.",
       "tags": [
         "alta_proteina",
         "saciante",
@@ -310,7 +315,7 @@
         "mediterranea",
         "tupper"
       ],
-      "premium_chef": true,
+      "premium_chef": false,
       "uso_personal": false,
       "batch_cooking": true,
       "tupper": true,
@@ -319,26 +324,23 @@
       "nivel_elaboracion": 2,
       "adherencia_score": 91,
       "coste_estimado_nivel": "medio",
-      "intolerancias": [
-        "Sin Gluten",
-        "Sin Lactosa"
-      ],
-      "nota_adherencia": "Sabe a plato de cuchara tradicional pero con macros controlados. El cliente come un clásico español sin sentir que está en dieta.",
-      "imagen_prompt": "Fotografia realista de un plato blanco con filetes de pollo al ajillo dorados, tiras de pimiento rojo y verde asados, y arroz basmati esponjoso. Perejil fresco picado, luz natural, estilo cocina española saludable, ingredientes reconocibles, sin aspecto IA."
+      "intolerancias": [],
+      "nota_adherencia": "Un clásico de la cocina española adaptado con ingredientes bajos en grasa. El cliente come un plato tradicional con macros controlados.",
+      "imagen_prompt": "Fotografia realista de un plato blanco con filetes de pollo al ajillo dorados, tiras de pimiento rojo y verde asados, y arroz basmati esponjoso. Perejil fresco picado, luz natural, estilo cocina española saludable, sin aspecto IA."
     },
     {
       "nombre": "Crema de calabaza y jengibre con langostinos salteados",
-      "descripcion": "Cena de cuchara ligera pero saciante. Crema dulce de calabaza con un toque picante de jengibre, coronada con langostinos salteados al ajillo. Cena completa en 20 minutos.",
+      "descripcion": "Crema de calabaza con un toque de jengibre, coronada con langostinos salteados al ajillo. Cena de cuchara ligera pero completa, lista en 20 minutos.",
       "categoria": "Cena",
       "porciones": 1,
       "descripcion_porcion": "1 plato hondo (400g aprox)",
       "tiempo_prep_min": 5,
       "tiempo_coccion_min": 18,
-      "kcal": 350,
+      "kcal": 310,
       "proteinas": 26,
-      "carbohidratos": 26,
-      "grasas": 14,
-      "fibra": 6,
+      "carbohidratos": 20,
+      "grasas": 12,
+      "fibra": 4,
       "ingredientes": [
         {
           "nombre": "Calabaza",
@@ -346,7 +348,7 @@
         },
         {
           "nombre": "Langostinos",
-          "cantidad_gramos": 80
+          "cantidad_gramos": 130
         },
         {
           "nombre": "Puerro",
@@ -354,7 +356,7 @@
         },
         {
           "nombre": "Aceite de oliva virgen extra",
-          "cantidad_gramos": 6
+          "cantidad_gramos": 10
         },
         {
           "nombre": "Jengibre rallado",
@@ -365,8 +367,8 @@
           "cantidad_gramos": 4
         }
       ],
-      "instrucciones": "1. Pela la calabaza y córtala en cubos. Lava y corta el puerro en rodajas finas. 2. En una olla con 3g de aceite, pocha el puerro 3 minutos. Añade la calabaza, el jengibre rallado y cubre con agua justo hasta cubrir. Cocina 15 minutos hasta que la calabaza esté tierna. 3. Mientras, pela los langostinos. En una sartén con 3g de aceite y el ajo picado, saltea los langostinos 2 minutos por cada lado. 4. Tritura la crema con batidora hasta obtener textura sedosa. 5. Sirve la crema caliente en un plato hondo y coloca los langostinos salteados en el centro.",
-      "consejos": "Puedes congelar la crema base sin langostinos y tenerla lista. Sustituye los langostinos por pollo desmenuzado si buscas más proteína.",
+      "instrucciones": "1. Pela la calabaza y córtala en cubos. Lava y corta el puerro en rodajas finas.\n2. En una olla con 4g de aceite, pocha el puerro 3 minutos. Añade la calabaza, el jengibre rallado y cubre con agua justo hasta cubrir. Cocina 15 minutos hasta que la calabaza esté tierna.\n3. Pela los langostinos. En una sartén con 4g de aceite y el ajo picado, saltéalos 2 minutos por cada lado.\n4. Tritura la crema con batidora hasta obtener textura sedosa.\n5. Sirve la crema caliente en un plato hondo y coloca los langostinos salteados en el centro.",
+      "consejos": "Puedes congelar la crema base sin langostinos y tenerla lista. Sustituye los langostinos por pechuga de pollo desmenuzada para más proteína.",
       "tags": [
         "saciante",
         "bajo_calorias",
@@ -398,25 +400,24 @@
       "adherencia_score": 92,
       "coste_estimado_nivel": "medio",
       "intolerancias": [
-        "Sin Gluten",
-        "Sin Lactosa"
+        "Crustáceos"
       ],
-      "nota_adherencia": "Una crema caliente que quita el frío y el hambre con pocas calorías. Los langostinos la convierten en cena completa sin pesar.",
+      "nota_adherencia": "Crema caliente que resulta reconfortante y aporta proteína gracias a los langostinos. Adecuada para cenas ligeras sin sensación de restricción.",
       "imagen_prompt": "Fotografia realista de un plato hondo con crema de calabaza naranja brillante y sedosa, decorada con langostinos salteados dorados y un hilo de aceite de oliva. Perejil fresco, luz natural de cocina, textura cremosa visible, estilo cena saludable premium, sin aspecto IA."
     },
     {
       "nombre": "Ensalada templada de pollo a la plancha con vinagreta de mostaza",
-      "descripcion": "Cena fresca y completa con pollo jugoso a la plancha, vegetales crujientes y una vinagreta ligera de mostaza y vinagre de manzana. Lista en 15 minutos.",
+      "descripcion": "Pollo jugoso a la plancha sobre vegetales crujientes con una vinagreta ligera de mostaza y vinagre de manzana. Cena fresca que se prepara en 15 minutos.",
       "categoria": "Cena",
       "porciones": 1,
       "descripcion_porcion": "1 ensalada grande (400g aprox)",
       "tiempo_prep_min": 5,
       "tiempo_coccion_min": 10,
-      "kcal": 370,
-      "proteinas": 36,
-      "carbohidratos": 14,
-      "grasas": 18,
-      "fibra": 6,
+      "kcal": 310,
+      "proteinas": 33,
+      "carbohidratos": 12,
+      "grasas": 13,
+      "fibra": 4,
       "ingredientes": [
         {
           "nombre": "Pechuga de pollo",
@@ -451,8 +452,8 @@
           "cantidad_gramos": 5
         }
       ],
-      "instrucciones": "1. Salpimienta la pechuga de pollo. Cocínala a la plancha 5 minutos por cada lado. Deja reposar 2 minutos y córtala en tiras. 2. Lava y prepara las verduras: corta los tomates cherry por la mitad, el pepino en medias lunas y pela la zanahoria en tiras finas con el pelador. 3. Prepara la vinagreta: emulsiona el aceite de oliva virgen extra con la mostaza y el vinagre de manzana. 4. En un bol grande, mezcla las lechugas con el pepino, el tomate cherry y la zanahoria. 5. Añade el pollo templado en tiras por encima. Aliña con la vinagreta justo antes de servir.",
-      "consejos": "Puedes preparar el pollo a la plancha para 3 días y usarlo frío en ensaladas. Añade 30g de aguacate para más cremosidad y grasas saludables.",
+      "instrucciones": "1. Salpimienta la pechuga de pollo. Cocínala a la plancha 5 minutos por cada lado. Deja reposar 2 minutos y córtala en tiras.\n2. Lava y prepara las verduras: corta los tomates cherry por la mitad, el pepino en medias lunas y pela la zanahoria en tiras finas con el pelador.\n3. Prepara la vinagreta: emulsiona el aceite de oliva virgen extra con la mostaza y el vinagre de manzana.\n4. En un bol grande, mezcla las lechugas con el pepino, el tomate cherry y la zanahoria.\n5. Añade el pollo templado en tiras por encima. Aliña con la vinagreta justo antes de servir.",
+      "consejos": "Puedes preparar el pollo a la plancha para 3 días y usarlo frío en ensaladas. Añade 30g de aguacate para más cremosidad y perfil de grasas insaturadas.",
       "tags": [
         "alta_proteina",
         "bajo_carbohidratos",
@@ -484,23 +485,25 @@
       "nivel_elaboracion": 1,
       "adherencia_score": 90,
       "coste_estimado_nivel": "bajo",
-      "intolerancias": [],
-      "nota_adherencia": "Cena fresca que no sabe a lechuga aburrida. La vinagreta de mostaza da el toque gourmet que evita pedir comida a domicilio.",
+      "intolerancias": [
+        "Mostaza"
+      ],
+      "nota_adherencia": "Ensalada completa que evita la monotonía de las verduras solas gracias a la vinagreta de mostaza. Buena opción para cenas rápidas con proteína suficiente.",
       "imagen_prompt": "Fotografia realista de un bol grande con ensalada variada de lechugas verdes, tomates cherry rojos partidos, pepino verde en medias lunas, tiras finas de zanahoria naranja y tiras de pollo a la plancha doradas. Vinagreta visible, luz natural de cocina, estilo ensalada completa saludable, sin aspecto IA."
     },
     {
-      "nombre": "Nice cream proteica de plátano y cacao crujiente",
-      "descripcion": "Helado saludable listo en 5 minutos. Plátano congelado batido con yogur griego y cacao, con textura cremosa de helado. Sin azúcar añadido ni lácteos pesados.",
+      "nombre": "Nice cream proteica de plátano y cacao",
+      "descripcion": "Helado saludable de plátano congelado batido con yogur griego y cacao. Textura cremosa tipo helado blando, sin azúcar añadido. Listo en 5 minutos.",
       "categoria": "Postre",
       "porciones": 1,
       "descripcion_porcion": "1 bol pequeño (200g aprox)",
       "tiempo_prep_min": 5,
       "tiempo_coccion_min": 0,
-      "kcal": 220,
-      "proteinas": 20,
-      "carbohidratos": 28,
-      "grasas": 3,
-      "fibra": 4,
+      "kcal": 210,
+      "proteinas": 18,
+      "carbohidratos": 34,
+      "grasas": 1,
+      "fibra": 3,
       "ingredientes": [
         {
           "nombre": "Plátano congelado",
@@ -519,8 +522,8 @@
           "cantidad_gramos": 15
         }
       ],
-      "instrucciones": "1. Corta el plátano congelado en rodajas. 2. Coloca el plátano, el yogur griego, el cacao en polvo y la proteína en el vaso de la batidora. 3. Tritura hasta obtener una textura cremosa similar a helado blando. Si queda demasiado denso, añade una cucharada de leche desnatada. 4. Sirve inmediatamente en un bol pequeño. 5. Opcional: decora con 3g de cacao en polvo espolvoreado o un par de granos de café.",
-      "consejos": "Ten siempre plátanos maduros congelados en bolsas. Esta receta admite variantes: añade 10g de mantequilla de cacahuete para un sabor más intenso.",
+      "instrucciones": "1. Corta el plátano congelado en rodajas.\n2. Coloca el plátano, el yogur griego, el cacao en polvo y la proteína en el vaso de la batidora.\n3. Tritura hasta obtener una textura cremosa similar a helado blando. Si queda demasiado denso, añade una cucharada de leche desnatada.\n4. Sirve inmediatamente en un bol pequeño.\n5. Opcional: decora con 3g de cacao en polvo espolvoreado.",
+      "consejos": "Ten siempre plátanos maduros congelados en bolsas. Esta receta admite variantes: añade 10g de mantequilla de cacahuete para un sabor más intenso y mayor contenido graso.",
       "tags": [
         "alta_proteina",
         "bajo_grasa",
@@ -552,22 +555,24 @@
       "nivel_elaboracion": 1,
       "adherencia_score": 96,
       "coste_estimado_nivel": "bajo",
-      "intolerancias": [],
-      "nota_adherencia": "Sabe a helado de chocolate pero tiene 20g de proteína. Cuando el antojo de dulce ataca por la tarde, esta receta lo mata sin descarrilar el día.",
+      "intolerancias": [
+        "Lácteos"
+      ],
+      "nota_adherencia": "Buena opción cuando apetece algo dulce y cremoso manteniendo proteína alta. El plátano congelado aporta dulzor natural sin añadir azúcar de mesa.",
       "imagen_prompt": "Fotografia realista de un bol pequeño con nice cream cremosa de color marrón chocolate, textura de helado blando, espolvoreada con cacao en polvo. Cuchara pequeña al lado, luz natural de cocina, estilo postre fit casero apetecible, sin aspecto IA."
     },
     {
       "nombre": "Tortitas de avena y proteína con frambuesas frescas",
-      "descripcion": "Pancakes saludables esponjosos hechos con avena, claras y proteína. Coronados con frambuesas frescas para un toque agridulce. Merienda o post-entreno perfecto.",
+      "descripcion": "Pancakes esponjosos de avena, claras y proteína, coronados con frambuesas frescas. Merienda o post-entreno que combina hidratos de calidad con proteína.",
       "categoria": "Merienda",
       "porciones": 1,
       "descripcion_porcion": "4 tortitas medianas (250g aprox)",
       "tiempo_prep_min": 5,
       "tiempo_coccion_min": 8,
-      "kcal": 300,
-      "proteinas": 28,
-      "carbohidratos": 32,
-      "grasas": 6,
+      "kcal": 280,
+      "proteinas": 26,
+      "carbohidratos": 30,
+      "grasas": 5,
       "fibra": 5,
       "ingredientes": [
         {
@@ -595,7 +600,7 @@
           "cantidad_gramos": 3
         }
       ],
-      "instrucciones": "1. Muele los copos de avena en un procesador hasta obtener harina fina. 2. En un bol, mezcla la harina de avena con la proteína de suero. 3. Añade las claras de huevo y el yogur griego. Bate hasta obtener una masa homogénea sin grumos. 4. Calienta una sartén antiadherente con el aceite de oliva untado con papel de cocina. 5. Vierte porciones de masa (2 cucharadas soperas por tortita). Cocina 2 minutos por cada lado hasta que aparezcan burbujas. 6. Sirve las tortitas apiladas con las frambuesas frescas encima.",
+      "instrucciones": "1. Muele los copos de avena en un procesador hasta obtener harina fina.\n2. En un bol, mezcla la harina de avena con la proteína de suero.\n3. Añade las claras de huevo y el yogur griego. Bate hasta obtener una masa homogénea sin grumos.\n4. Calienta una sartén antiadherente con el aceite untado con papel de cocina.\n5. Vierte porciones de masa (2 cucharadas soperas por tortita). Cocina 2 minutos por cada lado hasta que aparezcan burbujas.\n6. Sirve las tortitas apiladas con las frambuesas frescas encima.",
       "consejos": "Puedes duplicar la masa y guardar tortitas sobrantes en nevera 2 días. Recalienta en tostadora o sartén. Sustituye frambuesas por arándanos o plátano en rodajas.",
       "tags": [
         "alta_proteina",
@@ -628,30 +633,34 @@
       "nivel_elaboracion": 2,
       "adherencia_score": 95,
       "coste_estimado_nivel": "bajo",
-      "intolerancias": [],
-      "nota_adherencia": "Pancakes de verdad que no saben a proteína. El cliente desayuna o merienda tortitas sin sentirse en restricción, solo comiendo rico.",
-      "imagen_prompt": "Fotografia realista de un plato blanco con 4 tortitas de avena apiladas, esponjosas y doradas, coronadas con frambuesas rojas frescas. Miel o sirope ligero, luz natural de cocina, estilo brunch saludable casero, sin aspecto IA."
+      "intolerancias": [
+        "Gluten",
+        "Huevos",
+        "Lácteos"
+      ],
+      "nota_adherencia": "Pancakes con buena relación proteína-hidrato que no saben a suplemento. Opción atractiva para merendar o recargar después de entrenar sin sensación de restricción.",
+      "imagen_prompt": "Fotografia realista de un plato blanco con 4 tortitas de avena apiladas, esponjosas y doradas, coronadas con frambuesas rojas frescas. Luz natural de cocina, estilo brunch saludable casero, sin aspecto IA."
     },
     {
       "nombre": "Arroz frito de pollo, verduras y huevo al estilo saludable",
-      "descripcion": "Clásico arroz frito adaptado a nutrición deportiva. Pollo salteado, verduras crujientes, huevo y arroz basmati salteado con salsa de soja. Plato único completo y tupper-friendly.",
+      "descripcion": "Clásico arroz salteado con pollo, verduras crujientes y huevo. Versión adaptada con ingredientes limpios, salsa de soja y arroz basmati. Plato único que funciona bien en tupper.",
       "categoria": "Comida",
       "porciones": 1,
       "descripcion_porcion": "1 ración grande (450g aprox)",
       "tiempo_prep_min": 10,
       "tiempo_coccion_min": 15,
-      "kcal": 470,
-      "proteinas": 38,
-      "carbohidratos": 46,
-      "grasas": 12,
-      "fibra": 5,
+      "kcal": 500,
+      "proteinas": 40,
+      "carbohidratos": 44,
+      "grasas": 14,
+      "fibra": 4,
       "ingredientes": [
         {
           "nombre": "Pechuga de pollo",
           "cantidad_gramos": 130
         },
         {
-          "nombre": "Arroz basmati",
+          "nombre": "Arroz basmati en crudo",
           "cantidad_gramos": 50
         },
         {
@@ -683,8 +692,8 @@
           "cantidad_gramos": 4
         }
       ],
-      "instrucciones": "1. Cocina el arroz basmati en agua hirviendo 10 minutos. Escurre y extiende en una bandeja para que se enfríe. 2. Corta la pechuga de pollo en cubos pequeños. 3. Corta el pimiento y la zanahoria en tiras finas. 4. Calienta 3g de aceite en un wok o sartén grande. Saltea el pollo 4 minutos. Retira y reserva. 5. En el mismo wok con el aceite restante, saltea las verduras y el ajo 3 minutos. Añade los guisantes. 6. Empuja las verduras a un lado, casca el huevo y remueve hasta cuajarlo. 7. Añade el arroz cocido frío y el pollo reservado. Saltea 2 minutos. Añade la salsa de soja y mezcla bien.",
-      "consejos": "El arroz del día anterior funciona mejor porque está más seco. Puedes preparar 3 raciones y tener tupper para 3 días. Añade 5g de semillas de sésamo para decorar.",
+      "instrucciones": "1. Cocina el arroz basmati en agua hirviendo 10 minutos. Escurre y extiende en una bandeja para que se enfríe.\n2. Corta la pechuga de pollo en cubos pequeños.\n3. Corta el pimiento y la zanahoria en tiras finas.\n4. Calienta 3g de aceite en un wok o sartén grande. Saltea el pollo 4 minutos. Retira y reserva.\n5. En el mismo wok con el aceite restante, saltea las verduras y el ajo 3 minutos. Añade los guisantes.\n6. Empuja las verduras a un lado, casca el huevo y remueve hasta cuajarlo.\n7. Añade el arroz cocido frío y el pollo reservado. Saltea 2 minutos. Añade la salsa de soja y mezcla bien.",
+      "consejos": "El arroz del día anterior funciona mejor porque está más seco y no se apelmaza. Puedes preparar 3 raciones y tener tupper para 3 días. Añade 5g de semillas de sésamo para decorar.",
       "tags": [
         "alta_proteina",
         "saciante",
@@ -717,31 +726,35 @@
       "nivel_elaboracion": 2,
       "adherencia_score": 92,
       "coste_estimado_nivel": "bajo",
-      "intolerancias": [],
-      "nota_adherencia": "Sabe a takeaway chino pero está hecho con ingredientes limpios. El cliente come su plato favorito de siempre sin salirse de la dieta ni pedir a domicilio.",
+      "intolerancias": [
+        "Gluten",
+        "Huevos",
+        "Soja"
+      ],
+      "nota_adherencia": "Versión limpia del clásico arroz frito takeaway. El cliente come su plato favorito de comida asiática con ingredientes controlados y sin aditivos.",
       "imagen_prompt": "Fotografia realista de un bol con arroz frito salteado con cubos de pollo dorados, pimiento rojo, zanahoria, guisantes verdes y huevo revuelto. Salsa de soja integrada, semillas de sésamo, luz natural, estilo takeaway saludable casero, sin aspecto IA."
     },
     {
       "nombre": "Lentejas guisadas con verduras y arroz integral",
-      "descripcion": "Plato de cuchara nutritivo y reconfortante. Lentejas cocinadas con verduras, pimentón y arroz integral. Alto contenido en fibra y proteína vegetal. Perfecto para batch cooking.",
+      "descripcion": "Guiso de lentejas con verduras, pimentón y arroz integral. Plato de cuchara con alto contenido en fibra y proteína vegetal. Ideal para preparar en cantidad.",
       "categoria": "Comida",
       "porciones": 1,
       "descripcion_porcion": "1 plato hondo (500g aprox)",
       "tiempo_prep_min": 10,
       "tiempo_coccion_min": 30,
-      "kcal": 440,
-      "proteinas": 26,
-      "carbohidratos": 54,
-      "grasas": 10,
-      "fibra": 12,
+      "kcal": 400,
+      "proteinas": 18,
+      "carbohidratos": 64,
+      "grasas": 8,
+      "fibra": 10,
       "ingredientes": [
         {
           "nombre": "Lentejas cocidas en conserva",
           "cantidad_gramos": 150
         },
         {
-          "nombre": "Arroz integral",
-          "cantidad_gramos": 40
+          "nombre": "Arroz integral en crudo",
+          "cantidad_gramos": 30
         },
         {
           "nombre": "Zanahoria",
@@ -772,8 +785,8 @@
           "cantidad_gramos": 3
         }
       ],
-      "instrucciones": "1. Pela y pica la cebolla y el ajo finamente. Corta la zanahoria y el pimiento en cubos pequeños. 2. Calienta el aceite en una olla. Pocha la cebolla y el ajo 4 minutos hasta que estén transparentes. 3. Añade la zanahoria y el pimiento. Cocina 3 minutos. 4. Agrega el tomate triturado y el pimentón dulce. Cocina 2 minutos. 5. Añade las lentejas escurridas y lavadas. Cubre con agua. Cocina 15 minutos a fuego medio. 6. Mientras, cuece el arroz integral en una olla aparte 25 minutos. 7. Sirve las lentejas en un plato hondo con una porción de arroz integral.",
-      "consejos": "Puedes preparar 4 raciones y congelarlas individualmente. Añade 100g de pechuga de pollo troceada si quieres un plato aún más proteico para después de entrenar.",
+      "instrucciones": "1. Pela y pica la cebolla y el ajo finamente. Corta la zanahoria y el pimiento en cubos pequeños.\n2. Calienta el aceite en una olla. Pocha la cebolla y el ajo 4 minutos hasta que estén transparentes.\n3. Añade la zanahoria y el pimiento. Cocina 3 minutos.\n4. Agrega el tomate triturado y el pimentón dulce. Cocina 2 minutos.\n5. Añade las lentejas escurridas y lavadas. Cubre con agua. Cocina 15 minutos a fuego medio.\n6. Mientras, cuece el arroz integral en una olla aparte 25 minutos.\n7. Sirve las lentejas en un plato hondo con una porción de arroz integral.",
+      "consejos": "Puedes preparar 4 raciones y congelarlas individualmente. Para un plato más proteico, añade 100g de pechuga de pollo troceada cocinada aparte.",
       "tags": [
         "alto_volumen",
         "fibra",
@@ -807,11 +820,8 @@
       "nivel_elaboracion": 2,
       "adherencia_score": 90,
       "coste_estimado_nivel": "bajo",
-      "intolerancias": [
-        "Sin Gluten",
-        "Sin Lactosa"
-      ],
-      "nota_adherencia": "Plato de la abuela en versión fit. Las lentejas con arroz son el comfort food definitivo que el cliente puede comer sin pensar en calorías.",
+      "intolerancias": [],
+      "nota_adherencia": "Plato de cuchara tradicional en versión equilibrada. El alto contenido en fibra puede ayudar a mantener saciedad prolongada. Adecuado para etapas de control calórico.",
       "imagen_prompt": "Fotografia realista de un plato hondo con lentejas guisadas calientes, zanahoria y pimiento verde visibles en el caldo espeso, acompañadas de arroz integral. Perejil fresco picado, luz natural, estilo cocina de cuchara casera saludable, sin aspecto IA."
     }
   ]

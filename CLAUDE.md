@@ -1,5 +1,39 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 29-05-2026 (Sesión 44) — Pendientes Codex cerrados + bugs
+
+### Qué se hizo
+
+| Tarea | Commit | Detalle |
+|-------|--------|---------|
+| Banner bienvenida portal eliminado | `436bd47` | `mostrarBienvenida` state + useEffect + JSX eliminados de `DashboardCliente.tsx` |
+| Sprint 4 activado | `2fac169` | Migration `20260529_ejercicios_media.sql` — `foto_url`, `video_url`, `video_tipo` en tabla `ejercicios`. Código coach + cliente ya existía (Codex). Aplicar SQL en Supabase manualmente. |
+| D7 Fase 2 — ajuste nutricional por tipo de sesión | `0822bf6` | Card en tab Dieta del portal: muestra tipo de sesión + % ajuste CHO/kcal + consejo. Solo en día actual. Usa `lib/periodizacion/dia-entreno-nutricion.ts` (helper existente). |
+| Rate limiting endpoints IA | `91476bb` | `lib/rate-limit.ts` — 5 req/min por usuario en `generar-plan-inicial`, `generar-dieta-ia`, `proponer-plan-ciencia`. In-memory, sin dependencias externas. |
+| Fix memory leak rate limiter | `HEAD` | Limpieza de entradas expiradas cuando el Map supera 100 entradas. |
+| Instrucciones concatenadas + especias + ajo BD | SQL manual | `20260529_fix_instrucciones_y_especias.sql` aplicado en Supabase. Pasos sin salto de línea → normalizados. Especias ≥50g → 2-5g. Ajo dientes >40g → 8-12g. |
+
+### Estado de pendientes Codex
+
+| Bloque | Estado |
+|--------|--------|
+| Banner bienvenida | ✅ Eliminado |
+| Sprint 4 ejercicios (foto/vídeo) | ✅ Completo — migration aplicada |
+| D7 Fase 2 ajuste nutricional | ✅ Completo |
+| Rate limiting IA | ✅ Completo |
+| Instrucciones concatenadas BD | ✅ SQL aplicado |
+| Adherencia Fase C | ✅ Ya estaba completo (Codex lo había implementado) |
+
+**No quedan pendientes de Codex.**
+
+### Próximas sesiones (no urgente)
+
+- D7 Fase 3 (opcional): mostrar ajuste de macros calculado en kcal absolutas (no solo %) para facilitar comprensión al cliente
+- Training Sprint 4: añadir vídeos/fotos a los ejercicios vía UI del coach (`/entrenos/ejercicios`)
+- Rate limiting más granular (Upstash) si el volumen de clientes escala
+
+---
+
 ## ✅ SESIÓN 28-05-2026 (Sesión 43) — Revisión código Codex + lote recetas recomposición
 
 ### Qué se hizo
