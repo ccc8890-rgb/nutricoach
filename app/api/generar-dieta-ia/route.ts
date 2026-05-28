@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { rateLimit } from '@/lib/rate-limit'
 import { construirPrompt, generarDietaConIA } from '@/lib/deepseek'
 import type { DietaGenerada } from '@/lib/deepseek'
 import { registrarInteraccionIA } from '@/lib/ia-logger'
@@ -32,6 +33,10 @@ export async function POST(request: Request) {
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         if (authError || !user) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+        }
+
+        if (!rateLimit(`generar-dieta:${user.id}`, 5, 60_000)) {
+            return NextResponse.json({ error: 'Demasiadas peticiones. Espera un momento.' }, { status: 429 })
         }
 
         // 2. Validar input

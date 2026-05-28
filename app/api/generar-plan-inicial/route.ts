@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase, createApiSupabase } from '@/lib/supabase-server'
+import { rateLimit } from '@/lib/rate-limit'
 import { seleccionarProtocolos, formatearEvidenciaParaPrompt } from '@/lib/knowledge-base'
 import { obtenerInformeVigente, necesitaRegeneracion, generarInformeCasoClinico } from '@/lib/inteligencia-clinica'
 import { construirPrompt, generarDietaConIA, type DietaGenerada } from '@/lib/deepseek'
@@ -209,6 +210,10 @@ export async function POST(request: NextRequest) {
   const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
   if (authError || !user) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
+  if (!rateLimit(`generar-plan:${user.id}`, 5, 60_000)) {
+    return NextResponse.json({ error: 'Demasiadas peticiones. Espera un momento.' }, { status: 429 })
   }
 
   const { cliente_id } = await request.json()

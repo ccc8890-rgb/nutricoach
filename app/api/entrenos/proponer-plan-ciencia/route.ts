@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { rateLimit } from '@/lib/rate-limit'
 import { evaluarPerfilEntreno } from '@/lib/motor-entreno'
 import { obtenerInformeVigente } from '@/lib/inteligencia-clinica'
 import type { PerfilEntrenoCliente } from '@/types'
@@ -46,6 +47,10 @@ export async function POST(req: NextRequest) {
     const supabase = createApiSupabase(req)
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+    if (!rateLimit(`proponer-entreno:${user.id}`, 5, 60_000)) {
+      return NextResponse.json({ error: 'Demasiadas peticiones. Espera un momento.' }, { status: 429 })
+    }
 
     const { cliente_id } = await req.json()
     if (!cliente_id) return NextResponse.json({ error: 'Falta cliente_id' }, { status: 400 })
