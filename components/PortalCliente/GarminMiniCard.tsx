@@ -1,8 +1,27 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Activity, Watch, Footprints, BatteryMedium, Brain, Flame, RefreshCw, Loader2, HeartPulse, Moon, Route, Timer, Info } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Footprints, BatteryMedium, Brain, Flame, RefreshCw, Loader2, HeartPulse, Moon, Route, Timer, Info, Activity, Watch } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+
+// ─── Brand icons ─────────────────────────────────────────────────────────────
+
+function GarminIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#007CC3" />
+      <path fill="white" d="M14.8 10.8h-3.2v1.6h1.6v2.4c-.5.3-1.1.5-1.8.5-1.9 0-3.2-1.4-3.2-3.3s1.3-3.3 3.2-3.3c.9 0 1.8.4 2.5 1l1-1C13.8 7.5 12.6 7 11.2 7 8.4 7 6.4 9 6.4 12s2 5 4.8 5c1.4 0 2.7-.5 3.5-1.4v-4.8z" />
+    </svg>
+  )
+}
+
+function StravaIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="#FC4C02">
+      <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L8.41 0 3 10.172h4.173" />
+    </svg>
+  )
+}
 
 interface GarminDatos {
   body_battery_end: number | null
@@ -102,10 +121,10 @@ function readinessLabel(v: number) {
   return 'Bajo'
 }
 
-const PROVIDER_LABELS: Record<string, { label: string; color: string; icon: LucideIcon }> = {
-  garmin_connect: { label: 'Garmin', color: '#0D9488', icon: Watch },
-  garmin: { label: 'Garmin', color: '#0D9488', icon: Watch },
-  strava: { label: 'Strava', color: '#FC4C02', icon: Activity },
+const PROVIDER_LABELS: Record<string, { label: string; color: string; icon: LucideIcon; brandIcon?: React.FC<{ size?: number }> }> = {
+  garmin_connect: { label: 'Garmin', color: '#007CC3', icon: Watch, brandIcon: GarminIcon },
+  garmin: { label: 'Garmin', color: '#007CC3', icon: Watch, brandIcon: GarminIcon },
+  strava: { label: 'Strava', color: '#FC4C02', icon: Activity, brandIcon: StravaIcon },
   whoop: { label: 'Whoop', color: '#111827', icon: HeartPulse },
   coros: { label: 'Coros', color: '#2563EB', icon: Watch },
   google_fit: { label: 'Google Fit', color: '#4285F4', icon: Footprints },
@@ -179,7 +198,7 @@ export default function GarminMiniCard({ codigo }: Props) {
       {hasGarminData && d && (
         <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <div className="px-4 py-3 flex items-center gap-2 border-b" style={{ borderColor: 'var(--border)' }}>
-            <Watch size={14} style={{ color: '#0D9488' }} />
+            <GarminIcon size={14} />
             <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Garmin hoy</span>
             {garmin?.ultima_sync && (
               <span className="ml-auto text-[10px]" style={{ color: 'var(--text-muted)' }}>
@@ -384,11 +403,12 @@ function CompactProviderCard({
 }) {
   const meta = providerMeta(proveedor)
   const Icon = meta.icon
+  const BrandIcon = meta.brandIcon
 
   return (
     <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
       <div className="px-4 py-3 flex items-center gap-2 border-b" style={{ borderColor: 'var(--border)' }}>
-        <Icon size={14} style={{ color: meta.color }} />
+        {BrandIcon ? <BrandIcon size={14} /> : <Icon size={14} style={{ color: meta.color }} />}
         <span className="text-xs font-semibold capitalize" style={{ color: 'var(--text)' }}>{meta.label}</span>
         {ultimaSync && <span className="ml-auto text-[10px]" style={{ color: 'var(--text-muted)' }}>{formatTime(ultimaSync)}</span>}
         <button
