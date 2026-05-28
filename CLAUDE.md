@@ -1,5 +1,52 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 30-05-2026 (Sesión 45) — Integraciones nativas TrainingPeaks, Whoop, COROS + iconos oficiales
+
+### Qué se hizo
+
+| Tarea | Commit | Detalle |
+|-------|--------|---------|
+| Iconos oficiales Garmin + Strava + COROS | `cdd90b6` | PNGs descargados de App Store vía iTunes Lookup API. Reemplazan los SVGs artesanales. |
+| Fix sueño en API integraciones | `cdd90b6` | `sueno_h` y `sueno_calidad` añadidos al SELECT de Supabase + `datos_hoy` del response |
+| GarminMiniCard — iconos PNG + stat sueño | `cdd90b6` | Iconos Garmin/Strava/COROS como `<img>`. Stat "Sueño" con icono Moon añadido |
+| Garmin sync restaurada | manual | Credenciales re-vinculadas (fila `activa=true` pero `credenciales_json=NULL` después de fix sesión 43) |
+| Fix sleep data en UI | `cdd90b6` | Datos `sueno_h` ya existían en BD (5.5–6.8h); solo faltaba seleccionarlos en la query |
+| Terra API integrada | `cdd90b6` | `lib/integraciones/terra.ts` completo: widget session, disconnect, webhook HMAC, normalizadores activity/daily/sleep |
+| COROS OAuth nativo | `cdd90b6` | `lib/integraciones/coros.ts`: 30 tipos actividad, OAuth2, sync 14d, token refresh |
+| Webhook Terra | `cdd90b6` | `app/api/webhooks/terra/route.ts`: recibe activity/daily/sleep, mapea terra_user_id→cliente_id, persiste |
+| Migration `terra_usuarios` | `cdd90b6` | `supabase/migrations/20260530_terra_usuarios.sql` — tabla para mapear terra_user_id→cliente_id+provider |
+| Tarjetas nativas TrainingPeaks/Whoop/COROS | `06cba51` | IntegracionesPanel: 3 cards individuales con logo oficial, estado conectado/desconectado, botón propio |
+| Terra oculto como intermediario | `06cba51` | Cada card hace `?provider=TRAININGPEAKS/WHOOP/COROS` al widget de Terra, que abre el proveedor directamente |
+| Icono Whoop añadido | `06cba51` | `/public/icons/whoop.jpg` App Store oficial |
+
+### Arquitectura integraciones después de esta sesión
+
+```
+Pestaña Apps portal cliente:
+  ├── Garmin Connect (credenciales cifradas, unofficial API)
+  ├── Strava (OAuth2 oficial)
+  ├── Google Fit (OAuth2 oficial)
+  ├── TrainingPeaks ──┐
+  ├── Whoop          ─┤→ Terra API (oculto) → webhook → actividad_externa_cliente
+  └── COROS          ─┘
+```
+
+### ⚠️ PENDIENTE MANUAL — Para activar Terra en producción
+
+| # | Tarea | Cómo |
+|---|-------|------|
+| 🔴 | **Registrarse en tryterra.co** como developer | tryterra.co → Sign up |
+| 🔴 | **Añadir TERRA_API_KEY + TERRA_DEV_ID** a Vercel Production | Dashboard → Settings → Environment Variables |
+| 🔴 | **Registrar webhook Terra** | Dashboard Terra → Webhooks → URL: `https://nutricoach-delta.vercel.app/api/webhooks/terra` |
+| 🔴 | **Aplicar SQL migration** `supabase/migrations/20260530_terra_usuarios.sql` | Supabase → SQL Editor |
+| 🟠 | **COROS OAuth nativo** (opcional, Terra cubre COROS) | open.coros.com developer portal → `COROS_CLIENT_ID` + `COROS_CLIENT_SECRET` en Vercel |
+
+### Commits sesión 45
+- `cdd90b6` — feat: iconos oficiales + sueño Garmin + Terra API completa + COROS OAuth
+- `06cba51` — feat: tarjetas nativas TrainingPeaks, Whoop y COROS + provider param Terra widget
+
+---
+
 ## ✅ SESIÓN 29-05-2026 (Sesión 44) — Pendientes Codex cerrados + bugs
 
 ### Qué se hizo
