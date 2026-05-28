@@ -109,7 +109,24 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
     }
   })
 
-  return NextResponse.json({ integraciones: integraciones ?? [], garmin_connect: garminConnect, strava_resumen: stravaResumen, resumenes_proveedor })
+  // Terra — conexiones activas del cliente (TrainingPeaks, Whoop, etc.)
+  const { data: terraRows } = await db
+    .from('terra_usuarios')
+    .select('terra_user_id, provider, activa, ultima_sync')
+    .eq('cliente_id', clienteId)
+    .eq('activa', true)
+
+  return NextResponse.json({
+    integraciones: integraciones ?? [],
+    garmin_connect: garminConnect,
+    strava_resumen: stravaResumen,
+    resumenes_proveedor,
+    terra_conexiones: (terraRows ?? []).map(r => ({
+      terra_user_id: r.terra_user_id,
+      provider: r.provider,
+      ultima_sync: r.ultima_sync,
+    })),
+  })
 }
 
 function asNumber(value: unknown): number | null {

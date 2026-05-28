@@ -180,11 +180,35 @@ interface Props {
 
 // ─── Componente principal ────────────────────────────────────────────────────
 
+interface TerraConexion {
+  terra_user_id: string
+  provider: string
+  ultima_sync: string | null
+}
+
+// Proveedores que Terra expone (con sus íconos y etiquetas)
+const TERRA_PROVIDER_META: Record<string, { label: string; icon: string; color: string }> = {
+  TRAININGPEAKS: { label: 'TrainingPeaks', icon: '/icons/trainingpeaks.jpg', color: '#5C33F6' },
+  COROS:         { label: 'COROS',          icon: '/icons/coros.jpg',         color: '#1A1A2E' },
+  WHOOP:         { label: 'Whoop',          icon: '',                          color: '#111111' },
+  GARMIN:        { label: 'Garmin',         icon: '/icons/garmin-connect.jpg', color: '#007CC3' },
+  POLAR:         { label: 'Polar',          icon: '',                          color: '#D7263D' },
+  WAHOO:         { label: 'Wahoo',          icon: '',                          color: '#E8175D' },
+  SUUNTO:        { label: 'Suunto',         icon: '',                          color: '#E4003A' },
+  WITHINGS:      { label: 'Withings',       icon: '',                          color: '#00B0B9' },
+  OURA:          { label: 'Oura',           icon: '',                          color: '#B08D57' },
+}
+
+function terraMeta(provider: string) {
+  return TERRA_PROVIDER_META[provider.toUpperCase()] ?? { label: provider, icon: '', color: '#64748B' }
+}
+
 export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   const [integraciones, setIntegraciones] = useState<IntegracionInfo[]>([])
   const [garminConnect, setGarminConnect] = useState<GarminConnectStatus | null>(null)
   const [garminResumen, setGarminResumen] = useState<{ dias: GarminDia[]; promedios: GarminPromedios; tiene_datos: boolean } | null>(null)
   const [stravaResumen, setStravaResumen] = useState<StravaResumen | null>(null)
+  const [terraConexiones, setTerraConexiones] = useState<TerraConexion[]>([])
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMessage, setSyncMessage] = useState<string | null>(null)
@@ -202,6 +226,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
     setIntegraciones(intData.integraciones ?? [])
     setGarminConnect(intData.garmin_connect ?? null)
     setStravaResumen(intData.strava_resumen ?? null)
+    setTerraConexiones(intData.terra_conexiones ?? [])
     setGarminResumen(garminData)
   }
 
@@ -692,6 +717,85 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
           </div>
         )
       })}
+
+      {/* ── Terra — plataformas adicionales ────────────────────────────────── */}
+      <div className="card p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-[var(--text)]">Más plataformas</p>
+            <p className="text-xs text-[var(--text-muted)]">TrainingPeaks, Whoop, Polar, Wahoo, Suunto y más</p>
+          </div>
+          <button
+            onClick={() => { window.location.href = `/api/integraciones/terra/widget?codigo=${codigo}` }}
+            className="btn-primary text-xs px-3 py-1.5 shrink-0"
+          >
+            Conectar
+          </button>
+        </div>
+
+        {/* Logos de los proveedores disponibles via Terra */}
+        <div className="flex flex-wrap gap-2">
+          {['TRAININGPEAKS', 'WHOOP', 'POLAR', 'WAHOO', 'SUUNTO', 'WITHINGS', 'OURA'].map(p => {
+            const meta = terraMeta(p)
+            const conectada = terraConexiones.some(c => c.provider.toUpperCase() === p)
+            return (
+              <div
+                key={p}
+                className="flex items-center gap-1.5 rounded-lg px-2 py-1 border text-[10px] font-medium"
+                style={{
+                  borderColor: conectada ? meta.color : 'var(--border)',
+                  background: conectada ? `${meta.color}15` : 'var(--bg)',
+                  color: conectada ? meta.color : 'var(--text-muted)',
+                }}
+              >
+                {meta.icon
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={meta.icon} width={14} height={14} style={{ borderRadius: 3 }} alt={meta.label} />
+                  : <div className="w-3.5 h-3.5 rounded-sm" style={{ background: meta.color }} />
+                }
+                {meta.label}
+                {conectada && <CheckCircle size={10} className="text-green-500" />}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Conexiones activas via Terra */}
+        {terraConexiones.length > 0 && (
+          <div className="space-y-2 pt-1">
+            {terraConexiones.map(c => {
+              const meta = terraMeta(c.provider)
+              return (
+                <div key={c.terra_user_id} className="flex items-center gap-2 rounded-xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                  {meta.icon
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={meta.icon} width={20} height={20} style={{ borderRadius: 4 }} alt={meta.label} />
+                    : <div className="w-5 h-5 rounded" style={{ background: meta.color }} />
+                  }
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-[var(--text)]">{meta.label}</p>
+                    {c.ultima_sync && (
+                      <p className="text-[10px] text-[var(--text-muted)]">
+                        Última sync: {new Date(c.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`¿Desconectar ${meta.label}?`)) return
+                      await fetch(`/api/integraciones/terra/disconnect?terra_user_id=${c.terra_user_id}&codigo=${codigo}`, { method: 'DELETE' })
+                      setTerraConexiones(prev => prev.filter(x => x.terra_user_id !== c.terra_user_id))
+                    }}
+                    className="text-[10px] text-red-500 border border-red-200 rounded-lg px-2 py-1 shrink-0"
+                  >
+                    Desconectar
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       <div className="card p-4 flex items-start gap-3" style={{ background: 'var(--surface)' }}>
         <Zap size={16} className="text-[var(--primary)] mt-0.5 shrink-0" />
