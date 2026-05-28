@@ -409,6 +409,28 @@ export default function ClienteDetallePage() {
   const router = useRouter()
 
   const [cliente, setCliente] = useState<ClienteConExtra | null>(null)
+  const [membresiaEdit, setMembresiaEdit] = useState({
+    tipo: '',
+    inicio: '',
+    fin: '',
+  })
+  const [guardandoMembresia, setGuardandoMembresia] = useState(false)
+
+  async function guardarMembresia() {
+    if (!id) return
+    setGuardandoMembresia(true)
+    const { error } = await supabase
+      .from('clientes')
+      .update({
+        tipo_membresia: membresiaEdit.tipo || null,
+        fecha_inicio_membresia: membresiaEdit.inicio || null,
+        fecha_fin_membresia: membresiaEdit.fin || null,
+      })
+      .eq('id', id as string)
+    setGuardandoMembresia(false)
+    if (!error) addToast({ type: 'success', title: 'Membresía guardada', message: 'Los datos se han actualizado' })
+    else addToast({ type: 'error', title: 'Error', message: 'No se pudo guardar la membresía' })
+  }
   const [dietas, setDietas] = useState<PlanNutricion[]>([])
   const [entrenos, setEntrenos] = useState<PlanEntrenamiento[]>([])
   const [seguimiento, setSeguimiento] = useState<SeguimientoPeso[]>([])
@@ -480,6 +502,13 @@ export default function ClienteDetallePage() {
       supabase.from('notas_coach').select('*').eq('cliente_id', id).order('created_at', { ascending: false }).limit(20),
     ])
     setCliente(clienteRes.data)
+    if (clienteRes.data) {
+      setMembresiaEdit({
+        tipo: (clienteRes.data as Record<string, string | null>).tipo_membresia ?? '',
+        inicio: (clienteRes.data as Record<string, string | null>).fecha_inicio_membresia ?? '',
+        fin: (clienteRes.data as Record<string, string | null>).fecha_fin_membresia ?? '',
+      })
+    }
     setDietas(dietasRes.data ?? [])
     setEntrenos(entrenosRes.data ?? [])
     setSeguimiento(seguRes.data ?? [])
@@ -1159,6 +1188,51 @@ export default function ClienteDetallePage() {
                 onRegenerar={() => cargarInforme(true)}
               />
             </WorkCard>
+
+            {/* Membresía */}
+            <div className="xl:col-span-2 rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <h3 className="font-bold text-sm mb-3" style={{ color: 'var(--text)' }}>Membresía</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Tipo</label>
+                  <select
+                    className="input w-full text-sm"
+                    value={membresiaEdit.tipo}
+                    onChange={e => setMembresiaEdit(p => ({ ...p, tipo: e.target.value }))}
+                  >
+                    <option value="">Sin asignar</option>
+                    <option value="trimestral">Trimestral</option>
+                    <option value="semestral">Semestral</option>
+                    <option value="anual">Anual</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Fecha inicio</label>
+                  <input
+                    type="date"
+                    className="input w-full text-sm"
+                    value={membresiaEdit.inicio}
+                    onChange={e => setMembresiaEdit(p => ({ ...p, inicio: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Fecha fin</label>
+                  <input
+                    type="date"
+                    className="input w-full text-sm"
+                    value={membresiaEdit.fin}
+                    onChange={e => setMembresiaEdit(p => ({ ...p, fin: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <button
+                onClick={guardarMembresia}
+                disabled={guardandoMembresia}
+                className="btn-primary btn-sm mt-3"
+              >
+                {guardandoMembresia ? 'Guardando…' : 'Guardar membresía'}
+              </button>
+            </div>
 
             <div className="xl:col-span-2 rounded-2xl p-4" style={{ border: '1px solid rgba(255,69,58,0.2)', background: 'rgba(255,69,58,0.04)' }}>
               {!confirmandoEliminar ? (
