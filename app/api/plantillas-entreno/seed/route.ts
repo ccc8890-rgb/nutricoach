@@ -1232,6 +1232,9 @@ const PLANTILLAS: PlantillaSeed[] = [
  *   curl -X GET http://localhost:3000/api/plantillas-entreno/seed
  */
 export async function GET() {
+    if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'Not available in production' }, { status: 403 })
+    }
     try {
         // 1. Buscar el primer coach
         const { data: coaches, error: coachError } = await supabaseAdmin

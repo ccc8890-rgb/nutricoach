@@ -7,18 +7,27 @@ export async function PUT(
 ) {
     try {
         const supabase = await createServerSupabase()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (authError || !user) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+        }
+
         const { id } = await params
         const body = await request.json()
 
-        // Verificar que el cliente existe
-        const { data: cliente, error: findError } = await supabase
+        // Verificar que el cliente existe y pertenece a este coach
+        const srv = createServiceSupabase()
+        const { data: cliente, error: findError } = await srv
             .from('clientes')
-            .select('id')
+            .select('id, coach_id')
             .eq('id', id)
             .single()
 
         if (findError || !cliente) {
             return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
+        }
+        if (cliente.coach_id !== user.id) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
         }
 
         // Filtrar solo campos permitidos para actualizar
@@ -38,7 +47,7 @@ export async function PUT(
             return NextResponse.json({ error: 'No hay campos válidos para actualizar' }, { status: 400 })
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await srv
             .from('clientes')
             .update(actualizacion)
             .eq('id', id)
@@ -63,12 +72,19 @@ export async function GET(
 ) {
     try {
         const supabase = await createServerSupabase()
-        const { id } = await params
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (authError || !user) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+        }
 
-        const { data, error } = await supabase
+        const { id } = await params
+        const srv = createServiceSupabase()
+
+        const { data, error } = await srv
             .from('clientes')
             .select('*, profile:profiles!profile_id(nombre, apellidos, email, telefono)')
             .eq('id', id)
+            .eq('coach_id', user.id)
             .single()
 
         if (error || !data) {

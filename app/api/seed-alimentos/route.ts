@@ -92,6 +92,9 @@ async function deduplicarAlimentos() {
 }
 
 export async function GET() {
+    if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'Not available in production' }, { status: 403 })
+    }
     try {
         // 1. Primero: limpiar duplicados existentes
         const duplicadosEliminados = await deduplicarAlimentos()

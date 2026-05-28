@@ -1,8 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabase } from '@/lib/supabase-server'
 
 export async function POST(req: NextRequest) {
+  // Solo coaches autenticados pueden hacer scraping de URLs externas
+  const supabase = await createServerSupabase()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   const { url } = await req.json()
   if (!url) return NextResponse.json({ error: 'URL requerida' }, { status: 400 })
+
+  // Bloquear IPs privadas/internas (SSRF guard)
+  let parsedUrl: URL
+  try {
+    parsedUrl = new URL(url)
+  } catch {
+    return NextResponse.json({ error: 'URL inválida' }, { status: 400 })
+  }
+  const hostname = parsedUrl.hostname
+  if (
+    hostname === 'localhost' ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.') ||
+    hostname.startsWith('172.') ||
+    hostname === '127.0.0.1' ||
+    hostname === '0.0.0.0' ||
+    hostname.endsWith('.internal') ||
+    !['http:', 'https:'].includes(parsedUrl.protocol)
+  ) {
+    return NextResponse.json({ error: 'URL no permitida' }, { status: 400 })
+  }
 
   try {
     const res = await fetch(url, {

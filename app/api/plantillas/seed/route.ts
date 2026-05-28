@@ -33,6 +33,9 @@ const PLANTILLAS = [
  *   curl -X GET http://localhost:3000/api/plantillas/seed
  */
 export async function GET() {
+    if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'Not available in production' }, { status: 403 })
+    }
     try {
         // 1. Buscar el primer coach en profiles
         const { data: coaches, error: coachError } = await supabaseAdmin
