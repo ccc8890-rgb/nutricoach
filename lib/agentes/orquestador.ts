@@ -10,6 +10,7 @@ export type PasoDirector =
   | 'revisor_semanal'
   | 'revisor_semanal_entreno'
   | 'motivacion'
+  | 'retencion'
 
 export interface SenalesDirectorCliente {
   clienteId: string
@@ -86,6 +87,7 @@ export function crearPlanDirectorCliente(
     revisor_semanal: revisorSemanal,
     revisor_semanal_entreno: revisorSemanalEntreno,
     motivacion,
+    retencion: true, // always check for retention risk daily
   }
 
   const motivos: string[] = []

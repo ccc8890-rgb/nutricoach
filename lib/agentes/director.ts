@@ -15,6 +15,7 @@ import { ejecutarAgenteReadiness } from './readiness'
 import { ejecutarDirectorSupercoachCliente } from './supercoach'
 import { actualizarPerfilGusto } from './perfil-gusto'
 import { ejecutarAprendizajeColectivo } from './aprendizaje-colectivo'
+import { ejecutarAgenteRetencion } from './agente-retencion'
 import { crearPlanDirectorCliente, type ModoDirector, type PlanDirectorCliente } from './orquestador'
 
 export interface ResultadoDirector {
@@ -57,6 +58,7 @@ export async function ejecutarDirector(
       if (plan.ejecutar.perfil_gusto) await actualizarPerfilGusto(id)
 
       if (plan.ejecutar.riesgo_nutricion) await ejecutarAgenteRiesgo(id)
+      if (plan.ejecutar.retencion) await ejecutarAgenteRetencion(id)
       if (plan.ejecutar.riesgo_entreno) await ejecutarAgenteRiesgoEntreno(id)
       if (plan.ejecutar.readiness) await ejecutarAgenteReadiness(id)
       if (plan.ejecutar.supercoach) await ejecutarDirectorSupercoachCliente(id)
