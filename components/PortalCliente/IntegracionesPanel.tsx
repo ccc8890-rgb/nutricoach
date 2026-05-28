@@ -1,6 +1,25 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Activity, Watch, Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp, Lock, Eye, EyeOff, RefreshCw, Route, Clock } from 'lucide-react'
+import { Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp, Lock, Eye, EyeOff, RefreshCw, Route, Clock } from 'lucide-react'
+
+// ─── Brand icons ─────────────────────────────────────────────────────────────
+
+function GarminIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="12" fill="#007CC3" />
+      <path fill="white" d="M14.8 10.8h-3.2v1.6h1.6v2.4c-.5.3-1.1.5-1.8.5-1.9 0-3.2-1.4-3.2-3.3s1.3-3.3 3.2-3.3c.9 0 1.8.4 2.5 1l1-1C13.8 7.5 12.6 7 11.2 7 8.4 7 6.4 9 6.4 12s2 5 4.8 5c1.4 0 2.7-.5 3.5-1.4v-4.8z" />
+    </svg>
+  )
+}
+
+function StravaIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="#FC4C02">
+      <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L8.41 0 3 10.172h4.173" />
+    </svg>
+  )
+}
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
@@ -124,7 +143,7 @@ const OAUTH_PROVEEDORES = [
     key: 'strava',
     nombre: 'Strava',
     descripcion: 'Actividades de running, ciclismo y natación',
-    icono: Activity,
+    icono: Smartphone,
     color: '#FC4C02',
     disponible: true,
   },
@@ -206,9 +225,21 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
       })
       const data = await res.json().catch(() => null) as { results?: Array<{ proveedor: string; ok: boolean; sincronizados: number; error?: string }> } | null
       if (!res.ok) throw new Error(data?.results?.find(r => !r.ok)?.error ?? 'No se pudo sincronizar')
+
+      const results = data?.results ?? []
+      const errors = results.filter(r => !r.ok)
+      const total = results.reduce((acc, r) => acc + (r.sincronizados ?? 0), 0)
+
       await cargarDatos()
-      const total = (data?.results ?? []).reduce((acc, r) => acc + (r.sincronizados ?? 0), 0)
-      setSyncMessage(total > 0 ? `${total} registros actualizados` : 'Sin datos nuevos por ahora')
+
+      if (errors.length > 0 && total === 0) {
+        // Endpoint devolvió 200 pero todas las syncs fallaron — mostrar error real
+        setSyncMessage(`Error: ${errors[0]?.error ?? 'No se pudo sincronizar'}`)
+      } else if (total > 0) {
+        setSyncMessage(`${total} registros actualizados`)
+      } else {
+        setSyncMessage('Sin datos nuevos por ahora')
+      }
     } catch (error) {
       setSyncMessage(error instanceof Error ? error.message : 'Error sincronizando')
     } finally {
@@ -292,7 +323,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#007CC320' }}>
-              <Watch size={20} style={{ color: '#007CC3' }} />
+              <GarminIcon size={22} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
@@ -447,9 +478,9 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
         {garminConnect?.activa && !hoy && (
           <div className="mt-4 pt-4 border-t border-[var(--border)]">
             <div className="rounded-xl border px-3 py-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <p className="text-xs font-medium text-[var(--text)]">Garmin conectado sin datos recientes</p>
+              <p className="text-xs font-medium text-[var(--text)]">Sin datos recientes de Garmin</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
-                Pulsa Actualizar para traer hoy y ayer. Si acabas de entrenar, Garmin puede tardar unos minutos en publicar el dato.
+                Abre la app <strong>Garmin Connect</strong> en tu móvil para que el reloj sincronice los datos del día. Después pulsa <strong>Actualizar</strong> aquí.
               </p>
             </div>
           </div>
@@ -526,7 +557,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#FC4C0220' }}>
-                <Activity size={20} style={{ color: '#FC4C02' }} />
+                <StravaIcon size={22} />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
@@ -606,7 +637,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}20` }}>
-                <Icono size={20} style={{ color }} />
+                {key === 'strava' ? <StravaIcon size={22} /> : <Icono size={20} style={{ color }} />}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
