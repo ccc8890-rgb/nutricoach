@@ -605,8 +605,6 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     const [mostrarRegistrarEntreno, setMostrarRegistrarEntreno] = useState(false)
     const [sesionPendiente, setSesionPendiente] = useState<string | null>(null)
     const [tlsKey, setTlsKey] = useState(0)
-    const [mostrarBienvenida, setMostrarBienvenida] = useState(false)
-
     const loadData = useCallback(async () => {
         try {
             fetch(`/api/cliente/${codigo}/registrar-acceso`, { method: 'POST' }).catch(() => { })
@@ -637,14 +635,6 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
     useEffect(() => {
         loadData()
     }, [loadData])
-
-    // Mostrar banner de bienvenida solo en el primer acceso (detectado por localStorage)
-    useEffect(() => {
-        const key = `nutricoach:welcome:${codigo}`
-        if (!localStorage.getItem(key)) {
-            setMostrarBienvenida(true)
-        }
-    }, [codigo])
 
     // Marcar notas como leídas al visitar chat.
     useEffect(() => {
@@ -804,38 +794,6 @@ export default function DashboardCliente({ codigo }: DashboardClienteProps) {
 
             {/* Contenido */}
             <div className="max-w-3xl mx-auto p-4 space-y-4">
-
-                {/* Banner de bienvenida — primera visita */}
-                {mostrarBienvenida && (
-                    <div
-                        className="rounded-2xl p-4 flex items-start gap-3"
-                        style={{
-                            background: 'rgba(99,102,241,0.1)',
-                            border: '1px solid rgba(99,102,241,0.25)',
-                        }}
-                    >
-                        <span className="text-2xl flex-shrink-0">👋</span>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>
-                                ¡Bienvenido{nombreCliente !== 'Cliente' ? `, ${nombreCliente}` : ''}!
-                            </p>
-                            <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                                Tu coach ha preparado tu plan personalizado. Explora las pestañas para ver tu dieta, entrenos y hacer tu primer check-in.
-                            </p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                localStorage.setItem(`nutricoach:welcome:${codigo}`, '1')
-                                setMostrarBienvenida(false)
-                            }}
-                            className="text-xs px-2.5 py-1 rounded-full flex-shrink-0 font-medium"
-                            style={{ background: 'rgba(99,102,241,0.2)', color: 'rgb(99,102,241)' }}
-                        >
-                            Entendido
-                        </button>
-                    </div>
-                )}
 
                 {tab === 'plan' && (
                     <HoyCliente
