@@ -19,8 +19,10 @@ export async function GET(req: NextRequest) {
 
   if (!resolvedClienteId) return NextResponse.json({ error: 'cliente_id requerido' }, { status: 400 })
 
+  const provider = req.nextUrl.searchParams.get('provider') ?? undefined
+
   try {
-    const url = await generarWidgetSession(resolvedClienteId)
+    const url = await generarWidgetSession(resolvedClienteId, provider)
     return NextResponse.redirect(url)
   } catch (err) {
     console.error('[terra-widget]', err)

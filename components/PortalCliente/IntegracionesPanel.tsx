@@ -19,6 +19,16 @@ function CorosIcon({ size = 20 }: { size?: number }) {
   return <img src="/icons/coros.jpg" width={size} height={size} style={{ borderRadius: 6 }} alt="COROS" />
 }
 
+function TrainingPeaksIcon({ size = 20 }: { size?: number }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/trainingpeaks.jpg" width={size} height={size} style={{ borderRadius: 6 }} alt="TrainingPeaks" />
+}
+
+function WhoopIcon({ size = 20 }: { size?: number }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icons/whoop.jpg" width={size} height={size} style={{ borderRadius: 6 }} alt="Whoop" />
+}
+
 // ─── Tipos ──────────────────────────────────────────────────────────────────
 
 interface IntegracionInfo {
@@ -154,22 +164,6 @@ const OAUTH_PROVEEDORES = [
     icono: Smartphone,
     color: '#4285F4',
     disponible: true,
-  },
-  {
-    key: 'coros',
-    nombre: 'COROS',
-    descripcion: 'Entrenos, GPS, HR y recuperación',
-    icono: Heart,
-    color: '#1A1A2E',
-    disponible: true,
-  },
-  {
-    key: 'whoop',
-    nombre: 'Whoop',
-    descripcion: 'HRV, recuperación y strain diario',
-    icono: Heart,
-    color: '#111111',
-    disponible: false,
   },
 ]
 
@@ -718,84 +712,151 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
         )
       })}
 
-      {/* ── Terra — plataformas adicionales ────────────────────────────────── */}
-      <div className="card p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold text-[var(--text)]">Más plataformas</p>
-            <p className="text-xs text-[var(--text-muted)]">TrainingPeaks, Whoop, Polar, Wahoo, Suunto y más</p>
-          </div>
-          <button
-            onClick={() => { window.location.href = `/api/integraciones/terra/widget?codigo=${codigo}` }}
-            className="btn-primary text-xs px-3 py-1.5 shrink-0"
-          >
-            Conectar
-          </button>
-        </div>
-
-        {/* Logos de los proveedores disponibles via Terra */}
-        <div className="flex flex-wrap gap-2">
-          {['TRAININGPEAKS', 'WHOOP', 'POLAR', 'WAHOO', 'SUUNTO', 'WITHINGS', 'OURA'].map(p => {
-            const meta = terraMeta(p)
-            const conectada = terraConexiones.some(c => c.provider.toUpperCase() === p)
-            return (
-              <div
-                key={p}
-                className="flex items-center gap-1.5 rounded-lg px-2 py-1 border text-[10px] font-medium"
-                style={{
-                  borderColor: conectada ? meta.color : 'var(--border)',
-                  background: conectada ? `${meta.color}15` : 'var(--bg)',
-                  color: conectada ? meta.color : 'var(--text-muted)',
-                }}
-              >
-                {meta.icon
-                  // eslint-disable-next-line @next/next/no-img-element
-                  ? <img src={meta.icon} width={14} height={14} style={{ borderRadius: 3 }} alt={meta.label} />
-                  : <div className="w-3.5 h-3.5 rounded-sm" style={{ background: meta.color }} />
-                }
-                {meta.label}
-                {conectada && <CheckCircle size={10} className="text-green-500" />}
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Conexiones activas via Terra */}
-        {terraConexiones.length > 0 && (
-          <div className="space-y-2 pt-1">
-            {terraConexiones.map(c => {
-              const meta = terraMeta(c.provider)
-              return (
-                <div key={c.terra_user_id} className="flex items-center gap-2 rounded-xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                  {meta.icon
-                    // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={meta.icon} width={20} height={20} style={{ borderRadius: 4 }} alt={meta.label} />
-                    : <div className="w-5 h-5 rounded" style={{ background: meta.color }} />
-                  }
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-[var(--text)]">{meta.label}</p>
-                    {c.ultima_sync && (
-                      <p className="text-[10px] text-[var(--text-muted)]">
-                        Última sync: {new Date(c.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    )}
+      {/* ── TrainingPeaks ──────────────────────────────────────────────────── */}
+      {(() => {
+        const conn = terraConexiones.find(c => c.provider.toUpperCase() === 'TRAININGPEAKS')
+        return (
+          <div className="card p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#5C33F620' }}>
+                  <TrainingPeaksIcon size={22} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-[var(--text)]">TrainingPeaks</span>
+                    {conn ? <CheckCircle size={14} className="text-green-500" /> : <XCircle size={14} className="text-[var(--text-muted)]" />}
                   </div>
+                  <p className="text-xs text-[var(--text-muted)]">Plan de entrenamiento, TSS y carga de trabajo</p>
+                  {conn?.ultima_sync && (
+                    <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
+                      Última sync: {new Date(conn.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {conn ? (
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">Activo</span>
                   <button
                     onClick={async () => {
-                      if (!confirm(`¿Desconectar ${meta.label}?`)) return
-                      await fetch(`/api/integraciones/terra/disconnect?terra_user_id=${c.terra_user_id}&codigo=${codigo}`, { method: 'DELETE' })
-                      setTerraConexiones(prev => prev.filter(x => x.terra_user_id !== c.terra_user_id))
+                      if (!confirm('¿Desconectar TrainingPeaks?')) return
+                      await fetch(`/api/integraciones/terra/disconnect?terra_user_id=${conn.terra_user_id}&codigo=${codigo}`, { method: 'DELETE' })
+                      setTerraConexiones(prev => prev.filter(x => x.terra_user_id !== conn.terra_user_id))
                     }}
-                    className="text-[10px] text-red-500 border border-red-200 rounded-lg px-2 py-1 shrink-0"
-                  >
-                    Desconectar
-                  </button>
+                    className="text-xs text-red-500 border border-red-200 rounded-lg px-2 py-1 hover:bg-red-50 transition-colors"
+                  >Desconectar</button>
                 </div>
-              )
-            })}
+              ) : (
+                <button
+                  onClick={() => { window.location.href = `/api/integraciones/terra/widget?codigo=${codigo}&provider=TRAININGPEAKS` }}
+                  className="btn-primary text-xs px-3 py-1.5 shrink-0"
+                >Conectar</button>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+        )
+      })()}
+
+      {/* ── Whoop ──────────────────────────────────────────────────────────── */}
+      {(() => {
+        const conn = terraConexiones.find(c => c.provider.toUpperCase() === 'WHOOP')
+        return (
+          <div className="card p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#11111120' }}>
+                  <WhoopIcon size={22} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-[var(--text)]">Whoop</span>
+                    {conn ? <CheckCircle size={14} className="text-green-500" /> : <XCircle size={14} className="text-[var(--text-muted)]" />}
+                  </div>
+                  <p className="text-xs text-[var(--text-muted)]">HRV, recuperación, sueño y strain diario</p>
+                  {conn?.ultima_sync && (
+                    <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
+                      Última sync: {new Date(conn.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {conn ? (
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">Activo</span>
+                  <button
+                    onClick={async () => {
+                      if (!confirm('¿Desconectar Whoop?')) return
+                      await fetch(`/api/integraciones/terra/disconnect?terra_user_id=${conn.terra_user_id}&codigo=${codigo}`, { method: 'DELETE' })
+                      setTerraConexiones(prev => prev.filter(x => x.terra_user_id !== conn.terra_user_id))
+                    }}
+                    className="text-xs text-red-500 border border-red-200 rounded-lg px-2 py-1 hover:bg-red-50 transition-colors"
+                  >Desconectar</button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { window.location.href = `/api/integraciones/terra/widget?codigo=${codigo}&provider=WHOOP` }}
+                  className="btn-primary text-xs px-3 py-1.5 shrink-0"
+                >Conectar</button>
+              )}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* ── COROS (via Terra) ────────────────────────────────────────────── */}
+      {(() => {
+        const connTerra = terraConexiones.find(c => c.provider.toUpperCase() === 'COROS')
+        const connOAuth = getEstado('coros')
+        const conn = connTerra ?? (connOAuth?.activa ? { terra_user_id: '', provider: 'COROS', ultima_sync: connOAuth.ultima_sync } : undefined)
+        const isTerra = !!connTerra
+        return (
+          <div className="card p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#1A1A2E20' }}>
+                  <CorosIcon size={22} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-[var(--text)]">COROS</span>
+                    {conn ? <CheckCircle size={14} className="text-green-500" /> : <XCircle size={14} className="text-[var(--text-muted)]" />}
+                  </div>
+                  <p className="text-xs text-[var(--text-muted)]">Entrenos GPS, frecuencia cardíaca y recuperación</p>
+                  {conn?.ultima_sync && (
+                    <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
+                      Última sync: {new Date(conn.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {conn ? (
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">Activo</span>
+                  <button
+                    onClick={async () => {
+                      if (!confirm('¿Desconectar COROS?')) return
+                      if (isTerra && connTerra.terra_user_id) {
+                        await fetch(`/api/integraciones/terra/disconnect?terra_user_id=${connTerra.terra_user_id}&codigo=${codigo}`, { method: 'DELETE' })
+                        setTerraConexiones(prev => prev.filter(x => x.terra_user_id !== connTerra.terra_user_id))
+                      } else {
+                        await fetch(`/api/integraciones/coros/disconnect?cliente_id=${clienteId}`, { method: 'DELETE' })
+                        setIntegraciones(prev => prev.filter(i => i.proveedor !== 'coros'))
+                      }
+                    }}
+                    className="text-xs text-red-500 border border-red-200 rounded-lg px-2 py-1 hover:bg-red-50 transition-colors"
+                  >Desconectar</button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { window.location.href = `/api/integraciones/terra/widget?codigo=${codigo}&provider=COROS` }}
+                  className="btn-primary text-xs px-3 py-1.5 shrink-0"
+                >Conectar</button>
+              )}
+            </div>
+          </div>
+        )
+      })()}
 
       <div className="card p-4 flex items-start gap-3" style={{ background: 'var(--surface)' }}>
         <Zap size={16} className="text-[var(--primary)] mt-0.5 shrink-0" />

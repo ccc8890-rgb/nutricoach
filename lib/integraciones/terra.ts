@@ -43,7 +43,14 @@ const ACTIVITY_TYPE_MAP: Record<number, string> = {
 
 // ─── Widget session ───────────────────────────────────────────────────────────
 
-export async function generarWidgetSession(referenceId: string): Promise<string> {
+export async function generarWidgetSession(
+  referenceId: string,
+  provider?: string   // si se pasa, el widget abre directamente ese proveedor
+): Promise<string> {
+  const proveedores = provider
+    ? provider.toUpperCase()
+    : 'TRAININGPEAKS,COROS,WHOOP,GARMIN,POLAR,WAHOO,SUUNTO,WITHINGS,OURA'
+
   const res = await fetch(`${TERRA_BASE}/auth/generateWidgetSession`, {
     method: 'POST',
     headers: {
@@ -52,11 +59,10 @@ export async function generarWidgetSession(referenceId: string): Promise<string>
       'x-api-key': API_KEY,
     },
     body: JSON.stringify({
-      reference_id: referenceId,   // nuestro cliente_id
+      reference_id: referenceId,
       language: 'es',
       show_disconnect: true,
-      // Proveedores que queremos mostrar en el widget
-      providers: 'TRAININGPEAKS,COROS,WHOOP,GARMIN,POLAR,WAHOO,SUUNTO,WITHINGS,OURA',
+      providers: proveedores,
       auth_success_redirect_url: process.env.NEXT_PUBLIC_APP_URL + '/api/integraciones/terra/callback',
     }),
     signal: AbortSignal.timeout(10_000),
