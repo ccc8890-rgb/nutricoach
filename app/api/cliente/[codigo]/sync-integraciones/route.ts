@@ -96,46 +96,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  const tieneGarminPerClient = (integraciones ?? []).some(i => i.proveedor === 'garmin_connect' && i.credenciales_json)
-  const tieneStrava = (integraciones ?? []).some(i => i.proveedor === 'strava')
-  if (!tieneGarminPerClient && tieneStrava && process.env.GARMIN_EMAIL && process.env.GARMIN_PASSWORD) {
-    try {
-      const hoy = new Date().toISOString().split('T')[0]
-      const ayer = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      const days = await Promise.all([syncGarminDay(hoy), syncGarminDay(ayer)])
-      const validos = days.filter(Boolean) as NonNullable<typeof days[0]>[]
-      const sincronizados = validos.length > 0 ? await persistirGarminDays(db, clienteId, validos) : 0
-      await db
-        .from('integraciones_cliente')
-        .upsert(
-          {
-            cliente_id: clienteId,
-            proveedor: 'garmin_connect',
-            activa: true,
-            ultima_sync: now,
-            error_ultimo: null,
-            updated_at: now,
-          },
-          { onConflict: 'cliente_id,proveedor' }
-        )
-      results.push({ proveedor: 'garmin_connect', ok: true, sincronizados })
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error sincronizando Garmin Connect'
-      await db
-        .from('integraciones_cliente')
-        .upsert(
-          {
-            cliente_id: clienteId,
-            proveedor: 'garmin_connect',
-            activa: true,
-            error_ultimo: message,
-            updated_at: now,
-          },
-          { onConflict: 'cliente_id,proveedor' }
-        )
-      results.push({ proveedor: 'garmin_connect', ok: false, sincronizados: 0, error: message })
-    }
-  }
+  // NOTA: El fallback a credenciales globales del coach (GARMIN_EMAIL/GARMIN_PASSWORD) fue
+  // eliminado porque persistía datos de actividad del coach bajo el ID del cliente,
+  // mezclando datos privados. Garmin solo se sincroniza si el cliente tiene sus propias
+  // credenciales vinculadas en integraciones_cliente.credenciales_json.
 
   return NextResponse.json({
     ok: results.every(r => r.ok),

@@ -259,7 +259,7 @@ export async function POST(request: NextRequest) {
       alimentos_base: perfil?.alimentos_base,
     })
     if (dietaHabitual.length > 0) {
-      guardarDietaHabitualCliente(supabase, cliente_id, {
+      await guardarDietaHabitualCliente(supabase, cliente_id, {
         dia_tipico: perfil?.dia_tipico,
         comidas_favoritas: perfil?.comidas_favoritas,
         alimentos_base: perfil?.alimentos_base,

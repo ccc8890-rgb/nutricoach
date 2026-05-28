@@ -228,6 +228,7 @@ RESPONDE ÚNICAMENTE EN JSON VÁLIDO. Sin markdown, sin explicaciones fuera del 
 
     const response = await fetch(DEEPSEEK_API_URL, {
         method: 'POST',
+        signal: AbortSignal.timeout(60_000),
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiKey}`,
@@ -354,6 +355,7 @@ export async function generarInformeSemanalIA(prompt: string): Promise<{ data: I
 
     const response = await fetch(DEEPSEEK_API_URL, {
         method: 'POST',
+        signal: AbortSignal.timeout(60_000),
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiKey}`,
@@ -490,6 +492,7 @@ export async function recalcularMacrosIA(prompt: string): Promise<{ data: Sugere
 
     const response = await fetch(DEEPSEEK_API_URL, {
         method: 'POST',
+        signal: AbortSignal.timeout(60_000),
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiKey}`,
@@ -632,6 +635,7 @@ RESPONDE ÚNICAMENTE CON UN JSON VÁLIDO. SIN texto adicional, SIN markdown, SOL
 
     const response = await fetch(DEEPSEEK_API_URL, {
         method: 'POST',
+        signal: AbortSignal.timeout(60_000),
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiKey}`,
@@ -741,6 +745,7 @@ RESPONDE SOLO CON JSON (sin markdown, sin explicaciones), TODOS los campos inclu
 
     const response = await fetch(DEEPSEEK_API_URL, {
         method: 'POST',
+        signal: AbortSignal.timeout(60_000),
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({ model: DEEPSEEK_MODEL, messages, temperature: 0.1, max_tokens: 800 }),
     })
