@@ -1,18 +1,43 @@
-# ESTADO NutriCoach — 24-05-2026 (Sesión 36 — Sistema Multi-Agente IA Completo ✅)
+# ESTADO NutriCoach — 29-05-2026 (Sesión 46 — Rediseño /clientes + Agente Retención ✅)
 
-> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (24-05-2026).
+> Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (29-05-2026).
 
 ---
 
 ## 📍 DÓNDE ESTAMOS
 
-**Fase:** Sesión 36 completada. **Sistema multi-agente IA operativo — nutrición + entrenamiento.** 8 agentes, kanban coach, motor de decisiones activo, portal cliente con mensajes del coach. ✅ Build 0 errores. Deploy en Vercel. Crons configurados.
+**Fase:** Sesión 46 completada. **Rediseño completo `/clientes` con tabla densa responsive + membresías + 9 agentes IA.** ✅ Build 0 errores. Deploy en Vercel (`ddcbf3d`). SQL migration aplicada en Supabase.
 
 ---
 
-## ✅ COMPLETADO (24-05-2026) — Sesión 36 — Sistema multi-agente IA
+## ✅ COMPLETADO (29-05-2026) — Sesión 46 — Rediseño /clientes + Agente Retención
 
-### 🤖 Arquitectura de agentes (todos en `lib/agentes/`)
+### 📋 Qué se hizo
+
+| Archivo | Cambio |
+|---------|--------|
+| `supabase/migrations/20260529_membresia_clientes.sql` | +3 columnas en `clientes`: `tipo_membresia`, `fecha_inicio_membresia`, `fecha_fin_membresia` ✅ aplicado |
+| `lib/clientes-utils.ts` | Nuevo — tipos `ClienteRow`, `ToolbarCounts`, funciones score adherencia, predictor baja, deuda atención, filtros, sort |
+| `components/clientes/ClientesToolbar.tsx` | Nuevo — búsqueda 185px + chips estado + filtros membresía/fecha/chats + sort |
+| `components/clientes/ClientesTabla.tsx` | Nuevo — tabla densa desktop con 9 columnas, membresía con barra progreso, score adherencia, predictor baja |
+| `components/clientes/ClientesListaMobile.tsx` | Nuevo — lista iPhone 2 líneas + stats compactos |
+| `app/clientes/page.tsx` | Reescritura completa — 8 queries paralelas, enriquecimiento cliente, filtros/sort por useMemo |
+| `app/clientes/[id]/page.tsx` | Editor membresía en tab Perfil (tipo select + 2 date inputs + guardar) |
+| `lib/agentes/types.ts` | `'retencion'` en `TipoAgente`, `'alerta_retencion'` en `TipoTarea` |
+| `lib/agentes/agente-retencion.ts` | Nuevo agente — detecta caduca_pronto / baja_adherencia / nuevo_sin_enganche, propone acción al coach |
+| `lib/agentes/orquestador.ts` | `PasoDirector` + `'retencion'`, `ejecutar.retencion: true` |
+| `lib/agentes/director.ts` | Import + call `ejecutarAgenteRetencion(id)` diariamente |
+
+### 📐 Score de adherencia (fórmula)
+```
+score = checkIn×0.4 + comidas×0.3 + entreno×0.2 + peso×0.1
+```
+- checkIn: 100 si <4d, decrece lineal hasta 0 en 14d
+- comidas: % comidas completadas 7d (base 21 comidas/semana)
+- entreno: % sesiones completadas 7d (base 3/semana)
+- peso: 100 si hay peso en últimos 7d
+
+### 🤖 Arquitectura de agentes (todos en `lib/agentes/`) — actualizada
 
 | Archivo | Agente | Frecuencia | Modelo | Qué hace |
 |---------|--------|-----------|--------|---------|
@@ -20,6 +45,7 @@
 | `director.ts` | Director | Cron | — | Orquesta todos los agentes por cliente |
 | `riesgo.ts` | Riesgo Nutrición | Diario | Gemini Flash | Detecta riesgo abandono >45% |
 | `riesgo-entreno.ts` | Riesgo Entreno | Diario | Gemini Flash | Detecta inactividad >10 días con plan activo |
+| `agente-retencion.ts` | **Retención** | **Diario** | **DeepSeek V3** | **Caduca pronto / baja adherencia / nuevo sin enganchar** |
 | `revisor-semanal.ts` | Revisor Nutrición | Lunes | DeepSeek V3 | Analiza macros, adherencia, tendencia peso |
 | `revisor-semanal-entreno.ts` | Revisor Entreno | Lunes | Gemini Flash | Analiza TLS, RPE, sesiones realizadas vs planificadas |
 | `motivacion.ts` | Motivación | Lunes | Gemini Flash | Genera mensaje motivacional semanal personalizado |

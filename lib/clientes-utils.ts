@@ -143,7 +143,7 @@ export function aplicarFiltros(
     // filtros adicionales (acumulativos)
     if (caducaPronte) {
       const d = diasHastaCaducidad(c)
-      if (d === null || d > 30) return false
+      if (d === null || d < 0 || d > 30) return false
     }
     if (filtroAlta === 'mes') {
       if (!c.fecha_inicio_membresia) return false

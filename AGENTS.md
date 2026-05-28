@@ -51,3 +51,64 @@ Cereales (1639), Verduras (997), Frutos secos (424), Grasas (205), Tubérculos (
 - Para poblar micronutrientes: [`lib/deepseek.ts`](lib/deepseek.ts:607) → `completarAlimentoConIA()`
 - El categorizador automático puede colocar en categorías incorrectas si el nombre coincide con keywords de otra categoría. Revisar manualmente si hay dudas.
 <!-- END:fix-categorias-masivo -->
+
+<!-- BEGIN:agente-retencion -->
+# ✅ 29-05-2026 — Agente Retención (`lib/agentes/agente-retencion.ts`)
+
+Nuevo agente diario que detecta clientes en riesgo de baja o no renovar membresía.
+
+## Señales que detecta
+| Señal | Condición |
+|-------|-----------|
+| `caduca_pronto` | `fecha_fin_membresia` entre hoy y hoy+30d |
+| `baja_adherencia` | `dias_sin_checkin > 10` |
+| `nuevo_sin_enganche` | Alta ≤7 días + ningún check-in desde que se dio de alta |
+
+## Comportamiento
+- Si 0 señales → no genera tarea
+- Deduplicación: si ya existe `tipo='alerta_retencion'` + `estado='pendiente'` para ese cliente → no genera otro
+- Llama DeepSeek V3 con contexto del cliente → propone UNA acción al coach
+- Tarea aparece en kanban `/agentes` con `requiere_aprobacion: true`
+
+## Tipos en `lib/agentes/types.ts`
+- `TipoAgente` incluye `'retencion'`
+- `TipoTarea` incluye `'alerta_retencion'`
+
+## Qué NO hacer
+- NO añadir señales sin actualizar el system prompt del agente
+- Los campos `fecha_fin_membresia` y `created_at` NO están en `ContextoCliente` — el agente hace una query separada
+<!-- END:agente-retencion -->
+
+<!-- BEGIN:clientes-redesign -->
+# ✅ 29-05-2026 — Rediseño /clientes (tabla densa + membresías)
+
+## Archivos nuevos
+- `lib/clientes-utils.ts` — tipos y funciones puras (score, predictor, deuda, filtros, sort)
+- `components/clientes/ClientesToolbar.tsx` — búsqueda + chips + sort
+- `components/clientes/ClientesTabla.tsx` — tabla desktop (`hidden lg:block`)
+- `components/clientes/ClientesListaMobile.tsx` — lista iPhone (`lg:hidden`)
+
+## BD — columnas nuevas en `clientes`
+```sql
+tipo_membresia TEXT CHECK (IN 'trimestral','semestral','anual')
+fecha_inicio_membresia DATE
+fecha_fin_membresia DATE
+```
+Ya aplicadas en producción. El coach las edita desde `app/clientes/[id]` → tab Perfil.
+
+## Score de adherencia
+Calculado en frontend al enriquecer cada `ClienteRow`:
+```
+score = checkIn×0.4 + comidas×0.3 + entreno×0.2 + peso×0.1
+```
+
+## Predictor de baja (`esPredictorBaja`)
+Se activa si ≥2 de estas señales:
+1. `score_adherencia < 40`
+2. `diasHastaCaducidad ≤ 30`
+3. `chats_sin_leer > 0 && interacciones_coach_7d === 0`
+4. `dias_sin_checkin > 10`
+
+## Filtro "Caduca pronto"
+Solo incluye membresías con 0-30 días restantes (NO las ya expiradas con d < 0).
+<!-- END:clientes-redesign -->

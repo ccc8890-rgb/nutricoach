@@ -107,7 +107,13 @@ export async function ejecutarAgenteRetencion(clienteId: string): Promise<void> 
   })
 
   // DeepSeek V3: JSON estricto requerido, análisis de retención
-  const raw = await llamarDeepSeek(SYSTEM_PROMPT, userPrompt, 0.3)
+  let raw: string
+  try {
+    raw = await llamarDeepSeek(SYSTEM_PROMPT, userPrompt, 0.3)
+  } catch (e) {
+    console.error('[retencion] Error llamando DeepSeek:', e)
+    return
+  }
 
   let parsed: Record<string, unknown>
   try {

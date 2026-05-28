@@ -153,7 +153,7 @@ export default function ClientesPage() {
     riesgo: clientes.filter(c => (c.dias_sin_checkin ?? 0) > 10).length,
     sin_checkin: clientes.filter(c => (c.dias_sin_checkin ?? 0) > 4).length,
     activos: clientes.filter(c => c.activo).length,
-    caduca_pronto: clientes.filter(c => { const d = diasHastaCaducidad(c); return d !== null && d <= 30 }).length,
+    caduca_pronto: clientes.filter(c => { const d = diasHastaCaducidad(c); return d !== null && d >= 0 && d <= 30 }).length,
     chats_sin_leer: clientes.filter(c => (c.chats_sin_leer ?? 0) > 0).length,
     revisiones_proximas: clientes.filter(c => {
       if (!c.fecha_proxima_revision) return false

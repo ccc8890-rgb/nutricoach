@@ -1,5 +1,28 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 29-05-2026 (Sesión 46) — Rediseño /clientes + Agente Retención
+
+### Qué se hizo
+
+| Tarea | Commits | Detalle |
+|-------|---------|---------|
+| SQL migration membresía | `a47479a` | +3 cols en `clientes`: `tipo_membresia`, `fecha_inicio_membresia`, `fecha_fin_membresia` — **aplicada en Supabase** |
+| `lib/clientes-utils.ts` | `6df484c` | Tipos + score adherencia, predictor baja, deuda atención, filtros, sort |
+| `ClientesToolbar.tsx` | `40e9666` | Búsqueda 185px + chips estado + filtros membresía/fecha/chats + sort |
+| `ClientesTabla.tsx` | `c266ef5` | Tabla densa desktop — membresía+barra progreso, check-in, adherencia, estado, planes dots |
+| `ClientesListaMobile.tsx` | `4a62627` | Lista iPhone compacta 3 filas por cliente |
+| Reescritura `/clientes` | `c24c2c6` | 8 queries paralelas, enriquecimiento ClienteRow, filtros/sort useMemo, back button mobile |
+| Editor membresía ficha cliente | `039b848` | Tab Perfil → tipo + fechas inicio/fin → guardar en Supabase |
+| `agente-retencion.ts` | `d5c8f2d` | Nuevo agente — caduca_pronto / baja_adherencia / nuevo_sin_enganche → propuesta coach |
+| Wiring orquestador + director | `ddcbf3d` | `'retencion'` en `PasoDirector`, `ejecutar.retencion: true`, import + call en director |
+| Fix bugs post-auditoría | HEAD | `caduca_pronto` excluye ya-expiradas (d<0); try/catch en llamarDeepSeek |
+
+### Pendiente manual
+- ⚠️ Terra: registrarse en tryterra.co + `TERRA_API_KEY` + `TERRA_DEV_ID` en Vercel + webhook (ver sesión 45)
+- ⚠️ COROS OAuth: open.coros.com developer portal (opcional, Terra ya cubre COROS)
+
+---
+
 ## ✅ SESIÓN 30-05-2026 (Sesión 45) — Integraciones nativas TrainingPeaks, Whoop, COROS + iconos oficiales
 
 ### Qué se hizo
