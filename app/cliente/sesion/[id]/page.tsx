@@ -54,20 +54,16 @@ export default function EjecucionSesionPage() {
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState(false)
 
-  // Progress: which exercise is expanded / done
   const [ejercicioActivo, setEjercicioActivo] = useState<string | null>(null)
   const [ejerciciosDone, setEjerciciosDone] = useState<Set<string>>(new Set())
 
-  // Per-exercise set state: ejId → SetState[]
   const [sets, setSets] = useState<Record<string, SetState[]>>({})
 
-  // Rest timer
   const [timerTotal, setTimerTotal] = useState(0)
   const [timerLeft, setTimerLeft] = useState(0)
   const [timerRunning, setTimerRunning] = useState(false)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Completion screen + save state
   const [showCompletion, setShowCompletion] = useState(false)
   const [esfuerzoPercibido, setEsfuerzoPercibido] = useState<number | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -102,10 +98,8 @@ export default function EjecucionSesionPage() {
 
     if (error || !data) { setLoading(false); return }
 
-    // Verify session belongs to this client's plan
     const plan = Array.isArray(data.plan) ? data.plan[0] : data.plan
     if (plan?.cliente_id !== user.id) {
-      // Try matching via profile
       const { data: clienteData } = await supabase
         .from('clientes')
         .select('id')
@@ -128,7 +122,6 @@ export default function EjecucionSesionPage() {
     }
     setSesion(sesionData)
 
-    // Fetch historial de pesos reales (última sesión) para pre-cargar carga
     const ejIds = ejerciciosSorted
       .map(e => e.ejercicio?.id)
       .filter((id): id is string => Boolean(id))
@@ -138,17 +131,14 @@ export default function EjecucionSesionPage() {
       try {
         const res = await fetch(`/api/entrenos/historial-pesos?ejercicio_ids=${ejIds.join(',')}`)
         if (res.ok) {
-          const data = await res.json()
-          for (const item of data.pesos ?? []) {
+          const resData = await res.json()
+          for (const item of resData.pesos ?? []) {
             pesoHistorial[item.ejercicio_id] = item.ultimo_peso_kg
           }
         }
-      } catch {
-        // silent — fallback a peso_sugerido
-      }
+      } catch {}
     }
 
-    // Init set state: usar historial si existe, sino peso_sugerido de la plantilla
     const setsInit: Record<string, SetState[]> = {}
     for (const ej of ejerciciosSorted) {
       const pesoReal = ej.ejercicio?.id ? pesoHistorial[ej.ejercicio.id] : null
@@ -168,7 +158,6 @@ export default function EjecucionSesionPage() {
 
   useEffect(() => { loadSesion() }, [loadSesion])
 
-  // Timer logic
   useEffect(() => {
     if (timerRunning && timerLeft > 0) {
       timerRef.current = setInterval(() => {
@@ -212,7 +201,6 @@ export default function EjecucionSesionPage() {
     setSets(prev => {
       const ejSets = [...(prev[ejId] ?? [])]
       ejSets[setIdx] = { ...ejSets[setIdx], hecho: !ejSets[setIdx].hecho }
-      // Auto-start rest timer when set is completed (not un-completed)
       if (!prev[ejId][setIdx].hecho) {
         const ej = sesion?.ejercicios.find(e => e.id === ejId)
         if (ej?.descanso_segundos) startTimer(ej.descanso_segundos)
@@ -231,13 +219,11 @@ export default function EjecucionSesionPage() {
 
   function completarEjercicio(ejId: string) {
     setEjerciciosDone(prev => new Set([...prev, ejId]))
-    // Find next uncompleted exercise
     if (!sesion) return
     const idx = sesion.ejercicios.findIndex(e => e.id === ejId)
     const next = sesion.ejercicios.slice(idx + 1).find(e => !ejerciciosDone.has(e.id))
     if (next) {
       setEjercicioActivo(next.id)
-      // Auto-scroll hint
       setTimeout(() => {
         document.getElementById(`ej-${next.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 150)
@@ -276,9 +262,7 @@ export default function EjecucionSesionPage() {
         if (saveData.prs?.length) setPrsDetectados(saveData.prs)
       }
       setGuardadoOk(true)
-    } catch {
-      // silent — session still shown as complete
-    } finally {
+    } catch {} finally {
       setGuardando(false)
     }
   }
@@ -292,87 +276,59 @@ export default function EjecucionSesionPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-        style={{ borderColor: 'rgba(168,85,247,0.3)', borderTopColor: 'rgb(168,85,247)' }} />
+      <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
     </div>
   )
 
-  if (authError) return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
+  if (authError || !sesion) return (
+    <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center animate-fade-in">
       <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Sesión no encontrada</p>
-      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Esta sesión no pertenece a tu plan.</p>
-      <Link href="/cliente" className="btn-primary">Volver al portal</Link>
+      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Esta sesión no pertenece a tu plan o ha sido eliminada.</p>
+      <Link href="/cliente" className="glass-btn mt-4">Volver al portal</Link>
     </div>
   )
 
-  if (!sesion) return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
-      <p style={{ color: 'var(--text-muted)' }}>No se encontró la sesión.</p>
-      <Link href="/cliente" className="btn-secondary">Volver</Link>
-    </div>
-  )
-
-  // Completion screen
   if (showCompletion) {
     const totalVolumen = sesion.ejercicios.reduce((acc, ej) => {
       const ejSets = sets[ej.id] ?? []
-      return acc + ejSets.reduce((s, set) => {
-        const kg = parseFloat(set.carga) || 0
-        const reps = parseInt(set.reps) || 0
-        return s + (kg * reps)
-      }, 0)
+      return acc + ejSets.reduce((s, set) => s + ((parseFloat(set.carga) || 0) * (parseInt(set.reps) || 0)), 0)
     }, 0)
     const durMin = duracionCompletadaMin ?? 0
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: 'var(--bg)' }}>
-        <div
-          className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
-          style={{ background: 'rgba(168,85,247,0.15)', border: '2px solid rgba(168,85,247,0.3)' }}
-        >
-          <Trophy size={36} style={{ color: 'rgb(192,132,252)' }} />
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center animate-slide-up" style={{ background: 'var(--bg)' }}>
+        <div className="w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-glow" style={{ background: 'var(--surface-hover)', border: '2px solid var(--border-accent)' }}>
+          <Trophy size={40} style={{ color: 'var(--semantic-active)' }} />
         </div>
-        <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>¡Sesión completada!</h1>
-        <p className="text-base mb-4" style={{ color: 'var(--text-muted)' }}>{sesion.nombre}</p>
+        <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text)' }}>¡Sesión completada!</h1>
+        <p className="text-base mb-8 font-medium" style={{ color: 'var(--text-secondary)' }}>{sesion.nombre}</p>
 
-        {/* Stats */}
-        <div className="flex gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-8 w-full max-w-sm">
           {[
             { label: 'Ejercicios', value: totalEjercicios },
             { label: 'Duración', value: `${durMin} min` },
             ...(totalVolumen > 0 ? [{ label: 'Volumen', value: `${Math.round(totalVolumen)} kg` }] : []),
           ].map(stat => (
-            <div key={stat.label} className="flex flex-col items-center">
-              <span className="text-lg font-bold" style={{ color: 'var(--text)' }}>{stat.value}</span>
-              <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{stat.label}</span>
+            <div key={stat.label} className="glass-card flex flex-col items-center p-4">
+              <span className="text-2xl font-bold font-data" style={{ color: 'var(--text)' }}>{stat.value}</span>
+              <span className="text-xs uppercase tracking-widest mt-1 font-bold" style={{ color: 'var(--text-muted)' }}>{stat.label}</span>
             </div>
           ))}
         </div>
 
-        {/* PRs detectados */}
         {prsDetectados.length > 0 && (
-          <div className="w-full max-w-xs mb-4">
-            <p className="text-xs uppercase tracking-wide mb-2 text-center" style={{ color: 'var(--text-muted)' }}>
-              🏅 Nuevos récords personales
+          <div className="w-full max-w-sm mb-8 animate-fade-in">
+            <p className="text-xs font-bold uppercase tracking-widest mb-3 text-center" style={{ color: 'var(--semantic-warn)' }}>
+              Nuevos récords personales
             </p>
             <div className="flex flex-col gap-2">
               {prsDetectados.map(pr => (
-                <div
-                  key={pr.ejercicio_id}
-                  className="rounded-xl px-4 py-2.5 flex justify-between items-center"
-                  style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)' }}
-                >
-                  <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-                    {pr.ejercicio_nombre}
-                  </span>
+                <div key={pr.ejercicio_id} className="glass-card px-4 py-3 flex justify-between items-center" style={{ background: 'var(--semantic-warn-bg)', borderColor: 'var(--semantic-warn-border)' }}>
+                  <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{pr.ejercicio_nombre}</span>
                   <div className="text-right">
-                    <span className="text-sm font-bold" style={{ color: 'rgb(251,191,36)' }}>
-                      {pr.peso_nuevo_kg} kg
-                    </span>
+                    <span className="text-base font-bold font-data" style={{ color: 'var(--semantic-warn)' }}>{pr.peso_nuevo_kg} kg</span>
                     {pr.peso_anterior_kg && (
-                      <span className="text-xs ml-1" style={{ color: 'var(--text-muted)' }}>
-                        (+{(pr.peso_nuevo_kg - pr.peso_anterior_kg).toFixed(1)})
-                      </span>
+                      <span className="text-xs ml-2" style={{ color: 'var(--text-muted)' }}>(+{(pr.peso_nuevo_kg - pr.peso_anterior_kg).toFixed(1)})</span>
                     )}
                   </div>
                 </div>
@@ -381,21 +337,18 @@ export default function EjecucionSesionPage() {
           </div>
         )}
 
-        {/* RPE selector */}
         {!guardadoOk && (
-          <div className="w-full max-w-xs mb-6">
-            <p className="text-sm font-medium mb-3" style={{ color: 'var(--text)' }}>
-              ¿Cómo fue el esfuerzo? <span style={{ color: 'var(--text-muted)' }}>(opcional)</span>
-            </p>
-            <div className="grid grid-cols-5 gap-1.5">
+          <div className="w-full max-w-sm mb-10">
+            <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>RPE - Esfuerzo Percibido</p>
+            <div className="grid grid-cols-5 gap-2">
               {[1,2,3,4,5,6,7,8,9,10].map(n => (
                 <button
                   key={n}
                   onClick={() => setEsfuerzoPercibido(esfuerzoPercibido === n ? null : n)}
-                  className="rounded-xl py-2.5 text-sm font-bold transition-all"
+                  className="rounded-xl py-3 text-sm font-bold transition-all font-data"
                   style={esfuerzoPercibido === n
-                    ? { background: 'rgb(168,85,247)', color: 'white' }
-                    : { background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }
+                    ? { background: 'var(--text)', color: 'var(--bg)', transform: 'scale(1.05)' }
+                    : { background: 'var(--surface-hover)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
                   }
                 >
                   {n}
@@ -403,85 +356,76 @@ export default function EjecucionSesionPage() {
               ))}
             </div>
             {esfuerzoPercibido && (
-              <p className="text-xs mt-2 text-center" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-sm font-medium mt-4 text-center animate-fade-in" style={{ color: 'var(--semantic-info)' }}>
                 {esfuerzoPercibido <= 3 ? 'Muy ligero' : esfuerzoPercibido <= 5 ? 'Moderado' : esfuerzoPercibido <= 7 ? 'Intenso' : esfuerzoPercibido <= 9 ? 'Muy intenso' : 'Máximo esfuerzo'}
               </p>
             )}
           </div>
         )}
 
-        <div className="flex flex-col gap-3 w-full max-w-xs">
+        <div className="flex flex-col gap-3 w-full max-w-sm">
           {!guardadoOk ? (
             <button
               onClick={async () => { await guardarSesion(); router.push('/cliente') }}
               disabled={guardando}
-              className="btn-primary flex items-center justify-center gap-2"
+              className="btn-primary w-full py-4 text-base"
             >
-              {guardando ? <><Loader2 size={16} className="animate-spin" />Guardando…</> : 'Guardar y volver'}
+              {guardando ? <><Loader2 size={18} className="animate-spin" /> Guardando…</> : 'Terminar sesión'}
             </button>
           ) : (
-            <Link href="/cliente" className="btn-primary text-center">Volver al portal</Link>
+            <Link href="/cliente" className="btn-primary w-full py-4 text-base text-center">Volver al portal</Link>
           )}
-          <button
-              onClick={() => { setShowCompletion(false); setEjerciciosDone(new Set()); setEjercicioActivo(sesion.ejercicios[0]?.id ?? null); setDuracionCompletadaMin(null); sesionStartRef.current = Date.now() }}
-            className="btn-secondary"
-          >
-            Repetir sesión
-          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen pb-32" style={{ background: 'var(--bg)' }}>
-      {/* Header */}
+    <div className="min-h-screen pb-nav-safe" style={{ background: 'var(--bg)' }}>
+      {/* Immersive Header */}
       <div
-        className="sticky top-0 z-10 px-4 pt-safe-top"
+        className="sticky top-0 z-10 px-5 pt-safe-top"
         style={{
-          background: 'rgba(168,85,247,0.08)',
-          borderBottom: '1px solid rgba(168,85,247,0.18)',
-          backdropFilter: 'blur(12px)',
-          paddingTop: 'max(env(safe-area-inset-top), 12px)',
-          paddingBottom: 12,
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderBottom: '1px solid var(--border)',
+          paddingTop: 'max(env(safe-area-inset-top), 16px)',
+          paddingBottom: 16,
         }}
       >
-        <div className="flex items-center gap-3 mb-3">
-          <Link href="/cliente" className="p-2 rounded-lg transition-opacity hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex items-center gap-4 mb-4">
+          <Link href="/cliente" className="p-2 -ml-2 rounded-xl transition-colors glass-btn shadow-none" style={{ color: 'var(--text-muted)' }}>
             <ArrowLeft size={18} />
           </Link>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-base truncate" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
-            <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
-              {sesion.plan?.nombre}
-              {sesion.dia_semana ? ` · ${sesion.dia_semana}` : ''}
+            <p className="font-bold text-lg truncate leading-tight" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+            <p className="text-xs truncate font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>
+              {sesion.plan?.nombre} {sesion.dia_semana ? `· ${sesion.dia_semana}` : ''}
             </p>
           </div>
-          <span className="text-sm font-semibold tabular-nums" style={{ color: 'rgb(192,132,252)' }}>
-            {completados}/{totalEjercicios}
+          <span className="text-base font-bold font-data" style={{ color: 'var(--text)' }}>
+            {completados}<span style={{ color: 'var(--text-muted)' }}>/{totalEjercicios}</span>
           </span>
         </div>
 
         {sesion?.contexto_ia && (
-          <p
-            className="text-sm leading-relaxed mt-1 mb-3"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            {sesion.contexto_ia}
-          </p>
+          <div className="mb-4 p-3 rounded-xl" style={{ background: 'var(--accent-bg)', border: '1px solid var(--border-accent)' }}>
+            <p className="text-xs font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{sesion.contexto_ia}</p>
+          </div>
         )}
 
-        {/* Progress bar */}
-        <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(168,85,247,0.15)' }}>
+        {/* Progress Bar */}
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--surface-hover)' }}>
           <div
             className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${progressPct}%`, background: 'rgb(168,85,247)' }}
+            style={{ width: `${progressPct}%`, background: 'var(--text)' }}
           />
         </div>
       </div>
 
-      {/* Exercise list */}
-      <div className="px-4 pt-4 flex flex-col gap-3 max-w-lg mx-auto">
+      {/* Exercise List */}
+      <div className="px-5 pt-6 flex flex-col gap-4 max-w-lg mx-auto pb-40">
         {sesion.ejercicios.map((ej, idx) => {
           const isDone = ejerciciosDone.has(ej.id)
           const isActive = ej.id === ejercicioActivo
@@ -493,31 +437,30 @@ export default function EjecucionSesionPage() {
             <div
               key={ej.id}
               id={`ej-${ej.id}`}
-              className="rounded-2xl overflow-hidden transition-all"
+              className="glass-card overflow-hidden transition-all duration-300"
               style={{
-                background: 'var(--surface)',
                 border: isDone
-                  ? '1px solid rgba(34,197,94,0.25)'
+                  ? '1px solid var(--semantic-active-border)'
                   : isActive
-                    ? '1px solid rgba(168,85,247,0.3)'
+                    ? '1px solid var(--border-strong)'
                     : '1px solid var(--border)',
                 opacity: isDone ? 0.7 : 1,
+                transform: isActive ? 'scale(1.01)' : 'scale(1)',
+                boxShadow: isActive ? 'var(--shadow-md)' : 'none',
               }}
             >
-              {/* Exercise header */}
               <button
-                className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left"
                 onClick={() => setEjercicioActivo(isActive ? null : ej.id)}
               >
-                {/* Status icon */}
                 {isDone ? (
-                  <CheckCircle2 size={20} style={{ color: 'rgb(34,197,94)', flexShrink: 0 }} />
+                  <CheckCircle2 size={24} style={{ color: 'var(--semantic-active)', flexShrink: 0 }} />
                 ) : (
                   <span
-                    className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold"
+                    className="w-6 h-6 rounded-md flex-shrink-0 flex items-center justify-center text-[11px] font-bold"
                     style={{
-                      background: isActive ? 'rgba(168,85,247,0.18)' : 'rgba(128,128,128,0.12)',
-                      color: isActive ? 'rgb(192,132,252)' : 'var(--text-muted)',
+                      background: isActive ? 'var(--text)' : 'var(--surface-hover)',
+                      color: isActive ? 'var(--bg)' : 'var(--text-muted)',
                     }}
                   >
                     {idx + 1}
@@ -525,145 +468,114 @@ export default function EjecucionSesionPage() {
                 )}
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1">
-                    <p
-                      className="font-semibold text-sm"
-                      style={{ color: isDone ? 'var(--text-muted)' : 'var(--text)' }}
-                    >
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-base truncate" style={{ color: isDone ? 'var(--text-muted)' : 'var(--text)' }}>
                       {ej.ejercicio?.nombre}
                     </p>
                     {ej.ejercicio?.video_url && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDemoEjId(ej.id)
-                        }}
-                        className="p-0.5 rounded transition-opacity hover:opacity-70"
-                        style={{ color: 'rgb(168,85,247)' }}
+                      <div
+                        onClick={(e) => { e.stopPropagation(); setDemoEjId(ej.id) }}
+                        className="p-1 rounded-md transition-opacity hover:opacity-70 bg-transparent border border-dashed"
+                        style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-strong)' }}
                       >
                         <Info size={14} />
-                      </button>
+                      </div>
                     )}
                   </div>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  <p className="text-xs font-medium mt-1" style={{ color: 'var(--text-muted)' }}>
                     {[
-                      ej.ejercicio?.grupo_muscular,
                       `${ej.series} series`,
                       ej.repeticiones,
                     ].filter(Boolean).join(' · ')}
                     {!isDone && ejSets.length > 0 && setsCompletados > 0 && (
-                      <span style={{ color: 'rgb(168,85,247)' }}> · {setsCompletados}/{ejSets.length} sets</span>
+                      <span style={{ color: 'var(--text)' }}> · {setsCompletados}/{ejSets.length} sets</span>
                     )}
                   </p>
                 </div>
 
                 {isActive && !isDone ? (
-                  <ChevronUp size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  <ChevronUp size={18} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                 ) : (
-                  <ChevronDown size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  <ChevronDown size={18} style={{ color: 'var(--border-strong)', flexShrink: 0 }} />
                 )}
               </button>
 
-              {/* Expanded content */}
               {isActive && !isDone && (
-                <div style={{ borderTop: '1px solid var(--border)' }}>
-                  {/* Coach note */}
+                <div className="px-5 pb-5 animate-slide-up" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1rem' }}>
                   {ej.notas && (
-                    <div className="px-4 py-2.5" style={{ background: 'rgba(168,85,247,0.05)' }}>
-                      <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>💬 {ej.notas}</p>
+                    <div className="p-3 rounded-lg mb-4" style={{ background: 'var(--surface-hover)', border: '1px solid var(--border)' }}>
+                      <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>💬 {ej.notas}</p>
                     </div>
                   )}
-                  {/* IA context for this exercise */}
                   {ej.contexto_ia && (
-                    <div className="px-4 py-2">
-                      <p
-                        className="text-xs leading-relaxed mt-0.5"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
-                        {ej.contexto_ia}
-                      </p>
+                    <div className="p-3 rounded-lg mb-4" style={{ background: 'var(--accent-bg)', border: '1px solid var(--border-accent)' }}>
+                      <p className="text-xs font-medium leading-relaxed" style={{ color: 'var(--text)' }}>✨ {ej.contexto_ia}</p>
                     </div>
                   )}
 
                   {/* Sets table */}
-                  <div className="px-4 py-3">
-                    {/* Column headers */}
-                    <div className="grid grid-cols-[32px_1fr_1fr_36px] gap-2 mb-2 px-1">
-                      <span />
-                      <p className="text-[10px] uppercase tracking-wide text-center" style={{ color: 'var(--text-muted)' }}>
-                        Reps
-                      </p>
-                      <p className="text-[10px] uppercase tracking-wide text-center" style={{ color: 'var(--text-muted)' }}>
-                        Carga
-                      </p>
-                      <span />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      {ejSets.map((s, si) => (
-                        <div
-                          key={si}
-                          className="grid grid-cols-[32px_1fr_1fr_36px] gap-2 items-center rounded-lg px-1 py-1.5 transition-colors"
-                          style={{
-                            background: s.hecho ? 'rgba(34,197,94,0.07)' : 'transparent',
-                          }}
-                        >
-                          <span
-                            className="text-xs font-bold text-center"
-                            style={{ color: s.hecho ? 'rgb(34,197,94)' : 'var(--text-muted)' }}
-                          >
-                            {si + 1}
-                          </span>
-                          <input
-                            className="input py-1.5 text-sm text-center"
-                            placeholder={ej.repeticiones || '—'}
-                            value={s.reps}
-                            onChange={e => actualizarSet(ej.id, si, 'reps', e.target.value)}
-                            style={s.hecho ? { opacity: 0.6 } : {}}
-                          />
-                          <input
-                            className="input py-1.5 text-sm text-center"
-                            placeholder={ej.peso_sugerido || '—'}
-                            value={s.carga}
-                            onChange={e => actualizarSet(ej.id, si, 'carga', e.target.value)}
-                            style={s.hecho ? { opacity: 0.6 } : {}}
-                          />
-                          <button
-                            onClick={() => marcarSet(ej.id, si)}
-                            className="flex items-center justify-center"
-                          >
-                            {s.hecho ? (
-                              <CheckCircle2 size={20} style={{ color: 'rgb(34,197,94)' }} />
-                            ) : (
-                              <Circle size={20} style={{ color: 'var(--text-muted)' }} />
-                            )}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-[36px_1fr_1fr_40px] gap-2 mb-2 px-1">
+                    <span />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: 'var(--text-muted)' }}>Reps</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: 'var(--text-muted)' }}>Carga</p>
+                    <span />
                   </div>
 
-                  {/* Complete exercise button */}
-                  <div className="px-4 pb-4 pt-2">
+                  <div className="flex flex-col gap-2">
+                    {ejSets.map((s, si) => (
+                      <div
+                        key={si}
+                        className="grid grid-cols-[36px_1fr_1fr_40px] gap-2 items-center rounded-xl px-1 py-1 transition-all duration-200"
+                        style={{ background: s.hecho ? 'var(--semantic-active-bg)' : 'transparent', border: s.hecho ? '1px solid var(--semantic-active-border)' : '1px solid transparent' }}
+                      >
+                        <span className="text-xs font-bold text-center font-data" style={{ color: s.hecho ? 'var(--semantic-active)' : 'var(--text-muted)' }}>
+                          {si + 1}
+                        </span>
+                        <input
+                          className="input font-data text-sm font-semibold text-center py-2 bg-transparent border-transparent shadow-none"
+                          placeholder={ej.repeticiones || '—'}
+                          value={s.reps}
+                          onChange={e => actualizarSet(ej.id, si, 'reps', e.target.value)}
+                          style={s.hecho ? { opacity: 0.6 } : {}}
+                          onFocus={e => e.currentTarget.style.borderBottom = '1px solid var(--accent)'}
+                          onBlur={e => e.currentTarget.style.borderBottom = '1px solid transparent'}
+                        />
+                        <input
+                          className="input font-data text-sm font-semibold text-center py-2 bg-transparent border-transparent shadow-none"
+                          placeholder={ej.peso_sugerido || '—'}
+                          value={s.carga}
+                          onChange={e => actualizarSet(ej.id, si, 'carga', e.target.value)}
+                          style={s.hecho ? { opacity: 0.6 } : {}}
+                          onFocus={e => e.currentTarget.style.borderBottom = '1px solid var(--accent)'}
+                          onBlur={e => e.currentTarget.style.borderBottom = '1px solid transparent'}
+                        />
+                        <button onClick={() => marcarSet(ej.id, si)} className="flex items-center justify-center p-2 transition-transform active:scale-90">
+                          {s.hecho ? <CheckCircle2 size={24} style={{ color: 'var(--semantic-active)' }} /> : <Circle size={24} style={{ color: 'var(--border-strong)' }} />}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-6">
                     <button
                       onClick={() => completarEjercicio(ej.id)}
                       disabled={!todosSets && ejSets.length > 0}
-                      className="w-full rounded-xl py-3 text-sm font-semibold transition-all"
+                      className="w-full rounded-2xl py-3.5 text-sm font-bold transition-all disabled:opacity-40"
                       style={{
-                        background: todosSets ? 'rgba(168,85,247,0.9)' : 'rgba(128,128,128,0.12)',
-                        color: todosSets ? 'white' : 'var(--text-muted)',
+                        background: todosSets ? 'var(--text)' : 'var(--surface-hover)',
+                        color: todosSets ? 'var(--bg)' : 'var(--text-muted)',
                         cursor: todosSets ? 'pointer' : 'not-allowed',
                       }}
                     >
-                      {todosSets ? '✓ Ejercicio completado' : `Completa los ${ejSets.length - setsCompletados} sets restantes`}
+                      {todosSets ? 'Siguiente Ejercicio' : `Completa los ${ejSets.length - setsCompletados} sets restantes`}
                     </button>
                     {!todosSets && ejSets.length > 0 && (
                       <button
                         onClick={() => completarEjercicio(ej.id)}
-                        className="w-full mt-1.5 text-xs py-1.5 transition-opacity hover:opacity-70"
+                        className="w-full mt-3 text-xs font-semibold py-2 transition-opacity hover:opacity-70"
                         style={{ color: 'var(--text-muted)' }}
                       >
-                        Saltar ejercicio →
+                        Saltar ejercicio
                       </button>
                     )}
                   </div>
@@ -674,64 +586,49 @@ export default function EjecucionSesionPage() {
         })}
       </div>
 
-      {/* ── REST TIMER — sticky bottom ─────────────────── */}
+      {/* ── REST TIMER (Floating Island) ─────────────────── */}
       {timerTotal > 0 && (
         <div
-          className="fixed bottom-0 left-0 right-0 flex items-center justify-center gap-5 px-6 py-4"
-          style={{
-            background: 'var(--surface)',
-            borderTop: '1px solid var(--border)',
-            paddingBottom: 'max(env(safe-area-inset-bottom), 16px)',
-            backdropFilter: 'blur(12px)',
-          }}
+          className="fixed bottom-0 left-0 right-0 px-5"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
         >
-          {/* SVG ring */}
-          <div className="relative w-14 h-14 flex-shrink-0">
-            <svg className="w-14 h-14 -rotate-90" viewBox="0 0 64 64">
-              <circle cx="32" cy="32" r={TIMER_RING_R} fill="none" stroke="rgba(168,85,247,0.15)" strokeWidth="4" />
-              <circle
-                cx="32" cy="32" r={TIMER_RING_R}
-                fill="none"
-                stroke={timerLeft <= 5 ? 'rgb(248,113,113)' : 'rgb(168,85,247)'}
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeDasharray={RING_CIRCUMFERENCE}
-                strokeDashoffset={ringOffset}
-                style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.3s' }}
-              />
-            </svg>
-            <span
-              className="absolute inset-0 flex items-center justify-center text-sm font-bold tabular-nums"
-              style={{ color: timerLeft <= 5 ? 'rgb(248,113,113)' : 'var(--text)' }}
-            >
-              {timerLeft}
-            </span>
-          </div>
+          <div className="max-w-lg mx-auto glass-card flex items-center justify-between gap-4 p-4 rounded-3xl shadow-lg border border-white/10" style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(32px)' }}>
+            <div className="relative w-14 h-14 flex-shrink-0">
+              <svg className="w-14 h-14 -rotate-90" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r={TIMER_RING_R} fill="none" stroke="var(--surface-hover)" strokeWidth="4" />
+                <circle
+                  cx="32" cy="32" r={TIMER_RING_R}
+                  fill="none"
+                  stroke={timerLeft <= 5 ? 'var(--semantic-alert)' : 'var(--text)'}
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  strokeDasharray={RING_CIRCUMFERENCE}
+                  strokeDashoffset={ringOffset}
+                  style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.3s' }}
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-sm font-bold font-data" style={{ color: timerLeft <= 5 ? 'var(--semantic-alert)' : 'var(--text)' }}>
+                {timerLeft}
+              </span>
+            </div>
 
-          <div className="flex-1">
-            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-              {timerRunning ? 'Descansando…' : timerLeft > 0 ? 'Temporizador en pausa' : '¡Listo para el siguiente set!'}
-            </p>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              {timerLeft} s restantes · {timerTotal} s total
-            </p>
-          </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                {timerRunning ? 'Descansando…' : timerLeft > 0 ? 'En pausa' : '¡A por ello!'}
+              </p>
+              <p className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                {timerLeft}s restantes
+              </p>
+            </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={resetTimer}
-              className="p-2.5 rounded-xl transition-colors"
-              style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }}
-            >
-              <RotateCcw size={16} />
-            </button>
-            <button
-              onClick={toggleTimer}
-              className="p-2.5 rounded-xl transition-colors"
-              style={{ background: 'rgba(168,85,247,0.15)', color: 'rgb(168,85,247)' }}
-            >
-              {timerRunning ? <Pause size={16} /> : <Play size={16} />}
-            </button>
+            <div className="flex gap-2">
+              <button onClick={resetTimer} className="p-3 rounded-full transition-colors bg-transparent border" style={{ borderColor: 'var(--border-strong)', color: 'var(--text-muted)' }}>
+                <RotateCcw size={16} />
+              </button>
+              <button onClick={toggleTimer} className="p-3 rounded-full transition-colors shadow-glow" style={{ background: 'var(--text)', color: 'var(--bg)' }}>
+                {timerRunning ? <Pause size={16} /> : <Play size={16} />}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -744,57 +641,27 @@ export default function EjecucionSesionPage() {
         const videoUrl = ejercicio.video_url
         const youtubeId = videoUrl ? extractYouTubeId(videoUrl) : null
         return (
-          <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4" onClick={() => setDemoEjId(null)}>
-            <div className="fixed inset-0 bg-black/70" />
-            <div
-              className="relative rounded-2xl max-w-lg w-full overflow-hidden"
-              style={{ background: 'var(--surface)' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-5 animate-fade-in" onClick={() => setDemoEjId(null)}>
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" />
+            <div className="relative rounded-3xl max-w-lg w-full overflow-hidden glass-card shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
                 <div>
-                  <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{ejercicio.nombre}</p>
-                  {ejercicio.grupo_muscular && (
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{ejercicio.grupo_muscular}</p>
-                  )}
+                  <p className="font-bold text-base" style={{ color: 'var(--text)' }}>{ejercicio.nombre}</p>
+                  {ejercicio.grupo_muscular && <p className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-secondary)' }}>{ejercicio.grupo_muscular}</p>}
                 </div>
-                <button
-                  onClick={() => setDemoEjId(null)}
-                  className="p-1.5 rounded-lg transition-colors"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  <X size={18} />
+                <button onClick={() => setDemoEjId(null)} className="p-2 rounded-full transition-colors glass-btn shadow-none" style={{ color: 'var(--text-muted)' }}>
+                  <X size={16} />
                 </button>
               </div>
-              {/* Body */}
-              <div className="p-4">
+              <div className="p-6">
                 {youtubeId ? (
-                  <iframe
-                    width="100%"
-                    height="250"
-                    src={`https://www.youtube.com/embed/${youtubeId}`}
-                    frameBorder="0"
-                    allowFullScreen
-                    className="rounded-lg"
-                  />
+                  <iframe width="100%" height="220" src={`https://www.youtube.com/embed/${youtubeId}`} frameBorder="0" allowFullScreen className="rounded-2xl" />
                 ) : videoUrl ? (
-                  <a
-                    href={videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-purple-400 underline text-sm"
-                  >
-                    {videoUrl}
-                  </a>
+                  <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm underline font-medium" style={{ color: 'var(--text)' }}>{videoUrl}</a>
                 ) : ejercicio.foto_url ? (
-                  <img
-                    src={ejercicio.foto_url}
-                    alt={ejercicio.nombre}
-                    className="w-full rounded-lg object-cover max-h-64"
-                  />
+                  <img src={ejercicio.foto_url} alt={ejercicio.nombre} className="w-full rounded-2xl object-cover max-h-64" />
                 ) : (
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin demo disponible</p>
+                  <p className="text-sm text-center py-6" style={{ color: 'var(--text-muted)' }}>Sin demo disponible</p>
                 )}
               </div>
             </div>
