@@ -12,6 +12,7 @@ interface SesionSemana {
   orden: number
   ejercicios_count: number
   duracion_estimada_min?: number
+  contexto_ia?: string | null
 }
 
 interface SemanaEntrenoCardProps {
@@ -39,7 +40,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
     async function load() {
       const { data } = await supabase
         .from('sesiones_entrenamiento')
-        .select('id, nombre, dia_semana, orden, duracion_estimada_min, ejercicios:sesion_ejercicios(id)')
+        .select('id, nombre, dia_semana, orden, duracion_estimada_min, contexto_ia, ejercicios:sesion_ejercicios(id)')
         .eq('plan_id', planId)
         .order('orden')
 
@@ -52,6 +53,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             orden: s.orden,
             ejercicios_count: Array.isArray(s.ejercicios) ? s.ejercicios.length : 0,
             duracion_estimada_min: s.duracion_estimada_min ?? undefined,
+            contexto_ia: (s as { contexto_ia?: string }).contexto_ia ?? null,
           }))
         )
       }
@@ -270,6 +272,16 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
                   {nextSession.nombre}
                 </p>
+                {nextSession.contexto_ia && (
+                  <p
+                    className="text-[11px] mt-0.5 leading-snug"
+                    style={{ color: 'var(--text-muted)', opacity: 0.75 }}
+                  >
+                    {nextSession.contexto_ia.length > 80
+                      ? nextSession.contexto_ia.slice(0, 80) + '…'
+                      : nextSession.contexto_ia}
+                  </p>
+                )}
                 <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
                   {nextSession.dia_semana || 'Sesión'}
                   {nextSession.ejercicios_count > 0 && ` · ${nextSession.ejercicios_count} ej.`}
@@ -359,9 +371,21 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                     >
                       {completada ? <CheckCircle2 size={12} /> : (DIA_ABR[s.dia_semana] ?? '?')}
                     </span>
-                    <span className="flex-1 text-sm truncate" style={{ color: completada ? '#48C78E' : 'var(--text)' }}>
-                      {s.nombre}
-                      {completada && ' ✓'}
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm truncate" style={{ color: completada ? '#48C78E' : 'var(--text)' }}>
+                        {s.nombre}
+                        {completada && ' ✓'}
+                      </span>
+                      {s.contexto_ia && (
+                        <span
+                          className="block text-[11px] mt-0.5 leading-snug truncate"
+                          style={{ color: 'var(--text-muted)', opacity: 0.75 }}
+                        >
+                          {s.contexto_ia.length > 80
+                            ? s.contexto_ia.slice(0, 80) + '…'
+                            : s.contexto_ia}
+                        </span>
+                      )}
                     </span>
                     {s.ejercicios_count > 0 && !completada && (
                       <span className="text-[11px]">{s.ejercicios_count} ej.</span>
