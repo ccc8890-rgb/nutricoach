@@ -436,7 +436,7 @@ function ProyeccionCard({
     superComparado: string
 }) {
     return (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+        <div className="bg-gradient-to-br from-blue-50 to-[#161619] dark:from-blue-900/10 dark:to-[#0E0E11] border border-blue-200 dark:border-blue-800 rounded-xl p-4">
             <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">
                 Ahorro {label.toLowerCase()}
             </p>
