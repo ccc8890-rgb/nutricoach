@@ -15,11 +15,19 @@ type PlanRow = {
 
 type StatsMap = Record<string, { total30d: number; ultima: string; activo7d: boolean }>
 
+type ResumenCliente = {
+  cliente_id: string
+  dots: boolean[]
+  sesiones7d: number
+  fatiga: boolean
+}
+
 export default function EntrenosPage() {
   const [planes, setPlanes] = useState<PlanRow[]>([])
   const [busqueda, setBusqueda] = useState('')
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<StatsMap>({})
+  const [resumen, setResumen] = useState<Map<string, ResumenCliente>>(new Map())
 
   useEffect(() => {
     async function load() {
@@ -72,6 +80,14 @@ export default function EntrenosPage() {
         setStats(map)
       }
 
+      const resRes = await fetch('/api/entrenos/resumen-coach')
+      if (resRes.ok) {
+        const resData = await resRes.json()
+        const resMap = new Map<string, ResumenCliente>()
+        for (const c of resData.clientes ?? []) resMap.set(c.cliente_id, c)
+        setResumen(resMap)
+      }
+
       setLoading(false)
     }
     load()
@@ -96,6 +112,9 @@ export default function EntrenosPage() {
     if (diff <= 30) return `Hace ${diff} días`
     return '30d+'
   }
+
+  const DIAS_SEMANA = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+  const HOY_DOT = (new Date().getDay() + 6) % 7
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -155,22 +174,49 @@ export default function EntrenosPage() {
                   <p className="font-semibold" style={{ color: 'var(--text)' }}>{p.nombre}</p>
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{p.cliente?.profile?.nombre} {p.cliente?.profile?.apellidos}</p>
                 </div>
-                <div className="hidden md:flex items-center gap-4 text-sm">
+                <div className="hidden md:flex items-center gap-3">
+                  {p.activo && (() => {
+                    const r = p.cliente_id ? resumen.get(p.cliente_id) : undefined
+                    const s = p.cliente_id ? stats[p.cliente_id] : undefined
+                    return (
+                      <>
+                        <div className="flex items-center gap-1">
+                          {DIAS_SEMANA.map((d, i) => {
+                            const completado = r?.dots[i] ?? false
+                            const esHoy = i === HOY_DOT
+                            return (
+                              <div key={d} className="flex flex-col items-center gap-0.5">
+                                <span className="text-[9px]" style={{ color: 'var(--text-muted)', opacity: esHoy ? 1 : 0.5 }}>{d}</span>
+                                <div
+                                  className="w-2.5 h-2.5 rounded-full transition-all"
+                                  style={{
+                                    background: completado
+                                      ? 'rgb(168,85,247)'
+                                      : esHoy
+                                      ? 'rgba(168,85,247,0.2)'
+                                      : 'var(--border)',
+                                    boxShadow: completado ? '0 0 4px rgba(168,85,247,0.5)' : 'none',
+                                  }}
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                        {r?.fatiga && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'rgba(239,68,68,0.1)', color: 'rgb(239,68,68)', border: '1px solid rgba(239,68,68,0.3)' }}>
+                            Fatiga
+                          </span>
+                        )}
+                        {s?.ultima && (
+                          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                            {diasDesde(s.ultima)}
+                          </span>
+                        )}
+                      </>
+                    )
+                  })()}
                   {p.duracion_semanas && <span className="badge badge-purple">{p.duracion_semanas} sem</span>}
                   <span className={`badge ${p.activo ? 'badge-green' : 'badge-gray'}`}>{p.activo ? 'Activo' : 'Inactivo'}</span>
-                  {s && (
-                    <>
-                      {s.activo7d && (
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      )}
-                      <span style={{ color: 'var(--text-muted)' }}>
-                        {s.ultima ? diasDesde(s.ultima) : ''}
-                      </span>
-                      <span style={{ color: 'var(--text-muted)' }}>
-                        {s.total30d} sesiones
-                      </span>
-                    </>
-                  )}
                 </div>
               </Link>
             )
