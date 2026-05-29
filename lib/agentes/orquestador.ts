@@ -9,6 +9,7 @@ export type PasoDirector =
   | 'supercoach'
   | 'revisor_semanal'
   | 'revisor_semanal_entreno'
+  | 'training_brain'
   | 'motivacion'
   | 'retencion'
 
@@ -75,6 +76,12 @@ export function crearPlanDirectorCliente(
 
   const revisorSemanal = semanal && senales.tienePlanNutricion
   const revisorSemanalEntreno = semanal && senales.tienePlanEntreno
+  const trainingBrain =
+    semanal &&
+    senales.tienePlanEntreno &&
+    senales.sesiones7d >= 2 &&
+    !hasPending(senales, 'training_brain') &&
+    presionInbox === 'normal'
   const motivacion = semanal && checkinReciente && presionInbox === 'normal'
 
   const ejecutar: Record<PasoDirector, boolean> = {
@@ -86,8 +93,9 @@ export function crearPlanDirectorCliente(
     supercoach,
     revisor_semanal: revisorSemanal,
     revisor_semanal_entreno: revisorSemanalEntreno,
+    training_brain: trainingBrain,
     motivacion,
-    retencion: true, // always check for retention risk daily
+    retencion: true,
   }
 
   const motivos: string[] = []

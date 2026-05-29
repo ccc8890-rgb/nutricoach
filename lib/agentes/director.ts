@@ -11,6 +11,7 @@ import { ejecutarAgenteRiesgo } from './riesgo'
 import { ejecutarAgenteMotivacion } from './motivacion'
 import { ejecutarAgenteRiesgoEntreno } from './riesgo-entreno'
 import { ejecutarRevisorSemanalEntreno } from './revisor-semanal-entreno'
+import { ejecutarTrainingBrain } from './training-brain'
 import { ejecutarAgenteReadiness } from './readiness'
 import { ejecutarDirectorSupercoachCliente } from './supercoach'
 import { actualizarPerfilGusto } from './perfil-gusto'
@@ -66,6 +67,7 @@ export async function ejecutarDirector(
       if (plan.ejecutar.revisor_semanal) await ejecutarRevisorSemanal(id)
       if (plan.ejecutar.motivacion) await ejecutarAgenteMotivacion(id)
       if (plan.ejecutar.revisor_semanal_entreno) await ejecutarRevisorSemanalEntreno(id)
+      if (plan.ejecutar.training_brain) await ejecutarTrainingBrain(id)
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       errores.push(`cliente ${id}: ${msg}`)
