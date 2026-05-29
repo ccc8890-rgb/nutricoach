@@ -26,6 +26,7 @@ interface EjercicioEnSesion {
   peso_sugerido: string
   notas: string
   orden: number
+  contexto_ia: string
   ejercicio: { id: string; nombre: string; grupo_muscular: string; tipo: string }
 }
 
@@ -35,6 +36,8 @@ interface SesionLocal {
   dia_semana: string
   orden: number
   notas: string
+  instruccion_coach: string
+  contexto_ia: string
   ejercicios: EjercicioEnSesion[]
 }
 
@@ -50,6 +53,7 @@ export default function EditarEntrenoPage() {
   const [query, setQuery] = useState('')
   const [resultados, setResultados] = useState<Ejercicio[]>([])
   const [notasAbiertas, setNotasAbiertas] = useState<Set<string>>(new Set())
+  const [generandoCtx, setGenerandoCtx] = useState<string | null>(null)
 
   useEffect(() => { loadPlan() }, [id])
 
@@ -65,7 +69,14 @@ export default function EditarEntrenoPage() {
     setPlan(planRes.data)
     const data = (sesionesRes.data ?? []).map(s => ({
       ...s,
-      ejercicios: ((s as { ejercicios: SesionLocal['ejercicios'] }).ejercicios ?? []).sort((a, b) => a.orden - b.orden),
+      instruccion_coach: (s as Record<string, unknown>).instruccion_coach as string ?? '',
+      contexto_ia: (s as Record<string, unknown>).contexto_ia as string ?? '',
+      ejercicios: ((s as { ejercicios: SesionLocal['ejercicios'] }).ejercicios ?? [])
+        .sort((a, b) => a.orden - b.orden)
+        .map(e => ({
+          ...e,
+          contexto_ia: ((e as unknown as Record<string, unknown>).contexto_ia as string) ?? '',
+        })),
     }))
     setSesiones(data)
     if (data.length > 0) setSesionActiva(data[0].id)
@@ -107,6 +118,41 @@ export default function EditarEntrenoPage() {
   async function actualizarSesion(sesionId: string, field: string, value: string) {
     setSesiones(prev => prev.map(s => s.id === sesionId ? { ...s, [field]: value } : s))
     await supabase.from('sesiones_entrenamiento').update({ [field]: value }).eq('id', sesionId)
+  }
+
+  async function generarContexto(sesionId: string) {
+    setGenerandoCtx(sesionId)
+    try {
+      const res = await fetch('/api/entrenos/generar-contexto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sesion_id: sesionId }),
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      if (data.contexto_sesion) {
+        setSesiones(prev => prev.map(s =>
+          s.id === sesionId ? { ...s, contexto_ia: data.contexto_sesion } : s
+        ))
+      }
+      if (data.contextos_ejercicios?.length) {
+        const ctxMap = new Map<string, string>(
+          data.contextos_ejercicios.map((c: { id: string; contexto: string }) => [c.id, c.contexto])
+        )
+        setSesiones(prev => prev.map(s =>
+          s.id === sesionId
+            ? {
+                ...s,
+                ejercicios: s.ejercicios.map(e =>
+                  ctxMap.has(e.id) ? { ...e, contexto_ia: ctxMap.get(e.id)! } : e
+                ),
+              }
+            : s
+        ))
+      }
+    } finally {
+      setGenerandoCtx(null)
+    }
   }
 
   async function añadirEjercicio(ejercicio: Ejercicio) {
@@ -327,6 +373,43 @@ export default function EditarEntrenoPage() {
                 >
                   <Trash2 size={15} />
                 </button>
+              </div>
+
+              {/* IA Context block */}
+              <div
+                className="rounded-xl p-4 mb-5"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+              >
+                <p className="text-xs font-medium uppercase tracking-wide mb-2" style={{ color: 'var(--text-muted)' }}>
+                  Contexto IA
+                </p>
+                <textarea
+                  className="w-full text-sm rounded-lg px-3 py-2 resize-none outline-none mb-3"
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)', minHeight: 64 }}
+                  placeholder="Intención de esta sesión (ej: semana intensidad, apretar en compuestos…)"
+                  value={sesionActual.instruccion_coach}
+                  onChange={e => {
+                    setSesiones(prev => prev.map(s => s.id === sesionActual.id ? { ...s, instruccion_coach: e.target.value } : s))
+                    supabase.from('sesiones_entrenamiento').update({ instruccion_coach: e.target.value }).eq('id', sesionActual.id)
+                  }}
+                />
+                <button
+                  onClick={() => generarContexto(sesionActual.id)}
+                  disabled={generandoCtx === sesionActual.id}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity disabled:opacity-50"
+                  style={{ background: 'rgba(168,85,247,0.15)', color: 'rgb(192,132,252)', border: '1px solid rgba(168,85,247,0.3)' }}
+                >
+                  {generandoCtx === sesionActual.id ? (
+                    <><span className="inline-block w-3 h-3 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'rgba(192,132,252,0.4)', borderTopColor: 'rgb(192,132,252)' }} /> Generando…</>
+                  ) : (
+                    <>🤖 Generar contexto</>
+                  )}
+                </button>
+                {sesionActual.contexto_ia && (
+                  <p className="text-sm mt-3 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                    {sesionActual.contexto_ia}
+                  </p>
+                )}
               </div>
 
               {/* Exercise cards */}
