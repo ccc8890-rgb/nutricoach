@@ -70,6 +70,13 @@ export default function EjecucionSesionPage() {
   const [esfuerzoPercibido, setEsfuerzoPercibido] = useState<number | null>(null)
   const [guardando, setGuardando] = useState(false)
   const [guardadoOk, setGuardadoOk] = useState(false)
+  const [prsDetectados, setPrsDetectados] = useState<Array<{
+    ejercicio_id: string
+    ejercicio_nombre: string
+    peso_anterior_kg: number | null
+    peso_nuevo_kg: number
+    reps: number
+  }>>([])
   const [duracionCompletadaMin, setDuracionCompletadaMin] = useState<number | null>(null)
   const sesionStartRef = useRef(Date.now())
   const [demoEjId, setDemoEjId] = useState<string | null>(null)
@@ -119,12 +126,36 @@ export default function EjecucionSesionPage() {
     }
     setSesion(sesionData)
 
-    // Init set state for each exercise
+    // Fetch historial de pesos reales (última sesión) para pre-cargar carga
+    const ejIds = ejerciciosSorted
+      .map(e => e.ejercicio?.id)
+      .filter((id): id is string => Boolean(id))
+
+    let pesoHistorial: Record<string, number | null> = {}
+    if (ejIds.length > 0) {
+      try {
+        const res = await fetch(`/api/entrenos/historial-pesos?ejercicio_ids=${ejIds.join(',')}`)
+        if (res.ok) {
+          const data = await res.json()
+          for (const item of data.pesos ?? []) {
+            pesoHistorial[item.ejercicio_id] = item.ultimo_peso_kg
+          }
+        }
+      } catch {
+        // silent — fallback a peso_sugerido
+      }
+    }
+
+    // Init set state: usar historial si existe, sino peso_sugerido de la plantilla
     const setsInit: Record<string, SetState[]> = {}
     for (const ej of ejerciciosSorted) {
+      const pesoReal = ej.ejercicio?.id ? pesoHistorial[ej.ejercicio.id] : null
+      const cargaInicial = pesoReal !== null && pesoReal !== undefined
+        ? String(pesoReal)
+        : ej.peso_sugerido ?? ''
       setsInit[ej.id] = Array.from({ length: ej.series ?? 3 }, () => ({
         reps: '',
-        carga: ej.peso_sugerido ?? '',
+        carga: cargaInicial,
         hecho: false,
       }))
     }
@@ -228,7 +259,7 @@ export default function EjecucionSesionPage() {
       })).filter(s => s.reps != null || s.peso_kg != null),
     })).filter(ej => ej.ejercicio_id)
     try {
-      await fetch('/api/entrenos/registrar-sesion', {
+      const saveRes = await fetch('/api/entrenos/registrar-sesion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -238,6 +269,10 @@ export default function EjecucionSesionPage() {
           esfuerzo_percibido: esfuerzoPercibido ?? undefined,
         }),
       })
+      if (saveRes.ok) {
+        const saveData = await saveRes.json()
+        if (saveData.prs?.length) setPrsDetectados(saveData.prs)
+      }
       setGuardadoOk(true)
     } catch {
       // silent — session still shown as complete
@@ -311,6 +346,38 @@ export default function EjecucionSesionPage() {
             </div>
           ))}
         </div>
+
+        {/* PRs detectados */}
+        {prsDetectados.length > 0 && (
+          <div className="w-full max-w-xs mb-4">
+            <p className="text-xs uppercase tracking-wide mb-2 text-center" style={{ color: 'var(--text-muted)' }}>
+              🏅 Nuevos récords personales
+            </p>
+            <div className="flex flex-col gap-2">
+              {prsDetectados.map(pr => (
+                <div
+                  key={pr.ejercicio_id}
+                  className="rounded-xl px-4 py-2.5 flex justify-between items-center"
+                  style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)' }}
+                >
+                  <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                    {pr.ejercicio_nombre}
+                  </span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold" style={{ color: 'rgb(251,191,36)' }}>
+                      {pr.peso_nuevo_kg} kg
+                    </span>
+                    {pr.peso_anterior_kg && (
+                      <span className="text-xs ml-1" style={{ color: 'var(--text-muted)' }}>
+                        (+{(pr.peso_nuevo_kg - pr.peso_anterior_kg).toFixed(1)})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* RPE selector */}
         {!guardadoOk && (
