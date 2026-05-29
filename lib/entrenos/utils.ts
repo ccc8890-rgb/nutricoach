@@ -22,7 +22,7 @@ export const MODALITY_CONFIG: Record<SportModality, ModalityConfig> = {
   ciclismo: { label: 'Ciclismo', Icon: Bike, color: 'text-cyan-600', bg: 'bg-cyan-50', border: 'border-cyan-200', bgRgba: 'rgba(6,182,212,0.15)', colorRgb: 'rgb(6,182,212)' },
   running: { label: 'Running', Icon: Heart, color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-200', bgRgba: 'rgba(239,68,68,0.15)', colorRgb: 'rgb(239,68,68)' },
   hibrido: { label: 'Híbrido', Icon: Waves, color: 'text-teal-600', bg: 'bg-teal-50', border: 'border-teal-200', bgRgba: 'rgba(20,184,166,0.15)', colorRgb: 'rgb(20,184,166)' },
-  calistenia: { label: 'Calistenia', Icon: Dumbbell, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200', bgRgba: 'rgba(99,102,241,0.15)', colorRgb: 'rgb(99,102,241)' },
+  calistenia: { label: 'Calistenia', Icon: Dumbbell, color: 'text-[#808088]', bg: 'bg-[#0E0E11]', border: 'border-[#161619]', bgRgba: 'rgba(128,128,136,0.12)', colorRgb: 'rgb(128,128,136)' },
   natacion: { label: 'Natación', Icon: Waves, color: 'text-sky-500', bg: 'bg-sky-50', border: 'border-sky-200', bgRgba: 'rgba(14,165,233,0.15)', colorRgb: 'rgb(14,165,233)' },
   triatlon: { label: 'Triatlón', Icon: Trophy, color: 'text-violet-500', bg: 'bg-violet-50', border: 'border-violet-200', bgRgba: 'rgba(139,92,246,0.15)', colorRgb: 'rgb(139,92,246)' },
 }

@@ -76,7 +76,7 @@ export const FASE_COLORES: Record<FaseDeportiva, { bg: string; text: string; bad
     pico_maximo:       { bg: '#FFF7ED', text: '#9A3412', badge: 'bg-orange-100 text-orange-800' },
     tapering:          { bg: '#FEF3C7', text: '#92400E', badge: 'bg-amber-100 text-amber-800' },
     carrera_inminente: { bg: '#FEF2F2', text: '#991B1B', badge: 'bg-red-100 text-red-800' },
-    race_day:          { bg: '#4F46E5', text: '#FFFFFF', badge: 'bg-indigo-600 text-white' },
+    race_day:          { bg: '#222228', text: '#E8E8F0', badge: 'bg-[#222228] text-[#E8E8F0] border border-[#383840]' },
     recuperacion:      { bg: '#F5F3FF', text: '#6D28D9', badge: 'bg-purple-100 text-purple-700' },
     finalizada:        { bg: '#F9FAFB', text: '#6B7280', badge: 'bg-gray-100 text-gray-600' },
 }
