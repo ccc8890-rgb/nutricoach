@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { ChevronRight, Dumbbell, Zap, CheckCircle2, Loader2 } from 'lucide-react'
+import { ChevronRight, Dumbbell, Zap, CheckCircle2, Loader2, Play } from 'lucide-react'
 import Link from 'next/link'
 import { getRecomendacionDescanso } from '@/lib/entrenos/descanso'
 
@@ -285,12 +285,20 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                     <CheckCircle2 size={11} />
                     Hecha
                   </span>
+                ) : nextSession.dia_semana === TODAY_NAME ? (
+                  <span
+                    className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style={{ background: 'rgba(168,85,247,0.9)', color: 'white' }}
+                  >
+                    <Play size={11} />
+                    Empezar
+                  </span>
                 ) : (
                   <span
                     className="text-xs font-semibold px-2.5 py-1 rounded-full"
                     style={{ background: 'rgba(168,85,247,0.2)', color: 'rgb(192,132,252)' }}
                   >
-                    {nextSession.dia_semana === TODAY_NAME ? 'Hoy' : 'Iniciar'}
+                    Iniciar
                   </span>
                 )}
                 <ChevronRight size={14} style={{ color: nextSessionCompleted ? 'rgba(72,199,142,0.5)' : 'rgba(168,85,247,0.7)' }} />
