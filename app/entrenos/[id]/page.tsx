@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import BackButton from '@/components/BackButton'
-import { ArrowLeft, Plus, Trash2, Search, X, StickyNote, Calendar } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Search, X, StickyNote, Calendar, Video } from 'lucide-react'
 import { DIAS_SEMANA } from '@/lib/utils'
 import { PlanEntrenamiento, Ejercicio } from '@/types'
 
@@ -25,9 +25,10 @@ interface EjercicioEnSesion {
   descanso_segundos: number
   peso_sugerido: string
   notas: string
+  instruccion_ejercicio: string
   orden: number
   contexto_ia: string
-  ejercicio: { id: string; nombre: string; grupo_muscular: string; tipo: string }
+  ejercicio: { id: string; nombre: string; grupo_muscular: string; tipo: string; foto_url?: string | null; video_url?: string | null }
 }
 
 interface SesionLocal {
@@ -53,6 +54,7 @@ export default function EditarEntrenoPage() {
   const [query, setQuery] = useState('')
   const [resultados, setResultados] = useState<Ejercicio[]>([])
   const [notasAbiertas, setNotasAbiertas] = useState<Set<string>>(new Set())
+  const [instruccionesAbiertas, setInstruccionesAbiertas] = useState<Set<string>>(new Set())
   const [generandoCtx, setGenerandoCtx] = useState<string | null>(null)
 
   useEffect(() => { loadPlan() }, [id])
@@ -76,6 +78,7 @@ export default function EditarEntrenoPage() {
         .map(e => ({
           ...e,
           contexto_ia: ((e as unknown as Record<string, unknown>).contexto_ia as string) ?? '',
+          instruccion_ejercicio: ((e as unknown as Record<string, unknown>).instruccion_ejercicio as string) ?? '',
         })),
     }))
     setSesiones(data)
@@ -199,6 +202,34 @@ export default function EditarEntrenoPage() {
       n.has(ejId) ? n.delete(ejId) : n.add(ejId)
       return n
     })
+  }
+
+  function toggleInstruccion(ejId: string) {
+    setInstruccionesAbiertas(prev => {
+      const n = new Set(prev)
+      n.has(ejId) ? n.delete(ejId) : n.add(ejId)
+      return n
+    })
+  }
+
+  async function moverEjercicio(ejId: string, direction: 'up' | 'down') {
+    if (!sesionActiva) return
+    const sesion = sesiones.find(s => s.id === sesionActiva)
+    if (!sesion) return
+    const idx = sesion.ejercicios.findIndex(e => e.id === ejId)
+    if (idx === -1) return
+    const newIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (newIdx < 0 || newIdx >= sesion.ejercicios.length) return
+    const reordenados = [...sesion.ejercicios]
+    const [moved] = reordenados.splice(idx, 1)
+    reordenados.splice(newIdx, 0, moved)
+    const actualizados = reordenados.map((e, i) => ({ ...e, orden: i }))
+    setSesiones(prev => prev.map(s =>
+      s.id === sesionActiva ? { ...s, ejercicios: actualizados } : s
+    ))
+    await Promise.all(
+      actualizados.map(e => supabase.from('sesion_ejercicios').update({ orden: e.orden }).eq('id', e.id))
+    )
   }
 
   const sesionActual = sesiones.find(s => s.id === sesionActiva) ?? null
@@ -449,6 +480,19 @@ export default function EditarEntrenoPage() {
                               {ej.ejercicio.tipo}
                             </span>
                           )}
+                          {ej.ejercicio?.video_url && (
+                            <a
+                              href={ej.ejercicio.video_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full"
+                              style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)', border: '1px solid rgba(168,85,247,0.25)' }}
+                              title="Ver demostración"
+                            >
+                              <Video size={10} /> Demo
+                            </a>
+                          )}
                         </div>
 
                         {/* Fields */}
@@ -505,10 +549,48 @@ export default function EditarEntrenoPage() {
                             autoFocus
                           />
                         )}
+                        {instruccionesAbiertas.has(ej.id) && (
+                          <input
+                            className="input py-1.5 text-sm w-full mt-2"
+                            placeholder="Nota para IA (ej: técnica estricta, controlar excéntrica…)"
+                            value={ej.instruccion_ejercicio ?? ''}
+                            onChange={e => actualizarEjercicio(ej.id, 'instruccion_ejercicio', e.target.value)}
+                            autoFocus
+                          />
+                        )}
                       </div>
 
                       {/* Actions */}
                       <div className="flex flex-col gap-1 mt-0.5">
+                        <button
+                          onClick={() => moverEjercicio(ej.id, 'up')}
+                          disabled={idx === 0}
+                          className="p-1.5 rounded-md transition-colors disabled:opacity-20 text-xs leading-none font-bold"
+                          title="Subir"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          onClick={() => moverEjercicio(ej.id, 'down')}
+                          disabled={idx === sesionActual.ejercicios.length - 1}
+                          className="p-1.5 rounded-md transition-colors disabled:opacity-20 text-xs leading-none font-bold"
+                          title="Bajar"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          ↓
+                        </button>
+                        <button
+                          onClick={() => toggleInstruccion(ej.id)}
+                          className="p-1.5 rounded-md transition-colors text-sm leading-none"
+                          title="Nota para IA"
+                          style={{
+                            color: (ej.instruccion_ejercicio || instruccionesAbiertas.has(ej.id)) ? 'rgb(168,85,247)' : 'var(--text-muted)',
+                            background: instruccionesAbiertas.has(ej.id) ? 'rgba(168,85,247,0.09)' : 'transparent',
+                          }}
+                        >
+                          🤖
+                        </button>
                         <button
                           onClick={() => toggleNotas(ej.id)}
                           className="p-1.5 rounded-md transition-colors"
