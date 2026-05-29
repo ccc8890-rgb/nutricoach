@@ -93,9 +93,58 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error al guardar los registros' }, { status: 500 })
   }
 
+  // Detectar PRs: comparar peso máximo de esta sesión con prs_por_ejercicio
+  const ejercicioIds = ejercicios.map(e => e.ejercicio_id).filter(Boolean)
+  let prs: Array<{ ejercicio_id: string; ejercicio_nombre: string; peso_anterior_kg: number | null; peso_nuevo_kg: number; reps: number }> = []
+
+  if (ejercicioIds.length > 0) {
+    const { data: prsPrevios } = await admin
+      .from('prs_por_ejercicio')
+      .select('ejercicio_id, peso_max_kg, reps_en_pr')
+      .eq('cliente_id', cliente_id)
+      .in('ejercicio_id', ejercicioIds)
+
+    const prMap = new Map<string, { peso: number; reps: number }>(
+      (prsPrevios ?? []).map(p => [p.ejercicio_id, { peso: p.peso_max_kg, reps: p.reps_en_pr }])
+    )
+
+    const { data: ejerciciosData } = await admin
+      .from('ejercicios')
+      .select('id, nombre')
+      .in('id', ejercicioIds)
+
+    const nombreMap = new Map<string, string>(
+      (ejerciciosData ?? []).map(e => [e.id, e.nombre])
+    )
+
+    for (const ej of ejercicios) {
+      if (!ej.ejercicio_id || !ej.sets_ejecutados?.length) continue
+
+      const pesosEjercicio = ej.sets_ejecutados
+        .map((s: { peso_kg?: number; reps?: number }) => ({ peso: s.peso_kg ?? 0, reps: s.reps ?? 0 }))
+        .filter(s => s.peso > 0)
+
+      if (!pesosEjercicio.length) continue
+
+      const maxSet = pesosEjercicio.reduce((best, s) => s.peso > best.peso ? s : best, pesosEjercicio[0])
+      const prPrevio = prMap.get(ej.ejercicio_id)
+
+      if (!prPrevio || maxSet.peso > prPrevio.peso) {
+        prs.push({
+          ejercicio_id: ej.ejercicio_id,
+          ejercicio_nombre: nombreMap.get(ej.ejercicio_id) ?? ej.ejercicio_id,
+          peso_anterior_kg: prPrevio?.peso ?? null,
+          peso_nuevo_kg: maxSet.peso,
+          reps: maxSet.reps,
+        })
+      }
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     registros: insertedRows?.length ?? rows.length,
     fecha,
+    prs,
   })
 }
