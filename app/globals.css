@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   Casanova Nutrition — Design System v7 (Indigo Pro)
+   Casanova Nutrition — Design System v8 "Instrument"
    ═══════════════════════════════════════════════════════════════
-   - Dark mode profundo con acento índigo (#6366F1)
-   - Light mode limpio con el mismo índigo contrastado
-   - Flat design con sombras sutiles
-   - Micro-interacciones 150-200ms
+   - Base acromática fría (negro #060608, plata #E8E8F0)
+   - Color semántico pastel solo para estados y datos
+   - Coach: Razor (flat, hairlines) / Cliente: Slate Pro (elevación)
+   - Cero índigo, cero azul royal, cero verde néon
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Tailwind v4 ── */
@@ -16,63 +16,86 @@
 :root {
   color-scheme: dark;
 
-  /* ── Easing curves (Emil Kowalski / design-taste) ── */
+  /* ── Easing curves ── */
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ── Acento Indigo ── */
-  --accent: #6366F1;
-  --accent-dark: #4F46E5;
-  --accent-light: #818CF8;
-  --accent-bg: rgba(99, 102, 241, 0.1);
-  --accent-glow: rgba(99, 102, 241, 0.2);
-  --accent-ring: rgba(99, 102, 241, 0.3);
+  /* ── Acento — acromático frío (reemplaza índigo) ── */
+  --accent: #E8E8F0;
+  --accent-dark: #C8C8D0;
+  --accent-light: #F5F5F7;
+  --accent-bg: rgba(232, 232, 240, 0.07);
+  --accent-glow: rgba(232, 232, 240, 0.08);
+  --accent-ring: rgba(232, 232, 240, 0.12);
 
-  /* ── Neutral — Deep Dark Apple ── */
-  --bg: #0A0A0B;
-  --bg-subtle: #0E0E10;
-  --surface: #141416;
-  --surface-hover: #1C1C1E;
-  --surface-elevated: #222225;
-  --border: #2C2C2E;
-  --border-light: #1C1C1F;
-  --border-accent: rgba(161, 161, 166, 0.15);
+  /* ── Neutral — Deep Dark Cold ── */
+  --bg: #060608;
+  --bg-subtle: #09090B;
+  --surface: #0E0E11;
+  --surface-hover: #121216;
+  --surface-elevated: #141418;
+  --border: #161619;
+  --border-light: #111114;
+  --border-strong: #222228;
+  --border-accent: rgba(232, 232, 240, 0.08);
 
-  /* ── Text — Apple SF Pro ── */
-  --text: #F5F5F7;
-  --text-secondary: #A1A1A6;
-  --text-muted: #636366;
+  /* ── Text ── */
+  --text: #E8E8F0;
+  --text-secondary: #808088;
+  --text-muted: #383840;
+  --text-disabled: #242428;
 
   /* ── Glass ── */
-  --glass-bg: rgba(20, 20, 22, 0.72);
-  --glass-border: rgba(44, 44, 46, 0.6);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --glass-bg: rgba(14, 14, 17, 0.72);
+  --glass-border: rgba(22, 22, 25, 0.6);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 
-  /* ── Macronutrientes (pastel) ── */
-  --macro-protein: #52B788;
-  --macro-carbs: #74B9E0;
-  --macro-fat: #F4A261;
-  --macro-calories: #E8C547;
+  /* ── Macronutrientes — soft pastel sobre negro ── */
+  --macro-protein: #6AAF85;
+  --macro-carbs: #8A9AB8;
+  --macro-fat: #C8A96A;
+  --macro-calories: #E8E8F0;
 
-  /* ── Estados (Apple System Colors) ── */
-  --success: #30D158;
-  --success-bg: rgba(48, 209, 88, 0.1);
-  --warning: #C9A96E;
-  --warning-bg: rgba(201, 169, 110, 0.1);
-  --error: #FF453A;
-  --error-bg: rgba(255, 69, 58, 0.1);
-  --info: #0A84FF;
-  --info-bg: rgba(10, 132, 255, 0.1);
+  /* ── Semántico — SOLO para estados, alertas y datos ── */
+  --semantic-active: #6AAF85;
+  --semantic-active-bg: rgba(106, 175, 133, 0.08);
+  --semantic-active-border: rgba(106, 175, 133, 0.18);
+  --semantic-active-text: #4A8F65;
 
-  /* ── Shadows — glows plateados sutiles ── */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.6);
-  --shadow-glow: 0 0 24px var(--accent-glow);
-  --shadow-glow-strong: 0 0 40px var(--accent-glow);
+  --semantic-warn: #C8A96A;
+  --semantic-warn-bg: rgba(200, 169, 106, 0.08);
+  --semantic-warn-border: rgba(200, 169, 106, 0.18);
+  --semantic-warn-text: #A88848;
+
+  --semantic-alert: #B86A6A;
+  --semantic-alert-bg: rgba(184, 106, 106, 0.08);
+  --semantic-alert-border: rgba(184, 106, 106, 0.18);
+  --semantic-alert-text: #986060;
+
+  --semantic-info: #8A9AB8;
+  --semantic-info-bg: rgba(138, 154, 184, 0.08);
+  --semantic-info-border: rgba(138, 154, 184, 0.18);
+  --semantic-info-text: #6A7A98;
+
+  /* ── Estados legacy (backward compat — apuntan a semánticos) ── */
+  --success: var(--semantic-active);
+  --success-bg: var(--semantic-active-bg);
+  --warning: var(--semantic-warn);
+  --warning-bg: var(--semantic-warn-bg);
+  --error: var(--semantic-alert);
+  --error-bg: var(--semantic-alert-bg);
+  --info: var(--semantic-info);
+  --info-bg: var(--semantic-info-bg);
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  --shadow-glow-strong: 0 0 36px var(--accent-glow);
 
   /* ── Safe areas ── */
   --safe-top: env(safe-area-inset-top, 0px);
@@ -93,51 +116,66 @@
 .light {
   color-scheme: light;
 
-  /* ── Acento Indigo ── */
-  --accent: #6366F1;
-  --accent-dark: #4F46E5;
-  --accent-light: #818CF8;
-  --accent-bg: rgba(99, 102, 241, 0.08);
-  --accent-glow: rgba(99, 102, 241, 0.12);
-  --accent-ring: rgba(99, 102, 241, 0.2);
+  --accent: #1C1C1E;
+  --accent-dark: #2C2C2E;
+  --accent-light: #3A3A3C;
+  --accent-bg: rgba(28, 28, 30, 0.06);
+  --accent-glow: rgba(28, 28, 30, 0.08);
+  --accent-ring: rgba(28, 28, 30, 0.14);
 
-  /* ── Neutral — Apple Light ── */
-  --bg: #F2F2F4;
+  --bg: #F5F5F7;
   --bg-subtle: #EBEBED;
   --surface: #FFFFFF;
   --surface-hover: #F8F8FA;
   --surface-elevated: #FFFFFF;
   --border: #D1D1D6;
   --border-light: #E5E5EA;
-  --border-accent: rgba(142, 142, 147, 0.12);
+  --border-strong: #AEAEB2;
+  --border-accent: rgba(60, 60, 67, 0.12);
 
-  /* ── Text ── */
   --text: #1C1C1E;
   --text-secondary: #636366;
   --text-muted: #AEAEB2;
+  --text-disabled: #C7C7CC;
 
-  /* ── Glass ── */
   --glass-bg: rgba(255, 255, 255, 0.78);
   --glass-border: rgba(209, 209, 214, 0.6);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
 
-  /* ── Macronutrientes (pastel) ── */
-  --macro-protein: #2D9E6B;
-  --macro-carbs: #4A9FCC;
-  --macro-fat: #E07C3A;
-  --macro-calories: #B8960E;
+  --macro-protein: #3D9E6B;
+  --macro-carbs: #5A7A9E;
+  --macro-fat: #A87840;
+  --macro-calories: #1C1C1E;
 
-  /* ── Estados ── */
-  --success: #34C759;
-  --success-bg: #F0FFF4;
-  --warning: #B89B7A;
-  --warning-bg: #FBF6EF;
-  --error: #FF3B30;
-  --error-bg: #FFF1F0;
-  --info: #007AFF;
-  --info-bg: #EFF6FF;
+  --semantic-active: #3D9E6B;
+  --semantic-active-bg: rgba(61, 158, 107, 0.08);
+  --semantic-active-border: rgba(61, 158, 107, 0.2);
+  --semantic-active-text: #2D7A52;
 
-  /* ── Shadows ── */
+  --semantic-warn: #A87840;
+  --semantic-warn-bg: rgba(168, 120, 64, 0.08);
+  --semantic-warn-border: rgba(168, 120, 64, 0.2);
+  --semantic-warn-text: #8A6030;
+
+  --semantic-alert: #C05050;
+  --semantic-alert-bg: rgba(192, 80, 80, 0.08);
+  --semantic-alert-border: rgba(192, 80, 80, 0.2);
+  --semantic-alert-text: #A03838;
+
+  --semantic-info: #5A7A9E;
+  --semantic-info-bg: rgba(90, 122, 158, 0.08);
+  --semantic-info-border: rgba(90, 122, 158, 0.2);
+  --semantic-info-text: #426080;
+
+  --success: var(--semantic-active);
+  --success-bg: var(--semantic-active-bg);
+  --warning: var(--semantic-warn);
+  --warning-bg: var(--semantic-warn-bg);
+  --error: var(--semantic-alert);
+  --error-bg: var(--semantic-alert-bg);
+  --info: var(--semantic-info);
+  --info-bg: var(--semantic-info-bg);
+
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -145,7 +183,6 @@
   --shadow-glow: 0 0 15px var(--accent-glow);
   --shadow-glow-strong: 0 0 25px var(--accent-glow);
 
-  /* ── Aliases para compatibilidad ── */
   --primary: var(--accent);
   --primary-dark: var(--accent-dark);
   --primary-bg: var(--accent-bg);
@@ -336,11 +373,12 @@ body {
 
 .btn-primary {
   background: var(--accent);
-  color: #ffffff;
+  color: var(--bg);
 }
 
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 0 20px var(--accent-glow);
+  background: var(--accent-dark);
+  box-shadow: 0 0 16px var(--accent-glow);
   transform: translateY(-1px);
 }
 
@@ -406,8 +444,9 @@ body {
 }
 
 .sidebar-link.active {
-  background: var(--accent-bg);
+  background: var(--surface-elevated);
   color: var(--text);
+  border-left: 2px solid var(--text-secondary);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -426,7 +465,7 @@ body {
 }
 
 .input:focus {
-  border-color: var(--accent-ring);
+  border-color: var(--border-strong);
   box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
@@ -1036,3 +1075,44 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SEMANTIC BADGES — solo para estados y datos, nunca UI chrome
+   ═══════════════════════════════════════════════════════════════ */
+.badge-active {
+  background: var(--semantic-active-bg);
+  border: 1px solid var(--semantic-active-border);
+  color: var(--semantic-active-text);
+}
+
+.badge-warn {
+  background: var(--semantic-warn-bg);
+  border: 1px solid var(--semantic-warn-border);
+  color: var(--semantic-warn-text);
+}
+
+.badge-alert {
+  background: var(--semantic-alert-bg);
+  border: 1px solid var(--semantic-alert-border);
+  color: var(--semantic-alert-text);
+}
+
+.badge-info {
+  background: var(--semantic-info-bg);
+  border: 1px solid var(--semantic-info-border);
+  color: var(--semantic-info-text);
+}
+
+/* Punto de estado (5-6px, inline) */
+.status-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot-active { background: var(--semantic-active); }
+.status-dot-warn   { background: var(--semantic-warn); }
+.status-dot-alert  { background: var(--semantic-alert); }
+.status-dot-muted  { background: var(--text-disabled); border: 1px solid var(--border); }
