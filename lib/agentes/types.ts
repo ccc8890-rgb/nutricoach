@@ -16,6 +16,7 @@ export type TipoTarea =
   | 'alerta_readiness'
   | 'ajuste_nutricion_carga'
   | 'alerta_retencion'
+  | 'training_brain'
 
 export type EstadoTarea =
   | 'pendiente'
