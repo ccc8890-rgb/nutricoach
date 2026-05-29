@@ -70,10 +70,7 @@ const NUTRICION_ITEMS: NavItem[] = [
 ]
 
 const ENTRENAMIENTO_ITEMS: NavItem[] = [
-  { href: '/entrenos', label: 'Planes', icon: Dumbbell },
-  { href: '/entrenos/plantillas', label: 'Planificación', icon: ListChecks },
-  { href: '/entrenos/generar-ia', label: 'Generador IA', icon: Brain },
-  { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Database },
+  { href: '/entrenos', label: 'Training OS', icon: Dumbbell },
 ]
 
 const RECETARIO_ITEMS: NavItem[] = [
