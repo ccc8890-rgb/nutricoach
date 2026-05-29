@@ -10,7 +10,7 @@ const FRANJA_COLORES: Record<string, string> = {
   'Media mañana': '#84CC16',
   'Comida': '#0D9488',
   'Merienda': '#F97316',
-  'Cena': '#4F46E5',
+  'Cena': '#6AAF85',
   'Snack': '#84CC16',
 }
 
@@ -174,7 +174,7 @@ export default function MealCard({
               </span>
             )}
             {grasas && grasas > 0 && (
-              <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: '#4F46E520', color: '#4F46E5' }}>
+              <span className="badge badge-info text-xs font-medium px-2 py-1 rounded-full">
                 {grasas}g G
               </span>
             )}

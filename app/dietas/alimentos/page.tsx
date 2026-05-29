@@ -98,7 +98,7 @@ const MICRO_HIGHLIGHTS: { key: keyof Alimento; label: string; unit: string; colo
     { key: 'vitamina_d_ug', label: 'Vit D', unit: 'µg', color: '#F59E0B' },
     { key: 'vitamina_c_mg', label: 'Vit C', unit: 'mg', color: '#F97316' },
     { key: 'vitamina_b12_ug', label: 'B12', unit: 'µg', color: '#10B981' },
-    { key: 'calcio_mg', label: 'Ca', unit: 'mg', color: '#6366F1' },
+    { key: 'calcio_mg', label: 'Ca', unit: 'mg', color: '#8A9AB8' },
     { key: 'hierro_mg', label: 'Fe', unit: 'mg', color: '#EF4444' },
     { key: 'zinc_mg', label: 'Zn', unit: 'mg', color: '#8B5CF6' },
     { key: 'magnesio_mg', label: 'Mg', unit: 'mg', color: '#06B6D4' },

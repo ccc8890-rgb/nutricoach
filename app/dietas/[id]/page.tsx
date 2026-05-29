@@ -739,7 +739,7 @@ export default function EditarDietaPage() {
     vitamina_d_ug: { label: 'Vit D', idr: 15, unit: 'µg', color: '#F59E0B' },
     vitamina_c_mg: { label: 'Vit C', idr: 80, unit: 'mg', color: '#F97316' },
     vitamina_b12_ug: { label: 'B12', idr: 2.4, unit: 'µg', color: '#10B981' },
-    vitamina_a_ug: { label: 'Vit A', idr: 800, unit: 'µg', color: '#6366F1' },
+    vitamina_a_ug: { label: 'Vit A', idr: 800, unit: 'µg', color: '#8A9AB8' },
     vitamina_e_mg: { label: 'Vit E', idr: 12, unit: 'mg', color: '#8B5CF6' },
     calcio_mg: { label: 'Calcio', idr: 1000, unit: 'mg', color: '#3B82F6' },
     hierro_mg: { label: 'Hierro', idr: 14, unit: 'mg', color: '#EF4444' },

@@ -434,9 +434,9 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             {diaActivo === diaActualEspana() && (() => {
                 const ajuste = getAjusteDesdeNombreSesion(sesion_hoy?.nombre, !!sesion_hoy)
                 const esDescanso = ajuste.tipo === 'descanso_activo' || ajuste.tipo === 'descanso_total'
-                const color = esDescanso ? '#6366f1' : '#f59e0b'
-                const bg = esDescanso ? 'rgba(99,102,241,0.08)' : 'rgba(245,158,11,0.08)'
-                const border = esDescanso ? 'rgba(99,102,241,0.2)' : 'rgba(245,158,11,0.2)'
+                const color = esDescanso ? '#808088' : '#C8A96A'
+                const bg = esDescanso ? 'rgba(128,128,136,0.08)' : 'rgba(200,169,106,0.08)'
+                const border = esDescanso ? 'rgba(128,128,136,0.2)' : 'rgba(200,169,106,0.2)'
                 return (
                     <div className="rounded-2xl p-3 flex items-start gap-3" style={{ background: bg, border: `1px solid ${border}` }}>
                         <Zap size={16} style={{ color, flexShrink: 0, marginTop: 2 }} />

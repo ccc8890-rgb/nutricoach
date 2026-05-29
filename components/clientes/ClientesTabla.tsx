@@ -31,7 +31,7 @@ function ColHeader({ label, sortKey, current, onSort }: { label: string; sortKey
 
 function MembresiaCell({ c }: { c: ClienteRow }) {
   const dias = diasHastaCaducidad(c)
-  const barColor = dias !== null && dias <= 30 ? 'var(--error)' : 'var(--primary, #6366f1)'
+  const barColor = dias !== null && dias <= 30 ? 'var(--semantic-alert)' : 'var(--semantic-active)'
   const barWidth = (() => {
     if (!c.fecha_inicio_membresia || !c.fecha_fin_membresia) return 0
     const total = new Date(c.fecha_fin_membresia).getTime() - new Date(c.fecha_inicio_membresia).getTime()

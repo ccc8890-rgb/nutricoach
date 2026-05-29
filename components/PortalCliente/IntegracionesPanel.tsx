@@ -499,7 +499,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                 <StatPill label="TDEE" value={hoy.calorias_totales.toLocaleString('es-ES')} unit="kcal" color="#f97316" />
               )}
               {hoy.sueno_h != null && (
-                <StatPill label="Sueño" value={hoy.sueno_h.toFixed(1)} unit="h" color="#818CF8" />
+                <StatPill label="Sueño" value={hoy.sueno_h.toFixed(1)} unit="h" color="#8A9AB8" />
               )}
             </div>
           </div>

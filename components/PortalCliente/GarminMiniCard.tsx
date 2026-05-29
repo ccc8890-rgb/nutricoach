@@ -286,8 +286,8 @@ function buildGarminStats(d: GarminDatos): GarminStat[] {
       label: 'Readiness',
       value: readinessLabel(d.training_readiness),
       icon: Brain,
-      color: '#4f46e5',
-      bg: 'rgba(79,70,229,0.1)',
+      color: '#8A9AB8',
+      bg: 'rgba(138,154,184,0.1)',
       description: 'Preparación para entrenar hoy. Combina sueño, recuperación, carga reciente, HRV y estrés.',
     } : null,
     d.pasos !== null ? {
@@ -358,8 +358,8 @@ function buildGarminStats(d: GarminDatos): GarminStat[] {
       label: 'Sueño',
       value: `${d.sueno_h.toFixed(1)} h`,
       icon: Moon,
-      color: '#818CF8',
-      bg: 'rgba(129,140,248,0.1)',
+      color: '#8A9AB8',
+      bg: 'rgba(138,154,184,0.1)',
       description: 'Horas de sueño registradas. La recuperación muscular y la síntesis proteica ocurren principalmente durante el sueño profundo.',
     } : null,
   ].filter(Boolean) as GarminStat[]
