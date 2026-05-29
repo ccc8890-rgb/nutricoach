@@ -1171,3 +1171,17 @@ export interface ComidaConAlternativas extends Comida {
 export interface ComidaAlimentoConFactor extends ComidaAlimento {
   factor_ajuste?: number
 }
+
+export interface PRDetectado {
+  ejercicio_id: string
+  ejercicio_nombre: string
+  peso_anterior_kg: number | null
+  peso_nuevo_kg: number
+  reps: number
+}
+
+export interface HistorialPesoEjercicio {
+  ejercicio_id: string
+  ultimo_peso_kg: number | null
+  ultima_fecha: string | null
+}
