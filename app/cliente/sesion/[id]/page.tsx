@@ -13,6 +13,7 @@ interface EjercicioSesion {
   descanso_segundos: number
   peso_sugerido: string
   notas: string
+  contexto_ia?: string | null
   ejercicio: {
     id: string
     nombre: string
@@ -28,6 +29,7 @@ interface SesionInfo {
   nombre: string
   dia_semana: string
   notas: string
+  contexto_ia?: string | null
   ejercicios: EjercicioSesion[]
   plan: {
     nombre: string
@@ -88,10 +90,10 @@ export default function EjecucionSesionPage() {
     const { data, error } = await supabase
       .from('sesiones_entrenamiento')
       .select(`
-        id, nombre, dia_semana, notas,
+        id, nombre, dia_semana, notas, contexto_ia,
         plan:planes_entrenamiento(nombre, cliente_id),
         ejercicios:sesion_ejercicios(
-          id, orden, series, repeticiones, descanso_segundos, peso_sugerido, notas,
+          id, orden, series, repeticiones, descanso_segundos, peso_sugerido, notas, contexto_ia,
           ejercicio:ejercicios(id, nombre, grupo_muscular, tipo, video_url, foto_url)
         )
       `)
@@ -460,6 +462,15 @@ export default function EjecucionSesionPage() {
           </span>
         </div>
 
+        {sesion?.contexto_ia && (
+          <p
+            className="text-sm leading-relaxed mt-1 mb-3"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {sesion.contexto_ia}
+          </p>
+        )}
+
         {/* Progress bar */}
         <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(168,85,247,0.15)' }}>
           <div
@@ -560,6 +571,17 @@ export default function EjecucionSesionPage() {
                   {ej.notas && (
                     <div className="px-4 py-2.5" style={{ background: 'rgba(168,85,247,0.05)' }}>
                       <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>💬 {ej.notas}</p>
+                    </div>
+                  )}
+                  {/* IA context for this exercise */}
+                  {ej.contexto_ia && (
+                    <div className="px-4 py-2">
+                      <p
+                        className="text-xs leading-relaxed mt-0.5"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        {ej.contexto_ia}
+                      </p>
                     </div>
                   )}
 
