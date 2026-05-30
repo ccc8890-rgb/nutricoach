@@ -57,6 +57,7 @@ const PRIMARY_ITEMS: NavItem[] = [
   { href: '/clientes', label: 'Clientes', icon: UsersRound },
   { href: '/agentes', label: 'Inbox IA', icon: Bot },
   { href: '/respuestas', label: 'Consultas', icon: MessageCircle },
+  { href: '/entrenos', label: 'Entrenamiento', icon: Dumbbell },
 ]
 
 const NUTRICION_ITEMS: NavItem[] = [
@@ -69,9 +70,6 @@ const NUTRICION_ITEMS: NavItem[] = [
   { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: Activity },
 ]
 
-const ENTRENAMIENTO_ITEMS: NavItem[] = [
-  { href: '/entrenos', label: 'Training OS', icon: Dumbbell },
-]
 
 const RECETARIO_ITEMS: NavItem[] = [
   { href: '/recetas', label: 'Biblioteca', icon: ChefHat },
@@ -239,7 +237,6 @@ export default function Sidebar() {
 
   const sections: NavSection[] = [
     { key: 'nutricion', label: 'Nutrición', icon: Utensils, items: NUTRICION_ITEMS },
-    { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
     {
       key: 'recetario',
       label: 'Recetario',
