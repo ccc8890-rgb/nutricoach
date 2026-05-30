@@ -19,6 +19,7 @@ export interface EjercicioCard {
   peso_sugerido: string
   instruccion_ejercicio: string
   contexto_ia: string | null
+  ultimo_peso_kg?: number | null
 }
 
 interface Props {
@@ -95,9 +96,14 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           </span>
         </div>
         <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text)' }}>{ej.nombre}</h2>
-        {ej.peso_sugerido && (
-          <p className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>Sugerido: {ej.peso_sugerido}</p>
-        )}
+        <div className="flex items-center gap-3 mb-1">
+          {ej.ultimo_peso_kg != null && ej.ultimo_peso_kg > 0 && (
+            <p className="text-sm font-medium" style={{ color: 'rgb(168,85,247)' }}>↩ {ej.ultimo_peso_kg} kg</p>
+          )}
+          {ej.peso_sugerido && (
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Coach: {ej.peso_sugerido}</p>
+          )}
+        </div>
         {ej.contexto_ia && (
           <p className="text-xs italic mb-3" style={{ color: 'rgb(168,85,247)' }}>🤖 {ej.contexto_ia}</p>
         )}
@@ -172,6 +178,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           ejercicioNombre={ej.nombre}
           pesoSugerido={ej.peso_sugerido}
           repsSugeridas={ej.repeticiones}
+          pesoInicialKg={ej.ultimo_peso_kg ?? undefined}
           onGuardar={guardarSet}
           onCerrar={() => setSetActivo(null)}
         />

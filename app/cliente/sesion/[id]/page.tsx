@@ -57,6 +57,7 @@ export default function EjecucionSesionPage() {
     peso_nuevo_kg: number
     reps: number
   }>>([])
+  const [historialPesos, setHistorialPesos] = useState<Map<string, number>>(new Map())
 
   const loadSesion = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -93,6 +94,24 @@ export default function EjecucionSesionPage() {
 
     const ejerciciosSorted = ((data.ejercicios as unknown as EjercicioSesion[]) ?? [])
       .sort((a, b) => a.orden - b.orden)
+
+    // Cargar historial de pesos para pre-rellenar los inputs
+    const ejercicioIds = ejerciciosSorted
+      .map(e => e.ejercicio?.id)
+      .filter((v): v is string => Boolean(v))
+    if (ejercicioIds.length > 0) {
+      try {
+        const res = await fetch(`/api/entrenos/historial-pesos?ejercicio_ids=${ejercicioIds.join(',')}`)
+        if (res.ok) {
+          const histData = await res.json()
+          const map = new Map<string, number>()
+          for (const p of histData.pesos ?? []) {
+            if (p.ultimo_peso_kg != null) map.set(p.ejercicio_id, p.ultimo_peso_kg)
+          }
+          setHistorialPesos(map)
+        }
+      } catch { /* silencioso */ }
+    }
 
     setSesion({
       ...data,
@@ -208,6 +227,7 @@ export default function EjecucionSesionPage() {
     peso_sugerido: ej.peso_sugerido ?? '',
     instruccion_ejercicio: ej.notas ?? '',
     contexto_ia: ej.contexto_ia ?? null,
+    ultimo_peso_kg: ej.ejercicio?.id ? (historialPesos.get(ej.ejercicio.id) ?? null) : null,
   }))
 
   return (

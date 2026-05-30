@@ -8,14 +8,15 @@ interface Props {
   ejercicioNombre: string
   pesoSugerido: string
   repsSugeridas: string
+  pesoInicialKg?: number
   onGuardar: (kg: number, reps: number, rpe: number) => void
   onCerrar: () => void
 }
 
 export default function SetRegistroSheet({
-  setNum, totalSets, ejercicioNombre, pesoSugerido, repsSugeridas, onGuardar, onCerrar
+  setNum, totalSets, ejercicioNombre, pesoSugerido, repsSugeridas, pesoInicialKg, onGuardar, onCerrar
 }: Props) {
-  const [kg, setKg] = useState(pesoSugerido ? parseFloat(pesoSugerido) || 0 : 0)
+  const [kg, setKg] = useState(pesoInicialKg != null ? pesoInicialKg : pesoSugerido ? parseFloat(pesoSugerido) || 0 : 0)
   const [reps, setReps] = useState(parseInt(repsSugeridas) || 0)
   const [rpe, setRpe] = useState(7)
 
@@ -34,6 +35,9 @@ export default function SetRegistroSheet({
           <div>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Set {setNum} / {totalSets}</p>
             <p className="font-semibold" style={{ color: 'var(--text)' }}>{ejercicioNombre}</p>
+            {pesoInicialKg != null && pesoInicialKg > 0 && (
+              <p className="text-xs mt-0.5" style={{ color: 'rgb(168,85,247)' }}>Última vez: {pesoInicialKg} kg</p>
+            )}
           </div>
           <button onClick={onCerrar} style={{ color: 'var(--text-muted)' }} aria-label="Cerrar">
             <X size={18} />
