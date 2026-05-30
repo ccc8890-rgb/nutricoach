@@ -1,14 +1,13 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ClipboardList, Brain, Library, Dumbbell, Sparkles } from 'lucide-react'
+import { LayoutDashboard, Brain, Library, Dumbbell, Sparkles } from 'lucide-react'
 
 const SECTIONS = [
   {
     label: 'Coach',
     items: [
       { href: '/entrenos', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-      { href: '/entrenos/planes', label: 'Planes', icon: ClipboardList },
       { href: '/entrenos/brain-ia', label: 'Brain IA', icon: Brain },
     ],
   },
@@ -32,22 +31,19 @@ export default function TrainingSubNav() {
 
   function isActive(href: string, exact = false) {
     if (exact) return pathname === href
-    if (href === '/entrenos/planes') {
-      const parts = pathname.split('/').filter(Boolean)
-      return parts.length === 2 && parts[0] === 'entrenos' && parts[1] !== 'plantillas' && parts[1] !== 'ejercicios' && parts[1] !== 'generar-ia' && parts[1] !== 'nueva' && parts[1] !== 'brain-ia' && parts[1] !== 'planes'
-    }
     return pathname.startsWith(href)
   }
 
   return (
     <nav
-      className="hidden lg:flex flex-col flex-shrink-0"
+      className="hidden lg:flex flex-col flex-shrink-0 training-subnav"
       style={{
         width: 148,
         background: 'var(--surface)',
         borderRight: '1px solid var(--border)',
         paddingTop: 12,
         paddingBottom: 12,
+        animation: 'slideInLeft 0.22s ease-out',
       }}
     >
       <div style={{ padding: '0 10px 8px', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
@@ -75,7 +71,7 @@ export default function TrainingSubNav() {
                   borderLeft: `2px solid ${active ? 'rgb(168,85,247)' : 'transparent'}`,
                   background: active ? 'rgba(168,85,247,0.06)' : 'transparent',
                   textDecoration: 'none',
-                  transition: 'all 0.15s',
+                  transition: 'color 0.15s, background 0.15s, border-color 0.15s',
                 }}
               >
                 <item.icon size={14} />
