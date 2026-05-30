@@ -31,7 +31,7 @@ interface RawEjercicio {
   instruccion_ejercicio: string | null
   contexto_ia: string | null
   orden: number
-  ejercicio: { id: string; nombre: string; grupo_muscular: string; tipo: string } | null
+  ejercicio: { id: string; nombre: string; grupo_muscular: string; tipo: string; foto_url?: string | null; video_url?: string | null } | null
 }
 
 interface RawSesion {
@@ -83,6 +83,8 @@ function agruparPorSemanas(sesiones: RawSesion[], duracion: number | null): Sema
             instruccion_ejercicio: ej.instruccion_ejercicio ?? '',
             contexto_ia: ej.contexto_ia ?? null,
             orden: ej.orden,
+            foto_url: ej.ejercicio?.foto_url ?? null,
+            video_url: ej.ejercicio?.video_url ?? null,
           })),
       }))
 
@@ -122,7 +124,7 @@ export default function PlanEditorPage() {
         ejercicios:sesion_ejercicios(
           id, ejercicio_id, series, repeticiones, descanso_segundos,
           peso_sugerido, rpe, notas, instruccion_ejercicio, contexto_ia, orden,
-          ejercicio:ejercicios(id, nombre, grupo_muscular, tipo)
+          ejercicio:ejercicios(id, nombre, grupo_muscular, tipo, foto_url, video_url)
         )
       `)
       .eq('plan_id', id)
@@ -179,6 +181,19 @@ export default function PlanEditorPage() {
         supabase.from('sesion_ejercicios').update({ orden: i }).eq('id', eid)
       )
     )
+  }
+
+  async function handleUpdateEjercicio(sesionEjercicioId: string, field: 'instruccion_ejercicio', value: string) {
+    await supabase.from('sesion_ejercicios').update({ [field]: value }).eq('id', sesionEjercicioId)
+    setSemanas(prev => prev.map(sem => ({
+      ...sem,
+      sesiones: sem.sesiones.map(ses => ({
+        ...ses,
+        ejercicios: ses.ejercicios.map(ej =>
+          ej.id === sesionEjercicioId ? { ...ej, [field]: value } : ej
+        ),
+      })),
+    })))
   }
 
   async function handleMover(ejercicioId: string, destSesionId: string) {
@@ -241,6 +256,7 @@ export default function PlanEditorPage() {
           onReorder={handleReorder}
           onMover={handleMover}
           onToggleContextoIA={handleToggleContextoIA}
+          onUpdateEjercicio={handleUpdateEjercicio}
           sesionesDisponibles={sesionesFlat}
         />
       )}

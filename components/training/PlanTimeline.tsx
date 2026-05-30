@@ -15,7 +15,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react'
+import { GripVertical, ArrowUpDown, ChevronDown, ChevronUp, Video } from 'lucide-react'
 
 export interface EjercicioTimeline {
   id: string
@@ -31,6 +31,8 @@ export interface EjercicioTimeline {
   instruccion_ejercicio: string
   contexto_ia: string | null
   orden: number
+  foto_url?: string | null
+  video_url?: string | null
 }
 
 export interface SesionTimeline {
@@ -57,6 +59,7 @@ interface PlanTimelineProps {
   onReorder: (sesionId: string, ejerciciosOrdenados: string[]) => Promise<void>
   onMover: (ejercicioId: string, destSesionId: string) => Promise<void>
   onToggleContextoIA: (sesionId: string, ejercicioId: string) => void
+  onUpdateEjercicio?: (sesionEjercicioId: string, field: 'instruccion_ejercicio', value: string) => Promise<void>
   sesionesDisponibles: { id: string; nombre: string; dia_semana: string; semana: number }[]
 }
 
@@ -65,14 +68,18 @@ function SortableEjercicioCard({
   sesionId,
   onMoverClick,
   onToggleIA,
+  onUpdateEjercicio,
 }: {
   ej: EjercicioTimeline
   sesionId: string
   onMoverClick: (info: MoverDestino) => void
   onToggleIA: () => void
+  onUpdateEjercicio?: (id: string, field: 'instruccion_ejercicio', value: string) => Promise<void>
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ej.id })
   const [expanded, setExpanded] = useState(false)
+  const [instruccionOpen, setInstruccionOpen] = useState(false)
+  const [instruccionDraft, setInstruccionDraft] = useState(ej.instruccion_ejercicio)
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -101,7 +108,22 @@ function SortableEjercicioCard({
         </button>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{ej.nombre}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{ej.nombre}</p>
+            {ej.video_url && (
+              <a
+                href={ej.video_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors"
+                style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)', border: '1px solid rgba(168,85,247,0.25)' }}
+                title="Ver demostración"
+              >
+                <Video size={10} /> Demo
+              </a>
+            )}
+          </div>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             {ej.series}×{ej.repeticiones}
             {ej.rpe ? ` @RPE${ej.rpe}` : ''}
@@ -114,6 +136,20 @@ function SortableEjercicioCard({
             style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)' }}>
             {ej.grupo_muscular}
           </span>
+        )}
+
+        {onUpdateEjercicio && (
+          <button
+            onClick={() => { setInstruccionOpen(v => !v); if (!expanded) setExpanded(true) }}
+            className="flex-shrink-0 p-1 rounded transition-colors"
+            title="Nota para IA"
+            style={{
+              color: (instruccionDraft || instruccionOpen) ? 'rgb(168,85,247)' : 'var(--text-muted)',
+              background: instruccionOpen ? 'rgba(168,85,247,0.09)' : 'transparent',
+            }}
+          >
+            🤖
+          </button>
         )}
 
         <button
@@ -139,7 +175,20 @@ function SortableEjercicioCard({
       {expanded && (
         <div className="ml-6 mb-2 pl-3 py-2 rounded-lg border-l-2 text-xs"
           style={{ borderColor: 'rgba(168,85,247,0.3)', color: 'var(--text-secondary)' }}>
-          {ej.instruccion_ejercicio && <p className="mb-1">{ej.instruccion_ejercicio}</p>}
+          {instruccionOpen ? (
+            <input
+              className="input py-1 text-xs w-full mb-1"
+              placeholder="Nota para IA (ej: técnica estricta, controlar excéntrica…)"
+              value={instruccionDraft}
+              onChange={e => setInstruccionDraft(e.target.value)}
+              onBlur={() => {
+                if (onUpdateEjercicio) onUpdateEjercicio(ej.id, 'instruccion_ejercicio', instruccionDraft)
+              }}
+              autoFocus
+            />
+          ) : (
+            instruccionDraft && <p className="mb-1">{instruccionDraft}</p>
+          )}
           {ej.contexto_ia ? (
             <p className="italic" style={{ color: 'rgb(168,85,247)' }}>🤖 {ej.contexto_ia}</p>
           ) : (
@@ -153,7 +202,7 @@ function SortableEjercicioCard({
   )
 }
 
-export default function PlanTimeline({ semanas, onReorder, onMover, onToggleContextoIA, sesionesDisponibles }: PlanTimelineProps) {
+export default function PlanTimeline({ semanas, onReorder, onMover, onToggleContextoIA, onUpdateEjercicio, sesionesDisponibles }: PlanTimelineProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
   const [moverInfo, setMoverInfo] = useState<MoverDestino | null>(null)
 
@@ -205,6 +254,7 @@ export default function PlanTimeline({ semanas, onReorder, onMover, onToggleCont
                       sesionId={sesion.id}
                       onMoverClick={setMoverInfo}
                       onToggleIA={() => onToggleContextoIA(sesion.id, ej.id)}
+                      onUpdateEjercicio={onUpdateEjercicio}
                     />
                   ))}
                 </SortableContext>
