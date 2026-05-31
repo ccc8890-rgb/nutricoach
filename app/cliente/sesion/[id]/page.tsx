@@ -3,8 +3,9 @@ import { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Trophy, Loader2 } from 'lucide-react'
+import { ArrowLeft, Trophy, Loader2, Play } from 'lucide-react'
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
+import EjercicioDemoModal from '@/components/training/EjercicioDemoModal'
 
 type Modo = 'registrar' | 'solo-ver'
 
@@ -58,6 +59,7 @@ export default function EjecucionSesionPage() {
     reps: number
   }>>([])
   const [historialPesos, setHistorialPesos] = useState<Map<string, number>>(new Map())
+  const [demoEjercicio, setDemoEjercicio] = useState<{ nombre: string; grupo_muscular: string; video_url?: string | null; foto_url?: string | null } | null>(null)
 
   const loadSesion = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -228,6 +230,8 @@ export default function EjecucionSesionPage() {
     instruccion_ejercicio: ej.notas ?? '',
     contexto_ia: ej.contexto_ia ?? null,
     ultimo_peso_kg: ej.ejercicio?.id ? (historialPesos.get(ej.ejercicio.id) ?? null) : null,
+    video_url: ej.ejercicio?.video_url ?? null,
+    foto_url: ej.ejercicio?.foto_url ?? null,
   }))
 
   return (
@@ -308,16 +312,32 @@ export default function EjecucionSesionPage() {
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
               >
                 <div className="flex items-start justify-between mb-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
                     <span
                       className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold flex-shrink-0"
                       style={{ background: 'rgba(168,85,247,0.12)', color: 'rgb(168,85,247)' }}
                     >{i + 1}</span>
-                    <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre}</p>
+                    <p className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre}</p>
                   </div>
-                  <span className="text-xs ml-2 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
-                    {ej.series}×{ej.repeticiones}
-                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                    {(ej.ejercicio?.video_url || ej.ejercicio?.foto_url) && (
+                      <button
+                        onClick={() => setDemoEjercicio({
+                          nombre: ej.ejercicio?.nombre ?? '',
+                          grupo_muscular: ej.ejercicio?.grupo_muscular ?? '',
+                          video_url: ej.ejercicio?.video_url,
+                          foto_url: ej.ejercicio?.foto_url,
+                        })}
+                        className="flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-semibold"
+                        style={{ background: 'rgba(168,85,247,0.12)', color: 'rgb(168,85,247)', border: '1px solid rgba(168,85,247,0.25)' }}
+                      >
+                        <Play size={10} fill="currentColor" /> Demo
+                      </button>
+                    )}
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {ej.series}×{ej.repeticiones}
+                    </span>
+                  </div>
                 </div>
                 {ej.ejercicio?.grupo_muscular && (
                   <p className="text-xs mb-1 ml-7" style={{ color: 'var(--text-muted)' }}>{ej.ejercicio.grupo_muscular}</p>
@@ -336,6 +356,17 @@ export default function EjecucionSesionPage() {
           </div>
         )}
       </div>
+
+      {/* Modal demo — disponible en ambos modos */}
+      {demoEjercicio && (
+        <EjercicioDemoModal
+          nombre={demoEjercicio.nombre}
+          grupo_muscular={demoEjercicio.grupo_muscular}
+          video_url={demoEjercicio.video_url}
+          foto_url={demoEjercicio.foto_url}
+          onCerrar={() => setDemoEjercicio(null)}
+        />
+      )}
     </div>
   )
 }

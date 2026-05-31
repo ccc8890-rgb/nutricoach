@@ -1,7 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play } from 'lucide-react'
 import SetRegistroSheet from './SetRegistroSheet'
+import EjercicioDemoModal from './EjercicioDemoModal'
 
 export interface SetData {
   kg: number
@@ -20,6 +21,8 @@ export interface EjercicioCard {
   instruccion_ejercicio: string
   contexto_ia: string | null
   ultimo_peso_kg?: number | null
+  video_url?: string | null
+  foto_url?: string | null
 }
 
 interface Props {
@@ -39,6 +42,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
     )
   )
   const [setActivo, setSetActivo] = useState<{ ejId: string; setIdx: number } | null>(null)
+  const [demoAbierto, setDemoAbierto] = useState(false)
 
   const ej = ejercicios[ejIdx]
   if (!ej) return null
@@ -95,7 +99,19 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
             {ej.series}×{ej.repeticiones}
           </span>
         </div>
-        <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text)' }}>{ej.nombre}</h2>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{ej.nombre}</h2>
+          {(ej.video_url || ej.foto_url) && (
+            <button
+              onClick={() => setDemoAbierto(true)}
+              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full flex-shrink-0 ml-2 font-semibold"
+              style={{ background: 'rgba(168,85,247,0.12)', color: 'rgb(168,85,247)', border: '1px solid rgba(168,85,247,0.25)' }}
+              aria-label="Ver demostración"
+            >
+              <Play size={11} fill="currentColor" /> Demo
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-3 mb-1">
           {ej.ultimo_peso_kg != null && ej.ultimo_peso_kg > 0 && (
             <p className="text-sm font-medium" style={{ color: 'rgb(168,85,247)' }}>↩ {ej.ultimo_peso_kg} kg</p>
@@ -181,6 +197,17 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           pesoInicialKg={ej.ultimo_peso_kg ?? undefined}
           onGuardar={guardarSet}
           onCerrar={() => setSetActivo(null)}
+        />
+      )}
+
+      {/* Modal demo */}
+      {demoAbierto && (
+        <EjercicioDemoModal
+          nombre={ej.nombre}
+          grupo_muscular={ej.grupo_muscular}
+          video_url={ej.video_url}
+          foto_url={ej.foto_url}
+          onCerrar={() => setDemoAbierto(false)}
         />
       )}
     </div>
