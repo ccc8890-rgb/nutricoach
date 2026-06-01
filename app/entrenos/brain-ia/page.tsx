@@ -16,6 +16,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import type { EstadoTarea, FuenteCientifica, TipoTarea } from '@/lib/agentes/types'
+import { crearDecisionSummary } from '@/lib/training/workspace'
 
 const TRAINING_TYPES: TipoTarea[] = [
   'training_brain',
@@ -37,9 +38,9 @@ const STATUS_CONFIG: Record<string, { label: string; icon: typeof CheckCircle2; 
   pendiente: {
     label: 'Pendiente',
     icon: AlertTriangle,
-    bg: 'var(--semantic-warning-bg)',
-    color: 'var(--semantic-warning)',
-    border: 'var(--semantic-warning-border)',
+    bg: 'var(--semantic-warn-bg)',
+    color: 'var(--semantic-warn)',
+    border: 'var(--semantic-warn-border)',
   },
   modificado: {
     label: 'Editada',
@@ -115,7 +116,7 @@ function nombreCliente(tarea: TareaInbox): string {
 
 function priorityTone(priority: number) {
   if (priority <= 3) return { label: 'Alta', color: 'var(--semantic-alert)', bg: 'var(--semantic-alert-bg)', border: 'var(--semantic-alert-border)' }
-  if (priority <= 6) return { label: 'Media', color: 'var(--semantic-warning)', bg: 'var(--semantic-warning-bg)', border: 'var(--semantic-warning-border)' }
+  if (priority <= 6) return { label: 'Media', color: 'var(--semantic-warn)', bg: 'var(--semantic-warn-bg)', border: 'var(--semantic-warn-border)' }
   return { label: 'Baja', color: 'var(--text-muted)', bg: 'var(--surface)', border: 'var(--border)' }
 }
 
@@ -130,6 +131,7 @@ export default function BrainIAPage() {
   const [error, setError] = useState('')
   const [filtro, setFiltro] = useState<'todas' | 'pendiente' | 'aprobado' | 'rechazado' | 'modificado'>('pendiente')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const [comment, setComment] = useState('')
@@ -169,6 +171,10 @@ export default function BrainIAPage() {
       return t.estado === filtro
     })
   }, [tareas, filtro])
+
+  const selected = useMemo(() => (
+    filtradas.find(t => t.id === selectedId) ?? filtradas[0] ?? null
+  ), [filtradas, selectedId])
 
   async function decidir(tarea: TareaInbox, decision: 'aprobado' | 'rechazado' | 'modificado') {
     setSavingId(tarea.id)
@@ -281,18 +287,24 @@ export default function BrainIAPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="grid grid-cols-1 gap-4 2xl:grid-cols-2">
           {filtradas.map((tarea, index) => (
             <RecommendationCard
               key={tarea.id}
               tarea={tarea}
               index={index}
+              selected={selected?.id === tarea.id}
               expanded={expandedId === tarea.id}
               editing={editingId === tarea.id}
               draft={draft}
               comment={comment}
               saving={savingId === tarea.id}
-              onToggle={() => setExpandedId(expandedId === tarea.id ? null : tarea.id)}
+              onSelect={() => setSelectedId(tarea.id)}
+              onToggle={() => {
+                setSelectedId(tarea.id)
+                setExpandedId(expandedId === tarea.id ? null : tarea.id)
+              }}
               onApprove={() => decidir(tarea, 'aprobado')}
               onReject={() => decidir(tarea, 'rechazado')}
               onEdit={() => startEdit(tarea)}
@@ -306,6 +318,16 @@ export default function BrainIAPage() {
               onComment={setComment}
             />
           ))}
+          </div>
+          {selected && (
+            <DecisionDetailPanel
+              tarea={selected}
+              saving={savingId === selected.id}
+              onApprove={() => decidir(selected, 'aprobado')}
+              onReject={() => decidir(selected, 'rechazado')}
+              onEdit={() => startEdit(selected)}
+            />
+          )}
         </div>
       )}
     </div>
@@ -319,7 +341,7 @@ function StatCard({ label, value, tone, onClick }: {
   onClick: () => void
 }) {
   const color = tone === 'warning'
-    ? 'var(--semantic-warning)'
+    ? 'var(--semantic-warn)'
     : tone === 'info'
       ? 'var(--semantic-info)'
       : tone === 'active'
@@ -340,12 +362,14 @@ function StatCard({ label, value, tone, onClick }: {
 function RecommendationCard(props: {
   tarea: TareaInbox
   index: number
+  selected: boolean
   expanded: boolean
   editing: boolean
   draft: string
   comment: string
   saving: boolean
   onToggle: () => void
+  onSelect: () => void
   onApprove: () => void
   onReject: () => void
   onEdit: () => void
@@ -367,8 +391,9 @@ function RecommendationCard(props: {
   return (
     <article
       className="glass-card p-4"
+      onClick={props.onSelect}
       style={{
-        borderColor: status.border,
+        borderColor: props.selected ? priority.border : status.border,
         animation: `fadeIn 0.24s var(--ease-out-strong) ${Math.min(props.index, 8) * 35}ms both`,
       }}
     >
@@ -442,7 +467,7 @@ function RecommendationCard(props: {
             <InfoBlock title="Señales detectadas">
               {signals.map((s, i) => (
                 <div key={i} className="flex items-start gap-2 text-xs">
-                  <span className="mt-0.5 rounded-full px-2 py-0.5 font-semibold" style={{ background: 'var(--semantic-warning-bg)', color: 'var(--semantic-warning)' }}>
+                  <span className="mt-0.5 rounded-full px-2 py-0.5 font-semibold" style={{ background: 'var(--semantic-warn-bg)', color: 'var(--semantic-warn)' }}>
                     {s.tipo.replaceAll('_', ' ')}
                   </span>
                   <span style={{ color: 'var(--text-secondary)' }}>{s.descripcion}</span>
@@ -480,7 +505,7 @@ function RecommendationCard(props: {
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3" style={{ borderColor: 'var(--border)' }}>
         <button
-          onClick={props.onToggle}
+          onClick={(e) => { e.stopPropagation(); props.onToggle() }}
           className="inline-flex items-center gap-1 text-xs font-semibold"
           style={{ color: 'var(--text-muted)' }}
         >
@@ -490,14 +515,14 @@ function RecommendationCard(props: {
 
         {(tarea.estado === 'pendiente' || tarea.estado === 'en_revision' || tarea.estado === 'modificado') && (
           <div className="flex flex-wrap gap-2">
-            <button onClick={props.onEdit} disabled={props.saving} className="btn-secondary text-xs inline-flex items-center gap-1">
+            <button onClick={(e) => { e.stopPropagation(); props.onEdit() }} disabled={props.saving} className="btn-secondary text-xs inline-flex items-center gap-1">
               <Edit3 size={12} />
               Editar
             </button>
-            <button onClick={props.onReject} disabled={props.saving} className="rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: 'var(--semantic-alert-bg)', color: 'var(--semantic-alert)', border: '1px solid var(--semantic-alert-border)' }}>
+            <button onClick={(e) => { e.stopPropagation(); props.onReject() }} disabled={props.saving} className="rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: 'var(--semantic-alert-bg)', color: 'var(--semantic-alert)', border: '1px solid var(--semantic-alert-border)' }}>
               Ignorar
             </button>
-            <button onClick={props.onApprove} disabled={props.saving} className="rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)', border: '1px solid var(--semantic-active-border)' }}>
+            <button onClick={(e) => { e.stopPropagation(); props.onApprove() }} disabled={props.saving} className="rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)', border: '1px solid var(--semantic-active-border)' }}>
               Aprobar
             </button>
           </div>
@@ -511,6 +536,120 @@ function RecommendationCard(props: {
   )
 }
 
+function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
+  tarea: TareaInbox
+  saving: boolean
+  onApprove: () => void
+  onReject: () => void
+  onEdit: () => void
+}) {
+  const payload = tarea.payload ?? {}
+  const signals = payload.senales ?? []
+  const ajustes = payload.ajustes_plan ?? []
+  const summary = crearDecisionSummary({
+    prioridad: tarea.prioridad,
+    tipo: tarea.tipo,
+    senalesCount: signals.length,
+    ajustesCount: ajustes.length,
+    evidenciaCount: tarea.fuentes?.length ?? 0,
+  })
+  const riskColor = summary.risk === 'alto'
+    ? 'var(--semantic-alert)'
+    : summary.risk === 'medio'
+      ? 'var(--semantic-warn)'
+      : 'var(--semantic-active)'
+
+  return (
+    <aside className="xl:sticky xl:top-28 xl:self-start">
+      <section className="rounded-[28px] border p-4" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))' }}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+              Decision detail
+            </p>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
+              {summary.intent}
+            </h2>
+          </div>
+          <span className="rounded-full border px-2.5 py-1 text-xs font-semibold" style={{ borderColor: riskColor, color: riskColor, background: 'var(--bg)' }}>
+            Riesgo {summary.risk}
+          </span>
+        </div>
+
+        <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+          <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{nombreCliente(tarea)}</p>
+          <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {tarea.propuesta || 'Recomendación sin texto'}
+          </p>
+          {tarea.razonamiento && (
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{tarea.razonamiento}</p>
+          )}
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <DetailMetric label="Señales" value={signals.length} />
+          <DetailMetric label="Ajustes" value={ajustes.length} />
+          <DetailMetric label="Fuentes" value={tarea.fuentes?.length ?? 0} />
+        </div>
+
+        <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+            Checklist de decisión
+          </p>
+          <div className="mt-3 space-y-2">
+            {summary.checklist.map(item => (
+              <p key={item} className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{item}</p>
+            ))}
+          </div>
+        </div>
+
+        {(payload.mensaje_cliente || ajustes.length > 0) && (
+          <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+              Aplicación
+            </p>
+            {ajustes.slice(0, 3).map((ajuste, idx) => (
+              <p key={`${ajuste}-${idx}`} className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{ajuste}</p>
+            ))}
+            {payload.mensaje_cliente && (
+              <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--semantic-info)' }}>{payload.mensaje_cliente}</p>
+            )}
+          </div>
+        )}
+
+        {(tarea.estado === 'pendiente' || tarea.estado === 'en_revision' || tarea.estado === 'modificado') && (
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <button onClick={onEdit} disabled={saving} className="btn-secondary text-xs">
+              Editar
+            </button>
+            <button onClick={onReject} disabled={saving} className="rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: 'var(--semantic-alert-bg)', color: 'var(--semantic-alert)', border: '1px solid var(--semantic-alert-border)' }}>
+              Ignorar
+            </button>
+            <button onClick={onApprove} disabled={saving} className="rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)', border: '1px solid var(--semantic-active-border)' }}>
+              Aprobar
+            </button>
+          </div>
+        )}
+
+        {tarea.cliente_id && (
+          <Link href={`/clientes/${tarea.cliente_id}`} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--text)' }}>
+            Abrir Training Room del cliente <ExternalLink size={14} />
+          </Link>
+        )}
+      </section>
+    </aside>
+  )
+}
+
+function DetailMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+      <p className="text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="font-data mt-1 text-xl font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
+    </div>
+  )
+}
+
 function MiniSignal({ icon: Icon, label, value, tone }: {
   icon: typeof Brain
   label: string
@@ -518,7 +657,7 @@ function MiniSignal({ icon: Icon, label, value, tone }: {
   tone: 'warning' | 'info' | 'active' | 'neutral'
 }) {
   const color = tone === 'warning'
-    ? 'var(--semantic-warning)'
+    ? 'var(--semantic-warn)'
     : tone === 'info'
       ? 'var(--semantic-info)'
       : tone === 'active'

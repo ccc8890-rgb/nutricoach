@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import {
   calcularEjercicioQuality,
   calcularPlantillaQuality,
+  crearDecisionSummary,
   crearSesionGuidance,
   crearTrainingRoomSummary,
 } from '../lib/training/workspace'
@@ -96,5 +97,16 @@ assert.equal(guidance.mode, 'guiada')
 assert.equal(guidance.objective, 'Ejecutar con control y registrar datos útiles')
 assert.ok(guidance.coachNote.includes('IA'))
 assert.ok(guidance.clientSteps.includes('Revisa el objetivo antes de empezar'))
+
+const decision = crearDecisionSummary({
+  prioridad: 2,
+  tipo: 'alerta_riesgo_entreno',
+  senalesCount: 3,
+  ajustesCount: 2,
+  evidenciaCount: 1,
+})
+assert.equal(decision.risk, 'alto')
+assert.equal(decision.intent, 'Intervenir antes de la próxima sesión')
+assert.ok(decision.checklist.includes('Revisar señales y evidencia'))
 
 console.log('training workspace tests passed')

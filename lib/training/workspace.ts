@@ -50,6 +50,20 @@ export interface SesionGuidance {
   clientSteps: string[]
 }
 
+export interface DecisionSummaryInput {
+  prioridad: number
+  tipo: string
+  senalesCount: number
+  ajustesCount: number
+  evidenciaCount: number
+}
+
+export interface DecisionSummary {
+  risk: 'alto' | 'medio' | 'bajo'
+  intent: string
+  checklist: string[]
+}
+
 function clampScore(score: number) {
   return Math.max(0, Math.min(100, score))
 }
@@ -225,4 +239,26 @@ export function crearSesionGuidance(input: SesionGuidanceInput): SesionGuidance 
     coachNote: `Sesión ${input.planNombre ? `del plan ${input.planNombre}` : input.nombre}: ${signals.join(' · ')}.`,
     clientSteps,
   }
+}
+
+export function crearDecisionSummary(input: DecisionSummaryInput): DecisionSummary {
+  const risk = input.prioridad <= 3 || input.tipo.includes('riesgo')
+    ? 'alto'
+    : input.prioridad <= 6 || input.ajustesCount > 0
+      ? 'medio'
+      : 'bajo'
+
+  const intent = risk === 'alto'
+    ? 'Intervenir antes de la próxima sesión'
+    : input.ajustesCount > 0
+      ? 'Validar ajuste propuesto'
+      : 'Revisar y archivar criterio'
+
+  const checklist = [
+    'Revisar señales y evidencia',
+    input.ajustesCount > 0 ? 'Comprobar impacto sobre volumen, intensidad o nutrición' : 'Confirmar que no requiere cambio de plan',
+    input.evidenciaCount > 0 ? 'Mantener trazabilidad de la fuente aplicada' : 'Pedir más contexto si la recomendación es sensible',
+  ]
+
+  return { risk, intent, checklist }
 }
