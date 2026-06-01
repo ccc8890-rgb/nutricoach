@@ -23,6 +23,7 @@ import {
 import { useDebounce } from '@/lib/useDebounce'
 import { useToast } from '@/components/ui/Toast'
 import { MODALITY_CONFIG, detectarSubcategoriaLegacy } from '@/lib/entrenos/utils'
+import { calcularPlantillaQuality } from '@/lib/training/workspace'
 
 const OBJETIVO_COLOR: Record<string, string> = {
     hipertrofia: 'badge-teal',
@@ -148,6 +149,15 @@ export default function PlantillasEntrenoPage() {
     function renderPlantillaCard(p: PlantillaEntrenamiento) {
         const estaExpandida = expandida === p.id
         const sesiones = (p.sesiones ?? []) as PlantillaSesion[]
+        const ejerciciosCount = sesiones.reduce((acc, sesion) => acc + (((sesion.ejercicios ?? []) as PlantillaSesionEjercicio[]).length), 0)
+        const quality = calcularPlantillaQuality({
+            sesionesCount: sesiones.length,
+            ejerciciosCount,
+            duracionSemanas: p.duracion_semanas,
+            sportModality: p.sport_modality,
+            tier: p.tier,
+            progresionCount: Array.isArray(p.progresion) ? p.progresion.length : 0,
+        })
         const modality = p.sport_modality as SportModality | undefined
         const tier = p.tier
         const cfg = modality ? MODALITY_CONFIG[modality] : null
@@ -156,8 +166,8 @@ export default function PlantillasEntrenoPage() {
         return (
             <div
                 key={p.id}
-                className="border rounded-xl transition-all"
-                style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+                className="border rounded-2xl transition-all overflow-hidden"
+                style={{ borderColor: quality.status === 'top' ? 'var(--semantic-active-border)' : 'var(--border)', background: 'var(--surface)' }}
             >
                 <div
                     className="p-4 cursor-pointer"
@@ -223,6 +233,16 @@ export default function PlantillasEntrenoPage() {
                         </div>
 
                         <div className="flex gap-1.5 flex-wrap justify-end items-start">
+                            <span
+                                className="text-[11px] font-semibold px-2 py-1 rounded-full border"
+                                style={{
+                                    color: quality.status === 'top' ? 'var(--semantic-active)' : quality.status === 'usable' ? 'var(--semantic-info)' : 'var(--semantic-warn)',
+                                    borderColor: quality.status === 'top' ? 'var(--semantic-active-border)' : quality.status === 'usable' ? 'var(--semantic-info-border)' : 'var(--semantic-warn-border)',
+                                    background: quality.status === 'top' ? 'var(--semantic-active-bg)' : quality.status === 'usable' ? 'var(--semantic-info-bg)' : 'var(--semantic-warn-bg)',
+                                }}
+                            >
+                                {quality.score}% · {quality.label}
+                            </span>
                             {p.objetivo && (
                                 <span className={`badge text-[11px] ${OBJETIVO_COLOR[p.objetivo] ?? 'badge-gray'}`}>
                                     {p.objetivo.replace(/_/g, ' ')}
@@ -246,6 +266,21 @@ export default function PlantillasEntrenoPage() {
                     </div>
                     {p.descripcion && (
                         <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{p.descripcion.split(INDIVIDUALIZACION_MARKER)[0].trim()}</p>
+                    )}
+                    <div className="mt-3 grid grid-cols-4 gap-2">
+                        <AssetMetric label="Sesiones" value={sesiones.length} />
+                        <AssetMetric label="Ejercicios" value={ejerciciosCount} />
+                        <AssetMetric label="Semanas" value={p.duracion_semanas ?? '-'} />
+                        <AssetMetric label="Gaps" value={quality.gaps.length} />
+                    </div>
+                    {quality.gaps.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                            {quality.gaps.slice(0, 4).map(gap => (
+                                <span key={gap} className="rounded-full border px-2 py-0.5 text-[10px] font-medium" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', background: 'var(--bg)' }}>
+                                    {gap}
+                                </span>
+                            ))}
+                        </div>
                     )}
                 </div>
 
@@ -364,6 +399,18 @@ export default function PlantillasEntrenoPage() {
         diasMedia: plantillas.length
             ? Math.round((plantillas.reduce((acc, p) => acc + (p.dias_por_semana ?? 0), 0) / plantillas.length) * 10) / 10
             : 0,
+        topAssets: plantillas.filter(p => {
+            const sesiones = (p.sesiones ?? []) as PlantillaSesion[]
+            const ejerciciosCount = sesiones.reduce((acc, sesion) => acc + (((sesion.ejercicios ?? []) as PlantillaSesionEjercicio[]).length), 0)
+            return calcularPlantillaQuality({
+                sesionesCount: sesiones.length,
+                ejerciciosCount,
+                duracionSemanas: p.duracion_semanas,
+                sportModality: p.sport_modality,
+                tier: p.tier,
+                progresionCount: Array.isArray(p.progresion) ? p.progresion.length : 0,
+            }).status === 'top'
+        }).length,
     }
 
     const loadingSpinner = (
@@ -407,9 +454,10 @@ export default function PlantillasEntrenoPage() {
                 </div>
             </header>
 
-            <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 mb-5">
+            <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5 mb-5">
                 {[
                     { label: 'Plantillas', value: templateStats.total },
+                    { label: 'Top assets', value: templateStats.topAssets },
                     { label: 'Elite', value: templateStats.elite },
                     { label: 'Modalidades', value: templateStats.modalidades },
                     { label: 'Días media', value: templateStats.diasMedia || '-' },
@@ -419,6 +467,28 @@ export default function PlantillasEntrenoPage() {
                         <p className="text-[11px] mt-1 font-medium" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
                     </div>
                 ))}
+            </section>
+
+            <section className="mb-5 rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))' }}>
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+                    <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+                            Asset system
+                        </p>
+                        <h2 className="mt-1 text-xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
+                            Plantillas listas para asignar, comparar y evolucionar
+                        </h2>
+                        <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                            Cada plan se mide por estructura, duración, modalidad, progresión y densidad de ejercicios. La biblioteca deja de ser un listado y empieza a funcionar como inventario profesional.
+                        </p>
+                    </div>
+                    <div className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                        <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Siguiente mejora</p>
+                        <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                            Vista compare entre plantillas, cliente ideal y evidencia aplicada por bloque.
+                        </p>
+                    </div>
+                </div>
             </section>
 
             {/* Estado del seed */}
@@ -633,5 +703,14 @@ export default function PlantillasEntrenoPage() {
             )}
         </div>
         </>
+    )
+}
+
+function AssetMetric({ label, value }: { label: string; value: string | number }) {
+    return (
+        <div className="rounded-xl border px-2 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+            <p className="text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+            <p className="font-data mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
+        </div>
     )
 }

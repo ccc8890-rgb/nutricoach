@@ -13,6 +13,7 @@ import {
   Search,
   Video,
 } from 'lucide-react'
+import { calcularEjercicioQuality } from '@/lib/training/workspace'
 
 interface Ejercicio {
   id: string
@@ -48,7 +49,7 @@ function hasVideo(e: Ejercicio) {
 }
 
 function isCompleto(e: Ejercicio) {
-  return hasFoto(e) && hasVideo(e) && (e.equipamiento?.length ?? 0) > 0 && !!e.dificultad_nivel
+  return calcularEjercicioQuality(e).status === 'completo'
 }
 
 function coveragePercent(value: number, total: number) {
@@ -154,9 +155,13 @@ export default function EjerciciosMediaPage() {
     const fotos = ejercicios.filter(hasFoto).length
     const videos = ejercicios.filter(hasVideo).length
     const completos = ejercicios.filter(isCompleto).length
+    const scoreMedio = total
+      ? Math.round(ejercicios.reduce((acc, e) => acc + calcularEjercicioQuality(e).score, 0) / total)
+      : 0
 
     return [
       { label: 'Ejercicios', value: total.toString(), hint: 'en la vista actual' },
+      { label: 'Quality', value: `${scoreMedio}%`, hint: 'media assets' },
       { label: 'Con foto', value: `${coveragePercent(fotos, total)}%`, hint: `${fotos}/${total}` },
       { label: 'Con vídeo', value: `${coveragePercent(videos, total)}%`, hint: `${videos}/${total}` },
       { label: 'Completos', value: `${coveragePercent(completos, total)}%`, hint: `${completos}/${total}` },
@@ -206,7 +211,7 @@ export default function EjerciciosMediaPage() {
       </div>
 
       {!loading && (
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
           {stats.map(item => (
             <div
               key={item.label}
@@ -219,6 +224,30 @@ export default function EjerciciosMediaPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {!loading && (
+        <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))' }}>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+                Exercise asset system
+              </p>
+              <h2 className="mt-1 text-xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
+                Ejercicios preparados para builder, sesión móvil y sustituciones inteligentes
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                La calidad se mide por vídeo, foto, dificultad, equipamiento y músculos secundarios. Los gaps indican qué falta para que el cliente pueda ejecutar sin explicación extra.
+              </p>
+            </div>
+            <div className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Siguiente mejora</p>
+              <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                Añadir cues técnicos, errores comunes, regresiones, progresiones y sustitutos por lesión/equipamiento.
+              </p>
+            </div>
+          </div>
+        </section>
       )}
 
       {!loading && (
@@ -268,13 +297,14 @@ export default function EjerciciosMediaPage() {
             const itemForm = form[ej.id] ?? {}
             const fotoPreview = (itemForm.foto_url ?? ej.foto_url ?? '') as string
             const videoPreview = (itemForm.video_url ?? ej.video_url ?? '') as string
-            const completo = isCompleto(ej)
+            const quality = calcularEjercicioQuality(ej)
+            const completo = quality.status === 'completo'
 
             return (
               <div
                 key={ej.id}
-                className="overflow-hidden rounded-xl border"
-                style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+                className="overflow-hidden rounded-2xl border"
+                style={{ borderColor: completo ? 'var(--semantic-active-border)' : 'var(--border)', background: 'var(--surface)' }}
               >
                 <button
                   className="flex w-full items-center gap-3 px-4 py-3 text-left"
@@ -298,14 +328,16 @@ export default function EjerciciosMediaPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 items-center gap-2">
                       <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>{ej.nombre}</p>
-                      {completo && (
-                        <span
-                          className="hidden rounded-full px-2 py-0.5 text-[11px] font-medium sm:inline-flex"
-                          style={{ background: 'rgba(34, 197, 94, 0.12)', color: 'rgb(22, 163, 74)' }}
-                        >
-                          Completo
-                        </span>
-                      )}
+                      <span
+                        className="hidden rounded-full border px-2 py-0.5 text-[11px] font-semibold sm:inline-flex"
+                        style={{
+                          background: completo ? 'var(--semantic-active-bg)' : quality.status === 'usable' ? 'var(--semantic-info-bg)' : 'var(--semantic-warn-bg)',
+                          color: completo ? 'var(--semantic-active)' : quality.status === 'usable' ? 'var(--semantic-info)' : 'var(--semantic-warn)',
+                          borderColor: completo ? 'var(--semantic-active-border)' : quality.status === 'usable' ? 'var(--semantic-info-border)' : 'var(--semantic-warn-border)',
+                        }}
+                      >
+                        {quality.score}% · {quality.label}
+                      </span>
                     </div>
                     <p className="mt-0.5 truncate text-xs" style={{ color: 'var(--text-muted)' }}>
                       {ej.grupo_muscular || 'Sin grupo'} · {ej.tipo || 'Sin tipo'}
@@ -320,6 +352,11 @@ export default function EjerciciosMediaPage() {
                       <span className="rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
                         Dificultad {ej.dificultad_nivel ?? '-'}/5
                       </span>
+                      {quality.gaps.slice(0, 2).map(gap => (
+                        <span key={gap} className="rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                          {gap}
+                        </span>
+                      ))}
                     </div>
                   </div>
 

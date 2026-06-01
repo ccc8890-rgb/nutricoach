@@ -1,0 +1,184 @@
+import type { CommandCenterRow } from './command-center'
+
+export type QualityStatus = 'top' | 'usable' | 'incompleta' | 'completo' | 'basico'
+
+export interface PlantillaQualityInput {
+  sesionesCount: number
+  ejerciciosCount: number
+  duracionSemanas: number | null | undefined
+  sportModality: string | null | undefined
+  tier: string | null | undefined
+  progresionCount: number
+}
+
+export interface EjercicioQualityInput {
+  foto_url?: string | null
+  video_url?: string | null
+  dificultad_nivel?: number | null
+  equipamiento?: string[] | null
+  musculos_secundarios?: string[] | null
+}
+
+export interface QualityResult {
+  score: number
+  status: QualityStatus
+  label: string
+  gaps: string[]
+}
+
+export interface TrainingRoomSummary {
+  riskLevel: 'alto' | 'medio' | 'bajo'
+  primaryFocus: string
+  evidence: string[]
+  coachActions: string[]
+  clientMessage: string
+}
+
+function clampScore(score: number) {
+  return Math.max(0, Math.min(100, score))
+}
+
+export function calcularPlantillaQuality(input: PlantillaQualityInput): QualityResult {
+  const gaps: string[] = []
+  let score = 0
+
+  if (input.sesionesCount > 0) score += 25
+  else gaps.push('Sin sesiones')
+
+  if (input.ejerciciosCount >= 12) score += 25
+  else if (input.ejerciciosCount > 0) {
+    score += 12
+    gaps.push('Pocos ejercicios')
+  } else {
+    gaps.push('Sin ejercicios')
+  }
+
+  if (input.duracionSemanas && input.duracionSemanas >= 4) score += 15
+  else gaps.push('Sin duración')
+
+  if (input.sportModality) score += 15
+  else gaps.push('Sin modalidad')
+
+  if (input.progresionCount > 0) score += 15
+  else gaps.push('Sin progresión')
+
+  if (input.tier) score += 5
+  else gaps.push('Sin tier')
+
+  const finalScore = clampScore(score)
+  const status: QualityStatus = finalScore >= 90 ? 'top' : finalScore >= 65 ? 'usable' : 'incompleta'
+
+  return {
+    score: finalScore,
+    status,
+    label: status === 'top' ? 'Top asset' : status === 'usable' ? 'Usable' : 'Incompleta',
+    gaps,
+  }
+}
+
+export function calcularEjercicioQuality(input: EjercicioQualityInput): QualityResult {
+  const gaps: string[] = []
+  let score = 0
+
+  if (input.foto_url) score += 20
+  else gaps.push('Sin foto')
+
+  if (input.video_url) score += 30
+  else gaps.push('Sin vídeo')
+
+  if (input.dificultad_nivel) score += 15
+  else gaps.push('Sin dificultad')
+
+  if ((input.equipamiento?.length ?? 0) > 0) score += 20
+  else gaps.push('Sin equipamiento')
+
+  if ((input.musculos_secundarios?.length ?? 0) > 0) score += 15
+  else gaps.push('Sin músculos secundarios')
+
+  const finalScore = clampScore(score)
+  const status: QualityStatus = finalScore >= 85 ? 'completo' : finalScore >= 55 ? 'usable' : 'basico'
+
+  return {
+    score: finalScore,
+    status,
+    label: status === 'completo' ? 'Completo' : status === 'usable' ? 'Usable' : 'Básico',
+    gaps,
+  }
+}
+
+export function crearTrainingRoomSummary(cliente: CommandCenterRow): TrainingRoomSummary {
+  const evidence = [
+    cliente.rpe_media_7d !== null ? `RPE medio 7d: ${cliente.rpe_media_7d.toFixed(1)}` : 'RPE medio sin registrar',
+    cliente.adherencia_7d_pct !== null ? `Adherencia 7d: ${cliente.adherencia_7d_pct}%` : 'Adherencia sin objetivo semanal',
+    `Sesiones 7d: ${cliente.sesiones_7d}`,
+    `Carga score: ${cliente.carga_score}`,
+  ]
+
+  if (cliente.estado === 'fatiga') {
+    return {
+      riskLevel: 'alto',
+      primaryFocus: 'Controlar fatiga',
+      evidence,
+      coachActions: [
+        'Revisar volumen e intensidad de la próxima sesión',
+        'Valorar descarga o sesión técnica',
+        'Comprobar sueño, dolor y recuperación antes de progresar',
+      ],
+      clientMessage: 'Hoy priorizamos ejecutar bien y ajustar carga si la recuperación no acompaña.',
+    }
+  }
+
+  if (cliente.estado === 'revision_ia') {
+    return {
+      riskLevel: 'medio',
+      primaryFocus: 'Aprobar decisión IA',
+      evidence,
+      coachActions: [
+        'Abrir bandeja IA',
+        'Validar datos usados por la recomendación',
+        'Aprobar, editar o ignorar antes de cambiar el plan',
+      ],
+      clientMessage: 'Tu coach está revisando el siguiente ajuste para mantener el plan alineado contigo.',
+    }
+  }
+
+  if (cliente.estado === 'sin_actividad') {
+    return {
+      riskLevel: 'medio',
+      primaryFocus: 'Recuperar adherencia',
+      evidence,
+      coachActions: [
+        'Detectar fricción de agenda o dificultad',
+        'Enviar mensaje breve de seguimiento',
+        'Simplificar próxima sesión si hace falta',
+      ],
+      clientMessage: 'Volvemos a una sesión clara y asumible para recuperar continuidad.',
+    }
+  }
+
+  if (cliente.estado === 'progreso') {
+    return {
+      riskLevel: 'bajo',
+      primaryFocus: 'Progresar o consolidar',
+      evidence,
+      coachActions: [
+        'Revisar si toca subir carga, reps o densidad',
+        'Mantener técnica y control de RPE',
+        'Celebrar progreso sin acelerar de más',
+      ],
+      clientMessage: 'Hay buena respuesta al plan. La siguiente sesión buscará progresar sin perder control.',
+    }
+  }
+
+  return {
+    riskLevel: 'bajo',
+    primaryFocus: 'Mantener plan',
+    evidence,
+    coachActions: [
+      'Revisar próxima sesión programada',
+      'Mantener seguimiento semanal',
+      'Ajustar solo si aparecen señales nuevas',
+    ],
+    clientMessage: 'Seguimos con el plan previsto y revisamos sensaciones al terminar.',
+  }
+}

@@ -16,6 +16,7 @@ import {
   Warning,
 } from '@phosphor-icons/react'
 import type { CommandCenterRow, CommandCenterEstado, CommandCenterTono } from '@/lib/training/command-center'
+import TrainingRoomPanel from '@/components/training/TrainingRoomPanel'
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const HOY_IDX = (new Date().getDay() + 6) % 7
@@ -360,6 +361,10 @@ export default function EntrenosPage() {
                     </section>
                   </div>
 
+                  <div className="mt-4">
+                    <TrainingRoomPanel cliente={seleccionado} />
+                  </div>
+
                   <section className="mt-4 rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
@@ -413,14 +418,6 @@ export default function EntrenosPage() {
                     href={`/clientes/${seleccionado.cliente_id}`}
                     cta="Abrir cliente"
                   />
-                  <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
-                      Próxima capa
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                      Este panel será el Training Room compacto: próxima sesión, historial del ejercicio, evidencia y nutrición conectada.
-                    </p>
-                  </div>
                 </aside>
               )}
             </div>
