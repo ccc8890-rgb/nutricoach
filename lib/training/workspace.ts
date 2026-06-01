@@ -34,6 +34,22 @@ export interface TrainingRoomSummary {
   clientMessage: string
 }
 
+export interface SesionGuidanceInput {
+  nombre: string
+  planNombre?: string | null
+  ejerciciosCount: number
+  totalSets: number
+  hasContextoIa: boolean
+  hasMedia: boolean
+}
+
+export interface SesionGuidance {
+  mode: 'guiada' | 'simple'
+  objective: string
+  coachNote: string
+  clientSteps: string[]
+}
+
 function clampScore(score: number) {
   return Math.max(0, Math.min(100, score))
 }
@@ -180,5 +196,33 @@ export function crearTrainingRoomSummary(cliente: CommandCenterRow): TrainingRoo
       'Ajustar solo si aparecen señales nuevas',
     ],
     clientMessage: 'Seguimos con el plan previsto y revisamos sensaciones al terminar.',
+  }
+}
+
+export function crearSesionGuidance(input: SesionGuidanceInput): SesionGuidance {
+  const mode = input.hasContextoIa || input.hasMedia ? 'guiada' : 'simple'
+  const objective = input.totalSets >= 16
+    ? 'Ejecutar con control y registrar datos útiles'
+    : 'Completar la sesión con buena técnica'
+
+  const clientSteps = [
+    'Revisa el objetivo antes de empezar',
+    'Abre la demo si tienes dudas de técnica',
+    'Registra peso, reps y RPE en cada set',
+    'Cierra con sensaciones para que el coach ajuste mejor',
+  ]
+
+  const signals = [
+    `${input.ejerciciosCount} ejercicios`,
+    `${input.totalSets} sets`,
+    input.hasMedia ? 'media disponible' : 'media incompleta',
+    input.hasContextoIa ? 'contexto IA disponible' : 'sin contexto IA',
+  ]
+
+  return {
+    mode,
+    objective,
+    coachNote: `Sesión ${input.planNombre ? `del plan ${input.planNombre}` : input.nombre}: ${signals.join(' · ')}.`,
+    clientSteps,
   }
 }

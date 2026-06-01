@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import {
   calcularEjercicioQuality,
   calcularPlantillaQuality,
+  crearSesionGuidance,
   crearTrainingRoomSummary,
 } from '../lib/training/workspace'
 import type { CommandCenterRow } from '../lib/training/command-center'
@@ -82,5 +83,18 @@ assert.equal(summary.riskLevel, 'alto')
 assert.equal(summary.primaryFocus, 'Controlar fatiga')
 assert.ok(summary.evidence.some(item => item.includes('RPE')))
 assert.ok(summary.coachActions.includes('Revisar volumen e intensidad de la próxima sesión'))
+
+const guidance = crearSesionGuidance({
+  nombre: 'Fuerza tren inferior',
+  planNombre: 'Hyrox Base',
+  ejerciciosCount: 5,
+  totalSets: 18,
+  hasContextoIa: true,
+  hasMedia: true,
+})
+assert.equal(guidance.mode, 'guiada')
+assert.equal(guidance.objective, 'Ejecutar con control y registrar datos útiles')
+assert.ok(guidance.coachNote.includes('IA'))
+assert.ok(guidance.clientSteps.includes('Revisa el objetivo antes de empezar'))
 
 console.log('training workspace tests passed')

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, Brain, Loader2, Play, Trophy } from 'lucide-react'
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
 import EjercicioDemoModal from '@/components/training/EjercicioDemoModal'
+import { crearSesionGuidance } from '@/lib/training/workspace'
 
 type Modo = 'registrar' | 'solo-ver'
 
@@ -246,6 +247,16 @@ export default function EjecucionSesionPage() {
     foto_url: ej.ejercicio?.foto_url ?? null,
   }))
 
+  const totalSets = sesion.ejercicios.reduce((acc, ej) => acc + (ej.series ?? 0), 0)
+  const guidance = crearSesionGuidance({
+    nombre: sesion.nombre,
+    planNombre: sesion.plan?.nombre,
+    ejerciciosCount: sesion.ejercicios.length,
+    totalSets,
+    hasContextoIa: Boolean(sesion.contexto_ia || sesion.ejercicios.some(ej => ej.contexto_ia)),
+    hasMedia: sesion.ejercicios.some(ej => ej.ejercicio?.video_url || ej.ejercicio?.foto_url),
+  })
+
   return (
     <div className="min-h-screen flex flex-col pb-4" style={{ background: 'var(--bg)' }}>
       {/* Header */}
@@ -294,6 +305,33 @@ export default function EjecucionSesionPage() {
 
       {/* Content */}
       <div className="flex-1">
+        <section className="mx-auto w-full max-w-md px-4 pt-4">
+          <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))' }}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+                  Sesión guiada
+                </p>
+                <h2 className="mt-1 text-lg font-semibold tracking-tight" style={{ color: 'var(--text)' }}>{guidance.objective}</h2>
+              </div>
+              <span className="rounded-full border px-2 py-1 text-[11px] font-semibold" style={{ borderColor: 'var(--semantic-info-border)', background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }}>
+                {guidance.mode}
+              </span>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{guidance.coachNote}</p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <GuideMetric label="Ejercicios" value={sesion.ejercicios.length} />
+              <GuideMetric label="Sets" value={totalSets} />
+              <GuideMetric label="Modo" value={modo === 'registrar' ? 'log' : 'ver'} />
+            </div>
+            <div className="mt-3 space-y-1.5">
+              {guidance.clientSteps.slice(0, 3).map(step => (
+                <p key={step} className="text-xs" style={{ color: 'var(--text-muted)' }}>{step}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {modo === 'registrar' ? (
           guardando ? (
             <div className="flex items-center justify-center py-20">
@@ -383,6 +421,15 @@ export default function EjecucionSesionPage() {
           onCerrar={() => setDemoEjercicio(null)}
         />
       )}
+    </div>
+  )
+}
+
+function GuideMetric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-2xl border px-2 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+      <p className="text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="font-data mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
     </div>
   )
 }

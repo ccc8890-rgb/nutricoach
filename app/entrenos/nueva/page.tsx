@@ -261,31 +261,37 @@ function NuevoEntrenoForm() {
   }
 
   const totalEjercicios = sesionesLocal.reduce((acc, s) => acc + s.ejercicios.length, 0)
+  const totalSets = sesionesLocal.reduce((acc, s) => acc + s.ejercicios.reduce((sum, e) => sum + (e.series || 0), 0), 0)
   const TIPO_COLORS: Record<string, string> = {
     fuerza: 'badge-teal', cardio: 'badge-orange', flexibilidad: 'badge-blue', funcional: 'badge-green'
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 mb-8">
-        <Link href="/entrenos" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text)]">Nuevo plan de entrenamiento</h1>
-          <p className="text-[var(--text-muted)] text-sm">Selecciona una plantilla o créalo desde cero</p>
+    <div className="px-4 py-5 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1500px]">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/entrenos" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+                Plan Builder
+              </p>
+              <h1 className="text-2xl font-semibold tracking-tight text-[var(--text)] sm:text-3xl">Constructor visual</h1>
+              <p className="text-[var(--text-muted)] text-sm">Plan, semanas, sesiones y ejercicios en un mismo workspace.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 sm:min-w-[360px]">
+            <BuilderMetric label="Sesiones" value={sesionesLocal.length} />
+            <BuilderMetric label="Ejercicios" value={totalEjercicios} />
+            <BuilderMetric label="Sets" value={totalSets} />
+          </div>
         </div>
-      </div>
 
-      {/* Selector de plantillas */}
-      <div className="mb-6">
-        <PlantillaEntrenoSelector
-          onSeleccionar={handleSeleccionarPlantilla}
-          seleccionada={plantillaSeleccionada}
-        />
-      </div>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit} className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)_300px]">
         {/* Datos del plan */}
-        <div className="card">
+        <aside className="space-y-5 xl:sticky xl:top-28 xl:self-start">
+        <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] mb-1" style={{ color: 'var(--text-muted)' }}>Plan setup</p>
           <h2 className="font-semibold text-[var(--text)] mb-4">Datos del plan</h2>
           <div className="flex flex-col gap-4">
             <div>
@@ -310,9 +316,21 @@ function NuevoEntrenoForm() {
           </div>
         </div>
 
+        <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] mb-3" style={{ color: 'var(--text-muted)' }}>
+            Fuente
+          </p>
+          <PlantillaEntrenoSelector
+            onSeleccionar={handleSeleccionarPlantilla}
+            seleccionada={plantillaSeleccionada}
+          />
+        </div>
+        </aside>
+
         {/* Sesiones y ejercicios editables */}
-        {sesionesLocal.length > 0 && (
-          <div className="card">
+        <main className="min-w-0">
+        {sesionesLocal.length > 0 ? (
+          <div className="rounded-[28px] border p-4" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="font-semibold text-[var(--text)]">
@@ -330,10 +348,10 @@ function NuevoEntrenoForm() {
 
             <div className="flex flex-col gap-4">
               {sesionesLocal.map((sesion) => (
-                <div key={sesion.id} className="border border-gray-200 rounded-xl">
+                <div key={sesion.id} className="rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                   {/* Header sesión */}
                   <div className="flex items-center gap-3 p-4 pb-3">
-                    <button onClick={() => toggleExpandir(sesion.id)}
+                    <button type="button" onClick={() => toggleExpandir(sesion.id)}
                       className="text-gray-400 hover:text-[var(--text-muted)]">
                       {sesion.expandida ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                     </button>
@@ -351,7 +369,7 @@ function NuevoEntrenoForm() {
                       {DIAS_SEMANA.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                     <span className="text-sm text-gray-400">{sesion.ejercicios.length} ejercicios</span>
-                    <button onClick={() => eliminarSesion(sesion.id)} className="text-gray-300 hover:text-red-400">
+                    <button type="button" onClick={() => eliminarSesion(sesion.id)} className="text-gray-300 hover:text-red-400">
                       <Trash2 size={15} />
                     </button>
                   </div>
@@ -361,8 +379,8 @@ function NuevoEntrenoForm() {
                       {/* Ejercicios */}
                       {sesion.ejercicios.length > 0 && (
                         <div className="mb-3 flex flex-col gap-2">
-                          {sesion.ejercicios.map((ej, idx) => (
-                            <div key={ej.id} className="border border-gray-100 rounded-lg p-3">
+                          {sesion.ejercicios.map((ej) => (
+                            <div key={ej.id} className="rounded-xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
                               <div className="flex items-start gap-3">
                                 <GripVertical size={16} className="text-gray-300 mt-1 flex-shrink-0" />
                                 <div className="flex-1">
@@ -400,7 +418,7 @@ function NuevoEntrenoForm() {
                                   <input className="input py-1 text-sm mt-2" placeholder="Notas (opcional)…" value={ej.notas}
                                     onChange={e => actualizarEjercicioCampo(sesion.id, ej.id, 'notas', e.target.value)} />
                                 </div>
-                                <button onClick={() => eliminarEjercicioSesion(sesion.id, ej.id)} className="text-gray-300 hover:text-red-400 mt-1">
+                                <button type="button" onClick={() => eliminarEjercicioSesion(sesion.id, ej.id)} className="text-gray-300 hover:text-red-400 mt-1">
                                   <X size={15} />
                                 </button>
                               </div>
@@ -421,14 +439,14 @@ function NuevoEntrenoForm() {
                               value={queryEjercicio}
                               onChange={e => setQueryEjercicio(e.target.value)}
                             />
-                            <button onClick={() => { setBusquedaAbierta(null); setQueryEjercicio(''); setResultados([]) }} className="px-3 text-gray-400">
+                            <button type="button" onClick={() => { setBusquedaAbierta(null); setQueryEjercicio(''); setResultados([]) }} className="px-3 text-gray-400">
                               <X size={15} />
                             </button>
                           </div>
                           {resultados.length > 0 && (
                             <div className="absolute z-10 left-0 right-0 mt-1 bg-white rounded-lg border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
                               {resultados.map(ej => (
-                                <button key={ej.id} onClick={() => añadirEjercicioSesion(sesion.id, ej)}
+                                <button type="button" key={ej.id} onClick={() => añadirEjercicioSesion(sesion.id, ej)}
                                   className="w-full text-left px-4 py-2.5 transition-colors border-b border-gray-50 last:border-0"
                                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--semantic-info-bg)' }}
                                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}>
@@ -442,6 +460,7 @@ function NuevoEntrenoForm() {
                         </div>
                       ) : (
                         <button
+                          type="button"
                           onClick={() => { setBusquedaAbierta(sesion.id); setQueryEjercicio('') }}
                           className="w-full border border-dashed rounded-lg py-2.5 text-sm transition-colors flex items-center justify-center gap-2"
                           style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
@@ -464,10 +483,48 @@ function NuevoEntrenoForm() {
               </button>
             </div>
           </div>
+        ) : (
+          <div className="rounded-[28px] border px-6 py-16 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <Sparkles size={32} className="mx-auto mb-3" style={{ color: 'var(--semantic-info)' }} />
+            <p className="font-semibold" style={{ color: 'var(--text)' }}>Empieza desde una plantilla o añade una sesión</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm" style={{ color: 'var(--text-muted)' }}>
+              El canvas central mostrará semanas, sesiones, bloques y ejercicios antes de guardar.
+            </p>
+            <button type="button" onClick={añadirSesion} className="btn-primary mt-5 inline-flex items-center gap-2">
+              <Plus size={16} /> Crear primera sesión
+            </button>
+          </div>
         )}
+        </main>
 
-        {/* Botón submit */}
-        <div className="flex gap-3 justify-end">
+        <aside className="space-y-4 xl:sticky xl:top-28 xl:self-start">
+          <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+              Assist panel
+            </p>
+            <h3 className="mt-1 text-lg font-semibold" style={{ color: 'var(--text)' }}>Checklist coach</h3>
+            <div className="mt-4 space-y-2">
+              {[
+                form.cliente_id ? 'Cliente asignado' : 'Plan sin cliente',
+                form.duracion_semanas ? `${form.duracion_semanas} semanas` : 'Duración pendiente',
+                sesionesLocal.length ? `${sesionesLocal.length} sesiones` : 'Sin sesiones',
+                totalEjercicios ? `${totalEjercicios} ejercicios` : 'Sin ejercicios',
+              ].map(item => (
+                <div key={item} className="rounded-2xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Siguiente capa</p>
+            <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+              Aquí irá la IA contextual: sugerir progresión, reemplazar ejercicios por lesión/equipo y revisar coherencia de carga.
+            </p>
+          </div>
+
+        <div className="flex flex-col gap-3">
           <Link href="/entrenos" className="btn-secondary">Cancelar</Link>
           <button type="submit" className="btn-primary flex items-center gap-2" disabled={loading || !form.nombre}>
             {loading ? (
@@ -477,7 +534,18 @@ function NuevoEntrenoForm() {
             )}
           </button>
         </div>
+        </aside>
       </form>
+      </div>
+    </div>
+  )
+}
+
+function BuilderMetric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="font-data mt-1 text-xl font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
     </div>
   )
 }
