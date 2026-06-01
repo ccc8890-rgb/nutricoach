@@ -61,6 +61,7 @@ export default function EjerciciosMediaPage() {
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [grupo, setGrupo] = useState('')
+  const [qualityFilter, setQualityFilter] = useState<'todos' | 'sin_media' | 'sin_video' | 'completos'>('todos')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [saving, setSaving] = useState<string | null>(null)
   const [saved, setSaved] = useState<string | null>(null)
@@ -162,15 +163,25 @@ export default function EjerciciosMediaPage() {
     ]
   }, [ejercicios])
 
+  const visibles = useMemo(() => {
+    if (qualityFilter === 'sin_media') return ejercicios.filter(e => !hasFoto(e) || !hasVideo(e))
+    if (qualityFilter === 'sin_video') return ejercicios.filter(e => !hasVideo(e))
+    if (qualityFilter === 'completos') return ejercicios.filter(isCompleto)
+    return ejercicios
+  }, [ejercicios, qualityFilter])
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-normal" style={{ color: 'var(--text)' }}>
-            Librería multimedia de ejercicios
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] mb-2" style={{ color: 'var(--text-muted)' }}>
+            Biblioteca · Ejecución
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-none" style={{ color: 'var(--text)' }}>
+            Exercise Library
           </h1>
-          <p className="mt-1 max-w-2xl text-sm" style={{ color: 'var(--text-muted)' }}>
-            Fotos, vídeos, dificultad y material para que el coach y el cliente entiendan cada sesión sin fricción.
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            Base de ejercicios con media, dificultad, equipamiento y cues para que el builder y la sesión móvil funcionen sin explicación extra.
           </p>
         </div>
 
@@ -210,6 +221,33 @@ export default function EjerciciosMediaPage() {
         </div>
       )}
 
+      {!loading && (
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          {[
+            ['todos', 'Todos'],
+            ['sin_media', 'Sin media completa'],
+            ['sin_video', 'Sin vídeo'],
+            ['completos', 'Completos'],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setQualityFilter(value as typeof qualityFilter)}
+              className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+              style={{
+                background: qualityFilter === value ? 'var(--accent)' : 'var(--bg)',
+                color: qualityFilter === value ? 'var(--bg)' : 'var(--text-secondary)',
+                border: `1px solid ${qualityFilter === value ? 'var(--accent)' : 'var(--border)'}`,
+              }}
+            >
+              {label}
+            </button>
+          ))}
+          <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}>
+            {visibles.length} visibles
+          </span>
+        </div>
+      )}
+
       {error && (
         <div
           className="flex items-start gap-2 rounded-xl border px-4 py-3 text-sm"
@@ -226,7 +264,7 @@ export default function EjerciciosMediaPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-          {ejercicios.map(ej => {
+          {visibles.map(ej => {
             const itemForm = form[ej.id] ?? {}
             const fotoPreview = (itemForm.foto_url ?? ej.foto_url ?? '') as string
             const videoPreview = (itemForm.video_url ?? ej.video_url ?? '') as string
@@ -442,7 +480,7 @@ export default function EjerciciosMediaPage() {
             )
           })}
 
-          {ejercicios.length === 0 && (
+          {visibles.length === 0 && (
             <p className="col-span-full py-12 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
               No se encontraron ejercicios
             </p>

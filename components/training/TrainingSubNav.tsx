@@ -2,27 +2,31 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Brain, Dumbbell, LayoutDashboard, Library, Sparkles } from 'lucide-react'
+import { Brain, Dumbbell, FilePlus2, LayoutDashboard, Library, Sparkles } from 'lucide-react'
 
 const SECTIONS = [
   {
-    label: 'Coach',
+    label: 'Operativa',
+    hint: 'Qué requiere atención',
     items: [
-      { href: '/entrenos', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-      { href: '/entrenos/brain-ia', label: 'Brain IA', icon: Brain },
+      { href: '/entrenos', label: 'Command Center', icon: LayoutDashboard, exact: true },
+      { href: '/entrenos/brain-ia', label: 'AI Review', icon: Brain },
+    ],
+  },
+  {
+    label: 'Planificación',
+    hint: 'Crear y ajustar planes',
+    items: [
+      { href: '/entrenos/nueva', label: 'Crear plan', icon: FilePlus2 },
+      { href: '/entrenos/generar-ia', label: 'Plan con IA', icon: Sparkles },
     ],
   },
   {
     label: 'Biblioteca',
+    hint: 'Assets reutilizables',
     items: [
-      { href: '/entrenos/plantillas', label: 'Plantillas', icon: Library },
-      { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Dumbbell },
-    ],
-  },
-  {
-    label: 'Herramientas',
-    items: [
-      { href: '/entrenos/generar-ia', label: 'Generar plan IA', icon: Sparkles },
+      { href: '/entrenos/plantillas', label: 'Plan Library', icon: Library },
+      { href: '/entrenos/ejercicios', label: 'Exercise Library', icon: Dumbbell },
     ],
   },
 ]
@@ -60,7 +64,7 @@ export default function TrainingSubNav() {
               Training OS
             </p>
             <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Coach console
+              Decision console
             </p>
           </div>
         </div>
@@ -71,6 +75,9 @@ export default function TrainingSubNav() {
           <div style={{ padding: '8px 8px 5px', fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
             {section.label}
           </div>
+          <p style={{ padding: '0 8px 5px', fontSize: 10, lineHeight: 1.25, color: 'var(--text-muted)' }}>
+            {section.hint}
+          </p>
           {section.items.map(item => {
             const active = isActive(item.href, item.exact)
             return (

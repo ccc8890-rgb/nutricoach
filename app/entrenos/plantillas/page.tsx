@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, ProgresionPlantilla } from '@/types'
 import type { SportModality } from '@/types'
 import {
@@ -331,6 +332,40 @@ export default function PlantillasEntrenoPage() {
         )
     }
 
+    const plantillaActual = plantillas.find(p => p.id === asignandoId)
+
+    async function handleAsignar() {
+        if (!asignandoId || !clienteSeleccionado || !nombrePlan) return
+        setAsignando(true)
+        try {
+            const res = await fetch(`/api/plantillas-entreno/${asignandoId}/asignar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cliente_id: clienteSeleccionado, nombre: nombrePlan }),
+            })
+            const data = await res.json()
+            if (data.ok) {
+                addToast({ type: 'success', title: 'Plan asignado correctamente' })
+                setAsignandoId(null)
+            } else {
+                addToast({ type: 'error', title: data.error ?? 'Error al asignar' })
+            }
+        } catch {
+            addToast({ type: 'error', title: 'Error de conexión' })
+        } finally {
+            setAsignando(false)
+        }
+    }
+
+    const templateStats = {
+        total: plantillas.length,
+        elite: plantillas.filter(p => p.tier === 'elite').length,
+        modalidades: new Set(plantillas.map(p => p.sport_modality).filter(Boolean)).size,
+        diasMedia: plantillas.length
+            ? Math.round((plantillas.reduce((acc, p) => acc + (p.dias_por_semana ?? 0), 0) / plantillas.length) * 10) / 10
+            : 0,
+    }
+
     const loadingSpinner = (
         <div className="flex items-center gap-2 text-sm py-8 justify-center" style={{ color: 'var(--text-muted)' }}>
             <Loader2 size={16} className="animate-spin" />
@@ -341,28 +376,50 @@ export default function PlantillasEntrenoPage() {
     const hayAlgunaPlantilla = (Object.keys(MODALITY_CONFIG) as SportModality[]).some(m => agrupadasPorModalidad[m].length > 0) || legacy.length > 0
 
     return (
-        <div className="p-8 max-w-5xl mx-auto">
+        <>
+        <div className="p-6 max-w-7xl mx-auto">
             {/* Header */}
-            <header className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Planificación de entrenos</h1>
-                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                        Plantillas predefinidas por modalidad — Gym, HYROX, Running, Ciclismo, Funcional, Calistenia
+            <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-6">
+                <div className="max-w-3xl">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] mb-2" style={{ color: 'var(--text-muted)' }}>
+                        Biblioteca · Planificación
+                    </p>
+                    <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-none" style={{ color: 'var(--text)' }}>
+                        Plan Library
+                    </h1>
+                    <p className="text-sm mt-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                        Plantillas por modalidad para crear planes rápido, asignarlos a clientes y mantener un estándar de programación.
                     </p>
                 </div>
-                <button
-                    onClick={poblarPlantillas}
-                    disabled={seedStatus === 'loading'}
-                    className="btn-primary flex items-center gap-2"
-                >
-                    {seedStatus === 'loading' ? (
-                        <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                        <Download size={16} />
-                    )}
-                    {seedStatus === 'loading' ? 'Insertando…' : 'Poblar plantillas'}
-                </button>
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        onClick={poblarPlantillas}
+                        disabled={seedStatus === 'loading'}
+                        className="btn-secondary flex items-center gap-2 text-sm"
+                    >
+                        {seedStatus === 'loading' ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+                        {seedStatus === 'loading' ? 'Insertando…' : 'Poblar'}
+                    </button>
+                    <Link href="/entrenos/generar-ia" className="btn-primary flex items-center gap-2 text-sm">
+                        <Target size={15} />
+                        Generar con IA
+                    </Link>
+                </div>
             </header>
+
+            <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 mb-5">
+                {[
+                    { label: 'Plantillas', value: templateStats.total },
+                    { label: 'Elite', value: templateStats.elite },
+                    { label: 'Modalidades', value: templateStats.modalidades },
+                    { label: 'Días media', value: templateStats.diasMedia || '-' },
+                ].map(item => (
+                    <div key={item.label} className="rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                        <p className="text-2xl font-semibold leading-none" style={{ color: 'var(--text)' }}>{item.value}</p>
+                        <p className="text-[11px] mt-1 font-medium" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
+                    </div>
+                ))}
+            </section>
 
             {/* Estado del seed */}
             {seedMessage && (
@@ -383,8 +440,8 @@ export default function PlantillasEntrenoPage() {
             )}
 
             {/* Filtros */}
-            <div className="flex items-center gap-3 mb-6 flex-wrap">
-                <div className="relative flex-1 max-w-xs">
+            <div className="flex items-center gap-3 mb-6 flex-wrap rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <div className="relative flex-1 min-w-[240px] max-w-sm">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                     <input
                         type="text"
@@ -484,38 +541,6 @@ export default function PlantillasEntrenoPage() {
                     )}
                 </div>
             )}
-        </div>
-    )
-
-    // Modal de asignación
-    const plantillaActual = plantillas.find(p => p.id === asignandoId)
-
-    async function handleAsignar() {
-        if (!asignandoId || !clienteSeleccionado || !nombrePlan) return
-        setAsignando(true)
-        try {
-            const res = await fetch(`/api/plantillas-entreno/${asignandoId}/asignar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cliente_id: clienteSeleccionado, nombre: nombrePlan }),
-            })
-            const data = await res.json()
-            if (data.ok) {
-                addToast({ type: 'success', title: 'Plan asignado correctamente' })
-                setAsignandoId(null)
-            } else {
-                addToast({ type: 'error', title: data.error ?? 'Error al asignar' })
-            }
-        } catch {
-            addToast({ type: 'error', title: 'Error de conexión' })
-        } finally {
-            setAsignando(false)
-        }
-    }
-
-    return (
-        <>
-            {/* contenido principal ya está arriba */}
             {asignandoId && (
                 <div
                     className="fixed inset-0 z-50 flex items-start justify-center pt-32"
@@ -606,6 +631,7 @@ export default function PlantillasEntrenoPage() {
                     </div>
                 </div>
             )}
+        </div>
         </>
     )
 }
