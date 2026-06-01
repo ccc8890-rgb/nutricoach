@@ -1,217 +1,545 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import { Brain, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import {
+  AlertTriangle,
+  Brain,
+  CheckCircle2,
+  ChevronDown,
+  ClipboardCheck,
+  Edit3,
+  ExternalLink,
+  Loader2,
+  MessageSquareText,
+  ShieldAlert,
+  Sparkles,
+  XCircle,
+} from 'lucide-react'
+import type { EstadoTarea, FuenteCientifica, TipoTarea } from '@/lib/agentes/types'
 
-interface TareaTraining {
+const TRAINING_TYPES: TipoTarea[] = [
+  'training_brain',
+  'revision_semanal_entreno',
+  'alerta_riesgo_entreno',
+  'alerta_readiness',
+  'ajuste_nutricion_carga',
+]
+
+const TYPE_LABEL: Partial<Record<TipoTarea, string>> = {
+  training_brain: 'Training Brain',
+  revision_semanal_entreno: 'Revisión semanal',
+  alerta_riesgo_entreno: 'Riesgo entreno',
+  alerta_readiness: 'Readiness',
+  ajuste_nutricion_carga: 'Nutrición carga',
+}
+
+const STATUS_CONFIG: Record<string, { label: string; icon: typeof CheckCircle2; bg: string; color: string; border: string }> = {
+  pendiente: {
+    label: 'Pendiente',
+    icon: AlertTriangle,
+    bg: 'var(--semantic-warning-bg)',
+    color: 'var(--semantic-warning)',
+    border: 'var(--semantic-warning-border)',
+  },
+  modificado: {
+    label: 'Editada',
+    icon: Edit3,
+    bg: 'var(--semantic-info-bg)',
+    color: 'var(--semantic-info)',
+    border: 'var(--semantic-info-border)',
+  },
+  aprobado: {
+    label: 'Aprobada',
+    icon: CheckCircle2,
+    bg: 'var(--semantic-active-bg)',
+    color: 'var(--semantic-active)',
+    border: 'var(--semantic-active-border)',
+  },
+  rechazado: {
+    label: 'Ignorada',
+    icon: XCircle,
+    bg: 'var(--semantic-alert-bg)',
+    color: 'var(--semantic-alert)',
+    border: 'var(--semantic-alert-border)',
+  },
+  aplicado: {
+    label: 'Aplicada',
+    icon: ClipboardCheck,
+    bg: 'var(--semantic-active-bg)',
+    color: 'var(--semantic-active)',
+    border: 'var(--semantic-active-border)',
+  },
+}
+
+interface ClienteJoin {
+  id: string
+  profiles?: { nombre?: string | null; apellidos?: string | null } | null
+}
+
+interface TareaInbox {
   id: string
   cliente_id: string | null
-  estado: 'pendiente' | 'aprobado' | 'rechazado'
+  tipo: TipoTarea
+  estado: EstadoTarea
   prioridad: number
-  propuesta: string
-  razonamiento: string
+  propuesta: string | null
+  razonamiento: string | null
   payload: {
     senales?: Array<{ tipo: string; descripcion: string }>
-    rpe_reciente?: number | null
     logros?: string[]
     advertencias?: string[]
     ajustes_plan?: string[]
     protocolos_kb?: string[]
-  }
-  fuentes: string[]
+    mensaje_cliente?: string
+    [key: string]: unknown
+  } | null
+  fuentes: FuenteCientifica[] | null
   created_at: string
-  cliente_nombre?: string
-}
-
-const ESTADO_CONFIG = {
-  pendiente: { label: 'Pendiente', color: 'rgba(251,191,36,0.12)', text: 'rgb(251,191,36)', icon: Clock },
-  aprobado: { label: 'Aprobado', color: 'rgba(34,197,94,0.12)', text: 'rgb(34,197,94)', icon: CheckCircle2 },
-  rechazado: { label: 'Rechazado', color: 'rgba(239,68,68,0.12)', text: 'rgb(239,68,68)', icon: XCircle },
+  comentario_coach?: string | null
+  clientes?: ClienteJoin | null
 }
 
 function timeAgo(iso: string): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000)
-  if (diff < 60) return `Hace ${diff} min`
-  if (diff < 1440) return `Hace ${Math.floor(diff / 60)}h`
-  return `Hace ${Math.floor(diff / 1440)}d`
+  if (diff < 1) return 'Ahora'
+  if (diff < 60) return `${diff} min`
+  if (diff < 1440) return `${Math.floor(diff / 60)}h`
+  return `${Math.floor(diff / 1440)}d`
+}
+
+function nombreCliente(tarea: TareaInbox): string {
+  const profile = tarea.clientes?.profiles
+  const nombre = [profile?.nombre, profile?.apellidos].filter(Boolean).join(' ').trim()
+  return nombre || 'Cliente sin nombre'
+}
+
+function priorityTone(priority: number) {
+  if (priority <= 3) return { label: 'Alta', color: 'var(--semantic-alert)', bg: 'var(--semantic-alert-bg)', border: 'var(--semantic-alert-border)' }
+  if (priority <= 6) return { label: 'Media', color: 'var(--semantic-warning)', bg: 'var(--semantic-warning-bg)', border: 'var(--semantic-warning-border)' }
+  return { label: 'Baja', color: 'var(--text-muted)', bg: 'var(--surface)', border: 'var(--border)' }
+}
+
+function normalizeEstado(estado: EstadoTarea): keyof typeof STATUS_CONFIG {
+  if (estado === 'en_revision') return 'pendiente'
+  return estado in STATUS_CONFIG ? estado : 'pendiente'
 }
 
 export default function BrainIAPage() {
-  const [tareas, setTareas] = useState<TareaTraining[]>([])
+  const [tareas, setTareas] = useState<TareaInbox[]>([])
   const [loading, setLoading] = useState(true)
-  const [filtro, setFiltro] = useState<'todas' | 'pendiente' | 'aprobado' | 'rechazado'>('todas')
+  const [error, setError] = useState('')
+  const [filtro, setFiltro] = useState<'todas' | 'pendiente' | 'aprobado' | 'rechazado' | 'modificado'>('pendiente')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const [comment, setComment] = useState('')
+  const [savingId, setSavingId] = useState<string | null>(null)
 
   async function cargar() {
-    const { data: tareasData } = await supabase
-      .from('agente_tareas')
-      .select('id, cliente_id, estado, prioridad, propuesta, razonamiento, payload, fuentes, created_at')
-      .eq('tipo', 'training_brain')
-      .order('created_at', { ascending: false })
-      .limit(50)
-
-    if (!tareasData?.length) { setLoading(false); return }
-
-    const clienteIds = [...new Set(tareasData.map(t => t.cliente_id).filter(Boolean))] as string[]
-    const { data: perfiles } = await supabase
-      .from('profiles')
-      .select('id, nombre, apellidos')
-      .in('id', clienteIds)
-
-    const perfilMap = new Map((perfiles ?? []).map(p => [p.id, `${p.nombre} ${p.apellidos}`.trim()]))
-
-    setTareas(tareasData.map(t => ({
-      ...t,
-      estado: t.estado as TareaTraining['estado'],
-      payload: t.payload ?? {},
-      fuentes: t.fuentes ?? [],
-      cliente_nombre: t.cliente_id ? perfilMap.get(t.cliente_id) ?? '—' : '—',
-    })))
-    setLoading(false)
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/agentes/tareas?limite=100')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Error cargando recomendaciones')
+      const rows = ((data.tareas ?? []) as TareaInbox[])
+        .filter(t => TRAINING_TYPES.includes(t.tipo))
+      setTareas(rows)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error cargando recomendaciones')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { cargar() }, [])
 
-  async function actualizarEstado(id: string, estado: 'aprobado' | 'rechazado') {
-    await supabase.from('agente_tareas').update({ estado, revisado_at: new Date().toISOString() }).eq('id', id)
-    setTareas(prev => prev.map(t => t.id === id ? { ...t, estado } : t))
+  const stats = useMemo(() => ({
+    pendientes: tareas.filter(t => t.estado === 'pendiente' || t.estado === 'en_revision').length,
+    aprobadas: tareas.filter(t => t.estado === 'aprobado' || t.estado === 'aplicado').length,
+    ignoradas: tareas.filter(t => t.estado === 'rechazado').length,
+    editadas: tareas.filter(t => t.estado === 'modificado').length,
+  }), [tareas])
+
+  const filtradas = useMemo(() => {
+    return tareas.filter(t => {
+      if (filtro === 'todas') return true
+      if (filtro === 'pendiente') return t.estado === 'pendiente' || t.estado === 'en_revision'
+      if (filtro === 'aprobado') return t.estado === 'aprobado' || t.estado === 'aplicado'
+      return t.estado === filtro
+    })
+  }, [tareas, filtro])
+
+  async function decidir(tarea: TareaInbox, decision: 'aprobado' | 'rechazado' | 'modificado') {
+    setSavingId(tarea.id)
+    try {
+      const res = await fetch('/api/agentes/tareas', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tarea_id: tarea.id,
+          decision,
+          comentario_coach: comment || undefined,
+          propuesta_final: decision === 'modificado' ? draft : undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Error actualizando tarea')
+      setTareas(prev => prev.map(t => (
+        t.id === tarea.id
+          ? {
+              ...t,
+              estado: decision,
+              propuesta: decision === 'modificado' ? draft : t.propuesta,
+              comentario_coach: comment || t.comentario_coach,
+            }
+          : t
+      )))
+      setEditingId(null)
+      setDraft('')
+      setComment('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error actualizando tarea')
+    } finally {
+      setSavingId(null)
+    }
   }
 
-  const filtradas = tareas.filter(t => filtro === 'todas' || t.estado === filtro)
+  function startEdit(tarea: TareaInbox) {
+    setEditingId(tarea.id)
+    setExpandedId(tarea.id)
+    setDraft(tarea.propuesta ?? '')
+    setComment(tarea.comentario_coach ?? '')
+  }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--semantic-info-bg)' }}>
-          <Brain size={18} style={{ color: 'var(--semantic-info)' }} />
+    <div className="px-4 py-5 sm:p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-6">
+        <div className="max-w-3xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] mb-2" style={{ color: 'var(--text-muted)' }}>
+            Training OS 2.0
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-none" style={{ color: 'var(--text)' }}>
+            AI Review Inbox
+          </h1>
+          <p className="text-sm mt-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            Recomendaciones de entrenamiento, carga y nutrición listas para revisar. La IA prepara; el coach decide.
+          </p>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Training Brain</h1>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Análisis IA con base de conocimiento científico</p>
-        </div>
+        <Link href="/entrenos" className="btn-secondary inline-flex items-center gap-2 text-sm">
+          <ExternalLink size={15} />
+          Command Center
+        </Link>
       </div>
 
-      {/* Filtros */}
-      <div className="flex gap-2 mb-5">
-        {(['todas', 'pendiente', 'aprobado', 'rechazado'] as const).map(f => (
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 mb-5">
+        <StatCard label="Pendientes" value={stats.pendientes} tone="warning" onClick={() => setFiltro('pendiente')} />
+        <StatCard label="Editadas" value={stats.editadas} tone="info" onClick={() => setFiltro('modificado')} />
+        <StatCard label="Aprobadas" value={stats.aprobadas} tone="active" onClick={() => setFiltro('aprobado')} />
+        <StatCard label="Ignoradas" value={stats.ignoradas} tone="alert" onClick={() => setFiltro('rechazado')} />
+      </section>
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        {[
+          ['todas', 'Todas'],
+          ['pendiente', 'Pendientes'],
+          ['modificado', 'Editadas'],
+          ['aprobado', 'Aprobadas'],
+          ['rechazado', 'Ignoradas'],
+        ].map(([value, label]) => (
           <button
-            key={f}
-            onClick={() => setFiltro(f)}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors"
+            key={value}
+            onClick={() => setFiltro(value as typeof filtro)}
+            className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
             style={{
-              background: filtro === f ? 'var(--semantic-info-bg)' : 'var(--surface)',
-              color: filtro === f ? 'var(--semantic-info)' : 'var(--text-muted)',
-              border: `1px solid ${filtro === f ? 'var(--semantic-info-border)' : 'var(--border)'}`,
+              background: filtro === value ? 'var(--accent)' : 'var(--surface)',
+              color: filtro === value ? 'var(--bg)' : 'var(--text-secondary)',
+              border: `1px solid ${filtro === value ? 'var(--accent)' : 'var(--border)'}`,
             }}
           >
-            {f === 'todas' ? 'Todas' : ESTADO_CONFIG[f].label}
-            {f !== 'todas' && (
-              <span className="ml-1">({tareas.filter(t => t.estado === f).length})</span>
-            )}
+            {label}
           </button>
         ))}
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--semantic-info)' }} />
-        </div>
-      ) : filtradas.length === 0 ? (
-        <div className="card text-center py-16">
-          <Brain size={36} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
-          <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>Sin análisis Training Brain aún</p>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Se generan automáticamente cada lunes para clientes con ≥2 sesiones semanales</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {filtradas.map(t => {
-            const cfg = ESTADO_CONFIG[t.estado]
-            const Icon = cfg.icon
-            return (
-              <div key={t.id} className="card p-5">
-                {/* Header */}
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{t.cliente_nombre}</span>
-                      <span className="text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1"
-                        style={{ background: cfg.color, color: cfg.text }}>
-                        <Icon size={10} /> {cfg.label}
-                      </span>
-                      <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>{timeAgo(t.created_at)}</span>
-                    </div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{t.propuesta}</p>
-                  </div>
-                </div>
-
-                {/* Señales detectadas */}
-                {t.payload.senales?.length ? (
-                  <div className="mb-3">
-                    <p className="text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Señales</p>
-                    <div className="flex flex-col gap-1">
-                      {t.payload.senales.map((s, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="text-xs px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5"
-                            style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', fontSize: 9 }}>
-                            {s.tipo.replace('_', ' ')}
-                          </span>
-                          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{s.descripcion}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-
-                {/* Ajustes sugeridos */}
-                {t.payload.ajustes_plan?.length ? (
-                  <div className="mb-3">
-                    <p className="text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Ajustes sugeridos</p>
-                    <ul className="flex flex-col gap-0.5">
-                      {t.payload.ajustes_plan.map((a, i) => (
-                        <li key={i} className="text-xs" style={{ color: 'var(--text-secondary)' }}>→ {a}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                {/* Razonamiento */}
-                {t.razonamiento && (
-                  <p className="text-xs mb-3" style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{t.razonamiento}</p>
-                )}
-
-                {/* Papers KB */}
-                {t.fuentes?.length ? (
-                  <div className="mb-4 p-2 rounded-lg" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--semantic-info)' }}>Evidencia científica</p>
-                    {t.fuentes.slice(0, 3).map((f, i) => (
-                      <p key={i} className="text-xs" style={{ color: 'var(--text-muted)' }}>· {f}</p>
-                    ))}
-                  </div>
-                ) : null}
-
-                {/* Acciones */}
-                {t.estado === 'pendiente' && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => actualizarEstado(t.id, 'aprobado')}
-                      className="flex-1 py-2 rounded-lg text-xs font-semibold"
-                      style={{ background: 'rgba(34,197,94,0.12)', color: 'rgb(34,197,94)', border: '1px solid rgba(34,197,94,0.2)' }}
-                    >
-                      ✓ Aplicar propuesta
-                    </button>
-                    <button
-                      onClick={() => actualizarEstado(t.id, 'rechazado')}
-                      className="flex-1 py-2 rounded-lg text-xs font-semibold"
-                      style={{ background: 'rgba(239,68,68,0.08)', color: 'rgb(239,68,68)', border: '1px solid rgba(239,68,68,0.15)' }}
-                    >
-                      ✗ Descartar
-                    </button>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+      {error && (
+        <div className="mb-4 rounded-2xl px-4 py-3 text-sm" style={{ background: 'var(--semantic-alert-bg)', border: '1px solid var(--semantic-alert-border)', color: 'var(--semantic-alert)' }}>
+          {error}
         </div>
       )}
+
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
+        </div>
+      ) : filtradas.length === 0 ? (
+        <div className="glass-card py-16 px-6 text-center">
+          <Brain size={38} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+          <p className="font-semibold" style={{ color: 'var(--text)' }}>Sin recomendaciones en esta vista</p>
+          <p className="text-sm mt-1 max-w-md mx-auto" style={{ color: 'var(--text-muted)' }}>
+            Cuando los agentes detecten fatiga, baja adherencia, progreso o ajustes de carga aparecerán aquí para revisión.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          {filtradas.map((tarea, index) => (
+            <RecommendationCard
+              key={tarea.id}
+              tarea={tarea}
+              index={index}
+              expanded={expandedId === tarea.id}
+              editing={editingId === tarea.id}
+              draft={draft}
+              comment={comment}
+              saving={savingId === tarea.id}
+              onToggle={() => setExpandedId(expandedId === tarea.id ? null : tarea.id)}
+              onApprove={() => decidir(tarea, 'aprobado')}
+              onReject={() => decidir(tarea, 'rechazado')}
+              onEdit={() => startEdit(tarea)}
+              onSaveEdit={() => decidir(tarea, 'modificado')}
+              onCancelEdit={() => {
+                setEditingId(null)
+                setDraft('')
+                setComment('')
+              }}
+              onDraft={setDraft}
+              onComment={setComment}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function StatCard({ label, value, tone, onClick }: {
+  label: string
+  value: number
+  tone: 'warning' | 'info' | 'active' | 'alert'
+  onClick: () => void
+}) {
+  const color = tone === 'warning'
+    ? 'var(--semantic-warning)'
+    : tone === 'info'
+      ? 'var(--semantic-info)'
+      : tone === 'active'
+        ? 'var(--semantic-active)'
+        : 'var(--semantic-alert)'
+  return (
+    <button
+      onClick={onClick}
+      className="rounded-2xl px-4 py-3 text-left transition-transform active:scale-[0.98]"
+      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+    >
+      <p className="text-2xl font-semibold leading-none" style={{ color }}>{value}</p>
+      <p className="text-[11px] mt-1 font-medium" style={{ color: 'var(--text-muted)' }}>{label}</p>
+    </button>
+  )
+}
+
+function RecommendationCard(props: {
+  tarea: TareaInbox
+  index: number
+  expanded: boolean
+  editing: boolean
+  draft: string
+  comment: string
+  saving: boolean
+  onToggle: () => void
+  onApprove: () => void
+  onReject: () => void
+  onEdit: () => void
+  onSaveEdit: () => void
+  onCancelEdit: () => void
+  onDraft: (value: string) => void
+  onComment: (value: string) => void
+}) {
+  const { tarea } = props
+  const status = STATUS_CONFIG[normalizeEstado(tarea.estado)]
+  const StatusIcon = status.icon
+  const priority = priorityTone(tarea.prioridad)
+  const payload = tarea.payload ?? {}
+  const signals = payload.senales ?? []
+  const ajustes = payload.ajustes_plan ?? []
+  const advertencias = payload.advertencias ?? []
+  const logros = payload.logros ?? []
+
+  return (
+    <article
+      className="glass-card p-4"
+      style={{
+        borderColor: status.border,
+        animation: `fadeIn 0.24s var(--ease-out-strong) ${Math.min(props.index, 8) * 35}ms both`,
+      }}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{nombreCliente(tarea)}</span>
+            <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}>
+              {TYPE_LABEL[tarea.tipo] ?? tarea.tipo}
+            </span>
+            <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: priority.bg, color: priority.color, border: `1px solid ${priority.border}` }}>
+              Prioridad {priority.label}
+            </span>
+          </div>
+          <h2 className="text-base font-semibold leading-snug" style={{ color: 'var(--text)' }}>
+            {tarea.propuesta || 'Recomendación sin texto'}
+          </h2>
+        </div>
+        <span
+          className="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold inline-flex items-center gap-1"
+          style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}
+        >
+          <StatusIcon size={12} />
+          {status.label}
+        </span>
+      </div>
+
+      {tarea.razonamiento && (
+        <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+          {tarea.razonamiento}
+        </p>
+      )}
+
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <MiniSignal icon={ShieldAlert} label="Señales" value={signals.length} tone={signals.length ? 'warning' : 'neutral'} />
+        <MiniSignal icon={Sparkles} label="Ajustes" value={ajustes.length} tone={ajustes.length ? 'info' : 'neutral'} />
+        <MiniSignal icon={MessageSquareText} label="Evidencia" value={tarea.fuentes?.length ?? 0} tone={(tarea.fuentes?.length ?? 0) ? 'active' : 'neutral'} />
+      </div>
+
+      {props.editing && (
+        <div className="mt-4 rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text)' }}>Propuesta final</label>
+          <textarea
+            value={props.draft}
+            onChange={e => props.onDraft(e.target.value)}
+            className="input min-h-28 w-full resize-y"
+            style={{ paddingTop: 10 }}
+          />
+          <label className="block text-xs font-semibold mt-3 mb-1" style={{ color: 'var(--text)' }}>Nota privada del coach</label>
+          <textarea
+            value={props.comment}
+            onChange={e => props.onComment(e.target.value)}
+            className="input min-h-20 w-full resize-y"
+            style={{ paddingTop: 10 }}
+            placeholder="Qué has cambiado y por qué..."
+          />
+          <div className="mt-3 flex gap-2">
+            <button onClick={props.onSaveEdit} disabled={props.saving || !props.draft.trim()} className="btn-primary flex-1 text-sm">
+              {props.saving ? 'Guardando...' : 'Guardar editada'}
+            </button>
+            <button onClick={props.onCancelEdit} disabled={props.saving} className="btn-secondary flex-1 text-sm">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {props.expanded && !props.editing && (
+        <div className="mt-4 space-y-3">
+          {signals.length > 0 && (
+            <InfoBlock title="Señales detectadas">
+              {signals.map((s, i) => (
+                <div key={i} className="flex items-start gap-2 text-xs">
+                  <span className="mt-0.5 rounded-full px-2 py-0.5 font-semibold" style={{ background: 'var(--semantic-warning-bg)', color: 'var(--semantic-warning)' }}>
+                    {s.tipo.replaceAll('_', ' ')}
+                  </span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{s.descripcion}</span>
+                </div>
+              ))}
+            </InfoBlock>
+          )}
+          {ajustes.length > 0 && (
+            <InfoBlock title="Ajustes sugeridos">
+              {ajustes.map((a, i) => <p key={i} className="text-xs" style={{ color: 'var(--text-secondary)' }}>{a}</p>)}
+            </InfoBlock>
+          )}
+          {advertencias.length > 0 && (
+            <InfoBlock title="Advertencias">
+              {advertencias.map((a, i) => <p key={i} className="text-xs" style={{ color: 'var(--semantic-alert)' }}>{a}</p>)}
+            </InfoBlock>
+          )}
+          {logros.length > 0 && (
+            <InfoBlock title="Logros">
+              {logros.map((a, i) => <p key={i} className="text-xs" style={{ color: 'var(--semantic-active)' }}>{a}</p>)}
+            </InfoBlock>
+          )}
+          {(tarea.fuentes?.length ?? 0) > 0 && (
+            <InfoBlock title="Evidencia aplicada">
+              {(tarea.fuentes ?? []).slice(0, 4).map((f, i) => (
+                <p key={i} className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  {f.autores ? `${f.autores} (${f.año})` : 'Fuente'}: {f.titulo}
+                  {f.conclusión ? ` — ${f.conclusión}` : ''}
+                </p>
+              ))}
+            </InfoBlock>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3" style={{ borderColor: 'var(--border)' }}>
+        <button
+          onClick={props.onToggle}
+          className="inline-flex items-center gap-1 text-xs font-semibold"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          <ChevronDown size={13} style={{ transform: props.expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 160ms ease' }} />
+          {props.expanded ? 'Ocultar detalle' : 'Ver detalle'}
+        </button>
+
+        {(tarea.estado === 'pendiente' || tarea.estado === 'en_revision' || tarea.estado === 'modificado') && (
+          <div className="flex flex-wrap gap-2">
+            <button onClick={props.onEdit} disabled={props.saving} className="btn-secondary text-xs inline-flex items-center gap-1">
+              <Edit3 size={12} />
+              Editar
+            </button>
+            <button onClick={props.onReject} disabled={props.saving} className="rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: 'var(--semantic-alert-bg)', color: 'var(--semantic-alert)', border: '1px solid var(--semantic-alert-border)' }}>
+              Ignorar
+            </button>
+            <button onClick={props.onApprove} disabled={props.saving} className="rounded-xl px-3 py-2 text-xs font-semibold" style={{ background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)', border: '1px solid var(--semantic-active-border)' }}>
+              Aprobar
+            </button>
+          </div>
+        )}
+      </div>
+
+      <p className="mt-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+        Generada hace {timeAgo(tarea.created_at)}
+      </p>
+    </article>
+  )
+}
+
+function MiniSignal({ icon: Icon, label, value, tone }: {
+  icon: typeof Brain
+  label: string
+  value: number
+  tone: 'warning' | 'info' | 'active' | 'neutral'
+}) {
+  const color = tone === 'warning'
+    ? 'var(--semantic-warning)'
+    : tone === 'info'
+      ? 'var(--semantic-info)'
+      : tone === 'active'
+        ? 'var(--semantic-active)'
+        : 'var(--text-muted)'
+  return (
+    <div className="rounded-2xl px-3 py-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: 'var(--text-muted)' }}>
+        <Icon size={11} />
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-semibold leading-none" style={{ color }}>{value}</p>
+    </div>
+  )
+}
+
+function InfoBlock({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{title}</p>
+      <div className="space-y-2">{children}</div>
     </div>
   )
 }
