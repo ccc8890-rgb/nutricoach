@@ -1,18 +1,20 @@
 'use client'
+
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
-  Activity,
-  AlertTriangle,
   ArrowRight,
-  ArrowUpRight,
   Brain,
-  CheckCircle2,
-  Dumbbell,
-  Plus,
-  Search,
+  CheckCircle,
+  Barbell,
+  Lightning,
+  MagnifyingGlass,
+  SealWarning,
+  Target,
   Trophy,
-} from 'lucide-react'
+  UserFocus,
+  Warning,
+} from '@phosphor-icons/react'
 import type { CommandCenterRow, CommandCenterEstado, CommandCenterTono } from '@/lib/training/command-center'
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
@@ -25,6 +27,15 @@ interface CommandCenterStats {
   revision_ia: number
   progreso: number
   sin_actividad: number
+}
+
+const DEFAULT_STATS: CommandCenterStats = {
+  total: 0,
+  requiere_accion: 0,
+  fatiga: 0,
+  revision_ia: 0,
+  progreso: 0,
+  sin_actividad: 0,
 }
 
 function diasDesde(fecha: string | null): string {
@@ -40,8 +51,9 @@ function diasDesde(fecha: string | null): string {
 function estadoConfig(estado: CommandCenterEstado, tono: CommandCenterTono) {
   if (estado === 'fatiga') {
     return {
-      label: 'Fatiga',
-      icon: AlertTriangle,
+      label: 'Riesgo de carga',
+      short: 'Riesgo',
+      icon: Warning,
       bg: 'var(--semantic-alert-bg)',
       color: 'var(--semantic-alert)',
       border: 'var(--semantic-alert-border)',
@@ -49,25 +61,28 @@ function estadoConfig(estado: CommandCenterEstado, tono: CommandCenterTono) {
   }
   if (estado === 'revision_ia') {
     return {
-      label: 'Revisar IA',
+      label: 'IA pendiente',
+      short: 'IA',
       icon: Brain,
-      bg: 'var(--semantic-warning-bg)',
-      color: 'var(--semantic-warning)',
-      border: 'var(--semantic-warning-border)',
+      bg: 'var(--semantic-warn-bg)',
+      color: 'var(--semantic-warn)',
+      border: 'var(--semantic-warn-border)',
     }
   }
   if (estado === 'sin_actividad') {
     return {
-      label: 'Reactivar',
-      icon: Activity,
-      bg: 'var(--semantic-warning-bg)',
-      color: 'var(--semantic-warning)',
-      border: 'var(--semantic-warning-border)',
+      label: 'Reactivar cliente',
+      short: 'Reactivar',
+      icon: SealWarning,
+      bg: 'var(--semantic-warn-bg)',
+      color: 'var(--semantic-warn)',
+      border: 'var(--semantic-warn-border)',
     }
   }
   if (estado === 'progreso') {
     return {
-      label: 'Progreso',
+      label: 'Progreso detectado',
+      short: 'Progreso',
       icon: Trophy,
       bg: 'var(--semantic-active-bg)',
       color: 'var(--semantic-active)',
@@ -76,52 +91,52 @@ function estadoConfig(estado: CommandCenterEstado, tono: CommandCenterTono) {
   }
   return {
     label: tono === 'ok' ? 'OK' : 'Estable',
-    icon: CheckCircle2,
+    short: 'Estable',
+    icon: CheckCircle,
     bg: 'var(--semantic-info-bg)',
     color: 'var(--semantic-info)',
     border: 'var(--semantic-info-border)',
   }
 }
 
+function initials(c: CommandCenterRow) {
+  return `${c.nombre?.[0] ?? ''}${c.apellidos?.[0] ?? ''}`.toUpperCase() || 'NC'
+}
+
+function adherenceLabel(value: number | null) {
+  if (value === null) return 'Sin objetivo'
+  return `${value}%`
+}
+
+function clampPct(value: number | null, fallback = 0) {
+  if (value === null) return fallback
+  return Math.max(0, Math.min(100, value))
+}
+
 function DashboardSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      {[0, 1, 2, 3, 4, 5].map(i => (
-        <div
-          key={i}
-          className="glass-card p-4"
-          style={{ animation: `fadeIn 0.2s var(--ease-out-strong) ${i * 30}ms both` }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl animate-pulse" style={{ background: 'var(--border-strong)' }} />
-            <div className="flex-1 space-y-2">
-              <div className="h-3 w-36 rounded-full animate-pulse" style={{ background: 'var(--border-strong)' }} />
-              <div className="h-2.5 w-48 rounded-full animate-pulse" style={{ background: 'var(--border)' }} />
-            </div>
-          </div>
-          <div className="mt-5 grid grid-cols-4 gap-3">
-            {[0, 1, 2, 3].map(n => (
-              <div key={n} className="h-12 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} />
-            ))}
-          </div>
-        </div>
-      ))}
+    <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)_320px]">
+      <div className="space-y-2">
+        {[0, 1, 2, 3, 4].map(i => (
+          <div key={i} className="h-24 animate-pulse rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }} />
+        ))}
+      </div>
+      <div className="min-h-[540px] animate-pulse rounded-[28px] border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }} />
+      <div className="space-y-3">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="h-36 animate-pulse rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }} />
+        ))}
+      </div>
     </div>
   )
 }
 
 export default function EntrenosPage() {
   const [clientes, setClientes] = useState<CommandCenterRow[]>([])
-  const [stats, setStats] = useState<CommandCenterStats>({
-    total: 0,
-    requiere_accion: 0,
-    fatiga: 0,
-    revision_ia: 0,
-    progreso: 0,
-    sin_actividad: 0,
-  })
+  const [stats, setStats] = useState<CommandCenterStats>(DEFAULT_STATS)
   const [busqueda, setBusqueda] = useState('')
   const [filtro, setFiltro] = useState<'todos' | CommandCenterEstado | 'accion'>('todos')
+  const [selectedClienteId, setSelectedClienteId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -132,24 +147,24 @@ export default function EntrenosPage() {
       try {
         const res = await fetch('/api/entrenos/command-center')
         const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Error cargando Training OS')
+        if (!res.ok) throw new Error(data.error || 'Error cargando Training Workspace')
         setClientes(data.clientes ?? [])
-        setStats(data.stats ?? stats)
+        setStats(data.stats ?? DEFAULT_STATS)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error cargando Training OS')
+        setError(err instanceof Error ? err.message : 'Error cargando Training Workspace')
       } finally {
         setLoading(false)
       }
     }
     load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const filtrados = useMemo(() => {
     return clientes.filter(c => {
-      const matchesSearch = `${c.nombre} ${c.apellidos} ${c.plan_nombre} ${c.accion_principal}`
+      const q = busqueda.toLowerCase()
+      const matchesSearch = `${c.nombre} ${c.apellidos} ${c.plan_nombre} ${c.accion_principal} ${c.razon}`
         .toLowerCase()
-        .includes(busqueda.toLowerCase())
+        .includes(q)
       if (!matchesSearch) return false
       if (filtro === 'todos') return true
       if (filtro === 'accion') return c.requiere_accion
@@ -157,240 +172,401 @@ export default function EntrenosPage() {
     })
   }, [clientes, busqueda, filtro])
 
+  const seleccionado = useMemo(() => {
+    return filtrados.find(c => c.cliente_id === selectedClienteId) ?? filtrados[0] ?? null
+  }, [filtrados, selectedClienteId])
+
+  const estadoSeleccionado = seleccionado ? estadoConfig(seleccionado.estado, seleccionado.tono) : null
+  const EstadoIcon = estadoSeleccionado?.icon ?? CheckCircle
+  const iaPendiente = (seleccionado?.tareas_pendientes.length ?? 0) > 0
+
   return (
-    <div className="px-4 py-5 sm:p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-6">
-        <div className="max-w-3xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] mb-2" style={{ color: 'var(--text-muted)' }}>
-            Training OS 2.0
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-none" style={{ color: 'var(--text)' }}>
-            Command Center
-          </h1>
-          <p className="text-sm mt-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            Clientes ordenados por prioridad real: fatiga, IA pendiente, adherencia, PRs y última actividad.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/entrenos/brain-ia" className="btn-secondary flex items-center gap-2 text-sm">
-            <Brain size={15} /> Inbox IA
-          </Link>
-          <Link href="/entrenos/nueva" className="btn-primary flex items-center gap-2 text-sm">
-            <Plus size={15} /> Nuevo plan
-          </Link>
-        </div>
-      </div>
+    <div className="px-4 py-5 sm:px-5 lg:px-6">
+      <div className="mx-auto max-w-[1320px] space-y-5">
+        <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <StatButton label="Planes activos" value={stats.total} active={filtro === 'todos'} onClick={() => setFiltro('todos')} />
+          <StatButton label="Acción hoy" value={stats.requiere_accion} tone="warn" active={filtro === 'accion'} onClick={() => setFiltro('accion')} />
+          <StatButton label="Fatiga" value={stats.fatiga} tone="alert" active={filtro === 'fatiga'} onClick={() => setFiltro('fatiga')} />
+          <StatButton label="IA pendiente" value={stats.revision_ia} tone="warn" active={filtro === 'revision_ia'} onClick={() => setFiltro('revision_ia')} />
+          <StatButton label="Progreso" value={stats.progreso} tone="ok" active={filtro === 'progreso'} onClick={() => setFiltro('progreso')} />
+        </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5 mb-5">
-        {[
-          { label: 'Planes activos', value: stats.total, tone: 'neutro' },
-          { label: 'Requieren acción', value: stats.requiere_accion, tone: 'atencion' },
-          { label: 'Fatiga', value: stats.fatiga, tone: 'critico' },
-          { label: 'IA pendiente', value: stats.revision_ia, tone: 'atencion' },
-          { label: 'Progreso', value: stats.progreso, tone: 'ok' },
-        ].map(item => {
-          const color = item.tone === 'critico'
-            ? 'var(--semantic-alert)'
-            : item.tone === 'atencion'
-              ? 'var(--semantic-warning)'
-              : item.tone === 'ok'
-                ? 'var(--semantic-active)'
-                : 'var(--text)'
-          return (
-            <button
-              key={item.label}
-              onClick={() => {
-                if (item.label === 'Requieren acción') setFiltro('accion')
-                else if (item.label === 'Fatiga') setFiltro('fatiga')
-                else if (item.label === 'IA pendiente') setFiltro('revision_ia')
-                else if (item.label === 'Progreso') setFiltro('progreso')
-                else setFiltro('todos')
-              }}
-              className="rounded-2xl px-4 py-3 text-left transition-transform active:scale-[0.98]"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-            >
-              <p className="text-2xl font-semibold leading-none" style={{ color }}>{item.value}</p>
-              <p className="text-[11px] mt-1 font-medium" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
-            </button>
-          )
-        })}
-      </section>
+        <section
+          className="rounded-[28px] border p-3 sm:p-4"
+          style={{
+            borderColor: 'var(--border)',
+            background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))',
+            boxShadow: 'var(--shadow-md)',
+          }}
+        >
+          <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                Operate cockpit
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl" style={{ color: 'var(--text)' }}>
+                Prioridad real del coach
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Clientes ordenados por riesgo, IA pendiente, adherencia, carga y progreso. El objetivo no es mirar listas, es decidir la siguiente acción.
+              </p>
+            </div>
+            <div className="relative">
+              <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+              <input
+                className="input search-input w-full"
+                placeholder="Buscar cliente, plan o acción"
+                value={busqueda}
+                onChange={e => setBusqueda(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+          </div>
 
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center mb-5">
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {[
-            ['todos', 'Todos'],
-            ['accion', 'Acción'],
-            ['fatiga', 'Fatiga'],
-            ['revision_ia', 'IA'],
-            ['sin_actividad', 'Sin actividad'],
-            ['progreso', 'Progreso'],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              onClick={() => setFiltro(value as typeof filtro)}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all"
-              style={{
-                background: filtro === value ? 'var(--accent)' : 'var(--surface)',
-                color: filtro === value ? 'var(--bg)' : 'var(--text-secondary)',
-                border: `1px solid ${filtro === value ? 'var(--accent)' : 'var(--border)'}`,
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-          <input
-            className="input search-input w-full"
-            placeholder="Buscar cliente, plan o acción..."
-            value={busqueda}
-            onChange={e => setBusqueda(e.target.value)}
-            autoComplete="off"
-          />
-        </div>
-      </div>
-
-      {loading ? (
-        <DashboardSkeleton />
-      ) : error ? (
-        <div className="rounded-2xl px-6 py-10" style={{ background: 'var(--semantic-alert-bg)', border: '1px solid var(--semantic-alert-border)' }}>
-          <p className="font-semibold" style={{ color: 'var(--semantic-alert)' }}>No se ha podido cargar el Command Center</p>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{error}</p>
-        </div>
-      ) : filtrados.length === 0 ? (
-        <div className="rounded-2xl px-6 py-14 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-            No hay clientes en esta vista
-          </p>
-          <p className="text-xs mt-2 max-w-sm mx-auto" style={{ color: 'var(--text-muted)' }}>
-            Cambia el filtro, ajusta la búsqueda o crea un plan activo para empezar a priorizar acciones.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          {filtrados.map((c, i) => {
-            const config = estadoConfig(c.estado, c.tono)
-            const EstadoIcon = config.icon
-            const initials = `${c.nombre[0] ?? ''}${c.apellidos[0] ?? ''}`.toUpperCase()
-            const iaPendiente = c.tareas_pendientes.length > 0
-            return (
-              <article
-                key={c.plan_id}
-                className="glass-card p-4 transition-all duration-200"
+          <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+            {[
+              ['todos', 'Todos'],
+              ['accion', 'Acción'],
+              ['fatiga', 'Fatiga'],
+              ['revision_ia', 'IA'],
+              ['sin_actividad', 'Reactivar'],
+              ['progreso', 'Progreso'],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => setFiltro(value as typeof filtro)}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-transform active:scale-[0.98]"
                 style={{
-                  animation: `fadeIn 0.24s var(--ease-out-strong) ${Math.min(i, 8) * 35}ms both`,
-                  borderColor: c.requiere_accion ? config.border : 'var(--border)',
+                  background: filtro === value ? 'var(--text)' : 'var(--bg)',
+                  color: filtro === value ? 'var(--bg)' : 'var(--text-secondary)',
+                  border: `1px solid ${filtro === value ? 'var(--text)' : 'var(--border)'}`,
                 }}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div
-                      className="w-11 h-11 rounded-2xl flex items-center justify-center text-xs font-semibold flex-shrink-0"
-                      style={{ background: 'var(--bg)', border: '1px solid var(--border-strong)', color: 'var(--text)' }}
-                    >
-                      {initials || 'NC'}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>
-                        {c.nombre} {c.apellidos}
-                      </p>
-                      <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{c.plan_nombre}</p>
-                    </div>
-                  </div>
-                  <span
-                    className="text-xs px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1"
-                    style={{ background: config.bg, color: config.color, border: `1px solid ${config.border}` }}
-                  >
-                    <EstadoIcon size={12} />
-                    {config.label}
-                  </span>
-                </div>
+                {label}
+              </button>
+            ))}
+          </div>
 
-                <div className="mt-4 rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
-                        Próxima acción
-                      </p>
-                      <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{c.accion_principal}</p>
-                      <p className="mt-1 text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-                        {c.razon}
-                      </p>
-                    </div>
-                    <Link
-                      href={iaPendiente ? '/entrenos/brain-ia' : `/entrenos/${c.plan_id}`}
-                      className="shrink-0 rounded-xl p-2 transition-transform active:scale-[0.96]"
-                      style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
-                      aria-label="Abrir acción"
-                    >
-                      {iaPendiente ? <Brain size={16} /> : <ArrowRight size={16} />}
-                    </Link>
-                  </div>
-                </div>
+          {loading ? (
+            <DashboardSkeleton />
+          ) : error ? (
+            <div className="rounded-3xl px-6 py-10" style={{ background: 'var(--semantic-alert-bg)', border: '1px solid var(--semantic-alert-border)' }}>
+              <p className="font-semibold" style={{ color: 'var(--semantic-alert)' }}>No se ha podido cargar Training Workspace</p>
+              <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>{error}</p>
+            </div>
+          ) : filtrados.length === 0 ? (
+            <div className="rounded-3xl px-6 py-16 text-center" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>No hay clientes en esta vista</p>
+              <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                Cambia el filtro, ajusta la búsqueda o crea un plan activo para empezar a priorizar acciones.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)_320px]">
+              <aside className="space-y-2 xl:max-h-[680px] xl:overflow-y-auto xl:pr-1">
+                {filtrados.map((c, i) => (
+                  <PriorityClientButton
+                    key={c.plan_id}
+                    cliente={c}
+                    index={i}
+                    selected={seleccionado?.cliente_id === c.cliente_id}
+                    onClick={() => setSelectedClienteId(c.cliente_id)}
+                  />
+                ))}
+              </aside>
 
-                <div className="grid grid-cols-4 gap-3 my-4">
-                  <Metric label="Carga" value={String(c.carga_score)} danger={c.estado === 'fatiga'} />
-                  <Metric label="RPE" value={c.rpe_media_7d !== null ? c.rpe_media_7d.toFixed(1) : '--'} danger={(c.rpe_media_7d ?? 0) >= 8.5} />
-                  <Metric label="PRs" value={String(c.pr_count_7d)} active={c.pr_count_7d > 0} />
-                  <Metric label="IA" value={String(c.tareas_pendientes.length)} warning={iaPendiente} />
-                </div>
-
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center justify-center gap-1">
-                    {DIAS.map((d, idx) => (
-                      <div key={d} className="flex flex-col items-center gap-0.5">
-                        <span className="text-[8px]" style={{ color: 'var(--text-muted)', opacity: idx === HOY_IDX ? 1 : 0.5 }}>{d}</span>
-                        <div
-                          className="w-2.5 h-2.5 rounded-full"
-                          style={{
-                            background: c.dots[idx] ? 'var(--semantic-active)' : idx === HOY_IDX ? 'var(--semantic-info-bg)' : 'var(--border)',
-                            boxShadow: c.dots[idx] ? '0 0 0 3px var(--semantic-active-bg)' : 'none',
-                          }}
-                        />
+              {seleccionado && estadoSeleccionado && (
+                <article
+                  className="min-h-[560px] rounded-[28px] border p-4 sm:p-5"
+                  style={{ borderColor: estadoSeleccionado.border, background: 'var(--bg)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' }}
+                >
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div
+                        className="flex h-14 w-14 items-center justify-center rounded-2xl border text-sm font-semibold"
+                        style={{ borderColor: 'var(--border-strong)', background: 'var(--surface)', color: 'var(--text)' }}
+                      >
+                        {initials(seleccionado)}
                       </div>
-                    ))}
+                      <div className="min-w-0">
+                        <p className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
+                          {seleccionado.nombre} {seleccionado.apellidos}
+                        </p>
+                        <p className="mt-1 truncate text-sm" style={{ color: 'var(--text-secondary)' }}>
+                          {seleccionado.plan_nombre}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className="inline-flex w-fit items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold"
+                      style={{ background: estadoSeleccionado.bg, color: estadoSeleccionado.color, borderColor: estadoSeleccionado.border }}
+                    >
+                      <EstadoIcon size={17} weight="duotone" />
+                      {estadoSeleccionado.label}
+                    </div>
                   </div>
-                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {c.adherencia_7d_pct !== null ? `${c.adherencia_7d_pct}% adherencia` : 'sin objetivo'}
-                  </span>
-                </div>
 
-                <div className="mt-4 pt-3 flex flex-wrap items-center justify-between gap-2 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                  <span className="inline-flex items-center gap-1"><Dumbbell size={12} /> {c.sesiones_7d} sesiones / 7d</span>
-                  <span className="inline-flex items-center gap-1"><Activity size={12} /> {diasDesde(c.ultima_fecha)}</span>
-                  <Link href={`/entrenos/${c.plan_id}`} className="inline-flex items-center gap-1 font-semibold" style={{ color: 'var(--text)' }}>
-                    Plan <ArrowUpRight size={12} />
-                  </Link>
-                </div>
-              </article>
-            )
-          })}
-        </div>
-      )}
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <Signal label="Adherencia" value={adherenceLabel(seleccionado.adherencia_7d_pct)} pct={clampPct(seleccionado.adherencia_7d_pct)} />
+                    <Signal label="Carga" value={String(seleccionado.carga_score)} pct={Math.min(100, Math.round(seleccionado.carga_score / 7))} danger={seleccionado.estado === 'fatiga'} />
+                    <Signal label="RPE" value={seleccionado.rpe_media_7d !== null ? seleccionado.rpe_media_7d.toFixed(1) : '--'} pct={Math.round(((seleccionado.rpe_media_7d ?? 0) / 10) * 100)} danger={(seleccionado.rpe_media_7d ?? 0) >= 8.5} />
+                    <Signal label="PRs" value={String(seleccionado.pr_count_7d)} pct={Math.min(100, seleccionado.pr_count_7d * 25)} active={seleccionado.pr_count_7d > 0} />
+                  </div>
+
+                  <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+                    <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-2xl border p-2" style={{ borderColor: estadoSeleccionado.border, background: estadoSeleccionado.bg, color: estadoSeleccionado.color }}>
+                          <Target size={18} weight="duotone" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+                            Siguiente mejor acción
+                          </p>
+                          <h3 className="mt-1 text-xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
+                            {seleccionado.accion_principal}
+                          </h3>
+                          <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                            {seleccionado.razon}
+                          </p>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+                        Semana actual
+                      </p>
+                      <div className="mt-4 flex items-end justify-between gap-2">
+                        {DIAS.map((d, idx) => (
+                          <div key={d} className="flex flex-1 flex-col items-center gap-2">
+                            <div
+                              className="h-20 w-full rounded-full border"
+                              style={{
+                                borderColor: idx === HOY_IDX ? 'var(--border-strong)' : 'var(--border)',
+                                background: seleccionado.dots[idx]
+                                  ? 'linear-gradient(180deg, var(--semantic-active), var(--semantic-active-bg))'
+                                  : idx === HOY_IDX
+                                    ? 'var(--semantic-info-bg)'
+                                    : 'var(--bg)',
+                              }}
+                            />
+                            <span className="text-[10px] font-semibold" style={{ color: idx === HOY_IDX ? 'var(--text)' : 'var(--text-muted)' }}>
+                              {d}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  </div>
+
+                  <section className="mt-4 rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Contexto operativo</p>
+                        <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                          {seleccionado.sesiones_7d} sesiones en 7 días · {seleccionado.sesiones_28d} en 28 días · última sesión: {diasDesde(seleccionado.ultima_fecha)}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Link href={`/clientes/${seleccionado.cliente_id}`} className="btn-secondary inline-flex items-center gap-2 text-sm">
+                          <UserFocus size={16} /> Cliente
+                        </Link>
+                        <Link href={`/entrenos/${seleccionado.plan_id}`} className="btn-primary inline-flex items-center gap-2 text-sm">
+                          Abrir plan <ArrowRight size={16} />
+                        </Link>
+                      </div>
+                    </div>
+                  </section>
+                </article>
+              )}
+
+              {seleccionado && estadoSeleccionado && (
+                <aside className="space-y-3">
+                  <ActionCard
+                    title="Decisión IA"
+                    icon={<Brain size={18} weight="duotone" />}
+                    tone={iaPendiente ? 'warn' : 'neutral'}
+                    body={iaPendiente
+                      ? seleccionado.tareas_pendientes[0]?.propuesta || 'Hay una recomendación pendiente de revisión.'
+                      : 'Sin decisiones críticas pendientes. Mantén seguimiento de adherencia y próxima sesión.'}
+                    href="/entrenos/brain-ia"
+                    cta={iaPendiente ? 'Revisar bandeja' : 'Abrir Brain'}
+                  />
+                  <ActionCard
+                    title="Sesión y carga"
+                    icon={<Barbell size={18} weight="duotone" />}
+                    tone={seleccionado.estado === 'fatiga' ? 'alert' : 'neutral'}
+                    body={seleccionado.estado === 'fatiga'
+                      ? 'Revisa intensidad y volumen antes de progresar la siguiente sesión.'
+                      : 'Carga semanal dentro de rango operativo. Revisa progresión si el RPE acompaña.'}
+                    href={`/entrenos/${seleccionado.plan_id}`}
+                    cta="Abrir plan"
+                  />
+                  <ActionCard
+                    title="Comunicación"
+                    icon={<Lightning size={18} weight="duotone" />}
+                    tone={seleccionado.estado === 'sin_actividad' ? 'warn' : 'neutral'}
+                    body={seleccionado.estado === 'sin_actividad'
+                      ? 'Prioriza mensaje o ajuste de fricción antes de añadir carga.'
+                      : 'Prepara feedback breve si hay PR, fatiga o sesiones completadas.'}
+                    href={`/clientes/${seleccionado.cliente_id}`}
+                    cta="Abrir cliente"
+                  />
+                  <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+                      Próxima capa
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                      Este panel será el Training Room compacto: próxima sesión, historial del ejercicio, evidencia y nutrición conectada.
+                    </p>
+                  </div>
+                </aside>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   )
 }
 
-function Metric({ label, value, danger, active, warning }: {
+function StatButton({ label, value, active, tone = 'neutral', onClick }: {
   label: string
-  value: string
-  danger?: boolean
+  value: number
   active?: boolean
-  warning?: boolean
+  tone?: 'neutral' | 'warn' | 'alert' | 'ok'
+  onClick: () => void
 }) {
-  const color = danger
+  const color = tone === 'alert'
     ? 'var(--semantic-alert)'
-    : active
-      ? 'var(--semantic-active)'
-      : warning
-        ? 'var(--semantic-warning)'
+    : tone === 'warn'
+      ? 'var(--semantic-warn)'
+      : tone === 'ok'
+        ? 'var(--semantic-active)'
         : 'var(--text)'
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-3xl border px-4 py-3 text-left transition-transform active:scale-[0.98]"
+      style={{
+        borderColor: active ? 'var(--border-strong)' : 'var(--border)',
+        background: active ? 'var(--surface-elevated)' : 'var(--surface)',
+      }}
+    >
+      <p className="font-data text-3xl font-semibold leading-none" style={{ color }}>{value}</p>
+      <p className="mt-1 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{label}</p>
+    </button>
+  )
+}
+
+function PriorityClientButton({ cliente, selected, index, onClick }: {
+  cliente: CommandCenterRow
+  selected: boolean
+  index: number
+  onClick: () => void
+}) {
+  const config = estadoConfig(cliente.estado, cliente.tono)
+  const Icon = config.icon
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-2xl border p-3 text-left transition-all active:scale-[0.99]"
+      style={{
+        animation: `fadeIn 0.2s var(--ease-out-strong) ${Math.min(index, 8) * 30}ms both`,
+        borderColor: selected ? config.border : 'var(--border)',
+        background: selected ? 'var(--bg)' : 'var(--surface)',
+      }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border text-xs font-semibold" style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }}>
+            {initials(cliente)}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>
+              {cliente.nombre} {cliente.apellidos}
+            </p>
+            <p className="mt-0.5 truncate text-xs" style={{ color: 'var(--text-muted)' }}>{cliente.plan_nombre}</p>
+          </div>
+        </div>
+        <span className="rounded-full border p-1.5" style={{ borderColor: config.border, background: config.bg, color: config.color }}>
+          <Icon size={14} weight="duotone" />
+        </span>
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className="text-xs font-semibold" style={{ color: config.color }}>{config.short}</span>
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{cliente.accion_principal}</span>
+      </div>
+      <div className="mt-3 grid grid-cols-4 gap-2">
+        <MiniMetric label="Adh" value={cliente.adherencia_7d_pct !== null ? `${cliente.adherencia_7d_pct}%` : '--'} />
+        <MiniMetric label="RPE" value={cliente.rpe_media_7d !== null ? cliente.rpe_media_7d.toFixed(1) : '--'} />
+        <MiniMetric label="IA" value={String(cliente.tareas_pendientes.length)} />
+        <MiniMetric label="7d" value={String(cliente.sesiones_7d)} />
+      </div>
+    </button>
+  )
+}
+
+function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
-      <p className="font-data text-2xl leading-none mt-1" style={{ color }}>{value}</p>
+      <p className="text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="font-data text-sm font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
     </div>
+  )
+}
+
+function Signal({ label, value, pct, danger, active }: {
+  label: string
+  value: string
+  pct: number
+  danger?: boolean
+  active?: boolean
+}) {
+  const color = danger ? 'var(--semantic-alert)' : active ? 'var(--semantic-active)' : 'var(--text)'
+
+  return (
+    <div className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="font-data mt-1 text-2xl font-semibold leading-none" style={{ color }}>{value}</p>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--bg)' }}>
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+      </div>
+    </div>
+  )
+}
+
+function ActionCard({ title, icon, body, href, cta, tone }: {
+  title: string
+  icon: React.ReactNode
+  body: string
+  href: string
+  cta: string
+  tone: 'neutral' | 'warn' | 'alert'
+}) {
+  const color = tone === 'alert'
+    ? 'var(--semantic-alert)'
+    : tone === 'warn'
+      ? 'var(--semantic-warn)'
+      : 'var(--text)'
+
+  return (
+    <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <div className="flex items-center gap-2">
+        <span className="rounded-xl border p-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)', color }}>
+          {icon}
+        </span>
+        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{title}</p>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{body}</p>
+      <Link href={href} className="mt-4 inline-flex items-center gap-2 text-sm font-semibold" style={{ color }}>
+        {cta} <ArrowRight size={15} />
+      </Link>
+    </section>
   )
 }
