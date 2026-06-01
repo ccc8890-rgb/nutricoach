@@ -17,6 +17,12 @@ Debe ser un sistema de decisión asistida:
 
 El objetivo de negocio es claro: que Carlos pueda atender más clientes sin bajar calidad, reduciendo tareas repetitivas y aumentando precisión.
 
+La segunda condición es igual de importante:
+
+> Todo ese motor debe presentarse con una UI/UX clara, ordenada, intuitiva y premium. Si la IA recomienda bien pero el coach tiene que buscar entre pantallas confusas, el sistema falla.
+
+El rediseño visual no es decoración. Es parte del producto: reduce carga mental, acelera decisiones y mejora adherencia del cliente.
+
 ---
 
 ## 2. Referencias de mercado
@@ -78,7 +84,7 @@ El cliente entra para responder:
 
 ## 4. Modelo de producto
 
-Training OS 2.0 se organiza en seis capas.
+Training OS 2.0 se organiza en siete capas.
 
 ### 4.1 Command Center
 
@@ -264,6 +270,54 @@ Fuente
 
 La IA no debe citar papers al cliente salvo que el coach lo active. Al coach sí debe mostrar evidencia resumida y accionable.
 
+### 4.7 UX/UI System
+
+Capa visual y de interacción transversal.
+
+Objetivo:
+
+- Que el coach trabaje por prioridad, no por navegación manual.
+- Que el cliente sepa qué hacer sin interpretar dashboards.
+- Que cada pantalla tenga una acción primaria clara.
+- Que el diseño sea consistente entre coach y cliente, pero con densidad distinta.
+
+Principios:
+
+1. **Jerarquía antes que información:** primero decisión, luego contexto, luego detalle.
+2. **Una pantalla, un trabajo:** cada vista debe resolver un job concreto.
+3. **Coach denso, cliente simple:** el coach necesita escaneo rápido; el cliente necesita foco.
+4. **Acciones visibles:** aprobar, editar, ignorar, registrar, ver sesión y enviar mensaje siempre deben estar donde se esperan.
+5. **Estados completos:** loading, vacío, error, sin datos, sin plan, fatiga alta, sesión completada.
+6. **Mobile-first en cliente:** touch targets grandes, flujo de sesión sin scroll largo, inputs fáciles.
+7. **Desktop-first en coach:** layouts amplios, paneles laterales, tablas densas y filtros rápidos.
+8. **Lenguaje visual sobrio:** sin estética genérica de app fitness ni exceso de colores. Una paleta neutra, acento único y semánticos claros.
+9. **IA explicable:** toda recomendación debe mostrar “qué”, “por qué”, “con qué datos” y “qué hago ahora”.
+10. **Menos clicks repetitivos:** cualquier acción frecuente debe poder completarse en uno o dos pasos.
+
+Sistema visual:
+
+- Base neutra, limpia y profesional.
+- Acento principal para Training OS.
+- Verde: progreso, PR y completado.
+- Ámbar: revisar o precaución.
+- Rojo: riesgo, fatiga o dolor.
+- Azul/cyan suave: información y evidencia.
+- Tipografía sans clara; números con estilo tabular o monospace donde haya métricas.
+- Cards solo cuando agrupan decisiones; para datos densos usar líneas, tablas y separación por espacio.
+
+Componentes nucleares:
+
+- Priority row de cliente.
+- Recommendation card.
+- Evidence drawer.
+- Session execution card.
+- Weekly calendar strip.
+- Fatigue/load badge.
+- Coach action bar.
+- Client primary CTA.
+- Empty state accionable.
+- Inline explanation panel.
+
 ---
 
 ## 5. Experiencia coach
@@ -280,6 +334,15 @@ Bloques:
 - Acciones rápidas: mensaje, revisar sesión, aprobar ajuste.
 
 No debe parecer una tabla administrativa. Debe parecer una bandeja de control diaria.
+
+UX esperada:
+
+- Escaneo en menos de 10 segundos.
+- Filtros como chips, no formularios.
+- Métricas compactas por fila.
+- Acción principal por cliente visible sin abrir modal.
+- Drawer lateral para ver detalle sin perder la lista.
+- Orden por prioridad calculada, con opción de ordenar manualmente.
 
 ### 5.2 Pantalla: AI Review Inbox
 
@@ -305,6 +368,14 @@ Evidencia: regla interna de descarga por fatiga + principio de gestión de carga
 Acción: Aprobar / Editar / Ignorar
 ```
 
+UX esperada:
+
+- Cards agrupadas por urgencia.
+- Botones fijos por tarjeta.
+- Vista comparativa “antes/después” cuando la IA proponga cambiar una sesión.
+- Explicación corta visible y evidencia expandible.
+- Posibilidad de aprobar varias recomendaciones de bajo riesgo en lote.
+
 ### 5.3 Pantalla: Cliente Training Room
 
 Objetivo: revisar un cliente sin perder contexto.
@@ -324,6 +395,13 @@ Acciones:
 - Ver historial.
 - Añadir nota privada.
 
+UX esperada:
+
+- Layout de 3 zonas: estado, semana/sesión, IA/evidencia.
+- No obligar al coach a cambiar de página para ver historial, perfil y recomendación.
+- Timeline de eventos del cliente: sesión, check-in, PR, alerta, ajuste aprobado.
+- Sticky action bar con acciones de coach.
+
 ### 5.4 Pantalla: Plan Builder
 
 Objetivo: crear y ajustar planes rápido.
@@ -339,6 +417,14 @@ Debe tener:
 - Preview cliente.
 
 El coach no debe escribir textos largos. Escribe intención breve; la IA redacta contexto.
+
+UX esperada:
+
+- Builder por bloques, no lista plana.
+- Drag/drop donde aporte valor; menús rápidos donde sea más fiable.
+- Preview cliente siempre disponible.
+- Diferencias entre plantilla base y adaptación del cliente visibles.
+- Guardado claro y estado de cambios sin ambigüedad.
 
 ---
 
@@ -362,6 +448,14 @@ Contenido:
 - Qué mirar.
 - Botón principal.
 
+UX esperada:
+
+- Una card principal.
+- Un CTA dominante.
+- Texto corto y humano.
+- Nada de métricas complejas salvo que expliquen una decisión.
+- Si toca descanso, que también parezca una acción válida, no una pantalla vacía.
+
 ### 6.2 Pantalla: Semana
 
 Objetivo: entender la estructura sin saturación.
@@ -379,6 +473,14 @@ Click en sesión:
 
 - `Registrar` si es hoy o está pendiente.
 - `Solo ver` para futuras.
+
+UX esperada:
+
+- Banda semanal clara.
+- Hoy resaltado.
+- Sesiones completadas con feedback positivo sobrio.
+- Futuras en modo consulta.
+- Cambios recientes señalados con etiqueta “Ajustado por coach”.
 
 ### 6.3 Pantalla: Sesión
 
@@ -403,6 +505,15 @@ Reglas UX:
 - Registrar set en máximo 3 toques.
 - Modo `Solo ver` siempre disponible.
 
+UX esperada:
+
+- Pantalla tipo companion, no tabla.
+- Set activo evidente.
+- Peso anterior y peso sugerido visibles sin abrir historial.
+- Descanso automático.
+- Demo de ejercicio accesible pero no invasiva.
+- Final de sesión con sensación de cierre: resumen, RPE, nota y PRs.
+
 ### 6.4 Pantalla: Progreso
 
 Objetivo: motivar sin convertirlo en dashboard técnico.
@@ -420,6 +531,13 @@ No mostrar:
 
 - Gráficas técnicas excesivas.
 - Métricas sin explicación.
+
+UX esperada:
+
+- Progreso entendible en 30 segundos.
+- Comparativas contra uno mismo, no contra otros.
+- Mensajes de refuerzo del coach.
+- PRs y consistencia por encima de vanity metrics.
 
 ---
 
@@ -640,7 +758,21 @@ Incluye:
 - Sesión un ejercicio a la vez.
 - Feedback post-sesión.
 
-### Fase 6 — Automatización semanal
+### Fase 6 — UI/UX Coach + Cliente completa
+
+Objetivo: convertir la arquitectura funcional en una experiencia premium, intuitiva y consistente.
+
+Incluye:
+
+- Rediseño visual final del Command Center.
+- Rediseño visual final del Cliente Training Room.
+- Sistema de componentes Training OS.
+- Estados loading/empty/error.
+- Responsive desktop coach.
+- Responsive mobile cliente.
+- QA visual de las rutas críticas.
+
+### Fase 7 — Automatización semanal
 
 Objetivo: ahorrar trabajo repetitivo.
 
@@ -663,6 +795,8 @@ Incluye:
 3. Ajustar una sesión recomendada requiere menos de 3 acciones.
 4. Los mensajes repetitivos salen como borrador.
 5. Las decisiones importantes quedan auditadas.
+6. Las pantallas principales se entienden sin documentación.
+7. El coach puede revisar, aprobar o ignorar recomendaciones sin abrir más de una vista secundaria.
 
 ### Para cliente
 
@@ -671,6 +805,8 @@ Incluye:
 3. Entiende por qué hace la sesión.
 4. Puede reportar cómo fue sin formulario largo.
 5. Ve progreso sin saturarse.
+6. La sesión móvil puede completarse con una mano.
+7. La app no exige interpretar métricas técnicas para saber qué toca.
 
 ### Para negocio
 
@@ -678,6 +814,7 @@ Incluye:
 2. Menos tiempo semanal por cliente.
 3. Mejor adherencia por feedback más rápido.
 4. Mejor diferenciación frente a apps genéricas.
+5. Experiencia visual suficientemente premium para vender coaching de mayor valor.
 
 ---
 
@@ -703,7 +840,9 @@ Construir Training OS 2.0 en este orden:
 3. Next Session Engine.
 4. Evidence Layer.
 5. Cliente Hoy/Semana/Sesión refinado.
-6. Automatización semanal.
+6. UI/UX Coach + Cliente completa.
+7. Automatización semanal.
 
 Esto evita rehacer estética antes de tener el sistema de decisiones. Primero se define qué debe hacer el coach cada día; después se pulen las pantallas.
 
+La UI/UX se implementa en paralelo a cada fase, no como “capa final”. Cada entrega debe salir usable, ordenada y visualmente consistente desde el primer bloque.
