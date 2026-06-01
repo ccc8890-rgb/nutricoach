@@ -81,8 +81,8 @@ export default function BrainIAPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.15)' }}>
-          <Brain size={18} style={{ color: 'rgb(168,85,247)' }} />
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--semantic-info-bg)' }}>
+          <Brain size={18} style={{ color: 'var(--semantic-info)' }} />
         </div>
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Training Brain</h1>
@@ -98,9 +98,9 @@ export default function BrainIAPage() {
             onClick={() => setFiltro(f)}
             className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors"
             style={{
-              background: filtro === f ? 'rgba(168,85,247,0.15)' : 'var(--surface)',
-              color: filtro === f ? 'rgb(168,85,247)' : 'var(--text-muted)',
-              border: `1px solid ${filtro === f ? 'rgba(168,85,247,0.3)' : 'var(--border)'}`,
+              background: filtro === f ? 'var(--semantic-info-bg)' : 'var(--surface)',
+              color: filtro === f ? 'var(--semantic-info)' : 'var(--text-muted)',
+              border: `1px solid ${filtro === f ? 'var(--semantic-info-border)' : 'var(--border)'}`,
             }}
           >
             {f === 'todas' ? 'Todas' : ESTADO_CONFIG[f].label}
@@ -113,7 +113,7 @@ export default function BrainIAPage() {
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'rgb(168,85,247)' }} />
+          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--semantic-info)' }} />
         </div>
       ) : filtradas.length === 0 ? (
         <div className="card text-center py-16">
@@ -151,7 +151,7 @@ export default function BrainIAPage() {
                       {t.payload.senales.map((s, i) => (
                         <div key={i} className="flex items-start gap-2">
                           <span className="text-xs px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5"
-                            style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)', fontSize: 9 }}>
+                            style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', fontSize: 9 }}>
                             {s.tipo.replace('_', ' ')}
                           </span>
                           <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{s.descripcion}</span>
@@ -181,7 +181,7 @@ export default function BrainIAPage() {
                 {/* Papers KB */}
                 {t.fuentes?.length ? (
                   <div className="mb-4 p-2 rounded-lg" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    <p className="text-xs font-semibold mb-1" style={{ color: 'rgb(168,85,247)' }}>📚 Evidencia científica</p>
+                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--semantic-info)' }}>Evidencia científica</p>
                     {t.fuentes.slice(0, 3).map((f, i) => (
                       <p key={i} className="text-xs" style={{ color: 'var(--text-muted)' }}>· {f}</p>
                     ))}

@@ -138,16 +138,16 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
     const estaCompletada = sesionDelDia ? completadasHoy.has(sesionDelDia.id) : false
 
     if (isToday && hasSesion && estaCompletada) {
-      return { background: 'rgba(72,199,142,0.2)', color: '#48C78E' }
+      return { background: 'var(--semantic-active-border)', color: 'var(--semantic-active)' }
     }
     if (isToday && hasSesion) {
-      return { background: 'rgb(168,85,247)', color: 'white' }
+      return { background: 'var(--semantic-info)', color: 'white' }
     }
     if (hasSesion && estaCompletada) {
-      return { background: 'rgba(72,199,142,0.15)', color: '#48C78E' }
+      return { background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)' }
     }
     if (hasSesion) {
-      return { background: 'rgba(168,85,247,0.15)', color: 'rgb(192,132,252)' }
+      return { background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }
     }
     return { background: 'rgba(128,128,128,0.08)', color: 'var(--text-muted)' }
   }
@@ -156,7 +156,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
     const sesionDelDia = sesionesOrdenadas.find(s => s.dia_semana === dia)
     if (!sesionDelDia) return null
     if (completadasHoy.has(sesionDelDia.id)) {
-      return <CheckCircle2 size={12} style={{ color: '#48C78E' }} />
+      return <CheckCircle2 size={12} style={{ color: 'var(--semantic-active)' }} />
     }
     return null
   }
@@ -174,9 +174,9 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
         <div className="flex items-center gap-2">
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background: 'rgba(168,85,247,0.15)' }}
+            style={{ background: 'var(--semantic-info-bg)' }}
           >
-            <Dumbbell size={14} style={{ color: 'rgb(168,85,247)' }} />
+            <Dumbbell size={14} style={{ color: 'var(--semantic-info)' }} />
           </div>
           <div>
             <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{planNombre}</p>
@@ -211,16 +211,16 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 </div>
                 <div
                   className="w-1 h-1 rounded-full"
-                  style={{ background: hasSesion ? 'rgba(168,85,247,0.5)' : 'transparent' }}
+                  style={{ background: hasSesion ? 'var(--semantic-info-border)' : 'transparent' }}
                 />
               </div>
             )
           })}
         </div>
         <p className="text-[10px] mb-3" style={{ color: 'var(--text-muted)' }}>
-          <span style={{ color: 'rgb(192,132,252)' }}>●</span> Entreno &nbsp;
+          <span style={{ color: 'var(--semantic-info)' }}>●</span> Entreno &nbsp;
           <span style={{ color: 'rgba(128,128,128,0.5)' }}>●</span> Descanso &nbsp;
-          <span style={{ color: '#48C78E' }}>✓</span> Completado
+          <span style={{ color: 'var(--semantic-active)' }}>✓</span> Completado
         </p>
 
         {/* Rest day mini panel — solo cuando hoy es día de descanso */}
@@ -250,8 +250,8 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
         {/* Next session CTA */}
         {nextSession && (
           <div className="rounded-xl" style={{
-            background: nextSessionCompleted ? 'rgba(72,199,142,0.08)' : 'rgba(168,85,247,0.1)',
-            border: `1px solid ${nextSessionCompleted ? 'rgba(72,199,142,0.2)' : 'rgba(168,85,247,0.2)'}`,
+            background: nextSessionCompleted ? 'var(--semantic-active-bg)' : 'var(--semantic-info-bg)',
+            border: `1px solid ${nextSessionCompleted ? 'var(--semantic-active-border)' : 'var(--semantic-info-bg)'}`,
           }}>
             {/* Session info row */}
             <Link
@@ -260,12 +260,12 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             >
               <div
                 className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
-                style={{ background: nextSessionCompleted ? 'rgba(72,199,142,0.2)' : 'rgba(168,85,247,0.2)' }}
+                style={{ background: nextSessionCompleted ? 'var(--semantic-active-border)' : 'var(--semantic-info-bg)' }}
               >
                 {nextSessionCompleted ? (
-                  <CheckCircle2 size={16} style={{ color: '#48C78E' }} />
+                  <CheckCircle2 size={16} style={{ color: 'var(--semantic-active)' }} />
                 ) : (
-                  <Zap size={16} style={{ color: 'rgb(192,132,252)' }} />
+                  <Zap size={16} style={{ color: 'var(--semantic-info)' }} />
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -292,7 +292,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 {nextSessionCompleted ? (
                   <span
                     className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1"
-                    style={{ background: 'rgba(72,199,142,0.15)', color: '#48C78E' }}
+                    style={{ background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)' }}
                   >
                     <CheckCircle2 size={11} />
                     Hecha
@@ -300,7 +300,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 ) : nextSession.dia_semana === TODAY_NAME ? (
                   <span
                     className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ background: 'rgba(168,85,247,0.9)', color: 'white' }}
+                    style={{ background: 'var(--accent)', color: 'white' }}
                   >
                     <Play size={11} />
                     Empezar
@@ -308,12 +308,12 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 ) : (
                   <span
                     className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ background: 'rgba(168,85,247,0.2)', color: 'rgb(192,132,252)' }}
+                    style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }}
                   >
                     Iniciar
                   </span>
                 )}
-                <ChevronRight size={14} style={{ color: nextSessionCompleted ? 'rgba(72,199,142,0.5)' : 'rgba(168,85,247,0.7)' }} />
+                <ChevronRight size={14} style={{ color: nextSessionCompleted ? 'var(--semantic-active)' : 'var(--semantic-info)' }} />
               </div>
             </Link>
 
@@ -326,16 +326,16 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                   className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg font-medium transition-all active:scale-[0.98]"
                   style={{
                     background: 'transparent',
-                    border: '1px dashed rgba(168,85,247,0.3)',
-                    color: 'rgb(192,132,252)',
+                    border: '1px dashed var(--semantic-info-border)',
+                    color: 'var(--semantic-info)',
                   }}
                   onMouseEnter={e => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'rgba(168,85,247,0.08)'
-                      ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed rgba(168,85,247,0.5)'
+                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--semantic-info-bg)'
+                      ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed var(--semantic-info-border)'
                   }}
                   onMouseLeave={e => {
                     (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                      ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed rgba(168,85,247,0.3)'
+                      ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed var(--semantic-info-border)'
                   }}
                 >
                   {completandoId === nextSession.id ? (
@@ -359,20 +359,20 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                   <Link
                     href={`/cliente/sesion/${s.id}`}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-opacity hover:opacity-70"
-                    style={{ color: completada ? '#48C78E' : 'var(--text-muted)' }}
+                    style={{ color: completada ? 'var(--semantic-active)' : 'var(--text-muted)' }}
                   >
                     <span
                       className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
                       style={{
                         background: completada
-                          ? 'rgba(72,199,142,0.15)'
+                          ? 'var(--semantic-active-bg)'
                           : 'rgba(128,128,128,0.1)',
                       }}
                     >
                       {completada ? <CheckCircle2 size={12} /> : (DIA_ABR[s.dia_semana] ?? '?')}
                     </span>
                     <span className="flex-1 min-w-0">
-                      <span className="block text-sm truncate" style={{ color: completada ? '#48C78E' : 'var(--text)' }}>
+                      <span className="block text-sm truncate" style={{ color: completada ? 'var(--semantic-active)' : 'var(--text)' }}>
                         {s.nombre}
                         {completada && ' ✓'}
                       </span>
@@ -391,7 +391,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                       <span className="text-[11px]">{s.ejercicios_count} ej.</span>
                     )}
                     {completada && (
-                      <span className="text-[10px] font-medium" style={{ color: '#48C78E' }}>Completada</span>
+                      <span className="text-[10px] font-medium" style={{ color: 'var(--semantic-active)' }}>Completada</span>
                     )}
                   </Link>
 
@@ -407,9 +407,9 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                         color: 'var(--text-muted)',
                       }}
                       onMouseEnter={e => {
-                        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(168,85,247,0.06)'
-                          ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed rgba(168,85,247,0.3)'
-                          ; (e.currentTarget as HTMLButtonElement).style.color = 'rgb(192,132,252)'
+                        (e.currentTarget as HTMLButtonElement).style.background = 'var(--semantic-info-bg)'
+                          ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed var(--semantic-info-border)'
+                          ; (e.currentTarget as HTMLButtonElement).style.color = 'var(--semantic-info)'
                       }}
                       onMouseLeave={e => {
                         (e.currentTarget as HTMLButtonElement).style.background = 'rgba(128,128,128,0.04)'

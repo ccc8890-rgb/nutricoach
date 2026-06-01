@@ -6,13 +6,13 @@ import Link from 'next/link'
 import { ArrowLeft, Sparkles, Loader2, ChevronDown, ChevronUp, Dumbbell, Clock, Calendar, CheckCircle } from 'lucide-react'
 
 const DISCIPLINAS = [
-  { value: 'hyrox', label: 'HYROX', emoji: '🏋️' },
-  { value: 'running', label: 'Running', emoji: '🏃' },
-  { value: 'hibrido', label: 'Híbrido', emoji: '⚡' },
-  { value: 'ciclismo', label: 'Ciclismo', emoji: '🚴' },
-  { value: 'triatlon', label: 'Triatlón', emoji: '🔱' },
-  { value: 'fuerza', label: 'Fuerza', emoji: '💪' },
-  { value: 'general', label: 'General', emoji: '🎯' },
+  { value: 'hyrox', label: 'HYROX', code: 'HX' },
+  { value: 'running', label: 'Running', code: 'RN' },
+  { value: 'hibrido', label: 'Híbrido', code: 'HB' },
+  { value: 'ciclismo', label: 'Ciclismo', code: 'CY' },
+  { value: 'triatlon', label: 'Triatlón', code: 'TR' },
+  { value: 'fuerza', label: 'Fuerza', code: 'ST' },
+  { value: 'general', label: 'General', code: 'GN' },
 ]
 
 const NIVELES = ['principiante', 'intermedio', 'avanzado']
@@ -166,7 +166,7 @@ function GenerarIAForm() {
                     style={form.disciplina_principal === d.value
                       ? { background: 'var(--primary)', color: 'white', borderColor: 'var(--primary)' }
                       : { background: 'var(--surface)', color: 'var(--text-secondary)', borderColor: 'var(--border)' }}>
-                    <span>{d.emoji}</span> {d.label}
+                    <span className="font-data text-[10px] opacity-70">{d.code}</span> {d.label}
                   </button>
                 ))}
               </div>
@@ -272,7 +272,7 @@ function GenerarIAForm() {
           {generando && (
             <div className="card h-full flex flex-col items-center justify-center py-16 text-center gap-4">
               <div className="relative">
-                <div className="w-16 h-16 rounded-full border-4 border-green-100 border-t-green-500 animate-spin" />
+                <div className="w-16 h-16 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--semantic-info)' }} />
                 <Sparkles size={20} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                   style={{ color: 'var(--primary)' }} />
               </div>

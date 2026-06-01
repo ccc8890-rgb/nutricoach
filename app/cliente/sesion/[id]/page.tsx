@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Trophy, Loader2, Play } from 'lucide-react'
+import { ArrowLeft, Brain, Loader2, Play, Trophy } from 'lucide-react'
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
 import EjercicioDemoModal from '@/components/training/EjercicioDemoModal'
 
@@ -60,6 +60,12 @@ export default function EjecucionSesionPage() {
   }>>([])
   const [historialPesos, setHistorialPesos] = useState<Map<string, number>>(new Map())
   const [demoEjercicio, setDemoEjercicio] = useState<{ nombre: string; grupo_muscular: string; video_url?: string | null; foto_url?: string | null } | null>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('modo') === 'solo-ver') setModo('solo-ver')
+  }, [])
 
   const loadSesion = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -125,7 +131,10 @@ export default function EjecucionSesionPage() {
 
   useEffect(() => { loadSesion() }, [loadSesion])
 
-  async function registrarSesion(setsMap: Record<string, SetData[]>) {
+  async function registrarSesion(
+    setsMap: Record<string, SetData[]>,
+    meta?: { esfuerzo_percibido: number; notas: string; duracion_sesion_s: number }
+  ) {
     if (!sesion) return
     setGuardando(true)
     const ejerciciosPayload = sesion.ejercicios.map(ej => ({
@@ -146,7 +155,9 @@ export default function EjecucionSesionPage() {
         body: JSON.stringify({
           sesion_id: sesion.id,
           ejercicios: ejerciciosPayload,
-          duracion_sesion_s: Math.floor((Date.now() - sesionStartRef.current) / 1000),
+          duracion_sesion_s: meta?.duracion_sesion_s ?? Math.floor((Date.now() - sesionStartRef.current) / 1000),
+          esfuerzo_percibido: meta?.esfuerzo_percibido,
+          notas: meta?.notas,
         }),
       })
       const data = await res.json()
@@ -176,28 +187,28 @@ export default function EjecucionSesionPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: 'var(--bg)' }}>
       <div
         className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-        style={{ background: 'rgba(168,85,247,0.12)', border: '2px solid rgba(168,85,247,0.4)' }}
+        style={{ background: 'var(--semantic-active-bg)', border: '2px solid var(--semantic-active-border)' }}
       >
-        <Trophy size={36} style={{ color: 'rgb(168,85,247)' }} />
+        <Trophy size={36} style={{ color: 'var(--semantic-active)' }} />
       </div>
-      <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>¡Sesión completada!</h1>
+      <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>Sesión completada</h1>
       <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>{sesion.nombre}</p>
 
       {prsDetectados.length > 0 && (
         <div className="w-full max-w-sm mb-8">
-          <p className="text-xs font-bold uppercase tracking-widest mb-3 text-center" style={{ color: 'rgb(168,85,247)' }}>
-            🏆 Nuevos récords personales
+          <p className="text-xs font-bold uppercase tracking-widest mb-3 text-center" style={{ color: 'var(--semantic-active)' }}>
+            Nuevos récords personales
           </p>
           <div className="flex flex-col gap-2">
             {prsDetectados.map(pr => (
               <div
                 key={pr.ejercicio_id}
                 className="px-4 py-3 rounded-xl flex justify-between items-center"
-                style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)' }}
+                style={{ background: 'var(--semantic-active-bg)', border: '1px solid var(--semantic-active-border)' }}
               >
                 <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{pr.ejercicio_nombre}</span>
                 <div className="text-right">
-                  <span className="text-base font-bold" style={{ color: 'rgb(168,85,247)' }}>{pr.peso_nuevo_kg} kg</span>
+                  <span className="text-base font-bold" style={{ color: 'var(--semantic-active)' }}>{pr.peso_nuevo_kg} kg</span>
                   {pr.peso_anterior_kg != null && (
                     <span className="text-xs ml-2" style={{ color: 'var(--text-muted)' }}>
                       (+{(pr.peso_nuevo_kg - pr.peso_anterior_kg).toFixed(1)})
@@ -212,8 +223,8 @@ export default function EjecucionSesionPage() {
 
       <Link
         href="/cliente"
-        className="w-full max-w-sm py-3 rounded-xl text-sm font-semibold text-white text-center block"
-        style={{ background: 'rgb(168,85,247)' }}
+        className="w-full max-w-sm py-3 rounded-xl text-sm font-semibold text-center block transition-transform active:scale-[0.98]"
+        style={{ background: 'var(--accent)', color: 'var(--bg)' }}
       >
         Volver al portal
       </Link>
@@ -226,6 +237,7 @@ export default function EjecucionSesionPage() {
     grupo_muscular: ej.ejercicio?.grupo_muscular ?? '',
     series: ej.series ?? 3,
     repeticiones: ej.repeticiones ?? '',
+    descanso_segundos: ej.descanso_segundos ?? 90,
     peso_sugerido: ej.peso_sugerido ?? '',
     instruccion_ejercicio: ej.notas ?? '',
     contexto_ia: ej.contexto_ia ?? null,
@@ -270,8 +282,8 @@ export default function EjecucionSesionPage() {
               onClick={() => setModo(m)}
               className="px-3 py-1.5 text-xs font-semibold transition-all"
               style={{
-                background: modo === m ? 'rgb(168,85,247)' : 'transparent',
-                color: modo === m ? '#fff' : 'var(--text-muted)',
+                background: modo === m ? 'var(--accent)' : 'transparent',
+                color: modo === m ? 'var(--bg)' : 'var(--text-muted)',
               }}
             >
               {m === 'registrar' ? 'Registrar' : 'Solo ver'}
@@ -285,7 +297,7 @@ export default function EjecucionSesionPage() {
         {modo === 'registrar' ? (
           guardando ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 size={28} className="animate-spin" style={{ color: 'rgb(168,85,247)' }} />
+              <Loader2 size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
             </div>
           ) : (
             <SesionCardMobile
@@ -299,10 +311,11 @@ export default function EjecucionSesionPage() {
           <div className="px-4 pt-4 flex flex-col gap-3 max-w-md mx-auto">
             {sesion.contexto_ia && (
               <div
-                className="p-3 rounded-xl text-xs"
-                style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)', color: 'rgb(168,85,247)' }}
+                className="p-3 rounded-xl text-xs flex gap-2"
+                style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}
               >
-                🤖 {sesion.contexto_ia}
+                <Brain size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--semantic-info)' }} />
+                <span style={{ color: 'var(--text-secondary)' }}>{sesion.contexto_ia}</span>
               </div>
             )}
             {sesion.ejercicios.map((ej, i) => (
@@ -315,7 +328,7 @@ export default function EjecucionSesionPage() {
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <span
                       className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold flex-shrink-0"
-                      style={{ background: 'rgba(168,85,247,0.12)', color: 'rgb(168,85,247)' }}
+                      style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}
                     >{i + 1}</span>
                     <p className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre}</p>
                   </div>
@@ -329,7 +342,7 @@ export default function EjecucionSesionPage() {
                           foto_url: ej.ejercicio?.foto_url,
                         })}
                         className="flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-semibold"
-                        style={{ background: 'rgba(168,85,247,0.12)', color: 'rgb(168,85,247)', border: '1px solid rgba(168,85,247,0.25)' }}
+                        style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}
                       >
                         <Play size={10} fill="currentColor" /> Demo
                       </button>
@@ -349,7 +362,10 @@ export default function EjecucionSesionPage() {
                   <p className="text-xs mt-2 ml-7" style={{ color: 'var(--text-secondary)' }}>{ej.notas}</p>
                 )}
                 {ej.contexto_ia && (
-                  <p className="text-xs mt-1 ml-7 italic" style={{ color: 'rgb(168,85,247)' }}>🤖 {ej.contexto_ia}</p>
+                  <p className="text-xs mt-2 ml-7 flex gap-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                    <Brain size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--semantic-info)' }} />
+                    <span>{ej.contexto_ia}</span>
+                  </p>
                 )}
               </div>
             ))}

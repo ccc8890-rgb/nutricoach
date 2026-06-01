@@ -17,19 +17,22 @@ import {
     Crown,
     UserPlus,
     X,
+    TrendingUp,
 } from 'lucide-react'
 import { useDebounce } from '@/lib/useDebounce'
 import { useToast } from '@/components/ui/Toast'
 import { MODALITY_CONFIG, detectarSubcategoriaLegacy } from '@/lib/entrenos/utils'
 
 const OBJETIVO_COLOR: Record<string, string> = {
-    hipertrofia: 'badge-purple',
+    hipertrofia: 'badge-teal',
     fuerza: 'badge-blue',
     perdida_grasa: 'badge-orange',
     cardio: 'badge-red',
     tonificacion: 'badge-green',
     rendimiento: 'badge-teal',
 }
+
+const INDIVIDUALIZACION_MARKER = String.fromCodePoint(0x1f3af)
 
 function nivelStyle(nivel: string | null | undefined): React.CSSProperties {
     switch (nivel) {
@@ -169,7 +172,7 @@ export default function PlantillasEntrenoPage() {
                                     ? { background: 'rgba(239,68,68,0.15)', color: 'rgb(239,68,68)' }
                                     : p.tipo === 'mixto'
                                         ? { background: 'rgba(249,115,22,0.15)', color: 'rgb(249,115,22)' }
-                                        : { background: 'rgba(168,85,247,0.15)', color: 'rgb(168,85,247)' }
+                                        : { background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }
                             }
                         >
                             {cfg ? <cfg.Icon size={18} /> : <Dumbbell size={18} />}
@@ -227,7 +230,7 @@ export default function PlantillasEntrenoPage() {
                             <button
                                 onClick={(e) => { e.stopPropagation(); setAsignandoId(p.id); setNombrePlan(p.nombre); setClienteSeleccionado('') }}
                                 className="p-1.5 rounded-lg text-xs font-medium flex items-center gap-1"
-                                style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)', border: '1px solid rgba(168,85,247,0.25)' }}
+                                style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}
                             >
                                 <UserPlus size={13} /> Asignar
                             </button>
@@ -241,7 +244,7 @@ export default function PlantillasEntrenoPage() {
                         </div>
                     </div>
                     {p.descripcion && (
-                        <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{p.descripcion.split('🎯')[0].trim()}</p>
+                        <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{p.descripcion.split(INDIVIDUALIZACION_MARKER)[0].trim()}</p>
                     )}
                 </div>
 
@@ -250,8 +253,8 @@ export default function PlantillasEntrenoPage() {
                     <div className="px-4 pb-4 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                         {p.progresion && Array.isArray(p.progresion) && p.progresion.length > 0 && (
                             <div className="mb-3">
-                                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
-                                    📈 Progresión semanal
+                                <p className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                                    <TrendingUp size={13} /> Progresión semanal
                                 </p>
                                 <div className="flex flex-col gap-1.5 max-h-[200px] overflow-y-auto pr-1">
                                     {p.progresion.map((sem: ProgresionPlantilla) => (
@@ -396,7 +399,7 @@ export default function PlantillasEntrenoPage() {
                         onClick={() => setFiltroModalidad(null)}
                         className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
                         style={filtroModalidad === null
-                            ? { background: 'rgba(168,85,247,0.2)', color: 'rgb(192,132,252)', border: '1px solid rgba(168,85,247,0.4)' }
+                            ? { background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }
                             : { background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)', border: '1px solid transparent' }
                         }
                     >
@@ -588,11 +591,11 @@ export default function PlantillasEntrenoPage() {
                                 style={{
                                     background: !clienteSeleccionado || !nombrePlan || asignando
                                         ? 'rgba(128,128,128,0.2)'
-                                        : 'rgba(168,85,247,0.2)',
+                                        : 'var(--semantic-info-bg)',
                                     color: !clienteSeleccionado || !nombrePlan || asignando
                                         ? 'var(--text-muted)'
-                                        : 'rgb(168,85,247)',
-                                    border: '1px solid rgba(168,85,247,0.25)',
+                                        : 'var(--semantic-info)',
+                                    border: '1px solid var(--semantic-info-border)',
                                     cursor: !clienteSeleccionado || !nombrePlan || asignando ? 'not-allowed' : 'pointer',
                                 }}
                             >

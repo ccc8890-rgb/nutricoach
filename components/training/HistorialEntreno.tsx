@@ -98,7 +98,7 @@ export default function HistorialEntreno({ clienteId }: { clienteId: string }) {
               onClick={() => setDiasFiltro(d)}
               className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
               style={diasFiltro === d
-                ? { background: 'rgba(168,85,247,0.2)', color: 'rgb(192,132,252)', border: '1px solid rgba(168,85,247,0.4)' }
+                ? { background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }
                 : { background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)', border: '1px solid transparent' }
               }
             >
@@ -153,7 +153,7 @@ export default function HistorialEntreno({ clienteId }: { clienteId: string }) {
       {sesiones.length > 0 ? (
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Zap size={15} style={{ color: 'rgb(168,85,247)' }} />
+            <Zap size={15} style={{ color: 'var(--semantic-info)' }} />
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sesiones recientes</h3>
           </div>
           <div className="flex flex-col gap-2">
@@ -260,7 +260,7 @@ export default function HistorialEntreno({ clienteId }: { clienteId: string }) {
                                   <span
                                     key={si}
                                     className="text-[11px] px-2 py-0.5 rounded-md font-medium"
-                                    style={{ background: 'rgba(168,85,247,0.08)', color: 'rgb(168,85,247)' }}
+                                    style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }}
                                   >
                                     {s.reps ?? '?'}{s.peso_kg ? `×${s.peso_kg}kg` : ''}
                                   </span>

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, ProgresionPlantilla, SportModality, TrainingTier, PerfilEntrenoCliente } from '@/types'
-import { Dumbbell, Target, ChevronDown, ChevronUp, Check, Crown, AlertTriangle, Sparkles } from 'lucide-react'
+import { Dumbbell, Target, ChevronDown, ChevronUp, Check, Crown, AlertTriangle, Sparkles, TrendingUp } from 'lucide-react'
 import { MODALITY_CONFIG, detectarSubcategoriaLegacy } from '@/lib/entrenos/utils'
 import { evaluarPerfilEntreno, type RecomendacionEntreno } from '@/lib/motor-entreno'
 
@@ -13,13 +13,15 @@ interface Props {
 }
 
 const OBJETIVO_COLOR: Record<string, string> = {
-    hipertrofia:   'badge-purple',
+    hipertrofia:   'badge-teal',
     fuerza:        'badge-blue',
     perdida_grasa: 'badge-orange',
     cardio:        'badge-red',
     tonificacion:  'badge-green',
     rendimiento:   'badge-teal',
 }
+
+const INDIVIDUALIZACION_MARKER = String.fromCodePoint(0x1f3af)
 
 export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, clienteId }: Props) {
     const [plantillas, setPlantillas] = useState<PlantillaEntrenamiento[]>([])
@@ -67,7 +69,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
     if (loading) {
         return (
             <div className="flex items-center gap-2 text-sm py-4" style={{ color: 'var(--text-muted)' }}>
-                <div className="w-4 h-4 rounded-full border-2 border-purple-400 border-t-transparent animate-spin" />
+                <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--semantic-info)' }} />
                 Cargando plantillas…
             </div>
         )
@@ -98,7 +100,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                 key={p.id}
                 className="border rounded-xl transition-all cursor-pointer"
                 style={estaSeleccionada
-                    ? { borderColor: 'rgb(168,85,247)', background: 'rgba(168,85,247,0.10)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }
+                    ? { borderColor: 'var(--semantic-info)', background: 'var(--semantic-info-bg)', boxShadow: '0 1px 3px rgba(0,0,0,0.12)' }
                     : { borderColor: 'var(--border)', background: 'var(--surface)' }
                 }
             >
@@ -113,7 +115,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                     ? { background: 'rgba(239,68,68,0.15)', color: 'rgb(239,68,68)' }
                                     : p.tipo === 'mixto'
                                         ? { background: 'rgba(249,115,22,0.15)', color: 'rgb(249,115,22)' }
-                                        : { background: 'rgba(168,85,247,0.15)', color: 'rgb(168,85,247)' }
+                                        : { background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }
                             }
                         >
                             {cfg ? <cfg.Icon size={18} /> : <Dumbbell size={18} />}
@@ -122,7 +124,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <p className="font-semibold text-[15px]" style={{ color: 'var(--text)' }}>{p.nombre}</p>
-                                {estaSeleccionada && <Check size={16} className="text-purple-400 flex-shrink-0" />}
+                                {estaSeleccionada && <Check size={16} className="flex-shrink-0" style={{ color: 'var(--semantic-info)' }} />}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                 <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{p.dias_por_semana} días/sem · {p.nivel}</span>
@@ -167,7 +169,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                         </div>
                     </div>
                     {p.descripcion && (
-                        <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{p.descripcion.split('🎯')[0].trim()}</p>
+                        <p className="text-xs mt-2 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{p.descripcion.split(INDIVIDUALIZACION_MARKER)[0].trim()}</p>
                     )}
                 </div>
 
@@ -176,7 +178,9 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                         {/* Progresión semanal */}
                         {p.progresion && Array.isArray(p.progresion) && p.progresion.length > 0 && (
                             <div className="mb-3">
-                                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>📈 Progresión semanal</p>
+                                <p className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                                    <TrendingUp size={13} /> Progresión semanal
+                                </p>
                                 <div className="flex flex-col gap-1.5 max-h-[200px] overflow-y-auto pr-1">
                                     {p.progresion.map((sem: ProgresionPlantilla) => (
                                         <div
@@ -214,7 +218,9 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                         {/* Sesiones */}
                         {sesiones.length > 0 && (
                             <div className="flex flex-col gap-2">
-                                <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>🏋️ Sesiones</p>
+                                <p className="text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                                    <Dumbbell size={13} /> Sesiones
+                                </p>
                                 {sesiones.sort((a, b) => a.orden - b.orden).map(sesion => {
                                     const ejercicios = (sesion.ejercicios ?? []) as PlantillaSesionEjercicio[]
                                     return (
@@ -247,13 +253,13 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                         )}
 
                         {/* Individualización */}
-                        {p.descripcion?.includes('🎯') && (
+                        {p.descripcion?.includes(INDIVIDUALIZACION_MARKER) && (
                             <div
                                 className="mt-3 rounded-lg p-2.5"
-                                style={{ background: 'rgba(10,132,255,0.08)', border: '1px solid rgba(10,132,255,0.25)' }}
+                                style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}
                             >
-                                <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'rgb(10,132,255)' }}>🎯 Individualización</p>
-                                <p className="text-[11px] leading-relaxed" style={{ color: 'rgb(10,132,255)' }}>{p.descripcion.split('🎯')[1]?.trim()}</p>
+                                <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--semantic-info)' }}>Individualización</p>
+                                <p className="text-[11px] leading-relaxed" style={{ color: 'var(--semantic-info)' }}>{p.descripcion.split(INDIVIDUALIZACION_MARKER)[1]?.trim()}</p>
                             </div>
                         )}
                     </div>
@@ -265,7 +271,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
     return (
         <div className="card">
             <div className="flex items-center gap-2 mb-1">
-                <Target size={16} className="text-purple-400" />
+                <Target size={16} style={{ color: 'var(--semantic-info)' }} />
                 <h2 className="font-semibold" style={{ color: 'var(--text)' }}>Plantillas predefinidas</h2>
             </div>
             <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
@@ -276,17 +282,17 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
             {recomendacion && (
                 <div
                     className="mb-4 rounded-xl p-3 space-y-2"
-                    style={{ background: 'rgba(10,132,255,0.08)', border: '1px solid rgba(10,132,255,0.25)' }}
+                    style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}
                 >
                     <div className="flex items-start gap-2">
-                        <Sparkles size={13} style={{ color: 'rgb(10,132,255)' }} className="mt-0.5 flex-shrink-0" />
+                        <Sparkles size={13} style={{ color: 'var(--semantic-info)' }} className="mt-0.5 flex-shrink-0" />
                         <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'rgb(10,132,255)' }}>Motor de recomendación</p>
-                            <p className="text-xs" style={{ color: 'rgb(10,132,255)' }}>{recomendacion.foco_principal}</p>
+                            <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--semantic-info)' }}>Motor de recomendación</p>
+                            <p className="text-xs" style={{ color: 'var(--semantic-info)' }}>{recomendacion.foco_principal}</p>
                         </div>
                     </div>
                     {recomendacion.advertencias.length > 0 && (
-                        <div className="space-y-1 pt-1" style={{ borderTop: '1px solid rgba(10,132,255,0.2)' }}>
+                        <div className="space-y-1 pt-1" style={{ borderTop: '1px solid var(--semantic-info-border)' }}>
                             {recomendacion.advertencias.map((adv, i) => (
                                 <div key={i} className="flex items-start gap-1.5">
                                     <AlertTriangle size={11} style={{ color: '#C9A96E' }} className="mt-0.5 flex-shrink-0" />
@@ -296,12 +302,12 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                         </div>
                     )}
                     {recomendacion.ajustes_adicionales.length > 0 && (
-                        <div className="space-y-1 pt-1" style={{ borderTop: '1px solid rgba(10,132,255,0.2)' }}>
+                        <div className="space-y-1 pt-1" style={{ borderTop: '1px solid var(--semantic-info-border)' }}>
                             {recomendacion.ajustes_adicionales.map((aj, i) => (
                                 <p
                                     key={i}
                                     className="text-[11px] pl-3"
-                                    style={{ color: 'var(--text-muted)', borderLeft: '2px solid rgba(10,132,255,0.35)' }}
+                                    style={{ color: 'var(--text-muted)', borderLeft: '2px solid var(--semantic-info-border)' }}
                                 >{aj}</p>
                             ))}
                         </div>
@@ -325,7 +331,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                         ? { background: 'rgba(201,169,110,0.2)', borderColor: 'rgba(201,169,110,0.5)', color: '#C9A96E' }
                                         : t === 'general'
                                             ? { background: 'rgba(128,128,128,0.2)', borderColor: 'rgba(128,128,128,0.4)', color: 'var(--text)' }
-                                            : { background: 'rgba(168,85,247,0.2)', borderColor: 'rgba(168,85,247,0.5)', color: 'rgb(192,132,252)' }
+                                            : { background: 'var(--semantic-info-bg)', borderColor: 'var(--semantic-info-border)', color: 'var(--semantic-info)' }
                                     : { background: 'transparent', borderColor: 'var(--border)', color: 'var(--text-muted)' }
                                 }
                             >
@@ -343,7 +349,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                             onClick={() => setFiltroModalidad(null)}
                             className="text-[11px] font-medium px-2.5 py-1 rounded-full border transition-colors"
                             style={filtroModalidad === null
-                                ? { background: 'rgba(168,85,247,0.2)', borderColor: 'rgba(168,85,247,0.5)', color: 'rgb(192,132,252)' }
+                                ? { background: 'var(--semantic-info-bg)', borderColor: 'var(--semantic-info-border)', color: 'var(--semantic-info)' }
                                 : { background: 'transparent', borderColor: 'var(--border)', color: 'var(--text-muted)' }
                             }
                         >

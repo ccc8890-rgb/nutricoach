@@ -15,7 +15,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, ArrowUpDown, ChevronDown, ChevronUp, Video } from 'lucide-react'
+import { ArrowUpDown, Brain, ChevronDown, ChevronUp, GripVertical, Video } from 'lucide-react'
 
 export interface EjercicioTimeline {
   id: string
@@ -56,6 +56,7 @@ interface MoverDestino {
 
 interface PlanTimelineProps {
   semanas: SemanaTimeline[]
+  selectedSesionId?: string | null
   onReorder: (sesionId: string, ejerciciosOrdenados: string[]) => Promise<void>
   onMover: (ejercicioId: string, destSesionId: string) => Promise<void>
   onToggleContextoIA: (sesionId: string, ejercicioId: string) => void
@@ -93,8 +94,8 @@ function SortableEjercicioCard({
         className="flex items-center gap-2 rounded-lg px-3 py-2.5 mb-1.5 border transition-colors"
         style={{
           background: isDragging ? 'var(--surface)' : 'var(--bg)',
-          borderColor: isDragging ? 'rgb(168,85,247)' : 'var(--border)',
-          boxShadow: isDragging ? '0 4px 16px rgba(168,85,247,0.15)' : 'none',
+          borderColor: isDragging ? 'var(--semantic-info)' : 'var(--border)',
+          boxShadow: isDragging ? '0 8px 24px var(--semantic-info-bg)' : 'none',
         }}
       >
         <button
@@ -117,7 +118,7 @@ function SortableEjercicioCard({
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
                 className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 transition-colors"
-                style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)', border: '1px solid rgba(168,85,247,0.25)' }}
+                style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}
                 title="Ver demostración"
               >
                 <Video size={10} /> Demo
@@ -133,7 +134,7 @@ function SortableEjercicioCard({
 
         {ej.grupo_muscular && (
           <span className="hidden sm:inline text-xs px-1.5 py-0.5 rounded flex-shrink-0"
-            style={{ background: 'rgba(168,85,247,0.1)', color: 'rgb(168,85,247)' }}>
+            style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }}>
             {ej.grupo_muscular}
           </span>
         )}
@@ -144,11 +145,11 @@ function SortableEjercicioCard({
             className="flex-shrink-0 p-1 rounded transition-colors"
             title="Nota para IA"
             style={{
-              color: (instruccionDraft || instruccionOpen) ? 'rgb(168,85,247)' : 'var(--text-muted)',
-              background: instruccionOpen ? 'rgba(168,85,247,0.09)' : 'transparent',
+              color: (instruccionDraft || instruccionOpen) ? 'var(--semantic-info)' : 'var(--text-muted)',
+              background: instruccionOpen ? 'var(--semantic-info-bg)' : 'transparent',
             }}
           >
-            🤖
+            <Brain size={14} />
           </button>
         )}
 
@@ -174,7 +175,7 @@ function SortableEjercicioCard({
 
       {expanded && (
         <div className="ml-6 mb-2 pl-3 py-2 rounded-lg border-l-2 text-xs"
-          style={{ borderColor: 'rgba(168,85,247,0.3)', color: 'var(--text-secondary)' }}>
+          style={{ borderColor: 'var(--semantic-info-border)', color: 'var(--text-secondary)' }}>
           {instruccionOpen ? (
             <input
               className="input py-1 text-xs w-full mb-1"
@@ -190,9 +191,12 @@ function SortableEjercicioCard({
             instruccionDraft && <p className="mb-1">{instruccionDraft}</p>
           )}
           {ej.contexto_ia ? (
-            <p className="italic" style={{ color: 'rgb(168,85,247)' }}>🤖 {ej.contexto_ia}</p>
+            <p className="flex gap-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              <Brain size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--semantic-info)' }} />
+              <span>{ej.contexto_ia}</span>
+            </p>
           ) : (
-            <button onClick={onToggleIA} className="text-xs underline" style={{ color: 'rgb(168,85,247)' }}>
+            <button onClick={onToggleIA} className="text-xs underline" style={{ color: 'var(--semantic-info)' }}>
               + Generar contexto IA
             </button>
           )}
@@ -202,7 +206,7 @@ function SortableEjercicioCard({
   )
 }
 
-export default function PlanTimeline({ semanas, onReorder, onMover, onToggleContextoIA, onUpdateEjercicio, sesionesDisponibles }: PlanTimelineProps) {
+export default function PlanTimeline({ semanas, selectedSesionId, onReorder, onMover, onToggleContextoIA, onUpdateEjercicio, sesionesDisponibles }: PlanTimelineProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
   const [moverInfo, setMoverInfo] = useState<MoverDestino | null>(null)
 
@@ -218,20 +222,26 @@ export default function PlanTimeline({ semanas, onReorder, onMover, onToggleCont
 
   return (
     <div>
-      {semanas.map(semana => (
+      {semanas.map(semana => {
+        const sesiones = selectedSesionId
+          ? semana.sesiones.filter(sesion => sesion.id === selectedSesionId)
+          : semana.sesiones
+        if (!sesiones.length) return null
+
+        return (
         <div key={semana.numero} className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-xs font-semibold uppercase tracking-wider flex-shrink-0"
-              style={{ color: 'rgb(168,85,247)' }}>
+              style={{ color: 'var(--semantic-info)' }}>
               Semana {semana.numero}
             </span>
             <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
           </div>
 
-          {semana.sesiones.map(sesion => (
-            <div key={sesion.id} className="mb-5 pl-3" style={{ borderLeft: '2px solid var(--border)' }}>
+          {sesiones.map(sesion => (
+            <div id={`sesion-${sesion.id}`} key={sesion.id} className="mb-5 pl-3 scroll-mt-6" style={{ borderLeft: '2px solid var(--border)' }}>
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'rgb(168,85,247)', marginLeft: -5 }} />
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--semantic-info)', marginLeft: -5 }} />
                 <span className="text-xs uppercase tracking-wide font-medium" style={{ color: 'var(--text-muted)' }}>
                   {sesion.dia_semana}
                 </span>
@@ -262,7 +272,7 @@ export default function PlanTimeline({ semanas, onReorder, onMover, onToggleCont
             </div>
           ))}
         </div>
-      ))}
+      )})}
 
       {moverInfo && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
@@ -281,10 +291,10 @@ export default function PlanTimeline({ semanas, onReorder, onMover, onToggleCont
                     onClick={() => { onMover(moverInfo.ejercicioId, s.id); setMoverInfo(null) }}
                     className="text-left px-3 py-2 rounded-lg text-sm transition-colors"
                     style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgb(168,85,247)' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--semantic-info)' }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)' }}
                   >
-                    <span style={{ color: 'rgb(168,85,247)' }}>Sem {s.semana} · {s.dia_semana}</span>
+                    <span style={{ color: 'var(--semantic-info)' }}>Sem {s.semana} · {s.dia_semana}</span>
                     {' '}— {s.nombre}
                   </button>
                 ))}

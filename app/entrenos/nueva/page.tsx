@@ -262,7 +262,7 @@ function NuevoEntrenoForm() {
 
   const totalEjercicios = sesionesLocal.reduce((acc, s) => acc + s.ejercicios.length, 0)
   const TIPO_COLORS: Record<string, string> = {
-    fuerza: 'badge-purple', cardio: 'badge-orange', flexibilidad: 'badge-blue', funcional: 'badge-green'
+    fuerza: 'badge-teal', cardio: 'badge-orange', flexibilidad: 'badge-blue', funcional: 'badge-green'
   }
 
   return (
@@ -321,9 +321,9 @@ function NuevoEntrenoForm() {
                 <p className="text-xs text-gray-400">Modifica las sesiones antes de guardar</p>
               </div>
               {plantillaSeleccionada && (
-                <div className="bg-purple-50 border border-purple-200 rounded-lg px-3 py-2 flex items-center gap-2">
-                  <Sparkles size={14} className="text-purple-600" />
-                  <span className="text-xs font-medium text-purple-700">Plantilla aplicada</span>
+                <div className="rounded-lg px-3 py-2 flex items-center gap-2" style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}>
+                  <Sparkles size={14} style={{ color: 'var(--semantic-info)' }} />
+                  <span className="text-xs font-medium" style={{ color: 'var(--semantic-info)' }}>Plantilla aplicada</span>
                 </div>
               )}
             </div>
@@ -412,7 +412,7 @@ function NuevoEntrenoForm() {
                       {/* Buscador de ejercicios */}
                       {busquedaAbierta === sesion.id ? (
                         <div className="relative">
-                          <div className="flex items-center border border-purple-400 rounded-lg overflow-hidden" style={{ boxShadow: '0 0 0 3px rgba(124,58,237,0.1)' }}>
+                          <div className="flex items-center rounded-lg overflow-hidden" style={{ border: '1px solid var(--semantic-info)', boxShadow: '0 0 0 3px var(--semantic-info-bg)' }}>
                             <Search size={15} className="ml-3 text-gray-400 flex-shrink-0" />
                             <input
                               autoFocus
@@ -429,7 +429,9 @@ function NuevoEntrenoForm() {
                             <div className="absolute z-10 left-0 right-0 mt-1 bg-white rounded-lg border border-gray-200 shadow-lg max-h-60 overflow-y-auto">
                               {resultados.map(ej => (
                                 <button key={ej.id} onClick={() => añadirEjercicioSesion(sesion.id, ej)}
-                                  className="w-full text-left px-4 py-2.5 hover:bg-purple-50 transition-colors border-b border-gray-50 last:border-0">
+                                  className="w-full text-left px-4 py-2.5 transition-colors border-b border-gray-50 last:border-0"
+                                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--semantic-info-bg)' }}
+                                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}>
                                   <span className="font-medium text-[var(--text)] text-sm">{ej.nombre}</span>
                                   {ej.grupo_muscular && <span className="text-xs text-gray-400 ml-2">{ej.grupo_muscular}</span>}
                                   {ej.tipo && <span className={`badge ${TIPO_COLORS[ej.tipo] ?? 'badge-gray'} text-xs ml-2`}>{ej.tipo}</span>}
@@ -441,7 +443,8 @@ function NuevoEntrenoForm() {
                       ) : (
                         <button
                           onClick={() => { setBusquedaAbierta(sesion.id); setQueryEjercicio('') }}
-                          className="w-full border border-dashed border-gray-200 rounded-lg py-2.5 text-sm text-gray-400 hover:border-purple-300 hover:text-purple-600 transition-colors flex items-center justify-center gap-2"
+                          className="w-full border border-dashed rounded-lg py-2.5 text-sm transition-colors flex items-center justify-center gap-2"
+                          style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
                         >
                           <Plus size={15} /> Añadir ejercicio
                         </button>
@@ -454,7 +457,8 @@ function NuevoEntrenoForm() {
               <button
                 type="button"
                 onClick={añadirSesion}
-                className="w-full border-2 border-dashed border-gray-200 rounded-xl py-4 text-gray-400 hover:border-purple-300 hover:text-purple-600 transition-colors flex items-center justify-center gap-2 font-medium"
+                className="w-full border-2 border-dashed rounded-xl py-4 transition-colors flex items-center justify-center gap-2 font-medium"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
               >
                 <Plus size={18} /> Añadir día de entrenamiento
               </button>

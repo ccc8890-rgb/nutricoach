@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { Check, History, X } from 'lucide-react'
 
 interface Props {
   setNum: number
@@ -36,7 +36,9 @@ export default function SetRegistroSheet({
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Set {setNum} / {totalSets}</p>
             <p className="font-semibold" style={{ color: 'var(--text)' }}>{ejercicioNombre}</p>
             {pesoInicialKg != null && pesoInicialKg > 0 && (
-              <p className="text-xs mt-0.5" style={{ color: 'rgb(168,85,247)' }}>Última vez: {pesoInicialKg} kg</p>
+              <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--semantic-info)' }}>
+                <History size={12} /> Última vez: {pesoInicialKg} kg
+              </p>
             )}
           </div>
           <button onClick={onCerrar} style={{ color: 'var(--text-muted)' }} aria-label="Cerrar">
@@ -52,8 +54,8 @@ export default function SetRegistroSheet({
             <div key={label} className="flex flex-col items-center gap-2">
               <button
                 onClick={() => setValue((v: number) => Math.max(0, +(v + step).toFixed(1)))}
-                className="w-10 h-10 rounded-full text-xl font-bold"
-                style={{ background: 'rgba(168,85,247,0.15)', color: 'rgb(168,85,247)' }}
+                className="w-10 h-10 rounded-full text-xl font-bold transition-transform active:scale-[0.95]"
+                style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}
                 aria-label={`Aumentar ${label}`}
               >+</button>
               <div className="text-center min-w-[60px]">
@@ -62,7 +64,7 @@ export default function SetRegistroSheet({
               </div>
               <button
                 onClick={() => setValue((v: number) => Math.max(0, +(v - step).toFixed(1)))}
-                className="w-10 h-10 rounded-full text-xl font-bold"
+                className="w-10 h-10 rounded-full text-xl font-bold transition-transform active:scale-[0.95]"
                 style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
                 aria-label={`Reducir ${label}`}
               >−</button>
@@ -79,9 +81,9 @@ export default function SetRegistroSheet({
                 onClick={() => setRpe(n)}
                 className="w-10 h-10 rounded-full text-sm font-semibold transition-all"
                 style={{
-                  background: rpe === n ? 'rgb(168,85,247)' : 'var(--bg)',
-                  color: rpe === n ? '#fff' : 'var(--text-muted)',
-                  border: `1px solid ${rpe === n ? 'rgb(168,85,247)' : 'var(--border)'}`,
+                  background: rpe === n ? 'var(--accent)' : 'var(--bg)',
+                  color: rpe === n ? 'var(--bg)' : 'var(--text-muted)',
+                  border: `1px solid ${rpe === n ? 'var(--accent)' : 'var(--border)'}`,
                 }}
                 aria-label={`RPE ${n}`}
                 aria-pressed={rpe === n}
@@ -92,10 +94,10 @@ export default function SetRegistroSheet({
 
         <button
           onClick={() => onGuardar(kg, reps, rpe)}
-          className="w-full py-3 rounded-xl font-semibold text-white"
-          style={{ background: 'rgb(168,85,247)' }}
+          className="w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
+          style={{ background: 'var(--accent)', color: 'var(--bg)' }}
         >
-          ✓ Guardar set
+          <Check size={16} /> Guardar set
         </button>
       </div>
     </div>

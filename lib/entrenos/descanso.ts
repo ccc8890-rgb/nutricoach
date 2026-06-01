@@ -9,12 +9,12 @@ const TIPS_BAJA_CARGA: RecomendacionDescanso[] = [
   {
     titulo: 'Descanso activo',
     consejo: 'Un paseo de 30 min a ritmo suave es suficiente. Mueve sin acumular fatiga.',
-    icono: '🚶',
+    icono: 'DA',
   },
   {
     titulo: 'Movilidad',
     consejo: 'Dedica 10-15 min a movilidad de caderas y hombros. Ayuda a recuperar mejor que el reposo total.',
-    icono: '🧘',
+    icono: 'MO',
   },
 ]
 
@@ -22,17 +22,17 @@ const TIPS_ALTA_CARGA: RecomendacionDescanso[] = [
   {
     titulo: 'Recuperación prioritaria',
     consejo: 'Con muchas sesiones en la semana, el descanso activo es tan importante como el entreno. Prioriza el sueño y la hidratación.',
-    icono: '😴',
+    icono: 'RP',
   },
   {
     titulo: 'Proteína de recuperación',
     consejo: 'Asegura 1.6-2.2 g proteína/kg incluso en descanso. Los músculos se reparan fuera del gym.',
-    icono: '🥩',
+    icono: 'PR',
   },
   {
     titulo: 'Hidratos en descanso',
     consejo: 'No reducas drásticamente los carbohidratos en días de descanso — sirven para reponer glucógeno muscular.',
-    icono: '🍚',
+    icono: 'HC',
   },
 ]
 
@@ -40,12 +40,12 @@ const TIPS_GENERALES: RecomendacionDescanso[] = [
   {
     titulo: 'Día de recarga',
     consejo: 'El crecimiento muscular ocurre fuera del gym. Este día es parte del plan, no un día perdido.',
-    icono: '💡',
+    icono: 'DR',
   },
   {
     titulo: 'Escucha tu cuerpo',
     consejo: 'Fatiga alta = más descanso, no más entreno. Si tienes agujetas fuertes, hoy está justificado el reposo total.',
-    icono: '🎯',
+    icono: 'EC',
   },
 ]
 

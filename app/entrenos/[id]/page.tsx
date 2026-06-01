@@ -100,6 +100,7 @@ export default function PlanEditorPage() {
   const [plan, setPlan] = useState<PlanInfo | null>(null)
   const [semanas, setSemanas] = useState<SemanaTimeline[]>([])
   const [sesionesFlat, setSesionesFlat] = useState<{ id: string; nombre: string; dia_semana: string; semana: number }[]>([])
+  const [selectedSesionId, setSelectedSesionId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
@@ -154,6 +155,7 @@ export default function PlanEditorPage() {
     setPlan(planInfo)
     setSemanas(semanasList)
     setSesionesFlat(flat)
+    setSelectedSesionId(current => current ?? flat[0]?.id ?? null)
     setLoading(false)
   }, [id, router])
 
@@ -202,7 +204,7 @@ export default function PlanEditorPage() {
     await load()
   }
 
-  function handleToggleContextoIA(sesionId: string, _ejercicioId: string) {
+  function handleToggleContextoIA(sesionId: string) {
     fetch('/api/entrenos/generar-contexto', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -213,7 +215,7 @@ export default function PlanEditorPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-24">
-        <Loader2 size={24} className="animate-spin" style={{ color: 'rgb(168,85,247)' }} />
+        <Loader2 size={24} className="animate-spin" style={{ color: 'var(--semantic-info)' }} />
       </div>
     )
   }
@@ -221,7 +223,7 @@ export default function PlanEditorPage() {
   if (!plan) return null
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link href="/entrenos" style={{ color: 'var(--text-muted)' }} aria-label="Volver">
@@ -244,22 +246,55 @@ export default function PlanEditorPage() {
         </span>
       </div>
 
-      {/* Timeline */}
-      {semanas.length === 0 ? (
-        <div className="card text-center py-12">
-          <Dumbbell size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
-          <p style={{ color: 'var(--text-muted)' }}>Sin sesiones en este plan</p>
-        </div>
-      ) : (
-        <PlanTimeline
-          semanas={semanas}
-          onReorder={handleReorder}
-          onMover={handleMover}
-          onToggleContextoIA={handleToggleContextoIA}
-          onUpdateEjercicio={handleUpdateEjercicio}
-          sesionesDisponibles={sesionesFlat}
-        />
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-5">
+        <aside className="hidden lg:block">
+          <div className="glass-card p-3 sticky top-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-3" style={{ color: 'var(--text-muted)' }}>
+              Navegación del bloque
+            </p>
+            <div className="space-y-1.5 max-h-[70dvh] overflow-y-auto pr-1">
+              {sesionesFlat.map(s => {
+                const active = selectedSesionId === s.id
+                return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSelectedSesionId(s.id)}
+                  className="block w-full text-left rounded-lg px-3 py-2 text-xs transition-colors"
+                  style={{
+                    color: active ? 'var(--text)' : 'var(--text-secondary)',
+                    border: `1px solid ${active ? 'var(--semantic-info-border)' : 'var(--border)'}`,
+                    background: active ? 'var(--semantic-info-bg)' : 'var(--bg)',
+                  }}
+                >
+                  <span className="font-data" style={{ color: 'var(--semantic-info)' }}>S{s.semana}</span>
+                  {' · '}{s.dia_semana}
+                  <span className="block truncate mt-0.5" style={{ color: 'var(--text)' }}>{s.nombre}</span>
+                </button>
+              )})}
+            </div>
+          </div>
+        </aside>
+
+        <main className="min-w-0 glass-card p-4 sm:p-5">
+          {semanas.length === 0 ? (
+            <div className="text-center py-12">
+              <Dumbbell size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+              <p style={{ color: 'var(--text-muted)' }}>Sin sesiones en este plan</p>
+            </div>
+          ) : (
+            <PlanTimeline
+              semanas={semanas}
+              selectedSesionId={selectedSesionId}
+              onReorder={handleReorder}
+              onMover={handleMover}
+              onToggleContextoIA={handleToggleContextoIA}
+              onUpdateEjercicio={handleUpdateEjercicio}
+              sesionesDisponibles={sesionesFlat}
+            />
+          )}
+        </main>
+      </div>
     </div>
   )
 }

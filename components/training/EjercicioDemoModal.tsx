@@ -104,8 +104,8 @@ export default function EjercicioDemoModal({ nombre, grupo_muscular, video_url, 
                 href={video_url!}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-semibold text-white text-sm"
-                style={{ background: 'rgb(168,85,247)' }}
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-semibold text-sm transition-transform active:scale-[0.98]"
+                style={{ background: 'var(--accent)', color: 'var(--bg)' }}
               >
                 <Play size={16} /> Ver demostración
               </a>

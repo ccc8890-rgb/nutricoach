@@ -1,7 +1,8 @@
 'use client'
+
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Brain, Library, Dumbbell, Sparkles } from 'lucide-react'
+import { Brain, Dumbbell, LayoutDashboard, Library, Sparkles } from 'lucide-react'
 
 const SECTIONS = [
   {
@@ -38,20 +39,36 @@ export default function TrainingSubNav() {
     <nav
       className="hidden lg:flex flex-col flex-shrink-0 training-subnav"
       style={{
-        width: 148,
-        background: 'var(--surface)',
+        width: 172,
+        background: 'linear-gradient(180deg, var(--surface), var(--bg-subtle))',
         borderRight: '1px solid var(--border)',
-        paddingTop: 12,
-        paddingBottom: 12,
+        padding: '14px 10px',
         animation: 'slideInLeft 0.22s ease-out',
       }}
+      aria-label="Navegación de entrenamiento"
     >
-      <div style={{ padding: '0 10px 8px', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
-        Training OS
+      <div style={{ padding: '0 8px 12px' }}>
+        <div className="flex items-center gap-2">
+          <div
+            className="h-7 w-7 rounded-lg flex items-center justify-center"
+            style={{ background: 'var(--bg)', border: '1px solid var(--border-strong)' }}
+          >
+            <Dumbbell size={14} style={{ color: 'var(--semantic-active)' }} />
+          </div>
+          <div className="min-w-0">
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', lineHeight: 1.1 }}>
+              Training OS
+            </p>
+            <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Coach console
+            </p>
+          </div>
+        </div>
       </div>
+
       {SECTIONS.map(section => (
-        <div key={section.label} style={{ marginBottom: 4 }}>
-          <div style={{ padding: '8px 12px 3px', fontSize: 9, fontWeight: 600, color: 'var(--border-strong)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+        <div key={section.label} style={{ marginBottom: 10 }}>
+          <div style={{ padding: '8px 8px 5px', fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
             {section.label}
           </div>
           {section.items.map(item => {
@@ -61,20 +78,42 @@ export default function TrainingSubNav() {
                 key={item.href}
                 href={item.href}
                 style={{
+                  position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
-                  padding: '6px 12px',
+                  padding: '8px 9px',
+                  margin: '1px 0',
+                  borderRadius: 10,
                   fontSize: 12,
-                  fontWeight: active ? 600 : 400,
-                  color: active ? 'rgb(168,85,247)' : 'var(--text-secondary)',
-                  borderLeft: `2px solid ${active ? 'rgb(168,85,247)' : 'transparent'}`,
-                  background: active ? 'rgba(168,85,247,0.06)' : 'transparent',
+                  fontWeight: active ? 650 : 500,
+                  color: active ? 'var(--text)' : 'var(--text-secondary)',
+                  border: `1px solid ${active ? 'var(--border-strong)' : 'transparent'}`,
+                  background: active ? 'var(--bg)' : 'transparent',
                   textDecoration: 'none',
-                  transition: 'color 0.15s, background 0.15s, border-color 0.15s',
+                  transition: 'color 0.18s var(--ease-out-strong), background 0.18s var(--ease-out-strong), border-color 0.18s var(--ease-out-strong), transform 0.18s var(--ease-out-strong)',
+                }}
+                onMouseEnter={e => {
+                  if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--surface-hover)'
+                }}
+                onMouseLeave={e => {
+                  if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'
                 }}
               >
-                <item.icon size={14} />
+                {active && (
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      left: -10,
+                      width: 2,
+                      height: 18,
+                      borderRadius: 999,
+                      background: 'var(--semantic-active)',
+                    }}
+                  />
+                )}
+                <item.icon size={14} style={{ color: active ? 'var(--semantic-active)' : 'var(--text-muted)' }} />
                 {item.label}
               </Link>
             )

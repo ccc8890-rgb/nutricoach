@@ -1,6 +1,6 @@
 'use client'
-import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Play } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Brain, CheckCircle2, ChevronLeft, ChevronRight, Circle, History, Pause, Play, RotateCcw, Save } from 'lucide-react'
 import SetRegistroSheet from './SetRegistroSheet'
 import EjercicioDemoModal from './EjercicioDemoModal'
 
@@ -17,6 +17,7 @@ export interface EjercicioCard {
   grupo_muscular: string
   series: number
   repeticiones: string
+  descanso_segundos?: number
   peso_sugerido: string
   instruccion_ejercicio: string
   contexto_ia: string | null
@@ -28,10 +29,11 @@ export interface EjercicioCard {
 interface Props {
   ejercicios: EjercicioCard[]
   onEjercicioComplete: (ejId: string, sets: SetData[]) => void
-  onTodosCompletos: (setsMap: Record<string, SetData[]>) => void
+  onTodosCompletos: (setsMap: Record<string, SetData[]>, meta?: { esfuerzo_percibido: number; notas: string; duracion_sesion_s: number }) => void
 }
 
 export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTodosCompletos }: Props) {
+  const inicioRef = useRef(Date.now())
   const [ejIdx, setEjIdx] = useState(0)
   const [setsMap, setSetsMap] = useState<Record<string, SetData[]>>(() =>
     Object.fromEntries(
@@ -43,6 +45,26 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
   )
   const [setActivo, setSetActivo] = useState<{ ejId: string; setIdx: number } | null>(null)
   const [demoAbierto, setDemoAbierto] = useState(false)
+  const [restLeft, setRestLeft] = useState(0)
+  const [timerRunning, setTimerRunning] = useState(false)
+  const [finalizando, setFinalizando] = useState(false)
+  const [rpeGlobal, setRpeGlobal] = useState(7)
+  const [notasFinales, setNotasFinales] = useState('')
+  const [duracionFinalS, setDuracionFinalS] = useState(0)
+
+  useEffect(() => {
+    if (!timerRunning || restLeft <= 0) return
+    const t = window.setInterval(() => {
+      setRestLeft(v => {
+        if (v <= 1) {
+          setTimerRunning(false)
+          return 0
+        }
+        return v - 1
+      })
+    }, 1000)
+    return () => window.clearInterval(t)
+  }, [timerRunning, restLeft])
 
   const ej = ejercicios[ejIdx]
   if (!ej) return null
@@ -54,11 +76,15 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
   const totalSets = ejercicios.reduce((a, e) => a + e.series, 0)
   const hechos = Object.values(setsMap).flatMap(s => s).filter(s => s.hecho).length
   const progreso = totalSets > 0 ? hechos / totalSets : 0
+  const descanso = ej.descanso_segundos ?? 90
+  const setsCompletados = Object.values(setsMap).flatMap(s => s).filter(s => s.hecho)
+  const volumenTotal = Math.round(setsCompletados.reduce((acc, set) => acc + (set.kg * set.reps), 0))
 
   function guardarSet(kg: number, reps: number, rpe: number) {
     if (!setActivo) return
     const ejId = setActivo.ejId
     const idx = setActivo.setIdx
+    const esUltimoSetEjercicio = idx >= sets.length - 1
     setSetsMap(prev => {
       const nuevosSets = prev[ejId].map((s, i) =>
         i === idx ? { kg, reps, rpe, hecho: true } : s
@@ -68,14 +94,106 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
       return nuevo
     })
     setSetActivo(null)
+    if (!esUltimoSetEjercicio && descanso > 0) {
+      setRestLeft(descanso)
+      setTimerRunning(true)
+    }
+    if (esUltimoSetEjercicio && ejIdx < ejercicios.length - 1) {
+      window.setTimeout(() => setEjIdx(i => Math.min(ejercicios.length - 1, i + 1)), 350)
+    }
   }
 
   function avanzar() {
     if (ejIdx < ejercicios.length - 1) {
       setEjIdx(ejIdx + 1)
     } else {
-      onTodosCompletos(setsMap)
+      setDuracionFinalS(Math.max(1, Math.floor((Date.now() - inicioRef.current) / 1000)))
+      setFinalizando(true)
     }
+  }
+
+  if (finalizando) {
+    return (
+      <div className="min-h-full px-4 py-5 flex flex-col">
+        <div className="h-1 rounded-full mb-5 overflow-hidden" style={{ background: 'var(--border)' }}>
+          <div className="h-full rounded-full" style={{ width: '100%', background: 'var(--semantic-active)' }} />
+        </div>
+
+        <div className="glass-card p-5 flex-1 flex flex-col">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'var(--semantic-active-bg)', border: '1px solid var(--semantic-active-border)' }}>
+            <CheckCircle2 size={26} style={{ color: 'var(--semantic-active)' }} />
+          </div>
+          <h2 className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>Cerrar sesión</h2>
+          <p className="text-sm mt-1 mb-5" style={{ color: 'var(--text-muted)' }}>
+            Revisa cómo ha ido antes de enviarlo al coach.
+          </p>
+
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            <div className="rounded-xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>Sets</p>
+              <p className="font-data text-2xl mt-1" style={{ color: 'var(--text)' }}>{setsCompletados.length}</p>
+            </div>
+            <div className="rounded-xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>Volumen</p>
+              <p className="font-data text-2xl mt-1" style={{ color: 'var(--text)' }}>{volumenTotal}</p>
+            </div>
+            <div className="rounded-xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <p className="text-[10px] uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>Min</p>
+              <p className="font-data text-2xl mt-1" style={{ color: 'var(--text)' }}>{Math.round(duracionFinalS / 60)}</p>
+            </div>
+          </div>
+
+          <div className="mb-5">
+            <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>RPE global de la sesión</p>
+            <div className="grid grid-cols-5 gap-1.5">
+              {[6, 7, 8, 9, 10].map(n => (
+                <button
+                  key={n}
+                  onClick={() => setRpeGlobal(n)}
+                  className="h-11 rounded-xl text-sm font-semibold active:scale-[0.97]"
+                  style={{
+                    background: rpeGlobal === n ? 'var(--accent)' : 'var(--bg)',
+                    color: rpeGlobal === n ? 'var(--bg)' : 'var(--text-muted)',
+                    border: `1px solid ${rpeGlobal === n ? 'var(--accent)' : 'var(--border)'}`,
+                  }}
+                  aria-pressed={rpeGlobal === n}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <label className="text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }} htmlFor="notas-sesion">
+            Notas para el coach
+          </label>
+          <textarea
+            id="notas-sesion"
+            className="input min-h-24"
+            value={notasFinales}
+            onChange={e => setNotasFinales(e.target.value)}
+            placeholder="Sensaciones, molestias, cambios de peso, sueño..."
+          />
+
+          <div className="mt-auto pt-5 flex gap-3">
+            <button
+              onClick={() => setFinalizando(false)}
+              className="px-4 py-3 rounded-xl text-sm font-medium"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
+            >
+              Volver
+            </button>
+            <button
+              onClick={() => onTodosCompletos(setsMap, { esfuerzo_percibido: rpeGlobal, notas: notasFinales, duracion_sesion_s: duracionFinalS })}
+              className="flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98]"
+              style={{ background: 'var(--accent)', color: 'var(--bg)' }}
+            >
+              <Save size={16} /> Guardar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -84,7 +202,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
       <div className="h-1 rounded-full mx-4 mt-2 mb-1 overflow-hidden" style={{ background: 'var(--border)' }}>
         <div
           className="h-full rounded-full transition-all duration-300"
-          style={{ width: `${progreso * 100}%`, background: 'rgb(168,85,247)' }}
+          style={{ width: `${progreso * 100}%`, background: 'var(--semantic-active)' }}
         />
       </div>
       <p className="text-center text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
@@ -92,10 +210,10 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
       </p>
 
       {/* Card del ejercicio */}
-      <div className="mx-4 rounded-2xl p-5 flex-1 flex flex-col" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <div className="mx-4 rounded-2xl p-5 flex-1 flex flex-col" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="flex items-start justify-between mb-1">
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{ej.grupo_muscular}</span>
-          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(168,85,247,0.12)', color: 'rgb(168,85,247)' }}>
+          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}>
             {ej.series}×{ej.repeticiones}
           </span>
         </div>
@@ -104,8 +222,8 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           {(ej.video_url || ej.foto_url) && (
             <button
               onClick={() => setDemoAbierto(true)}
-              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full flex-shrink-0 ml-2 font-semibold"
-              style={{ background: 'rgba(168,85,247,0.12)', color: 'rgb(168,85,247)', border: '1px solid rgba(168,85,247,0.25)' }}
+              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full flex-shrink-0 ml-2 font-semibold transition-transform active:scale-[0.97]"
+              style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}
               aria-label="Ver demostración"
             >
               <Play size={11} fill="currentColor" /> Demo
@@ -114,14 +232,22 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
         </div>
         <div className="flex items-center gap-3 mb-1">
           {ej.ultimo_peso_kg != null && ej.ultimo_peso_kg > 0 && (
-            <p className="text-sm font-medium" style={{ color: 'rgb(168,85,247)' }}>↩ {ej.ultimo_peso_kg} kg</p>
+            <p className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--semantic-info)' }}>
+              <History size={13} /> {ej.ultimo_peso_kg} kg última vez
+            </p>
           )}
           {ej.peso_sugerido && (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Coach: {ej.peso_sugerido}</p>
           )}
+          {descanso > 0 && (
+            <p className="text-sm ml-auto font-data" style={{ color: 'var(--text-muted)' }}>Desc. {descanso}s</p>
+          )}
         </div>
         {ej.contexto_ia && (
-          <p className="text-xs italic mb-3" style={{ color: 'rgb(168,85,247)' }}>🤖 {ej.contexto_ia}</p>
+          <div className="flex gap-2 rounded-xl px-3 py-2 mb-3" style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}>
+            <Brain size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--semantic-info)' }} />
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{ej.contexto_ia}</p>
+          </div>
         )}
         {ej.instruccion_ejercicio && (
           <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>{ej.instruccion_ejercicio}</p>
@@ -138,29 +264,58 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
               <button
                 key={i}
                 onClick={() => { if (!set.hecho) setSetActivo({ ejId: ej.id, setIdx: i }) }}
-                className="rounded-xl py-3 flex flex-col items-center justify-center transition-all"
+                className="rounded-xl py-3 flex flex-col items-center justify-center transition-all active:scale-[0.98]"
                 style={{
-                  background: set.hecho ? 'rgba(168,85,247,0.1)' : isActive ? 'rgba(168,85,247,0.08)' : 'var(--bg)',
-                  border: `1.5px solid ${set.hecho ? 'rgba(168,85,247,0.5)' : isActive ? 'rgb(168,85,247)' : 'var(--border)'}`,
+                  background: set.hecho ? 'var(--semantic-active-bg)' : isActive ? 'var(--semantic-info-bg)' : 'var(--bg)',
+                  border: `1.5px solid ${set.hecho ? 'var(--semantic-active-border)' : isActive ? 'var(--semantic-info)' : 'var(--border)'}`,
                 }}
                 aria-label={`Set ${i + 1}${set.hecho ? ` completado: ${set.kg}kg × ${set.reps} reps` : ''}`}
               >
                 <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Set {i + 1}</span>
                 {set.hecho ? (
                   <>
-                    <span className="text-base font-bold" style={{ color: 'rgb(168,85,247)' }}>{set.kg}kg</span>
+                    <span className="text-base font-bold" style={{ color: 'var(--semantic-active)' }}>{set.kg}kg</span>
                     <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{set.reps} reps</span>
                   </>
                 ) : (
-                  <span className="text-lg" style={{ color: isActive ? 'rgb(168,85,247)' : 'var(--border-strong)' }}>
-                    {isActive ? '▶' : '○'}
-                  </span>
+                  isActive
+                    ? <Play size={17} fill="currentColor" style={{ color: 'var(--semantic-info)' }} />
+                    : <Circle size={17} style={{ color: 'var(--border-strong)' }} />
                 )}
               </button>
             )
           })}
         </div>
       </div>
+
+      {restLeft > 0 && (
+        <div className="sticky bottom-[88px] mx-4 mt-3 rounded-2xl px-4 py-3 flex items-center gap-3"
+          style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' }}>
+          <div className="relative h-12 w-12 rounded-full flex items-center justify-center" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+            <span className="font-data text-lg" style={{ color: 'var(--text)' }}>{restLeft}</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Descanso entre sets</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Respira, prepara la carga y vuelve al set activo.</p>
+          </div>
+          <button
+            onClick={() => setTimerRunning(v => !v)}
+            className="h-10 w-10 rounded-xl flex items-center justify-center active:scale-[0.96]"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
+            aria-label={timerRunning ? 'Pausar descanso' : 'Reanudar descanso'}
+          >
+            {timerRunning ? <Pause size={16} /> : <Play size={16} fill="currentColor" />}
+          </button>
+          <button
+            onClick={() => { setRestLeft(0); setTimerRunning(false) }}
+            className="h-10 w-10 rounded-xl flex items-center justify-center active:scale-[0.96]"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+            aria-label="Cerrar descanso"
+          >
+            <RotateCcw size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Navegación inferior */}
       <div className="flex gap-3 px-4 py-4">
@@ -179,9 +334,14 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
         <button
           onClick={avanzar}
           disabled={!todosEjHechos}
-          className="flex-1 flex items-center justify-center gap-1 py-3 rounded-xl text-sm font-semibold text-white transition-all"
-          style={{ background: todosEjHechos ? 'rgb(168,85,247)' : 'rgba(168,85,247,0.3)' }}
+          className="flex-1 flex items-center justify-center gap-1 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+          style={{
+            background: todosEjHechos ? 'var(--accent)' : 'var(--surface)',
+            color: todosEjHechos ? 'var(--bg)' : 'var(--text-muted)',
+            border: `1px solid ${todosEjHechos ? 'var(--accent)' : 'var(--border)'}`,
+          }}
         >
+          {ejIdx === ejercicios.length - 1 ? <CheckCircle2 size={16} /> : null}
           {ejIdx === ejercicios.length - 1 ? 'Finalizar sesión' : 'Siguiente'} <ChevronRight size={16} />
         </button>
       </div>
