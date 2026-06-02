@@ -16,7 +16,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import type { EstadoTarea, FuenteCientifica, TipoTarea } from '@/lib/agentes/types'
-import { crearDecisionSummary, crearDecisionTrace } from '@/lib/training/workspace'
+import { crearDecisionPlaybook, crearDecisionSummary, crearDecisionTrace } from '@/lib/training/workspace'
 
 const TRAINING_TYPES: TipoTarea[] = [
   'training_brain',
@@ -573,6 +573,16 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
     hasMensajeCliente: Boolean(payload.mensaje_cliente),
     hasAutoApplyPayload: hasNumericMacroAdjustment(payload),
   })
+  const playbook = crearDecisionPlaybook({
+    prioridad: tarea.prioridad,
+    tipo: tarea.tipo,
+    senalesCount: signals.length,
+    ajustesCount: ajustes.length,
+    advertenciasCount: advertencias.length,
+    logrosCount: logros.length,
+    hasMensajeCliente: Boolean(payload.mensaje_cliente),
+    hasAutoApplyPayload: hasNumericMacroAdjustment(payload),
+  })
   const riskColor = summary.risk === 'alto'
     ? 'var(--semantic-alert)'
     : summary.risk === 'medio'
@@ -610,6 +620,35 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
           <DetailMetric label="Señales" value={signals.length} />
           <DetailMetric label="Ajustes" value={ajustes.length} />
           <DetailMetric label="Fuentes" value={tarea.fuentes?.length ?? 0} />
+        </div>
+
+        <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+                Playbook coach
+              </p>
+              <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{playbook.primaryCta}</p>
+            </div>
+            <span className="rounded-full border px-2.5 py-1 text-[10px] font-semibold" style={{ borderColor: 'var(--semantic-info-border)', background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }}>
+              {playbook.lane}
+            </span>
+          </div>
+          <div className="mt-3 space-y-2">
+            {playbook.steps.map((step, index) => (
+              <p key={step} className="flex gap-2 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                <span className="font-data" style={{ color: 'var(--text-muted)' }}>{index + 1}</span>
+                <span>{step}</span>
+              </p>
+            ))}
+          </div>
+          <div className="mt-3 grid gap-2">
+            {playbook.guardrails.map(item => (
+              <p key={item} className="rounded-xl px-2 py-1.5 text-[11px] leading-relaxed" style={{ background: 'var(--semantic-warn-bg)', color: 'var(--text-secondary)', border: '1px solid var(--semantic-warn-border)' }}>
+                {item}
+              </p>
+            ))}
+          </div>
         </div>
 
         <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>

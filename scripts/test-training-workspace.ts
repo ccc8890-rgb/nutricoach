@@ -3,6 +3,7 @@ import {
   calcularEjercicioQuality,
   calcularPlantillaQuality,
   crearCoachDeskPlan,
+  crearDecisionPlaybook,
   crearDecisionSummary,
   crearDecisionTrace,
   crearTrainingCockpitCards,
@@ -175,6 +176,35 @@ const traceManual = crearDecisionTrace({
 assert.equal(traceManual.applicationMode, 'manual')
 assert.equal(traceManual.applicationLabel, 'Requiere edición manual del plan')
 assert.ok(traceManual.traceItems.includes('Sin evidencia adjunta'))
+
+const playbookRiesgo = crearDecisionPlaybook({
+  tipo: 'alerta_riesgo_entreno',
+  prioridad: 2,
+  senalesCount: 3,
+  ajustesCount: 1,
+  advertenciasCount: 2,
+  logrosCount: 0,
+  hasMensajeCliente: true,
+  hasAutoApplyPayload: false,
+})
+assert.equal(playbookRiesgo.lane, 'Intervención')
+assert.equal(playbookRiesgo.primaryCta, 'Editar antes de aprobar')
+assert.ok(playbookRiesgo.steps.includes('Comprobar sueño, molestias y RPE antes de tocar el plan'))
+assert.ok(playbookRiesgo.guardrails.includes('No aprobar automáticamente una alerta con advertencias activas'))
+
+const playbookProgreso = crearDecisionPlaybook({
+  tipo: 'training_brain',
+  prioridad: 8,
+  senalesCount: 1,
+  ajustesCount: 0,
+  advertenciasCount: 0,
+  logrosCount: 2,
+  hasMensajeCliente: false,
+  hasAutoApplyPayload: false,
+})
+assert.equal(playbookProgreso.lane, 'Progresión')
+assert.equal(playbookProgreso.primaryCta, 'Consolidar aprendizaje')
+assert.ok(playbookProgreso.steps.includes('Revisar si el progreso se mantiene sin subir fatiga'))
 
 const coachDesk = crearCoachDeskPlan({
   estado: 'ajustar',

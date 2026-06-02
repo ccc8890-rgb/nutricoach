@@ -85,6 +85,24 @@ export interface DecisionTrace {
   traceItems: string[]
 }
 
+export interface DecisionPlaybookInput {
+  tipo: string
+  prioridad: number
+  senalesCount: number
+  ajustesCount: number
+  advertenciasCount: number
+  logrosCount: number
+  hasMensajeCliente: boolean
+  hasAutoApplyPayload: boolean
+}
+
+export interface DecisionPlaybook {
+  lane: 'Intervención' | 'Ajuste' | 'Comunicación' | 'Progresión' | 'Seguimiento'
+  primaryCta: string
+  steps: string[]
+  guardrails: string[]
+}
+
 export interface CoachDeskPlanInput {
   estado: 'descarga' | 'ajustar' | 'progresar' | 'base'
   hasPlan: boolean
@@ -369,6 +387,90 @@ export function crearDecisionTrace(input: DecisionTraceInput): DecisionTrace {
   ]
 
   return { applicationMode, applicationLabel, impactLabel, coachNextAction, traceItems }
+}
+
+export function crearDecisionPlaybook(input: DecisionPlaybookInput): DecisionPlaybook {
+  const isHighRisk = input.prioridad <= 3 || input.advertenciasCount > 0 || input.tipo.includes('riesgo')
+  const isAutoAdjustment = input.hasAutoApplyPayload || input.ajustesCount > 0
+  const isMessage = input.hasMensajeCliente || input.tipo === 'revision_semanal_entreno' || input.tipo === 'alerta_readiness'
+
+  if (isHighRisk) {
+    return {
+      lane: 'Intervención',
+      primaryCta: 'Editar antes de aprobar',
+      steps: [
+        'Comprobar sueño, molestias y RPE antes de tocar el plan',
+        'Reducir volumen o intensidad solo en la próxima exposición sensible',
+        isMessage ? 'Reescribir mensaje al cliente con instrucción clara y breve' : 'Crear nota interna para revisar la próxima sesión',
+      ],
+      guardrails: [
+        'No aprobar automáticamente una alerta con advertencias activas',
+        'No progresar carga si la señal principal es fatiga o riesgo',
+      ],
+    }
+  }
+
+  if (input.logrosCount > 0 && input.ajustesCount === 0) {
+    return {
+      lane: 'Progresión',
+      primaryCta: 'Consolidar aprendizaje',
+      steps: [
+        'Revisar si el progreso se mantiene sin subir fatiga',
+        'Mantener técnica y RPE objetivo una semana más',
+        'Programar progresión pequeña solo si la adherencia sigue estable',
+      ],
+      guardrails: [
+        'No convertir un buen dato aislado en subida agresiva',
+        'Evitar cambiar varias variables a la vez',
+      ],
+    }
+  }
+
+  if (isAutoAdjustment) {
+    return {
+      lane: 'Ajuste',
+      primaryCta: input.hasAutoApplyPayload ? 'Validar números' : 'Aplicar manualmente',
+      steps: [
+        'Comparar ajuste propuesto con objetivo actual del cliente',
+        'Aplicar solo volumen, intensidad o macro afectado',
+        'Dejar comentario de por qué se cambia',
+      ],
+      guardrails: [
+        'No tocar dieta y entrenamiento a la vez salvo evidencia clara',
+        'Mantener el cambio reversible durante la siguiente semana',
+      ],
+    }
+  }
+
+  if (isMessage) {
+    return {
+      lane: 'Comunicación',
+      primaryCta: 'Revisar mensaje',
+      steps: [
+        'Ajustar tono al cliente',
+        'Dar una instrucción ejecutable para la próxima sesión',
+        'Evitar explicar más de lo necesario',
+      ],
+      guardrails: [
+        'No enviar mensajes ambiguos',
+        'No prometer cambios que todavía no están aplicados',
+      ],
+    }
+  }
+
+  return {
+    lane: 'Seguimiento',
+    primaryCta: 'Archivar o revisar',
+    steps: [
+      'Confirmar que no hay señales nuevas',
+      'Mantener plan actual',
+      'Revisar de nuevo con el próximo check-in',
+    ],
+    guardrails: [
+      'No generar trabajo extra si la recomendación no cambia una decisión',
+      'Pedir más datos antes de modificar sesiones clave',
+    ],
+  }
 }
 
 export function crearCoachDeskPlan(input: CoachDeskPlanInput): CoachDeskPlan {
