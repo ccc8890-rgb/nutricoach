@@ -14,7 +14,7 @@ import {
   Video,
 } from 'lucide-react'
 import { calcularEjercicioQuality } from '@/lib/training/workspace'
-import { crearExerciseLibraryQueue } from '@/lib/training/exercise-library'
+import { crearExerciseLibraryBatchPlan, crearExerciseLibraryQueue } from '@/lib/training/exercise-library'
 
 interface Ejercicio {
   id: string
@@ -176,6 +176,7 @@ export default function EjerciciosMediaPage() {
     return ejercicios
   }, [ejercicios, qualityFilter])
   const assetQueue = useMemo(() => crearExerciseLibraryQueue(ejercicios), [ejercicios])
+  const batchPlan = useMemo(() => crearExerciseLibraryBatchPlan(ejercicios), [ejercicios])
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 space-y-5">
@@ -261,6 +262,22 @@ export default function EjerciciosMediaPage() {
                 <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Cola prioritaria</p>
                 <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{assetQueue.prioritarios.length} ejercicios</span>
               </div>
+              {batchPlan.batchSize > 0 && (
+                <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--semantic-info-border)', background: 'var(--semantic-info-bg)' }}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--semantic-info)' }}>
+                        Batch recomendado
+                      </p>
+                      <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{batchPlan.focus}</p>
+                    </div>
+                    <span className="rounded-full border px-2 py-1 text-[11px] font-semibold" style={{ borderColor: 'var(--semantic-info-border)', color: 'var(--semantic-info)', background: 'var(--bg)' }}>
+                      {batchPlan.estimatedMinutes} min
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{batchPlan.note}</p>
+                </div>
+              )}
               <div className="mt-3 space-y-2">
                 {assetQueue.prioritarios.length > 0 ? assetQueue.prioritarios.map(item => (
                   <button

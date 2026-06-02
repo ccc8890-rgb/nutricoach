@@ -26,6 +26,14 @@ export interface ExerciseLibraryQueue {
   prioritarios: ExercisePriorityItem[]
 }
 
+export interface ExerciseLibraryBatchPlan {
+  focus: string
+  batchSize: number
+  estimatedMinutes: number
+  exerciseIds: string[]
+  note: string
+}
+
 function reasonFor(input: ExerciseLibraryInput) {
   const missing = [
     !input.foto_url ? 'sin foto' : null,
@@ -66,5 +74,37 @@ export function crearExerciseLibraryQueue(ejercicios: ExerciseLibraryInput[]): E
       .sort((a, b) => a.score - b.score || a.nombre.localeCompare(b.nombre))
       .slice(0, 5)
       .map(({ id, nombre, score, reason }) => ({ id, nombre, score, reason })),
+  }
+}
+
+export function crearExerciseLibraryBatchPlan(ejercicios: ExerciseLibraryInput[]): ExerciseLibraryBatchPlan {
+  const queue = crearExerciseLibraryQueue(ejercicios)
+  const batch = queue.prioritarios.slice(0, 3)
+  const batchInputs = batch
+    .map(item => ejercicios.find(ejercicio => ejercicio.id === item.id))
+    .filter((item): item is ExerciseLibraryInput => Boolean(item))
+
+  const missingFoto = batchInputs.filter(item => !item.foto_url).length
+  const missingVideo = batchInputs.filter(item => !item.video_url).length
+  const missingMeta = batchInputs.filter(item => !item.dificultad_nivel || (item.equipamiento?.length ?? 0) === 0).length
+
+  let focus = 'Metadatos'
+  if (missingFoto > 0 && missingVideo > 0) focus = 'Vídeo y foto'
+  else if (missingVideo > 0) focus = 'Vídeo'
+  else if (missingFoto > 0) focus = 'Foto'
+
+  const batchSize = batchInputs.length
+  const estimatedMinutes = batchSize > 0
+    ? Math.round((missingFoto * 4) + (missingVideo * 7) + (missingMeta * 3) + 1)
+    : 0
+
+  return {
+    focus,
+    batchSize,
+    estimatedMinutes,
+    exerciseIds: batchInputs.map(item => item.id),
+    note: batchSize > 0
+      ? `Completa ${batchSize} ejercicios prioritarios para subir readiness sin revisar toda la biblioteca.`
+      : 'La vista actual no tiene ejercicios prioritarios pendientes.',
   }
 }
