@@ -4,6 +4,7 @@ import {
   calcularPlantillaQuality,
   crearCoachDeskPlan,
   crearDecisionSummary,
+  crearDecisionTrace,
   crearSesionGuidance,
   crearTrainingRoomSummary,
 } from '../lib/training/workspace'
@@ -109,6 +110,52 @@ const decision = crearDecisionSummary({
 assert.equal(decision.risk, 'alto')
 assert.equal(decision.intent, 'Intervenir antes de la próxima sesión')
 assert.ok(decision.checklist.includes('Revisar señales y evidencia'))
+
+const traceMensaje = crearDecisionTrace({
+  tipo: 'alerta_riesgo_entreno',
+  estado: 'pendiente',
+  prioridad: 2,
+  senalesCount: 3,
+  ajustesCount: 1,
+  advertenciasCount: 1,
+  logrosCount: 0,
+  evidenciaCount: 2,
+  hasMensajeCliente: true,
+})
+assert.equal(traceMensaje.applicationMode, 'mensaje')
+assert.equal(traceMensaje.applicationLabel, 'Envía mensaje al cliente al aprobar')
+assert.ok(traceMensaje.impactLabel.includes('Impacto alto'))
+assert.ok(traceMensaje.traceItems.includes('2 fuentes científicas'))
+
+const traceAuto = crearDecisionTrace({
+  tipo: 'ajuste_nutricion_carga',
+  estado: 'pendiente',
+  prioridad: 5,
+  senalesCount: 2,
+  ajustesCount: 2,
+  advertenciasCount: 0,
+  logrosCount: 0,
+  evidenciaCount: 1,
+  hasMensajeCliente: false,
+})
+assert.equal(traceAuto.applicationMode, 'auto')
+assert.equal(traceAuto.applicationLabel, 'Puede aplicar ajuste al aprobar')
+assert.equal(traceAuto.coachNextAction, 'Aprobar solo si los números encajan con el contexto actual')
+
+const traceManual = crearDecisionTrace({
+  tipo: 'training_brain',
+  estado: 'pendiente',
+  prioridad: 6,
+  senalesCount: 1,
+  ajustesCount: 1,
+  advertenciasCount: 0,
+  logrosCount: 1,
+  evidenciaCount: 0,
+  hasMensajeCliente: false,
+})
+assert.equal(traceManual.applicationMode, 'manual')
+assert.equal(traceManual.applicationLabel, 'Requiere edición manual del plan')
+assert.ok(traceManual.traceItems.includes('Sin evidencia adjunta'))
 
 const coachDesk = crearCoachDeskPlan({
   estado: 'ajustar',

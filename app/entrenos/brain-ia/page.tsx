@@ -16,7 +16,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import type { EstadoTarea, FuenteCientifica, TipoTarea } from '@/lib/agentes/types'
-import { crearDecisionSummary } from '@/lib/training/workspace'
+import { crearDecisionSummary, crearDecisionTrace } from '@/lib/training/workspace'
 
 const TRAINING_TYPES: TipoTarea[] = [
   'training_brain',
@@ -546,12 +546,25 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
   const payload = tarea.payload ?? {}
   const signals = payload.senales ?? []
   const ajustes = payload.ajustes_plan ?? []
+  const advertencias = payload.advertencias ?? []
+  const logros = payload.logros ?? []
   const summary = crearDecisionSummary({
     prioridad: tarea.prioridad,
     tipo: tarea.tipo,
     senalesCount: signals.length,
     ajustesCount: ajustes.length,
     evidenciaCount: tarea.fuentes?.length ?? 0,
+  })
+  const trace = crearDecisionTrace({
+    prioridad: tarea.prioridad,
+    tipo: tarea.tipo,
+    estado: normalizeEstado(tarea.estado),
+    senalesCount: signals.length,
+    ajustesCount: ajustes.length,
+    advertenciasCount: advertencias.length,
+    logrosCount: logros.length,
+    evidenciaCount: tarea.fuentes?.length ?? 0,
+    hasMensajeCliente: Boolean(payload.mensaje_cliente),
   })
   const riskColor = summary.risk === 'alto'
     ? 'var(--semantic-alert)'
@@ -590,6 +603,37 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
           <DetailMetric label="Señales" value={signals.length} />
           <DetailMetric label="Ajustes" value={ajustes.length} />
           <DetailMetric label="Fuentes" value={tarea.fuentes?.length ?? 0} />
+        </div>
+
+        <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+                Trazabilidad IA
+              </p>
+              <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{trace.impactLabel}</p>
+            </div>
+            <span
+              className="rounded-full border px-2.5 py-1 text-[10px] font-semibold"
+              style={{
+                borderColor: trace.applicationMode === 'auto' ? 'var(--semantic-active-border)' : trace.applicationMode === 'mensaje' ? 'var(--semantic-info-border)' : 'var(--border)',
+                background: trace.applicationMode === 'auto' ? 'var(--semantic-active-bg)' : trace.applicationMode === 'mensaje' ? 'var(--semantic-info-bg)' : 'var(--surface)',
+                color: trace.applicationMode === 'auto' ? 'var(--semantic-active)' : trace.applicationMode === 'mensaje' ? 'var(--semantic-info)' : 'var(--text-muted)',
+              }}
+            >
+              {trace.applicationLabel}
+            </span>
+          </div>
+          <p className="mt-3 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {trace.coachNextAction}
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {trace.traceItems.map(item => (
+              <p key={item} className="rounded-xl px-2 py-1.5 text-[11px]" style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}>
+                {item}
+              </p>
+            ))}
+          </div>
         </div>
 
         <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>

@@ -64,6 +64,26 @@ export interface DecisionSummary {
   checklist: string[]
 }
 
+export interface DecisionTraceInput {
+  tipo: string
+  estado: string
+  prioridad: number
+  senalesCount: number
+  ajustesCount: number
+  advertenciasCount: number
+  logrosCount: number
+  evidenciaCount: number
+  hasMensajeCliente: boolean
+}
+
+export interface DecisionTrace {
+  applicationMode: 'auto' | 'mensaje' | 'manual' | 'cerrada'
+  applicationLabel: string
+  impactLabel: string
+  coachNextAction: string
+  traceItems: string[]
+}
+
 export interface CoachDeskPlanInput {
   estado: 'descarga' | 'ajustar' | 'progresar' | 'base'
   hasPlan: boolean
@@ -277,6 +297,61 @@ export function crearDecisionSummary(input: DecisionSummaryInput): DecisionSumma
   ]
 
   return { risk, intent, checklist }
+}
+
+export function crearDecisionTrace(input: DecisionTraceInput): DecisionTrace {
+  if (input.estado === 'aplicado' || input.estado === 'rechazado') {
+    return {
+      applicationMode: 'cerrada',
+      applicationLabel: input.estado === 'aplicado' ? 'Aplicada' : 'Archivada',
+      impactLabel: input.estado === 'aplicado' ? 'Cambio ya ejecutado' : 'Sin impacto en el plan',
+      coachNextAction: input.estado === 'aplicado' ? 'Comprobar respuesta del cliente en la próxima revisión' : 'Mantener solo como aprendizaje',
+      traceItems: [
+        input.evidenciaCount > 0 ? `${input.evidenciaCount} fuentes revisables` : 'Sin fuentes adjuntas',
+        `${input.senalesCount} señales originales`,
+      ],
+    }
+  }
+
+  const isNutritionAdjustment = input.tipo === 'ajuste_nutricion_carga'
+  const isClientMessage = input.tipo === 'revision_semanal_entreno'
+    || input.tipo === 'alerta_riesgo_entreno'
+    || input.tipo === 'alerta_readiness'
+
+  const applicationMode: DecisionTrace['applicationMode'] = isNutritionAdjustment
+    ? 'auto'
+    : isClientMessage || input.hasMensajeCliente
+      ? 'mensaje'
+      : 'manual'
+
+  const applicationLabel = applicationMode === 'auto'
+    ? 'Puede aplicar ajuste al aprobar'
+    : applicationMode === 'mensaje'
+      ? 'Envía mensaje al cliente al aprobar'
+      : 'Requiere edición manual del plan'
+
+  const impactLabel = input.advertenciasCount > 0 || input.prioridad <= 3
+    ? 'Impacto alto: revisar antes de la próxima sesión'
+    : input.ajustesCount > 0
+      ? 'Impacto medio: validar cambios propuestos'
+      : input.logrosCount > 0
+        ? 'Impacto positivo: consolidar progresión'
+        : 'Impacto bajo: seguimiento'
+
+  const coachNextAction = applicationMode === 'manual'
+    ? 'Abrir Training Room y aplicar solo el cambio validado'
+    : applicationMode === 'auto'
+      ? 'Aprobar solo si los números encajan con el contexto actual'
+      : 'Editar el mensaje si el tono no encaja con el cliente'
+
+  const traceItems = [
+    `${input.senalesCount} señales detectadas`,
+    `${input.ajustesCount} ajustes propuestos`,
+    input.evidenciaCount > 0 ? `${input.evidenciaCount} fuentes científicas` : 'Sin evidencia adjunta',
+    input.advertenciasCount > 0 ? `${input.advertenciasCount} advertencias` : 'Sin advertencias críticas',
+  ]
+
+  return { applicationMode, applicationLabel, impactLabel, coachNextAction, traceItems }
 }
 
 export function crearCoachDeskPlan(input: CoachDeskPlanInput): CoachDeskPlan {
