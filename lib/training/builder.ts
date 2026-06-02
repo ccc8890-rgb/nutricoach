@@ -24,6 +24,16 @@ export interface BuilderSessionDraft {
   ejercicios: BuilderExerciseDraft[]
 }
 
+export interface BuilderLoadSummary {
+  totalSesiones: number
+  totalSets: number
+  diasProgramados: number
+  sesionesFuertes: number
+  minutosEstimados: number
+  tone: 'ok' | 'warn' | 'alert'
+  alertas: string[]
+}
+
 function siguienteDia(dia: string) {
   const idx = DIAS.indexOf(dia)
   return idx >= 0 ? DIAS[(idx + 1) % DIAS.length] : ''
@@ -87,4 +97,40 @@ export function moverSesionBuilder(
   next[targetIndex] = current
 
   return renumerarSesiones(next)
+}
+
+export function crearBuilderLoadSummary(sesiones: BuilderSessionDraft[]): BuilderLoadSummary {
+  const totalSesiones = sesiones.length
+  const totalSets = sesiones.reduce((total, sesion) => total + sesion.ejercicios.reduce((sum, ejercicio) => sum + (ejercicio.series || 0), 0), 0)
+  const diasProgramados = new Set(sesiones.map(sesion => sesion.dia_semana).filter(Boolean)).size
+  const sesionesFuertes = sesiones.filter(sesion => {
+    const sets = sesion.ejercicios.reduce((sum, ejercicio) => sum + (ejercicio.series || 0), 0)
+    const fuerzaSets = sesion.ejercicios
+      .filter(ejercicio => ejercicio.ejercicio_tipo === 'fuerza' || ejercicio.ejercicio_tipo === 'funcional' || ejercicio.ejercicio_tipo === 'cardio')
+      .reduce((sum, ejercicio) => sum + (ejercicio.series || 0), 0)
+    return sets >= 8 || fuerzaSets >= 6
+  }).length
+  const descansoMin = sesiones.reduce((total, sesion) => (
+    total + sesion.ejercicios.reduce((sum, ejercicio) => sum + ((ejercicio.series || 0) * (ejercicio.descanso_segundos || 0) / 60), 0)
+  ), 0)
+  const ejecucionMin = totalSets * 1.5
+  const minutosEstimados = Math.round(descansoMin + ejecucionMin + totalSesiones * 8)
+
+  const alertas = [
+    totalSesiones > 5 ? 'Más de 5 sesiones: revisa sostenibilidad semanal' : null,
+    sesionesFuertes >= 2 ? 'Semana exigente: revisa recuperación y distribución de intensidad' : null,
+    diasProgramados > 0 && totalSesiones > diasProgramados ? 'Hay días con varias sesiones: comprueba solapamientos' : null,
+  ].filter((alerta): alerta is string => Boolean(alerta))
+
+  const tone: BuilderLoadSummary['tone'] = alertas.length >= 2 ? 'alert' : alertas.length === 1 ? 'warn' : 'ok'
+
+  return {
+    totalSesiones,
+    totalSets,
+    diasProgramados,
+    sesionesFuertes,
+    minutosEstimados,
+    tone,
+    alertas,
+  }
 }

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { duplicarSesionBuilder, moverSesionBuilder } from '../lib/training/builder'
+import { crearBuilderLoadSummary, duplicarSesionBuilder, moverSesionBuilder } from '../lib/training/builder'
 
 const sesiones = [
   {
@@ -42,5 +42,28 @@ assert.equal(movedDown[1].orden, 1)
 
 const movedUpAtTop = moverSesionBuilder(sesiones, 's1', 'up')
 assert.deepEqual(movedUpAtTop.map(s => s.id), ['s1', 's2'])
+
+const loadSummary = crearBuilderLoadSummary([
+  {
+    ...sesiones[0],
+    ejercicios: [
+      { id: 'e1', ejercicio_id: 'sq', ejercicio_nombre: 'Sentadilla', ejercicio_grupo: 'Pierna', ejercicio_tipo: 'fuerza', series: 5, repeticiones: '5', descanso_segundos: 180, peso_sugerido: 'RPE 8', notas: '', orden: 0 },
+      { id: 'e2', ejercicio_id: 'bp', ejercicio_nombre: 'Press banca', ejercicio_grupo: 'Pecho', ejercicio_tipo: 'fuerza', series: 4, repeticiones: '6', descanso_segundos: 150, peso_sugerido: 'RPE 8', notas: '', orden: 1 },
+    ],
+  },
+  {
+    ...sesiones[1],
+    ejercicios: [
+      { id: 'e3', ejercicio_id: 'run', ejercicio_nombre: 'Intervalos', ejercicio_grupo: 'Cardio', ejercicio_tipo: 'cardio', series: 6, repeticiones: '400m', descanso_segundos: 90, peso_sugerido: '', notas: '', orden: 0 },
+    ],
+  },
+])
+assert.equal(loadSummary.totalSesiones, 2)
+assert.equal(loadSummary.totalSets, 15)
+assert.equal(loadSummary.diasProgramados, 2)
+assert.equal(loadSummary.sesionesFuertes, 2)
+assert.equal(loadSummary.tone, 'warn')
+assert.ok(loadSummary.alertas.includes('Semana exigente: revisa recuperación y distribución de intensidad'))
+assert.ok(loadSummary.minutosEstimados > 0)
 
 console.log('training builder tests passed')

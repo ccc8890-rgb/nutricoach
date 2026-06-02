@@ -7,7 +7,7 @@ import Link from 'next/link'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, Ejercicio } from '@/types'
 import { DIAS_SEMANA } from '@/lib/utils'
-import { duplicarSesionBuilder, moverSesionBuilder, type BuilderSessionDraft } from '@/lib/training/builder'
+import { crearBuilderLoadSummary, duplicarSesionBuilder, moverSesionBuilder, type BuilderSessionDraft } from '@/lib/training/builder'
 
 type SesionLocal = BuilderSessionDraft
 
@@ -249,6 +249,12 @@ function NuevoEntrenoForm() {
 
   const totalEjercicios = sesionesLocal.reduce((acc, s) => acc + s.ejercicios.length, 0)
   const totalSets = sesionesLocal.reduce((acc, s) => acc + s.ejercicios.reduce((sum, e) => sum + (e.series || 0), 0), 0)
+  const loadSummary = crearBuilderLoadSummary(sesionesLocal)
+  const loadTone = loadSummary.tone === 'alert'
+    ? { bg: 'var(--semantic-alert-bg)', border: 'var(--semantic-alert-border)', fg: 'var(--semantic-alert)' }
+    : loadSummary.tone === 'warn'
+      ? { bg: 'var(--semantic-warn-bg)', border: 'var(--semantic-warn-border)', fg: 'var(--semantic-warn)' }
+      : { bg: 'var(--semantic-active-bg)', border: 'var(--semantic-active-border)', fg: 'var(--semantic-active)' }
   const TIPO_COLORS: Record<string, string> = {
     fuerza: 'badge-teal', cardio: 'badge-orange', flexibilidad: 'badge-blue', funcional: 'badge-green'
   }
@@ -513,6 +519,29 @@ function NuevoEntrenoForm() {
         </main>
 
         <aside className="space-y-4 xl:sticky xl:top-28 xl:self-start">
+          <div className="rounded-3xl border p-4" style={{ borderColor: loadTone.border, background: loadTone.bg }}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+              Carga estimada
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <BuilderMetric label="Tiempo" value={loadSummary.minutosEstimados ? `${loadSummary.minutosEstimados}m` : '—'} />
+              <BuilderMetric label="Días" value={loadSummary.diasProgramados || '—'} />
+              <BuilderMetric label="Sets" value={loadSummary.totalSets} />
+              <BuilderMetric label="Fuertes" value={loadSummary.sesionesFuertes} />
+            </div>
+            <div className="mt-3 space-y-2">
+              {loadSummary.alertas.length ? loadSummary.alertas.map(alerta => (
+                <p key={alerta} className="rounded-2xl border px-3 py-2 text-xs leading-relaxed" style={{ borderColor: loadTone.border, color: 'var(--text-secondary)', background: 'var(--surface)' }}>
+                  {alerta}
+                </p>
+              )) : (
+                <p className="rounded-2xl border px-3 py-2 text-xs" style={{ borderColor: loadTone.border, color: loadTone.fg, background: 'var(--surface)' }}>
+                  Distribución asumible para revisar y guardar.
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
               Assist panel
