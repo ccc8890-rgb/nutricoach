@@ -74,6 +74,7 @@ export interface DecisionTraceInput {
   logrosCount: number
   evidenciaCount: number
   hasMensajeCliente: boolean
+  hasAutoApplyPayload: boolean
 }
 
 export interface DecisionTrace {
@@ -313,7 +314,7 @@ export function crearDecisionTrace(input: DecisionTraceInput): DecisionTrace {
     }
   }
 
-  const isNutritionAdjustment = input.tipo === 'ajuste_nutricion_carga'
+  const isNutritionAdjustment = input.tipo === 'ajuste_nutricion_carga' && input.hasAutoApplyPayload
   const isClientMessage = input.tipo === 'revision_semanal_entreno'
     || input.tipo === 'alerta_riesgo_entreno'
     || input.tipo === 'alerta_readiness'

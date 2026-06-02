@@ -120,6 +120,12 @@ function priorityTone(priority: number) {
   return { label: 'Baja', color: 'var(--text-muted)', bg: 'var(--surface)', border: 'var(--border)' }
 }
 
+function hasNumericMacroAdjustment(payload: TareaInbox['payload']): boolean {
+  const ajustes = payload?.ajustes
+  if (!ajustes || typeof ajustes !== 'object' || Array.isArray(ajustes)) return false
+  return ['kcal', 'proteinas', 'carbohidratos', 'grasas'].some(key => typeof (ajustes as Record<string, unknown>)[key] === 'number')
+}
+
 function normalizeEstado(estado: EstadoTarea): keyof typeof STATUS_CONFIG {
   if (estado === 'en_revision') return 'pendiente'
   return estado in STATUS_CONFIG ? estado : 'pendiente'
@@ -565,6 +571,7 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
     logrosCount: logros.length,
     evidenciaCount: tarea.fuentes?.length ?? 0,
     hasMensajeCliente: Boolean(payload.mensaje_cliente),
+    hasAutoApplyPayload: hasNumericMacroAdjustment(payload),
   })
   const riskColor = summary.risk === 'alto'
     ? 'var(--semantic-alert)'

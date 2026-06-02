@@ -121,6 +121,7 @@ const traceMensaje = crearDecisionTrace({
   logrosCount: 0,
   evidenciaCount: 2,
   hasMensajeCliente: true,
+  hasAutoApplyPayload: false,
 })
 assert.equal(traceMensaje.applicationMode, 'mensaje')
 assert.equal(traceMensaje.applicationLabel, 'Envía mensaje al cliente al aprobar')
@@ -137,10 +138,26 @@ const traceAuto = crearDecisionTrace({
   logrosCount: 0,
   evidenciaCount: 1,
   hasMensajeCliente: false,
+  hasAutoApplyPayload: true,
 })
 assert.equal(traceAuto.applicationMode, 'auto')
 assert.equal(traceAuto.applicationLabel, 'Puede aplicar ajuste al aprobar')
 assert.equal(traceAuto.coachNextAction, 'Aprobar solo si los números encajan con el contexto actual')
+
+const traceAutoSinPayload = crearDecisionTrace({
+  tipo: 'ajuste_nutricion_carga',
+  estado: 'pendiente',
+  prioridad: 5,
+  senalesCount: 2,
+  ajustesCount: 1,
+  advertenciasCount: 0,
+  logrosCount: 0,
+  evidenciaCount: 1,
+  hasMensajeCliente: false,
+  hasAutoApplyPayload: false,
+})
+assert.equal(traceAutoSinPayload.applicationMode, 'manual')
+assert.equal(traceAutoSinPayload.applicationLabel, 'Requiere edición manual del plan')
 
 const traceManual = crearDecisionTrace({
   tipo: 'training_brain',
@@ -152,6 +169,7 @@ const traceManual = crearDecisionTrace({
   logrosCount: 1,
   evidenciaCount: 0,
   hasMensajeCliente: false,
+  hasAutoApplyPayload: false,
 })
 assert.equal(traceManual.applicationMode, 'manual')
 assert.equal(traceManual.applicationLabel, 'Requiere edición manual del plan')
