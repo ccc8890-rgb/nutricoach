@@ -348,12 +348,12 @@ export function crearDecisionTrace(input: DecisionTraceInput): DecisionTrace {
     }
   }
 
-  const isNutritionAdjustment = input.tipo === 'ajuste_nutricion_carga' && input.hasAutoApplyPayload
+  const isAutoAdjustment = (input.tipo === 'ajuste_nutricion_carga' || input.tipo === 'actualizacion_plan') && input.hasAutoApplyPayload
   const isClientMessage = input.tipo === 'revision_semanal_entreno'
     || input.tipo === 'alerta_riesgo_entreno'
     || input.tipo === 'alerta_readiness'
 
-  const applicationMode: DecisionTrace['applicationMode'] = isNutritionAdjustment
+  const applicationMode: DecisionTrace['applicationMode'] = isAutoAdjustment
     ? 'auto'
     : isClientMessage || input.hasMensajeCliente
       ? 'mensaje'
@@ -376,7 +376,9 @@ export function crearDecisionTrace(input: DecisionTraceInput): DecisionTrace {
   const coachNextAction = applicationMode === 'manual'
     ? 'Abrir Training Room y aplicar solo el cambio validado'
     : applicationMode === 'auto'
-      ? 'Aprobar solo si los números encajan con el contexto actual'
+      ? input.tipo === 'actualizacion_plan'
+        ? 'Aprobar solo si el cambio encaja con la semana actual'
+        : 'Aprobar solo si los números encajan con el contexto actual'
       : 'Editar el mensaje si el tono no encaja con el cliente'
 
   const traceItems = [

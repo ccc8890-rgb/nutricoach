@@ -146,6 +146,22 @@ assert.equal(traceAuto.applicationMode, 'auto')
 assert.equal(traceAuto.applicationLabel, 'Puede aplicar ajuste al aprobar')
 assert.equal(traceAuto.coachNextAction, 'Aprobar solo si los números encajan con el contexto actual')
 
+const tracePlanUpdate = crearDecisionTrace({
+  tipo: 'actualizacion_plan',
+  estado: 'pendiente',
+  prioridad: 5,
+  senalesCount: 2,
+  ajustesCount: 1,
+  advertenciasCount: 0,
+  logrosCount: 0,
+  evidenciaCount: 1,
+  hasMensajeCliente: true,
+  hasAutoApplyPayload: true,
+})
+assert.equal(tracePlanUpdate.applicationMode, 'auto')
+assert.equal(tracePlanUpdate.applicationLabel, 'Puede aplicar ajuste al aprobar')
+assert.equal(tracePlanUpdate.coachNextAction, 'Aprobar solo si el cambio encaja con la semana actual')
+
 const traceAutoSinPayload = crearDecisionTrace({
   tipo: 'ajuste_nutricion_carga',
   estado: 'pendiente',

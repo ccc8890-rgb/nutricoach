@@ -8,6 +8,56 @@
 import { createServiceSupabase } from '@/lib/supabase-server'
 import type { AgenteTarea } from './types'
 
+export interface PlanEntrenoUpdateInput {
+  descripcionActual: string | null
+  planUpdate?: {
+    sesiones_por_semana?: number | null
+    duracion_semanas?: number | null
+  }
+  propuesta?: string | null
+}
+
+export interface PlanEntrenoUpdateSeguro {
+  campos: {
+    descripcion?: string
+    duracion_semanas?: number
+  }
+  mensaje: string
+}
+
+export function crearPlanEntrenoUpdateSeguro(input: PlanEntrenoUpdateInput): PlanEntrenoUpdateSeguro {
+  const campos: PlanEntrenoUpdateSeguro['campos'] = {}
+  const notas: string[] = []
+
+  if (input.planUpdate?.duracion_semanas != null) {
+    campos.duracion_semanas = input.planUpdate.duracion_semanas
+  }
+
+  if (input.planUpdate?.sesiones_por_semana != null) {
+    notas.push(`[IA coach] Objetivo operativo: ${input.planUpdate.sesiones_por_semana} sesiones/semana`)
+  }
+  if (input.propuesta) {
+    notas.push(`[IA coach] ${input.propuesta}`)
+  }
+
+  if (notas.length > 0) {
+    campos.descripcion = [input.descripcionActual, ...notas]
+      .filter((item): item is string => Boolean(item?.trim()))
+      .join('\n\n')
+  }
+
+  const touched = Object.keys(campos)
+  return {
+    campos,
+    mensaje: touched.length
+      ? `Plan de entrenamiento anotado: ${[
+          campos.duracion_semanas != null ? 'duración' : null,
+          campos.descripcion ? 'objetivo semanal operativo' : null,
+        ].filter(Boolean).join(' y ')}`
+      : 'Sin actualización estructural segura',
+  }
+}
+
 export async function aplicarTarea(tarea: AgenteTarea): Promise<{ ok: boolean; mensaje?: string }> {
   const db = createServiceSupabase()
 
@@ -125,17 +175,33 @@ async function aplicarActualizacionPlan(
     mensaje_cliente?: string
   }
 
-  const update: Record<string, number> = {}
-  if (payload.plan_update?.duracion_semanas != null) {
-    update.duracion_semanas = payload.plan_update.duracion_semanas
+  const { data: planActual, error: planError } = await db
+    .from('planes_entrenamiento')
+    .select('id, descripcion')
+    .eq('cliente_id', tarea.cliente_id)
+    .eq('activo', true)
+    .maybeSingle()
+
+  if (planError) {
+    console.error('[aplicar] Error leyendo plan entrenamiento:', planError)
+    return { ok: false, mensaje: planError.message }
   }
 
-  if (Object.keys(update).length) {
+  const updateSeguro = crearPlanEntrenoUpdateSeguro({
+    descripcionActual: (planActual?.descripcion as string | null) ?? null,
+    planUpdate: payload.plan_update,
+    propuesta: tarea.propuesta,
+  })
+
+  if (Object.keys(updateSeguro.campos).length && !planActual?.id) {
+    return { ok: false, mensaje: 'Sin plan de entrenamiento activo para aplicar actualización' }
+  }
+
+  if (Object.keys(updateSeguro.campos).length && planActual?.id) {
     const { error } = await db
       .from('planes_entrenamiento')
-      .update(update)
-      .eq('cliente_id', tarea.cliente_id)
-      .eq('activo', true)
+      .update(updateSeguro.campos)
+      .eq('id', planActual?.id)
 
     if (error) {
       console.error('[aplicar] Error actualizacion plan:', error)
@@ -157,5 +223,5 @@ async function aplicarActualizacionPlan(
     .update({ estado: 'aplicado', aplicado_at: new Date().toISOString() })
     .eq('id', tarea.id)
 
-  return { ok: true, mensaje: Object.keys(update).length ? 'Plan de entrenamiento actualizado' : 'Actualización de plan registrada' }
+  return { ok: true, mensaje: Object.keys(updateSeguro.campos).length ? updateSeguro.mensaje : 'Actualización de plan registrada' }
 }

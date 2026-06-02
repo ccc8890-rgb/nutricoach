@@ -24,6 +24,7 @@ const TRAINING_TYPES: TipoTarea[] = [
   'alerta_riesgo_entreno',
   'alerta_readiness',
   'ajuste_nutricion_carga',
+  'actualizacion_plan',
 ]
 
 const TYPE_LABEL: Partial<Record<TipoTarea, string>> = {
@@ -32,6 +33,7 @@ const TYPE_LABEL: Partial<Record<TipoTarea, string>> = {
   alerta_riesgo_entreno: 'Riesgo entreno',
   alerta_readiness: 'Readiness',
   ajuste_nutricion_carga: 'Nutrición carga',
+  actualizacion_plan: 'Ajuste plan',
 }
 
 const STATUS_CONFIG: Record<string, { label: string; icon: typeof CheckCircle2; bg: string; color: string; border: string }> = {
@@ -126,6 +128,20 @@ function hasNumericMacroAdjustment(payload: TareaInbox['payload']): boolean {
   return ['kcal', 'proteinas', 'carbohidratos', 'grasas'].some(key => typeof (ajustes as Record<string, unknown>)[key] === 'number')
 }
 
+function hasTrainingPlanUpdate(payload: TareaInbox['payload']): boolean {
+  const update = payload?.plan_update
+  if (!update || typeof update !== 'object' || Array.isArray(update)) return false
+  return ['sesiones_por_semana', 'duracion_semanas'].some(key => typeof (update as Record<string, unknown>)[key] === 'number')
+}
+
+function isTrainingInboxTask(tarea: TareaInbox): boolean {
+  if (!TRAINING_TYPES.includes(tarea.tipo)) return false
+  if (tarea.tipo === 'actualizacion_plan') {
+    return tarea.payload?.accion_aplicable === 'actualizar_plan_entreno'
+  }
+  return true
+}
+
 function normalizeEstado(estado: EstadoTarea): keyof typeof STATUS_CONFIG {
   if (estado === 'en_revision') return 'pendiente'
   return estado in STATUS_CONFIG ? estado : 'pendiente'
@@ -151,7 +167,7 @@ export default function BrainIAPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error cargando recomendaciones')
       const rows = ((data.tareas ?? []) as TareaInbox[])
-        .filter(t => TRAINING_TYPES.includes(t.tipo))
+        .filter(isTrainingInboxTask)
       setTareas(rows)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error cargando recomendaciones')
@@ -571,7 +587,7 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
     logrosCount: logros.length,
     evidenciaCount: tarea.fuentes?.length ?? 0,
     hasMensajeCliente: Boolean(payload.mensaje_cliente),
-    hasAutoApplyPayload: hasNumericMacroAdjustment(payload),
+    hasAutoApplyPayload: hasNumericMacroAdjustment(payload) || hasTrainingPlanUpdate(payload),
   })
   const playbook = crearDecisionPlaybook({
     prioridad: tarea.prioridad,
@@ -581,7 +597,7 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
     advertenciasCount: advertencias.length,
     logrosCount: logros.length,
     hasMensajeCliente: Boolean(payload.mensaje_cliente),
-    hasAutoApplyPayload: hasNumericMacroAdjustment(payload),
+    hasAutoApplyPayload: hasNumericMacroAdjustment(payload) || hasTrainingPlanUpdate(payload),
   })
   const riskColor = summary.risk === 'alto'
     ? 'var(--semantic-alert)'
