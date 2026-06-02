@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Brain, CheckCircle2, ChevronLeft, ChevronRight, Circle, History, Pause, Play, RotateCcw, Save } from 'lucide-react'
 import SetRegistroSheet from './SetRegistroSheet'
 import EjercicioDemoModal from './EjercicioDemoModal'
-import { crearSessionProgressSummary } from '@/lib/training/session-progress'
+import { crearSessionExecutionSummary, crearSessionProgressSummary } from '@/lib/training/session-progress'
 
 export interface SetData {
   kg: number
@@ -84,6 +84,12 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
     completedSets: hechos,
   })
   const descanso = ej.descanso_segundos ?? 90
+  const executionSummary = crearSessionExecutionSummary({
+    sets,
+    descansoSegundos: descanso,
+    pesoSugerido: ej.peso_sugerido,
+    ultimoPesoKg: ej.ultimo_peso_kg,
+  })
   const setsCompletados = Object.values(setsMap).flatMap(s => s).filter(s => s.hecho)
   const volumenTotal = Math.round(setsCompletados.reduce((acc, set) => acc + (set.kg * set.reps), 0))
 
@@ -273,6 +279,13 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>{ej.instruccion_ejercicio}</p>
         )}
 
+        <div className="mb-3 grid grid-cols-2 gap-2">
+          <ExecutionMetric label="Foco" value={executionSummary.focusLabel} />
+          <ExecutionMetric label="Ahora" value={executionSummary.nextSetLabel} />
+          <ExecutionMetric label="Volumen" value={`${executionSummary.volumeKg} kg`} />
+          <ExecutionMetric label="RPE medio" value={executionSummary.averageRpe ?? '—'} />
+        </div>
+
         {/* Grid de sets */}
         <div
           className="grid gap-2 flex-1"
@@ -390,6 +403,15 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           onCerrar={() => setDemoAbierto(false)}
         />
       )}
+    </div>
+  )
+}
+
+function ExecutionMetric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-xl border px-3 py-2" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="mt-0.5 truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
     </div>
   )
 }
