@@ -2,35 +2,14 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Sparkles, GripVertical } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Sparkles, GripVertical, Copy, ArrowUp, ArrowDown } from 'lucide-react'
 import Link from 'next/link'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, Ejercicio } from '@/types'
 import { DIAS_SEMANA } from '@/lib/utils'
+import { duplicarSesionBuilder, moverSesionBuilder, type BuilderSessionDraft } from '@/lib/training/builder'
 
-interface EjercicioLocal {
-  id: string                  // id temporal (uuid aleatorio)
-  ejercicio_id: string
-  ejercicio_nombre: string
-  ejercicio_grupo: string
-  ejercicio_tipo: string
-  series: number
-  repeticiones: string
-  descanso_segundos: number
-  peso_sugerido: string
-  notas: string
-  orden: number
-}
-
-interface SesionLocal {
-  id: string                  // id temporal
-  nombre: string
-  dia_semana: string
-  orden: number
-  notas: string
-  expandida: boolean
-  ejercicios: EjercicioLocal[]
-}
+type SesionLocal = BuilderSessionDraft
 
 let tempCounter = 0
 function tempId(prefix = 'tmp'): string {
@@ -155,6 +134,14 @@ function NuevoEntrenoForm() {
 
   function eliminarSesion(sesionId: string) {
     setSesionesLocal(prev => prev.filter(s => s.id !== sesionId))
+  }
+
+  function duplicarSesion(sesionId: string) {
+    setSesionesLocal(prev => duplicarSesionBuilder(prev, sesionId, tempId))
+  }
+
+  function moverSesion(sesionId: string, direction: 'up' | 'down') {
+    setSesionesLocal(prev => moverSesionBuilder(prev, sesionId, direction))
   }
 
   function añadirEjercicioSesion(sesionId: string, ejercicio: Ejercicio) {
@@ -347,7 +334,7 @@ function NuevoEntrenoForm() {
             </div>
 
             <div className="flex flex-col gap-4">
-              {sesionesLocal.map((sesion) => (
+              {sesionesLocal.map((sesion, sesionIndex) => (
                 <div key={sesion.id} className="rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                   {/* Header sesión */}
                   <div className="flex items-center gap-3 p-4 pb-3">
@@ -369,6 +356,34 @@ function NuevoEntrenoForm() {
                       {DIAS_SEMANA.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                     <span className="text-sm text-gray-400">{sesion.ejercicios.length} ejercicios</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => moverSesion(sesion.id, 'up')}
+                        disabled={sesionIndex === 0}
+                        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:text-[var(--text)] disabled:opacity-30"
+                        title="Subir sesión"
+                      >
+                        <ArrowUp size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moverSesion(sesion.id, 'down')}
+                        disabled={sesionIndex === sesionesLocal.length - 1}
+                        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:text-[var(--text)] disabled:opacity-30"
+                        title="Bajar sesión"
+                      >
+                        <ArrowDown size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => duplicarSesion(sesion.id)}
+                        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:text-[var(--text)]"
+                        title="Duplicar sesión"
+                      >
+                        <Copy size={14} />
+                      </button>
+                    </div>
                     <button type="button" onClick={() => eliminarSesion(sesion.id)} className="text-gray-300 hover:text-red-400">
                       <Trash2 size={15} />
                     </button>
