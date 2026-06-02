@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, MessageSquareText, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle, ShoppingCart, BookOpen, Clock, CheckCircle2, Moon, Sun, Home } from 'lucide-react'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, MessageSquareText, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle, ShoppingCart, BookOpen, Clock, CheckCircle2, Moon, Sun, Home, Play } from 'lucide-react'
 import MiPlan from './MiPlan'
 import CheckInForm from './CheckInForm'
 import ProgresoCharts from './ProgresoCharts'
@@ -17,6 +17,7 @@ import GarminMiniCard from './GarminMiniCard'
 import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach, RegistroComidaDia } from '@/types'
 import { useTheme } from '@/components/ThemeProvider'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
+import { crearClienteWeekSummary } from '@/lib/training/client-week'
 
 interface DashboardData {
     plan: PlanNutricion
@@ -179,7 +180,7 @@ function EntrenoCliente({
             return new Set()
         }
     })
-    const sesiones = (entreno?.sesiones ?? []) as Array<{
+    const sesiones = useMemo(() => (entreno?.sesiones ?? []) as Array<{
         id: string
         nombre: string
         dia_semana?: string | null
@@ -197,12 +198,24 @@ function EntrenoCliente({
             notas?: string | null
             ejercicio?: { nombre?: string | null; grupo_muscular?: string | null }
         }>
-    }>
+    }>, [entreno?.sesiones])
     const sesionesDia = sesiones.filter(s => normalizarDia(s.dia_semana) === diaActivo)
     const sesionesHoy = sesiones.filter(s => normalizarDia(s.dia_semana) === hoyIdx)
     const visibles = sesionesDia.length ? sesionesDia : sesionesHoy.length ? sesionesHoy : sesiones
     const totalEjercicios = visibles.reduce((acc, s) => acc + (s.ejercicios?.length ?? 0), 0)
     const duracionDia = visibles.reduce((acc, s) => acc + Number(s.duracion_min ?? s.duracion_estimada_min ?? 0), 0)
+    const resumenSemana = useMemo(() => crearClienteWeekSummary({
+        sesiones: sesiones.map(s => ({
+            id: s.id,
+            nombre: s.nombre,
+            dia_semana: s.dia_semana ?? '',
+            duracion_estimada_min: Number(s.duracion_min ?? s.duracion_estimada_min ?? 0) || null,
+            ejercicios_count: s.ejercicios?.length ?? 0,
+            completada: sesionesHechas.has(s.id),
+            esHoy: normalizarDia(s.dia_semana) === hoyIdx,
+        })),
+    }), [sesiones, sesionesHechas, hoyIdx])
+    const sesionPrincipal = resumenSemana.sesionPrincipal
 
     function marcarSesion(sesionId: string, nombre: string) {
         setSesionesHechas(prev => {
@@ -217,6 +230,88 @@ function EntrenoCliente({
     return (
         <div className="space-y-4">
             <TLSGauge key={tlsKey} codigo={codigo} onRegistrar={onRegistrar} />
+            <section className="rounded-3xl border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <div className="p-4" style={{ borderBottom: '1px solid var(--border)' }}>
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Training OS</p>
+                            <h2 className="mt-1 text-xl font-black tracking-tight" style={{ color: 'var(--text)' }}>
+                                {resumenSemana.progresoPct}% semana
+                            </h2>
+                            <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                                {resumenSemana.mensajeCliente}
+                            </p>
+                        </div>
+                        <Link
+                            href="/cliente/semana"
+                            className="shrink-0 rounded-2xl px-3 py-2 text-xs font-bold transition-all active:scale-[0.98]"
+                            style={{ background: 'var(--primary)', color: 'white' }}
+                        >
+                            Semana
+                        </Link>
+                    </div>
+                    <div className="mt-4 h-2 overflow-hidden rounded-full" style={{ background: 'var(--bg)' }}>
+                        <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{ width: `${resumenSemana.progresoPct}%`, background: 'var(--primary)' }}
+                        />
+                    </div>
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                        <div className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Hechas</p>
+                            <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{resumenSemana.completadas}/{resumenSemana.totalSesiones}</p>
+                        </div>
+                        <div className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Pendientes</p>
+                            <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{resumenSemana.pendientes}</p>
+                        </div>
+                        <div className="rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Min plan</p>
+                            <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{resumenSemana.minutosPlanificados || '—'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {sesionPrincipal ? (
+                    <div className="p-4">
+                        <div className="rounded-3xl p-4" style={{ background: 'rgba(201,169,110,0.10)', border: '1px solid rgba(201,169,110,0.24)' }}>
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                                        {sesionPrincipal.esHoy ? 'Sesión de hoy' : 'Próxima sesión'}
+                                    </p>
+                                    <p className="mt-1 line-clamp-1 text-base font-bold" style={{ color: 'var(--text)' }}>{sesionPrincipal.nombre}</p>
+                                    <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                                        {sesionPrincipal.dia_semana || 'Sesión'} · {sesionPrincipal.ejercicios_count} ejercicios{sesionPrincipal.duracion_estimada_min ? ` · ${sesionPrincipal.duracion_estimada_min} min` : ''}
+                                    </p>
+                                </div>
+                                {sesionPrincipal.completada && <CheckCircle2 size={18} style={{ color: '#16A34A' }} />}
+                            </div>
+                            <div className="mt-4 grid grid-cols-2 gap-2">
+                                <Link
+                                    href={`/cliente/sesion/${sesionPrincipal.id}`}
+                                    className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
+                                    style={{ background: 'var(--primary)', color: 'white' }}
+                                >
+                                    <Play size={13} fill="currentColor" />
+                                    Empezar
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={() => marcarSesion(sesionPrincipal.id, sesionPrincipal.nombre)}
+                                    className="rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
+                                    style={{ background: sesionPrincipal.completada ? '#DCFCE7' : 'var(--bg)', border: '1px solid var(--border)', color: sesionPrincipal.completada ? '#16A34A' : 'var(--text)' }}
+                                >
+                                    {sesionPrincipal.completada ? 'Hecha' : 'Marcar hecha'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="p-4 text-sm" style={{ color: 'var(--text-muted)' }}>Tu coach todavía no ha asignado sesiones de entrenamiento.</p>
+                )}
+            </section>
+
             <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <div className="flex items-center justify-between gap-3 mb-4">
                     <div>
