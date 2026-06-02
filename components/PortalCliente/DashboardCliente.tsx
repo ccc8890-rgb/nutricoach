@@ -17,7 +17,7 @@ import GarminMiniCard from './GarminMiniCard'
 import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPeso, NotaCoach, RegistroComidaDia } from '@/types'
 import { useTheme } from '@/components/ThemeProvider'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
-import { crearClienteWeekSummary } from '@/lib/training/client-week'
+import { aplicarSesionesCompletadas, crearClienteWeekSummary } from '@/lib/training/client-week'
 
 interface DashboardData {
     plan: PlanNutricion
@@ -172,14 +172,9 @@ function EntrenoCliente({
     const hoyIdx = hoy === 0 ? 6 : hoy - 1
     const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
     const [diaActivo, setDiaActivo] = useState(hoyIdx)
-    const [sesionesHechas, setSesionesHechas] = useState<Set<string>>(() => {
-        if (typeof window === 'undefined') return new Set()
-        try {
-            return new Set(JSON.parse(localStorage.getItem(`nutricoach:training:${codigo}`) ?? '[]') as string[])
-        } catch {
-            return new Set()
-        }
-    })
+    const [sesionesHechas, setSesionesHechas] = useState<Set<string>>(new Set())
+    const [savingSesionId, setSavingSesionId] = useState<string | null>(null)
+    const [estadoError, setEstadoError] = useState('')
     const sesiones = useMemo(() => (entreno?.sesiones ?? []) as Array<{
         id: string
         nombre: string
@@ -204,27 +199,66 @@ function EntrenoCliente({
     const visibles = sesionesDia.length ? sesionesDia : sesionesHoy.length ? sesionesHoy : sesiones
     const totalEjercicios = visibles.reduce((acc, s) => acc + (s.ejercicios?.length ?? 0), 0)
     const duracionDia = visibles.reduce((acc, s) => acc + Number(s.duracion_min ?? s.duracion_estimada_min ?? 0), 0)
-    const resumenSemana = useMemo(() => crearClienteWeekSummary({
-        sesiones: sesiones.map(s => ({
+    const sesionesResumen = useMemo(() => aplicarSesionesCompletadas(
+        sesiones.map(s => ({
             id: s.id,
             nombre: s.nombre,
             dia_semana: s.dia_semana ?? '',
             duracion_estimada_min: Number(s.duracion_min ?? s.duracion_estimada_min ?? 0) || null,
             ejercicios_count: s.ejercicios?.length ?? 0,
-            completada: sesionesHechas.has(s.id),
+            completada: false,
             esHoy: normalizarDia(s.dia_semana) === hoyIdx,
         })),
-    }), [sesiones, sesionesHechas, hoyIdx])
+        Array.from(sesionesHechas)
+    ), [sesiones, sesionesHechas, hoyIdx])
+    const resumenSemana = useMemo(() => crearClienteWeekSummary({ sesiones: sesionesResumen }), [sesionesResumen])
     const sesionPrincipal = resumenSemana.sesionPrincipal
 
-    function marcarSesion(sesionId: string, nombre: string) {
-        setSesionesHechas(prev => {
-            const next = new Set(prev)
-            next.add(sesionId)
-            localStorage.setItem(`nutricoach:training:${codigo}`, JSON.stringify(Array.from(next)))
-            return next
-        })
-        onSesion(nombre)
+    useEffect(() => {
+        if (!entreno?.id) {
+            setSesionesHechas(new Set())
+            return
+        }
+
+        let cancelled = false
+        async function cargarEstadoEntreno() {
+            setEstadoError('')
+            try {
+                const res = await fetch(`/api/cliente/${codigo}/entreno-estado?plan_id=${entreno?.id}`)
+                if (!res.ok) throw new Error('No se pudo cargar el estado')
+                const data = await res.json() as { completadas?: string[] }
+                if (!cancelled) setSesionesHechas(new Set(data.completadas ?? []))
+            } catch {
+                if (!cancelled) setEstadoError('No se ha podido sincronizar el progreso de entrenamiento.')
+            }
+        }
+
+        cargarEstadoEntreno()
+        return () => { cancelled = true }
+    }, [codigo, entreno?.id])
+
+    async function marcarSesion(sesionId: string, nombre: string) {
+        if (sesionesHechas.has(sesionId) || savingSesionId) return
+        setSavingSesionId(sesionId)
+        setEstadoError('')
+        try {
+            const res = await fetch(`/api/cliente/${codigo}/completar-sesion`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sesion_id: sesionId }),
+            })
+            if (!res.ok) throw new Error('No se pudo guardar')
+            setSesionesHechas(prev => {
+                const next = new Set(prev)
+                next.add(sesionId)
+                return next
+            })
+            onSesion(nombre)
+        } catch {
+            setEstadoError('No se ha podido marcar la sesión como hecha. Inténtalo de nuevo.')
+        } finally {
+            setSavingSesionId(null)
+        }
     }
 
     return (
@@ -270,6 +304,11 @@ function EntrenoCliente({
                             <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{resumenSemana.minutosPlanificados || '—'}</p>
                         </div>
                     </div>
+                    {estadoError && (
+                        <p className="mt-3 rounded-2xl px-3 py-2 text-xs" style={{ background: 'var(--semantic-alert-bg)', color: 'var(--semantic-alert)', border: '1px solid var(--semantic-alert-border)' }}>
+                            {estadoError}
+                        </p>
+                    )}
                 </div>
 
                 {sesionPrincipal ? (
@@ -299,10 +338,11 @@ function EntrenoCliente({
                                 <button
                                     type="button"
                                     onClick={() => marcarSesion(sesionPrincipal.id, sesionPrincipal.nombre)}
+                                    disabled={sesionPrincipal.completada || savingSesionId === sesionPrincipal.id}
                                     className="rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
                                     style={{ background: sesionPrincipal.completada ? '#DCFCE7' : 'var(--bg)', border: '1px solid var(--border)', color: sesionPrincipal.completada ? '#16A34A' : 'var(--text)' }}
                                 >
-                                    {sesionPrincipal.completada ? 'Hecha' : 'Marcar hecha'}
+                                    {savingSesionId === sesionPrincipal.id ? 'Guardando...' : sesionPrincipal.completada ? 'Hecha' : 'Marcar hecha'}
                                 </button>
                             </div>
                         </div>
@@ -382,10 +422,11 @@ function EntrenoCliente({
                                     </div>
                                     <button
                                         onClick={() => marcarSesion(sesion.id, sesion.nombre)}
+                                        disabled={sesionesHechas.has(sesion.id) || savingSesionId === sesion.id}
                                         className="shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold"
                                         style={{ background: sesionesHechas.has(sesion.id) ? '#DCFCE7' : 'var(--primary-bg)', color: sesionesHechas.has(sesion.id) ? '#16A34A' : 'var(--primary)' }}
                                     >
-                                        {sesionesHechas.has(sesion.id) ? 'Hecha' : 'Hecho'}
+                                        {savingSesionId === sesion.id ? '...' : sesionesHechas.has(sesion.id) ? 'Hecha' : 'Hecho'}
                                     </button>
                                 </div>
                                 {(sesion.ejercicios ?? []).length > 0 && (

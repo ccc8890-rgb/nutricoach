@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { crearClienteWeekSummary } from '../lib/training/client-week'
+import { aplicarSesionesCompletadas, crearClienteWeekSummary } from '../lib/training/client-week'
 
 const summary = crearClienteWeekSummary({
   sesiones: [
@@ -21,5 +21,12 @@ assert.equal(summary.mensajeCliente, 'Hoy toca Hyrox engine. Ejecuta con control
 const empty = crearClienteWeekSummary({ sesiones: [] })
 assert.equal(empty.estadoSemana, 'sin_plan')
 assert.equal(empty.mensajeCliente, 'Tu coach todavía no ha cargado sesiones para esta semana.')
+
+const sesionesPersistidas = aplicarSesionesCompletadas([
+  { id: 's1', nombre: 'Fuerza full body', dia_semana: 'Lunes', duracion_estimada_min: 55, ejercicios_count: 6, completada: false, esHoy: false },
+  { id: 's2', nombre: 'Hyrox engine', dia_semana: 'Miércoles', duracion_estimada_min: 45, ejercicios_count: 5, completada: false, esHoy: true },
+], ['s2'])
+assert.equal(sesionesPersistidas[0].completada, false)
+assert.equal(sesionesPersistidas[1].completada, true)
 
 console.log('training client week tests passed')

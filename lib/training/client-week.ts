@@ -59,3 +59,14 @@ export function crearClienteWeekSummary({ sesiones }: { sesiones: ClienteWeekSes
     mensajeCliente,
   }
 }
+
+export function aplicarSesionesCompletadas(
+  sesiones: ClienteWeekSession[],
+  completadasIds: string[]
+): ClienteWeekSession[] {
+  const completadas = new Set(completadasIds)
+  return sesiones.map(sesion => ({
+    ...sesion,
+    completada: completadas.has(sesion.id),
+  }))
+}
