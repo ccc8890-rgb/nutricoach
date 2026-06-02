@@ -14,6 +14,7 @@ import {
   Video,
 } from 'lucide-react'
 import { calcularEjercicioQuality } from '@/lib/training/workspace'
+import { crearExerciseLibraryQueue } from '@/lib/training/exercise-library'
 
 interface Ejercicio {
   id: string
@@ -174,6 +175,7 @@ export default function EjerciciosMediaPage() {
     if (qualityFilter === 'completos') return ejercicios.filter(isCompleto)
     return ejercicios
   }, [ejercicios, qualityFilter])
+  const assetQueue = useMemo(() => crearExerciseLibraryQueue(ejercicios), [ejercicios])
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 space-y-5">
@@ -228,7 +230,7 @@ export default function EjerciciosMediaPage() {
 
       {!loading && (
         <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))' }}>
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
                 Exercise asset system
@@ -239,12 +241,50 @@ export default function EjerciciosMediaPage() {
               <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 La calidad se mide por vídeo, foto, dificultad, equipamiento y músculos secundarios. Los gaps indican qué falta para que el cliente pueda ejecutar sin explicación extra.
               </p>
+              <div className="mt-4 grid grid-cols-3 gap-2 max-w-md">
+                <div className="rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Readiness</p>
+                  <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{assetQueue.assetReadinessPct}%</p>
+                </div>
+                <div className="rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Completos</p>
+                  <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{assetQueue.completos}</p>
+                </div>
+                <div className="rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Prioridad</p>
+                  <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{assetQueue.prioritarios.length}</p>
+                </div>
+              </div>
             </div>
             <div className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Siguiente mejora</p>
-              <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                Añadir cues técnicos, errores comunes, regresiones, progresiones y sustitutos por lesión/equipamiento.
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Cola prioritaria</p>
+                <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{assetQueue.prioritarios.length} ejercicios</span>
+              </div>
+              <div className="mt-3 space-y-2">
+                {assetQueue.prioritarios.length > 0 ? assetQueue.prioritarios.map(item => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      const ejercicio = ejercicios.find(e => e.id === item.id)
+                      if (ejercicio) toggleExpand(item.id, ejercicio)
+                    }}
+                    className="w-full rounded-xl border px-3 py-2 text-left transition-colors"
+                    style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-xs font-semibold" style={{ color: 'var(--text)' }}>{item.nombre}</p>
+                      <span className="text-[11px] font-semibold" style={{ color: 'var(--semantic-warn)' }}>{item.score}%</span>
+                    </div>
+                    <p className="mt-0.5 line-clamp-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
+                  </button>
+                )) : (
+                  <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                    Todos los ejercicios visibles tienen media y metadatos suficientes para sesión móvil.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </section>
