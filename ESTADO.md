@@ -143,7 +143,7 @@ Cuando el coach aprueba una tarea en el kanban, se ejecuta:
 ### 🟠 Media prioridad
 | Tarea | Contexto |
 |-------|---------|
-| Bug `prs_por_ejercicio` usa `sets_ejecutados -> 0` | Siempre lee el primer set, no el más pesado |
+| ✅ Bug `prs_por_ejercicio` verificado | Supabase remoto usa `s.set_data ->> 'peso_kg'`; no requiere SQL adicional. Verificado 02-06-2026 |
 | 147 imágenes malas regenerar con gpt-image-1 | `node scripts/regenerar-imagenes-malas.mjs --genera` |
 | Registro comidas (S3) pendiente | DEEPSEEK_S3_registro_comidas.md en salidas/ |
 | Estética portal S4 | DEEPSEEK_S4_estetica_portal.md en salidas/ |
