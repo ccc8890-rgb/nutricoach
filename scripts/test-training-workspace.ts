@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import {
   calcularEjercicioQuality,
   calcularPlantillaQuality,
+  crearCoachDeskPlan,
   crearDecisionSummary,
   crearSesionGuidance,
   crearTrainingRoomSummary,
@@ -108,5 +109,16 @@ const decision = crearDecisionSummary({
 assert.equal(decision.risk, 'alto')
 assert.equal(decision.intent, 'Intervenir antes de la próxima sesión')
 assert.ok(decision.checklist.includes('Revisar señales y evidencia'))
+
+const coachDesk = crearCoachDeskPlan({
+  estado: 'ajustar',
+  hasPlan: true,
+  hasPerfil: false,
+  accionesCount: 2,
+  fuentesExternasCount: 0,
+})
+assert.equal(coachDesk.phase, 'Decisión')
+assert.equal(coachDesk.primaryAction, 'Revisar IA')
+assert.ok(coachDesk.blockers.includes('Completar perfil atleta'))
 
 console.log('training workspace tests passed')

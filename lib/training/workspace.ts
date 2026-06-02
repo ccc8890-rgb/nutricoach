@@ -64,6 +64,22 @@ export interface DecisionSummary {
   checklist: string[]
 }
 
+export interface CoachDeskPlanInput {
+  estado: 'descarga' | 'ajustar' | 'progresar' | 'base'
+  hasPlan: boolean
+  hasPerfil: boolean
+  accionesCount: number
+  fuentesExternasCount: number
+}
+
+export interface CoachDeskPlan {
+  phase: string
+  nextStep: string
+  primaryAction: string
+  secondaryAction: string
+  blockers: string[]
+}
+
 function clampScore(score: number) {
   return Math.max(0, Math.min(100, score))
 }
@@ -261,4 +277,60 @@ export function crearDecisionSummary(input: DecisionSummaryInput): DecisionSumma
   ]
 
   return { risk, intent, checklist }
+}
+
+export function crearCoachDeskPlan(input: CoachDeskPlanInput): CoachDeskPlan {
+  const blockers = [
+    !input.hasPlan ? 'Asignar o crear plan activo' : null,
+    !input.hasPerfil ? 'Completar perfil atleta' : null,
+    input.fuentesExternasCount === 0 ? 'Conectar o revisar datos externos si el cliente los usa' : null,
+  ].filter((item): item is string => Boolean(item))
+
+  if (!input.hasPlan) {
+    return {
+      phase: 'Setup',
+      nextStep: 'Crear estructura base antes de analizar carga',
+      primaryAction: 'Asignar plantilla',
+      secondaryAction: 'Abrir builder',
+      blockers,
+    }
+  }
+
+  if (input.estado === 'descarga') {
+    return {
+      phase: 'Control',
+      nextStep: 'Reducir fricción y proteger recuperación esta semana',
+      primaryAction: 'Ajustar volumen',
+      secondaryAction: 'Enviar pauta al cliente',
+      blockers,
+    }
+  }
+
+  if (input.estado === 'ajustar' || input.accionesCount > 0) {
+    return {
+      phase: 'Decisión',
+      nextStep: 'Validar señales y aplicar solo el ajuste con más impacto',
+      primaryAction: 'Revisar IA',
+      secondaryAction: 'Editar plan',
+      blockers,
+    }
+  }
+
+  if (input.estado === 'progresar') {
+    return {
+      phase: 'Progresión',
+      nextStep: 'Subir estímulo manteniendo técnica y RPE objetivo',
+      primaryAction: 'Programar progresión',
+      secondaryAction: 'Revisar historial',
+      blockers,
+    }
+  }
+
+  return {
+    phase: 'Base',
+    nextStep: 'Mantener estructura y esperar nuevos datos de ejecución',
+    primaryAction: 'Actualizar análisis',
+    secondaryAction: 'Revisar semana',
+    blockers,
+  }
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import {
   Activity,
@@ -14,6 +15,7 @@ import {
   Target,
   Zap,
 } from 'lucide-react'
+import { crearCoachDeskPlan } from '@/lib/training/workspace'
 
 type Tone = 'critico' | 'atencion' | 'ok' | 'neutro'
 
@@ -210,6 +212,13 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
   const decisionTone = toneStyle(decisionTraining.tono)
   const ajusteVolumen = decisionTraining.microciclo.ajuste_volumen_pct
   const ajusteLabel = ajusteVolumen > 0 ? `+${ajusteVolumen}%` : `${ajusteVolumen}%`
+  const coachDesk = crearCoachDeskPlan({
+    estado: decisionTraining.estado,
+    hasPlan: Boolean(data.plan),
+    hasPerfil: Boolean(data.perfil),
+    accionesCount: decisionTraining.acciones.length,
+    fuentesExternasCount: decisionTraining.fuentes.externas_sesiones,
+  })
 
   return (
     <section className="rounded-2xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -229,6 +238,14 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
           </div>
 
           <div className="flex flex-wrap gap-2">
+            {data.plan && (
+              <Link href={`/entrenos/${data.plan.id}?returnTo=/clientes/${clienteId}`} className="btn-secondary btn-sm">
+                <Dumbbell size={13} /> Abrir plan
+              </Link>
+            )}
+            <Link href="/entrenos/brain-ia" className="btn-secondary btn-sm">
+              <Brain size={13} /> Bandeja IA
+            </Link>
             <button className="btn-secondary btn-sm" onClick={load}>
               <RefreshCw size={13} /> Actualizar
             </button>
@@ -248,6 +265,37 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-4 p-4 sm:p-5">
         <div className="space-y-4">
+          <div className="rounded-xl p-4" style={{ background: 'rgba(201,169,110,0.08)', border: '1px solid rgba(201,169,110,0.22)' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-4 lg:items-center">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="px-2 py-1 rounded-lg text-[11px] font-bold uppercase tracking-[0.12em]" style={{ background: 'rgba(201,169,110,0.14)', color: 'rgb(201,169,110)', border: '1px solid rgba(201,169,110,0.28)' }}>
+                    {coachDesk.phase}
+                  </span>
+                  <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Siguiente paso del coach</span>
+                </div>
+                <p className="text-base font-semibold leading-tight" style={{ color: 'var(--text)' }}>{coachDesk.nextStep}</p>
+                {coachDesk.blockers.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-3">
+                    {coachDesk.blockers.map(blocker => (
+                      <span key={blocker} className="px-2 py-1 rounded-lg text-[11px]" style={{ background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                        {blocker}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2 lg:justify-end">
+                <Link href={data.plan ? `/entrenos/${data.plan.id}?returnTo=/clientes/${clienteId}` : `/entrenos/nueva?cliente=${clienteId}`} className="btn-primary btn-sm">
+                  {coachDesk.primaryAction}
+                </Link>
+                <Link href={coachDesk.primaryAction === 'Revisar IA' ? '/entrenos/brain-ia' : `/entrenos/nueva?cliente=${clienteId}`} className="btn-secondary btn-sm">
+                  {coachDesk.secondaryAction}
+                </Link>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
             <Metric label="Disciplina" value={modalidad} icon={Route} tooltip="Modalidad principal del perfil atleta. Sirve para filtrar plantillas y decidir qué tipo de carga priorizar." />
             <Metric label="Semana" value={`${data.rendimiento.sesiones_7d}/${data.rendimiento.sesiones_objetivo_semana ?? '-'} sesiones`} icon={Dumbbell} tooltip="Sesiones registradas en los últimos 7 días frente al objetivo semanal del plan activo." />
