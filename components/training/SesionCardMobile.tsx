@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Brain, CheckCircle2, ChevronLeft, ChevronRight, Circle, History, Pause, Play, RotateCcw, Save } from 'lucide-react'
 import SetRegistroSheet from './SetRegistroSheet'
 import EjercicioDemoModal from './EjercicioDemoModal'
+import { crearSessionProgressSummary } from '@/lib/training/session-progress'
 
 export interface SetData {
   kg: number
@@ -76,6 +77,12 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
   const totalSets = ejercicios.reduce((a, e) => a + e.series, 0)
   const hechos = Object.values(setsMap).flatMap(s => s).filter(s => s.hecho).length
   const progreso = totalSets > 0 ? hechos / totalSets : 0
+  const progressSummary = crearSessionProgressSummary({
+    totalExercises: ejercicios.length,
+    currentExerciseIndex: ejIdx,
+    totalSets,
+    completedSets: hechos,
+  })
   const descanso = ej.descanso_segundos ?? 90
   const setsCompletados = Object.values(setsMap).flatMap(s => s).filter(s => s.hecho)
   const volumenTotal = Math.round(setsCompletados.reduce((acc, set) => acc + (set.kg * set.reps), 0))
@@ -211,6 +218,19 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
 
       {/* Card del ejercicio */}
       <div className="mx-4 rounded-2xl p-5 flex-1 flex flex-col" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="mb-4 rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+              {progressSummary.phase.replace('_', ' ')}
+            </p>
+            <p className="font-data text-xs font-semibold" style={{ color: 'var(--text)' }}>
+              {progressSummary.percent}% · {hechos}/{totalSets} sets
+            </p>
+          </div>
+          <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {progressSummary.message}
+          </p>
+        </div>
         <div className="flex items-start justify-between mb-1">
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{ej.grupo_muscular}</span>
           <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}>
