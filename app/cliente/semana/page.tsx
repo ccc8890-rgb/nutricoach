@@ -11,7 +11,9 @@ import {
   Eye,
   Loader2,
   Play,
+  Target,
 } from 'lucide-react'
+import { crearClienteWeekSummary } from '@/lib/training/client-week'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const
 const DIAS_ABR: Record<string, string> = {
@@ -198,9 +200,8 @@ export default function VistaSemanalClientePage() {
     load()
   }, [todayISO, weekEndISO, weekStart])
 
-  const sesionesHechas = sesiones.filter(s => s.completada).length
-  const minutosSemana = sesiones.reduce((total, s) => total + (s.duracion_estimada_min ?? 0), 0)
-  const hoy = sesiones.find(s => s.esHoy)
+  const resumenSemana = useMemo(() => crearClienteWeekSummary({ sesiones }), [sesiones])
+  const sesionPrincipal = resumenSemana.sesionPrincipal
 
   return (
     <div className="min-h-screen px-4 pb-8 pt-4" style={{ background: 'var(--bg)' }}>
@@ -236,8 +237,8 @@ export default function VistaSemanalClientePage() {
               <h2 className="mt-1 truncate text-lg font-bold" style={{ color: 'var(--text)' }}>
                 {planNombre || 'Tu plan de entrenamiento'}
               </h2>
-              <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-                {hoy ? `Hoy toca ${hoy.nombre}` : 'Hoy no hay sesión programada'}
+              <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                {resumenSemana.mensajeCliente}
               </p>
             </div>
             <div
@@ -248,20 +249,76 @@ export default function VistaSemanalClientePage() {
             </div>
           </div>
 
+          <div className="mt-5 rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>Progreso semanal</p>
+                <p className="mt-1 text-2xl font-black tabular-nums" style={{ color: 'var(--text)' }}>{resumenSemana.progresoPct}%</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>{resumenSemana.completadas}/{resumenSemana.totalSesiones}</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>sesiones hechas</p>
+              </div>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full" style={{ background: 'rgba(128,128,128,0.14)' }}>
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{ width: `${resumenSemana.progresoPct}%`, background: 'var(--accent)' }}
+              />
+            </div>
+          </div>
+
           <div className="mt-5 grid grid-cols-3 gap-2">
             <div className="rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{sesiones.length}</p>
+              <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{resumenSemana.totalSesiones}</p>
               <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>sesiones</p>
             </div>
             <div className="rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-lg font-bold" style={{ color: 'var(--semantic-active)' }}>{sesionesHechas}</p>
-              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>hechas</p>
+              <p className="text-lg font-bold" style={{ color: 'var(--semantic-active)' }}>{resumenSemana.pendientes}</p>
+              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>pendientes</p>
             </div>
             <div className="rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{minutosSemana || '-'}</p>
+              <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{resumenSemana.minutosPlanificados || '-'}</p>
               <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>min plan</p>
             </div>
           </div>
+
+          {sesionPrincipal && (
+            <div className="mt-5 rounded-3xl p-4" style={{ background: 'rgba(201,169,110,0.10)', border: '1px solid rgba(201,169,110,0.24)' }}>
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl" style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
+                  <Target size={19} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+                    {sesionPrincipal.esHoy ? 'Sesión de hoy' : 'Próxima sesión'}
+                  </p>
+                  <h3 className="mt-1 truncate text-base font-bold" style={{ color: 'var(--text)' }}>{sesionPrincipal.nombre}</h3>
+                  <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {sesionPrincipal.dia_semana || 'Sesión'} · {sesionPrincipal.ejercicios_count} ejercicios{sesionPrincipal.duracion_estimada_min ? ` · ${sesionPrincipal.duracion_estimada_min} min` : ''}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Link
+                  href={`/cliente/sesion/${sesionPrincipal.id}`}
+                  className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
+                  style={{ background: 'var(--accent)', color: 'var(--bg)' }}
+                >
+                  <Play size={13} fill="currentColor" />
+                  Empezar
+                </Link>
+                <Link
+                  href={`/cliente/sesion/${sesionPrincipal.id}?modo=solo-ver`}
+                  className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                >
+                  <Eye size={13} />
+                  Revisar
+                </Link>
+              </div>
+            </div>
+          )}
 
           <div className="mt-5 flex items-center gap-1.5">
             {DIAS.map(dia => {
