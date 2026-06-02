@@ -5,6 +5,7 @@ import {
   crearCoachDeskPlan,
   crearDecisionSummary,
   crearDecisionTrace,
+  crearTrainingCockpitCards,
   crearSesionGuidance,
   crearTrainingRoomSummary,
 } from '../lib/training/workspace'
@@ -185,5 +186,36 @@ const coachDesk = crearCoachDeskPlan({
 assert.equal(coachDesk.phase, 'Decisión')
 assert.equal(coachDesk.primaryAction, 'Revisar IA')
 assert.ok(coachDesk.blockers.includes('Completar perfil atleta'))
+
+const cockpit = crearTrainingCockpitCards({
+  hasPlan: true,
+  hasPerfil: false,
+  tareasPendientesCount: 2,
+  adherenciaPct: 62,
+  sesiones7d: 2,
+  sesionesObjetivo: 4,
+})
+assert.equal(cockpit.length, 4)
+assert.equal(cockpit[0].label, 'Plan')
+assert.equal(cockpit[0].tone, 'ok')
+assert.equal(cockpit[1].label, 'Perfil')
+assert.equal(cockpit[1].tone, 'warn')
+assert.equal(cockpit[2].label, 'IA')
+assert.equal(cockpit[2].value, '2 pendientes')
+assert.equal(cockpit[2].tone, 'warn')
+assert.equal(cockpit[3].label, 'Adherencia')
+assert.equal(cockpit[3].tone, 'warn')
+
+const cockpitSinPlan = crearTrainingCockpitCards({
+  hasPlan: false,
+  hasPerfil: false,
+  tareasPendientesCount: 0,
+  adherenciaPct: null,
+  sesiones7d: 0,
+  sesionesObjetivo: null,
+})
+assert.equal(cockpitSinPlan[0].tone, 'alert')
+assert.equal(cockpitSinPlan[0].action, 'Crear plan')
+assert.equal(cockpitSinPlan[3].value, 'Sin objetivo')
 
 console.log('training workspace tests passed')

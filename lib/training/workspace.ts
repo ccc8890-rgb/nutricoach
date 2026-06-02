@@ -101,6 +101,22 @@ export interface CoachDeskPlan {
   blockers: string[]
 }
 
+export interface TrainingCockpitInput {
+  hasPlan: boolean
+  hasPerfil: boolean
+  tareasPendientesCount: number
+  adherenciaPct: number | null
+  sesiones7d: number
+  sesionesObjetivo: number | null
+}
+
+export interface TrainingCockpitCard {
+  label: string
+  value: string
+  tone: 'ok' | 'warn' | 'alert' | 'neutral'
+  action: string
+}
+
 function clampScore(score: number) {
   return Math.max(0, Math.min(100, score))
 }
@@ -409,4 +425,43 @@ export function crearCoachDeskPlan(input: CoachDeskPlanInput): CoachDeskPlan {
     secondaryAction: 'Revisar semana',
     blockers,
   }
+}
+
+export function crearTrainingCockpitCards(input: TrainingCockpitInput): TrainingCockpitCard[] {
+  const adherenciaLabel = input.adherenciaPct === null
+    ? 'Sin objetivo'
+    : `${input.adherenciaPct}%`
+
+  const adherenciaTone: TrainingCockpitCard['tone'] = input.adherenciaPct === null
+    ? 'neutral'
+    : input.adherenciaPct < 70
+      ? 'warn'
+      : 'ok'
+
+  return [
+    {
+      label: 'Plan',
+      value: input.hasPlan ? 'Activo' : 'Sin plan',
+      tone: input.hasPlan ? 'ok' : 'alert',
+      action: input.hasPlan ? 'Abrir plan' : 'Crear plan',
+    },
+    {
+      label: 'Perfil',
+      value: input.hasPerfil ? 'Atleta completo' : 'Incompleto',
+      tone: input.hasPerfil ? 'ok' : 'warn',
+      action: input.hasPerfil ? 'Revisar perfil' : 'Completar perfil',
+    },
+    {
+      label: 'IA',
+      value: input.tareasPendientesCount > 0 ? `${input.tareasPendientesCount} pendientes` : 'Sin pendientes',
+      tone: input.tareasPendientesCount > 0 ? 'warn' : 'ok',
+      action: input.tareasPendientesCount > 0 ? 'Revisar IA' : 'Analizar',
+    },
+    {
+      label: 'Adherencia',
+      value: input.sesionesObjetivo ? `${input.sesiones7d}/${input.sesionesObjetivo} · ${adherenciaLabel}` : adherenciaLabel,
+      tone: adherenciaTone,
+      action: adherenciaTone === 'warn' ? 'Simplificar semana' : 'Mantener',
+    },
+  ]
 }

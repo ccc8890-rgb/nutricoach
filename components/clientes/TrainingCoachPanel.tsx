@@ -15,7 +15,7 @@ import {
   Target,
   Zap,
 } from 'lucide-react'
-import { crearCoachDeskPlan } from '@/lib/training/workspace'
+import { crearCoachDeskPlan, crearTrainingCockpitCards } from '@/lib/training/workspace'
 
 type Tone = 'critico' | 'atencion' | 'ok' | 'neutro'
 
@@ -131,6 +131,13 @@ function Metric({ label, value, icon: Icon, tooltip }: { label: string; value: s
   )
 }
 
+function cockpitToneStyle(tone: 'ok' | 'warn' | 'alert' | 'neutral') {
+  if (tone === 'alert') return { border: 'var(--semantic-alert-border)', bg: 'var(--semantic-alert-bg)', fg: 'var(--semantic-alert)' }
+  if (tone === 'warn') return { border: 'var(--semantic-warn-border)', bg: 'var(--semantic-warn-bg)', fg: 'var(--semantic-warn)' }
+  if (tone === 'ok') return { border: 'var(--semantic-active-border)', bg: 'var(--semantic-active-bg)', fg: 'var(--semantic-active)' }
+  return { border: 'var(--border)', bg: 'var(--bg)', fg: 'var(--text-muted)' }
+}
+
 export default function TrainingCoachPanel({ clienteId }: { clienteId: string }) {
   const [data, setData] = useState<TrainingOSData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -219,6 +226,14 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
     accionesCount: decisionTraining.acciones.length,
     fuentesExternasCount: decisionTraining.fuentes.externas_sesiones,
   })
+  const cockpitCards = crearTrainingCockpitCards({
+    hasPlan: Boolean(data.plan),
+    hasPerfil: Boolean(data.perfil),
+    tareasPendientesCount: data.tareas_pendientes.length,
+    adherenciaPct: data.rendimiento.adherencia_7d_pct,
+    sesiones7d: data.rendimiento.sesiones_7d,
+    sesionesObjetivo: data.rendimiento.sesiones_objetivo_semana,
+  })
 
   return (
     <section className="rounded-2xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -265,6 +280,22 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-4 p-4 sm:p-5">
         <div className="space-y-4">
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-2">
+            {cockpitCards.map(card => {
+              const cardTone = cockpitToneStyle(card.tone)
+              return (
+                <div key={card.label} className="rounded-xl border p-3" style={{ borderColor: cardTone.border, background: cardTone.bg }}>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{card.label}</p>
+                    <span className="h-2 w-2 rounded-full" style={{ background: cardTone.fg }} />
+                  </div>
+                  <p className="mt-2 text-sm font-semibold leading-tight" style={{ color: 'var(--text)' }}>{card.value}</p>
+                  <p className="mt-1 text-[11px] font-medium" style={{ color: cardTone.fg }}>{card.action}</p>
+                </div>
+              )
+            })}
+          </div>
+
           <div className="rounded-xl p-4" style={{ background: 'rgba(201,169,110,0.08)', border: '1px solid rgba(201,169,110,0.22)' }}>
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-4 lg:items-center">
               <div className="min-w-0">
