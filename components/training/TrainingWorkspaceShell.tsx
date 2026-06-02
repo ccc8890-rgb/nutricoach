@@ -100,7 +100,7 @@ export default function TrainingWorkspaceShell({ children }: { children: ReactNo
           WebkitBackdropFilter: 'blur(18px)',
         }}
       >
-        <div className="mx-auto flex max-w-[1500px] flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="mr-auto flex w-full max-w-[1500px] flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <div
               className="hidden h-11 w-11 items-center justify-center rounded-2xl border sm:flex"
@@ -148,7 +148,7 @@ export default function TrainingWorkspaceShell({ children }: { children: ReactNo
           </div>
         </div>
 
-        <div className="mx-auto mt-3 flex max-w-[1500px] gap-2 overflow-x-auto pb-1 lg:hidden">
+        <div className="mr-auto mt-3 flex w-full max-w-[1500px] gap-2 overflow-x-auto pb-1 lg:hidden">
           {MODES.map(mode => {
             const active = currentMode.key === mode.key
             const Icon = mode.icon
@@ -171,7 +171,7 @@ export default function TrainingWorkspaceShell({ children }: { children: ReactNo
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-[1500px] lg:grid-cols-[216px_minmax(0,1fr)]">
+      <div className="mr-auto grid w-full max-w-[1500px] lg:grid-cols-[216px_minmax(0,1fr)]">
         <aside
           className="sticky top-[84px] hidden h-[calc(100dvh-84px)] border-r p-3 lg:block"
           style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}
