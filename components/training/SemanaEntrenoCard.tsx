@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { ChevronRight, Dumbbell, Zap, CheckCircle2, Loader2, Play } from 'lucide-react'
+import { ChevronRight, Dumbbell, Zap, CheckCircle2, Play } from 'lucide-react'
 import Link from 'next/link'
 import { getRecomendacionDescanso } from '@/lib/entrenos/descanso'
 
@@ -34,7 +34,6 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
   const [sesiones, setSesiones] = useState<SesionSemana[]>([])
   const [loading, setLoading] = useState(true)
   const [completadasHoy, setCompletadasHoy] = useState<Set<string>>(new Set())
-  const [completandoId, setCompletandoId] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -78,30 +77,6 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
     }
     if (planId) fetchEstado()
   }, [planId])
-
-  async function completarSesion(sesionId: string) {
-    setCompletandoId(sesionId)
-    try {
-      const res = await fetch('/api/entrenos/completar-sesion-rapida', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sesion_id: sesionId }),
-      })
-      if (!res.ok) {
-        const err = await res.json()
-        console.error('[completar]', err)
-        return
-      }
-      const data = await res.json()
-      if (data.ok) {
-        setCompletadasHoy(prev => new Set(prev).add(sesionId))
-      }
-    } catch {
-      // silent
-    } finally {
-      setCompletandoId(null)
-    }
-  }
 
   if (loading) return (
     <div className="rounded-2xl p-4 animate-pulse" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -152,15 +127,6 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
     return { background: 'rgba(128,128,128,0.08)', color: 'var(--text-muted)' }
   }
 
-  function dayDotIcon(dia: string) {
-    const sesionDelDia = sesionesOrdenadas.find(s => s.dia_semana === dia)
-    if (!sesionDelDia) return null
-    if (completadasHoy.has(sesionDelDia.id)) {
-      return <CheckCircle2 size={12} style={{ color: 'var(--semantic-active)' }} />
-    }
-    return null
-  }
-
   return (
     <div
       className="rounded-2xl overflow-hidden"
@@ -191,11 +157,10 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
       {/* Day dots row */}
       <div className="px-4 py-3">
         <div className="flex items-center gap-1.5 mb-2">
-          {(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const).map(dia => {
-            const hasSesion = diasConSesion.has(dia)
-            const isToday = dia === TODAY_NAME
-            const sesionDelDia = sesionesOrdenadas.find(s => s.dia_semana === dia)
-            const estaCompletada = sesionDelDia ? completadasHoy.has(sesionDelDia.id) : false
+            {(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const).map(dia => {
+              const hasSesion = diasConSesion.has(dia)
+              const sesionDelDia = sesionesOrdenadas.find(s => s.dia_semana === dia)
+              const estaCompletada = sesionDelDia ? completadasHoy.has(sesionDelDia.id) : false
             return (
               <div
                 key={dia}
@@ -303,49 +268,19 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                     style={{ background: 'var(--accent)', color: 'white' }}
                   >
                     <Play size={11} />
-                    Empezar
+                    Empezar entreno
                   </span>
                 ) : (
                   <span
                     className="text-xs font-semibold px-2.5 py-1 rounded-full"
                     style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }}
                   >
-                    Iniciar
+                    Ver entreno
                   </span>
                 )}
                 <ChevronRight size={14} style={{ color: nextSessionCompleted ? 'var(--semantic-active)' : 'var(--semantic-info)' }} />
               </div>
             </Link>
-
-            {/* Quick-complete button for next session (only if not completed and has exercises) */}
-            {!nextSessionCompleted && nextSession.ejercicios_count > 0 && (
-              <div className="px-3.5 pb-3 pt-1">
-                <button
-                  onClick={() => completarSesion(nextSession.id)}
-                  disabled={completandoId === nextSession.id}
-                  className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg font-medium transition-all active:scale-[0.98]"
-                  style={{
-                    background: 'transparent',
-                    border: '1px dashed var(--semantic-info-border)',
-                    color: 'var(--semantic-info)',
-                  }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--semantic-info-bg)'
-                      ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed var(--semantic-info-border)'
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                      ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed var(--semantic-info-border)'
-                  }}
-                >
-                  {completandoId === nextSession.id ? (
-                    <><Loader2 size={12} className="animate-spin" /> Completando…</>
-                  ) : (
-                    <><CheckCircle2 size={12} /> Completar sesión rápida</>
-                  )}
-                </button>
-              </div>
-            )}
           </div>
         )}
 
@@ -395,35 +330,6 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                     )}
                   </Link>
 
-                  {/* Quick-complete for non-completed sessions */}
-                  {!completada && s.ejercicios_count > 0 && (
-                    <button
-                      onClick={() => completarSesion(s.id)}
-                      disabled={completandoId === s.id}
-                      className="ml-9 mr-2 mb-1 flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded-lg font-medium transition-all active:scale-[0.98]"
-                      style={{
-                        background: 'rgba(128,128,128,0.04)',
-                        border: '1px dashed rgba(128,128,128,0.2)',
-                        color: 'var(--text-muted)',
-                      }}
-                      onMouseEnter={e => {
-                        (e.currentTarget as HTMLButtonElement).style.background = 'var(--semantic-info-bg)'
-                          ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed var(--semantic-info-border)'
-                          ; (e.currentTarget as HTMLButtonElement).style.color = 'var(--semantic-info)'
-                      }}
-                      onMouseLeave={e => {
-                        (e.currentTarget as HTMLButtonElement).style.background = 'rgba(128,128,128,0.04)'
-                          ; (e.currentTarget as HTMLButtonElement).style.border = '1px dashed rgba(128,128,128,0.2)'
-                          ; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'
-                      }}
-                    >
-                      {completandoId === s.id ? (
-                        <><Loader2 size={10} className="animate-spin" /> Completando…</>
-                      ) : (
-                        <><CheckCircle2 size={10} /> Completar</>
-                      )}
-                    </button>
-                  )}
                 </div>
               )
             })}

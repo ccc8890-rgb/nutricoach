@@ -73,6 +73,18 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
   const sets = setsMap[ej.id] ?? []
   const primerSetPendiente = sets.findIndex(s => !s.hecho)
   const todosEjHechos = sets.every(s => s.hecho)
+  const ejerciciosEstado = ejercicios.map((ejercicio, index) => {
+    const setsEjercicio = setsMap[ejercicio.id] ?? []
+    const hechosEjercicio = setsEjercicio.filter(s => s.hecho).length
+    return {
+      ...ejercicio,
+      index,
+      hechosEjercicio,
+      totalEjercicio: setsEjercicio.length,
+      completado: setsEjercicio.length > 0 && hechosEjercicio === setsEjercicio.length,
+      activo: index === ejIdx,
+    }
+  })
 
   const totalSets = ejercicios.reduce((a, e) => a + e.series, 0)
   const hechos = Object.values(setsMap).flatMap(s => s).filter(s => s.hecho).length
@@ -212,112 +224,175 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
   return (
     <div className="flex flex-col" style={{ minHeight: '100%' }}>
       {/* Barra progreso global */}
-      <div className="h-1 rounded-full mx-4 mt-2 mb-1 overflow-hidden" style={{ background: 'var(--border)' }}>
-        <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{ width: `${progreso * 100}%`, background: 'var(--semantic-active)' }}
-        />
+      <div className="mx-auto w-full max-w-md px-4 pt-4">
+        <div className="overflow-hidden rounded-3xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <div className="px-4 pt-4">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+                  Bloques de entrenamiento
+                </p>
+                <p className="mt-0.5 text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                  {progressSummary.percent}% completado
+                </p>
+              </div>
+              <p className="font-data text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+                {hechos}/{totalSets} sets
+              </p>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full" style={{ background: 'var(--bg-subtle)' }}>
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{ width: `${progreso * 100}%`, background: 'var(--semantic-active)' }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 flex gap-2 overflow-x-auto px-4 pb-4 [-ms-overflow-style:none] [scrollbar-width:none]">
+            {ejerciciosEstado.map(item => (
+              <button
+                key={item.id}
+                onClick={() => setEjIdx(item.index)}
+                className="min-w-[154px] rounded-2xl border px-3 py-3 text-left transition-all active:scale-[0.98]"
+                style={{
+                  borderColor: item.activo
+                    ? 'var(--accent)'
+                    : item.completado
+                      ? 'var(--semantic-active-border)'
+                      : 'var(--border)',
+                  background: item.activo
+                    ? 'rgba(201,169,110,0.12)'
+                    : item.completado
+                      ? 'var(--semantic-active-bg)'
+                      : 'var(--bg)',
+                }}
+                aria-current={item.activo ? 'step' : undefined}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span
+                    className="flex h-7 w-7 items-center justify-center rounded-xl text-xs font-bold"
+                    style={{
+                      background: item.completado ? 'var(--semantic-active-border)' : item.activo ? 'var(--accent)' : 'var(--surface)',
+                      color: item.completado ? 'var(--semantic-active)' : item.activo ? 'var(--bg)' : 'var(--text-muted)',
+                      border: `1px solid ${item.activo ? 'var(--accent)' : 'var(--border)'}`,
+                    }}
+                  >
+                    {item.completado ? <CheckCircle2 size={14} /> : item.index + 1}
+                  </span>
+                  <span className="font-data text-[11px]" style={{ color: item.completado ? 'var(--semantic-active)' : 'var(--text-muted)' }}>
+                    {item.hechosEjercicio}/{item.totalEjercicio}
+                  </span>
+                </div>
+                <p className="mt-2 line-clamp-2 text-xs font-semibold leading-snug" style={{ color: 'var(--text)' }}>
+                  {item.nombre}
+                </p>
+                <p className="mt-1 truncate text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  {item.grupo_muscular || 'Ejercicio'} · {item.series}×{item.repeticiones}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-      <p className="text-center text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-        Ejercicio {ejIdx + 1} / {ejercicios.length}
-      </p>
 
       {/* Card del ejercicio */}
-      <div className="mx-4 rounded-2xl p-5 flex-1 flex flex-col" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-        <div className="mb-4 rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
-              {progressSummary.phase.replace('_', ' ')}
-            </p>
-            <p className="font-data text-xs font-semibold" style={{ color: 'var(--text)' }}>
-              {progressSummary.percent}% · {hechos}/{totalSets} sets
+      <div className="mx-auto mt-4 w-full max-w-md px-4">
+        <div className="rounded-3xl p-5 flex-1 flex flex-col" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+          <div className="mb-4 rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+                {progressSummary.phase.replace('_', ' ')}
+              </p>
+              <p className="font-data text-xs font-semibold" style={{ color: 'var(--text)' }}>
+                {progressSummary.percent}% · {hechos}/{totalSets} sets
+              </p>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              {progressSummary.message}
             </p>
           </div>
-          <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            {progressSummary.message}
-          </p>
-        </div>
-        <div className="flex items-start justify-between mb-1">
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{ej.grupo_muscular}</span>
-          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}>
-            {ej.series}×{ej.repeticiones}
-          </span>
-        </div>
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{ej.nombre}</h2>
-          {(ej.video_url || ej.foto_url) && (
-            <button
-              onClick={() => setDemoAbierto(true)}
-              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full flex-shrink-0 ml-2 font-semibold transition-transform active:scale-[0.97]"
-              style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}
-              aria-label="Ver demostración"
-            >
-              <Play size={11} fill="currentColor" /> Demo
-            </button>
-          )}
-        </div>
-        <div className="flex items-center gap-3 mb-1">
-          {ej.ultimo_peso_kg != null && ej.ultimo_peso_kg > 0 && (
-            <p className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--semantic-info)' }}>
-              <History size={13} /> {ej.ultimo_peso_kg} kg última vez
-            </p>
-          )}
-          {ej.peso_sugerido && (
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Coach: {ej.peso_sugerido}</p>
-          )}
-          {descanso > 0 && (
-            <p className="text-sm ml-auto font-data" style={{ color: 'var(--text-muted)' }}>Desc. {descanso}s</p>
-          )}
-        </div>
-        {ej.contexto_ia && (
-          <div className="flex gap-2 rounded-xl px-3 py-2 mb-3" style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}>
-            <Brain size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--semantic-info)' }} />
-            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{ej.contexto_ia}</p>
+          <div className="flex items-start justify-between mb-1">
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{ej.grupo_muscular}</span>
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}>
+              {ej.series}×{ej.repeticiones}
+            </span>
           </div>
-        )}
-        {ej.instruccion_ejercicio && (
-          <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>{ej.instruccion_ejercicio}</p>
-        )}
-
-        <div className="mb-3 grid grid-cols-2 gap-2">
-          <ExecutionMetric label="Foco" value={executionSummary.focusLabel} />
-          <ExecutionMetric label="Ahora" value={executionSummary.nextSetLabel} />
-          <ExecutionMetric label="Volumen" value={`${executionSummary.volumeKg} kg`} />
-          <ExecutionMetric label="RPE medio" value={executionSummary.averageRpe ?? '—'} />
-        </div>
-
-        {/* Grid de sets */}
-        <div
-          className="grid gap-2 flex-1"
-          style={{ gridTemplateColumns: sets.length <= 3 ? `repeat(${sets.length}, 1fr)` : 'repeat(2, 1fr)' }}
-        >
-          {sets.map((set, i) => {
-            const isActive = !set.hecho && i === primerSetPendiente
-            return (
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>{ej.nombre}</h2>
+            {(ej.video_url || ej.foto_url) && (
               <button
-                key={i}
-                onClick={() => { if (!set.hecho) setSetActivo({ ejId: ej.id, setIdx: i }) }}
-                className="rounded-xl py-3 flex flex-col items-center justify-center transition-all active:scale-[0.98]"
-                style={{
-                  background: set.hecho ? 'var(--semantic-active-bg)' : isActive ? 'var(--semantic-info-bg)' : 'var(--bg)',
-                  border: `1.5px solid ${set.hecho ? 'var(--semantic-active-border)' : isActive ? 'var(--semantic-info)' : 'var(--border)'}`,
-                }}
-                aria-label={`Set ${i + 1}${set.hecho ? ` completado: ${set.kg}kg × ${set.reps} reps` : ''}`}
+                onClick={() => setDemoAbierto(true)}
+                className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full flex-shrink-0 ml-2 font-semibold transition-transform active:scale-[0.97]"
+                style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}
+                aria-label="Ver demostración"
               >
-                <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Set {i + 1}</span>
-                {set.hecho ? (
-                  <>
-                    <span className="text-base font-bold" style={{ color: 'var(--semantic-active)' }}>{set.kg}kg</span>
-                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{set.reps} reps</span>
-                  </>
-                ) : (
-                  isActive
-                    ? <Play size={17} fill="currentColor" style={{ color: 'var(--semantic-info)' }} />
-                    : <Circle size={17} style={{ color: 'var(--border-strong)' }} />
-                )}
+                <Play size={11} fill="currentColor" /> Demo
               </button>
-            )
-          })}
+            )}
+          </div>
+          <div className="flex items-center gap-3 mb-1">
+            {ej.ultimo_peso_kg != null && ej.ultimo_peso_kg > 0 && (
+              <p className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--semantic-info)' }}>
+                <History size={13} /> {ej.ultimo_peso_kg} kg última vez
+              </p>
+            )}
+            {ej.peso_sugerido && (
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Coach: {ej.peso_sugerido}</p>
+            )}
+            {descanso > 0 && (
+              <p className="text-sm ml-auto font-data" style={{ color: 'var(--text-muted)' }}>Desc. {descanso}s</p>
+            )}
+          </div>
+          {ej.contexto_ia && (
+            <div className="flex gap-2 rounded-xl px-3 py-2 mb-3" style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}>
+              <Brain size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--semantic-info)' }} />
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{ej.contexto_ia}</p>
+            </div>
+          )}
+          {ej.instruccion_ejercicio && (
+            <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>{ej.instruccion_ejercicio}</p>
+          )}
+
+          <div className="mb-3 grid grid-cols-2 gap-2">
+            <ExecutionMetric label="Foco" value={executionSummary.focusLabel} />
+            <ExecutionMetric label="Ahora" value={executionSummary.nextSetLabel} />
+            <ExecutionMetric label="Volumen" value={`${executionSummary.volumeKg} kg`} />
+            <ExecutionMetric label="RPE medio" value={executionSummary.averageRpe ?? '—'} />
+          </div>
+
+          {/* Grid de sets */}
+          <div
+            className="grid gap-2 flex-1"
+            style={{ gridTemplateColumns: sets.length <= 3 ? `repeat(${sets.length}, 1fr)` : 'repeat(2, 1fr)' }}
+          >
+            {sets.map((set, i) => {
+              const isActive = !set.hecho && i === primerSetPendiente
+              return (
+                <button
+                  key={i}
+                  onClick={() => { if (!set.hecho) setSetActivo({ ejId: ej.id, setIdx: i }) }}
+                  className="rounded-xl py-3 flex flex-col items-center justify-center transition-all active:scale-[0.98]"
+                  style={{
+                    background: set.hecho ? 'var(--semantic-active-bg)' : isActive ? 'var(--semantic-info-bg)' : 'var(--bg)',
+                    border: `1.5px solid ${set.hecho ? 'var(--semantic-active-border)' : isActive ? 'var(--semantic-info)' : 'var(--border)'}`,
+                  }}
+                  aria-label={`Set ${i + 1}${set.hecho ? ` completado: ${set.kg}kg × ${set.reps} reps` : ''}`}
+                >
+                  <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Set {i + 1}</span>
+                  {set.hecho ? (
+                    <>
+                      <span className="text-base font-bold" style={{ color: 'var(--semantic-active)' }}>{set.kg}kg</span>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{set.reps} reps</span>
+                    </>
+                  ) : (
+                    isActive
+                      ? <Play size={17} fill="currentColor" style={{ color: 'var(--semantic-info)' }} />
+                      : <Circle size={17} style={{ color: 'var(--border-strong)' }} />
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
 

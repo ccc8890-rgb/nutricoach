@@ -1,9 +1,10 @@
 'use client'
 import { useCallback, useEffect, useState, useRef } from 'react'
+import type { ReactNode } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Brain, Loader2, Play, Trophy } from 'lucide-react'
+import { ArrowLeft, Brain, CheckCircle2, Clock3, Dumbbell, Loader2, Play, Target, Trophy } from 'lucide-react'
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
 import EjercicioDemoModal from '@/components/training/EjercicioDemoModal'
 import { crearSesionGuidance } from '@/lib/training/workspace'
@@ -258,10 +259,9 @@ export default function EjecucionSesionPage() {
   })
 
   return (
-    <div className="min-h-screen flex flex-col pb-4" style={{ background: 'var(--bg)' }}>
-      {/* Header */}
+    <div className="min-h-screen flex flex-col pb-6" style={{ background: 'var(--bg)' }}>
       <div
-        className="sticky top-0 z-10 px-4 py-3 flex items-center justify-between"
+        className="sticky top-0 z-10 px-4 py-3"
         style={{
           background: 'var(--glass-bg)',
           backdropFilter: 'blur(20px)',
@@ -270,63 +270,87 @@ export default function EjecucionSesionPage() {
           paddingTop: 'max(env(safe-area-inset-top), 12px)',
         }}
       >
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <Link href="/cliente" style={{ color: 'var(--text-muted)', flexShrink: 0 }} aria-label="Volver">
-            <ArrowLeft size={18} />
-          </Link>
-          <div className="min-w-0">
-            <p className="font-bold text-sm truncate" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
-            {sesion.plan?.nombre && (
-              <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{sesion.plan.nombre}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Toggle pill */}
-        <div
-          className="flex rounded-xl overflow-hidden ml-3 flex-shrink-0"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-        >
-          {(['registrar', 'solo-ver'] as const).map(m => (
-            <button
-              key={m}
-              onClick={() => setModo(m)}
-              className="px-3 py-1.5 text-xs font-semibold transition-all"
-              style={{
-                background: modo === m ? 'var(--accent)' : 'transparent',
-                color: modo === m ? 'var(--bg)' : 'var(--text-muted)',
-              }}
+        <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <Link
+              href="/cliente/semana"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-transform active:scale-[0.96]"
+              style={{ color: 'var(--text-muted)', background: 'var(--surface)', border: '1px solid var(--border)' }}
+              aria-label="Volver a la semana"
             >
-              {m === 'registrar' ? 'Registrar' : 'Solo ver'}
-            </button>
-          ))}
+              <ArrowLeft size={18} />
+            </Link>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+                Portal cliente · Entreno
+              </p>
+              <p className="truncate text-sm font-bold" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+            </div>
+          </div>
+
+          <div
+            className="flex shrink-0 overflow-hidden rounded-2xl"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          >
+            {(['registrar', 'solo-ver'] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => setModo(m)}
+                className="px-3 py-2 text-xs font-semibold transition-all active:scale-[0.98]"
+                style={{
+                  background: modo === m ? 'var(--accent)' : 'transparent',
+                  color: modo === m ? 'var(--bg)' : 'var(--text-muted)',
+                }}
+              >
+                {m === 'registrar' ? 'Registrar' : 'Ver'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1">
         <section className="mx-auto w-full max-w-md px-4 pt-4">
-          <div className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))' }}>
+          <div className="overflow-hidden rounded-[1.75rem] border" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))' }}>
+            <div className="p-5">
             <div className="flex items-start justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
-                  Sesión guiada
+                  Sesión guiada por tu coach
                 </p>
-                <h2 className="mt-1 text-lg font-semibold tracking-tight" style={{ color: 'var(--text)' }}>{guidance.objective}</h2>
+                <h1 className="mt-1 text-2xl font-black tracking-tight" style={{ color: 'var(--text)' }}>{sesion.nombre}</h1>
+                {sesion.plan?.nombre && (
+                  <p className="mt-1 truncate text-xs" style={{ color: 'var(--text-muted)' }}>{sesion.plan.nombre}</p>
+                )}
               </div>
-              <span className="rounded-full border px-2 py-1 text-[11px] font-semibold" style={{ borderColor: 'var(--semantic-info-border)', background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }}>
-                {guidance.mode}
-              </span>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
+                <Dumbbell size={22} />
+              </div>
             </div>
-            <p className="mt-3 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{guidance.coachNote}</p>
+            <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{guidance.coachNote}</p>
             <div className="mt-3 grid grid-cols-3 gap-2">
-              <GuideMetric label="Ejercicios" value={sesion.ejercicios.length} />
-              <GuideMetric label="Sets" value={totalSets} />
-              <GuideMetric label="Modo" value={modo === 'registrar' ? 'log' : 'ver'} />
+              <GuideMetric icon={<Target size={13} />} label="Bloques" value={sesion.ejercicios.length} />
+              <GuideMetric icon={<CheckCircle2 size={13} />} label="Sets" value={totalSets} />
+              <GuideMetric icon={<Clock3 size={13} />} label="Modo" value={modo === 'registrar' ? 'registro' : 'vista'} />
             </div>
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+                Cómo ejecutarlo
+              </p>
+              <div className="space-y-1.5">
               {guidance.clientSteps.slice(0, 3).map(step => (
-                <p key={step} className="text-xs" style={{ color: 'var(--text-muted)' }}>{step}</p>
+                <p key={step} className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{step}</p>
+              ))}
+              </div>
+            </div>
+            </div>
+            <div className="grid grid-cols-3 border-t" style={{ borderColor: 'var(--border)' }}>
+              {sesion.ejercicios.slice(0, 3).map((ej, index) => (
+                <div key={ej.id} className="min-w-0 border-r px-3 py-3 last:border-r-0" style={{ borderColor: 'var(--border)' }}>
+                  <p className="text-[10px] font-bold" style={{ color: 'var(--accent)' }}>Bloque {index + 1}</p>
+                  <p className="mt-1 truncate text-xs font-semibold" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre}</p>
+                  <p className="mt-0.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>{ej.series}×{ej.repeticiones}</p>
+                </div>
               ))}
             </div>
           </div>
@@ -425,10 +449,10 @@ export default function EjecucionSesionPage() {
   )
 }
 
-function GuideMetric({ label, value }: { label: string; value: string | number }) {
+function GuideMetric({ icon, label, value }: { icon: ReactNode; label: string; value: string | number }) {
   return (
     <div className="rounded-2xl border px-2 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-      <p className="text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>{icon}{label}</p>
       <p className="font-data mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
     </div>
   )
