@@ -228,14 +228,15 @@ const previewPlan = crearDecisionApplyPreview({
   hasAutoApplyPayload: true,
   hasMensajeCliente: true,
   hasTrainingPlanUpdate: true,
+  hasSessionUpdates: true,
   hasMacroAdjustment: false,
   ajustesCount: 1,
 })
 assert.equal(previewPlan.title, 'Se anotará el plan activo')
 assert.deepEqual(previewPlan.items, [
   'Actualizar descripción/duración del plan si el payload lo permite',
+  'Aplicar ajustes seguros en sesiones y ejercicios concretos',
   'Enviar mensaje al cliente',
-  'Revisar manualmente sesiones concretas si hace falta',
 ])
 assert.equal(previewPlan.tone, 'warn')
 

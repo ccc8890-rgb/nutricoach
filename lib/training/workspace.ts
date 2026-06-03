@@ -108,6 +108,7 @@ export interface DecisionApplyPreviewInput {
   hasAutoApplyPayload: boolean
   hasMensajeCliente: boolean
   hasTrainingPlanUpdate: boolean
+  hasSessionUpdates?: boolean
   hasMacroAdjustment: boolean
   ajustesCount: number
 }
@@ -493,8 +494,9 @@ export function crearDecisionPlaybook(input: DecisionPlaybookInput): DecisionPla
 export function crearDecisionApplyPreview(input: DecisionApplyPreviewInput): DecisionApplyPreview {
   if (input.hasTrainingPlanUpdate) {
     const items = ['Actualizar descripción/duración del plan si el payload lo permite']
+    if (input.hasSessionUpdates) items.push('Aplicar ajustes seguros en sesiones y ejercicios concretos')
     if (input.hasMensajeCliente) items.push('Enviar mensaje al cliente')
-    items.push('Revisar manualmente sesiones concretas si hace falta')
+    if (!input.hasSessionUpdates) items.push('Revisar manualmente sesiones concretas si hace falta')
     return {
       title: 'Se anotará el plan activo',
       tone: 'warn',

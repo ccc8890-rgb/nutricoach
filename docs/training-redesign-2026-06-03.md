@@ -8,12 +8,19 @@
 - `plan_update.sesiones_por_semana` no se escribe como columna porque no existe en `planes_entrenamiento`; se transforma en nota operativa dentro de `descripcion`.
 - `plan_update.duracion_semanas` se escribe solo en la columna real `duracion_semanas`.
 - `AI Review Inbox` muestra una previsualización antes de aprobar: qué se aplicará, si se enviará mensaje y qué queda manual.
+- `plan_update.sesiones[]` permite aplicar ajustes concretos sobre sesiones y ejercicios del plan activo:
+  - Sesiones: match por `id`, `dia_semana` o `nombre`.
+  - Ejercicios: match por `id`, `ejercicio_id` o `ejercicio_nombre`.
+  - Campos permitidos en sesión: `duracion_estimada_min`, `notas`, `contexto_ia`.
+  - Campos permitidos en ejercicio: `series`, `repeticiones`, `descanso_segundos`, `peso_sugerido`, `rpe`, `notas`, `instruccion_ejercicio`.
+  - Las notas de IA se añaden con prefijo `[IA coach]` para mantener trazabilidad.
 
 ## Bug encontrado y corregido
 
 - Antes, una tarea `actualizacion_plan` con payload estructural podía acabar marcada como aplicada aunque no existiera un plan activo de entrenamiento.
 - Ahora, si no hay `planes_entrenamiento` activo para el cliente, la aplicación devuelve error y no marca la tarea como aplicada.
 - La vista remota `prs_por_ejercicio` fue verificada con `pg_get_viewdef`: ya usa `s.set_data ->> 'peso_kg'` y no `sets_ejecutados -> 0`.
+- La aplicación IA ya no se limita a anotar el plan cuando trae sesiones concretas: ajusta la sesión o ejercicio real si encuentra un match seguro y reporta qué no pudo aplicar.
 
 ## Verificación
 
@@ -26,4 +33,4 @@
 
 ## Siguiente mejora recomendada
 
-- QA visual completa en navegador de coach y cliente para cerrar solapes, densidad y estados vacíos.
+- Añadir historial visible de cambios IA por sesión para que el coach pueda comparar antes/después y revertir un ajuste concreto.

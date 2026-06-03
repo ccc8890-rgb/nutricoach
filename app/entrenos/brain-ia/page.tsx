@@ -132,6 +132,14 @@ function hasTrainingPlanUpdate(payload: TareaInbox['payload']): boolean {
   const update = payload?.plan_update
   if (!update || typeof update !== 'object' || Array.isArray(update)) return false
   return ['sesiones_por_semana', 'duracion_semanas'].some(key => typeof (update as Record<string, unknown>)[key] === 'number')
+    || hasTrainingSessionUpdates(payload)
+}
+
+function hasTrainingSessionUpdates(payload: TareaInbox['payload']): boolean {
+  const update = payload?.plan_update
+  if (!update || typeof update !== 'object' || Array.isArray(update)) return false
+  const sesiones = (update as Record<string, unknown>).sesiones
+  return Array.isArray(sesiones) && sesiones.length > 0
 }
 
 function isTrainingInboxTask(tarea: TareaInbox): boolean {
@@ -572,6 +580,7 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
   const logros = payload.logros ?? []
   const hasMacroAdjustment = hasNumericMacroAdjustment(payload)
   const hasPlanUpdate = hasTrainingPlanUpdate(payload)
+  const hasSessionUpdates = hasTrainingSessionUpdates(payload)
   const summary = crearDecisionSummary({
     prioridad: tarea.prioridad,
     tipo: tarea.tipo,
@@ -606,6 +615,7 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
     hasAutoApplyPayload: hasMacroAdjustment || hasPlanUpdate,
     hasMensajeCliente: Boolean(payload.mensaje_cliente),
     hasTrainingPlanUpdate: hasPlanUpdate,
+    hasSessionUpdates,
     hasMacroAdjustment,
     ajustesCount: ajustes.length,
   })
