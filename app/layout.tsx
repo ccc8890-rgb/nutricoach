@@ -47,7 +47,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
+    <html lang="es" data-scroll-behavior="smooth" className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
       <body
         className="min-h-full font-sans overflow-x-hidden"
         style={{
