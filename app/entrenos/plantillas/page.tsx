@@ -432,20 +432,24 @@ export default function PlantillasEntrenoPage() {
                         Biblioteca · Planificación
                     </p>
                     <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-none" style={{ color: 'var(--text)' }}>
-                        Plan Library
+                        Planes y plantillas
                     </h1>
                     <p className="text-sm mt-2 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                        Plantillas por modalidad para crear planes rápido, asignarlos a clientes y mantener un estándar de programación.
+                        Base práctica para crear, revisar y asignar planes a clientes sin abrir cada plantilla desde cero.
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                    <Link href="/entrenos/nueva" className="btn-secondary flex items-center gap-2 text-sm">
+                        <Dumbbell size={15} />
+                        Crear manual
+                    </Link>
                     <button
                         onClick={poblarPlantillas}
                         disabled={seedStatus === 'loading'}
                         className="btn-secondary flex items-center gap-2 text-sm"
                     >
                         {seedStatus === 'loading' ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-                        {seedStatus === 'loading' ? 'Insertando…' : 'Poblar'}
+                        {seedStatus === 'loading' ? 'Insertando…' : 'Cargar base'}
                     </button>
                     <Link href="/entrenos/generar-ia" className="btn-primary flex items-center gap-2 text-sm">
                         <Target size={15} />
@@ -473,19 +477,19 @@ export default function PlantillasEntrenoPage() {
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
                     <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
-                            Asset system
+                            Plan operativo
                         </p>
                         <h2 className="mt-1 text-xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
-                            Plantillas listas para asignar, comparar y evolucionar
+                            Escoge por modalidad, revisa estructura y asigna al cliente adecuado
                         </h2>
                         <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                            Cada plan se mide por estructura, duración, modalidad, progresión y densidad de ejercicios. La biblioteca deja de ser un listado y empieza a funcionar como inventario profesional.
+                            La tarjeta te enseña sesiones, densidad, progresión y gaps antes de asignar. La idea es decidir rápido si sirve tal cual o necesita ajuste.
                         </p>
                     </div>
                     <div className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                        <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Siguiente mejora</p>
+                        <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Flujo recomendado</p>
                         <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                            Vista compare entre plantillas, cliente ideal y evidencia aplicada por bloque.
+                            Filtra modalidad, abre sesiones, asigna al cliente y ajusta después desde el plan activo.
                         </p>
                     </div>
                 </div>
@@ -565,12 +569,12 @@ export default function PlantillasEntrenoPage() {
                     </p>
                     <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
                         {plantillas.length === 0
-                            ? 'Pulsa "Poblar plantillas" para insertar las plantillas predefinidas'
+                            ? 'Carga la base inicial o crea una plantilla manual adaptada a tu forma de trabajar'
                             : 'Prueba con otros filtros'}
                     </p>
                     {plantillas.length === 0 && (
                         <button onClick={poblarPlantillas} disabled={seedStatus === 'loading'} className="btn-primary">
-                            Poblar plantillas
+                            Cargar base de plantillas
                         </button>
                     )}
                 </div>

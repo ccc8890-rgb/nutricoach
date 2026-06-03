@@ -34,6 +34,24 @@ export interface ExerciseLibraryBatchPlan {
   note: string
 }
 
+export interface ExerciseLibraryCoachGroup {
+  grupo: string
+  total: number
+  listos: number
+  pendientes: number
+  readinessPct: number
+  primaryGap: string
+  ids: string[]
+}
+
+const GAP_PRIORITY: Record<string, number> = {
+  'Sin vídeo': 1,
+  'Sin foto': 2,
+  'Sin equipamiento': 3,
+  'Sin dificultad': 4,
+  'Sin músculos secundarios': 5,
+}
+
 function reasonFor(input: ExerciseLibraryInput) {
   const missing = [
     !input.foto_url ? 'sin foto' : null,
@@ -107,4 +125,43 @@ export function crearExerciseLibraryBatchPlan(ejercicios: ExerciseLibraryInput[]
       ? `Completa ${batchSize} ejercicios prioritarios para subir readiness sin revisar toda la biblioteca.`
       : 'La vista actual no tiene ejercicios prioritarios pendientes.',
   }
+}
+
+export function crearExerciseLibraryCoachGroups(ejercicios: ExerciseLibraryInput[]): ExerciseLibraryCoachGroup[] {
+  const map = new Map<string, ExerciseLibraryInput[]>()
+
+  for (const ejercicio of ejercicios) {
+    const grupo = ejercicio.grupo_muscular?.trim() || 'Sin grupo'
+    const current = map.get(grupo) ?? []
+    current.push(ejercicio)
+    map.set(grupo, current)
+  }
+
+  return Array.from(map.entries())
+    .map(([grupo, items]) => {
+      const scored = items.map(item => ({
+        item,
+        quality: calcularEjercicioQuality(item),
+      }))
+      const listos = scored.filter(row => row.quality.status === 'completo').length
+      const gaps = scored
+        .flatMap(row => row.quality.gaps)
+        .reduce<Record<string, number>>((acc, gap) => {
+          acc[gap] = (acc[gap] ?? 0) + 1
+          return acc
+        }, {})
+      const primaryGap = Object.entries(gaps)
+        .sort((a, b) => (GAP_PRIORITY[a[0]] ?? 99) - (GAP_PRIORITY[b[0]] ?? 99) || b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ?? 'Listo para asignar'
+
+      return {
+        grupo,
+        total: items.length,
+        listos,
+        pendientes: items.length - listos,
+        readinessPct: items.length ? Math.round((listos / items.length) * 100) : 0,
+        primaryGap,
+        ids: items.map(item => item.id),
+      }
+    })
+    .sort((a, b) => b.total - a.total || a.grupo.localeCompare(b.grupo))
 }

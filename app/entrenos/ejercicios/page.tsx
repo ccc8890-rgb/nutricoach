@@ -11,10 +11,11 @@ import {
   Loader2,
   Save,
   Search,
+  SlidersHorizontal,
   Video,
 } from 'lucide-react'
 import { calcularEjercicioQuality } from '@/lib/training/workspace'
-import { crearExerciseLibraryBatchPlan, crearExerciseLibraryQueue } from '@/lib/training/exercise-library'
+import { crearExerciseLibraryBatchPlan, crearExerciseLibraryCoachGroups, crearExerciseLibraryQueue } from '@/lib/training/exercise-library'
 
 interface Ejercicio {
   id: string
@@ -170,13 +171,23 @@ export default function EjerciciosMediaPage() {
   }, [ejercicios])
 
   const visibles = useMemo(() => {
-    if (qualityFilter === 'sin_media') return ejercicios.filter(e => !hasFoto(e) || !hasVideo(e))
-    if (qualityFilter === 'sin_video') return ejercicios.filter(e => !hasVideo(e))
-    if (qualityFilter === 'completos') return ejercicios.filter(isCompleto)
-    return ejercicios
+    const base = qualityFilter === 'sin_media'
+      ? ejercicios.filter(e => !hasFoto(e) || !hasVideo(e))
+      : qualityFilter === 'sin_video'
+        ? ejercicios.filter(e => !hasVideo(e))
+        : qualityFilter === 'completos'
+          ? ejercicios.filter(isCompleto)
+          : ejercicios
+
+    return [...base].sort((a, b) =>
+      (a.grupo_muscular || 'Sin grupo').localeCompare(b.grupo_muscular || 'Sin grupo')
+      || a.nombre.localeCompare(b.nombre)
+    )
   }, [ejercicios, qualityFilter])
   const assetQueue = useMemo(() => crearExerciseLibraryQueue(ejercicios), [ejercicios])
   const batchPlan = useMemo(() => crearExerciseLibraryBatchPlan(ejercicios), [ejercicios])
+  const coachGroups = useMemo(() => crearExerciseLibraryCoachGroups(ejercicios), [ejercicios])
+  const selectedGroup = useMemo(() => coachGroups.find(item => item.grupo === grupo), [coachGroups, grupo])
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 space-y-5">
@@ -186,10 +197,10 @@ export default function EjerciciosMediaPage() {
             Biblioteca · Ejecución
           </p>
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-none" style={{ color: 'var(--text)' }}>
-            Exercise Library
+            Biblioteca de ejercicios
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            Base de ejercicios con media, dificultad, equipamiento y cues para que el builder y la sesión móvil funcionen sin explicación extra.
+            Revisa ejercicios por grupo, completa configuración útil y deja el material listo para asignar a planes de clientes sin entrar en una biblioteca técnica.
           </p>
         </div>
 
@@ -234,13 +245,13 @@ export default function EjerciciosMediaPage() {
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
-                Exercise asset system
+                Workspace por grupos
               </p>
               <h2 className="mt-1 text-xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
-                Ejercicios preparados para builder, sesión móvil y sustituciones inteligentes
+                Qué está listo para asignar y qué necesita revisión
               </h2>
               <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                La calidad se mide por vídeo, foto, dificultad, equipamiento y músculos secundarios. Los gaps indican qué falta para que el cliente pueda ejecutar sin explicación extra.
+                Trabaja por grupos musculares: primero deja vídeos, dificultad y equipamiento en orden; después usa esos ejercicios en builder, plantillas y ajustes IA.
               </p>
               <div className="mt-4 grid grid-cols-3 gap-2 max-w-md">
                 <div className="rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
@@ -256,12 +267,55 @@ export default function EjerciciosMediaPage() {
                   <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{assetQueue.prioritarios.length}</p>
                 </div>
               </div>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {coachGroups.slice(0, 6).map(item => {
+                  const active = grupo === item.grupo
+                  return (
+                    <button
+                      key={item.grupo}
+                      type="button"
+                      onClick={() => setGrupo(active ? '' : item.grupo)}
+                      className="rounded-2xl border p-3 text-left transition-all hover:-translate-y-0.5"
+                      style={{
+                        borderColor: active ? 'var(--accent)' : 'var(--border)',
+                        background: active ? 'var(--semantic-info-bg)' : 'var(--bg)',
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{item.grupo}</p>
+                        <span className="text-[11px] font-semibold" style={{ color: item.pendientes ? 'var(--semantic-warn)' : 'var(--semantic-active)' }}>
+                          {item.readinessPct}%
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                        {item.total} ejercicios · {item.listos} listos · {item.pendientes} por revisar
+                      </p>
+                      <p className="mt-1 text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+                        {item.primaryGap}
+                      </p>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
             <div className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Cola prioritaria</p>
+                <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
+                  {selectedGroup ? `Grupo activo: ${selectedGroup.grupo}` : 'Cola prioritaria'}
+                </p>
                 <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{assetQueue.prioritarios.length} ejercicios</span>
               </div>
+              {selectedGroup && (
+                <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal size={14} style={{ color: 'var(--semantic-info)' }} />
+                    <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Uso operativo</p>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                    Revisa dificultad, equipamiento y vídeo en {selectedGroup.grupo.toLowerCase()} antes de asignar estos ejercicios a clientes o plantillas.
+                  </p>
+                </div>
+              )}
               {batchPlan.batchSize > 0 && (
                 <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--semantic-info-border)', background: 'var(--semantic-info-bg)' }}>
                   <div className="flex items-start justify-between gap-3">
@@ -311,9 +365,9 @@ export default function EjerciciosMediaPage() {
         <div className="flex flex-wrap items-center gap-2 rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           {[
             ['todos', 'Todos'],
-            ['sin_media', 'Sin media completa'],
-            ['sin_video', 'Sin vídeo'],
-            ['completos', 'Completos'],
+            ['sin_media', 'Por completar'],
+            ['sin_video', 'Falta vídeo'],
+            ['completos', 'Listos para asignar'],
           ].map(([value, label]) => (
             <button
               key={value}
@@ -350,7 +404,9 @@ export default function EjerciciosMediaPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-          {visibles.map(ej => {
+          {visibles.map((ej, index) => {
+            const prev = visibles[index - 1]
+            const showGroupHeader = !grupo && (prev?.grupo_muscular || 'Sin grupo') !== (ej.grupo_muscular || 'Sin grupo')
             const itemForm = form[ej.id] ?? {}
             const fotoPreview = (itemForm.foto_url ?? ej.foto_url ?? '') as string
             const videoPreview = (itemForm.video_url ?? ej.video_url ?? '') as string
@@ -358,11 +414,27 @@ export default function EjerciciosMediaPage() {
             const completo = quality.status === 'completo'
 
             return (
-              <div
-                key={ej.id}
-                className="overflow-hidden rounded-2xl border"
-                style={{ borderColor: completo ? 'var(--semantic-active-border)' : 'var(--border)', background: 'var(--surface)' }}
-              >
+              <div key={ej.id} className="contents">
+                {showGroupHeader && (
+                  <div className="col-span-full mt-2 flex items-center justify-between rounded-2xl border px-4 py-3" style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}>
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{ej.grupo_muscular || 'Sin grupo'}</p>
+                      <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Bloque operativo para revisar y asignar</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setGrupo(ej.grupo_muscular || '')}
+                      className="rounded-full border px-3 py-1 text-[11px] font-semibold"
+                      style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}
+                    >
+                      Filtrar grupo
+                    </button>
+                  </div>
+                )}
+                <div
+                  className="overflow-hidden rounded-2xl border"
+                  style={{ borderColor: completo ? 'var(--semantic-active-border)' : 'var(--border)', background: 'var(--surface)' }}
+                >
                 <button
                   className="flex w-full items-center gap-3 px-4 py-3 text-left"
                   onClick={() => toggleExpand(ej.id, ej)}
@@ -570,6 +642,7 @@ export default function EjerciciosMediaPage() {
                     </div>
                   </div>
                 )}
+                </div>
               </div>
             )
           })}

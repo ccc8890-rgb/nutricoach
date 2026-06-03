@@ -11,6 +11,7 @@ import {
   crearSesionGuidance,
   crearTrainingRoomSummary,
 } from '../lib/training/workspace'
+import { crearExerciseLibraryCoachGroups } from '../lib/training/exercise-library'
 import type { CommandCenterRow } from '../lib/training/command-center'
 
 const plantillaCompleta = calcularPlantillaQuality({
@@ -292,5 +293,18 @@ const cockpitSinPlan = crearTrainingCockpitCards({
 assert.equal(cockpitSinPlan[0].tone, 'alert')
 assert.equal(cockpitSinPlan[0].action, 'Crear plan')
 assert.equal(cockpitSinPlan[3].value, 'Sin objetivo')
+
+const exerciseGroups = crearExerciseLibraryCoachGroups([
+  { id: 'sq', nombre: 'Sentadilla', grupo_muscular: 'Piernas', tipo: 'fuerza', foto_url: null, video_url: null, dificultad_nivel: 4, equipamiento: ['Barra'] },
+  { id: 'rdl', nombre: 'Peso muerto rumano', grupo_muscular: 'Piernas', tipo: 'fuerza', foto_url: 'foto', video_url: 'video', dificultad_nivel: 3, equipamiento: ['Barra'] },
+  { id: 'run', nombre: 'Rodaje Z2', grupo_muscular: 'Cardio', tipo: 'cardio', foto_url: 'foto', video_url: null, dificultad_nivel: 2, equipamiento: [] },
+])
+assert.equal(exerciseGroups[0].grupo, 'Piernas')
+assert.equal(exerciseGroups[0].total, 2)
+assert.equal(exerciseGroups[0].listos, 1)
+assert.equal(exerciseGroups[0].pendientes, 1)
+assert.equal(exerciseGroups[0].primaryGap, 'Sin vídeo')
+assert.equal(exerciseGroups[1].grupo, 'Cardio')
+assert.equal(exerciseGroups[1].primaryGap, 'Sin vídeo')
 
 console.log('training workspace tests passed')
