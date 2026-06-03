@@ -104,33 +104,19 @@ export default function PlanEditorPage() {
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
-    const { data: planData } = await supabase
-      .from('planes_entrenamiento')
-      .select(`
-        id, nombre, activo, duracion_semanas, cliente_id,
-        cliente:clientes(profile:profiles!profile_id(nombre, apellidos))
-      `)
-      .eq('id', id)
-      .single()
+    const res = await fetch(`/api/entrenos/${id}`)
 
-    if (!planData) {
+    if (res.status === 404 || res.status === 403) {
       router.push('/entrenos')
       return
     }
 
-    const { data: sesData } = await supabase
-      .from('sesiones_entrenamiento')
-      .select(`
-        id, nombre, dia_semana, orden, duracion_estimada_min, contexto_ia,
-        ejercicios:sesion_ejercicios(
-          id, ejercicio_id, series, repeticiones, descanso_segundos,
-          peso_sugerido, rpe, notas, instruccion_ejercicio, contexto_ia, orden,
-          ejercicio:ejercicios(id, nombre, grupo_muscular, tipo, foto_url, video_url)
-        )
-      `)
-      .eq('plan_id', id)
-      .order('orden')
+    if (!res.ok) {
+      setLoading(false)
+      return
+    }
 
+    const { plan: planData, sesiones: sesData } = await res.json()
     const cli = (planData as unknown as { cliente: { profile: { nombre: string; apellidos: string } } | null }).cliente
     const planInfo: PlanInfo = {
       id: planData.id,
