@@ -103,6 +103,21 @@ export interface DecisionPlaybook {
   guardrails: string[]
 }
 
+export interface DecisionApplyPreviewInput {
+  tipo: string
+  hasAutoApplyPayload: boolean
+  hasMensajeCliente: boolean
+  hasTrainingPlanUpdate: boolean
+  hasMacroAdjustment: boolean
+  ajustesCount: number
+}
+
+export interface DecisionApplyPreview {
+  title: string
+  tone: 'ok' | 'warn' | 'info' | 'neutral'
+  items: string[]
+}
+
 export interface CoachDeskPlanInput {
   estado: 'descarga' | 'ajustar' | 'progresar' | 'base'
   hasPlan: boolean
@@ -472,6 +487,52 @@ export function crearDecisionPlaybook(input: DecisionPlaybookInput): DecisionPla
       'No generar trabajo extra si la recomendación no cambia una decisión',
       'Pedir más datos antes de modificar sesiones clave',
     ],
+  }
+}
+
+export function crearDecisionApplyPreview(input: DecisionApplyPreviewInput): DecisionApplyPreview {
+  if (input.hasTrainingPlanUpdate) {
+    const items = ['Actualizar descripción/duración del plan si el payload lo permite']
+    if (input.hasMensajeCliente) items.push('Enviar mensaje al cliente')
+    items.push('Revisar manualmente sesiones concretas si hace falta')
+    return {
+      title: 'Se anotará el plan activo',
+      tone: 'warn',
+      items,
+    }
+  }
+
+  if (input.hasMacroAdjustment) {
+    return {
+      title: 'Se actualizarán macros del plan',
+      tone: 'ok',
+      items: [
+        'Actualizar kcal o macros numéricos del plan nutricional activo',
+        input.hasMensajeCliente ? 'Enviar mensaje al cliente' : 'No se enviará mensaje si el payload no lo incluye',
+      ],
+    }
+  }
+
+  if (input.hasMensajeCliente) {
+    return {
+      title: 'Se enviará mensaje al cliente',
+      tone: 'info',
+      items: ['Crear mensaje en el chat del cliente', 'Marcar la recomendación como aplicada'],
+    }
+  }
+
+  if (input.hasAutoApplyPayload || input.ajustesCount > 0) {
+    return {
+      title: 'Requiere revisión manual',
+      tone: 'warn',
+      items: ['La IA propone ajustes, pero no hay payload automático seguro', 'Abrir Training Room y aplicar solo lo validado'],
+    }
+  }
+
+  return {
+    title: 'Sin cambios automáticos',
+    tone: 'neutral',
+    items: ['Aprobar solo registra aprendizaje y estado de la tarea'],
   }
 }
 

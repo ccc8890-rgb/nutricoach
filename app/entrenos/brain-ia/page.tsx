@@ -16,7 +16,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import type { EstadoTarea, FuenteCientifica, TipoTarea } from '@/lib/agentes/types'
-import { crearDecisionPlaybook, crearDecisionSummary, crearDecisionTrace } from '@/lib/training/workspace'
+import { crearDecisionApplyPreview, crearDecisionPlaybook, crearDecisionSummary, crearDecisionTrace } from '@/lib/training/workspace'
 
 const TRAINING_TYPES: TipoTarea[] = [
   'training_brain',
@@ -570,6 +570,8 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
   const ajustes = payload.ajustes_plan ?? []
   const advertencias = payload.advertencias ?? []
   const logros = payload.logros ?? []
+  const hasMacroAdjustment = hasNumericMacroAdjustment(payload)
+  const hasPlanUpdate = hasTrainingPlanUpdate(payload)
   const summary = crearDecisionSummary({
     prioridad: tarea.prioridad,
     tipo: tarea.tipo,
@@ -587,7 +589,7 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
     logrosCount: logros.length,
     evidenciaCount: tarea.fuentes?.length ?? 0,
     hasMensajeCliente: Boolean(payload.mensaje_cliente),
-    hasAutoApplyPayload: hasNumericMacroAdjustment(payload) || hasTrainingPlanUpdate(payload),
+    hasAutoApplyPayload: hasMacroAdjustment || hasPlanUpdate,
   })
   const playbook = crearDecisionPlaybook({
     prioridad: tarea.prioridad,
@@ -597,7 +599,15 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
     advertenciasCount: advertencias.length,
     logrosCount: logros.length,
     hasMensajeCliente: Boolean(payload.mensaje_cliente),
-    hasAutoApplyPayload: hasNumericMacroAdjustment(payload) || hasTrainingPlanUpdate(payload),
+    hasAutoApplyPayload: hasMacroAdjustment || hasPlanUpdate,
+  })
+  const applyPreview = crearDecisionApplyPreview({
+    tipo: tarea.tipo,
+    hasAutoApplyPayload: hasMacroAdjustment || hasPlanUpdate,
+    hasMensajeCliente: Boolean(payload.mensaje_cliente),
+    hasTrainingPlanUpdate: hasPlanUpdate,
+    hasMacroAdjustment,
+    ajustesCount: ajustes.length,
   })
   const riskColor = summary.risk === 'alto'
     ? 'var(--semantic-alert)'
@@ -636,6 +646,36 @@ function DecisionDetailPanel({ tarea, saving, onApprove, onReject, onEdit }: {
           <DetailMetric label="Señales" value={signals.length} />
           <DetailMetric label="Ajustes" value={ajustes.length} />
           <DetailMetric label="Fuentes" value={tarea.fuentes?.length ?? 0} />
+        </div>
+
+        <div
+          className="mt-4 rounded-2xl border p-3"
+          style={{
+            borderColor: applyPreview.tone === 'ok'
+              ? 'var(--semantic-active-border)'
+              : applyPreview.tone === 'info'
+                ? 'var(--semantic-info-border)'
+                : applyPreview.tone === 'warn'
+                  ? 'var(--semantic-warn-border)'
+                  : 'var(--border)',
+            background: applyPreview.tone === 'ok'
+              ? 'var(--semantic-active-bg)'
+              : applyPreview.tone === 'info'
+                ? 'var(--semantic-info-bg)'
+                : applyPreview.tone === 'warn'
+                  ? 'var(--semantic-warn-bg)'
+                  : 'var(--bg)',
+          }}
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+            Preview al aprobar
+          </p>
+          <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{applyPreview.title}</p>
+          <div className="mt-3 space-y-1.5">
+            {applyPreview.items.map(item => (
+              <p key={item} className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{item}</p>
+            ))}
+          </div>
         </div>
 
         <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>

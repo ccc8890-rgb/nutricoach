@@ -4,6 +4,7 @@ import {
   calcularPlantillaQuality,
   crearCoachDeskPlan,
   crearDecisionPlaybook,
+  crearDecisionApplyPreview,
   crearDecisionSummary,
   crearDecisionTrace,
   crearTrainingCockpitCards,
@@ -221,6 +222,33 @@ const playbookProgreso = crearDecisionPlaybook({
 assert.equal(playbookProgreso.lane, 'Progresión')
 assert.equal(playbookProgreso.primaryCta, 'Consolidar aprendizaje')
 assert.ok(playbookProgreso.steps.includes('Revisar si el progreso se mantiene sin subir fatiga'))
+
+const previewPlan = crearDecisionApplyPreview({
+  tipo: 'actualizacion_plan',
+  hasAutoApplyPayload: true,
+  hasMensajeCliente: true,
+  hasTrainingPlanUpdate: true,
+  hasMacroAdjustment: false,
+  ajustesCount: 1,
+})
+assert.equal(previewPlan.title, 'Se anotará el plan activo')
+assert.deepEqual(previewPlan.items, [
+  'Actualizar descripción/duración del plan si el payload lo permite',
+  'Enviar mensaje al cliente',
+  'Revisar manualmente sesiones concretas si hace falta',
+])
+assert.equal(previewPlan.tone, 'warn')
+
+const previewMensaje = crearDecisionApplyPreview({
+  tipo: 'alerta_readiness',
+  hasAutoApplyPayload: false,
+  hasMensajeCliente: true,
+  hasTrainingPlanUpdate: false,
+  hasMacroAdjustment: false,
+  ajustesCount: 0,
+})
+assert.equal(previewMensaje.title, 'Se enviará mensaje al cliente')
+assert.equal(previewMensaje.tone, 'info')
 
 const coachDesk = crearCoachDeskPlan({
   estado: 'ajustar',
