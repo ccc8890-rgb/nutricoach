@@ -76,7 +76,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: typeof CheckCircle2; 
 
 interface ClienteJoin {
   id: string
-  profiles?: { nombre?: string | null; apellidos?: string | null } | null
+  profile?: { nombre?: string | null; apellidos?: string | null } | null
 }
 
 interface TareaInbox {
@@ -111,7 +111,7 @@ function timeAgo(iso: string): string {
 }
 
 function nombreCliente(tarea: TareaInbox): string {
-  const profile = tarea.clientes?.profiles
+  const profile = tarea.clientes?.profile
   const nombre = [profile?.nombre, profile?.apellidos].filter(Boolean).join(' ').trim()
   return nombre || 'Cliente sin nombre'
 }

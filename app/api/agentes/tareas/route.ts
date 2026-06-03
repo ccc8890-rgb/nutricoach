@@ -4,6 +4,14 @@ import { registrarAprendizaje } from '@/lib/agentes/executor'
 import { aplicarTarea } from '@/lib/agentes/aplicar'
 import type { AgenteTarea } from '@/lib/agentes/types'
 
+export const AGENTE_TAREAS_SELECT = `
+  *,
+  clientes!cliente_id (
+    id,
+    profile:profiles!profile_id ( nombre, apellidos )
+  )
+`
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerSupabase()
@@ -20,13 +28,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('agente_tareas')
-      .select(`
-        *,
-        clientes!cliente_id (
-          id,
-          profiles ( nombre, apellidos )
-        )
-      `)
+      .select(AGENTE_TAREAS_SELECT)
       .order('prioridad', { ascending: true })
       .order('created_at', { ascending: false })
       .limit(limite)

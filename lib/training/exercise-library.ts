@@ -215,3 +215,14 @@ export function filtrarExerciseLibrary(ejercicios: ExerciseLibraryInput[], filte
       || a.nombre.localeCompare(b.nombre)
     )
 }
+
+export function shouldShowExerciseLibraryList(filters: ExerciseLibraryFilters): boolean {
+  return Boolean(
+    filters.query?.trim()
+    || filters.grupo?.trim()
+    || filters.tipo?.trim()
+    || filters.equipamiento?.trim()
+    || filters.dificultad?.trim()
+    || (filters.estado && filters.estado !== 'todos')
+  )
+}

@@ -34,7 +34,7 @@ type AgenteTarea = {
   aplicado_at: string | null
   clientes?: {
     id: string
-    profiles?: {
+    profile?: {
       nombre: string | null
       apellidos: string | null
     } | null
@@ -75,7 +75,7 @@ const TIPO_LABELS: Record<string, string> = {
 }
 
 function getNombreCliente(t: AgenteTarea): string {
-  const p = t.clientes?.profiles
+  const p = t.clientes?.profile
   if (!p) return 'Sin cliente'
   return [p.nombre, p.apellidos].filter(Boolean).join(' ') || 'Sin cliente'
 }

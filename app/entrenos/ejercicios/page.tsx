@@ -20,6 +20,7 @@ import {
   crearExerciseLibraryCoachGroups,
   crearExerciseLibraryQueue,
   filtrarExerciseLibrary,
+  shouldShowExerciseLibraryList,
   type ExerciseLibraryEstadoFilter,
 } from '@/lib/training/exercise-library'
 
@@ -190,6 +191,7 @@ export default function EjerciciosMediaPage() {
   const equipamientoOptions = useMemo(() => Array.from(new Set(ejercicios.flatMap(e => e.equipamiento ?? []).filter(Boolean))).sort(), [ejercicios])
   const dificultadOptions = useMemo(() => Array.from(new Set(ejercicios.map(e => e.dificultad_nivel).filter((item): item is number => item != null))).sort((a, b) => a - b), [ejercicios])
   const filtrosActivos = [query.trim(), grupo, tipo, equipamiento, dificultad, estado !== 'todos' ? estado : ''].filter(Boolean).length
+  const showExerciseList = shouldShowExerciseLibraryList({ query, grupo, tipo, equipamiento, dificultad, estado })
 
   function limpiarFiltros() {
     setQuery('')
@@ -284,8 +286,20 @@ export default function EjerciciosMediaPage() {
                   <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{assetQueue.prioritarios.length}</p>
                 </div>
               </div>
-              <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                {coachGroups.slice(0, 6).map(item => {
+              <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Abrir categoría</p>
+                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Elige un grupo y evita revisar la lista completa.</p>
+                  </div>
+                  <select value={grupo} onChange={e => setGrupo(e.target.value)} className="input text-sm sm:w-56">
+                    <option value="">Seleccionar grupo</option>
+                    {grupoOptions.map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {coachGroups.map(item => {
                   const active = grupo === item.grupo
                   return (
                     <button
@@ -401,7 +415,7 @@ export default function EjerciciosMediaPage() {
 
           <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
             <select value={grupo} onChange={e => setGrupo(e.target.value)} className="input text-sm">
-              <option value="">Todos los grupos</option>
+              <option value="">Grupo: elegir categoría</option>
               {grupoOptions.map(g => <option key={g} value={g}>{g}</option>)}
             </select>
             <select value={estado} onChange={e => setEstado(e.target.value as ExerciseLibraryEstadoFilter)} className="input text-sm">
@@ -465,6 +479,31 @@ export default function EjerciciosMediaPage() {
         <div className="flex justify-center py-16">
           <Loader2 size={24} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
         </div>
+      ) : !showExerciseList ? (
+        <section className="rounded-3xl border p-6 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <SlidersHorizontal size={24} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+          <p className="font-semibold" style={{ color: 'var(--text)' }}>Elige una categoría o usa la búsqueda</p>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            La librería tiene muchos ejercicios. Para trabajar más rápido, selecciona un grupo muscular, material, dificultad o estado antes de desplegar resultados.
+          </p>
+          <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {coachGroups.slice(0, 6).map(item => (
+              <button
+                key={item.grupo}
+                type="button"
+                onClick={() => setGrupo(item.grupo)}
+                className="rounded-2xl border p-3 text-left transition-all hover:-translate-y-0.5"
+                style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{item.grupo}</p>
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{item.total}</span>
+                </div>
+                <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>{item.primaryGap}</p>
+              </button>
+            ))}
+          </div>
+        </section>
       ) : (
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
           {visibles.map((ej, index) => {

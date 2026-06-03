@@ -11,7 +11,7 @@ import {
   crearSesionGuidance,
   crearTrainingRoomSummary,
 } from '../lib/training/workspace'
-import { crearExerciseLibraryCoachGroups, filtrarExerciseLibrary } from '../lib/training/exercise-library'
+import { crearExerciseLibraryCoachGroups, filtrarExerciseLibrary, shouldShowExerciseLibraryList } from '../lib/training/exercise-library'
 import type { CommandCenterRow } from '../lib/training/command-center'
 
 const plantillaCompleta = calcularPlantillaQuality({
@@ -320,5 +320,9 @@ const filteredExercises = filtrarExerciseLibrary([
   estado: 'listos',
 })
 assert.deepEqual(filteredExercises.map(item => item.id), ['press'])
+assert.equal(shouldShowExerciseLibraryList({ estado: 'todos' }), false)
+assert.equal(shouldShowExerciseLibraryList({ grupo: 'Piernas', estado: 'todos' }), true)
+assert.equal(shouldShowExerciseLibraryList({ query: 'press', estado: 'todos' }), true)
+assert.equal(shouldShowExerciseLibraryList({ estado: 'sin_video' }), true)
 
 console.log('training workspace tests passed')
