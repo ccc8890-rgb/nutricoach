@@ -11,7 +11,7 @@ import {
   crearSesionGuidance,
   crearTrainingRoomSummary,
 } from '../lib/training/workspace'
-import { crearExerciseLibraryCoachGroups } from '../lib/training/exercise-library'
+import { crearExerciseLibraryCoachGroups, filtrarExerciseLibrary } from '../lib/training/exercise-library'
 import type { CommandCenterRow } from '../lib/training/command-center'
 
 const plantillaCompleta = calcularPlantillaQuality({
@@ -306,5 +306,19 @@ assert.equal(exerciseGroups[0].pendientes, 1)
 assert.equal(exerciseGroups[0].primaryGap, 'Sin vídeo')
 assert.equal(exerciseGroups[1].grupo, 'Cardio')
 assert.equal(exerciseGroups[1].primaryGap, 'Sin vídeo')
+
+const filteredExercises = filtrarExerciseLibrary([
+  { id: 'sq', nombre: 'Sentadilla', grupo_muscular: 'Piernas', tipo: 'fuerza', foto_url: null, video_url: null, dificultad_nivel: 4, equipamiento: ['Barra'] },
+  { id: 'press', nombre: 'Press banca', grupo_muscular: 'Pecho', tipo: 'fuerza', foto_url: 'foto', video_url: 'video', dificultad_nivel: 3, equipamiento: ['Barra'] },
+  { id: 'run', nombre: 'Rodaje Z2', grupo_muscular: 'Cardio', tipo: 'cardio', foto_url: 'foto', video_url: null, dificultad_nivel: 2, equipamiento: ['Peso corporal'] },
+], {
+  query: 'press',
+  grupo: 'Pecho',
+  tipo: 'fuerza',
+  equipamiento: 'Barra',
+  dificultad: '3',
+  estado: 'listos',
+})
+assert.deepEqual(filteredExercises.map(item => item.id), ['press'])
 
 console.log('training workspace tests passed')

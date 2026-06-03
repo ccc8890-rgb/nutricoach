@@ -15,7 +15,13 @@ import {
   Video,
 } from 'lucide-react'
 import { calcularEjercicioQuality } from '@/lib/training/workspace'
-import { crearExerciseLibraryBatchPlan, crearExerciseLibraryCoachGroups, crearExerciseLibraryQueue } from '@/lib/training/exercise-library'
+import {
+  crearExerciseLibraryBatchPlan,
+  crearExerciseLibraryCoachGroups,
+  crearExerciseLibraryQueue,
+  filtrarExerciseLibrary,
+  type ExerciseLibraryEstadoFilter,
+} from '@/lib/training/exercise-library'
 
 interface Ejercicio {
   id: string
@@ -64,7 +70,10 @@ export default function EjerciciosMediaPage() {
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [grupo, setGrupo] = useState('')
-  const [qualityFilter, setQualityFilter] = useState<'todos' | 'sin_media' | 'sin_video' | 'completos'>('todos')
+  const [estado, setEstado] = useState<ExerciseLibraryEstadoFilter>('todos')
+  const [tipo, setTipo] = useState('')
+  const [equipamiento, setEquipamiento] = useState('')
+  const [dificultad, setDificultad] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [saving, setSaving] = useState<string | null>(null)
   const [saved, setSaved] = useState<string | null>(null)
@@ -77,7 +86,6 @@ export default function EjerciciosMediaPage() {
     setError(null)
 
     const params = new URLSearchParams()
-    if (query.trim()) params.set('query', query.trim())
     if (grupo) params.set('grupo', grupo)
 
     const res = await fetch(`/api/ejercicios/media?${params.toString()}`)
@@ -90,7 +98,7 @@ export default function EjerciciosMediaPage() {
       setEjercicios(payload.ejercicios ?? [])
     }
     setLoading(false)
-  }, [grupo, query])
+  }, [grupo])
 
   useEffect(() => {
     loadEjercicios()
@@ -171,23 +179,26 @@ export default function EjerciciosMediaPage() {
   }, [ejercicios])
 
   const visibles = useMemo(() => {
-    const base = qualityFilter === 'sin_media'
-      ? ejercicios.filter(e => !hasFoto(e) || !hasVideo(e))
-      : qualityFilter === 'sin_video'
-        ? ejercicios.filter(e => !hasVideo(e))
-        : qualityFilter === 'completos'
-          ? ejercicios.filter(isCompleto)
-          : ejercicios
-
-    return [...base].sort((a, b) =>
-      (a.grupo_muscular || 'Sin grupo').localeCompare(b.grupo_muscular || 'Sin grupo')
-      || a.nombre.localeCompare(b.nombre)
-    )
-  }, [ejercicios, qualityFilter])
+    return filtrarExerciseLibrary(ejercicios, { query, grupo, tipo, equipamiento, dificultad, estado }) as Ejercicio[]
+  }, [dificultad, ejercicios, equipamiento, estado, grupo, query, tipo])
   const assetQueue = useMemo(() => crearExerciseLibraryQueue(ejercicios), [ejercicios])
   const batchPlan = useMemo(() => crearExerciseLibraryBatchPlan(ejercicios), [ejercicios])
   const coachGroups = useMemo(() => crearExerciseLibraryCoachGroups(ejercicios), [ejercicios])
   const selectedGroup = useMemo(() => coachGroups.find(item => item.grupo === grupo), [coachGroups, grupo])
+  const grupoOptions = useMemo(() => Array.from(new Set([...GRUPOS, ...ejercicios.map(e => e.grupo_muscular).filter(Boolean)])).sort(), [ejercicios])
+  const tipoOptions = useMemo(() => Array.from(new Set(ejercicios.map(e => e.tipo).filter(Boolean))).sort(), [ejercicios])
+  const equipamientoOptions = useMemo(() => Array.from(new Set(ejercicios.flatMap(e => e.equipamiento ?? []).filter(Boolean))).sort(), [ejercicios])
+  const dificultadOptions = useMemo(() => Array.from(new Set(ejercicios.map(e => e.dificultad_nivel).filter((item): item is number => item != null))).sort((a, b) => a - b), [ejercicios])
+  const filtrosActivos = [query.trim(), grupo, tipo, equipamiento, dificultad, estado !== 'todos' ? estado : ''].filter(Boolean).length
+
+  function limpiarFiltros() {
+    setQuery('')
+    setGrupo('')
+    setTipo('')
+    setEquipamiento('')
+    setDificultad('')
+    setEstado('todos')
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 space-y-5">
@@ -205,22 +216,28 @@ export default function EjerciciosMediaPage() {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row">
-          <div className="relative min-w-0 sm:w-72">
+          <div className="relative min-w-0 sm:w-80">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <input
               ref={inputRef}
               type="text"
-              placeholder="Buscar ejercicio"
+              placeholder="Buscar por nombre, tipo, material..."
               value={query}
               onChange={e => setQuery(e.target.value)}
               autoComplete="off"
               className="input search-input w-full text-sm"
             />
           </div>
-          <select value={grupo} onChange={e => setGrupo(e.target.value)} className="input text-sm sm:w-48">
-            <option value="">Todos los grupos</option>
-            {GRUPOS.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
+          {filtrosActivos > 0 && (
+            <button
+              type="button"
+              onClick={limpiarFiltros}
+              className="rounded-xl border px-3 py-2 text-sm font-semibold"
+              style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}
+            >
+              Limpiar filtros
+            </button>
+          )}
         </div>
       </div>
 
@@ -362,30 +379,76 @@ export default function EjerciciosMediaPage() {
       )}
 
       {!loading && (
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          {[
-            ['todos', 'Todos'],
-            ['sin_media', 'Por completar'],
-            ['sin_video', 'Falta vídeo'],
-            ['completos', 'Listos para asignar'],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              onClick={() => setQualityFilter(value as typeof qualityFilter)}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
-              style={{
-                background: qualityFilter === value ? 'var(--accent)' : 'var(--bg)',
-                color: qualityFilter === value ? 'var(--bg)' : 'var(--text-secondary)',
-                border: `1px solid ${qualityFilter === value ? 'var(--accent)' : 'var(--border)'}`,
-              }}
-            >
-              {label}
-            </button>
-          ))}
-          <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}>
-            {visibles.length} visibles
-          </span>
-        </div>
+        <section className="rounded-2xl border p-3" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Filtros de trabajo</p>
+              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                {visibles.length} de {ejercicios.length} ejercicios visibles{filtrosActivos ? ` · ${filtrosActivos} filtros activos` : ''}
+              </p>
+            </div>
+            {filtrosActivos > 0 && (
+              <button
+                type="button"
+                onClick={limpiarFiltros}
+                className="rounded-full border px-3 py-1.5 text-xs font-semibold"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--bg)' }}
+              >
+                Reset
+              </button>
+            )}
+          </div>
+
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+            <select value={grupo} onChange={e => setGrupo(e.target.value)} className="input text-sm">
+              <option value="">Todos los grupos</option>
+              {grupoOptions.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+            <select value={estado} onChange={e => setEstado(e.target.value as ExerciseLibraryEstadoFilter)} className="input text-sm">
+              <option value="todos">Todos los estados</option>
+              <option value="por_completar">Por completar</option>
+              <option value="sin_video">Falta vídeo</option>
+              <option value="sin_foto">Falta foto</option>
+              <option value="listos">Listos para asignar</option>
+            </select>
+            <select value={tipo} onChange={e => setTipo(e.target.value)} className="input text-sm">
+              <option value="">Todos los tipos</option>
+              {tipoOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+            <select value={equipamiento} onChange={e => setEquipamiento(e.target.value)} className="input text-sm">
+              <option value="">Todo el material</option>
+              {equipamientoOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+            <select value={dificultad} onChange={e => setDificultad(e.target.value)} className="input text-sm">
+              <option value="">Toda dificultad</option>
+              {dificultadOptions.map(opt => <option key={opt} value={String(opt)}>Dificultad {opt}</option>)}
+            </select>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {[
+              ['todos', 'Todos'],
+              ['por_completar', 'Por completar'],
+              ['sin_video', 'Falta vídeo'],
+              ['sin_foto', 'Falta foto'],
+              ['listos', 'Listos'],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setEstado(value as ExerciseLibraryEstadoFilter)}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                style={{
+                  background: estado === value ? 'var(--accent)' : 'var(--bg)',
+                  color: estado === value ? 'var(--bg)' : 'var(--text-secondary)',
+                  border: `1px solid ${estado === value ? 'var(--accent)' : 'var(--border)'}`,
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </section>
       )}
 
       {error && (

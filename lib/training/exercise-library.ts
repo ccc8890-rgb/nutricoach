@@ -44,6 +44,17 @@ export interface ExerciseLibraryCoachGroup {
   ids: string[]
 }
 
+export type ExerciseLibraryEstadoFilter = 'todos' | 'por_completar' | 'sin_video' | 'sin_foto' | 'listos'
+
+export interface ExerciseLibraryFilters {
+  query?: string
+  grupo?: string
+  tipo?: string
+  equipamiento?: string
+  dificultad?: string
+  estado?: ExerciseLibraryEstadoFilter
+}
+
 const GAP_PRIORITY: Record<string, number> = {
   'Sin vídeo': 1,
   'Sin foto': 2,
@@ -164,4 +175,43 @@ export function crearExerciseLibraryCoachGroups(ejercicios: ExerciseLibraryInput
       }
     })
     .sort((a, b) => b.total - a.total || a.grupo.localeCompare(b.grupo))
+}
+
+export function filtrarExerciseLibrary(ejercicios: ExerciseLibraryInput[], filters: ExerciseLibraryFilters): ExerciseLibraryInput[] {
+  const query = filters.query?.trim().toLowerCase()
+  const grupo = filters.grupo?.trim()
+  const tipo = filters.tipo?.trim()
+  const equipamiento = filters.equipamiento?.trim()
+  const dificultad = filters.dificultad?.trim()
+  const estado = filters.estado ?? 'todos'
+
+  return ejercicios
+    .filter(ejercicio => {
+      if (query) {
+        const haystack = [
+          ejercicio.nombre,
+          ejercicio.grupo_muscular,
+          ejercicio.tipo,
+          ...(ejercicio.equipamiento ?? []),
+          ...(ejercicio.musculos_secundarios ?? []),
+        ].filter(Boolean).join(' ').toLowerCase()
+        if (!haystack.includes(query)) return false
+      }
+
+      if (grupo && ejercicio.grupo_muscular !== grupo) return false
+      if (tipo && ejercicio.tipo !== tipo) return false
+      if (equipamiento && !(ejercicio.equipamiento ?? []).includes(equipamiento)) return false
+      if (dificultad && String(ejercicio.dificultad_nivel ?? '') !== dificultad) return false
+
+      if (estado === 'por_completar' && calcularEjercicioQuality(ejercicio).status === 'completo') return false
+      if (estado === 'sin_video' && ejercicio.video_url) return false
+      if (estado === 'sin_foto' && ejercicio.foto_url) return false
+      if (estado === 'listos' && calcularEjercicioQuality(ejercicio).status !== 'completo') return false
+
+      return true
+    })
+    .sort((a, b) =>
+      (a.grupo_muscular || 'Sin grupo').localeCompare(b.grupo_muscular || 'Sin grupo')
+      || a.nombre.localeCompare(b.nombre)
+    )
 }

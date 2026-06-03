@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     .from('ejercicios')
     .select('id, nombre, grupo_muscular, tipo, descripcion, foto_url, video_url, video_tipo, dificultad_nivel, equipamiento, musculos_secundarios')
     .order('nombre')
-    .limit(120)
+    .limit(500)
 
   if (query) q = q.ilike('nombre', `%${query}%`)
   if (grupo) q = q.eq('grupo_muscular', grupo)
