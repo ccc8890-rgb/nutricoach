@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { Brain, CheckCircle2, ChevronLeft, ChevronRight, Circle, History, Pause, Play, RotateCcw, Save } from 'lucide-react'
+import { ArrowCounterClockwise, Barbell, Brain, CaretLeft, CaretRight, CheckCircle, Circle, ClockCounterClockwise, FloppyDisk, Pause, Play } from '@phosphor-icons/react'
 import SetRegistroSheet from './SetRegistroSheet'
 import EjercicioDemoModal from './EjercicioDemoModal'
 import { crearSessionExecutionSummary, crearSessionProgressSummary } from '@/lib/training/session-progress'
@@ -66,6 +66,35 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
     }, 1000)
     return () => window.clearInterval(t)
   }, [timerRunning, restLeft])
+
+  const prevRestLeftRef = useRef(0)
+
+  function playBeep() {
+    if (typeof window === 'undefined') return
+    try {
+      const ctx = new window.AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.frequency.value = 440
+      gain.gain.setValueAtTime(0.3, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.15)
+      osc.onended = () => ctx.close()
+    } catch { /* silencioso si AudioContext no disponible */ }
+  }
+
+  useEffect(() => {
+    if (restLeft === 0 && prevRestLeftRef.current > 0) {
+      playBeep()
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([200, 100, 200])
+      }
+    }
+    prevRestLeftRef.current = restLeft
+  }, [restLeft])
 
   const ej = ejercicios[ejIdx]
   if (!ej) return null
@@ -146,7 +175,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
 
         <div className="glass-card p-5 flex-1 flex flex-col">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'var(--semantic-active-bg)', border: '1px solid var(--semantic-active-border)' }}>
-            <CheckCircle2 size={26} style={{ color: 'var(--semantic-active)' }} />
+            <CheckCircle size={26} style={{ color: 'var(--semantic-active)' }} />
           </div>
           <h2 className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>Cerrar sesión</h2>
           <p className="text-sm mt-1 mb-5" style={{ color: 'var(--text-muted)' }}>
@@ -213,7 +242,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
               className="flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98]"
               style={{ background: 'var(--accent)', color: 'var(--bg)' }}
             >
-              <Save size={16} /> Guardar sesión
+              <FloppyDisk size={16} /> Guardar sesión
             </button>
           </div>
         </div>
@@ -277,7 +306,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
                       border: `1px solid ${item.activo ? 'var(--accent)' : 'var(--border)'}`,
                     }}
                   >
-                    {item.completado ? <CheckCircle2 size={14} /> : item.index + 1}
+                    {item.completado ? <CheckCircle size={14} /> : item.index + 1}
                   </span>
                   <span className="font-data text-[11px]" style={{ color: item.completado ? 'var(--semantic-active)' : 'var(--text-muted)' }}>
                     {item.hechosEjercicio}/{item.totalEjercicio}
@@ -333,7 +362,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           <div className="flex items-center gap-3 mb-1">
             {ej.ultimo_peso_kg != null && ej.ultimo_peso_kg > 0 && (
               <p className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--semantic-info)' }}>
-                <History size={13} /> {ej.ultimo_peso_kg} kg última vez
+                <ClockCounterClockwise size={13} /> {ej.ultimo_peso_kg} kg última vez
               </p>
             )}
             {ej.peso_sugerido && (
@@ -420,7 +449,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
             style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
             aria-label="Cerrar descanso"
           >
-            <RotateCcw size={16} />
+            <ArrowCounterClockwise size={16} />
           </button>
         </div>
       )}
@@ -437,7 +466,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
             color: ejIdx === 0 ? 'var(--text-muted)' : 'var(--text)',
           }}
         >
-          <ChevronLeft size={16} /> Anterior
+          <CaretLeft size={16} /> Anterior
         </button>
         <button
           onClick={avanzar}
@@ -449,8 +478,8 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
             border: `1px solid ${todosEjHechos ? 'var(--accent)' : 'var(--border)'}`,
           }}
         >
-          {ejIdx === ejercicios.length - 1 ? <CheckCircle2 size={16} /> : null}
-          {ejIdx === ejercicios.length - 1 ? 'Finalizar sesión' : 'Siguiente'} <ChevronRight size={16} />
+          {ejIdx === ejercicios.length - 1 ? <CheckCircle size={16} /> : null}
+          {ejIdx === ejercicios.length - 1 ? 'Finalizar sesión' : 'Siguiente'} <CaretRight size={16} />
         </button>
       </div>
 
@@ -475,6 +504,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           grupo_muscular={ej.grupo_muscular}
           video_url={ej.video_url}
           foto_url={ej.foto_url}
+          instruccion_ejercicio={ej.instruccion_ejercicio}
           onCerrar={() => setDemoAbierto(false)}
         />
       )}
