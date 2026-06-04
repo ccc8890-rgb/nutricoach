@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Brain, CheckCircle2, Clock3, Dumbbell, Loader2, Play, Target, Trophy } from 'lucide-react'
+import { ArrowLeft, Barbell, Brain, CheckCircle, CircleNotch, Clock, Play, Target, Trophy } from '@phosphor-icons/react'
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
 import EjercicioDemoModal from '@/components/training/EjercicioDemoModal'
 import { crearSesionGuidance } from '@/lib/training/workspace'
@@ -61,7 +61,13 @@ export default function EjecucionSesionPage() {
     reps: number
   }>>([])
   const [historialPesos, setHistorialPesos] = useState<Map<string, number>>(new Map())
-  const [demoEjercicio, setDemoEjercicio] = useState<{ nombre: string; grupo_muscular: string; video_url?: string | null; foto_url?: string | null } | null>(null)
+  const [demoEjercicio, setDemoEjercicio] = useState<{
+    nombre: string
+    grupo_muscular: string
+    video_url?: string | null
+    foto_url?: string | null
+    instruccion_ejercicio?: string | null
+  } | null>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -173,7 +179,7 @@ export default function EjecucionSesionPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen">
-      <Loader2 size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
+      <CircleNotch size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
     </div>
   )
 
@@ -186,7 +192,7 @@ export default function EjecucionSesionPage() {
   )
 
   if (guardadoOk) return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ background: prsDetectados.length > 0 ? 'var(--semantic-active-bg)' : 'var(--bg)', animation: 'fadeIn 0.4s var(--ease-out-strong, ease-out) both' }}>
       <div
         className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
         style={{ background: 'var(--semantic-active-bg)', border: '2px solid var(--semantic-active-border)' }}
@@ -202,11 +208,11 @@ export default function EjecucionSesionPage() {
             Nuevos récords personales
           </p>
           <div className="flex flex-col gap-2">
-            {prsDetectados.map(pr => (
+            {prsDetectados.map((pr, i) => (
               <div
                 key={pr.ejercicio_id}
                 className="px-4 py-3 rounded-xl flex justify-between items-center"
-                style={{ background: 'var(--semantic-active-bg)', border: '1px solid var(--semantic-active-border)' }}
+                style={{ background: 'var(--semantic-active-bg)', border: '1px solid var(--semantic-active-border)', animation: `fadeIn 0.3s var(--ease-out-strong, ease-out) ${i * 80}ms both` }}
               >
                 <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{pr.ejercicio_nombre}</span>
                 <div className="text-right">
@@ -324,14 +330,14 @@ export default function EjecucionSesionPage() {
                 )}
               </div>
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
-                <Dumbbell size={22} />
+                <Barbell size={22} />
               </div>
             </div>
             <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{guidance.coachNote}</p>
             <div className="mt-3 grid grid-cols-3 gap-2">
               <GuideMetric icon={<Target size={13} />} label="Bloques" value={sesion.ejercicios.length} />
-              <GuideMetric icon={<CheckCircle2 size={13} />} label="Sets" value={totalSets} />
-              <GuideMetric icon={<Clock3 size={13} />} label="Modo" value={modo === 'registrar' ? 'registro' : 'vista'} />
+              <GuideMetric icon={<CheckCircle size={13} />} label="Sets" value={totalSets} />
+              <GuideMetric icon={<Clock size={13} />} label="Modo" value={modo === 'registrar' ? 'registro' : 'vista'} />
             </div>
             <div className="mt-4 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
@@ -359,7 +365,7 @@ export default function EjecucionSesionPage() {
         {modo === 'registrar' ? (
           guardando ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
+              <CircleNotch size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
             </div>
           ) : (
             <SesionCardMobile
@@ -402,6 +408,7 @@ export default function EjecucionSesionPage() {
                           grupo_muscular: ej.ejercicio?.grupo_muscular ?? '',
                           video_url: ej.ejercicio?.video_url,
                           foto_url: ej.ejercicio?.foto_url,
+                          instruccion_ejercicio: ej.notas ?? '',
                         })}
                         className="flex items-center gap-1 text-[11px] px-2 py-1 rounded-full font-semibold"
                         style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}
@@ -442,6 +449,7 @@ export default function EjecucionSesionPage() {
           grupo_muscular={demoEjercicio.grupo_muscular}
           video_url={demoEjercicio.video_url}
           foto_url={demoEjercicio.foto_url}
+          instruccion_ejercicio={demoEjercicio.instruccion_ejercicio}
           onCerrar={() => setDemoEjercicio(null)}
         />
       )}
