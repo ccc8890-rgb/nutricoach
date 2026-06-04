@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { ChevronRight, Dumbbell, Zap, CheckCircle2, Play } from 'lucide-react'
+import { CaretRight, Barbell, Lightning, CheckCircle, Play } from '@phosphor-icons/react'
 import Link from 'next/link'
 import { getRecomendacionDescanso } from '@/lib/entrenos/descanso'
 
@@ -142,7 +142,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{ background: 'var(--semantic-info-bg)' }}
           >
-            <Dumbbell size={14} style={{ color: 'var(--semantic-info)' }} />
+            <Barbell size={14} style={{ color: 'var(--semantic-info)' }} />
           </div>
           <div>
             <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{planNombre}</p>
@@ -172,7 +172,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                   style={dayDotStyle(dia)}
                   title={hasSesion ? sesionDelDia?.nombre : 'Descanso'}
                 >
-                  {estaCompletada ? <CheckCircle2 size={14} /> : DIA_ABR[dia]}
+                  {estaCompletada ? <CheckCircle size={14} /> : DIA_ABR[dia]}
                 </div>
                 <div
                   className="w-1 h-1 rounded-full"
@@ -228,9 +228,9 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 style={{ background: nextSessionCompleted ? 'var(--semantic-active-border)' : 'var(--semantic-info-bg)' }}
               >
                 {nextSessionCompleted ? (
-                  <CheckCircle2 size={16} style={{ color: 'var(--semantic-active)' }} />
+                  <CheckCircle size={16} style={{ color: 'var(--semantic-active)' }} />
                 ) : (
-                  <Zap size={16} style={{ color: 'var(--semantic-info)' }} />
+                  <Lightning size={16} style={{ color: 'var(--semantic-info)' }} />
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -259,7 +259,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                     className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1"
                     style={{ background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)' }}
                   >
-                    <CheckCircle2 size={11} />
+                    <CheckCircle size={11} />
                     Hecha
                   </span>
                 ) : nextSession.dia_semana === TODAY_NAME ? (
@@ -278,7 +278,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                     Ver entreno
                   </span>
                 )}
-                <ChevronRight size={14} style={{ color: nextSessionCompleted ? 'var(--semantic-active)' : 'var(--semantic-info)' }} />
+                <CaretRight size={14} style={{ color: nextSessionCompleted ? 'var(--semantic-active)' : 'var(--semantic-info)' }} />
               </div>
             </Link>
           </div>
@@ -304,7 +304,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                           : 'rgba(128,128,128,0.1)',
                       }}
                     >
-                      {completada ? <CheckCircle2 size={12} /> : (DIA_ABR[s.dia_semana] ?? '?')}
+                      {completada ? <CheckCircle size={12} /> : (DIA_ABR[s.dia_semana] ?? '?')}
                     </span>
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm truncate" style={{ color: completada ? 'var(--semantic-active)' : 'var(--text)' }}>
