@@ -1,5 +1,30 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 04-06-2026 (Sesión 47) — Training Polish: Phosphor + EjercicioDemoModal + Timer feedback
+
+### Qué se hizo
+
+| Tarea | Commits | Detalle |
+|-------|---------|---------|
+| Migración iconos Lucide → Phosphor | `3ccec66`–`e8552a8` | 6 archivos: HistorialEntreno, SemanaEntrenoCard, SetRegistroSheet, EjercicioDemoModal, SesionCardMobile, `/cliente/sesion/[id]`, ejercicios/page |
+| EjercicioDemoModal reescrito | `cde9273` | 4 niveles de fallback: YouTube embed → Instagram/TikTok/Vimeo (botón + thumbnail) → foto → placeholder Barbell. Prop `instruccion_ejercicio` nueva con sección colapsable |
+| Timer feedback físico | `bab90ea` | Web Audio API beep 440Hz + `navigator.vibrate([200,100,200])` al llegar el timer de descanso a 0. Guard SSR incluido |
+| `instruccion_ejercicio` en callers | `bab90ea` `0cc4dbe` | SesionCardMobile y `/cliente/sesion/[id]` pasan el campo al modal. Estado `demoEjercicio` extendido |
+| Animación PRs en pantalla éxito | `0cc4dbe` | `fadeIn` staggered por item, fondo `--semantic-active-bg` cuando hay PRs |
+| Spec + plan documentados | `a535f40` `46dd297` | `docs/superpowers/specs/2026-06-04-training-polish-design.md` + `docs/superpowers/plans/2026-06-04-training-polish.md` |
+
+### Estado del módulo de entrenamiento tras esta sesión
+- ✅ Consistencia visual completa: todos los componentes training usan `@phosphor-icons/react`
+- ✅ EjercicioDemoModal soporta todas las plataformas sin salir de la app
+- ✅ Timer de descanso con feedback físico (beep + vibración)
+- ✅ Instrucciones del ejercicio visibles en el modal (colapsadas por defecto)
+- ✅ Pantalla de PRs con animación celebratoria
+
+### Pendiente (identificado en audit de bugs sesión 47)
+- Ver sección de bugs al final de este archivo cuando esté el informe
+
+---
+
 ## ✅ SESIÓN 29-05-2026 (Sesión 46) — Rediseño /clientes + Agente Retención
 
 ### Qué se hizo
