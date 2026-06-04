@@ -1,5 +1,32 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 05-06-2026 (Sesión 48) — Limpieza sidebar + tab Formularios en Clientes
+
+### Qué se hizo
+
+| Tarea | Commit | Detalle |
+|-------|--------|---------|
+| Limpieza sidebar | `c27de53` | Eliminados Probador IA, Scraping, Enriquecer, Consultas. Cuestionarios suelto al final. KBPanel y CostesClientes eliminados del dashboard. |
+| Badge noLeidas → Clientes | `c27de53` | El badge de formularios sin leer (+ clientes pendientes) se mueve al item Clientes en lugar de Consultas. |
+| Tab Formularios en /clientes | `c27de53` | Dos tabs: "Clientes" (lista CRM) y "Formularios" (respuestas_clientes). Mark-as-read al abrir. Skeleton correcto. |
+| Fix bugs tab Formularios | `c27de53` | try/finally en loadRespuestas (evita spinner infinito). Flag `formulariosCargados` para evitar flash de empty state antes del primer fetch. |
+
+### Estado del sidebar tras esta sesión
+- ✅ Sidebar: 4 items primarios (Radar, Clientes, Inbox IA, Entrenamiento)
+- ✅ Módulos: Nutrición, Recetario, Conocimiento (sin sección Sistema)
+- ✅ Cuestionarios: item suelto al final, separado por divisor
+- ✅ Dashboard: Stats → Acciones → AutoCoach → Check-ins → Analytics (sin KB ni Costes)
+- ✅ /clientes con tab Formularios integrado (respuestas de cuestionarios = leads)
+- ✅ /respuestas sigue existiendo como URL directa (no está en sidebar)
+
+### Bugs corregidos
+| # | Archivo | Bug | Fix |
+|---|---------|-----|-----|
+| 1 | `app/clientes/page.tsx` | `loadRespuestas` sin try/finally → spinner infinito si Supabase falla | try/catch/finally añadido |
+| 2 | `app/clientes/page.tsx` | Flash de empty state al abrir tab Formularios (useEffect asíncrono) | Flag `formulariosCargados` + condición `!formulariosCargados \|\| respuestasLoading` |
+
+---
+
 ## ✅ SESIÓN 04-06-2026 (Sesión 47) — Training Polish: Phosphor + EjercicioDemoModal + Timer feedback
 
 ### Qué se hizo
