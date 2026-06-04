@@ -1,7 +1,7 @@
 // app/clientes/page.tsx
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useDebounce } from '@/lib/useDebounce'
 import Link from 'next/link'
@@ -14,7 +14,10 @@ import {
 import ClientesToolbar from '@/components/clientes/ClientesToolbar'
 import ClientesTabla from '@/components/clientes/ClientesTabla'
 import ClientesListaMobile from '@/components/clientes/ClientesListaMobile'
+import RespuestasClientes from '@/components/RespuestasClientes'
+import type { RespuestaCliente } from '@/types'
 
+type TabActiva = 'clientes' | 'formularios'
 type PlanRow = { cliente_id: string }
 type TareaRow = { cliente_id: string | null }
 
@@ -22,6 +25,13 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<ClienteRow[]>([])
   const [loading, setLoading] = useState(true)
   const [invitando, setInvitando] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+
+  // Tabs
+  const [tabActiva, setTabActiva] = useState<TabActiva>('clientes')
+  const [respuestas, setRespuestas] = useState<RespuestaCliente[]>([])
+  const [respuestasLoading, setRespuestasLoading] = useState(false)
+  const [respuestasNoLeidas, setRespuestasNoLeidas] = useState(0)
+  const [formulariosCargados, setFormulariosCargados] = useState(false)
 
   // Filtros
   const [busqueda, setBusqueda] = useState('')
@@ -32,6 +42,34 @@ export default function ClientesPage() {
   const [filtroRevisiones, setFiltroRevisiones] = useState(false)
   const [filtroChats, setFiltroChats] = useState(false)
   const [sort, setSort] = useState<SortKey>('checkin')
+
+  const loadRespuestas = useCallback(async () => {
+    setRespuestasLoading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('respuestas_clientes')
+        .select('*, cuestionario:cuestionarios(titulo)')
+        .eq('coach_id', user.id)
+        .order('created_at', { ascending: false })
+      setRespuestas(data ?? [])
+      const unread = (data ?? []).filter((r: RespuestaCliente) => !r.leida).map((r: RespuestaCliente) => r.id)
+      if (unread.length > 0) {
+        await supabase.from('respuestas_clientes').update({ leida: true, updated_at: new Date().toISOString() }).in('id', unread)
+        setRespuestasNoLeidas(0)
+      }
+    } catch (e) {
+      console.error('[clientes] error cargando formularios:', e)
+    } finally {
+      setRespuestasLoading(false)
+      setFormulariosCargados(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (tabActiva === 'formularios') loadRespuestas()
+  }, [tabActiva, loadRespuestas])
 
   async function handleInvitar() {
     setInvitando('loading')
@@ -136,6 +174,14 @@ export default function ClientesPage() {
         }
 
         setClientes(mapped)
+
+        // Conteo badge para tab Formularios
+        const { count: noLeidas } = await supabase
+          .from('respuestas_clientes')
+          .select('id', { count: 'exact', head: true })
+          .eq('coach_id', user.id)
+          .eq('leida', false)
+        setRespuestasNoLeidas(noLeidas ?? 0)
       } catch (e) {
         console.error('[clientes] error:', e)
       }
@@ -204,6 +250,64 @@ export default function ClientesPage() {
         </div>
       </header>
 
+      {/* Tabs */}
+      <div className="flex items-center gap-1 mb-4 border-b" style={{ borderColor: 'var(--border)' }}>
+        {([
+          { key: 'clientes', label: 'Clientes', count: clientes.length },
+          { key: 'formularios', label: 'Formularios', count: respuestasNoLeidas },
+        ] as { key: TabActiva; label: string; count: number }[]).map(({ key, label, count }) => (
+          <button
+            key={key}
+            onClick={() => setTabActiva(key)}
+            className="relative px-4 py-2.5 text-sm font-medium transition-colors"
+            style={{
+              color: tabActiva === key ? 'var(--text)' : 'var(--text-muted)',
+              borderTop: 'none',
+              borderLeft: 'none',
+              borderRight: 'none',
+              borderBottom: tabActiva === key ? '2px solid var(--accent)' : '2px solid transparent',
+              marginBottom: '-1px',
+              background: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            {label}
+            {count > 0 && (
+              <span
+                className="ml-2 text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center inline-block"
+                style={{
+                  background: key === 'formularios' ? 'var(--error)' : 'var(--accent)',
+                  color: '#fff',
+                }}
+              >
+                {count > 99 ? '99+' : count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {tabActiva === 'formularios' ? (
+        <div className="max-w-4xl">
+          {!formulariosCargados || respuestasLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="rounded-2xl p-4 flex items-center gap-3 animate-pulse" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <div className="w-3 h-3 rounded-full skeleton flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 skeleton rounded w-40" />
+                    <div className="h-3 skeleton rounded w-56 max-w-full" />
+                  </div>
+                  <div className="h-6 w-20 skeleton rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <RespuestasClientes respuestas={respuestas} onActualizar={loadRespuestas} />
+          )}
+        </div>
+      ) : (
+        <>
       {/* Toolbar */}
       <ClientesToolbar
         busqueda={busqueda} onBusqueda={setBusqueda}
@@ -246,6 +350,8 @@ export default function ClientesPage() {
           <div className="lg:hidden">
             <ClientesListaMobile clientes={filtrados} />
           </div>
+        </>
+      )}
         </>
       )}
     </div>

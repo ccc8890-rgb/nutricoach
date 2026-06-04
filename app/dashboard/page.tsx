@@ -26,8 +26,6 @@ import { CountUp } from '@/components/ui/CountUp'
 import { MiniSparkline } from '@/components/dashboard/MiniSparkline'
 import CheckinsPendientes from '@/components/dashboard/CheckinsPendientes'
 import AutoCoachPanel from '@/components/dashboard/AutoCoachPanel'
-import KBPanel from '@/components/dashboard/KBPanel'
-import CostesClientes from '@/components/dashboard/CostesClientes'
 
 const BarChart = dynamic(() => import('@/components/dashboard/BarChart'), {
   loading: () => <SkeletonChart height={100} />,
@@ -320,10 +318,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <KBPanel />
       <AutoCoachPanel />
       <CheckinsPendientes />
-      <CostesClientes />
 
       {/* ── Nuevos clientes + Consultas ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">

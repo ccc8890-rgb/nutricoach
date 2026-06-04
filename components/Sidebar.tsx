@@ -16,13 +16,11 @@ import {
   ClipboardList,
   Database,
   Dumbbell,
-  FlaskConical,
   House,
   Images,
   ListChecks,
   LogOut,
   Menu,
-  MessageCircle,
   Moon,
   Settings,
   ShoppingCart,
@@ -56,7 +54,6 @@ const PRIMARY_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Radar', icon: House },
   { href: '/clientes', label: 'Clientes', icon: UsersRound },
   { href: '/agentes', label: 'Inbox IA', icon: Bot },
-  { href: '/respuestas', label: 'Consultas', icon: MessageCircle },
   { href: '/entrenos', label: 'Entrenamiento', icon: Dumbbell },
 ]
 
@@ -84,11 +81,8 @@ const CONOCIMIENTO_ITEMS: NavItem[] = [
   { href: '/conocimiento', label: 'Base de conocimiento', icon: Brain },
 ]
 
-const SISTEMA_ITEMS: NavItem[] = [
+const EXTRA_ITEMS: NavItem[] = [
   { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
-  { href: '/ia-test', label: 'Probador IA', icon: FlaskConical },
-  { href: '/precios/scraping', label: 'Scraping', icon: Database },
-  { href: '/precios/enriquecer', label: 'Enriquecer', icon: Settings },
 ]
 
 function isActivePath(pathname: string, href: string) {
@@ -231,7 +225,7 @@ export default function Sidebar() {
 
   const primaryItems = PRIMARY_ITEMS.map(item => {
     if (item.href === '/agentes') return { ...item, badge: agentesPendientes }
-    if (item.href === '/respuestas') return { ...item, badge: noLeidas }
+    if (item.href === '/clientes') return { ...item, badge: noLeidas }
     return item
   })
 
@@ -245,7 +239,6 @@ export default function Sidebar() {
       items: RECETARIO_ITEMS.map(item => item.href === '/recetas/cola' ? { ...item, badge: recetasPendientes } : item),
     },
     { key: 'conocimiento', label: 'Conocimiento', icon: Brain, items: CONOCIMIENTO_ITEMS },
-    { key: 'sistema', label: 'Sistema', icon: Settings, items: SISTEMA_ITEMS },
   ]
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
@@ -343,6 +336,12 @@ export default function Sidebar() {
             onToggle={() => setExpanded(prev => ({ ...prev, [section.key]: !prev[section.key] }))}
           />
         ))}
+
+        <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--glass-border)' }}>
+          {EXTRA_ITEMS.map(item => (
+            <NavLink key={item.href} item={item} pathname={pathname} />
+          ))}
+        </div>
       </nav>
 
       <div className="flex-shrink-0 p-3 border-t space-y-1" style={{ borderColor: 'var(--glass-border)' }}>
