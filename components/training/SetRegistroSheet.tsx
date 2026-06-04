@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Check, History, X } from 'lucide-react'
+import { Check, ClockCounterClockwise, X } from '@phosphor-icons/react'
 
 interface Props {
   setNum: number
@@ -37,7 +37,7 @@ export default function SetRegistroSheet({
             <p className="font-semibold" style={{ color: 'var(--text)' }}>{ejercicioNombre}</p>
             {pesoInicialKg != null && pesoInicialKg > 0 && (
               <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--semantic-info)' }}>
-                <History size={12} /> Última vez: {pesoInicialKg} kg
+                <ClockCounterClockwise size={12} /> Última vez: {pesoInicialKg} kg
               </p>
             )}
           </div>
