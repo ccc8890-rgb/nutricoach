@@ -116,14 +116,15 @@ function GenerarIAForm() {
       }),
     })
 
-    const json = await res.json()
     setGenerando(false)
 
     if (!res.ok) {
+      const json = await res.json().catch(() => ({ error: 'Error al generar el plan' }))
       setError(json.error ?? 'Error al generar el plan')
       return
     }
 
+    const json = await res.json()
     setPlan(json.plan)
     setMeta(json.metadata)
     setSemanaAbierta(1)

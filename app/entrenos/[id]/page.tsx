@@ -156,10 +156,12 @@ export default function PlanEditorPage() {
         const map = new Map(ses.ejercicios.map(e => [e.id, e]))
         return {
           ...ses,
-          ejercicios: ejerciciosOrdenados.map((eid, i) => ({
-            ...map.get(eid)!,
-            orden: i,
-          })),
+          ejercicios: ejerciciosOrdenados
+            .filter(eid => map.has(eid))
+            .map((eid, i) => ({
+              ...map.get(eid)!,
+              orden: i,
+            })),
         }
       }),
     })))

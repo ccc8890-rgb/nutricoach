@@ -53,6 +53,7 @@ export default function EjecucionSesionPage() {
   const [modo, setModo] = useState<Modo>('registrar')
   const [guardando, setGuardando] = useState(false)
   const [guardadoOk, setGuardadoOk] = useState(false)
+  const [errorGuardado, setErrorGuardado] = useState('')
   const [prsDetectados, setPrsDetectados] = useState<Array<{
     ejercicio_id: string
     ejercicio_nombre: string
@@ -168,12 +169,16 @@ export default function EjecucionSesionPage() {
           notas: meta?.notas,
         }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({ ok: false, error: 'Error al guardar la sesión' }))
       if (data.ok) {
         setPrsDetectados(data.prs ?? [])
         setGuardadoOk(true)
+      } else {
+        setErrorGuardado(data.error ?? 'No se pudo guardar la sesión. Inténtalo de nuevo.')
       }
-    } catch {}
+    } catch {
+      setErrorGuardado('Error de conexión. Comprueba tu red e inténtalo de nuevo.')
+    }
     setGuardando(false)
   }
 
@@ -366,6 +371,20 @@ export default function EjecucionSesionPage() {
           guardando ? (
             <div className="flex items-center justify-center py-20">
               <CircleNotch size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
+            </div>
+          ) : errorGuardado ? (
+            <div className="mx-auto mt-6 w-full max-w-md px-4">
+              <div className="rounded-2xl border p-4 text-center" style={{ borderColor: 'var(--semantic-alert-border)', background: 'var(--semantic-alert-bg)' }}>
+                <p className="text-sm font-semibold" style={{ color: 'var(--semantic-alert)' }}>No se pudo guardar la sesión</p>
+                <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>{errorGuardado}</p>
+                <button
+                  onClick={() => setErrorGuardado('')}
+                  className="mt-3 rounded-xl px-4 py-2 text-xs font-semibold"
+                  style={{ background: 'var(--semantic-alert)', color: 'var(--bg)' }}
+                >
+                  Reintentar
+                </button>
+              </div>
             </div>
           ) : (
             <SesionCardMobile
