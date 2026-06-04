@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Trophy, Zap, ChevronDown, ChevronUp } from 'lucide-react'
+import { Trophy, Lightning, CaretDown, CaretUp } from '@phosphor-icons/react'
 
 interface PREntry {
   ejercicio_id: string
@@ -153,7 +153,7 @@ export default function HistorialEntreno({ clienteId }: { clienteId: string }) {
       {sesiones.length > 0 ? (
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Zap size={15} style={{ color: 'var(--semantic-info)' }} />
+            <Lightning size={15} style={{ color: 'var(--semantic-info)' }} />
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sesiones recientes</h3>
           </div>
           <div className="flex flex-col gap-2">
@@ -222,8 +222,8 @@ export default function HistorialEntreno({ clienteId }: { clienteId: string }) {
                         </span>
                       )}
                       {isOpen
-                        ? <ChevronUp size={15} style={{ color: 'var(--text-muted)' }} />
-                        : <ChevronDown size={15} style={{ color: 'var(--text-muted)' }} />
+                        ? <CaretUp size={15} style={{ color: 'var(--text-muted)' }} />
+                        : <CaretDown size={15} style={{ color: 'var(--text-muted)' }} />
                       }
                     </div>
                   </button>
@@ -285,7 +285,7 @@ export default function HistorialEntreno({ clienteId }: { clienteId: string }) {
         </section>
       ) : (
         <div className="rounded-xl text-center py-12" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <Zap size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
+          <Lightning size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
           <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Sin sesiones registradas</p>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             Aparecerán aquí cuando el cliente complete sesiones desde la app
