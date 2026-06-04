@@ -20,8 +20,18 @@
 - ✅ Instrucciones del ejercicio visibles en el modal (colapsadas por defecto)
 - ✅ Pantalla de PRs con animación celebratoria
 
-### Pendiente (identificado en audit de bugs sesión 47)
-- Ver sección de bugs al final de este archivo cuando esté el informe
+### Audit de bugs (sesión 47) — commit `4bc4053`
+
+| # | Gravedad | Archivo | Bug | Estado |
+|---|----------|---------|-----|--------|
+| 1 | 🔴 Crítico | `entrenos/generar-ia/page.tsx` | `.json()` llamado antes de `res.ok` — si la API devuelve HTML en 500, lanza excepción | ✅ Corregido |
+| 2 | 🟠 Alto | `cliente/sesion/[id]/page.tsx` | `registrarSesion()` no mostraba error si `data.ok === false` o si `.json()` fallaba | ✅ Corregido — nuevo estado `errorGuardado` + banner "Reintentar" |
+| 3 | 🔴 Falso positivo | `entrenos/[id]/page.tsx:127` | Optional chaining `cli?.profile?.nombre` ya protege correctamente | ⚪ No aplica |
+| 4 | 🟡 Medio | `entrenos/plantillas/page.tsx` | IIFE en useEffect — patrón menor, funciona | ⚪ Documentado, no crítico |
+| 5 | 🟡 Medio | `entrenos/[id]/page.tsx` | `selectedSesionId` puede quedar huérfano tras refetch en edge case | ⚪ Documentado, edge case poco probable |
+| 6 | 🟠 Alto | `entrenos/plantillas/page.tsx:641` | Modal de asignación con `plantillaActual` undefined muestra nombre vacío pero no crashea (optional chaining) | ⚪ UX menor, no crash |
+| 7 | 🟡 Medio | `cliente/sesion/[id]/page.tsx` | Error en historial de pesos ignorado silenciosamente | ⚪ No impacta flujo crítico |
+| 8 | 🟡 Medio | `entrenos/[id]/page.tsx:160` | `map.get(eid)!` non-null assertion — podría fallar si estado stale | ✅ Corregido — `filter(eid => map.has(eid))` antes del `.map` |
 
 ---
 
