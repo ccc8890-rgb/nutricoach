@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { ArrowCounterClockwise, Barbell, Brain, CaretLeft, CaretRight, CheckCircle, Circle, ClockCounterClockwise, FloppyDisk, Pause, Play } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, Brain, CaretLeft, CaretRight, CheckCircle, Circle, ClockCounterClockwise, FloppyDisk, Pause, Play } from '@phosphor-icons/react'
 import SetRegistroSheet from './SetRegistroSheet'
 import EjercicioDemoModal from './EjercicioDemoModal'
 import { crearSessionExecutionSummary, crearSessionProgressSummary } from '@/lib/training/session-progress'
