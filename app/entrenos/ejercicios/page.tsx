@@ -2,18 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  AlertCircle,
+  ArrowSquareOut,
+  CaretDown,
+  CaretUp,
   Check,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  Image as ImageIcon,
-  Loader2,
-  Save,
-  Search,
+  CircleNotch,
+  FloppyDisk,
+  ImageSquare,
+  MagnifyingGlass,
   SlidersHorizontal,
-  Video,
-} from 'lucide-react'
+  VideoCamera,
+  WarningCircle,
+} from '@phosphor-icons/react'
 import { calcularEjercicioQuality } from '@/lib/training/workspace'
 import {
   crearExerciseLibraryBatchPlan,
@@ -64,6 +64,44 @@ function isCompleto(e: Ejercicio) {
 function coveragePercent(value: number, total: number) {
   if (total === 0) return 0
   return Math.round((value / total) * 100)
+}
+
+function ReadinessBar({ value, tone = 'info' }: { value: number; tone?: 'info' | 'warn' | 'active' }) {
+  const color = tone === 'active'
+    ? 'var(--semantic-active)'
+    : tone === 'warn'
+      ? 'var(--semantic-warn)'
+      : 'var(--semantic-info)'
+
+  return (
+    <div className="mt-2 h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--bg-subtle)' }}>
+      <div
+        className="h-full rounded-full transition-[width] duration-300 ease-out"
+        style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: color }}
+      />
+    </div>
+  )
+}
+
+function LibrarySkeleton() {
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
+        {[0, 1, 2, 3, 4].map(item => (
+          <div key={item} className="h-[88px] animate-pulse rounded-xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }} />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="h-72 animate-pulse rounded-3xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }} />
+        <div className="h-72 animate-pulse rounded-3xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }} />
+      </div>
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+        {[0, 1, 2, 3].map(item => (
+          <div key={item} className="h-24 animate-pulse rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }} />
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default function EjerciciosMediaPage() {
@@ -219,7 +257,7 @@ export default function EjerciciosMediaPage() {
 
         <div className="flex flex-col gap-2 sm:flex-row">
           <div className="relative min-w-0 sm:w-80">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+            <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <input
               ref={inputRef}
               type="text"
@@ -248,12 +286,13 @@ export default function EjerciciosMediaPage() {
           {stats.map(item => (
             <div
               key={item.label}
-              className="rounded-xl border px-4 py-3"
+              className="rounded-xl border px-4 py-3 transition-transform hover:-translate-y-0.5 active:scale-[0.99]"
               style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
             >
               <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
               <p className="mt-1 text-2xl font-semibold" style={{ color: 'var(--text)' }}>{item.value}</p>
               <p className="mt-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>{item.hint}</p>
+              {item.value.endsWith('%') && <ReadinessBar value={Number(item.value.replace('%', '')) || 0} tone={item.label === 'Completos' ? 'active' : item.label === 'Quality' ? 'info' : 'warn'} />}
             </div>
           ))}
         </div>
@@ -324,6 +363,7 @@ export default function EjerciciosMediaPage() {
                       <p className="mt-1 text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>
                         {item.primaryGap}
                       </p>
+                      <ReadinessBar value={item.readinessPct} tone={item.pendientes ? 'warn' : 'active'} />
                     </button>
                   )
                 })}
@@ -339,7 +379,7 @@ export default function EjerciciosMediaPage() {
               {selectedGroup && (
                 <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                   <div className="flex items-center gap-2">
-                    <SlidersHorizontal size={14} style={{ color: 'var(--semantic-info)' }} />
+                    <SlidersHorizontal size={14} weight="duotone" style={{ color: 'var(--semantic-info)' }} />
                     <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Uso operativo</p>
                   </div>
                   <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
@@ -470,18 +510,16 @@ export default function EjerciciosMediaPage() {
           className="flex items-start gap-2 rounded-xl border px-4 py-3 text-sm"
           style={{ borderColor: 'rgba(239, 68, 68, 0.35)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--text)' }}
         >
-          <AlertCircle size={16} className="mt-0.5 shrink-0 text-red-500" />
+          <WarningCircle size={16} weight="duotone" className="mt-0.5 shrink-0" style={{ color: 'var(--semantic-alert)' }} />
           <span>{error}</span>
         </div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
-        </div>
+        <LibrarySkeleton />
       ) : !showExerciseList ? (
         <section className="rounded-3xl border p-6 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-          <SlidersHorizontal size={24} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+          <SlidersHorizontal size={24} weight="duotone" className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
           <p className="font-semibold" style={{ color: 'var(--text)' }}>Elige una categoría o usa la búsqueda</p>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
             La librería tiene muchos ejercicios. Para trabajar más rápido, selecciona un grupo muscular, material, dificultad o estado antes de desplegar resultados.
@@ -552,7 +590,7 @@ export default function EjerciciosMediaPage() {
                         style={{ backgroundImage: `url("${ej.foto_url}")` }}
                       />
                     ) : (
-                      <ImageIcon size={18} style={{ color: 'var(--text-muted)' }} />
+                      <ImageSquare size={18} weight="duotone" style={{ color: 'var(--text-muted)' }} />
                     )}
                   </div>
 
@@ -575,10 +613,10 @@ export default function EjerciciosMediaPage() {
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
                       <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
-                        <ImageIcon size={12} /> {ej.foto_url ? 'Foto' : 'Sin foto'}
+                        <ImageSquare size={12} /> {ej.foto_url ? 'Foto' : 'Sin foto'}
                       </span>
                       <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
-                        <Video size={12} /> {ej.video_url ? (ej.video_tipo || 'Vídeo') : 'Sin vídeo'}
+                        <VideoCamera size={12} /> {ej.video_url ? (ej.video_tipo || 'Vídeo') : 'Sin vídeo'}
                       </span>
                       <span className="rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
                         Dificultad {ej.dificultad_nivel ?? '-'}/5
@@ -591,7 +629,7 @@ export default function EjerciciosMediaPage() {
                     </div>
                   </div>
 
-                  {expandedId === ej.id ? <ChevronUp size={17} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={17} style={{ color: 'var(--text-muted)' }} />}
+                  {expandedId === ej.id ? <CaretUp size={17} style={{ color: 'var(--text-muted)' }} /> : <CaretDown size={17} style={{ color: 'var(--text-muted)' }} />}
                 </button>
 
                 {expandedId === ej.id && (
@@ -610,7 +648,7 @@ export default function EjerciciosMediaPage() {
                             />
                           ) : (
                             <div className="flex h-full flex-col items-center justify-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                              <ImageIcon size={22} />
+                              <ImageSquare size={22} weight="duotone" />
                               Sin imagen
                             </div>
                           )}
@@ -624,9 +662,9 @@ export default function EjerciciosMediaPage() {
                             className="inline-flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium"
                             style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
                           >
-                            <Video size={15} />
+                            <VideoCamera size={15} />
                             Abrir vídeo
-                            <ExternalLink size={14} />
+                            <ArrowSquareOut size={14} />
                           </a>
                         )}
                       </div>
@@ -733,11 +771,11 @@ export default function EjerciciosMediaPage() {
                           className="btn-primary inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm sm:w-auto"
                         >
                           {saving === ej.id ? (
-                            <Loader2 size={14} className="animate-spin" />
+                            <CircleNotch size={14} className="animate-spin" />
                           ) : saved === ej.id ? (
                             <><Check size={14} /> Guardado</>
                           ) : (
-                            <><Save size={14} /> Guardar cambios</>
+                            <><FloppyDisk size={14} /> Guardar cambios</>
                           )}
                         </button>
                       </div>
