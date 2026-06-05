@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase-server'
+import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
 type Severity = 'critica' | 'alta' | 'media' | 'baja'
 
@@ -112,6 +112,12 @@ function sortBySeverity<T extends { severity: Severity; created_at?: string | nu
   })
 }
 
+function logError(error: unknown) {
+  if (error instanceof Error) return error.message
+  if (error && typeof error === 'object') return JSON.stringify(error)
+  return String(error)
+}
+
 export async function GET() {
   try {
     const supabase = await createServerSupabase()
@@ -119,6 +125,7 @@ export async function GET() {
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
+    const db = createServiceSupabase()
 
     const now = new Date()
     const todayISO = toISODate(now)
@@ -135,32 +142,32 @@ export async function GET() {
       tareasRes,
       competicionesRes,
     ] = await Promise.all([
-      supabase
+      db
         .from('clientes')
         .select('id, activo, onboarding_completado, created_at, fecha_proxima_revision, tipo_membresia, fecha_fin_membresia, profile:profiles!profile_id(nombre, apellidos, email)')
         .eq('coach_id', user.id),
-      supabase
+      db
         .from('planes_nutricion')
         .select('id, cliente_id, activo')
         .eq('coach_id', user.id),
-      supabase
+      db
         .from('planes_entrenamiento')
         .select('id, cliente_id, activo')
         .eq('coach_id', user.id),
-      supabase
+      db
         .from('respuestas_clientes')
         .select('id, estado, nombre_cliente, email_cliente, created_at')
         .eq('coach_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20),
-      supabase
+      db
         .from('agente_tareas')
         .select('id, cliente_id, tipo, agente, estado, prioridad, propuesta, created_at, clientes!cliente_id(id, profile:profiles!profile_id(nombre, apellidos))')
         .in('estado', ['pendiente', 'en_revision', 'modificado'])
         .order('prioridad', { ascending: true })
         .order('created_at', { ascending: false })
         .limit(40),
-      supabase
+      db
         .from('competiciones')
         .select('id, nombre, disciplina, fecha_competicion, cliente_id, clientes!inner(profile:profiles!profile_id(nombre, apellidos))')
         .eq('activo', true)
@@ -183,13 +190,13 @@ export async function GET() {
 
     const [checkinsRes, registrosRes] = clienteIds.length
       ? await Promise.all([
-        supabase
+        db
           .from('checkins')
           .select('id, cliente_id, fecha, adherencia, energia, sueno, nota_coach, created_at')
           .in('cliente_id', clienteIds)
           .gte('fecha', toISODate(sevenDaysAgo))
           .order('fecha', { ascending: false }),
-        supabase
+        db
           .from('registros_sets')
           .select('id, cliente_id, fecha')
           .in('cliente_id', clienteIds)
@@ -449,7 +456,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('[dashboard/command-center] Error:', error)
+    console.error('[dashboard/command-center] Error:', logError(error))
     return NextResponse.json({ error: 'Error al cargar el command center' }, { status: 500 })
   }
 }

@@ -156,6 +156,9 @@ const SEVERITY_STYLE: Record<Severity, { label: string; bg: string; color: strin
   baja: { label: 'Baja', bg: 'var(--success-bg)', color: 'var(--success)' },
 }
 
+const DASHBOARD_MUTED = 'color-mix(in srgb, var(--text) 52%, transparent)'
+const DASHBOARD_SECONDARY = 'color-mix(in srgb, var(--text) 72%, transparent)'
+
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
   const data = await res.json().catch(() => ({}))
@@ -216,10 +219,10 @@ function SectionHeader({
       <div className="flex items-center gap-2">
         <Icon size={16} weight="fill" style={{ color: 'var(--accent)' }} />
         <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>{title}</h2>
-        {meta && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{meta}</span>}
+        {meta && <span className="text-xs" style={{ color: DASHBOARD_MUTED }}>{meta}</span>}
       </div>
       {href && (
-        <Link href={href} className="text-xs inline-flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+        <Link href={href} className="text-xs inline-flex items-center gap-1" style={{ color: DASHBOARD_MUTED }}>
           Abrir <ArrowRight size={11} />
         </Link>
       )}
@@ -231,7 +234,7 @@ function EmptyState({ title, actionHref, actionLabel }: { title: string; actionH
   return (
     <div className="rounded-xl border px-4 py-6 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface-hover)' }}>
       <CheckCircle size={20} weight="fill" className="mx-auto mb-2" style={{ color: 'var(--success)' }} />
-      <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{title}</p>
+      <p className="text-sm font-medium" style={{ color: DASHBOARD_SECONDARY }}>{title}</p>
       {actionHref && actionLabel && (
         <Link href={actionHref} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold" style={{ color: 'var(--text)' }}>
           {actionLabel} <ArrowRight size={11} />
@@ -280,14 +283,14 @@ function TodayActionQueue({ actions }: { actions: TodayAction[] }) {
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <SeverityChip severity={action.severity} />
               <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{action.cliente_nombre}</span>
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{action.meta}</span>
+              <span className="text-xs" style={{ color: DASHBOARD_MUTED }}>{action.meta}</span>
             </div>
-            <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{action.title}</p>
-            <p className="mt-0.5 line-clamp-1 text-xs" style={{ color: 'var(--text-muted)' }}>{action.detail}</p>
+            <p className="text-sm font-medium" style={{ color: DASHBOARD_SECONDARY }}>{action.title}</p>
+            <p className="mt-0.5 line-clamp-1 text-xs" style={{ color: DASHBOARD_MUTED }}>{action.detail}</p>
           </div>
           <div className="flex items-center justify-between gap-2 sm:justify-end">
             <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{action.cta}</span>
-            <ArrowRight size={13} style={{ color: 'var(--text-muted)' }} />
+            <ArrowRight size={13} style={{ color: DASHBOARD_MUTED }} />
           </div>
         </Link>
       ))}
@@ -310,7 +313,7 @@ function ClientRiskList({ clientes }: { clientes: ClienteRiesgo[] }) {
           <div className="mb-2 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>{cliente.cliente_nombre}</p>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{cliente.accion}</p>
+              <p className="text-xs" style={{ color: DASHBOARD_MUTED }}>{cliente.accion}</p>
             </div>
             <span
               className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
@@ -324,7 +327,7 @@ function ClientRiskList({ clientes }: { clientes: ClienteRiesgo[] }) {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {cliente.signals.map(signal => (
-              <span key={signal} className="rounded-md px-1.5 py-0.5 text-[11px]" style={{ background: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}>
+              <span key={signal} className="rounded-md px-1.5 py-0.5 text-[11px]" style={{ background: 'var(--surface-elevated)', color: DASHBOARD_SECONDARY }}>
                 {signal}
               </span>
             ))}
@@ -351,12 +354,12 @@ function AiInboxSummary({ tareas }: { tareas: InboxIa[] }) {
             <p className="truncate text-sm font-semibold capitalize" style={{ color: 'var(--text)' }}>
               {tarea.tipo.replaceAll('_', ' ')}
             </p>
-            <span className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
+            <span className="text-[10px] font-semibold" style={{ color: DASHBOARD_MUTED }}>
               P{tarea.prioridad}
             </span>
           </div>
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{tarea.cliente_nombre}</p>
-          <p className="mt-1 line-clamp-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-xs" style={{ color: DASHBOARD_SECONDARY }}>{tarea.cliente_nombre}</p>
+          <p className="mt-1 line-clamp-2 text-[11px]" style={{ color: DASHBOARD_MUTED }}>
             {tarea.propuesta ?? `Agente ${tarea.agente}`}
           </p>
         </Link>
@@ -380,8 +383,8 @@ function WeeklyOpsStrip({ data }: { data: CommandData['operacion'] }) {
       {items.map(({ label, value, icon: Icon }) => (
         <div key={label} className="px-3 py-3" style={{ background: 'var(--surface)' }}>
           <div className="mb-2 flex items-center gap-1.5">
-            <Icon size={13} weight="fill" style={{ color: 'var(--text-muted)' }} />
-            <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{label}</span>
+            <Icon size={13} weight="fill" style={{ color: DASHBOARD_MUTED }} />
+            <span className="text-[11px]" style={{ color: DASHBOARD_MUTED }}>{label}</span>
           </div>
           <p className="font-data text-2xl font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
         </div>
@@ -401,11 +404,11 @@ function FoodCostFriction({ costes }: { costes: CosteCliente[] }) {
     <div>
       <div className="mb-3 grid grid-cols-2 gap-2">
         <div className="rounded-xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface-hover)' }}>
-          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Media semanal</p>
+          <p className="text-[11px]" style={{ color: DASHBOARD_MUTED }}>Media semanal</p>
           <p className="font-data text-xl font-semibold" style={{ color: 'var(--text)' }}>{formatEuro(avg)}</p>
         </div>
         <Link href="/precios/escandallo" className="rounded-xl border p-3" style={{ borderColor: sinPrecio > 0 ? 'var(--warning)' : 'var(--border)', background: 'var(--surface-hover)' }}>
-          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Con precios incompletos</p>
+          <p className="text-[11px]" style={{ color: DASHBOARD_MUTED }}>Con precios incompletos</p>
           <p className="font-data text-xl font-semibold" style={{ color: sinPrecio > 0 ? 'var(--warning)' : 'var(--text)' }}>{sinPrecio}</p>
         </Link>
       </div>
@@ -414,7 +417,7 @@ function FoodCostFriction({ costes }: { costes: CosteCliente[] }) {
           <Link key={coste.cliente_id} href={`/clientes/${coste.cliente_id}`} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2" style={{ background: 'var(--surface-hover)' }}>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium" style={{ color: 'var(--text)' }}>{coste.nombre}</p>
-              <p className="truncate text-[11px]" style={{ color: 'var(--text-muted)' }}>{coste.plan_nombre ?? 'Plan activo'}</p>
+              <p className="truncate text-[11px]" style={{ color: DASHBOARD_MUTED }}>{coste.plan_nombre ?? 'Plan activo'}</p>
             </div>
             <div className="text-right">
               <p className="font-data text-sm font-semibold" style={{ color: 'var(--text)' }}>{formatEuro(coste.coste_semanal_min)}</p>
@@ -441,13 +444,13 @@ function SportsCalendarStrip({ competiciones }: { competiciones: Competicion[] }
         >
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>{comp.nombre}</p>
-            <p className="truncate text-xs" style={{ color: 'var(--text-muted)' }}>{comp.cliente_nombre} · {comp.disciplina ?? 'competición'}</p>
+            <p className="truncate text-xs" style={{ color: DASHBOARD_MUTED }}>{comp.cliente_nombre} · {comp.disciplina ?? 'competición'}</p>
           </div>
           <div className="text-right">
             <p className="font-data text-sm font-bold" style={{ color: comp.dias <= 7 ? 'var(--warning)' : 'var(--text)' }}>
               {comp.dias === 0 ? 'Hoy' : `${comp.dias}d`}
             </p>
-            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{formatDate(comp.fecha_competicion)}</p>
+            <p className="text-[10px]" style={{ color: DASHBOARD_MUTED }}>{formatDate(comp.fecha_competicion)}</p>
           </div>
         </Link>
       ))}
@@ -470,8 +473,8 @@ function BusinessSummary({ data }: { data: NegocioData }) {
       {items.map(({ label, value, icon: Icon }) => (
         <div key={label} className="px-3 py-3" style={{ background: 'var(--surface)' }}>
           <div className="mb-2 flex items-center gap-1.5">
-            <Icon size={13} weight="fill" style={{ color: 'var(--text-muted)' }} />
-            <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{label}</span>
+            <Icon size={13} weight="fill" style={{ color: DASHBOARD_MUTED }} />
+            <span className="text-[11px]" style={{ color: DASHBOARD_MUTED }}>{label}</span>
           </div>
           <p className="font-data text-xl font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
         </div>
@@ -489,13 +492,13 @@ function RenewalsTable({ rows }: { rows: NegocioData['renovaciones'] }) {
         <Link key={row.cliente_id} href={row.href} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5" style={{ background: 'var(--surface-hover)' }}>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium" style={{ color: 'var(--text)' }}>{row.cliente_nombre}</p>
-            <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{row.tipo_membresia ?? 'sin tipo'} · {formatDate(row.fecha_fin_membresia)}</p>
+            <p className="text-[11px]" style={{ color: DASHBOARD_MUTED }}>{row.tipo_membresia ?? 'sin tipo'} · {formatDate(row.fecha_fin_membresia)}</p>
           </div>
           <div className="text-right">
             <p className="font-data text-sm font-semibold" style={{ color: row.dias !== null && row.dias <= 7 ? 'var(--warning)' : 'var(--text)' }}>
               {row.dias !== null && row.dias < 0 ? `-${Math.abs(row.dias)}d` : `${row.dias ?? 0}d`}
             </p>
-            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{row.importe_estimado ? formatEuro(row.importe_estimado) : 'sin importe'}</p>
+            <p className="text-[10px]" style={{ color: DASHBOARD_MUTED }}>{row.importe_estimado ? formatEuro(row.importe_estimado) : 'sin importe'}</p>
           </div>
         </Link>
       ))}
@@ -513,9 +516,9 @@ function PaymentIssuesList({ rows }: { rows: NegocioData['pagos_pendientes'] }) 
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-medium" style={{ color: 'var(--text)' }}>{row.cliente_nombre}</p>
-              <p className="text-[11px]" style={{ color: row.severity === 'alta' ? 'var(--error)' : 'var(--text-muted)' }}>{row.motivo}</p>
+              <p className="text-[11px]" style={{ color: row.severity === 'alta' ? 'var(--error)' : DASHBOARD_MUTED }}>{row.motivo}</p>
             </div>
-            <ArrowRight size={12} className="mt-1 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+            <ArrowRight size={12} className="mt-1 flex-shrink-0" style={{ color: DASHBOARD_MUTED }} />
           </div>
         </Link>
       ))}
@@ -532,10 +535,10 @@ function TransactionsTable({ rows }: { rows: NegocioData['transacciones_reciente
         <Link key={row.id} href={row.href} className="grid gap-2 border-b px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_110px_120px_80px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>{row.cliente_nombre}</p>
-            <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{row.plan_tipo ?? 'custom'} · {row.origen}</p>
+            <p className="text-[11px]" style={{ color: DASHBOARD_MUTED }}>{row.plan_tipo ?? 'custom'} · {row.origen}</p>
           </div>
           <p className="font-data text-sm font-semibold sm:text-right" style={{ color: 'var(--text)' }}>{formatEuro(row.importe)}</p>
-          <p className="text-xs sm:text-right" style={{ color: 'var(--text-muted)' }}>{formatDate(row.fecha)}</p>
+          <p className="text-xs sm:text-right" style={{ color: DASHBOARD_MUTED }}>{formatDate(row.fecha)}</p>
           <p className="text-xs capitalize sm:text-right" style={{ color: 'var(--success)' }}>{row.estado}</p>
         </Link>
       ))}
@@ -602,7 +605,7 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-7xl">
         <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-1 text-xs capitalize" style={{ color: 'var(--text-muted)' }}>{todayLabel}</p>
+            <p className="mb-1 text-xs capitalize" style={{ color: DASHBOARD_MUTED }}>{todayLabel}</p>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>Dashboard</h1>
               <span className="rounded-lg px-2 py-1 text-xs font-semibold" style={{ background: pendingActions > 0 ? 'var(--warning-bg)' : 'var(--success-bg)', color: pendingActions > 0 ? 'var(--warning)' : 'var(--success)' }}>
@@ -636,7 +639,7 @@ export default function DashboardPage() {
                 className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all active:scale-95"
                 style={{
                   background: selected ? 'var(--surface-elevated)' : 'transparent',
-                  color: selected ? 'var(--text)' : 'var(--text-muted)',
+                  color: selected ? 'var(--text)' : DASHBOARD_MUTED,
                 }}
               >
                 <Icon size={15} weight="fill" />
@@ -685,7 +688,7 @@ export default function DashboardPage() {
             </div>
 
             {command?.timestamp && (
-              <p className="pb-4 text-center text-[10px]" style={{ color: 'var(--text-muted)' }}>
+              <p className="pb-4 text-center text-[10px]" style={{ color: DASHBOARD_MUTED }}>
                 Actualizado {new Date(command.timestamp).toLocaleString('es-ES')}
               </p>
             )}
@@ -727,7 +730,7 @@ export default function DashboardPage() {
                   ['Clientes activos', negocio.embudo.clientes_activados],
                 ].map(([label, value]) => (
                   <div key={label} className="rounded-2xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</p>
+                    <p className="text-xs" style={{ color: DASHBOARD_MUTED }}>{label}</p>
                     <p className="font-data mt-1 text-2xl font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
                   </div>
                 ))}
@@ -735,7 +738,7 @@ export default function DashboardPage() {
             )}
 
             {negocio?.timestamp && (
-              <p className="pb-4 text-center text-[10px]" style={{ color: 'var(--text-muted)' }}>
+              <p className="pb-4 text-center text-[10px]" style={{ color: DASHBOARD_MUTED }}>
                 Actualizado {new Date(negocio.timestamp).toLocaleString('es-ES')}
               </p>
             )}

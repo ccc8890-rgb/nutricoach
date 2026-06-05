@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase-server'
+import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
 type ClienteProfile = {
   nombre?: string | null
@@ -62,6 +62,12 @@ function monthsFor(cliente: ClienteNegocioRow) {
   return PLAN_MESES[cliente.tipo_membresia ?? ''] ?? PLAN_MESES[cliente.plan_tipo ?? ''] ?? 1
 }
 
+function logError(error: unknown) {
+  if (error instanceof Error) return error.message
+  if (error && typeof error === 'object') return JSON.stringify(error)
+  return String(error)
+}
+
 export async function GET() {
   try {
     const supabase = await createServerSupabase()
@@ -69,12 +75,25 @@ export async function GET() {
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
+    const db = createServiceSupabase()
 
-    const { data, error } = await supabase
+    let hasStripeColumns = true
+    let { data, error } = await db
       .from('clientes')
       .select('id, activo, created_at, tipo_membresia, fecha_inicio_membresia, fecha_fin_membresia, stripe_customer_id, stripe_payment_intent_id, plan_tipo, plan_precio, fecha_inicio_plan, pagado_via_stripe, profile:profiles!profile_id(nombre, apellidos, email)')
       .eq('coach_id', user.id)
       .order('created_at', { ascending: false })
+
+    if (error?.code === '42703') {
+      hasStripeColumns = false
+      const fallback = await db
+        .from('clientes')
+        .select('id, activo, created_at, tipo_membresia, fecha_inicio_membresia, fecha_fin_membresia, profile:profiles!profile_id(nombre, apellidos, email)')
+        .eq('coach_id', user.id)
+        .order('created_at', { ascending: false })
+      data = fallback.data as typeof data
+      error = fallback.error
+    }
 
     if (error) throw error
 
@@ -184,6 +203,7 @@ export async function GET() {
         membresias_7d: renovaciones.filter(r => r.dias !== null && r.dias >= 0 && r.dias <= 7).length,
         membresias_30d: renovaciones.filter(r => r.dias !== null && r.dias >= 0 && r.dias <= 30).length,
         clientes_sin_membresia: activos.filter(c => !c.tipo_membresia).length,
+        stripe_configurado: hasStripeColumns,
       },
       transacciones_recientes: transaccionesRecientes,
       pagos_pendientes: pagosPendientes.slice(0, 12),
@@ -197,7 +217,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('[dashboard/negocio] Error:', error)
+    console.error('[dashboard/negocio] Error:', logError(error))
     return NextResponse.json({ error: 'Error al cargar negocio' }, { status: 500 })
   }
 }
