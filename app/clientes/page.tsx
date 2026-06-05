@@ -15,6 +15,7 @@ import ClientesToolbar from '@/components/clientes/ClientesToolbar'
 import ClientesTabla from '@/components/clientes/ClientesTabla'
 import ClientesListaMobile from '@/components/clientes/ClientesListaMobile'
 import RespuestasClientes from '@/components/RespuestasClientes'
+import GenerarLinkPagoModal from '@/components/coach/GenerarLinkPagoModal'
 import type { RespuestaCliente } from '@/types'
 
 type TabActiva = 'clientes' | 'formularios'
@@ -25,6 +26,7 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<ClienteRow[]>([])
   const [loading, setLoading] = useState(true)
   const [invitando, setInvitando] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [modalLinkOpen, setModalLinkOpen] = useState(false)
 
   // Tabs
   const [tabActiva, setTabActiva] = useState<TabActiva>('clientes')
@@ -236,6 +238,11 @@ export default function ClientesPage() {
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setModalLinkOpen(true)}
+            className="btn-primary flex items-center gap-1.5 text-sm px-3 py-2 whitespace-nowrap">
+            <span>＋</span> Generar link de pago
+          </button>
+          <button
             onClick={handleInvitar}
             className="btn-secondary btn-sm"
             disabled={invitando === 'loading'}
@@ -354,6 +361,11 @@ export default function ClientesPage() {
       )}
         </>
       )}
+
+      <GenerarLinkPagoModal
+        open={modalLinkOpen}
+        onClose={() => setModalLinkOpen(false)}
+      />
     </div>
   )
 }
