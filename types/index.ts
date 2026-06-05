@@ -28,6 +28,13 @@ export interface Cliente {
   created_at: string
   updated_at: string
   profile?: Profile
+  // Stripe
+  stripe_customer_id?: string
+  stripe_payment_intent_id?: string
+  plan_tipo?: 'base' | 'pro' | 'ultra' | 'custom'
+  plan_precio?: number
+  fecha_inicio_plan?: string
+  pagado_via_stripe?: boolean
 }
 
 export interface Alimento {
