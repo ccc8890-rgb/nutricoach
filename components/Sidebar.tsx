@@ -16,6 +16,7 @@ import {
   ClipboardList,
   Database,
   Dumbbell,
+  FilePlus2,
   House,
   Images,
   ListChecks,
@@ -25,6 +26,7 @@ import {
   Settings,
   ShoppingCart,
   SlidersHorizontal,
+  Sparkles,
   Store,
   Sun,
   TrendingUp,
@@ -40,6 +42,7 @@ type NavItem = {
   label: string
   icon: LucideIcon
   badge?: number
+  exact?: boolean
 }
 
 type NavSection = {
@@ -53,15 +56,26 @@ type NavSection = {
 const PRIMARY_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Radar', icon: House },
   { href: '/clientes', label: 'Clientes', icon: UsersRound },
-  { href: '/agentes', label: 'Inbox IA', icon: Bot },
-  { href: '/entrenos', label: 'Entrenamiento', icon: Dumbbell },
+  { href: '/agentes', label: 'Revisión IA', icon: Bot },
 ]
 
 const NUTRICION_ITEMS: NavItem[] = [
-  { href: '/dietas', label: 'Dietas activas', icon: Utensils },
+  { href: '/dietas', label: 'Planes', icon: Utensils, exact: true },
   { href: '/dietas/plantillas', label: 'Plantillas', icon: ListChecks },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
   { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
+]
+
+const ENTRENAMIENTO_ITEMS: NavItem[] = [
+  { href: '/entrenos', label: 'Radar entreno', icon: Dumbbell, exact: true },
+  { href: '/entrenos/brain-ia', label: 'Revisión IA', icon: Brain },
+  { href: '/entrenos/nueva', label: 'Crear plan', icon: FilePlus2 },
+  { href: '/entrenos/generar-ia', label: 'Plan con IA', icon: Sparkles },
+  { href: '/entrenos/plantillas', label: 'Plantillas', icon: ListChecks },
+  { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Database },
+]
+
+const NEGOCIO_ITEMS: NavItem[] = [
   { href: '/precios', label: 'Precios', icon: Store },
   { href: '/precios/escandallo', label: 'Escandallo', icon: TrendingUp },
   { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: Activity },
@@ -69,7 +83,7 @@ const NUTRICION_ITEMS: NavItem[] = [
 
 
 const RECETARIO_ITEMS: NavItem[] = [
-  { href: '/recetas', label: 'Biblioteca', icon: ChefHat },
+  { href: '/recetas', label: 'Recetas', icon: ChefHat, exact: true },
   { href: '/recetas/cobertura', label: 'Cobertura', icon: ChartPie },
   { href: '/recetas/imagenes', label: 'Imágenes', icon: Images },
   { href: '/recetas/cola', label: 'Pendientes', icon: ClipboardList },
@@ -79,13 +93,11 @@ const RECETARIO_ITEMS: NavItem[] = [
 const CONOCIMIENTO_ITEMS: NavItem[] = [
   { href: '/coach/metodologia', label: 'Metodología', icon: SlidersHorizontal },
   { href: '/conocimiento', label: 'Base de conocimiento', icon: Brain },
-]
-
-const EXTRA_ITEMS: NavItem[] = [
   { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
 ]
 
-function isActivePath(pathname: string, href: string) {
+function isActivePath(pathname: string, href: string, exact = false) {
+  if (exact) return pathname === href
   return pathname === href || pathname.startsWith(href + '/')
 }
 
@@ -113,7 +125,7 @@ function NavLink({
   pathname: string
   badgeTone?: 'accent' | 'danger'
 }) {
-  const active = isActivePath(pathname, item.href)
+  const active = isActivePath(pathname, item.href, item.exact)
   const Icon = item.icon
 
   return (
@@ -149,7 +161,7 @@ function SidebarSection({
   expanded: boolean
   onToggle: () => void
 }) {
-  const active = section.items.some(item => isActivePath(pathname, item.href))
+  const active = section.items.some(item => isActivePath(pathname, item.href, item.exact))
   const Icon = section.icon
 
   return (
@@ -231,6 +243,7 @@ export default function Sidebar() {
 
   const sections: NavSection[] = [
     { key: 'nutricion', label: 'Nutrición', icon: Utensils, items: NUTRICION_ITEMS },
+    { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
     {
       key: 'recetario',
       label: 'Recetario',
@@ -238,16 +251,30 @@ export default function Sidebar() {
       badge: recetasPendientes,
       items: RECETARIO_ITEMS.map(item => item.href === '/recetas/cola' ? { ...item, badge: recetasPendientes } : item),
     },
-    { key: 'conocimiento', label: 'Conocimiento', icon: Brain, items: CONOCIMIENTO_ITEMS },
+    { key: 'negocio', label: 'Negocio', icon: TrendingUp, items: NEGOCIO_ITEMS },
+    { key: 'sistema', label: 'Sistema', icon: Settings, items: CONOCIMIENTO_ITEMS },
   ]
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     for (const section of sections) {
-      initial[section.key] = section.items.some(item => isActivePath(pathname, item.href))
+      initial[section.key] = section.items.some(item => isActivePath(pathname, item.href, item.exact))
     }
     return initial
   })
+
+  useEffect(() => {
+    setExpanded(prev => {
+      const next = { ...prev }
+      for (const section of sections) {
+        if (section.items.some(item => isActivePath(pathname, item.href, item.exact))) {
+          next[section.key] = true
+        }
+      }
+      return next
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -319,7 +346,7 @@ export default function Sidebar() {
               key={item.href}
               item={item}
               pathname={pathname}
-              badgeTone={item.href === '/respuestas' ? 'danger' : 'accent'}
+              badgeTone={item.href === '/agentes' ? 'danger' : 'accent'}
             />
           ))}
         </div>
@@ -336,12 +363,6 @@ export default function Sidebar() {
             onToggle={() => setExpanded(prev => ({ ...prev, [section.key]: !prev[section.key] }))}
           />
         ))}
-
-        <div className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--glass-border)' }}>
-          {EXTRA_ITEMS.map(item => (
-            <NavLink key={item.href} item={item} pathname={pathname} />
-          ))}
-        </div>
       </nav>
 
       <div className="flex-shrink-0 p-3 border-t space-y-1" style={{ borderColor: 'var(--glass-border)' }}>
