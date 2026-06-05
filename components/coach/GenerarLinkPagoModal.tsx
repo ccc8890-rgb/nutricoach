@@ -40,6 +40,7 @@ export default function GenerarLinkPagoModal({ open, onClose, clienteId, cliente
           email_cliente: email || undefined,
         }),
       })
+      if (!res.ok) { alert('Error ' + res.status + ' generando el link'); return }
       const data = await res.json()
       if (data.url) setLinkGenerado(data.url)
       else alert('Error generando el link')
