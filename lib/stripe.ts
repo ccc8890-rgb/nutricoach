@@ -1,7 +1,22 @@
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-05-27.dahlia',
+let _stripe: Stripe | undefined
+
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      apiVersion: '2026-05-27.dahlia' as any,
+    })
+  }
+  return _stripe
+}
+
+// Alias para compatibilidad con imports existentes
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop: string | symbol) {
+    return getStripe()[prop as keyof Stripe]
+  },
 })
 
 export const PLANES = {
