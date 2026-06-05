@@ -44,8 +44,8 @@
   /* ── Text ── */
   --text: #E8E8F0;
   --text-secondary: #808088;
-  --text-muted: #383840;
-  --text-disabled: #242428;
+  --text-muted: #6F6F78;
+  --text-disabled: #3F3F46;
 
   /* ── Glass ── */
   --glass-bg: rgba(14, 14, 17, 0.72);
@@ -135,7 +135,7 @@
 
   --text: #1C1C1E;
   --text-secondary: #636366;
-  --text-muted: #AEAEB2;
+  --text-muted: #7A7A82;
   --text-disabled: #C7C7CC;
 
   --glass-bg: rgba(255, 255, 255, 0.78);

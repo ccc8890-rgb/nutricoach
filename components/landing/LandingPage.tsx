@@ -196,7 +196,7 @@ export default function LandingPage() {
           ].map(t => (
             <div key={t.nombre} className="p-6 rounded-2xl flex flex-col gap-4"
               style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-sm italic" style={{ color: 'var(--text-secondary)' }}>"{t.texto}"</p>
+              <p className="text-sm italic" style={{ color: 'var(--text-secondary)' }}>&ldquo;{t.texto}&rdquo;</p>
               <p className="font-semibold text-sm">{t.nombre}</p>
             </div>
           ))}

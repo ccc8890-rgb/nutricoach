@@ -156,8 +156,8 @@ const SEVERITY_STYLE: Record<Severity, { label: string; bg: string; color: strin
   baja: { label: 'Baja', bg: 'var(--success-bg)', color: 'var(--success)' },
 }
 
-const DASHBOARD_MUTED = 'color-mix(in srgb, var(--text) 52%, transparent)'
-const DASHBOARD_SECONDARY = 'color-mix(in srgb, var(--text) 72%, transparent)'
+const DASHBOARD_MUTED = 'color-mix(in srgb, var(--text) 66%, transparent)'
+const DASHBOARD_SECONDARY = 'color-mix(in srgb, var(--text) 84%, transparent)'
 
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url)
@@ -208,11 +208,13 @@ function SectionHeader({
   title,
   meta,
   href,
+  linkLabel = 'Ver',
 }: {
   icon: React.ElementType
   title: string
   meta?: string
   href?: string
+  linkLabel?: string
 }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-3">
@@ -222,8 +224,8 @@ function SectionHeader({
         {meta && <span className="text-xs" style={{ color: DASHBOARD_MUTED }}>{meta}</span>}
       </div>
       {href && (
-        <Link href={href} className="text-xs inline-flex items-center gap-1" style={{ color: DASHBOARD_MUTED }}>
-          Abrir <ArrowRight size={11} />
+        <Link href={href} className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: DASHBOARD_MUTED }}>
+          {linkLabel} <ArrowRight size={11} />
         </Link>
       )}
     </div>
@@ -267,29 +269,31 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
 
 function TodayActionQueue({ actions }: { actions: TodayAction[] }) {
   if (actions.length === 0) {
-    return <EmptyState title="Sin acciones urgentes ahora mismo" actionHref="/clientes" actionLabel="Ver clientes" />
+    return <EmptyState title="Sin revisiones urgentes ahora mismo" actionHref="/clientes" actionLabel="Ver clientes" />
   }
 
   return (
-    <div className="divide-y overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+    <div className="divide-y overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--border-strong)', background: 'var(--surface)' }}>
       {actions.map(action => (
         <Link
           key={action.id}
           href={action.href}
-          className="grid gap-3 px-4 py-3 transition-colors active:scale-[0.995] sm:grid-cols-[minmax(0,1fr)_auto]"
-          style={{ borderColor: 'var(--border)' }}
+          className="group grid gap-3 px-4 py-4 transition-colors active:scale-[0.995] sm:grid-cols-[minmax(0,1fr)_auto]"
+          style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
         >
-          <div className="min-w-0">
+          <div className="min-w-0 border-l-2 pl-3" style={{ borderColor: SEVERITY_STYLE[action.severity].color }}>
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <SeverityChip severity={action.severity} />
-              <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{action.cliente_nombre}</span>
-              <span className="text-xs" style={{ color: DASHBOARD_MUTED }}>{action.meta}</span>
+              <span className="text-sm font-bold" style={{ color: 'var(--text)' }}>{action.cliente_nombre}</span>
+              <span className="text-xs font-medium" style={{ color: DASHBOARD_MUTED }}>{action.meta}</span>
             </div>
-            <p className="text-sm font-medium" style={{ color: DASHBOARD_SECONDARY }}>{action.title}</p>
-            <p className="mt-0.5 line-clamp-1 text-xs" style={{ color: DASHBOARD_MUTED }}>{action.detail}</p>
+            <p className="text-sm font-semibold" style={{ color: DASHBOARD_SECONDARY }}>{action.title}</p>
+            <p className="mt-1 line-clamp-2 text-xs leading-relaxed" style={{ color: DASHBOARD_MUTED }}>{action.detail}</p>
           </div>
           <div className="flex items-center justify-between gap-2 sm:justify-end">
-            <span className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{action.cta}</span>
+            <span className="rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors group-hover:border-[var(--border-strong)]" style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-hover)' }}>
+              {action.cta}
+            </span>
             <ArrowRight size={13} style={{ color: DASHBOARD_MUTED }} />
           </div>
         </Link>
@@ -298,8 +302,61 @@ function TodayActionQueue({ actions }: { actions: TodayAction[] }) {
   )
 }
 
+function WeeklyFocusPanel({ command }: { command: CommandData | null }) {
+  const items = [
+    {
+      label: 'Check-ins',
+      value: command?.operacion.checkins_pendientes ?? 0,
+      detail: 'pendientes de respuesta',
+      icon: ClipboardText,
+      tone: (command?.operacion.checkins_pendientes ?? 0) > 0 ? 'var(--warning)' : 'var(--success)',
+    },
+    {
+      label: 'IA lista',
+      value: command?.inbox_ia.length ?? 0,
+      detail: 'propuestas por revisar',
+      icon: Brain,
+      tone: (command?.inbox_ia.length ?? 0) > 0 ? 'var(--info)' : 'var(--success)',
+    },
+    {
+      label: 'Riesgo',
+      value: command?.clientes_riesgo.length ?? 0,
+      detail: 'clientes a vigilar',
+      icon: Warning,
+      tone: (command?.clientes_riesgo.length ?? 0) > 0 ? 'var(--error)' : 'var(--success)',
+    },
+    {
+      label: 'Renovaciones',
+      value: command?.operacion.membresias_30d ?? 0,
+      detail: 'membresías en 30 días',
+      icon: Repeat,
+      tone: (command?.operacion.membresias_30d ?? 0) > 0 ? 'var(--warning)' : 'var(--success)',
+    },
+  ]
+
+  return (
+    <aside className="card-glass h-fit">
+      <SectionHeader icon={ListChecks} title="Foco semanal" meta="vista rápida" />
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+        {items.map(({ label, value, detail, icon: Icon, tone }) => (
+          <div key={label} className="rounded-xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface-hover)' }}>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Icon size={14} weight="fill" style={{ color: tone }} />
+                <p className="text-xs font-semibold" style={{ color: DASHBOARD_SECONDARY }}>{label}</p>
+              </div>
+              <p className="font-data text-2xl font-semibold leading-none" style={{ color: 'var(--text)' }}>{value}</p>
+            </div>
+            <p className="text-[11px] leading-relaxed" style={{ color: DASHBOARD_MUTED }}>{detail}</p>
+          </div>
+        ))}
+      </div>
+    </aside>
+  )
+}
+
 function ClientRiskList({ clientes }: { clientes: ClienteRiesgo[] }) {
-  if (clientes.length === 0) return <EmptyState title="Sin clientes en riesgo detectable" />
+  if (clientes.length === 0) return <EmptyState title="Sin clientes en riesgo ahora mismo" />
 
   return (
     <div className="space-y-2">
@@ -307,13 +364,13 @@ function ClientRiskList({ clientes }: { clientes: ClienteRiesgo[] }) {
         <Link
           key={cliente.cliente_id}
           href={cliente.href}
-          className="block rounded-xl border px-3 py-3 transition-colors active:scale-[0.99]"
+          className="group block rounded-xl border px-3 py-3 transition-colors active:scale-[0.99]"
           style={{ borderColor: 'var(--border)', background: 'var(--surface-hover)' }}
         >
           <div className="mb-2 flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>{cliente.cliente_nombre}</p>
-              <p className="text-xs" style={{ color: DASHBOARD_MUTED }}>{cliente.accion}</p>
+              <p className="truncate text-sm font-bold" style={{ color: 'var(--text)' }}>{cliente.cliente_nombre}</p>
+              <p className="mt-0.5 text-xs font-medium leading-relaxed" style={{ color: DASHBOARD_SECONDARY }}>{cliente.accion}</p>
             </div>
             <span
               className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold"
@@ -327,10 +384,16 @@ function ClientRiskList({ clientes }: { clientes: ClienteRiesgo[] }) {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {cliente.signals.map(signal => (
-              <span key={signal} className="rounded-md px-1.5 py-0.5 text-[11px]" style={{ background: 'var(--surface-elevated)', color: DASHBOARD_SECONDARY }}>
+              <span key={signal} className="rounded-md px-1.5 py-0.5 text-[11px] font-medium" style={{ background: 'var(--surface-elevated)', color: DASHBOARD_MUTED }}>
                 {signal}
               </span>
             ))}
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t pt-2" style={{ borderColor: 'var(--border)' }}>
+            <span className="text-[11px] font-semibold" style={{ color: DASHBOARD_MUTED }}>Siguiente paso</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold" style={{ color: 'var(--text)' }}>
+              Abrir ficha <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
+            </span>
           </div>
         </Link>
       ))}
@@ -339,7 +402,7 @@ function ClientRiskList({ clientes }: { clientes: ClienteRiesgo[] }) {
 }
 
 function AiInboxSummary({ tareas }: { tareas: InboxIa[] }) {
-  if (tareas.length === 0) return <EmptyState title="Sin tareas IA pendientes" actionHref="/entrenos/brain-ia" actionLabel="Ver brain IA" />
+  if (tareas.length === 0) return <EmptyState title="Sin propuestas IA pendientes" actionHref="/entrenos/brain-ia" actionLabel="Ver revisión IA" />
 
   return (
     <div className="space-y-2">
@@ -347,21 +410,27 @@ function AiInboxSummary({ tareas }: { tareas: InboxIa[] }) {
         <Link
           key={tarea.id}
           href={tarea.href}
-          className="block rounded-xl border px-3 py-3 active:scale-[0.99]"
+          className="group block rounded-xl border px-3 py-3 active:scale-[0.99]"
           style={{ borderColor: 'var(--border)', background: 'var(--surface-hover)' }}
         >
           <div className="mb-1 flex items-center justify-between gap-2">
-            <p className="truncate text-sm font-semibold capitalize" style={{ color: 'var(--text)' }}>
+            <p className="truncate text-sm font-bold capitalize" style={{ color: 'var(--text)' }}>
               {tarea.tipo.replaceAll('_', ' ')}
             </p>
-            <span className="text-[10px] font-semibold" style={{ color: DASHBOARD_MUTED }}>
+            <span className="rounded-md px-1.5 py-0.5 text-[10px] font-bold" style={{ color: DASHBOARD_MUTED, background: 'var(--surface-elevated)' }}>
               P{tarea.prioridad}
             </span>
           </div>
-          <p className="text-xs" style={{ color: DASHBOARD_SECONDARY }}>{tarea.cliente_nombre}</p>
-          <p className="mt-1 line-clamp-2 text-[11px]" style={{ color: DASHBOARD_MUTED }}>
-            {tarea.propuesta ?? `Agente ${tarea.agente}`}
+          <p className="text-xs font-semibold" style={{ color: DASHBOARD_SECONDARY }}>{tarea.cliente_nombre}</p>
+          <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed" style={{ color: DASHBOARD_MUTED }}>
+            {tarea.propuesta ?? 'Propuesta pendiente de revisión'}
           </p>
+          <div className="mt-3 flex items-center justify-between border-t pt-2" style={{ borderColor: 'var(--border)' }}>
+            <span className="text-[11px] font-semibold" style={{ color: DASHBOARD_MUTED }}>Preparado para revisión</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold" style={{ color: 'var(--text)' }}>
+              Revisar <ArrowRight size={11} className="transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </div>
         </Link>
       ))}
     </div>
@@ -607,11 +676,14 @@ export default function DashboardPage() {
           <div>
             <p className="mb-1 text-xs capitalize" style={{ color: DASHBOARD_MUTED }}>{todayLabel}</p>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>Dashboard</h1>
+              <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>Radar diario</h1>
               <span className="rounded-lg px-2 py-1 text-xs font-semibold" style={{ background: pendingActions > 0 ? 'var(--warning-bg)' : 'var(--success-bg)', color: pendingActions > 0 ? 'var(--warning)' : 'var(--success)' }}>
-                {commandLoading ? 'Cargando' : `${pendingActions} acciones`}
+                {commandLoading ? 'Cargando' : `${pendingActions} por revisar`}
               </span>
             </div>
+            <p className="mt-1 text-sm" style={{ color: DASHBOARD_MUTED }}>
+              Trabajo preparado para revisar, ajustar y aprobar.
+            </p>
           </div>
           <div className="flex gap-2">
             <Link href="/clientes/nuevo" className="btn btn-primary btn-sm">
@@ -626,7 +698,7 @@ export default function DashboardPage() {
 
         <div className="mb-5 inline-flex rounded-2xl border p-1" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           {[
-            { id: 'command' as Tab, label: 'Command Center', icon: ListChecks },
+            { id: 'command' as Tab, label: 'Hoy', icon: ListChecks },
             { id: 'negocio' as Tab, label: 'Negocio', icon: CurrencyEur },
           ].map(tab => {
             const Icon = tab.icon
@@ -653,19 +725,22 @@ export default function DashboardPage() {
           <div className="space-y-5">
             {commandError && <ErrorState message={commandError} onRetry={loadCommand} />}
 
-            <section>
-              <SectionHeader icon={Lightning} title="Hoy requiere atención" meta={command ? `${command.hoy.length} señales` : undefined} />
-              {commandLoading ? <SkeletonRows rows={6} /> : command && <TodayActionQueue actions={command.hoy} />}
-            </section>
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+              <section>
+                <SectionHeader icon={Lightning} title="Cola de revisión" meta={command ? `${command.hoy.length} señales activas` : undefined} />
+                {commandLoading ? <SkeletonRows rows={6} /> : command && <TodayActionQueue actions={command.hoy} />}
+              </section>
+              {commandLoading ? <SkeletonRows rows={4} /> : <WeeklyFocusPanel command={command} />}
+            </div>
 
             <div className="grid gap-5 lg:grid-cols-2">
               <section className="card-glass">
-                <SectionHeader icon={Warning} title="Clientes en riesgo" href="/clientes" />
+                <SectionHeader icon={Warning} title="Clientes en riesgo" href="/clientes" linkLabel="Ver clientes" />
                 {commandLoading ? <SkeletonRows rows={4} /> : command && <ClientRiskList clientes={command.clientes_riesgo} />}
               </section>
 
               <section className="card-glass">
-                <SectionHeader icon={Brain} title="Inbox IA" href="/entrenos/brain-ia" />
+                <SectionHeader icon={Brain} title="Trabajo preparado por IA" href="/entrenos/brain-ia" linkLabel="Revisar IA" />
                 {commandLoading ? <SkeletonRows rows={4} /> : command && <AiInboxSummary tareas={command.inbox_ia} />}
               </section>
             </div>
@@ -677,7 +752,7 @@ export default function DashboardPage() {
 
             <div className="grid gap-5 lg:grid-cols-2">
               <section className="card-glass">
-                <SectionHeader icon={ForkKnife} title="Coste y fricción alimentaria" href="/precios/escandallo" />
+                <SectionHeader icon={ForkKnife} title="Coste y fricción alimentaria" href="/precios/escandallo" linkLabel="Abrir escandallo" />
                 {commandLoading ? <SkeletonRows rows={4} /> : <FoodCostFriction costes={costes} />}
               </section>
 
@@ -706,12 +781,12 @@ export default function DashboardPage() {
 
             <div className="grid gap-5 lg:grid-cols-2">
               <section className="card-glass">
-                <SectionHeader icon={Repeat} title="Renovaciones" href="/clientes" />
+                <SectionHeader icon={Repeat} title="Renovaciones" href="/clientes" linkLabel="Ver clientes" />
                 {negocioLoading ? <SkeletonRows rows={4} /> : negocio && <RenewalsTable rows={negocio.renovaciones} />}
               </section>
 
               <section className="card-glass">
-                <SectionHeader icon={CreditCard} title="Pagos pendientes" href="/clientes" />
+                <SectionHeader icon={CreditCard} title="Pagos pendientes" href="/clientes" linkLabel="Ver clientes" />
                 {negocioLoading ? <SkeletonRows rows={4} /> : negocio && <PaymentIssuesList rows={negocio.pagos_pendientes} />}
               </section>
             </div>

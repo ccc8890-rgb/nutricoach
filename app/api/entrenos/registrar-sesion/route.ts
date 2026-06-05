@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 
   // Detectar PRs: comparar peso máximo de esta sesión con prs_por_ejercicio
   const ejercicioIds = ejercicios.map(e => e.ejercicio_id).filter(Boolean)
-  let prs: Array<{ ejercicio_id: string; ejercicio_nombre: string; peso_anterior_kg: number | null; peso_nuevo_kg: number; reps: number }> = []
+  const prs: Array<{ ejercicio_id: string; ejercicio_nombre: string; peso_anterior_kg: number | null; peso_nuevo_kg: number; reps: number }> = []
 
   if (ejercicioIds.length > 0) {
     const { data: prsPrevios } = await admin

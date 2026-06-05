@@ -4,6 +4,7 @@
 // Proveedores soportados: TrainingPeaks, Coros, Whoop, Garmin, Strava, Polar, Wahoo, Suunto...
 
 import type { ActividadExterna } from './types'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 const API_KEY = process.env.TERRA_API_KEY!
 const DEV_ID = process.env.TERRA_DEV_ID!
@@ -88,12 +89,10 @@ export async function desconectarTerraUser(terraUserId: string): Promise<void> {
 export function verificarFirmaWebhook(body: string, signature: string | null): boolean {
   if (!signature) return false
   try {
-    const crypto = require('crypto') as typeof import('crypto')
-    const expected = crypto
-      .createHmac('sha256', API_KEY)
+    const expected = createHmac('sha256', API_KEY)
       .update(body)
       .digest('hex')
-    return crypto.timingSafeEqual(
+    return timingSafeEqual(
       Buffer.from(expected, 'hex'),
       Buffer.from(signature, 'hex')
     )
@@ -113,8 +112,6 @@ export function normalizarTerraActivity(
   const hr = (activity.heart_rate_data as Record<string, unknown> | null) ?? {}
   const cal = (activity.calories_data as Record<string, unknown> | null) ?? {}
   const dur = (activity.active_durations_data as Record<string, unknown> | null) ?? {}
-  const mov = (activity.movement_data as Record<string, unknown> | null) ?? {}
-
   const startTime = String(activity.start_time ?? '')
   const fecha = startTime ? startTime.split('T')[0] : new Date().toISOString().split('T')[0]
   const tipoNum = Number(activity.type ?? 0)
