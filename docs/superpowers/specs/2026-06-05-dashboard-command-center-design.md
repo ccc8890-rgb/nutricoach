@@ -15,6 +15,8 @@ El dashboard no debe parecer una app genérica con gráficos decorativos. Debe r
 3. Qué acción concreta debo hacer.
 4. Qué impacto tiene en retención, negocio o progreso del cliente.
 
+Además, `/dashboard` debe tener una pestaña extendida `Negocio` para separar la gestión económica del trabajo diario de coaching. La vista principal responde "qué hago hoy"; `Negocio` responde "cómo está entrando y reteniéndose el dinero".
+
 ## 2. Benchmark usado
 
 Referencias revisadas:
@@ -55,6 +57,13 @@ Ya existen fuentes suficientes para una primera versión sin migraciones grandes
 - Stripe reciente: endpoints de checkout, payment link y webhook ya existen; se puede usar estado de cliente si está persistido.
 
 ## 5. Nueva estructura del dashboard
+
+La estructura base tendrá dos pestañas:
+
+- `Command Center`: vista diaria operativa. Es la pestaña por defecto.
+- `Negocio`: vista extendida de pagos, transacciones, renovaciones y salud comercial.
+
+No deben mezclarse. Un pago fallido o una membresía a punto de caducar puede aparecer como acción urgente en `Command Center`, pero el análisis financiero completo vive en `Negocio`.
 
 ### 5.1 Cabecera compacta
 
@@ -180,6 +189,44 @@ Retirar de la primera pantalla:
 
 Si se conservan, deben ir al final como "histórico" y no condicionar la pantalla diaria.
 
+### 5.9 Pestaña extendida "Negocio"
+
+Objetivo: dar una vista clara de caja, pagos, renovaciones y fricción comercial sin convertir el dashboard principal en un CRM financiero.
+
+Contenido prioritario:
+
+1. Ingresos recientes:
+   - transacciones pagadas;
+   - fecha;
+   - cliente;
+   - importe;
+   - plan o concepto;
+   - origen: checkout, payment link o registro manual si existe.
+
+2. Pagos pendientes o problemáticos:
+   - payment links generados sin completar;
+   - pagos fallidos si Stripe lo persiste;
+   - clientes activos sin membresía configurada;
+   - clientes con membresía caducada.
+
+3. Renovaciones:
+   - membresías que caducan en 7, 14 y 30 días;
+   - importe potencial si hay precio del plan;
+   - acción: `Generar link`, `Contactar`, `Renovar`.
+
+4. MRR/ingreso esperado:
+   - clientes activos por tipo de membresía;
+   - ingreso mensual equivalente estimado;
+   - ingreso trimestral/semestral/anual comprometido si hay datos.
+
+5. Embudo básico:
+   - clientes nuevos pendientes de pago;
+   - links enviados;
+   - pagos completados;
+   - clientes activados.
+
+Regla: esta pestaña sí puede usar tablas densas. No necesita gráficos salvo que un histórico mensual ayude a tomar una decisión.
+
 ## 6. Arquitectura propuesta
 
 ### 6.1 API agregada
@@ -216,17 +263,64 @@ type DashboardCommandCenter = {
 
 Motivo: el dashboard actual hace muchas llamadas desde el cliente y mezcla cálculos de UI con cálculos de negocio. Una API agregada reduce complejidad visual y deja la pantalla más estable.
 
-### 6.2 Componentes
+### 6.2 API de negocio
+
+Crear una API separada para no contaminar la respuesta operativa:
+
+`GET /api/dashboard/negocio`
+
+Respuesta sugerida:
+
+```ts
+type DashboardNegocio = {
+  resumen: {
+    ingresos_30d: number
+    ingresos_mes_actual: number
+    transacciones_30d: number
+    clientes_membresia_activa: number
+    membresias_7d: number
+    membresias_30d: number
+    clientes_sin_membresia: number
+  }
+  transacciones_recientes: TransaccionDashboard[]
+  pagos_pendientes: PagoPendienteDashboard[]
+  renovaciones: RenovacionDashboard[]
+  embudo: {
+    nuevos_sin_pago: number
+    links_generados: number
+    pagos_completados: number
+    clientes_activados: number
+  }
+  timestamp: string
+}
+```
+
+Fuente de datos inicial:
+
+- `clientes.tipo_membresia`.
+- `clientes.fecha_inicio_membresia`.
+- `clientes.fecha_fin_membresia`.
+- campos Stripe persistidos en `clientes` si existen.
+- eventos/estado creado por `app/api/stripe/webhook/route.ts` si hay tabla o columnas fiables.
+
+Si no hay tabla de transacciones propia, la primera implementación debe mostrar renovaciones, membresías y clientes sin membresía; las transacciones detalladas quedan preparadas para cuando el webhook persista esos eventos.
+
+### 6.3 Componentes
 
 Componentes nuevos o refactorizados:
 
 - `DashboardCommandCenter.tsx`: layout principal.
+- `DashboardTabs.tsx`: cambio entre `Command Center` y `Negocio`.
 - `TodayActionQueue.tsx`: cola priorizada.
 - `ClientRiskList.tsx`: clientes en riesgo.
 - `AiInboxSummary.tsx`: tareas IA.
 - `WeeklyOpsStrip.tsx`: operación semanal.
 - `FoodCostFriction.tsx`: coste y precios incompletos.
 - `SportsCalendarStrip.tsx`: competiciones.
+- `BusinessDashboard.tsx`: pestaña negocio.
+- `RecentTransactionsTable.tsx`: transacciones recientes.
+- `RenewalsTable.tsx`: renovaciones próximas.
+- `PaymentIssuesList.tsx`: pagos pendientes o problemas.
 - `DashboardEmptyState.tsx`: estado inicial si no hay clientes.
 
 Componentes existentes reutilizables:
@@ -252,6 +346,8 @@ Reglas:
 Layout desktop:
 
 ```text
+Tabs: Command Center | Negocio
+
 Header compacto
 ┌──────────────────────── Hoy requiere atención ────────────────────────┐
 │ lista priorizada de acciones                                            │
@@ -268,6 +364,24 @@ Header compacto
 ┌──────── Coste/fricción ────────────┐ ┌──────── Calendario deportivo ────┐
 │ coste semanal, precios faltantes    │ │ competiciones                    │
 └─────────────────────────────────────┘ └────────────────────────────────┘
+```
+
+Layout `Negocio`:
+
+```text
+Tabs: Command Center | Negocio
+
+┌──────── Resumen económico ─────────────────────────────────────────────┐
+│ ingresos 30d | mes actual | renovaciones 7d/30d | sin membresía        │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌──────── Renovaciones ──────────────┐ ┌──────── Pagos pendientes ────────┐
+│ tabla por fecha e importe potencial │ │ links/fallos/clientes sin setup  │
+└─────────────────────────────────────┘ └────────────────────────────────┘
+
+┌──────── Transacciones recientes ───────────────────────────────────────┐
+│ cliente | importe | fecha | estado | origen                             │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## 8. Estados
@@ -291,9 +405,12 @@ Error:
 Incluido:
 
 - Nueva API agregada.
+- Nueva API o sección agregada para `Negocio`.
 - Nuevo layout del dashboard.
+- Pestañas `Command Center` y `Negocio`.
 - Retirada de gráficos decorativos de la primera pantalla.
 - Integración de check-ins, agentes, costes, competiciones, revisiones y membresías.
+- Integración inicial de datos comerciales disponibles: membresías, caducidad, clientes sin membresía y Stripe si está persistido.
 - Responsive móvil.
 - Build y lint.
 
@@ -304,6 +421,7 @@ No incluido:
 - Rediseño de `/clientes`, `/entrenos` o portal cliente.
 - Sistema completo de calendario.
 - Nuevas automatizaciones IA.
+- Contabilidad formal, fiscalidad, facturación legal o conciliación bancaria.
 
 ## 10. Verificación
 
@@ -321,6 +439,7 @@ Producto:
 - Cada bloque tiene ruta o acción clara.
 - No hay gráficos sin decisión asociada.
 - En móvil se ve primero la cola de acciones.
+- La pestaña `Negocio` separa pagos/renovaciones de coaching operativo.
 - Los datos mostrados salen de tablas/endpoints reales.
 
 ## 11. Riesgos y mitigación
