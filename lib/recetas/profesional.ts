@@ -162,7 +162,7 @@ function validarCantidadesSospechosas(ing: IngredienteProfesionalInput): string 
   // Aceite > 60g por receta (we'll check per ingredient, but total will be checked later)
   if (/(aceite|aceite de oliva|aceite de girasol|aceite de coco|aceite de aguacate|aceite de sesamo|aceite de cacahuete|aceite de soja|aceite de maiz|aceite de canola|aceite vegetal|aceite de palma|aceite de almendras|aceite de nuez|aceite de avellana|aceite de uva|aceite de linaza|aceite de onagra|aceite de borraja|aceite de pescado|aceite de higado de bacalao)/.test(nombre) && gramos > 60) return 'cantidades_sospechosas'
   // Condimentos tipo vinagre/zumo/limon > 120g salvo bebida (solo líquidos/condimentos, no frutas enteras)
-  if (/(vinagre|zumo|jugo|limon|lima|naranja exprimida|agua de coco|leche de coco|salsa|aliño|aderezo)/.test(nombre) && gramos > 120) return 'cantidades_sospechosas'
+  if (/(vinagre|zumo|jugo|limon|lima|naranja exprimida|salsa|aliño|aderezo)/.test(nombre) && gramos > 120) return 'cantidades_sospechosas'
   return null
 }
 

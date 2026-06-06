@@ -165,7 +165,7 @@ assert.equal(resumen.estado_sugerido, 'bloqueada')
     nombre: 'Mango sticky rice tailandés',
     ingredientes: [
       { nombre_libre: 'Arroz glutinoso', nombre_alimento: 'Arroz glutinoso', cantidad_gramos: 150, tiene_precio: true },
-      { nombre_libre: 'Leche de coco', nombre_alimento: 'Leche de coco', cantidad_gramos: 100, tiene_precio: true },
+      { nombre_libre: 'Leche de coco', nombre_alimento: 'Leche de coco', cantidad_gramos: 200, tiene_precio: true },
       { nombre_libre: 'Azúcar', nombre_alimento: 'Azúcar', cantidad_gramos: 30, tiene_precio: true },
       { nombre_libre: 'Sal', cantidad_gramos: 2, tiene_precio: true },
       { nombre_libre: 'Mango maduro', nombre_alimento: 'Mango', cantidad_gramos: 200, tiene_precio: true },
