@@ -58,13 +58,13 @@ async function getCoachAccess(): Promise<CoachAccess> {
 
     if (error || !user) return 'login'
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .maybeSingle()
+      .single()
 
-    if (profile?.role && profile.role !== 'coach') return 'cliente'
+    if (profileError || profile?.role !== 'coach') return 'cliente'
 
     return 'coach'
   })()

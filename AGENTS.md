@@ -23,6 +23,26 @@ La tabla `alimentos` tiene los **24 campos de micronutrientes** poblados para to
 - Para alimentos nuevos ver [`lib/deepseek.ts`](lib/deepseek.ts:607) → `completarAlimentoConIA()`.
 <!-- END:micronutrientes-completos -->
 
+<!-- BEGIN:ui-navigation-fluidity-20260606 -->
+# ✅ 06-06-2026 — Fluidez navegación coach + bug audit auth
+
+## Commits recientes
+- `915b374` — `fix: mejorar fluidez de navegacion coach`
+
+## Cambios clave
+- `components/CoachShell.tsx` cachea acceso coach durante la sesión para evitar spinner global al saltar entre módulos.
+- `components/Sidebar.tsx` precarga rutas principales y submódulos con `router.prefetch()`.
+- `lib/useNotificaciones.ts` cachea usuario/notificaciones durante 10s para reducir queries al remontar sidebar.
+- Bug audit posterior: el shell debe conceder acceso coach solo con `profiles.role === 'coach'`; no asumir coach si falla `profiles`.
+
+## Documentación
+- `salidas/06-06-2026_navigation-fluidity-report.md`
+- `salidas/06-06-2026_bug-audit-navigation-auth.md`
+
+## Próxima sesión recomendada
+Revisar lentitud interna de páginas con datos propios (`/dietas`, `/clientes`, `/entrenos`) para que la navegación sea inmediata y cada módulo cargue contenido sin sensación de recarga completa.
+<!-- END:ui-navigation-fluidity-20260606 -->
+
 <!-- BEGIN:fix-categorias-masivo -->
 # ✅ 23-05-2026 — Corrección masiva de categorías (~350+ alimentos re-categorizados)
 
