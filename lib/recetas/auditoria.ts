@@ -40,7 +40,10 @@ interface IngredienteDb {
   alimento_id: string | null
   nombre_libre: string | null
   cantidad_gramos: number | null
-  alimentos?: { nombre: string | null; calorias: number | null } | null
+  alimentos?:
+    | { nombre: string | null; calorias: number | null }
+    | { nombre: string | null; calorias: number | null }[]
+    | null
 }
 
 function toInput(receta: RecetaDb, ingredientes: IngredienteDb[], conPrecio: Set<string>): RecetaProfesionalInput {
@@ -61,14 +64,17 @@ function toInput(receta: RecetaDb, ingredientes: IngredienteDb[], conPrecio: Set
     porciones: receta.porciones,
     intolerancias: receta.intolerancias,
     tags: receta.tags,
-    ingredientes: ingredientes.map(i => ({
-      alimento_id: i.alimento_id,
-      nombre_libre: i.nombre_libre,
-      cantidad_gramos: i.cantidad_gramos,
-      tiene_precio: i.alimento_id ? conPrecio.has(i.alimento_id) : false,
-      nombre_alimento: i.alimentos?.nombre ?? null,
-      kcal_alimento: i.alimentos?.calorias ?? null,
-    })),
+    ingredientes: ingredientes.map(i => {
+      const alimento = Array.isArray(i.alimentos) ? i.alimentos[0] : i.alimentos
+      return {
+        alimento_id: i.alimento_id,
+        nombre_libre: i.nombre_libre,
+        cantidad_gramos: i.cantidad_gramos,
+        tiene_precio: i.alimento_id ? conPrecio.has(i.alimento_id) : false,
+        nombre_alimento: alimento?.nombre ?? null,
+        kcal_alimento: alimento?.calorias ?? null,
+      }
+    }),
   }
 }
 
