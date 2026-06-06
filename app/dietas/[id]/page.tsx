@@ -1,6 +1,6 @@
 'use client'
-import { useEffect, useState } from 'react'
-import type { ElementType } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { ElementType, ReactNode } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
@@ -69,6 +69,7 @@ type RecetaEquivalente = RecetaAsignada & {
 }
 
 type Fuente = 'local' | 'off' | 'recetas'
+type MacroPct = { proteinas: number; carbohidratos: number; grasas: number }
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const
 const DIA_DEFAULT = DIAS_SEMANA[0]
@@ -168,15 +169,221 @@ function MacroDial({ label, value, target, color, icon: Icon, unit }: {
 function macroPctFromPlan(plan: PlanNutricion | null) {
   const kcal = Number(plan?.kcal_objetivo ?? 0)
   if (kcal <= 0) return { proteinas: 30, carbohidratos: 40, grasas: 30 }
-  return {
+  return normalizeMacroPct({
     proteinas: Math.round(((Number(plan?.proteinas_objetivo ?? 0) * 4) / kcal) * 100) || 30,
     carbohidratos: Math.round(((Number(plan?.carbohidratos_objetivo ?? 0) * 4) / kcal) * 100) || 40,
     grasas: Math.round(((Number(plan?.grasas_objetivo ?? 0) * 9) / kcal) * 100) || 30,
-  }
+  })
 }
 
 function gramsFromPct(kcal: number, pct: number, kcalPerGram: 4 | 9) {
   return Math.round(((kcal * pct) / 100 / kcalPerGram) * 10) / 10
+}
+
+function normalizeMacroPct(input: MacroPct): MacroPct {
+  const next = {
+    proteinas: Math.max(10, Math.round(input.proteinas || 0)),
+    carbohidratos: Math.max(15, Math.round(input.carbohidratos || 0)),
+    grasas: Math.max(15, Math.round(input.grasas || 0)),
+  }
+  const diff = 100 - (next.proteinas + next.carbohidratos + next.grasas)
+  next.carbohidratos = Math.max(15, next.carbohidratos + diff)
+
+  if (next.carbohidratos < 15) {
+    const deficit = 15 - next.carbohidratos
+    next.carbohidratos = 15
+    next.grasas = Math.max(15, next.grasas - deficit)
+  }
+
+  const total = next.proteinas + next.carbohidratos + next.grasas
+  if (total !== 100) next.grasas += 100 - total
+  return next
+}
+
+function MacroDistributionBar({
+  value,
+  onChange,
+  kcal,
+  disabled = false,
+}: {
+  value: MacroPct
+  onChange: (next: MacroPct) => void
+  kcal: number
+  disabled?: boolean
+}) {
+  const barRef = useRef<HTMLDivElement>(null)
+  const [dragging, setDragging] = useState<'proteinas' | 'grasas' | null>(null)
+  const total = value.proteinas + value.carbohidratos + value.grasas
+  const proteinasEnd = value.proteinas
+  const carbosEnd = value.proteinas + value.carbohidratos
+
+  function pctFromPointer(clientX: number) {
+    const rect = barRef.current?.getBoundingClientRect()
+    if (!rect) return 0
+    return Math.round(((clientX - rect.left) / rect.width) * 100)
+  }
+
+  const updateBoundary = useCallback((boundary: 'proteinas' | 'grasas', rawPct: number) => {
+    if (disabled) return
+
+    if (boundary === 'proteinas') {
+      const min = 10
+      const max = 100 - value.grasas - 15
+      const proteinas = Math.min(Math.max(rawPct, min), max)
+      onChange(normalizeMacroPct({
+        proteinas,
+        carbohidratos: 100 - proteinas - value.grasas,
+        grasas: value.grasas,
+      }))
+      return
+    }
+
+    const minBoundary = value.proteinas + 15
+    const maxBoundary = 100 - 15
+    const boundaryPct = Math.min(Math.max(rawPct, minBoundary), maxBoundary)
+    onChange(normalizeMacroPct({
+      proteinas: value.proteinas,
+      carbohidratos: boundaryPct - value.proteinas,
+      grasas: 100 - boundaryPct,
+    }))
+  }, [disabled, onChange, value])
+
+  useEffect(() => {
+    if (!dragging) return
+    const activeBoundary = dragging
+
+    function onPointerMove(event: PointerEvent) {
+      updateBoundary(activeBoundary, pctFromPointer(event.clientX))
+    }
+
+    function onPointerUp() {
+      setDragging(null)
+    }
+
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp, { once: true })
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+    }
+  }, [dragging, updateBoundary])
+
+  function onBarPointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (disabled) return
+    const rawPct = pctFromPointer(event.clientX)
+    const nearest = Math.abs(rawPct - proteinasEnd) <= Math.abs(rawPct - carbosEnd) ? 'proteinas' : 'grasas'
+    setDragging(nearest)
+    updateBoundary(nearest, rawPct)
+  }
+
+  const macros = [
+    { key: 'proteinas' as const, label: 'Proteína', short: 'P', color: '#FF3B30', kcalPerGram: 4 as const },
+    { key: 'carbohidratos' as const, label: 'Carbohidratos', short: 'C', color: '#FF9500', kcalPerGram: 4 as const },
+    { key: 'grasas' as const, label: 'Grasas', short: 'G', color: '#0A84FF', kcalPerGram: 9 as const },
+  ]
+
+  return (
+    <div className="space-y-3">
+      <div
+        ref={barRef}
+        role="group"
+        aria-label="Distribución editable de macros objetivo"
+        onPointerDown={onBarPointerDown}
+        className={`relative h-9 overflow-hidden rounded-full border select-none ${disabled ? 'opacity-60' : 'cursor-ew-resize'}`}
+        style={{
+          borderColor: 'var(--border)',
+          background: 'var(--surface)',
+          touchAction: 'none',
+        }}
+      >
+        <div className="flex h-full w-full">
+          <div className="h-full transition-[width]" style={{ width: `${value.proteinas}%`, background: '#FF3B30' }} />
+          <div className="h-full transition-[width]" style={{ width: `${value.carbohidratos}%`, background: '#FF9500' }} />
+          <div className="h-full transition-[width]" style={{ width: `${value.grasas}%`, background: '#0A84FF' }} />
+        </div>
+        {[
+          { key: 'proteinas' as const, left: proteinasEnd, label: 'Ajustar proteína y carbohidratos' },
+          { key: 'grasas' as const, left: carbosEnd, label: 'Ajustar carbohidratos y grasas' },
+        ].map(handle => (
+          <button
+            key={handle.key}
+            type="button"
+            aria-label={handle.label}
+            disabled={disabled}
+            onPointerDown={event => {
+              event.stopPropagation()
+              setDragging(handle.key)
+              updateBoundary(handle.key, pctFromPointer(event.clientX))
+            }}
+            className="absolute top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border transition-transform active:scale-95 disabled:cursor-not-allowed"
+            style={{
+              left: `${handle.left}%`,
+              borderColor: 'rgba(255,255,255,0.85)',
+              background: 'color-mix(in srgb, var(--surface) 88%, white)',
+              boxShadow: '0 8px 24px rgba(15,23,42,0.18), inset 0 0 0 1px rgba(15,23,42,0.08)',
+            }}
+          >
+            <span className="mx-auto block h-3.5 w-0.5 rounded-full" style={{ background: 'var(--text-muted)' }} />
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {macros.map(item => (
+          <div key={item.key} className="rounded-xl px-3 py-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold" style={{ color: item.color }}>{item.label}</span>
+              <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--text)' }}>{value[item.key]}%</span>
+            </div>
+            <p className="mt-1 text-[11px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+              {item.short} {gramsFromPct(kcal, value[item.key], item.kcalPerGram)}g objetivo
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+        <span>Total {total}%</span>
+        <span>Arrastra los cortes blancos para redistribuir sin romper el 100%.</span>
+      </div>
+    </div>
+  )
+}
+
+function CollapsibleModule({
+  title,
+  eyebrow,
+  meta,
+  defaultOpen = true,
+  children,
+}: {
+  title: string
+  eyebrow: string
+  meta?: ReactNode
+  defaultOpen?: boolean
+  children: ReactNode
+}) {
+  return (
+    <details
+      open={defaultOpen}
+      className="group rounded-3xl mb-6 overflow-hidden"
+      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 sm:p-5 active:scale-[0.995]">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{eyebrow}</p>
+          <h2 className="text-lg sm:text-xl font-bold truncate" style={{ color: 'var(--text)' }}>{title}</h2>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {meta}
+          <ChevronDown size={18} className="transition-transform group-open:rotate-180" style={{ color: 'var(--text-muted)' }} />
+        </div>
+      </summary>
+      <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+        {children}
+      </div>
+    </details>
+  )
 }
 
 export default function EditarDietaPage() {
@@ -189,7 +396,6 @@ export default function EditarDietaPage() {
   const [loading, setLoading] = useState(true)
   const [toggling, setToggling] = useState(false)
   const [copiadoId, setCopiadoId] = useState(false)
-  const [porcionesVis, setPorcionesVis] = useState(1)
   const [diaActivo, setDiaActivo] = useState<string>(DIA_DEFAULT)
   const [copiandoDia, setCopiandoDia] = useState<string | null>(null)
 
@@ -240,6 +446,55 @@ export default function EditarDietaPage() {
   useEffect(() => {
     setMacroPct(macroPctFromPlan(plan))
   }, [plan?.id, plan?.kcal_objetivo, plan?.proteinas_objetivo, plan?.carbohidratos_objetivo, plan?.grasas_objetivo])
+
+  useEffect(() => {
+    const comidasConOpciones = comidas.filter(comida =>
+      (comida.alternativas_receta_ids ?? []).some(recetaId => recetaId && recetaId !== comida.receta_id)
+    )
+    if (!comidasConOpciones.length) return
+
+    const idsPendientes = Array.from(new Set(
+      comidasConOpciones.flatMap(comida =>
+        (comida.alternativas_receta_ids ?? [])
+          .filter(recetaId => recetaId && recetaId !== comida.receta_id)
+          .filter(recetaId => !(alternativasPorComida[comida.id] ?? []).some(r => r.id === recetaId))
+      )
+    ))
+    if (!idsPendientes.length) return
+
+    let cancelado = false
+
+    async function cargarOpcionesAsignadas() {
+      const { data } = await supabase
+        .from('recetas')
+        .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_plato')
+        .in('id', idsPendientes)
+
+      if (cancelado || !data?.length) return
+
+      const recetasPorId = new Map(data.map(receta => [receta.id, receta as RecetaEquivalente]))
+      setAlternativasPorComida(prev => {
+        const next = { ...prev }
+        for (const comida of comidasConOpciones) {
+          const actuales = next[comida.id] ?? []
+          const actualesIds = new Set(actuales.map(r => r.id))
+          const asignadas = (comida.alternativas_receta_ids ?? [])
+            .filter(recetaId => recetaId && recetaId !== comida.receta_id)
+            .map(recetaId => recetasPorId.get(recetaId))
+            .filter((receta): receta is RecetaEquivalente => Boolean(receta))
+            .filter(receta => !actualesIds.has(receta.id))
+
+          if (asignadas.length) {
+            next[comida.id] = [...asignadas, ...actuales]
+          }
+        }
+        return next
+      })
+    }
+
+    cargarOpcionesAsignadas()
+    return () => { cancelado = true }
+  }, [comidas, alternativasPorComida])
 
   async function toggleActivo() {
     if (!plan) return
@@ -777,13 +1032,7 @@ export default function EditarDietaPage() {
   const tieneMicrosDieta = Object.values(microsTotales).some(v => v > 0)
 
   const totalDiaBase = sumarMacros(comidasDia.map(c => calcMacrosComida(c.alimentos)))
-  const totalDia = {
-    calorias: totalDiaBase.calorias * porcionesVis,
-    proteinas: totalDiaBase.proteinas * porcionesVis,
-    carbohidratos: totalDiaBase.carbohidratos * porcionesVis,
-    grasas: totalDiaBase.grasas * porcionesVis,
-    fibra: totalDiaBase.fibra * porcionesVis,
-  }
+  const totalDia = totalDiaBase
 
   const macroObjetivos = {
     calorias: plan?.kcal_objetivo ?? 0,
@@ -963,18 +1212,17 @@ export default function EditarDietaPage() {
           </div>
         </div>
 
-        {/* Totales del día */}
-        <section className="rounded-3xl p-4 sm:p-5 mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Plan nutricional</p>
-              <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Objetivo diario vs dieta aplicada</h2>
-            </div>
+        <CollapsibleModule
+          eyebrow="Plan nutricional"
+          title="Objetivo diario vs dieta aplicada"
+          defaultOpen
+          meta={
             <div className="hidden sm:flex items-center gap-2 text-xs px-3 py-1.5 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
               <Target size={13} />
               {comidasDia.length} comidas · {diaActivo}
             </div>
-          </div>
+          }
+        >
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <MacroDial label="Kcal" value={totalDia.calorias} target={macroObjetivos.calorias} color="#34C759" icon={Flame} unit="kcal" />
             <MacroDial label="Proteína" value={totalDia.proteinas} target={macroObjetivos.proteinas} color="#FF3B30" icon={Beef} unit="g" />
@@ -1017,148 +1265,88 @@ export default function EditarDietaPage() {
                 </button>
               </div>
             </div>
-            <div className="mb-3">
-              <div className="flex rounded-full overflow-hidden h-2.5" style={{ background: 'var(--border)' }}>
-                <div style={{ width: `${Math.max(macroPct.proteinas, 0)}%`, background: '#FF3B30' }} />
-                <div style={{ width: `${Math.max(macroPct.carbohidratos, 0)}%`, background: '#FF9500' }} />
-                <div style={{ width: `${Math.max(macroPct.grasas, 0)}%`, background: '#0A84FF' }} />
-              </div>
-              <div className="mt-2 flex flex-wrap gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                <span>Objetivo P {macroPct.proteinas}%</span>
-                <span>C {macroPct.carbohidratos}%</span>
-                <span>G {macroPct.grasas}%</span>
-                <span>
-                  Aplicado hoy P {Math.round((totalDia.proteinas * 4 / Math.max(totalDia.calorias, 1)) * 100)}%
-                  · C {Math.round((totalDia.carbohidratos * 4 / Math.max(totalDia.calorias, 1)) * 100)}%
-                  · G {Math.round((totalDia.grasas * 9 / Math.max(totalDia.calorias, 1)) * 100)}%
-                </span>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-              {[
-                { key: 'proteinas' as const, label: 'Proteína', color: '#FF3B30', kcalPerGram: 4 as const },
-                { key: 'carbohidratos' as const, label: 'Carbohidratos', color: '#FF9500', kcalPerGram: 4 as const },
-                { key: 'grasas' as const, label: 'Grasas', color: '#0A84FF', kcalPerGram: 9 as const },
-              ].map(item => (
-                <div key={item.key} className="rounded-xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-semibold" style={{ color: item.color }}>{item.label}</span>
-                    <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--text)' }}>
-                      {macroPct[item.key]}% · {gramsFromPct(Number(plan?.kcal_objetivo ?? 0), macroPct[item.key], item.kcalPerGram)}g
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={item.key === 'proteinas' ? 10 : 15}
-                    max={item.key === 'grasas' ? 45 : 65}
-                    step={1}
-                    value={macroPct[item.key]}
-                    onChange={e => setMacroPct(prev => ({ ...prev, [item.key]: Number(e.target.value) }))}
-                    className="w-full accent-[var(--primary)]"
-                  />
-                </div>
-              ))}
+            <MacroDistributionBar
+              value={macroPct}
+              onChange={setMacroPct}
+              kcal={Number(plan?.kcal_objetivo ?? 0)}
+              disabled={!plan?.kcal_objetivo || guardandoMacros}
+            />
+            <div className="mt-2 flex flex-wrap gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+              <span>
+                Aplicado hoy P {Math.round((totalDia.proteinas * 4 / Math.max(totalDia.calorias, 1)) * 100)}%
+                · C {Math.round((totalDia.carbohidratos * 4 / Math.max(totalDia.calorias, 1)) * 100)}%
+                · G {Math.round((totalDia.grasas * 9 / Math.max(totalDia.calorias, 1)) * 100)}%
+              </span>
             </div>
           </div>
-        </section>
+        </CollapsibleModule>
 
-        {/* Panel micronutrientes */}
         {tieneMicrosDieta && (
-          <>
-            <details className="card mb-4 p-0 overflow-hidden sm:hidden">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4">
-                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                  Micronutrientes del plan · % IDR
-                </span>
-                <ChevronDown size={15} style={{ color: 'var(--text-muted)' }} />
-              </summary>
-              <div className="px-4 pb-4">
-                <div className="grid grid-cols-1 gap-y-2">
-                  {Object.entries(IDR).map(([key, { label, idr, unit, color }]) => {
-                    const val = microsTotales[key]
-                    if (!val || val === 0) return null
-                    const pct = Math.min((val / idr) * 100, 150)
-                    const pctDisplay = Math.round((val / idr) * 100)
-                    const barColor = pctDisplay >= 80 ? '#22C55E' : pctDisplay >= 50 ? '#F97316' : '#EF4444'
-                    return (
-                      <div key={key}>
-                        <div className="flex items-center justify-between text-xs mb-0.5">
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                            <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                          </span>
-                          <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>
-                            {val.toFixed(1)}{unit} <span className="font-semibold" style={{ color: barColor }}>{pctDisplay}%</span>
-                          </span>
-                        </div>
-                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                          <div
-                            className="h-full rounded-full transition-all"
-                            style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-                <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
-                  IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
-                </p>
-              </div>
-            </details>
-
-            <div className="card mb-4 p-4 hidden sm:block">
-              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
-                Micronutrientes del plan · % IDR
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-                {Object.entries(IDR).map(([key, { label, idr, unit, color }]) => {
-                  const val = microsTotales[key]
-                  if (!val || val === 0) return null
-                  const pct = Math.min((val / idr) * 100, 150)
-                  const pctDisplay = Math.round((val / idr) * 100)
-                  const barColor = pctDisplay >= 80 ? '#22C55E' : pctDisplay >= 50 ? '#F97316' : '#EF4444'
-                  return (
-                    <div key={key}>
-                      <div className="flex items-center justify-between text-xs mb-0.5">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                          <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-                        </span>
-                        <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>
-                          {val.toFixed(1)}{unit} <span className="font-semibold" style={{ color: barColor }}>{pctDisplay}%</span>
-                        </span>
-                      </div>
-                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
-                        />
-                      </div>
+          <CollapsibleModule
+            eyebrow="Micronutrientes"
+            title="Micronutrientes del plan · % IDR"
+            defaultOpen={false}
+            meta={
+              <span className="hidden sm:inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+                Cerrado por defecto
+              </span>
+            }
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+              {Object.entries(IDR).map(([key, { label, idr, unit, color }]) => {
+                const val = microsTotales[key]
+                if (!val || val === 0) return null
+                const pct = Math.min((val / idr) * 100, 150)
+                const pctDisplay = Math.round((val / idr) * 100)
+                const barColor = pctDisplay >= 80 ? '#22C55E' : pctDisplay >= 50 ? '#F97316' : '#EF4444'
+                return (
+                  <div key={key}>
+                    <div className="flex items-center justify-between text-xs mb-0.5">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                        <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                      </span>
+                      <span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                        {val.toFixed(1)}{unit} <span className="font-semibold" style={{ color: barColor }}>{pctDisplay}%</span>
+                      </span>
                     </div>
-                  )
-                })}
-              </div>
-              <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
-                IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
-              </p>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${Math.min(pct, 100)}%`, background: barColor }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          </>
+            <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
+              IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
+            </p>
+          </CollapsibleModule>
         )}
 
-        {/* Auditoría semanal */}
-        <section className="rounded-3xl p-4 sm:p-5 mb-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <CollapsibleModule
+          eyebrow="Auditoría del plan semanal"
+          title="Semáforo de revisión antes de aprobar"
+          defaultOpen={false}
+          meta={
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums"
+              style={{
+                background: auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').bg,
+                color: auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').text,
+              }}
+            >
+              <ClipboardCheck size={13} />
+              {scoreSemana}/100
+            </span>
+          }
+        >
+          <p className="text-sm max-w-2xl mb-4" style={{ color: 'var(--text-muted)' }}>
+            Detecta desviaciones de macros, comidas sin receta, días vacíos y equivalentes insuficientes para que el coach ajuste rápido.
+          </p>
           <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-5">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <ClipboardCheck size={16} style={{ color: 'var(--primary)' }} />
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Auditoría del plan semanal</p>
-              </div>
-              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Semáforo de revisión antes de aprobar</h2>
-              <p className="text-sm mt-1 max-w-2xl" style={{ color: 'var(--text-muted)' }}>
-                Detecta desviaciones de macros, comidas sin receta, días vacíos y equivalentes insuficientes para que el coach ajuste rápido.
-              </p>
-            </div>
             <div className="grid grid-cols-3 gap-2 w-full xl:w-auto">
               <div className="rounded-2xl px-3 py-2" style={{ background: auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').bg, border: `1px solid ${auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').border}` }}>
                 <p className="text-[10px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Score</p>
@@ -1241,19 +1429,19 @@ export default function EditarDietaPage() {
               )}
             </div>
           </div>
-        </section>
+        </CollapsibleModule>
 
-        <section className="rounded-3xl p-4 sm:p-5 mb-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Dieta del día</p>
-              <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Semana nutricional y comidas de {diaActivo}</h2>
-            </div>
-            <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full w-fit" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+        <CollapsibleModule
+          eyebrow="Dieta del día"
+          title={`Semana nutricional y comidas de ${diaActivo}`}
+          defaultOpen
+          meta={
+            <div className="hidden sm:flex items-center gap-2 text-xs px-3 py-1.5 rounded-full w-fit" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
               <CalendarDays size={13} />
               {comidasDia.length} comidas · {Math.round(totalDia.calorias)} kcal
             </div>
-          </div>
+          }
+        >
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
             {auditoriaSemana.map(({ dia, comidas: comidasDelDia, macros, score, criticos, avisos }) => {
               const activo = dia === diaActivo
@@ -1281,65 +1469,27 @@ export default function EditarDietaPage() {
               )
             })}
           </div>
-          <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              Trabajando {diaActivo}. Copia este día a otro si quieres usarlo como base y ajustar platos concretos.
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl p-2.5" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+            <p className="text-xs font-semibold shrink-0" style={{ color: 'var(--text-muted)' }}>
+              Base: {diaActivo}
             </p>
-            <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex flex-wrap gap-1.5 justify-start sm:justify-end">
               {DIAS_SEMANA.filter(dia => dia !== diaActivo).map(dia => (
                 <button
                   key={dia}
                   type="button"
                   onClick={() => copiarDiaADestino(dia)}
                   disabled={copiandoDia !== null || comidasDia.length === 0}
-                  className="text-xs font-semibold rounded-full px-3 py-1.5 border whitespace-nowrap disabled:opacity-50"
+                  className="text-[11px] font-semibold rounded-full px-2.5 py-1 border whitespace-nowrap disabled:opacity-50"
                   style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}
+                  title={`Copiar ${diaActivo} a ${dia}`}
                 >
-                  {copiandoDia === dia ? 'Copiando...' : `Copiar a ${dia}`}
+                  {copiandoDia === dia ? 'Copiando' : `Copiar a ${DIA_ABR[dia]}`}
                 </button>
               ))}
             </div>
           </div>
-        </section>
-
-        {/* Recalculadora de porciones */}
-        <div className="card mb-4 flex items-center gap-3 py-3 px-4">
-          <span className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}><UtensilsCrossed size={15} /> Porciones:</span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPorcionesVis(p => Math.max(0.25, p - 0.25))}
-              className="w-7 h-7 flex items-center justify-center rounded text-sm font-bold"
-              style={{ background: 'var(--bg)', color: 'var(--text)' }}
-            >−</button>
-            <input
-              type="number"
-              min={0.25}
-              max={20}
-              step={0.25}
-              value={porcionesVis}
-              onChange={e => {
-                const v = parseFloat(e.target.value)
-                if (!isNaN(v) && v >= 0.25 && v <= 20) setPorcionesVis(v)
-              }}
-              className="w-16 text-center text-sm font-semibold border rounded"
-              style={{
-                background: 'var(--bg)',
-                color: 'var(--text)',
-                borderColor: 'var(--border)',
-              }}
-            />
-            <button
-              onClick={() => setPorcionesVis(p => Math.min(20, p + 0.25))}
-              className="w-7 h-7 flex items-center justify-center rounded text-sm font-bold"
-              style={{ background: 'var(--bg)', color: 'var(--text)' }}
-            >+</button>
-          </div>
-          {porcionesVis !== 1 && (
-            <span className="text-xs ml-auto" style={{ color: 'var(--text-muted)' }}>
-              Mostrando ×{porcionesVis.toFixed(2).replace(/\.?0+$/, '')} &middot; Base: {totalDiaBase.calorias.toFixed(0)} kcal
-            </span>
-          )}
-        </div>
+        </CollapsibleModule>
 
         {/* Comidas */}
         {guardando && (
@@ -1939,12 +2089,20 @@ export default function EditarDietaPage() {
             )}
           </div>
 
-          {/* ─── Lista de la Compra ─── */}
-          <div className="mt-4">
+          <CollapsibleModule
+            eyebrow="Operativa"
+            title="Lista de la compra"
+            defaultOpen={false}
+            meta={
+              <span className="hidden sm:inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
+                Opcional
+              </span>
+            }
+          >
             <ErrorBoundary>
               <ListaCompra planId={id} clienteId={plan?.cliente_id ?? ''} nombrePlan={plan?.nombre} rol="coach" />
             </ErrorBoundary>
-          </div>
+          </CollapsibleModule>
         </div>
       </div>
     </>)
