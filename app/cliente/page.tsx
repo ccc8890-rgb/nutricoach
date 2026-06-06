@@ -159,10 +159,10 @@ function PortalClientePageContent() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { window.location.href = '/login'; return }
+      if (!user) { window.location.replace('/login'); return }
 
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (prof?.role === 'coach') { window.location.href = '/dashboard'; return }
+      if (prof?.role === 'coach') { window.location.replace('/dashboard'); return }
       setProfile(prof as Profile)
 
       fetch('/api/cliente/registrar-acceso', { method: 'POST' }).catch(() => {})
@@ -171,7 +171,7 @@ function PortalClientePageContent() {
       setCliente(cli as Cliente)
 
       if (cli && !cli.onboarding_completado) {
-        window.location.href = '/onboarding'
+        window.location.replace('/onboarding')
         return
       }
 
