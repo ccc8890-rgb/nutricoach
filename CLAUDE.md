@@ -1,5 +1,42 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 06-06-2026 (Sesión 49+50) — Bugs portal cliente + Métricas cardio entreno
+
+### Qué se hizo
+
+| Tarea | Commits | Detalle |
+|-------|---------|---------|
+| Fix bug "empezar entrenamiento" | `634575b`, `97aeb3b` | Auth check fallaba con RLS en cadena. Nuevo `GET /api/cliente/sesion/[id]` con service role bypasea todo. Back button ← cambiado de `/cliente/semana` → `/cliente`. |
+| Fix "portal roto" al volver | `dfe25c6` | Links a sesión usan `replace` en vez de `push` — swipe back iOS ya no va a `/cliente/semana`. |
+| Métricas cardio en registro sesión | `3875b21`–`956a285` | SkiErg/remo/bici muestran **metros + cal + tiempo + RPE** en lugar de kg/reps. Detección automática por nombre del ejercicio (sin config manual). |
+| Selector tipo ejercicio en coach | `7ac8707` | Panel `/entrenos/ejercicios` permite cambiar tipo entre fuerza/cardio/funcional/flexibilidad. |
+
+### Causa raíz bug sesión (IMPORTANTE — patrón recurrente)
+Mismo patrón de sesión 38 y 49: **PostgREST falla silenciosamente con joins anidados y RLS en cadena** (`sesiones_entrenamiento → planes_entrenamiento → clientes`). El cliente Supabase devolvía `null` aunque los datos existían.
+
+**Regla definitiva:** cualquier query que cruce ≥2 tablas con RLS activo → API route con `createServiceSupabase()`. Nunca joins anidados profundos desde el cliente.
+
+### Arquitectura métricas cardio
+
+```
+getModo(tipo, nombre) → 'fuerza' | 'cardio'
+  1. tipo === 'cardio' en BD → cardio
+  2. nombre contiene keyword (ski, remo, bici, rowing...) → cardio automático
+  3. resto → fuerza
+
+Fuerza: SetRegistroSheet muestra kg + reps + RPE
+Cardio: SetRegistroSheet muestra metros (±10) + cal (±1) + tiempo MM:SS (±5s) + RPE
+
+SetData unificado: { kg?, reps?, metros?, calorias?, tiempo_s?, rpe, hecho }
+sets_ejecutados JSONB acepta ambas estructuras sin cambio en BD
+PRs solo calculan para fuerza (peso_kg > 0)
+```
+
+### Keywords cardio detectadas automáticamente
+`ski`, `skierg`, `remo`, `rowing`, `bici`, `ciclismo`, `assault`, `air bike`, `echo bike`, `airdyne`, `running`, `correr`, `carrera`, `cinta`, `treadmill`, `nataci`, `swim`, `kayak`, `ergómetro`
+
+---
+
 ## ✅ SESIÓN 06-06-2026 (Sesión 50) — Training visual diferenciado + dark mode fixes portal cliente
 
 ### Qué se hizo

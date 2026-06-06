@@ -16,6 +16,7 @@ El sistema ya tiene buena parte de la infraestructura:
 - Cobertura en `/recetas/cobertura`.
 - Perfil alimentario del cliente y feedback.
 - Quality gate centralizado con `auditarRecetaProfesional`.
+- Roles de ingrediente y reglas de scaling en `lib/ingredient-roles.ts`.
 
 La base actual tiene 409 recetas aprobadas. De ellas, 328 están marcadas como `portion_scalable`, pero todavía falta una capa explícita de "receta base adaptable". Hoy el sistema selecciona recetas fijas y ajusta por cercanía; mañana debe seleccionar una base y aplicar una transformación controlada.
 
@@ -28,6 +29,7 @@ La cobertura actual permite empezar, pero está descompensada:
 - Media mañana: 4 recetas.
 - Recetas sin momento: 113.
 - Recetas aprobadas con `score_calidad < 70`: 61.
+- Solo el 24% de `receta_ingredientes` tiene `rol_ingrediente` asignado.
 - Predomina salud general/mantenimiento frente a objetivos deportivos o recomposición.
 
 Esto confirma que antes de producir volumen masivo conviene crear una capa estructural.
@@ -190,6 +192,20 @@ Responsabilidades:
 
 La IA puede redactar nombre, instrucciones y pequeños ajustes culinarios, pero los gramajes y límites salen de reglas estructuradas.
 
+### Prerrequisito: Scaling por Rol en Producción
+
+Ya existe `lib/ingredient-roles.ts` con `SCALING_RULES`, `inferirRolIngrediente` y `calcularGramajeAjustado`, pero la expansión real de recetas en `lib/recetas/aplicar-receta-comida.ts` todavía usa un factor uniforme sobre todos los ingredientes.
+
+Antes de activar bases adaptables, `aplicarRecetaAComida` debe:
+
+- seleccionar `rol_ingrediente` y `es_cantidad_fija` desde `receta_ingredientes`;
+- usar `calcularGramajeAjustado()` en vez de multiplicar todo por el mismo factor;
+- mantener `factor_ajuste` trazable;
+- recalcular macros reales desde los ingredientes ajustados;
+- rechazar factores extremos fuera de `0.55-1.6`, salvo lógica explícita de variante.
+
+También hay que ejecutar o rehacer `scripts/inferir-roles-ingredientes.mjs` para dejar los roles poblados antes de depender de esta capa.
+
 ## Flujo de Plan IA
 
 El plan inicial pasará de:
@@ -229,12 +245,14 @@ Si no pasa, queda `en_revision`.
 Orden de trabajo:
 
 1. Auditar cobertura actual y huecos.
-2. Clasificar/rehacer momentos de recetas existentes sin momento.
-3. Crear 60 bases adaptables.
-4. Generar variantes de prueba para 10 bases.
-5. Pasar quality gate y revisión manual.
-6. Activar uso limitado en generación de planes.
-7. Medir aceptación con `receta_interacciones_cliente`.
+2. Poblar `rol_ingrediente` en recetas existentes.
+3. Cambiar expansión de recetas a scaling por rol.
+4. Clasificar/rehacer momentos de recetas existentes sin momento.
+5. Crear 60 bases adaptables.
+6. Generar variantes de prueba para 10 bases.
+7. Pasar quality gate y revisión manual.
+8. Activar uso limitado en generación de planes.
+9. Medir aceptación con `receta_interacciones_cliente`.
 
 ## Criterios de Éxito
 
@@ -273,4 +291,3 @@ Prioridad de producto:
 2. Pérdida grasa y recomposición.
 3. Rendimiento amateur.
 4. Rendimiento avanzado/profesional.
-
