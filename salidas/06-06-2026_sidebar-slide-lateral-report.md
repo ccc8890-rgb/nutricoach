@@ -19,6 +19,7 @@ Carlos pidió que los submódulos, especialmente dentro de Nutrición, no se des
   - `SidebarSection` queda como patrón único para todos los módulos con submódulos.
   - `SecondarySidebar` renderiza el submenú contextual en escritorio.
   - No hay lógica especial solo para Nutrición; Entrenamiento, Sistema y futuros módulos usan la misma columna secundaria.
+  - Se elimina la navegación lateral interna de `TrainingWorkspaceShell` en escritorio para no crear tres columnas ni duplicar los submódulos de entrenamiento.
 
 - En móvil:
   - Se mantiene el desplegable vertical dentro del drawer.
@@ -32,5 +33,7 @@ Carlos pidió que los submódulos, especialmente dentro de Nutrición, no se des
 ## Verificación
 
 - `npx eslint components/Sidebar.tsx`: OK.
+- `npx eslint components/training/TrainingWorkspaceShell.tsx`: OK.
+- Playwright local con cookie Supabase SSR de test: `/dietas`, `/entrenos` y `/conocimiento` muestran 2 sidebars, `main.left = 512`, sin solape.
 - `git diff --check`: OK.
 - `npm run build`: OK.

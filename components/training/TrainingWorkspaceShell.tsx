@@ -7,13 +7,9 @@ import {
   Brain,
   Command,
   Database,
-  Barbell,
-  FolderOpen,
   MagnifyingGlass,
   Pulse,
-  Sparkle,
   SquaresFour,
-  TrendUp,
 } from '@phosphor-icons/react'
 
 type IconWeight = 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone'
@@ -171,82 +167,8 @@ export default function TrainingWorkspaceShell({ children }: { children: ReactNo
         </div>
       </div>
 
-      <div className="mr-auto grid w-full max-w-[1500px] lg:grid-cols-[216px_minmax(0,1fr)]">
-        <aside
-          className="sticky top-[84px] hidden h-[calc(100dvh-84px)] border-r p-3 lg:block"
-          style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}
-        >
-          <div className="space-y-3">
-            {MODES.map(mode => {
-              const activeMode = currentMode.key === mode.key
-              const Icon = mode.icon
-              return (
-                <div key={mode.key} className="rounded-2xl border p-2" style={{ borderColor: activeMode ? 'var(--border-strong)' : 'transparent', background: activeMode ? 'var(--surface)' : 'transparent' }}>
-                  <Link
-                    href={mode.href}
-                    className="flex items-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold transition-colors"
-                    style={{ color: activeMode ? 'var(--text)' : 'var(--text-secondary)' }}
-                  >
-                    <Icon size={17} weight={activeMode ? 'duotone' : 'regular'} />
-                    <span>{mode.label}</span>
-                    {activeMode && <TrendUp className="ml-auto" size={14} style={{ color: 'var(--semantic-active)' }} />}
-                  </Link>
-                  {activeMode && (
-                    <div className="mt-1 space-y-1">
-                      {mode.items.map(item => {
-                        const active = isActive(pathname, item.href, item.exact)
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className="block rounded-lg px-8 py-1.5 text-xs font-medium transition-colors"
-                            style={{
-                              background: active ? 'var(--bg)' : 'transparent',
-                              color: active ? 'var(--text)' : 'var(--text-muted)',
-                            }}
-                          >
-                            {item.label}
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="mt-5 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <div className="flex items-center gap-2">
-              <Sparkle size={16} weight="duotone" style={{ color: 'var(--semantic-warn)' }} />
-              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Asistente IA</p>
-            </div>
-            <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-              Revisa carga, adherencia y próxima sesión antes de que el coach tenga que buscarlo.
-            </p>
-            <Link
-              href="/entrenos/brain-ia"
-              className="mt-3 inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-semibold"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--bg)' }}
-            >
-              Abrir Brain <FolderOpen size={13} />
-            </Link>
-          </div>
-
-          <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <div className="flex items-center gap-2">
-              <Barbell size={16} weight="duotone" style={{ color: 'var(--semantic-info)' }} />
-              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Library health</p>
-            </div>
-            <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-              Planes y ejercicios se tratan como activos: media, calidad, uso y contexto.
-            </p>
-          </div>
-        </aside>
-
-        <main className="min-w-0">
-          {children}
-        </main>
+      <div className="mr-auto w-full max-w-[1500px]">
+        {children}
       </div>
     </section>
   )
