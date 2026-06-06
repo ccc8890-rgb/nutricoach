@@ -684,6 +684,20 @@ export default function EjerciciosMediaPage() {
                           </div>
 
                           <div className="space-y-1">
+                            <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Tipo de ejercicio</label>
+                            <select
+                              value={(itemForm.tipo ?? 'fuerza') as string}
+                              onChange={e => updateField(ej.id, 'tipo', e.target.value)}
+                              className="input w-full text-sm"
+                            >
+                              <option value="fuerza">Fuerza (kg + reps)</option>
+                              <option value="cardio">Cardio (m + cal + tiempo)</option>
+                              <option value="funcional">Funcional (kg + reps)</option>
+                              <option value="flexibilidad">Flexibilidad (reps)</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-1">
                             <label className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Tipo de vídeo</label>
                             <select
                               value={(itemForm.video_tipo ?? '') as string}
