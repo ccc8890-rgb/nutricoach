@@ -1,5 +1,32 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 06-06-2026 (Sesión 51) — Fix navegación iOS swipe-back portal cliente
+
+### Qué se hizo
+
+| Bug | Fix | Commits |
+|-----|-----|---------|
+| `SemanaEntrenoCard` usaba `replace` para links de sesión — swipe-back desde sesión saltaba `/cliente` y volvía a página anterior | Eliminado `replace` del componente (`SemanaEntrenoCard` vive en `/cliente`, no en `/cliente/semana`) | `6f888d1` |
+| "Volver al portal" en pantalla de sesión completada no usaba `replace` — swipe-back desde `/cliente` volvía a la sesión vacía | Añadido `replace` en link y en estado de error | `a93d3fa` |
+
+### Regla definitiva — navegación en portal cliente
+
+```
+REGLA: usar replace solo cuando la página actual NO debe aparecer en el historial de vuelta
+
+✅ /cliente/semana  → /cliente/sesion/[id] : replace (saltar semana al volver atrás)
+✅ /cliente/sesion  → /cliente (pantalla completada/error): replace (no volver a sesión vacía)
+✅ /cliente/sesion  → /cliente (back button ←): Link sin replace (ya se gestiona por historial)
+
+❌ SemanaEntrenoCard (/cliente) → /cliente/sesion/[id]: NO usar replace
+   → /cliente debe quedar en historial para que swipe-back funcione
+```
+
+### Causa raíz (patrón de este bug)
+El `replace` se introdujo en sesión 49 para evitar que swipe-back fuera a `/cliente/semana`. Pero se aplicó a todos los links de sesión incluyendo los de `SemanaEntrenoCard`, que está embedido en `/cliente` (no en `/cliente/semana`). Esto reemplazaba `/cliente` en el historial y el swipe-back saltaba a la página anterior al portal.
+
+---
+
 ## ✅ SESIÓN 06-06-2026 (Sesión 49+50) — Bugs portal cliente + Métricas cardio entreno
 
 ### Qué se hizo
