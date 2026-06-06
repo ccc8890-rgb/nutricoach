@@ -21,6 +21,9 @@
 - [ ] Remove global `Inbox IA`/`Revisión IA` as a primary sidebar item.
 - [ ] Move `Entrenamiento` from primary items into a `Entrenamiento` section.
 - [ ] Group `Precios`, `Escandallo`, and `Rentabilidad` under `Nutrición`.
+- [ ] Move `Alimentos` inside the `Recetario` subgroup.
+- [ ] Move `Recetario` itself inside `Nutrición`.
+- [ ] Create `Costes y compra` subgroup with lista compra, precios, escandallo and rentabilidad.
 - [ ] Group methodology, knowledge base, and questionnaires under `Sistema`.
 - [ ] Keep primary items short: `Inicio`, `Clientes`.
 

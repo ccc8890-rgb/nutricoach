@@ -41,6 +41,25 @@ El sidebar debe ser intuitivo, minimalista y consistente. Entrenamiento no debe 
 - Menos nombres internos, más nombres de trabajo real del coach.
 - La IA aparece como revisión/preparación, no como estructura técnica.
 - La revisión IA no debe competir como módulo principal si ya aparece integrada en dashboard, clientes y entrenamiento.
+
+## Estructura final de Nutrición
+
+Nutrición queda como módulo madre:
+
+1. Planes activos
+2. Plantillas
+3. Recetario
+   - Alimentos
+   - Recetas
+   - Cobertura
+   - Imágenes
+   - Pendientes
+   - Revisión
+4. Costes y compra
+   - Lista compra
+   - Precios
+   - Escandallo
+   - Rentabilidad
 - Mantener el diseño actual: acromático, denso, con buenos contrastes.
 - No introducir nuevas dependencias.
 

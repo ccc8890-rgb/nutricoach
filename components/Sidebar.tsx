@@ -37,6 +37,7 @@ import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
 
 type NavItem = {
+  type?: 'item'
   href: string
   label: string
   icon: LucideIcon
@@ -44,11 +45,22 @@ type NavItem = {
   exact?: boolean
 }
 
+type NavGroup = {
+  type: 'group'
+  key: string
+  label: string
+  icon: LucideIcon
+  badge?: number
+  items: NavItem[]
+}
+
+type NavEntry = NavItem | NavGroup
+
 type NavSection = {
   key: string
   label: string
   icon: LucideIcon
-  items: NavItem[]
+  items: NavEntry[]
   badge?: number
 }
 
@@ -58,13 +70,8 @@ const PRIMARY_ITEMS: NavItem[] = [
 ]
 
 const NUTRICION_ITEMS: NavItem[] = [
-  { href: '/dietas', label: 'Planes', icon: Utensils, exact: true },
+  { href: '/dietas', label: 'Planes activos', icon: Utensils, exact: true },
   { href: '/dietas/plantillas', label: 'Plantillas', icon: ListChecks },
-  { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
-  { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
-  { href: '/precios', label: 'Precios', icon: Store },
-  { href: '/precios/escandallo', label: 'Escandallo', icon: TrendingUp },
-  { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: Activity },
 ]
 
 const ENTRENAMIENTO_ITEMS: NavItem[] = [
@@ -78,11 +85,19 @@ const ENTRENAMIENTO_ITEMS: NavItem[] = [
 
 
 const RECETARIO_ITEMS: NavItem[] = [
+  { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
   { href: '/recetas', label: 'Recetas', icon: ChefHat, exact: true },
   { href: '/recetas/cobertura', label: 'Cobertura', icon: ChartPie },
   { href: '/recetas/imagenes', label: 'Imágenes', icon: Images },
   { href: '/recetas/cola', label: 'Pendientes', icon: ClipboardList },
   { href: '/recetas/revisar', label: 'Revisión', icon: ListChecks },
+]
+
+const COSTES_COMPRA_ITEMS: NavItem[] = [
+  { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
+  { href: '/precios', label: 'Precios', icon: Store },
+  { href: '/precios/escandallo', label: 'Escandallo', icon: TrendingUp },
+  { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: Activity },
 ]
 
 const CONOCIMIENTO_ITEMS: NavItem[] = [
@@ -94,6 +109,17 @@ const CONOCIMIENTO_ITEMS: NavItem[] = [
 function isActivePath(pathname: string, href: string, exact = false) {
   if (exact) return pathname === href
   return pathname === href || pathname.startsWith(href + '/')
+}
+
+function isGroup(entry: NavEntry): entry is NavGroup {
+  return entry.type === 'group'
+}
+
+function isActiveEntry(pathname: string, entry: NavEntry) {
+  if (isGroup(entry)) {
+    return entry.items.some(item => isActivePath(pathname, item.href, item.exact))
+  }
+  return isActivePath(pathname, entry.href, entry.exact)
 }
 
 function Badge({ value, tone = 'accent' }: { value: number; tone?: 'accent' | 'danger' }) {
@@ -156,7 +182,7 @@ function SidebarSection({
   expanded: boolean
   onToggle: () => void
 }) {
-  const active = section.items.some(item => isActivePath(pathname, item.href, item.exact))
+  const active = section.items.some(entry => isActiveEntry(pathname, entry))
   const Icon = section.icon
 
   return (
@@ -183,15 +209,42 @@ function SidebarSection({
       </button>
 
       {expanded && (
-        <div className="ml-3 mt-1 border-l pl-3 space-y-0.5" style={{ borderColor: 'var(--border)' }}>
-          {section.items.map(item => (
-            <NavLink
-              key={item.href}
-              item={item}
-              pathname={pathname}
-              badgeTone={item.href === '/recetas/cola' ? 'danger' : 'accent'}
-            />
-          ))}
+        <div className="ml-3 mt-1 border-l pl-3 space-y-1" style={{ borderColor: 'var(--border)' }}>
+          {section.items.map(entry => {
+            if (isGroup(entry)) {
+              const GroupIcon = entry.icon
+              return (
+                <div key={entry.key} className="pt-1">
+                  <div className="flex items-center gap-2 px-3 py-1.5">
+                    <GroupIcon size={14} strokeWidth={1.9} style={{ color: 'var(--text-muted)' }} />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+                      {entry.label}
+                    </span>
+                    {entry.badge ? <Badge value={entry.badge} tone="danger" /> : null}
+                  </div>
+                  <div className="space-y-0.5">
+                    {entry.items.map(item => (
+                      <NavLink
+                        key={item.href}
+                        item={item}
+                        pathname={pathname}
+                        badgeTone={item.href === '/recetas/cola' ? 'danger' : 'accent'}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+
+            return (
+              <NavLink
+                key={entry.href}
+                item={entry}
+                pathname={pathname}
+                badgeTone="accent"
+              />
+            )
+          })}
         </div>
       )}
     </div>
@@ -224,23 +277,35 @@ export default function Sidebar() {
     return item
   })
 
-  const sections: NavSection[] = [
-    { key: 'nutricion', label: 'Nutrición', icon: Utensils, items: NUTRICION_ITEMS },
-    { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
+  const nutricionItems: NavEntry[] = [
+    ...NUTRICION_ITEMS,
     {
+      type: 'group',
       key: 'recetario',
       label: 'Recetario',
       icon: ChefHat,
       badge: recetasPendientes,
       items: RECETARIO_ITEMS.map(item => item.href === '/recetas/cola' ? { ...item, badge: recetasPendientes } : item),
     },
+    {
+      type: 'group',
+      key: 'costes-compra',
+      label: 'Costes y compra',
+      icon: Store,
+      items: COSTES_COMPRA_ITEMS,
+    },
+  ]
+
+  const sections: NavSection[] = [
+    { key: 'nutricion', label: 'Nutrición', icon: Utensils, badge: recetasPendientes, items: nutricionItems },
+    { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
     { key: 'sistema', label: 'Sistema', icon: Settings, items: CONOCIMIENTO_ITEMS },
   ]
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     for (const section of sections) {
-      initial[section.key] = section.items.some(item => isActivePath(pathname, item.href, item.exact))
+      initial[section.key] = section.items.some(entry => isActiveEntry(pathname, entry))
     }
     return initial
   })
@@ -249,7 +314,7 @@ export default function Sidebar() {
     setExpanded(prev => {
       const next = { ...prev }
       for (const section of sections) {
-        if (section.items.some(item => isActivePath(pathname, item.href, item.exact))) {
+        if (section.items.some(entry => isActiveEntry(pathname, entry))) {
           next[section.key] = true
         }
       }
