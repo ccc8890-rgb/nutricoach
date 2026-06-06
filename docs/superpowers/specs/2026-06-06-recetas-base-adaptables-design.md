@@ -31,7 +31,7 @@ La cobertura actual permite empezar, pero está descompensada:
 - Recetas sin momento: 101.
 - Recetas aprobadas sin auditoría profesional (`score_calidad = null`): 0.
 - Recetas aprobadas con `quality_estado_sugerido = bloqueada`: 0.
-- Solo el 24% de `receta_ingredientes` tiene `rol_ingrediente` asignado.
+- `receta_ingredientes` ya tiene `rol_ingrediente` asignado al 100% tras backfill: 4102/4102.
 - Predomina salud general/mantenimiento frente a objetivos deportivos o recomposición.
 
 Esto confirma que antes de producir volumen masivo conviene crear una capa estructural.
@@ -248,10 +248,10 @@ Orden de trabajo:
 
 1. Auditar cobertura actual y huecos.
 2. Backfill de auditoría profesional en recetas aprobadas con `score_calidad = null`.
-3. Poblar `rol_ingrediente` en recetas existentes.
-4. Cambiar expansión de recetas a scaling por rol.
+3. Poblar `rol_ingrediente` en recetas existentes. Completado: 4102/4102 ingredientes con rol.
+4. Cambiar expansión de recetas a scaling por rol. Completado en `aplicarRecetaAComida`: especias/fijos no escalan, salsas/grasas/estructurales escalan con límites.
 5. Clasificar/rehacer momentos de recetas existentes sin momento.
-6. Crear una micro-batería peri-entreno controlada antes de usar slots pre/post en planes.
+6. Crear una micro-batería peri-entreno controlada antes de usar slots pre/post en planes. Mientras no exista cobertura suficiente, los momentos deportivos son estrictos y no aceptan fallback a recetas genéricas.
 7. Crear 60 bases adaptables.
 8. Generar variantes de prueba para 10 bases.
 9. Pasar quality gate y revisión manual.

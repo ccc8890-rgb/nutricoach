@@ -33,6 +33,18 @@ export const RECETA_MOMENTOS = [
   'carga_cho',
 ] as const
 
+export const RECETA_MOMENTOS_ESTRICTOS = [
+  'pre_entreno',
+  'post_entreno',
+  'intra_entreno',
+  'tapering',
+  'carga_cho',
+] as const
+
+export function requiereMomentoExacto(momento?: string | null) {
+  return RECETA_MOMENTOS_ESTRICTOS.includes(momento as typeof RECETA_MOMENTOS_ESTRICTOS[number])
+}
+
 export const RECETA_ESTILOS = [
   'funcional',
   'chef_healthy',
@@ -271,8 +283,9 @@ export function scoreRecetaParaAgente(
     ? deportes.has(contexto.deporte) ? 1 : deportes.has('general') ? 0.55 : 0.25
     : 0.5
 
+  const momentoEstricto = requiereMomentoExacto(contexto.momento)
   const momentoScore = contexto.momento
-    ? momentos.has(contexto.momento) ? 1 : 0.35
+    ? momentos.has(contexto.momento) ? 1 : momentoEstricto ? 0 : 0.35
     : 0.5
 
   const kcal = Number(receta.kcal ?? 0)
@@ -300,6 +313,9 @@ export function scoreRecetaParaAgente(
 
   let contextNutritionScore = 0.6
   let contextPenalty = 0
+  if (momentoEstricto && contexto.momento && !momentos.has(contexto.momento)) {
+    contextPenalty += 0.25
+  }
   if (contexto.momento === 'pre_entreno') {
     const carbScore = carbs >= 35 ? 1 : carbs >= 25 ? 0.75 : carbs >= 15 ? 0.45 : 0.2
     const fatScore = fat <= 12 ? 1 : fat <= 18 ? 0.75 : fat <= 25 ? 0.4 : 0.15

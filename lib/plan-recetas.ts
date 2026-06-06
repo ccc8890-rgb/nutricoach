@@ -2,7 +2,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RecetaCandidata, TipoReceta } from '@/types'
 import { obtenerPerfilCliente } from '@/lib/agentes/perfil-gusto'
-import { inferirMomentoDesdeTipo, scoreRecetaParaAgente } from '@/lib/recetario-taxonomia'
+import { inferirMomentoDesdeTipo, requiereMomentoExacto, scoreRecetaParaAgente } from '@/lib/recetario-taxonomia'
 
 const SLOT_KCAL_PCT: Record<string, [number, number]> = {
   'Desayuno':       [0.20, 0.25],
@@ -87,6 +87,11 @@ export async function filtrarRecetasPorSlot(
   const tiposPermitidos = SLOT_TIPOS_PERMITIDOS[slotNombre] ?? ['completa']
   const restricciones = filtroCliente.restricciones ?? []
   const tiempoMaximo = filtroCliente.tiempo_cocina_min
+  const momentoTaxonomia = tagsClinicosRequeridos?.es_pre_entreno
+    ? 'pre_entreno'
+    : tagsClinicosRequeridos?.es_post_entreno
+      ? 'post_entreno'
+      : inferirMomentoDesdeTipo(slotNombre)
 
   // Cargar interacciones recientes del cliente (si hay clienteId)
   const recientesIds = new Set<string>()
@@ -117,6 +122,9 @@ export async function filtrarRecetasPorSlot(
 
   if (tiempoMaximo && tiempoMaximo > 0) {
     query = query.or(`tiempo_prep_min.is.null,tiempo_prep_min.lte.${tiempoMaximo}`)
+  }
+  if (requiereMomentoExacto(momentoTaxonomia)) {
+    query = query.contains('momentos', [momentoTaxonomia])
   }
 
   const { data: recetas } = await query.limit(80)
@@ -240,11 +248,6 @@ export async function filtrarRecetasPorSlot(
 
     const adherenciaScore = ((r.adherencia_score ?? 65) / 100)
     const chefHealthyScore = r.premium_chef ? 0.85 : 0.6
-    const momentoTaxonomia = tagsClinicosRequeridos?.es_pre_entreno
-      ? 'pre_entreno'
-      : tagsClinicosRequeridos?.es_post_entreno
-        ? 'post_entreno'
-        : inferirMomentoDesdeTipo(slotNombre)
     const taxonomyScore = scoreRecetaParaAgente(r, {
       objetivo: objetivoCliente,
       deporte: deporteCliente,

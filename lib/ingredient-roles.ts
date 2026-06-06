@@ -9,7 +9,7 @@ export const SCALING_RULES: Record<RolIngrediente, (factor: number) => number> =
   verdura_volumen:     (f) => f,
   grasa_saludable:     (f) => 1 + (f - 1) * 0.5,
   salsa_condimento:    (f) => Math.min(f, 1.25),
-  especias_aromaticos: (_) => 1.0,
+  especias_aromaticos: () => 1.0,
   estructural:         (f) => Math.min(f, 1.15),
   lacteo_complemento:  (f) => Math.min(f, 1.30),
   fruta_complemento:   (f) => Math.min(f, 1.20),
@@ -34,7 +34,7 @@ export function inferirRolIngrediente(
   const grasas = alimento.grasas ?? 0
   const kcal = alimento.calorias ?? 0
 
-  const RE_ESPECIA = /\b(sal(?!sa)|pimienta|ajo en polvo|cebolla en polvo|orégano|comino|cúrcuma|pimentón|albahaca|romero|tomillo|jengibre|canela|laurel|cilantro|perejil|cayena|nuez moscada|cardamomo|curry)\b/
+  const RE_ESPECIA = /\b(sal(?!sa)|pimienta|ajo|diente de ajo|ajo en polvo|cebolla en polvo|orégano|comino|cúrcuma|pimentón|albahaca|romero|tomillo|jengibre|canela|laurel|cilantro|perejil|cayena|nuez moscada|cardamomo|curry)\b/
   if (RE_ESPECIA.test(nombre)) return 'especias_aromaticos'
 
   const RE_SALSA = /\b(ketchup|mayonesa|pesto|hummus|tahini|mostaza|aliño|aderezo|ranch|sriracha|guacamole|tzatziki|chimichurri|vinagreta|salsa de soja|salsa teriyaki|salsa hoisin)\b/

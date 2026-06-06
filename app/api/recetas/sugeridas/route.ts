@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
-import { inferirMomentoDesdeTipo, scoreRecetaParaAgente } from '@/lib/recetario-taxonomia'
+import { inferirMomentoDesdeTipo, requiereMomentoExacto, scoreRecetaParaAgente } from '@/lib/recetario-taxonomia'
 
 // Mapeo: restricción del onboarding → alérgenos EU que la receta NO debe contener
 // Modelo positivo: excluimos recetas donde intolerancias SOLAPA con los alérgenos del cliente
@@ -76,7 +76,9 @@ export async function GET(request: NextRequest) {
             q = q.or(`deportes.cs.{${deporte}},deportes.cs.{general},deportes.eq.{}`)
         }
         if (momento) {
-            q = q.or(`momentos.cs.{${momento}},momentos.eq.{}`)
+            q = requiereMomentoExacto(momento)
+                ? q.contains('momentos', [momento])
+                : q.or(`momentos.cs.{${momento}},momentos.eq.{}`)
         }
         if (extraFilters?.excludeIds?.length) {
             q = q.not('id', 'in', `(${extraFilters.excludeIds.join(',')})`)
