@@ -28,6 +28,55 @@ type CoachContext = {
   actionIcon: React.ElementType
 }
 
+type CoachAccess = 'coach' | 'login' | 'cliente'
+
+let coachAccessCache: CoachAccess | null = null
+let coachAccessPromise: Promise<CoachAccess> | null = null
+let authListenerReady = false
+
+function resetCoachAccessCache() {
+  coachAccessCache = null
+  coachAccessPromise = null
+}
+
+function installAuthCacheReset() {
+  if (authListenerReady || typeof window === 'undefined') return
+  authListenerReady = true
+  supabase.auth.onAuthStateChange(event => {
+    if (event === 'SIGNED_OUT' || event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+      resetCoachAccessCache()
+    }
+  })
+}
+
+async function getCoachAccess(): Promise<CoachAccess> {
+  if (coachAccessCache) return coachAccessCache
+  if (coachAccessPromise) return coachAccessPromise
+
+  coachAccessPromise = (async () => {
+    const { data: { user }, error } = await supabase.auth.getUser()
+
+    if (error || !user) return 'login'
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (profile?.role && profile.role !== 'coach') return 'cliente'
+
+    return 'coach'
+  })()
+
+  try {
+    coachAccessCache = await coachAccessPromise
+    return coachAccessCache
+  } finally {
+    coachAccessPromise = null
+  }
+}
+
 function getCoachContext(pathname: string): CoachContext {
   if (pathname.startsWith('/clientes')) {
     return { area: 'Inicio', title: 'Clientes', actionHref: '/clientes/nuevo', actionLabel: 'Nuevo cliente', actionIcon: UserPlus }
@@ -66,6 +115,7 @@ function CoachFloatingControls() {
     <div className="fixed right-3 z-30 flex gap-2 lg:hidden" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}>
       <Link
         href="/dashboard"
+        prefetch
         className="h-11 w-11 rounded-2xl border flex items-center justify-center"
         style={{
           borderColor: 'var(--border)',
@@ -114,7 +164,7 @@ function CoachTopBar({ pathname }: { pathname: string }) {
       <div className="mx-auto flex max-w-7xl flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>
-            <Link href="/dashboard" className="transition-colors hover:text-[var(--text)]">
+            <Link href="/dashboard" prefetch className="transition-colors hover:text-[var(--text)]">
               Coach OS
             </Link>
             <ChevronRight size={12} />
@@ -136,7 +186,7 @@ function CoachTopBar({ pathname }: { pathname: string }) {
               global
             </span>
           </div>
-          <Link href={context.actionHref} className="btn btn-primary btn-sm">
+          <Link href={context.actionHref} prefetch className="btn btn-primary btn-sm">
             <ActionIcon size={14} />
             {context.actionLabel}
           </Link>
@@ -149,31 +199,30 @@ function CoachTopBar({ pathname }: { pathname: string }) {
 export default function CoachShell({ children, padded = false }: { children: React.ReactNode; padded?: boolean }) {
   const router = useRouter()
   const pathname = usePathname()
-  const [ready, setReady] = useState(false)
+  const [ready, setReady] = useState(() => coachAccessCache === 'coach')
 
   useEffect(() => {
+    installAuthCacheReset()
     let active = true
 
     async function checkSession() {
-      const { data: { user }, error } = await supabase.auth.getUser()
+      if (coachAccessCache === 'coach') {
+        setReady(true)
+        return
+      }
+
+      setReady(false)
+      const access = await getCoachAccess()
 
       if (!active) return
 
-      if (error || !user) {
+      if (access === 'login') {
         const next = encodeURIComponent(pathname || '/dashboard')
         router.replace(`/login?next=${next}`)
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      if (!active) return
-
-      if (profile?.role && profile.role !== 'coach') {
+      if (access === 'cliente') {
         router.replace('/cliente')
         return
       }

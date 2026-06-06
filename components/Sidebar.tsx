@@ -129,6 +129,11 @@ function isActiveSection(pathname: string, section: NavSection) {
   return isActivePath(pathname, section.href, true) || section.items.some(entry => isActiveEntry(pathname, entry))
 }
 
+function collectEntryHrefs(entry: NavEntry): string[] {
+  if (isGroup(entry)) return entry.items.map(item => item.href)
+  return [entry.href]
+}
+
 function Badge({ value, tone = 'accent' }: { value: number; tone?: 'accent' | 'danger' }) {
   if (value <= 0) return null
   return (
@@ -159,6 +164,7 @@ function NavLink({
   return (
     <Link
       href={item.href}
+      prefetch
       className={`sidebar-link ${active ? 'active' : ''}`}
       style={active ? { position: 'relative', overflow: 'visible' } : undefined}
     >
@@ -242,6 +248,7 @@ function SidebarSection({
     <div className="relative mt-1">
       <Link
         href={section.href}
+        prefetch
         className={`sidebar-link w-full ${active ? 'active' : ''}`}
         style={active ? { position: 'relative', overflow: 'visible' } : undefined}
       >
@@ -377,6 +384,16 @@ export default function Sidebar() {
     { key: 'sistema', label: 'Sistema', href: '/sistema', icon: Settings, items: CONOCIMIENTO_ITEMS },
   ]
 
+  useEffect(() => {
+    const hrefs = new Set<string>([
+      ...PRIMARY_ITEMS.map(item => item.href),
+      ...sections.flatMap(section => [section.href, ...section.items.flatMap(collectEntryHrefs)]),
+    ])
+
+    hrefs.forEach(href => router.prefetch(href))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router])
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     for (const section of sections) {
@@ -411,6 +428,7 @@ export default function Sidebar() {
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
+            prefetch
             className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black tracking-tight"
             style={{
               background: 'var(--text)',
