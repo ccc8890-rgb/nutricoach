@@ -326,7 +326,7 @@ export function calcularScoreCalidadReceta(receta: RecetaProfesionalInput): Scor
   const cantidadesValidas = ingredientes.filter(i => n(i.cantidad_gramos) > 0)
   const conPrecio = ingredientes.filter(i => i.tiene_precio !== false)
   let bloqueantes: string[] = []
-  const avisos: string[] = []
+  let avisos: string[] = []
 
   if (ingredientes.length === 0) bloqueantes.push('sin_ingredientes')
   if (ingredientes.some(i => !i.alimento_id)) bloqueantes.push('ingredientes_sin_alimento')
