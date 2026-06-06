@@ -38,6 +38,9 @@ function getCoachContext(pathname: string): CoachContext {
   if (pathname.startsWith('/entrenos')) {
     return { area: 'Entrenamiento', title: 'Training OS', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Dumbbell }
   }
+  if (pathname.startsWith('/nutricion')) {
+    return { area: 'Nutrición', title: 'Dashboard nutrición', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
+  }
   if (pathname.startsWith('/dietas') || pathname.startsWith('/compra')) {
     return { area: 'Nutrición', title: 'Planes y alimentos', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
   }
@@ -46,6 +49,9 @@ function getCoachContext(pathname: string): CoachContext {
   }
   if (pathname.startsWith('/precios')) {
     return { area: 'Nutrición', title: 'Costes y rentabilidad', actionHref: '/precios/escandallo', actionLabel: 'Escandallo', actionIcon: FilePlus2 }
+  }
+  if (pathname.startsWith('/sistema')) {
+    return { area: 'Sistema', title: 'Dashboard sistema', actionHref: '/conocimiento/nueva', actionLabel: 'Nueva nota', actionIcon: Plus }
   }
   if (pathname.startsWith('/conocimiento') || pathname.startsWith('/coach') || pathname.startsWith('/cuestionarios')) {
     return { area: 'Sistema', title: 'Método y conocimiento', actionHref: '/conocimiento/nueva', actionLabel: 'Nueva nota', actionIcon: Plus }

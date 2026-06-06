@@ -59,6 +59,7 @@ type NavEntry = NavItem | NavGroup
 type NavSection = {
   key: string
   label: string
+  href: string
   icon: LucideIcon
   items: NavEntry[]
   badge?: number
@@ -70,12 +71,13 @@ const PRIMARY_ITEMS: NavItem[] = [
 ]
 
 const NUTRICION_ITEMS: NavItem[] = [
+  { href: '/nutricion', label: 'Dashboard', icon: House, exact: true },
   { href: '/dietas', label: 'Planes activos', icon: Utensils, exact: true },
   { href: '/dietas/plantillas', label: 'Plantillas', icon: ListChecks },
 ]
 
 const ENTRENAMIENTO_ITEMS: NavItem[] = [
-  { href: '/entrenos', label: 'Inicio entreno', icon: Dumbbell, exact: true },
+  { href: '/entrenos', label: 'Dashboard', icon: Dumbbell, exact: true },
   { href: '/entrenos/brain-ia', label: 'Revisión IA', icon: Brain },
   { href: '/entrenos/nueva', label: 'Crear plan', icon: FilePlus2 },
   { href: '/entrenos/generar-ia', label: 'Plan con IA', icon: Sparkles },
@@ -101,6 +103,7 @@ const COSTES_COMPRA_ITEMS: NavItem[] = [
 ]
 
 const CONOCIMIENTO_ITEMS: NavItem[] = [
+  { href: '/sistema', label: 'Dashboard', icon: House, exact: true },
   { href: '/coach/metodologia', label: 'Metodología', icon: SlidersHorizontal },
   { href: '/conocimiento', label: 'Base de conocimiento', icon: Brain },
   { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
@@ -120,6 +123,10 @@ function isActiveEntry(pathname: string, entry: NavEntry) {
     return entry.items.some(item => isActivePath(pathname, item.href, item.exact))
   }
   return isActivePath(pathname, entry.href, entry.exact)
+}
+
+function isActiveSection(pathname: string, section: NavSection) {
+  return isActivePath(pathname, section.href, true) || section.items.some(entry => isActiveEntry(pathname, entry))
 }
 
 function Badge({ value, tone = 'accent' }: { value: number; tone?: 'accent' | 'danger' }) {
@@ -223,20 +230,18 @@ function SidebarSection({
   section,
   pathname,
   expanded,
-  onToggle,
 }: {
   section: NavSection
   pathname: string
   expanded: boolean
-  onToggle: () => void
 }) {
-  const active = section.items.some(entry => isActiveEntry(pathname, entry))
+  const active = isActiveSection(pathname, section)
   const Icon = section.icon
 
   return (
     <div className="relative mt-1">
-      <button
-        onClick={onToggle}
+      <Link
+        href={section.href}
         className={`sidebar-link w-full ${active ? 'active' : ''}`}
         style={active ? { position: 'relative', overflow: 'visible' } : undefined}
       >
@@ -257,7 +262,7 @@ function SidebarSection({
         ) : (
           <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
         )}
-      </button>
+      </Link>
 
       {expanded && (
         <div
@@ -367,15 +372,15 @@ export default function Sidebar() {
   ]
 
   const sections: NavSection[] = [
-    { key: 'nutricion', label: 'Nutrición', icon: Utensils, badge: recetasPendientes, items: nutricionItems },
-    { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
-    { key: 'sistema', label: 'Sistema', icon: Settings, items: CONOCIMIENTO_ITEMS },
+    { key: 'nutricion', label: 'Nutrición', href: '/nutricion', icon: Utensils, badge: recetasPendientes, items: nutricionItems },
+    { key: 'entrenamiento', label: 'Entrenamiento', href: '/entrenos', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
+    { key: 'sistema', label: 'Sistema', href: '/sistema', icon: Settings, items: CONOCIMIENTO_ITEMS },
   ]
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
     for (const section of sections) {
-      initial[section.key] = section.items.some(entry => isActiveEntry(pathname, entry))
+      initial[section.key] = isActiveSection(pathname, section)
     }
     return initial
   })
@@ -385,30 +390,13 @@ export default function Sidebar() {
       const next: Record<string, boolean> = {}
 
       for (const section of sections) {
-        if (section.items.some(entry => isActiveEntry(pathname, entry))) {
-          next[section.key] = true
-        } else {
-          next[section.key] = false
-        }
+        next[section.key] = isActiveSection(pathname, section)
       }
 
       return next
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
-
-  function toggleSection(sectionKey: string) {
-    setExpanded(prev => {
-      const isOpen = prev[sectionKey] ?? false
-      const next: Record<string, boolean> = {}
-
-      for (const section of sections) {
-        next[section.key] = section.key === sectionKey ? !isOpen : false
-      }
-
-      return next
-    })
-  }
 
   const selectedSection = sections.find(section => expanded[section.key]) ?? null
 
@@ -498,7 +486,6 @@ export default function Sidebar() {
             section={section}
             pathname={pathname}
             expanded={expanded[section.key] ?? false}
-            onToggle={() => toggleSection(section.key)}
           />
         ))}
       </nav>
