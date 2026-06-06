@@ -1,5 +1,34 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 06-06-2026 (Sesión 54) — Prevención: script auditoría + invariantes AGENTS.md
+
+### Qué se hizo
+
+| Acción | Detalle | Commit |
+|--------|---------|--------|
+| Script `scripts/audit-portal-patterns.mjs` | Detecta 4 patrones peligrosos: `href` en portales, Supabase directo en componentes, links sin `replace` en páginas secundarias | `de26b33` |
+| Bloque `portal-navigation-invariants` en `AGENTS.md` | 4 reglas irromibles con ejemplos ✅/❌ + comando de verificación | `de26b33` |
+
+### Cómo usar el script
+
+```bash
+# Ejecutar antes de cualquier cambio en el portal cliente
+node scripts/audit-portal-patterns.mjs
+
+# Si falla → no deployar. Si pasa → ✅
+```
+
+### Las 4 reglas permanentes (también en AGENTS.md)
+
+| Regla | Patrón prohibido | Patrón correcto |
+|-------|-----------------|----------------|
+| 1 | `window.location.href` en portales | `window.location.replace()` |
+| 2 | `<Link href="/cliente">` sin replace en páginas secundarias | `<Link href="/cliente" replace>` |
+| 3 | `<Link href="/cliente/sesion/..." replace>` en SemanaEntrenoCard | Sin `replace` (push) |
+| 4 | `supabase.from()` con joins cruzados en PortalCliente components | `fetch('/api/...')` con service role |
+
+---
+
 ## ✅ SESIÓN 06-06-2026 (Sesión 53) — Fix bucle historial coach + auditoría navegación completa
 
 ### Bugs corregidos
