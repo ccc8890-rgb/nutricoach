@@ -1,3 +1,63 @@
+<!-- BEGIN:portal-navigation-invariants -->
+# 🚨 INVARIANTES DEL PORTAL CLIENTE — LEER ANTES DE TOCAR CUALQUIER PÁGINA BAJO /app/cliente/ O /components/PortalCliente/
+
+Estos bugs ocurrieron en producción repetidamente. Cada regla tiene un bug real detrás.
+
+## Regla 1 — window.location.replace(), NUNCA href en portales
+
+```
+❌ window.location.href = '/dashboard'   → añade al historial → bucle iOS swipe-back
+✅ window.location.replace('/dashboard') → reemplaza → sin bucle
+```
+
+Aplica a TODO redirect de auth/rol dentro de `/app/cliente/` y `/app/onboarding/`.
+
+## Regla 2 — Back buttons de páginas secundarias → siempre con replace
+
+```
+❌ <Link href="/cliente">           → acumula historial con cada uso
+✅ <Link href="/cliente" replace>   → reemplaza → swipe-back limpio
+```
+
+Aplica a TODAS las páginas bajo `/app/cliente/` que no sean el portal principal (`page.tsx`):
+- `/app/cliente/sesion/[id]/page.tsx` — TODOS los links/botones de vuelta
+- `/app/cliente/semana/page.tsx` — botón ← de cabecera
+
+## Regla 3 — Links de SemanaEntrenoCard a sesión → push (SIN replace)
+
+```
+❌ <Link href="/cliente/sesion/..." replace>  → reemplaza /cliente → swipe-back salta el portal
+✅ <Link href="/cliente/sesion/...">          → push → swipe-back vuelve al portal
+```
+
+`SemanaEntrenoCard` vive DENTRO de `/cliente` — necesita push para que /cliente quede en historial.
+`/cliente/semana/page.tsx` SÍ usa replace porque es una página intermedia que debe saltarse.
+
+## Regla 4 — Componentes PortalCliente: NUNCA query directa a Supabase con joins
+
+```
+❌ supabase.from('sesiones_entrenamiento').select('*, ejercicios:sesion_ejercicios(...)')
+   → RLS silencia joins cruzados → array vacío → UI muestra nada sin error
+   
+✅ fetch('/api/entrenos/sesiones-plan?plan_id=X')
+   → API route con createServiceSupabase() → bypasea RLS → datos reales
+```
+
+Aplica a CUALQUIER query en `/components/PortalCliente/` o `/components/training/SemanaEntrenoCard.tsx`
+que cruce ≥2 tablas con RLS activo (sesiones_entrenamiento, sesion_ejercicios, planes_entrenamiento,
+planes_nutricion, registros_sets, clientes).
+
+**Tablas que leen OK sin service role (RLS permisiva):** profiles, recetas, alimentos, ejercicios (catálogo público).
+
+## Verificación antes de mergear
+
+```bash
+node scripts/audit-portal-patterns.mjs
+```
+
+Este script detecta automáticamente las 4 reglas anteriores. Si falla → no mergear.
+<!-- END:portal-navigation-invariants -->
+
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 
