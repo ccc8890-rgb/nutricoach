@@ -96,6 +96,30 @@ assert.equal(resumen.estado_sugerido, 'bloqueada')
   assert.ok(score.bloqueantes.includes('match_semantico_sospechoso'), 'Debería bloquear Frutos rojos -> Frutos Secos')
 }
 
+// 1b. caso bueno: Frutos rojos -> Frambuesa
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Frutos rojos', nombre_alimento: 'Frambuesa bandeja', cantidad_gramos: 80, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(!score.bloqueantes.includes('match_semantico_sospechoso'), 'No debería bloquear Frutos rojos -> Frambuesa')
+}
+
+// 1c. caso bueno: Huevos -> Huevo
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Huevos', nombre_alimento: 'Huevo', cantidad_gramos: 60, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(!score.bloqueantes.includes('match_semantico_sospechoso'), 'No debería bloquear plural/singular')
+}
+
 // 2. Nata espesa -> Aperitivo de patata con sabor a nata agria y cebolla
 {
   const input: RecetaProfesionalInput = {

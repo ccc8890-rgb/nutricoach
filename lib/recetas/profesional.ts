@@ -100,11 +100,17 @@ function tokensSignificativos(s: string): string[] {
 
 function tokensCompartidos(a: string[], b: string[]): number {
   const setB = new Set(b)
-  return a.filter(t => setB.has(t)).length
+  return a.filter(t => setB.has(t) || setB.has(singularizarToken(t))).length
 }
 
 function normalizarStr(s: string): string {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function singularizarToken(token: string): string {
+  if (token.endsWith('es') && token.length > 4) return token.slice(0, -2)
+  if (token.endsWith('s') && token.length > 3) return token.slice(0, -1)
+  return token
 }
 
 function validarMatchSemantico(ing: IngredienteProfesionalInput): string | null {
@@ -115,6 +121,8 @@ function validarMatchSemantico(ing: IngredienteProfesionalInput): string | null 
   // 1) Frutos rojos vs Frutos secos
   const frutosRojos = /frutos rojos|fruta roja|berries|frambuesa|fresa|arandano|arándano|mora/.test(libre)
   const frutosSecos = /frutos secos|almendra|nuez|avellana|cacahuete|anacardo|pistacho/.test(alimento)
+  const frutaRojaValida = /frutos rojos|berries|frambuesa|fresa|arandano|mora/.test(alimento)
+  if (frutosRojos && frutaRojaValida) return null
   if (frutosRojos && frutosSecos) return 'match_semantico_sospechoso'
 
   // 2) Nata / crema de leche vs patata / snack / aperitivo / chips / nata agria cebolla
