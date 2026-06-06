@@ -185,8 +185,48 @@ function SidebarSection({
   const active = section.items.some(entry => isActiveEntry(pathname, entry))
   const Icon = section.icon
 
+  const panel = (
+    <div className="space-y-1">
+      {section.items.map(entry => {
+        if (isGroup(entry)) {
+          const GroupIcon = entry.icon
+          return (
+            <div key={entry.key} className="pt-1">
+              <div className="flex items-center gap-2 px-3 py-1.5">
+                <GroupIcon size={14} strokeWidth={1.9} style={{ color: 'var(--text-muted)' }} />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
+                  {entry.label}
+                </span>
+                {entry.badge ? <Badge value={entry.badge} tone="danger" /> : null}
+              </div>
+              <div className="space-y-0.5">
+                {entry.items.map(item => (
+                  <NavLink
+                    key={item.href}
+                    item={item}
+                    pathname={pathname}
+                    badgeTone={item.href === '/recetas/cola' ? 'danger' : 'accent'}
+                  />
+                ))}
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <NavLink
+            key={entry.href}
+            item={entry}
+            pathname={pathname}
+            badgeTone="accent"
+          />
+        )
+      })}
+    </div>
+  )
+
   return (
-    <div className="mt-1">
+    <div className="relative mt-1">
       <button
         onClick={onToggle}
         className={`sidebar-link w-full ${active ? 'active' : ''}`}
@@ -202,50 +242,41 @@ function SidebarSection({
         <span>{section.label}</span>
         {section.badge ? <Badge value={section.badge} tone="danger" /> : null}
         {expanded ? (
-          <ChevronDown size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
+          <>
+            <ChevronRight size={14} className="ml-auto hidden lg:block" style={{ color: 'var(--text-muted)' }} />
+            <ChevronDown size={14} className="ml-auto lg:hidden" style={{ color: 'var(--text-muted)' }} />
+          </>
         ) : (
           <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
         )}
       </button>
 
       {expanded && (
-        <div className="ml-3 mt-1 border-l pl-3 space-y-1" style={{ borderColor: 'var(--border)' }}>
-          {section.items.map(entry => {
-            if (isGroup(entry)) {
-              const GroupIcon = entry.icon
-              return (
-                <div key={entry.key} className="pt-1">
-                  <div className="flex items-center gap-2 px-3 py-1.5">
-                    <GroupIcon size={14} strokeWidth={1.9} style={{ color: 'var(--text-muted)' }} />
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
-                      {entry.label}
-                    </span>
-                    {entry.badge ? <Badge value={entry.badge} tone="danger" /> : null}
-                  </div>
-                  <div className="space-y-0.5">
-                    {entry.items.map(item => (
-                      <NavLink
-                        key={item.href}
-                        item={item}
-                        pathname={pathname}
-                        badgeTone={item.href === '/recetas/cola' ? 'danger' : 'accent'}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )
-            }
-
-            return (
-              <NavLink
-                key={entry.href}
-                item={entry}
-                pathname={pathname}
-                badgeTone="accent"
-              />
-            )
-          })}
-        </div>
+        <>
+          <div
+            className="ml-3 mt-1 border-l pl-3 lg:hidden"
+            style={{ borderColor: 'var(--border)' }}
+          >
+            {panel}
+          </div>
+          <div
+            className="absolute left-[calc(100%+0.65rem)] top-0 z-50 hidden w-64 origin-left rounded-2xl border p-2 opacity-100 shadow-2xl lg:block"
+            style={{
+              borderColor: 'var(--glass-border)',
+              background: 'color-mix(in srgb, var(--surface) 94%, transparent)',
+              backdropFilter: 'blur(22px)',
+              WebkitBackdropFilter: 'blur(22px)',
+              boxShadow: '0 18px 60px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.05)',
+              animation: 'sidebarFlyoutIn 0.22s var(--ease-out-strong)',
+            }}
+          >
+            <div className="mb-2 flex items-center gap-2 border-b px-3 pb-2 pt-1" style={{ borderColor: 'var(--border)' }}>
+              <Icon size={15} strokeWidth={2} style={{ color: 'var(--text)' }} />
+              <span className="text-xs font-bold" style={{ color: 'var(--text)' }}>{section.label}</span>
+            </div>
+            {panel}
+          </div>
+        </>
       )}
     </div>
   )
@@ -385,7 +416,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 p-3 flex flex-col gap-0.5 overflow-y-auto">
+      <nav className="flex-1 p-3 flex flex-col gap-0.5 overflow-y-auto lg:overflow-visible">
         <div className="mb-2">
           <p className="px-3 mb-1 text-[10px] font-semibold tracking-[0.14em] uppercase" style={{ color: 'var(--text-muted)' }}>
             Trabajo
@@ -454,7 +485,7 @@ export default function Sidebar() {
 
       <aside
         className={`
-          relative w-64 min-h-screen flex flex-col border-r overflow-hidden
+          relative w-64 min-h-screen flex flex-col border-r overflow-hidden lg:overflow-visible
           transition-transform duration-300 ease-out
           max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-40
           ${mounted && mobileOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}
