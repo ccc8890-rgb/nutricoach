@@ -103,17 +103,49 @@ function tokensCompartidos(a: string[], b: string[]): number {
   return a.filter(t => setB.has(t)).length
 }
 
+function normalizarStr(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
 function validarMatchSemantico(ing: IngredienteProfesionalInput): string | null {
   if (!ing.nombre_libre || !ing.nombre_alimento) return null
+  const libre = normalizarStr(ing.nombre_libre)
+  const alimento = normalizarStr(ing.nombre_alimento)
+
+  // 1) Frutos rojos vs Frutos secos
+  const frutosRojos = /frutos rojos|fruta roja|berries|frambuesa|fresa|arandano|arándano|mora/.test(libre)
+  const frutosSecos = /frutos secos|almendra|nuez|avellana|cacahuete|anacardo|pistacho/.test(alimento)
+  if (frutosRojos && frutosSecos) return 'match_semantico_sospechoso'
+
+  // 2) Nata / crema de leche vs patata / snack / aperitivo / chips / nata agria cebolla
+  const nata = /nata|crema de leche/.test(libre)
+  const patataSnack = /patata|snack|aperitivo|chips|nata agria.*cebolla/.test(alimento)
+  if (nata && patataSnack) return 'match_semantico_sospechoso'
+
+  // 3) Arroz glutinoso / sticky rice vs cereal / cereales / chocolate / copos de trigo
+  const arrozGlutinoso = /arroz glutinoso|sticky rice/.test(libre)
+  const cerealChocolate = /cereal|cereales|chocolate|copos de trigo/.test(alimento)
+  if (arrozGlutinoso && cerealChocolate) return 'match_semantico_sospechoso'
+
+  // 4) Hielo vs polo / helado / sorbete o kcal_alimento > 5
+  const hielo = /^hielo$/.test(libre)
+  if (hielo) {
+    const poloHelado = /polo|helado|sorbete/.test(alimento)
+    const kcalAlto = (ing.kcal_alimento ?? 0) > 5
+    if (poloHelado || kcalAlto) return 'match_semantico_sospechoso'
+  }
+
+  // 5) Agua de coco vs solo 'agua'
+  const aguaCoco = /agua de coco/.test(libre)
+  const soloAgua = /^agua$/.test(alimento)
+  if (aguaCoco && soloAgua) return 'match_semantico_sospechoso'
+
+  // Fallback to token overlap check
   const tokensLibre = tokensSignificativos(ing.nombre_libre)
   const tokensAlimento = tokensSignificativos(ing.nombre_alimento)
   if (tokensLibre.length === 0 || tokensAlimento.length === 0) return null
   const compartidos = tokensCompartidos(tokensLibre, tokensAlimento)
-  // If no significant tokens shared, it's suspicious
   if (compartidos === 0) return 'match_semantico_sospechoso'
-  // If only generic tokens shared (already filtered), but we also check for specific conflict patterns
-  // Additional pattern: if nombre_libre contains a specific fruit/vegetable and alimento contains a different one
-  // We'll rely on the token overlap test.
   return null
 }
 
@@ -202,7 +234,7 @@ export function calcularScoreCalidadReceta(receta: RecetaProfesionalInput): Scor
   const conAlimento = ingredientes.filter(i => !!i.alimento_id)
   const cantidadesValidas = ingredientes.filter(i => n(i.cantidad_gramos) > 0)
   const conPrecio = ingredientes.filter(i => i.tiene_precio !== false)
-  const bloqueantes: string[] = []
+  let bloqueantes: string[] = []
   const avisos: string[] = []
 
   if (ingredientes.length === 0) bloqueantes.push('sin_ingredientes')
@@ -220,6 +252,8 @@ export function calcularScoreCalidadReceta(receta: RecetaProfesionalInput): Scor
   }
   const incoherente = validarRecetaSemanticaIncoherente(receta)
   if (incoherente) bloqueantes.push(incoherente)
+  // Deduplicate
+  bloqueantes = [...new Set(bloqueantes)]
 
   if (ingredientes.length > 0 && ingredientes.length < 3) avisos.push('pocos_ingredientes')
   if (!receta.descripcion) avisos.push('sin_descripcion')
