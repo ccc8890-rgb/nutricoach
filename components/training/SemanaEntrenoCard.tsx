@@ -127,31 +127,52 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
     return { background: 'rgba(128,128,128,0.08)', color: 'var(--text-muted)' }
   }
 
+  const diaActualLabel = TODAY_NAME
+
   return (
     <div
       className="rounded-2xl overflow-hidden"
       style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
     >
-      {/* Header strip */}
+      {/* Header training B1 */}
       <div
         className="px-4 pt-4 pb-3 flex items-center justify-between"
-        style={{ borderBottom: '1px solid var(--border)' }}
+        style={{
+          borderBottom: '1px solid var(--border)',
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 60%)',
+        }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background: 'var(--semantic-info-bg)' }}
+            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{
+              background: 'rgba(99,102,241,0.12)',
+              border: '1px solid rgba(99,102,241,0.20)',
+            }}
           >
-            <Barbell size={14} style={{ color: 'var(--semantic-info)' }} />
+            <Barbell size={15} style={{ color: '#818CF8' }} />
           </div>
           <div>
-            <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{planNombre}</p>
-            <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-              {sesionesOrdenadas.length} sesión{sesionesOrdenadas.length !== 1 ? 'es' : ''} / semana
-              {completadasHoy.size > 0 && ` · ${completadasHoy.size} hecha${completadasHoy.size !== 1 ? 's' : ''} hoy`}
+            <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>Entrenamiento</p>
+            <p className="text-[11px]" style={{ color: '#9898A0' }}>
+              {planNombre} · {sesionesOrdenadas.length} día{sesionesOrdenadas.length !== 1 ? 's' : ''} / semana
             </p>
           </div>
         </div>
+        {todaySession ? (
+          <span
+            className="text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0"
+            style={{
+              background: 'rgba(99,102,241,0.12)',
+              color: '#818CF8',
+              border: '1px solid rgba(99,102,241,0.22)',
+            }}
+          >
+            Hoy: {diaActualLabel}
+          </span>
+        ) : (
+          <span className="text-[11px]" style={{ color: '#6F6F78' }}>{diaActualLabel}</span>
+        )}
       </div>
 
       {/* Day dots row */}
@@ -182,11 +203,12 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             )
           })}
         </div>
-        <p className="text-[10px] mb-3" style={{ color: 'var(--text-muted)' }}>
-          <span style={{ color: 'var(--semantic-info)' }}>●</span> Entreno &nbsp;
-          <span style={{ color: 'rgba(128,128,128,0.5)' }}>●</span> Descanso &nbsp;
-          <span style={{ color: 'var(--semantic-active)' }}>✓</span> Completado
-        </p>
+        <div className="flex items-center gap-3 text-[10px] font-medium mb-3">
+          <span style={{ color: '#6F6F78' }}><span style={{ color: '#818CF8' }}>●</span> Hoy</span>
+          <span style={{ color: '#6F6F78' }}><span style={{ color: '#8A9AB8' }}>●</span> Entreno</span>
+          <span style={{ color: '#6F6F78' }}><span style={{ color: '#4ADE80' }}>✓</span> Hecho</span>
+          <span style={{ color: '#6F6F78' }}><span style={{ color: '#45454F' }}>●</span> Descanso</span>
+        </div>
 
         {/* Rest day mini panel — solo cuando hoy es día de descanso */}
         {!todaySession && (() => {
@@ -248,7 +270,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                       : nextSession.contexto_ia}
                   </p>
                 )}
-                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                <p className="text-[11px]" style={{ color: '#9898A0' }}>
                   {nextSession.dia_semana || 'Sesión'}
                   {nextSession.ejercicios_count > 0 && ` · ${nextSession.ejercicios_count} ej.`}
                   {nextSession.duracion_estimada_min && ` · ${nextSession.duracion_estimada_min} min`}
@@ -274,12 +296,12 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 ) : (
                   <span
                     className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }}
+                    style={{ background: 'rgba(99,102,241,0.10)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.18)' }}
                   >
                     Ver entreno
                   </span>
                 )}
-                <CaretRight size={14} style={{ color: nextSessionCompleted ? 'var(--semantic-active)' : 'var(--semantic-info)' }} />
+                <CaretRight size={14} style={{ color: nextSessionCompleted ? '#4ADE80' : '#818CF8' }} />
               </div>
             </Link>
           </div>
@@ -296,20 +318,20 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                     href={`/cliente/sesion/${s.id}`}
                     replace
                     className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-opacity hover:opacity-70"
-                    style={{ color: completada ? 'var(--semantic-active)' : 'var(--text-muted)' }}
+                    style={{ color: completada ? '#4ADE80' : '#9898A0' }}
                   >
                     <span
                       className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
                       style={{
                         background: completada
-                          ? 'var(--semantic-active-bg)'
+                          ? 'rgba(74,222,128,0.10)'
                           : 'rgba(128,128,128,0.1)',
                       }}
                     >
                       {completada ? <CheckCircle size={12} /> : (DIA_ABR[s.dia_semana] ?? '?')}
                     </span>
                     <span className="flex-1 min-w-0">
-                      <span className="block text-sm truncate" style={{ color: completada ? 'var(--semantic-active)' : 'var(--text)' }}>
+                      <span className="block text-sm truncate" style={{ color: completada ? '#4ADE80' : 'var(--text)' }}>
                         {s.nombre}
                         {completada && ' ✓'}
                       </span>
@@ -328,7 +350,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                       <span className="text-[11px]">{s.ejercicios_count} ej.</span>
                     )}
                     {completada && (
-                      <span className="text-[10px] font-medium" style={{ color: 'var(--semantic-active)' }}>Completada</span>
+                      <span className="text-[10px] font-medium" style={{ color: '#4ADE80' }}>Completada</span>
                     )}
                   </Link>
 
