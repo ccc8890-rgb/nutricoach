@@ -6,8 +6,14 @@ import EjercicioDemoModal from './EjercicioDemoModal'
 import { crearSessionExecutionSummary, crearSessionProgressSummary } from '@/lib/training/session-progress'
 
 export interface SetData {
-  kg: number
-  reps: number
+  // Fuerza
+  kg?: number
+  reps?: number
+  // Cardio
+  metros?: number
+  calorias?: number
+  tiempo_s?: number
+  // Común
   rpe: number
   hecho: boolean
 }
@@ -25,12 +31,17 @@ export interface EjercicioCard {
   ultimo_peso_kg?: number | null
   video_url?: string | null
   foto_url?: string | null
+  tipo?: string | null   // 'fuerza' | 'cardio' | 'funcional' | 'flexibilidad'
 }
 
 interface Props {
   ejercicios: EjercicioCard[]
   onEjercicioComplete: (ejId: string, sets: SetData[]) => void
   onTodosCompletos: (setsMap: Record<string, SetData[]>, meta?: { esfuerzo_percibido: number; notas: string; duracion_sesion_s: number }) => void
+}
+
+function getModo(tipo?: string | null): 'fuerza' | 'cardio' {
+  return tipo === 'cardio' ? 'cardio' : 'fuerza'
 }
 
 export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTodosCompletos }: Props) {
@@ -40,7 +51,9 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
     Object.fromEntries(
       ejercicios.map(e => [
         e.id,
-        Array.from({ length: e.series }, () => ({ kg: 0, reps: 0, rpe: 7, hecho: false })),
+        getModo(e.tipo) === 'cardio'
+          ? Array.from({ length: e.series }, () => ({ metros: 0, calorias: 0, tiempo_s: 0, rpe: 7, hecho: false }))
+          : Array.from({ length: e.series }, () => ({ kg: 0, reps: 0, rpe: 7, hecho: false })),
       ])
     )
   )
@@ -132,7 +145,9 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
     ultimoPesoKg: ej.ultimo_peso_kg,
   })
   const setsCompletados = Object.values(setsMap).flatMap(s => s).filter(s => s.hecho)
-  const volumenTotal = Math.round(setsCompletados.reduce((acc, set) => acc + (set.kg * set.reps), 0))
+  const volumenTotal = Math.round(
+    setsCompletados.reduce((acc, set) => acc + ((set.kg ?? 0) * (set.reps ?? 0)), 0)
+  )
 
   function guardarSet(kg: number, reps: number, rpe: number) {
     if (!setActivo) return

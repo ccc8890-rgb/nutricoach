@@ -14,8 +14,11 @@ export interface SessionProgressSummary {
 }
 
 export interface SessionExecutionSet {
-  kg: number
-  reps: number
+  kg?: number
+  reps?: number
+  metros?: number
+  calorias?: number
+  tiempo_s?: number
   rpe: number
   hecho: boolean
 }
@@ -63,7 +66,7 @@ export function crearSessionProgressSummary(input: SessionProgressInput): Sessio
 export function crearSessionExecutionSummary(input: SessionExecutionInput): SessionExecutionSummary {
   const completedSets = input.sets.filter(set => set.hecho)
   const nextSetIndex = input.sets.findIndex(set => !set.hecho)
-  const volumeKg = completedSets.reduce((total, set) => total + (set.kg * set.reps), 0)
+  const volumeKg = completedSets.reduce((total, set) => total + ((set.kg ?? 0) * (set.reps ?? 0)), 0)
   const averageRpe = completedSets.length > 0
     ? Number((completedSets.reduce((total, set) => total + set.rpe, 0) / completedSets.length).toFixed(1))
     : null
