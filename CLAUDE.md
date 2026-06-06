@@ -1,5 +1,49 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 06-06-2026 (Sesión 50) — Training visual diferenciado + dark mode fixes portal cliente
+
+### Qué se hizo
+
+| Tarea | Commits | Detalle |
+|-------|---------|---------|
+| Eliminar divider separador en tab "plan" | `ac07ce0` | Borrado el `{/* Separador */}` entre dieta y entrenamiento — ya no es necesario |
+| Header B1 en `SemanaEntrenoCard` | `0b0d75f` | Gradiente indigo sutil + pill "Hoy: [día]" + icono indigo. Título "Entrenamiento" en bold. Subtítulo con plan y días/semana |
+| Dark mode fixes `SemanaEntrenoCard` | `0b0d75f` | Leyenda con 4 colores explícitos, metadata `#9898A0`, badge "Ver entreno" indigo sólido, "Completada" verde `#4ADE80` |
+| Dark mode fixes `/cliente/semana` | `01324ce` | Labels stats, metadata sesiones y "sets registrados" con colores de contraste correcto |
+| Spec + plan documentados | `9394055` `a8f182b` | `docs/superpowers/specs/2026-06-06-training-visual-darkmode-design.md` + `docs/superpowers/plans/2026-06-06-training-visual-darkmode.md` |
+
+### Tokens de color dark mode establecidos para training
+
+| Elemento | Color |
+|---|---|
+| Texto secundario (metadata, subtítulos) | `#9898A0` |
+| Día actual / botones indigo / leyenda "Hoy" | `#818CF8` |
+| Sesión con entreno (dots, badges) | `#8A9AB8` |
+| Sesión completada / "sets registrados" | `#4ADE80` |
+| Día de descanso en leyenda | `#45454F` |
+| Texto muted mínimo legible | `#6F6F78` |
+
+### Arquitectura visual del bloque training (tab "plan")
+
+```
+┌─────────────────────────────────────────────┐
+│ [🏋️] Entrenamiento          [Hoy: Viernes]  │ ← gradiente indigo, pill solo si hay sesión hoy
+│      Híbrido Elite · 4 días / semana        │
+├─────────────────────────────────────────────┤
+│  L   M   ✓   J  [V]  S   D                 │ ← dots con colores por estado
+│  ● Hoy  ● Entreno  ✓ Hecho  ● Descanso     │
+│                                             │
+│  [▶] Fuerza + Carrera         [Empezar]    │ ← CTA día actual
+│      8 ej · ~55 min                        │
+│  L  Upper + HYROX           6 ej · 50m  ›  │
+│  X  Lower + Running         ✓ Completada   │
+│  S  Cardio Zona 2           60m          ›  │
+│  Ver semana completa                     ›  │
+└─────────────────────────────────────────────┘
+```
+
+---
+
 ## ✅ SESIÓN 06-06-2026 (Sesión 49) — Fix bug crítico portal cliente: empezar entrenamiento
 
 ### Bugs corregidos
