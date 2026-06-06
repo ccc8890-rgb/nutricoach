@@ -1,5 +1,51 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 06-06-2026 (Sesión 52) — Fix estructural training portal cliente
+
+### Qué se hizo
+
+| Bug | Causa raíz | Fix | Commit |
+|-----|-----------|-----|--------|
+| `SemanaEntrenoCard` mostraba vacío (sin entrenamiento) | Query directa a `sesiones_entrenamiento + sesion_ejercicios` desde cliente Supabase — RLS silencia joins cruzados | Nueva API `GET /api/entrenos/sesiones-plan` con service role | `3ef923e` |
+| `/cliente/semana` mostraba vacío | Mismas queries directas + `planes_entrenamiento + sesiones_entrenamiento + registros_sets` sin service role | Nueva API `GET /api/entrenos/semana-completa` con service role | `3ef923e` |
+| Back button ← de sesión acumulaba historial | `Link href="/cliente"` sin `replace` → cada uso duplicaba /cliente en historial → iOS swipe-back volvía a sesión vacía | Añadido `replace` en ← de header de sesión | `3ef923e` |
+| Back button ← de semana acumulaba historial | Mismo patrón | Añadido `replace` en ← de semana page | `3ef923e` |
+
+### APIs nuevas (ambas con service role)
+
+```
+GET /api/entrenos/sesiones-plan?plan_id=X
+  → sesiones con ejercicios_count + completadas_hoy
+  → usado por SemanaEntrenoCard (reemplaza query directa Supabase)
+
+GET /api/entrenos/semana-completa
+  → lee plan activo del usuario autenticado
+  → sesiones con ejercicios_count + registros_count semanal + completada + esHoy
+  → usado por /cliente/semana (reemplaza 4 queries directas Supabase)
+```
+
+### Regla definitiva — navegación portal cliente (actualizada)
+
+```
+TODOS los back buttons que navegan a /cliente deben usar replace:
+  ✅ /cliente/sesion/[id] ← button → /cliente: replace
+  ✅ /cliente/sesion/[id] pantalla completada → /cliente: replace
+  ✅ /cliente/sesion/[id] estado error → /cliente: replace
+  ✅ /cliente/semana ← button → /cliente: replace
+
+  ❌ NUNCA usar Link href="/cliente" sin replace en estas páginas
+```
+
+### Por qué se repite este bug
+
+El mismo patrón persiste porque:
+1. Los back buttons sin `replace` acumulan historial → iOS swipe-back vuelve a páginas inesperadas
+2. Las queries directas a Supabase con joins cruzados (`sesiones_entrenamiento → sesion_ejercicios`) fallan silenciosamente por RLS → array vacío → UI muestra "sin datos"
+
+**Regla de proyecto:** cualquier nueva página del portal que tenga ← back button a `/cliente` → siempre `replace`. Cualquier query que cruce ≥2 tablas con RLS → siempre API route con `createServiceSupabase()`.
+
+---
+
 ## ✅ SESIÓN 06-06-2026 (Sesión 51) — Fix navegación iOS swipe-back portal cliente
 
 ### Qué se hizo
