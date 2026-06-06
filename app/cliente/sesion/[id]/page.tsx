@@ -168,7 +168,7 @@ export default function EjecucionSesionPage() {
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
       <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Sesión no encontrada</p>
       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Esta sesión no pertenece a tu plan o ha sido eliminada.</p>
-      <Link href="/cliente" className="glass-btn mt-4">Volver al portal</Link>
+      <Link href="/cliente" replace className="glass-btn mt-4">Volver al portal</Link>
     </div>
   )
 
@@ -212,6 +212,7 @@ export default function EjecucionSesionPage() {
 
       <Link
         href="/cliente"
+        replace
         className="w-full max-w-sm py-3 rounded-xl text-sm font-semibold text-center block transition-transform active:scale-[0.98]"
         style={{ background: 'var(--accent)', color: 'var(--bg)' }}
       >
