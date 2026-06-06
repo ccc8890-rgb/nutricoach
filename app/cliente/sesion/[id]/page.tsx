@@ -37,10 +37,10 @@ interface SesionInfo {
   notas: string
   contexto_ia?: string | null
   ejercicios: EjercicioSesion[]
-  plan: {
+  plan?: {
     nombre: string
     cliente_id: string
-  }
+  } | null
 }
 
 export default function EjecucionSesionPage() {
@@ -96,16 +96,21 @@ export default function EjecucionSesionPage() {
     if (error || !data) { setLoading(false); return }
 
     const plan = Array.isArray(data.plan) ? data.plan[0] : data.plan
-    if (plan?.cliente_id !== user.id) {
-      const { data: clienteData } = await supabase
-        .from('clientes')
-        .select('id')
-        .eq('profile_id', user.id)
-        .single()
-      if (!clienteData || plan?.cliente_id !== clienteData.id) {
-        setAuthError(true)
-        setLoading(false)
-        return
+
+    // Si el join a planes_entrenamiento devuelve datos, verificar propiedad
+    // Si plan es null (RLS bloquea la join para clientes), confiar en el RLS de sesiones_entrenamiento
+    if (plan) {
+      if (plan.cliente_id !== user.id) {
+        const { data: clienteData } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('profile_id', user.id)
+          .single()
+        if (!clienteData || plan.cliente_id !== clienteData.id) {
+          setAuthError(true)
+          setLoading(false)
+          return
+        }
       }
     }
 
@@ -284,10 +289,10 @@ export default function EjecucionSesionPage() {
         <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <Link
-              href="/cliente/semana"
+              href="/cliente"
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-transform active:scale-[0.96]"
               style={{ color: 'var(--text-muted)', background: 'var(--surface)', border: '1px solid var(--border)' }}
-              aria-label="Volver a la semana"
+              aria-label="Volver al portal"
             >
               <ArrowLeft size={18} />
             </Link>
