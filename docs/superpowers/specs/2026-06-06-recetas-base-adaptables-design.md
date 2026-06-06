@@ -27,11 +27,15 @@ La cobertura actual permite empezar, pero está descompensada:
 - Rendimiento: 65 recetas marcadas.
 - Deportes específicos: running 62, Hyrox 46 y endurance 47. Ciclismo/triatlón siguen por debajo del objetivo.
 - Media mañana: 4 recetas.
+- Merienda: 174 recetas.
+- Desayuno: 68 recetas.
+- Comida: 110 recetas.
+- Cena: 68 recetas.
 - Pre-entreno: 12 recetas aprobadas.
 - Post-entreno: 19 recetas aprobadas.
 - Carga CHO: 4 recetas aprobadas.
 - Tapering: 1 receta aprobada.
-- Recetas sin momento: 101.
+- Recetas sin momento: 3, omitidas por no tener tipo claro.
 - Recetas aprobadas sin auditoría profesional (`score_calidad = null`): 0.
 - Recetas aprobadas con `quality_estado_sugerido = bloqueada`: 0.
 - `receta_ingredientes` ya tiene `rol_ingrediente` asignado al 100% tras backfill: 4102/4102.
