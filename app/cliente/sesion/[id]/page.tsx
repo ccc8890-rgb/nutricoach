@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowLeft, Barbell, Brain, CheckCircle, CircleNotch, Clock, Play, Target, Trophy } from '@phosphor-icons/react'
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
@@ -77,55 +76,31 @@ export default function EjecucionSesionPage() {
   }, [])
 
   const loadSesion = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setAuthError(true); setLoading(false); return }
-
-    const { data, error } = await supabase
-      .from('sesiones_entrenamiento')
-      .select(`
-        id, nombre, dia_semana, notas, contexto_ia,
-        plan:planes_entrenamiento(nombre, cliente_id),
-        ejercicios:sesion_ejercicios(
-          id, orden, series, repeticiones, descanso_segundos, peso_sugerido, notas, contexto_ia,
-          ejercicio:ejercicios(id, nombre, grupo_muscular, tipo, video_url, foto_url)
-        )
-      `)
-      .eq('id', id)
-      .single()
-
-    if (error || !data) { setLoading(false); return }
-
-    const plan = Array.isArray(data.plan) ? data.plan[0] : data.plan
-
-    // Si el join a planes_entrenamiento devuelve datos, verificar propiedad
-    // Si plan es null (RLS bloquea la join para clientes), confiar en el RLS de sesiones_entrenamiento
-    if (plan) {
-      if (plan.cliente_id !== user.id) {
-        const { data: clienteData } = await supabase
-          .from('clientes')
-          .select('id')
-          .eq('profile_id', user.id)
-          .single()
-        if (!clienteData || plan.cliente_id !== clienteData.id) {
-          setAuthError(true)
-          setLoading(false)
-          return
-        }
-      }
+    // Usar API route con service role para evitar problemas de RLS en joins anidados
+    const res = await fetch(`/api/cliente/sesion/${id}`)
+    if (!res.ok) {
+      if (res.status === 401) { setAuthError(true) }
+      else if (res.status === 403 || res.status === 404) { setAuthError(true) }
+      setLoading(false)
+      return
     }
 
-    const ejerciciosSorted = ((data.ejercicios as unknown as EjercicioSesion[]) ?? [])
-      .sort((a, b) => a.orden - b.orden)
+    const json = await res.json().catch(() => null)
+    if (!json?.sesion) { setLoading(false); return }
 
-    // Cargar historial de pesos para pre-rellenar los inputs
+    const { sesion: data } = json
+    const ejerciciosSorted = ((data.ejercicios as unknown as EjercicioSesion[]) ?? [])
+      .sort((a: EjercicioSesion, b: EjercicioSesion) => a.orden - b.orden)
+
+    // Pre-rellenar historial de pesos
     const ejercicioIds = ejerciciosSorted
-      .map(e => e.ejercicio?.id)
-      .filter((v): v is string => Boolean(v))
+      .map((e: EjercicioSesion) => e.ejercicio?.id)
+      .filter((v: unknown): v is string => Boolean(v))
     if (ejercicioIds.length > 0) {
       try {
-        const res = await fetch(`/api/entrenos/historial-pesos?ejercicio_ids=${ejercicioIds.join(',')}`)
-        if (res.ok) {
-          const histData = await res.json()
+        const pwRes = await fetch(`/api/entrenos/historial-pesos?ejercicio_ids=${ejercicioIds.join(',')}`)
+        if (pwRes.ok) {
+          const histData = await pwRes.json()
           const map = new Map<string, number>()
           for (const p of histData.pesos ?? []) {
             if (p.ultimo_peso_kg != null) map.set(p.ejercicio_id, p.ultimo_peso_kg)
@@ -135,11 +110,7 @@ export default function EjecucionSesionPage() {
       } catch { /* silencioso */ }
     }
 
-    setSesion({
-      ...data,
-      plan: Array.isArray(data.plan) ? data.plan[0] : data.plan,
-      ejercicios: ejerciciosSorted,
-    } as SesionInfo)
+    setSesion({ ...data, ejercicios: ejerciciosSorted })
     setLoading(false)
   }, [id])
 
