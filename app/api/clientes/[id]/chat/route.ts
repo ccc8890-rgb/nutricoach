@@ -10,14 +10,22 @@ export async function GET(
     const supabase = await createServerSupabase()
     const { id: clienteId } = await params
 
-    const { data } = await supabase
-      .from('chat_mensajes')
-      .select('*')
-      .eq('cliente_id', clienteId)
-      .order('created_at', { ascending: true })
-      .limit(100)
+    const [{ data }, { count }] = await Promise.all([
+      supabase
+        .from('chat_mensajes')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .order('created_at', { ascending: true })
+        .limit(100),
+      supabase
+        .from('chat_mensajes')
+        .select('*', { count: 'exact', head: true })
+        .eq('cliente_id', clienteId)
+        .eq('remitente', 'cliente')
+        .eq('leido', false),
+    ])
 
-    return NextResponse.json({ mensajes: data ?? [] })
+    return NextResponse.json({ mensajes: data ?? [], no_leidos: count ?? 0 })
   } catch (err) {
     console.error('Error GET chat:', err)
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
@@ -82,8 +90,14 @@ export async function HEAD(
       .eq('remitente', 'cliente')
       .eq('leido', false)
 
-    return NextResponse.json({ no_leidos: count ?? 0 })
+    return new NextResponse(null, {
+      status: 200,
+      headers: { 'x-no-leidos': String(count ?? 0) },
+    })
   } catch {
-    return NextResponse.json({ no_leidos: 0 })
+    return new NextResponse(null, {
+      status: 200,
+      headers: { 'x-no-leidos': '0' },
+    })
   }
 }

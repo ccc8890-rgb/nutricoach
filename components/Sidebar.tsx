@@ -251,8 +251,8 @@ function SidebarSection({
         {section.badge ? <Badge value={section.badge} tone="danger" /> : null}
         {expanded ? (
           <>
-            <ChevronRight size={14} className="ml-auto hidden lg:block" style={{ color: 'var(--text-muted)' }} />
-            <ChevronDown size={14} className="ml-auto lg:hidden" style={{ color: 'var(--text-muted)' }} />
+            <ChevronRight size={14} className="ml-auto hidden xl:block" style={{ color: 'var(--text-muted)' }} />
+            <ChevronDown size={14} className="ml-auto xl:hidden" style={{ color: 'var(--text-muted)' }} />
           </>
         ) : (
           <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
@@ -261,7 +261,7 @@ function SidebarSection({
 
       {expanded && (
         <div
-          className="ml-3 mt-1 border-l pl-3 lg:hidden"
+          className="ml-3 mt-1 border-l pl-3 xl:hidden"
           style={{ borderColor: 'var(--border)' }}
         >
           <SectionPanelContent section={section} pathname={pathname} />
@@ -284,7 +284,7 @@ function SecondarySidebar({
 
   return (
     <aside
-      className="hidden w-64 min-h-screen flex-col border-r lg:flex"
+      className="hidden w-64 min-h-screen flex-col border-r xl:flex"
       style={{
         background: 'color-mix(in srgb, var(--surface) 88%, var(--bg))',
         borderColor: 'var(--glass-border)',

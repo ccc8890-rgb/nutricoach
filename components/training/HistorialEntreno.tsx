@@ -27,11 +27,6 @@ interface SesionDia {
   ejercicios: EjercicioLog[]
 }
 
-const RPE_LABEL: Record<number, string> = {
-  1: 'Muy ligero', 2: 'Ligero', 3: 'Ligero', 4: 'Moderado', 5: 'Moderado',
-  6: 'Algo intenso', 7: 'Intenso', 8: 'Muy intenso', 9: 'Casi máximo', 10: 'Máximo',
-}
-
 function rpeColor(rpe: number): string {
   if (rpe <= 4) return 'rgba(34,197,94,0.8)'
   if (rpe <= 6) return 'rgba(234,179,8,0.9)'
@@ -71,7 +66,11 @@ export default function HistorialEntreno({ clienteId }: { clienteId: string }) {
   function toggleSesion(fecha: string) {
     setExpanded(prev => {
       const next = new Set(prev)
-      next.has(fecha) ? next.delete(fecha) : next.add(fecha)
+      if (next.has(fecha)) {
+        next.delete(fecha)
+      } else {
+        next.add(fecha)
+      }
       return next
     })
   }

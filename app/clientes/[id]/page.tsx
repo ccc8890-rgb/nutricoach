@@ -480,7 +480,7 @@ export default function ClienteDetallePage() {
   useEffect(() => {
     async function checkNoLeidos() {
       try {
-        const res = await fetch(`/api/clientes/${id}/chat`, { method: 'HEAD' })
+        const res = await fetch(`/api/clientes/${id}/chat`)
         if (res.ok) {
           const json = await res.json()
           setNoLeidosChat(json.no_leidos ?? 0)
@@ -520,7 +520,7 @@ export default function ClienteDetallePage() {
   // También refrescar noLeidosChat cuando se carga la página
   useEffect(() => {
     loadData()
-    fetch(`/api/clientes/${id}/chat`, { method: 'HEAD' }).then(r => { if (r.ok) r.json().then(j => setNoLeidosChat(j.no_leidos ?? 0)) }).catch(() => { })
+    fetch(`/api/clientes/${id}/chat`).then(r => { if (r.ok) r.json().then(j => setNoLeidosChat(j.no_leidos ?? 0)) }).catch(() => { })
   }, [id])
 
   async function recargarCliente() {
