@@ -534,7 +534,9 @@ async function insertarReceta(recetaPlan, dataIA, ingredientesDB) {
         categoria: recetaPlan.categoria,
         tipo_plato: recetaPlan.tipo_plato,
         dificultad: recetaPlan.dificultad,
-        estado: 'aprobada',
+        // ⚠️  Se deja en_revision porque este script .mjs no puede ejecutar auditarRecetaProfesional (TS).
+        // La receta deberá pasar por el quality gate manualmente o mediante otro script.
+        estado: 'en_revision',
         fuente: 'ia-generada',
         fuente_tipo: 'ia_generada',
         coach_id: COACH_ID,

@@ -22,6 +22,7 @@
 import { createClient } from '@supabase/supabase-js'
 import * as fs from 'fs'
 import * as path from 'path'
+import { auditarRecetaProfesional } from '../lib/recetas/auditoria'
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -380,7 +381,7 @@ async function main() {
                 instrucciones: rev.instrucciones,
                 consejos: rev.consejos || null,
                 porciones: rev.porciones,
-                estado: 'aprobada',
+                estado: 'en_revision',
             }
 
             // Mantener url_origen original si existe
@@ -459,10 +460,25 @@ async function main() {
                 }
             }
 
-            aprobadas++
-            console.log(`✅ APROBADA: "${rev.nombre}"`)
-            console.log(`   └─ Categoría: ${rev.categoria} | Dificultad: ${rev.dificultad} | Cocción: ${rev.tipo_coccion}`)
-            console.log(`   └─ ${rev.justificacion}`)
+            // ── Quality gate via auditarRecetaProfesional ──
+            const audit = await auditarRecetaProfesional(
+                supabase as any,
+                rev.receta_id,
+                'revision_ia_pre_aprobacion',
+                'script_revisar_recetas_cola_ia'
+            )
+            const puedeAprobar = audit.resumen.aprobable && audit.score.bloqueantes.length === 0
+
+            if (puedeAprobar) {
+                await supabase.from('recetas').update({ estado: 'aprobada' }).eq('id', rev.receta_id)
+                aprobadas++
+                console.log(`✅ APROBADA: "${rev.nombre}"`)
+                console.log(`   └─ Categoría: ${rev.categoria} | Dificultad: ${rev.dificultad} | Cocción: ${rev.tipo_coccion}`)
+                console.log(`   └─ ${rev.justificacion}`)
+            } else {
+                console.log(`⏸️  EN_REVISION: "${rev.nombre}" (bloqueantes: ${audit.score.bloqueantes.join(', ') || 'ninguno'})`)
+                // Dejamos estado = 'en_revision' (ya está en updateData)
+            }
 
         } catch (err) {
             console.error(`❌ Error procesando receta "${rev.nombre}":`, err)

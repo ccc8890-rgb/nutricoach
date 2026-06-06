@@ -353,7 +353,9 @@ async function insertarReceta(receta) {
       consejos: receta.consejos ?? null,
       intolerancias: receta.intolerancias ?? [],
       tags: receta.tags ?? [],
-      estado: 'aprobada',
+      // ⚠️  Se deja en_revision porque este script .mjs no puede ejecutar auditarRecetaProfesional (TS).
+      // La receta deberá pasar por el quality gate manualmente o mediante otro script.
+      estado: 'en_revision',
       fuente_tipo: 'ia_generada',
       // Tags clínicos
       apto_sop: receta.apto_sop ?? false,

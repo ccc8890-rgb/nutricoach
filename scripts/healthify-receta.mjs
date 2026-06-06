@@ -378,7 +378,9 @@ Aplica las reglas de healthificación. Devuelve la receta completa en JSON.`
         carbohidratos: Math.round(carbsPorcion * 10) / 10,
         grasas: Math.round(grasasPorcion * 10) / 10,
         intolerancias: receta.intolerancias || [],
-        estado: 'aprobada',
+        // ⚠️  Se deja en_revision porque este script .mjs no puede ejecutar auditarRecetaProfesional (TS).
+        // La receta deberá pasar por el quality gate manualmente o mediante otro script.
+        estado: 'en_revision',
         coach_id: COACH_ID,
         receta_original_id: LINK_TO ?? null,
     }).select('id').single()
