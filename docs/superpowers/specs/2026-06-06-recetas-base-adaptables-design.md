@@ -18,7 +18,7 @@ El sistema ya tiene buena parte de la infraestructura:
 - Quality gate centralizado con `auditarRecetaProfesional`.
 - Roles de ingrediente y reglas de scaling en `lib/ingredient-roles.ts`.
 
-La base actual tiene 409 recetas aprobadas. De ellas, 328 están marcadas como `portion_scalable`, pero todavía falta una capa explícita de "receta base adaptable". Hoy el sistema selecciona recetas fijas y ajusta por cercanía; mañana debe seleccionar una base y aplicar una transformación controlada.
+La base actual, tras pasar el backfill de auditoría y sacar de aprobadas las recetas bloqueadas, tiene 384 recetas aprobadas. De ellas, 312 están marcadas con `portion_scalable` dentro de `planning_roles`, pero todavía falta una capa explícita de "receta base adaptable". Hoy el sistema selecciona recetas fijas y ajusta por cercanía; mañana debe seleccionar una base y aplicar una transformación controlada.
 
 ## Diagnóstico
 
@@ -27,8 +27,10 @@ La cobertura actual permite empezar, pero está descompensada:
 - Rendimiento: 37 recetas marcadas.
 - Deportes específicos: running, Hyrox, ciclismo, triatlón y endurance tienen 37 cada uno.
 - Media mañana: 4 recetas.
-- Recetas sin momento: 113.
-- Recetas aprobadas con `score_calidad < 70`: 61.
+- Pre-entreno, post-entreno, carga CHO y tapering: 0 recetas aprobadas etiquetadas en `momentos`.
+- Recetas sin momento: 101.
+- Recetas aprobadas sin auditoría profesional (`score_calidad = null`): 0.
+- Recetas aprobadas con `quality_estado_sugerido = bloqueada`: 0.
 - Solo el 24% de `receta_ingredientes` tiene `rol_ingrediente` asignado.
 - Predomina salud general/mantenimiento frente a objetivos deportivos o recomposición.
 
@@ -245,14 +247,16 @@ Si no pasa, queda `en_revision`.
 Orden de trabajo:
 
 1. Auditar cobertura actual y huecos.
-2. Poblar `rol_ingrediente` en recetas existentes.
-3. Cambiar expansión de recetas a scaling por rol.
-4. Clasificar/rehacer momentos de recetas existentes sin momento.
-5. Crear 60 bases adaptables.
-6. Generar variantes de prueba para 10 bases.
-7. Pasar quality gate y revisión manual.
-8. Activar uso limitado en generación de planes.
-9. Medir aceptación con `receta_interacciones_cliente`.
+2. Backfill de auditoría profesional en recetas aprobadas con `score_calidad = null`.
+3. Poblar `rol_ingrediente` en recetas existentes.
+4. Cambiar expansión de recetas a scaling por rol.
+5. Clasificar/rehacer momentos de recetas existentes sin momento.
+6. Crear una micro-batería peri-entreno controlada antes de usar slots pre/post en planes.
+7. Crear 60 bases adaptables.
+8. Generar variantes de prueba para 10 bases.
+9. Pasar quality gate y revisión manual.
+10. Activar uso limitado en generación de planes.
+11. Medir aceptación con `receta_interacciones_cliente`.
 
 ## Criterios de Éxito
 
@@ -261,6 +265,8 @@ La v1 se considera lista cuando:
 - Existen 60 bases adaptables en BD.
 - Al menos 40 bases tienen 4 variantes probadas.
 - Media mañana sube de 4 a mínimo 30 opciones útiles.
+- Pre-entreno y post-entreno suben de 0 a mínimo 25 opciones útiles cada uno.
+- Carga CHO y tapering tienen al menos 10 opciones controladas cada uno.
 - Rendimiento sube de 37 a mínimo 80 opciones.
 - Running/Hyrox/endurance suben a mínimo 60 cada uno.
 - El plan IA puede cubrir 7 días sin repetir receta para un cliente estándar.

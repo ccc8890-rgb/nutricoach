@@ -36,12 +36,13 @@ async function main() {
   console.log(DRY ? `[DRY-RUN] No se aplicarán cambios. Usa --apply para ejecutar.` : `[APPLY] Auditando recetas...`)
 
   while (true) {
+    const rangeFrom = DRY ? from : 0
     const { data: recetas, error } = await supabase
       .from('recetas')
       .select('id, nombre, score_calidad')
       .eq('estado', 'aprobada')
       .is('score_calidad', null)
-      .range(from, from + pageSize - 1)
+      .range(rangeFrom, rangeFrom + pageSize - 1)
 
     if (error) {
       console.error('Error fetching recetas:', error.message)
@@ -68,7 +69,7 @@ async function main() {
     }
 
     if (recetas.length < pageSize) break
-    from += pageSize
+    if (DRY) from += pageSize
   }
 
   console.log(`\n─────────────────────────────`)

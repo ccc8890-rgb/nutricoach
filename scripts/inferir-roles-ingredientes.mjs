@@ -11,6 +11,7 @@ const supabase = createClient(
 
 const DRY_RUN = process.argv.includes('--dry-run')
 const APLICAR = process.argv.includes('--aplicar')
+const PAGE_SIZE = 1000
 
 function inferirRol(alimento, nombreIngrediente) {
   const nombre = (nombreIngrediente ?? '').toLowerCase()
@@ -20,7 +21,7 @@ function inferirRol(alimento, nombreIngrediente) {
   const grasas = alimento?.grasas ?? 0
   const kcal = alimento?.calorias ?? 0
 
-  if (/\b(sal(?!sa)|pimienta|ajo en polvo|cebolla en polvo|orégano|comino|cúrcuma|pimentón|albahaca|romero|tomillo|jengibre|canela|laurel|cilantro|perejil|cayena|nuez moscada|cardamomo|curry)\b/.test(nombre)) return 'especias_aromaticos'
+  if (/\b(sal(?!sa)|pimienta|ajo|diente de ajo|ajo en polvo|cebolla en polvo|orégano|comino|cúrcuma|pimentón|albahaca|romero|tomillo|jengibre|canela|laurel|cilantro|perejil|cayena|nuez moscada|cardamomo|curry)\b/.test(nombre)) return 'especias_aromaticos'
   if (/\b(ketchup|mayonesa|pesto|hummus|tahini|mostaza|aliño|aderezo|ranch|sriracha|guacamole|tzatziki|chimichurri|vinagreta|salsa de soja|salsa teriyaki|salsa hoisin)\b/.test(nombre)) return 'salsa_condimento'
   if (/\b(tortilla de trigo|wrap|pan(?:ecillo)?|baguette|base de pizza|masa|galleta|cracker|tostada)\b/.test(nombre)) return 'estructural'
   if (/\b(fresa|frambuesa|arándano|plátano|mango|piña|kiwi|naranja|fruta|berry|cereza|uva|sandía|melón|melocotón|granada)\b/.test(nombre) || cat.includes('fruta')) return 'fruta_complemento'
@@ -35,11 +36,19 @@ function inferirRol(alimento, nombreIngrediente) {
 async function main() {
   console.log(`Modo: ${DRY_RUN ? 'DRY-RUN' : APLICAR ? 'APLICAR' : 'PREVIEW'}`)
 
-  const { data: ingredientes, error } = await supabase
-    .from('receta_ingredientes')
-    .select('id, nombre_libre, rol_ingrediente, alimento:alimentos(calorias, proteinas, carbohidratos, grasas, categoria)')
+  const ingredientes = []
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from('receta_ingredientes')
+      .select('id, nombre_libre, rol_ingrediente, alimento:alimentos(calorias, proteinas, carbohidratos, grasas, categoria)')
+      .range(from, from + PAGE_SIZE - 1)
 
-  if (error) { console.error(error.message); process.exit(1) }
+    if (error) { console.error(error.message); process.exit(1) }
+    if (!data || data.length === 0) break
+
+    ingredientes.push(...data)
+    if (data.length < PAGE_SIZE) break
+  }
 
   const sinRol = ingredientes.filter(i => !i.rol_ingrediente)
   console.log(`\nTotal ingredientes: ${ingredientes.length}`)
