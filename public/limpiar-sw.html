@@ -53,6 +53,7 @@
         <div class="spinner"></div>
         <h2>Limpiando caché...</h2>
         <p>Eliminando Service Worker y datos antiguos</p>
+        <p style="margin-top:1rem;font-size:13px;color:#999">Te pedirá que vuelvas a iniciar sesión</p>
     </div>
     <script>
         (async function () {
@@ -80,10 +81,10 @@
             // 4. Clear sessionStorage
             sessionStorage.clear()
 
-            console.log('Cleanup complete. Redirecting to /')
+            console.log('Cleanup complete. Redirecting to /login')
 
-            // 5. Redirect with cache-bust
-            window.location.href = '/?_=' + Date.now()
+            // 5. Redirect to login (tokens were cleared, need to re-authenticate)
+            window.location.replace('/login?limpiado=1')
         })()
     </script>
 </body>
