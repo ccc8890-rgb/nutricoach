@@ -152,7 +152,7 @@ function validarMatchSemantico(ing: IngredienteProfesionalInput): string | null 
 function validarCantidadesSospechosas(ing: IngredienteProfesionalInput): string | null {
   const gramos = ing.cantidad_gramos ?? 0
   if (gramos <= 0) return null
-  const nombre = (ing.nombre_libre || '').toLowerCase()
+  const nombre = normalizarStr(ing.nombre_libre || '')
   // Sal > 10g
   if (/^sal\b/.test(nombre) && gramos > 10) return 'cantidades_sospechosas'
   // Ralladura/cascara/piel de citrico > 10g
