@@ -37,6 +37,23 @@ export async function PATCH(
       return NextResponse.json({ error: 'Receta no encontrada' }, { status: 404 })
     }
 
+    // Quality gate for approval
+    if (estado === 'aprobada') {
+      const audit = await auditarRecetaProfesional(
+        createServiceSupabase(),
+        id,
+        'quality_check_previo',
+        'api_receta_estado'
+      )
+      if (!audit.resumen.aprobable || audit.score.bloqueantes.length > 0) {
+        return NextResponse.json({
+          error: 'La receta no pasa el quality gate',
+          bloqueantes: audit.score.bloqueantes,
+          avisos: audit.score.avisos,
+        }, { status: 409 })
+      }
+    }
+
     const { error: updateError } = await supabase
       .from('recetas')
       .update({ estado })

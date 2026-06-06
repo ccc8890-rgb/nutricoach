@@ -10,6 +10,8 @@ export interface IngredienteProfesionalInput {
   nombre_libre?: string | null
   cantidad_gramos?: number | null
   tiene_precio?: boolean
+  nombre_alimento?: string | null
+  kcal_alimento?: number | null
 }
 
 export interface RecetaProfesionalInput {
@@ -84,6 +86,69 @@ function clamp(value: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, value))
 }
 
+// Token normalization for semantic matching
+function normalizarToken(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function tokensSignificativos(s: string): string[] {
+  const tokens = normalizarToken(s).split(' ').filter(t => t.length > 2)
+  // Remove generic tokens that are too common
+  const genericos = new Set(['con', 'sin', 'para', 'de', 'la', 'el', 'los', 'las', 'del', 'y', 'e', 'o', 'a', 'en', 'por', 'al', 'un', 'una', 'unas', 'unos', 'que', 'es', 'se', 'no', 'lo', 'su', 'sus', 'como', 'mas', 'pero', 'muy', 'todo', 'tipo', 'sabor', 'estilo', 'casero', 'natural', 'ecologico', 'artesanal', 'tradicional', 'integral', 'light', 'zero', 'diet', 'fit', 'healthy', 'bio', 'eco', 'sin', 'con', 'bajo', 'alto', 'enriquecido', 'fortificado', 'premium', 'selecto', 'extra', 'super', 'max', 'plus', 'classic', 'original', 'clasico', 'tradicion', 'receta', 'cocina', 'plato', 'comida', 'bebida', 'postre', 'snack', 'aperitivo', 'entrante', 'principal', 'guarnicion', 'acompanamiento', 'base', 'mezcla', 'preparado', 'listo', 'instantaneo', 'rapido', 'facil', 'casero', 'artesano', 'natural', 'ecologico', 'bio', 'organico', 'integral', 'light', 'diet', 'zero', 'sin', 'con', 'bajo', 'alto', 'enriquecido', 'fortificado', 'premium', 'selecto', 'extra', 'super', 'max', 'plus', 'classic', 'original', 'clasico', 'tradicion', 'receta', 'cocina', 'plato', 'comida', 'bebida', 'postre', 'snack', 'aperitivo', 'entrante', 'principal', 'guarnicion', 'acompanamiento', 'base', 'mezcla', 'preparado', 'listo', 'instantaneo', 'rapido', 'facil'])
+  return tokens.filter(t => !genericos.has(t))
+}
+
+function tokensCompartidos(a: string[], b: string[]): number {
+  const setB = new Set(b)
+  return a.filter(t => setB.has(t)).length
+}
+
+function validarMatchSemantico(ing: IngredienteProfesionalInput): string | null {
+  if (!ing.nombre_libre || !ing.nombre_alimento) return null
+  const tokensLibre = tokensSignificativos(ing.nombre_libre)
+  const tokensAlimento = tokensSignificativos(ing.nombre_alimento)
+  if (tokensLibre.length === 0 || tokensAlimento.length === 0) return null
+  const compartidos = tokensCompartidos(tokensLibre, tokensAlimento)
+  // If no significant tokens shared, it's suspicious
+  if (compartidos === 0) return 'match_semantico_sospechoso'
+  // If only generic tokens shared (already filtered), but we also check for specific conflict patterns
+  // Additional pattern: if nombre_libre contains a specific fruit/vegetable and alimento contains a different one
+  // We'll rely on the token overlap test.
+  return null
+}
+
+function validarCantidadesSospechosas(ing: IngredienteProfesionalInput): string | null {
+  const gramos = ing.cantidad_gramos ?? 0
+  if (gramos <= 0) return null
+  const nombre = (ing.nombre_libre || '').toLowerCase()
+  // Sal > 10g
+  if (/^sal\b/.test(nombre) && gramos > 10) return 'cantidades_sospechosas'
+  // Ralladura/cascara/piel de citrico > 10g
+  if (/(ralladura|cascara|piel)\s*(de\s*)?(limon|lima|naranja|pomelo|mandarina)/.test(nombre) && gramos > 10) return 'cantidades_sospechosas'
+  // Especias secas > 20g
+  if (/(canela|clavo|nuez moscada|jengibre|curcuma|pimenton|oregano|tomillo|romero|laurel|comino|cilantro|perejil|albahaca|menta|hierbabuena|eneldo|estragon|salvia|cebollino|ajo en polvo|cebolla en polvo|mostaza en polvo|curry|garam masala|chile|pimienta|cardamomo|anís|vainilla|azafran)/.test(nombre) && gramos > 20) return 'cantidades_sospechosas'
+  // Aceite > 60g por receta (we'll check per ingredient, but total will be checked later)
+  if (/(aceite|aceite de oliva|aceite de girasol|aceite de coco|aceite de aguacate|aceite de sesamo|aceite de cacahuete|aceite de soja|aceite de maiz|aceite de canola|aceite vegetal|aceite de palma|aceite de almendras|aceite de nuez|aceite de avellana|aceite de uva|aceite de linaza|aceite de onagra|aceite de borraja|aceite de pescado|aceite de higado de bacalao)/.test(nombre) && gramos > 60) return 'cantidades_sospechosas'
+  // Condimentos tipo vinagre/zumo/limon > 120g salvo bebida
+  if (/(vinagre|zumo|jugo|limon|lima|naranja|pomelo|mandarina|piña|manzana|uva|arandano|granada|frambuesa|fresa|mora|cereza|melocoton|albaricoque|ciruela|pera|mango|papaya|kiwi|platano|higo|dátil|higo chumbo|maracuya|guanabana|carambola|lichi|rambutan|durian|jackfruit|breadfruit|coco|leche de coco|agua de coco)/.test(nombre) && gramos > 120) return 'cantidades_sospechosas'
+  return null
+}
+
+function validarRecetaSemanticaIncoherente(receta: RecetaProfesionalInput): string | null {
+  const nombre = (receta.nombre || '').toLowerCase()
+  // Check for specific known dish names that have specific ingredients
+  if (nombre.includes('mango sticky rice') || nombre.includes('mango pegajoso') || nombre.includes('arroz pegajoso mango')) {
+    const ingredientes = receta.ingredientes || []
+    const nombresIng = ingredientes.map(i => (i.nombre_libre || '').toLowerCase()).join(' ')
+    // Expected ingredients: arroz glutinoso, leche de coco, azúcar, mango, sésamo
+    // Suspicious if contains nata espesa or yemas de huevo
+    if (/(nata espesa|yemas? de huevo|yema)/.test(nombresIng)) {
+      return 'receta_semantica_incoherente'
+    }
+  }
+  return null
+}
+
 export function clasificarRecetaProfesional(receta: RecetaProfesionalInput): ClasificacionProfesional {
   const texto = textoReceta(receta)
   const kcal = n(receta.kcal)
@@ -145,6 +210,16 @@ export function calcularScoreCalidadReceta(receta: RecetaProfesionalInput): Scor
   if (ingredientes.some(i => n(i.cantidad_gramos) <= 0)) bloqueantes.push('cantidades_invalidas')
   if (!receta.porciones || receta.porciones <= 0) bloqueantes.push('porciones_invalidas')
   if (!receta.kcal || receta.kcal <= 0) bloqueantes.push('sin_macros')
+
+  // New semantic and quantity checks
+  for (const ing of ingredientes) {
+    const sem = validarMatchSemantico(ing)
+    if (sem) bloqueantes.push(sem)
+    const cant = validarCantidadesSospechosas(ing)
+    if (cant) bloqueantes.push(cant)
+  }
+  const incoherente = validarRecetaSemanticaIncoherente(receta)
+  if (incoherente) bloqueantes.push(incoherente)
 
   if (ingredientes.length > 0 && ingredientes.length < 3) avisos.push('pocos_ingredientes')
   if (!receta.descripcion) avisos.push('sin_descripcion')

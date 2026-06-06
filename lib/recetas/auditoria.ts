@@ -40,6 +40,7 @@ interface IngredienteDb {
   alimento_id: string | null
   nombre_libre: string | null
   cantidad_gramos: number | null
+  alimentos?: { nombre: string | null; calorias: number | null } | null
 }
 
 function toInput(receta: RecetaDb, ingredientes: IngredienteDb[], conPrecio: Set<string>): RecetaProfesionalInput {
@@ -65,6 +66,8 @@ function toInput(receta: RecetaDb, ingredientes: IngredienteDb[], conPrecio: Set
       nombre_libre: i.nombre_libre,
       cantidad_gramos: i.cantidad_gramos,
       tiene_precio: i.alimento_id ? conPrecio.has(i.alimento_id) : false,
+      nombre_alimento: i.alimentos?.nombre ?? null,
+      kcal_alimento: i.alimentos?.calorias ?? null,
     })),
   }
 }
@@ -88,7 +91,7 @@ export async function auditarRecetaProfesional(
       .single(),
     srv
       .from('receta_ingredientes')
-      .select('id, alimento_id, nombre_libre, cantidad_gramos')
+      .select('id, alimento_id, nombre_libre, cantidad_gramos, alimentos!left(nombre, calorias)')
       .eq('receta_id', recetaId),
   ])
 

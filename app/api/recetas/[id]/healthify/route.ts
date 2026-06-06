@@ -194,6 +194,7 @@ ${specs ? `ESPECIFICACIONES: ${specs}` : ''}`
   const porciones = recetaGenerada.porciones || recetaBase.porciones || 2
 
   // Insertar receta fit
+  // Insert with estado 'en_revision' initially
   const { data: nuevaReceta, error: insertError } = await sbService.from('recetas').insert({
     nombre: recetaGenerada.nombre || nombreFit,
     descripcion: recetaGenerada.descripcion || null,
@@ -212,7 +213,7 @@ ${specs ? `ESPECIFICACIONES: ${specs}` : ''}`
     carbohidratos: Math.round(totalCarbs / porciones * 10) / 10,
     grasas: Math.round(totalGrasas / porciones * 10) / 10,
     intolerancias: normalizarIntolerancias(recetaGenerada.intolerancias || []),
-    estado: 'aprobada',
+    estado: 'en_revision',
     coach_id: user.id,
     receta_original_id: id,
   }).select('id, nombre').single()
@@ -226,6 +227,12 @@ ${specs ? `ESPECIFICACIONES: ${specs}` : ''}`
     await sbService.from('receta_ingredientes').insert(
       ingredientesInsert.map((ing, i) => ({ ...ing, receta_id: nuevaReceta.id, orden: i + 1 }))
     )
+  }
+
+  // Audit and possibly approve
+  const audit = await auditarRecetaProfesional(sbService, nuevaReceta.id, 'healthify_creacion', 'api_recetas_healthify')
+  if (audit.resumen.aprobable && audit.score.bloqueantes.length === 0) {
+    await sbService.from('recetas').update({ estado: 'aprobada' }).eq('id', nuevaReceta.id)
   }
 
   return NextResponse.json({
