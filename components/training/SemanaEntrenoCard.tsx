@@ -221,6 +221,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             {/* Session info row */}
             <Link
               href={`/cliente/sesion/${nextSession.id}`}
+              replace
               className="flex items-center gap-3 px-3.5 pt-3 pb-2 transition-opacity hover:opacity-80"
             >
               <div
@@ -293,6 +294,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 <div key={s.id} className="flex flex-col">
                   <Link
                     href={`/cliente/sesion/${s.id}`}
+                    replace
                     className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-opacity hover:opacity-70"
                     style={{ color: completada ? 'var(--semantic-active)' : 'var(--text-muted)' }}
                   >

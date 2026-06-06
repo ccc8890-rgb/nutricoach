@@ -302,6 +302,7 @@ export default function VistaSemanalClientePage() {
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <Link
                   href={`/cliente/sesion/${sesionPrincipal.id}`}
+                  replace
                   className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
                   style={{ background: 'var(--accent)', color: 'var(--bg)' }}
                 >
@@ -310,6 +311,7 @@ export default function VistaSemanalClientePage() {
                 </Link>
                 <Link
                   href={`/cliente/sesion/${sesionPrincipal.id}?modo=solo-ver`}
+                  replace
                   className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
                   style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
                 >
@@ -427,6 +429,7 @@ export default function VistaSemanalClientePage() {
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <Link
                     href={`/cliente/sesion/${s.id}`}
+                    replace
                     className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
                     style={{ background: 'var(--accent)', color: 'var(--bg)' }}
                   >
@@ -435,6 +438,7 @@ export default function VistaSemanalClientePage() {
                   </Link>
                   <Link
                     href={`/cliente/sesion/${s.id}?modo=solo-ver`}
+                    replace
                     className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
                     style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)' }}
                   >
