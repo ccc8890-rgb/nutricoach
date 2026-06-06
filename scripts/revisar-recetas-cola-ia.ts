@@ -1,7 +1,7 @@
 /**
  * revisar-recetas-cola-ia.ts
  *
- * Script INTELIGENTE que usa DeepSeek para revisar, estandarizar y aprobar
+ * Script INTELIGENTE que usa DeepSeek para revisar, estandarizar y aprobar solo si pasa quality gate
  * las 34 recetas en cola (en_revision).
  *
  * ¿Qué hace?
@@ -14,7 +14,7 @@
  *    e) Corrija cantidades de ingredientes absurdas
  *    f) Normalice nombres de ingredientes
  * 3. Aplica cambios en BD
- * 4. Aprueba recetas (estado = 'aprobada')
+ * 4. Ejecuta quality gate y solo aprueba las recetas sin bloqueantes; el resto queda en_revision
  *
  * USO: npx tsx scripts/revisar-recetas-cola-ia.ts
  */
