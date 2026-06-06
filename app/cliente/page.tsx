@@ -501,16 +501,6 @@ function PortalClientePageContent() {
               <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
 
-            {/* Separador */}
-            <div className="flex items-center gap-3 my-1">
-              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
-              <div className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-                <Barbell size={11} />
-                Entrenamiento
-              </div>
-              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
-            </div>
-
             {entreno ? (
               <>
                 <SemanaEntrenoCard planId={entreno.id} planNombre={entreno.nombre} />
