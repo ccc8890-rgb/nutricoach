@@ -233,6 +233,7 @@ export default function EjecucionSesionPage() {
     ultimo_peso_kg: ej.ejercicio?.id ? (historialPesos.get(ej.ejercicio.id) ?? null) : null,
     video_url: ej.ejercicio?.video_url ?? null,
     foto_url: ej.ejercicio?.foto_url ?? null,
+    tipo: ej.ejercicio?.tipo ?? null,
   }))
 
   const totalSets = sesion.ejercicios.reduce((acc, ej) => acc + (ej.series ?? 0), 0)
