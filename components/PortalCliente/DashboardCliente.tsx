@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, MessageSquareText, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle, ShoppingCart, BookOpen, Clock, CheckCircle2, Moon, Sun, Home, Play } from 'lucide-react'
+import { UtensilsCrossed, ClipboardCheck, BarChart3, Loader2, MessageSquareText, Dumbbell, MessageCircle, Smartphone, Calendar, AlertCircle, ShoppingCart, BookOpen, Clock, CheckCircle2, Moon, Sun, Home, Play, Search } from 'lucide-react'
 import MiPlan from './MiPlan'
 import CheckInForm from './CheckInForm'
 import ProgresoCharts from './ProgresoCharts'
@@ -18,6 +18,7 @@ import type { PlanNutricion, Cliente, PlanEntrenamiento, CheckIn, SeguimientoPes
 import { useTheme } from '@/components/ThemeProvider'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { aplicarSesionesCompletadas, crearClienteWeekSummary } from '@/lib/training/client-week'
+import { inferirSlotComida } from '@/lib/tipos-comida'
 
 interface DashboardData {
     plan: PlanNutricion
@@ -100,8 +101,47 @@ type RecetaPlanCliente = {
     kcal?: number | null
     proteinas?: number | null
     tiempo_prep_min?: number | null
+    tipo_plato?: string | null
+    categoria?: string | null
     comida?: string
     tipo: 'asignada' | 'alternativa'
+}
+
+type FiltroRecetario = 'todas' | 'desayunos' | 'comidas' | 'cenas' | 'snacks'
+type FiltroOrigenReceta = 'todas' | 'asignada' | 'alternativa'
+
+const FILTROS_RECETARIO: { key: FiltroRecetario; label: string }[] = [
+    { key: 'todas', label: 'Todas' },
+    { key: 'desayunos', label: 'Desayunos' },
+    { key: 'comidas', label: 'Comidas' },
+    { key: 'cenas', label: 'Cenas' },
+    { key: 'snacks', label: 'Snacks' },
+]
+
+const RECETAS_POR_BLOQUE = 12
+
+function normalizarTextoFiltro(texto: string | null | undefined) {
+    return (texto ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+function categoriaRecetaCliente(receta: RecetaPlanCliente): FiltroRecetario {
+    const slot = inferirSlotComida(receta.comida)
+    if (slot === 'Desayuno') return 'desayunos'
+    if (slot === 'Media mañana' || slot === 'Merienda') return 'snacks'
+    if (slot === 'Cena') return 'cenas'
+    if (slot === 'Comida') return 'comidas'
+
+    const tipo = normalizarTextoFiltro(`${receta.tipo_plato ?? ''} ${receta.categoria ?? ''}`)
+    if (/\b(desayuno|breakfast)\b/.test(tipo)) return 'desayunos'
+    if (/\b(snack|merienda|almuerzo|media manana|postre)\b/.test(tipo)) return 'snacks'
+    if (/\b(cena|dinner)\b/.test(tipo)) return 'cenas'
+
+    const texto = normalizarTextoFiltro(receta.nombre)
+    if (/\b(desayuno|porridge|tostada|tortilla|yogur|pancake|waffle|avena)\b/.test(texto)) return 'desayunos'
+    if (/\b(snack|merienda|batido|barrita)\b/.test(texto)) return 'snacks'
+    if (/\b(cena)\b/.test(texto)) return 'cenas'
+
+    return 'comidas'
 }
 
 function calcMacrosComida(comida: ComidaCliente) {
@@ -660,11 +700,15 @@ function HoyCliente({
 }
 
 function RecetarioCliente({ plan, codigo }: { plan: PlanNutricion; codigo: string }) {
+    const [filtro, setFiltro] = useState<FiltroRecetario>('todas')
+    const [origen, setOrigen] = useState<FiltroOrigenReceta>('todas')
+    const [busqueda, setBusqueda] = useState('')
+    const [visibles, setVisibles] = useState(RECETAS_POR_BLOQUE)
     const comidas = (plan.comidas ?? []) as Array<{
         nombre: string
         receta_id?: string | null
-        receta?: { id: string; nombre: string; imagen_url?: string | null; kcal?: number | null; proteinas?: number | null; tiempo_prep_min?: number | null } | null
-        alternativa_recetas?: Array<{ id: string; nombre: string; imagen_url?: string | null; kcal?: number | null; proteinas?: number | null; tiempo_prep_min?: number | null }>
+        receta?: { id: string; nombre: string; imagen_url?: string | null; kcal?: number | null; proteinas?: number | null; tiempo_prep_min?: number | null; tipo_plato?: string | null; categoria?: string | null } | null
+        alternativa_recetas?: Array<{ id: string; nombre: string; imagen_url?: string | null; kcal?: number | null; proteinas?: number | null; tiempo_prep_min?: number | null; tipo_plato?: string | null; categoria?: string | null }>
     }>
     const recetasMap = new Map<string, RecetaPlanCliente>()
 
@@ -683,8 +727,27 @@ function RecetarioCliente({ plan, codigo }: { plan: PlanNutricion; codigo: strin
     })
 
     const recetas = Array.from(recetasMap.values())
-    const asignadas = recetas.filter(r => r.tipo === 'asignada')
-    const alternativas = recetas.filter(r => r.tipo === 'alternativa')
+    const query = normalizarTextoFiltro(busqueda)
+    const contadores = FILTROS_RECETARIO.reduce<Record<FiltroRecetario, number>>((acc, item) => {
+        acc[item.key] = item.key === 'todas'
+            ? recetas.length
+            : recetas.filter(receta => categoriaRecetaCliente(receta) === item.key).length
+        return acc
+    }, { todas: 0, desayunos: 0, comidas: 0, cenas: 0, snacks: 0 })
+    const recetasFiltradas = recetas.filter(receta => {
+        const categoria = categoriaRecetaCliente(receta)
+        const coincideCategoria = filtro === 'todas' || categoria === filtro
+        const coincideOrigen = origen === 'todas' || receta.tipo === origen
+        const coincideBusqueda = !query || normalizarTextoFiltro(`${receta.nombre} ${receta.comida ?? ''}`).includes(query)
+
+        return coincideCategoria && coincideOrigen && coincideBusqueda
+    })
+    const recetasVisibles = recetasFiltradas.slice(0, visibles)
+    const quedanRecetas = recetasFiltradas.length > recetasVisibles.length
+
+    useEffect(() => {
+        setVisibles(RECETAS_POR_BLOQUE)
+    }, [filtro, origen, busqueda])
 
     return (
         <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
@@ -698,24 +761,90 @@ function RecetarioCliente({ plan, codigo }: { plan: PlanNutricion; codigo: strin
             {recetas.length === 0 ? (
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Todavía no hay recetas vinculadas a tu plan.</p>
             ) : (
-                <div className="space-y-5">
-                    {asignadas.length > 0 && (
-                        <div>
-                            <div className="mb-2 flex items-center justify-between">
-                                <h3 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Asignadas por el coach</h3>
-                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{asignadas.length}</span>
-                            </div>
-                            <RecipeGridCliente items={asignadas} codigo={codigo} />
+                <div className="space-y-4">
+                    <div className="relative">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" size={16} style={{ color: 'var(--text-muted)' }} />
+                        <input
+                            value={busqueda}
+                            onChange={event => setBusqueda(event.target.value)}
+                            placeholder="Buscar receta"
+                            className="h-11 w-full rounded-2xl border bg-transparent pl-9 pr-3 text-sm outline-none transition focus:ring-2"
+                            style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--bg)', '--tw-ring-color': 'var(--primary-bg)' } as React.CSSProperties}
+                        />
+                    </div>
+
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                        {FILTROS_RECETARIO.map(item => {
+                            const activo = filtro === item.key
+                            return (
+                                <button
+                                    key={item.key}
+                                    type="button"
+                                    onClick={() => setFiltro(item.key)}
+                                    className="shrink-0 rounded-full border px-3 py-2 text-xs font-semibold transition active:scale-[0.98]"
+                                    style={{
+                                        borderColor: activo ? 'var(--primary)' : 'var(--border)',
+                                        background: activo ? 'var(--primary-bg)' : 'var(--bg)',
+                                        color: activo ? 'var(--primary)' : 'var(--text-secondary)',
+                                    }}
+                                >
+                                    {item.label} · {contadores[item.key]}
+                                </button>
+                            )
+                        })}
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 rounded-2xl border p-1" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                        {[
+                            { key: 'todas', label: 'Todo' },
+                            { key: 'asignada', label: 'Plan' },
+                            { key: 'alternativa', label: 'Alternativas' },
+                        ].map(item => {
+                            const activo = origen === item.key
+                            return (
+                                <button
+                                    key={item.key}
+                                    type="button"
+                                    onClick={() => setOrigen(item.key as FiltroOrigenReceta)}
+                                    className="rounded-xl px-2 py-2 text-xs font-semibold transition active:scale-[0.98]"
+                                    style={{
+                                        background: activo ? 'var(--surface)' : 'transparent',
+                                        color: activo ? 'var(--text)' : 'var(--text-muted)',
+                                    }}
+                                >
+                                    {item.label}
+                                </button>
+                            )
+                        })}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                            {recetasFiltradas.length} receta{recetasFiltradas.length === 1 ? '' : 's'}
+                        </h3>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            Mostrando {recetasVisibles.length} de {recetasFiltradas.length}
+                        </span>
+                    </div>
+
+                    {recetasFiltradas.length === 0 ? (
+                        <div className="rounded-2xl border p-4 text-sm" style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                            No hay recetas desbloqueadas con estos filtros.
                         </div>
-                    )}
-                    {alternativas.length > 0 && (
-                        <div>
-                            <div className="mb-2 flex items-center justify-between">
-                                <h3 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Opciones alternativas</h3>
-                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{alternativas.length}</span>
-                            </div>
-                            <RecipeGridCliente items={alternativas} codigo={codigo} />
-                        </div>
+                    ) : (
+                        <>
+                            <RecipeGridCliente items={recetasVisibles} codigo={codigo} />
+                            {quedanRecetas && (
+                                <button
+                                    type="button"
+                                    onClick={() => setVisibles(actual => actual + RECETAS_POR_BLOQUE)}
+                                    className="w-full rounded-2xl border px-4 py-3 text-sm font-semibold transition active:scale-[0.98]"
+                                    style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+                                >
+                                    Ver más recetas
+                                </button>
+                            )}
+                        </>
                     )}
                 </div>
             )}

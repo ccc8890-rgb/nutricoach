@@ -17,6 +17,7 @@ interface RecetaAlternativaCliente {
     proteinas?: number | null
     tiempo_prep_min?: number | null
     tipo_plato?: string | null
+    categoria?: string | null
 }
 
 export async function GET(
@@ -34,7 +35,7 @@ export async function GET(
                 *,
                 comidas(
                     *,
-                    receta:recetas(id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min),
+                    receta:recetas(id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_plato, categoria),
                     alimentos:comida_alimentos(*, alimento:alimentos(*))
                 )
             `)
@@ -151,7 +152,7 @@ export async function GET(
         if (alternativaIds.length > 0) {
             const { data: recetasAlt } = await supabase
                 .from('recetas')
-                .select('id, nombre, imagen_url, kcal, proteinas, tiempo_prep_min, tipo_plato')
+                .select('id, nombre, imagen_url, kcal, proteinas, tiempo_prep_min, tipo_plato, categoria')
                 .in('id', alternativaIds)
             recetasAlternativas = new Map((recetasAlt ?? []).map(receta => [receta.id, receta]))
         }
