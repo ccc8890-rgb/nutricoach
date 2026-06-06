@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { normalizarIntolerancias, normalizarIntolerancia } from '@/lib/recetas-constants'
+import { normalizarIntolerancias } from '@/lib/recetas-constants'
+import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 
 const SYSTEM_PROMPT = `Eres un dietista y chef experto en versiones healthy/fit de recetas.
 Crea una receta healthificada completa, apetecible y con macros realistas.
