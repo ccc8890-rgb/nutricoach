@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -44,7 +43,6 @@ interface SesionSemana {
   contexto_ia?: string | null
   fecha: string
   fechaLabel: string
-  ejercicioIds: string[]
   registros_count: number
   completada: boolean
   esHoy: boolean
@@ -86,119 +84,32 @@ export default function VistaSemanalClientePage() {
   const [planNombre, setPlanNombre] = useState('')
   const [error, setError] = useState('')
 
-  const weekStart = useMemo(() => startOfWeek(), [])
-  const todayISO = useMemo(() => toISODate(new Date()), [])
-  const weekEndISO = useMemo(() => toISODate(addDays(weekStart, 6)), [weekStart])
 
   useEffect(() => {
     async function load() {
       setLoading(true)
       setError('')
-
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        setError('No se ha podido validar tu sesión.')
-        setLoading(false)
-        return
-      }
-
-      const { data: clienteData } = await supabase
-        .from('clientes')
-        .select('id')
-        .eq('profile_id', user.id)
-        .single()
-
-      if (!clienteData) {
-        setError('No encontramos tu perfil de cliente.')
-        setLoading(false)
-        return
-      }
-
-      const { data: planEntreno } = await supabase
-        .from('planes_entrenamiento')
-        .select('id, nombre')
-        .eq('cliente_id', clienteData.id)
-        .eq('activo', true)
-        .single()
-
-      if (!planEntreno) {
-        setSesiones([])
-        setLoading(false)
-        return
-      }
-
-      setPlanNombre(planEntreno.nombre)
-
-      const { data: sesData } = await supabase
-        .from('sesiones_entrenamiento')
-        .select('id, nombre, dia_semana, duracion_estimada_min, contexto_ia, ejercicios:sesion_ejercicios(id)')
-        .eq('plan_id', planEntreno.id)
-        .order('orden')
-
-      const sesionesBase = ((sesData ?? []) as Array<{
-        id: string
-        nombre: string
-        dia_semana: string | null
-        duracion_estimada_min: number | null
-        contexto_ia?: string | null
-        ejercicios?: Array<{ id: string }>
-      }>).map(s => {
-        const dia = s.dia_semana ?? ''
-        const fecha = toISODate(addDays(weekStart, DIAS_ORDER[dia] ?? 0))
-        const ejercicioIds = Array.isArray(s.ejercicios) ? s.ejercicios.map(e => e.id).filter(Boolean) : []
-        return {
-          id: s.id,
-          nombre: s.nombre,
-          dia_semana: dia,
-          duracion_estimada_min: s.duracion_estimada_min ?? null,
-          contexto_ia: s.contexto_ia ?? null,
-          ejercicios_count: ejercicioIds.length,
-          ejercicioIds,
-          fecha,
-          fechaLabel: formatShortDate(fecha),
-          registros_count: 0,
-          completada: false,
-          esHoy: fecha === todayISO,
+      try {
+        const res = await fetch('/api/entrenos/semana-completa')
+        if (!res.ok) {
+          setError('No se pudo cargar el entrenamiento.')
+          return
         }
-      })
-
-      const allEjercicioIds = sesionesBase.flatMap(s => s.ejercicioIds)
-      const registrosPorEjercicioFecha = new Map<string, number>()
-
-      if (allEjercicioIds.length > 0) {
-        const { data: registros } = await supabase
-          .from('registros_sets')
-          .select('sesion_ejercicio_id, fecha')
-          .eq('cliente_id', clienteData.id)
-          .gte('fecha', toISODate(weekStart))
-          .lte('fecha', weekEndISO)
-          .in('sesion_ejercicio_id', allEjercicioIds)
-
-        for (const registro of registros ?? []) {
-          const key = `${registro.sesion_ejercicio_id}:${registro.fecha}`
-          registrosPorEjercicioFecha.set(key, (registrosPorEjercicioFecha.get(key) ?? 0) + 1)
-        }
+        const data = await res.json()
+        if (data.plan_nombre) setPlanNombre(data.plan_nombre)
+        const sesionesConFecha = (data.sesiones ?? []).map((s: SesionSemana) => ({
+          ...s,
+          fechaLabel: formatShortDate(s.fecha),
+        }))
+        setSesiones(sesionesConFecha)
+      } catch {
+        setError('Error de conexión.')
+      } finally {
+        setLoading(false)
       }
-
-      setSesiones(
-        sesionesBase
-          .sort((a, b) => (DIAS_ORDER[a.dia_semana] ?? 9) - (DIAS_ORDER[b.dia_semana] ?? 9))
-          .map(s => {
-            const registrosCount = s.ejercicioIds.reduce((total, ejercicioId) => (
-              total + (registrosPorEjercicioFecha.get(`${ejercicioId}:${s.fecha}`) ?? 0)
-            ), 0)
-            return {
-              ...s,
-              registros_count: registrosCount,
-              completada: registrosCount > 0,
-            }
-          })
-      )
-      setLoading(false)
     }
-
     load()
-  }, [todayISO, weekEndISO, weekStart])
+  }, [])
 
   const resumenSemana = useMemo(() => crearClienteWeekSummary({ sesiones }), [sesiones])
   const sesionPrincipal = resumenSemana.sesionPrincipal
@@ -209,6 +120,7 @@ export default function VistaSemanalClientePage() {
         <div className="flex items-center gap-3">
           <Link
             href="/cliente"
+            replace
             className="flex h-10 w-10 items-center justify-center rounded-full"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
             aria-label="Volver"
@@ -232,7 +144,7 @@ export default function VistaSemanalClientePage() {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-                {toISODate(weekStart).split('-').reverse().join('-')} / {weekEndISO.split('-').reverse().join('-')}
+                Semana actual
               </p>
               <h2 className="mt-1 truncate text-lg font-bold" style={{ color: 'var(--text)' }}>
                 {planNombre || 'Tu plan de entrenamiento'}

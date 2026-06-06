@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
 import { CaretRight, Barbell, Lightning, CheckCircle, Play } from '@phosphor-icons/react'
 import Link from 'next/link'
 import { getRecomendacionDescanso } from '@/lib/entrenos/descanso'
@@ -37,45 +36,19 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from('sesiones_entrenamiento')
-        .select('id, nombre, dia_semana, orden, duracion_estimada_min, contexto_ia, ejercicios:sesion_ejercicios(id)')
-        .eq('plan_id', planId)
-        .order('orden')
-
-      if (data) {
-        setSesiones(
-          data.map(s => ({
-            id: s.id,
-            nombre: s.nombre,
-            dia_semana: s.dia_semana ?? '',
-            orden: s.orden,
-            ejercicios_count: Array.isArray(s.ejercicios) ? s.ejercicios.length : 0,
-            duracion_estimada_min: s.duracion_estimada_min ?? undefined,
-            contexto_ia: (s as { contexto_ia?: string }).contexto_ia ?? null,
-          }))
-        )
-      }
-      setLoading(false)
-    }
-    load()
-  }, [planId])
-
-  // Fetch today's completions
-  useEffect(() => {
-    async function fetchEstado() {
       try {
-        const res = await fetch(`/api/entrenos/estado-sesiones?plan_id=${planId}`)
+        const res = await fetch(`/api/entrenos/sesiones-plan?plan_id=${planId}`)
         if (!res.ok) return
         const data = await res.json()
-        if (data.completadas_hoy) {
-          setCompletadasHoy(new Set(data.completadas_hoy))
-        }
+        if (data.sesiones) setSesiones(data.sesiones)
+        if (data.completadas_hoy) setCompletadasHoy(new Set(data.completadas_hoy))
       } catch {
         // silent
+      } finally {
+        setLoading(false)
       }
     }
-    if (planId) fetchEstado()
+    if (planId) load()
   }, [planId])
 
   if (loading) return (

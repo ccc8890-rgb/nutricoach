@@ -263,6 +263,7 @@ export default function EjecucionSesionPage() {
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <Link
               href="/cliente"
+              replace
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-transform active:scale-[0.96]"
               style={{ color: 'var(--text-muted)', background: 'var(--surface)', border: '1px solid var(--border)' }}
               aria-label="Volver al portal"
