@@ -181,6 +181,97 @@ function validarRecetaSemanticaIncoherente(receta: RecetaProfesionalInput): stri
   return null
 }
 
+// ── New quality‑gate helpers ──
+
+function validarInstruccionesVacias(receta: RecetaProfesionalInput): string | null {
+  const instr = receta.instrucciones
+  if (!instr || instr.trim().length < 20) return 'instrucciones_vacias'
+  return null
+}
+
+function validarMacrosFueraRango(receta: RecetaProfesionalInput): string | null {
+  const kcal = n(receta.kcal)
+  if (kcal <= 0) return null // already handled by sin_macros
+  const tipo = (receta.tipo_plato || receta.categoria || '').toLowerCase()
+  const maxPorTipo: Record<string, number> = {
+    postre: 900,
+    snack: 650,
+    desayuno: 900,
+    comida: 1100,
+    cena: 1100,
+  }
+  // find first matching key
+  const max = Object.entries(maxPorTipo).find(([key]) => tipo.includes(key))?.[1]
+  if (max && kcal > max) return 'macros_fuera_rango'
+  return null
+}
+
+function validarAlimentoCeroKcal(ing: IngredienteProfesionalInput): string | null {
+  const kcal = ing.kcal_alimento ?? null
+  if (kcal !== 0) return null
+  const cantidad = n(ing.cantidad_gramos)
+  if (cantidad <= 30) return null
+  const nombre = normalizarStr(ing.nombre_libre || '')
+  const alimento = normalizarStr(ing.nombre_alimento || '')
+  // allowed zero‑kcal ingredients
+  const permitidos = /^(agua|hielo|sal|vinagre|especia|edulcorante|gelatina 0|infusión|infusion)$/
+  if (permitidos.test(nombre) || permitidos.test(alimento)) return null
+  return 'alimento_cero_kcal'
+}
+
+function validarCantidadMuyPequena(ing: IngredienteProfesionalInput): string | null {
+  const cantidad = n(ing.cantidad_gramos)
+  if (cantidad >= 5) return null
+  const nombre = normalizarStr(ing.nombre_libre || '')
+  // only flag if it looks like a main ingredient (protein, cereal, legume, dairy, fruit, vegetable)
+  const principal = /(pollo|ternera|cerdo|pescado|huevo|tofu|seitan|arroz|pasta|pan|avena|quinoa|legumbre|lenteja|garbanzo|alubia|leche|yogur|queso|requesón|fruta|verdura|hortaliza|espinaca|brócoli|zanahoria|tomate|cebolla|ajo|pimiento|calabacín|berenjena|patata|boniato|calabaza)/i
+  if (!principal.test(nombre)) return null
+  return 'cantidad_muy_pequena'
+}
+
+function validarPotenciadorExcesivo(ing: IngredienteProfesionalInput): string | null {
+  const cantidad = n(ing.cantidad_gramos)
+  if (cantidad <= 0) return null
+  const nombre = normalizarStr(ing.nombre_libre || '')
+  const alimento = normalizarStr(ing.nombre_alimento || '')
+  const texto = nombre + ' ' + alimento
+  // glutamato / msg
+  if (/(glutamato|msg|umami)/.test(texto) && cantidad > 8) return 'potenciador_excesivo'
+  // tabasco / sriracha
+  if (/(tabasco|sriracha)/.test(texto) && cantidad > 20) return 'potenciador_excesivo'
+  // salsa de soja
+  if (/(salsa soja|soja|soya)/.test(texto) && cantidad > 50) return 'potenciador_excesivo'
+  return null
+}
+
+function validarCantidadesPorDefecto(receta: RecetaProfesionalInput): string | null {
+  const ingredientes = receta.ingredientes || []
+  if (ingredientes.length < 3) return null
+  const exactos100 = ingredientes.filter(i => n(i.cantidad_gramos) === 100).length
+  if (exactos100 / ingredientes.length >= 0.8) return 'cantidades_por_defecto'
+  return null
+}
+
+function validarCantidadAbsurda(ing: IngredienteProfesionalInput): string | null {
+  const cantidad = n(ing.cantidad_gramos)
+  if (cantidad > 2000) return 'cantidad_absurda'
+  return null
+}
+
+function validarIngredientesDuplicados(receta: RecetaProfesionalInput): string | null {
+  const ingredientes = receta.ingredientes || []
+  const vistos = new Set<string>()
+  for (const ing of ingredientes) {
+    const nombre = normalizarStr(ing.nombre_libre || '')
+    if (!nombre) continue
+    // ignore sal/agua/hielo
+    if (/^(sal|agua|hielo)$/.test(nombre)) continue
+    if (vistos.has(nombre)) return 'ingredientes_duplicados'
+    vistos.add(nombre)
+  }
+  return null
+}
+
 export function clasificarRecetaProfesional(receta: RecetaProfesionalInput): ClasificacionProfesional {
   const texto = textoReceta(receta)
   const kcal = n(receta.kcal)
@@ -249,9 +340,23 @@ export function calcularScoreCalidadReceta(receta: RecetaProfesionalInput): Scor
     if (sem) bloqueantes.push(sem)
     const cant = validarCantidadesSospechosas(ing)
     if (cant) bloqueantes.push(cant)
+    const cero = validarAlimentoCeroKcal(ing)
+    if (cero) bloqueantes.push(cero)
+    const pequena = validarCantidadMuyPequena(ing)
+    if (pequena) bloqueantes.push(pequena)
+    const potenciador = validarPotenciadorExcesivo(ing)
+    if (potenciador) bloqueantes.push(potenciador)
+    const absurda = validarCantidadAbsurda(ing)
+    if (absurda) bloqueantes.push(absurda)
   }
   const incoherente = validarRecetaSemanticaIncoherente(receta)
   if (incoherente) bloqueantes.push(incoherente)
+  const instrVacias = validarInstruccionesVacias(receta)
+  if (instrVacias) bloqueantes.push(instrVacias)
+  const macrosFuera = validarMacrosFueraRango(receta)
+  if (macrosFuera) bloqueantes.push(macrosFuera)
+  const porDefecto = validarCantidadesPorDefecto(receta)
+  if (porDefecto) bloqueantes.push(porDefecto)
   // Deduplicate
   bloqueantes = [...new Set(bloqueantes)]
 
@@ -260,6 +365,10 @@ export function calcularScoreCalidadReceta(receta: RecetaProfesionalInput): Scor
   if (!receta.imagen_url) avisos.push('sin_imagen')
   if (!receta.url_origen) avisos.push('sin_origen')
   if (!receta.intolerancias || receta.intolerancias.length === 0) avisos.push('sin_intolerancias')
+  const duplicados = validarIngredientesDuplicados(receta)
+  if (duplicados) avisos.push(duplicados)
+  // Deduplicate avisos
+  avisos = [...new Set(avisos)]
 
   const ingredientesScore = ingredientes.length === 0
     ? 0

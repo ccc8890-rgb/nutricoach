@@ -178,4 +178,138 @@ assert.equal(resumen.estado_sugerido, 'bloqueada')
   assert.ok(!score.bloqueantes.includes('receta_semantica_incoherente'), 'No debería bloquear receta incoherente')
 }
 
+// ── New quality‑gate tests ──
+
+// 1. instrucciones vacías o <20 caracteres => bloqueantes incluye 'instrucciones_vacias'
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    instrucciones: 'Cortar.',
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(score.bloqueantes.includes('instrucciones_vacias'), 'Debería bloquear instrucciones_vacias')
+}
+
+// 2. Postre con 1200 kcal por porción => bloqueantes incluye 'macros_fuera_rango'
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    nombre: 'Postre hipercalórico',
+    categoria: 'Postre',
+    tipo_plato: 'Postre',
+    kcal: 1200,
+    proteinas: 10,
+    carbohidratos: 100,
+    grasas: 80,
+    fibra: 1,
+    ingredientes: [
+      { nombre_libre: 'Chocolate', cantidad_gramos: 200, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(score.bloqueantes.includes('macros_fuera_rango'), 'Debería bloquear macros_fuera_rango')
+}
+
+// 3. alimento con kcal_alimento 0 y cantidad 200g, nombre_libre 'Leche de soja', nombre_alimento 'Leche de soja' => bloqueantes incluye 'alimento_cero_kcal'
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Leche de soja', nombre_alimento: 'Leche de soja', cantidad_gramos: 200, tiene_precio: true, kcal_alimento: 0 },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(score.bloqueantes.includes('alimento_cero_kcal'), 'Debería bloquear alimento_cero_kcal')
+}
+
+// 4. Pechuga de pollo 3g => bloqueantes incluye 'cantidad_muy_pequena'
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Pechuga de pollo', cantidad_gramos: 3, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(score.bloqueantes.includes('cantidad_muy_pequena'), 'Debería bloquear cantidad_muy_pequena')
+}
+
+// 5. Glutamato monosódico 20g => bloqueantes incluye 'potenciador_excesivo'
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Glutamato monosódico', cantidad_gramos: 20, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(score.bloqueantes.includes('potenciador_excesivo'), 'Debería bloquear potenciador_excesivo')
+}
+
+// 6. 3 ingredientes todos a 100g exactos => bloqueantes incluye 'cantidades_por_defecto'
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Arroz', cantidad_gramos: 100, tiene_precio: true },
+      { nombre_libre: 'Pollo', cantidad_gramos: 100, tiene_precio: true },
+      { nombre_libre: 'Verduras', cantidad_gramos: 100, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(score.bloqueantes.includes('cantidades_por_defecto'), 'Debería bloquear cantidades_por_defecto')
+}
+
+// 7. Arroz 3000g => bloqueantes incluye 'cantidad_absurda'
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Arroz', cantidad_gramos: 3000, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(score.bloqueantes.includes('cantidad_absurda'), 'Debería bloquear cantidad_absurda')
+}
+
+// 8. Dos ingredientes con nombre_libre duplicado 'Arroz' => avisos incluye 'ingredientes_duplicados'
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Arroz', cantidad_gramos: 100, tiene_precio: true },
+      { nombre_libre: 'Arroz', cantidad_gramos: 50, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(score.avisos.includes('ingredientes_duplicados'), 'Debería avisar ingredientes_duplicados')
+}
+
+// 9. Caso bueno Mango sticky rice ya existente debe seguir sin bloqueantes de cantidades ni match
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    nombre: 'Mango sticky rice tailandés',
+    ingredientes: [
+      { nombre_libre: 'Arroz glutinoso', nombre_alimento: 'Arroz glutinoso', cantidad_gramos: 150, tiene_precio: true },
+      { nombre_libre: 'Leche de coco', nombre_alimento: 'Leche de coco', cantidad_gramos: 200, tiene_precio: true },
+      { nombre_libre: 'Azúcar', nombre_alimento: 'Azúcar', cantidad_gramos: 30, tiene_precio: true },
+      { nombre_libre: 'Sal', cantidad_gramos: 2, tiene_precio: true },
+      { nombre_libre: 'Mango maduro', nombre_alimento: 'Mango', cantidad_gramos: 200, tiene_precio: true },
+      { nombre_libre: 'Sésamo', nombre_alimento: 'Sésamo', cantidad_gramos: 5, tiene_precio: true },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(!score.bloqueantes.includes('match_semantico_sospechoso'), 'No debería bloquear match semántico')
+  assert.ok(!score.bloqueantes.includes('cantidades_sospechosas'), 'No debería bloquear cantidades sospechosas')
+  assert.ok(!score.bloqueantes.includes('receta_semantica_incoherente'), 'No debería bloquear receta incoherente')
+  assert.ok(!score.bloqueantes.includes('cantidades_por_defecto'), 'No debería bloquear cantidades_por_defecto')
+  assert.ok(!score.bloqueantes.includes('cantidad_absurda'), 'No debería bloquear cantidad_absurda')
+  assert.ok(!score.bloqueantes.includes('cantidad_muy_pequena'), 'No debería bloquear cantidad_muy_pequena')
+  assert.ok(!score.bloqueantes.includes('alimento_cero_kcal'), 'No debería bloquear alimento_cero_kcal')
+  assert.ok(!score.bloqueantes.includes('potenciador_excesivo'), 'No debería bloquear potenciador_excesivo')
+  assert.ok(!score.bloqueantes.includes('instrucciones_vacias'), 'No debería bloquear instrucciones_vacias')
+  assert.ok(!score.bloqueantes.includes('macros_fuera_rango'), 'No debería bloquear macros_fuera_rango')
+}
+
 console.log('recetas-profesional.test.ts OK')
