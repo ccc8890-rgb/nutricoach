@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -17,6 +17,7 @@ import {
 } from '@phosphor-icons/react'
 import type { CommandCenterRow, CommandCenterEstado, CommandCenterTono } from '@/lib/training/command-center'
 import TrainingRoomPanel from '@/components/training/TrainingRoomPanel'
+import { useCachedFetch } from '@/lib/useCachedFetch'
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const HOY_IDX = (new Date().getDay() + 6) % 7
@@ -133,32 +134,23 @@ function DashboardSkeleton() {
 }
 
 export default function EntrenosPage() {
-  const [clientes, setClientes] = useState<CommandCenterRow[]>([])
-  const [stats, setStats] = useState<CommandCenterStats>(DEFAULT_STATS)
   const [busqueda, setBusqueda] = useState('')
   const [filtro, setFiltro] = useState<'todos' | CommandCenterEstado | 'accion'>('todos')
   const [selectedClienteId, setSelectedClienteId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true)
-      setError('')
-      try {
-        const res = await fetch('/api/entrenos/command-center')
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Error cargando Training Workspace')
-        setClientes(data.clientes ?? [])
-        setStats(data.stats ?? DEFAULT_STATS)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error cargando Training Workspace')
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
+  const fetchCommandCenter = useCallback(async () => {
+    const res = await fetch('/api/entrenos/command-center')
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Error cargando Training Workspace')
+    return {
+      clientes: data.clientes ?? [],
+      stats: data.stats ?? DEFAULT_STATS,
+    } as { clientes: CommandCenterRow[]; stats: CommandCenterStats }
   }, [])
+
+  const { data, loading, error } = useCachedFetch('entrenos-command-center', fetchCommandCenter, { ttl: 20_000 })
+  const clientes = useMemo(() => data?.clientes ?? [], [data])
+  const stats = data?.stats ?? DEFAULT_STATS
 
   const filtrados = useMemo(() => {
     return clientes.filter(c => {

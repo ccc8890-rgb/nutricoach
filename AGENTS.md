@@ -38,9 +38,10 @@ La tabla `alimentos` tiene los **24 campos de micronutrientes** poblados para to
 ## Documentación
 - `salidas/06-06-2026_navigation-fluidity-report.md`
 - `salidas/06-06-2026_bug-audit-navigation-auth.md`
+- `salidas/06-06-2026_internal-page-fluidity-pass.md`
 
 ## Próxima sesión recomendada
-Revisar lentitud interna de páginas con datos propios (`/dietas`, `/clientes`, `/entrenos`) para que la navegación sea inmediata y cada módulo cargue contenido sin sensación de recarga completa.
+Revisar invalidación fina tras crear/editar cliente, dieta o plan de entreno para refrescar caches concretos sin volver a cargar todo el modulo.
 <!-- END:ui-navigation-fluidity-20260606 -->
 
 <!-- BEGIN:fix-categorias-masivo -->

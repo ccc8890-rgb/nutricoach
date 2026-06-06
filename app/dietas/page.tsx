@@ -1,6 +1,7 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useCachedFetch } from '@/lib/useCachedFetch'
 import Link from 'next/link'
 import { Plus, UtensilsCrossed, Search } from 'lucide-react'
 import { StaggerList, StaggerItem } from '@/components/ui/Motion'
@@ -14,37 +15,29 @@ type PlanRow = {
 }
 
 export default function DietasPage() {
-  const [planes, setPlanes] = useState<PlanRow[]>([])
   const [busqueda, setBusqueda] = useState('')
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
-        if (userError) console.error('[dietas] Error auth.getUser:', userError)
-        if (!user) { console.warn('[dietas] No hay usuario autenticado'); setLoading(false); return }
+  const fetchPlanes = useCallback(async () => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError) console.error('[dietas] Error auth.getUser:', userError)
+    if (!user) return []
 
-        const { data, error } = await supabase
-          .from('planes_nutricion')
-          .select('*, cliente:clientes(id, profile:profiles!profile_id(nombre, apellidos))')
-          .eq('coach_id', user.id)
-          .order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('planes_nutricion')
+      .select('*, cliente:clientes(id, profile:profiles!profile_id(nombre, apellidos))')
+      .eq('coach_id', user.id)
+      .order('created_at', { ascending: false })
 
-        if (error) {
-          console.error('[dietas] Error en query planes_nutricion:', error.message, error.details, error.hint)
-        } else {
-          console.log(`[dietas] ${data?.length ?? 0} planes cargados`)
-        }
-
-        setPlanes(data ?? [])
-      } catch (e) {
-        console.error('[dietas] Excepción inesperada:', e)
-      }
-      setLoading(false)
+    if (error) {
+      console.error('[dietas] Error en query planes_nutricion:', error.message, error.details, error.hint)
+      return []
     }
-    load()
+
+    return data ?? []
   }, [])
+
+  const { data: planesData, loading } = useCachedFetch<PlanRow[]>('dietas-index', fetchPlanes, { ttl: 20_000 })
+  const planes = planesData ?? []
 
   const filtrados = planes.filter(p =>
     `${p.nombre} ${p.cliente?.profile?.nombre}`.toLowerCase().includes(busqueda.toLowerCase())

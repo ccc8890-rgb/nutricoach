@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { invalidateCacheKey } from '@/lib/useCachedFetch'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -37,6 +38,7 @@ export default function NuevoClientePage() {
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Error al crear el cliente')
 
+      invalidateCacheKey('clientes-index')
       router.push('/clientes')
     } catch (err: unknown) {
       setError((err as { message?: string })?.message ?? 'Error al crear el cliente')

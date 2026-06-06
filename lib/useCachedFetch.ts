@@ -26,8 +26,10 @@ export function useCachedFetch<T>(
     options?: { ttl?: number; enabled?: boolean }
 ) {
     const { ttl = DEFAULT_TTL, enabled = true } = options ?? {}
-    const [data, setData] = useState<T | null>(null)
-    const [loading, setLoading] = useState(true)
+    const initialCached = key ? cache.get(key) as CacheEntry<T> | undefined : undefined
+    const initialHasFreshCache = !!initialCached && Date.now() - initialCached.timestamp < ttl
+    const [data, setData] = useState<T | null>(initialHasFreshCache ? initialCached.data : null)
+    const [loading, setLoading] = useState(enabled && !initialHasFreshCache)
     const [error, setError] = useState<string | null>(null)
     const mountedRef = useRef(true)
     const keyRef = useRef(key)
@@ -99,7 +101,7 @@ export function useCachedFetch<T>(
         return () => {
             mountedRef.current = false
         }
-    }, [execute])
+    }, [execute, key])
 
     const invalidateCache = useCallback(() => {
         if (key) cache.delete(key)
@@ -114,4 +116,8 @@ export function useCachedFetch<T>(
  */
 export function clearAllCache() {
     cache.clear()
+}
+
+export function invalidateCacheKey(key: string) {
+    cache.delete(key)
 }

@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 import { supabase } from '@/lib/supabase'
+import { invalidateCacheKey } from '@/lib/useCachedFetch'
 import {
   calcularTMB, calcularTDEE, calcularKcalObjetivo, calcularMacrosObjetivo,
   NIVEL_ACTIVIDAD_LABELS, type NivelActividad,
@@ -101,7 +102,10 @@ function NuevaDietaForm() {
     }).select().single()
 
     setLoading(false)
-    if (!error && data) router.push(`/dietas/${data.id}`)
+    if (!error && data) {
+      invalidateCacheKey('dietas-index')
+      router.push(`/dietas/${data.id}`)
+    }
   }
 
   return (

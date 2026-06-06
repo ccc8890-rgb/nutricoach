@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { invalidateCacheKey } from '@/lib/useCachedFetch'
 import { ArrowLeft, Plus, Trash2, Search, X, ChevronDown, ChevronUp, Sparkles, GripVertical, Copy, ArrowUp, ArrowDown } from 'lucide-react'
 import Link from 'next/link'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
@@ -243,6 +244,7 @@ function NuevoEntrenoForm() {
       }
     }
 
+    invalidateCacheKey('entrenos-command-center')
     router.push(`/entrenos/${plan.id}`)
     // no hace falta setLoading(false) porque redirige
   }

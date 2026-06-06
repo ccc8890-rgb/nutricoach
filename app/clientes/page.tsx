@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { invalidateCacheKey, useCachedFetch } from '@/lib/useCachedFetch'
 import { useDebounce } from '@/lib/useDebounce'
 import Link from 'next/link'
 import { ArrowLeft, Check, Link as LinkIcon, Plus, SpinnerGap, UsersThree } from '@phosphor-icons/react'
@@ -21,10 +22,9 @@ import type { RespuestaCliente } from '@/types'
 type TabActiva = 'clientes' | 'formularios'
 type PlanRow = { cliente_id: string }
 type TareaRow = { cliente_id: string | null }
+type ClientesPageData = { clientes: ClienteRow[]; respuestasNoLeidas: number }
 
 export default function ClientesPage() {
-  const [clientes, setClientes] = useState<ClienteRow[]>([])
-  const [loading, setLoading] = useState(true)
   const [invitando, setInvitando] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [modalLinkOpen, setModalLinkOpen] = useState(false)
 
@@ -59,6 +59,7 @@ export default function ClientesPage() {
       const unread = (data ?? []).filter((r: RespuestaCliente) => !r.leida).map((r: RespuestaCliente) => r.id)
       if (unread.length > 0) {
         await supabase.from('respuestas_clientes').update({ leida: true, updated_at: new Date().toISOString() }).in('id', unread)
+        invalidateCacheKey('clientes-index')
         setRespuestasNoLeidas(0)
       }
     } catch (e) {
@@ -83,114 +84,111 @@ export default function ClientesPage() {
     } catch { setInvitando('error'); setTimeout(() => setInvitando('idle'), 2000) }
   }
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { setLoading(false); return }
+  const fetchClientes = useCallback(async (): Promise<ClientesPageData> => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { clientes: [], respuestasNoLeidas: 0 }
 
-        const { data, error } = await supabase
-          .from('clientes')
-          .select('id, activo, objetivo, nivel, peso_inicial, fecha_proxima_revision, revisado_por_coach, tipo_membresia, fecha_inicio_membresia, fecha_fin_membresia, profile:profiles!profile_id(nombre, apellidos, email)')
-          .eq('coach_id', user.id)
-          .order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('clientes')
+      .select('id, activo, objetivo, nivel, peso_inicial, fecha_proxima_revision, revisado_por_coach, tipo_membresia, fecha_inicio_membresia, fecha_fin_membresia, profile:profiles!profile_id(nombre, apellidos, email)')
+      .eq('coach_id', user.id)
+      .order('created_at', { ascending: false })
 
-        if (error) { console.error('[clientes] query error:', error.message); setLoading(false); return }
-
-        const mapped: ClienteRow[] = (data ?? []).map(c => ({
-          ...c,
-          profile: Array.isArray(c.profile) ? c.profile[0] : c.profile,
-        }))
-
-        if (mapped.length > 0) {
-          const ids = mapped.map(c => c.id)
-          const hace7d = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0]
-          const hace90d = new Date(Date.now() - 90 * 86_400_000).toISOString().split('T')[0]
-
-          const [checkinsRes, dietasRes, entrenosRes, tareasRes, chatsRes, comidasRes, sesionesRes, chatCoachRes] = await Promise.all([
-            supabase.from('checkins').select('cliente_id, fecha, peso').in('cliente_id', ids).gte('fecha', hace90d).order('fecha', { ascending: false }),
-            supabase.from('planes_nutricion').select('cliente_id').in('cliente_id', ids).eq('activo', true),
-            supabase.from('planes_entrenamiento').select('cliente_id').in('cliente_id', ids).eq('activo', true),
-            supabase.from('agente_tareas').select('cliente_id').in('cliente_id', ids).eq('estado', 'pendiente'),
-            supabase.from('chat_mensajes').select('cliente_id').in('cliente_id', ids).eq('remitente', 'cliente').eq('leido', false),
-            supabase.from('registro_comidas_dia').select('cliente_id').in('cliente_id', ids).gte('fecha', hace7d).in('estado', ['hecha', 'cambiada']),
-            supabase.from('registros_entreno').select('cliente_id').in('cliente_id', ids).gte('fecha', hace7d),
-            supabase.from('chat_mensajes').select('cliente_id').in('cliente_id', ids).eq('remitente', 'coach').gte('created_at', new Date(Date.now() - 7 * 86_400_000).toISOString()),
-          ])
-
-          const ultimoCheckin = new Map<string, string>()
-          const tienePeso7d = new Set<string>()
-          for (const ch of checkinsRes.data ?? []) {
-            if (!ultimoCheckin.has(ch.cliente_id)) ultimoCheckin.set(ch.cliente_id, ch.fecha)
-            if (ch.peso && ch.fecha >= hace7d) tienePeso7d.add(ch.cliente_id)
-          }
-
-          const dietasActivas = new Set(((dietasRes.data ?? []) as PlanRow[]).map(p => p.cliente_id))
-          const entrenosActivos = new Set(((entrenosRes.data ?? []) as PlanRow[]).map(p => p.cliente_id))
-
-          const tareasPor = new Map<string, number>()
-          for (const t of (tareasRes.data ?? []) as TareaRow[]) {
-            if (t.cliente_id) tareasPor.set(t.cliente_id, (tareasPor.get(t.cliente_id) ?? 0) + 1)
-          }
-
-          const chatsSinLeer = new Map<string, number>()
-          for (const m of chatsRes.data ?? []) {
-            chatsSinLeer.set(m.cliente_id, (chatsSinLeer.get(m.cliente_id) ?? 0) + 1)
-          }
-
-          const comidasHecha = new Map<string, number>()
-          for (const r of comidasRes.data ?? []) {
-            comidasHecha.set(r.cliente_id, (comidasHecha.get(r.cliente_id) ?? 0) + 1)
-          }
-
-          const sesionesComp = new Map<string, number>()
-          for (const s of sesionesRes.data ?? []) {
-            sesionesComp.set(s.cliente_id, (sesionesComp.get(s.cliente_id) ?? 0) + 1)
-          }
-
-          const interaccionesCoach = new Map<string, number>()
-          for (const m of chatCoachRes.data ?? []) {
-            interaccionesCoach.set(m.cliente_id, (interaccionesCoach.get(m.cliente_id) ?? 0) + 1)
-          }
-
-          const ahora = Date.now()
-          for (const c of mapped) {
-            const fechaCheck = ultimoCheckin.get(c.id)
-            c.ultimo_checkin = fechaCheck ?? null
-            c.dias_sin_checkin = fechaCheck ? Math.floor((ahora - new Date(fechaCheck).getTime()) / 86_400_000) : 999
-            c.tiene_dieta_activa = dietasActivas.has(c.id)
-            c.tiene_entreno_activo = entrenosActivos.has(c.id)
-            c.tareas_ia_pendientes = tareasPor.get(c.id) ?? 0
-            c.chats_sin_leer = chatsSinLeer.get(c.id) ?? 0
-            c.comidas_hecha_7d = comidasHecha.get(c.id) ?? 0
-            c.sesiones_completadas_7d = sesionesComp.get(c.id) ?? 0
-            c.tiene_peso_7d = tienePeso7d.has(c.id)
-            c.interacciones_coach_7d = interaccionesCoach.get(c.id) ?? 0
-            c.score_adherencia = calcularScoreAdherencia(c)
-            c.deuda_atencion = calcularDeudaAtencion(c)
-          }
-          // predictor baja necesita score_adherencia calculado
-          for (const c of mapped) {
-            c.es_predictor_baja = esPredictorBaja(c)
-          }
-        }
-
-        setClientes(mapped)
-
-        // Conteo badge para tab Formularios
-        const { count: noLeidas } = await supabase
-          .from('respuestas_clientes')
-          .select('id', { count: 'exact', head: true })
-          .eq('coach_id', user.id)
-          .eq('leida', false)
-        setRespuestasNoLeidas(noLeidas ?? 0)
-      } catch (e) {
-        console.error('[clientes] error:', e)
-      }
-      setLoading(false)
+    if (error) {
+      console.error('[clientes] query error:', error.message)
+      return { clientes: [], respuestasNoLeidas: 0 }
     }
-    load()
+
+    const mapped: ClienteRow[] = (data ?? []).map(c => ({
+      ...c,
+      profile: Array.isArray(c.profile) ? c.profile[0] : c.profile,
+    }))
+
+    if (mapped.length > 0) {
+      const ids = mapped.map(c => c.id)
+      const hace7d = new Date(Date.now() - 7 * 86_400_000).toISOString().split('T')[0]
+      const hace90d = new Date(Date.now() - 90 * 86_400_000).toISOString().split('T')[0]
+
+      const [checkinsRes, dietasRes, entrenosRes, tareasRes, chatsRes, comidasRes, sesionesRes, chatCoachRes] = await Promise.all([
+        supabase.from('checkins').select('cliente_id, fecha, peso').in('cliente_id', ids).gte('fecha', hace90d).order('fecha', { ascending: false }),
+        supabase.from('planes_nutricion').select('cliente_id').in('cliente_id', ids).eq('activo', true),
+        supabase.from('planes_entrenamiento').select('cliente_id').in('cliente_id', ids).eq('activo', true),
+        supabase.from('agente_tareas').select('cliente_id').in('cliente_id', ids).eq('estado', 'pendiente'),
+        supabase.from('chat_mensajes').select('cliente_id').in('cliente_id', ids).eq('remitente', 'cliente').eq('leido', false),
+        supabase.from('registro_comidas_dia').select('cliente_id').in('cliente_id', ids).gte('fecha', hace7d).in('estado', ['hecha', 'cambiada']),
+        supabase.from('registros_entreno').select('cliente_id').in('cliente_id', ids).gte('fecha', hace7d),
+        supabase.from('chat_mensajes').select('cliente_id').in('cliente_id', ids).eq('remitente', 'coach').gte('created_at', new Date(Date.now() - 7 * 86_400_000).toISOString()),
+      ])
+
+      const ultimoCheckin = new Map<string, string>()
+      const tienePeso7d = new Set<string>()
+      for (const ch of checkinsRes.data ?? []) {
+        if (!ultimoCheckin.has(ch.cliente_id)) ultimoCheckin.set(ch.cliente_id, ch.fecha)
+        if (ch.peso && ch.fecha >= hace7d) tienePeso7d.add(ch.cliente_id)
+      }
+
+      const dietasActivas = new Set(((dietasRes.data ?? []) as PlanRow[]).map(p => p.cliente_id))
+      const entrenosActivos = new Set(((entrenosRes.data ?? []) as PlanRow[]).map(p => p.cliente_id))
+
+      const tareasPor = new Map<string, number>()
+      for (const t of (tareasRes.data ?? []) as TareaRow[]) {
+        if (t.cliente_id) tareasPor.set(t.cliente_id, (tareasPor.get(t.cliente_id) ?? 0) + 1)
+      }
+
+      const chatsSinLeer = new Map<string, number>()
+      for (const m of chatsRes.data ?? []) {
+        chatsSinLeer.set(m.cliente_id, (chatsSinLeer.get(m.cliente_id) ?? 0) + 1)
+      }
+
+      const comidasHecha = new Map<string, number>()
+      for (const r of comidasRes.data ?? []) {
+        comidasHecha.set(r.cliente_id, (comidasHecha.get(r.cliente_id) ?? 0) + 1)
+      }
+
+      const sesionesComp = new Map<string, number>()
+      for (const s of sesionesRes.data ?? []) {
+        sesionesComp.set(s.cliente_id, (sesionesComp.get(s.cliente_id) ?? 0) + 1)
+      }
+
+      const interaccionesCoach = new Map<string, number>()
+      for (const m of chatCoachRes.data ?? []) {
+        interaccionesCoach.set(m.cliente_id, (interaccionesCoach.get(m.cliente_id) ?? 0) + 1)
+      }
+
+      const ahora = Date.now()
+      for (const c of mapped) {
+        const fechaCheck = ultimoCheckin.get(c.id)
+        c.ultimo_checkin = fechaCheck ?? null
+        c.dias_sin_checkin = fechaCheck ? Math.floor((ahora - new Date(fechaCheck).getTime()) / 86_400_000) : 999
+        c.tiene_dieta_activa = dietasActivas.has(c.id)
+        c.tiene_entreno_activo = entrenosActivos.has(c.id)
+        c.tareas_ia_pendientes = tareasPor.get(c.id) ?? 0
+        c.chats_sin_leer = chatsSinLeer.get(c.id) ?? 0
+        c.comidas_hecha_7d = comidasHecha.get(c.id) ?? 0
+        c.sesiones_completadas_7d = sesionesComp.get(c.id) ?? 0
+        c.tiene_peso_7d = tienePeso7d.has(c.id)
+        c.interacciones_coach_7d = interaccionesCoach.get(c.id) ?? 0
+        c.score_adherencia = calcularScoreAdherencia(c)
+        c.deuda_atencion = calcularDeudaAtencion(c)
+      }
+
+      for (const c of mapped) {
+        c.es_predictor_baja = esPredictorBaja(c)
+      }
+    }
+
+    const { count: noLeidas } = await supabase
+      .from('respuestas_clientes')
+      .select('id', { count: 'exact', head: true })
+      .eq('coach_id', user.id)
+      .eq('leida', false)
+
+    return { clientes: mapped, respuestasNoLeidas: noLeidas ?? 0 }
   }, [])
+
+  const { data: clientesData, loading } = useCachedFetch<ClientesPageData>('clientes-index', fetchClientes, { ttl: 20_000 })
+  const clientes = useMemo(() => clientesData?.clientes ?? [], [clientesData])
+  const formulariosBadge = formulariosCargados ? respuestasNoLeidas : clientesData?.respuestasNoLeidas ?? 0
 
   const hoy = Date.now()
 
@@ -261,7 +259,7 @@ export default function ClientesPage() {
       <div className="flex items-center gap-1 mb-4 border-b" style={{ borderColor: 'var(--border)' }}>
         {([
           { key: 'clientes', label: 'Clientes', count: clientes.length },
-          { key: 'formularios', label: 'Formularios', count: respuestasNoLeidas },
+          { key: 'formularios', label: 'Formularios', count: formulariosBadge },
         ] as { key: TabActiva; label: string; count: number }[]).map(({ key, label, count }) => (
           <button
             key={key}
