@@ -40,8 +40,20 @@ interface Props {
   onTodosCompletos: (setsMap: Record<string, SetData[]>, meta?: { esfuerzo_percibido: number; notas: string; duracion_sesion_s: number }) => void
 }
 
-function getModo(tipo?: string | null): 'fuerza' | 'cardio' {
-  return tipo === 'cardio' ? 'cardio' : 'fuerza'
+const CARDIO_KEYWORDS = [
+  'ski', 'skierg', 'remo', 'rowing', 'bici', 'ciclismo',
+  'assault', 'air bike', 'echo bike', 'airdyne',
+  'running', 'correr', 'carrera', 'cinta', 'treadmill',
+  'nataci', 'swim', 'kayak', 'ergómetro', 'ergometro',
+]
+
+function getModo(tipo?: string | null, nombre?: string | null): 'fuerza' | 'cardio' {
+  if (tipo === 'cardio') return 'cardio'
+  if (nombre) {
+    const n = nombre.toLowerCase()
+    if (CARDIO_KEYWORDS.some(k => n.includes(k))) return 'cardio'
+  }
+  return 'fuerza'
 }
 
 export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTodosCompletos }: Props) {
@@ -51,7 +63,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
     Object.fromEntries(
       ejercicios.map(e => [
         e.id,
-        getModo(e.tipo) === 'cardio'
+        getModo(e.tipo, e.nombre) === 'cardio'
           ? Array.from({ length: e.series }, () => ({ metros: 0, calorias: 0, tiempo_s: 0, rpe: 7, hecho: false }))
           : Array.from({ length: e.series }, () => ({ kg: 0, reps: 0, rpe: 7, hecho: false })),
       ])
@@ -421,7 +433,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
                     border: `1.5px solid ${set.hecho ? 'var(--semantic-active-border)' : isActive ? 'var(--semantic-info)' : 'var(--border)'}`,
                   }}
                   aria-label={`Set ${i + 1}${set.hecho
-                    ? getModo(ej.tipo) === 'cardio'
+                    ? getModo(ej.tipo, ej.nombre) === 'cardio'
                       ? ' completado'
                       : ` completado: ${set.kg ?? 0}kg × ${set.reps ?? 0} reps`
                     : ''}`}
@@ -429,7 +441,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
                   <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Set {i + 1}</span>
                   {set.hecho ? (
                     (() => {
-                      const modo = getModo(ej.tipo)
+                      const modo = getModo(ej.tipo, ej.nombre)
                       if (modo === 'cardio') {
                         const linea1 = (set.metros ?? 0) > 0 ? `${set.metros}m`
                           : (set.calorias ?? 0) > 0 ? `${set.calorias}cal`
@@ -531,7 +543,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           pesoSugerido={ej.peso_sugerido}
           repsSugeridas={ej.repeticiones}
           pesoInicialKg={ej.ultimo_peso_kg ?? undefined}
-          modo={getModo(ej.tipo)}
+          modo={getModo(ej.tipo, ej.nombre)}
           onGuardar={guardarSet}
           onCerrar={() => setSetActivo(null)}
         />
