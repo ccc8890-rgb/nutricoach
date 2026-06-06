@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Bot,
   ChevronRight,
   Dumbbell,
   FilePlus2,
@@ -34,7 +33,7 @@ function getCoachContext(pathname: string): CoachContext {
     return { area: 'Inicio', title: 'Clientes', actionHref: '/clientes/nuevo', actionLabel: 'Nuevo cliente', actionIcon: UserPlus }
   }
   if (pathname.startsWith('/agentes')) {
-    return { area: 'Inicio', title: 'Revisión IA', actionHref: '/agentes', actionLabel: 'Ver pendientes', actionIcon: Bot }
+    return { area: 'Sistema', title: 'Revisión IA', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: Home }
   }
   if (pathname.startsWith('/entrenos')) {
     return { area: 'Entrenamiento', title: 'Training OS', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Dumbbell }
@@ -46,12 +45,12 @@ function getCoachContext(pathname: string): CoachContext {
     return { area: 'Nutrición', title: 'Recetario', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }
   }
   if (pathname.startsWith('/precios')) {
-    return { area: 'Negocio', title: 'Costes y rentabilidad', actionHref: '/precios/escandallo', actionLabel: 'Escandallo', actionIcon: FilePlus2 }
+    return { area: 'Nutrición', title: 'Costes y rentabilidad', actionHref: '/precios/escandallo', actionLabel: 'Escandallo', actionIcon: FilePlus2 }
   }
   if (pathname.startsWith('/conocimiento') || pathname.startsWith('/coach') || pathname.startsWith('/cuestionarios')) {
     return { area: 'Sistema', title: 'Método y conocimiento', actionHref: '/conocimiento/nueva', actionLabel: 'Nueva nota', actionIcon: Plus }
   }
-  return { area: 'Inicio', title: 'Panel de trabajo', actionHref: '/clientes/nuevo', actionLabel: 'Nuevo cliente', actionIcon: UserPlus }
+  return { area: 'Inicio', title: 'Dashboard', actionHref: '/clientes/nuevo', actionLabel: 'Nuevo cliente', actionIcon: UserPlus }
 }
 
 function CoachFloatingControls() {
@@ -131,10 +130,6 @@ function CoachTopBar({ pathname }: { pathname: string }) {
               global
             </span>
           </div>
-          <Link href="/agentes" className="btn btn-ghost btn-sm hidden sm:inline-flex">
-            <Bot size={14} />
-            Revisión IA
-          </Link>
           <Link href={context.actionHref} className="btn btn-primary btn-sm">
             <ActionIcon size={14} />
             {context.actionLabel}

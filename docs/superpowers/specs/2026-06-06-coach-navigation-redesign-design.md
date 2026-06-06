@@ -16,18 +16,20 @@ El sidebar debe ser intuitivo, minimalista y consistente. Entrenamiento no debe 
    - Inicio
    - Nutrición
    - Entrenamiento
-   - Negocio
    - Sistema
 
 2. Renombrar conceptos técnicos:
-   - `Inbox IA` pasa a `Revisión IA`.
-   - `Radar` se mantiene como inicio operativo.
+   - `Inbox IA` deja de ser acceso principal.
+   - La entrada inicial se llama `Inicio`.
+   - La pantalla central usa `Dashboard`.
    - `Dietas activas` pasa a `Planes`.
    - `Biblioteca` de recetas pasa a `Recetas`.
 
 3. Entrenamiento se convierte en desplegable en el sidebar global, igual que Nutrición, Negocio y Sistema.
 
-4. Añadir `CoachTopBar` ligero:
+4. Precios, escandallo y rentabilidad forman parte de Nutrición porque trabajan junto a alimentos, lista de compra y costes de planes.
+
+5. Añadir `CoachTopBar` ligero:
    - breadcrumb contextual;
    - acción rápida contextual;
    - acceso visible a revisión IA;
@@ -38,6 +40,7 @@ El sidebar debe ser intuitivo, minimalista y consistente. Entrenamiento no debe 
 - La navegación debe responder "dónde estoy" y "qué puedo hacer ahora".
 - Menos nombres internos, más nombres de trabajo real del coach.
 - La IA aparece como revisión/preparación, no como estructura técnica.
+- La revisión IA no debe competir como módulo principal si ya aparece integrada en dashboard, clientes y entrenamiento.
 - Mantener el diseño actual: acromático, denso, con buenos contrastes.
 - No introducir nuevas dependencias.
 

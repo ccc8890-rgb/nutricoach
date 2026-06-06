@@ -7,7 +7,6 @@ import { supabase } from '@/lib/supabase'
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
-  Bot,
   Brain,
   ChefHat,
   ChartPie,
@@ -54,9 +53,8 @@ type NavSection = {
 }
 
 const PRIMARY_ITEMS: NavItem[] = [
-  { href: '/dashboard', label: 'Radar', icon: House },
+  { href: '/dashboard', label: 'Inicio', icon: House },
   { href: '/clientes', label: 'Clientes', icon: UsersRound },
-  { href: '/agentes', label: 'Revisión IA', icon: Bot },
 ]
 
 const NUTRICION_ITEMS: NavItem[] = [
@@ -64,21 +62,18 @@ const NUTRICION_ITEMS: NavItem[] = [
   { href: '/dietas/plantillas', label: 'Plantillas', icon: ListChecks },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
   { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
+  { href: '/precios', label: 'Precios', icon: Store },
+  { href: '/precios/escandallo', label: 'Escandallo', icon: TrendingUp },
+  { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: Activity },
 ]
 
 const ENTRENAMIENTO_ITEMS: NavItem[] = [
-  { href: '/entrenos', label: 'Radar entreno', icon: Dumbbell, exact: true },
+  { href: '/entrenos', label: 'Inicio entreno', icon: Dumbbell, exact: true },
   { href: '/entrenos/brain-ia', label: 'Revisión IA', icon: Brain },
   { href: '/entrenos/nueva', label: 'Crear plan', icon: FilePlus2 },
   { href: '/entrenos/generar-ia', label: 'Plan con IA', icon: Sparkles },
   { href: '/entrenos/plantillas', label: 'Plantillas', icon: ListChecks },
   { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Database },
-]
-
-const NEGOCIO_ITEMS: NavItem[] = [
-  { href: '/precios', label: 'Precios', icon: Store },
-  { href: '/precios/escandallo', label: 'Escandallo', icon: TrendingUp },
-  { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: Activity },
 ]
 
 
@@ -210,7 +205,6 @@ export default function Sidebar() {
   const { theme, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [recetasPendientes, setRecetasPendientes] = useState(0)
-  const [agentesPendientes, setAgentesPendientes] = useState(0)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
@@ -223,20 +217,9 @@ export default function Sidebar() {
       .eq('estado', 'en_revision')
       .then(({ count }) => setRecetasPendientes(count ?? 0))
 
-    const fetchAgentes = () => {
-      supabase
-        .from('agente_tareas')
-        .select('id', { count: 'exact', head: true })
-        .eq('estado', 'pendiente')
-        .then(({ count }) => setAgentesPendientes(count ?? 0))
-    }
-    fetchAgentes()
-    const interval = setInterval(fetchAgentes, 60_000)
-    return () => clearInterval(interval)
   }, [])
 
   const primaryItems = PRIMARY_ITEMS.map(item => {
-    if (item.href === '/agentes') return { ...item, badge: agentesPendientes }
     if (item.href === '/clientes') return { ...item, badge: noLeidas }
     return item
   })
@@ -251,7 +234,6 @@ export default function Sidebar() {
       badge: recetasPendientes,
       items: RECETARIO_ITEMS.map(item => item.href === '/recetas/cola' ? { ...item, badge: recetasPendientes } : item),
     },
-    { key: 'negocio', label: 'Negocio', icon: TrendingUp, items: NEGOCIO_ITEMS },
     { key: 'sistema', label: 'Sistema', icon: Settings, items: CONOCIMIENTO_ITEMS },
   ]
 
@@ -285,15 +267,17 @@ export default function Sidebar() {
     <>
       <div className="flex-shrink-0 p-5 border-b" style={{ borderColor: 'var(--glass-border)' }}>
         <div className="flex items-center gap-3">
-          <div
+          <Link
+            href="/dashboard"
             className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black tracking-tight"
             style={{
               background: 'var(--text)',
               color: 'var(--bg)',
             }}
+            aria-label="Volver a Inicio"
           >
             CN
-          </div>
+          </Link>
           <div className="min-w-0">
             <p className="font-bold leading-tight text-[15px]" style={{ color: 'var(--text)' }}>
               Casanova
@@ -346,7 +330,7 @@ export default function Sidebar() {
               key={item.href}
               item={item}
               pathname={pathname}
-              badgeTone={item.href === '/agentes' ? 'danger' : 'accent'}
+              badgeTone="accent"
             />
           ))}
         </div>

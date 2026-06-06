@@ -18,17 +18,17 @@
 
 ## Task 1: Sidebar IA
 
-- [ ] Rename `Inbox IA` to `Revisión IA`.
+- [ ] Remove global `Inbox IA`/`Revisión IA` as a primary sidebar item.
 - [ ] Move `Entrenamiento` from primary items into a `Entrenamiento` section.
-- [ ] Group `Precios`, `Escandallo`, and `Rentabilidad` under `Negocio`.
+- [ ] Group `Precios`, `Escandallo`, and `Rentabilidad` under `Nutrición`.
 - [ ] Group methodology, knowledge base, and questionnaires under `Sistema`.
-- [ ] Keep primary items short: `Radar`, `Clientes`, `Revisión IA`.
+- [ ] Keep primary items short: `Inicio`, `Clientes`.
 
 ## Task 2: Sidebar Interaction Consistency
 
 - [ ] Use the same expandable `SidebarSection` pattern for Nutrición, Entrenamiento, Negocio, Recetario, and Sistema.
 - [ ] Auto-expand active section on route change.
-- [ ] Keep badges for `Revisión IA`, `Clientes`, and recipe review queue.
+- [ ] Keep badges for `Clientes` and recipe review queue.
 
 ## Task 3: Coach Top Bar
 

@@ -676,7 +676,7 @@ export default function DashboardPage() {
           <div>
             <p className="mb-1 text-xs capitalize" style={{ color: DASHBOARD_MUTED }}>{todayLabel}</p>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>Radar diario</h1>
+              <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>Dashboard</h1>
               <span className="rounded-lg px-2 py-1 text-xs font-semibold" style={{ background: pendingActions > 0 ? 'var(--warning-bg)' : 'var(--success-bg)', color: pendingActions > 0 ? 'var(--warning)' : 'var(--success)' }}>
                 {commandLoading ? 'Cargando' : `${pendingActions} por revisar`}
               </span>
