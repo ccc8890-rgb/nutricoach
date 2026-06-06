@@ -149,14 +149,14 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
     setsCompletados.reduce((acc, set) => acc + ((set.kg ?? 0) * (set.reps ?? 0)), 0)
   )
 
-  function guardarSet(kg: number, reps: number, rpe: number) {
+  function guardarSet(data: Omit<SetData, 'hecho'>) {
     if (!setActivo) return
     const ejId = setActivo.ejId
     const idx = setActivo.setIdx
     const esUltimoSetEjercicio = idx >= sets.length - 1
     setSetsMap(prev => {
       const nuevosSets = prev[ejId].map((s, i) =>
-        i === idx ? { kg, reps, rpe, hecho: true } : s
+        i === idx ? { ...data, hecho: true } : s
       )
       const nuevo = { ...prev, [ejId]: nuevosSets }
       if (nuevosSets.every(s => s.hecho)) onEjercicioComplete(ejId, nuevosSets)
@@ -420,14 +420,38 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
                     background: set.hecho ? 'var(--semantic-active-bg)' : isActive ? 'var(--semantic-info-bg)' : 'var(--bg)',
                     border: `1.5px solid ${set.hecho ? 'var(--semantic-active-border)' : isActive ? 'var(--semantic-info)' : 'var(--border)'}`,
                   }}
-                  aria-label={`Set ${i + 1}${set.hecho ? ` completado: ${set.kg}kg × ${set.reps} reps` : ''}`}
+                  aria-label={`Set ${i + 1}${set.hecho
+                    ? getModo(ej.tipo) === 'cardio'
+                      ? ' completado'
+                      : ` completado: ${set.kg ?? 0}kg × ${set.reps ?? 0} reps`
+                    : ''}`}
                 >
                   <span className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Set {i + 1}</span>
                   {set.hecho ? (
-                    <>
-                      <span className="text-base font-bold" style={{ color: 'var(--semantic-active)' }}>{set.kg}kg</span>
-                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{set.reps} reps</span>
-                    </>
+                    (() => {
+                      const modo = getModo(ej.tipo)
+                      if (modo === 'cardio') {
+                        const linea1 = (set.metros ?? 0) > 0 ? `${set.metros}m`
+                          : (set.calorias ?? 0) > 0 ? `${set.calorias}cal`
+                          : (set.tiempo_s ?? 0) > 0 ? `${Math.floor((set.tiempo_s ?? 0) / 60)}:${String((set.tiempo_s ?? 0) % 60).padStart(2, '0')}`
+                          : '—'
+                        const linea2 = (set.metros ?? 0) > 0 && (set.calorias ?? 0) > 0
+                          ? `${set.calorias}cal`
+                          : `RPE ${set.rpe}`
+                        return (
+                          <>
+                            <span className="text-base font-bold" style={{ color: 'var(--semantic-active)' }}>{linea1}</span>
+                            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{linea2}</span>
+                          </>
+                        )
+                      }
+                      return (
+                        <>
+                          <span className="text-base font-bold" style={{ color: 'var(--semantic-active)' }}>{set.kg}kg</span>
+                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{set.reps} reps</span>
+                        </>
+                      )
+                    })()
                   ) : (
                     isActive
                       ? <Play size={17} fill="currentColor" style={{ color: 'var(--semantic-info)' }} />
@@ -507,6 +531,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           pesoSugerido={ej.peso_sugerido}
           repsSugeridas={ej.repeticiones}
           pesoInicialKg={ej.ultimo_peso_kg ?? undefined}
+          modo={getModo(ej.tipo)}
           onGuardar={guardarSet}
           onCerrar={() => setSetActivo(null)}
         />
