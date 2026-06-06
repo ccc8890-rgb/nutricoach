@@ -343,16 +343,35 @@ export default function Sidebar() {
 
   useEffect(() => {
     setExpanded(prev => {
-      const next = { ...prev }
+      const next: Record<string, boolean> = {}
+      let hasActiveSection = false
+
       for (const section of sections) {
         if (section.items.some(entry => isActiveEntry(pathname, entry))) {
           next[section.key] = true
+          hasActiveSection = true
+        } else {
+          next[section.key] = false
         }
       }
-      return next
+
+      return hasActiveSection ? next : prev
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
+
+  function toggleSection(sectionKey: string) {
+    setExpanded(prev => {
+      const isOpen = prev[sectionKey] ?? false
+      const next: Record<string, boolean> = {}
+
+      for (const section of sections) {
+        next[section.key] = section.key === sectionKey ? !isOpen : false
+      }
+
+      return next
+    })
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -440,7 +459,7 @@ export default function Sidebar() {
             section={section}
             pathname={pathname}
             expanded={expanded[section.key] ?? false}
-            onToggle={() => setExpanded(prev => ({ ...prev, [section.key]: !prev[section.key] }))}
+            onToggle={() => toggleSection(section.key)}
           />
         ))}
       </nav>
