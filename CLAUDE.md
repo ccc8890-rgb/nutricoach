@@ -1,5 +1,32 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 06-06-2026 (Sesión 53) — Fix bucle historial coach + auditoría navegación completa
+
+### Bugs corregidos
+
+| # | Bug | Causa raíz | Fix | Commit |
+|---|-----|-----------|-----|--------|
+| 1 | "App rara" = coach dashboard al volver de sesión | `window.location.href='/dashboard'` en `/cliente/page.tsx` añadía entrada al historial → iOS swipe-back creaba bucle `/cliente→/dashboard→/cliente→...` | Cambiado a `window.location.replace()` en los 3 redirects del portal | `4bf4182` |
+| 2 | `limpiar-sw.html` redirigía a landing tras limpiar | Redirigía a `/?_=timestamp` → sin tokens → LandingPage pública | Redirige a `/login` con mensaje "te pedirá iniciar sesión" | `e651579` |
+
+### Causa raíz del bucle coach
+
+```
+Antes:
+  Session ← (replace) → /cliente → window.location.href='/dashboard' (PUSH) → /dashboard
+  iOS swipe-back → /cliente → push a /dashboard → bucle infinito
+  El /dashboard (panel coach con datos de clientes) = "app rara"
+
+Ahora:
+  Session ← (replace) → /cliente → window.location.replace('/dashboard') (REPLACE) → /dashboard
+  iOS swipe-back → lo que había antes de /cliente → limpio
+```
+
+### Regla añadida
+Todos los redirects de autenticación/rol dentro de páginas cliente deben usar `window.location.replace()`, nunca `window.location.href`. El `href` añade al historial y crea bucles con el swipe-back de iOS.
+
+---
+
 ## ✅ SESIÓN 06-06-2026 (Sesión 52) — Fix estructural training portal cliente
 
 ### Qué se hizo
