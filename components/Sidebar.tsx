@@ -171,21 +171,14 @@ function NavLink({
   )
 }
 
-function SidebarSection({
+function SectionPanelContent({
   section,
   pathname,
-  expanded,
-  onToggle,
 }: {
   section: NavSection
   pathname: string
-  expanded: boolean
-  onToggle: () => void
 }) {
-  const active = section.items.some(entry => isActiveEntry(pathname, entry))
-  const Icon = section.icon
-
-  const panel = (
+  return (
     <div className="space-y-1">
       {section.items.map(entry => {
         if (isGroup(entry)) {
@@ -224,6 +217,21 @@ function SidebarSection({
       })}
     </div>
   )
+}
+
+function SidebarSection({
+  section,
+  pathname,
+  expanded,
+  onToggle,
+}: {
+  section: NavSection
+  pathname: string
+  expanded: boolean
+  onToggle: () => void
+}) {
+  const active = section.items.some(entry => isActiveEntry(pathname, entry))
+  const Icon = section.icon
 
   return (
     <div className="relative mt-1">
@@ -252,33 +260,64 @@ function SidebarSection({
       </button>
 
       {expanded && (
-        <>
-          <div
-            className="ml-3 mt-1 border-l pl-3 lg:hidden"
-            style={{ borderColor: 'var(--border)' }}
-          >
-            {panel}
-          </div>
-          <div
-            className="absolute left-[calc(100%+0.65rem)] top-0 z-50 hidden w-64 origin-left rounded-2xl border p-2 opacity-100 shadow-2xl lg:block"
-            style={{
-              borderColor: 'var(--glass-border)',
-              background: 'color-mix(in srgb, var(--surface) 94%, transparent)',
-              backdropFilter: 'blur(22px)',
-              WebkitBackdropFilter: 'blur(22px)',
-              boxShadow: '0 18px 60px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.05)',
-              animation: 'sidebarFlyoutIn 0.22s var(--ease-out-strong)',
-            }}
-          >
-            <div className="mb-2 flex items-center gap-2 border-b px-3 pb-2 pt-1" style={{ borderColor: 'var(--border)' }}>
-              <Icon size={15} strokeWidth={2} style={{ color: 'var(--text)' }} />
-              <span className="text-xs font-bold" style={{ color: 'var(--text)' }}>{section.label}</span>
-            </div>
-            {panel}
-          </div>
-        </>
+        <div
+          className="ml-3 mt-1 border-l pl-3 lg:hidden"
+          style={{ borderColor: 'var(--border)' }}
+        >
+          <SectionPanelContent section={section} pathname={pathname} />
+        </div>
       )}
     </div>
+  )
+}
+
+function SecondarySidebar({
+  section,
+  pathname,
+}: {
+  section: NavSection | null
+  pathname: string
+}) {
+  if (!section) return null
+
+  const Icon = section.icon
+
+  return (
+    <aside
+      className="hidden w-64 min-h-screen flex-col border-r lg:flex"
+      style={{
+        background: 'color-mix(in srgb, var(--surface) 88%, var(--bg))',
+        borderColor: 'var(--glass-border)',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+      }}
+    >
+      <div className="flex-shrink-0 border-b p-5" style={{ borderColor: 'var(--glass-border)' }}>
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border"
+            style={{
+              borderColor: 'var(--border)',
+              background: 'var(--surface-elevated)',
+              color: 'var(--text)',
+            }}
+          >
+            <Icon size={18} strokeWidth={2.2} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+              Módulo activo
+            </p>
+            <h2 className="truncate text-[15px] font-bold leading-tight" style={{ color: 'var(--text)' }}>
+              {section.label}
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto p-3">
+        <SectionPanelContent section={section} pathname={pathname} />
+      </nav>
+    </aside>
   )
 }
 
@@ -342,20 +381,18 @@ export default function Sidebar() {
   })
 
   useEffect(() => {
-    setExpanded(prev => {
+    setExpanded(() => {
       const next: Record<string, boolean> = {}
-      let hasActiveSection = false
 
       for (const section of sections) {
         if (section.items.some(entry => isActiveEntry(pathname, entry))) {
           next[section.key] = true
-          hasActiveSection = true
         } else {
           next[section.key] = false
         }
       }
 
-      return hasActiveSection ? next : prev
+      return next
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
@@ -372,6 +409,8 @@ export default function Sidebar() {
       return next
     })
   }
+
+  const selectedSection = sections.find(section => expanded[section.key]) ?? null
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -435,7 +474,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 p-3 flex flex-col gap-0.5 overflow-y-auto lg:overflow-visible">
+      <nav className="flex-1 p-3 flex flex-col gap-0.5 overflow-y-auto">
         <div className="mb-2">
           <p className="px-3 mb-1 text-[10px] font-semibold tracking-[0.14em] uppercase" style={{ color: 'var(--text-muted)' }}>
             Trabajo
@@ -504,7 +543,7 @@ export default function Sidebar() {
 
       <aside
         className={`
-          relative w-64 min-h-screen flex flex-col border-r overflow-hidden lg:overflow-visible
+          relative w-64 min-h-screen flex flex-col border-r overflow-hidden
           transition-transform duration-300 ease-out
           max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-40
           ${mounted && mobileOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}
@@ -519,6 +558,8 @@ export default function Sidebar() {
       >
         {sidebarContent}
       </aside>
+
+      <SecondarySidebar section={selectedSection} pathname={pathname || '/dashboard'} />
     </>
   )
 }

@@ -1,24 +1,24 @@
-# Sidebar slide lateral report
+# Sidebar contextual lateral report
 
 Fecha: 06-06-2026
 Proyecto: NutriCoach
 
 ## Motivo
 
-Carlos pidió que los submódulos, especialmente dentro de Nutrición, no se desplegaran hacia abajo en escritorio. Después pidió aplicar el mismo criterio a Entrenamiento, Sistema y el resto de módulos. La intención es una navegación más fluida, lateral y natural, similar a patrones de dashboards modernos tipo Vercel.
+Carlos pidió que los submódulos, especialmente dentro de Nutrición, no se desplegaran hacia abajo en escritorio. Después pidió aplicar el mismo criterio a Entrenamiento, Sistema y el resto de módulos. Finalmente ajustó el criterio: el panel no debe flotar ni solapar contenido, sino funcionar como una segunda columna fija a la derecha del sidebar principal.
 
 ## Cambios aplicados
 
 - En desktop (`lg`):
-  - Al abrir cualquier sección del sidebar, sus submódulos aparecen en un panel lateral a la derecha.
-  - El panel usa fondo translúcido, blur, borde fino y sombra suave.
-  - La entrada tiene animación `sidebarFlyoutIn` con desplazamiento lateral corto y escala mínima.
-  - El sidebar permite overflow visible en desktop para que el panel no se recorte.
-  - La apertura es exclusiva: si se abre Nutrición, se cierran Entrenamiento, Sistema y el resto. Evita ruido visual y solapamientos de varios paneles.
+  - Al abrir cualquier sección del sidebar, sus submódulos aparecen en una segunda columna fija a su derecha.
+  - La columna ocupa toda la altura de la página y forma parte del layout flex, por lo que empuja el contenido principal y no lo solapa.
+  - La cabecera muestra el módulo activo para reforzar contexto: Nutrición, Entrenamiento o Sistema.
+  - La apertura es exclusiva: si se abre Nutrición, se cierran Entrenamiento, Sistema y el resto. Evita ruido visual.
 
 - A nivel de arquitectura:
   - `SidebarSection` queda como patrón único para todos los módulos con submódulos.
-  - No hay lógica especial solo para Nutrición; Entrenamiento, Sistema y futuros módulos usan el mismo slide lateral.
+  - `SecondarySidebar` renderiza el submenú contextual en escritorio.
+  - No hay lógica especial solo para Nutrición; Entrenamiento, Sistema y futuros módulos usan la misma columna secundaria.
 
 - En móvil:
   - Se mantiene el desplegable vertical dentro del drawer.
