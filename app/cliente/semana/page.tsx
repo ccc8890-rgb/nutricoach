@@ -271,15 +271,15 @@ export default function VistaSemanalClientePage() {
           <div className="mt-5 grid grid-cols-3 gap-2">
             <div className="rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{resumenSemana.totalSesiones}</p>
-              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>sesiones</p>
+              <p className="text-[11px]" style={{ color: '#9898A0' }}>sesiones</p>
             </div>
             <div className="rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <p className="text-lg font-bold" style={{ color: 'var(--semantic-active)' }}>{resumenSemana.pendientes}</p>
-              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>pendientes</p>
+              <p className="text-[11px]" style={{ color: '#9898A0' }}>pendientes</p>
             </div>
             <div className="rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{resumenSemana.minutosPlanificados || '-'}</p>
-              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>min plan</p>
+              <p className="text-[11px]" style={{ color: '#9898A0' }}>min plan</p>
             </div>
           </div>
 
@@ -294,7 +294,7 @@ export default function VistaSemanalClientePage() {
                     {sesionPrincipal.esHoy ? 'Sesión de hoy' : 'Próxima sesión'}
                   </p>
                   <h3 className="mt-1 truncate text-base font-bold" style={{ color: 'var(--text)' }}>{sesionPrincipal.nombre}</h3>
-                  <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  <p className="mt-1 text-xs" style={{ color: '#9898A0' }}>
                     {sesionPrincipal.dia_semana || 'Sesión'} · {sesionPrincipal.ejercicios_count} ejercicios{sesionPrincipal.duracion_estimada_min ? ` · ${sesionPrincipal.duracion_estimada_min} min` : ''}
                   </p>
                 </div>
@@ -409,12 +409,12 @@ export default function VistaSemanalClientePage() {
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs" style={{ color: '#9898A0' }}>
                       <span className="inline-flex items-center gap-1"><Dumbbell size={12} /> {s.ejercicios_count} ejercicios</span>
                       {s.duracion_estimada_min && (
                         <span className="inline-flex items-center gap-1"><Clock3 size={12} /> {s.duracion_estimada_min} min</span>
                       )}
-                      {s.completada && <span style={{ color: 'var(--semantic-active)' }}>{s.registros_count} sets registrados</span>}
+                      {s.completada && <span style={{ color: '#4ADE80' }}>{s.registros_count} sets registrados</span>}
                     </p>
                     {s.contexto_ia && (
                       <p className="mt-2 line-clamp-2 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
