@@ -1,5 +1,24 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 06-06-2026 (Sesión 49) — Fix bug crítico portal cliente: empezar entrenamiento
+
+### Bugs corregidos
+
+| # | Archivo | Bug | Fix | Commit |
+|---|---------|-----|-----|--------|
+| 1 | `app/cliente/sesion/[id]/page.tsx` | Auth check fallaba cuando join `planes_entrenamiento` devolvía null por RLS → "Sesión no encontrada" | Cambiar a API route con service role | `634575b` |
+| 2 | `app/cliente/sesion/[id]/page.tsx` | Back button ← iba a `/cliente/semana` (página sin bottom nav → parecía "app rota") | Cambiado a `/cliente` | `634575b` |
+| 3 | `app/cliente/sesion/[id]/page.tsx` | Query directo supabase (cliente) fallaba silenciosamente: RLS en cadena `sesiones_entrenamiento → planes_entrenamiento → clientes` → sesión nunca cargaba | Nuevo endpoint `GET /api/cliente/sesion/[id]` con `createServiceSupabase()` | `97aeb3b` |
+| 4 | `app/api/cliente/sesion/[id]/route.ts` | (nuevo) | Verifica pertenencia explícita por `cliente_id`, devuelve sesión completa con ejercicios | `97aeb3b` |
+
+### Causa raíz
+El mismo patrón de sesión 38: **PostgREST falla silenciosamente con joins anidados cuando las RLS tienen subqueries en cadena** (`sesiones_entrenamiento` → `planes_entrenamiento` → `clientes`). El query del cliente devolvía `null` aunque los datos existían. Solución definitiva: **nunca usar joins anidados profundos desde el cliente; usar siempre API route con service role para queries que crucen más de 2 tablas con RLS**.
+
+### Regla añadida (crítica)
+> Cualquier query que cruce ≥2 tablas con RLS activo debe ir por API route con `createServiceSupabase()`. El cliente supabase solo es válido para lecturas simples de una tabla (sin joins).
+
+---
+
 ## ✅ SESIÓN 05-06-2026 (Sesión 48) — Limpieza sidebar + tab Formularios en Clientes
 
 ### Qué se hizo
