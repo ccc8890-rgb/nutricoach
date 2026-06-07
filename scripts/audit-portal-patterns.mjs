@@ -154,6 +154,26 @@ if (!publicCodeContent.includes('createServerSupabase')) {
   })
 }
 
+// ─── Regla 6: links públicos a sesiones deben conservar codigo ───────────────
+// El coach puede revisar el portal público por código. Si DashboardCliente abre
+// /cliente/sesion/[id] sin codigo, la API intenta resolver cliente por sesión
+// autenticada y un coach cae en "Sesión no encontrada" → /cliente → /dashboard.
+const PUBLIC_DASHBOARD = join(ROOT, 'components/PortalCliente/DashboardCliente.tsx')
+const publicDashboardContent = readFile(PUBLIC_DASHBOARD)
+const publicDashboardLines = publicDashboardContent.split('\n')
+for (let i = 0; i < publicDashboardLines.length; i++) {
+  const line = publicDashboardLines[i]
+  if (line.includes('/cliente/sesion/') && !line.includes('codigo=')) {
+    errors.push({
+      file: rel(PUBLIC_DASHBOARD),
+      line: i + 1,
+      rule: 'PUBLIC_SESSION_LINK_NEEDS_CODE',
+      msg: `Links desde DashboardCliente a /cliente/sesion deben incluir ?codigo=... para que el flujo público/coach no dependa del usuario autenticado`,
+      code: line.trim(),
+    })
+  }
+}
+
 // ─── Resultado ────────────────────────────────────────────────────────────────
 console.log('\n🔍 Auditoría patrones portal cliente\n')
 

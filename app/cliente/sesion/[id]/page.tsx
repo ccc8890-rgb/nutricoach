@@ -1,7 +1,7 @@
 'use client'
 import { useCallback, useEffect, useState, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Barbell, Brain, CheckCircle, CircleNotch, Clock, Play, Target, Trophy } from '@phosphor-icons/react'
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
@@ -44,7 +44,10 @@ interface SesionInfo {
 
 export default function EjecucionSesionPage() {
   const { id } = useParams<{ id: string }>()
+  const searchParams = useSearchParams()
   const sesionStartRef = useRef(Date.now())
+  const codigo = searchParams.get('codigo')
+  const backHref = codigo ? `/cliente/${codigo}` : '/cliente'
 
   const [sesion, setSesion] = useState<SesionInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -77,7 +80,8 @@ export default function EjecucionSesionPage() {
 
   const loadSesion = useCallback(async () => {
     // Usar API route con service role para evitar problemas de RLS en joins anidados
-    const res = await fetch(`/api/cliente/sesion/${id}`)
+    const codigoParam = codigo ? `?codigo=${encodeURIComponent(codigo)}` : ''
+    const res = await fetch(`/api/cliente/sesion/${id}${codigoParam}`)
     if (!res.ok) {
       if (res.status === 401) { setAuthError(true) }
       else if (res.status === 403 || res.status === 404) { setAuthError(true) }
@@ -112,7 +116,7 @@ export default function EjecucionSesionPage() {
 
     setSesion({ ...data, ejercicios: ejerciciosSorted })
     setLoading(false)
-  }, [id])
+  }, [id, codigo])
 
   useEffect(() => { loadSesion() }, [loadSesion])
 
@@ -143,6 +147,7 @@ export default function EjecucionSesionPage() {
           duracion_sesion_s: meta?.duracion_sesion_s ?? Math.floor((Date.now() - sesionStartRef.current) / 1000),
           esfuerzo_percibido: meta?.esfuerzo_percibido,
           notas: meta?.notas,
+          codigo: codigo ?? undefined,
         }),
       })
       const data = await res.json().catch(() => ({ ok: false, error: 'Error al guardar la sesión' }))
@@ -168,7 +173,7 @@ export default function EjecucionSesionPage() {
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center">
       <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Sesión no encontrada</p>
       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Esta sesión no pertenece a tu plan o ha sido eliminada.</p>
-      <Link href="/cliente" replace className="glass-btn mt-4">Volver al portal</Link>
+      <Link href={backHref} replace className="glass-btn mt-4">Volver al portal</Link>
     </div>
   )
 
@@ -211,7 +216,7 @@ export default function EjecucionSesionPage() {
       )}
 
       <Link
-        href="/cliente"
+        href={backHref}
         replace
         className="w-full max-w-sm py-3 rounded-xl text-sm font-semibold text-center block transition-transform active:scale-[0.98]"
         style={{ background: 'var(--accent)', color: 'var(--bg)' }}
@@ -262,7 +267,7 @@ export default function EjecucionSesionPage() {
         <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <Link
-              href="/cliente"
+              href={backHref}
               replace
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-transform active:scale-[0.96]"
               style={{ color: 'var(--text-muted)', background: 'var(--surface)', border: '1px solid var(--border)' }}

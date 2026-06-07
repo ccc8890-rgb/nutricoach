@@ -17,16 +17,13 @@ interface EjercicioRegistro {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createApiSupabase(request)
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
-
   let body: {
     sesion_id: string
     ejercicios: EjercicioRegistro[]
     duracion_sesion_s?: number
     esfuerzo_percibido?: number
     notas?: string
+    codigo?: string
   }
   try {
     body = await request.json()
@@ -34,24 +31,39 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Body inválido' }, { status: 400 })
   }
 
-  const { sesion_id, ejercicios, duracion_sesion_s, esfuerzo_percibido, notas } = body
+  const { sesion_id, ejercicios, duracion_sesion_s, esfuerzo_percibido, notas, codigo } = body
   if (!sesion_id || !ejercicios?.length) {
     return NextResponse.json({ error: 'Faltan datos requeridos' }, { status: 400 })
   }
 
   const admin = createServiceSupabase()
 
-  // Resolve cliente_id from the authenticated user
-  const { data: clienteData } = await admin
-    .from('clientes')
-    .select('id')
-    .eq('profile_id', user.id)
-    .single()
+  let cliente_id: string | null = null
 
-  if (!clienteData) {
+  if (codigo) {
+    const { data: planPublico } = await admin
+      .from('planes_nutricion')
+      .select('cliente_id')
+      .eq('codigo_publico', codigo)
+      .eq('activo', true)
+      .single()
+    cliente_id = planPublico?.cliente_id ?? null
+  } else {
+    const supabase = createApiSupabase(request)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+
+    const { data: clienteData } = await admin
+      .from('clientes')
+      .select('id')
+      .eq('profile_id', user.id)
+      .single()
+    cliente_id = clienteData?.id ?? null
+  }
+
+  if (!cliente_id) {
     return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
   }
-  const cliente_id = clienteData.id
 
   // Verify session belongs to this client
   const { data: sesionData } = await admin

@@ -2,6 +2,12 @@
 
 ## ✅ SESIÓN 07-06-2026 (Sesión 55) — Fix raíz: portal cliente antiguo en historial Training
 
+### Segundo bug detectado tras revisar en producción
+
+| Bug | Causa raíz | Fix |
+|-----|-----------|-----|
+| Al entrar como coach a la app cliente, pulsar "Empezar" mostraba "Sesión no encontrada" y al volver caía en perfil/dashboard coach | `DashboardCliente` abría `/cliente/sesion/[id]` sin `codigo`. La API `/api/cliente/sesion/[id]` solo resolvía cliente por usuario autenticado (`clientes.profile_id`). Carlos estaba logueado como coach, así que no había cliente asociado y devolvía 404. | Flujo público por código completo: link `?codigo=...`, API de sesión verifica por `planes_nutricion.codigo_publico`, vuelta a `/cliente/[codigo]`, y `registrar-sesion` acepta `codigo` para guardar sesión del cliente correcto. |
+
 ### Bug recurrente corregido
 
 | Bug | Causa raíz | Fix | Commit |

@@ -68,6 +68,23 @@ Si vuelve a aparecer el bug de "al volver de entreno aparece otra app cliente", 
 La causa raíz es impedir que un cliente autenticado pueda renderizar `DashboardCliente`.
 Fix raíz aplicado 07-06-2026 en `app/cliente/[codigo]/page.tsx`: Server Component + `createServerSupabase()` + `redirect('/cliente')` para `profiles.role === 'cliente'`.
 
+## Regla 6 — Sesiones abiertas desde portal público deben llevar `codigo`
+
+```
+❌ /cliente/[codigo] → DashboardCliente → /cliente/sesion/[id]
+   La API intenta resolver cliente por usuario autenticado. Si Carlos está logueado como coach:
+   404 "Sesión no encontrada" → botón /cliente → redirect a /dashboard.
+
+✅ /cliente/[codigo] → DashboardCliente → /cliente/sesion/[id]?codigo=CODIGO
+   La API verifica que la sesión pertenece al cliente del `codigo_publico` y permite revisar/registrar.
+```
+
+Fix aplicado 07-06-2026:
+- `DashboardCliente` añade `?codigo=${codigo}` al link de sesión.
+- `app/api/cliente/sesion/[id]` acepta `codigo` y verifica propiedad por `planes_nutricion.codigo_publico`.
+- `app/cliente/sesion/[id]` vuelve a `/cliente/[codigo]` si llegó con código, no a `/cliente`.
+- `POST /api/entrenos/registrar-sesion` acepta `codigo` para el flujo público, igual que otros endpoints del portal por código.
+
 ## Verificación antes de mergear
 
 ```bash
