@@ -22,7 +22,7 @@ export const PLANTILLAS_RECETARIO_PRO: Array<{
       instrucciones: [
         'Cocer el arroz hasta que quede tierno.',
         'Cocinar el pollo a la plancha con poca grasa.',
-        'Saltear el calabacin brevemente y montar el plato con sal y aceite medidos.',
+        'Saltear el calabacin brevemente y montar el plato con aceite medido.',
       ],
       objetivos: [input.objetivo],
       deportes: input.deporte ? [input.deporte, 'endurance'] : ['endurance'],
@@ -34,7 +34,6 @@ export const PLANTILLAS_RECETARIO_PRO: Array<{
         { nombre: 'pechuga de pollo', cantidadGramos: 125, rolIngrediente: 'proteina_principal' },
         { nombre: 'calabacin', cantidadGramos: 100, rolIngrediente: 'verdura_fibra' },
         { nombre: 'aceite de oliva', cantidadGramos: 6, rolIngrediente: 'grasas' },
-        { nombre: 'sal', cantidadGramos: 2, rolIngrediente: 'especias_aromaticos', esCantidadFija: true },
       ],
       trazabilidad: {
         plantillaId: 'tapering-arroz-pollo-calabacin',
@@ -52,7 +51,7 @@ export const PLANTILLAS_RECETARIO_PRO: Array<{
       instrucciones: [
         'Cocer la patata y la zanahoria hasta que queden tiernas.',
         'Cocinar la merluza al vapor o plancha suave.',
-        'Servir con aceite y sal medidos.',
+        'Servir con aceite medido.',
       ],
       objetivos: [input.objetivo],
       deportes: input.deporte ? [input.deporte, 'endurance'] : ['endurance'],
@@ -64,7 +63,6 @@ export const PLANTILLAS_RECETARIO_PRO: Array<{
         { nombre: 'merluza', cantidadGramos: 150, rolIngrediente: 'proteina_principal' },
         { nombre: 'zanahoria', cantidadGramos: 80, rolIngrediente: 'verdura_fibra' },
         { nombre: 'aceite de oliva', cantidadGramos: 5, rolIngrediente: 'grasas' },
-        { nombre: 'sal', cantidadGramos: 2, rolIngrediente: 'especias_aromaticos', esCantidadFija: true },
       ],
       trazabilidad: {
         plantillaId: 'tapering-patata-merluza-zanahoria',

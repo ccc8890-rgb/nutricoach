@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { detectarHuecosRecetario } from '../lib/recetas/agente-recetario/coverage'
 import { generarCandidatasDesdeHueco } from '../lib/recetas/agente-recetario/generator'
 import { prepararImagenPendiente } from '../lib/recetas/agente-recetario/image'
+import { resolverIngredientesCandidata } from '../lib/recetas/agente-recetario/matcher'
 import { AGENTE_RECETARIO_DEFAULTS, type RecetaCandidata } from '../lib/recetas/agente-recetario/types'
 import { validarCandidataConservadora } from '../lib/recetas/agente-recetario/validator'
 
@@ -128,6 +129,45 @@ function testImagePreparationNeverApproves() {
   assert.equal(imagen.prompt.length > 30, true)
 }
 
+function testMatcherRejectsMissingFood() {
+  const receta = generarCandidatasDesdeHueco({
+    objetivo: 'rendimiento',
+    deporte: 'running',
+    momento: 'tapering',
+    actuales: 5,
+    minimo: 12,
+    prioridad: 'alta',
+    motivo: 'Cobertura 5/12',
+  }, { cantidad: 1 })[0]
+
+  const resultado = resolverIngredientesCandidata(receta, [{ id: '1', nombre: 'arroz blanco' }])
+  assert.equal(resultado.ok, false)
+  assert.equal(resultado.errores.length > 0, true)
+}
+
+function testMatcherResolvesExactNormalizedFood() {
+  const receta = generarCandidatasDesdeHueco({
+    objetivo: 'rendimiento',
+    deporte: 'running',
+    momento: 'tapering',
+    actuales: 5,
+    minimo: 12,
+    prioridad: 'alta',
+    motivo: 'Cobertura 5/12',
+  }, { cantidad: 1 })[0]
+
+  const resultado = resolverIngredientesCandidata(receta, [
+    { id: '1', nombre: 'Arroz blanco' },
+    { id: '2', nombre: 'Pechuga de pollo' },
+    { id: '3', nombre: 'Calabacín' },
+    { id: '4', nombre: 'Aceite de oliva' },
+    { id: '5', nombre: 'Sal' },
+  ])
+
+  assert.equal(resultado.ok, true)
+  assert.equal(resultado.receta.ingredientes.every((ing) => ing.alimentoId && ing.alimentoNombre), true)
+}
+
 function testCliDryRunDoesNotApply() {
   const output = execFileSync('npm', [
     'exec',
@@ -154,5 +194,7 @@ testGeneratorDoesNotUseUnsafeCondimentAmounts()
 testValidatorRejectsUnmatchedIngredients()
 testValidatorRejectsSuspiciousStickyRiceChipsMatch()
 testImagePreparationNeverApproves()
+testMatcherRejectsMissingFood()
+testMatcherResolvesExactNormalizedFood()
 testCliDryRunDoesNotApply()
 console.log('agente-recetario-pro.test.ts OK')
