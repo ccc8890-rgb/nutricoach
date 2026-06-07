@@ -125,7 +125,7 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
 
   const { data: cliente } = await db
     .from('clientes')
-    .select('id, objetivo, peso_inicial, altura, edad, sexo, profiles(nombre, apellidos)')
+    .select('id, objetivo, peso_inicial, altura, edad, sexo, profiles!profile_id(nombre, apellidos)')
     .eq('id', clienteId)
     .single()
 
@@ -164,14 +164,18 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
   const actividadSemanal = await getSummaryLast7d(db, clienteId).catch(() => null)
 
   // Cargar preferencias del cliente para personalización de recetas
-  // restricciones_alimentarias es la columna real en clientes (intolerancias, patologias, etc.)
-  const { data: clienteExtra } = await db
-    .from('clientes')
-    .select('restricciones_alimentarias')
-    .eq('id', clienteId)
-    .single()
+  // Las fuentes correctas son onboarding_responses y onboarding_perfil_profundo
+  const { data: onboardingData } = await db
+    .from('onboarding_responses')
+    .select('restricciones, alimentos_no_gustan, alimentos_base')
+    .eq('cliente_id', clienteId)
+    .maybeSingle()
 
-  const perfilProfundo = clienteExtra?.restricciones_alimentarias as Record<string, unknown> | null
+  const { data: perfilProfundoData } = await db
+    .from('onboarding_perfil_profundo')
+    .select('comidas_favoritas, alimentos_evitar_extra, condiciones_salud, descripcion_semana_entreno')
+    .eq('cliente_id', clienteId)
+    .maybeSingle()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: registros30d } = await (db as any)
@@ -192,12 +196,44 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
     ? `Ha saltado ${saltadasIds.length} comidas en los últimos 30 días`
     : null
 
+  // Merge alimentos rechazados from both sources
+  const rechazadosOnboarding: string[] = onboardingData?.alimentos_no_gustan
+    ? (Array.isArray(onboardingData.alimentos_no_gustan)
+        ? (onboardingData.alimentos_no_gustan as string[])
+        : [onboardingData.alimentos_no_gustan as string])
+    : []
+  const rechazadosPerfil: string[] = perfilProfundoData?.alimentos_evitar_extra
+    ? (Array.isArray(perfilProfundoData.alimentos_evitar_extra)
+        ? (perfilProfundoData.alimentos_evitar_extra as string[])
+        : [perfilProfundoData.alimentos_evitar_extra as string])
+    : []
+
+  // Merge alimentos favoritos — prefer perfil_profundo, fallback to onboarding alimentos_base
+  const favoritosPerfil: string[] = perfilProfundoData?.comidas_favoritas
+    ? (Array.isArray(perfilProfundoData.comidas_favoritas)
+        ? (perfilProfundoData.comidas_favoritas as string[])
+        : [perfilProfundoData.comidas_favoritas as string])
+    : []
+  const favoritosOnboarding: string[] = onboardingData?.alimentos_base
+    ? (Array.isArray(onboardingData.alimentos_base)
+        ? (onboardingData.alimentos_base as string[])
+        : [onboardingData.alimentos_base as string])
+    : []
+
   const preferencias_recetas = {
-    alimentos_favoritos:         (perfilProfundo?.alimentos_favoritos as string[]) ?? [],
-    alimentos_rechazados:        (perfilProfundo?.alimentos_rechazados as string[]) ?? [],
-    dieta_habitual:              (perfilProfundo?.dieta_habitual as string) ?? null,
-    intolerancias:               (perfilProfundo?.intolerancias as string[]) ?? [],
-    patologias:                  (perfilProfundo?.patologias as string[]) ?? [],
+    alimentos_favoritos:         favoritosPerfil.length > 0 ? favoritosPerfil : favoritosOnboarding,
+    alimentos_rechazados:        [...new Set([...rechazadosOnboarding, ...rechazadosPerfil])],
+    dieta_habitual:              (perfilProfundoData?.descripcion_semana_entreno as string | null) ?? null,
+    intolerancias:               onboardingData?.restricciones
+                                   ? (Array.isArray(onboardingData.restricciones)
+                                       ? (onboardingData.restricciones as string[])
+                                       : [onboardingData.restricciones as string])
+                                   : [],
+    patologias:                  perfilProfundoData?.condiciones_salud
+                                   ? (typeof perfilProfundoData.condiciones_salud === 'string'
+                                       ? (perfilProfundoData.condiciones_salud as string).split(',').map((s: string) => s.trim()).filter(Boolean)
+                                       : (perfilProfundoData.condiciones_salud as string[]))
+                                   : [],
     tecnicas_preferidas:         [],
     recetas_completadas_ids_30d: completadasIds,
     recetas_saltadas_ids_30d:    saltadasIds,

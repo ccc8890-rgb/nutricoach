@@ -130,11 +130,27 @@ export async function filtrarRecetasPorSlot(
   const { data: recetas } = await query.limit(80)
   if (!recetas || recetas.length === 0) return []
 
+  // Mapeo restricciones cliente → alérgenos EU presentes en recetas
+  // 'Sin Gluten' → 'Gluten', 'Sin Lactosa' → 'Lácteos', etc.
+  const RESTRICCION_A_ALERGENO: Record<string, string[]> = {
+    'sin gluten':       ['Gluten'],
+    'sin lactosa':      ['Lácteos'],
+    'sin huevo':        ['Huevos'],
+    'sin frutos secos': ['Frutos Secos', 'Cacahuetes'],
+    'sin soja':         ['Soja'],
+    'sin mariscos':     ['Crustáceos', 'Moluscos'],
+    'vegetariano':      ['Pescado', 'Crustáceos', 'Moluscos'],
+    'vegano':           ['Lácteos', 'Huevos', 'Pescado', 'Crustáceos', 'Moluscos'],
+  }
+  const alergenosExcluir = [...new Set(
+    restricciones.flatMap(r => RESTRICCION_A_ALERGENO[r.toLowerCase()] ?? [r])
+  )]
+
   // Filtro duro: intolerancias
   let candidatas = recetas.filter(r => {
-    if (!restricciones.length) return true
+    if (!alergenosExcluir.length) return true
     const recetaIntol: string[] = r.intolerancias ?? []
-    return !restricciones.some(intol => recetaIntol.includes(intol))
+    return !alergenosExcluir.some(alergeno => recetaIntol.includes(alergeno))
   })
 
   // Filtro duro: alimentos a evitar
