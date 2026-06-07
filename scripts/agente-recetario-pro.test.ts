@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { detectarHuecosRecetario } from '../lib/recetas/agente-recetario/coverage'
 import { generarCandidatasDesdeHueco } from '../lib/recetas/agente-recetario/generator'
-import { AGENTE_RECETARIO_DEFAULTS } from '../lib/recetas/agente-recetario/types'
+import { AGENTE_RECETARIO_DEFAULTS, type RecetaCandidata } from '../lib/recetas/agente-recetario/types'
+import { validarCandidataConservadora } from '../lib/recetas/agente-recetario/validator'
 
 function testDefaultsAreConservative() {
   assert.equal(AGENTE_RECETARIO_DEFAULTS.dryRun, true)
@@ -66,9 +67,53 @@ function testGeneratorDoesNotUseUnsafeCondimentAmounts() {
   assert.equal(sospechosos.length, 0)
 }
 
+function testValidatorRejectsUnmatchedIngredients() {
+  const receta: RecetaCandidata = {
+    nombre: 'Mango sticky rice sospechoso',
+    descripcion: 'Prueba',
+    instrucciones: ['Cocer arroz.', 'Servir con mango.'],
+    objetivos: ['salud_general'],
+    deportes: [],
+    momentos: ['postre'],
+    tipoPlato: 'postre',
+    ingredientes: [
+      { nombre: 'mango', alimentoId: 'ok-mango', alimentoNombre: 'Mango', cantidadGramos: 120, rolIngrediente: 'frutas' },
+      { nombre: 'arroz glutinoso', cantidadGramos: 90, rolIngrediente: 'carbohidrato_principal' },
+    ],
+    trazabilidad: { plantillaId: 'test', motivoGeneracion: 'test', modo: 'dry-run' },
+  }
+
+  const resultado = validarCandidataConservadora(receta)
+  assert.equal(resultado.valida, false)
+  assert.equal(resultado.errores.some((error) => error.includes('sin alimento vinculado')), true)
+}
+
+function testValidatorRejectsSuspiciousStickyRiceChipsMatch() {
+  const receta: RecetaCandidata = {
+    nombre: 'Mango sticky rice sospechoso',
+    descripcion: 'Prueba',
+    instrucciones: ['Cocer arroz.', 'Servir con mango.'],
+    objetivos: ['salud_general'],
+    deportes: [],
+    momentos: ['postre'],
+    tipoPlato: 'postre',
+    ingredientes: [
+      { nombre: 'mango', alimentoId: 'ok-mango', alimentoNombre: 'Mango', cantidadGramos: 120, rolIngrediente: 'frutas' },
+      { nombre: 'arroz glutinoso', alimentoId: 'bad-chip', alimentoNombre: 'Chips de patata sabor arroz', cantidadGramos: 90, rolIngrediente: 'carbohidrato_principal' },
+    ],
+    trazabilidad: { plantillaId: 'test', motivoGeneracion: 'test', modo: 'dry-run' },
+  }
+
+  const resultado = validarCandidataConservadora(receta)
+  assert.equal(resultado.valida, false)
+  assert.equal(resultado.errores.some((error) => error.includes('match sospechoso')), true)
+}
+
 testDefaultsAreConservative()
 testCoverageDetectsTaperingGap()
 testCoverageDoesNotCreateGapWhenMinimumIsMet()
 testGeneratorCreatesSmallDryRunBatch()
 testGeneratorDoesNotUseUnsafeCondimentAmounts()
+testValidatorRejectsUnmatchedIngredients()
+testValidatorRejectsSuspiciousStickyRiceChipsMatch()
 console.log('agente-recetario-pro.test.ts OK')
