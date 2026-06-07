@@ -1,5 +1,6 @@
 import type { RecetaCandidata, ResultadoValidacionAgente } from './types'
 import { AGENTE_RECETARIO_DEFAULTS } from './types'
+import { validarVocabulario } from './vocabulary-guard'
 
 const MATCHES_SOSPECHOSOS: Array<{
   ingrediente: RegExp
@@ -27,6 +28,20 @@ export function validarCandidataConservadora(receta: RecetaCandidata): Resultado
   const warnings: string[] = []
 
   if (!receta.nombre.trim()) errores.push('nombre vacio')
+
+  // Bloquear terminología técnica en campos visibles
+  const vocab = validarVocabulario({
+    nombre: receta.nombre,
+    descripcion: receta.descripcion,
+    instrucciones: receta.instrucciones,
+    consejos: '',
+  })
+  if (!vocab.valido) {
+    vocab.violaciones.forEach(v =>
+      errores.push(`vocabulario prohibido en ${v.campo}: ${v.patron}`)
+    )
+  }
+
   if (receta.instrucciones.length < 2) errores.push('instrucciones insuficientes')
   if (receta.ingredientes.length < 3) errores.push('menos de 3 ingredientes')
 
