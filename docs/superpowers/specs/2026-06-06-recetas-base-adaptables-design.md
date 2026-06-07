@@ -18,23 +18,23 @@ El sistema ya tiene buena parte de la infraestructura:
 - Quality gate centralizado con `auditarRecetaProfesional`.
 - Roles de ingrediente y reglas de scaling en `lib/ingredient-roles.ts`.
 
-La base actual, tras pasar el backfill de auditoría, sacar de aprobadas las recetas bloqueadas y rescatar la primera tanda peri-entreno, tiene 417 recetas aprobadas. De ellas, 316 están marcadas con `portion_scalable` dentro de `planning_roles`, pero todavía falta una capa explícita de "receta base adaptable". Hoy el sistema selecciona recetas fijas y ajusta por cercanía; mañana debe seleccionar una base y aplicar una transformación controlada.
+La base actual, tras pasar el backfill de auditoría, sacar de aprobadas las recetas bloqueadas, rescatar la primera tanda peri-entreno y sembrar una micro-batería de carga/tapering, tiene 425 recetas aprobadas. De ellas, 316 están marcadas con `portion_scalable` dentro de `planning_roles`, pero todavía falta una capa explícita de "receta base adaptable". Hoy el sistema selecciona recetas fijas y ajusta por cercanía; mañana debe seleccionar una base y aplicar una transformación controlada.
 
 ## Diagnóstico
 
 La cobertura actual permite empezar, pero está descompensada:
 
-- Rendimiento: 65 recetas marcadas.
-- Deportes específicos: running 62, Hyrox 46 y endurance 47. Ciclismo/triatlón siguen por debajo del objetivo.
+- Rendimiento: 73 recetas marcadas.
+- Deportes específicos: running 70, Hyrox 46, ciclismo 57, triatlón 49 y endurance 55.
 - Media mañana: 4 recetas.
 - Merienda: 174 recetas.
 - Desayuno: 68 recetas.
 - Comida: 110 recetas.
 - Cena: 68 recetas.
-- Pre-entreno: 12 recetas aprobadas.
-- Post-entreno: 19 recetas aprobadas.
-- Carga CHO: 4 recetas aprobadas.
-- Tapering: 1 receta aprobada.
+- Pre-entreno: 14 recetas aprobadas.
+- Post-entreno: 22 recetas aprobadas.
+- Carga CHO: 11 recetas aprobadas.
+- Tapering: 5 recetas aprobadas.
 - Recetas sin momento: 3, omitidas por no tener tipo claro.
 - Recetas aprobadas sin auditoría profesional (`score_calidad = null`): 0.
 - Recetas aprobadas con `quality_estado_sugerido = bloqueada`: 0.
