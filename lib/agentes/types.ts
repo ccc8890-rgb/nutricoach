@@ -130,6 +130,18 @@ export interface ContextoCliente {
   perfil_aprendizaje: ClientePerfilAprendizaje | null
   metodologia_coach: CoachMemoria[]
   actividad_semanal: ResumenActividadSemanal | null
+  // Preferencias y adherencia — para personalización de recetas
+  preferencias_recetas: {
+    alimentos_favoritos:            string[]
+    alimentos_rechazados:           string[]
+    dieta_habitual:                 string | null
+    intolerancias:                  string[]
+    patologias:                     string[]
+    tecnicas_preferidas:            string[]   // inferido de recetas completadas
+    recetas_completadas_ids_30d:    string[]
+    recetas_saltadas_ids_30d:       string[]
+    patron_abandono:                string | null
+  } | null
 }
 
 export interface CheckinResumen {

@@ -163,6 +163,46 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
 
   const actividadSemanal = await getSummaryLast7d(db, clienteId).catch(() => null)
 
+  // Cargar preferencias del cliente para personalización de recetas
+  const { data: clienteExtra } = await db
+    .from('clientes')
+    .select('intolerancias, onboarding_perfil_profundo')
+    .eq('id', clienteId)
+    .single()
+
+  const perfilProfundo = clienteExtra?.onboarding_perfil_profundo as Record<string, unknown> | null
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: registros30d } = await (db as any)
+    .from('registro_comidas_dia')
+    .select('estado, comida_id')
+    .eq('cliente_id', clienteId)
+    .gte('fecha', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]) as { data: Array<{ estado: string; comida_id: string }> | null }
+
+  const completadasIds: string[] = []
+  const saltadasIds: string[] = []
+
+  for (const r of registros30d ?? []) {
+    if (r.estado === 'completada') completadasIds.push(r.comida_id as string)
+    else if (r.estado === 'saltada') saltadasIds.push(r.comida_id as string)
+  }
+
+  const patronAbandono = saltadasIds.length >= 3
+    ? `Ha saltado ${saltadasIds.length} comidas en los últimos 30 días`
+    : null
+
+  const preferencias_recetas = {
+    alimentos_favoritos:         (perfilProfundo?.alimentos_favoritos as string[]) ?? [],
+    alimentos_rechazados:        (perfilProfundo?.alimentos_rechazados as string[]) ?? [],
+    dieta_habitual:              (perfilProfundo?.dieta_habitual as string) ?? null,
+    intolerancias:               (clienteExtra?.intolerancias as string[]) ?? [],
+    patologias:                  (perfilProfundo?.patologias as string[]) ?? [],
+    tecnicas_preferidas:         [],
+    recetas_completadas_ids_30d: completadasIds,
+    recetas_saltadas_ids_30d:    saltadasIds,
+    patron_abandono:             patronAbandono,
+  }
+
   return {
     cliente: {
       id: cliente.id,
@@ -179,6 +219,7 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
     perfil_aprendizaje: perfil as ClientePerfilAprendizaje | null,
     metodologia_coach: (metodologia as CoachMemoria[]) ?? [],
     actividad_semanal: actividadSemanal,
+    preferencias_recetas,
   }
 }
 
