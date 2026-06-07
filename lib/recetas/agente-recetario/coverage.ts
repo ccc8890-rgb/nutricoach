@@ -28,7 +28,7 @@ function coincide(regla: Omit<CoverageSnapshot, 'actuales'>, snap: CoverageSnaps
   return regla.objetivo === snap.objetivo
     && (!regla.deporte || regla.deporte === snap.deporte)
     && (!regla.momento || regla.momento === snap.momento)
-    && (!regla.tipoPlato || regla.tipoPlato === snap.tipoPlato)
+    && (!regla.tipoPlato || regla.tipoPlato.toLowerCase() === snap.tipoPlato?.toLowerCase())
 }
 
 export function detectarHuecosRecetario(snapshot: CoverageSnapshot[]): RecetaCoverageGap[] {

@@ -12,7 +12,9 @@ export function generarCandidatasDesdeHueco(
   )
 
   const compatibles = PLANTILLAS_RECETARIO_PRO.filter((template) =>
-    !gap.momento || template.momentos.includes(gap.momento)
+    template.objetivos.includes(gap.objetivo)
+    && (!gap.momento || template.momentos.includes(gap.momento))
+    && (!gap.tipoPlato || template.tipoPlato.toLowerCase() === gap.tipoPlato.toLowerCase())
   )
 
   return compatibles

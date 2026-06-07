@@ -71,6 +71,36 @@ function testGeneratorDoesNotUseUnsafeCondimentAmounts() {
   assert.equal(sospechosos.length, 0)
 }
 
+function testGeneratorCreatesPreTrainingCandidates() {
+  const candidatas = generarCandidatasDesdeHueco({
+    objetivo: 'rendimiento',
+    momento: 'pre_entreno',
+    actuales: 14,
+    minimo: 30,
+    prioridad: 'alta',
+    motivo: 'Cobertura 14/30',
+  }, { cantidad: 2 })
+
+  assert.equal(candidatas.length, 2)
+  assert.equal(candidatas.every((receta) => receta.momentos.includes('pre_entreno')), true)
+  assert.equal(candidatas.every((receta) => receta.digestibilidad === 'alta'), true)
+}
+
+function testGeneratorCreatesFatLossDinnerCandidate() {
+  const candidatas = generarCandidatasDesdeHueco({
+    objetivo: 'perdida_grasa',
+    tipoPlato: 'cena',
+    actuales: 12,
+    minimo: 30,
+    prioridad: 'media',
+    motivo: 'Cobertura 12/30',
+  }, { cantidad: 1 })
+
+  assert.equal(candidatas.length, 1)
+  assert.equal(candidatas[0].tipoPlato, 'Cena')
+  assert.equal(candidatas[0].objetivos.includes('perdida_grasa'), true)
+}
+
 function testValidatorRejectsUnmatchedIngredients() {
   const receta: RecetaCandidata = {
     nombre: 'Mango sticky rice sospechoso',
@@ -340,6 +370,8 @@ testCoverageDetectsTaperingGap()
 testCoverageDoesNotCreateGapWhenMinimumIsMet()
 testGeneratorCreatesSmallDryRunBatch()
 testGeneratorDoesNotUseUnsafeCondimentAmounts()
+testGeneratorCreatesPreTrainingCandidates()
+testGeneratorCreatesFatLossDinnerCandidate()
 testValidatorRejectsUnmatchedIngredients()
 testValidatorRejectsSuspiciousStickyRiceChipsMatch()
 testImagePreparationNeverApproves()

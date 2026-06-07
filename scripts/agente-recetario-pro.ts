@@ -18,8 +18,20 @@ function arg(name: string, fallback = '') {
 const objetivo = arg('objetivo', 'rendimiento')
 const deporte = arg('deporte', 'running')
 const momento = arg('momento', 'tapering')
+const tipoPlatoArg = arg('tipo-plato', '')
 const cantidad = Number(arg('cantidad', '3'))
 const apply = process.argv.includes('--apply')
+
+const TIPO_PLATO_POR_MOMENTO: Record<string, string> = {
+  desayuno: 'Desayuno',
+  comida: 'Comida',
+  cena: 'Cena',
+  merienda: 'Merienda',
+  media_manana: 'Almuerzo',
+  snack: 'Snack',
+}
+
+const tipoPlato = tipoPlatoArg || TIPO_PLATO_POR_MOMENTO[momento]
 
 async function cargarAlimentos(): Promise<AlimentoLigero[]> {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -54,7 +66,7 @@ async function cargarAlimentos(): Promise<AlimentoLigero[]> {
 }
 
 async function main() {
-  const gaps = detectarHuecosRecetario([{ objetivo, deporte, momento, actuales: 0 }])
+  const gaps = detectarHuecosRecetario([{ objetivo, deporte, momento, tipoPlato, actuales: 0 }])
   const gap = gaps[0]
 
   if (!gap) {
