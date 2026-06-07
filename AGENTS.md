@@ -85,6 +85,21 @@ Fix aplicado 07-06-2026:
 - `app/cliente/sesion/[id]` vuelve a `/cliente/[codigo]` si llegó con código, no a `/cliente`.
 - `POST /api/entrenos/registrar-sesion` acepta `codigo` para el flujo público, igual que otros endpoints del portal por código.
 
+## Regla 7 — PWA/SW: nunca cachear APIs del portal cliente
+
+```
+❌ sw.js cachea /api/cliente/sesion/[id] o cualquier /api/cliente/*
+   La PWA instalada puede conservar 401/403/404 ("Sesión no encontrada") o datos de otro usuario.
+
+✅ /api/* network-only salvo endpoints públicos explícitamente cacheables y solo con res.ok.
+```
+
+Fix aplicado 07-06-2026:
+- `public/sw.js` subido a `nutricoach-v7` para limpiar caches antiguas.
+- `/api/*` pasa a network-only.
+- `API_CACHE_ROUTES` solo cachea respuestas `res.ok`.
+- `scripts/audit-portal-patterns.mjs` falla si vuelve a haber fallback de cache para APIs.
+
 ## Verificación antes de mergear
 
 ```bash

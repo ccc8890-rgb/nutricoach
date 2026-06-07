@@ -174,6 +174,33 @@ for (let i = 0; i < publicDashboardLines.length; i++) {
   }
 }
 
+// ─── Regla 7: Service Worker no debe cachear APIs de cliente ─────────────────
+// Las APIs del portal dependen de cookies, usuario y estado actual. Cachearlas
+// conserva 401/403/404 o datos de otro flujo en la PWA instalada.
+const SERVICE_WORKER = join(ROOT, 'public/sw.js')
+const swContent = readFile(SERVICE_WORKER)
+if (!swContent.includes("const CACHE = 'nutricoach-v7'")) {
+  warnings.push({
+    file: rel(SERVICE_WORKER),
+    rule: 'BUMP_SW_CACHE_VERSION',
+    msg: `Al cambiar estrategia PWA, subir versión CACHE para forzar limpieza de caches antiguas`,
+  })
+}
+if (!swContent.includes('if (pathname.startsWith(\'/api/\'))') && !swContent.includes('if (pathname.startsWith("/api/"))')) {
+  errors.push({
+    file: rel(SERVICE_WORKER),
+    rule: 'MISSING_API_NETWORK_ONLY_RULE',
+    msg: `sw.js debe manejar APIs explícitamente como network-only`,
+  })
+}
+if (/pathname\.startsWith\(['"]\/api\/['"]\)[\s\S]{0,400}caches\.match\(request\)/.test(swContent)) {
+  errors.push({
+    file: rel(SERVICE_WORKER),
+    rule: 'NO_API_CACHE_FALLBACK',
+    msg: `No usar caches.match(request) como fallback para APIs; puede devolver errores auth antiguos en PWA`,
+  })
+}
+
 // ─── Resultado ────────────────────────────────────────────────────────────────
 console.log('\n🔍 Auditoría patrones portal cliente\n')
 

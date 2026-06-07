@@ -1,4 +1,4 @@
-const CACHE = 'nutricoach-v6'
+const CACHE = 'nutricoach-v7'
 const STATIC_ASSETS = [
     '/manifest.json',
     '/icon-192.svg',
@@ -56,16 +56,19 @@ self.addEventListener('fetch', (event) => {
         return
     }
 
-    // APIs cacheables → cache-first para lectura, network para escritura.
-    // /api/alimentos no se cachea: el catálogo cambia por limpieza de BD y debe reflejarse al momento.
+    // APIs cacheables → stale-while-revalidate solo si la respuesta es OK.
+    // Nunca cachear errores auth/404: en PWA pueden dejar estados falsos como
+    // "Sesión no encontrada" aunque el backend ya haya cambiado.
     const esApiCacheable = API_CACHE_ROUTES.some(route => pathname.startsWith(route))
     if (esApiCacheable) {
         event.respondWith(
             caches.match(request).then(cached => {
                 const fetchPromise = fetch(request)
                     .then(res => {
-                        const clone = res.clone()
-                        caches.open(CACHE).then(cache => cache.put(request, clone))
+                        if (res.ok) {
+                            const clone = res.clone()
+                            caches.open(CACHE).then(cache => cache.put(request, clone))
+                        }
                         return res
                     })
                     .catch(() => cached)
@@ -75,17 +78,11 @@ self.addEventListener('fetch', (event) => {
         return
     }
 
-    // Otras API routes → network first, cache fallback
+    // Otras API routes → solo red.
+    // Especialmente /api/cliente/* depende de sesión/cookies/cliente actual.
+    // Cachear aquí puede mezclar usuario coach/cliente o conservar 401/403/404.
     if (pathname.startsWith('/api/')) {
-        event.respondWith(
-            fetch(request)
-                .then(res => {
-                    const clone = res.clone()
-                    caches.open(CACHE).then(cache => cache.put(request, clone))
-                    return res
-                })
-                .catch(() => caches.match(request))
-        )
+        event.respondWith(fetch(request))
         return
     }
 

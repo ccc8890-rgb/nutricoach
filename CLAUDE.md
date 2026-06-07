@@ -7,6 +7,7 @@
 | Bug | Causa raíz | Fix |
 |-----|-----------|-----|
 | Al entrar como coach a la app cliente, pulsar "Empezar" mostraba "Sesión no encontrada" y al volver caía en perfil/dashboard coach | `DashboardCliente` abría `/cliente/sesion/[id]` sin `codigo`. La API `/api/cliente/sesion/[id]` solo resolvía cliente por usuario autenticado (`clientes.profile_id`). Carlos estaba logueado como coach, así que no había cliente asociado y devolvía 404. | Flujo público por código completo: link `?codigo=...`, API de sesión verifica por `planes_nutricion.codigo_publico`, vuelta a `/cliente/[codigo]`, y `registrar-sesion` acepta `codigo` para guardar sesión del cliente correcto. |
+| Cliente real en PWA iPhone seguía viendo "Sesión no encontrada" tras deploy | `public/sw.js` cacheaba todas las API routes con fallback, incluidas respuestas 401/403/404 de `/api/cliente/sesion/[id]`. Una PWA instalada podía devolver un error antiguo aunque la red/backend ya estuviera corregido. | `sw.js` subido a `nutricoach-v7`; `/api/*` network-only; endpoints cacheables solo guardan `res.ok`; auditoría bloquea cache fallback de APIs. |
 
 ### Bug recurrente corregido
 
