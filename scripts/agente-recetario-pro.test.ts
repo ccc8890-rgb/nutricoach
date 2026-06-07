@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { detectarHuecosRecetario } from '../lib/recetas/agente-recetario/coverage'
 import { generarCandidatasDesdeHueco } from '../lib/recetas/agente-recetario/generator'
 import { prepararImagenPendiente } from '../lib/recetas/agente-recetario/image'
-import { construirPayloadInsercionReceta } from '../lib/recetas/agente-recetario/importer'
+import { construirPayloadInsercionReceta, insertarRecetaEnRevision } from '../lib/recetas/agente-recetario/importer'
 import { resolverIngredientesCandidata } from '../lib/recetas/agente-recetario/matcher'
 import { AGENTE_RECETARIO_DEFAULTS, type RecetaCandidata } from '../lib/recetas/agente-recetario/types'
 import { validarCandidataConservadora } from '../lib/recetas/agente-recetario/validator'
@@ -81,8 +81,8 @@ function testValidatorRejectsUnmatchedIngredients() {
     momentos: ['postre'],
     tipoPlato: 'postre',
     ingredientes: [
-      { nombre: 'mango', alimentoId: 'ok-mango', alimentoNombre: 'Mango', cantidadGramos: 120, rolIngrediente: 'frutas' },
-      { nombre: 'arroz glutinoso', cantidadGramos: 90, rolIngrediente: 'carbohidrato_principal' },
+      { nombre: 'mango', alimentoId: 'ok-mango', alimentoNombre: 'Mango', cantidadGramos: 120, rolIngrediente: 'fruta_complemento' },
+      { nombre: 'arroz glutinoso', cantidadGramos: 90, rolIngrediente: 'carbohidrato_base' },
     ],
     trazabilidad: { plantillaId: 'test', motivoGeneracion: 'test', modo: 'dry-run' },
   }
@@ -102,8 +102,8 @@ function testValidatorRejectsSuspiciousStickyRiceChipsMatch() {
     momentos: ['postre'],
     tipoPlato: 'postre',
     ingredientes: [
-      { nombre: 'mango', alimentoId: 'ok-mango', alimentoNombre: 'Mango', cantidadGramos: 120, rolIngrediente: 'frutas' },
-      { nombre: 'arroz glutinoso', alimentoId: 'bad-chip', alimentoNombre: 'Chips de patata sabor arroz', cantidadGramos: 90, rolIngrediente: 'carbohidrato_principal' },
+      { nombre: 'mango', alimentoId: 'ok-mango', alimentoNombre: 'Mango', cantidadGramos: 120, rolIngrediente: 'fruta_complemento' },
+      { nombre: 'arroz glutinoso', alimentoId: 'bad-chip', alimentoNombre: 'Chips de patata sabor arroz', cantidadGramos: 90, rolIngrediente: 'carbohidrato_base' },
     ],
     trazabilidad: { plantillaId: 'test', motivoGeneracion: 'test', modo: 'dry-run' },
   }
@@ -198,9 +198,141 @@ function testImporterAlwaysUsesReviewState() {
     motivo: 'Cobertura 5/12',
   }, { cantidad: 1 })[0]
 
-  const payload = construirPayloadInsercionReceta(receta)
+  const recetaMatcheada = resolverIngredientesCandidata(receta, [
+    { id: '1', nombre: 'Arroz blanco', calorias: 130, proteinas: 2.7, carbohidratos: 28, grasas: 0.3, fibra: 0.4 },
+    { id: '2', nombre: 'Pechuga de pollo', calorias: 165, proteinas: 31, carbohidratos: 0, grasas: 3.6, fibra: 0 },
+    { id: '3', nombre: 'Calabacín', calorias: 17, proteinas: 1.2, carbohidratos: 3.1, grasas: 0.3, fibra: 1 },
+    { id: '4', nombre: 'Aceite de oliva', calorias: 884, proteinas: 0, carbohidratos: 0, grasas: 100, fibra: 0 },
+  ]).receta
+
+  const payload = construirPayloadInsercionReceta(recetaMatcheada)
   assert.equal(payload.receta.estado, 'en_revision')
   assert.notEqual(payload.receta.estado, 'aprobada')
+  assert.deepEqual(payload.receta.intolerancias, [])
+}
+
+function testImporterRejectsUnmatchedIngredients() {
+  const receta = generarCandidatasDesdeHueco({
+    objetivo: 'rendimiento',
+    deporte: 'running',
+    momento: 'tapering',
+    actuales: 5,
+    minimo: 12,
+    prioridad: 'alta',
+    motivo: 'Cobertura 5/12',
+  }, { cantidad: 1 })[0]
+
+  assert.throws(() => construirPayloadInsercionReceta(receta), /sin alimento_id/)
+}
+
+function testImporterCalculatesMacrosFromIngredients() {
+  const receta = generarCandidatasDesdeHueco({
+    objetivo: 'rendimiento',
+    deporte: 'running',
+    momento: 'tapering',
+    actuales: 5,
+    minimo: 12,
+    prioridad: 'alta',
+    motivo: 'Cobertura 5/12',
+  }, { cantidad: 1 })[0]
+
+  const recetaMatcheada = resolverIngredientesCandidata(receta, [
+    { id: '1', nombre: 'Arroz blanco', calorias: 130, proteinas: 2.7, carbohidratos: 28, grasas: 0.3, fibra: 0.4 },
+    { id: '2', nombre: 'Pechuga de pollo', calorias: 165, proteinas: 31, carbohidratos: 0, grasas: 3.6, fibra: 0 },
+    { id: '3', nombre: 'Calabacín', calorias: 17, proteinas: 1.2, carbohidratos: 3.1, grasas: 0.3, fibra: 1 },
+    { id: '4', nombre: 'Aceite de oliva', calorias: 884, proteinas: 0, carbohidratos: 0, grasas: 100, fibra: 0 },
+  ]).receta
+
+  const payload = construirPayloadInsercionReceta(recetaMatcheada)
+  assert.equal(payload.receta.kcal > 350, true)
+  assert.equal(payload.receta.proteinas > 40, true)
+  assert.equal(payload.receta.grasas > 10, true)
+}
+
+function recetaMatcheadaParaInsert() {
+  const receta = generarCandidatasDesdeHueco({
+    objetivo: 'rendimiento',
+    deporte: 'running',
+    momento: 'tapering',
+    actuales: 5,
+    minimo: 12,
+    prioridad: 'alta',
+    motivo: 'Cobertura 5/12',
+  }, { cantidad: 1 })[0]
+
+  return resolverIngredientesCandidata(receta, [
+    { id: '1', nombre: 'Arroz blanco', calorias: 130, proteinas: 2.7, carbohidratos: 28, grasas: 0.3, fibra: 0.4 },
+    { id: '2', nombre: 'Pechuga de pollo', calorias: 165, proteinas: 31, carbohidratos: 0, grasas: 3.6, fibra: 0 },
+    { id: '3', nombre: 'Calabacín', calorias: 17, proteinas: 1.2, carbohidratos: 3.1, grasas: 0.3, fibra: 1 },
+    { id: '4', nombre: 'Aceite de oliva', calorias: 884, proteinas: 0, carbohidratos: 0, grasas: 100, fibra: 0 },
+  ]).receta
+}
+
+function fakeSupabase(options: { duplicate?: boolean } = {}) {
+  const state = {
+    recetas: [] as any[],
+    ingredientes: [] as any[],
+    deleted: [] as string[],
+  }
+
+  return {
+    state,
+    from(table: string) {
+      return {
+        select() { return this },
+        eq(column: string, value: unknown) {
+          if (table === 'recetas' && column === 'nombre' && options.duplicate) {
+            return this
+          }
+          if (table === 'recetas' && column === 'id') {
+            state.deleted.push(String(value))
+          }
+          return this
+        },
+        in() { return this },
+        async limit() {
+          return { data: options.duplicate ? [{ id: 'dup', nombre: 'duplicada', estado: 'en_revision' }] : [], error: null }
+        },
+        insert(payload: any) {
+          if (table === 'recetas') {
+            const receta = { id: 'receta-1', ...payload }
+            state.recetas.push(receta)
+            return {
+              select() {
+                return {
+                  async single() {
+                    return { data: receta, error: null }
+                  },
+                }
+              },
+            }
+          }
+          state.ingredientes.push(...payload)
+          return Promise.resolve({ data: payload, error: null })
+        },
+        delete() { return this },
+      }
+    },
+  }
+}
+
+async function testImporterSkipsDuplicates() {
+  const supabase = fakeSupabase({ duplicate: true })
+  const resultado = await insertarRecetaEnRevision(supabase as any, recetaMatcheadaParaInsert())
+
+  assert.equal(resultado.estado, 'duplicada')
+  assert.equal(supabase.state.recetas.length, 0)
+}
+
+async function testImporterInsertsRecipeAndIngredients() {
+  const supabase = fakeSupabase()
+  const resultado = await insertarRecetaEnRevision(supabase as any, recetaMatcheadaParaInsert())
+
+  assert.equal(resultado.estado, 'insertada')
+  assert.equal(resultado.recetaId, 'receta-1')
+  assert.equal(supabase.state.recetas[0].estado, 'en_revision')
+  assert.equal(supabase.state.ingredientes.length, 4)
+  assert.equal(supabase.state.ingredientes.every((ing) => ing.receta_id === 'receta-1'), true)
 }
 
 testDefaultsAreConservative()
@@ -215,4 +347,16 @@ testMatcherRejectsMissingFood()
 testMatcherResolvesExactNormalizedFood()
 testCliDryRunDoesNotApply()
 testImporterAlwaysUsesReviewState()
-console.log('agente-recetario-pro.test.ts OK')
+testImporterRejectsUnmatchedIngredients()
+testImporterCalculatesMacrosFromIngredients()
+
+async function main() {
+  await testImporterSkipsDuplicates()
+  await testImporterInsertsRecipeAndIngredients()
+  console.log('agente-recetario-pro.test.ts OK')
+}
+
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})

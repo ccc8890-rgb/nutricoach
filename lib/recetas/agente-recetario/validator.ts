@@ -14,12 +14,12 @@ const MATCHES_SOSPECHOSOS: Array<{
 
 const LIMITES_POR_ROL: Record<string, { min: number; max: number }> = {
   especias_aromaticos: { min: 0.2, max: 15 },
-  salsas_condimentos: { min: 2, max: 120 },
-  grasas: { min: 1, max: 35 },
+  salsa_condimento: { min: 2, max: 120 },
+  grasa_saludable: { min: 1, max: 35 },
   proteina_principal: { min: 40, max: 260 },
-  carbohidrato_principal: { min: 25, max: 300 },
-  verdura_fibra: { min: 20, max: 300 },
-  frutas: { min: 30, max: 250 },
+  carbohidrato_base: { min: 25, max: 300 },
+  verdura_volumen: { min: 20, max: 300 },
+  fruta_complemento: { min: 30, max: 250 },
 }
 
 export function validarCandidataConservadora(receta: RecetaCandidata): ResultadoValidacionAgente {

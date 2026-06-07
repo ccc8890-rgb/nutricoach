@@ -19,6 +19,13 @@ export type IngredienteCandidato = {
   cantidadGramos: number
   rolIngrediente: string
   esCantidadFija?: boolean
+  macros100g?: {
+    calorias: number
+    proteinas: number
+    carbohidratos: number
+    grasas: number
+    fibra: number
+  }
 }
 
 export type RecetaCandidata = {

@@ -9,7 +9,7 @@ export type ImagenPendienteAgente = {
 
 export function prepararImagenPendiente(receta: RecetaCandidata): ImagenPendienteAgente {
   const ingredientesPrincipales = receta.ingredientes
-    .filter((ingrediente) => !['especias_aromaticos', 'salsas_condimentos'].includes(ingrediente.rolIngrediente))
+    .filter((ingrediente) => !['especias_aromaticos', 'salsa_condimento'].includes(ingrediente.rolIngrediente))
     .slice(0, 4)
     .map((ingrediente) => ingrediente.nombre)
     .join(', ')

@@ -3,6 +3,11 @@ import type { RecetaCandidata } from './types'
 export type AlimentoLigero = {
   id: string
   nombre: string
+  calorias?: number | null
+  proteinas?: number | null
+  carbohidratos?: number | null
+  grasas?: number | null
+  fibra?: number | null
 }
 
 export type ResultadoMatcher = {
@@ -38,6 +43,13 @@ export function resolverIngredientesCandidata(
       ...ingrediente,
       alimentoId: alimento.id,
       alimentoNombre: alimento.nombre,
+      macros100g: {
+        calorias: alimento.calorias ?? 0,
+        proteinas: alimento.proteinas ?? 0,
+        carbohidratos: alimento.carbohidratos ?? 0,
+        grasas: alimento.grasas ?? 0,
+        fibra: alimento.fibra ?? 0,
+      },
     }
   })
 

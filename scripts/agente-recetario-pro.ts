@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { detectarHuecosRecetario } from '../lib/recetas/agente-recetario/coverage'
 import { generarCandidatasDesdeHueco } from '../lib/recetas/agente-recetario/generator'
 import { prepararImagenPendiente } from '../lib/recetas/agente-recetario/image'
+import { insertarRecetaEnRevision } from '../lib/recetas/agente-recetario/importer'
 import { resolverIngredientesCandidata, type AlimentoLigero } from '../lib/recetas/agente-recetario/matcher'
 import { validarCandidataConservadora } from '../lib/recetas/agente-recetario/validator'
 
@@ -37,7 +38,7 @@ async function cargarAlimentos(): Promise<AlimentoLigero[]> {
   for (let from = 0; ; from += pageSize) {
     const { data, error } = await supabase
       .from('alimentos')
-      .select('id,nombre')
+      .select('id,nombre,calorias,proteinas,carbohidratos,grasas,fibra')
       .eq('es_comestible', true)
       .order('nombre', { ascending: true })
       .range(from, from + pageSize - 1)
@@ -53,11 +54,6 @@ async function cargarAlimentos(): Promise<AlimentoLigero[]> {
 }
 
 async function main() {
-  if (apply) {
-    console.error('ERROR: --apply no esta implementado en la fase dry-run conservadora.')
-    process.exit(1)
-  }
-
   const gaps = detectarHuecosRecetario([{ objetivo, deporte, momento, actuales: 0 }])
   const gap = gaps[0]
 
@@ -69,6 +65,18 @@ async function main() {
   }
 
   const alimentos = await cargarAlimentos()
+  const supabase = apply
+    ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } },
+    )
+    : null
+
+  if (apply && (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+    throw new Error('Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY para usar --apply')
+  }
+
   const candidatas = generarCandidatasDesdeHueco(gap, { cantidad })
   const matcheadas = candidatas.map((receta) => resolverIngredientesCandidata(receta, alimentos))
   const validadas = matcheadas.map((match) => ({
@@ -79,7 +87,7 @@ async function main() {
   }))
 
   console.log('AgenteRecetarioPro')
-  console.log('Modo: dry-run')
+  console.log(`Modo: ${apply ? 'apply' : 'dry-run'}`)
   console.log(`Objetivo: ${objetivo}`)
   console.log(`Deporte: ${deporte}`)
   console.log(`Momento: ${momento}`)
@@ -88,7 +96,21 @@ async function main() {
   console.log(`Generadas: ${candidatas.length}`)
   console.log(`Validas para en_revision: ${validadas.filter((item) => item.validacion.valida).length}`)
   console.log(`Descartadas: ${validadas.filter((item) => !item.validacion.valida).length}`)
-  console.log('Insertadas: 0')
+
+  const resultadosApply: Array<{ nombre: string; estado: string; recetaId?: string }> = []
+  if (apply && supabase) {
+    for (const item of validadas.filter((entry) => entry.validacion.valida)) {
+      const resultado = await insertarRecetaEnRevision(supabase, item.receta, { imagenPrompt: item.imagen.prompt })
+      resultadosApply.push({
+        nombre: item.receta.nombre,
+        estado: resultado.estado,
+        recetaId: resultado.recetaId,
+      })
+    }
+  }
+
+  console.log(`Insertadas: ${resultadosApply.filter((item) => item.estado === 'insertada').length}`)
+  console.log(`Duplicadas: ${resultadosApply.filter((item) => item.estado === 'duplicada').length}`)
 
   for (const item of validadas) {
     console.log(`- ${item.receta.nombre} -> ${item.validacion.estado}`)
@@ -98,6 +120,10 @@ async function main() {
     for (const error of item.validacion.errores) {
       console.log(`  validacion: ${error}`)
     }
+  }
+
+  for (const item of resultadosApply) {
+    console.log(`  apply: ${item.estado} · ${item.nombre}${item.recetaId ? ` · ${item.recetaId}` : ''}`)
   }
 }
 
