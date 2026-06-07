@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { detectarHuecosRecetario } from '../lib/recetas/agente-recetario/coverage'
 import { generarCandidatasDesdeHueco } from '../lib/recetas/agente-recetario/generator'
+import { prepararImagenPendiente } from '../lib/recetas/agente-recetario/image'
 import { AGENTE_RECETARIO_DEFAULTS, type RecetaCandidata } from '../lib/recetas/agente-recetario/types'
 import { validarCandidataConservadora } from '../lib/recetas/agente-recetario/validator'
 
@@ -109,6 +110,23 @@ function testValidatorRejectsSuspiciousStickyRiceChipsMatch() {
   assert.equal(resultado.errores.some((error) => error.includes('match sospechoso')), true)
 }
 
+function testImagePreparationNeverApproves() {
+  const receta = generarCandidatasDesdeHueco({
+    objetivo: 'rendimiento',
+    deporte: 'running',
+    momento: 'tapering',
+    actuales: 5,
+    minimo: 12,
+    prioridad: 'alta',
+    motivo: 'Cobertura 5/12',
+  }, { cantidad: 1 })[0]
+
+  const imagen = prepararImagenPendiente(receta)
+  assert.equal(imagen.aprobada, false)
+  assert.equal(imagen.estado, 'pendiente_revision')
+  assert.equal(imagen.prompt.length > 30, true)
+}
+
 testDefaultsAreConservative()
 testCoverageDetectsTaperingGap()
 testCoverageDoesNotCreateGapWhenMinimumIsMet()
@@ -116,4 +134,5 @@ testGeneratorCreatesSmallDryRunBatch()
 testGeneratorDoesNotUseUnsafeCondimentAmounts()
 testValidatorRejectsUnmatchedIngredients()
 testValidatorRejectsSuspiciousStickyRiceChipsMatch()
+testImagePreparationNeverApproves()
 console.log('agente-recetario-pro.test.ts OK')
