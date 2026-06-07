@@ -109,7 +109,7 @@ export const PLANTILLAS_RECETARIO_PRO: Array<{
       instrucciones: [
         'Cocer la pasta al dente.',
         'Cocinar el pavo sin exceso de aceite.',
-        'Mezclar con tomate triturado y ajustar sal.',
+        'Mezclar con tomate triturado.',
       ],
       objetivos: [input.objetivo],
       deportes: input.deporte ? [input.deporte, 'endurance'] : ['endurance'],
@@ -121,7 +121,6 @@ export const PLANTILLAS_RECETARIO_PRO: Array<{
         { nombre: 'pavo', cantidadGramos: 110, rolIngrediente: 'proteina_principal' },
         { nombre: 'tomate triturado', cantidadGramos: 90, rolIngrediente: 'salsas_condimentos' },
         { nombre: 'aceite de oliva', cantidadGramos: 7, rolIngrediente: 'grasas' },
-        { nombre: 'sal', cantidadGramos: 2, rolIngrediente: 'especias_aromaticos', esCantidadFija: true },
       ],
       trazabilidad: {
         plantillaId: 'carga-cho-pasta-pavo-tomate',
