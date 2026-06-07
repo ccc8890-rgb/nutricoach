@@ -5,7 +5,7 @@ import { PLANTILLAS_RECETARIO_PRO } from './templates'
 export function generarCandidatasDesdeHueco(
   gap: RecetaCoverageGap,
   options: { cantidad?: number } = {},
-): RecetaCandidata[] {
+): Omit<RecetaCandidata, 'nombre' | 'descripcion' | 'instrucciones'>[] {
   const cantidad = Math.min(
     options.cantidad ?? 3,
     AGENTE_RECETARIO_DEFAULTS.maxCandidatesPerRun,
