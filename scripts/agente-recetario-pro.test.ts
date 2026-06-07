@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { detectarHuecosRecetario } from '../lib/recetas/agente-recetario/coverage'
 import { generarCandidatasDesdeHueco } from '../lib/recetas/agente-recetario/generator'
 import { prepararImagenPendiente } from '../lib/recetas/agente-recetario/image'
+import { construirPayloadInsercionReceta } from '../lib/recetas/agente-recetario/importer'
 import { resolverIngredientesCandidata } from '../lib/recetas/agente-recetario/matcher'
 import { AGENTE_RECETARIO_DEFAULTS, type RecetaCandidata } from '../lib/recetas/agente-recetario/types'
 import { validarCandidataConservadora } from '../lib/recetas/agente-recetario/validator'
@@ -186,6 +187,22 @@ function testCliDryRunDoesNotApply() {
   assert.equal(output.includes('en_revision'), true)
 }
 
+function testImporterAlwaysUsesReviewState() {
+  const receta = generarCandidatasDesdeHueco({
+    objetivo: 'rendimiento',
+    deporte: 'running',
+    momento: 'tapering',
+    actuales: 5,
+    minimo: 12,
+    prioridad: 'alta',
+    motivo: 'Cobertura 5/12',
+  }, { cantidad: 1 })[0]
+
+  const payload = construirPayloadInsercionReceta(receta)
+  assert.equal(payload.receta.estado, 'en_revision')
+  assert.notEqual(payload.receta.estado, 'aprobada')
+}
+
 testDefaultsAreConservative()
 testCoverageDetectsTaperingGap()
 testCoverageDoesNotCreateGapWhenMinimumIsMet()
@@ -197,4 +214,5 @@ testImagePreparationNeverApproves()
 testMatcherRejectsMissingFood()
 testMatcherResolvesExactNormalizedFood()
 testCliDryRunDoesNotApply()
+testImporterAlwaysUsesReviewState()
 console.log('agente-recetario-pro.test.ts OK')
