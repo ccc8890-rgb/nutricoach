@@ -125,6 +125,35 @@ if (mainContent.includes("router.replace('/cliente/semana')")) {
   })
 }
 
+// ─── Regla 5: /cliente/[codigo] no debe renderizar portal antiguo si hay sesión ─
+// Esta ruta existe por compatibilidad pública, pero un cliente autenticado debe
+// acabar siempre en /cliente. Si no, el historial puede volver a DashboardCliente.
+const PUBLIC_CODE_PORTAL = join(ROOT, 'app/cliente/[codigo]/page.tsx')
+const publicCodeContent = readFile(PUBLIC_CODE_PORTAL)
+if (publicCodeContent.includes("'use client'") || publicCodeContent.includes('"use client"')) {
+  errors.push({
+    file: rel(PUBLIC_CODE_PORTAL),
+    line: 1,
+    rule: 'CLIENT_CODE_PORTAL_MUST_BE_SERVER_GUARDED',
+    msg: `/cliente/[codigo] debe ser Server Component para redirigir a /cliente antes de renderizar DashboardCliente`,
+    code: publicCodeContent.split('\n')[0]?.trim(),
+  })
+}
+if (!publicCodeContent.includes("redirect('/cliente')") && !publicCodeContent.includes('redirect("/cliente")')) {
+  errors.push({
+    file: rel(PUBLIC_CODE_PORTAL),
+    rule: 'MISSING_CLIENT_ROLE_REDIRECT',
+    msg: `/cliente/[codigo] debe redirigir a /cliente cuando detecta sesión con role cliente`,
+  })
+}
+if (!publicCodeContent.includes('createServerSupabase')) {
+  errors.push({
+    file: rel(PUBLIC_CODE_PORTAL),
+    rule: 'MISSING_SERVER_SESSION_CHECK',
+    msg: `/cliente/[codigo] debe comprobar sesión en servidor antes de renderizar DashboardCliente`,
+  })
+}
+
 // ─── Resultado ────────────────────────────────────────────────────────────────
 console.log('\n🔍 Auditoría patrones portal cliente\n')
 

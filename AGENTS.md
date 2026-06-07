@@ -49,6 +49,25 @@ planes_nutricion, registros_sets, clientes).
 
 **Tablas que leen OK sin service role (RLS permisiva):** profiles, recetas, alimentos, ejercicios (catálogo público).
 
+## Regla 5 — `/cliente/[codigo]` es compatibilidad pública, NO portal interno
+
+```
+❌ Cliente logueado renderiza /cliente/[codigo] → monta DashboardCliente antiguo → "app rara" al volver de Training
+✅ Cliente logueado entra en /cliente/[codigo] → Server Component detecta role cliente → redirect('/cliente')
+```
+
+El portal activo para usuarios autenticados es `/cliente`.
+`/cliente/[codigo]` solo existe para enlaces públicos por código, PDFs e integraciones externas.
+
+Si vuelve a aparecer el bug de "al volver de entreno aparece otra app cliente", NO tocar solo:
+- `router.back()`
+- `Link replace`
+- botones `Volver`
+- links de `SemanaEntrenoCard`
+
+La causa raíz es impedir que un cliente autenticado pueda renderizar `DashboardCliente`.
+Fix raíz aplicado 07-06-2026 en `app/cliente/[codigo]/page.tsx`: Server Component + `createServerSupabase()` + `redirect('/cliente')` para `profiles.role === 'cliente'`.
+
 ## Verificación antes de mergear
 
 ```bash

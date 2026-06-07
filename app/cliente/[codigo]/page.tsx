@@ -1,10 +1,28 @@
-'use client'
-
-import { useParams } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import DashboardCliente from '@/components/PortalCliente/DashboardCliente'
+import { createServerSupabase } from '@/lib/supabase-server'
 
-export default function ClientePublicoPage() {
-    const { codigo } = useParams<{ codigo: string }>()
+interface ClientePublicoPageProps {
+    params: Promise<{ codigo: string }>
+}
+
+export default async function ClientePublicoPage({ params }: ClientePublicoPageProps) {
+    const { codigo } = await params
+
+    const supabase = await createServerSupabase()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.role === 'cliente') {
+            redirect('/cliente')
+        }
+    }
 
     if (!codigo) {
         return (

@@ -1,5 +1,29 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 07-06-2026 (Sesión 55) — Fix raíz: portal cliente antiguo en historial Training
+
+### Bug recurrente corregido
+
+| Bug | Causa raíz | Fix | Commit |
+|-----|-----------|-----|--------|
+| Al empezar entrenamiento y volver atrás aparecía una "app cliente" rara con dashboard distinto | Coexistían dos portales cliente: `/cliente` autenticado actual y `/cliente/[codigo]` público antiguo con `DashboardCliente`. Enlaces viejos, PDF, recetas o historial podían dejar `/cliente/{codigo}` detrás de `/cliente/sesion/[id]`. | `app/cliente/[codigo]/page.tsx` ahora es Server Component: si hay sesión y `profiles.role === 'cliente'`, hace `redirect('/cliente')` antes de renderizar `DashboardCliente`. | este commit |
+
+### Auditoría de patrones similares
+
+- Único montaje directo de `DashboardCliente`: `app/cliente/[codigo]/page.tsx`.
+- Enlaces antiguos detectados dentro del flujo público por código: `DashboardCliente`, `PlanSemanal`, `MiPlan`, PDFs e integraciones. Se mantienen para compatibilidad pública.
+- Para cliente logueado, cualquier entrada a `/cliente/[codigo]` debe caer en `/cliente` por redirección server-side.
+- No volver a arreglar este bug tocando `router.back()`, `replace` o botones de vuelta uno por uno: eso solo tapa síntomas.
+
+### Verificación
+
+```bash
+node scripts/audit-portal-patterns.mjs
+npx eslint 'app/cliente/[codigo]/page.tsx'
+npx tsc --noEmit --pretty false
+npm run build
+```
+
 ## ✅ SESIÓN 06-06-2026 (Sesión 54) — Prevención: script auditoría + invariantes AGENTS.md
 
 ### Qué se hizo
