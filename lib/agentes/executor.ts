@@ -164,13 +164,14 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
   const actividadSemanal = await getSummaryLast7d(db, clienteId).catch(() => null)
 
   // Cargar preferencias del cliente para personalización de recetas
+  // restricciones_alimentarias es la columna real en clientes (intolerancias, patologias, etc.)
   const { data: clienteExtra } = await db
     .from('clientes')
-    .select('intolerancias, onboarding_perfil_profundo')
+    .select('restricciones_alimentarias')
     .eq('id', clienteId)
     .single()
 
-  const perfilProfundo = clienteExtra?.onboarding_perfil_profundo as Record<string, unknown> | null
+  const perfilProfundo = clienteExtra?.restricciones_alimentarias as Record<string, unknown> | null
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: registros30d } = await (db as any)
@@ -195,7 +196,7 @@ export async function cargarContextoCliente(clienteId: string): Promise<Contexto
     alimentos_favoritos:         (perfilProfundo?.alimentos_favoritos as string[]) ?? [],
     alimentos_rechazados:        (perfilProfundo?.alimentos_rechazados as string[]) ?? [],
     dieta_habitual:              (perfilProfundo?.dieta_habitual as string) ?? null,
-    intolerancias:               (clienteExtra?.intolerancias as string[]) ?? [],
+    intolerancias:               (perfilProfundo?.intolerancias as string[]) ?? [],
     patologias:                  (perfilProfundo?.patologias as string[]) ?? [],
     tecnicas_preferidas:         [],
     recetas_completadas_ids_30d: completadasIds,
