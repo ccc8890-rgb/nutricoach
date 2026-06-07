@@ -81,10 +81,10 @@
             // 4. Clear sessionStorage
             sessionStorage.clear()
 
-            console.log('Cleanup complete. Redirecting to /login')
+            console.log('Cleanup complete. Redirecting to /login?next=/cliente')
 
-            // 5. Redirect to login (tokens were cleared, need to re-authenticate)
-            window.location.replace('/login?limpiado=1')
+            // 5. Redirect to login for the authenticated client portal.
+            window.location.replace('/login?next=%2Fcliente&limpiado=1')
         })()
     </script>
 </body>

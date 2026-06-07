@@ -2,7 +2,7 @@
   "name": "Casanova Cliente",
   "short_name": "Cliente",
   "description": "Plan personal de nutrición, entrenamiento y seguimiento",
-  "start_url": "/cliente/2tp7rtMS",
+  "start_url": "/cliente",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0A0A0B",

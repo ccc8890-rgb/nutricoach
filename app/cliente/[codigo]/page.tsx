@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import DashboardCliente from '@/components/PortalCliente/DashboardCliente'
 import { createServerSupabase } from '@/lib/supabase-server'
+import ClientePublicoPwaGuard from './ClientePublicoPwaGuard'
 
 interface ClientePublicoPageProps {
     params: Promise<{ codigo: string }>
@@ -35,5 +36,9 @@ export default async function ClientePublicoPage({ params }: ClientePublicoPageP
         )
     }
 
-    return <DashboardCliente codigo={codigo} />
+    return (
+        <ClientePublicoPwaGuard>
+            <DashboardCliente codigo={codigo} />
+        </ClientePublicoPwaGuard>
+    )
 }

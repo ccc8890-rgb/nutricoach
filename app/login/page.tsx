@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { LogIn, Sparkles } from 'lucide-react'
 
@@ -10,12 +10,47 @@ export default function LoginPage() {
   const [loadingGoogle, setLoadingGoogle] = useState(false)
   const [error, setError] = useState('')
 
+  function getSafeNext() {
+    const next = new URLSearchParams(window.location.search).get('next')
+    return next && next.startsWith('/') && !next.startsWith('//') ? next : null
+  }
+
+  async function getDefaultRedirect(userId: string) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single()
+
+    return profile?.role === 'cliente' ? '/cliente' : '/dashboard'
+  }
+
+  useEffect(() => {
+    let active = true
+
+    async function redirectExistingSession() {
+      const { data } = await supabase.auth.getUser()
+      if (!active || !data.user) return
+
+      const next = getSafeNext()
+      const fallback = await getDefaultRedirect(data.user.id)
+      window.location.replace(next ?? fallback)
+    }
+
+    redirectExistingSession()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   async function handleGoogle() {
     setLoadingGoogle(true)
+    const next = getSafeNext()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ''}`,
       },
     })
     setLoadingGoogle(false)
@@ -62,8 +97,9 @@ export default function LoginPage() {
     }
 
     await new Promise(r => setTimeout(r, 100))
-    const next = new URLSearchParams(window.location.search).get('next')
-    window.location.href = next && next.startsWith('/') ? next : '/dashboard'
+    const next = getSafeNext()
+    const fallback = data.user ? await getDefaultRedirect(data.user.id) : '/dashboard'
+    window.location.replace(next ?? fallback)
   }
 
   return (

@@ -13,6 +13,8 @@ function CallbackHandler() {
     async function handleCallback() {
       const code = searchParams.get('code')
       const invtoken = searchParams.get('invtoken')
+      const next = searchParams.get('next')
+      const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : null
 
       if (!code) {
         router.push('/login')
@@ -58,7 +60,13 @@ function CallbackHandler() {
           router.push(`/registro/${invtoken}?error=${encodeURIComponent(data2.error ?? 'Error al vincular')}`)
         }
       } else {
-        router.push('/dashboard')
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+
+        router.replace(safeNext ?? (profile?.role === 'cliente' ? '/cliente' : '/dashboard'))
       }
     }
 

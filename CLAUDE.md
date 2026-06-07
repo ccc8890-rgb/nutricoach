@@ -1,5 +1,29 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 07-06-2026 (Sesión 56) — Fix PWA cliente arrancando en portal público antiguo
+
+### Bug detectado por Carlos en iPhone
+
+| Bug | Causa raíz | Fix |
+|-----|-----------|-----|
+| Al pulsar "limpiar" o reabrir la PWA, se abría directamente la app cliente rara básica | `public/manifest-cliente-carlos.json` tenía `start_url: "/cliente/2tp7rtMS"`. Esa URL es el portal público antiguo por código y monta `DashboardCliente`. Si iOS arrancaba ahí sin sesión/cookie válida, veía la app básica. | Manifest cliente arranca en `/cliente`; `limpiar-sw.html` manda a `/login?next=/cliente`; `/cliente/[codigo]` tiene guardia client-side para modo PWA standalone y no renderiza el dashboard público en apps instaladas antiguas; login/callback redirigen por rol. |
+
+### Regla permanente
+
+- La PWA cliente autenticada debe arrancar siempre en `/cliente`, nunca en `/cliente/[codigo]`.
+- `/cliente/[codigo]` es compatibilidad pública para enlaces por código, no destino de PWA instalada.
+- Si iOS conserva una PWA antigua con start_url viejo, `ClientePublicoPwaGuard` debe redirigir antes de mostrar `DashboardCliente`.
+- Al limpiar caché, usar siempre `/login?next=%2Fcliente&limpiado=1`.
+
+### Verificación
+
+```bash
+node scripts/audit-portal-patterns.mjs
+npx eslint 'app/cliente/[codigo]/page.tsx' 'app/cliente/[codigo]/ClientePublicoPwaGuard.tsx' app/login/page.tsx app/auth/callback/page.tsx
+npx tsc --noEmit --pretty false
+npm run build
+```
+
 ## ✅ SESIÓN 07-06-2026 (Sesión 55) — Fix raíz: portal cliente antiguo en historial Training
 
 ### Segundo bug detectado tras revisar en producción

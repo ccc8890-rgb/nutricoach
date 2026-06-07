@@ -100,13 +100,31 @@ Fix aplicado 07-06-2026:
 - `API_CACHE_ROUTES` solo cachea respuestas `res.ok`.
 - `scripts/audit-portal-patterns.mjs` falla si vuelve a haber fallback de cache para APIs.
 
+## Regla 8 — La PWA cliente NUNCA arranca en `/cliente/[codigo]`
+
+```
+❌ manifest-cliente-carlos.json → "start_url": "/cliente/2tp7rtMS"
+   Al limpiar datos o abrir desde iPhone, iOS reabre el portal público antiguo.
+
+✅ manifest-cliente-carlos.json → "start_url": "/cliente"
+   La PWA arranca siempre en el portal cliente autenticado.
+```
+
+Fix aplicado 07-06-2026:
+- `public/manifest-cliente-carlos.json` usa `start_url: "/cliente"`.
+- `public/limpiar-sw.html` redirige a `/login?next=%2Fcliente&limpiado=1`.
+- `app/cliente/[codigo]/ClientePublicoPwaGuard.tsx` impide que una PWA instalada con start_url antiguo renderice `DashboardCliente`: si no hay sesión manda a login cliente; si hay cliente manda a `/cliente`; si hay coach manda a `/dashboard`.
+- `app/login/page.tsx` y `app/auth/callback/page.tsx` resuelven el rol: cliente → `/cliente`, coach → `/dashboard` cuando no hay `next`.
+
+No volver a poner un código público en el manifest para "arreglar" accesos rápidos. Eso reintroduce la app básica antigua en iOS.
+
 ## Verificación antes de mergear
 
 ```bash
 node scripts/audit-portal-patterns.mjs
 ```
 
-Este script detecta automáticamente las 4 reglas anteriores. Si falla → no mergear.
+Este script detecta automáticamente estas reglas. Si falla → no mergear.
 <!-- END:portal-navigation-invariants -->
 
 <!-- BEGIN:nextjs-agent-rules -->

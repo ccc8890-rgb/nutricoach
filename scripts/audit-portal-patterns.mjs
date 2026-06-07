@@ -201,6 +201,39 @@ if (/pathname\.startsWith\(['"]\/api\/['"]\)[\s\S]{0,400}caches\.match\(request\
   })
 }
 
+// ─── Regla 8: PWA cliente no debe arrancar en portal publico por codigo ──────
+// iOS conserva el start_url de la PWA instalada. Si apunta a /cliente/[codigo],
+// al limpiar sesion vuelve al DashboardCliente publico antiguo.
+const CLIENT_MANIFEST = join(ROOT, 'public/manifest-cliente-carlos.json')
+const clientManifestContent = readFile(CLIENT_MANIFEST)
+try {
+  const manifest = JSON.parse(clientManifestContent)
+  if (manifest.start_url !== '/cliente') {
+    errors.push({
+      file: rel(CLIENT_MANIFEST),
+      rule: 'CLIENT_PWA_STARTS_AT_AUTH_PORTAL',
+      msg: `manifest-cliente-carlos.json debe usar start_url "/cliente"; nunca /cliente/[codigo]`,
+      code: `"start_url": ${JSON.stringify(manifest.start_url)}`,
+    })
+  }
+} catch {
+  errors.push({
+    file: rel(CLIENT_MANIFEST),
+    rule: 'CLIENT_MANIFEST_INVALID_JSON',
+    msg: `manifest-cliente-carlos.json no es JSON valido`,
+  })
+}
+
+const CLEAN_SW = join(ROOT, 'public/limpiar-sw.html')
+const cleanSwContent = readFile(CLEAN_SW)
+if (!cleanSwContent.includes('/login?next=%2Fcliente&limpiado=1')) {
+  errors.push({
+    file: rel(CLEAN_SW),
+    rule: 'CLEAN_SW_MUST_RETURN_TO_CLIENT_LOGIN',
+    msg: `limpiar-sw.html debe redirigir a /login?next=%2Fcliente&limpiado=1 para evitar que el cliente acabe en /dashboard`,
+  })
+}
+
 // ─── Resultado ────────────────────────────────────────────────────────────────
 console.log('\n🔍 Auditoría patrones portal cliente\n')
 
