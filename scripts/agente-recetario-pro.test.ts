@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import assert from 'node:assert/strict'
 import { detectarHuecosRecetario } from '../lib/recetas/agente-recetario/coverage'
 import { generarCandidatasDesdeHueco } from '../lib/recetas/agente-recetario/generator'
@@ -127,6 +128,24 @@ function testImagePreparationNeverApproves() {
   assert.equal(imagen.prompt.length > 30, true)
 }
 
+function testCliDryRunDoesNotApply() {
+  const output = execFileSync('npm', [
+    'exec',
+    '--',
+    'tsx',
+    'scripts/agente-recetario-pro.ts',
+    '--dry-run',
+    '--objetivo=rendimiento',
+    '--deporte=running',
+    '--momento=tapering',
+    '--cantidad=2',
+  ], { encoding: 'utf8' })
+
+  assert.equal(output.includes('Modo: dry-run'), true)
+  assert.equal(output.includes('Insertadas: 0'), true)
+  assert.equal(output.includes('en_revision'), true)
+}
+
 testDefaultsAreConservative()
 testCoverageDetectsTaperingGap()
 testCoverageDoesNotCreateGapWhenMinimumIsMet()
@@ -135,4 +154,5 @@ testGeneratorDoesNotUseUnsafeCondimentAmounts()
 testValidatorRejectsUnmatchedIngredients()
 testValidatorRejectsSuspiciousStickyRiceChipsMatch()
 testImagePreparationNeverApproves()
+testCliDryRunDoesNotApply()
 console.log('agente-recetario-pro.test.ts OK')
