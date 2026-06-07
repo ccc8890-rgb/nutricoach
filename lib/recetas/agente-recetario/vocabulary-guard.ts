@@ -1,6 +1,6 @@
 // lib/recetas/agente-recetario/vocabulary-guard.ts
 
-const TERMINOS_PROHIBIDOS: Array<{ patron: RegExp; sugerencia: string }> = [
+const TERMINOS_PROHIBIDOS: Array<{ patron: RegExp; sugerencia: string; soloNombre?: boolean }> = [
   { patron: /\btapering\b/i,         sugerencia: 'día de carga ligera' },
   { patron: /\bpre[- ]entreno\b/i,   sugerencia: 'antes del ejercicio' },
   { patron: /\bpost[- ]entreno\b/i,  sugerencia: 'después del ejercicio' },
@@ -12,12 +12,13 @@ const TERMINOS_PROHIBIDOS: Array<{ patron: RegExp; sugerencia: string }> = [
   { patron: /\bfit\b/i,              sugerencia: '' },
   { patron: /\bhealthy\b/i,          sugerencia: '' },
   { patron: /\bsaludable\b/i,        sugerencia: 'casero' },
-  { patron: /\bbol\b/i,              sugerencia: 'plato' },
+  // 'bol' es castellano correcto para recipiente de cocina — NO bloquear
   { patron: /\bbowl\b/i,             sugerencia: 'plato' },
   { patron: /\bsmoothi/i,            sugerencia: 'batido' },
   { patron: /\bacaí\b/i,             sugerencia: '' },
   { patron: /\bgranola\s+bowl\b/i,   sugerencia: 'copos con frutas' },
-  { patron: /\bdorado\b/i,           sugerencia: 'tostado' },  // sentido culinario latinoamericano
+  // 'dorado' como adjetivo en el nombre suena latinoamericano; en instrucciones es técnica culinaria válida
+  { patron: /\bdorado\b/i,           sugerencia: '', soloNombre: true },
   { patron: /\bRPE\b/,               sugerencia: '' },
   { patron: /\bRIR\b/,               sugerencia: '' },
   { patron: /\bHRV\b/,               sugerencia: '' },
@@ -40,6 +41,7 @@ export type VocabularyViolation = {
   sugerencia: string
 }
 
+
 export type VocabularyResult = {
   valido: boolean
   violaciones: VocabularyViolation[]
@@ -61,7 +63,8 @@ export function validarVocabulario(receta: {
   ]
 
   for (const [campo, texto] of camposARevisar) {
-    for (const { patron, sugerencia } of TERMINOS_PROHIBIDOS) {
+    for (const { patron, sugerencia, soloNombre } of TERMINOS_PROHIBIDOS) {
+      if (soloNombre && campo !== 'nombre') continue
       if (patron.test(texto)) {
         violaciones.push({ campo, patron: patron.source, sugerencia })
       }
