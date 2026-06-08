@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { inferirSlotComida, tipoPlatoCompatibleConSlot } from '@/lib/tipos-comida'
+import { rateLimit } from '@/lib/rate-limit'
 
 interface ComidaOrdenable {
     orden: number
@@ -21,9 +22,15 @@ interface RecetaAlternativaCliente {
 }
 
 export async function GET(
-    _request: Request,
+    request: NextRequest,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
+    // Rate-limit por IP: 60 req/min protege contra brute-force de codigo_publico
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    if (!rateLimit(`portal-dashboard:${ip}`, 60, 60_000)) {
+        return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 })
+    }
+
     try {
         const supabase = createServiceSupabase()
         const { codigo } = await params

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ejecutarDirector } from '@/lib/agentes/director'
 import { createServerSupabase } from '@/lib/supabase-server'
 
+export const maxDuration = 300 // 5 min — suficiente para ~100 clientes en paralelo
+
 function checkAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization')
   if (authHeader?.startsWith('Bearer ')) {

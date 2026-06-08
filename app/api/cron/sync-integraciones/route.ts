@@ -3,6 +3,8 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 import { sincronizarTodosProveedores } from '@/lib/integraciones/sync'
 import { syncGarminDay, persistirGarminDays, dateRange } from '@/lib/integraciones/garmin-connect-sync'
 import { syncGarminClientDays } from '@/lib/integraciones/garmin-connect-perclient'
+
+export const maxDuration = 300
 import { descifrarCredenciales } from '@/lib/integraciones/garmin-connect-perclient'
 
 export async function GET(req: NextRequest) {

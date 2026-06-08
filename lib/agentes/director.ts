@@ -50,27 +50,37 @@ export async function ejecutarDirector(
   const tareasPrevias = await contarTareasPendientes(db)
   const planesDirector: PlanDirectorCliente[] = []
 
-  for (const { id } of clientes) {
-    try {
-      const plan = crearPlanDirectorCliente(await cargarSenalesDirectorCliente(id), modo)
-      planesDirector.push(plan)
+  // Procesar clientes en lotes paralelos para escalar a cientos de clientes.
+  // Concurrencia=5: equilibrio entre velocidad y límites de rate de la API de IA.
+  const CONCURRENCIA = 5
+  for (let i = 0; i < clientes.length; i += CONCURRENCIA) {
+    const lote = clientes.slice(i, i + CONCURRENCIA)
+    const resultados = await Promise.allSettled(
+      lote.map(async ({ id }) => {
+        const plan = crearPlanDirectorCliente(await cargarSenalesDirectorCliente(id), modo)
+        planesDirector.push(plan)
 
-      if (plan.ejecutar.perfil_aprendizaje) await actualizarPerfilAprendizaje(id)
-      if (plan.ejecutar.perfil_gusto) await actualizarPerfilGusto(id)
+        if (plan.ejecutar.perfil_aprendizaje) await actualizarPerfilAprendizaje(id)
+        if (plan.ejecutar.perfil_gusto) await actualizarPerfilGusto(id)
 
-      if (plan.ejecutar.riesgo_nutricion) await ejecutarAgenteRiesgo(id)
-      if (plan.ejecutar.retencion) await ejecutarAgenteRetencion(id)
-      if (plan.ejecutar.riesgo_entreno) await ejecutarAgenteRiesgoEntreno(id)
-      if (plan.ejecutar.readiness) await ejecutarAgenteReadiness(id)
-      if (plan.ejecutar.supercoach) await ejecutarDirectorSupercoachCliente(id)
+        if (plan.ejecutar.riesgo_nutricion) await ejecutarAgenteRiesgo(id)
+        if (plan.ejecutar.retencion) await ejecutarAgenteRetencion(id)
+        if (plan.ejecutar.riesgo_entreno) await ejecutarAgenteRiesgoEntreno(id)
+        if (plan.ejecutar.readiness) await ejecutarAgenteReadiness(id)
+        if (plan.ejecutar.supercoach) await ejecutarDirectorSupercoachCliente(id)
 
-      if (plan.ejecutar.revisor_semanal) await ejecutarRevisorSemanal(id)
-      if (plan.ejecutar.motivacion) await ejecutarAgenteMotivacion(id)
-      if (plan.ejecutar.revisor_semanal_entreno) await ejecutarRevisorSemanalEntreno(id)
-      if (plan.ejecutar.training_brain) await ejecutarTrainingBrain(id)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      errores.push(`cliente ${id}: ${msg}`)
+        if (plan.ejecutar.revisor_semanal) await ejecutarRevisorSemanal(id)
+        if (plan.ejecutar.motivacion) await ejecutarAgenteMotivacion(id)
+        if (plan.ejecutar.revisor_semanal_entreno) await ejecutarRevisorSemanalEntreno(id)
+        if (plan.ejecutar.training_brain) await ejecutarTrainingBrain(id)
+      })
+    )
+    for (let j = 0; j < resultados.length; j++) {
+      const r = resultados[j]
+      if (r.status === 'rejected') {
+        const msg = r.reason instanceof Error ? r.reason.message : String(r.reason)
+        errores.push(`cliente ${lote[j].id}: ${msg}`)
+      }
     }
   }
 

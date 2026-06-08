@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase, createApiSupabase } from '@/lib/supabase-server'
 import { rateLimit } from '@/lib/rate-limit'
+
+export const maxDuration = 120
 import { seleccionarProtocolos, formatearEvidenciaParaPrompt } from '@/lib/knowledge-base'
 import { obtenerInformeVigente, necesitaRegeneracion, generarInformeCasoClinico } from '@/lib/inteligencia-clinica'
 import { construirPrompt, generarDietaConIA, type DietaGenerada } from '@/lib/deepseek'
