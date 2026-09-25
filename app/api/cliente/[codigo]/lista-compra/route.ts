@@ -11,6 +11,7 @@ import {
     sugerirSustitutosEconomicos,
 } from '@/lib/lista-compra/inteligente'
 import { canonicalizarItemCompra, esIngredienteBasicoNoCompra, normalizarNombreCompra } from '@/lib/lista-compra/filtros'
+import { esComidaDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
 import type { IngredienteSemanal, PrecioOpcion } from '@/types'
 
 export interface ItemListaCompra {
@@ -54,8 +55,13 @@ export async function GET(
         .select('nombre, dia_semana, comida_alimentos(cantidad_gramos, alimento:alimentos(id, nombre, categoria, es_generico))')
         .eq('plan_id', plan.id)
 
-    const comidasFiltradas = diaFiltro
-        ? (comidas ?? []).filter(comida => comida.dia_semana === diaFiltro)
+    // Bug corregido (25-09-2026): con `?dia=X`, una comida recurrente (sin
+    // dia_semana, se repite cada día) se excluía siempre de la lista de un
+    // día concreto — un plan sin días asignados devolvía la compra vacía al
+    // elegir cualquier día. Misma semántica que lib/nutricion/comidas-dia.ts.
+    const diaFiltroIdx = diaFiltro ? indiceDiaDesdeTexto(diaFiltro) : null
+    const comidasFiltradas = diaFiltroIdx !== null
+        ? (comidas ?? []).filter(comida => esComidaDelDia(comida, diaFiltroIdx))
         : (comidas ?? [])
 
     if (!comidasFiltradas.length) return NextResponse.json({ items: [] })

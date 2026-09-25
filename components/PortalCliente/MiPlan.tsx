@@ -99,8 +99,8 @@ function fechaParaDiaSemana(dia: string) {
     return target.toLocaleDateString('en-CA')
 }
 
-function diaComida(comida: Pick<Comida, 'dia_semana'>) {
-    return comida.dia_semana || DIAS_NUTRICION[0]
+function comidaDelDiaActivo(comida: Pick<Comida, 'dia_semana'>, dia: string) {
+    return (comida.dia_semana ?? DIAS_NUTRICION[0]) === dia
 }
 
 interface MiPlanProps {
@@ -348,7 +348,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
     // el useEffect cada vez que el usuario hace swap en la vista Hoy
     const comidasParaSemana = useMemo(() => plan.comidas ?? [], [plan.comidas])
     const comidasDia = useMemo(
-        () => (planLocal.comidas ?? []).filter(c => diaComida(c) === diaActivo).sort((a, b) => a.orden - b.orden),
+        () => (planLocal.comidas ?? []).filter(c => comidaDelDiaActivo(c, diaActivo)).sort((a, b) => a.orden - b.orden),
         [planLocal.comidas, diaActivo]
     )
 
@@ -409,7 +409,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             <div className="grid grid-cols-7 gap-1.5">
                 {DIAS_NUTRICION.map(dia => {
                     const activo = dia === diaActivo
-                    const totalDiaChip = (planLocal.comidas ?? []).filter(c => diaComida(c) === dia).length
+                    const totalDiaChip = (planLocal.comidas ?? []).filter(c => comidaDelDiaActivo(c, dia)).length
                     return (
                         <button
                             key={dia}

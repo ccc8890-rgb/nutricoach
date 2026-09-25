@@ -12,57 +12,106 @@ export async function GET(request: NextRequest) {
 
   const admin = createServiceSupabase()
 
-  const { data: clienteData } = await admin
+  const { data: clienteData, error: clienteError } = await admin
     .from('clientes')
     .select('id')
     .eq('profile_id', user.id)
-    .single()
+    .maybeSingle()
 
+  if (clienteError) return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   if (!clienteData) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
 
-  const { data: sesData } = await admin
+  const { data: planData, error: planError } = await admin
+    .from('planes_entrenamiento')
+    .select('id, cliente_id')
+    .eq('id', planId)
+    .maybeSingle()
+
+  if (planError) return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+  if (!planData || planData.cliente_id !== clienteData.id) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  }
+
+  const { data: sesData, error: sesError } = await admin
     .from('sesiones_entrenamiento')
     .select('id, nombre, dia_semana, orden, duracion_estimada_min, contexto_ia')
     .eq('plan_id', planId)
     .order('orden')
 
-  if (!sesData) return NextResponse.json({ sesiones: [] })
+  if (sesError) return NextResponse.json({ error: 'Error interno' }, { status: 500 })
 
-  const sesIds = sesData.map(s => s.id)
+  const sesionesRaw = sesData ?? []
+  const sesIds = sesionesRaw.map(s => s.id)
 
-  // Get ejercicio counts per session
-  const { data: ejData } = await admin
-    .from('sesion_ejercicios')
-    .select('id, sesion_id')
-    .in('sesion_id', sesIds)
+  let ejData: { id: string; sesion_id: string }[] = []
+  if (sesIds.length > 0) {
+    const { data, error } = await admin
+      .from('sesion_ejercicios')
+      .select('id, sesion_id')
+      .in('sesion_id', sesIds)
+    if (error) return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+    ejData = data ?? []
+  }
 
   const ejCountBySesion: Record<string, number> = {}
-  for (const ej of ejData ?? []) {
+  for (const ej of ejData) {
     ejCountBySesion[ej.sesion_id] = (ejCountBySesion[ej.sesion_id] ?? 0) + 1
   }
 
-  // Get today's completions
   const today = new Date().toISOString().split('T')[0]
-  const allEjIds = (ejData ?? []).map(e => e.id)
+  const allEjIds = ejData.map(e => e.id)
   let completadasHoy: string[] = []
+  let registradasSemana: string[] = []
 
   if (allEjIds.length > 0) {
-    const { data: registros } = await admin
+    const { data: registros, error: regError } = await admin
       .from('registros_sets')
-      .select('sesion_ejercicio_id')
+      .select('sesion_ejercicio_id, fecha')
       .eq('cliente_id', clienteData.id)
       .eq('fecha', today)
       .in('sesion_ejercicio_id', allEjIds)
 
+    if (regError) return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+
     const conRegistro = new Set(registros?.map(r => r.sesion_ejercicio_id) ?? [])
     const sesCompletadas = new Set<string>()
-    for (const ej of ejData ?? []) {
+    for (const ej of ejData) {
       if (conRegistro.has(ej.id)) sesCompletadas.add(ej.sesion_id)
     }
     completadasHoy = Array.from(sesCompletadas)
+
+    const now = new Date()
+    const dayOfWeek = now.getUTCDay()
+    const diffToMonday = (dayOfWeek + 6) % 7
+    const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+    monday.setUTCDate(monday.getUTCDate() - diffToMonday)
+    const nextMonday = new Date(monday)
+    nextMonday.setUTCDate(nextMonday.getUTCDate() + 7)
+    const mondayStr = monday.toISOString().split('T')[0]
+    const nextMondayStr = nextMonday.toISOString().split('T')[0]
+
+    const { data: registrosSemana, error: regSemError } = await admin
+      .from('registros_sets')
+      .select('sesion_ejercicio_id, fecha')
+      .eq('cliente_id', clienteData.id)
+      .gte('fecha', mondayStr)
+      .lt('fecha', nextMondayStr)
+      .in('sesion_ejercicio_id', allEjIds)
+
+    if (regSemError) return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+
+    const ejToSesion = new Map<string, string>()
+    for (const ej of ejData) ejToSesion.set(ej.id, ej.sesion_id)
+
+    const sesSemana = new Set<string>()
+    for (const r of registrosSemana ?? []) {
+      const sesId = ejToSesion.get(r.sesion_ejercicio_id)
+      if (sesId) sesSemana.add(sesId)
+    }
+    registradasSemana = Array.from(sesSemana)
   }
 
-  const sesiones = sesData.map(s => ({
+  const sesiones = sesionesRaw.map(s => ({
     id: s.id,
     nombre: s.nombre,
     dia_semana: s.dia_semana ?? '',
@@ -72,5 +121,5 @@ export async function GET(request: NextRequest) {
     ejercicios_count: ejCountBySesion[s.id] ?? 0,
   }))
 
-  return NextResponse.json({ sesiones, completadas_hoy: completadasHoy })
+  return NextResponse.json({ sesiones, completadas_hoy: completadasHoy, registradas_semana: registradasSemana })
 }

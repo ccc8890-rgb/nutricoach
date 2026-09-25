@@ -1,5 +1,54 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 25-09-2026 — Reactivación uso personal + motor nutrición/entreno + colisión con Astra
+
+### Contexto
+Retomada la reactivación del proyecto (guía `salidas/24-09-2026_guia-reactivacion-nutricoach.md`, estrategia: Carlos como primer cliente real de su propio sistema). Trabajo en paralelo con Astra (ChatGPT) sobre los mismos archivos — hubo una colisión real donde Astra sobrescribió 3 fixes ya aplicados (ver más abajo); reaplicados y verificados de nuevo.
+
+### Bugs de producción corregidos (afectan a cualquier cliente, no solo a Carlos)
+| # | Archivo | Bug | Impacto |
+|---|---------|-----|---------|
+| 1 | `app/cliente/page.tsx`, `components/PortalCliente/MiPlan.tsx` | Macros "Hoy" sumaban TODAS las comidas del plan, no solo las del día. `MiPlan` anclaba comidas sin `dia_semana` (recurrentes) al lunes fijo | Cliente veía macros/comidas incorrectas el resto de la semana |
+| 2 | `app/api/cliente/[codigo]/plan-pdf/route.ts` | Mismo bug en el PDF: comidas recurrentes amontonadas en "Lunes", resumen "kcal/día" podía inflarse hasta 7x | PDF exportado al cliente roto para planes sin días asignados |
+| 3 | `app/api/cliente/[codigo]/lista-compra/route.ts` | Filtro `?dia=X` excluía comidas recurrentes — plan sin días daba lista vacía en cualquier día | Lista de la compra por día rota |
+| 4 | `app/api/entrenos/proponer-plan-ciencia/route.ts` | `profiles.edad/sexo/peso_actual` no existen (viven en `clientes`) → 500 en toda generación de plan. `knowledge_base.referencias` no existe (es `fuente`) → 0 papers KB siempre, sin error visible | Generación de plan de entreno con IA rota para TODOS los coaches |
+| 5 | `app/api/generar-plan-inicial/route.ts` | `comidas.origen_adherencia` tiene CHECK constraint; DeepSeek puede devolver valores fuera del enum (ej. "nuevo") → insert falla y la comida desaparece en silencio | Plan de dieta con comidas faltantes sin aviso |
+| 6 | `app/api/generar-plan-inicial/route.ts` | Cuando una comida trae varias recetas, cada una recibía el target completo (o partes iguales × porciones, que podía sumar >100%) en vez de reparto proporcional al peso de porciones | Comidas multi-receta con kcal muy por encima del objetivo |
+| 7 | `lib/agentes/riesgo-entreno.ts`, `revisor-semanal-entreno.ts`, `training-brain.ts` | Consultaban `profiles.eq('id', clienteId)` con el id de `clientes`, no de `profiles` — nunca encontraban fila | Mensajes de estos 3 agentes siempre decían "el cliente" en vez del nombre real |
+
+### Motor de personalización — mejora estructural (lo que pidió Carlos: "una vuelta de tuerca" real)
+- `lib/plan-recetas.ts`: `filtrarRecetasPorSlot`/`distanciaEuclidiana` ahora pesan carbohidratos y grasas además de kcal+proteína al puntuar qué receta encaja mejor (antes solo miraba 2 de 4 macros).
+- `lib/recetas/aplicar-receta-comida.ts`: escalado de raciones ahora es **multi-macro** — ingredientes con rol `proteina_principal`/`carbohidrato_base`/`grasa_saludable` escalan hacia SU propio objetivo de macro (no heredan el ratio de la receta original), con una corrección de seguridad que reancla el total a las kcal objetivo si el escalado independiente por rol se desvía >15%.
+- `lib/ingredient-roles.ts`: quesos/nata/semillas con grasa Y proteína altas (ej. cheddar 33g grasa/25g proteína) se reclasifican correctamente como `grasa_saludable` en vez de `proteina_principal`.
+- Verificado end-to-end regenerando el plan real de Carlos varias veces: desviación de macros pasó de **+40% a +115%** (según el macro) a **kcal -1.3%, carbohidrato +11.6%, grasa -11.1%, proteína -20.5%**.
+
+### Carlos activado como cliente real de su propio sistema
+- Perfil Atleta relleno (`perfil_entreno_cliente`): híbrido, 5 días/semana, recuperación alta, sin lesiones, psicología competición.
+- Plan de entreno real generado con motor + KB (230+ papers): "Plan Híbrido de Rendimiento — Fuerza + Resistencia con Periodización Ondulante", 12 semanas, 5 papers citados (Wilson 2012, Schumann & Rønnestad 2019, Zourdos 2016, Ralston 2017).
+- Plan de nutrición real generado y activo: 2886 kcal / 104P / 415C / 90G, 3 comidas (Desayuno 25% / Comida 40% / Cena 35%), pendiente de que Carlos lo revise en la app.
+- 4 registros de prueba antiguos desactivados (2 nutrición "prueba"/"prueba 2", 2 entreno duplicados).
+
+### Auditoría del motor de recálculo automático (Garmin → periodización)
+- Crons verificados en `vercel.json`: sync-integraciones diario, agentes diario/semanal.
+- `lib/agentes/director.ts` orquesta correctamente todos los agentes por cliente con manejo de errores aislado.
+- **Pendiente de Carlos, no de código**: sin Garmin vinculado como cliente (`integraciones_cliente` vacío) ni sesiones de entreno registradas — el motor no tiene datos aún. Carlos entró a vincular Garmin durante la sesión; puede que los permisos se hayan revocado y haya que rehacerlo.
+- **No se ejecutó el director completo en producción** (afecta a los 11 clientes reales activos — acción de efecto compartido, requiere confirmación explícita antes de lanzarla).
+
+### Incidente de colisión con Astra (documentado para que no se repita)
+Mientras Astra trabajaba en paralelo sobre los mismos archivos, sobrescribió 3 fixes ya aplicados (`proponer-plan-ciencia`, `lista-compra`, `plan-pdf`) volviendo a introducir los bugs originales. Se detectaron por las notas de "archivo cambiado en disco" del entorno y se reaplicaron. Lección: si se trabaja en paralelo con otro agente sobre el mismo repo sin control de versiones intermedio, verificar el estado real de los archivos críticos antes de dar por buena una corrección anterior.
+
+### Verificación de toda la sesión
+`npx tsc --noEmit` 0 errores · ESLint sin errores nuevos (solo warnings preexistentes) · `npm run build` producción completo · 4 suites de test en verde (`test-comidas-dia` 46/46, `test-garmin-authorization` 15/15, `test-training-client-week`, `test-calcular-cantidad-aplicada` 6/6 nueva) · `scripts/audit-portal-patterns.mjs` sin problemas.
+
+### Próxima sesión
+1. Carlos revisa el plan de nutrición generado (recetas/cantidades concretas) y el de entreno.
+2. Revincular Garmin Connect como cliente (permisos posiblemente revocados).
+3. Registrar al menos una sesión de entreno real para que el motor de recálculo semanal tenga datos.
+4. Decidir si ejecutar el director completo (`POST /api/agentes/ejecutar?modo=semanal`) contra los 11 clientes reales para verificar en producción.
+5. Nutrición pendiente de afinar más si Carlos ve macros aún desviados tras su revisión — la corrección de kcal funciona bien (±1-2%), carbohidrato/grasa individual todavía depende de qué receta concreta elige la IA en cada generación.
+
+---
+
 ## ✅ SESIÓN 07-06-2026 (Sesión 56) — Fix PWA cliente arrancando en portal público antiguo
 
 ### Bug detectado por Carlos en iPhone

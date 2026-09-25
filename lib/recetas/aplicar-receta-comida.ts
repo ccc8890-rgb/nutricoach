@@ -35,14 +35,20 @@ export function calcularCantidadAplicadaReceta(
   cantidadGramos: number,
   rolIngrediente: RolIngrediente | null | undefined,
   esCantidadFija: boolean | null | undefined,
-  factorBase: number
+  factorBase: number,
+  // Factor ya calculado a partir del macro objetivo de ESTE rol (proteína,
+  // carbohidrato o grasa) en vez del factor genérico por kcal. Cuando se
+  // pasa, sustituye por completo al damping de SCALING_RULES — ese damping
+  // existe para roles SIN objetivo propio (amortiguar el crecimiento de
+  // grasa/lácteos al escalar solo por kcal); si el rol ya tiene su propio
+  // objetivo de macro, aplicar además el damping generaría un déficit
+  // artificial contra ese objetivo.
+  factorDirecto?: number | null
 ) {
-  const ajustada = calcularGramajeAjustado(
-    cantidadGramos,
-    rolIngrediente,
-    esCantidadFija === true,
-    factorBase
-  )
+  const esFija = esCantidadFija === true
+  const ajustada = !esFija && factorDirecto != null
+    ? cantidadGramos * factorDirecto
+    : calcularGramajeAjustado(cantidadGramos, rolIngrediente, esFija, factorBase)
   const redondeada = redondearGramajePractico(ajustada)
   return {
     cantidad_gramos: redondeada,
@@ -74,6 +80,18 @@ export async function aplicarRecetaAComida(
     planId?: string | null
     comidaSlot?: string | null
     targetKcal?: number | null
+    // Objetivos de macro específicos (opcionales, retrocompatibles). Sin
+    // ellos, el comportamiento es idéntico al anterior: un único factor
+    // derivado de targetKcal para toda la receta. Con ellos, los
+    // ingredientes con rol proteina_principal/carbohidrato_base/
+    // grasa_saludable escalan hacia SU propio macro objetivo en vez de
+    // heredar el ratio de macros que ya traía la receta — antes, dos
+    // recetas con las mismas kcal pero grasa/carbohidrato invertidos
+    // producían el mismo plato escalado, y el total del día podía
+    // desviarse ~40-80% en un macro aunque las kcal cuadraran.
+    targetProteinas?: number | null
+    targetCarbohidratos?: number | null
+    targetGrasas?: number | null
     tipoInteraccion?: TipoInteraccion
     reemplazar?: boolean
   }
@@ -107,15 +125,48 @@ export async function aplicarRecetaAComida(
   const factor = kcalIngredientesReceta > 0 && targetKcal > 0
     ? Math.min(2, Math.max(0.2, targetKcal / kcalIngredientesReceta))
     : 1
-  const ingredientesValidos = ingredientesRaw
+
+  const ingredientesConAlimento = ingredientesRaw
     .filter(ing => ing.alimento_id && ing.alimento && Number(ing.cantidad_gramos ?? 0) > 0)
+
+  // Factores por macro: cuánto aporta HOY (sin escalar) cada rol con
+  // objetivo propio, frente a lo que se pide para la comida. Solo se usan
+  // si el rol existe en la receta y aporta >0 de ese macro — si no,
+  // ese/esos ingredientes siguen el factor general por kcal, igual que
+  // antes.
+  const MACRO_POR_ROL: Partial<Record<RolIngrediente, 'proteinas' | 'carbohidratos' | 'grasas'>> = {
+    proteina_principal: 'proteinas',
+    carbohidrato_base: 'carbohidratos',
+    grasa_saludable: 'grasas',
+  }
+  function factorRol(rol: RolIngrediente, target: number | null | undefined): number | null {
+    if (!target || target <= 0) return null
+    const campoMacro = MACRO_POR_ROL[rol]
+    if (!campoMacro) return null
+    const aportado = ingredientesConAlimento
+      .filter(ing => ing.rol_ingrediente === rol)
+      .reduce((sum, ing) => sum + Number(ing.alimento![campoMacro] ?? 0) * (Number(ing.cantidad_gramos) / 100), 0)
+    if (aportado <= 0) return null
+    return Math.min(2.5, Math.max(0.2, target / aportado))
+  }
+  const factorProt = factorRol('proteina_principal', params.targetProteinas)
+  const factorCarb = factorRol('carbohidrato_base', params.targetCarbohidratos)
+  const factorGrasa = factorRol('grasa_saludable', params.targetGrasas)
+
+  const ingredientesValidos = ingredientesConAlimento
     .map(ing => {
       const cantidadBase = Number(ing.cantidad_gramos)
+      const factorDirecto =
+        ing.rol_ingrediente === 'proteina_principal' ? factorProt :
+        ing.rol_ingrediente === 'carbohidrato_base' ? factorCarb :
+        ing.rol_ingrediente === 'grasa_saludable' ? factorGrasa :
+        null
       const cantidadAplicada = calcularCantidadAplicadaReceta(
         cantidadBase,
         ing.rol_ingrediente,
         ing.es_cantidad_fija,
-        factor
+        factor,
+        factorDirecto
       )
 
       return {
@@ -129,6 +180,38 @@ export async function aplicarRecetaAComida(
 
   if (ingredientesValidos.length === 0) {
     throw new Error('La receta no tiene ingredientes vinculados a alimentos')
+  }
+
+  // Corrección final: escalar cada rol hacia SU macro objetivo de forma
+  // independiente puede, sumado, superar ampliamente el objetivo de kcal
+  // (si proteína, carbohidrato y grasa suben cada uno por su lado, el
+  // total no es la suma de un solo factor — se multiplica). Si el
+  // resultado se desvía >15% de targetKcal, se reajusta todo el conjunto
+  // con un factor uniforme para devolver las kcal a rango, preservando el
+  // ratio de macros ya logrado entre sí (no deshace la mejora, solo ajusta
+  // el tamaño de la ración completa). Los ingredientes de cantidad fija no
+  // se tocan en esta corrección, igual que en el resto del escalado.
+  if (targetKcal > 0 && (factorProt !== null || factorCarb !== null || factorGrasa !== null)) {
+    const kcalResultante = ingredientesValidos.reduce(
+      (sum, ing) => sum + Number(ing.alimento.calorias ?? 0) * (ing.cantidad_gramos / 100), 0
+    )
+    if (kcalResultante > 0) {
+      const desviacion = kcalResultante / targetKcal
+      if (desviacion > 1.15 || desviacion < 0.85) {
+        const correccion = targetKcal / kcalResultante
+        for (let idx = 0; idx < ingredientesValidos.length; idx++) {
+          if (ingredientesConAlimento[idx]?.es_cantidad_fija === true) continue
+          const original = ingredientesValidos[idx]
+          const cantidadCorregida = redondearGramajePractico(original.cantidad_gramos * correccion)
+          const cantidadBaseIng = Number(ingredientesConAlimento[idx].cantidad_gramos)
+          ingredientesValidos[idx] = {
+            ...original,
+            cantidad_gramos: cantidadCorregida,
+            factor_ajuste: cantidadBaseIng > 0 ? cantidadCorregida / cantidadBaseIng : original.factor_ajuste,
+          }
+        }
+      }
+    }
   }
 
   if (reemplazar) {
@@ -211,5 +294,11 @@ export async function aplicarRecetaAComida(
     ingredientes,
     sin_vincular: ingredientesRaw.filter(ing => !ing.alimento_id || !ing.alimento).length,
     factor_ajuste: factor,
+    // Factores por macro realmente aplicados (null = ese rol no estaba
+    // presente en la receta o no se pidió objetivo, y usó el factor_ajuste
+    // general por kcal en su lugar).
+    factor_proteinas: factorProt,
+    factor_carbohidratos: factorCarb,
+    factor_grasas: factorGrasa,
   }
 }

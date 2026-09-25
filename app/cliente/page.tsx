@@ -8,6 +8,7 @@ import {
   CaretRight, X, TrendDown, TrendUp,
 } from '@phosphor-icons/react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
+import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
 import GraficoPeso from '@/components/PortalCliente/GraficoPeso'
@@ -204,9 +205,13 @@ function PortalClientePageContent() {
     load()
   }, [router])
 
+  function comidasHoyDeDieta() {
+    return comidasDelDia(dieta?.comidas, diaActualIndex())
+  }
+
   function calcMacrosDia() {
     if (!dieta) return null
-    return sumarMacros((dieta.comidas ?? []).map(c =>
+    return sumarMacros(comidasHoyDeDieta().map(c =>
       sumarMacros((c.alimentos ?? []).map((a: ComidaAlimento) =>
         calcularMacrosPorCantidad(
           a.alimento?.calorias ?? 0, a.alimento?.proteinas ?? 0,
@@ -247,7 +252,7 @@ function PortalClientePageContent() {
   const penultimoPeso = historialPeso[1]?.peso
   const diffPeso = ultimoPeso && penultimoPeso ? ultimoPeso - penultimoPeso : null
   const sesionesSemana = entreno?.sesiones?.length ?? 0
-  const comidasDia = dieta?.comidas?.length ?? 0
+  const comidasDia = comidasHoyDeDieta().length
   const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 
   const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [

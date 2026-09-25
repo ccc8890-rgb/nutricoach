@@ -31,26 +31,39 @@ const SLOT_TIPOS_PERMITIDOS: Record<string, TipoReceta[]> = {
   'Cena':          ['completa', 'guarnicion'],
 }
 
+// Distancia normalizada a los macros objetivo. Antes solo comparaba
+// kcal+proteína, así que dos recetas con las mismas kcal pero ratios de
+// carbohidrato/grasa opuestos puntuaban igual — el plan final podía
+// desviarse ~40% en carbohidratos aunque las kcal totales cuadraran casi
+// exactas. Ahora promedia solo los macros con target > 0 (retrocompatible:
+// si no se pasan targetCarb/targetGrasa, se comporta igual que antes).
 function distanciaEuclidiana(
-  kcal: number, prot: number,
-  targetKcal: number, targetProt: number
+  kcal: number, prot: number, carb: number, grasa: number,
+  targetKcal: number, targetProt: number, targetCarb?: number, targetGrasa?: number
 ): number {
   const dKcal = targetKcal > 0 ? Math.abs(kcal - targetKcal) / targetKcal : 0
   const dProt = targetProt > 0 ? Math.abs(prot - targetProt) / targetProt : 0
-  return dKcal + dProt
+  const dCarb = targetCarb && targetCarb > 0 ? Math.abs(carb - targetCarb) / targetCarb : 0
+  const dGrasa = targetGrasa && targetGrasa > 0 ? Math.abs(grasa - targetGrasa) / targetGrasa : 0
+  const terminos = 2 + (targetCarb && targetCarb > 0 ? 1 : 0) + (targetGrasa && targetGrasa > 0 ? 1 : 0)
+  return (dKcal + dProt + dCarb + dGrasa) * (2 / terminos)
 }
 
 export function calcularTargetSlot(
   slotNombre: string,
   kcalObjetivo: number,
   proteinaObjetivo: number,
-  numComidas: number
-): { targetKcal: number; targetProt: number } {
+  numComidas: number,
+  carbohidratoObjetivo?: number,
+  grasaObjetivo?: number
+): { targetKcal: number; targetProt: number; targetCarb?: number; targetGrasa?: number } {
   const [min, max] = SLOT_KCAL_PCT[slotNombre] ?? [1 / numComidas, 1 / numComidas]
   const pct = (min + max) / 2
   return {
     targetKcal: Math.round(kcalObjetivo * pct),
     targetProt: Math.round(proteinaObjetivo * pct),
+    targetCarb: carbohidratoObjetivo ? Math.round(carbohidratoObjetivo * pct) : undefined,
+    targetGrasa: grasaObjetivo ? Math.round(grasaObjetivo * pct) : undefined,
   }
 }
 
@@ -81,7 +94,14 @@ export async function filtrarRecetasPorSlot(
   clienteId?: string,
   objetivoCliente?: string,
   tagsClinicosRequeridos?: Partial<Record<'apto_sop' | 'apto_hashimoto' | 'apto_rendimiento' | 'es_post_entreno' | 'es_pre_entreno', boolean>>,
-  deporteCliente?: string | null
+  deporteCliente?: string | null,
+  // Añadidos al final (retrocompatible con llamadas posicionales previas).
+  // Sin esto, la selección solo comparaba kcal+proteína: una receta con las
+  // kcal correctas pero carbohidratos/grasas invertidos puntuaba igual que
+  // una bien equilibrada, y el plan final podía desviarse ~40% en
+  // carbohidratos aunque las kcal cuadraran.
+  targetCarb?: number,
+  targetGrasa?: number
 ): Promise<RecetaCandidata[]> {
   const categorias = SLOT_CATEGORIAS[slotNombre] ?? SLOT_CATEGORIAS['Comida']
   const tiposPermitidos = SLOT_TIPOS_PERMITIDOS[slotNombre] ?? ['completa']
@@ -227,7 +247,10 @@ export async function filtrarRecetasPorSlot(
     const planningRoles = new Set((rec.planning_roles as string[] | undefined) ?? [])
 
     // ── Componente 2: proximidad macro objetivo (20%) ─────────
-    const dist = distanciaEuclidiana(r.kcal, r.proteinas ?? 0, targetKcal, targetProt)
+    const dist = distanciaEuclidiana(
+      r.kcal, r.proteinas ?? 0, r.carbohidratos ?? 0, r.grasas ?? 0,
+      targetKcal, targetProt, targetCarb, targetGrasa
+    )
     const distNorm = Math.min(dist, 2) / 2
 
     // ── Componente 3: alineación con perfil de gusto (30%) ────

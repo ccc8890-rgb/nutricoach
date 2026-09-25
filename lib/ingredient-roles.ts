@@ -49,8 +49,16 @@ export function inferirRolIngrediente(
   const RE_LACTEO = /\b(queso fresco|requesón|ricotta|mascarpone|crema de leche|nata|yogur|kéfir|queso rallado|queso parmesano)\b/
   if (RE_LACTEO.test(nombre) && kcal < 250) return 'lacteo_complemento'
 
+  // Bug corregido (25-09-2026): `grasas > 20 && prot < 15` no detectaba
+  // quesos curados/nata/semillas con proteína alta Y grasa aún más alta
+  // (ej. queso cheddar ~33g grasa / 25g proteína por 100g) — caían en
+  // proteina_principal por el umbral prot>=15 de más abajo, y el escalado
+  // por macro objetivo los trataba como si fueran la fuente de proteína
+  // del plato en vez de la fuente de grasa, arrastrando grasa de más al
+  // perseguir el objetivo de proteína. Ahora basta con que la grasa supere
+  // a la proteína en peso (no que la proteína sea baja en absoluto).
   const RE_GRASA = /\b(aguacate|aceite|nuez|almendra|cacahuete|pistacho|avellana|anacardo|semilla|linaza|chía|mantequilla de)\b/
-  if (RE_GRASA.test(nombre) || (grasas > 20 && prot < 15)) return 'grasa_saludable'
+  if (RE_GRASA.test(nombre) || (grasas > 20 && grasas > prot)) return 'grasa_saludable'
 
   const RE_PROTEINA = /\b(pollo|pechuga|muslo|ternera|buey|cerdo|pavo|salmón|atún|merluza|lubina|dorada|bacalao|huevo|clara|tofu|seitán|tempe|garbanzos|lentejas|judías|edamame|proteína)\b/
   if (RE_PROTEINA.test(nombre) || prot >= 15) return 'proteina_principal'

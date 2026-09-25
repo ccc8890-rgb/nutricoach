@@ -637,13 +637,15 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
   const candidatasPorSlot = new Map<string, import('@/types').RecetaCandidata[]>()
 
   for (const slot of slots) {
-    const { targetKcal, targetProt } = calcularTargetSlot(slot, kcalObjetivo, distribucionProteina.total, numComidas)
+    const { targetKcal, targetProt, targetCarb, targetGrasa } = calcularTargetSlot(slot, kcalObjetivo, distribucionProteina.total, numComidas, carbos, grasas)
     const candidatas = await filtrarRecetasPorSlot(
       supabase, slot, targetKcal, targetProt, filtroCliente, 6,
       cliente_id,
       onboarding.objetivo,
       tagsClinicosRequeridos && Object.keys(tagsClinicosRequeridos).length > 0 ? tagsClinicosRequeridos : undefined,
-      perfilEntreno?.sport_modality ?? null
+      perfilEntreno?.sport_modality ?? null,
+      targetCarb,
+      targetGrasa
     )
     candidatasPorSlot.set(slot, candidatas)
   }
@@ -808,6 +810,15 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           }, 0)
           const proteinaComida = distribucionProteina.comidas[index]?.proteinas_g ?? Math.round((kcalComida * 0.30) / 4)
           const kcalFinal = Math.round(kcalComida || kcalObjetivo / Math.max(dietaGenerada.comidas.length, 1))
+          // Reparto proporcional de carbohidratos/grasas del día por comida,
+          // según el mismo peso (share de kcal) que ya se usaba solo para
+          // mostrar porcentaje_kcal. Antes ninguna comida tenía objetivo de
+          // carbohidrato/grasa propio — ver aplicarRecetaAComida más abajo.
+          const shareKcal = dietaGenerada.macros_totales.kcal > 0
+            ? kcalComida / dietaGenerada.macros_totales.kcal
+            : 1 / Math.max(dietaGenerada.comidas.length, 1)
+          const carbosComida = Math.round(carbos * shareKcal)
+          const grasasComida = Math.round(grasas * shareKcal)
           return {
             nombre: c.nombre,
             orden: c.orden,
@@ -815,6 +826,8 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
             kcal: kcalFinal,
             kcal_target: kcalFinal,
             proteinas_target: proteinaComida,
+            carbos_target: carbosComida,
+            grasas_target: grasasComida,
             hora_sugerida: distribucionProteina.comidas[index]?.hora_sugerida ||
               ({ Desayuno: '08:00', Comida: '13:30', Merienda: '17:00', Cena: '20:30' } as Record<string, string>)[c.nombre] ||
               undefined,
@@ -1085,6 +1098,14 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           : []
       })()
       const recetaIdPrincipal = (recetasNormalizadas[0]?.receta_id as string | undefined) ?? null
+      // Bug corregido (25-09-2026): `comidas.origen_adherencia` tiene un
+      // CHECK constraint en BD (solo acepta recetario/habitual_adaptado/
+      // novedad_controlada/manual). DeepSeek puede devolver valores fuera
+      // de ese enum (ej. "nuevo") pese a la instrucción del prompt — el
+      // insert entero fallaba con 23514 y la comida se perdía en silencio
+      // (`if (comidaError || !comidaDb) { ...; continue }` más abajo).
+      const ORIGEN_ADHERENCIA_VALIDO = new Set(['recetario', 'habitual_adaptado', 'novedad_controlada', 'manual'])
+      const origenAdherenciaIA = comida.origen_adherencia as string | undefined
       const { data: comidaDb, error: comidaError } = await supabase
         .from('comidas')
         .insert({
@@ -1097,8 +1118,10 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
             : null,
           kcal_target: (comida.kcal_target as number) || null,
           proteinas_target: (comida.proteinas_target as number) || null,
+          carbos_target: (comida.carbos_target as number) || null,
+          grasas_target: (comida.grasas_target as number) || null,
           notas_peri_entreno: (comida.notas_peri_entreno as string) || null,
-          origen_adherencia: (comida.origen_adherencia as string) || 'recetario',
+          origen_adherencia: origenAdherenciaIA && ORIGEN_ADHERENCIA_VALIDO.has(origenAdherenciaIA) ? origenAdherenciaIA : 'recetario',
           adaptacion_habitual: (comida.adaptacion_habitual as string) || null,
           receta_id: recetaIdPrincipal || null,
         })
@@ -1110,6 +1133,10 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
         continue
       }
 
+      const numRecetasComida = Math.max(1, recetasNormalizadas.length)
+      const pesoPortionesComida = recetasNormalizadas.reduce(
+        (sum, r) => sum + ((r.cantidad_porciones as number) || 1), 0
+      )
       for (let recetaIndex = 0; recetaIndex < recetasNormalizadas.length; recetaIndex++) {
         const r = recetasNormalizadas[recetaIndex]
         const recetaId = r.receta_id as string | undefined
@@ -1130,7 +1157,22 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           continue
         }
 
-        const targetKcalComida = (comida.kcal_target as number) || Math.round(kcalObjetivo / (comidasData?.length ?? 4))
+        // Bug corregido (25-09-2026): cuando una comida trae varias recetas
+        // (`comida.recetas`, p.ej. plato + guarnición), cada receta recibía
+        // el 100% del target de la comida en vez de su parte — 2 recetas en
+        // la misma comida podían duplicar sus kcal reales frente al
+        // objetivo. El primer intento (target/nº_recetas × cantidad_porciones)
+        // seguía sobrando: si una receta pedía 1.5 porciones y otra 1,
+        // dividir a partes iguales y LUEGO multiplicar por porciones asigna
+        // (1.5+1)/2 = 1.25× el presupuesto real de la comida. El reparto
+        // correcto es proporcional al peso de porciones de cada receta,
+        // para que la suma de los repartos sea siempre exactamente el
+        // target de la comida.
+        const pesoReceta = pesoPortionesComida > 0 ? cantPorciones / pesoPortionesComida : 1 / numRecetasComida
+        const targetKcalComidaTotal = (comida.kcal_target as number) || Math.round(kcalObjetivo / (comidasData?.length ?? 4))
+        const targetProtComidaTotal = comida.proteinas_target as number | undefined
+        const targetCarbComidaTotal = comida.carbos_target as number | undefined
+        const targetGrasaComidaTotal = comida.grasas_target as number | undefined
         try {
           await aplicarRecetaAComida(supabase, {
             comidaId: comidaDb.id,
@@ -1138,7 +1180,10 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
             clienteId: cliente_id,
             planId: planDb.id,
             comidaSlot: comida.nombre as string,
-            targetKcal: targetKcalComida * cantPorciones,
+            targetKcal: targetKcalComidaTotal * pesoReceta,
+            targetProteinas: targetProtComidaTotal ? targetProtComidaTotal * pesoReceta : undefined,
+            targetCarbohidratos: targetCarbComidaTotal ? targetCarbComidaTotal * pesoReceta : undefined,
+            targetGrasas: targetGrasaComidaTotal ? targetGrasaComidaTotal * pesoReceta : undefined,
             tipoInteraccion: 'asignada_plan',
             reemplazar: recetaIndex === 0,
           })

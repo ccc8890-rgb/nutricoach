@@ -59,8 +59,12 @@ export async function POST(req: NextRequest) {
 
     // Cargar cliente + onboarding + perfil atleta
     const [clienteRes, perfilEntrenoRes, onboardingRes, sesionesCompletadasRes] = await Promise.all([
+      // Bug corregido (25-09-2026): `profiles` no tiene columnas edad/sexo/
+      // peso_actual (viven en `clientes`, ya incluidas por el `select('*')`
+      // de este mismo query) — el join pedía columnas inexistentes y
+      // devolvía 500 en TODA generación de plan, para cualquier cliente.
       sb.from('clientes')
-        .select('*, profiles:profiles!profile_id(nombre, apellidos, edad, sexo, peso_actual)')
+        .select('*, profiles:profiles!profile_id(nombre, apellidos)')
         .eq('id', cliente_id).single(),
       sb.from('perfil_entreno_cliente').select('*').eq('cliente_id', cliente_id).maybeSingle(),
       sb.from('onboarding_responses').select('*').eq('cliente_id', cliente_id).maybeSingle(),
@@ -98,14 +102,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Papeles relevantes de KB según modalidad
+    // Bug corregido (25-09-2026): `knowledge_base.referencias` no existe
+    // (la cita vive en la columna `fuente`) — el select entero fallaba en
+    // silencio (`kbRes.data ?? []`  no comprobaba `.error`), así que TODO
+    // plan generado hasta ahora se apoyaba en 0 papers reales pese a haber
+    // 307 en la tabla.
     const kbRes = await sb.from('knowledge_base')
-      .select('titulo, resumen, referencias, tags')
+      .select('titulo, resumen, fuente, tags')
       .or(`tags.cs.{${modalidadFoco}},tags.cs.{fuerza},tags.cs.{cardio},tags.cs.{hiit}`)
       .limit(5)
+    if (kbRes.error) console.error('proponer-plan-ciencia KB error:', kbRes.error)
     const papers = kbRes.data ?? []
 
     const evidenciasTexto = papers.length > 0
-      ? papers.map(p => `• ${p.titulo}\n  ${p.resumen?.slice(0, 200) ?? ''}\n  Refs: ${(p.referencias as string[])?.slice(0, 2).join('; ')}`).join('\n\n')
+      ? papers.map(p => `• ${p.titulo}\n  ${p.resumen?.slice(0, 200) ?? ''}\n  Fuente: ${p.fuente ?? 'sin cita'}`).join('\n\n')
       : 'Sin papers específicos — usar principios ACSM/NSCA generales.'
 
     // Informe clínico del cliente (inyectar si existe)

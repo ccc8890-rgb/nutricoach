@@ -179,11 +179,15 @@ export async function ejecutarTrainingBrain(clienteId: string): Promise<void> {
     .eq('cliente_id', clienteId)
     .single()
 
-  const { data: profileData } = await db
-    .from('profiles')
-    .select('nombre, apellidos')
+  // Bug corregido (25-09-2026): `clienteId` es el id de `clientes`, no de
+  // `profiles` — comparar `profiles.id` directamente contra él nunca
+  // encontraba fila y el nombre caía siempre al genérico "el cliente".
+  const { data: clienteConPerfil } = await db
+    .from('clientes')
+    .select('profiles:profiles!profile_id(nombre, apellidos)')
     .eq('id', clienteId)
     .single()
+  const profileData = clienteConPerfil?.profiles as { nombre?: string; apellidos?: string } | null
 
   const nombre = [profileData?.nombre, profileData?.apellidos].filter(Boolean).join(' ') || 'el cliente'
 

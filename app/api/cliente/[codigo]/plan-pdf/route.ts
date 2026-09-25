@@ -4,6 +4,7 @@ import { canonicalizarItemCompra, esIngredienteBasicoNoCompra } from '@/lib/list
 import { convertirGramosACompra } from '@/lib/lista-compra/inteligente'
 import { escapeHtml } from '@/lib/html/escape'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
+import { comidasDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
 import type { Macros } from '@/types'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -160,9 +161,11 @@ export async function GET(
 }
 
 function ordenarComidas(comidas: ComidaPdf[]) {
+    // Comidas sin día (recurrentes, se repiten cada día) van primero;
+    // no se anclan a "Lunes" como antes. Ver lib/nutricion/comidas-dia.ts.
     return [...comidas].sort((a, b) => {
-        const diaA = DIAS.indexOf(a.dia_semana || DIAS[0])
-        const diaB = DIAS.indexOf(b.dia_semana || DIAS[0])
+        const diaA = indiceDiaDesdeTexto(a.dia_semana) ?? -1
+        const diaB = indiceDiaDesdeTexto(b.dia_semana) ?? -1
         return (diaA - diaB) || ((a.orden ?? 0) - (b.orden ?? 0))
     })
 }
@@ -225,13 +228,16 @@ function construirListaCompra(comidas: ComidaPdf[]): ItemListaPdf[] {
 }
 
 function agruparPorDia(comidas: ComidaPdf[]) {
-    const map = new Map<string, ComidaPdf[]>()
-    for (const dia of DIAS) map.set(dia, [])
-    for (const comida of comidas) {
-        const dia = comida.dia_semana && DIAS.includes(comida.dia_semana) ? comida.dia_semana : DIAS[0]
-        map.get(dia)?.push(comida)
-    }
-    return Array.from(map.entries()).filter(([, items]) => items.length > 0)
+    // Bug corregido (25-09-2026): una comida SIN dia_semana es recurrente
+    // (se repite cada día), no "del lunes". Antes, todas las comidas
+    // recurrentes se amontonaban en la sección "Lunes" del PDF, dejando el
+    // resto de días vacíos y multiplicando por 7 el resumen "kcal/día"
+    // (sumaba TODO el plan como si fuera un solo día). Misma semántica que
+    // lib/nutricion/comidas-dia.ts, usada en el resto del portal cliente.
+    const normalizadas = comidas.map(c => ({ ...c, orden: c.orden ?? 0 }))
+    return DIAS
+        .map((dia, idx) => [dia, comidasDelDia(normalizadas, idx)] as const)
+        .filter(([, items]) => items.length > 0)
 }
 
 function mealTitle(comida: ComidaPdf) {

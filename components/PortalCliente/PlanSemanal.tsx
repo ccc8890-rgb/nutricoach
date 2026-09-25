@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
+import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 
 const DIAS_SHORT = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -66,19 +67,9 @@ function calcMacros(alimentos: AlimentoEnComida[]) {
     ))
 }
 
-function normalizarDiaNutricion(dia: string | null | undefined): number {
-    if (!dia) return 0
-    const d = dia.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    const idx = DIAS.map(x => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')).findIndex(k => d.includes(k))
-    return idx >= 0 ? idx : 0
-}
-
 export default function PlanSemanal({ comidas, targets, codigo }: PlanSemanalProps) {
-    const [diaSeleccionado, setDiaSeleccionado] = useState(0)
-    const comidasDia = comidas
-        .filter(comida => normalizarDiaNutricion(comida.dia_semana) === diaSeleccionado)
-        .slice()
-        .sort((a, b) => a.orden - b.orden)
+    const [diaSeleccionado, setDiaSeleccionado] = useState(() => diaActualIndex())
+    const comidasDia = comidasDelDia(comidas, diaSeleccionado)
 
     // Macro totales del día seleccionado (suma de recetas asignadas)
     const totalDia = comidasDia.reduce(

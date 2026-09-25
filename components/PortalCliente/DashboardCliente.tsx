@@ -521,10 +521,7 @@ function HoyCliente({
     const hoyIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
     const fechaHoy = fechaHoyLocal()
     const comidas = (data.plan.comidas ?? []) as ComidaCliente[]
-    const comidasHoy = comidas
-        .filter(comida => (normalizarDia(comida.dia_semana) ?? 0) === hoyIdx)
-        .slice()
-        .sort((a, b) => a.orden - b.orden)
+    const comidasHoy = comidas.filter(c => (normalizarDia(c.dia_semana) ?? 0) === hoyIdx)
     const registrosHoy = new Map((data.registros_comidas ?? [])
         .filter(r => r.fecha === fechaHoy)
         .map(r => [r.comida_id, r]))

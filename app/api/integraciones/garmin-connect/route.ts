@@ -6,44 +6,87 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase } from '@/lib/supabase-server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { cifrarCredenciales, verificarCredencialesGarmin } from '@/lib/integraciones/garmin-connect-perclient'
+import { autorizarCliente, type ClienteLookup } from '@/lib/integraciones/autorizar-cliente'
+
+// Construye el lookup de autorización sobre el cliente service-role.
+function crearLookup(db: ReturnType<typeof createServiceSupabase>): ClienteLookup {
+  return {
+    async porId(clienteId) {
+      const { data, error } = await db
+        .from('clientes')
+        .select('id, coach_id, profile_id')
+        .eq('id', clienteId)
+        .maybeSingle()
+      if (error) throw error
+      return data ?? null
+    },
+    async porCodigo(codigo) {
+      const { data: plan, error } = await db
+        .from('planes_nutricion')
+        .select('cliente_id')
+        .eq('codigo_publico', codigo)
+        .maybeSingle()
+      if (error) throw error
+      if (!plan?.cliente_id) return null
+      const { data, error: errCliente } = await db
+        .from('clientes')
+        .select('id, coach_id, profile_id')
+        .eq('id', plan.cliente_id)
+        .maybeSingle()
+      if (errCliente) throw errCliente
+      return data ?? null
+    },
+    async porProfileId(userId) {
+      const { data, error } = await db
+        .from('clientes')
+        .select('id, coach_id, profile_id')
+        .eq('profile_id', userId)
+        .maybeSingle()
+      if (error) throw error
+      return data ?? null
+    },
+    async rolDePerfil(userId) {
+      const { data, error } = await db
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle()
+      if (error) throw error
+      return data?.role ?? null
+    },
+  }
+}
 
 export async function POST(req: NextRequest) {
   const supabase = createApiSupabase(req)
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Puede llamarlo el coach (para vincular cuenta de un cliente)
-  // o el propio cliente si tiene sesión activa
-  // Identificamos al cliente por cliente_id en el body (si lo envía el coach)
-  // o por el session user si es el propio cliente
-  const body = await req.json()
+  // Autenticación ANTES de parsear el body.
+  if (!user) {
+    return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  }
+
+  let body: { email?: string; password?: string; cliente_id?: string; codigo?: string }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'JSON inválido' }, { status: 400 })
+  }
   const { email, password, cliente_id: clienteIdParam, codigo } = body
+
+  // Autenticar y autorizar ANTES de validar credenciales o producir efectos.
+  const db = createServiceSupabase()
+  const auth = await autorizarCliente(
+    { userId: user.id, clienteIdParam, codigo },
+    crearLookup(db)
+  )
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+  const clienteId = auth.clienteId
 
   if (!email || !password) {
     return NextResponse.json({ error: 'email y password requeridos' }, { status: 400 })
-  }
-
-  // Determinar cliente_id:
-  // 1) Si viene codigo del portal → buscar en planes_nutricion
-  // 2) Si viene cliente_id directo (coach autenticado)
-  // 3) Si hay user autenticado y es el propio cliente (fallback)
-  const db = createServiceSupabase()
-  let clienteId: string | null = null
-
-  if (codigo) {
-    const { data: plan } = await db
-      .from('planes_nutricion')
-      .select('cliente_id')
-      .eq('codigo_publico', codigo)
-      .maybeSingle()
-    clienteId = plan?.cliente_id ?? null
-  } else if (clienteIdParam) {
-    // Sólo coaches autenticados pueden vincular por cliente_id directo
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    clienteId = clienteIdParam
-  }
-
-  if (!clienteId) {
-    return NextResponse.json({ error: 'No se pudo identificar el cliente' }, { status: 400 })
   }
 
   // Verificar que las credenciales son válidas antes de guardar
@@ -73,37 +116,50 @@ export async function POST(req: NextRequest) {
     )
 
   if (upsertError) {
-    return NextResponse.json({ error: upsertError.message }, { status: 500 })
+    console.error('[garmin-connect] upsert error:', upsertError)
+    return NextResponse.json({ error: 'No se pudieron guardar las credenciales' }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true, displayName })
 }
 
 export async function DELETE(req: NextRequest) {
-  const body = await req.json()
+  const supabase = createApiSupabase(req)
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Autenticación ANTES de parsear el body.
+  if (!user) {
+    return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  }
+
+  let body: { cliente_id?: string; codigo?: string }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'JSON inválido' }, { status: 400 })
+  }
   const { cliente_id, codigo } = body
 
   const db = createServiceSupabase()
-  let clienteId: string | null = cliente_id ?? null
-
-  if (!clienteId && codigo) {
-    const { data: plan } = await db
-      .from('planes_nutricion')
-      .select('cliente_id')
-      .eq('codigo_publico', codigo)
-      .maybeSingle()
-    clienteId = plan?.cliente_id ?? null
+  const auth = await autorizarCliente(
+    { userId: user.id, clienteIdParam: cliente_id, codigo },
+    crearLookup(db)
+  )
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
   }
+  const clienteId = auth.clienteId
 
-  if (!clienteId) {
-    return NextResponse.json({ error: 'cliente no encontrado' }, { status: 400 })
-  }
-
-  await db
+  const { error } = await db
     .from('integraciones_cliente')
     .delete()
     .eq('cliente_id', clienteId)
     .eq('proveedor', 'garmin_connect')
+
+  if (error) {
+    console.error('[garmin-connect] delete error:', error)
+    return NextResponse.json({ error: 'No se pudo desconectar Garmin' }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true })
 }

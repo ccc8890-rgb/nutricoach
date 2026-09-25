@@ -27,12 +27,14 @@ const DIA_ABR: Record<string, string> = {
   Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J',
   Viernes: 'V', Sábado: 'S', Domingo: 'D',
 }
-const TODAY_NAME = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][new Date().getDay()]
+const DIAS_SEMANA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'] as const
 
 export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoCardProps) {
   const [sesiones, setSesiones] = useState<SesionSemana[]>([])
   const [loading, setLoading] = useState(true)
-  const [completadasHoy, setCompletadasHoy] = useState<Set<string>>(new Set())
+  const [registradasSemana, setRegistradasSemana] = useState<Set<string>>(new Set())
+  // Día local del navegador (no UTC): la UI debe coincidir con el día del usuario.
+  const TODAY_NAME = DIAS_SEMANA[new Date().getDay()]
 
   useEffect(() => {
     async function load() {
@@ -41,7 +43,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
         if (!res.ok) return
         const data = await res.json()
         if (data.sesiones) setSesiones(data.sesiones)
-        if (data.completadas_hoy) setCompletadasHoy(new Set(data.completadas_hoy))
+        if (data.registradas_semana) setRegistradasSemana(new Set(data.registradas_semana))
       } catch {
         // silent
       } finally {
@@ -71,27 +73,52 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
     return da - db
   })
 
-  const todaySession = sesionesOrdenadas.find(s => s.dia_semana === TODAY_NAME)
-  const nextSession = todaySession ?? sesionesOrdenadas[0]
-  const nextSessionCompleted = nextSession ? completadasHoy.has(nextSession.id) : false
+  const sesionesHoy = sesionesOrdenadas.filter(s => s.dia_semana === TODAY_NAME)
+  const sesionesHoySinRegistro = sesionesHoy.filter(s => !registradasSemana.has(s.id))
+
+  // Próxima sesión: primera hoy sin registros, sino primera hoy, sino próxima cronológica sin registros desde hoy (circular), si todas registradas próxima cronológica
+  let nextSession: SesionSemana | undefined
+  if (sesionesHoySinRegistro.length > 0) {
+    nextSession = sesionesHoySinRegistro[0]
+  } else if (sesionesHoy.length > 0) {
+    nextSession = sesionesHoy[0]
+  } else {
+    const hoyOrder = DIA_ORDER[TODAY_NAME] ?? 0
+    const futurasSinRegistro = sesionesOrdenadas.filter(s => {
+      const d = DIA_ORDER[s.dia_semana] ?? 0
+      return d > hoyOrder && !registradasSemana.has(s.id)
+    })
+    if (futurasSinRegistro.length > 0) {
+      nextSession = futurasSinRegistro[0]
+    } else {
+      const circularesSinRegistro = sesionesOrdenadas.filter(s => !registradasSemana.has(s.id))
+      if (circularesSinRegistro.length > 0) {
+        nextSession = circularesSinRegistro[0]
+      } else {
+        const futuras = sesionesOrdenadas.filter(s => (DIA_ORDER[s.dia_semana] ?? 0) > hoyOrder)
+        nextSession = futuras[0] ?? sesionesOrdenadas[0]
+      }
+    }
+  }
+  const nextSessionRegistrada = nextSession ? registradasSemana.has(nextSession.id) : false
 
   // Days that have a session this week
   const diasConSesion = new Set(sesionesOrdenadas.map(s => s.dia_semana))
 
-  // Day dot color: check if completed
+  // Day dot color: check if registered
   function dayDotStyle(dia: string) {
     const hasSesion = diasConSesion.has(dia)
     const isToday = dia === TODAY_NAME
-    const sesionDelDia = sesionesOrdenadas.find(s => s.dia_semana === dia)
-    const estaCompletada = sesionDelDia ? completadasHoy.has(sesionDelDia.id) : false
+    const sesionesDelDia = sesionesOrdenadas.filter(s => s.dia_semana === dia)
+    const todasRegistradas = sesionesDelDia.length > 0 && sesionesDelDia.every(s => registradasSemana.has(s.id))
 
-    if (isToday && hasSesion && estaCompletada) {
+    if (isToday && hasSesion && todasRegistradas) {
       return { background: 'var(--semantic-active-border)', color: 'var(--semantic-active)' }
     }
     if (isToday && hasSesion) {
       return { background: 'var(--semantic-info)', color: 'white' }
     }
-    if (hasSesion && estaCompletada) {
+    if (hasSesion && todasRegistradas) {
       return { background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)' }
     }
     if (hasSesion) {
@@ -132,7 +159,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             </p>
           </div>
         </div>
-        {todaySession ? (
+        {sesionesHoy.length > 0 ? (
           <span
             className="text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0"
             style={{
@@ -153,8 +180,8 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
         <div className="flex items-center gap-1.5 mb-2">
             {(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as const).map(dia => {
               const hasSesion = diasConSesion.has(dia)
-              const sesionDelDia = sesionesOrdenadas.find(s => s.dia_semana === dia)
-              const estaCompletada = sesionDelDia ? completadasHoy.has(sesionDelDia.id) : false
+              const sesionesDelDia = sesionesOrdenadas.filter(s => s.dia_semana === dia)
+              const todasRegistradas = sesionesDelDia.length > 0 && sesionesDelDia.every(s => registradasSemana.has(s.id))
             return (
               <div
                 key={dia}
@@ -164,9 +191,9 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all"
                   style={dayDotStyle(dia)}
-                  title={hasSesion ? sesionDelDia?.nombre : 'Descanso'}
+                  title={hasSesion ? sesionesDelDia.map(s => s.nombre).join(', ') : 'Descanso'}
                 >
-                  {estaCompletada ? <CheckCircle size={14} /> : DIA_ABR[dia]}
+                  {todasRegistradas ? <CheckCircle size={14} /> : DIA_ABR[dia]}
                 </div>
                 <div
                   className="w-1 h-1 rounded-full"
@@ -179,12 +206,12 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
         <div className="flex items-center gap-3 text-[10px] font-medium mb-3">
           <span style={{ color: '#6F6F78' }}><span style={{ color: '#818CF8' }}>●</span> Hoy</span>
           <span style={{ color: '#6F6F78' }}><span style={{ color: '#8A9AB8' }}>●</span> Entreno</span>
-          <span style={{ color: '#6F6F78' }}><span style={{ color: '#4ADE80' }}>✓</span> Hecho</span>
+          <span style={{ color: '#6F6F78' }}><span style={{ color: '#4ADE80' }}>✓</span> Con registros</span>
           <span style={{ color: '#6F6F78' }}><span style={{ color: '#45454F' }}>●</span> Descanso</span>
         </div>
 
         {/* Rest day mini panel — solo cuando hoy es día de descanso */}
-        {!todaySession && (() => {
+        {sesionesHoy.length === 0 && (() => {
           const rec = getRecomendacionDescanso(sesionesOrdenadas.length, TODAY_NAME)
           return (
             <div
@@ -210,8 +237,8 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
         {/* Next session CTA */}
         {nextSession && (
           <div className="rounded-xl" style={{
-            background: nextSessionCompleted ? 'var(--semantic-active-bg)' : 'var(--semantic-info-bg)',
-            border: `1px solid ${nextSessionCompleted ? 'var(--semantic-active-border)' : 'var(--semantic-info-bg)'}`,
+            background: nextSessionRegistrada ? 'var(--semantic-active-bg)' : 'var(--semantic-info-bg)',
+            border: `1px solid ${nextSessionRegistrada ? 'var(--semantic-active-border)' : 'var(--semantic-info-bg)'}`,
           }}>
             {/* Session info row */}
             <Link
@@ -220,9 +247,9 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             >
               <div
                 className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
-                style={{ background: nextSessionCompleted ? 'var(--semantic-active-border)' : 'var(--semantic-info-bg)' }}
+                style={{ background: nextSessionRegistrada ? 'var(--semantic-active-border)' : 'var(--semantic-info-bg)' }}
               >
-                {nextSessionCompleted ? (
+                {nextSessionRegistrada ? (
                   <CheckCircle size={16} style={{ color: 'var(--semantic-active)' }} />
                 ) : (
                   <Lightning size={16} style={{ color: 'var(--semantic-info)' }} />
@@ -249,13 +276,13 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                 </p>
               </div>
               <div className="flex items-center gap-1.5">
-                {nextSessionCompleted ? (
+                {nextSessionRegistrada ? (
                   <span
                     className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1"
                     style={{ background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)' }}
                   >
                     <CheckCircle size={11} />
-                    Hecha
+                    Registrada
                   </span>
                 ) : nextSession.dia_semana === TODAY_NAME ? (
                   <span
@@ -273,7 +300,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                     Ver entreno
                   </span>
                 )}
-                <CaretRight size={14} style={{ color: nextSessionCompleted ? '#4ADE80' : '#818CF8' }} />
+                <CaretRight size={14} style={{ color: nextSessionRegistrada ? '#4ADE80' : '#818CF8' }} />
               </div>
             </Link>
           </div>
@@ -283,28 +310,28 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
         {sesionesOrdenadas.length > 1 && (
           <div className="mt-2 flex flex-col gap-1">
             {sesionesOrdenadas.filter(s => s.id !== nextSession?.id).map(s => {
-              const completada = completadasHoy.has(s.id)
+              const registrada = registradasSemana.has(s.id)
               return (
                 <div key={s.id} className="flex flex-col">
                   <Link
                     href={`/cliente/sesion/${s.id}`}
                     className="flex items-center gap-2.5 px-3 py-2 rounded-lg transition-opacity hover:opacity-70"
-                    style={{ color: completada ? '#4ADE80' : '#9898A0' }}
+                    style={{ color: registrada ? '#4ADE80' : '#9898A0' }}
                   >
                     <span
                       className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
                       style={{
-                        background: completada
+                        background: registrada
                           ? 'rgba(74,222,128,0.10)'
                           : 'rgba(128,128,128,0.1)',
                       }}
                     >
-                      {completada ? <CheckCircle size={12} /> : (DIA_ABR[s.dia_semana] ?? '?')}
+                      {registrada ? <CheckCircle size={12} /> : (DIA_ABR[s.dia_semana] ?? '?')}
                     </span>
                     <span className="flex-1 min-w-0">
-                      <span className="block text-sm truncate" style={{ color: completada ? '#4ADE80' : 'var(--text)' }}>
+                      <span className="block text-sm truncate" style={{ color: registrada ? '#4ADE80' : 'var(--text)' }}>
                         {s.nombre}
-                        {completada && ' ✓'}
+                        {registrada && ' ✓'}
                       </span>
                       {s.contexto_ia && (
                         <span
@@ -317,11 +344,11 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
                         </span>
                       )}
                     </span>
-                    {s.ejercicios_count > 0 && !completada && (
+                    {s.ejercicios_count > 0 && !registrada && (
                       <span className="text-[11px]">{s.ejercicios_count} ej.</span>
                     )}
-                    {completada && (
-                      <span className="text-[10px] font-medium" style={{ color: '#4ADE80' }}>Completada</span>
+                    {registrada && (
+                      <span className="text-[10px] font-medium" style={{ color: '#4ADE80' }}>Con registros</span>
                     )}
                   </Link>
 
