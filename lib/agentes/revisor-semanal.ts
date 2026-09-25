@@ -4,6 +4,7 @@
 // Se ejecuta automáticamente cada lunes para cada cliente activo.
 // ================================================================
 
+import { createServiceSupabase } from '@/lib/supabase-server'
 import { llamarDeepSeek, cargarContextoCliente, guardarTareaAgente } from './executor'
 import { obtenerInformeVigente } from '@/lib/inteligencia-clinica'
 import { obtenerPerfilCliente } from './perfil-gusto'
@@ -343,11 +344,54 @@ function evaluarNodosActividad(
   return scoreExtra
 }
 
+// Por encima de este umbral, el último check-in ya no representa el estado
+// actual del cliente: el árbol de 19 nodos usaría datos fantasma (peso,
+// adherencia, energía) para fabricar una tendencia semanal inexistente.
+// Con cadencia semanal, 12 días da margen a una semana perdida sin disparar
+// aún la alerta.
+export const DIAS_CHECKIN_DESACTUALIZADO = 12
+
+export function diasDesde(fechaIso: string | undefined): number {
+  if (!fechaIso) return Infinity
+  return Math.floor((Date.now() - new Date(fechaIso).getTime()) / (24 * 60 * 60 * 1000))
+}
+
+async function yaHayRecordatorioPendiente(clienteId: string): Promise<boolean> {
+  const db = createServiceSupabase()
+  const { count } = await db
+    .from('agente_tareas')
+    .select('*', { count: 'exact', head: true })
+    .eq('cliente_id', clienteId)
+    .eq('tipo', 'checkin_recordatorio')
+    .eq('estado', 'pendiente')
+  return (count ?? 0) > 0
+}
+
+async function proponerRecordatorioCheckin(clienteId: string, dias: number): Promise<void> {
+  if (await yaHayRecordatorioPendiente(clienteId)) return
+  await guardarTareaAgente('revisor_semanal', {
+    tipo: 'checkin_recordatorio',
+    propuesta: `Sin check-ins desde hace ${dias} días. No se puede evaluar el plan con datos fiables — contactar al cliente para reactivar el seguimiento antes de proponer cualquier ajuste de macros.`,
+    razonamiento: `Último check-in registrado hace ${dias} días (umbral: ${DIAS_CHECKIN_DESACTUALIZADO}). Generar un ajuste de macros con estos datos fabricaría una tendencia de peso/adherencia/energía inexistente.`,
+    payload: { dias_sin_checkin: dias },
+    fuentes: [],
+    prioridad: 4,
+    score_confianza: 1,
+    requiere_aprobacion: true,
+  }, clienteId)
+}
+
 // ── Entry point principal ─────────────────────────────────────
 export async function ejecutarRevisorSemanal(clienteId: string): Promise<void> {
   const ctx = await cargarContextoCliente(clienteId)
   if (!ctx) return
   if (ctx.checkins_recientes.length < 2) return
+
+  const diasSinCheckin = diasDesde(ctx.checkins_recientes[0]?.fecha)
+  if (diasSinCheckin > DIAS_CHECKIN_DESACTUALIZADO) {
+    await proponerRecordatorioCheckin(clienteId, diasSinCheckin)
+    return
+  }
 
   // Cargar perfil de gusto y patrones colectivos en paralelo
   const [perfilGusto, patronesColectivos, informeClinico] = await Promise.all([
@@ -396,7 +440,12 @@ export async function ejecutarRevisorSemanal(clienteId: string): Promise<void> {
     fuentes: (parsed.fuentes as ResultadoAgente['fuentes']) ?? [],
     prioridad: Number(parsed.prioridad ?? 5),
     score_confianza: Number(parsed.score_confianza ?? 0.5),
-    requiere_aprobacion: parsed.requiere_aprobacion !== false,
+    // Siempre true, sin excepción: esta tarea puede reescribir kcal/macros
+    // reales de un cliente (aplicarAjusteMacros en aplicar.ts). Nunca dejar
+    // que el JSON crudo de DeepSeek decida por sí solo si un cambio de dieta
+    // se aplica sin que el coach lo vea — un campo mal puesto en la
+    // respuesta del modelo no debe poder saltarse la revisión humana.
+    requiere_aprobacion: true,
     mensaje_cliente: parsed.mensaje_cliente ? String(parsed.mensaje_cliente) : undefined,
     senales_proxima_semana: senales.length > 0 ? senales : undefined,
   }

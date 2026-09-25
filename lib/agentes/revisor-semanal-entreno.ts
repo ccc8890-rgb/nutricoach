@@ -7,6 +7,7 @@
 // ================================================================
 
 import { llamarGemini, guardarTareaAgente } from './executor'
+import { obtenerPatronesRelevantes } from './aprendizaje-colectivo'
 import { createServiceSupabase } from '@/lib/supabase-server'
 
 function obtenerLunesPasado(): string {
@@ -17,6 +18,15 @@ function obtenerLunesPasado(): string {
   lunes.setDate(hoy.getDate() - diff - 7)  // semana anterior
   lunes.setHours(0, 0, 0, 0)
   return lunes.toISOString()
+}
+
+// Evita re-alertar "inactividad total" cada lunes mientras el coach no haya
+// triado la alerta anterior. Solo suprime cuando la última tarea pendiente
+// de este tipo también reportaba 0 sesiones (mismo fallo, sin resolver).
+export function debeSuprimirPorInactividadRepetida(
+  ultimaPendiente: { sesiones_realizadas?: number } | null | undefined
+): boolean {
+  return ultimaPendiente?.sesiones_realizadas === 0
 }
 
 function obtenerLunesActual(): string {
@@ -91,13 +101,32 @@ export async function ejecutarRevisorSemanalEntreno(clienteId: string): Promise<
   // 5. Solo generar tarea si hay datos útiles o adherencia baja
   if (sesiones.length === 0 && adherencia > 0.7) return
 
+  // Inactividad total repetida: si ya hay una alerta de "0 sesiones" pendiente
+  // sin revisar por el coach, no generar otra idéntica cada lunes. El agente
+  // volvía a proponer "contactar urgentemente" semana tras semana sin que el
+  // coach hubiera tenido oportunidad de actuar sobre la anterior — puro ruido
+  // en el inbox. Se libera en cuanto el coach marca la tarea previa como
+  // revisada, o si vuelve a haber actividad real.
+  if (sesionesRealizadas === 0) {
+    const { data: pendientesInactividad } = await db
+      .from('agente_tareas')
+      .select('id, payload')
+      .eq('cliente_id', clienteId)
+      .eq('tipo', 'revision_semanal_entreno')
+      .eq('estado', 'pendiente')
+      .order('created_at', { ascending: false })
+      .limit(1)
+    const ultimaPayload = pendientesInactividad?.[0]?.payload as { sesiones_realizadas?: number } | null
+    if (debeSuprimirPorInactividadRepetida(ultimaPayload)) return
+  }
+
   // 6. Perfil cliente
   // Bug corregido (25-09-2026): `clienteId` es el id de `clientes`, no de
   // `profiles` — comparar `profiles.id` directamente contra él nunca
   // encontraba fila y el nombre caía siempre al genérico "el cliente".
   const { data: clienteConPerfil } = await db
     .from('clientes')
-    .select('profiles:profiles!profile_id(nombre, apellidos)')
+    .select('objetivo, profiles:profiles!profile_id(nombre, apellidos)')
     .eq('id', clienteId)
     .single()
   const perfil = clienteConPerfil?.profiles as { nombre?: string; apellidos?: string } | null
@@ -110,6 +139,11 @@ export async function ejecutarRevisorSemanalEntreno(clienteId: string): Promise<
     const ej = s.ejercicio as unknown as { grupo_muscular?: string } | null
     if (ej?.grupo_muscular) gruposSet.add(ej.grupo_muscular)
   }
+
+  // Patrones agregados de todos los clientes (aprendizaje-colectivo.ts) —
+  // antes solo alimentaban al revisor de nutrición; el de entreno nunca se
+  // beneficiaba del conocimiento acumulado entre clientes.
+  const patronesColectivos = await obtenerPatronesRelevantes(clienteConPerfil?.objetivo ?? 'rendimiento')
 
   const prompt = `Eres el revisor semanal de entrenamiento de NutriCoach.
 
@@ -128,6 +162,7 @@ INTERPRETACIÓN TLS:
 - 50-150: carga moderada ideal
 - 150-250: carga alta, vigilar recuperación
 - >250: sobreentrenamiento potencial
+${patronesColectivos}
 
 Analiza y genera propuesta para el coach en JSON:
 {

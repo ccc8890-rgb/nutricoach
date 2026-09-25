@@ -84,24 +84,38 @@ export async function ejecutarAprendizajeColectivo(): Promise<{
   let actualizados = 0
 
   for (const patron of validos) {
-    const { error } = await db.from('conocimiento_colectivo').upsert(
-      {
-        categoria: patron.categoria,
-        patron: patron.patron,
-        condicion_contexto: patron.condicion_contexto,
-        evidencia_estadistica: patron.evidencia_estadistica,
-        recomendacion_accion: patron.recomendacion_accion,
-        confianza: patron.confianza,
-        n_clientes_soporte: patron.n_clientes,
-        fecha_ultima_validacion: new Date().toISOString().split('T')[0],
-        activo: true,
-      },
-      {
-        onConflict: 'categoria,patron',
-        ignoreDuplicates: false,
-      }
-    )
-    if (!error) actualizados++
+    // Bug corregido (25-09-2026): el upsert usaba nombres de columna
+    // (`patron`, `condicion_contexto`, `evidencia_estadistica`,
+    // `recomendacion_accion`, `n_clientes_soporte`, `fecha_ultima_validacion`)
+    // que nunca existieron en la tabla real (`observacion`, `condicion`
+    // jsonb, `evidencia` jsonb, `accion_sugerida`). El upsert fallaba en
+    // silencio cada vez (error ignorado sin log) — el agente llevaba desde
+    // su creación sin persistir ni un solo patrón nuevo.
+    const fila = {
+      categoria: patron.categoria,
+      observacion: patron.patron,
+      condicion: patron.condicion_contexto,
+      evidencia: { texto: patron.evidencia_estadistica, n_clientes: patron.n_clientes },
+      accion_sugerida: patron.recomendacion_accion,
+      confianza: patron.confianza,
+      activo: true,
+    }
+
+    // Sin constraint única conocida sobre (categoria, observacion) en la
+    // tabla real → buscar+actualizar en vez de upsert con onConflict.
+    const { data: existente } = await db
+      .from('conocimiento_colectivo')
+      .select('id')
+      .eq('categoria', patron.categoria)
+      .eq('observacion', patron.patron)
+      .maybeSingle()
+
+    const { error } = existente
+      ? await db.from('conocimiento_colectivo').update(fila).eq('id', existente.id)
+      : await db.from('conocimiento_colectivo').insert(fila)
+
+    if (error) console.error('[aprendizaje-colectivo] Error guardando patrón:', error.message)
+    else actualizados++
   }
 
   // 4. Guardar resumen ejecutivo en coach_memoria
@@ -266,9 +280,13 @@ export async function obtenerPatronesRelevantes(
 ): Promise<string> {
   const db = createServiceSupabase()
 
+  // Bug corregido (25-09-2026): mismo mismatch de columnas que el upsert de
+  // arriba — esta select nunca devolvía filas (columnas inexistentes), así
+  // que `obtenerPatronesRelevantes` llevaba desde su creación devolviendo
+  // siempre '' y el "conocimiento colectivo" nunca llegaba a ningún prompt.
   const { data: patrones } = await db
     .from('conocimiento_colectivo')
-    .select('patron, condicion_contexto, recomendacion_accion, confianza')
+    .select('observacion, condicion, accion_sugerida, confianza')
     .eq('activo', true)
     .gte('confianza', 0.6)
     .order('confianza', { ascending: false })
@@ -276,9 +294,10 @@ export async function obtenerPatronesRelevantes(
 
   if (!patrones || patrones.length === 0) return ''
 
-  // Filtrar por relevancia al objetivo/condición
+  // Filtrar por relevancia al objetivo/condición. `condicion` es jsonb —
+  // puede ser un string plano (formato actual) o un objeto (formatos futuros).
   const relevantes = patrones.filter(p => {
-    const ctx = p.condicion_contexto?.toLowerCase() ?? ''
+    const ctx = (typeof p.condicion === 'string' ? p.condicion : JSON.stringify(p.condicion ?? '')).toLowerCase()
     return (
       ctx.includes(objetivo.toLowerCase()) ||
       ctx.includes('todos') ||
@@ -290,6 +309,6 @@ export async function obtenerPatronesRelevantes(
 
   return `\n\nCONOCIMIENTO COLECTIVO VALIDADO (${relevantes.length} patrones relevantes):
 ${relevantes.map(p =>
-  `• ${p.patron} → ${p.recomendacion_accion} [confianza: ${(p.confianza * 100).toFixed(0)}%]`
+  `• ${p.observacion} → ${p.accion_sugerida} [confianza: ${(p.confianza * 100).toFixed(0)}%]`
 ).join('\n')}`
 }

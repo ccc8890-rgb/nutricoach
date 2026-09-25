@@ -7,6 +7,7 @@
 // ================================================================
 
 import { llamarDeepSeek, guardarTareaAgente } from './executor'
+import { obtenerPatronesRelevantes } from './aprendizaje-colectivo'
 import { seleccionarProtocolos, formatearEvidenciaParaPrompt, type PerfilClienteKB } from '@/lib/knowledge-base'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import type { FuenteCientifica } from './types'
@@ -184,7 +185,7 @@ export async function ejecutarTrainingBrain(clienteId: string): Promise<void> {
   // encontraba fila y el nombre caía siempre al genérico "el cliente".
   const { data: clienteConPerfil } = await db
     .from('clientes')
-    .select('profiles:profiles!profile_id(nombre, apellidos)')
+    .select('objetivo, profiles:profiles!profile_id(nombre, apellidos)')
     .eq('id', clienteId)
     .single()
   const profileData = clienteConPerfil?.profiles as { nombre?: string; apellidos?: string } | null
@@ -202,6 +203,11 @@ export async function ejecutarTrainingBrain(clienteId: string): Promise<void> {
 
   const protocolos = await seleccionarProtocolos(db, perfilKb, 3)
   const evidenciaTexto = formatearEvidenciaParaPrompt(protocolos)
+
+  // Patrones agregados de todos los clientes (aprendizaje-colectivo.ts) —
+  // antes solo alimentaban al revisor de nutrición; training-brain nunca se
+  // beneficiaba del conocimiento acumulado entre clientes, solo de la KB de papers.
+  const patronesColectivos = await obtenerPatronesRelevantes(clienteConPerfil?.objetivo ?? 'rendimiento')
 
   // 7. DeepSeek
   const senalesTexto = signals.map(s => `- [${s.tipo}] ${s.descripcion}`).join('\n')
@@ -221,7 +227,7 @@ GRUPOS MUSCULARES ÚLTIMAS 2 SEM: ${gruposEntrenados}
 SEÑALES DETECTADAS:
 ${senalesTexto}
 
-${evidenciaTexto ? evidenciaTexto + '\n' : ''}
+${evidenciaTexto ? evidenciaTexto + '\n' : ''}${patronesColectivos}
 Genera un análisis en JSON:
 {
   "propuesta": "qué hacer esta semana con el plan (máx 3 frases, concreto y accionable)",

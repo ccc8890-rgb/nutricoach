@@ -12,6 +12,7 @@
 
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { getSummaryLast7d } from '@/lib/integraciones/normalizer'
+import { aplicarTarea } from './aplicar'
 import type {
   TipoAgente,
   ContextoCliente,
@@ -289,7 +290,20 @@ export async function guardarTareaAgente(
     return null
   }
 
-  return data as AgenteTarea
+  const tarea = data as AgenteTarea
+
+  // Auto-aplicar cuando el agente marca la propuesta como ajuste menor de
+  // bajo riesgo (requiere_aprobacion:false). Hasta ahora esta ruta insertaba
+  // la fila en estado 'aprobado' pero nada disparaba aplicarTarea() — el
+  // único camino real era el PATCH manual del coach en el kanban. Sin este
+  // paso, requiere_aprobacion:false no tenía ningún efecto autónomo.
+  if (!resultado.requiere_aprobacion) {
+    aplicarTarea(tarea).catch(err =>
+      console.error('[executor] Error auto-aplicando tarea de bajo riesgo:', err)
+    )
+  }
+
+  return tarea
 }
 
 // ── Registrar señal de aprendizaje tras decisión del coach ───
