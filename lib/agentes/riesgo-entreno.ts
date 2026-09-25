@@ -22,17 +22,36 @@ export async function ejecutarAgenteRiesgoEntreno(clienteId: string): Promise<vo
 
   if (!plan) return  // Sin plan activo → no aplica
 
-  // 2. Última sesión registrada
-  const { data: ultimaSesion } = await db
-    .from('registros_sets')
-    .select('fecha')
-    .eq('cliente_id', clienteId)
-    .order('fecha', { ascending: false })
-    .limit(1)
-    .single()
+  // 2. Última sesión registrada — en la app (registros_sets) O detectada por
+  // wearable (Garmin/Strava en actividad_externa_cliente). Antes solo miraba
+  // registros_sets: un cliente que corre o pedalea de verdad con el reloj
+  // puesto pero no registra sets de gimnasio en la app salía marcado como
+  // "inactivo" y disparaba una alerta falsa de riesgo de abandono.
+  const [{ data: ultimaSesionApp }, { data: ultimaActividadWearable }] = await Promise.all([
+    db
+      .from('registros_sets')
+      .select('fecha')
+      .eq('cliente_id', clienteId)
+      .order('fecha', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('actividad_externa_cliente')
+      .select('fecha')
+      .eq('cliente_id', clienteId)
+      .not('tipo_entreno', 'is', null)
+      .order('fecha', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
 
-  const diasSin = ultimaSesion
-    ? Math.floor((Date.now() - new Date(ultimaSesion.fecha).getTime()) / 86_400_000)
+  const fechasCandidatas = [ultimaSesionApp?.fecha, ultimaActividadWearable?.fecha]
+    .filter((f): f is string => Boolean(f))
+    .map(f => new Date(f).getTime())
+  const ultimaFecha = fechasCandidatas.length > 0 ? Math.max(...fechasCandidatas) : null
+
+  const diasSin = ultimaFecha !== null
+    ? Math.floor((Date.now() - ultimaFecha) / 86_400_000)
     : 99
 
   if (diasSin < DIAS_SIN_SESION_UMBRAL) return
