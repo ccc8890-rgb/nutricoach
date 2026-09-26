@@ -7,9 +7,19 @@ import { syncGarminClientDays } from '@/lib/integraciones/garmin-connect-perclie
 export const maxDuration = 300
 import { descifrarCredenciales } from '@/lib/integraciones/garmin-connect-perclient'
 
+function checkAuth(req: NextRequest): boolean {
+  const authHeader = req.headers.get('authorization')
+  if (authHeader?.startsWith('Bearer ')) {
+    return authHeader.slice(7) === process.env.CRON_SECRET
+  }
+  const legacySecret = req.headers.get('x-cron-secret') ?? req.nextUrl.searchParams.get('secret')
+  if (legacySecret) return legacySecret === process.env.CRON_SECRET
+  // Vercel crons send the secret as a header
+  return req.headers.get('x-vercel-cron-secret') === process.env.CRON_SECRET
+}
+
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-cron-secret') ?? req.nextUrl.searchParams.get('secret')
-  if (secret !== process.env.CRON_SECRET) {
+  if (!checkAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
