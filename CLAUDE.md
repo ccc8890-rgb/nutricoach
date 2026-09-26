@@ -1,5 +1,41 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 25-09-2026 (tarde/noche, Claude) — Validación motor de recalculo + 5 bugs reales + integración wearables
+
+### Contexto
+Continuación de la sesión de hoy (ver bloque de abajo). Carlos pidió centrar la sesión en pulir el motor de recalculo automático de dietas (estado corporal + entreno + gasto calórico + planning) para que sea competitivo en el mercado. Protocolo de relevo Claude↔Codex activo (`ESTADO-COMPARTIDO.md`/`TAREAS.md` en la raíz de `NUTRICION/`): Codex tenía el lock sobre la reparación de `app/cliente/page.tsx`; Carlos confirmó que Codex ya no estaba activo, se verificó el archivo íntegro (no era necesario ningún fix) y se tomó la dirección.
+
+### Diagnóstico inicial — por qué no había datos reales que validar
+- El cron de sync de Garmin/Strava en Vercel llevaba parado desde el 06-06-2026 (sin error registrado — simplemente no se disparaba). Sync manual disparado con éxito: trajo body battery/training readiness/RHR frescos de hoy para el perfil de prueba de Carlos.
+- Garmin **sí estaba vinculado** (contradice lo apuntado en la sesión de la mañana — se había re-vinculado durante el día). Strava seguía con datos solo hasta el 30-06-2026 porque usa webhook push (no polling) — no es un bug de sync, hace falta que Carlos vuelva a autorizar la app en Strava para que el webhook vuelva a recibir actividades nuevas.
+- `registros_entreno` (log manual de TLS) = 0 en las últimas semanas para los 11 clientes reales.
+
+### 5 bugs reales encontrados y corregidos en el motor (commits `b228221`, `f0326a8`)
+| # | Archivo | Bug | Impacto |
+|---|---------|-----|---------|
+| 1 | `lib/agentes/revisor-semanal.ts` | El árbol de 19 nodos no comprobaba la frescura del check-in — calculaba "semanas en déficit" desde el último check-in (122 días de antigüedad en el cliente de prueba) y fabricaba una tendencia semanal inexistente, proponiendo ajustes de macros reales sobre datos fantasma cada lunes desde el 24-08-2026 | El motor llevaba 5 semanas "ajustando" la dieta de Carlos con datos de mayo |
+| 2 | `lib/agentes/revisor-semanal-entreno.ts` | Repetía la alerta "0 sesiones, contactar urgentemente" cada lunes sin escalado mientras durara la inactividad — puro ruido en el inbox del coach | Alertas duplicadas semana tras semana sin que aportaran nada nuevo |
+| 3 | `lib/agentes/aprendizaje-colectivo.ts` | El lector (`obtenerPatronesRelevantes`) y el escritor (`ejecutarAprendizajeColectivo`) usaban nombres de columna que nunca existieron en la tabla real `conocimiento_colectivo` (`patron`/`condicion_contexto`/`recomendacion_accion` vs. las reales `observacion`/`condicion`/`accion_sugerida`). El error se ignoraba en silencio | El sistema de "aprendizaje entre todos los clientes" llevaba desde su creación sin persistir ni servir un solo patrón, pese a tener 4 patrones válidos ya guardados esperando a usarse |
+| 4 | `lib/agentes/riesgo-entreno.ts` | Solo miraba `registros_sets` (sets de gimnasio logueados a mano) para decidir "días sin entrenar" | Un cliente que corre/pedalea de verdad con el reloj puesto pero no loguea series de gimnasio salía marcado como inactivo |
+| 5 | `lib/agentes/revisor-semanal-entreno.ts` | Mismo problema: "sesiones realizadas" de la semana solo contaba `registros_sets` | Actividad real de Garmin/Strava invisible para el revisor semanal de entreno |
+
+### Mejoras de autoalimentación (lo que pidió Carlos: "que se retroalimente")
+- `revisor-semanal-entreno.ts` y `training-brain.ts` ahora también consultan `conocimiento_colectivo` (antes solo lo hacía el revisor de nutrición) — el lado de entreno empieza a aprender de todos los clientes, no solo de la KB de papers.
+- `riesgo-entreno.ts`/`revisor-semanal-entreno.ts` ahora cuentan actividad de `actividad_externa_cliente` (Garmin/Strava) además de `registros_sets` — el "entrenamiento realizado" que alimenta el recalculo ya no depende de que el cliente loguee manualmente en la app.
+- Infraestructura de auto-aplicado conectada: `guardarTareaAgente` ahora dispara `aplicarTarea()` cuando un agente marca `requiere_aprobacion:false` (existía el campo pero nada lo ejecutaba). **Salvaguarda aplicada a propósito**: `revisor-semanal.ts` (la única tarea que puede reescribir macros reales de un cliente) fija `requiere_aprobacion:true` de forma incondicional — no se deja que el JSON crudo de DeepSeek decida si un cambio de dieta se salta la revisión del coach. Hoy esta infraestructura está lista pero inerte: ningún agente auto-aplica nada a clientes reales todavía.
+
+### Verificación
+`npx tsc --noEmit` 0 errores · `npm run build` producción completo (2 veces) · 4 tests nuevos en verde (`revisor-semanal-checkin-staleness`, `revisor-semanal-entreno-dedup`, `aprendizaje-colectivo-columnas`) · cada fix probado contra el cliente real en Supabase (perfil de prueba de Carlos) antes de dar por bueno.
+
+### Pendiente — próxima sesión
+1. Carlos: re-autorizar Strava en la app para que el webhook vuelva a recibir actividades (dato: última actividad Strava real es del 30-06-2026).
+2. Carlos: registrar/confirmar que Garmin sigue sincronizando solo (ya se disparó manualmente hoy, revisar que el cron de Vercel lo haga solo sin intervención — no se pudo verificar el cron de Vercel en sí desde esta sesión, sin acceso CLI autenticado).
+3. Con datos frescos de verdad (Strava reconectado + al menos 1 semana), volver a ejecutar `revisor-semanal.ts`/`revisor-semanal-entreno.ts` contra el cliente real y confirmar que el recalculo usa señales actuales, no solo que no rompe.
+4. Decisión de producto pendiente (no tomada por Claude, deliberadamente): si/cuándo activar `requiere_aprobacion:false` en algún agente de bajo riesgo (ej. mensajes de apoyo, nunca cambios de macros) para autonomía real.
+5. No se ejecutó el director completo (`ejecutarDirector`) contra los 11 clientes reales — sigue siendo una acción de efecto compartido que requiere confirmación explícita de Carlos antes de lanzarla.
+
+---
+
 ## ✅ SESIÓN 25-09-2026 — Reactivación uso personal + motor nutrición/entreno + colisión con Astra
 
 ### Contexto
@@ -32,6 +68,7 @@ Retomada la reactivación del proyecto (guía `salidas/24-09-2026_guia-reactivac
 - Crons verificados en `vercel.json`: sync-integraciones diario, agentes diario/semanal.
 - `lib/agentes/director.ts` orquesta correctamente todos los agentes por cliente con manejo de errores aislado.
 - **Pendiente de Carlos, no de código**: sin Garmin vinculado como cliente (`integraciones_cliente` vacío) ni sesiones de entreno registradas — el motor no tiene datos aún. Carlos entró a vincular Garmin durante la sesión; puede que los permisos se hayan revocado y haya que rehacerlo.
+  - **Actualización misma noche**: Garmin quedó vinculado — sync manual confirmado con datos frescos. Ver bloque "SESIÓN 25-09-2026 (tarde/noche)" arriba para el diagnóstico completo (incluye que Strava sigue sin autorizar de nuevo).
 - **No se ejecutó el director completo en producción** (afecta a los 11 clientes reales activos — acción de efecto compartido, requiere confirmación explícita antes de lanzarla).
 
 ### Incidente de colisión con Astra (documentado para que no se repita)
@@ -42,10 +79,12 @@ Mientras Astra trabajaba en paralelo sobre los mismos archivos, sobrescribió 3 
 
 ### Próxima sesión
 1. Carlos revisa el plan de nutrición generado (recetas/cantidades concretas) y el de entreno.
-2. Revincular Garmin Connect como cliente (permisos posiblemente revocados).
+2. ~~Revincular Garmin Connect como cliente~~ — hecho la misma noche, ver bloque de arriba. Strava sigue pendiente de reautorizar.
 3. Registrar al menos una sesión de entreno real para que el motor de recálculo semanal tenga datos.
 4. Decidir si ejecutar el director completo (`POST /api/agentes/ejecutar?modo=semanal`) contra los 11 clientes reales para verificar en producción.
 5. Nutrición pendiente de afinar más si Carlos ve macros aún desviados tras su revisión — la corrección de kcal funciona bien (±1-2%), carbohidrato/grasa individual todavía depende de qué receta concreta elige la IA en cada generación.
+
+Ver también la lista de pendientes del bloque "SESIÓN 25-09-2026 (tarde/noche)" arriba — es la continuación real de esta lista.
 
 ---
 
