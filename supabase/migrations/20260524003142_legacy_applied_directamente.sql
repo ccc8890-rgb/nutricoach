@@ -1,0 +1,8 @@
+-- Placeholder de bookkeeping (T20, 26-09-2026): esta migración fue aplicada directamente
+-- contra producción (dashboard SQL editor o `supabase db query --linked`) en su momento,
+-- sin dejar un archivo local en el repo. El SQL original no se pudo recuperar porque
+-- `supabase db pull` requiere Docker Desktop y no estaba disponible en esta sesión.
+-- El cambio YA está aplicado en producción — este archivo solo existe para que
+-- `supabase db push`/`migration list` no bloqueen por falta de archivo local.
+-- Si en el futuro se instala Docker, ejecutar `supabase db pull` para comparar el
+-- esquema real y documentar aquí retroactivamente el contenido si se puede inferir.
