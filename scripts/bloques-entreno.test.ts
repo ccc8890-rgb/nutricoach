@@ -3,6 +3,7 @@ import {
   siguienteFaseBloque,
   calcularEstadoBloque,
   clasificarTipoSesion,
+  calcularBloqueInfo,
   DIAS_SEMANA_ORDEN,
   DIAS_SEMANA_ABREVIATURA,
 } from '../lib/entrenos/bloques'
@@ -39,12 +40,30 @@ assert.equal(bloqueFuturo.semanaActual, 1)
 assert.equal(Number.isNaN(bloqueFuturo.diasRestantes), false)
 assert.ok(bloqueFuturo.diasRestantes >= 0)
 
+// --- calcularEstadoBloque: comparación por día completo, no por horas ---
+// Bug real de revisión: un plan creado a las 20:00 comparado con "ahora" a
+// las 10:00 exactamente 7 días después daba diasTranscurridos=6 (semana 1)
+// en vez de 7 (semana 2), porque restaba timestamps crudos en vez de
+// truncar ambas fechas a medianoche primero.
+const bloqueHoraTardia = calcularEstadoBloque('2026-09-01T20:00:00Z', 4, new Date('2026-09-08T10:00:00Z'))
+assert.equal(bloqueHoraTardia.semanaActual, 2, 'debe contar por día de calendario, no por diferencia exacta de horas')
+
 // --- clasificarTipoSesion ---
 assert.equal(clasificarTipoSesion(['fuerza', 'fuerza', 'funcional']), 'hibrido')
 assert.equal(clasificarTipoSesion(['cardio', 'cardio', 'cardio']), 'carrera')
 assert.equal(clasificarTipoSesion(['fuerza', 'cardio']), 'mixto')
 // sesión sin ejercicios vinculados: no debe dividir por cero ni lanzar
 assert.equal(clasificarTipoSesion([]), 'mixto')
+// Bug real de revisión: sesión híbrida típica (2 estaciones cardio + 3
+// ejercicios de fuerza/funcional) daba 'mixto' en vez de 'hibrido' porque
+// el umbral 0.6/0.2 dejaba una franja intermedia demasiado ancha.
+assert.equal(clasificarTipoSesion(['cardio', 'cardio', 'fuerza', 'fuerza', 'funcional']), 'hibrido')
+
+// --- calcularBloqueInfo: helper compartido para no duplicar el cálculo en cada API ---
+assert.equal(calcularBloqueInfo('2026-09-01', 4, null), null)
+assert.equal(calcularBloqueInfo('2026-09-01', null, 'Base'), null)
+const bloqueInfo = calcularBloqueInfo('2026-09-01', 4, 'Fuerza', new Date('2026-09-08T12:00:00Z'))
+assert.deepEqual(bloqueInfo, { fase: 'Fuerza', semana_actual: 2, semanas_totales: 4 })
 
 // --- DIAS_SEMANA_ABREVIATURA[DIAS_SEMANA_ORDEN[dia]] debe dar la letra correcta ---
 // Bug real encontrado en revisión: /cliente/mes usaba un array de cabeceras

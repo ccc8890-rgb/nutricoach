@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ChevronLeft, ChevronRight, Dumbbell, Footprints, Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { AlertTriangle, ArrowLeft, ChevronLeft, ChevronRight, Dumbbell, Footprints, Loader2 } from 'lucide-react'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 
 interface DiaMes {
@@ -39,18 +40,24 @@ function agruparPorSemanas(dias: DiaMes[]): DiaMes[][] {
 }
 
 export default function VistaMensualClientePage() {
+  const router = useRouter()
   const hoy = new Date()
   const [year, setYear] = useState(hoy.getFullYear())
   const [month, setMonth] = useState(hoy.getMonth() + 1)
   const [dias, setDias] = useState<DiaMes[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     setLoading(true)
+    setError('')
     fetch(`/api/entrenos/mes-completo?year=${year}&month=${month}`)
-      .then(r => r.ok ? r.json() : { dias: [] })
+      .then(r => {
+        if (!r.ok) throw new Error('No se pudo cargar el mes.')
+        return r.json()
+      })
       .then(data => setDias(data.dias ?? []))
-      .catch(() => setDias([]))
+      .catch(() => setError('No se pudo cargar el mes.'))
       .finally(() => setLoading(false))
   }, [year, month])
 
@@ -78,15 +85,14 @@ export default function VistaMensualClientePage() {
     <div className="min-h-screen px-4 pb-8 pt-4" style={{ background: 'var(--bg)' }}>
       <div className="mx-auto flex w-full max-w-md flex-col gap-4">
         <div className="flex items-center gap-3">
-          <Link
-            href="/cliente/semana"
-            replace
+          <button
+            onClick={() => router.back()}
             className="flex h-10 w-10 items-center justify-center rounded-full"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
             aria-label="Volver"
           >
             <ArrowLeft size={18} />
-          </Link>
+          </button>
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>Training OS</p>
             <h1 className="truncate text-xl font-bold" style={{ color: 'var(--text)' }}>Vista mensual</h1>
@@ -107,6 +113,14 @@ export default function VistaMensualClientePage() {
           <div className="flex justify-center py-12">
             <Loader2 size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
           </div>
+        ) : error ? (
+          <div
+            className="flex items-center gap-2 rounded-3xl p-5 text-sm"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+          >
+            <AlertTriangle size={16} style={{ color: 'var(--semantic-alert)' }} />
+            {error}
+          </div>
         ) : (
           <div className="rounded-3xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             <div className="grid grid-cols-7 gap-1 mb-2">
@@ -118,11 +132,18 @@ export default function VistaMensualClientePage() {
               {semanas.map((semana, i) => {
                 const fase = semana.find(d => d.fase_bloque)?.fase_bloque
                 const pendiente = semana.some(d => d.bloque_pendiente)
+                const etiqueta = fase && pendiente
+                  ? `Bloque ${fase} → bloque siguiente pendiente de generar`
+                  : pendiente
+                    ? 'Bloque siguiente pendiente de generar'
+                    : fase
+                      ? `Bloque ${fase}`
+                      : null
                 return (
                   <div key={i}>
-                    {(fase || pendiente) && (
+                    {etiqueta && (
                       <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: 'var(--text-muted)' }}>
-                        {pendiente ? 'Bloque siguiente pendiente de generar' : `Bloque ${fase}`}
+                        {etiqueta}
                       </p>
                     )}
                     <div className="grid grid-cols-7 gap-1">
@@ -131,21 +152,24 @@ export default function VistaMensualClientePage() {
                         const esHoy = dia.fecha === hoyISO
                         return (
                           <div key={j} className="flex flex-col items-center gap-0.5">
-                            {dia.fecha ? (
+                            {!dia.fecha ? (
+                              <div className="h-10 w-full" />
+                            ) : dia.sesion ? (
                               <Link
-                                href={dia.sesion ? `/cliente/sesion/${dia.sesion.id}?modo=solo-ver` : '#'}
+                                href={`/cliente/sesion/${dia.sesion.id}?modo=solo-ver`}
                                 className="flex h-10 w-full flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-bold"
                                 style={{ ...style, border: esHoy ? '1.5px solid var(--accent)' : '1px solid transparent' }}
                               >
-                                {new Date(dia.fecha).getDate()}
-                                {dia.sesion && (
-                                  dia.sesion.tipo_sesion === 'carrera'
-                                    ? <Footprints size={11} />
-                                    : <Dumbbell size={11} />
-                                )}
+                                {Number(dia.fecha.split('-')[2])}
+                                {dia.sesion.tipo_sesion === 'carrera' ? <Footprints size={11} /> : <Dumbbell size={11} />}
                               </Link>
                             ) : (
-                              <div className="h-10 w-full" />
+                              <div
+                                className="flex h-10 w-full flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-bold"
+                                style={{ ...style, border: esHoy ? '1.5px solid var(--accent)' : '1px solid transparent' }}
+                              >
+                                {Number(dia.fecha.split('-')[2])}
+                              </div>
                             )}
                           </div>
                         )

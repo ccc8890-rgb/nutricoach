@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { calcularEstadoBloque, clasificarTipoSesion } from '@/lib/entrenos/bloques'
+import { calcularBloqueInfo, clasificarTipoSesion } from '@/lib/entrenos/bloques'
 
 export async function GET(request: NextRequest) {
   const supabase = createApiSupabase(request)
@@ -121,15 +121,7 @@ export async function GET(request: NextRequest) {
   }
 
   const faseBloqueDelPlan = sesionesRaw.find(s => s.fase_bloque)?.fase_bloque as string | undefined
-  const bloque = faseBloqueDelPlan && planData.duracion_semanas
-    ? {
-        fase: faseBloqueDelPlan,
-        ...(() => {
-          const estado = calcularEstadoBloque(planData.created_at, planData.duracion_semanas as number)
-          return { semana_actual: estado.semanaActual, semanas_totales: estado.semanasTotales }
-        })(),
-      }
-    : null
+  const bloque = calcularBloqueInfo(planData.created_at, planData.duracion_semanas, faseBloqueDelPlan)
 
   const sesiones = sesionesRaw.map(s => ({
     id: s.id,

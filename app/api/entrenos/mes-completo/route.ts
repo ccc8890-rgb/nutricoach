@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { calcularEstadoBloque, clasificarTipoSesion } from '@/lib/entrenos/bloques'
+import { clasificarTipoSesion, fechaFinBloque } from '@/lib/entrenos/bloques'
 
 function toISODate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -120,8 +120,10 @@ export async function GET(request: NextRequest) {
     // Antes del inicio del plan actual: no tenemos datos de qué se hizo ese día.
     const antesDeInicio = fecha < toISODate(new Date(fechaInicioPlan))
     // Después de que termine el bloque activo y aún no se generó el siguiente.
+    // Comparado por día de calendario (fechaFinBloque ya trunca a medianoche),
+    // no por diferencia exacta de horas desde la creación del plan.
     const bloquePendiente = duracionSemanas
-      ? d.getTime() > new Date(fechaInicioPlan).getTime() + duracionSemanas * 7 * 24 * 60 * 60 * 1000
+      ? d.getTime() >= fechaFinBloque(fechaInicioPlan, duracionSemanas).getTime()
       : false
 
     if (antesDeInicio || bloquePendiente || !sesion) {
