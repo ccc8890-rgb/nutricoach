@@ -1,5 +1,52 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 26-09-2026 (noche, Claude) — Cron Garmin/Strava roto, PWA cliente rota, auditoría masiva del recetario
+
+### Contexto
+Continuación de la sesión de tarde (T18/T20/T15, ver bloque de abajo). Carlos pidió cerrar T13/T14 (Strava/Garmin), pero al investigar T14 se encontró un bug de código real (no un tema de reautorizar Strava). Mientras se corregía, Carlos reportó en vivo que la PWA de su iPhone "no funciona como debería" y, revisando una receta en la app, encontró un ingrediente con la forma equivocada (avena en copos en vez de harina) — eso escaló a una auditoría sistemática de todo el recetario.
+
+### T14 — Cron de sync Garmin/Strava llevaba roto desde que se creó
+`app/api/cron/sync-integraciones/route.ts` comprobaba un header (`x-cron-secret`/`?secret=`) que Vercel nunca envía al invocar el cron automático — Vercel manda `Authorization: Bearer <CRON_SECRET>`, que es lo que ya comprobaba bien `agentes/ejecutar/route.ts`. El cron se disparaba solo cada día a las 06:00 UTC pero devolvía 401 en silencio siempre, sin sincronizar nada. Fix: `checkAuth()` ahora lee `Authorization: Bearer` primero. `CRON_SECRET` regenerado con valor real en Vercel Production (Vercel CLI quedó autenticado en esta sesión, `vercel whoami` → `ccc8890-9712`). Verificado con deploy nuevo + curl real → `HTTP 200`, sincronizó 2 registros Garmin, confirmados en `actividad_externa_cliente`.
+
+**⚠️ Lección importante:** `vercel env pull` devuelve `""` para 36 de 46 variables de entorno sensibles de este proyecto (incluida `SUPABASE_SERVICE_ROLE_KEY`, que sabemos tiene valor real porque se usa con éxito en todos los scripts de esta sesión leyendo `.env.local`). Es un bug/limitación del propio comando `env pull`, no refleja el estado real de las env vars en Vercel. **No usar `vercel env pull` para diagnosticar si una env var está vacía** — verificar siempre contra el comportamiento real del endpoint desplegado.
+
+Commit `9be9b68`.
+
+### T25 — PWA de `/cliente` abría el dashboard de coach en el iPhone
+Carlos: "la app que tenía puesta en el iphone de cliente no funciona como debería". Causa: `/cliente` (portal cliente autenticado, el de uso diario — no confundir con `/cliente/[codigo]`, el portal público antiguo) no tenía `layout.tsx` propio, así que heredaba el manifest raíz (`manifest.json`, `start_url: /dashboard`, panel de coach). Al añadir el portal a pantalla de inicio desde Safari en `/cliente`, el icono instalado abría el dashboard de coach. Nuevo `app/cliente/layout.tsx` declara `manifest-cliente-carlos.json` (`start_url: /cliente`) para toda la subruta — mismo patrón que ya tenía `/cliente/[codigo]` desde sesión 07-06, pero esa ruta vieja no cubre `/cliente`. Verificado con curl: `/cliente` sirve ahora `rel="manifest" href="/manifest-cliente-carlos.json"`.
+
+Commit `ab94edf`.
+
+### T26 — Auditoría IA "forma de ingredientes vs instrucciones" + limpieza recetario
+Carlos, revisando "Tortitas de avena y plátano sin harina": el ingrediente "avena en copos" no permite una masa homogénea de tortita, debería ser harina de avena. También encontró "vinagre" contando en macros/lista de compra en una receta de huevo escalfado, cuando solo se usa para el agua de cocción y se descarta. Se generalizó a una auditoría sistemática con DeepSeek sobre las 474 recetas aprobadas, comparando instrucciones vs ingrediente vinculado.
+
+**Resultado: 376 hallazgos en 240/474 recetas (51%)** — mucho más grave de lo esperado. No era solo "forma equivocada": muchos ingredientes están vinculados a un alimento completamente distinto dentro de la misma receta (patrón de varios ingredientes desplazados a la vez, probablemente un bug de algún script de importación/reparación masiva pasado, no investigado a fondo). Ejemplos reales encontrados:
+- "Merluza al vapor con patata y judías verdes": "patata cocida" → **"Albóndigas con Patatas a lo Provenzal"** (un plato preparado).
+- "Macarrones guisados con pavo y tomate": "pasta blanca" → **"Pastanaga"** (zanahoria en catalán).
+- Varias recetas de salmón/atún con el pescado vinculado a **pechuga de pollo**.
+
+**4 scripts nuevos** (`scripts/auditar-forma-ingredientes-ia.mjs`, `fix-no-se-ingiere-t18b.mjs`, `matchear-forma-incorrecta.mjs`, `aplicar-forma-incorrecta-alta-confianza.mjs`):
+1. Auditoría DeepSeek read-only → 362 "forma_incorrecta" + 14 "no_se_ingiere" (ingrediente de técnica que se descarta, ej. vinagre de escalfar).
+2. Aplicados 12/14 "no_se_ingiere" (2 excluidos tras revisión manual: 1 falso positivo donde la sal sí se ingiere, 1 caso donde la IA confundió el vinagre de otra receta con un ingrediente de spaghetti sin relación).
+3. Segunda pasada que **no se fía del texto libre de la sugerencia de la IA**: busca en `alimentos` real y solo marca "alta confianza" cuando hay un match inequívoco (110 de 362; el resto — 252 — queda en `salidas/forma-incorrecta-revision-manual-2026-09-26.json` para revisión manual, no está en git porque `salidas/` va en `.gitignore`).
+4. Aplicados 107 de los 110 de alta confianza (3 excluidos, datos de origen demasiado confusos para automatizar). Recalculadas macros de 86 recetas.
+
+**Bug propio detectado y corregido durante la aplicación**: al re-vincular un ingrediente a un alimento de densidad calórica muy distinta (ej. "leche semidesnatada" 200g → "Aceite de coco virgen", o "pimiento asado" 100g → "Nueces troceadas") sin ajustar `cantidad_gramos`, 3 recetas dispararon a >900kcal/porción de forma absurda ("Arroz cremoso con plátano y aceite de coco" llegó a 2081kcal). Detectado con un barrido de sanidad post-aplicación (buscar recetas con kcal fuera de rango 50-850) antes de dar la tarea por cerrada, y corregido a mano ajustando las cantidades a valores realistas.
+
+**Bonus**: detectadas y eliminadas 2 recetas de prueba/desarrollo que llevaban filtradas en producción como `estado='aprobada'` desde mayo (`url_origen` literal "test-url", sin imagen real): "Tortitas de Avena y Plátano" (duplicado sin imagen de la receta real que Carlos revisó) y "Gofres proteicos". Estaban en uso por 2 planes (1 inactivo, 1 de clienta sintética de test — ningún cliente real afectado), migradas a recetas reales antes de borrar.
+
+Commit `64eba83`.
+
+### ⚠️ Pendiente — próxima sesión
+1. **252 hallazgos + 3 casos confusos** de la auditoría del recetario sin aplicar, en `salidas/forma-incorrecta-revision-manual-2026-09-26.json` — necesitan ojo humano (Carlos), son ambiguos o sin candidato claro en BD. Regenerar el JSON con `node scripts/auditar-forma-ingredientes-ia.mjs` si no está a mano.
+2. **T13 — Strava reautorizar**: Carlos tiene que hacer login/consentimiento en Strava desde la app (`/cliente` → tab Apps → Conectar). No automatizable.
+3. Investigar la causa raíz del patrón de "varios ingredientes desplazados a la vez dentro de la misma receta" (visto en varias recetas de la auditoría) — no se investigó a fondo esta sesión, solo se corrigieron los síntomas.
+
+### Verificación
+`npx tsc --noEmit` limpio en cada paso. Cada fix probado contra Supabase real y/o contra el endpoint desplegado en producción (`nutricoach-delta.vercel.app`), no solo `git push`. Vercel CLI quedó autenticado (`ccc8890-9712`) — útil para futuras sesiones (deploys, logs, env vars — con la salvedad de `env pull` documentada arriba).
+
+---
+
 ## ✅ SESIÓN 26-09-2026 (parte 3, Claude) — Simplificación del menú: quitar duplicados, menos pestañas
 
 ### Contexto
