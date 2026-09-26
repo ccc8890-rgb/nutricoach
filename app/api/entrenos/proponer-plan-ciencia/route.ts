@@ -3,6 +3,7 @@ import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { rateLimit } from '@/lib/rate-limit'
 import { evaluarPerfilEntreno } from '@/lib/motor-entreno'
 import { obtenerInformeVigente } from '@/lib/inteligencia-clinica'
+import { siguienteFaseBloque, type FaseBloque } from '@/lib/entrenos/bloques'
 import type { PerfilEntrenoCliente } from '@/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -52,7 +53,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Demasiadas peticiones. Espera un momento.' }, { status: 429 })
     }
 
-    const { cliente_id } = await req.json()
+    const { cliente_id, fase_bloque_objetivo: faseBloqueObjetivoBody } = await req.json() as {
+      cliente_id?: string
+      fase_bloque_objetivo?: FaseBloque
+    }
     if (!cliente_id) return NextResponse.json({ error: 'Falta cliente_id' }, { status: 400 })
 
     const sb = createServiceSupabase()
@@ -180,7 +184,76 @@ export async function POST(req: NextRequest) {
 • Movilidad integrada: 5-10 min al inicio, no al final cuando hay fatiga`,
     }
 
-    const protocoloDeporte = SPORT_PROTOCOLS[modalidadFoco] ?? SPORT_PROTOCOLS.funcional
+    const MODULACION_POR_FASE: Record<FaseBloque, string> = {
+      Base: 'Volumen moderado, técnica ante todo. Carrera dominada por aeróbico Z2. Cargas de híbrido moderadas, sin buscar RM.',
+      Fuerza: 'Más carga y menos repeticiones en el bloque de hipertrofia accesoria y en las estaciones Hyrox con peso. Carrera se mantiene en mantenimiento: Z2 + 1 sesión de series corta, sin volumen extra.',
+      Resistencia: 'Más volumen y densidad en las estaciones (simulacros tipo "1km + estación"). El tempo run gana peso frente a las series puras.',
+      Deload: 'Reduce el volumen total un 30-40% manteniendo la frecuencia. Baja la intensidad. Nada de PRs ni series intensas esta semana.',
+    }
+
+    /**
+     * Protocolo combinado para el cliente con sport_modality === 'hibrido':
+     * 3 sesiones híbridas (Hyrox + hipertrofia accesoria rotando espalda/
+     * pecho/bíceps/hombro) y 2 sesiones de carrera (tirada larga fija en fin
+     * de semana + series/tempo alternando entre semana), modulado por la fase
+     * de bloque de 4 semanas en la que está el cliente.
+     */
+    function construirProtocoloHibridoHyroxRunning(fase: FaseBloque): string {
+      return `HÍBRIDO HYROX + RUNNING — Bloque actual: ${fase}
+${MODULACION_POR_FASE[fase]}
+
+REPARTO SEMANAL OBLIGATORIO — EXACTAMENTE 5 SESIONES EN TOTAL, NI UNA MÁS:
+• 3 sesiones HÍBRIDAS (y solo 3): cada una incluye 1-2 estaciones reales de Hyrox (SkiErg, Sled Push, Sled Pull, Burpee Broad Jumps, Farmers Carry, Wall Balls, Row) MÁS un bloque de fuerza/hipertrofia accesoria. La hipertrofia accesoria debe ROTAR entre las 3 sesiones para cubrir espalda, pecho, bíceps y hombro a lo largo de la semana — no repitas el mismo grupo muscular en las 3 sesiones híbridas.
+• 1 ÚNICA sesión de CARRERA — tirada larga, en fin de semana (Sábado o Domingo): rodaje continuo a ritmo aeróbico Z2, duración progresiva.
+• 1 ÚNICA sesión de CARRERA — entre semana: ELIGE series (intervalos) O tempo run según la fase de bloque indicada arriba, NUNCA ambas en la misma semana. Total de sesiones de carrera en la semana: exactamente 2, no 3.
+
+FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 2010/2017 (hipertrofia accesoria).`
+    }
+
+    const esHibridoHyroxRunning = modalidadFoco === 'hibrido'
+
+    // Si no se especifica fase de bloque, calcularla a partir del plan más
+    // reciente del cliente (activo o no) — así "generar siguiente bloque"
+    // funciona sin que el frontend tenga que saber la rotación.
+    let faseBloqueObjetivo: FaseBloque = 'Base'
+    if (esHibridoHyroxRunning) {
+      if (faseBloqueObjetivoBody) {
+        faseBloqueObjetivo = faseBloqueObjetivoBody
+      } else {
+        const { data: planAnterior } = await sb
+          .from('planes_entrenamiento')
+          .select('id')
+          .eq('cliente_id', cliente_id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        let faseAnterior: FaseBloque | null = null
+        if (planAnterior) {
+          const { data: sesionPrevia } = await sb
+            .from('sesiones_entrenamiento')
+            .select('fase_bloque')
+            .eq('plan_id', planAnterior.id)
+            .not('fase_bloque', 'is', null)
+            .limit(1)
+            .maybeSingle()
+          faseAnterior = (sesionPrevia?.fase_bloque as FaseBloque | undefined) ?? null
+        }
+        faseBloqueObjetivo = siguienteFaseBloque(faseAnterior)
+      }
+    }
+
+    const protocoloDeporte = esHibridoHyroxRunning
+      ? construirProtocoloHibridoHyroxRunning(faseBloqueObjetivo)
+      : (SPORT_PROTOCOLS[modalidadFoco] ?? SPORT_PROTOCOLS.funcional)
+
+    const instruccionDuracion = esHibridoHyroxRunning
+      ? `1. Plan de EXACTAMENTE 5 sesiones/semana — CUENTA el array "sesiones" antes de responder: debe tener longitud 5, ni 4 ni 6. Reparto fijo: 3 híbridas + 2 carrera (nunca 3 de carrera). EXACTAMENTE 4 semanas de duración (este bloque completo, sin semana de descarga adicional — el Deload es un bloque entero cuando corresponda en la rotación)`
+      : `1. Plan de ${Math.min(diasSemana, 5)} sesiones/semana, 8-12 semanas de duración`
+
+    const instruccionCargasConcretas = esHibridoHyroxRunning
+      ? `\n6. Sin datos de RM/VDOT reales del cliente: ESTIMA pesos de partida conservadores para un atleta de nivel ${nivel} de ~65kg (ej. sentadilla goblet, press banca, remo, dominadas asistidas si hace falta) y ritmos de partida conservadores en min/km para Z2/umbral/series según nivel ${nivel}. Estos valores son un punto de partida — el sistema los ajustará solo según el RPE que registre el cliente en el próximo bloque. NUNCA dejes "peso_estimado_kg" o "ritmo_objetivo" vacíos en ejercicios de fuerza o sesiones de carrera respectivamente.`
+      : ''
 
     const promptSistema = `Eres un preparador físico y entrenador personal de élite con 20 años de experiencia en España. Tienes certificación NSCA-CSCS (Certified Strength and Conditioning Specialist) y ACSM. Has preparado atletas recreacionales y semi-profesionales en running, CrossFit, Hyrox y triatlón.
 
@@ -241,11 +314,11 @@ ${informeClinicoBlock || '→ Sin informe clínico previo. Aplicar protocolos es
 ${evidenciasTexto}
 
 ## INSTRUCCIONES DE GENERACIÓN
-1. Plan de ${Math.min(diasSemana, 5)} sesiones/semana, 8-12 semanas de duración
+${instruccionDuracion}
 2. Semana tipo: distribución coherente (no 2 días fuerza seguidos sin recuperación)
 3. Cada sesión: nombre descriptivo, 4-6 ejercicios ordenados (compuestos primero)
 4. Cada ejercicio: series, reps exactas, descanso calculado, RPE objetivo, nota con el POR QUÉ
-5. Incluir progresión: cómo escalar cada 2 semanas
+5. Incluir progresión: cómo escalar cada 2 semanas${instruccionCargasConcretas}
 
 ## FORMATO JSON EXACTO
 {
@@ -259,6 +332,8 @@ ${evidenciasTexto}
       "nombre": "string — nombre evocador ej: 'Fuerza base tren inferior'",
       "dia_semana": "Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo",
       "tipo": "fuerza|cardio|hiit|tecnica|recuperacion|mixto",
+      "tipo_sesion": "hibrido|carrera",
+      "ritmo_objetivo": "string — solo si tipo_sesion es 'carrera': ritmo objetivo en min/km, ej. '5:30/km Z2' (omitir o vacío si es híbrida)",
       "duracion_min": number,
       "ejercicios": [
         {
@@ -267,6 +342,7 @@ ${evidenciasTexto}
           "repeticiones": "string — '8-10' o '30s' o '400m' o '3x5min'",
           "descanso_segundos": number,
           "rpe_objetivo": "string — '7-8' o '8 RIR 2'",
+          "peso_estimado_kg": "number — peso de partida estimado en kg. Solo para ejercicios de fuerza; omitir en ejercicios de carrera/cardio",
           "notas": "string — técnica clave + justificación científica de POR QUÉ este ejercicio aquí"
         }
       ]
@@ -332,9 +408,11 @@ ${evidenciasTexto}
       const { data: planDB } = await sb.from('planes_entrenamiento').insert({
         coach_id: user.id,
         cliente_id,
-        nombre: (planIA.nombre_plan as string) ?? `Plan IA — ${modalidadFoco}`,
+        nombre: esHibridoHyroxRunning
+          ? `Híbrido Hyrox + Running — ${faseBloqueObjetivo}`
+          : ((planIA.nombre_plan as string) ?? `Plan IA — ${modalidadFoco}`),
         descripcion: (planIA.fundamentacion as string) ?? null,
-        duracion_semanas: (planIA.duracion_semanas as number) ?? null,
+        duracion_semanas: esHibridoHyroxRunning ? 4 : ((planIA.duracion_semanas as number) ?? null),
         activo: true,
       }).select('id').single()
 
@@ -351,6 +429,8 @@ ${evidenciasTexto}
             dia_semana: (s.dia_semana as string) ?? null,
             orden: i + 1,
             notas: null,
+            fase_bloque: esHibridoHyroxRunning ? faseBloqueObjetivo : null,
+            contexto_ia: esHibridoHyroxRunning && s.ritmo_objetivo ? String(s.ritmo_objetivo) : null,
           }).select('id').single()
 
           if (!nuevaSesion) continue
@@ -372,6 +452,7 @@ ${evidenciasTexto}
               descanso_segundos: typeof ej.descanso_segundos === 'number' ? ej.descanso_segundos : null,
               notas: [ej.rpe_objetivo ? `RPE ${ej.rpe_objetivo}` : null, ej.notas].filter(Boolean).join(' — ') || null,
               orden: j + 1,
+              peso_sugerido: typeof ej.peso_estimado_kg === 'number' ? `${ej.peso_estimado_kg}kg` : null,
             })
           }
         }
