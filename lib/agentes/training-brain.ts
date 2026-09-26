@@ -29,10 +29,10 @@ function getFechaHaceNDias(n: number): string {
 
 interface PRRow {
   ejercicio_id: string
-  ejercicio_nombre: string
   peso_max_kg: number
   reps_en_pr: number
-  fecha_pr: string
+  fecha: string
+  ejercicio?: { nombre: string } | { nombre: string }[] | null
 }
 
 interface RegistroRow {
@@ -85,9 +85,9 @@ export async function ejecutarTrainingBrain(clienteId: string): Promise<void> {
       .order('fecha', { ascending: false }),
     db
       .from('prs_por_ejercicio')
-      .select('ejercicio_id, ejercicio_nombre, peso_max_kg, reps_en_pr, fecha_pr')
+      .select('ejercicio_id, peso_max_kg, reps_en_pr, fecha, ejercicio:ejercicios(nombre)')
       .eq('cliente_id', clienteId)
-      .order('fecha_pr', { ascending: false })
+      .order('fecha', { ascending: false })
       .limit(20),
   ])
 
@@ -104,12 +104,13 @@ export async function ejecutarTrainingBrain(clienteId: string): Promise<void> {
   // a) PR stagnation: PRs con fecha_pr > 21 días
   for (const pr of prs) {
     const diasSinPR = Math.floor(
-      (hoy.getTime() - new Date(pr.fecha_pr).getTime()) / 86_400_000
+      (hoy.getTime() - new Date(pr.fecha).getTime()) / 86_400_000
     )
+    const nombreEjercicio = Array.isArray(pr.ejercicio) ? pr.ejercicio[0]?.nombre : pr.ejercicio?.nombre
     if (diasSinPR >= 21) {
       signals.push({
         tipo: 'plateau_pr',
-        descripcion: `${pr.ejercicio_nombre}: sin nuevo PR hace ${diasSinPR} días (último: ${pr.peso_max_kg}kg × ${pr.reps_en_pr} reps)`,
+        descripcion: `${nombreEjercicio ?? 'Ejercicio'}: sin nuevo PR hace ${diasSinPR} días (último: ${pr.peso_max_kg}kg × ${pr.reps_en_pr} reps)`,
         tags: ['plateau', 'estancamiento', 'progresion'],
       })
     }
@@ -176,7 +177,7 @@ export async function ejecutarTrainingBrain(clienteId: string): Promise<void> {
   // 5. Perfil cliente para KB
   const { data: perfil } = await db
     .from('perfil_entreno_cliente')
-    .select('objetivo_especifico, sport_modality, nivel_experiencia')
+    .select('objetivo_especifico, sport_modality, nivel')
     .eq('cliente_id', clienteId)
     .single()
 

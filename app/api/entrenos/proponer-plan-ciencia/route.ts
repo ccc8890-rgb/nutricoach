@@ -318,6 +318,17 @@ ${evidenciasTexto}
     // Guardar automáticamente en planes_entrenamiento + sesiones_entrenamiento
     let planGuardadoId: string | null = null
     try {
+      // Desactivar cualquier plan de entreno previo del cliente — sin esto
+      // este plan generado por IA convive "activo" con el que ya se le
+      // hubiera asignado desde una plantilla (generar-plan-inicial), y
+      // cualquier consulta que asuma un único plan activo puede devolver
+      // el equivocado.
+      await sb
+        .from('planes_entrenamiento')
+        .update({ activo: false })
+        .eq('cliente_id', cliente_id)
+        .eq('activo', true)
+
       const { data: planDB } = await sb.from('planes_entrenamiento').insert({
         coach_id: user.id,
         cliente_id,

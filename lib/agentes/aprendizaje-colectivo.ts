@@ -176,7 +176,7 @@ async function recopilarDatosAgregados(
   // Perfiles de aprendizaje actuales
   const { data: perfiles } = await db
     .from('agente_perfil_cliente')
-    .select('cliente_id, nivel_cocina_real, alimentos_rechazados_categorias, adherencia_historica_media, tasa_ejecucion_media')
+    .select('cliente_id, nivel_cocina_real, categorias_evitar, adherencia_promedio_30d')
     .in('cliente_id', clienteIds)
 
   // ── Agregación anónima ────────────────────────────────────
@@ -215,7 +215,7 @@ async function recopilarDatosAgregados(
   // Categorías más rechazadas
   const categoriasRechazadas: Record<string, number> = {}
   for (const p of perfiles ?? []) {
-    const rechazadas = p.alimentos_rechazados_categorias as string[] ?? []
+    const rechazadas = p.categorias_evitar as string[] ?? []
     for (const cat of rechazadas) {
       categoriasRechazadas[cat] = (categoriasRechazadas[cat] ?? 0) + 1
     }
@@ -252,8 +252,7 @@ Categorías de alimentos más rechazadas: ${topRechazadas || 'ninguna registrada
 
 === PERFILES DE APRENDIZAJE ===
 Clientes con perfil activo: ${perfiles?.length ?? 0}
-Adherencia histórica media: ${media((perfiles ?? []).map(p => p.adherencia_historica_media ?? 0)).toFixed(0)}%
-Tasa ejecución media recetas: ${media((perfiles ?? []).map(p => p.tasa_ejecucion_media ?? 0)).toFixed(0)}%
+Adherencia histórica media (30 días): ${media((perfiles ?? []).map(p => p.adherencia_promedio_30d ?? 0)).toFixed(0)}%
 
 Analiza estos datos y extrae los patrones más relevantes y accionables.`
 

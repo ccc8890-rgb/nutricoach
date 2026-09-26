@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const db = createServiceSupabase()
     const { data: clientesRaw, error } = await db
         .from('clientes')
-        .select('id, profile_id, activo, profiles(nombre, apellidos, email)')
+        .select('id, profile_id, activo, profiles!profile_id(nombre, apellidos, email)')
         .eq('coach_id', user.id)
         .order('created_at', { ascending: false })
         .limit(500)

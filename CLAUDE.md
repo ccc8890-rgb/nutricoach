@@ -1,5 +1,133 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 26-09-2026 (parte 3, Claude) — Simplificación del menú: quitar duplicados, menos pestañas
+
+### Contexto
+Carlos, no programador: "necesito que todo funcione de una manera lógica y sencilla... sin demasiadas pestañas... y que no haya funciones duplicadas aquí y allá... todo organizado y en su justa medida." Se le presentaron los duplicados reales encontrados y confirmó por dónde empezar antes de tocar nada de navegación (ver preguntas respondidas: código muerto primero, dar protagonismo al generador de entreno con ciencia real, fusionar las 3 pestañas de revisión de recetas).
+
+### Cambios hechos
+1. **Código muerto eliminado**: `app/api/recetas/migrar/route.ts` + `scripts/migrar-recetas.mjs` (migración de esquema ya completada hace meses, sin ninguna pantalla que lo usara). `components/training/TrainingSubNav.tsx` (componente de navegación de entreno huérfano — nunca se importaba desde ningún sitio, era el residuo de un rediseño anterior).
+2. **Un solo generador de plan de entreno con IA**: eliminado `/entrenos/generar-ia` (página + API), el motor simple que además citaba menos ciencia y llevaba roto (bug de esta sesión, parte 2). Se quitó su entrada de 3 sitios distintos donde estaba duplicada (`components/Sidebar.tsx`, `components/training/TrainingWorkspaceShell.tsx`, CTA en `/entrenos/plantillas`) — el propio hecho de que hubiera 3 definiciones de menú de entreno casi idénticas mantenidas a mano por separado (con etiquetas ligeramente distintas: "Plan con IA" vs "Plan IA") era parte del problema de duplicación que reportó Carlos. El motor bueno (`proponer-plan-ciencia`, con papers citados y periodización real) ya era accesible desde la ficha de cada cliente (`/clientes/[id]/revisar-plan`, botón "Regenerar") — se dejó ahí, que es donde tiene sentido: un plan de entreno se genera PARA un cliente concreto, no en abstracto.
+3. **Recetario: 3 pestañas del menú → 1**. "Imágenes", "Pendientes" y "Revisión" eran en el fondo la misma tarea ("recetas que necesitan atención antes de publicarse"). Se creó `components/recetas/RevisionTabs.tsx`, una pestaña interna ligera insertada dentro de las 3 páginas existentes (`/recetas/revisar`, `/recetas/cola`, `/recetas/imagenes`) — **sin tocar la lógica interna de cada una** (cada una sigue siendo su propio código, ~400-500 líneas, con su propia función real y distinta: cola de importación, aprobación con quality-gate, control de calidad visual). El menú principal ahora solo tiene una entrada ("Revisión" → `/recetas/revisar`); desde ahí se navega a las otras dos con pestañas dentro de la misma pantalla, sin volver al menú lateral.
+4. **Imports huérfanos limpiados** en `components/Sidebar.tsx` (`Images`, `Sparkles` ya no se usaban).
+
+### Por qué NO se tocó todavía (fuera de alcance de lo confirmado)
+- **4 páginas distintas llamadas "Dashboard"** (Inicio, Dashboard Nutrición, Dashboard Entrenamiento, Dashboard Sistema) — detectado y reportado a Carlos, pero renombrarlas es una decisión de naming que no se confirmó explícitamente en esta sesión.
+- **Precios/Compra con 4 pestañas** (Escandallo y Precios se solapan conceptualmente) — reportado, no confirmado.
+- **`generar-dieta-ia`** (API paralela y más simple a `generar-plan-inicial`) — se pensó inicialmente que era código muerto (nadie la enlazaba desde ninguna página top-level), pero SÍ se usa desde `components/RespuestasClientes.tsx` (flujo de generar dieta a partir de una respuesta de cuestionario, no del flujo de onboarding normal). No se tocó — consolidarla con el motor bueno es un cambio más grande que requiere entender ambos flujos primero.
+- El propio `/entrenos` tiene DOS sistemas de navegación en paralelo (el sidebar principal + una barra de pestañas interna del "workspace" de entreno, `TrainingWorkspaceShell.tsx`, con Command/Plan/Library/Brain) que muestran cosas parecidas por caminos distintos — es un patrón de doble navegación más profundo que no se rediseñó esta sesión, solo se le quitó el duplicado del generador de IA.
+
+### Continuación — los 3 pendientes que quedaban abiertos (Carlos dijo "sigue")
+
+**1. Los 4 "Dashboard" con el mismo nombre — corregido.** Renombrados a "Resumen" (`/nutricion`, `/entrenos`, `/sistema`); `/dashboard` ya se llamaba "Inicio" y no hacía falta tocarlo. Ninguna de las 3 páginas mostraba la palabra "Dashboard" en su propio contenido, así que el cambio es solo de etiqueta de menú, sin riesgo.
+
+**2. Precios / Escandallo / Rentabilidad — investigado, NO son duplicados reales.** Se abrió el código de las 3: `Precios` (`components/AdminPrecios.tsx`, 595 líneas) es el catálogo de precios de supermercado en bruto; `Escandallo` (484 líneas) es la cobertura de coste por receta a partir de ese catálogo; `Rentabilidad` es un buscador de cliente para ver el coste de SU plan concreto. Son 3 tareas distintas sobre el mismo dominio (coste de la comida), no la misma función repetida — fusionarlas habría mezclado "gestionar mi base de precios" con "auditar qué recetas tienen coste sin calcular" con "ver cuánto le cuesta a este cliente su dieta". Se dejaron separadas pero con nombres que dicen qué hace cada una en vez de una palabra genérica: "Catálogo de precios", "Coste de recetas", "Rentabilidad por cliente".
+
+**3. Doble navegación en Entrenamiento — eliminada.** `app/entrenos/layout.tsx` envolvía cada página con `TrainingWorkspaceShell`, una barra superior propia (con sus propios "modos" Operate/Plan/Library/Brain) que repetía casi los mismos enlaces que ya están en el menú lateral. Además tenía una caja de "buscar cliente, plan, ejercicio" que **no hacía nada** (era texto decorativo, no un input funcional) y 3 indicadores ("Riesgo: live", "IA: review", "Sesiones: hoy") con **valores fijos, no datos reales** — parecía información en vivo pero era decoración estática. Se quitó el shell entero; `/entrenos/*` ahora usa el mismo patrón que todas las demás secciones (`CoachShell` a secas). Las 5 páginas de Entrenamiento ya tenían su propio título, así que ninguna se quedó sin cabecera. También se borró `TrainingSubNav.tsx`, un tercer intento de menú de entreno que llevaba tiempo sin usarse desde ningún sitio — la app llegó a tener 3 listas de navegación de Entrenamiento mantenidas por separado (Sidebar, TrainingSubNav muerto, TrainingWorkspaceShell), ahora queda solo 1.
+
+### Verificación (de toda la parte 3)
+`npx tsc --noEmit` 0 errores · `npm run build` producción completo sin errores · crawl con Playwright de las 3 páginas de revisión de recetas + `/nutricion` + `/entrenos` (y sus 4 subpáginas) + `/sistema` + `/precios` (y sus 2 subpáginas): 13 páginas comprobadas, todas cargan sin error de página ni de consola.
+
+---
+
+## 🐛 Hallazgo de Carlos (sesión 26-09-2026, revisando una dieta real) — auto-match de ingredientes a productos equivocados
+
+Carlos, revisando una dieta ya aplicada, encontró: **"Bowl de skyr con granola de almendra y frutos rojos"** con ingredientes reales `frambuesas congeladas` → vinculado a **"Frambuesas Cubiertas Choc,Blanc y Choc,Leche"** (450kcal/100g, un producto de chocolatería, no fruta), `arándanos congelados` → vinculado a **"Barritas de galleta rellenas de arándanos"** (420kcal/100g), y `granola sin azúcar` → vinculado a **"Granola Fitness Chocolate"** con **0 kcal registradas en la base de datos**. Los 4 (+ `yogur skyr natural 0%`→yogur de sabor) se corrigieron a mano en la receta `8ab0fee9-d55e-4764-ba32-0a68e0f8ba2a`, vinculándolos a alimentos base reales.
+
+Es la 3ª instancia de este patrón detectada en el día (ver también el bug de "Bebida de coco/almendras"→lácteo real de la parte 1). **No es un caso aislado** — ver `TAREAS.md` T18 (subida a prioridad alta) para el criterio de detección sistemática propuesto y quedar pendiente de una auditoría completa del recetario, que Carlos pidió dejar para más adelante ("nos meteremos más tarde en el recetario").
+
+---
+
+## ✅ SESIÓN 26-09-2026 (parte 2, Claude) — Auditoría funcional completa de la app: 11 bugs reales más encontrados y corregidos
+
+### Contexto
+Carlos pidió, tras revisar los planes de la parte 1: "cerciórate que todos los parámetros y secciones de la app funcionen correctamente... antes de pasar a otras cosas" y "revisa todos esos fallos". Se hizo una auditoría sistemática de TODA la app, no solo del motor de planes.
+
+### Metodología (2 técnicas automatizadas, no revisión manual página por página)
+1. **Prueba en vivo de cada `.from().select()` estático del código** contra el esquema real de Supabase (625 pares encontrados, cruzados contra columnas y relaciones reales vía el esquema OpenAPI de PostgREST). Esto reproduce exactamente el error que vería un usuario real, sin adivinar.
+2. **Crawl con navegador real (Playwright)** de las ~36 páginas del panel coach y 2 del portal cliente, con una sesión de coach/cliente auténtica (cookie de Supabase construida igual que en la parte 1), capturando errores de consola, `pageerror` y respuestas HTTP ≥400.
+
+### 11 bugs reales encontrados y corregidos
+| # | Bug | Causa raíz | Fix | Archivo |
+|---|-----|-----------|-----|---------|
+| 1 | **`/clientes/[id]/revisar-rapido` (cualquier cliente nuevo sin revisar) → "Cliente no encontrado"** | `clientes` tiene DOS FK a `profiles` (`coach_id` y `profile_id`); el embed `profiles(...)` sin desambiguar hace que PostgREST rechace la consulta entera (`PGRST201`) | `profiles!profile_id(...)` | `app/clientes/[id]/revisar-rapido/page.tsx` |
+| 2 | `GET /api/clientes` (usado en `/compra`) fallaba con el mismo error | Mismo problema | `profiles!profile_id(...)` | `app/api/clientes/route.ts` |
+| 3 | `costes-clientes` (dashboard, ya retirado de la UI) y el "informe de caso clínico" (`inteligencia-clinica.ts`, usado dentro de la generación de plan) tenían el mismo problema silencioso | Mismo problema | `profiles!profile_id(...)` | `app/api/dashboard/costes-clientes/route.ts`, `lib/inteligencia-clinica.ts` |
+| 4 | El **"informe de caso clínico"** (capa de personalización que se inyecta en el prompt de generación de dieta) llevaba roto además por 2 motivos más: intentaba leer `onboarding_perfil_profundo` como columna en vez de relación, y usaba `restricciones_alimentarias`/`tipo_entrenamiento` que no existen donde los buscaba | — | Embeds correctos (`onboarding_perfil_profundo(condiciones_salud)`, `onboarding_responses(tipo_entreno)`) + lectura de `restricciones_alimentarias` desde `clientes` | `lib/inteligencia-clinica.ts` |
+| 5 | El **"perfil de gusto" del cliente** (28-30% del peso del algoritmo de selección de recetas, ver sesión parte 1) llevaba roto desde su creación: leía `checkins.peso_kg` y `checkins.adherencia_pct`, columnas que nunca existieron (son `peso` y `adherencia`, escala 1-10 no %) | — | Alias en el select + conversión de escala (`adherencia * 10`) | `lib/agentes/perfil-gusto.ts` |
+| 6 | El **"aprendizaje colectivo"** (retroalimentación entre todos los clientes) leía 2 columnas más que tampoco existen (`alimentos_rechazados_categorias`, `adherencia_historica_media`, `tasa_ejecucion_media`) | Mismo patrón que el bug de aprendizaje-colectivo ya corregido en la sesión de ayer (25-09) — nueva instancia no detectada entonces | `categorias_evitar`, `adherencia_promedio_30d`; se retira `tasa_ejecucion_media` (sin dato real disponible) | `lib/agentes/aprendizaje-colectivo.ts` |
+| 7 | El **motor de detección de estancamiento (`training-brain.ts`)** no podía nombrar el ejercicio en plateau (`ejercicio_nombre` no existe en la vista `prs_por_ejercicio`) ni leer `nivel_experiencia` (no existe, es `nivel`) | — | Embed `ejercicio:ejercicios(nombre)` + columna `nivel` | `lib/agentes/training-brain.ts` |
+| 8 | `command-center` (dashboard de entrenamiento) filtraba PRs de la semana por `fecha_pr`, columna inexistente (`fecha`) | — | `fecha` | `app/api/entrenos/command-center/route.ts` |
+| 9 | **`/entrenos/generar-ia`** (página real, enlazada desde el sidebar) rompía siempre: pedía `profiles.edad/peso_actual/altura`, que no existen ahí | — | Se retiran del select (no se usaban en el prompt) | `app/api/entrenos/generar-ia/route.ts` |
+| 10 | **`generar-plan-inicial`** leía `plantillas_dieta` (typo, la tabla real es `plantillas_dietas`) — no rompía la generación (el código tolera `null`) pero las plantillas de dieta del coach nunca se inyectaban en el prompt | — | `plantillas_dietas` | `app/api/generar-plan-inicial/route.ts` |
+| 11 | **AutoCoach** (panel del dashboard) usaba una relación `profile!inner` que no existe (es `profiles`) y buscaba `fecha_proxima_revision` en `planes_nutricion` en vez de en `clientes` — la alerta "revisión de plan pendiente" nunca se disparaba | — | `profiles!profile_id(...)` + fecha leída de `clientes` | `lib/auto-coach.ts` |
+| 12 | `/api/precios/escandallo` (página real) daba 500 en segundo plano vía `/api/precios/cobertura`: `receta_ingredientes` tiene DOS FK a `recetas` (`receta_id` y `receta_vinculada_id`), mismo patrón que el bug #1 | — | `recetas!receta_ingredientes_receta_id_fkey(...)` | `app/api/precios/cobertura/route.ts` |
+| 13 | La IA de entrenamiento (`lib/agentes/aplicar.ts`) no podía leer ni escribir el RPE de una sesión real asignada a un cliente — la columna `rpe` solo existía en las plantillas, no en `sesion_ejercicios` | Columna nunca se creó al añadir RPE a las plantillas (Training Pro Plan 1) | **Migración de base de datos** `alter table sesion_ejercicios add column rpe text` aplicada directamente con `supabase db query --linked` (el historial de migraciones locales está desincronizado del remoto — `supabase db push` normal falla, ver Pendientes) | `supabase/migrations/20260926_add_rpe_sesion_ejercicios.sql` + Supabase remoto |
+
+### 🚨 Incidente propio durante la sesión (documentado para que no se repita)
+Al limpiar la infraestructura de test de la parte 1 (coach sintético temporal), se llamó a `supabase.auth.admin.deleteUser()` sobre el coach de prueba **después** de haber generado los 6 planes de nutrición/entrenamiento bajo su `coach_id`. Borrar ese usuario **hizo cascada sobre `planes_nutricion`/`planes_entrenamiento`** (FK a `profiles.id`) y borró los 6 planes recién creados sin avisar (no hubo error, simplemente desaparecieron). Se detectó porque el portal cliente de Natalia empezó a dar 406 (0 filas donde se esperaba 1). **Regla nueva para cualquier sesión futura que use un coach sintético temporal para pruebas**: antes de borrar el usuario de prueba, reasignar el `coach_id` de CUALQUIER fila que lo referencie (no solo `clientes`) al coach real. Los 6 planes se regeneraron sin problema tras detectarlo.
+**Implicación para producción, no solo para pruebas**: si alguna vez se borra una cuenta de coach real con clientes activos, esto mismo borraría en cascada todos los planes de todos sus clientes. Merece decidir si `planes_nutricion.coach_id`/`planes_entrenamiento.coach_id` deberían tener `ON DELETE SET NULL` o `ON DELETE RESTRICT` en vez de `CASCADE` — no se ha tocado esta sesión, es una decisión de producto/seguridad de datos que le corresponde a Carlos.
+
+### Cierre de los 2 pendientes (a petición explícita de Carlos: "sí arréglalo todo")
+
+**1. Duplicado de planes de entrenamiento — causa real encontrada y corregida.**
+No era un bug de una sola llamada duplicando su propio insert: son **dos features distintas** que crean un `planes_entrenamiento` activo cada una sin desactivar el anterior — `generar-plan-inicial` (asigna una plantilla automáticamente) y `proponer-plan-ciencia` (genera uno nuevo con IA). Si un coach usa ambas para el mismo cliente (flujo normal: primero el inicial, luego refinarlo con IA), el cliente termina con 2+ planes "activos" a la vez. Mismo problema ya sospechado para `planes_nutricion` (nota de la sesión de ayer 25-09).
+- Fix: los 3 puntos de inserción (`planes_nutricion` en `generar-plan-inicial`, `planes_entrenamiento` en `generar-plan-inicial` vía plantilla, `planes_entrenamiento` en `proponer-plan-ciencia`) ahora desactivan (`activo:false`) cualquier plan previo del mismo `cliente_id` antes de insertar el nuevo.
+- Datos ya existentes de los 6 clientes ficticios corregidos a mano (cada uno tenía 2 planes de entreno activos; se desactivó el más antiguo — el asignado por plantilla — y se dejó activo el generado por IA, que es más específico).
+- Archivos: `app/api/generar-plan-inicial/route.ts`, `app/api/entrenos/proponer-plan-ciencia/route.ts`.
+
+**2. Cascada de borrado en `coach_id` — aplicada.**
+Migración `supabase/migrations/20260926_fix_cascade_coach_id_planes.sql`: `planes_nutricion.coach_id` y `planes_entrenamiento.coach_id` pasan de `ON DELETE CASCADE` a `ON DELETE RESTRICT`. Confirmado en el esquema remoto tras aplicar. Ahora borrar una cuenta de coach con planes en BD da un error explícito de FK en vez de borrarlos en cascada en silencio — hay que reasignar o borrar sus planes primero. Aplicada con `supabase db query --linked` (Carlos confirmó explícitamente antes de ejecutar, ya que el entorno la bloqueó por defecto al ser una modificación de la base de datos de producción). Mismo pendiente de higiene que la migración del RPE: el historial de migraciones local sigue desincronizado del remoto (ver Pendiente #1 más abajo), así que `supabase db push` normal seguirá sin funcionar hasta que se resuelva en sesión dedicada.
+
+### Verificación
+`npx tsc --noEmit` 0 errores · `npm run build` producción completo sin errores · cada fix probado en vivo contra Supabase real (no solo tsc) · crawl completo con Playwright de 36 páginas del panel coach + 2 del portal cliente, todas en verde tras los fixes · los 6 planes de clientes ficticios de la parte 1 regenerados y verificados de nuevo (Natalia sigue 100% vegana).
+
+### Pendiente — próxima sesión
+1. `supabase db push` normal falla: el historial de migraciones locales no coincide con el remoto (migraciones antiguas sin timestamp válido + versiones remotas no trackeadas localmente). La migración de esta sesión (`rpe` en `sesion_ejercicios`) se aplicó directamente con `supabase db query --linked`, saltándose el sistema de versionado — funciona pero deja el historial de migraciones sucio. Recomendado: `supabase db pull` + `supabase migration repair` en una sesión dedicada, con cuidado.
+2. Investigar por qué `proponer-plan-ciencia` inserta 2 planes de entrenamiento activos por llamada.
+3. Decidir la política de `ON DELETE` para `coach_id` en `planes_nutricion`/`planes_entrenamiento` (ver incidente de arriba).
+4. `app/api/recetas/migrar/route.ts` sigue roto (`recetas.ingredientes` no existe) pero es un endpoint de migración de esquema ya completada hace meses, sin ninguna página que lo use — candidato a borrar directamente en vez de arreglar.
+5. Seguir con los pendientes de la parte 1 (revisar los 6 planes regenerados, decidir si commitear todo junto).
+
+---
+
+## ✅ SESIÓN 26-09-2026 (parte 1, Claude) — Auditoría con 6 clientes ficticios reales: 4 bugs de personalización encontrados y corregidos
+
+### Contexto
+Carlos pidió "seguir puliendo y probando con clientes ficticios para corroborar que el sistema es realmente bueno y potente, no un sistema genérico". Ya existían 6 clientes de prueba muy exigentes creados en sesión previa (`scripts/crear-clientes-diversos.ts`): Hyrox en 8 semanas, triatleta con hipotiroidismo (goitrógenos), powerlifter con dislipidemia, ciclista con SII/protocolo FODMAP, runner con prediabetes sin lactosa, maratoniana vegana con anemia ferropénica. Estaban creados en BD pero **nunca se les había generado un plan real** (0 planes, 0 checkins).
+
+### Metodología — se probó el motor real de producción, no una réplica
+Para no usar las credenciales reales de Carlos, se creó un coach sintético temporal (`coach-qa-sintetico@nutricoach-test.dev`, ya eliminado al cerrar la sesión), se le copiaron temporalmente las 35 plantillas de entrenamiento reales, se levantó `next dev` en local y se llamó a los endpoints de producción **tal cual los llama la UI** (`POST /api/generar-plan-inicial`, `POST /api/entrenos/proponer-plan-ciencia`) construyendo una cookie de sesión real de Supabase (`@supabase/ssr`, formato `sb-<ref>-auth-token` + chunking oficial). Esto validó el pipeline completo: TDEE → mesociclo → informe clínico → protocolos científicos → filtrado de recetas → DeepSeek → validación de recetas → micronutrientes → persistencia en BD. Al terminar, los 6 clientes se devolvieron al coach real y toda la infraestructura de test se borró.
+
+### Lo que confirma que el sistema SÍ es sofisticado (no genérico)
+- Plan de Carlos (Hyrox): periodización por bloques citando Wilson 2012, Schumann & Rønnestad 2019, Zourdos 2016, RPE progresivo, sesiones y notas de coaching específicas de Hyrox.
+- Plan de Sofía (FODMAP): mesociclo con carga de carbohidratos progresiva atada a su fecha real de competición (La Purito Andorra).
+- Cada plan cita ISSN/Helms/Morton para la proteína objetivo, aplica distribución proteica con umbral de leucina, e inyecta flags psicológicos (confianza baja, estrés, sueño) cuando aplica.
+
+### 4 bugs reales de personalización encontrados y corregidos (commits pendientes de crear)
+| # | Bug | Causa raíz | Fix | Archivo |
+|---|-----|-----------|-----|---------|
+| 1 | Clienta **vegana estricta recibió carne** (pato, pollo) en su plan | `filtrarRecetasPorSlot` solo *excluía* recetas con alérgeno presente (Lácteos/Huevos/Pescado); la carne no es un alérgeno EU así que ninguna receta con carne quedaba nunca excluida para un cliente vegano/vegetariano | Nuevo filtro duro **positivo**: para restricción vegano/vegetariano, la receta debe tener el tag `Vegano`/`Vegetariano` explícito en `intolerancias`, no basta con no tener alérgenos | `lib/plan-recetas.ts` |
+| 2 | 30 recetas del recetario estaban **mal etiquetadas** como Vegano/Vegetariano pese a tener pato, pollo, miel, queso, salmón, gelatina, jamón (el bug #1 las habría dejado pasar igualmente) | Etiquetado histórico manual/import sin verificación cruzada contra ingredientes reales | Auditadas las 59 recetas "Vegano" y 191 "Vegetariano" aprobadas contra sus ingredientes reales; corregidas 13 + 17 (con solape) quitando el tag incorrecto | datos en Supabase (`recetas.intolerancias`) |
+| 3 | Restricciones declaradas solo como **texto libre clínico** (ej. "sin cebolla, ajo crudo, lácteos alta lactosa" del protocolo FODMAP de Sofía) nunca llegaban al filtro duro de recetas — solo se inyectaban como texto en el prompt de la IA, que podía ignorarlas | `filtroCliente.alimentos_evitar_extra` en `generar-plan-inicial/route.ts` leía un campo de `onboarding` que ningún flujo real rellena; `perfil.alimentos_evitar_extra` y `onboarding.alimentos_no_gustan` (donde sí vive el dato real) nunca se pasaban | (a) Se combinan las 3 fuentes en un único array de términos a evitar, comprobado contra nombre de receta **e ingredientes reales** (antes solo el nombre). (b) Palabras clave clínicas ("lactosa", "gluten", "marisco") en el texto libre se traducen a la restricción estructurada equivalente para activar el filtro duro por alérgeno | `app/api/generar-plan-inicial/route.ts`, `lib/plan-recetas.ts` |
+| 4 | Receta con ingrediente **"Bebida de coco o almendras"** auto-matcheada al alimento real "Bebida láctea de piña y coco" (un lácteo real) — bug de auto-match de ingredientes, no de restricciones | Mismo patrón ya documentado en sesiones previas (auto-match por substring sin verificar coherencia semántica) | Corregido el `alimento_id` de ese ingrediente a "Bebida de Coco Sin Azúcar ni Edulcorante" y recalculadas las macros de la receta | datos en Supabase (`receta_ingredientes`, `recetas`) |
+
+### Pendiente — recomendado, no ejecutado esta sesión
+1. **Auditoría sistemática de auto-match de ingredientes**: el bug #4 es una instancia nueva de un patrón ya conocido (ver sección "Sistema de calidad de recetas" en `NUTRICION/CLAUDE.md`). Recomiendo correr un script que cruce cada `receta_ingredientes.nombre_libre` contra el `alimento.nombre` real vinculado y marque discrepancias semánticas grandes (ej. "coco/almendra" → "láctea").
+2. **Filtro duro sin red de seguridad**: el nuevo filtro de "alimentos a evitar" (bug #3) es dobladamente estricto (nombre + ingredientes) y no tiene un mínimo de candidatos de reserva — si un cliente declara una lista larga de alimentos a evitar, un slot podría quedarse sin candidatas. No ha ocurrido con los 6 perfiles de prueba, pero merece un test con una lista de evitar deliberadamente larga.
+3. Los otros vocabularios de alérgeno (Sin Gluten/Sin Huevo/Sin Frutos Secos/Sin Soja/Sin Cerdo) no se auditaron sistemáticamente contra ingredientes reales como sí se hizo con Vegano/Vegetariano — mismo riesgo potencial, no confirmado.
+4. `planes_nutricion` no desactiva el plan anterior al generar uno nuevo (`activo:true` se inserta sin poner `activo:false` en los previos) — iría bien revisarlo aparte, no se tocó por ser un problema de otra naturaleza (higiene de datos, no de personalización).
+
+### Verificación
+`npx tsc --noEmit` 0 errores · `npm run build` producción completo sin errores · 6 planes de nutrición y 6 de entrenamiento reales generados y persistidos en Supabase para los 6 clientes ficticios (revisables por Carlos en `/clientes` bajo el coach real) · cada fix confirmado regenerando el plan real tras el cambio y verificando que el ingrediente/receta problemático desaparece.
+
+### Próxima sesión
+1. Carlos revisa los 6 planes generados en `/clientes` (coach real) para dar el visto bueno de calidad "de verdad", no solo desde el punto de vista técnico.
+2. Decidir si se ejecuta la auditoría sistemática de auto-match de ingredientes (pendiente #1).
+3. Sigue pendiente T13/T14/T15 de `TAREAS.md` (Strava, cron Garmin, director completo en producción) — no tocado esta sesión.
+
+---
+
 ## ✅ SESIÓN 25-09-2026 (tarde/noche, Claude) — Validación motor de recalculo + 5 bugs reales + integración wearables
 
 ### Contexto

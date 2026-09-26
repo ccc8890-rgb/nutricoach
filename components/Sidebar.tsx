@@ -17,7 +17,6 @@ import {
   Dumbbell,
   FilePlus2,
   House,
-  Images,
   ListChecks,
   LogOut,
   Menu,
@@ -25,7 +24,6 @@ import {
   Settings,
   ShoppingCart,
   SlidersHorizontal,
-  Sparkles,
   Store,
   Sun,
   TrendingUp,
@@ -71,16 +69,15 @@ const PRIMARY_ITEMS: NavItem[] = [
 ]
 
 const NUTRICION_ITEMS: NavItem[] = [
-  { href: '/nutricion', label: 'Dashboard', icon: House, exact: true },
+  { href: '/nutricion', label: 'Resumen', icon: House, exact: true },
   { href: '/dietas', label: 'Planes activos', icon: Utensils, exact: true },
   { href: '/dietas/plantillas', label: 'Plantillas', icon: ListChecks },
 ]
 
 const ENTRENAMIENTO_ITEMS: NavItem[] = [
-  { href: '/entrenos', label: 'Dashboard', icon: Dumbbell, exact: true },
+  { href: '/entrenos', label: 'Resumen', icon: Dumbbell, exact: true },
   { href: '/entrenos/brain-ia', label: 'Revisión IA', icon: Brain },
   { href: '/entrenos/nueva', label: 'Crear plan', icon: FilePlus2 },
-  { href: '/entrenos/generar-ia', label: 'Plan con IA', icon: Sparkles },
   { href: '/entrenos/plantillas', label: 'Plantillas', icon: ListChecks },
   { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Database },
 ]
@@ -90,20 +87,18 @@ const RECETARIO_ITEMS: NavItem[] = [
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
   { href: '/recetas', label: 'Recetas', icon: ChefHat, exact: true },
   { href: '/recetas/cobertura', label: 'Cobertura', icon: ChartPie },
-  { href: '/recetas/imagenes', label: 'Imágenes', icon: Images },
-  { href: '/recetas/cola', label: 'Pendientes', icon: ClipboardList },
   { href: '/recetas/revisar', label: 'Revisión', icon: ListChecks },
 ]
 
 const COSTES_COMPRA_ITEMS: NavItem[] = [
   { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
-  { href: '/precios', label: 'Precios', icon: Store },
-  { href: '/precios/escandallo', label: 'Escandallo', icon: TrendingUp },
-  { href: '/precios/rentabilidad', label: 'Rentabilidad', icon: Activity },
+  { href: '/precios', label: 'Catálogo de precios', icon: Store },
+  { href: '/precios/escandallo', label: 'Coste de recetas', icon: TrendingUp },
+  { href: '/precios/rentabilidad', label: 'Rentabilidad por cliente', icon: Activity },
 ]
 
 const CONOCIMIENTO_ITEMS: NavItem[] = [
-  { href: '/sistema', label: 'Dashboard', icon: House, exact: true },
+  { href: '/sistema', label: 'Resumen', icon: House, exact: true },
   { href: '/coach/metodologia', label: 'Metodología', icon: SlidersHorizontal },
   { href: '/conocimiento', label: 'Base de conocimiento', icon: Brain },
   { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },

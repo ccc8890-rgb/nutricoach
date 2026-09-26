@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Search, AlertTriangle, Check, X, ExternalLink, FileText, ImageIcon, MessageSquare, Hash, ChefHat, FileWarning, RefreshCw, List, BarChart } from 'lucide-react'
+import RevisionTabs from '@/components/recetas/RevisionTabs'
 
 // ─── Tipos ───
 interface RecetaRevisar {
@@ -190,6 +191,9 @@ export default function RevisarRecetasPage() {
         <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
             {/* Header */}
             <div className="sticky top-0 z-10 border-b" style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}>
+                <div className="max-w-7xl mx-auto px-4 pt-3">
+                    <RevisionTabs />
+                </div>
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
                     <Link href="/recetas" className="p-1.5 rounded-lg hover:opacity-70 transition-opacity" style={{ color: 'var(--text-secondary)' }}>
                         <ArrowLeft size={20} />

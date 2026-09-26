@@ -134,7 +134,7 @@ export async function filtrarRecetasPorSlot(
 
   let query = supabase
     .from('recetas')
-    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, recipe_intelligence_score, macro_flex_score, planning_roles, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad')
+    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, recipe_intelligence_score, macro_flex_score, planning_roles, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
     .eq('estado', 'aprobada')
     .gt('kcal', 0)
     .in('categoria', categorias)
@@ -166,14 +166,38 @@ export async function filtrarRecetasPorSlot(
     restricciones.flatMap(r => RESTRICCION_A_ALERGENO[r.toLowerCase()] ?? [r])
   )]
 
-  // Filtro duro: intolerancias
+  // La carne (roja, ave) no es un alérgeno EU, así que no existe ningún tag
+  // "contiene carne" en `intolerancias` — solo tags positivos "Vegano"/
+  // "Vegetariano". El filtro de arriba (por alérgeno) nunca puede excluir un
+  // plato con carne para un cliente vegano/vegetariano: sin esto, una receta
+  // de carne pasa el filtro con normalidad porque no tiene ningún alérgeno
+  // marcado. Aquí exigimos el tag positivo como requisito, no como exclusión.
+  const RESTRICCION_A_TAG_POSITIVO: Record<string, string> = {
+    'vegano': 'Vegano',
+    'vegetariano': 'Vegetariano',
+  }
+  const tagsPositivosRequeridos = [...new Set(
+    restricciones
+      .map(r => RESTRICCION_A_TAG_POSITIVO[r.toLowerCase()])
+      .filter((tag): tag is string => Boolean(tag))
+  )]
+
+  // Filtro duro: intolerancias (exclusión por alérgeno + requisito positivo vegano/vegetariano)
   let candidatas = recetas.filter(r => {
-    if (!alergenosExcluir.length) return true
     const recetaIntol: string[] = r.intolerancias ?? []
-    return !alergenosExcluir.some(alergeno => recetaIntol.includes(alergeno))
+    if (alergenosExcluir.length && alergenosExcluir.some(alergeno => recetaIntol.includes(alergeno))) {
+      return false
+    }
+    if (tagsPositivosRequeridos.length && !tagsPositivosRequeridos.every(tag => recetaIntol.includes(tag))) {
+      return false
+    }
+    return true
   })
 
-  // Filtro duro: alimentos a evitar
+  // Filtro duro: alimentos a evitar — se comprueba tanto el nombre de la
+  // receta como sus ingredientes reales. Antes solo miraba el título: una
+  // receta llamada "Espaguetis a la boloñesa" con cebolla como ingrediente
+  // interno no se excluía para un cliente que declaraba "sin cebolla".
   const evitarRaw = filtroCliente.alimentos_evitar_extra
   const evitarArr: string[] = Array.isArray(evitarRaw)
     ? evitarRaw
@@ -183,9 +207,15 @@ export async function filtrarRecetasPorSlot(
 
   if (evitarArr.length > 0) {
     const evitarLower = evitarArr.map(a => a.toLowerCase())
-    candidatas = candidatas.filter(r =>
-      !evitarLower.some(term => r.nombre.toLowerCase().includes(term))
-    )
+    candidatas = candidatas.filter(r => {
+      const rIng = (r as unknown as { receta_ingredientes?: Array<{ nombre_libre?: string | null; alimento?: { nombre?: string | null } | null }> }).receta_ingredientes ?? []
+      const textosReceta = [
+        r.nombre.toLowerCase(),
+        ...rIng.map(i => (i.nombre_libre ?? '').toLowerCase()),
+        ...rIng.map(i => (i.alimento?.nombre ?? '').toLowerCase()),
+      ]
+      return !evitarLower.some(term => textosReceta.some(texto => texto.includes(term)))
+    })
   }
 
   // Filtro duro: dislikes del cliente

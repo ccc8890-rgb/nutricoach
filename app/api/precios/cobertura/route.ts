@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       selectAll<IngredienteRow>(
         srv,
         'receta_ingredientes',
-        'id, receta_id, alimento_id, cantidad_gramos, nombre_libre, alimentos(id,nombre,categoria), recetas(id,nombre)',
+        'id, receta_id, alimento_id, cantidad_gramos, nombre_libre, alimentos(id,nombre,categoria), recetas!receta_ingredientes_receta_id_fkey(id,nombre)',
         q => q.not('alimento_id', 'is', null).gt('cantidad_gramos', 0),
       ),
       selectAll<ReferenciaRow>(

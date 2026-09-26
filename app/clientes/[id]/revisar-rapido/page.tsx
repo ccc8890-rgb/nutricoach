@@ -101,7 +101,7 @@ export default function RevisarRapidoPage() {
     ] = await Promise.all([
       supabase
         .from('clientes')
-        .select('id, objetivo, revisado_por_coach, profiles(nombre, apellidos, email)')
+        .select('id, objetivo, revisado_por_coach, profiles!profile_id(nombre, apellidos, email)')
         .eq('id', id)
         .single(),
       supabase

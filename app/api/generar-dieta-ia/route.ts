@@ -94,7 +94,7 @@ export async function POST(request: Request) {
         // 5. Obtener recetas disponibles (incluyendo azúcares, sodio y fibra para IA personalizada)
         const { data: recetas } = await supabase
             .from('recetas')
-            .select('id, nombre, categoria, kcal, proteinas, carbohidratos, grasas, azucares, sodio_mg, fibra')
+            .select('id, nombre, categoria, kcal, proteinas, carbohidratos, grasas, fibra')
             .or(`coach_id.eq.${user.id},coach_id.is.null`)
 
         if (!recetas || recetas.length < 5) {

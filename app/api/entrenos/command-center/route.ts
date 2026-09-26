@@ -87,9 +87,9 @@ export async function GET(request: NextRequest) {
       .gte('fecha', toISODate(desde28)),
     admin
       .from('prs_por_ejercicio')
-      .select('cliente_id, fecha_pr')
+      .select('cliente_id, fecha')
       .in('cliente_id', clienteIds)
-      .gte('fecha_pr', lunesISO),
+      .gte('fecha', lunesISO),
     admin
       .from('agente_tareas')
       .select('id, cliente_id, tipo, prioridad, propuesta')

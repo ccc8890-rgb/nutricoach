@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Globe, CheckCircle, Loader2 } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
+import RevisionTabs from '@/components/recetas/RevisionTabs'
 
 interface Receta {
   id: string
@@ -220,6 +221,7 @@ export default function ColaPage() {
     <div className="p-6" style={{ backgroundColor: 'var(--bg)', minHeight: '100vh' }}>
       {/* Header */}
       <div className="mb-6">
+        <RevisionTabs />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>

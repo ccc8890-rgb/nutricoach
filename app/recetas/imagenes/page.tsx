@@ -18,6 +18,7 @@ import {
   X,
   XCircle,
 } from 'lucide-react'
+import RevisionTabs from '@/components/recetas/RevisionTabs'
 
 type FiltroImagen = 'pendientes' | 'sin_imagen' | 'sospechosas' | 'ai' | 'scraped' | 'aprobadas' | 'rechazadas' | 'todas'
 
@@ -385,6 +386,7 @@ export default function RecetasImagenesPage() {
   return (
     <main className="min-h-screen layout-main p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
+        <RevisionTabs />
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>

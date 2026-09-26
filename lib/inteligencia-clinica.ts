@@ -118,7 +118,7 @@ interface PlanActivo {
 interface PerfilEntreno {
   sport_modality: string | null
   dias_disponibles: number | null
-  nivel_condicion: string | null
+  nivel: string | null
   patron_lesiones: unknown[] | null
   objetivo_especifico: string | null
 }
@@ -146,9 +146,10 @@ async function cargarContextoCompleto(clienteId: string): Promise<ContextoComple
   const { data: clienteRaw } = await db
     .from('clientes')
     .select(`
-      id, objetivo, peso_inicial, altura, edad, sexo,
-      profiles(nombre, apellidos),
-      onboarding_perfil_profundo
+      id, objetivo, peso_inicial, altura, edad, sexo, restricciones_alimentarias,
+      profiles!profile_id(nombre, apellidos),
+      onboarding_perfil_profundo(condiciones_salud),
+      onboarding_responses(tipo_entreno)
     `)
     .eq('id', clienteId)
     .single()
@@ -156,7 +157,10 @@ async function cargarContextoCompleto(clienteId: string): Promise<ContextoComple
   if (!clienteRaw) return null
 
   const profiles = clienteRaw.profiles as { nombre?: string; apellidos?: string } | null
-  const onboarding = (clienteRaw.onboarding_perfil_profundo as Record<string, unknown>) ?? {}
+  const perfilProfundo = clienteRaw.onboarding_perfil_profundo as { condiciones_salud?: string } | { condiciones_salud?: string }[] | null
+  const onboardingResp = clienteRaw.onboarding_responses as { tipo_entreno?: string[] } | { tipo_entreno?: string[] }[] | null
+  const condicionesSalud = Array.isArray(perfilProfundo) ? perfilProfundo[0]?.condiciones_salud : perfilProfundo?.condiciones_salud
+  const tipoEntreno = Array.isArray(onboardingResp) ? onboardingResp[0]?.tipo_entreno : onboardingResp?.tipo_entreno
 
   const cliente: ClienteCompleto = {
     id: clienteRaw.id,
@@ -167,9 +171,9 @@ async function cargarContextoCompleto(clienteId: string): Promise<ContextoComple
     altura: clienteRaw.altura ?? null,
     edad: clienteRaw.edad ?? null,
     sexo: clienteRaw.sexo ?? null,
-    condiciones_salud: (onboarding.condiciones_salud as string) ?? null,
-    restricciones_alimentarias: (onboarding.restricciones_alimentarias as string) ?? null,
-    tipo_entreno: (onboarding.tipo_entrenamiento as string) ?? null,
+    condiciones_salud: condicionesSalud ?? null,
+    restricciones_alimentarias: clienteRaw.restricciones_alimentarias ?? null,
+    tipo_entreno: tipoEntreno?.join(', ') ?? null,
   }
 
   const { data: plan } = await db
@@ -191,7 +195,7 @@ async function cargarContextoCompleto(clienteId: string): Promise<ContextoComple
 
   const { data: perfilEntreno } = await db
     .from('perfil_entreno_cliente')
-    .select('sport_modality, dias_disponibles, nivel_condicion, patron_lesiones, objetivo_especifico')
+    .select('sport_modality, dias_disponibles, nivel, patron_lesiones, objetivo_especifico')
     .eq('cliente_id', clienteId)
     .single()
 

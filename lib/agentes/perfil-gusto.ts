@@ -100,7 +100,7 @@ async function cargarContexto(supabase: SupabaseClient, clienteId: string): Prom
       .limit(100),
     supabase
       .from('checkins')
-      .select('peso_kg, adherencia_pct, energia, sueno, created_at')
+      .select('peso_kg:peso, adherencia_raw:adherencia, energia, sueno, created_at')
       .eq('cliente_id', clienteId)
       .gte('created_at', hace4semanas)
       .order('created_at', { ascending: false })
@@ -131,7 +131,8 @@ async function cargarContexto(supabase: SupabaseClient, clienteId: string): Prom
       tipo: f.tipo === 'asignada_plan' ? 'asignada' : f.tipo,
       slot: f.slot ?? f.comida_slot ?? null,
     })),
-    checkins_recientes: (checkinRes.data ?? []) as Checkin[],
+    checkins_recientes: ((checkinRes.data ?? []) as unknown as Array<{ peso_kg: number | null; adherencia_raw: number | null; energia: number | null; sueno: number | null; created_at: string }>)
+      .map(c => ({ ...c, adherencia_pct: c.adherencia_raw != null ? c.adherencia_raw * 10 : null })),
     semana_actual: semanaActual,
     onboarding: onboardingRes.data ?? {},
     plan_activo_recetas: (((planRes.data?.[0]?.comidas ?? []) as Record<string, unknown>[]).map(c => ({

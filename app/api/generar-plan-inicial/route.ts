@@ -151,6 +151,16 @@ async function crearPlanEntrenoDesdePlantilla(
 
   if (!sesiones?.length) return null
 
+  // Sin esto, cada generación deja el plan de entreno anterior también
+  // activo — el cliente/coach ven varios planes "activos" a la vez y las
+  // consultas que asumen uno solo (.single() con .limit(1)) devuelven uno
+  // cualquiera según el orden, no necesariamente el más reciente.
+  await supabase
+    .from('planes_entrenamiento')
+    .update({ activo: false })
+    .eq('cliente_id', input.clienteId)
+    .eq('activo', true)
+
   const { data: plan, error: planError } = await supabase
     .from('planes_entrenamiento')
     .insert({
@@ -591,7 +601,7 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
 
   // ── 9. Fetch plantillas y recetas para el prompt de dieta ──────────────────
   const { data: plantillas } = await supabase
-    .from('plantillas_dieta')
+    .from('plantillas_dietas')
     .select('id, nombre, kcal_objetivo, proteinas_objetivo, carbohidratos_objetivo, grasas_objetivo')
     .eq('coach_id', cliente.coach_id)
     .limit(20)
@@ -600,9 +610,47 @@ ${estresAlto ? '⚠️ ESTRÉS ALTO: snacks proteína+fibra, aceptar variabilida
   const numComidas = metodologia?.num_comidas_default ?? 4
   const slots = ['Desayuno', 'Comida', 'Merienda', 'Cena']
 
+  // El filtro duro de recetas necesita las mismas listas de "evitar" que ya
+  // se inyectan como texto libre al prompt (líneas de arriba) — si no, el
+  // candidato pre-filtrado puede seguir conteniendo cebolla/ajo/lácteos que
+  // el cliente declaró evitar (ej. protocolo FODMAP) porque el único sitio
+  // donde esa restricción existía era el prompt, y la IA no la respeta
+  // siempre al elegir entre las recetas ya pre-filtradas.
+  const aEvitarTexto = [
+    (onboarding as Record<string, unknown>).alimentos_evitar_extra,
+    perfil?.alimentos_evitar_extra,
+    onboarding.alimentos_no_gustan,
+  ]
+    .flatMap(v => Array.isArray(v) ? v : typeof v === 'string' && v.trim() ? v.split(',') : [])
+    .map(s => (s as string).trim())
+    .filter(Boolean)
+
+  // Restricciones declaradas solo como texto clínico libre (ej. "lácteos alta
+  // lactosa" dentro de un protocolo FODMAP) no matchean por substring exacto
+  // contra el nombre de un ingrediente ("Queso feta"), así que sin esto se
+  // cuelan lácteos/gluten pese a que el cliente los tiene marcados como
+  // problema de salud. Se detectan por palabra clave y se tratan como la
+  // restricción estructurada equivalente (mismo filtro duro por alérgeno).
+  const textoClinicoCompleto = [aEvitarTexto.join(' '), perfil?.condiciones_salud ?? '']
+    .join(' ')
+    .toLowerCase()
+  const RESTRICCION_INFERIDA_POR_PALABRA: Array<[string, string]> = [
+    ['lactosa', 'sin lactosa'],
+    ['lácteos', 'sin lactosa'],
+    ['gluten', 'sin gluten'],
+    ['celiac', 'sin gluten'],
+    ['marisco', 'sin mariscos'],
+    ['crustáceo', 'sin mariscos'],
+  ]
+  const restriccionesInferidas = RESTRICCION_INFERIDA_POR_PALABRA
+    .filter(([palabra]) => textoClinicoCompleto.includes(palabra))
+    .map(([, restriccion]) => restriccion)
+
+  const restriccionesEfectivas = [...new Set([...(onboarding.restricciones ?? []), ...restriccionesInferidas])]
+
   const filtroCliente = {
-    restricciones: onboarding.restricciones,
-    alimentos_evitar_extra: (onboarding as Record<string, unknown>).alimentos_evitar_extra as string[] | null,
+    restricciones: restriccionesEfectivas,
+    alimentos_evitar_extra: aEvitarTexto,
     tiempo_cocina_min: onboarding.tiempo_cocina_min,
     alimentos_base: (onboarding as Record<string, unknown>).alimentos_base as string[] | null,
   }
@@ -1061,6 +1109,14 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
       ('Plan nutricional para ' + onboarding.objetivo.replace(/_/g, ' '))
 
     // 13a. Crear el plan en BD
+    // Desactivar cualquier plan de nutrición previo del cliente — sin esto
+    // quedan varios "activos" a la vez tras cada regeneración.
+    await supabase
+      .from('planes_nutricion')
+      .update({ activo: false })
+      .eq('cliente_id', cliente_id)
+      .eq('activo', true)
+
     const { data: planDb, error: planDbError } = await supabase
       .from('planes_nutricion')
       .insert({

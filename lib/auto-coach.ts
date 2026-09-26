@@ -25,6 +25,7 @@ type ClientRow = {
   profile_id: string
   peso_inicial?: number
   objetivo?: string
+  fecha_proxima_revision?: string | null
   profile?: { nombre?: string }
 }
 
@@ -68,7 +69,7 @@ export async function analizarCliente(
   // 1. Obtener datos del cliente
   const { data: cliente } = await supabase
     .from('clientes')
-    .select('id, profile_id, peso_inicial, objetivo, profile!inner(nombre)')
+    .select('id, profile_id, peso_inicial, objetivo, fecha_proxima_revision, profile:profiles!profile_id(nombre)')
     .eq('id', clienteId)
     .single()
 
@@ -104,7 +105,7 @@ export async function analizarCliente(
   // 4. Obtener plan activo
   const { data: plan } = await supabase
     .from('planes_nutricion')
-    .select('id, fecha_proxima_revision, activo')
+    .select('id, activo')
     .eq('cliente_id', clienteId)
     .eq('activo', true)
     .single()
@@ -424,29 +425,26 @@ export async function analizarCliente(
     })
   }
 
-  // 6h. Revisión de plan pendiente
-  if (plan && typeof plan === 'object' && 'fecha_proxima_revision' in plan) {
-    const planObj = plan as { id: string; fecha_proxima_revision?: string; activo: boolean }
-    if (planObj.fecha_proxima_revision) {
-      const diasHastaRevision = diasDesde(planObj.fecha_proxima_revision) * -1
-      if (diasHastaRevision <= 0) {
-        recomendaciones.push({
-          id: generarId(),
-          cliente_id: clienteId,
-          cliente_nombre: nombre,
-          tipo: 'revision_plan',
-          urgencia: 'media',
-          titulo: 'Revisión de plan pendiente',
-          descripcion: `El plan de ${nombre} debería haberse revisado el ${new Date(planObj.fecha_proxima_revision).toLocaleDateString('es-ES')}.`,
-          detalle_ia: '',
-          sugerencia_accion: 'Programar sesión de revisión con el cliente. Evaluar progreso y ajustar plan si es necesario.',
-          datos_contexto: {
-            peso_actual: pesoActual,
-            peso_anterior: pesoAnterior,
-          },
-          created_at: ahora,
-        })
-      }
+  // 6h. Revisión de plan pendiente (la fecha vive en `clientes`, no en `planes_nutricion`)
+  if (plan && c.fecha_proxima_revision) {
+    const diasHastaRevision = diasDesde(c.fecha_proxima_revision) * -1
+    if (diasHastaRevision <= 0) {
+      recomendaciones.push({
+        id: generarId(),
+        cliente_id: clienteId,
+        cliente_nombre: nombre,
+        tipo: 'revision_plan',
+        urgencia: 'media',
+        titulo: 'Revisión de plan pendiente',
+        descripcion: `El plan de ${nombre} debería haberse revisado el ${new Date(c.fecha_proxima_revision).toLocaleDateString('es-ES')}.`,
+        detalle_ia: '',
+        sugerencia_accion: 'Programar sesión de revisión con el cliente. Evaluar progreso y ajustar plan si es necesario.',
+        datos_contexto: {
+          peso_actual: pesoActual,
+          peso_anterior: pesoAnterior,
+        },
+        created_at: ahora,
+      })
     }
   }
 
@@ -473,7 +471,7 @@ export async function analizarTodosClientes(
   // Obtener clientes activos del coach
   const { data: clientes } = await supabase
     .from('clientes')
-    .select('id, profile_id, peso_inicial, objetivo, profile!inner(nombre)')
+    .select('id, profile_id, peso_inicial, objetivo, fecha_proxima_revision, profile:profiles!profile_id(nombre)')
     .eq('coach_id', coachId)
     .eq('activo', true)
 

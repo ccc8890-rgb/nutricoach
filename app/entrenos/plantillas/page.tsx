@@ -451,7 +451,7 @@ export default function PlantillasEntrenoPage() {
                         {seedStatus === 'loading' ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
                         {seedStatus === 'loading' ? 'Insertando…' : 'Cargar base'}
                     </button>
-                    <Link href="/entrenos/generar-ia" className="btn-primary flex items-center gap-2 text-sm">
+                    <Link href="/clientes" className="btn-primary flex items-center gap-2 text-sm" title="El plan con IA se genera desde la ficha de cada cliente">
                         <Target size={15} />
                         Generar con IA
                     </Link>

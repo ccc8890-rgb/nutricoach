@@ -81,15 +81,19 @@ export async function GET(
         // 4. Obtener info del cliente
         const { data: cliente } = await supabase
             .from('clientes')
-            .select('id, nombre, objetivo')
+            .select('id, objetivo, profiles!profile_id(nombre)')
             .eq('id', clienteId)
             .single()
+
+        const nombreCliente = cliente
+            ? (Array.isArray(cliente.profiles) ? cliente.profiles[0]?.nombre : (cliente.profiles as { nombre?: string } | null)?.nombre)
+            : null
 
         return NextResponse.json({
             data: conversaciones,
             meta: {
                 cliente: cliente
-                    ? { id: cliente.id, nombre: (cliente as any).nombre, objetivo: (cliente as any).objetivo }
+                    ? { id: cliente.id, nombre: nombreCliente, objetivo: (cliente as any).objetivo }
                     : null,
                 total: conversaciones.length,
                 tipos: {

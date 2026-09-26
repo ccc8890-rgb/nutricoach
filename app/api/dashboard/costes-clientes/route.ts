@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     .from('clientes')
     .select(`
       id,
-      profile:profiles(nombre, apellidos),
+      profile:profiles!profile_id(nombre, apellidos),
       planes:planes_nutricion(
         id,
         nombre,
