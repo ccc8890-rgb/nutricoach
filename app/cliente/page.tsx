@@ -177,26 +177,27 @@ function PortalClientePageContent() {
       }
 
       if (cli) {
+        // Bug real (revisión 27-09-2026): estas dos consultas cruzaban
+        // planes_nutricion/planes_entrenamiento con sus tablas hijas
+        // (comidas/sesiones) en un join anidado desde el cliente Supabase.
+        // RLS silencia esos joins (sin error, sin 403) devolviendo arrays
+        // vacíos — TODO cliente real veía su dieta y su entreno activos con
+        // 0 comidas / 0 sesiones aunque existieran en BD. Ahora se piden a
+        // APIs con service role, mismo patrón que el resto del portal.
         const [dietaRes, entrenoRes, histRes] = await Promise.all([
-          supabase.from('planes_nutricion')
-            .select('*, comidas(*, alimentos:comida_alimentos(*, alimento:alimentos(*)))')
-            .eq('cliente_id', cli.id).eq('activo', true)
-            .order('created_at', { ascending: false }).limit(1).single(),
-          supabase.from('planes_entrenamiento')
-            .select('*, sesiones:sesiones_entrenamiento(*, ejercicios:sesion_ejercicios(*, ejercicio:ejercicios(*)))')
-            .eq('cliente_id', cli.id).eq('activo', true)
-            .order('created_at', { ascending: false }).limit(1).single(),
+          fetch('/api/cliente/plan-nutricion-activo').then(r => r.ok ? r.json() : { plan: null }),
+          fetch('/api/cliente/plan-entrenamiento-activo').then(r => r.ok ? r.json() : { plan: null }),
           supabase.from('seguimiento_peso')
             .select('*').eq('cliente_id', cli.id)
             .order('fecha', { ascending: false }).limit(15),
         ])
-        if (dietaRes.data) {
-          const ordenadas = ((dietaRes.data as PlanNutricion).comidas ?? []).sort((a, b) => a.orden - b.orden)
-          setDieta({ ...dietaRes.data as PlanNutricion, comidas: ordenadas })
+        if (dietaRes.plan) {
+          const ordenadas = ((dietaRes.plan as PlanNutricion).comidas ?? []).sort((a, b) => a.orden - b.orden)
+          setDieta({ ...dietaRes.plan as PlanNutricion, comidas: ordenadas })
         }
-        if (entrenoRes.data) {
-          const ordenadas = ((entrenoRes.data as PlanEntrenamiento).sesiones ?? []).sort((a, b) => a.orden - b.orden)
-          setEntreno({ ...entrenoRes.data as PlanEntrenamiento, sesiones: ordenadas })
+        if (entrenoRes.plan) {
+          const ordenadas = ((entrenoRes.plan as PlanEntrenamiento).sesiones ?? []).sort((a, b) => a.orden - b.orden)
+          setEntreno({ ...entrenoRes.plan as PlanEntrenamiento, sesiones: ordenadas })
         }
         setHistorialPeso(histRes.data as SeguimientoPeso[] ?? [])
       }

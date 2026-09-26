@@ -9,6 +9,7 @@ import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import PlanSemanal from './PlanSemanal'
 import { getAjusteDesdeNombreSesion } from '@/lib/periodizacion/dia-entreno-nutricion'
+import { esComidaDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
 
 type EstadoComida = RegistroComidaDia['estado']
 
@@ -99,8 +100,14 @@ function fechaParaDiaSemana(dia: string) {
     return target.toLocaleDateString('en-CA')
 }
 
+// Bug real (revisión 27-09-2026): esta función anclaba las comidas
+// recurrentes (dia_semana null, pensadas para aparecer TODOS los días) al
+// Lunes fijo, así que cualquier otro día mostraba "No hay comidas
+// construidas" aunque el plan sí tuviera comidas. Delega en el helper
+// compartido y ya probado (scripts/test-comidas-dia.ts) para no duplicar
+// la regla de nuevo.
 function comidaDelDiaActivo(comida: Pick<Comida, 'dia_semana'>, dia: string) {
-    return (comida.dia_semana ?? DIAS_NUTRICION[0]) === dia
+    return esComidaDelDia(comida, indiceDiaDesdeTexto(dia) ?? 0)
 }
 
 interface MiPlanProps {
