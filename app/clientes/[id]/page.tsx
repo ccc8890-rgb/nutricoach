@@ -34,6 +34,7 @@ const AdherenciaScoreCard = dynamic(() => import('@/components/clientes/Adherenc
 const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAdherenciaHeatmap'), { ssr: false, loading: () => <div className="h-32 rounded-2xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const ActividadClientePanel = dynamic(() => import('@/components/clientes/ActividadClientePanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const TrainingCoachPanel = dynamic(() => import('@/components/clientes/TrainingCoachPanel'), { ssr: false, loading: () => <TabSkeleton /> })
+const GenerarBloqueHibridoPanel = dynamic(() => import('@/components/clientes/GenerarBloqueHibridoPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 
 function TabSkeleton() {
   return <div className="animate-pulse rounded-2xl h-48 w-full" style={{ background: 'var(--surface)' }} />
@@ -976,6 +977,8 @@ export default function ClienteDetallePage() {
             </section>
 
             <ErrorBoundary><TrainingCoachPanel clienteId={id as string} /></ErrorBoundary>
+
+            <ErrorBoundary><GenerarBloqueHibridoPanel clienteId={id as string} /></ErrorBoundary>
 
             <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] gap-4">
               <div className="space-y-4">
