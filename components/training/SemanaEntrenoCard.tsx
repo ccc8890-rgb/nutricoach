@@ -33,6 +33,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
   const [sesiones, setSesiones] = useState<SesionSemana[]>([])
   const [loading, setLoading] = useState(true)
   const [registradasSemana, setRegistradasSemana] = useState<Set<string>>(new Set())
+  const [bloque, setBloque] = useState<{ fase: string; semana_actual: number; semanas_totales: number } | null>(null)
   // Día local del navegador (no UTC): la UI debe coincidir con el día del usuario.
   const TODAY_NAME = DIAS_SEMANA[new Date().getDay()]
 
@@ -44,6 +45,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
         const data = await res.json()
         if (data.sesiones) setSesiones(data.sesiones)
         if (data.registradas_semana) setRegistradasSemana(new Set(data.registradas_semana))
+        if (data.bloque) setBloque(data.bloque)
       } catch {
         // silent
       } finally {
@@ -156,6 +158,7 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>Entrenamiento</p>
             <p className="text-[11px]" style={{ color: '#9898A0' }}>
               {planNombre} · {sesionesOrdenadas.length} día{sesionesOrdenadas.length !== 1 ? 's' : ''} / semana
+              {bloque && ` · Bloque ${bloque.fase} · Semana ${bloque.semana_actual}/${bloque.semanas_totales}`}
             </p>
           </div>
         </div>

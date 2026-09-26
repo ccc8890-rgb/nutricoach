@@ -8,6 +8,7 @@ import {
   Clock3,
   Dumbbell,
   Eye,
+  Footprints,
   Loader2,
   Play,
   Target,
@@ -46,6 +47,7 @@ interface SesionSemana {
   registros_count: number
   completada: boolean
   esHoy: boolean
+  tipo_sesion?: 'hibrido' | 'carrera' | 'mixto'
 }
 
 function startOfWeek(date = new Date()) {
@@ -82,6 +84,7 @@ export default function VistaSemanalClientePage() {
   const [sesiones, setSesiones] = useState<SesionSemana[]>([])
   const [loading, setLoading] = useState(true)
   const [planNombre, setPlanNombre] = useState('')
+  const [bloque, setBloque] = useState<{ fase: string; semana_actual: number; semanas_totales: number } | null>(null)
   const [error, setError] = useState('')
 
 
@@ -97,6 +100,7 @@ export default function VistaSemanalClientePage() {
         }
         const data = await res.json()
         if (data.plan_nombre) setPlanNombre(data.plan_nombre)
+        if (data.bloque) setBloque(data.bloque)
         const sesionesConFecha = (data.sesiones ?? []).map((s: SesionSemana) => ({
           ...s,
           fechaLabel: formatShortDate(s.fecha),
@@ -152,6 +156,11 @@ export default function VistaSemanalClientePage() {
               <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                 {resumenSemana.mensajeCliente}
               </p>
+              {bloque && (
+                <p className="mt-1 text-xs font-semibold" style={{ color: 'var(--accent)' }}>
+                  Bloque {bloque.fase} · Semana {bloque.semana_actual}/{bloque.semanas_totales}
+                </p>
+              )}
             </div>
             <div
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
@@ -272,6 +281,14 @@ export default function VistaSemanalClientePage() {
               )
             })}
           </div>
+
+          <Link
+            href="/cliente/mes"
+            className="mt-4 flex items-center justify-center gap-1.5 rounded-2xl px-3 py-2.5 text-xs font-bold"
+            style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+          >
+            Ver mes completo <ChevronRight size={13} />
+          </Link>
         </section>
 
         {loading ? (
@@ -314,6 +331,11 @@ export default function VistaSemanalClientePage() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
+                      {s.tipo_sesion === 'carrera' ? (
+                        <Footprints size={14} style={{ color: 'var(--semantic-info)' }} />
+                      ) : (
+                        <Dumbbell size={14} style={{ color: '#818CF8' }} />
+                      )}
                       <h2 className="truncate text-sm font-bold" style={{ color: 'var(--text)' }}>{s.nombre}</h2>
                       {s.esHoy && !s.completada && (
                         <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
