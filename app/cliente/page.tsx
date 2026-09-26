@@ -3,9 +3,10 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
-  House, BookOpen, ClipboardText, ChartLineUp, SignOut,
+  House, BookOpen, BookOpenText, ClipboardText, ChartLineUp, SignOut,
   ForkKnife, Barbell, Scales, Trophy, Sun, Moon,
-  CaretRight, X, TrendDown, TrendUp,
+  CaretRight, CaretLeft, X, TrendDown, TrendUp,
+  ShoppingCart, ChatCircleDots, DeviceMobile,
 } from '@phosphor-icons/react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
@@ -20,9 +21,25 @@ import NotasCoach from '@/components/PortalCliente/NotasCoach'
 import TLSGauge from '@/components/PortalCliente/TLSGauge'
 import MiPlan from '@/components/PortalCliente/MiPlan'
 import SemanaEntrenoCard from '@/components/training/SemanaEntrenoCard'
+import ListaCompraPortal from '@/components/PortalCliente/ListaCompraPortal'
+import MisPlatos from '@/components/PortalCliente/MisPlatos'
+import ChatPanel from '@/components/PortalCliente/ChatPanel'
+import IntegracionesPanel from '@/components/PortalCliente/IntegracionesPanel'
 import { useTheme } from '@/components/ThemeProvider'
 
-type Tab = 'hoy' | 'plan' | 'checkin' | 'progreso'
+type Tab = 'hoy' | 'plan' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'apps'
+
+function VolverAHoy({ setTab }: { setTab: (t: Tab) => void }) {
+  return (
+    <button
+      onClick={() => setTab('hoy')}
+      className="flex items-center gap-1.5 text-xs font-semibold"
+      style={{ color: 'var(--text-muted)' }}
+    >
+      <CaretLeft size={14} /> Hoy
+    </button>
+  )
+}
 
 /* ── Macro ring SVG ─────────────────────────────── */
 function MacroRing({
@@ -427,6 +444,43 @@ function PortalClientePageContent() {
               </div>
             )}
 
+            {codigo && (
+              <div className="grid grid-cols-4 gap-2">
+                <button
+                  onClick={() => setTab('compra')}
+                  className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <ShoppingCart size={17} style={{ color: '#D9A441' }} />
+                  <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Compra</p>
+                </button>
+                <button
+                  onClick={() => setTab('recetas')}
+                  className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <BookOpenText size={17} style={{ color: '#8A7BC8' }} />
+                  <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Recetas</p>
+                </button>
+                <button
+                  onClick={() => setTab('chat')}
+                  className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <ChatCircleDots size={17} style={{ color: '#EF4444' }} />
+                  <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Chat</p>
+                </button>
+                <button
+                  onClick={() => setTab('apps')}
+                  className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <DeviceMobile size={17} style={{ color: '#4A9FCC' }} />
+                  <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Apps</p>
+                </button>
+              </div>
+            )}
+
             {/* Bento grid: stats rápidos */}
             {(ultimoPeso || entreno) && (
               <div className="grid grid-cols-2 gap-3">
@@ -649,6 +703,50 @@ function PortalClientePageContent() {
               <EmptyState icon={Trophy} text="Activa un plan para ver tus logros" />
             )}
 
+          </div>
+        )}
+
+        {tab === 'compra' && (
+          <div className="flex flex-col gap-4">
+            <VolverAHoy setTab={setTab} />
+            {codigo ? (
+              <ListaCompraPortal codigo={codigo} />
+            ) : (
+              <EmptyState icon={ShoppingCart} text="Activa un plan de dieta para ver tu lista de la compra" />
+            )}
+          </div>
+        )}
+
+        {tab === 'recetas' && (
+          <div className="flex flex-col gap-4">
+            <VolverAHoy setTab={setTab} />
+            {codigo && cliente ? (
+              <MisPlatos codigo={codigo} clienteId={cliente.id} />
+            ) : (
+              <EmptyState icon={BookOpenText} text="Activa un plan de dieta para ver tus recetas" />
+            )}
+          </div>
+        )}
+
+        {tab === 'chat' && (
+          <div className="flex flex-col gap-4">
+            <VolverAHoy setTab={setTab} />
+            {codigo ? (
+              <ChatPanel codigo={codigo} />
+            ) : (
+              <EmptyState icon={ChatCircleDots} text="Activa un plan para poder escribir a tu coach" />
+            )}
+          </div>
+        )}
+
+        {tab === 'apps' && (
+          <div className="flex flex-col gap-4">
+            <VolverAHoy setTab={setTab} />
+            {codigo && cliente ? (
+              <IntegracionesPanel codigo={codigo} clienteId={cliente.id} />
+            ) : (
+              <EmptyState icon={DeviceMobile} text="Activa un plan para conectar tus apps y wearables" />
+            )}
           </div>
         )}
       </div>
