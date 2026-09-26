@@ -58,6 +58,10 @@ export async function POST(req: NextRequest) {
       fase_bloque_objetivo?: FaseBloque
     }
     if (!cliente_id) return NextResponse.json({ error: 'Falta cliente_id' }, { status: 400 })
+    const FASES_VALIDAS: FaseBloque[] = ['Base', 'Fuerza', 'Resistencia', 'Deload']
+    if (faseBloqueObjetivoBody && !FASES_VALIDAS.includes(faseBloqueObjetivoBody)) {
+      return NextResponse.json({ error: 'fase_bloque_objetivo inválida' }, { status: 400 })
+    }
 
     const sb = createServiceSupabase()
 

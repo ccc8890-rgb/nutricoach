@@ -3,6 +3,8 @@ import {
   siguienteFaseBloque,
   calcularEstadoBloque,
   clasificarTipoSesion,
+  DIAS_SEMANA_ORDEN,
+  DIAS_SEMANA_ABREVIATURA,
 } from '../lib/entrenos/bloques'
 
 // --- siguienteFaseBloque: rotación fija Base -> Fuerza -> Resistencia -> Deload -> Base ---
@@ -43,5 +45,16 @@ assert.equal(clasificarTipoSesion(['cardio', 'cardio', 'cardio']), 'carrera')
 assert.equal(clasificarTipoSesion(['fuerza', 'cardio']), 'mixto')
 // sesión sin ejercicios vinculados: no debe dividir por cero ni lanzar
 assert.equal(clasificarTipoSesion([]), 'mixto')
+
+// --- DIAS_SEMANA_ABREVIATURA[DIAS_SEMANA_ORDEN[dia]] debe dar la letra correcta ---
+// Bug real encontrado en revisión: /cliente/mes usaba un array de cabeceras
+// domingo-primero (['D','L','M','X','J','V','S']) indexado con un orden
+// lunes-primero, desplazando cada columna del calendario un día.
+const letraEsperadaPorDia: Record<string, string> = {
+  Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J', Viernes: 'V', Sábado: 'S', Domingo: 'D',
+}
+for (const [dia, letra] of Object.entries(letraEsperadaPorDia)) {
+  assert.equal(DIAS_SEMANA_ABREVIATURA[DIAS_SEMANA_ORDEN[dia]], letra, `${dia} debería mapear a "${letra}"`)
+}
 
 console.log('OK — bloques-entreno')

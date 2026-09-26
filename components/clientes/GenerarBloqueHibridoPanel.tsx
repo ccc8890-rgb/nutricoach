@@ -14,10 +14,18 @@ interface PlanActivoInfo {
 
 export default function GenerarBloqueHibridoPanel({ clienteId }: { clienteId: string }) {
   const [plan, setPlan] = useState<PlanActivoInfo | null | undefined>(undefined) // undefined = cargando
+  const [esHibrido, setEsHibrido] = useState(false)
   const [generando, setGenerando] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function cargar() {
+    const { data: perfil } = await supabase
+      .from('perfil_entreno_cliente')
+      .select('sport_modality')
+      .eq('cliente_id', clienteId)
+      .maybeSingle()
+    setEsHibrido(perfil?.sport_modality === 'hibrido')
+
     const { data: planData } = await supabase
       .from('planes_entrenamiento')
       .select('id, nombre, created_at, duracion_semanas')
@@ -71,6 +79,12 @@ export default function GenerarBloqueHibridoPanel({ clienteId }: { clienteId: st
   if (plan === undefined) return null
 
   const esBloqueHibrido = Boolean(plan?.fase_bloque)
+
+  // Sin bloque activo y el cliente no es de modalidad híbrida: no mostrar el
+  // panel. El botón "Generar plan Híbrido..." desactivaría el plan activo
+  // del cliente (proponer-plan-ciencia lo hace siempre) para sustituirlo por
+  // uno que ni siquiera sería híbrido, sin que el coach lo pida.
+  if (!esBloqueHibrido && !esHibrido) return null
   const estado = plan && plan.duracion_semanas
     ? calcularEstadoBloque(plan.created_at, plan.duracion_semanas)
     : null

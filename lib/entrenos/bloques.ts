@@ -47,6 +47,14 @@ export function calcularEstadoBloque(
   }
 }
 
+/** Orden lunes-primero, consistente en toda la app (semana-completa, mes-completo). */
+export const DIAS_SEMANA_ORDEN: Record<string, number> = {
+  Lunes: 0, Martes: 1, Miércoles: 2, Jueves: 3, Viernes: 4, Sábado: 5, Domingo: 6,
+}
+
+/** Abreviaturas indexadas por DIAS_SEMANA_ORDEN — mismo orden lunes-primero. */
+export const DIAS_SEMANA_ABREVIATURA = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+
 export type TipoSesion = 'hibrido' | 'carrera' | 'mixto'
 
 /**

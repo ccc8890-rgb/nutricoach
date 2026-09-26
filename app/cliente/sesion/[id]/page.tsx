@@ -323,6 +323,15 @@ export default function EjecucionSesionPage() {
               </div>
             </div>
             <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{guidance.coachNote}</p>
+            {sesion.contexto_ia && (
+              <div
+                className="mt-3 flex gap-2 rounded-xl p-3 text-xs"
+                style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}
+              >
+                <Brain size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--semantic-info)' }} />
+                <span style={{ color: 'var(--text-secondary)' }}>{sesion.contexto_ia}</span>
+              </div>
+            )}
             <div className="mt-3 grid grid-cols-3 gap-2">
               <GuideMetric icon={<Target size={13} />} label="Bloques" value={sesion.ejercicios.length} />
               <GuideMetric icon={<CheckCircle size={13} />} label="Sets" value={totalSets} />
@@ -380,15 +389,6 @@ export default function EjecucionSesionPage() {
         ) : (
           /* Solo ver — flat list */
           <div className="px-4 pt-4 flex flex-col gap-3 max-w-md mx-auto">
-            {sesion.contexto_ia && (
-              <div
-                className="p-3 rounded-xl text-xs flex gap-2"
-                style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}
-              >
-                <Brain size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--semantic-info)' }} />
-                <span style={{ color: 'var(--text-secondary)' }}>{sesion.contexto_ia}</span>
-              </div>
-            )}
             {sesion.ejercicios.map((ej, i) => (
               <div
                 key={ej.id}

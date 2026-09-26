@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, ChevronLeft, ChevronRight, Dumbbell, Footprints, Loader2 } from 'lucide-react'
+import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 
 interface DiaMes {
   fecha: string
@@ -11,8 +12,6 @@ interface DiaMes {
   bloque_pendiente: boolean
 }
 
-const DIAS_ABR = ['D', 'L', 'M', 'X', 'J', 'V', 'S']
-const DIA_ORDEN: Record<string, number> = { Lunes: 0, Martes: 1, Miércoles: 2, Jueves: 3, Viernes: 4, Sábado: 5, Domingo: 6 }
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
 function agruparPorSemanas(dias: DiaMes[]): DiaMes[][] {
@@ -20,7 +19,7 @@ function agruparPorSemanas(dias: DiaMes[]): DiaMes[][] {
   const semanas: DiaMes[][] = []
   let semanaActual: DiaMes[] = []
 
-  const primerDiaOrden = DIA_ORDEN[dias[0].dia_semana] ?? 0
+  const primerDiaOrden = DIAS_SEMANA_ORDEN[dias[0].dia_semana] ?? 0
   for (let i = 0; i < primerDiaOrden; i++) {
     semanaActual.push({ fecha: '', dia_semana: '', sesion: null, fase_bloque: null, bloque_pendiente: false })
   }
@@ -111,7 +110,7 @@ export default function VistaMensualClientePage() {
         ) : (
           <div className="rounded-3xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             <div className="grid grid-cols-7 gap-1 mb-2">
-              {DIAS_ABR.map(d => (
+              {DIAS_SEMANA_ABREVIATURA.map(d => (
                 <p key={d} className="text-center text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>{d}</p>
               ))}
             </div>
