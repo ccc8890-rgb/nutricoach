@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { calcularEstadoBloque, clasificarTipoSesion } from '@/lib/entrenos/bloques'
 
 function startOfWeek() {
   const now = new Date()
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   const { data: planEntreno } = await admin
     .from('planes_entrenamiento')
-    .select('id, nombre')
+    .select('id, nombre, created_at, duracion_semanas')
     .eq('cliente_id', clienteData.id)
     .eq('activo', true)
     .order('created_at', { ascending: false })
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
 
   const { data: sesData } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, duracion_estimada_min, contexto_ia')
+    .select('id, nombre, dia_semana, duracion_estimada_min, contexto_ia, fase_bloque')
     .eq('plan_id', planEntreno.id)
     .order('orden')
 
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
 
   const { data: ejData } = await admin
     .from('sesion_ejercicios')
-    .select('id, sesion_id')
+    .select('id, sesion_id, ejercicio:ejercicios(tipo)')
     .in('sesion_id', sesIds)
 
   const ejCountBySesion: Record<string, number> = {}
@@ -94,6 +95,25 @@ export async function GET(request: NextRequest) {
     Lunes: 0, Martes: 1, Miércoles: 2, Jueves: 3, Viernes: 4, Sábado: 5, Domingo: 6,
   }
 
+  const tiposPorSesion: Record<string, string[]> = {}
+  for (const ej of ejData ?? []) {
+    const tipo = (ej as unknown as { ejercicio: { tipo: string | null } | null }).ejercicio?.tipo
+    if (!tipo) continue
+    if (!tiposPorSesion[ej.sesion_id]) tiposPorSesion[ej.sesion_id] = []
+    tiposPorSesion[ej.sesion_id].push(tipo)
+  }
+
+  const faseBloqueDelPlan = sesData.find(s => s.fase_bloque)?.fase_bloque as string | undefined
+  const bloque = faseBloqueDelPlan && planEntreno.duracion_semanas
+    ? {
+        fase: faseBloqueDelPlan,
+        ...(() => {
+          const estado = calcularEstadoBloque(planEntreno.created_at, planEntreno.duracion_semanas as number)
+          return { semana_actual: estado.semanaActual, semanas_totales: estado.semanasTotales }
+        })(),
+      }
+    : null
+
   const sesiones = sesData.map(s => {
     const diaOffset = DIAS_ORDER[s.dia_semana ?? ''] ?? 0
     const fecha = toISODate(new Date(weekStart.getTime() + diaOffset * 86400000))
@@ -104,6 +124,7 @@ export async function GET(request: NextRequest) {
       duracion_estimada_min: s.duracion_estimada_min ?? null,
       contexto_ia: s.contexto_ia ?? null,
       ejercicios_count: ejCountBySesion[s.id] ?? 0,
+      tipo_sesion: clasificarTipoSesion(tiposPorSesion[s.id] ?? []),
       fecha,
       registros_count: registrosPorSesion[s.id] ?? 0,
       completada: (registrosPorSesion[s.id] ?? 0) > 0,
@@ -111,5 +132,5 @@ export async function GET(request: NextRequest) {
     }
   })
 
-  return NextResponse.json({ sesiones, plan_nombre: planEntreno.nombre })
+  return NextResponse.json({ sesiones, plan_nombre: planEntreno.nombre, bloque })
 }

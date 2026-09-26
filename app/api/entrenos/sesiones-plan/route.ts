@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { calcularEstadoBloque, clasificarTipoSesion } from '@/lib/entrenos/bloques'
 
 export async function GET(request: NextRequest) {
   const supabase = createApiSupabase(request)
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
 
   const { data: planData, error: planError } = await admin
     .from('planes_entrenamiento')
-    .select('id, cliente_id')
+    .select('id, cliente_id, created_at, duracion_semanas')
     .eq('id', planId)
     .maybeSingle()
 
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
 
   const { data: sesData, error: sesError } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, orden, duracion_estimada_min, contexto_ia')
+    .select('id, nombre, dia_semana, orden, duracion_estimada_min, contexto_ia, fase_bloque')
     .eq('plan_id', planId)
     .order('orden')
 
@@ -43,14 +44,14 @@ export async function GET(request: NextRequest) {
   const sesionesRaw = sesData ?? []
   const sesIds = sesionesRaw.map(s => s.id)
 
-  let ejData: { id: string; sesion_id: string }[] = []
+  let ejData: { id: string; sesion_id: string; ejercicio: { tipo: string | null } | null }[] = []
   if (sesIds.length > 0) {
     const { data, error } = await admin
       .from('sesion_ejercicios')
-      .select('id, sesion_id')
+      .select('id, sesion_id, ejercicio:ejercicios(tipo)')
       .in('sesion_id', sesIds)
     if (error) return NextResponse.json({ error: 'Error interno' }, { status: 500 })
-    ejData = data ?? []
+    ejData = (data ?? []) as unknown as { id: string; sesion_id: string; ejercicio: { tipo: string | null } | null }[]
   }
 
   const ejCountBySesion: Record<string, number> = {}
@@ -111,6 +112,25 @@ export async function GET(request: NextRequest) {
     registradasSemana = Array.from(sesSemana)
   }
 
+  const tiposPorSesion: Record<string, string[]> = {}
+  for (const ej of ejData) {
+    const tipo = ej.ejercicio?.tipo
+    if (!tipo) continue
+    if (!tiposPorSesion[ej.sesion_id]) tiposPorSesion[ej.sesion_id] = []
+    tiposPorSesion[ej.sesion_id].push(tipo)
+  }
+
+  const faseBloqueDelPlan = sesionesRaw.find(s => s.fase_bloque)?.fase_bloque as string | undefined
+  const bloque = faseBloqueDelPlan && planData.duracion_semanas
+    ? {
+        fase: faseBloqueDelPlan,
+        ...(() => {
+          const estado = calcularEstadoBloque(planData.created_at, planData.duracion_semanas as number)
+          return { semana_actual: estado.semanaActual, semanas_totales: estado.semanasTotales }
+        })(),
+      }
+    : null
+
   const sesiones = sesionesRaw.map(s => ({
     id: s.id,
     nombre: s.nombre,
@@ -119,7 +139,8 @@ export async function GET(request: NextRequest) {
     duracion_estimada_min: s.duracion_estimada_min ?? null,
     contexto_ia: s.contexto_ia ?? null,
     ejercicios_count: ejCountBySesion[s.id] ?? 0,
+    tipo_sesion: clasificarTipoSesion(tiposPorSesion[s.id] ?? []),
   }))
 
-  return NextResponse.json({ sesiones, completadas_hoy: completadasHoy, registradas_semana: registradasSemana })
+  return NextResponse.json({ sesiones, completadas_hoy: completadasHoy, registradas_semana: registradasSemana, bloque })
 }
