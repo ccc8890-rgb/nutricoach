@@ -11,12 +11,22 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Dumbbell, GripVertical, Loader2, Plus, X } from 'lucide-react'
+import { ChevronDown, Dumbbell, GripVertical, Loader2, Plus, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/ui/Toast'
 
 const DIAS: string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const DIAS_ABREV: Record<string, string> = { Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J', Viernes: 'V', Sábado: 'S', Domingo: 'D' }
+
+interface Ejercicio {
+  id: string
+  series: number | null
+  repeticiones: string | null
+  peso_sugerido: string | null
+  rpe: string | null
+  orden: number | null
+  ejercicio: { nombre: string } | null
+}
 
 interface SesionKanban {
   id: string
@@ -25,24 +35,23 @@ interface SesionKanban {
   duracion_estimada_min: number | null
   fase_bloque: string | null
   contexto_ia: string | null
+  ejercicios: Ejercicio[]
 }
 
-function SesionCard({ sesion }: { sesion: SesionKanban }) {
+// Tarjeta arrastrable Y desplegable: un clic (sin arrastrar) expande la
+// sesión para revisar los ejercicios ahí mismo, sin salir del calendario.
+// El PointerSensor con activationConstraint de distancia hace que un clic
+// simple no dispare el drag, así que ambos gestos conviven sin conflicto.
+function SesionCard({ sesion, expandida, onToggle }: { sesion: SesionKanban; expandida: boolean; onToggle: () => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: sesion.id })
   const style = transform
     ? { transform: CSS.Translate.toString(transform), zIndex: 10 }
     : undefined
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="rounded-xl p-3 mb-2.5 cursor-grab active:cursor-grabbing touch-none select-none"
-      {...listeners}
-      {...attributes}
-    >
+    <div ref={setNodeRef} style={style} className="mb-2.5 touch-none select-none">
       <div
-        className="rounded-xl p-3 flex items-start gap-2.5 transition-shadow"
+        className="rounded-xl overflow-hidden transition-shadow"
         style={{
           background: 'var(--surface-elevated,var(--border))',
           border: '1px solid var(--border-strong,var(--border))',
@@ -50,32 +59,59 @@ function SesionCard({ sesion }: { sesion: SesionKanban }) {
           opacity: isDragging ? 0.6 : 1,
         }}
       >
-        <GripVertical size={14} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
-        <div className="min-w-0">
-          <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
-          {sesion.contexto_ia && (
-            <p className="text-xs mt-1 font-medium" style={{ color: 'var(--semantic-info-text)' }}>{sesion.contexto_ia}</p>
+        <div className="p-3 flex items-start gap-2.5 cursor-grab active:cursor-grabbing" {...listeners} {...attributes}>
+          <GripVertical size={14} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+          <button onClick={onToggle} className="min-w-0 flex-1 text-left">
+            <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+            {sesion.contexto_ia && (
+              <p className="text-xs mt-1 font-medium" style={{ color: 'var(--semantic-info-text)' }}>{sesion.contexto_ia}</p>
+            )}
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {sesion.duracion_estimada_min ? (
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{sesion.duracion_estimada_min} min</span>
+              ) : null}
+              {sesion.fase_bloque ? (
+                <span
+                  className="text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full"
+                  style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info-text)', border: '1px solid var(--semantic-info-border)' }}
+                >
+                  {sesion.fase_bloque}
+                </span>
+              ) : null}
+            </div>
+          </button>
+          {sesion.ejercicios.length > 0 && (
+            <button onClick={onToggle} className="flex-shrink-0 mt-0.5">
+              <ChevronDown size={14} className="transition-transform" style={{ color: 'var(--text-muted)', transform: expandida ? 'rotate(180deg)' : 'none' }} />
+            </button>
           )}
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            {sesion.duracion_estimada_min ? (
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{sesion.duracion_estimada_min} min</span>
-            ) : null}
-            {sesion.fase_bloque ? (
-              <span
-                className="text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full"
-                style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info-text)', border: '1px solid var(--semantic-info-border)' }}
-              >
-                {sesion.fase_bloque}
-              </span>
-            ) : null}
-          </div>
         </div>
+
+        {expandida && sesion.ejercicios.length > 0 && (
+          <div className="px-3 pb-3 space-y-1.5" style={{ borderTop: '1px solid var(--border)' }}>
+            {[...sesion.ejercicios].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)).map(ej => {
+              const stats = [ej.series && `${ej.series}x${ej.repeticiones ?? '?'}`, ej.peso_sugerido, ej.rpe && `RPE ${ej.rpe}`].filter(Boolean)
+              return (
+                <div key={ej.id} className="pt-2.5 first:pt-3">
+                  <p className="text-xs font-medium" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
+                  {stats.length > 0 && <p className="text-[11px] mt-0.5 tabular-nums" style={{ color: 'var(--text-muted)' }}>{stats.join(' · ')}</p>}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-function DiaColumna({ dia, sesiones, onAñadir }: { dia: string; sesiones: SesionKanban[]; onAñadir: (dia: string, nombre: string) => Promise<void> }) {
+function DiaColumna({ dia, sesiones, expandidaId, onToggle, onAñadir }: {
+  dia: string
+  sesiones: SesionKanban[]
+  expandidaId: string | null
+  onToggle: (id: string) => void
+  onAñadir: (dia: string, nombre: string) => Promise<void>
+}) {
   const { setNodeRef, isOver } = useDroppable({ id: dia })
   const [añadiendo, setAñadiendo] = useState(false)
   const [nombre, setNombre] = useState('')
@@ -106,7 +142,9 @@ function DiaColumna({ dia, sesiones, onAñadir }: { dia: string; sesiones: Sesio
       {sesiones.length === 0 && !añadiendo ? (
         <p className="text-xs px-1 mb-2" style={{ color: 'var(--text-disabled)' }}>Descanso</p>
       ) : (
-        sesiones.map(s => <SesionCard key={s.id} sesion={s} />)
+        sesiones.map(s => (
+          <SesionCard key={s.id} sesion={s} expandida={expandidaId === s.id} onToggle={() => onToggle(s.id)} />
+        ))
       )}
 
       {añadiendo ? (
@@ -142,22 +180,17 @@ function DiaColumna({ dia, sesiones, onAñadir }: { dia: string; sesiones: Sesio
 
 export default function EntrenoCalendarioKanban({ planId }: { planId: string }) {
   const [sesiones, setSesiones] = useState<SesionKanban[] | null>(null)
+  const [expandidaId, setExpandidaId] = useState<string | null>(null)
   const [guardando, setGuardando] = useState(false)
   const { addToast } = useToast()
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
 
   useEffect(() => {
     let cancelado = false
-    supabase
-      .from('sesiones_entrenamiento')
-      .select('id, nombre, dia_semana, duracion_estimada_min, fase_bloque, contexto_ia, orden')
-      .eq('plan_id', planId)
-      .order('orden')
-      .then(({ data, error }) => {
-        if (cancelado) return
-        if (error) { console.error(error); setSesiones([]); return }
-        setSesiones(data ?? [])
-      })
+    fetch(`/api/entrenos/${planId}`)
+      .then(r => r.json())
+      .then(data => { if (!cancelado) setSesiones(data.sesiones ?? []) })
+      .catch(() => { if (!cancelado) setSesiones([]) })
     return () => { cancelado = true }
   }, [planId])
 
@@ -192,7 +225,7 @@ export default function EntrenoCalendarioKanban({ planId }: { planId: string }) 
       addToast({ type: 'error', title: 'No se pudo crear la sesión' })
       return
     }
-    setSesiones(prev => [...(prev ?? []), data])
+    setSesiones(prev => [...(prev ?? []), { ...data, ejercicios: [] }])
     addToast({ type: 'success', title: `"${nombre}" añadida a ${dia}` })
   }
 
@@ -217,13 +250,20 @@ export default function EntrenoCalendarioKanban({ planId }: { planId: string }) 
   return (
     <div>
       <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-        Plantilla semanal del bloque activo — se repite cada semana hasta el siguiente bloque. Arrastra una sesión a otro día para reorganizarla.
+        Plantilla semanal del bloque activo — se repite cada semana hasta el siguiente bloque. Pulsa una sesión para ver sus ejercicios, o arrástrala a otro día.
         {guardando && <span className="ml-2 inline-flex items-center gap-1"><Loader2 size={11} className="animate-spin" /> Guardando…</span>}
       </p>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {DIAS.map(dia => (
-            <DiaColumna key={dia} dia={dia} sesiones={sesiones.filter(s => s.dia_semana === dia)} onAñadir={handleAñadirSesion} />
+            <DiaColumna
+              key={dia}
+              dia={dia}
+              sesiones={sesiones.filter(s => s.dia_semana === dia)}
+              expandidaId={expandidaId}
+              onToggle={id => setExpandidaId(prev => prev === id ? null : id)}
+              onAñadir={handleAñadirSesion}
+            />
           ))}
         </div>
       </DndContext>

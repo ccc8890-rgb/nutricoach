@@ -18,6 +18,7 @@ export const PLAN_EDITOR_SESIONES_SELECT = `
   orden,
   duracion_estimada_min,
   contexto_ia,
+  fase_bloque,
   ejercicios:sesion_ejercicios(
     id,
     ejercicio_id,

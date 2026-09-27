@@ -13,31 +13,44 @@ const MODEL = 'deepseek-chat'
 // Palabras genéricas que no aportan al matching
 const STOP_WORDS = new Set(['con', 'de', 'en', 'el', 'la', 'los', 'las', 'y', 'a', 'al', 'del'])
 
-async function matchEjercicio(sb: SupabaseClient, nombre: string): Promise<string | null> {
+// Ejercicios de otra disciplina que NO deben colarse en una sesión de
+// carrera pura solo porque comparten una palabra genérica del nombre IA
+// (ej. "continuo", "series", "intervalos"). Bug real detectado por Carlos:
+// "Tirada Larga Z2" (rodaje de 90min) se vinculó a "SkiErg Continuo" y
+// "Carrera Series Cortas" (8x400m) se vinculó a "Series de crol 50m" —
+// ambos con `tipo` inconsistente o de otra disciplina, y el nivel 3
+// devolvía el primer resultado de Postgres sin ninguna preferencia.
+const OTRA_DISCIPLINA_RE = /crol|natación|natacion|nado\b|ski\s?erg|sled|wall\s?ball|remo\b|rowing|bici|kettlebell|mancuerna|dominada|sentadilla|press\s|peso muerto|farmer|granjero/i
+
+async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPreferido?: 'cardio' | 'fuerza'): Promise<string | null> {
   const normalizado = nombre.toLowerCase().trim()
 
+  function elegirMejor(candidatos: { id: string; nombre: string; tipo: string | null }[]): string | null {
+    if (candidatos.length === 0) return null
+    if (candidatos.length === 1) return candidatos[0].id
+    if (!tipoPreferido) return candidatos[0].id
+    // Entre varios candidatos para la misma palabra, prioriza: tipo
+    // correcto Y sin pinta de ser de otra disciplina (SkiErg, natación...).
+    const buenos = candidatos.filter(c => c.tipo === tipoPreferido && !OTRA_DISCIPLINA_RE.test(c.nombre))
+    if (buenos.length > 0) return buenos[0].id
+    const sinOtraDisciplina = candidatos.filter(c => !OTRA_DISCIPLINA_RE.test(c.nombre))
+    if (sinOtraDisciplina.length > 0) return sinOtraDisciplina[0].id
+    return candidatos[0].id
+  }
+
   // Nivel 1: match exacto (case-insensitive)
-  const { data: exacto } = await sb.from('ejercicios')
-    .select('id')
-    .ilike('nombre', normalizado)
-    .limit(1)
-  if (exacto?.[0]) return exacto[0].id
+  const { data: exacto } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', normalizado).limit(5)
+  if (exacto?.length) return elegirMejor(exacto)
 
   // Nivel 2: match parcial — nombre del ejercicio contiene la búsqueda
-  const { data: parcial } = await sb.from('ejercicios')
-    .select('id')
-    .ilike('nombre', `%${normalizado}%`)
-    .limit(1)
-  if (parcial?.[0]) return parcial[0].id
+  const { data: parcial } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', `%${normalizado}%`).limit(5)
+  if (parcial?.length) return elegirMejor(parcial)
 
   // Nivel 3: buscar por palabras significativas (>3 chars, sin stop words)
   const palabras = normalizado.split(/\s+/).filter(p => p.length > 3 && !STOP_WORDS.has(p))
   for (const palabra of palabras) {
-    const { data: porPalabra } = await sb.from('ejercicios')
-      .select('id')
-      .ilike('nombre', `%${palabra}%`)
-      .limit(1)
-    if (porPalabra?.[0]) return porPalabra[0].id
+    const { data: porPalabra } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', `%${palabra}%`).limit(5)
+    if (porPalabra?.length) return elegirMejor(porPalabra)
   }
 
   return null
@@ -439,13 +452,20 @@ ${instruccionDuracion}
 
           if (!nuevaSesion) continue
 
+          // Sesión de carrera pura (no híbrida): sus ejercicios deben ser
+          // de carrera, nunca un aparato de gimnasio o de otra disciplina
+          // que comparta una palabra suelta con lo que propuso la IA.
+          const nombreSesion = ((s.nombre as string) ?? '').toLowerCase()
+          const esSesionCarrera = /carrera|tirada|rodaje|running|tempo run/i.test(nombreSesion) && !/híbrid|hibrid|hyrox/i.test(nombreSesion)
+          const tipoPreferidoSesion: 'cardio' | 'fuerza' | undefined = esSesionCarrera ? 'cardio' : undefined
+
           // Vincular cada ejercicio IA a un ejercicio real de la BD por nombre
           for (let j = 0; j < ejerciciosIA.length; j++) {
             const ej = ejerciciosIA[j]
             const nombreEj = (ej.nombre as string ?? '').trim()
             if (!nombreEj) continue
 
-            const ejercicioId = await matchEjercicio(sb, nombreEj)
+            const ejercicioId = await matchEjercicio(sb, nombreEj, tipoPreferidoSesion)
             if (!ejercicioId) continue // no hay match — se omite
 
             await sb.from('sesion_ejercicios').insert({
