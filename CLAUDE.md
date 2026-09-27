@@ -1,5 +1,56 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 26/27-09-2026 (noche, Claude) — Programa Híbrido Hyrox+Running + hallazgo crítico: portal cliente mostraba planes vacíos a TODOS los clientes
+
+### Contexto
+Carlos pidió construir un sistema de rutinas de entrenamiento centrado en Hyrox + running (5-10-21k), usándose a sí mismo como primer cliente real (dogfooding) antes de tocar nutrición o abrir a más clientes. Sesión completa: brainstorming → spec → plan → implementación con TDD → revisión final con fixes → auditoría abierta del resto de la app a petición de Carlos ("sigue probando cosas tú... debería funcionar como una app top del mercado").
+
+### Parte 1 — Programa Híbrido Hyrox + Running (spec + plan + 8 tareas)
+
+Spec: [`docs/superpowers/specs/2026-09-26-hyrox-running-training-system-design.md`](docs/superpowers/specs/2026-09-26-hyrox-running-training-system-design.md). Plan: [`docs/superpowers/plans/2026-09-26-hyrox-running-training-system.md`](docs/superpowers/plans/2026-09-26-hyrox-running-training-system.md).
+
+**Sin ninguna migración de BD** — se reutilizaron 3 columnas ya existentes y sin usar: `sesiones_entrenamiento.fase_bloque`, `sesion_ejercicios.peso_sugerido`, `ejercicios.tipo`.
+
+- **Motor de generación** (`app/api/entrenos/proponer-plan-ciencia/route.ts`): nuevo protocolo combinado quese activa solo si `perfil_entreno_cliente.sport_modality === 'hibrido'` — 3 sesiones híbridas (estaciones Hyrox reales + hipertrofia accesoria rotando espalda/pecho/bíceps/hombro) + 2 de carrera (tirada larga fija fin de semana + series/tempo alternando entre semana según la fase del bloque). Bloques de 4 semanas rotando Base→Fuerza→Resistencia→Deload. Pesos y ritmos concretos estimados por IA (sin RM/VDOT reales aún), con autoajuste por RPE ya existente en el motor. Clientes no-híbridos generan exactamente igual que antes (verificado con cliente real gym_fuerza).
+- **`lib/entrenos/bloques.ts`** (nuevo, con test real `scripts/bloques-entreno.test.ts`): lógica pura de rotación de fase, cálculo de semana-en-bloque (por día de calendario, no por horas), clasificación híbrido/carrera de una sesión por mayoría de tipo de ejercicio, helper `calcularBloqueInfo` compartido.
+- **3 vistas cliente**: `/cliente` (pill de bloque en `SemanaEntrenoCard`), `/cliente/semana` (pill + iconos Dumbbell/Footprints por sesión), `/cliente/mes` (nueva página, calendario completo con fases por semana y transición de bloque).
+- **Panel coach**: `components/clientes/GenerarBloqueHibridoPanel.tsx` en la pestaña Entrenamiento — "Generar plan Híbrido..." / "Generar siguiente bloque: X", oculto para clientes no-híbridos (evita desactivar por error el plan de un cliente que no es de este programa).
+- **Revisión final (subagente opus, rama completa)**: 4 hallazgos Critical/Important corregidos con TDD — cabecera del calendario mensual desalineada un día completo, botón de bloque apareciendo/actuando sobre clientes no-híbridos, ritmo de carrera invisible durante la ejecución real de la sesión (solo se veía en "solo ver"), `fase_bloque_objetivo` sin validar. 8 hallazgos menores corregidos después en una segunda pasada (fechas por día completo en vez de por horas, umbral de clasificación híbrido/carrera a mayoría simple, helper de bloque unificado, varios detalles de `/cliente/mes`).
+- Trabajado en worktree (`feature/hyrox-running-training`) con ledger de ejecución, merge fast-forward a `main` al terminar.
+
+### Parte 2 — Auditoría abierta del portal cliente real (a petición de Carlos)
+
+**Hallazgo crítico de la noche**: el portal cliente autenticado (`/cliente`) pedía la dieta y el entreno activos con un join anidado de 3 niveles (`planes_nutricion→comidas→comida_alimentos→alimentos`, y lo mismo para entrenamiento) **directamente desde el cliente Supabase del navegador**. RLS corta esos joins en silencio — sin error, sin 403 — así que **absolutamente todo cliente real veía su plan de dieta y de entreno con 0 comidas, 0 sesiones y 0 kcal**, aunque el coach le hubiera preparado un plan completo. Verificado con 3 cuentas de cliente reales distintas antes del fix (0 comidas vistas / 4 reales en BD, 0 sesiones vistas / 6 reales), y con capturas antes/después (0 kcal/día → 3193 kcal/día tras el fix).
+
+Fix: dos endpoints nuevos con `service_role` (mismo patrón ya usado para las APIs de entrenamiento de la Parte 1) — `/api/cliente/plan-nutricion-activo` y `/api/cliente/plan-entrenamiento-activo`, que resuelven el cliente por sesión autenticada. `app/cliente/page.tsx` ahora los consume en vez del join roto.
+
+**3 bugs más encontrados y corregidos en la misma auditoría**:
+1. `components/PortalCliente/MiPlan.tsx` tenía su propia función privada de filtrado de comidas por día (`comidaDelDiaActivo`) que anclaba las comidas recurrentes (`dia_semana` null) al Lunes fijo — cualquier otro día mostraba "No hay comidas construidas" aunque el plan sí tuviera comidas. Corregido delegando en el helper compartido y ya probado `lib/nutricion/comidas-dia.ts` (46/46 tests) en vez de reimplementar la regla por tercera vez.
+2. `app/api/cliente/[codigo]/mis-platos/route.ts` buscaba el código público en `clientes.codigo_publico` — columna que no existe (vive en `planes_nutricion.codigo_publico`, regla ya documentada en este archivo). La pestaña "Recetas" daba 404 siempre. Corregido.
+3. Barrido sistemático confirmó que ningún otro componente de `components/PortalCliente/*` hace queries directas a Supabase (todos pasan por `fetch()` a rutas API) — el patrón roto estaba solo en `app/cliente/page.tsx` y `MiPlan.tsx`. Barrido de `codigo_publico` confirmó que `mis-platos` era la única ruta con ese bug.
+
+**Feature nueva conectada** (decisión explícita de Carlos al ver el hueco): el portal cliente real solo tenía 4 pestañas (Hoy, Mi Plan, Check-in, Progreso). Compra (`ListaCompraPortal`), Recetas personalizadas (`MisPlatos`), Chat con el coach (`ChatPanel`) e integraciones con wearables (`IntegracionesPanel`) ya estaban completamente construidos y probados, pero solo se usaban desde el portal público antiguo por código (`/cliente/[codigo]`) — inalcanzables para un cliente autenticado normal. Añadidos como accesos rápidos desde la pestaña Hoy (no en el nav inferior fijo, para no saturar de pestañas el móvil), reutilizando el mismo `codigo`/`cliente.id` que la página ya resolvía.
+
+**Verificado con interacciones reales, no solo carga de pantalla**: marcar una comida como "Hecha" (pasa a 1/4 completadas, toast "Comida registrada"), enviar un mensaje de chat (aparece en el hilo), completar un check-in (peso + sliders → "¡Check-in completado!", historial actualizado a 1 registro) — los tres verificados de principio a fin contra Supabase real.
+
+### Metodología de esta sesión (para repetir en próximas auditorías)
+- Cuentas de cliente reales de prueba usadas: `andres.lopez.powerlifting@nutricoach-test.dev`, `carlos.rodriguez.hyrox@nutricoach-test.dev`, `natalia.gonzalez.maraton@nutricoach-test.dev`, `sofia.ruiz.ciclismo@nutricoach-test.dev` (rol `cliente` real, no coach — necesario para probar el portal tal cual lo ve un cliente, ya que la cuenta de Carlos tiene rol `coach` y `/cliente` la redirige a `/dashboard`).
+- Cookie de sesión real construida vía `admin.auth.admin.generateLink({type:'magiclink'})` + `/auth/v1/verify` + cookie `sb-<ref>-auth-token` en formato `base64-<base64 JSON>` — mismo patrón ya documentado en sesiones anteriores.
+- Cuando se detecta "0 de algo que debería ser N": comparar SIEMPRE lo que devuelve la query tal cual la ejecuta el código (con el JWT del usuario, no con service role) contra la realidad en BD (con service role) — así se confirma si es un problema de RLS silencioso o de datos realmente vacíos. Sin error, sin 403, 0 filas: esa combinación es la huella del patrón "join anidado desde el cliente + RLS", no un dato vacío legítimo.
+- `DashboardCliente.tsx` (9 pestañas: Dieta/Training/Compra/Recetas/Chat/Apps/etc.) es el portal **antiguo público por código** (`/cliente/[codigo]`), NO el portal autenticado real. El portal real es `app/cliente/page.tsx` (solo 4 pestañas antes de esta sesión). Cualquier auditoría futura del "portal cliente" debe apuntar a `app/cliente/page.tsx`, no a `DashboardCliente.tsx` — confundir los dos hizo perder tiempo al principio de esta sesión.
+
+### Verificación de toda la sesión
+`npx tsc --noEmit` y `npm run build` limpios en cada paso · test unitario `scripts/bloques-entreno.test.ts` en verde · cada fix probado en vivo con Playwright contra Supabase real y capturas de pantalla, no solo lectura de código · 4 clientes de prueba × 8 pestañas (32 combinaciones) sin errores de consola/red tras el fix crítico.
+
+### ⚠️ Pendiente — próxima sesión
+1. **Nutrición**: Carlos quiere afinar su propio plan de nutrición (quedó fuera de alcance explícitamente esta sesión — el objetivo era validar primero el sistema de entrenamiento).
+2. **Seguir auditando el resto de la app** como pidió Carlos ("debería funcionar como una app top del mercado"): quedó pendiente el lado coach a fondo y el recetario. Se hizo un barrido estático del patrón "`clientes.codigo_publico`" (sin más hallazgos) y del patrón "join anidado desde componente cliente" (sin más hallazgos en `components/PortalCliente/*`), pero no se auditaron a fondo `app/clientes/*`, `app/dietas/*`, `app/recetas/*`, `app/entrenos/*` (lado coach) en esta sesión.
+3. **Progresión intra-bloque** (semana 1 vs semana 4 del bloque con series/reps distintas, hoy se repite la misma semana tipo) y **periodización real hacia una fecha de carrera** (usar tabla `competiciones` ya existente) — mejoras futuras documentadas en la spec, no implementadas a propósito (fuera de alcance v1).
+4. Verificar visualmente en el móvil real de Carlos (PWA) el programa Híbrido y las 4 pestañas nuevas — todo verificado con Playwright/dev server esta sesión, no en dispositivo real.
+5. 5 hallazgos menores documentados pero no corregidos (deliberadamente, no bloqueantes): ver ledger de la Parte 1 en `docs/superpowers/plans/2026-09-26-hyrox-running-training-system.md` si se recupera el workspace, o el propio historial de commits (`git log --oneline` desde `49b3e9a` hasta `39f48bb`) para el detalle exacto de cada uno.
+
+---
+
 ## ✅ SESIÓN 26-09-2026 (noche, Claude) — Cron Garmin/Strava roto, PWA cliente rota, auditoría masiva del recetario
 
 ### Contexto
