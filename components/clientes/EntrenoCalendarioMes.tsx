@@ -65,21 +65,21 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{MESES[month - 1]} {year}</p>
-        <div className="flex gap-1">
-          <button onClick={() => cambiarMes(-1)} className="p-1.5 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}><ChevronLeft size={14} /></button>
-          <button onClick={() => cambiarMes(1)} className="p-1.5 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}><ChevronRight size={14} /></button>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-base font-semibold" style={{ color: 'var(--text)' }}>{MESES[month - 1]} {year}</p>
+        <div className="flex gap-1.5">
+          <button onClick={() => cambiarMes(-1)} className="p-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}><ChevronLeft size={15} /></button>
+          <button onClick={() => cambiarMes(1)} className="p-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}><ChevronRight size={15} /></button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <div className="grid grid-cols-7 gap-1.5 mb-1.5">
         {DIAS_ABREV.map(d => (
-          <p key={d} className="text-center text-[10px] font-semibold uppercase tracking-wider py-1" style={{ color: 'var(--text-muted)' }}>{d}</p>
+          <p key={d} className="text-center text-xs font-semibold uppercase tracking-wider py-1" style={{ color: 'var(--text-muted)' }}>{d}</p>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1.5">
         {Array.from({ length: offset }).map((_, i) => <div key={`pad-${i}`} />)}
         {dias.map(dia => {
           const esHoy = dia.fecha === hoy
@@ -87,30 +87,30 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
           return (
             <div
               key={dia.fecha}
-              className="rounded-lg p-1.5 min-h-[72px] flex flex-col"
+              className="rounded-lg p-2 min-h-[96px] flex flex-col"
               style={{
                 background: esHoy ? 'var(--semantic-info-bg)' : 'var(--bg)',
                 border: `1px solid ${esHoy ? 'var(--semantic-info-border)' : 'var(--border)'}`,
               }}
             >
-              <p className="text-[10px] font-semibold mb-1" style={{ color: esHoy ? 'var(--semantic-info-text)' : 'var(--text-muted)' }}>{numeroDia}</p>
+              <p className="text-xs font-semibold mb-1.5" style={{ color: esHoy ? 'var(--semantic-info-text)' : 'var(--text-muted)' }}>{numeroDia}</p>
 
               {dia.competiciones.length > 0 && (
-                <div className="flex items-center gap-1 mb-1 px-1 py-0.5 rounded" style={{ background: 'var(--semantic-alert-bg)' }}>
-                  <Flag size={9} style={{ color: 'var(--semantic-alert-text)' }} />
-                  <span className="text-[9px] font-semibold truncate" style={{ color: 'var(--semantic-alert-text)' }}>{dia.competiciones[0].nombre}</span>
+                <div className="flex items-center gap-1 mb-1.5 px-1.5 py-1 rounded-md" style={{ background: 'var(--semantic-alert-bg)' }}>
+                  <Flag size={11} className="flex-shrink-0" style={{ color: 'var(--semantic-alert-text)' }} />
+                  <span className="text-[11px] font-semibold truncate" style={{ color: 'var(--semantic-alert-text)' }}>{dia.competiciones[0].nombre}</span>
                 </div>
               )}
 
               {dia.bloque_pendiente ? (
-                <span className="text-[9px]" style={{ color: 'var(--text-disabled)' }}>Bloque siguiente sin generar</span>
+                <span className="text-[11px]" style={{ color: 'var(--text-disabled)' }}>Bloque siguiente sin generar</span>
               ) : (
                 dia.sesiones.slice(0, 2).map(s => {
                   const color = s.fase_bloque ? FASE_COLOR[s.fase_bloque] : undefined
                   return (
                     <p
                       key={s.id}
-                      className="text-[9px] font-medium truncate px-1 py-0.5 rounded mb-0.5"
+                      className="text-[11px] font-medium truncate px-1.5 py-1 rounded-md mb-1"
                       style={{ background: color?.bg ?? 'var(--surface-elevated,var(--border))', color: color?.text ?? 'var(--text-muted)' }}
                     >
                       {s.nombre}
@@ -119,7 +119,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
                 })
               )}
               {dia.sesiones.length > 2 && (
-                <span className="text-[9px]" style={{ color: 'var(--text-muted)' }}>+{dia.sesiones.length - 2} más</span>
+                <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>+{dia.sesiones.length - 2} más</span>
               )}
             </div>
           )

@@ -37,12 +37,12 @@ function SesionCard({ sesion }: { sesion: SesionKanban }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="rounded-xl p-2.5 mb-2 cursor-grab active:cursor-grabbing touch-none select-none"
+      className="rounded-xl p-3 mb-2.5 cursor-grab active:cursor-grabbing touch-none select-none"
       {...listeners}
       {...attributes}
     >
       <div
-        className="rounded-xl p-2.5 flex items-start gap-2 transition-shadow"
+        className="rounded-xl p-3 flex items-start gap-2.5 transition-shadow"
         style={{
           background: 'var(--surface-elevated,var(--border))',
           border: '1px solid var(--border-strong,var(--border))',
@@ -50,19 +50,19 @@ function SesionCard({ sesion }: { sesion: SesionKanban }) {
           opacity: isDragging ? 0.6 : 1,
         }}
       >
-        <GripVertical size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+        <GripVertical size={14} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
         <div className="min-w-0">
-          <p className="text-xs font-semibold leading-tight" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+          <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
           {sesion.contexto_ia && (
-            <p className="text-[10px] mt-0.5" style={{ color: 'var(--semantic-info-text)' }}>{sesion.contexto_ia}</p>
+            <p className="text-xs mt-1 font-medium" style={{ color: 'var(--semantic-info-text)' }}>{sesion.contexto_ia}</p>
           )}
-          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             {sesion.duracion_estimada_min ? (
-              <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{sesion.duracion_estimada_min} min</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{sesion.duracion_estimada_min} min</span>
             ) : null}
             {sesion.fase_bloque ? (
               <span
-                className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
+                className="text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full"
                 style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info-text)', border: '1px solid var(--semantic-info-border)' }}
               >
                 {sesion.fase_bloque}
@@ -93,47 +93,47 @@ function DiaColumna({ dia, sesiones, onAñadir }: { dia: string; sesiones: Sesio
   return (
     <div
       ref={setNodeRef}
-      className="rounded-xl p-2 min-h-[120px] flex-1 min-w-[132px] transition-colors"
+      className="rounded-xl p-2.5 min-h-[120px] flex-1 min-w-[144px] transition-colors"
       style={{
         background: isOver ? 'var(--semantic-info-bg)' : 'var(--bg)',
         border: `1px dashed ${isOver ? 'var(--semantic-info-border)' : 'var(--border)'}`,
       }}
     >
-      <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 px-0.5" style={{ color: 'var(--text-muted)' }}>
+      <p className="text-xs font-semibold uppercase tracking-wider mb-2.5 px-1" style={{ color: 'var(--text-muted)' }}>
         <span className="sm:hidden">{DIAS_ABREV[dia]}</span>
         <span className="hidden sm:inline">{dia}</span>
       </p>
       {sesiones.length === 0 && !añadiendo ? (
-        <p className="text-[11px] px-0.5 mb-2" style={{ color: 'var(--text-disabled)' }}>Descanso</p>
+        <p className="text-xs px-1 mb-2" style={{ color: 'var(--text-disabled)' }}>Descanso</p>
       ) : (
         sesiones.map(s => <SesionCard key={s.id} sesion={s} />)
       )}
 
       {añadiendo ? (
-        <div className="rounded-lg p-1.5" style={{ background: 'var(--surface-elevated,var(--border))' }}>
+        <div className="rounded-lg p-2" style={{ background: 'var(--surface-elevated,var(--border))' }}>
           <input
             autoFocus
             value={nombre}
             onChange={e => setNombre(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') confirmar(); if (e.key === 'Escape') setAñadiendo(false) }}
             placeholder="Nombre de la sesión"
-            className="w-full text-xs px-2 py-1.5 rounded-md mb-1.5"
+            className="w-full text-sm px-2.5 py-2 rounded-md mb-2"
             style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
           />
-          <div className="flex gap-1">
-            <button onClick={confirmar} disabled={guardando || !nombre.trim()} className="flex-1 text-[11px] font-medium py-1 rounded-md" style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
+          <div className="flex gap-1.5">
+            <button onClick={confirmar} disabled={guardando || !nombre.trim()} className="flex-1 text-xs font-medium py-1.5 rounded-md" style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
               {guardando ? '…' : 'Añadir'}
             </button>
-            <button onClick={() => { setAñadiendo(false); setNombre('') }} className="px-2 rounded-md" style={{ color: 'var(--text-muted)' }}><X size={12} /></button>
+            <button onClick={() => { setAñadiendo(false); setNombre('') }} className="px-2.5 rounded-md" style={{ color: 'var(--text-muted)' }}><X size={13} /></button>
           </div>
         </div>
       ) : (
         <button
           onClick={() => setAñadiendo(true)}
-          className="w-full flex items-center justify-center gap-1 text-[11px] py-1.5 rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 text-xs py-2 rounded-lg transition-colors"
           style={{ color: 'var(--text-muted)', border: '1px dashed var(--border)' }}
         >
-          <Plus size={11} /> Sesión
+          <Plus size={12} /> Sesión
         </button>
       )}
     </div>
