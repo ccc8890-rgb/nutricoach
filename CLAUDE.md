@@ -1,5 +1,66 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 27-09-2026 (tarde/noche, Claude) — Reset de clientes + rediseño ficha Entrenamiento + fixes reales de matching
+
+### Contexto
+Continuación directa de la sesión anterior (mismo día, ver bloque de abajo). Arrancó con la lista de 5 pendientes que dejó esa sesión (nutrición personal de Carlos, auditoría lado coach, progresión intra-bloque, verificación móvil, hallazgos menores) pero Carlos redirigió pronto: "vamos a hacer un pequeño reset de clientes y vamos a empezar de nuevo con 3 clientes más el mío propio... revisando cada uno para dejar la interfaz del panel de coach como quiero". El resto de la sesión fue iterativo: Carlos revisaba en el navegador, señalaba un problema visual o de datos concreto, se diagnosticaba y arreglaba, se desplegaba, se verificaba en producción con Playwright, siguiente.
+
+### Parte 1 — Plan de nutrición personal de Carlos (afinado, dentro de NutriCoach)
+Carlos ya tenía un `cliente` real (`04cc53b3`, vinculado a su propio perfil de coach) con un plan activo "Plan mantenimiento híbrido" (2886 kcal). Auditado: la proteína real de las comidas (95g/1.44g·kg) estaba muy por debajo del objetivo guardado (104g) y del estándar del propio proyecto para `rendimiento` (1.8-2.0g/kg). Ajustado a 131g (1.98g/kg) subiendo huevo del desayuno, añadiendo pechuga de pollo a la comida y recortando miel para mantener las kcal casi iguales (2886→2825). Verificado sumando macros reales de `comida_alimentos`, no solo el objetivo guardado.
+
+### Parte 2 — Reset de clientes
+Confirmado con Carlos: borrados los 10 clientes de prueba/legacy con todo su historial (planes, checkins, onboarding), conservada su cuenta propia. Creados 3 clientes ficticios nuevos con perfiles muy distintos para estresar la interfaz: Carlos Rodríguez (Hyrox rendimiento), Andrés López (powerlifter, recomposición + dislipidemia), Natalia González (vegana estricta, maratón + anemia). Generados sus planes de nutrición y entreno reales pasando por el motor de producción (no simulado).
+
+**2 bugs reales encontrados generando esos planes:**
+1. Los ejemplos de comida peri-entreno (`lib/nutricion-peri-entreno.ts`) eran texto libre hardcodeado con lácteos/huevo/whey — a Natalia (vegana) le sugería "leche desnatada", "pollo + arroz". Añadido filtro por restricción (vegano quita todo lo animal; vegetariano solo quita carne/pescado, no huevo/lácteos).
+2. `inferirModalidadEntreno()` en `generar-plan-inicial` clasificaba a Natalia (maratoniana pura) como `sport_modality: 'hibrido'` solo porque su descripción de semana mencionaba "fuerza + core" como trabajo accesorio normal de running — activaba el protocolo Híbrido Hyrox completo (SkiErg, Sled Push...) sin que lo pidiera. Corregido para que esa señal solo mire el campo estructurado `tipo_entreno`, no el texto libre completo.
+
+### Parte 3 — Auditoría "por qué esta merienda es tan mala" (a partir de un caso real de Natalia)
+Carlos señaló una merienda vegana de "patatas gajos fritas" con muy poca proteína. Investigado a fondo:
+- El `select()` de `filtrarRecetasPorSlot` (`lib/plan-recetas.ts`) **nunca pedía las columnas** `apto_rendimiento`, `apto_sop`, `apto_hashimoto`, `es_post_entreno`, `es_pre_entreno`, `densidad_proteica`, `score_saciedad` — el filtro de tags clínicos llevaba siendo un no-op silencioso para TODOS los clientes desde que se creó, no solo para Natalia. Corregido + añadidas las columnas.
+- Aun con el filtro corregido, si hay pocas recetas con el tag puesto (vegano+merienda+rendimiento: 1 de 16), el filtro se descarta y no quedaba ninguna señal nutricional en el ranking — solo "calidad" de producción (foto/ejecución). Añadido un bonus de score (densidad proteica + saciedad) para esos casos.
+- Bug encadenado: el texto `adaptacion_habitual` de la IA a veces describe una receta DISTINTA de la que realmente vincula (ej. dice "garbanzos" pero vincula "Muesli casero"). Añadida una guarda que compara el texto con el nombre real de la receta (por prefijo, no palabra exacta — el español declina por género/número) y lo oculta si no coincide.
+- Pendiente sin resolver, es contenido no código: el recetario solo tiene 16 meriendas veganas y 1 sola apta para rendimiento — hace falta añadir recetas, no hay más margen algorítmico.
+
+### Parte 4 — Rediseño completo de la pestaña Entrenamiento de la ficha del cliente
+Carlos, tras ver la primera versión de sub-pestañas: "esto es muy denso, quiero la rutina real de un vistazo, no un botón que me lleve a otra pantalla". Iterado en vivo hasta:
+- **5 sub-pestañas** dentro de Entrenamiento: Plan activo, Calendario, Historial, Perfil atleta, Competiciones (antes: 6 bloques pesados apilados, ~2300 líneas de scroll).
+- **`RutinaSemanaAccordion.tsx`** (nuevo): rutina de la semana en acordeón, primera cosa que se ve en "Plan activo", día de hoy abierto por defecto, pace visible en la cabecera de cada fila sin desplegar.
+- **`EntrenoCalendarioKanban.tsx`** (nuevo): calendario semanal drag-and-drop (`@dnd-kit`, ya usado en el proyecto) — mover una sesión de día, botón "+ Sesión" para programar una segunda sesión el mismo día, y clic en cualquier sesión para desplegar sus ejercicios in-situ.
+- **`EntrenoCalendarioMes.tsx`** + `app/api/entrenos/mes-coach` (nuevos): vista mensual del calendario, con las competiciones activas del cliente marcadas en su fecha.
+- **`DecisionesIACliente.tsx`** (nuevo): "aprobar IA" vivía triplicado (cockpit `/entrenos`, cola global `/entrenos/brain-ia` de 840 líneas, enlace de salida desde la ficha) — Carlos decidió que la ficha del cliente sea la única pantalla de trabajo. Versión compacta scopeada a un cliente, misma API que brain-ia (`PATCH /api/agentes/tareas`). `/entrenos/brain-ia` se deja intacta (otros sitios como `/dashboard` aún enlazan a ella) pero sale del menú lateral. `/entrenos` (el cockpit "Training OS") pasa de 3 columnas con paneles duplicados a una lista simple de clientes que enlaza a su ficha.
+- **Tipografía**: texto de 9-10px en calendario (semana y mes) y filas de ejercicio subido a 11-16px con más padding — Carlos: "cuesta verlo, hay texto pegado a los extremos".
+- **Panel IA colapsado por defecto**: el bloque "Training OS / decisiones" (denso, muchos "Sin dato" en un cliente nuevo) baja debajo de la rutina y empieza cerrado.
+
+### Parte 5 — Bug real de matching de ejercicios (encontrado por Carlos revisando el calendario)
+"Tirada Larga Z2" (rodaje 90min) tenía vinculado un ejercicio de máquina de gimnasio ("SkiErg Continuo"). Causa: `matchEjercicio()` en `proponer-plan-ciencia`, nivel 3 (búsqueda por palabra suelta), devolvía el primer resultado de Postgres sin ninguna preferencia por tipo ni disciplina. Auditoría posterior encontró el mismo patrón en 19 sesiones de carrera de todos los clientes (activos e históricos) — el más gracioso: "Carrera Series Cortas" (8x400m) vinculada a "Series de crol 50m" (natación).
+- `matchEjercicio()` ahora recibe un `tipoPreferido` inferido del nombre de la sesión y elige entre varios candidatos por palabra en vez de quedarse con el primero — prioriza tipo correcto y excluye nombres con pinta de otra disciplina (SkiErg, sled, wall ball, natación/crol, kettlebell...).
+- Bug propio en la primera versión del fix: si NINGÚN candidato de una palabra pasaba el filtro, devolvía igualmente el primero (malo) en vez de dejar que el nivel de arriba probara la siguiente palabra del nombre — eso bloqueaba que "Series 800m" llegara a probar "800m" (que sí tenía "Intervalos 800m" esperando) porque "series" ya había devuelto "Series de crol 50m". Corregido para devolver `null` y dejar pasar a la siguiente palabra.
+- 5 ejercicios de running puro mal etiquetados como `tipo='fuerza'` en la tabla `ejercicios` corregidos a `'cardio'` (Tempo Run T-pace, Intervalos Umbral 1km, Carrera Larga E-pace, Strides de Velocidad, Intervalos I-pace 1000m) — alimentaban el mismo bug aguas abajo.
+- Datos reales corregidos en los 2 planes actualmente activos con el patrón (Carlos Casanova, Carlos Rodríguez).
+
+### Parte 6 — Reparto Híbrido Hyrox+Running: 5→6 sesiones
+Carlos: "hace mucho énfasis en hyrox pero solo dos días de run". El reparto (3 híbridas + 2 carrera, fijado a propósito en el prompt desde el diseño original) pasó a 3 híbridas + 3 carrera — la sesión de series y la de tempo run entre semana ahora se incluyen las dos en vez de elegir una, más la tirada larga del fin de semana. Verificado regenerando el bloque real de Carlos dos veces hasta que salió limpio (6 sesiones, 0 sospechosos de matching).
+
+### Metodología de esta sesión
+- Cada cambio de UI se verificó con `browse` (headless Chromium) contra `localhost:3000` primero, con una cookie de sesión de coach real construida vía `admin.auth.admin.generateLink()`, y luego contra producción tras cada deploy — no solo "el build pasa".
+- El drag-and-drop del calendario no se pudo verificar con eventos de puntero sintéticos en headless (dnd-kit no responde igual a `PointerEvent` scripteado que a un puntero real) — se verificó la escritura en BD directamente y se le pidió a Carlos que confirmara el gesto con el ratón.
+- Cada commit se desplegó y se esperó activamente a `vercel ls --yes` en estado `Ready` antes de dar nada por confirmado — dos veces Carlos preguntó "¿ya está?" mientras un deploy seguía en German `Building`.
+- 8 commits, todos con `tsc`/`build` limpios antes de cada push.
+
+### ⚠️ Pendiente — próxima sesión
+1. **Carlos se centra en el portal cliente (`app/cliente/*`)**: quiere ver desde el lado del cliente en su iPhone cómo se materializa todo lo que se ha tocado hoy (plan de entreno, rutina, calendario) y encontrar fallos visuales/de usabilidad ahí. Sesión previa (26/27-09 noche, ver bloque de abajo) ya hizo un pase grande de portal cliente (fix crítico de RLS + 4 pestañas nuevas conectadas) — esta sería la continuación con foco puramente visual/UX en móvil real.
+2. **252 hallazgos de la auditoría "forma de ingredientes vs instrucciones"** (sesión 26-09) siguen sin revisar manualmente — `nutricoach/salidas/forma-incorrecta-revision-manual-2026-09-26.json`, no está en git (`salidas/` en `.gitignore`).
+3. **Progresión intra-bloque + periodización real hacia fecha de carrera**: diseño ya aprobado por Carlos a mitad de esta sesión (usar `calcularEstadoBloque` existente para variar carga semana 1→4, y la tabla `competiciones`/`fase_deportiva_cliente` ya construida para nutrición para elegir la fase del bloque según días-hasta-la-carrera en vez de rotación fija) — nunca se llegó a implementar porque Carlos pivotó al reset de clientes. La spec conversacional sigue vigente si se retoma.
+4. **9 sesiones de carrera con el mismo bug de matching en planes inactivos/históricos** (no visibles en ninguna ficha activa ahora mismo) quedaron sin corregir a propósito — sin impacto visible, revisar si se reactivan esos planes alguna vez.
+5. Recetario: solo 16 meriendas veganas, 1 apta para rendimiento — contenido, no código.
+6. Otras 5 pestañas de la ficha (Resumen, Nutrición, Seguimiento, Comunicación, Perfil) no se tocaron — son más ligeras que Entrenamiento, Carlos prefirió ver primero cómo quedaba esto antes de decidir si hace falta un rediseño más completo ahí también.
+
+### Verificación
+`npx tsc --noEmit` y `npm run build` limpios antes de cada uno de los 8 commits. Cada cambio de UI probado en vivo con `browse` contra local y contra producción tras el deploy (capturas, sin errores de consola). 2 planes de entreno reales regenerados dos veces para confirmar los fixes de matching de ejercicios. Datos de producción verificados por consulta directa a Supabase antes y después de cada corrección (nunca solo "debería funcionar").
+
+---
+
 ## ✅ SESIÓN 26/27-09-2026 (noche, Claude) — Programa Híbrido Hyrox+Running + hallazgo crítico: portal cliente mostraba planes vacíos a TODOS los clientes
 
 ### Contexto
