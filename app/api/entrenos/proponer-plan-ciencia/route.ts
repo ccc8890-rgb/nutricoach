@@ -27,15 +27,18 @@ async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPreferido?
 
   function elegirMejor(candidatos: { id: string; nombre: string; tipo: string | null }[]): string | null {
     if (candidatos.length === 0) return null
-    if (candidatos.length === 1) return candidatos[0].id
     if (!tipoPreferido) return candidatos[0].id
     // Entre varios candidatos para la misma palabra, prioriza: tipo
     // correcto Y sin pinta de ser de otra disciplina (SkiErg, natación...).
     const buenos = candidatos.filter(c => c.tipo === tipoPreferido && !OTRA_DISCIPLINA_RE.test(c.nombre))
     if (buenos.length > 0) return buenos[0].id
-    const sinOtraDisciplina = candidatos.filter(c => !OTRA_DISCIPLINA_RE.test(c.nombre))
-    if (sinOtraDisciplina.length > 0) return sinOtraDisciplina[0].id
-    return candidatos[0].id
+    // Ningún candidato de ESTA palabra es de fiar (todos son de otra
+    // disciplina, ej. la única "series..." de la BD es de natación) — mejor
+    // devolver null y dejar que el nivel de arriba pruebe la siguiente
+    // palabra ("800m" en vez de "series") que si busca directamente sin
+    // ella habría encontrado "Intervalos 800m". Aceptar aquí el primer
+    // candidato malo bloqueaba esa segunda oportunidad.
+    return null
   }
 
   // Nivel 1: match exacto (case-insensitive)
@@ -211,18 +214,23 @@ export async function POST(req: NextRequest) {
     /**
      * Protocolo combinado para el cliente con sport_modality === 'hibrido':
      * 3 sesiones híbridas (Hyrox + hipertrofia accesoria rotando espalda/
-     * pecho/bíceps/hombro) y 2 sesiones de carrera (tirada larga fija en fin
-     * de semana + series/tempo alternando entre semana), modulado por la fase
-     * de bloque de 4 semanas en la que está el cliente.
+     * pecho/bíceps/hombro) y 3 sesiones de carrera (tirada larga fija en fin
+     * de semana + series Y tempo run entre semana), modulado por la fase de
+     * bloque de 4 semanas en la que está el cliente.
+     *
+     * Antes eran 2 sesiones de carrera (series O tempo, nunca ambas) — Carlos
+     * pidió más peso al running sin recortar las híbridas, así que ahora se
+     * incluyen las dos variantes entre semana en vez de elegir una.
      */
     function construirProtocoloHibridoHyroxRunning(fase: FaseBloque): string {
       return `HÍBRIDO HYROX + RUNNING — Bloque actual: ${fase}
 ${MODULACION_POR_FASE[fase]}
 
-REPARTO SEMANAL OBLIGATORIO — EXACTAMENTE 5 SESIONES EN TOTAL, NI UNA MÁS:
+REPARTO SEMANAL OBLIGATORIO — EXACTAMENTE 6 SESIONES EN TOTAL, NI UNA MÁS:
 • 3 sesiones HÍBRIDAS (y solo 3): cada una incluye 1-2 estaciones reales de Hyrox (SkiErg, Sled Push, Sled Pull, Burpee Broad Jumps, Farmers Carry, Wall Balls, Row) MÁS un bloque de fuerza/hipertrofia accesoria. La hipertrofia accesoria debe ROTAR entre las 3 sesiones para cubrir espalda, pecho, bíceps y hombro a lo largo de la semana — no repitas el mismo grupo muscular en las 3 sesiones híbridas.
-• 1 ÚNICA sesión de CARRERA — tirada larga, en fin de semana (Sábado o Domingo): rodaje continuo a ritmo aeróbico Z2, duración progresiva.
-• 1 ÚNICA sesión de CARRERA — entre semana: ELIGE series (intervalos) O tempo run según la fase de bloque indicada arriba, NUNCA ambas en la misma semana. Total de sesiones de carrera en la semana: exactamente 2, no 3.
+• 1 sesión de CARRERA — tirada larga, en fin de semana (Sábado o Domingo): rodaje continuo a ritmo aeróbico Z2, duración progresiva.
+• 1 sesión de CARRERA — series (intervalos) entre semana, según la fase de bloque indicada arriba.
+• 1 sesión de CARRERA — tempo run entre semana (día distinto al de series), según la fase de bloque indicada arriba. Total de sesiones de carrera en la semana: exactamente 3.
 
 FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 2010/2017 (hipertrofia accesoria).`
     }
@@ -265,7 +273,7 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
       : (SPORT_PROTOCOLS[modalidadFoco] ?? SPORT_PROTOCOLS.funcional)
 
     const instruccionDuracion = esHibridoHyroxRunning
-      ? `1. Plan de EXACTAMENTE 5 sesiones/semana — CUENTA el array "sesiones" antes de responder: debe tener longitud 5, ni 4 ni 6. Reparto fijo: 3 híbridas + 2 carrera (nunca 3 de carrera). EXACTAMENTE 4 semanas de duración (este bloque completo, sin semana de descarga adicional — el Deload es un bloque entero cuando corresponda en la rotación)`
+      ? `1. Plan de EXACTAMENTE 6 sesiones/semana — CUENTA el array "sesiones" antes de responder: debe tener longitud 6, ni 5 ni 7. Reparto fijo: 3 híbridas + 3 carrera. EXACTAMENTE 4 semanas de duración (este bloque completo, sin semana de descarga adicional — el Deload es un bloque entero cuando corresponda en la rotación)`
       : `1. Plan de ${Math.min(diasSemana, 5)} sesiones/semana, 8-12 semanas de duración`
 
     const instruccionCargasConcretas = esHibridoHyroxRunning
