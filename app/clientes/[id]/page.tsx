@@ -36,6 +36,8 @@ const ActividadClientePanel = dynamic(() => import('@/components/clientes/Activi
 const TrainingCoachPanel = dynamic(() => import('@/components/clientes/TrainingCoachPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const GenerarBloqueHibridoPanel = dynamic(() => import('@/components/clientes/GenerarBloqueHibridoPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioKanban = dynamic(() => import('@/components/clientes/EntrenoCalendarioKanban'), { ssr: false, loading: () => <TabSkeleton /> })
+const RutinaSemanaAccordion = dynamic(() => import('@/components/clientes/RutinaSemanaAccordion'), { ssr: false, loading: () => <TabSkeleton /> })
+const EntrenoCalendarioMes = dynamic(() => import('@/components/clientes/EntrenoCalendarioMes'), { ssr: false, loading: () => <TabSkeleton /> })
 
 function TabSkeleton() {
   return <div className="animate-pulse rounded-2xl h-48 w-full" style={{ background: 'var(--surface)' }} />
@@ -479,6 +481,8 @@ export default function ClienteDetallePage() {
   const [isEditando, setIsEditando] = useState(false)
   const [tabActiva, setTabActiva] = useState<Tab>('resumen')
   const [subTabEntreno, setSubTabEntreno] = useState<SubTabEntreno>('plan')
+  const [mostrarPanelIAEntreno, setMostrarPanelIAEntreno] = useState(false)
+  const [vistaCalendarioEntreno, setVistaCalendarioEntreno] = useState<'semana' | 'mes'>('semana')
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false)
   const [eliminando, setEliminando] = useState(false)
   const [showSelectorPlantilla, setShowSelectorPlantilla] = useState(false)
@@ -1025,14 +1029,61 @@ export default function ClienteDetallePage() {
                   </div>
                 </section>
 
-                <ErrorBoundary><TrainingCoachPanel clienteId={id as string} /></ErrorBoundary>
-                <ErrorBoundary><GenerarBloqueHibridoPanel clienteId={id as string} /></ErrorBoundary>
+                {entrenoActivo && (
+                  <WorkCard title="Rutina de la semana" kicker="De un vistazo, sin salir de aquí" icon={Dumbbell}>
+                    <ErrorBoundary><RutinaSemanaAccordion planId={entrenoActivo.id} /></ErrorBoundary>
+                  </WorkCard>
+                )}
+
+                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+                  <button
+                    onClick={() => setMostrarPanelIAEntreno(v => !v)}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3"
+                    style={{ background: 'var(--surface)' }}
+                  >
+                    <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Panel IA — decisiones, carga y recuperación</span>
+                    <ChevronRight size={14} className="transition-transform" style={{ color: 'var(--text-muted)', transform: mostrarPanelIAEntreno ? 'rotate(90deg)' : 'rotate(0deg)' }} />
+                  </button>
+                  {mostrarPanelIAEntreno && (
+                    <div className="p-1 space-y-4" style={{ background: 'var(--bg)' }}>
+                      <ErrorBoundary><TrainingCoachPanel clienteId={id as string} /></ErrorBoundary>
+                      <ErrorBoundary><GenerarBloqueHibridoPanel clienteId={id as string} /></ErrorBoundary>
+                    </div>
+                  )}
+                </div>
               </div>
 
             ) : subTabEntreno === 'calendario' ? (
-              <WorkCard title="Calendario semanal" kicker="Arrastra para reorganizar" icon={ClipboardCheck}>
+              <WorkCard
+                title={vistaCalendarioEntreno === 'semana' ? 'Calendario semanal' : 'Calendario mensual'}
+                kicker={vistaCalendarioEntreno === 'semana' ? 'Arrastra para reorganizar' : 'Vista de pájaro — sesiones y competiciones'}
+                icon={ClipboardCheck}
+                action={
+                  <div className="flex gap-1 rounded-lg p-0.5" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                    {(['semana', 'mes'] as const).map(v => (
+                      <button
+                        key={v}
+                        onClick={() => setVistaCalendarioEntreno(v)}
+                        className="px-2.5 py-1 text-xs font-medium rounded-md transition-colors"
+                        style={{
+                          background: vistaCalendarioEntreno === v ? 'var(--surface-elevated,var(--border))' : 'transparent',
+                          color: vistaCalendarioEntreno === v ? 'var(--text)' : 'var(--text-muted)',
+                        }}
+                      >
+                        {v === 'semana' ? 'Semana' : 'Mes'}
+                      </button>
+                    ))}
+                  </div>
+                }
+              >
                 {entrenoActivo ? (
-                  <ErrorBoundary><EntrenoCalendarioKanban planId={entrenoActivo.id} /></ErrorBoundary>
+                  <ErrorBoundary>
+                    {vistaCalendarioEntreno === 'semana' ? (
+                      <EntrenoCalendarioKanban planId={entrenoActivo.id} />
+                    ) : (
+                      <EntrenoCalendarioMes planId={entrenoActivo.id} />
+                    )}
+                  </ErrorBoundary>
                 ) : (
                   <EmptyModule
                     icon={Dumbbell}

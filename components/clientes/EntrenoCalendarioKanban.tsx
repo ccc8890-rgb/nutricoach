@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Dumbbell, GripVertical, Loader2 } from 'lucide-react'
+import { Dumbbell, GripVertical, Loader2, Plus, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/ui/Toast'
 
@@ -71,8 +71,21 @@ function SesionCard({ sesion }: { sesion: SesionKanban }) {
   )
 }
 
-function DiaColumna({ dia, sesiones }: { dia: string; sesiones: SesionKanban[] }) {
+function DiaColumna({ dia, sesiones, onAñadir }: { dia: string; sesiones: SesionKanban[]; onAñadir: (dia: string, nombre: string) => Promise<void> }) {
   const { setNodeRef, isOver } = useDroppable({ id: dia })
+  const [añadiendo, setAñadiendo] = useState(false)
+  const [nombre, setNombre] = useState('')
+  const [guardando, setGuardando] = useState(false)
+
+  async function confirmar() {
+    if (!nombre.trim()) return
+    setGuardando(true)
+    await onAñadir(dia, nombre.trim())
+    setGuardando(false)
+    setNombre('')
+    setAñadiendo(false)
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -86,10 +99,38 @@ function DiaColumna({ dia, sesiones }: { dia: string; sesiones: SesionKanban[] }
         <span className="sm:hidden">{DIAS_ABREV[dia]}</span>
         <span className="hidden sm:inline">{dia}</span>
       </p>
-      {sesiones.length === 0 ? (
-        <p className="text-[11px] px-0.5" style={{ color: 'var(--text-disabled)' }}>Descanso</p>
+      {sesiones.length === 0 && !añadiendo ? (
+        <p className="text-[11px] px-0.5 mb-2" style={{ color: 'var(--text-disabled)' }}>Descanso</p>
       ) : (
         sesiones.map(s => <SesionCard key={s.id} sesion={s} />)
+      )}
+
+      {añadiendo ? (
+        <div className="rounded-lg p-1.5" style={{ background: 'var(--surface-elevated,var(--border))' }}>
+          <input
+            autoFocus
+            value={nombre}
+            onChange={e => setNombre(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') confirmar(); if (e.key === 'Escape') setAñadiendo(false) }}
+            placeholder="Nombre de la sesión"
+            className="w-full text-xs px-2 py-1.5 rounded-md mb-1.5"
+            style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
+          />
+          <div className="flex gap-1">
+            <button onClick={confirmar} disabled={guardando || !nombre.trim()} className="flex-1 text-[11px] font-medium py-1 rounded-md" style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
+              {guardando ? '…' : 'Añadir'}
+            </button>
+            <button onClick={() => { setAñadiendo(false); setNombre('') }} className="px-2 rounded-md" style={{ color: 'var(--text-muted)' }}><X size={12} /></button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setAñadiendo(true)}
+          className="w-full flex items-center justify-center gap-1 text-[11px] py-1.5 rounded-lg transition-colors"
+          style={{ color: 'var(--text-muted)', border: '1px dashed var(--border)' }}
+        >
+          <Plus size={11} /> Sesión
+        </button>
       )}
     </div>
   )
@@ -136,6 +177,21 @@ export default function EntrenoCalendarioKanban({ planId }: { planId: string }) 
     }
   }
 
+  async function handleAñadirSesion(dia: string, nombre: string) {
+    const ordenMax = Math.max(0, ...(sesiones ?? []).map(s => (s as SesionKanban & { orden?: number }).orden ?? 0))
+    const { data, error } = await supabase
+      .from('sesiones_entrenamiento')
+      .insert({ plan_id: planId, nombre, dia_semana: dia, orden: ordenMax + 1 })
+      .select('id, nombre, dia_semana, duracion_estimada_min, fase_bloque')
+      .single()
+    if (error || !data) {
+      addToast({ type: 'error', title: 'No se pudo crear la sesión' })
+      return
+    }
+    setSesiones(prev => [...(prev ?? []), data])
+    addToast({ type: 'success', title: `"${nombre}" añadida a ${dia}` })
+  }
+
   if (sesiones === null) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -163,7 +219,7 @@ export default function EntrenoCalendarioKanban({ planId }: { planId: string }) 
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {DIAS.map(dia => (
-            <DiaColumna key={dia} dia={dia} sesiones={sesiones.filter(s => s.dia_semana === dia)} />
+            <DiaColumna key={dia} dia={dia} sesiones={sesiones.filter(s => s.dia_semana === dia)} onAñadir={handleAñadirSesion} />
           ))}
         </div>
       </DndContext>
