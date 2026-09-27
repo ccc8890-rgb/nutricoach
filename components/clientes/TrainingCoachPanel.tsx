@@ -258,9 +258,6 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
                 <Dumbbell size={13} /> Abrir plan
               </Link>
             )}
-            <Link href="/entrenos/brain-ia" className="btn-secondary btn-sm">
-              <Brain size={13} /> Bandeja IA
-            </Link>
             <button className="btn-secondary btn-sm" onClick={load}>
               <RefreshCw size={13} /> Actualizar
             </button>
@@ -320,7 +317,7 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
                 <Link href={data.plan ? `/entrenos/${data.plan.id}?returnTo=/clientes/${clienteId}` : `/entrenos/nueva?cliente=${clienteId}`} className="btn-primary btn-sm">
                   {coachDesk.primaryAction}
                 </Link>
-                <Link href={coachDesk.primaryAction === 'Revisar IA' ? '/entrenos/brain-ia' : `/entrenos/nueva?cliente=${clienteId}`} className="btn-secondary btn-sm">
+                <Link href={coachDesk.primaryAction === 'Revisar IA' ? '#decisiones-ia' : `/entrenos/nueva?cliente=${clienteId}`} className="btn-secondary btn-sm">
                   {coachDesk.secondaryAction}
                 </Link>
               </div>

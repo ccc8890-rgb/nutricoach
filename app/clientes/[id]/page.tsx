@@ -35,6 +35,7 @@ const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAd
 const ActividadClientePanel = dynamic(() => import('@/components/clientes/ActividadClientePanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const TrainingCoachPanel = dynamic(() => import('@/components/clientes/TrainingCoachPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const GenerarBloqueHibridoPanel = dynamic(() => import('@/components/clientes/GenerarBloqueHibridoPanel'), { ssr: false, loading: () => <TabSkeleton /> })
+const DecisionesIACliente = dynamic(() => import('@/components/clientes/DecisionesIACliente'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioKanban = dynamic(() => import('@/components/clientes/EntrenoCalendarioKanban'), { ssr: false, loading: () => <TabSkeleton /> })
 const RutinaSemanaAccordion = dynamic(() => import('@/components/clientes/RutinaSemanaAccordion'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioMes = dynamic(() => import('@/components/clientes/EntrenoCalendarioMes'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -1034,6 +1035,12 @@ export default function ClienteDetallePage() {
                     <ErrorBoundary><RutinaSemanaAccordion planId={entrenoActivo.id} /></ErrorBoundary>
                   </WorkCard>
                 )}
+
+                <div id="decisiones-ia">
+                  <WorkCard title="Decisiones de IA pendientes" kicker="Aprobar, editar o ignorar aquí mismo" icon={Brain}>
+                    <ErrorBoundary><DecisionesIACliente clienteId={id as string} /></ErrorBoundary>
+                  </WorkCard>
+                </div>
 
                 <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
                   <button
