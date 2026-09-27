@@ -90,6 +90,7 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
                   <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                     {sesion.ejercicios.length} {sesion.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'}{sesion.duracion_estimada_min ? ` · ~${sesion.duracion_estimada_min} min` : ''}
+                    {sesion.contexto_ia && <span style={{ color: 'var(--semantic-info-text)' }}> · {sesion.contexto_ia}</span>}
                   </p>
                 </div>
               </div>
@@ -98,9 +99,6 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
 
             {abierto && (
               <div className="px-3.5 pb-3.5 space-y-1.5">
-                {sesion.contexto_ia && (
-                  <p className="text-xs mb-2 px-3 py-2 rounded-lg" style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text-muted)' }}>{sesion.contexto_ia}</p>
-                )}
                 {sesion.ejercicios.length === 0 ? (
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Sin ejercicios cargados.</p>
                 ) : (

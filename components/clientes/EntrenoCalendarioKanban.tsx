@@ -24,6 +24,7 @@ interface SesionKanban {
   dia_semana: string | null
   duracion_estimada_min: number | null
   fase_bloque: string | null
+  contexto_ia: string | null
 }
 
 function SesionCard({ sesion }: { sesion: SesionKanban }) {
@@ -52,6 +53,9 @@ function SesionCard({ sesion }: { sesion: SesionKanban }) {
         <GripVertical size={13} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
         <div className="min-w-0">
           <p className="text-xs font-semibold leading-tight" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+          {sesion.contexto_ia && (
+            <p className="text-[10px] mt-0.5" style={{ color: 'var(--semantic-info-text)' }}>{sesion.contexto_ia}</p>
+          )}
           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
             {sesion.duracion_estimada_min ? (
               <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{sesion.duracion_estimada_min} min</span>
@@ -146,7 +150,7 @@ export default function EntrenoCalendarioKanban({ planId }: { planId: string }) 
     let cancelado = false
     supabase
       .from('sesiones_entrenamiento')
-      .select('id, nombre, dia_semana, duracion_estimada_min, fase_bloque, orden')
+      .select('id, nombre, dia_semana, duracion_estimada_min, fase_bloque, contexto_ia, orden')
       .eq('plan_id', planId)
       .order('orden')
       .then(({ data, error }) => {
@@ -182,7 +186,7 @@ export default function EntrenoCalendarioKanban({ planId }: { planId: string }) 
     const { data, error } = await supabase
       .from('sesiones_entrenamiento')
       .insert({ plan_id: planId, nombre, dia_semana: dia, orden: ordenMax + 1 })
-      .select('id, nombre, dia_semana, duracion_estimada_min, fase_bloque')
+      .select('id, nombre, dia_semana, duracion_estimada_min, fase_bloque, contexto_ia')
       .single()
     if (error || !data) {
       addToast({ type: 'error', title: 'No se pudo crear la sesión' })
