@@ -20,6 +20,49 @@ export interface PeriEntrenoInput {
   kcalObjetivo: number
   carbosObjetivo: number
   tipoEntreno?: string[]         // del onboarding
+  restricciones?: string[]       // ej: ['Vegano', 'Sin Lactosa'] — filtra los ejemplos de comida
+}
+
+// ── Filtro de ejemplos por restricción ─────────────────────────────────────
+// Los `ejemplos` de arriba son texto libre hardcodeado (pollo, huevo, leche,
+// whey...) pensado para el caso general. Sin este filtro, un cliente vegano
+// recibía "Pollo + arroz" o "leche desnatada" como ejemplo de comida — tanto
+// en pantalla como dentro del prompt de DeepSeek que genera su plan real.
+const SUSTITUTOS_VEGANOS: Record<string, string> = {
+  'Plátano + 30g proteína whey': 'Plátano + 30g proteína de guisante o soja',
+  'Batido: 200ml leche desnatada + 40g avena + 1/2 plátano': 'Batido: 200ml bebida de soja + 40g avena + 1/2 plátano',
+  'Arroz integral + pechuga pollo + verduras': 'Arroz integral + tofu o tempeh + verduras',
+  'Pasta integral + pavo + salsa tomate natural': 'Pasta integral + lentejas + salsa tomate natural',
+  'Avena + claras de huevo + fruta': 'Avena + proteína de guisante + fruta',
+  'Arroz blanco + pollo + patata cocida': 'Arroz blanco + tofu + patata cocida',
+  'Batido: 300ml leche + 50g avena + scoop proteína': 'Batido: 300ml bebida vegetal + 50g avena + scoop proteína vegana',
+  'Tortitas de avena + claras + plátano': 'Tortitas de avena + proteína de guisante + plátano',
+  'Yogur griego + fruta + granola': 'Yogur de soja + fruta + granola',
+  'Tostada integral + aguacate + huevo': 'Tostada integral + aguacate + tofu revuelto',
+  'Batido de fruta + avena + proteína': 'Batido de fruta + avena + proteína vegana',
+  'Batido: 2 scoops proteína + 80g dextrosa/maltodextrina': 'Batido: 2 scoops proteína vegana + 80g dextrosa/maltodextrina',
+  'Arroz blanco + pollo + batata': 'Arroz blanco + tempeh + batata',
+  'Recuperación: 500ml leche chocolate desnatada + plátano': 'Recuperación: 500ml bebida de soja con cacao + plátano',
+  'Pollo + arroz integral + verduras': 'Tofu o seitán + arroz integral + verduras',
+  'Batido proteína + avena + leche': 'Batido proteína vegana + avena + bebida vegetal',
+  'Tortilla francesa (3 huevos) + pan integral + aguacate': 'Tofu revuelto + pan integral + aguacate',
+  'Comida principal equilibrada post-entreno': 'Comida principal equilibrada post-entreno (base vegetal)',
+  'Ensalada de legumbres + huevo + atún': 'Ensalada de legumbres + tofu + semillas',
+  'Yogur griego + frutos secos + fruta': 'Yogur de soja + frutos secos + fruta',
+}
+
+// Vegetariano evita carne y pescado pero sí come huevo/lácteos — a
+// diferencia del vegano, aquí solo se sustituyen los ejemplos con carne o
+// pescado, dejando intactos los que llevan huevo, leche, yogur o queso.
+const CARNE_O_PESCADO_RE = /pollo|pavo|atún|whey/i
+
+function filtrarEjemplosPorRestriccion(ejemplos: string[], restricciones: string[] | undefined): string[] {
+  const texto = (restricciones ?? []).join(' ').toLowerCase()
+  const esVegano = texto.includes('vegano')
+  const esVegetariano = !esVegano && texto.includes('vegetariano')
+  if (esVegano) return ejemplos.map(ej => SUSTITUTOS_VEGANOS[ej] ?? ej)
+  if (esVegetariano) return ejemplos.map(ej => CARNE_O_PESCADO_RE.test(ej) ? (SUSTITUTOS_VEGANOS[ej] ?? ej) : ej)
+  return ejemplos
 }
 
 export interface RecomendacionPeriEntreno {
@@ -223,7 +266,7 @@ export function generarRecomendacionPeriEntreno(input: PeriEntrenoInput): Recome
       timing: preTiming,
       recomendacion: preRecomendacion,
       macros: preMacros,
-      ejemplos: preEjemplos,
+      ejemplos: filtrarEjemplosPorRestriccion(preEjemplos, input.restricciones),
     },
     intra_entreno: intraEntreno,
     post_entreno: {
@@ -231,7 +274,7 @@ export function generarRecomendacionPeriEntreno(input: PeriEntrenoInput): Recome
       ventana_anabolica: ventanaAnabolica,
       recomendacion: postRecomendacion,
       macros: { kcal: postKcal, proteinas: postProteina, carbohidratos: postCarbos, grasas: 10 },
-      ejemplos: postEjemplos,
+      ejemplos: filtrarEjemplosPorRestriccion(postEjemplos, input.restricciones),
     },
     alertas,
   }

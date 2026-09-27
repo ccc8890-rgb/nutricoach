@@ -85,6 +85,29 @@ function calcularTDEE(peso: number, altura: number, edad: number, sexo: string, 
   return Math.round(tmb * factor)
 }
 
+// DeepSeek a veces devuelve un `receta_id` válido (de la lista de
+// candidatas) pero escribe `adaptacion_habitual` describiendo una receta
+// DISTINTA — ej. receta_id apunta a "Muesli casero..." pero el texto dice
+// "Elige garbanzos especiados al horno...". El texto no es una alucinación
+// de un plato inventado, es la descripción de OTRO candidato real que la IA
+// consideró y no cuadra con el `receta_id` final que sí escribió. Mostrar
+// ese texto al coach/cliente es peor que no mostrar nada — parece describir
+// el plato servido cuando describe otro. Comprobamos que al menos una
+// palabra significativa (>3 letras) del nombre de la receta resuelta
+// aparezca en el texto antes de guardarlo.
+function adaptacionCoincideConReceta(adaptacion: string | null | undefined, nombreReceta: string | undefined): boolean {
+  if (!adaptacion || !nombreReceta) return true // nada que contradecir
+  const normalizar = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  const textoNorm = normalizar(adaptacion)
+  const palabrasReceta = normalizar(nombreReceta).split(/\s+/).filter(p => p.length > 3)
+  if (palabrasReceta.length === 0) return true
+  // Prefijo (no la palabra completa): el español declina por género/número
+  // ("crujientes" en el nombre de la receta vs "crujiente" en el texto de
+  // la IA) y una comparación de substring exacta daba falso negativo con
+  // descripciones que sí eran correctas.
+  return palabrasReceta.some(p => textoNorm.includes(p.slice(0, Math.min(6, p.length))))
+}
+
 function inferirModalidadEntreno(onboarding: Record<string, any>, perfil?: Record<string, any> | null): SportModality | undefined {
   const texto = [
     ...(Array.isArray(onboarding.tipo_entreno) ? onboarding.tipo_entreno : []),
@@ -96,9 +119,21 @@ function inferirModalidadEntreno(onboarding: Record<string, any>, perfil?: Recor
 
   const tieneHyrox = texto.includes('hyrox')
   const tieneRunning = texto.includes('running') || texto.includes('correr') || texto.includes('carrera') || texto.includes('10k') || texto.includes('5k') || texto.includes('marat')
-  const tieneGym = texto.includes('gym') || texto.includes('muscul') || texto.includes('fuerza') || texto.includes('crossfit')
   const tieneCiclismo = texto.includes('ciclismo') || texto.includes('bici') || texto.includes('ftp')
   const tieneTriatlon = texto.includes('triat')
+
+  // `tieneGym` decide si se activa el protocolo Híbrido (estaciones Hyrox +
+  // gimnasio) sobre un corredor/ciclista, así que solo mira el campo
+  // estructurado `tipo_entreno` (lo que el cliente marcó a propósito), no el
+  // texto libre entero: un runner que describe "J: fuerza + core 45min" como
+  // trabajo accesorio de su semana NO está pidiendo un programa de gimnasio,
+  // y antes esa única palabra "fuerza" en texto libre bastaba para
+  // convertirlo en Híbrido Hyrox (SkiErg, Sled Push...) sin que lo pidiera.
+  const tipoEntrenoEstructurado = (Array.isArray(onboarding.tipo_entreno) ? onboarding.tipo_entreno : [])
+    .map((t: string) => String(t).toLowerCase())
+  const tieneGym = tipoEntrenoEstructurado.some(t =>
+    ['gym', 'fuerza', 'musculacion', 'muscul', 'crossfit', 'powerlifting', 'calistenia'].some(k => t.includes(k))
+  )
 
   if (tieneTriatlon) return 'triatlon'
   if ((tieneHyrox || tieneRunning) && tieneGym) return 'hibrido'
@@ -431,6 +466,7 @@ export async function POST(request: NextRequest) {
     kcalObjetivo,
     carbosObjetivo: carbos,
     tipoEntreno: onboarding.tipo_entreno,
+    restricciones: [...(onboarding.restricciones ?? []), cliente.restricciones_alimentarias ?? ''],
   })
 
   // ── 5c. Informe de caso clínico (inteligencia clínica) ───────────────────────
@@ -1245,6 +1281,10 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           })
         } catch (err) {
           console.error('[generar-plan-inicial] Error expandiendo receta en ingredientes:', recetaFull.nombre, err)
+        }
+
+        if (recetaIndex === 0 && !adaptacionCoincideConReceta(comida.adaptacion_habitual as string | null, recetaFull.nombre)) {
+          await supabase.from('comidas').update({ adaptacion_habitual: null }).eq('id', comidaDb.id)
         }
       }
     }

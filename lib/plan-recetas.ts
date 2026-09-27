@@ -132,9 +132,15 @@ export async function filtrarRecetasPorSlot(
     }
   }
 
+  // El select original no pedía las columnas de tags clínicos
+  // (apto_rendimiento/apto_sop/apto_hashimoto/es_post_entreno/es_pre_entreno)
+  // ni las de calidad nutricional (densidad_proteica/score_saciedad). Sin
+  // ellas, `rec[tag]` más abajo siempre era `undefined` — el filtro de tags
+  // clínicos y el bonus de ajuste a rendimiento no podían funcionar nunca,
+  // para ningún cliente, aunque el código los usara como si existieran.
   let query = supabase
     .from('recetas')
-    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, recipe_intelligence_score, macro_flex_score, planning_roles, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, recipe_intelligence_score, macro_flex_score, planning_roles, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad, apto_sop, apto_hashimoto, apto_rendimiento, es_post_entreno, es_pre_entreno, densidad_proteica, score_saciedad, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
     .eq('estado', 'aprobada')
     .gt('kcal', 0)
     .in('categoria', categorias)
@@ -302,6 +308,20 @@ export async function filtrarRecetasPorSlot(
     const novedadScore = nAsignada === 0 ? 0.8 : nAsignada <= 2 ? 0.6 : 0.4
 
     // ── Componente 5: tag clínico match + apta_objetivo (10%) ─
+    // `apto_rendimiento` solo se usa arriba como filtro categórico, y ese
+    // filtro se DESCARTA en silencio si quedan <3 candidatas (slots como
+    // "Merienda vegana" suelen tener muy pocas recetas con el tag puesto).
+    // Sin este bonus, tras descartarse el filtro no queda ninguna señal
+    // nutricional en el ranking — solo `score_calidad`/`recipe_intelligence`
+    // (fotografía, ejecución...), que no distingue una guarnición de
+    // patatas fritas (alta puntuación de producción, baja saciedad/proteína)
+    // de un snack realmente pensado para después de entrenar.
+    const perfRendimientoFit = tagsClinicosRequeridos?.apto_rendimiento
+      ? ((rec.apto_rendimiento as boolean) ? 0.5 : 0) +
+        Math.min(1, ((rec.densidad_proteica as number) ?? 0) / 20) * 0.3 +
+        Math.min(1, ((rec.score_saciedad as number) ?? 0) / 3) * 0.2
+      : null
+
     const aptaMatch = r.apta_cliente
       ? aptasObjetivo.includes(r.apta_cliente) ? 1.0
         : r.apta_cliente === 'general' ? 0.5
@@ -336,7 +356,7 @@ export async function filtrarRecetasPorSlot(
         taxonomyScore  * 0.12 +
         alineacionPerfil * 0.28 +
         novedadScore   * 0.10 +
-        Math.max(aptaMatch, objetivoTaxonomia) * 0.07 +
+        Math.max(aptaMatch, objetivoTaxonomia, perfRendimientoFit ?? 0) * 0.07 +
         adherenciaScore * 0.03 +
         macroFlexScore * 0.015 +
         (planningRoles.has('portion_scalable') ? 1 : 0.4) * 0.005
@@ -344,7 +364,7 @@ export async function filtrarRecetasPorSlot(
       // Legacy weights (sin datos de perfil)
       sortScore =
         scoreNorm * 0.22 +
-        Math.max(aptaMatch, objetivoTaxonomia) * 0.22 +
+        Math.max(aptaMatch, objetivoTaxonomia, perfRendimientoFit ?? 0) * 0.22 +
         (1 - distNorm) * 0.24 +
         taxonomyScore * 0.20 +
         adherenciaScore * 0.07 +
