@@ -13,6 +13,20 @@ import { esComidaDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia
 
 type EstadoComida = RegistroComidaDia['estado']
 
+// Cuando la comida no tiene receta vinculada (ingredientes sueltos), construye
+// un nombre legible a partir de los 3 ingredientes con más peso calórico —
+// evita repetir la etiqueta genérica ("Desayuno") como si fuera el plato.
+function nombreDesdeIngredientes(alimentos: AlimentoEnComida[]): string | null {
+    const principales = [...alimentos]
+        .filter(a => a.alimento?.nombre)
+        .sort((a, b) => (b.alimento!.calorias * b.cantidad_gramos) - (a.alimento!.calorias * a.cantidad_gramos))
+        .slice(0, 3)
+        .map(a => a.alimento!.nombre)
+    if (principales.length === 0) return null
+    if (principales.length === 1) return principales[0]
+    return `${principales.slice(0, -1).join(', ')} y ${principales[principales.length - 1]}`
+}
+
 interface AlimentoEnComida {
     id: string
     alimento_id?: string
@@ -185,9 +199,7 @@ function MacroRing({
 }
 
 export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: MiPlanProps) {
-    const [expandidas, setExpandidas] = useState<Record<string, boolean>>(
-        Object.fromEntries((plan.comidas ?? []).map(c => [c.id, true]))
-    )
+    const [expandidas, setExpandidas] = useState<Record<string, boolean>>({})
     const [planState, setPlanState] = useState(plan)
     const planLocal = planState
     const [registros, setRegistros] = useState<Record<string, RegistroComidaDia>>({})
@@ -528,7 +540,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                     const yaHecho = registro?.estado === 'hecha'
                     const saltada = registro?.estado === 'saltada'
                     const tieneCambio = registro?.estado === 'cambiada' ? registro?.notas : null
-                    const recetaNombre = comida.receta?.nombre ?? comida.nombre
+                    const recetaNombre = comida.receta?.nombre ?? nombreDesdeIngredientes(alimentos) ?? comida.nombre
 
                     return (
                         <div key={comida.id} className="card overflow-hidden !p-0">
