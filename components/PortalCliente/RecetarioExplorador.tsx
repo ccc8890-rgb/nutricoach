@@ -2,9 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { MagnifyingGlass, ForkKnife } from '@phosphor-icons/react'
+import { MagnifyingGlass, ForkKnife, SlidersHorizontal, X } from '@phosphor-icons/react'
 
 const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre'] as const
+
+// Filtro por ingrediente principal, aparte del tipo de comida. Usa el mismo
+// vocabulario que ya genera lib/auto-tag.ts y guarda en recetas.tags — no
+// es un sistema nuevo, solo se expone aquí como chips. Curado a los
+// ingredientes con cobertura real en el recetario (ver auditoría 28-09).
+const TAGS_INGREDIENTE = ['Pollo', 'Carne', 'Pescado', 'Pasta', 'Arroz', 'Legumbre', 'Patata', 'Yogur'] as const
 
 interface RecetaCatalogo {
   id: string
@@ -24,6 +30,8 @@ export default function RecetarioExplorador({
 }) {
   const [q, setQ] = useState('')
   const [categoria, setCategoria] = useState<string>('Todos')
+  const [tag, setTag] = useState<string | null>(null)
+  const [mostrarFiltros, setMostrarFiltros] = useState(false)
   const [recetas, setRecetas] = useState<RecetaCatalogo[]>([])
   const [page, setPage] = useState(0)
   const [hayMas, setHayMas] = useState(false)
@@ -38,7 +46,7 @@ export default function RecetarioExplorador({
     }, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, categoria])
+  }, [q, categoria, tag])
 
   async function cargar(paginaSolicitada: number, reemplazar: boolean) {
     setCargando(true)
@@ -46,6 +54,7 @@ export default function RecetarioExplorador({
       const params = new URLSearchParams({ page: String(paginaSolicitada) })
       if (q.trim()) params.set('q', q.trim())
       if (categoria !== 'Todos') params.set('categoria', categoria)
+      if (tag) params.set('tag', tag)
       const res = await fetch(`/api/cliente/${codigo}/recetario?${params.toString()}`)
       const data = await res.json()
       setRecetas(prev => reemplazar ? (data.recetas ?? []) : [...prev, ...(data.recetas ?? [])])
@@ -67,17 +76,31 @@ export default function RecetarioExplorador({
     <div className="flex flex-col gap-3">
       <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Explorar recetario</h2>
 
-      <div className="relative">
-        <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-        <input
-          type="text"
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          placeholder="Buscar receta…"
-          autoComplete="off"
-          className="w-full rounded-2xl pl-9 pr-3 py-2.5 text-sm"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
-        />
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+          <input
+            type="text"
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder="Buscar receta…"
+            autoComplete="off"
+            className="w-full rounded-2xl pl-9 pr-3 py-2.5 text-sm"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
+          />
+        </div>
+        <button
+          onClick={() => setMostrarFiltros(v => !v)}
+          className="shrink-0 rounded-2xl px-3 flex items-center justify-center"
+          style={{
+            background: mostrarFiltros || tag ? 'var(--primary)' : 'var(--surface)',
+            border: '1px solid var(--border)',
+            color: mostrarFiltros || tag ? 'var(--bg)' : 'var(--text-muted)',
+          }}
+          aria-label="Más filtros"
+        >
+          <SlidersHorizontal size={16} />
+        </button>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -96,6 +119,34 @@ export default function RecetarioExplorador({
           </button>
         ))}
       </div>
+
+      {mostrarFiltros && (
+        <div className="flex flex-wrap items-center gap-2">
+          {TAGS_INGREDIENTE.map(t => (
+            <button
+              key={t}
+              onClick={() => setTag(prev => prev === t ? null : t)}
+              className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold"
+              style={{
+                background: tag === t ? 'var(--accent)' : 'var(--surface)',
+                color: tag === t ? 'var(--bg)' : 'var(--text-muted)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              {t}
+            </button>
+          ))}
+          {tag && (
+            <button
+              onClick={() => setTag(null)}
+              className="shrink-0 inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-semibold"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <X size={12} /> Quitar
+            </button>
+          )}
+        </div>
+      )}
 
       {cargando && recetas.length === 0 ? (
         <div className="flex justify-center py-8">

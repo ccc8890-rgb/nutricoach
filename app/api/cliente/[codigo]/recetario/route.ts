@@ -30,6 +30,7 @@ export async function GET(
   const { searchParams } = new URL(request.url)
   const q = searchParams.get('q')?.trim() ?? ''
   const categoria = searchParams.get('categoria')?.trim() ?? ''
+  const tag = searchParams.get('tag')?.trim() ?? ''
   const page = Math.max(parseInt(searchParams.get('page') ?? '0', 10) || 0, 0)
 
   const supabase = createServiceSupabase()
@@ -75,6 +76,10 @@ export async function GET(
 
   if (q) query = query.ilike('nombre', `%${q}%`)
   if (categoria && categoria !== 'Todos') query = query.eq('categoria', categoria)
+  // `tag` filtra por ingrediente principal (Pollo/Carne/Pescado/Pasta/...),
+  // ya calculado por lib/auto-tag.ts y guardado en recetas.tags. Filtro
+  // independiente de `categoria` (tipo de comida) — se pueden combinar.
+  if (tag) query = query.contains('tags', [tag])
 
   const { data: recetas } = await query
   if (!recetas) return NextResponse.json({ recetas: [], hayMas: false })
