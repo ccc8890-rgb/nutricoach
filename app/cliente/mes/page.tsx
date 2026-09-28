@@ -1,8 +1,7 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { AlertTriangle, ArrowLeft, ChevronLeft, ChevronRight, Dumbbell, Footprints, Loader2 } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, ChevronLeft, ChevronRight, CircleDashed, Dumbbell, Footprints, Loader2, Play, Eye } from 'lucide-react'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 
 interface DiaMes {
@@ -39,14 +38,21 @@ function agruparPorSemanas(dias: DiaMes[]): DiaMes[][] {
   return semanas
 }
 
+function formatFechaLarga(fecha: string) {
+  const [y, m, d] = fecha.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
 export default function VistaMensualClientePage() {
-  const router = useRouter()
   const hoy = new Date()
+  const [modo, setModo] = useState<'semana' | 'mes'>('semana')
   const [year, setYear] = useState(hoy.getFullYear())
   const [month, setMonth] = useState(hoy.getMonth() + 1)
   const [dias, setDias] = useState<DiaMes[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const hoyISO = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+  const [diaSeleccionado, setDiaSeleccionado] = useState<string>(hoyISO)
 
   useEffect(() => {
     setLoading(true)
@@ -62,7 +68,12 @@ export default function VistaMensualClientePage() {
   }, [year, month])
 
   const semanas = useMemo(() => agruparPorSemanas(dias), [dias])
-  const hoyISO = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+  const semanaActual = useMemo(
+    () => semanas.find(s => s.some(d => d.fecha === hoyISO)) ?? semanas[0] ?? [],
+    [semanas, hoyISO]
+  )
+  const semanasVisibles = modo === 'semana' ? (semanaActual.length ? [semanaActual] : []) : semanas
+  const diaInfo = dias.find(d => d.fecha === diaSeleccionado) ?? null
 
   function mesAnterior() {
     if (month === 1) { setMonth(12); setYear(y => y - 1) } else setMonth(m => m - 1)
@@ -82,21 +93,39 @@ export default function VistaMensualClientePage() {
   }
 
   return (
-    <div className="min-h-screen px-4 pb-8 pt-4" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen px-4 pb-8 pt-safe" style={{ background: 'var(--bg)' }}>
       <div className="mx-auto flex w-full max-w-md flex-col gap-4">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
+          <Link
+            href="/cliente"
+            replace
             className="flex h-10 w-10 items-center justify-center rounded-full"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
             aria-label="Volver"
           >
             <ArrowLeft size={18} />
-          </button>
+          </Link>
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>Training OS</p>
-            <h1 className="truncate text-xl font-bold" style={{ color: 'var(--text)' }}>Vista mensual</h1>
+            <h1 className="truncate text-xl font-bold" style={{ color: 'var(--text)' }}>Calendario de entreno</h1>
           </div>
+        </div>
+
+        <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+          {(['semana', 'mes'] as const).map(m => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setModo(m)}
+              className="flex-1 py-2.5 text-sm font-semibold capitalize transition-colors"
+              style={{
+                background: modo === m ? 'var(--primary)' : 'transparent',
+                color: modo === m ? 'var(--bg)' : 'var(--text-muted)',
+              }}
+            >
+              {m}
+            </button>
+          ))}
         </div>
 
         <div className="flex items-center justify-between rounded-2xl p-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -129,7 +158,7 @@ export default function VistaMensualClientePage() {
               ))}
             </div>
             <div className="flex flex-col gap-2">
-              {semanas.map((semana, i) => {
+              {semanasVisibles.map((semana, i) => {
                 const fase = semana.find(d => d.fase_bloque)?.fase_bloque
                 const pendiente = semana.some(d => d.bloque_pendiente)
                 const etiqueta = fase && pendiente
@@ -150,26 +179,32 @@ export default function VistaMensualClientePage() {
                       {semana.map((dia, j) => {
                         const style = colorDia(dia)
                         const esHoy = dia.fecha === hoyISO
+                        const esSeleccionado = dia.fecha && dia.fecha === diaSeleccionado
                         return (
                           <div key={j} className="flex flex-col items-center gap-0.5">
                             {!dia.fecha ? (
-                              <div className="h-10 w-full" />
-                            ) : dia.sesion ? (
-                              <Link
-                                href={`/cliente/sesion/${dia.sesion.id}?modo=solo-ver`}
-                                className="flex h-10 w-full flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-bold"
-                                style={{ ...style, border: esHoy ? '1.5px solid var(--accent)' : '1px solid transparent' }}
-                              >
-                                {Number(dia.fecha.split('-')[2])}
-                                {dia.sesion.tipo_sesion === 'carrera' ? <Footprints size={11} /> : <Dumbbell size={11} />}
-                              </Link>
+                              <div className={modo === 'semana' ? 'h-16 w-full' : 'h-10 w-full'} />
                             ) : (
-                              <div
-                                className="flex h-10 w-full flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-bold"
-                                style={{ ...style, border: esHoy ? '1.5px solid var(--accent)' : '1px solid transparent' }}
+                              <button
+                                type="button"
+                                onClick={() => setDiaSeleccionado(dia.fecha)}
+                                className={`flex w-full flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-bold transition-transform active:scale-95 ${modo === 'semana' ? 'h-16' : 'h-10'}`}
+                                style={{
+                                  ...style,
+                                  border: esSeleccionado
+                                    ? '1.5px solid var(--text)'
+                                    : esHoy
+                                      ? '1.5px solid var(--accent)'
+                                      : '1px solid transparent',
+                                }}
                               >
                                 {Number(dia.fecha.split('-')[2])}
-                              </div>
+                                {dia.sesion ? (
+                                  dia.sesion.tipo_sesion === 'carrera' ? <Footprints size={11} /> : <Dumbbell size={11} />
+                                ) : modo === 'semana' ? (
+                                  <CircleDashed size={11} style={{ opacity: 0.5 }} />
+                                ) : null}
+                              </button>
                             )}
                           </div>
                         )
@@ -179,6 +214,55 @@ export default function VistaMensualClientePage() {
                 )
               })}
             </div>
+          </div>
+        )}
+
+        {/* Detalle del día seleccionado */}
+        {!loading && !error && (
+          <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wide first-letter:uppercase" style={{ color: 'var(--text-muted)' }}>
+              {formatFechaLarga(diaSeleccionado)}
+            </p>
+            {diaInfo?.sesion ? (
+              <>
+                <div className="mt-2 flex items-center gap-3">
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
+                    style={{ background: diaInfo.sesion.tipo_sesion === 'carrera' ? 'var(--semantic-info-bg)' : 'rgba(99,102,241,0.12)' }}
+                  >
+                    {diaInfo.sesion.tipo_sesion === 'carrera'
+                      ? <Footprints size={18} style={{ color: 'var(--semantic-info)' }} />
+                      : <Dumbbell size={18} style={{ color: '#818CF8' }} />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold leading-tight" style={{ color: 'var(--text)' }}>{diaInfo.sesion.nombre}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      {diaInfo.sesion.ejercicios_count} ejercicios{diaInfo.sesion.completada ? ' · registrada' : ''}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Link
+                    href={`/cliente/sesion/${diaInfo.sesion.id}`}
+                    className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
+                    style={{ background: 'var(--accent)', color: 'var(--bg)' }}
+                  >
+                    <Play size={13} fill="currentColor" /> Empezar
+                  </Link>
+                  <Link
+                    href={`/cliente/sesion/${diaInfo.sesion.id}?modo=solo-ver`}
+                    className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
+                    style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                  >
+                    <Eye size={13} /> Solo ver
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                {diaInfo?.bloque_pendiente ? 'Bloque siguiente pendiente de generar.' : 'Sin sesión programada — descanso.'}
+              </p>
+            )}
           </div>
         )}
       </div>

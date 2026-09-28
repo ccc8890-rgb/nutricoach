@@ -555,7 +555,7 @@ function PortalClientePageContent() {
               <>
                 <SemanaEntrenoCard planId={entreno.id} planNombre={entreno.nombre} />
                 <button
-                  onClick={() => router.push('/cliente/semana')}
+                  onClick={() => router.push('/cliente/mes')}
                   className="w-full flex items-center justify-between px-5 py-4 rounded-2xl cursor-pointer transition-all active:scale-[0.98]"
                   style={{
                     background: 'var(--surface)',
@@ -570,8 +570,8 @@ function PortalClientePageContent() {
                       <Barbell size={16} style={{ color: 'var(--semantic-info)' }} />
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ver semana completa</p>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Plan, estado y acceso a cada sesión</p>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Calendario de entreno</p>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Vista semana o mes, toca un día para ver la sesión</p>
                     </div>
                   </div>
                   <CaretRight size={16} style={{ color: 'var(--semantic-info)' }} />

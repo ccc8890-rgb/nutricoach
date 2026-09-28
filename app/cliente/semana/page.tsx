@@ -119,7 +119,7 @@ export default function VistaSemanalClientePage() {
   const sesionPrincipal = resumenSemana.sesionPrincipal
 
   return (
-    <div className="min-h-screen px-4 pb-8 pt-4" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen px-4 pb-8 pt-safe" style={{ background: 'var(--bg)' }}>
       <div className="mx-auto flex w-full max-w-md flex-col gap-4">
         <div className="flex items-center gap-3">
           <Link
