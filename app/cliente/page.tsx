@@ -24,7 +24,7 @@ import EntrenoSubTabs from '@/components/training/EntrenoSubTabs'
 import ListaCompraPortal from '@/components/PortalCliente/ListaCompraPortal'
 import MisPlatos from '@/components/PortalCliente/MisPlatos'
 import ChatPanel from '@/components/PortalCliente/ChatPanel'
-import IntegracionesPanel from '@/components/PortalCliente/IntegracionesPanel'
+import AjustesTabs from '@/components/PortalCliente/AjustesTabs'
 import { useTheme } from '@/components/ThemeProvider'
 
 type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'perfil'
@@ -705,10 +705,10 @@ function PortalClientePageContent() {
 
         {tab === 'perfil' && (
           <div className="flex flex-col gap-4">
-            {codigo && cliente ? (
-              <IntegracionesPanel codigo={codigo} clienteId={cliente.id} />
+            {cliente ? (
+              <AjustesTabs codigo={codigo} clienteId={cliente.id} profile={profile} cliente={cliente} />
             ) : (
-              <EmptyState icon={DeviceMobile} text="Activa un plan para conectar tus apps y wearables" />
+              <EmptyState icon={DeviceMobile} text="Activa un plan para ver tus ajustes" />
             )}
           </div>
         )}
