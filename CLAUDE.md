@@ -1,5 +1,54 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 28-09-2026 (Claude, continuación tarde) — Rediseño profundo Dieta/Entreno del portal cliente, 11 commits
+
+### Contexto
+Continuación directa del bloque de mañana (T28, ver bloque de abajo). Carlos siguió probando en vivo en su iPhone real tras cada deploy y pidiendo ajustes concretos, iterativo: señala un problema o una idea → se implementa → se despliega → se verifica → siguiente. Cierra explícitamente ("guarda y documenta todo... para poder seguir en Codex") porque se le agotan los tokens de Claude ~2 días.
+
+### "Ver receta" nunca funcionó de verdad para un cliente — bug de fondo serio
+Carlos: "le doy a volver o volver a plan y se me pone en la pantalla de inicio". Investigado a fondo: **no era el `?tab=` que se perdía** (eso ya se arregló por la mañana) — el enlace "Ver receta" del portal cliente llevaba a `/recetas/[id]`, la página de **coach**, envuelta en `CoachShell`. `CoachShell` comprueba el rol en un `useEffect` y **redirige cualquier sesión con rol "cliente" a `/cliente` sin preservar query params, sin excepción** — por diseño, para que un cliente no vea el editor de recetas del coach. El código de esa página SÍ tenía lógica `isClientView`/`clienteCodigo` pensada para servir una vista de solo lectura a clientes, pero nunca llegaba a ejecutarse: `CoachShell` redirige antes.
+- **Fix real**: nueva ruta propia `app/cliente/receta/[id]/page.tsx`, sin `CoachShell`, solo lectura (foto, macros con `MacroRing`, ingredientes con `IngredientChecklist`, preparación con `StepByStep` — los 3 componentes de `components/premium/` ya existían y son agnósticos de rol). `MiPlan.tsx` y `PlanSemanal.tsx` apuntan aquí ahora.
+- **Bug relacionado descubierto de paso**: `app/api/cliente/plan-nutricion-activo/route.ts` no unía `recetas` en su `select()` de `comidas` — `comida.receta` era `null` siempre aunque `comida.receta_id` existiera. Las 3 comidas reales de Carlos SÍ tenían receta vinculada con foto real ("Tostada de aguacate...", etc.) pero nunca llegaba. Corregido el join — ahora salen nombre real y foto en vez de "Desayuno" repetido + icono genérico.
+- **Mismo bug, tercera vez, en el PDF**: `app/api/cliente/[codigo]/plan-pdf/route.ts` tenía el mismo enlace legacy `/cliente/[codigo]` en su botón "Volver a la app". Corregido igual.
+
+### Kanban semanal — Dieta y Entreno (la pieza más grande de la sesión)
+Carlos no quería la vista Semana anterior (selector de día + lista, básicamente idéntica cada día porque el plan es una plantilla recurrente). Pidió algo "tipo Trello" para poder arrastrar comidas/sesiones entre días. Se reutilizó el patrón ya probado en producción en `components/clientes/EntrenoCalendarioKanban.tsx` (lado coach): `@dnd-kit/core` con `PointerSensor` + `activationConstraint: { distance: 6 }` para que tocar y arrastrar convivan, columnas con `overflow-x-auto` (scroll horizontal, patrón Trello-móvil real).
+- **`components/training/EntrenoKanban.tsx`** (nuevo): sesiones de entreno **siempre** tienen `dia_semana` concreto (nunca recurrentes) → drag = simple `UPDATE dia_semana`. Nuevo endpoint `/api/cliente/entrenos/mover-dia` (auth por sesión, verifica que la sesión pertenezca al plan activo del cliente).
+- **`components/PortalCliente/DietaKanban.tsx`** (nuevo): las comidas de dieta **sí pueden ser recurrentes** (`dia_semana IS NULL` = misma comida los 7 días — así estaban las 3 de Carlos). Mover una comida recurrente no tiene significado claro (ya es la misma en todos los días), así que hay un paso previo obligatorio: botón "Activar por día" → `/api/cliente/[codigo]/comidas/materializar` convierte cada comida recurrente en **7 copias reales** (una por día, con sus `comida_alimentos` copiados) y borra la original. Verificado en vivo: 3 recurrentes → 21 comidas reales, confirmado contra Supabase. Después, arrastrar es un simple `UPDATE dia_semana` vía `/api/cliente/[codigo]/comidas/mover-dia` (rechaza con error explícito si por lo que sea la comida sigue siendo recurrente, en vez de adivinar qué hacer).
+- **Decisión de alcance explícita de Carlos** (preguntada, no asumida): el Kanban del lado **cliente** solo mueve comidas/sesiones ya existentes entre días — no crea ni borra. Construir el plan día a día real (más allá de materializar) es tarea del **coach**, pendiente para otra sesión (ver Propuesto abajo).
+- **Limitación conocida, no bloqueante**: `materializar` no es transaccional (Supabase JS sin RPC) — si fallara a mitad de las 3 comidas, quedaría un estado mixto (alguna materializada, otra no). En la práctica no ha pasado y el usuario puede reintentar sin duplicar (solo materializa las que sigan con `dia_semana IS NULL`).
+
+### Compra: reposicionada, no eliminada
+Primera versión metía "Compra" como 3er botón junto a "Hoy"/"Semana" en Dieta — Carlos: "no encaja". Ahora es una tarjeta colapsable **un nivel por debajo**, dentro de cada vista: "Lista de la compra de hoy" (con `diaInicial` = el día activo) dentro de Hoy, "Lista de la compra semanal" dentro de Semana. `ListaCompraPortal` ganó un prop opcional `diaInicial` para esto.
+
+### Ajustes: de un solo panel de Apps a 3 sub-tabs
+Carlos pidió explícitamente "varias pestañas... perfil del cliente... parámetros típicos de configuración". Nuevo `components/PortalCliente/AjustesTabs.tsx`:
+- **Apps** — `IntegracionesPanel` (sin cambios de fondo).
+- **Perfil** — datos del cliente de solo lectura (nombre, email, objetivo, nivel, edad, altura — "los gestiona tu coach, avísale por chat si cambian"), campo editable de restricciones alimentarias (nuevo `PATCH /api/cliente/perfil`, auth por sesión), toggle de tema consolidado aquí también.
+- **Cuenta** — cambiar contraseña (`supabase.auth.updateUser`) y cerrar sesión.
+- De paso, la pestaña Ajustes dejó de depender de tener un plan de dieta activo (antes gateaba todo tras `codigo && cliente`; con solo `cliente` alcanza para Perfil/Cuenta — Apps sigue necesitando `codigo` para sus llamadas, eso no cambió).
+
+### Otros ajustes visuales pedidos en vivo
+- Ejercicios del acordeón/Hoy de Entreno: nombre+series+reps+descanso siempre visibles, la explicación (RPE, técnica) desplegable solo al tocar — nuevo `components/training/ExpandableExercises.tsx`, reutilizado en Hoy/Semana/Mes de Entreno. Quitados los botones "Empezar"/"Solo ver" y el enlace "Abrir calendario completo" que sobraban (Carlos: "no necesito en principio").
+- Botón "Descargar plan en PDF": de botón genérico a tarjeta con icono+título+subtítulo, igual que el resto de accesos del portal.
+- PDF del plan: paleta actualizada de crema/verde (diseño antiguo) a grafito/plata (paleta real de la app, v8 "Instrument").
+- Padding superior de todas las cabeceras "Volver" subido dos veces esta sesión (12px fijo → +8px sobre notch → +16px sobre notch) — Carlos seguía notándolo pegado arriba tras el primer ajuste.
+
+### Bug de seguridad/auditoría — endpoints nuevos de esta sesión, patrón heredado
+`/api/cliente/[codigo]/comidas/materializar` y `.../mover-dia` (dieta) **no comprueban sesión de usuario**, solo el `codigo` público del plan — **igual que ya hacían** `registrar-comida`, `lista-compra`, `notas`, `chat`, etc. (patrón preexistente en todo `/api/cliente/[codigo]/*`, no una regresión de hoy). A diferencia de esas rutas (mayormente lecturas o registros no destructivos), estas dos SÍ mutan/borran datos reales del plan — quien conozca o adivine el `codigo_publico` de un cliente podría reescribir su semana. Recomendación para endurecer en otra sesión: añadir `createApiSupabase`+`getUser()` a todo `/api/cliente/[codigo]/*` que escriba, no solo a los nuevos. `/api/cliente/entrenos/mover-dia` y `/api/cliente/perfil` (nuevos, auth por sesión) sí quedaron bien protegidos desde el principio.
+
+### Verificación
+`npx tsc --noEmit` y `npm run build` limpios antes de cada uno de los 11 commits. Cada cambio de UI probado en vivo con `browse` (headless) contra `localhost:3000` y contra `nutricoach-delta.vercel.app` tras el deploy, esperando activamente a `vercel ls --yes` en `Ready`. Materialización de comidas verificada con consulta directa a Supabase (3→21 filas) y el endpoint de mover-día probado con una llamada real (movida y restaurada) porque el drag-and-drop en sí no se puede simular con eventos de puntero sintéticos en headless (limitación ya documentada en sesiones anteriores) — el gesto real se confía a que Carlos lo confirme en su móvil.
+
+### ⚠️ Pendiente — próxima sesión (Codex u otro Claude)
+1. **Recetario del portal cliente vacío** — pestaña "Recetas" no muestra nada, ni las recetas asignadas por el coach ni el recetario completo. Carlos: "más tarde nos pondremos intensamente sobre el recetario" — sesión dedicada, no un fix rápido.
+2. **Kanban de coach para construir la semana** — hoy el cliente solo puede *mover* comidas/sesiones ya existentes. Falta la herramienta del lado coach para *crear* variación real día a día (o decidir si se genera con IA — ver pregunta que Carlos dejó sin resolver del todo, se decantó por "cliente reordena, coach construye" pero el lado coach no se tocó esta sesión).
+3. **Endurecer auth de `/api/cliente/[codigo]/*`** — ver bloque de seguridad arriba.
+4. Verificar en el iPhone real de Carlos: el gesto de arrastrar en ambos Kanban (dieta y entreno), y si el padding superior (+16px) ya es suficiente o hace falta más.
+5. Sigue pendiente de sesiones anteriores: 252 hallazgos de auditoría de ingredientes sin revisar, verificar sync real Garmin/Strava, dato "Trote de calentamiento" duplicado en el plan de Carlos.
+
+---
+
 ## ✅ SESIÓN 28-09-2026 (Claude) — Auditoría en vivo del portal cliente real (T28) + rediseño Entrenamiento
 
 ### Contexto
