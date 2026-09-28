@@ -7,7 +7,7 @@ import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, CheckCircle
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
-import PlanSemanal from './PlanSemanal'
+import DietaKanban from './DietaKanban'
 import ListaCompraPortal from './ListaCompraPortal'
 import { getAjusteDesdeNombreSesion } from '@/lib/periodizacion/dia-entreno-nutricion'
 import { esComidaDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
@@ -427,9 +427,10 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                 ))}
             </div>
 
-            {/* Vista semanal — usa comidasParaSemana (plan original, referencia estable) */}
+            {/* Vista semanal — Kanban por día, arrastrar comidas entre días.
+                Usa comidasParaSemana (plan original, referencia estable) */}
             {vistaActual === 'semana' && (<>
-                <PlanSemanal comidas={comidasParaSemana} clienteId={planLocal.cliente_id} codigo={codigo} targets={targets} />
+                <DietaKanban comidas={comidasParaSemana} codigo={codigo} onMaterializado={() => window.location.reload()} />
                 {/* Lista de la compra semanal — un nivel por debajo, no compite con el toggle de arriba */}
                 <div>
                     <button
