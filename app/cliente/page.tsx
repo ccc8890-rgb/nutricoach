@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
   House, BookOpenText, ClipboardText, ChartLineUp, SignOut,
-  ForkKnife, Barbell, Scales, Trophy, Sun, Moon,
+  ForkKnife, Barbell, Scales, Trophy, Sun, Moon, Gear,
   CaretRight, CaretLeft, X, TrendDown, TrendUp,
   ShoppingCart, ChatCircleDots, DeviceMobile,
 } from '@phosphor-icons/react'
@@ -27,8 +27,8 @@ import ChatPanel from '@/components/PortalCliente/ChatPanel'
 import IntegracionesPanel from '@/components/PortalCliente/IntegracionesPanel'
 import { useTheme } from '@/components/ThemeProvider'
 
-type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'apps'
-const TABS_VALIDOS: Tab[] = ['hoy', 'dieta', 'entreno', 'checkin', 'progreso', 'compra', 'recetas', 'chat', 'apps']
+type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'perfil'
+const TABS_VALIDOS: Tab[] = ['hoy', 'dieta', 'entreno', 'checkin', 'progreso', 'compra', 'recetas', 'chat', 'perfil']
 
 function VolverAHoy({ setTab }: { setTab: (t: Tab) => void }) {
   return (
@@ -278,10 +278,11 @@ function PortalClientePageContent() {
   const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 
   const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'hoy',     label: 'Hoy',     icon: House },
-    { key: 'dieta',   label: 'Dieta',   icon: ForkKnife },
-    { key: 'entreno', label: 'Entreno', icon: Barbell },
-    { key: 'recetas', label: 'Recetas', icon: BookOpenText },
+    { key: 'hoy',     label: 'Hoy',      icon: House },
+    { key: 'dieta',   label: 'Dieta',    icon: ForkKnife },
+    { key: 'entreno', label: 'Entreno',  icon: Barbell },
+    { key: 'recetas', label: 'Recetas',  icon: BookOpenText },
+    { key: 'perfil',  label: 'Ajustes',  icon: Gear },
   ]
 
   return (
@@ -459,7 +460,7 @@ function PortalClientePageContent() {
                 <p className="text-[11px] font-semibold uppercase tracking-wide mb-2 px-1" style={{ color: 'var(--text-muted)' }}>
                   Accesos rápidos
                 </p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setTab('checkin')}
                     className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
@@ -491,14 +492,6 @@ function PortalClientePageContent() {
                   >
                     <ChatCircleDots size={17} style={{ color: '#EF4444' }} />
                     <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Chat</p>
-                  </button>
-                  <button
-                    onClick={() => setTab('apps')}
-                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                  >
-                    <DeviceMobile size={17} style={{ color: '#4A9FCC' }} />
-                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Apps</p>
                   </button>
                 </div>
               </div>
@@ -710,9 +703,8 @@ function PortalClientePageContent() {
           </div>
         )}
 
-        {tab === 'apps' && (
+        {tab === 'perfil' && (
           <div className="flex flex-col gap-4">
-            <VolverAHoy setTab={setTab} />
             {codigo && cliente ? (
               <IntegracionesPanel codigo={codigo} clienteId={cliente.id} />
             ) : (
