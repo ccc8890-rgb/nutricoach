@@ -1,5 +1,67 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 28-09-2026 (Claude, continuación noche) — Recetario explorable, alternativas de comida, causa raíz de ingredientes ajenos + navegación
+
+### Contexto
+Continuación directa del bloque de tarde del mismo día (ver sección de abajo), tras la pausa de ~2 días por límite de tokens de Carlos. Sesión muy iterativa en tiempo real: Carlos usaba el portal en su móvil, reportaba un problema o pedía una mejora concreta, se diagnosticaba/implementaba, se verificaba con `tsc`/`eslint`/`build` y pruebas reales contra Supabase, se desplegaba. 9 commits. Cierre explícito de Carlos: "guarda y documenta y audita todo para que lo que hemos avanzado quede bien fijado".
+
+### T33 cerrado del todo (verificación, no trabajo nuevo)
+Al retomar la sesión, `TAREAS.md` decía T33 "parcial" pero el código ya tenía las 14 rutas de escritura de `/api/cliente/[codigo]/*` protegidas con `lib/cliente/autorizar-escritura-plan.ts` (commit `6e86696`, hecho por Codex durante la pausa). Verificado `tsc` limpio y actualizada la documentación para reflejar la realidad — T33 **HECHO**.
+
+### T29 verificado — Garmin sincroniza, Strava pendiente de una actividad real
+Comprobado contra Supabase: Garmin Connect con `ultima_sync` de ese mismo día y filas de actividad hasta el día actual — funciona. Strava con `activa=true` pero 0 filas — no es un bug, es push-only (webhook) y necesita que Carlos suba una actividad real desde el reloj/app para que llegue el primer dato.
+
+### T34 — Recetario explorable en el portal cliente (commit `73cd700`)
+Pestaña "Recetas" solo mostraba "Mis platos" (recetas IA personalizadas por cliente, función que casi nadie usa — por eso siempre estaba vacía). Carlos eligió el alcance (preguntado explícitamente): recetas del plan activo + recetario completo explorable. Nuevo `app/api/cliente/[codigo]/recetario/route.ts` (búsqueda + categoría, filtrado por restricciones alimentarias del cliente reutilizando el mismo mapeo alérgeno/vegano que usa el motor de generación de planes) + `components/PortalCliente/RecetarioExplorador.tsx`. Se relajó `GET /api/cliente/[codigo]/recetas/[recetaId]` para poder ver cualquier receta aprobada del catálogo, no solo las ya vinculadas al plan (antes daba 403). "Mis platos" ya no muestra un hueco vacío confuso si no hay ninguno.
+
+**Iteración siguiente, a petición de Carlos**: filtros por ingrediente (Pollo/Carne/Pescado/Pasta/Arroz/Legumbre/Patata/Yogur) detrás de un botón "Más filtros" para no saturar la vista (commit `960f49a`) — reutiliza `recetas.tags` ya poblado por `lib/auto-tag.ts`, sin sistema nuevo. Explícitamente no se implementó un filtro por macro dominante (proteína/grasa/HC) que Carlos sugirió como alternativa: los tags de ese tipo en BD están sucios (`alta_proteina`/`alto_proteina` duplicados, sin equivalente de grasa/carbohidrato) — Carlos confirmó que con los filtros de ingrediente es suficiente por ahora.
+
+### T36 — Alternativas de comida en "Hoy": el backend ya existía, nadie lo llamaba (commit `ca238fa`)
+Carlos pidió "2-3 alternativas por comida". Investigando, el endpoint `/api/cliente/[codigo]/comidas/[id]/alternativas` (macros similares + restricciones, construido en sesión 21-05) y los chips de swap en `MiPlan.tsx` ya existían — pero nada llamaba nunca al endpoint, así que `comida.alternativa_recetas` se quedaba `undefined` para siempre. Se cargan ahora de forma perezosa al desplegar cada comida por primera vez (no las ~4-5 del día de golpe).
+
+### T39 — Desplegar ejercicios al tocar una sesión en Entreno > Semana (commit `12fa708`)
+El kanban de sesiones (`EntrenoKanban.tsx`) permitía mover sesiones entre días pero no ver qué contenían. Reutiliza `/api/cliente/sesion/[id]` + `ListaEjerciciosExpandible` (mismo patrón que "Hoy"). Tocar la tarjeta selecciona y despliega el detalle debajo del tablero sin interferir con el arrastre (drag usa `PointerSensor` con `activationConstraint`, un tap simple no lo dispara).
+
+### T40 — "Volver" desde una receta llevaba a Hoy en vez de a Dieta (commit `dbdf9ba`)
+Bug real encontrado por Carlos en vivo. Causa: cambiar de pestaña con la barra inferior solo actualizaba estado de React, nunca la URL. El botón "Volver" explícito de `/cliente/receta/[id]` sí codifica `returnTo=/cliente?tab=X` y funciona, pero el gesto nativo de "atrás" del móvil (o el botón del navegador) ignora ese `returnTo` y va a la última URL real del historial — que nunca reflejaba la pestaña activa. Fix: `router.replace(\`/cliente?tab=\${tab}\`)` en cada cambio de pestaña, sin añadir entradas al historial.
+
+### T41 — Reencasillar platos por franja en Dieta, no solo mover de día (commit `4cfaa34`)
+Carlos: "por si prefieres intercambiar un plato para cena por comida". Cada columna de día del kanban de Dieta pasa a tener 4 carriles fijos (Desayuno/Comida/Merienda/Cena) como zonas de arrastre independientes — soltar en un carril distinto renombra la comida a esa franja además de mover de día. `mover-dia` acepta un `nombre` opcional retrocompatible. No recalcula objetivos de macros de la franja destino, solo relabela (decisión consciente, documentada como posible mejora futura).
+
+### T43 — Auditoría del recetario a fondo (la parte más grande de la sesión)
+
+Carlos reportó que el filtro "Pasta" del recetario devolvía platos sin relación. Investigar esto llevó a encontrar y corregir 3 capas de bugs distintas, cada una más profunda que la anterior:
+
+**T43a — Ambigüedad de la palabra "pasta" en `lib/auto-tag.ts`** (commit `0455ac6`): "pasta" en español significa fideos O pasta para untar (pasta de almendras, de tomate, de sésamo...); el matching por substring además dejaba pasar "Pastanaga" (zanahoria en catalán, contiene "pasta"). Fix: coincidencia por palabra completa + exclusión de "pasta de X" conocidas. De paso, `scripts/auto-etiquetar-recetas.ts` sobrescribía `recetas.tags` por completo — se cambió a fusión, para no borrar tags de otro sistema (rendimiento/post_entreno/periodizacion) que conviven en la misma columna.
+
+**T43b/c — Causa raíz real: ingredientes de OTRA receta colgados** (commit `fd608b0`): al seguir investigando por qué "Pasta"/"Pollo"/"Arroz" seguían devolviendo platos raros, se encontró que varias recetas tenían un `nombre` sin ninguna relación con sus ingredientes reales en BD (ej. "Salmón al horno con avena cremosa y brócoli al ajillo" tenía pechuga de pollo y arroz como ingredientes reales). **Causa raíz**: `scripts/generar-recetas-desde-esqueletos.ts` (el generador de recetas por lotes desde plantillas nutricionales — perfiles perdida_grasa/rendimiento/patologia) nunca guardaba qué "esqueleto" exacto generó cada receta. Un script aparte, `scripts/backfill-macros-esqueletos.ts`, tenía que ADIVINARLO por perfil+tipoPlato+tags para vincular los ingredientes — con varios esqueletos compartiendo esas señales, adivinaba mal y colgaba a una receta los ingredientes de un esqueleto distinto. Afectaba a un lote completo de 50 recetas creado el 07-06-2026.
+
+Corregido en 2 frentes:
+- **Prevención** (para que no vuelva a pasar): el generador ahora vincula `receta_ingredientes` y calcula macros directamente al crear la receta, con el esqueleto ya en memoria (sin adivinar nada después) — `backfill-macros-esqueletos.ts` marcado obsoleto con aviso explícito. Prompt reescrito para exigir mencionar el ingrediente principal real y prohibir inventar proteínas no listadas (los ejemplos de nombre con proteínas concretas del prompt original — "Merluza al vapor...", "Tortilla cremosa de espinacas..." — eran justo lo que DeepSeek copiaba sin mirar los ingredientes reales, y **coincidían literalmente** con 2 de las recetas mal nombradas encontradas). Nueva guarda de código `nombreCoherenteConIngredientes()` que rechaza la receta si el nombre no menciona el ingrediente principal real, antes de insertar.
+- **Corrección de datos** (aplicada en Supabase, scripts commiteados): 60 filas de `receta_ingredientes` relinkeadas en 37 recetas del lote (incl. "Salmón fresco" del catálogo BEDCA, que estaba `es_comestible=false` por error desde su creación — afectaba a CUALQUIER receta que necesitara salmón, no solo este lote), 10 recetas renombradas (nombre/descripción/instrucciones) para reflejar sus ingredientes reales con un prompt que exige mencionarlos explícitamente, macros recalculadas. Commit final `b6fe246` corrigió el residuo cosmético (6 recetas con "zanahoria" en el nombre pero calabacín/brócoli reales, mismo tipo de verdura — corregido con edición mínima vía DeepSeek respetando concordancia de género).
+
+**Auditoría de cierre**: verificado programáticamente que las 50 recetas del lote quedan 100% coherentes (nombre menciona al menos un ingrediente real). Chequeos adicionales sobre las 474 recetas aprobadas: 0 sin ingredientes, 0 con kcal=0/null, 7 fuera de rango 40-900kcal/porción pero son las mismas ya conocidas de sesiones anteriores (salsas/masa base con kcal alta por diseño). Repetida la auditoría de nombre-vs-ingredientes sobre todo el catálogo: 55 casos "sospechosos" restantes revisados uno a uno — son nombres estilizados/en inglés (Honey BBQ Chicken, Brookies, Kebaprol, Tacos BigMac) cuyos ingredientes SÍ son coherentes, no la misma familia de bug.
+
+### Scripts nuevos de esta sesión (recetario)
+- `scripts/audit-nombre-vs-ingredientes-v2.mjs` — auditoría general nombre vs. `nombre_libre` real, reutilizable para futuras revisiones.
+- `scripts/audit-esqueleto-nombre-vs-ingredientes.mjs` — versión previa, más limitada (solo recetas con tags de esqueleto, top-2 ingredientes).
+- `scripts/fix-batch-060726-ingredientes.mjs` — relinkeo de ingredientes del lote 07-06-2026 contra alimentos verificados a mano (no búsqueda difusa automática).
+- `scripts/regenerar-nombres-batch-060726.mjs` — regeneración de nombre/descripción/instrucciones con prompt constreñido.
+- `scripts/fix-verdura-cosmetica-060726.mjs` — edición mínima de texto (solo la verdura, con concordancia de género).
+
+### Pendiente para la próxima sesión
+1. **T44 — fotos faltantes + recetas "demasiado IA"**: Carlos lo planteó como siguiente paso antes de integrar más recetas nuevas, pero sin alcance definido todavía. Preguntar primero qué entiende exactamente por "demasiado IA" (¿nombres genéricos? ¿descripciones planas? ¿instrucciones poco realistas?) antes de tocar nada.
+2. **T30** (baja, arrastrado): "Trote de calentamiento" duplicado en una sesión real del plan de Carlos — dato de contenido, no código.
+3. **T31** (media, arrastrado): seguir puliendo Compra/Chat del portal si Carlos encuentra algo raro al usarlos — no auditados a fondo todavía.
+4. **T35** (baja, arrastrado): herramienta lado-coach para construir variación real día a día en dietas (el kanban de cliente solo mueve, no crea/quita).
+5. **T38** (media, arrastrado): Carlos notó lentitud al cambiar de pestaña — sin repro concreto, diagnosticar con datos reales si vuelve a pasar de forma consistente.
+6. Los 252 hallazgos pendientes de T26 (`forma-incorrecta-revision-manual-2026-09-26.json`, no está en git) siguen sin revisión manual — patrón distinto al de T43 (mismo ingrediente con forma equivocada, no ingrediente ajeno).
+
+### Verificación de toda la sesión
+`npx tsc --noEmit` y `npm run build` limpios antes de cada uno de los 9 commits. Cambios de recetario probados contra Supabase real (no solo lectura de código): endpoints curl'eados en local con el plan real de Carlos y con un cliente vegano de prueba, macros de recetas corregidas verificadas antes/después, coherencia nombre-ingredientes del lote 07-06-2026 verificada programáticamente al cierre (0 restantes de 50). Revisión de seguridad de lo nuevo: `recetario`/`recetas/[recetaId]` son GET de solo lectura sobre contenido curado público (sin PII, sin necesidad de auth); la extensión de `mover-dia` con `nombre` opcional sigue detrás de `autorizarEscrituraPlan` (T33); ningún endpoint nuevo de escritura sin autenticar.
+
+---
+
 ## ✅ SESIÓN 28-09-2026 (Claude, continuación tarde) — Rediseño profundo Dieta/Entreno del portal cliente, 11 commits
 
 ### Contexto
