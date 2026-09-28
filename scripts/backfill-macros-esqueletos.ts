@@ -1,4 +1,19 @@
 // scripts/backfill-macros-esqueletos.ts
+//
+// ⚠️ OBSOLETO / NO USAR (30-09-2026, ver TAREAS.md T43c) — este script fue
+// la causa raíz de un bug real: `encontrarEsqueleto()` no tiene forma de
+// saber qué esqueleto exacto generó una receta (nunca se guardó esa
+// referencia), así que ADIVINA por perfil+tipoPlato+tags. Cuando varios
+// esqueletos comparten esas señales, adivina mal y le cuelga a una receta
+// los ingredientes de OTRO esqueleto distinto (ej. "Salmón al horno..."
+// terminó con pechuga de pollo y arroz como ingredientes reales, en 14
+// recetas de un mismo lote). `generar-recetas-desde-esqueletos.ts` ya
+// vincula los ingredientes correctamente en el momento de crear la receta
+// (con el esqueleto real en memoria, sin adivinar nada) — este script ya
+// no debería hacer falta. No ejecutar sin antes entender por qué hay
+// recetas con kcal=null (probablemente un fallo distinto, no falta de
+// backfill) y sin revisar el resultado receta por receta.
+//
 // Para las recetas generadas hoy desde esqueletos que tienen kcal=null,
 // intenta linkear ingredientes del esqueleto a la tabla alimentos
 // y calcular macros por porción.

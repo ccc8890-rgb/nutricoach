@@ -37,6 +37,23 @@ async function llamarDeepSeek(prompt: string): Promise<string> {
 }
 
 // ── Prompt builder ────────────────────────────────────────────────
+// Guarda de coherencia: el nombre debe mencionar el ingrediente principal
+// real del esqueleto. Es la comprobación que habría bloqueado el bug de
+// esta sesión (nombre "Salmón al horno..." para una receta de pollo) antes
+// de insertarla — no confía solo en que el prompt lo pida.
+function normalizarPalabra(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
+
+function nombreCoherenteConIngredientes(nombre: string, esqueleto: Esqueleto): boolean {
+  const nombreN = normalizarPalabra(nombre)
+  const principal = esqueleto.ingredientes.find(i => i.rol === 'proteina_principal') ?? esqueleto.ingredientes[0]
+  const palabrasClave = normalizarPalabra(principal.nombre)
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !['fresco', 'fresca', 'entero', 'entera', 'natural', 'crudo', 'cruda'].includes(w))
+  return palabrasClave.some(w => nombreN.includes(w))
+}
+
 function construirPrompt(esqueleto: Esqueleto, variacion: number): string {
   const ings = esqueleto.ingredientes
     .map(i => `- ${i.gramos}g de ${i.nombre} (rol: ${i.rol})`)
@@ -52,11 +69,12 @@ ${ings}
 ${variacion > 1 ? `\nEsta es la variación ${variacion} — usa una preparación, salsa o presentación diferente a las anteriores.` : ''}
 
 REGLAS ABSOLUTAS — si las incumples el sistema rechaza la receta:
+- El nombre y la descripción DEBEN mencionar explícitamente el ingrediente de rol "proteina_principal" (o el de más peso si no hay ninguno con ese rol) tal cual aparece en la lista de arriba. NUNCA nombres, en su lugar, otra proteína o ingrediente que no esté en la lista — aunque suene más apetecible. Si la lista dice "pechuga de pollo", el nombre debe decir pollo; nunca salmón, atún, merluza, caballa ni ningún otro sustituto.
 - NUNCA uses en nombre, descripción ni instrucciones: tapering, pre-entreno, post-entreno, carga, carga de carbohidratos, carga cho, TDEE, macros, proteico, fit, healthy, saludable (como adjetivo del nombre), bowl, dorado (en sentido culinario), smoothie bowl, açaí, granola bowl, RPE, RIR, HRV, FODMAP, goitrógeno, dislipidemia, hipotiroidismo, resistencia a la insulina, colon irritable
 - El nombre debe sonar a receta casera mediterránea española apetecible
-- Ejemplos de nombres correctos: "Arroz meloso de pollo con calabacín al limón", "Macarrones con pavo y sofrito de tomate", "Merluza al vapor con patata y zanahoria", "Tortilla cremosa de espinacas y queso fresco"
+- Formato de nombre (sustituye SIEMPRE los ingredientes de ejemplo por los reales de la lista de arriba): "[Técnica de preparación] de [proteína/ingrediente principal] con [acompañamiento] al/con [detalle]" — ej. si la lista trae pollo+calabacín+limón: "Pollo meloso con calabacín al limón"; si trae garbanzos+espinacas: "Garbanzos guisados con espinacas"
 - Vocabulario permitido: meloso, cremoso, jugoso, tierno, crujiente, especiado, al horno, a la plancha, al vapor, guisado, estofado, en salsa, con sofrito, al ajillo, mediterráneo, casero, de temporada
-- Instrucciones con intención culinaria: textura deseada, punto de cocción, montaje, contraste
+- Instrucciones con intención culinaria: textura deseada, punto de cocción, montaje, contraste — usando SOLO los ingredientes listados, ninguno más
 
 Devuelve SOLO este JSON (sin texto extra):
 {
@@ -125,6 +143,86 @@ async function insertarReceta(
   return data!.id
 }
 
+// ── Vincular ingredientes del esqueleto + calcular macros ──────────
+//
+// Bug raíz corregido (30-09-2026, ver TAREAS.md T43c): esta función antes
+// no existía — los ingredientes se vinculaban en un paso APARTE
+// (scripts/backfill-macros-esqueletos.ts) que ya no sabía qué esqueleto
+// exacto había generado cada receta (no se guardaba ninguna referencia) y
+// tenía que ADIVINARLO por perfil+tipoPlato+tags. Cuando varios esqueletos
+// compartían esas señales, adivinaba mal y le colgaba a una receta los
+// ingredientes de otro esqueleto distinto — así una receta "Salmón al
+// horno..." podía acabar con pechuga de pollo y arroz como ingredientes
+// reales. Vincular aquí, con el `esqueleto` ya en memoria (sin adivinar
+// nada), elimina esa clase de bug de raíz para todo lo generado a partir
+// de ahora.
+type AlimentoDB = { id: string; calorias: number; proteinas: number; carbohidratos: number; grasas: number; fibra: number }
+
+async function buscarAlimento(db: ReturnType<typeof crearSupabase>, nombre: string): Promise<AlimentoDB | null> {
+  const { data: exacto } = await db.from('alimentos')
+    .select('id, calorias, proteinas, carbohidratos, grasas, fibra')
+    .ilike('nombre', nombre).eq('es_comestible', true).gt('calorias', 0)
+    .order('nombre').limit(1)
+  if (exacto?.[0]) return exacto[0] as AlimentoDB
+
+  const palabras = nombre.toLowerCase()
+    .replace(/[áéíóú]/g, (c) => ({ á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u' }[c] ?? c))
+    .split(/\s+/).filter(w => w.length > 3)
+  for (const w of palabras) {
+    const { data } = await db.from('alimentos')
+      .select('id, calorias, proteinas, carbohidratos, grasas, fibra')
+      .ilike('nombre', `%${w}%`).eq('es_comestible', true).gt('calorias', 0)
+      .order('nombre').limit(1)
+    if (data?.[0]) return data[0] as AlimentoDB
+  }
+  return null
+}
+
+async function vincularIngredientesYMacros(
+  db: ReturnType<typeof crearSupabase>,
+  recetaId: string,
+  esqueleto: Esqueleto,
+  porciones: number,
+): Promise<{ vinculados: number; total: number }> {
+  const filas: Array<{ receta_id: string; alimento_id: string; nombre_libre: string; cantidad_gramos: number; rol_ingrediente: string }> = []
+  let kcal = 0, prot = 0, carb = 0, gras = 0, fib = 0
+
+  for (const ing of esqueleto.ingredientes) {
+    const alimento = await buscarAlimento(db, ing.nombre)
+    if (!alimento) continue
+    const factor = ing.gramos / 100
+    kcal += alimento.calorias * factor
+    prot += alimento.proteinas * factor
+    carb += alimento.carbohidratos * factor
+    gras += alimento.grasas * factor
+    fib += (alimento.fibra ?? 0) * factor
+    filas.push({
+      receta_id: recetaId,
+      alimento_id: alimento.id,
+      nombre_libre: ing.nombre,
+      cantidad_gramos: ing.gramos,
+      rol_ingrediente: ing.rol,
+    })
+  }
+
+  if (filas.length > 0) {
+    const { error: errIng } = await db.from('receta_ingredientes').insert(filas)
+    if (errIng) throw new Error(errIng.message)
+
+    const p = Math.max(porciones, 1)
+    const { error: errMacros } = await db.from('recetas').update({
+      kcal: Math.round(kcal / p * 10) / 10,
+      proteinas: Math.round(prot / p * 10) / 10,
+      carbohidratos: Math.round(carb / p * 10) / 10,
+      grasas: Math.round(gras / p * 10) / 10,
+      fibra: Math.round(fib / p * 10) / 10,
+    }).eq('id', recetaId)
+    if (errMacros) throw new Error(errMacros.message)
+  }
+
+  return { vinculados: filas.length, total: esqueleto.ingredientes.length }
+}
+
 // ── Main ──────────────────────────────────────────────────────────
 async function main() {
   console.log(`\n🍳 Generador de recetas desde esqueletos`)
@@ -166,11 +264,18 @@ async function main() {
           continue
         }
 
+        if (!nombreCoherenteConIngredientes(generada.nombre, esqueleto)) {
+          console.log(`❌ Nombre no coherente con ingredientes ("${generada.nombre}")`)
+          rechazadas++
+          continue
+        }
+
         if (DRY_RUN) {
           console.log(`✅ "${generada.nombre}"`)
         } else {
-          await insertarReceta(db!, coachId, esqueleto, generada)
-          console.log(`✅ "${generada.nombre}"`)
+          const recetaId = await insertarReceta(db!, coachId, esqueleto, generada)
+          const { vinculados, total } = await vincularIngredientesYMacros(db!, recetaId, esqueleto, 1)
+          console.log(`✅ "${generada.nombre}" (${vinculados}/${total} ingredientes vinculados)`)
         }
         ok++
 
