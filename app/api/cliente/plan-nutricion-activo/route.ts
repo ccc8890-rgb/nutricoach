@@ -29,7 +29,14 @@ export async function GET(request: NextRequest) {
 
   const { data: plan, error } = await admin
     .from('planes_nutricion')
-    .select('*, comidas(*, alimentos:comida_alimentos(*, alimento:alimentos(*)))')
+    .select(`
+      *,
+      comidas(
+        *,
+        alimentos:comida_alimentos(*, alimento:alimentos(*)),
+        receta:recetas(id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min)
+      )
+    `)
     .eq('cliente_id', clienteData.id)
     .eq('activo', true)
     .order('created_at', { ascending: false })

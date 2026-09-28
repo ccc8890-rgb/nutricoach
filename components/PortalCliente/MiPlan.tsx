@@ -207,8 +207,16 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
     const [seleccionandoReceta, setSeleccionandoReceta] = useState<string | null>(null)
     const [anotandoCambio, setAnotandoCambio] = useState<string | null>(null)
     const [textoCambio, setTextoCambio] = useState('')
-    const dietReturnTo = `/cliente/${codigo}?tab=dieta`
-    const recetaHref = (recetaId: string) => `/recetas/${recetaId}?returnTo=${encodeURIComponent(dietReturnTo)}`
+    // Antes apuntaba a /cliente/[codigo] (portal público legacy): ese route
+    // redirige a /cliente para clientes autenticados pero pierde ?tab= en
+    // la redirección server-side — "Volver" caía siempre en Hoy.
+    const dietReturnTo = `/cliente?tab=dieta`
+    // /recetas/[id] es la página de coach (envuelta en CoachShell), que
+    // redirige a cualquier rol "cliente" de vuelta a /cliente sin avisar —
+    // "Ver receta" desde el portal cliente nunca funcionó de verdad. Ruta
+    // propia sin CoachShell: /cliente/receta/[id].
+    const recetaHref = (recetaId: string) =>
+        `/cliente/receta/${recetaId}?codigo=${encodeURIComponent(codigo)}&returnTo=${encodeURIComponent(dietReturnTo)}`
 
     useEffect(() => {
         setPlanState(plan)

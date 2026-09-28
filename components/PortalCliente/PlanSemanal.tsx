@@ -179,7 +179,7 @@ export default function PlanSemanal({ comidas, targets, codigo }: PlanSemanalPro
                                         </div>
                                         {codigo && (
                                             <Link
-                                                href={`/recetas/${receta.id}?returnTo=/cliente/${codigo}`}
+                                                href={`/cliente/receta/${receta.id}?codigo=${encodeURIComponent(codigo)}&returnTo=${encodeURIComponent('/cliente?tab=dieta')}`}
                                                 className="shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold"
                                                 style={{ background: 'var(--primary-bg)', color: 'var(--primary)' }}
                                             >
