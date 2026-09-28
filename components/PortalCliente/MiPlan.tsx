@@ -203,6 +203,13 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>({})
     const [planState, setPlanState] = useState(plan)
     const planLocal = planState
+    // El backend (`/comidas/[id]/alternativas`) siempre existía y calcula
+    // 2-3 alternativas por comida (macros similares + restricciones), pero
+    // nada en el portal lo llamaba nunca — `alternativa_recetas` se quedaba
+    // undefined para siempre y los chips de swap no podían aparecer. Se
+    // cargan aquí de forma perezosa (solo al desplegar la comida, no las
+    // ~4-5 comidas del día de golpe) para no añadir peticiones de más.
+    const [alternativasCargando, setAlternativasCargando] = useState<Record<string, boolean>>({})
     const [registros, setRegistros] = useState<Record<string, RegistroComidaDia>>({})
     const [registrando, setRegistrando] = useState<string | null>(null)
     const [seleccionandoReceta, setSeleccionandoReceta] = useState<string | null>(null)
@@ -281,6 +288,29 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             setRegistrando(null)
             setAnotandoCambio(null)
             setTextoCambio('')
+        }
+    }
+
+    async function cargarAlternativas(comidaId: string) {
+        setAlternativasCargando(prev => ({ ...prev, [comidaId]: true }))
+        try {
+            const res = await fetch(`/api/cliente/${codigo}/comidas/${comidaId}/alternativas`)
+            const json = await res.json().catch(() => null) as { alternativas?: AlternativaReceta[] } | null
+            setPlanState(prev => ({
+                ...prev,
+                comidas: (prev.comidas ?? []).map(c =>
+                    c.id === comidaId ? { ...c, alternativa_recetas: json?.alternativas ?? [] } : c
+                ),
+            }))
+        } catch {
+            setPlanState(prev => ({
+                ...prev,
+                comidas: (prev.comidas ?? []).map(c =>
+                    c.id === comidaId ? { ...c, alternativa_recetas: c.alternativa_recetas ?? [] } : c
+                ),
+            }))
+        } finally {
+            setAlternativasCargando(prev => ({ ...prev, [comidaId]: false }))
         }
     }
 
@@ -570,16 +600,23 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                     const tieneCambio = registro?.estado === 'cambiada' ? registro?.notas : null
                     const recetaNombre = comida.receta?.nombre ?? nombreDesdeIngredientes(alimentos) ?? comida.nombre
 
+                    const toggleComida = () => {
+                        setExpandidas(prev => ({ ...prev, [comida.id]: !prev[comida.id] }))
+                        if (!expanded && comida.alternativa_recetas === undefined && !alternativasCargando[comida.id]) {
+                            cargarAlternativas(comida.id)
+                        }
+                    }
+
                     return (
                         <div key={comida.id} className="card overflow-hidden !p-0">
                             <div
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setExpandidas(prev => ({ ...prev, [comida.id]: !prev[comida.id] }))}
+                                onClick={toggleComida}
                                 onKeyDown={e => {
                                     if (e.key === 'Enter' || e.key === ' ') {
                                         e.preventDefault()
-                                        setExpandidas(prev => ({ ...prev, [comida.id]: !prev[comida.id] }))
+                                        toggleComida()
                                     }
                                 }}
                                 className="w-full px-5 py-3 flex items-center justify-between transition-colors"
@@ -628,6 +665,12 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                                 </div>
                                 {expanded ? <ChevronUp size={18} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={18} style={{ color: 'var(--text-muted)' }} />}
                             </div>
+
+                            {alternativasCargando[comida.id] && comida.alternativa_recetas === undefined && (
+                                <div className="px-5 pb-3 -mt-1 flex items-center gap-1.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                                    <Loader2 size={12} className="animate-spin" /> Buscando alternativas…
+                                </div>
+                            )}
 
                             {(comida.alternativa_recetas ?? []).length > 0 && (
                                 <div className="px-5 pb-3 -mt-1 flex flex-wrap gap-2">
