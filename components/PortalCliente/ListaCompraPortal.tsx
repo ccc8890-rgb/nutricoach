@@ -9,6 +9,7 @@ import type { SustitutoEconomico } from '@/lib/lista-compra/inteligente'
 
 interface ListaCompraPortalProps {
     codigo: string
+    diaInicial?: string
 }
 
 const CATEGORIA_ABBR: Record<string, string> = {
@@ -70,14 +71,14 @@ interface ListaCompraResponse {
     coste_diario_estimado: number
 }
 
-export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
+export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPortalProps) {
     const [items, setItems] = useState<ItemListaCompra[]>([])
     const [data, setData] = useState<ListaCompraResponse | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
     const [marcados, setMarcados] = useState<Set<string>>(new Set())
     const [colapsadas, setColapsadas] = useState<Set<string>>(new Set())
-    const [dia, setDia] = useState<string>('Semana')
+    const [dia, setDia] = useState<string>(diaInicial ?? 'Semana')
     const storageKey = `nutricoach:lista-compra:${codigo}:${dia}`
 
     useEffect(() => {

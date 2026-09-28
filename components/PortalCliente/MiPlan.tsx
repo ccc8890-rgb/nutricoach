@@ -348,6 +348,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
     const [descargando, setDescargando] = useState(false)
     const [vistaActual, setVistaActual] = useState<'hoy' | 'semana' | 'compra'>('hoy')
     const [diaActivo, setDiaActivo] = useState<string>(() => diaActualEspana())
+    const [mostrarCompra, setMostrarCompra] = useState(false)
     const { addToast } = useToast()
 
     function calcMacrosComida(alimentos: AlimentoEnComida[]): Macros {
@@ -408,9 +409,9 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
 
     return (
         <div className="space-y-4 print-area">
-            {/* Toggle Hoy / Semana / Compra */}
+            {/* Toggle Hoy / Semana */}
             <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
-                {(['hoy', 'semana', 'compra'] as const).map(v => (
+                {(['hoy', 'semana'] as const).map(v => (
                     <button
                         key={v}
                         type="button"
@@ -421,21 +422,32 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                             color: vistaActual === v ? 'var(--bg)' : 'var(--text-muted)',
                         }}
                     >
-                        {v === 'hoy' ? 'Hoy' : v === 'semana' ? 'Semana' : 'Compra'}
+                        {v === 'hoy' ? 'Hoy' : 'Semana'}
                     </button>
                 ))}
             </div>
 
             {/* Vista semanal — usa comidasParaSemana (plan original, referencia estable) */}
-            {vistaActual === 'semana' && (
+            {vistaActual === 'semana' && (<>
                 <PlanSemanal comidas={comidasParaSemana} clienteId={planLocal.cliente_id} codigo={codigo} targets={targets} />
-            )}
-
-            {/* Lista de la compra — integrada aquí a petición de Carlos, antes solo
-                vivía en Accesos rápidos de Hoy, desconectada del resto de la dieta */}
-            {vistaActual === 'compra' && (
-                <ListaCompraPortal codigo={codigo} />
-            )}
+                {/* Lista de la compra semanal — un nivel por debajo, no compite con el toggle de arriba */}
+                <div>
+                    <button
+                        type="button"
+                        onClick={() => setMostrarCompra(v => !v)}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-2xl"
+                        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                    >
+                        <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Lista de la compra semanal</span>
+                        {mostrarCompra ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />}
+                    </button>
+                    {mostrarCompra && (
+                        <div className="mt-3">
+                            <ListaCompraPortal codigo={codigo} diaInicial="Semana" />
+                        </div>
+                    )}
+                </div>
+            </>)}
 
             {/* Vista diaria */}
             {vistaActual === 'hoy' && (<>
@@ -789,6 +801,26 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                         </div>
                     )
                 })}
+            </div>
+
+            {/* Lista de la compra del día activo — un nivel por debajo, no compite con el toggle de arriba */}
+            <div>
+                <button
+                    type="button"
+                    onClick={() => setMostrarCompra(v => !v)}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-2xl"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                    <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                        Lista de la compra {diaActivo === diaActualEspana() ? 'de hoy' : `de ${diaActivo}`}
+                    </span>
+                    {mostrarCompra ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />}
+                </button>
+                {mostrarCompra && (
+                    <div className="mt-3">
+                        <ListaCompraPortal codigo={codigo} diaInicial={diaActivo} />
+                    </div>
+                )}
             </div>
 
             {/* Botón Descargar PDF */}
