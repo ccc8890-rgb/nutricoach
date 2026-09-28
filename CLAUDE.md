@@ -1,5 +1,64 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 28-09-2026 (Claude) — Auditoría en vivo del portal cliente real (T28) + rediseño Entrenamiento
+
+### Contexto
+Continuación directa de T28 (pendiente dejado por la sesión 27-09): Carlos pidió revisar `app/cliente/*` "como lo vería yo desde mi iPhone" y pulir lo que no funcionara o no fuera intuitivo. Sesión larga, muy iterativa: Carlos probaba en vivo (primero un navegador headless controlado por Claude con handoff para que él iniciara sesión con credenciales reales, luego directamente producción), señalaba un problema, se diagnosticaba, se arreglaba, se desplegaba a Vercel y se verificaba — repetido ~10 veces. Cierra por límite de tokens de Carlos (2 días de pausa), de ahí este documento y el relevo a Codex.
+
+### Bloqueo de seguridad encontrado y resuelto con el usuario
+El clasificador de permisos del entorno bloqueó la técnica habitual de sesiones anteriores (magic-link + inyección de cookie de sesión de cliente de prueba) por "Credential Materialization". Se resolvió pasando a `browse --headed` + `handoff`: Carlos inicia sesión él mismo en la ventana de Chrome controlada, Claude retoma el control con `resume`. **Anotar para futuras sesiones**: si se necesita probar como cliente autenticado, usar este patrón (handoff), no reconstruir tokens de sesión a mano.
+
+### Bug de datos crítico — el propio Carlos no veía su portal
+`clientes.profile_id` del cliente real de Carlos (`04cc53b3`, plan "Híbrido Hyrox + Running") apuntaba a su perfil de **coach**, no al de su cuenta `ccc8890+cliente@gmail.com`. Como `/cliente` redirige a `/dashboard` si el rol es `coach`, el portal de Carlos llevaba tiempo mostrando "no hay nada asignado". Fix: `UPDATE clientes SET profile_id = <id cuenta cliente> WHERE id = '04cc53b3...'`. Sin código tocado, solo dato.
+
+### Navegación del portal reorganizada (varias iteraciones con Carlos)
+- Barra inferior: **Hoy · Dieta · Entreno · Recetas** (antes Hoy·Mi Plan·Check-in·Progreso — Mi Plan mezclaba dieta+entreno, Check-in/Progreso ocupaban sitio fijo con poco uso). Check-in/Progreso/Compra/Chat/Apps pasan a "Accesos rápidos" en Hoy.
+- `app/cliente/page.tsx` ahora lee `?tab=` al montar; los enlaces "Volver" desde calendario/sesión pasan `?tab=entreno` — antes cualquier "volver" aterrizaba siempre en Hoy perdiendo el contexto (bug que encontró Carlos en vivo).
+- Fix bug real: `.pt-4` fijo en `/cliente/semana` y `/cliente/mes` dejaba el botón "Volver" oculto bajo el notch en la PWA del iPhone — cambiado a `.pt-safe`.
+
+### Pestaña Entreno — rediseño a petición explícita de Carlos
+De "sesión de hoy + botón a otra pantalla" a 3 sub-tabs propios dentro de la pestaña:
+- **Hoy**: sesión de hoy con todos los ejercicios ya desplegados.
+- **Semana**: acordeón de 7 días, tocar un día expande sus ejercicios inline (fetch perezoso a `/api/cliente/sesion/[id]`, cacheado en memoria).
+- **Mes**: calendario tipo Apple Calendar (`components/training/CalendarioMesEntreno.tsx`, reutilizado también en `/cliente/mes` como deep-link) — tocar un día abre el detalle debajo, sin navegar fuera.
+- Iteración final: cada ejercicio se lista siempre con nombre+series+reps+descanso; la explicación/RPE/técnica solo se despliega al tocar el ejercicio (`components/training/ExpandableExercises.tsx`, nuevo, reutilizado en Hoy/Semana/Mes). Quitados los botones "Empezar"/"Solo ver" y el enlace "Abrir calendario completo" — Carlos los pidió fuera por redundantes.
+- `SemanaEntrenoCard.tsx` queda sin uso en el portal cliente (no borrado, por si se reutiliza en otro sitio).
+
+### Bug de pérdida de datos real en ejercicios de cardio
+`app/cliente/sesion/[id]/page.tsx` al guardar la sesión completa (`registrar-sesion`) solo mapeaba `peso_kg`/`reps`/`rpe` — para SkiErg/Carrera/etc. (que se registran en metros/tiempo, campos `distancia_m`/`tiempo_s` ya soportados por el backend) esos datos se descartaban en silencio. Con la mitad de las sesiones del programa Híbrido Hyrox+Running siendo de carrera, esto afectaba directamente a los datos reales de Carlos. Corregido enviando también `tiempo_s`/`distancia_m`. Relacionado: `lib/training/session-progress.ts` mostraba "Volumen: 0 kg" en ejercicios de cardio (fórmula solo contaba kg×reps) — ahora cae a metros/calorías cuando no hay kg.
+
+### Bug de seguridad — nota interna de IA filtrada al chat del cliente
+`lib/agentes/aplicar.ts` → `aplicarMensajeCliente()` tenía `payload.mensaje_cliente || tarea.propuesta` como fallback: `tarea.propuesta` es la recomendación interna para el coach en el kanban, nunca debe llegar al cliente. Se encontró en el chat REAL de Carlos un mensaje literal: *"Contacta urgentemente al cliente... no ajustes el plan hasta comprender la situación"* — filtrado desde una tarea de agente antigua (03-06-2026) sin `mensaje_cliente`. Fallback eliminado; los 2 mensajes filtrados borrados del chat de Carlos.
+
+### Otros bugs de datos corregidos en el plan real de Carlos
+- Ingredientes duplicados en `comida_alimentos` (Harina de trigo 90g + Agua 50g repetidos dos veces en la misma comida) inflaban el total 1142→827 kcal reales tras el fix. Filas duplicadas borradas directamente en Supabase.
+- `components/PortalCliente/MiPlan.tsx`: comidas sin receta vinculada mostraban el nombre de la categoría dos veces ("Desayuno" / "Desayuno"). Nueva función `nombreDesdeIngredientes()` genera un nombre legible desde los 3 ingredientes con más peso calórico. Comidas ahora colapsadas por defecto (antes todas expandidas, imposible ver el día de un vistazo).
+- `/cliente/semana`: el mensaje "Tu coach todavía no ha cargado sesiones" aparecía siempre ~1s en cada carga (no estaba condicionado a `loading`) — corregido.
+
+### Bugs de contraste en modo oscuro (patrón repetido, 3 sitios)
+`color: 'white'` fijo sobre `background: var(--primary)`/`var(--accent)` — en modo oscuro esas variables son casi blancas (`#E8E8F0`), dejando texto blanco sobre fondo casi blanco, invisible. Encontrado y corregido en: toggle Hoy/Semana de `MiPlan.tsx`, botón "Empezar entreno" de `SemanaEntrenoCard.tsx`, selector de días de `ListaCompraPortal.tsx`. Patrón correcto ya usado en otras partes de la app: `color: 'var(--bg)'` en vez de `'white'` (se invierte solo con el tema).
+
+### Garmin Connect + Strava — verificados y conectados de verdad
+Carlos preguntó si estaban bien implementados: código correcto (cifrado AES-256-CBC con IV único, OAuth completo, refresco de token, verificación de webhook), pero **cero conexiones activas** en producción (`integraciones_cliente` y `actividad_externa_cliente` vacías) — el reset de clientes del 27-09 se llevó también las conexiones, incluida la propia de Carlos. Reconectadas en vivo con credenciales reales (handoff): Garmin Connect activo, Strava autorizado (`proveedor_user_id: 62828992`). Pendiente que el reloj sincronice + cron 06:00 para ver datos reales.
+
+### Hallazgo sin corregir (dato, no código)
+Sesión "Carrera: Series Cortas en Descarga" (martes) tiene 2 ejercicios y ambos se llaman "Trote de calentamiento" (con RPE distinto) — probablemente debería ser calentamiento + series reales de 400m. Visible en el nuevo acordeón Semana. No es un bug de UI, es contenido del plan — decisión de programación, no de Claude.
+
+### Metodología
+Cada cambio verificado con `browse` (headless con handoff cuando hacía falta sesión real) contra local primero y contra producción tras cada deploy. `npx tsc --noEmit` y `npm run build` limpios antes de cada uno de los 8 commits. `vercel ls --yes` esperado hasta `Ready` antes de dar nada por confirmado.
+
+### ⚠️ Pendiente — próxima sesión (ver también `TAREAS.md` en la raíz de `NUTRICION/`)
+1. **252 hallazgos de la auditoría "forma de ingredientes vs instrucciones"** (sesión 26-09) siguen sin revisar manualmente — `nutricoach/salidas/forma-incorrecta-revision-manual-2026-09-26.json`, no está en git.
+2. **"Trote de calentamiento" duplicado** en la sesión de carrera del martes del bloque Híbrido de Carlos — revisar contenido del plan, no código.
+3. **Chat/Notas/Check-in/Compra/Wearables dependen del código del plan de nutrición** (`dieta.codigo_publico`), no de un identificador propio del cliente — frágil si algún día hay un cliente solo con entreno sin dieta. Hoy no afecta a nadie (todos los clientes activos tienen ambos planes). Documentado, no corregido.
+4. **Verificar sincronización real de Garmin/Strava** tras el primer ciclo de cron (06:00) o reloj sincronizado.
+5. Seguir puliendo visualmente otras pestañas del portal cliente (Compra, Recetas, Chat, Apps) si Carlos encuentra más cosas — no se auditaron a fondo esta sesión, solo se verificó que cargan sin errores.
+
+### Verificación
+`npx tsc --noEmit` y `npm run build` limpios en cada commit (8 commits). Cada cambio de UI probado en vivo contra `localhost:3000` y contra `nutricoach-delta.vercel.app` tras el deploy, con capturas de pantalla — no solo "el build pasa". 2 bugs de datos corregidos directamente en Supabase con confirmación explícita de Carlos antes de aplicar (`clientes.profile_id`, ingredientes duplicados, mensajes de chat filtrados).
+
+---
+
 ## ✅ SESIÓN 27-09-2026 (tarde/noche, Claude) — Reset de clientes + rediseño ficha Entrenamiento + fixes reales de matching
 
 ### Contexto
