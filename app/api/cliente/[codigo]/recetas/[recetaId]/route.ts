@@ -20,13 +20,6 @@ export async function GET(
       return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 })
     }
 
-    const recetaPermitida = (plan.comidas ?? []).some((comida: { receta_id?: string | null; alternativas_receta_ids?: string[] | null }) =>
-      comida.receta_id === recetaId || (comida.alternativas_receta_ids ?? []).includes(recetaId)
-    )
-    if (!recetaPermitida) {
-      return NextResponse.json({ error: 'Receta no vinculada al plan' }, { status: 403 })
-    }
-
     const [recetaRes, ingredientesRes] = await Promise.all([
       supabase.from('recetas').select('*').eq('id', recetaId).single(),
       supabase
@@ -38,6 +31,19 @@ export async function GET(
 
     if (recetaRes.error || !recetaRes.data) {
       return NextResponse.json({ error: 'Receta no encontrada' }, { status: 404 })
+    }
+
+    // Antes solo se podía ver una receta si estaba vinculada a una comida
+    // del plan (403 en cualquier otro caso) — eso impedía explorar el
+    // recetario más allá de lo ya asignado. Cualquier receta aprobada es
+    // contenido curado y público del coach, así que basta con que esté
+    // aprobada; las vinculadas al plan también se ven aunque cambien de
+    // estado más adelante.
+    const recetaPermitida = (plan.comidas ?? []).some((comida: { receta_id?: string | null; alternativas_receta_ids?: string[] | null }) =>
+      comida.receta_id === recetaId || (comida.alternativas_receta_ids ?? []).includes(recetaId)
+    ) || recetaRes.data.estado === 'aprobada'
+    if (!recetaPermitida) {
+      return NextResponse.json({ error: 'Receta no disponible' }, { status: 403 })
     }
 
     return NextResponse.json({

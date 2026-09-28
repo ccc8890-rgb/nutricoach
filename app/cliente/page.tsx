@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import {
   House, BookOpenText, ClipboardText, ChartLineUp, SignOut,
@@ -23,6 +24,7 @@ import MiPlan from '@/components/PortalCliente/MiPlan'
 import EntrenoSubTabs from '@/components/training/EntrenoSubTabs'
 import ListaCompraPortal from '@/components/PortalCliente/ListaCompraPortal'
 import MisPlatos from '@/components/PortalCliente/MisPlatos'
+import RecetarioExplorador from '@/components/PortalCliente/RecetarioExplorador'
 import ChatPanel from '@/components/PortalCliente/ChatPanel'
 import AjustesTabs from '@/components/PortalCliente/AjustesTabs'
 import { useTheme } from '@/components/ThemeProvider'
@@ -230,6 +232,28 @@ function PortalClientePageContent() {
   function comidasHoyDeDieta() {
     return comidasDelDia(dieta?.comidas, diaActualIndex())
   }
+
+  // `Comida`/`PlanNutricion` en types/index.ts no declaran `receta` (el
+  // embed que trae /api/cliente/plan-nutricion-activo) — mismo patrón ya
+  // usado en MiPlan.tsx: tipo local en vez de tocar el tipo compartido.
+  function recetasDelPlan(): { id: string; nombre: string; imagen_url: string | null; kcal: number | null; proteinas: number | null }[] {
+    const comidas = (dieta?.comidas ?? []) as unknown as {
+      receta_id?: string | null
+      receta?: { id: string; nombre: string; imagen_url: string | null; kcal: number; proteinas: number } | null
+    }[]
+    const vistas = new Set<string>()
+    const resultado: { id: string; nombre: string; imagen_url: string | null; kcal: number | null; proteinas: number | null }[] = []
+    for (const c of comidas) {
+      if (c.receta && !vistas.has(c.receta.id)) {
+        vistas.add(c.receta.id)
+        resultado.push(c.receta)
+      }
+    }
+    return resultado
+  }
+
+  const recetaHref = (recetaId: string) =>
+    `/cliente/receta/${recetaId}?codigo=${encodeURIComponent(codigo)}&returnTo=${encodeURIComponent('/cliente?tab=recetas')}`
 
   function calcMacrosDia() {
     if (!dieta) return null
@@ -683,9 +707,45 @@ function PortalClientePageContent() {
         )}
 
         {tab === 'recetas' && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6">
             {codigo && cliente ? (
-              <MisPlatos codigo={codigo} clienteId={cliente.id} />
+              <>
+                {recetasDelPlan().length > 0 && (
+                  <div className="flex flex-col gap-3">
+                    <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>En tu plan</h2>
+                    <div className="grid grid-cols-2 gap-3">
+                      {recetasDelPlan().map(r => (
+                        <a
+                          key={r.id}
+                          href={recetaHref(r.id)}
+                          className="rounded-2xl overflow-hidden"
+                          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                        >
+                          <div className="relative w-full h-28" style={{ background: 'var(--surface-elevated)' }}>
+                            {r.imagen_url ? (
+                              <Image src={r.imagen_url} alt={r.nombre} fill className="object-cover" sizes="(max-width: 768px) 50vw, 300px" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <BookOpenText size={24} style={{ color: 'var(--text-muted)' }} />
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-2.5">
+                            <p className="text-xs font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
+                            {r.kcal ? (
+                              <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>{r.kcal} kcal · {r.proteinas}g P</p>
+                            ) : null}
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <MisPlatos codigo={codigo} clienteId={cliente.id} />
+
+                <RecetarioExplorador codigo={codigo} recetaHref={recetaHref} />
+              </>
             ) : (
               <EmptyState icon={BookOpenText} text="Activa un plan de dieta para ver tus recetas" />
             )}

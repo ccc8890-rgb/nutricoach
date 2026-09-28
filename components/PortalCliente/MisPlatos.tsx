@@ -31,29 +31,19 @@ export default function MisPlatos({ codigo, clienteId }: Props) {
       .finally(() => setCargando(false))
   }, [codigo, clienteId])
 
-  if (cargando) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="w-6 h-6 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
+  if (cargando) return null
 
-  if (recetas.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-4xl mb-3">🍽️</p>
-        <p className="text-[var(--text-muted)] text-sm">
-          Aquí aparecerán los platos personalizados que tu coach ha creado para ti.
-        </p>
-      </div>
-    )
-  }
+  // Antes mostraba un placeholder "aquí aparecerán tus platos" siempre que
+  // no hubiera ninguno — con el recetario explorable ya integrado en la
+  // pestaña, ese hueco vacío solo confundía (parecía un error, no una
+  // función poco usada). Si no hay platos personalizados, esta sección
+  // simplemente no ocupa espacio.
+  if (recetas.length === 0) return null
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-[var(--text)] mb-4">Mis platos</h2>
-      <p className="text-sm text-[var(--text-muted)] mb-4">
+      <h2 className="text-sm font-bold mb-1" style={{ color: 'var(--text)' }}>Mis platos</h2>
+      <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
         Platos creados especialmente para ti basados en tus preferencias.
       </p>
       <div className="grid grid-cols-2 gap-3">
