@@ -180,6 +180,20 @@ function PortalClientePageContent() {
     }
   }, [searchParams])
 
+  // Cambiar de pestaña (barra inferior) solo movía el estado de React, nunca
+  // la URL — el botón "Volver" de páginas como /cliente/receta/[id] sí
+  // codifica `returnTo=/cliente?tab=X` y funciona, pero el gesto nativo de
+  // "atrás" del móvil (o el botón del navegador) ignora ese returnTo y va a
+  // la última URL real del historial, que siempre era /cliente sin `tab`
+  // (o con el tab de cuando se cargó la app) — por eso aterrizaba en "Hoy"
+  // aunque el cliente estuviera en Dieta/Entreno/Recetas. Mantener la URL
+  // sincronizada con la pestaña activa hace que ese "atrás" nativo vuelva
+  // al sitio correcto.
+  useEffect(() => {
+    router.replace(`/cliente?tab=${tab}`, { scroll: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab])
+
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
