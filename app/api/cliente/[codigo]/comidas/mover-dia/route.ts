@@ -1,14 +1,20 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 const DIAS_VALIDOS = new Set(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'])
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   try {
     const { codigo } = await params
+
+    const auth = await autorizarEscrituraPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
+    const planId = auth.planId
+
     const body = await request.json().catch(() => ({}))
     const comidaId: string = body.comida_id
     const diaSemana: string = body.dia_semana
@@ -19,22 +25,13 @@ export async function POST(
 
     const admin = createServiceSupabase()
 
-    const { data: plan } = await admin
-      .from('planes_nutricion')
-      .select('id')
-      .eq('codigo_publico', codigo)
-      .eq('activo', true)
-      .single()
-
-    if (!plan) return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 })
-
     const { data: comida } = await admin
       .from('comidas')
       .select('id, plan_id, dia_semana')
       .eq('id', comidaId)
       .single()
 
-    if (!comida || comida.plan_id !== plan.id) {
+    if (!comida || comida.plan_id !== planId) {
       return NextResponse.json({ error: 'Comida no encontrada en este plan' }, { status: 404 })
     }
 

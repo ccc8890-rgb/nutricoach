@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 import { syncGarminClientDays } from '@/lib/integraciones/garmin-connect-perclient'
 import { syncGarminDay, persistirGarminDays } from '@/lib/integraciones/garmin-connect-sync'
 import { stravaProvider } from '@/lib/integraciones/strava'
@@ -35,6 +36,10 @@ async function resolverClientePorCodigo(codigo: string) {
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ codigo: string }> }) {
   const { codigo } = await params
+
+  const auth = await autorizarEscrituraPlan(request, codigo)
+  if (auth instanceof NextResponse) return auth
+
   const body = await request.json().catch(() => ({})) as { dias?: number }
   const dias = Math.min(Math.max(Number(body.dias ?? 3), 1), 14)
   const { db, clienteId } = await resolverClientePorCodigo(codigo)

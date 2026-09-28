@@ -1,13 +1,19 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   try {
-    const supabase = createServiceSupabase()
     const { codigo } = await params
+
+    const auth = await autorizarEscrituraPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
+
+    const supabase = createServiceSupabase()
+
     let body: { comida_id?: string; estado?: string; notas?: string | null; fecha?: string }
     try {
       body = await request.json()
@@ -29,6 +35,19 @@ export async function POST(
 
     if (!plan || !plan.cliente_id) {
       return NextResponse.json({ error: 'Plan o cliente no encontrado' }, { status: 404 })
+    }
+
+    // Verificar que la comida pertenece al plan antes de mutar (evita upsert
+    // sobre registros de comidas ajenas).
+    const { data: comida, error: comidaError } = await supabase
+      .from('comidas')
+      .select('id, plan_id')
+      .eq('id', comida_id)
+      .eq('plan_id', plan.id)
+      .single()
+
+    if (comidaError || !comida) {
+      return NextResponse.json({ error: 'Comida no encontrada' }, { status: 404 })
     }
 
     const fechaHoy = fecha ?? new Date().toISOString().split('T')[0]
@@ -57,12 +76,17 @@ export async function POST(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   try {
-    const supabase = createServiceSupabase()
     const { codigo } = await params
+
+    const auth = await autorizarEscrituraPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
+
+    const supabase = createServiceSupabase()
+
     let body: { comida_id?: string; fecha?: string }
     try {
       body = await request.json()
@@ -84,6 +108,18 @@ export async function DELETE(
 
     if (!plan || !plan.cliente_id) {
       return NextResponse.json({ error: 'Plan o cliente no encontrado' }, { status: 404 })
+    }
+
+    // Verificar que la comida pertenece al plan antes de borrar.
+    const { data: comida, error: comidaError } = await supabase
+      .from('comidas')
+      .select('id, plan_id')
+      .eq('id', comida_id)
+      .eq('plan_id', plan.id)
+      .single()
+
+    if (comidaError || !comida) {
+      return NextResponse.json({ error: 'Comida no encontrada' }, { status: 404 })
     }
 
     const fechaRegistro = fecha ?? new Date().toISOString().split('T')[0]

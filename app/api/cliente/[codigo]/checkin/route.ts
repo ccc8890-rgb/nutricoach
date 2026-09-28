@@ -1,17 +1,23 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { evaluarCheckin } from '@/lib/periodizacion/arbol-decision'
 import { calcularAjusteCaloricoSemanal } from '@/lib/periodizacion/motor-macros'
 import { generarFeedbackCheckinIA } from '@/lib/feedback-checkin-ia'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 import type { AjusteMacros } from '@/lib/periodizacion/motor-macros'
 
 export async function POST(
-    request: Request,
+    request: NextRequest,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     try {
-        const supabase = createServiceSupabase()
         const { codigo } = await params
+
+        const auth = await autorizarEscrituraPlan(request, codigo)
+        if (auth instanceof NextResponse) return auth
+
+        const supabase = createServiceSupabase()
+
         const body = await request.json()
         const { peso, adherencia, energia, sueno, notas, foto_url, cintura_cm, cadera_cm, pecho_cm, brazo_cm, muslo_cm, pasos_manual, calorias_activas_manual, hrv_manual } = body
 

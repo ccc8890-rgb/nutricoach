@@ -1,14 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function POST(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   const { codigo } = await params
   if (!codigo) {
     return NextResponse.json({ error: 'Código requerido' }, { status: 400 })
   }
+
+  const auth = await autorizarEscrituraPlan(request, codigo)
+  if (auth instanceof NextResponse) return auth
 
   const supabase = createServiceSupabase()
 

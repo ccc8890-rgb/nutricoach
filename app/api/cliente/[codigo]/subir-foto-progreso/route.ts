@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { uploadToCloudinary } from '@/lib/cloudinary'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     const { codigo } = await params
+
+    const auth = await autorizarEscrituraPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
 
     const db = createServiceSupabase()
 

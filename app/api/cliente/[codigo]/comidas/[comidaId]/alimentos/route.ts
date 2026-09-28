@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 type Params = Promise<{ codigo: string; comidaId: string }>
 
@@ -30,6 +31,10 @@ export async function POST(
   { params }: { params: Params }
 ) {
   const { codigo, comidaId } = await params
+
+  const auth = await autorizarEscrituraPlan(request, codigo)
+  if (auth instanceof NextResponse) return auth
+
   const body = await request.json().catch(() => null) as {
     alimento_id?: string
     cantidad_gramos?: number

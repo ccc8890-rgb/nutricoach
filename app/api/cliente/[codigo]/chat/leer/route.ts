@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function PATCH(
   request: NextRequest,
@@ -7,6 +8,10 @@ export async function PATCH(
 ) {
   try {
     const { codigo } = await params
+
+    const auth = await autorizarEscrituraPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
+
     const body = await request.json()
     const { mensaje_id } = body
 

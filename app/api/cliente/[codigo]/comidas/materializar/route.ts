@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
@@ -11,28 +12,22 @@ const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', '
 // es un simple cambio de dia_semana, igual que ya hacen las sesiones de
 // entrenamiento (siempre día concreto, nunca recurrentes).
 export async function POST(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   try {
     const { codigo } = await params
+
+    const auth = await autorizarEscrituraPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
+    const planId = auth.planId
+
     const admin = createServiceSupabase()
-
-    const { data: plan, error: planError } = await admin
-      .from('planes_nutricion')
-      .select('id')
-      .eq('codigo_publico', codigo)
-      .eq('activo', true)
-      .single()
-
-    if (planError || !plan) {
-      return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 })
-    }
 
     const { data: recurrentes, error: comidasError } = await admin
       .from('comidas')
       .select('*')
-      .eq('plan_id', plan.id)
+      .eq('plan_id', planId)
       .is('dia_semana', null)
 
     if (comidasError) {

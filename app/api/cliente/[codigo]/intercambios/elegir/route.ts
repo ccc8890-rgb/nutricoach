@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { actualizarPerfilDesdeIntercambios } from '@/lib/actualizar-perfil'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   const { codigo } = await params
+
+  const auth = await autorizarEscrituraPlan(request, codigo)
+  if (auth instanceof NextResponse) return auth
+
   const body = await request.json().catch(() => null) as {
     cliente_id?: string
     alimento_original_id?: string

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 type Params = Promise<{ codigo: string; comidaId: string; itemId: string }>
 
@@ -34,6 +35,10 @@ export async function PATCH(
   { params }: { params: Params }
 ) {
   const { codigo, comidaId, itemId } = await params
+
+  const auth = await autorizarEscrituraPlan(request, codigo)
+  if (auth instanceof NextResponse) return auth
+
   const body = await request.json().catch(() => null) as {
     alimento_id?: string
     cantidad_gramos?: number
@@ -77,10 +82,14 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Params }
 ) {
   const { codigo, comidaId, itemId } = await params
+
+  const auth = await autorizarEscrituraPlan(request, codigo)
+  if (auth instanceof NextResponse) return auth
+
   const ctx = await validarItem(codigo, comidaId, itemId)
   if (ctx.error) return ctx.error
 

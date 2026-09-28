@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 // GET: Obtener mensajes del chat (cliente)
 export async function GET(
@@ -38,12 +39,17 @@ export async function GET(
 
 // POST: Enviar mensaje como cliente
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   try {
-    const supabase = createServiceSupabase()
     const { codigo } = await params
+
+    const auth = await autorizarEscrituraPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
+
+    const supabase = createServiceSupabase()
+
     const { contenido } = await request.json()
 
     if (!contenido?.trim()) {

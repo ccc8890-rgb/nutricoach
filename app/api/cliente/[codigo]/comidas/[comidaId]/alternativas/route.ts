@@ -81,10 +81,6 @@ export async function GET(
       .map(r => r.id)
 
     alternativaIds = [...alternativaIds, ...nuevas]
-
-    if (alternativaIds.length > 0) {
-      await db.from('comidas').update({ alternativas_receta_ids: alternativaIds }).eq('id', comidaId)
-    }
   }
 
   if (alternativaIds.length === 0) return NextResponse.json({ alternativas: [] })

@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
+import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ codigo: string; comidaId: string }> }
 ) {
   const { codigo, comidaId } = await params
+
+  const auth = await autorizarEscrituraPlan(request, codigo)
+  if (auth instanceof NextResponse) return auth
+
   const body = await request.json().catch(() => null) as { receta_id?: string } | null
   if (!body?.receta_id) {
     return NextResponse.json({ error: 'receta_id requerido' }, { status: 400 })
