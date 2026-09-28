@@ -343,8 +343,12 @@ async function aplicarMensajeCliente(
 ): Promise<{ ok: boolean; mensaje?: string }> {
   if (!tarea.cliente_id) return { ok: false, mensaje: 'Sin cliente_id' }
   const payload = tarea.payload as { mensaje_cliente?: string }
-  const contenido = payload.mensaje_cliente || tarea.propuesta
-  if (!contenido) return { ok: false, mensaje: 'Sin propuesta/mensaje' }
+  // `tarea.propuesta` es la recomendación interna para el coach (kanban),
+  // nunca debe usarse como fallback: se filtró al chat real de un cliente
+  // (auditoría 28-09-2026) con texto como "Contacta urgentemente al
+  // cliente... no ajustes el plan hasta comprender la situación".
+  const contenido = payload.mensaje_cliente
+  if (!contenido) return { ok: false, mensaje: 'Sin mensaje_cliente en el payload — no se envía la propuesta interna al chat' }
 
   const { error } = await db.from('chat_mensajes').insert({
     cliente_id: tarea.cliente_id,

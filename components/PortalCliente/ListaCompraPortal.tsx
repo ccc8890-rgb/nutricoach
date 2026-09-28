@@ -114,7 +114,7 @@ export default function ListaCompraPortal({ codigo }: ListaCompraPortalProps) {
                     className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold"
                     style={{
                         background: dia === d ? 'var(--primary)' : 'var(--bg)',
-                        color: dia === d ? 'white' : 'var(--text-muted)',
+                        color: dia === d ? 'var(--bg)' : 'var(--text-muted)',
                         border: `1px solid ${dia === d ? 'var(--primary)' : 'var(--border)'}`,
                     }}
                 >

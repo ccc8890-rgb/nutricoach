@@ -33,6 +33,7 @@ export interface SessionExecutionInput {
 export interface SessionExecutionSummary {
   nextSetLabel: string
   volumeKg: number
+  volumeLabel: string
   averageRpe: number | null
   focusLabel: string
   recoveryLabel: string
@@ -67,6 +68,17 @@ export function crearSessionExecutionSummary(input: SessionExecutionInput): Sess
   const completedSets = input.sets.filter(set => set.hecho)
   const nextSetIndex = input.sets.findIndex(set => !set.hecho)
   const volumeKg = completedSets.reduce((total, set) => total + ((set.kg ?? 0) * (set.reps ?? 0)), 0)
+  const volumeMetros = completedSets.reduce((total, set) => total + (set.metros ?? 0), 0)
+  const volumeCalorias = completedSets.reduce((total, set) => total + (set.calorias ?? 0), 0)
+  // Ejercicios de cardio (SkiErg, remo, carrera...) no registran kg/reps —
+  // mostrar "0 kg" ahí confunde. Se usa la métrica que realmente tiene datos.
+  const volumeLabel = volumeKg > 0
+    ? `${Number(volumeKg.toFixed(1))} kg`
+    : volumeMetros > 0
+      ? `${Math.round(volumeMetros)} m`
+      : volumeCalorias > 0
+        ? `${Math.round(volumeCalorias)} cal`
+        : '—'
   const averageRpe = completedSets.length > 0
     ? Number((completedSets.reduce((total, set) => total + set.rpe, 0) / completedSets.length).toFixed(1))
     : null
@@ -83,6 +95,7 @@ export function crearSessionExecutionSummary(input: SessionExecutionInput): Sess
   return {
     nextSetLabel: nextSetIndex >= 0 ? `Set ${nextSetIndex + 1} pendiente` : 'Ejercicio completo',
     volumeKg: Number(volumeKg.toFixed(1)),
+    volumeLabel,
     averageRpe,
     focusLabel,
     recoveryLabel: input.descansoSegundos > 0 ? `Descanso ${input.descansoSegundos}s` : 'Sin descanso pautado',

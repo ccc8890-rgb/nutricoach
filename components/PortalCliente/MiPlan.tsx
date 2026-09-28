@@ -397,7 +397,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                         className="flex-1 py-2.5 text-sm font-semibold transition-colors"
                         style={{
                             background: vistaActual === v ? 'var(--primary)' : 'transparent',
-                            color: vistaActual === v ? 'white' : 'var(--text-muted)',
+                            color: vistaActual === v ? 'var(--bg)' : 'var(--text-muted)',
                         }}
                     >
                         {v === 'hoy' ? 'Hoy' : 'Semana'}

@@ -3,7 +3,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import {
-  House, BookOpen, BookOpenText, ClipboardText, ChartLineUp, SignOut,
+  House, BookOpenText, ClipboardText, ChartLineUp, SignOut,
   ForkKnife, Barbell, Scales, Trophy, Sun, Moon,
   CaretRight, CaretLeft, X, TrendDown, TrendUp,
   ShoppingCart, ChatCircleDots, DeviceMobile,
@@ -27,7 +27,7 @@ import ChatPanel from '@/components/PortalCliente/ChatPanel'
 import IntegracionesPanel from '@/components/PortalCliente/IntegracionesPanel'
 import { useTheme } from '@/components/ThemeProvider'
 
-type Tab = 'hoy' | 'plan' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'apps'
+type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'apps'
 
 function VolverAHoy({ setTab }: { setTab: (t: Tab) => void }) {
   return (
@@ -274,10 +274,10 @@ function PortalClientePageContent() {
   const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 
   const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'hoy',      label: 'Hoy',      icon: House },
-    { key: 'plan',     label: 'Mi Plan',  icon: BookOpen },
-    { key: 'checkin',  label: 'Check-in', icon: ClipboardText },
-    { key: 'progreso', label: 'Progreso', icon: ChartLineUp },
+    { key: 'hoy',     label: 'Hoy',     icon: House },
+    { key: 'dieta',   label: 'Dieta',   icon: ForkKnife },
+    { key: 'entreno', label: 'Entreno', icon: Barbell },
+    { key: 'recetas', label: 'Recetas', icon: BookOpenText },
   ]
 
   return (
@@ -415,73 +415,7 @@ function PortalClientePageContent() {
               <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
 
-            {codigo && (
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => setTab('plan')}
-                  className="rounded-2xl px-3 py-3 text-left transition-all active:scale-[0.98]"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <ForkKnife size={17} style={{ color: 'var(--accent)' }} />
-                  <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>Comidas</p>
-                </button>
-                <button
-                  onClick={() => setTab('plan')}
-                  className="rounded-2xl px-3 py-3 text-left transition-all active:scale-[0.98]"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <Barbell size={17} style={{ color: '#4A9FCC' }} />
-                  <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>Entreno</p>
-                </button>
-                <button
-                  onClick={() => setTab('checkin')}
-                  className="rounded-2xl px-3 py-3 text-left transition-all active:scale-[0.98]"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <ClipboardText size={17} style={{ color: '#52B788' }} />
-                  <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>Check-in</p>
-                </button>
-              </div>
-            )}
-
-            {codigo && (
-              <div className="grid grid-cols-4 gap-2">
-                <button
-                  onClick={() => setTab('compra')}
-                  className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <ShoppingCart size={17} style={{ color: '#D9A441' }} />
-                  <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Compra</p>
-                </button>
-                <button
-                  onClick={() => setTab('recetas')}
-                  className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <BookOpenText size={17} style={{ color: '#8A7BC8' }} />
-                  <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Recetas</p>
-                </button>
-                <button
-                  onClick={() => setTab('chat')}
-                  className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <ChatCircleDots size={17} style={{ color: '#EF4444' }} />
-                  <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Chat</p>
-                </button>
-                <button
-                  onClick={() => setTab('apps')}
-                  className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <DeviceMobile size={17} style={{ color: '#4A9FCC' }} />
-                  <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Apps</p>
-                </button>
-              </div>
-            )}
-
-            {/* Bento grid: stats rápidos */}
+            {/* Bento: peso + entreno de hoy */}
             {(ultimoPeso || entreno) && (
               <div className="grid grid-cols-2 gap-3">
                 {ultimoPeso && (
@@ -497,7 +431,7 @@ function PortalClientePageContent() {
                 )}
                 {entreno && (
                   <button
-                    onClick={() => setTab('plan')}
+                    onClick={() => setTab('entreno')}
                     className="flex items-center gap-3 p-3 rounded-2xl text-left cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
                     style={{ background: 'var(--surface)' }}
                   >
@@ -512,6 +446,57 @@ function PortalClientePageContent() {
                     </div>
                   </button>
                 )}
+              </div>
+            )}
+
+            {/* Accesos rápidos: solo lo que NO vive ya en la barra inferior (Hoy/Dieta/Entreno/Recetas) */}
+            {codigo && (
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide mb-2 px-1" style={{ color: 'var(--text-muted)' }}>
+                  Accesos rápidos
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setTab('checkin')}
+                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                  >
+                    <ClipboardText size={17} style={{ color: '#52B788' }} />
+                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Check-in</p>
+                  </button>
+                  <button
+                    onClick={() => setTab('progreso')}
+                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                  >
+                    <ChartLineUp size={17} style={{ color: '#4A9FCC' }} />
+                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Progreso</p>
+                  </button>
+                  <button
+                    onClick={() => setTab('compra')}
+                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                  >
+                    <ShoppingCart size={17} style={{ color: '#D9A441' }} />
+                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Compra</p>
+                  </button>
+                  <button
+                    onClick={() => setTab('chat')}
+                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                  >
+                    <ChatCircleDots size={17} style={{ color: '#EF4444' }} />
+                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Chat</p>
+                  </button>
+                  <button
+                    onClick={() => setTab('apps')}
+                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                  >
+                    <DeviceMobile size={17} style={{ color: '#4A9FCC' }} />
+                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Apps</p>
+                  </button>
+                </div>
               </div>
             )}
 
@@ -551,8 +536,8 @@ function PortalClientePageContent() {
           </div>
         )}
 
-        {/* ─── MI PLAN ─── */}
-        {tab === 'plan' && (
+        {/* ─── DIETA ─── */}
+        {tab === 'dieta' && (
           <div className="flex flex-col gap-4">
             {dieta ? (
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -560,7 +545,12 @@ function PortalClientePageContent() {
             ) : (
               <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
+          </div>
+        )}
 
+        {/* ─── ENTRENO ─── */}
+        {tab === 'entreno' && (
+          <div className="flex flex-col gap-4">
             {entreno ? (
               <>
                 <SemanaEntrenoCard planId={entreno.id} planNombre={entreno.nombre} />
@@ -596,6 +586,7 @@ function PortalClientePageContent() {
         {/* ─── CHECK-IN ─── */}
         {tab === 'checkin' && (
           <div className="flex flex-col gap-4">
+            <VolverAHoy setTab={setTab} />
             {codigo ? (
               <>
                 <CheckInForm codigo={codigo} onCheckinCreado={() => setCheckinKey(k => k + 1)} />
@@ -610,6 +601,7 @@ function PortalClientePageContent() {
         {/* ─── PROGRESO ─── */}
         {tab === 'progreso' && (
           <div className="flex flex-col gap-4">
+            <VolverAHoy setTab={setTab} />
 
             {/* Registrar peso */}
             <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -719,7 +711,6 @@ function PortalClientePageContent() {
 
         {tab === 'recetas' && (
           <div className="flex flex-col gap-4">
-            <VolverAHoy setTab={setTab} />
             {codigo && cliente ? (
               <MisPlatos codigo={codigo} clienteId={cliente.id} />
             ) : (

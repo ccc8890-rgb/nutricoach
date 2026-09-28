@@ -134,6 +134,8 @@ export default function EjecucionSesionPage() {
         peso_kg: s.kg,
         reps: s.reps,
         rpe: s.rpe,
+        tiempo_s: s.tiempo_s,
+        distancia_m: s.metros,
       })),
     })).filter(ej => ej.ejercicio_id)
 

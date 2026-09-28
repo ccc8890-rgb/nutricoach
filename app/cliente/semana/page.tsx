@@ -154,7 +154,7 @@ export default function VistaSemanalClientePage() {
                 {planNombre || 'Tu plan de entrenamiento'}
               </h2>
               <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                {resumenSemana.mensajeCliente}
+                {loading ? 'Cargando tu semana…' : resumenSemana.mensajeCliente}
               </p>
               {bloque && (
                 <p className="mt-1 text-xs font-semibold" style={{ color: 'var(--accent)' }}>

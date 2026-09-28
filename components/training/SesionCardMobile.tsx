@@ -412,7 +412,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           <div className="mb-3 grid grid-cols-2 gap-2">
             <ExecutionMetric label="Foco" value={executionSummary.focusLabel} />
             <ExecutionMetric label="Ahora" value={executionSummary.nextSetLabel} />
-            <ExecutionMetric label="Volumen" value={`${executionSummary.volumeKg} kg`} />
+            <ExecutionMetric label="Volumen" value={executionSummary.volumeLabel} />
             <ExecutionMetric label="RPE medio" value={executionSummary.averageRpe ?? '—'} />
           </div>
 

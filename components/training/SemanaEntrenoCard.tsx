@@ -246,64 +246,68 @@ export default function SemanaEntrenoCard({ planId, planNombre }: SemanaEntrenoC
             {/* Session info row */}
             <Link
               href={`/cliente/sesion/${nextSession.id}`}
-              className="flex items-center gap-3 px-3.5 pt-3 pb-2 transition-opacity hover:opacity-80"
+              className="flex flex-col gap-2 px-3.5 pt-3 pb-2.5 transition-opacity hover:opacity-80"
             >
-              <div
-                className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
-                style={{ background: nextSessionRegistrada ? 'var(--semantic-active-border)' : 'var(--semantic-info-bg)' }}
-              >
-                {nextSessionRegistrada ? (
-                  <CheckCircle size={16} style={{ color: 'var(--semantic-active)' }} />
-                ) : (
-                  <Lightning size={16} style={{ color: 'var(--semantic-info)' }} />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
-                  {nextSession.nombre}
-                </p>
-                {nextSession.contexto_ia && (
-                  <p
-                    className="text-[11px] mt-0.5 leading-snug"
-                    style={{ color: 'var(--text-muted)', opacity: 0.75 }}
-                  >
-                    {nextSession.contexto_ia.length > 80
-                      ? nextSession.contexto_ia.slice(0, 80) + '…'
-                      : nextSession.contexto_ia}
+              <div className="flex items-start gap-3">
+                <div
+                  className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
+                  style={{ background: nextSessionRegistrada ? 'var(--semantic-active-border)' : 'var(--semantic-info-bg)' }}
+                >
+                  {nextSessionRegistrada ? (
+                    <CheckCircle size={16} style={{ color: 'var(--semantic-active)' }} />
+                  ) : (
+                    <Lightning size={16} style={{ color: 'var(--semantic-info)' }} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text)' }}>
+                    {nextSession.nombre}
                   </p>
-                )}
+                  {nextSession.contexto_ia && (
+                    <p
+                      className="text-[11px] mt-0.5 leading-snug"
+                      style={{ color: 'var(--text-muted)', opacity: 0.75 }}
+                    >
+                      {nextSession.contexto_ia.length > 80
+                        ? nextSession.contexto_ia.slice(0, 80) + '…'
+                        : nextSession.contexto_ia}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-2 pl-12">
                 <p className="text-[11px]" style={{ color: '#9898A0' }}>
                   {nextSession.dia_semana || 'Sesión'}
                   {nextSession.ejercicios_count > 0 && ` · ${nextSession.ejercicios_count} ej.`}
                   {nextSession.duracion_estimada_min && ` · ${nextSession.duracion_estimada_min} min`}
                 </p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {nextSessionRegistrada ? (
-                  <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1"
-                    style={{ background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)' }}
-                  >
-                    <CheckCircle size={11} />
-                    Registrada
-                  </span>
-                ) : nextSession.dia_semana === TODAY_NAME ? (
-                  <span
-                    className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ background: 'var(--accent)', color: 'white' }}
-                  >
-                    <Play size={11} />
-                    Empezar entreno
-                  </span>
-                ) : (
-                  <span
-                    className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ background: 'rgba(99,102,241,0.10)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.18)' }}
-                  >
-                    Ver entreno
-                  </span>
-                )}
-                <CaretRight size={14} style={{ color: nextSessionRegistrada ? '#4ADE80' : '#818CF8' }} />
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {nextSessionRegistrada ? (
+                    <span
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1"
+                      style={{ background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)' }}
+                    >
+                      <CheckCircle size={11} />
+                      Registrada
+                    </span>
+                  ) : nextSession.dia_semana === TODAY_NAME ? (
+                    <span
+                      className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+                      style={{ background: 'var(--accent)', color: 'var(--bg)' }}
+                    >
+                      <Play size={11} />
+                      Empezar entreno
+                    </span>
+                  ) : (
+                    <span
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                      style={{ background: 'rgba(99,102,241,0.10)', color: '#818CF8', border: '1px solid rgba(99,102,241,0.18)' }}
+                    >
+                      Ver entreno
+                    </span>
+                  )}
+                  <CaretRight size={14} style={{ color: nextSessionRegistrada ? '#4ADE80' : '#818CF8' }} />
+                </div>
               </div>
             </Link>
           </div>
