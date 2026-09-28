@@ -8,6 +8,7 @@ import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import PlanSemanal from './PlanSemanal'
+import ListaCompraPortal from './ListaCompraPortal'
 import { getAjusteDesdeNombreSesion } from '@/lib/periodizacion/dia-entreno-nutricion'
 import { esComidaDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
 
@@ -345,7 +346,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
         }
     }
     const [descargando, setDescargando] = useState(false)
-    const [vistaActual, setVistaActual] = useState<'hoy' | 'semana'>('hoy')
+    const [vistaActual, setVistaActual] = useState<'hoy' | 'semana' | 'compra'>('hoy')
     const [diaActivo, setDiaActivo] = useState<string>(() => diaActualEspana())
     const { addToast } = useToast()
 
@@ -407,9 +408,9 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
 
     return (
         <div className="space-y-4 print-area">
-            {/* Toggle Hoy / Semana */}
+            {/* Toggle Hoy / Semana / Compra */}
             <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
-                {(['hoy', 'semana'] as const).map(v => (
+                {(['hoy', 'semana', 'compra'] as const).map(v => (
                     <button
                         key={v}
                         type="button"
@@ -420,7 +421,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                             color: vistaActual === v ? 'var(--bg)' : 'var(--text-muted)',
                         }}
                     >
-                        {v === 'hoy' ? 'Hoy' : 'Semana'}
+                        {v === 'hoy' ? 'Hoy' : v === 'semana' ? 'Semana' : 'Compra'}
                     </button>
                 ))}
             </div>
@@ -428,6 +429,12 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             {/* Vista semanal — usa comidasParaSemana (plan original, referencia estable) */}
             {vistaActual === 'semana' && (
                 <PlanSemanal comidas={comidasParaSemana} clienteId={planLocal.cliente_id} codigo={codigo} targets={targets} />
+            )}
+
+            {/* Lista de la compra — integrada aquí a petición de Carlos, antes solo
+                vivía en Accesos rápidos de Hoy, desconectada del resto de la dieta */}
+            {vistaActual === 'compra' && (
+                <ListaCompraPortal codigo={codigo} />
             )}
 
             {/* Vista diaria */}
