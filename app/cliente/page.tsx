@@ -28,6 +28,7 @@ import IntegracionesPanel from '@/components/PortalCliente/IntegracionesPanel'
 import { useTheme } from '@/components/ThemeProvider'
 
 type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'apps'
+const TABS_VALIDOS: Tab[] = ['hoy', 'dieta', 'entreno', 'checkin', 'progreso', 'compra', 'recetas', 'chat', 'apps']
 
 function VolverAHoy({ setTab }: { setTab: (t: Tab) => void }) {
   return (
@@ -156,7 +157,10 @@ function PortalClientePageContent() {
   const [cliente, setCliente] = useState<Cliente | null>(null)
   const [dieta, setDieta] = useState<PlanNutricion | null>(null)
   const [entreno, setEntreno] = useState<PlanEntrenamiento | null>(null)
-  const [tab, setTab] = useState<Tab>('hoy')
+  const [tab, setTab] = useState<Tab>(() => {
+    const tabParam = searchParams.get('tab')
+    return TABS_VALIDOS.includes(tabParam as Tab) ? (tabParam as Tab) : 'hoy'
+  })
   const [peso, setPeso] = useState('')
   const [notaPeso, setNotaPeso] = useState('')
   const [guardandoPeso, setGuardandoPeso] = useState(false)

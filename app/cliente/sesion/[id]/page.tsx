@@ -47,7 +47,7 @@ export default function EjecucionSesionPage() {
   const searchParams = useSearchParams()
   const sesionStartRef = useRef(Date.now())
   const codigo = searchParams.get('codigo')
-  const backHref = codigo ? `/cliente/${codigo}` : '/cliente'
+  const backHref = codigo ? `/cliente/${codigo}` : '/cliente?tab=entreno'
 
   const [sesion, setSesion] = useState<SesionInfo | null>(null)
   const [loading, setLoading] = useState(true)
