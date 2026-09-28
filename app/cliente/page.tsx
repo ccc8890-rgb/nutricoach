@@ -20,7 +20,7 @@ import HistorialCheckins from '@/components/PortalCliente/HistorialCheckins'
 import NotasCoach from '@/components/PortalCliente/NotasCoach'
 import TLSGauge from '@/components/PortalCliente/TLSGauge'
 import MiPlan from '@/components/PortalCliente/MiPlan'
-import SemanaEntrenoCard from '@/components/training/SemanaEntrenoCard'
+import EntrenoSubTabs from '@/components/training/EntrenoSubTabs'
 import ListaCompraPortal from '@/components/PortalCliente/ListaCompraPortal'
 import MisPlatos from '@/components/PortalCliente/MisPlatos'
 import ChatPanel from '@/components/PortalCliente/ChatPanel'
@@ -556,31 +556,7 @@ function PortalClientePageContent() {
         {tab === 'entreno' && (
           <div className="flex flex-col gap-4">
             {entreno ? (
-              <>
-                <SemanaEntrenoCard planId={entreno.id} planNombre={entreno.nombre} />
-                <button
-                  onClick={() => router.push('/cliente/mes')}
-                  className="w-full flex items-center justify-between px-5 py-4 rounded-2xl cursor-pointer transition-all active:scale-[0.98]"
-                  style={{
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center"
-                      style={{ background: 'var(--semantic-info-bg)' }}
-                    >
-                      <Barbell size={16} style={{ color: 'var(--semantic-info)' }} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Calendario de entreno</p>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Vista semana o mes, toca un día para ver la sesión</p>
-                    </div>
-                  </div>
-                  <CaretRight size={16} style={{ color: 'var(--semantic-info)' }} />
-                </button>
-              </>
+              <EntrenoSubTabs planId={entreno.id} planNombre={entreno.nombre} />
             ) : (
               <EmptyState icon={Barbell} text="Tu coach aún no ha asignado un plan de entrenamiento" />
             )}
