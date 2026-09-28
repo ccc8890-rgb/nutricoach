@@ -666,14 +666,14 @@ body {
 }
 
 /* Padding superior que respeta notch/status bar de iOS en PWA standalone.
-   +8px extra sobre el inset real: pegado justo al borde del notch el botón
-   de volver quedaba incómodo de tocar en el iPhone real de Carlos. */
+   +16px extra sobre el inset real: el botón de volver seguía sintiéndose
+   pegado arriba en el iPhone real de Carlos tras el primer ajuste (+8px). */
 .pt-safe {
-  padding-top: max(calc(env(safe-area-inset-top, 0px) + 8px), 20px);
+  padding-top: max(calc(env(safe-area-inset-top, 0px) + 16px), 28px);
 }
 
 .pt-safe-top {
-  padding-top: max(calc(env(safe-area-inset-top, 0px) + 8px), 20px);
+  padding-top: max(calc(env(safe-area-inset-top, 0px) + 16px), 28px);
 }
 
 /* Padding superior en móvil: status bar + altura botón hamburguesa + margen */

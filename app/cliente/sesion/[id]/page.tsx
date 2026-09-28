@@ -263,7 +263,7 @@ export default function EjecucionSesionPage() {
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderBottom: '1px solid var(--border)',
-          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 8px), 20px)',
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 16px), 28px)',
         }}
       >
         <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3">

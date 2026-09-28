@@ -289,7 +289,10 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
 
     const entrenoHtml = p.entreno ? generarEntrenoHtml(p.entreno) : ''
     const listaHtml = p.listaCompra.length ? generarListaHtml(p.listaCompra) : ''
-    const backUrl = `${p.appUrl.replace(/\/$/, '')}/cliente/${p.codigo}?tab=dieta`
+    // /cliente/[codigo] es el portal público legacy: redirige a /cliente para
+    // clientes autenticados pero pierde ?tab= en el camino — "Volver a la app"
+    // caía siempre en Hoy en vez de Dieta. Enlace directo a la ruta real.
+    const backUrl = `${p.appUrl.replace(/\/$/, '')}/cliente?tab=dieta`
 
     return `<!DOCTYPE html>
 <html lang="es">
@@ -302,9 +305,9 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: #f5f3ef;
-      color: #191714;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #F5F5F7;
+      color: #1C1C1E;
+      font-family: 'DM Sans', Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.45;
     }
     .toolbar {
@@ -315,17 +318,17 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
       gap: 8px;
       align-items: center;
       justify-content: center;
-      padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 10px;
-      background: rgba(245, 243, 239, .9);
+      padding: max(calc(env(safe-area-inset-top, 0px) + 16px), 28px) 12px 10px;
+      background: rgba(245, 245, 247, .9);
       backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(25, 23, 20, .08);
+      border-bottom: 1px solid rgba(28, 28, 30, .08);
     }
     .toolbar a, .toolbar button {
       min-height: 40px;
-      border: 1px solid rgba(25, 23, 20, .12);
+      border: 1px solid rgba(28, 28, 30, .12);
       border-radius: 999px;
       background: #fff;
-      color: #191714;
+      color: #1C1C1E;
       padding: 0 14px;
       font: inherit;
       font-size: 13px;
@@ -341,8 +344,8 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
       border-radius: 28px;
       color: #fff;
       background:
-        linear-gradient(135deg, rgba(9, 36, 34, .94), rgba(19, 89, 78, .92)),
-        radial-gradient(circle at 85% 10%, rgba(244, 198, 103, .5), transparent 34%);
+        linear-gradient(135deg, rgba(28, 28, 30, .96), rgba(44, 44, 46, .92)),
+        radial-gradient(circle at 85% 10%, rgba(232, 232, 240, .35), transparent 34%);
     }
     .brand { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.68); }
     h1 { margin: 0; font-size: clamp(32px, 8vw, 64px); line-height: .96; letter-spacing: 0; }
@@ -365,7 +368,7 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
       margin-top: 22px;
       border-radius: 24px;
       background: #fff;
-      border: 1px solid rgba(25, 23, 20, .08);
+      border: 1px solid #D1D1D6;
       overflow: hidden;
       page-break-inside: avoid;
     }
@@ -374,36 +377,36 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
       justify-content: space-between;
       gap: 14px;
       padding: 18px 20px;
-      border-bottom: 1px solid rgba(25, 23, 20, .08);
-      background: #fbfaf7;
+      border-bottom: 1px solid #D1D1D6;
+      background: #EBEBED;
     }
     .day-head h2 { margin: 0; font-size: 20px; }
-    .day-head p { margin: 3px 0 0; color: #6f6860; font-size: 13px; text-align: right; }
+    .day-head p { margin: 3px 0 0; color: #636366; font-size: 13px; text-align: right; }
     .meal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 14px; }
     .meal {
       border-radius: 18px;
-      border: 1px solid rgba(25, 23, 20, .08);
+      border: 1px solid #D1D1D6;
       padding: 14px;
       background: #fff;
       page-break-inside: avoid;
     }
     .meal-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-    .slot { margin: 0 0 4px; color: #857d73; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .slot { margin: 0 0 4px; color: #7A7A82; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
     .meal h3 { margin: 0; font-size: 16px; line-height: 1.18; }
-    .meal-kcal { flex: 0 0 auto; border-radius: 999px; background: #e9f6ef; color: #0f6a4f; padding: 6px 9px; font-size: 12px; font-weight: 800; }
-    .macro-line { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 12px; color: #6f6860; font-size: 12px; font-weight: 700; }
+    .meal-kcal { flex: 0 0 auto; border-radius: 999px; background: rgba(61,158,107,.1); color: #2D7A52; padding: 6px 9px; font-size: 12px; font-weight: 800; }
+    .macro-line { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 12px; color: #636366; font-size: 12px; font-weight: 700; }
     .ingredients { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-    .ingredients li { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: #312d28; }
-    .ingredients strong { color: #191714; white-space: nowrap; }
+    .ingredients li { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: #1C1C1E; }
+    .ingredients strong { color: #1C1C1E; white-space: nowrap; }
     .shopping, .training { padding: 20px; }
     .shopping h2, .training h2 { margin: 0 0 14px; font-size: 22px; }
     .shopping-grid { columns: 2; column-gap: 28px; }
-    .shop-item { break-inside: avoid; display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #eee9e2; font-size: 13px; }
-    .session { padding: 12px 0; border-bottom: 1px solid #eee9e2; }
+    .shop-item { break-inside: avoid; display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #E5E5EA; font-size: 13px; }
+    .session { padding: 12px 0; border-bottom: 1px solid #E5E5EA; }
     .session:last-child { border-bottom: 0; }
     .session strong { display: block; margin-bottom: 6px; }
-    .session span { display: inline-block; margin: 3px 4px 3px 0; padding: 4px 9px; border-radius: 999px; background: #f4f1ec; font-size: 12px; }
-    footer { margin-top: 22px; color: #8b8378; font-size: 12px; text-align: center; }
+    .session span { display: inline-block; margin: 3px 4px 3px 0; padding: 4px 9px; border-radius: 999px; background: #EBEBED; font-size: 12px; }
+    footer { margin-top: 22px; color: #7A7A82; font-size: 12px; text-align: center; }
     @media (max-width: 700px) {
       .page { padding: 14px 10px 34px; }
       .cover { padding: 24px; border-radius: 24px; }

@@ -828,10 +828,20 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             <button
                 onClick={handleDescargarPDF}
                 disabled={descargando}
-                className="btn btn-primary btn-lg w-full no-print"
+                className="w-full flex items-center justify-between px-5 py-4 rounded-2xl no-print transition-all active:scale-[0.98]"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             >
-                {descargando ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-                {descargando ? 'Generando...' : 'Descargar plan en PDF'}
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-bg)' }}>
+                        {descargando ? <Loader2 size={16} className="animate-spin" style={{ color: 'var(--primary)' }} /> : <Download size={16} style={{ color: 'var(--primary)' }} />}
+                    </div>
+                    <div className="text-left">
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                            {descargando ? 'Generando…' : 'Descargar plan en PDF'}
+                        </p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Dieta completa para llevar offline</p>
+                    </div>
+                </div>
             </button>
 
             </>)}
