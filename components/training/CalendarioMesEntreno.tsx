@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { AlertTriangle, ChevronLeft, ChevronRight, CircleDashed, Dumbbell, Footprints, Loader2, Play, Eye } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, ChevronRight, CircleDashed, Dumbbell, Footprints, Loader2 } from 'lucide-react'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
+import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 
 export interface DiaMes {
   fecha: string
@@ -58,6 +58,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
   const [error, setError] = useState('')
   const hoyISO = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
   const [diaSeleccionado, setDiaSeleccionado] = useState<string>(hoyISO)
+  const [detalles, setDetalles] = useState<Record<string, EjercicioDetalle[] | 'cargando'>>({})
 
   useEffect(() => {
     setLoading(true)
@@ -79,6 +80,17 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
   )
   const semanasVisibles = modo === 'semana' ? (semanaActual.length ? [semanaActual] : []) : semanas
   const diaInfo = dias.find(d => d.fecha === diaSeleccionado) ?? null
+
+  useEffect(() => {
+    const sesionId = diaInfo?.sesion?.id
+    if (!sesionId || detalles[sesionId]) return
+    setDetalles(prev => ({ ...prev, [sesionId]: 'cargando' }))
+    fetch(`/api/cliente/sesion/${sesionId}`)
+      .then(r => r.json())
+      .then(data => setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] })))
+      .catch(() => setDetalles(prev => ({ ...prev, [sesionId]: [] })))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diaInfo?.sesion?.id])
 
   function mesAnterior() {
     if (month === 1) { setMonth(12); setYear(y => y - 1) } else setMonth(m => m - 1)
@@ -231,21 +243,12 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                   </p>
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <Link
-                  href={`/cliente/sesion/${diaInfo.sesion.id}`}
-                  className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
-                  style={{ background: 'var(--accent)', color: 'var(--bg)' }}
-                >
-                  <Play size={13} fill="currentColor" /> Empezar
-                </Link>
-                <Link
-                  href={`/cliente/sesion/${diaInfo.sesion.id}?modo=solo-ver`}
-                  className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
-                  style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
-                >
-                  <Eye size={13} /> Solo ver
-                </Link>
+              <div className="mt-3">
+                {detalles[diaInfo.sesion.id] === 'cargando' ? (
+                  <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
+                ) : (
+                  <ListaEjerciciosExpandible ejercicios={(detalles[diaInfo.sesion.id] as EjercicioDetalle[]) ?? []} />
+                )}
               </div>
             </>
           ) : (

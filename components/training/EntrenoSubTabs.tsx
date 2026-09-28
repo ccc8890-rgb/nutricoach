@@ -1,11 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import {
-  ChevronDown, ChevronRight, Dumbbell, Footprints, Play, Eye,
-  Loader2, CheckCircle2, CircleDashed, Clock, Repeat,
-} from 'lucide-react'
+import { ChevronDown, Dumbbell, Footprints, Loader2, CheckCircle2, CircleDashed } from 'lucide-react'
 import CalendarioMesEntreno from './CalendarioMesEntreno'
+import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 
 interface SesionSemana {
   id: string
@@ -21,66 +18,8 @@ interface SesionSemana {
   esHoy: boolean
 }
 
-interface EjercicioDetalle {
-  id: string
-  orden: number
-  series: number | null
-  repeticiones: string | null
-  descanso_segundos: number | null
-  peso_sugerido: string | null
-  notas: string | null
-  contexto_ia: string | null
-  ejercicio: { id: string; nombre: string; grupo_muscular: string | null; tipo: string | null } | null
-}
-
 function iconoTipo(tipo: SesionSemana['tipo_sesion'], size = 16) {
   return tipo === 'carrera' ? <Footprints size={size} /> : <Dumbbell size={size} />
-}
-
-function ListaEjercicios({ ejercicios }: { ejercicios: EjercicioDetalle[] }) {
-  if (ejercicios.length === 0) {
-    return <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>Sin ejercicios cargados.</p>
-  }
-  return (
-    <div className="flex flex-col gap-2 mt-2">
-      {ejercicios.map(ej => (
-        <div key={ej.id} className="rounded-xl px-3 py-2.5" style={{ background: 'var(--bg)' }}>
-          <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-            {ej.series && (
-              <span className="inline-flex items-center gap-1"><Repeat size={11} /> {ej.series}×{ej.repeticiones ?? '-'}</span>
-            )}
-            {ej.descanso_segundos ? (
-              <span className="inline-flex items-center gap-1"><Clock size={11} /> {ej.descanso_segundos}s desc.</span>
-            ) : null}
-            {ej.peso_sugerido && <span>{ej.peso_sugerido}</span>}
-          </div>
-          {ej.notas && <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>{ej.notas}</p>}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function BotonesAccion({ sesionId }: { sesionId: string }) {
-  return (
-    <div className="mt-3 grid grid-cols-2 gap-2">
-      <Link
-        href={`/cliente/sesion/${sesionId}`}
-        className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
-        style={{ background: 'var(--accent)', color: 'var(--bg)' }}
-      >
-        <Play size={13} fill="currentColor" /> Empezar
-      </Link>
-      <Link
-        href={`/cliente/sesion/${sesionId}?modo=solo-ver`}
-        className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-bold transition-transform active:scale-[0.98]"
-        style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
-      >
-        <Eye size={13} /> Solo ver
-      </Link>
-    </div>
-  )
 }
 
 export default function EntrenoSubTabs({ planNombre }: { planId: string; planNombre: string }) {
@@ -176,12 +115,13 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
             {sesionHoy.contexto_ia && (
               <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>{sesionHoy.contexto_ia}</p>
             )}
-            {detalles[sesionHoy.id] === 'cargando' ? (
-              <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
-            ) : (
-              <ListaEjercicios ejercicios={(detalles[sesionHoy.id] as EjercicioDetalle[]) ?? []} />
-            )}
-            <BotonesAccion sesionId={sesionHoy.id} />
+            <div className="mt-3">
+              {detalles[sesionHoy.id] === 'cargando' ? (
+                <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
+              ) : (
+                <ListaEjerciciosExpandible ejercicios={(detalles[sesionHoy.id] as EjercicioDetalle[]) ?? []} />
+              )}
+            </div>
           </div>
         ) : (
           <div className="rounded-3xl p-8 flex flex-col items-center gap-2 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -218,13 +158,12 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
                 </button>
                 {abierto && (
                   <div className="px-4 pb-4">
-                    {s.contexto_ia && <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{s.contexto_ia}</p>}
+                    {s.contexto_ia && <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>{s.contexto_ia}</p>}
                     {detalles[s.id] === 'cargando' ? (
                       <div className="flex justify-center py-4"><Loader2 size={18} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
                     ) : (
-                      <ListaEjercicios ejercicios={(detalles[s.id] as EjercicioDetalle[]) ?? []} />
+                      <ListaEjerciciosExpandible ejercicios={(detalles[s.id] as EjercicioDetalle[]) ?? []} />
                     )}
-                    <BotonesAccion sesionId={s.id} />
                   </div>
                 )}
               </div>
@@ -239,15 +178,6 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
       ) : (
         <CalendarioMesEntreno mostrarToggleSemanaMes={false} />
       )}
-
-      <Link
-        href="/cliente/mes"
-        className="flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-      >
-        Abrir calendario completo
-        <ChevronRight size={14} />
-      </Link>
     </div>
   )
 }
