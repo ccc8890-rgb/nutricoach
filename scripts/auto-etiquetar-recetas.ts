@@ -10,7 +10,7 @@
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
 import { resolve } from 'path'
-import { autoTagReceta } from '../lib/auto-tag'
+import { autoTagReceta, KNOWN_TAGS } from '../lib/auto-tag'
 
 dotenv.config({ path: resolve(process.cwd(), '.env.local') })
 
@@ -35,7 +35,7 @@ const PAGE_SIZE = 50
     while (true) {
       let query = supabase
         .from('recetas')
-        .select('id, nombre, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+        .select('id, nombre, tags, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
         .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
         .order('nombre')
 
@@ -46,13 +46,23 @@ const PAGE_SIZE = 50
       if (!recetas || recetas.length === 0) break
 
       for (const receta of recetas) {
-        const tags = autoTagReceta(receta as Parameters<typeof autoTagReceta>[0])
+        const tagsIngrediente = autoTagReceta(receta as Parameters<typeof autoTagReceta>[0])
+        // `recetas.tags` también guarda tags de otro sistema (rendimiento,
+        // post_entreno, periodizacion...) generados por el motor de
+        // recetario profesional. Sobrescribir la columna entera (como hacía
+        // esta versión antes) los habría borrado en cualquier receta que
+        // pasara por este script. Se preservan y solo se reemplaza el
+        // subconjunto de tags de ingrediente/tipo de plato (KNOWN_TAGS).
+        const tagsPrevios: string[] = (receta.tags as string[] | null) ?? []
+        const tagsAjenos = tagsPrevios.filter(t => !KNOWN_TAGS.includes(t))
+        const tags = Array.from(new Set([...tagsAjenos, ...tagsIngrediente])).sort()
+        const cambia = tags.length !== tagsPrevios.length || tags.some((t, i) => t !== [...tagsPrevios].sort()[i])
         const tagsStr = tags.length ? tags.join(', ') : '(sin tags)'
 
         if (dryRun) {
-          const estado = tags.length ? '✅' : '⚠️ '
-          console.log(`${estado} ${receta.nombre.padEnd(52)} → [${tagsStr}]`)
-        } else {
+          const estado = !cambia ? '·' : tags.length ? '✅' : '⚠️ '
+          if (cambia) console.log(`${estado} ${receta.nombre.padEnd(52)} → [${tagsStr}]`)
+        } else if (cambia) {
           const { error: err } = await supabase
             .from('recetas')
             .update({ tags })

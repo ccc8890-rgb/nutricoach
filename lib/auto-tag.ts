@@ -100,6 +100,32 @@ function norm(s: string): string {
     .replace(/[^a-z0-9\s]/g, ' ')
 }
 
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// Antes se usaba `texto.includes(keyword)` — coincidencia de substring, no
+// de palabra completa. "pasta" (la palabra) aparece dentro de "pastanaga"
+// (zanahoria en catalán) sin ser pasta en absoluto — etiquetaba mal
+// cualquier receta con zanahoria de esa marca. Coincidencia por palabra
+// completa (con límites `\b`) evita ese tipo de falso positivo para
+// cualquier keyword, no solo "pasta".
+function matchPalabra(texto: string, keyword: string): boolean {
+  return new RegExp(`\\b${escapeRegex(keyword)}\\b`).test(texto)
+}
+
+// "Pasta" en español es ambiguo: fideos/macarrones, pero también una pasta
+// para untar (pasta de almendras, de tomate, de sésamo/tahini...). El
+// keyword genérico 'pasta' solo debe activar el tag cuando NO forma parte
+// de una de estas pastas para untar — se detectan y se quitan del texto
+// antes de comprobar el keyword. Los tipos de pasta concretos (espagueti,
+// macarrón...) no se ven afectados porque no contienen ese patrón.
+const PASTA_PARA_UNTAR = /\bpasta de (almendras?|cacahuetes?|avellanas?|sesamo|tahini|curry|lentejas?|garbanzos?|aceitunas?|datiles?|tomate|boniato)\b/g
+
+function quitarPastasParaUntar(texto: string): string {
+  return texto.replace(PASTA_PARA_UNTAR, ' ')
+}
+
 // Vocabulario completo de tags conocidos — usado en el editor de recetas
 export const KNOWN_TAGS: string[] = Array.from(new Set([
   ...NAME_TAGS.map(([, tag]) => tag),
@@ -108,11 +134,11 @@ export const KNOWN_TAGS: string[] = Array.from(new Set([
 
 export function autoTagReceta(receta: RecetaParaTag): string[] {
   const tags = new Set<string>()
-  const nombreN = norm(receta.nombre)
+  const nombreN = quitarPastasParaUntar(norm(receta.nombre))
 
   // Tags desde el nombre del plato
   for (const [kw, tag] of NAME_TAGS) {
-    if (nombreN.includes(norm(kw))) tags.add(tag)
+    if (matchPalabra(nombreN, norm(kw))) tags.add(tag)
   }
 
   // Tags desde ingredientes
@@ -122,10 +148,10 @@ export function autoTagReceta(receta: RecetaParaTag): string[] {
     if (alimento?.nombre) ingTexts.push(norm(alimento.nombre))
     if (ing.nombre_libre) ingTexts.push(norm(ing.nombre_libre))
   }
-  const ingStr = ingTexts.join(' ')
+  const ingStr = quitarPastasParaUntar(ingTexts.join(' '))
 
   for (const [kw, tag] of INGREDIENT_TAGS) {
-    if (ingStr.includes(norm(kw))) tags.add(tag)
+    if (matchPalabra(ingStr, norm(kw))) tags.add(tag)
   }
 
   return Array.from(tags).sort()
