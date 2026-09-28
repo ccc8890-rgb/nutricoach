@@ -1,5 +1,47 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 29-09-2026 (madrugada, Claude) — Auditoría de matches de ingredientes: 2 casos de Carlos + 3 patrones sistémicos (T45)
+
+### Contexto
+Carlos, revisando su propio plan real desde el móvil, sospechó de dos recetas concretas: "Ensalada de pepino chafado con aliño de sésamo" (cantidades e ingrediente de sésamo "raros") y "Bollos de patata dulce" (llevaba caseína micelar, que le sonaba falso). Pidió identificar el problema sin tener que revisar receta a receta él mismo, y al confirmar los 2 casos pidió extender la revisión a todo el recetario ("seguiremos revisando todas las recetas para que estén perfectas en título, ingredientes, cantidades, kcals etc.").
+
+### Los 2 casos confirmados
+- **"Ensalada de pepino chafado con aliño de sésamo"** (`adf4a285-caf8-48c7-8e51-a346824d92d0`): el ingrediente "Pepino mediano" (60g) estaba vinculado a **"Tzaziki Crema Yogur con Pepino"** (80 kcal/100g, un producto preparado) en vez de al alimento real "Pepino" (15 kcal/100g) — la receta no tenía pepino real en su base nutricional, solo un producto de yogur con pepino. Además "Piparras" pesaba **240g**, una cantidad absurda para un encurtido de guarnición. Corregido: relink a "Pepino" real + piparras bajadas a 30g. Kcal receta: 178.9→138.4.
+- **"Bollos de patata dulce saludables"** (`4a998463-af82-4bb3-81f2-e01784e81ac4`): la caseína micelar SÍ estaba mencionada en las instrucciones (no era un ingrediente huérfano), pero es un aditivo que la IA insertó al generar/refinar la receta sin que estuviera en el original — mismo tipo de problema que Carlos ya había anotado como pendiente sin definir alcance (T44, "recetas demasiado IA"). Eliminada la caseína del ingrediente y de las instrucciones, macros recalculadas (147.5→142.9 kcal).
+
+### Auditoría sistemática — 3 patrones más
+Reutilizado el script ya existente `scripts/auditar-matches-ingredientes.mjs --todas` (compara cada `receta_ingredientes.nombre_libre` contra el `alimento.nombre` real vinculado) sobre las **586 recetas totales** (no solo las 476 aprobadas de T18). Resultado: 98 matches sospechosos. Filtrando falsos positivos del propio script (plurales/sinónimos que no reconoce, ej. "Huevos"→"Huevo"), quedaron 3 patrones sistémicos reales, cada uno repetido en varias recetas — no casos aislados:
+
+| Patrón | Ingredientes afectados | Recetas | Impacto |
+|---|---|---|---|
+| **"Aguacate" → "Agua"** | 8 | Bowl de pollo y aguacate, Ensalada de pollo especiado, Ensalada de cuscús fresca, otras | Aguacate (160kcal/100g) contaba como agua pura (0kcal) |
+| **"Proteína whey vainilla" → "Natillas con chocolate +Proteínas Hacendado"** | 3 | Donut fit, Batido verde saciante, Cookies de avena y chocolate | Suplemento de proteína vinculado a un postre de nata, macros distintos |
+| **"Queso cottage/batido bajo en grasa/0%" → "Queso añejo fuerte de oveja"** | 13 | Tostada Proteica Cottage, Mousse Queso Fresco y Fresa, Tarro Queso Cottage, Tarta de queso sin base, Bocadillo de pollo, wraps varios | Queso light vinculado a un queso curado con mucha más grasa/calorías |
+
+Cada relink apunta a un alimento **ya existente y comestible** en BD (Aguacate genérico `91ad5545`, Proteína en polvo sabor vainilla `9076c191`, Cottage 0% Materia Grasa `30dbfc8a`) — no se inventaron alimentos nuevos. Script nuevo `scripts/fix-auditoria-matches-2026-09-29.mjs` (dry-run por defecto, `--apply` para ejecutar), ejecutado primero en dry-run y revisado antes de aplicar. Recalculadas macros de las 26 recetas afectadas en total.
+
+Los saltos de kcal más grandes confirman que el bug de "queso cottage→queso añejo" era serio, no cosmético:
+- Tarro de Queso Cottage con Frutos Rojos y Nueces: 1153→**457 kcal**
+- Mousse de Queso Fresco y Fresa (sin horno): 901→**205 kcal**
+- Tostada Proteica con Cottage y Fresas Laminadas: 732→**210 kcal**
+
+### No tocado a propósito
+"pan de proteína (rebanada)" en *Pan proteico con AOVE y tomate* estaba vinculado a la misma "Natillas con chocolate +Proteínas" — pero relinkearlo a "Proteína en polvo sabor vainilla" habría sido igual de incorrecto (un pan proteico no es proteína en polvo). Sin un alimento "pan proteico" claro en BD, se dejó marcado para revisión manual en vez de mal-vincularlo a otra cosa.
+
+### Informe completo
+`nutricoach/salidas/auditoria-matches-2026-09-28.json` (98 hallazgos, no está en git — `salidas/` en `.gitignore`) — incluye los ~75 descartados como ruido en esta sesión, que no se revisaron uno a uno. Puede haber algún caso real entre ellos.
+
+### Verificación
+Dry-run ejecutado y leído completo antes de `--apply`. No se tocó código de la app (solo datos vía Supabase + 1 script nuevo), así que no aplica `tsc`/`build`. Verificado post-aplicación releyendo las 26 recetas recalculadas y confirmando que los kcal/macros bajaron/subieron en la dirección esperada según el alimento correcto.
+
+### Commits
+`52d1827` — fix: corrige matches de ingredientes mal vinculados en recetario (pusheado a `origin/main`).
+
+### Pendiente — próxima sesión (ver T46 en `TAREAS.md`)
+Carlos quiere seguir revisando el recetario completo. Sin alcance decidido todavía entre: (a) revisar uno a uno los ~75 hallazgos descartados como ruido de esta auditoría, (b) retomar los 252 hallazgos de T26 (forma incorrecta del ingrediente, patrón distinto), (c) auditoría de cantidades absurdas a nivel de todo el recetario (el caso de piparras 240g fue puntual, no se buscó sistemáticamente), (d) T44 (fotos faltantes + recetas "demasiado IA") sigue sin alcance definido.
+
+---
+
 ## ✅ SESIÓN 28-09-2026 (Claude, continuación noche) — Recetario explorable, alternativas de comida, causa raíz de ingredientes ajenos + navegación
 
 ### Contexto
