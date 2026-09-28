@@ -18,6 +18,11 @@ export async function POST(
     const body = await request.json().catch(() => ({}))
     const comidaId: string = body.comida_id
     const diaSemana: string = body.dia_semana
+    // Opcional: además de mover de día, reencasillar el plato en otra
+    // franja (Desayuno/Comida/Merienda/Cena) — permite p.ej. usar una cena
+    // como comida. Solo cambia la etiqueta, no recalcula objetivos de
+    // macros de la franja (el plato conserva los suyos).
+    const nombre: string | undefined = typeof body.nombre === 'string' && body.nombre.trim() ? body.nombre.trim() : undefined
 
     if (!comidaId || !DIAS_VALIDOS.has(diaSemana)) {
       return NextResponse.json({ error: 'Parámetros inválidos' }, { status: 400 })
@@ -39,7 +44,10 @@ export async function POST(
       return NextResponse.json({ error: 'Esta comida se repite todos los días. Actívala por día primero.' }, { status: 409 })
     }
 
-    const { error } = await admin.from('comidas').update({ dia_semana: diaSemana }).eq('id', comidaId)
+    const update: { dia_semana: string; nombre?: string } = { dia_semana: diaSemana }
+    if (nombre) update.nombre = nombre
+
+    const { error } = await admin.from('comidas').update(update).eq('id', comidaId)
     if (error) return NextResponse.json({ error: 'No se pudo mover la comida' }, { status: 500 })
 
     return NextResponse.json({ ok: true })
