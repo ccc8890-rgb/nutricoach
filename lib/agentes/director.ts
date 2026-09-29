@@ -17,7 +17,7 @@ import { ejecutarDirectorSupercoachCliente } from './supercoach'
 import { actualizarPerfilGusto } from './perfil-gusto'
 import { ejecutarAprendizajeColectivo } from './aprendizaje-colectivo'
 import { ejecutarAgenteRetencion } from './agente-retencion'
-import { crearPlanDirectorCliente, type ModoDirector, type PlanDirectorCliente } from './orquestador'
+import { crearPlanDirectorCliente, resolverPasosDirector, type ModoDirector, type PasoDirector, type PlanDirectorCliente } from './orquestador'
 
 export interface ResultadoDirector {
   clientes_procesados: number
@@ -26,11 +26,13 @@ export interface ResultadoDirector {
   duracion_ms: number
   planes_director?: PlanDirectorCliente[]
   aprendizaje_colectivo?: { patrones_extraidos: number; resumen: string }
+  dry_run?: boolean
 }
 
 // ── Entry point del cron job ──────────────────────────────────
 export async function ejecutarDirector(
-  modo: ModoDirector = 'diario'
+  modo: ModoDirector = 'diario',
+  options: { dryRun?: boolean } = {}
 ): Promise<ResultadoDirector> {
   const inicio = Date.now()
   const db = createServiceSupabase()
@@ -60,19 +62,9 @@ export async function ejecutarDirector(
         const plan = crearPlanDirectorCliente(await cargarSenalesDirectorCliente(id), modo)
         planesDirector.push(plan)
 
-        if (plan.ejecutar.perfil_aprendizaje) await actualizarPerfilAprendizaje(id)
-        if (plan.ejecutar.perfil_gusto) await actualizarPerfilGusto(id)
-
-        if (plan.ejecutar.riesgo_nutricion) await ejecutarAgenteRiesgo(id)
-        if (plan.ejecutar.retencion) await ejecutarAgenteRetencion(id)
-        if (plan.ejecutar.riesgo_entreno) await ejecutarAgenteRiesgoEntreno(id)
-        if (plan.ejecutar.readiness) await ejecutarAgenteReadiness(id)
-        if (plan.ejecutar.supercoach) await ejecutarDirectorSupercoachCliente(id)
-
-        if (plan.ejecutar.revisor_semanal) await ejecutarRevisorSemanal(id)
-        if (plan.ejecutar.motivacion) await ejecutarAgenteMotivacion(id)
-        if (plan.ejecutar.revisor_semanal_entreno) await ejecutarRevisorSemanalEntreno(id)
-        if (plan.ejecutar.training_brain) await ejecutarTrainingBrain(id)
+        for (const paso of resolverPasosDirector(plan, options.dryRun === true)) {
+          await ejecutarPasoDirector(paso, id)
+        }
       })
     )
     for (let j = 0; j < resultados.length; j++) {
@@ -89,7 +81,7 @@ export async function ejecutarDirector(
 
   // Aprendizaje colectivo: solo el 1er día del mes (en ejecución semanal)
   let aprendizajeColectivo: ResultadoDirector['aprendizaje_colectivo']
-  if (modo === 'semanal' && new Date().getDate() <= 7) {
+  if (!options.dryRun && modo === 'semanal' && new Date().getDate() <= 7) {
     try {
       const res = await ejecutarAprendizajeColectivo()
       aprendizajeColectivo = { patrones_extraidos: res.patrones_extraidos, resumen: res.resumen }
@@ -106,6 +98,23 @@ export async function ejecutarDirector(
     duracion_ms: Date.now() - inicio,
     planes_director: planesDirector,
     aprendizaje_colectivo: aprendizajeColectivo,
+    dry_run: options.dryRun === true,
+  }
+}
+
+async function ejecutarPasoDirector(paso: PasoDirector, clienteId: string): Promise<void> {
+  switch (paso) {
+    case 'perfil_aprendizaje': await actualizarPerfilAprendizaje(clienteId); return
+    case 'perfil_gusto': await actualizarPerfilGusto(clienteId); return
+    case 'riesgo_nutricion': await ejecutarAgenteRiesgo(clienteId); return
+    case 'retencion': await ejecutarAgenteRetencion(clienteId); return
+    case 'riesgo_entreno': await ejecutarAgenteRiesgoEntreno(clienteId); return
+    case 'readiness': await ejecutarAgenteReadiness(clienteId); return
+    case 'supercoach': await ejecutarDirectorSupercoachCliente(clienteId); return
+    case 'revisor_semanal': await ejecutarRevisorSemanal(clienteId); return
+    case 'motivacion': await ejecutarAgenteMotivacion(clienteId); return
+    case 'revisor_semanal_entreno': await ejecutarRevisorSemanalEntreno(clienteId); return
+    case 'training_brain': await ejecutarTrainingBrain(clienteId); return
   }
 }
 

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { crearPlanDirectorCliente } from '../lib/agentes/orquestador'
+import { crearPlanDirectorCliente, resolverPasosDirector } from '../lib/agentes/orquestador'
 
 const base = {
   clienteId: 'cliente-1',
@@ -60,5 +60,20 @@ assert.equal(duplicados.ejecutar.riesgo_nutricion, false)
 assert.equal(duplicados.ejecutar.riesgo_entreno, false)
 assert.equal(duplicados.ejecutar.supercoach, false)
 
-console.log('orquestador-director.test.ts OK')
+const pasosSemanales = resolverPasosDirector(semanal, false)
+assert.deepEqual(pasosSemanales, [
+  'perfil_aprendizaje',
+  'perfil_gusto',
+  'retencion',
+  'readiness',
+  'supercoach',
+  'revisor_semanal',
+  'motivacion',
+  'revisor_semanal_entreno',
+  'training_brain',
+])
 
+const pasosDryRun = resolverPasosDirector(semanal, true)
+assert.deepEqual(pasosDryRun, [])
+
+console.log('orquestador-director.test.ts OK')

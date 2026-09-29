@@ -31,6 +31,28 @@ export interface PlanDirectorCliente {
   presionInbox: 'normal' | 'alta'
 }
 
+const ORDEN_PASOS_DIRECTOR: PasoDirector[] = [
+  'perfil_aprendizaje',
+  'perfil_gusto',
+  'riesgo_nutricion',
+  'retencion',
+  'riesgo_entreno',
+  'readiness',
+  'supercoach',
+  'revisor_semanal',
+  'motivacion',
+  'revisor_semanal_entreno',
+  'training_brain',
+]
+
+export function resolverPasosDirector(
+  plan: PlanDirectorCliente,
+  dryRun: boolean
+): PasoDirector[] {
+  if (dryRun) return []
+  return ORDEN_PASOS_DIRECTOR.filter(paso => plan.ejecutar[paso])
+}
+
 function hasPending(s: SenalesDirectorCliente, tipo: string, agente?: string): boolean {
   return s.pendientes.some(t => t.tipo === tipo && (!agente || t.agente === agente))
 }
@@ -115,4 +137,3 @@ export function crearPlanDirectorCliente(
     presionInbox,
   }
 }
-

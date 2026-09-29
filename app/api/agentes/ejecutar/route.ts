@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const modo = (searchParams.get('modo') ?? 'diario') as 'diario' | 'semanal'
-    const resultado = await ejecutarDirector(modo)
+    const resultado = await ejecutarDirector(modo, { dryRun: searchParams.get('dryRun') === 'true' })
     return NextResponse.json({ ok: true, resultado })
   } catch (error) {
     console.error('[agentes/ejecutar]', error)
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const modo = (searchParams.get('modo') ?? 'diario') as 'diario' | 'semanal'
-    const resultado = await ejecutarDirector(modo)
+    const resultado = await ejecutarDirector(modo, { dryRun: searchParams.get('dryRun') === 'true' })
     return NextResponse.json({ ok: true, resultado })
   } catch (error) {
     console.error('[agentes/ejecutar]', error)
