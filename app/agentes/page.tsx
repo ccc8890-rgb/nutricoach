@@ -15,6 +15,7 @@ import {
   X,
 } from '@phosphor-icons/react'
 import { StaggerList, StaggerItem } from '@/components/ui/Motion'
+import HistorialEjecucionesAgentes from '@/components/HistorialEjecucionesAgentes'
 
 type AgenteTarea = {
   id: string
@@ -131,6 +132,7 @@ export default function AgentesInboxPage() {
   const [editandoPropuesta, setEditandoPropuesta] = useState('')
   const [ejecutando, setEjecutando] = useState<'idle' | 'diario' | 'semanal'>('idle')
   const [resultadoRun, setResultadoRun] = useState<string | null>(null)
+  const [ejecucionesKey, setEjecucionesKey] = useState(0)
 
   const fetchTareas = useCallback(async () => {
     try {
@@ -169,6 +171,7 @@ export default function AgentesInboxPage() {
       const resultado = data.resultado
       setResultadoRun(`${resultado?.clientes_procesados ?? 0} clientes procesados, ${resultado?.tareas_generadas ?? 0} acciones nuevas`)
       await fetchTareas()
+      setEjecucionesKey(key => key + 1)
     } catch {
       setResultadoRun('No se pudo ejecutar el análisis')
     } finally {
@@ -244,6 +247,8 @@ export default function AgentesInboxPage() {
         <Metric label="Clientes" value={stats.clientes} icon={Clock} />
         <Metric label="Aplicadas" value={stats.aplicadas} icon={Check} />
       </div>
+
+      <HistorialEjecucionesAgentes refreshKey={ejecucionesKey} />
 
       <div className="rounded-3xl p-3 mb-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div className="flex flex-col lg:flex-row gap-3 lg:items-center min-w-0">
