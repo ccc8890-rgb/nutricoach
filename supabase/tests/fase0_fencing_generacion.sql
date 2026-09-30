@@ -48,7 +48,7 @@ insert into public.planes_entrenamiento (id, coach_id, cliente_id, nombre, activ
 select plan_entrenamiento_activo_id, actor_id, cliente_id, 'Entrenamiento activo fencing', true
 from fase0_fencing_fixture;
 
-select plan(21);
+select plan(25);
 
 select has_column('public', 'generaciones_plan_inicial', 'intento_token', 'generacion guarda lease vigente');
 select has_column('public', 'planes_nutricion', 'generacion_intento_token', 'nutricion guarda lease del intento');
@@ -125,6 +125,41 @@ select lives_ok(
     select entrenamiento_b_id, actor_id, cliente_id, 'Borrador entrenamiento B', false, generacion_id, token_b
     from fase0_fencing_fixture$$,
   'borradores de entrenamiento de dos intentos pueden coexistir'
+);
+
+select throws_ok(
+  $test$do $attempt$
+  begin
+    perform public.limpiar_borradores_generacion(generacion_id, null)
+    from fase0_fencing_fixture;
+  end
+  $attempt$$test$,
+  'P0001', 'La lease del intento de generación es obligatoria',
+  'limpieza rechaza explicitamente una lease NULL'
+);
+
+select throws_ok(
+  $test$do $attempt$
+  begin
+    perform public.marcar_generacion_inicial_fallida(
+      generacion_id, null, 'NULL_LEASE', 'lease ausente'
+    ) from fase0_fencing_fixture;
+  end
+  $attempt$$test$,
+  'P0001', 'La lease del intento de generación es obligatoria',
+  'marcar fallo rechaza explicitamente una lease NULL'
+);
+
+select throws_ok(
+  $test$do $attempt$
+  begin
+    perform public.activar_planes_generacion(
+      generacion_id, null, nutricion_b_id, entrenamiento_b_id
+    ) from fase0_fencing_fixture;
+  end
+  $attempt$$test$,
+  'P0001', 'La lease del intento de generación es obligatoria',
+  'activacion rechaza explicitamente una lease NULL'
 );
 
 select throws_ok(
@@ -224,6 +259,21 @@ select ok(
    from fase0_fencing_fixture f,
    lateral public.claim_generacion_plan_inicial(f.cliente_id, 'fase0:fencing:misma-clave', f.actor_id) c),
   'reutilizar no filtra la lease completada'
+);
+
+delete from public.generaciones_plan_inicial g
+using fase0_fencing_fixture f
+where g.id = f.generacion_id;
+
+select ok(
+  (select pn.generacion_inicial_id is null
+      and pn.generacion_intento_token is null
+      and pe.generacion_inicial_id is null
+      and pe.generacion_intento_token is null
+    from fase0_fencing_fixture f
+    join public.planes_nutricion pn on pn.id = f.nutricion_b_id
+    join public.planes_entrenamiento pe on pe.id = f.entrenamiento_b_id),
+  'borrar la generacion desvincula generacion y lease de ambos planes'
 );
 
 select * from finish();
