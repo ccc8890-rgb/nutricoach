@@ -17,7 +17,9 @@ import { ejecutarDirectorSupercoachCliente } from './supercoach'
 import { actualizarPerfilGusto } from './perfil-gusto'
 import { ejecutarAprendizajeColectivo } from './aprendizaje-colectivo'
 import { ejecutarAgenteRetencion } from './agente-retencion'
-import { crearPlanDirectorCliente, resolverPasosDirector, type ModoDirector, type PasoDirector, type PlanDirectorCliente } from './orquestador'
+import { crearPlanDirectorCliente, resolverEstadoEjecucion, resolverPasosDirector, type ModoDirector, type PasoDirector, type PlanDirectorCliente } from './orquestador'
+
+type OrigenDirector = 'cron' | 'manual' | 'sistema'
 
 export interface ResultadoDirector {
   clientes_procesados: number
@@ -27,17 +29,19 @@ export interface ResultadoDirector {
   planes_director?: PlanDirectorCliente[]
   aprendizaje_colectivo?: { patrones_extraidos: number; resumen: string }
   dry_run?: boolean
+  ejecucion_id?: string
 }
 
 // ── Entry point del cron job ──────────────────────────────────
 export async function ejecutarDirector(
   modo: ModoDirector = 'diario',
-  options: { dryRun?: boolean } = {}
+  options: { dryRun?: boolean; origen?: OrigenDirector } = {}
 ): Promise<ResultadoDirector> {
   const inicio = Date.now()
   const db = createServiceSupabase()
   const errores: string[] = []
   let tareasGeneradas = 0
+  const ejecucionId = await iniciarAuditoriaDirector(db, modo, options)
 
   // Obtener clientes activos
   const { data: clientes, error } = await db
@@ -46,7 +50,9 @@ export async function ejecutarDirector(
     .eq('activo', true)
 
   if (error || !clientes) {
-    return { clientes_procesados: 0, tareas_generadas: 0, errores: ['No se pudieron cargar clientes'], duracion_ms: Date.now() - inicio }
+    const resultado = { clientes_procesados: 0, tareas_generadas: 0, errores: ['No se pudieron cargar clientes'], duracion_ms: Date.now() - inicio, dry_run: options.dryRun === true, ejecucion_id: ejecucionId }
+    await finalizarAuditoriaDirector(db, ejecucionId, resultado)
+    return resultado
   }
 
   const tareasPrevias = await contarTareasPendientes(db)
@@ -91,7 +97,7 @@ export async function ejecutarDirector(
     }
   }
 
-  return {
+  const resultado: ResultadoDirector = {
     clientes_procesados: clientes.length,
     tareas_generadas: tareasGeneradas,
     errores,
@@ -99,7 +105,47 @@ export async function ejecutarDirector(
     planes_director: planesDirector,
     aprendizaje_colectivo: aprendizajeColectivo,
     dry_run: options.dryRun === true,
+    ejecucion_id: ejecucionId,
   }
+  await finalizarAuditoriaDirector(db, ejecucionId, resultado)
+  return resultado
+}
+
+async function iniciarAuditoriaDirector(
+  db: ReturnType<typeof createServiceSupabase>,
+  modo: ModoDirector,
+  options: { dryRun?: boolean; origen?: OrigenDirector }
+): Promise<string | undefined> {
+  const { data, error } = await db
+    .from('agente_ejecuciones')
+    .insert({ modo, origen: options.origen ?? 'sistema', dry_run: options.dryRun === true })
+    .select('id')
+    .single()
+  if (error) {
+    console.error('[director] No se pudo iniciar la auditoría:', error.message)
+    return undefined
+  }
+  return data.id as string
+}
+
+async function finalizarAuditoriaDirector(
+  db: ReturnType<typeof createServiceSupabase>,
+  ejecucionId: string | undefined,
+  resultado: ResultadoDirector
+): Promise<void> {
+  if (!ejecucionId) return
+  const { error } = await db
+    .from('agente_ejecuciones')
+    .update({
+      estado: resolverEstadoEjecucion(resultado.errores),
+      clientes_procesados: resultado.clientes_procesados,
+      tareas_generadas: resultado.tareas_generadas,
+      errores: resultado.errores,
+      duracion_ms: resultado.duracion_ms,
+      finalizado_at: new Date().toISOString(),
+    })
+    .eq('id', ejecucionId)
+  if (error) console.error('[director] No se pudo finalizar la auditoría:', error.message)
 }
 
 async function ejecutarPasoDirector(paso: PasoDirector, clienteId: string): Promise<void> {

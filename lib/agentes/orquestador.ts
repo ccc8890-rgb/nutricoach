@@ -1,4 +1,5 @@
 export type ModoDirector = 'diario' | 'semanal'
+export type EstadoEjecucionDirector = 'completado' | 'completado_con_errores'
 
 export type PasoDirector =
   | 'perfil_aprendizaje'
@@ -51,6 +52,10 @@ export function resolverPasosDirector(
 ): PasoDirector[] {
   if (dryRun) return []
   return ORDEN_PASOS_DIRECTOR.filter(paso => plan.ejecutar[paso])
+}
+
+export function resolverEstadoEjecucion(errores: string[]): EstadoEjecucionDirector {
+  return errores.length === 0 ? 'completado' : 'completado_con_errores'
 }
 
 function hasPending(s: SenalesDirectorCliente, tipo: string, agente?: string): boolean {

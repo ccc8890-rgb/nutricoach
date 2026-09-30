@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { crearPlanDirectorCliente, resolverPasosDirector } from '../lib/agentes/orquestador'
+import { crearPlanDirectorCliente, resolverEstadoEjecucion, resolverPasosDirector } from '../lib/agentes/orquestador'
 
 const base = {
   clienteId: 'cliente-1',
@@ -75,5 +75,8 @@ assert.deepEqual(pasosSemanales, [
 
 const pasosDryRun = resolverPasosDirector(semanal, true)
 assert.deepEqual(pasosDryRun, [])
+
+assert.equal(resolverEstadoEjecucion([]), 'completado')
+assert.equal(resolverEstadoEjecucion(['cliente C1: timeout']), 'completado_con_errores')
 
 console.log('orquestador-director.test.ts OK')
