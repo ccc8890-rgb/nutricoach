@@ -19,6 +19,11 @@ import { calcularAjustesPeriEntreno } from '@/lib/nutricion-peri-entreno'
 import { getContextoCoach, getContextoClienteClinico, getTargetsComidas } from '@/lib/metodologia-recetario'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { extraerDietaHabitual, formatearDietaHabitualParaPrompt, guardarDietaHabitualCliente, type PlatoHabitualCliente } from '@/lib/dieta-habitual'
+import {
+  marcarGeneracionFallida,
+  reclamarGeneracionInicial,
+  type GeneracionInicialResponse,
+} from '@/lib/planes/generacion-inicial'
 import type { PerfilEntrenoCliente, RecetaCandidata, SportModality } from '@/types'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
@@ -168,33 +173,27 @@ function inferirPerfilEntreno(clienteId: string, onboarding: Record<string, any>
 
 async function crearPlanEntrenoDesdePlantilla(
   supabase: ReturnType<typeof createServiceSupabase>,
-  input: { clienteId: string; coachId: string; plantillaId: string; nombre?: string }
-): Promise<string | null> {
-  const { data: plantilla } = await supabase
+  input: { clienteId: string; coachId: string; plantillaId: string; generacionId: string; nombre?: string }
+): Promise<string> {
+  const { data: plantilla, error: plantillaError } = await supabase
     .from('plantillas_entrenamiento')
     .select('id, nombre, descripcion, duracion_semanas')
     .eq('id', input.plantillaId)
     .single()
 
-  if (!plantilla) return null
+  if (plantillaError || !plantilla) {
+    throw new Error(`TRAINING_TEMPLATE_NOT_FOUND:${plantillaError?.message ?? input.plantillaId}`)
+  }
 
-  const { data: sesiones } = await supabase
+  const { data: sesiones, error: sesionesError } = await supabase
     .from('plantilla_sesiones')
     .select('*, ejercicios:plantilla_sesion_ejercicios(*)')
     .eq('plantilla_id', input.plantillaId)
     .order('orden')
 
-  if (!sesiones?.length) return null
-
-  // Sin esto, cada generación deja el plan de entreno anterior también
-  // activo — el cliente/coach ven varios planes "activos" a la vez y las
-  // consultas que asumen uno solo (.single() con .limit(1)) devuelven uno
-  // cualquiera según el orden, no necesariamente el más reciente.
-  await supabase
-    .from('planes_entrenamiento')
-    .update({ activo: false })
-    .eq('cliente_id', input.clienteId)
-    .eq('activo', true)
+  if (sesionesError || !sesiones?.length) {
+    throw new Error(`TRAINING_TEMPLATE_EMPTY:${sesionesError?.message ?? input.plantillaId}`)
+  }
 
   const { data: plan, error: planError } = await supabase
     .from('planes_entrenamiento')
@@ -204,12 +203,15 @@ async function crearPlanEntrenoDesdePlantilla(
       nombre: input.nombre ?? plantilla.nombre,
       descripcion: plantilla.descripcion ?? null,
       duracion_semanas: plantilla.duracion_semanas ?? null,
-      activo: true,
+      activo: false,
+      generacion_inicial_id: input.generacionId,
     })
     .select('id')
     .single()
 
-  if (planError || !plan) return null
+  if (planError || !plan) {
+    throw new Error(`TRAINING_PLAN_INSERT_FAILED:${planError?.message ?? 'respuesta vacía'}`)
+  }
 
   for (const sesion of sesiones as PlantillaSesionRow[]) {
     const { data: nuevaSesion, error: sesionError } = await supabase
@@ -227,7 +229,7 @@ async function crearPlanEntrenoDesdePlantilla(
 
     if (sesionError || !nuevaSesion) {
       await supabase.from('planes_entrenamiento').delete().eq('id', plan.id)
-      return null
+      throw new Error(`TRAINING_SESSION_INSERT_FAILED:${sesionError?.message ?? sesion.nombre}`)
     }
 
     for (const ejercicio of sesion.ejercicios ?? []) {
@@ -244,7 +246,7 @@ async function crearPlanEntrenoDesdePlantilla(
 
       if (ejercicioError) {
         await supabase.from('planes_entrenamiento').delete().eq('id', plan.id)
-        return null
+        throw new Error(`TRAINING_EXERCISE_INSERT_FAILED:${ejercicioError.message}`)
       }
     }
   }
@@ -263,22 +265,40 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Demasiadas peticiones. Espera un momento.' }, { status: 429 })
   }
 
-  const { cliente_id } = await request.json()
+  const body = await request.json().catch(() => null) as {
+    cliente_id?: unknown
+    idempotency_key?: unknown
+    origen?: unknown
+  } | null
+  const cliente_id = typeof body?.cliente_id === 'string' ? body.cliente_id : ''
+  const idempotencyKey = typeof body?.idempotency_key === 'string' ? body.idempotency_key.trim() : ''
+  const origen = typeof body?.origen === 'string' ? body.origen : ''
   if (!cliente_id) return NextResponse.json({ error: 'cliente_id requerido' }, { status: 400 })
+  if (idempotencyKey.length < 8 || idempotencyKey.length > 160) {
+    return NextResponse.json({
+      error: { codigo: 'INVALID_IDEMPOTENCY_KEY', mensaje: 'idempotency_key debe tener entre 8 y 160 caracteres.' },
+    }, { status: 400 })
+  }
 
   const supabase = createServiceSupabase()
 
   // ── 1. Fetch ALL client data ───────────────────────────────────────────────
   const { data: cliente } = await supabase
     .from('clientes')
-    .select('id, coach_id, objetivo, peso_inicial, altura, edad, sexo, restricciones_alimentarias')
+    .select('id, coach_id, profile_id, objetivo, peso_inicial, altura, edad, sexo, restricciones_alimentarias')
     .eq('id', cliente_id)
     .single()
 
   if (!cliente) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
 
-  if (cliente.coach_id !== user.id) {
-    return NextResponse.json({ error: 'Acceso restringido al coach del cliente' }, { status: 403 })
+  const esCoachPropietario = cliente.coach_id === user.id
+  const esClienteInicial = cliente.profile_id === user.id
+    && origen === 'onboarding'
+    && idempotencyKey === `onboarding:${cliente.id}`
+  if (!esCoachPropietario && !esClienteInicial) {
+    return NextResponse.json({
+      error: { codigo: 'FORBIDDEN_CLIENT', mensaje: 'No puedes generar el plan de este cliente.' },
+    }, { status: 403 })
   }
 
   const { data: onboarding } = await supabase
@@ -288,6 +308,51 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (!onboarding) return NextResponse.json({ error: 'Onboarding no completado' }, { status: 400 })
+
+  let claim
+  try {
+    claim = await reclamarGeneracionInicial(supabase, {
+      clienteId: cliente.id,
+      clave: idempotencyKey,
+      actorId: user.id,
+    })
+  } catch (error) {
+    console.error('[generar-plan-inicial] Error reclamando generación:', error)
+    return NextResponse.json({
+      error: {
+        codigo: 'CLAIM_FAILED',
+        mensaje: 'No se pudo iniciar la generación del plan.',
+        accion: 'Reintenta en unos segundos.',
+      },
+    }, { status: 500 })
+  }
+
+  if (claim.accion === 'esperar') {
+    const response: GeneracionInicialResponse = {
+      ok: true,
+      generacion_id: claim.generacionId,
+      estado: claim.estado,
+      reutilizada: false,
+      plan_nutricion_id: claim.planNutricionId,
+      plan_entrenamiento_id: claim.planEntrenamientoId,
+    }
+    return NextResponse.json(response, { status: 202 })
+  }
+
+  if (claim.accion === 'reutilizar') {
+    const response: GeneracionInicialResponse = {
+      ok: true,
+      generacion_id: claim.generacionId,
+      estado: claim.estado,
+      reutilizada: true,
+      plan_nutricion_id: claim.planNutricionId,
+      plan_entrenamiento_id: claim.planEntrenamientoId,
+    }
+    return NextResponse.json(response)
+  }
+
+  let generacionActivada = false
+  try {
 
   const { data: perfil } = await supabase
     .from('onboarding_perfil_profundo')
@@ -1140,19 +1205,14 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
   try {
     const codigoPublico = crypto.randomUUID().slice(0, 10)
     const comidasData = (planJson.distribucion_comidas as Array<Record<string, unknown>> ?? [])
+    if (comidasData.length === 0) {
+      throw new Error('MEALS_NOT_GENERATED')
+    }
     const descripcion = (planJson.notas_dieta as string) ||
       (planJson.notas_coach as string) ||
       ('Plan nutricional para ' + onboarding.objetivo.replace(/_/g, ' '))
 
-    // 13a. Crear el plan en BD
-    // Desactivar cualquier plan de nutrición previo del cliente — sin esto
-    // quedan varios "activos" a la vez tras cada regeneración.
-    await supabase
-      .from('planes_nutricion')
-      .update({ activo: false })
-      .eq('cliente_id', cliente_id)
-      .eq('activo', true)
-
+    // 13a. Crear el borrador. El plan activo solo cambia dentro de la RPC final.
     const { data: planDb, error: planDbError } = await supabase
       .from('planes_nutricion')
       .insert({
@@ -1164,14 +1224,17 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
         proteinas_objetivo: (planJson.macros as any)?.proteinas_g ?? null,
         carbohidratos_objetivo: (planJson.macros as any)?.carbos_g ?? null,
         grasas_objetivo: (planJson.macros as any)?.grasas_g ?? null,
-        activo: true,
+        activo: false,
         generado_por_ia: true,
         codigo_publico: codigoPublico,
+        generacion_inicial_id: claim.generacionId,
       })
       .select()
       .single()
 
-    if (planDbError) throw planDbError
+    if (planDbError || !planDb) {
+      throw new Error(`NUTRITION_PLAN_INSERT_FAILED:${planDbError?.message ?? 'respuesta vacía'}`)
+    }
     planId = planDb.id
 
     // 13b. Crear comidas y expandir recetas en ingredientes reales
@@ -1189,6 +1252,9 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
             }]
           : []
       })()
+      if (recetasNormalizadas.length === 0) {
+        throw new Error(`RECIPE_CANDIDATE_NOT_FOUND:${String(comida.nombre)}`)
+      }
       const recetaIdPrincipal = (recetasNormalizadas[0]?.receta_id as string | undefined) ?? null
       // Bug corregido (25-09-2026): `comidas.origen_adherencia` tiene un
       // CHECK constraint en BD (solo acepta recetario/habitual_adaptado/
@@ -1221,8 +1287,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
         .single()
 
       if (comidaError || !comidaDb) {
-        console.error('Error creando comida:', comida.nombre, comidaError)
-        continue
+        throw new Error(`MEAL_INSERT_FAILED:${comidaError?.message ?? String(comida.nombre)}`)
       }
 
       const numRecetasComida = Math.max(1, recetasNormalizadas.length)
@@ -1245,8 +1310,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           (candidatasPorSlot.get(comida.nombre as string) ?? [...candidatasPorSlot.values()].flat())[0]
 
         if (!recetaFull) {
-          console.warn('[generar-plan-inicial] Sin candidatos para slot, omitiendo:', comida.nombre, recetaNombre)
-          continue
+          throw new Error(`RECIPE_CANDIDATE_NOT_FOUND:${String(comida.nombre)}:${recetaNombre}`)
         }
 
         // Bug corregido (25-09-2026): cuando una comida trae varias recetas
@@ -1281,6 +1345,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
           })
         } catch (err) {
           console.error('[generar-plan-inicial] Error expandiendo receta en ingredientes:', recetaFull.nombre, err)
+          throw err
         }
 
         if (recetaIndex === 0 && !adaptacionCoincideConReceta(comida.adaptacion_habitual as string | null, recetaFull.nombre)) {
@@ -1290,32 +1355,41 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
     }
   } catch (err) {
     console.error('[generar-plan-inicial] Error persistiendo plan en BD:', err)
+    throw err
   }
 
-  // ── 13c. Crear entrenamiento inicial si el cliente aún no tiene plan activo ──
+  // ── 13c. Crear el entrenamiento como borrador de la misma generación ───────
   let planEntrenoId: string | null = null
   try {
-    const { data: entrenoActivo } = await supabase
-      .from('planes_entrenamiento')
-      .select('id')
-      .eq('cliente_id', cliente_id)
-      .eq('activo', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
     const plantillaRecomendada = plantillasEntrenoRecomendadas?.[0]
-    if (!entrenoActivo && plantillaRecomendada?.id) {
-      planEntrenoId = await crearPlanEntrenoDesdePlantilla(supabase, {
-        clienteId: cliente_id,
-        coachId: cliente.coach_id,
-        plantillaId: plantillaRecomendada.id,
-        nombre: `Plan inicial — ${plantillaRecomendada.nombre}`,
-      })
+    if (!plantillaRecomendada?.id) {
+      throw new Error('TRAINING_TEMPLATE_NOT_AVAILABLE')
     }
+    planEntrenoId = await crearPlanEntrenoDesdePlantilla(supabase, {
+      clienteId: cliente_id,
+      coachId: cliente.coach_id,
+      plantillaId: plantillaRecomendada.id,
+      generacionId: claim.generacionId,
+      nombre: `Plan inicial — ${plantillaRecomendada.nombre}`,
+    })
   } catch (err) {
     console.error('[generar-plan-inicial] Error creando entrenamiento inicial:', err)
+    throw err
   }
+
+  if (!planId || !planEntrenoId) {
+    throw new Error('INCOMPLETE_GENERATION_DRAFTS')
+  }
+
+  const { error: activationError } = await supabase.rpc('activar_planes_generacion', {
+    p_generacion_id: claim.generacionId,
+    p_plan_nutricion_id: planId,
+    p_plan_entrenamiento_id: planEntrenoId,
+  })
+  if (activationError) {
+    throw new Error(`ACTIVATION_FAILED:${activationError.message}`)
+  }
+  generacionActivada = true
 
   // ── 14. Save to registros_ia ───────────────────────────────────────────────
   try {
@@ -1361,6 +1435,11 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
 
   return NextResponse.json({
     ok: true,
+    generacion_id: claim.generacionId,
+    estado: 'completada',
+    reutilizada: false,
+    plan_nutricion_id: planId,
+    plan_entrenamiento_id: planEntrenoId,
     plan: planJson,
     modo: dietaIA ? 'ia_con_recetas' : 'fallback',
     distribucion_proteina: {
@@ -1376,4 +1455,50 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
       alertas: mesociclo.alertas,
     },
   })
+  } catch (error) {
+    console.error('[generar-plan-inicial] Generación fallida:', error)
+
+    if (!generacionActivada) {
+      const { error: cleanupNutritionError } = await supabase
+        .from('planes_nutricion')
+        .delete()
+        .eq('generacion_inicial_id', claim.generacionId)
+        .eq('activo', false)
+      const { error: cleanupTrainingError } = await supabase
+        .from('planes_entrenamiento')
+        .delete()
+        .eq('generacion_inicial_id', claim.generacionId)
+        .eq('activo', false)
+
+      if (cleanupNutritionError || cleanupTrainingError) {
+        console.error('[generar-plan-inicial] Error limpiando borradores:', {
+          nutricion: cleanupNutritionError?.message,
+          entrenamiento: cleanupTrainingError?.message,
+        })
+      }
+
+      try {
+        await marcarGeneracionFallida(supabase, {
+          generacionId: claim.generacionId,
+          codigo: 'GENERATION_FAILED',
+          mensaje: 'No se pudo completar la generación inicial.',
+        })
+      } catch (markError) {
+        console.error('[generar-plan-inicial] Error marcando generación fallida:', markError)
+      }
+    }
+
+    const response: GeneracionInicialResponse = {
+      ok: false,
+      generacion_id: claim.generacionId,
+      estado: 'fallida',
+      reutilizada: false,
+      error: {
+        codigo: 'GENERATION_FAILED',
+        mensaje: 'No se pudo completar la generación inicial.',
+        accion: 'Reintenta; tu plan anterior sigue activo',
+      },
+    }
+    return NextResponse.json(response, { status: 500 })
+  }
 }
