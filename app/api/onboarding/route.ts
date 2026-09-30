@@ -70,6 +70,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Error al guardar onboarding' }, { status: 500 })
   }
 
-  // Plan generation is triggered after the deep profile form (/api/onboarding/perfil)
+  // El flujo activo guarda perfil y solicita generación en /api/onboarding/completo.
   return NextResponse.json({ cliente_id: cliente.id })
 }
