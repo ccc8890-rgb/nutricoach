@@ -153,6 +153,7 @@ export default function RevisarPlanPage() {
   const [plan, setPlan] = useState<PlanInicial | null>(null)
   const [loading, setLoading] = useState(true)
   const [aprobando, setAprobando] = useState(false)
+  const [errorAprobacion, setErrorAprobacion] = useState<string | null>(null)
   const [showRaw, setShowRaw] = useState(false)
   const [creandoDieta, setCreandoDieta] = useState(false)
   const [dietaCreada, setDietaCreada] = useState<{ id: string } | null>(null)
@@ -337,13 +338,34 @@ export default function RevisarPlanPage() {
     )
     if (!ok) return
     setAprobando(true)
-    await fetch('/api/aprobar-cliente', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ cliente_id: params.id }),
-    })
-    router.push(`/clientes/${params.id}`)
+    setErrorAprobacion(null)
+    try {
+      const res = await fetch('/api/aprobar-cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ cliente_id: params.id }),
+      })
+      const data = await res.json().catch(() => null) as {
+        error?: string | { mensaje?: string; accion?: string }
+        accion?: string
+      } | null
+
+      if (!res.ok) {
+        const mensaje = typeof data?.error === 'string'
+          ? data.error
+          : data?.error?.mensaje ?? 'No se pudo aprobar el cliente.'
+        const accion = data?.accion ?? (typeof data?.error === 'object' ? data.error.accion : undefined)
+        setErrorAprobacion(accion ? `${mensaje} ${accion}` : mensaje)
+        return
+      }
+
+      router.push(`/clientes/${params.id}`)
+    } catch (error) {
+      setErrorAprobacion(error instanceof Error ? error.message : 'Error inesperado al aprobar el cliente.')
+    } finally {
+      setAprobando(false)
+    }
   }
 
   const crearPlan = async () => {
@@ -1139,6 +1161,9 @@ export default function RevisarPlanPage() {
       )}
       {errorEntreno && (
         <p className="text-sm text-red-600 dark:text-red-400 text-center">{errorEntreno}</p>
+      )}
+      {errorAprobacion && (
+        <p className="text-sm text-red-600 dark:text-red-400 text-center">{errorAprobacion}</p>
       )}
     </div>
   )

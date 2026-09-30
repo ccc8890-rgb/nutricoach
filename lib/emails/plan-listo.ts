@@ -64,26 +64,32 @@ export async function sendPlanListoEmail(params: {
     to: string
     nombre: string
     appUrl: string
-}): Promise<void> {
+}): Promise<boolean> {
     const { Resend } = await import('resend')
     const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) {
         console.warn('[sendPlanListoEmail] RESEND_API_KEY no configurada — email no enviado')
-        return
+        return false
     }
     const resend = new Resend(apiKey)
     const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev'
     const fromName = process.env.RESEND_FROM_NAME ?? 'NutriCoach'
     const portalUrl = `${params.appUrl}/cliente`
     try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: `${fromName} <${fromEmail}>`,
             to: params.to,
             subject: 'Tu plan personalizado ya está listo — ¡a por tus objetivos!',
             html: planListoEmailHtml(params.nombre, portalUrl),
         })
+        if (error) {
+            console.error('[sendPlanListoEmail] Error al enviar email:', error)
+            return false
+        }
         console.log(`[sendPlanListoEmail] ✅ Email enviado a ${params.to}`)
+        return true
     } catch (err) {
         console.error('[sendPlanListoEmail] Error al enviar email:', err)
+        return false
     }
 }

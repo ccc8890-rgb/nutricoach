@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase, createApiSupabase } from '@/lib/supabase-server'
 import { rateLimit } from '@/lib/rate-limit'
+import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 
 export const maxDuration = 120
 import { seleccionarProtocolos, formatearEvidenciaParaPrompt } from '@/lib/knowledge-base'
@@ -300,14 +301,26 @@ export async function POST(request: NextRequest) {
 
   if (!cliente) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
 
-  const esCoachPropietario = cliente.coach_id === user.id
   const esClienteInicial = cliente.profile_id === user.id
     && origen === 'onboarding'
     && idempotencyKey === `onboarding:${cliente.id}`
-  if (!esCoachPropietario && !esClienteInicial) {
-    return NextResponse.json({
-      error: { codigo: 'FORBIDDEN_CLIENT', mensaje: 'No puedes generar el plan de este cliente.' },
-    }, { status: 403 })
+
+  if (!esClienteInicial) {
+    const autorizacion = await autorizarCoachCliente(supabase, {
+      userId: user.id,
+      clienteId: cliente.id,
+    })
+    if (!autorizacion.ok) {
+      return NextResponse.json({
+        error: {
+          codigo: autorizacion.codigo,
+          mensaje: autorizacion.mensaje,
+          accion: autorizacion.status === 500
+            ? 'Reintenta en unos segundos.'
+            : 'Selecciona un cliente de tu cartera.',
+        },
+      }, { status: autorizacion.status })
+    }
   }
 
   const { data: onboarding } = await supabase

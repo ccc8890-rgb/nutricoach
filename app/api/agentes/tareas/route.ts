@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase-server'
+import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { registrarAprendizaje } from '@/lib/agentes/executor'
 import { aplicarTarea } from '@/lib/agentes/aplicar'
+import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 import type { AgenteTarea } from '@/lib/agentes/types'
 
 export const AGENTE_TAREAS_SELECT = `
   *,
-  clientes!cliente_id (
+  clientes!inner (
     id,
+    coach_id,
     profile:profiles!profile_id ( nombre, apellidos )
   )
 `
@@ -19,6 +21,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
+    const db = createServiceSupabase()
 
     const { searchParams } = new URL(request.url)
     const estado = searchParams.get('estado')
@@ -26,9 +29,10 @@ export async function GET(request: NextRequest) {
     const agente = searchParams.get('agente')
     const limite = parseInt(searchParams.get('limite') || '50', 10)
 
-    let query = supabase
+    let query = db
       .from('agente_tareas')
       .select(AGENTE_TAREAS_SELECT)
+      .eq('clientes.coach_id', user.id)
       .order('prioridad', { ascending: true })
       .order('created_at', { ascending: false })
       .limit(limite)
@@ -64,58 +68,122 @@ export async function PATCH(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
+    const db = createServiceSupabase()
 
-    const body = await request.json()
-    const { tarea_id, decision, comentario_coach, propuesta_final } = body as {
-      tarea_id: string
-      decision: 'aprobado' | 'rechazado' | 'modificado'
-      comentario_coach?: string
-      propuesta_final?: string
-    }
+    const body = await request.json().catch(() => null) as Record<string, unknown> | null
+    const tarea_id = typeof body?.tarea_id === 'string' ? body.tarea_id.trim() : ''
+    const decision = typeof body?.decision === 'string' ? body.decision : ''
+    const comentario_coach = typeof body?.comentario_coach === 'string'
+      ? body.comentario_coach
+      : undefined
+    const propuesta_final = typeof body?.propuesta_final === 'string'
+      ? body.propuesta_final
+      : undefined
 
-    if (!tarea_id || !decision) {
+    if (!tarea_id || !['aprobado', 'rechazado', 'modificado'].includes(decision)) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
     }
 
-    const updateData: Record<string, unknown> = {
-      estado: decision,
-      comentario_coach: comentario_coach || null,
-      revisado_at: new Date().toISOString(),
+    const decisionValidada = decision as 'aprobado' | 'rechazado' | 'modificado'
+
+    const { data: tareaInicial, error: tareaError } = await db
+      .from('agente_tareas')
+      .select('id,cliente_id,estado')
+      .eq('id', tarea_id)
+      .single()
+
+    if (tareaError?.code === 'PGRST116' || (!tareaError && !tareaInicial)) {
+      return NextResponse.json({ error: 'Tarea no encontrada', codigo: 'TASK_NOT_FOUND' }, { status: 404 })
+    }
+    if (tareaError || !tareaInicial) {
+      console.error('Error al cargar tarea:', tareaError)
+      return NextResponse.json({ error: 'Error al cargar tarea' }, { status: 500 })
+    }
+    if (!tareaInicial.cliente_id) {
+      return NextResponse.json({
+        error: 'La tarea no está asociada a un cliente.',
+        codigo: 'TASK_CLIENT_REQUIRED',
+      }, { status: 409 })
     }
 
-    if (decision === 'modificado' && propuesta_final !== undefined) {
+    const autorizacion = await autorizarCoachCliente(db, {
+      userId: user.id,
+      clienteId: tareaInicial.cliente_id,
+    })
+    if (!autorizacion.ok) {
+      return NextResponse.json({
+        error: autorizacion.mensaje,
+        codigo: autorizacion.codigo,
+      }, { status: autorizacion.status })
+    }
+
+    if (tareaInicial.estado === 'aplicado' || tareaInicial.estado === 'rechazado') {
+      return NextResponse.json({
+        error: 'La tarea ya está cerrada y no admite otra decisión.',
+        codigo: 'TASK_ALREADY_FINAL',
+      }, { status: 409 })
+    }
+
+    const updateData: Record<string, unknown> = {
+      estado: decisionValidada,
+      comentario_coach: comentario_coach || null,
+      revisado_at: new Date().toISOString(),
+      revisado_por: user.id,
+      error_aplicacion: null,
+    }
+
+    if (decisionValidada === 'modificado' && propuesta_final !== undefined) {
       updateData.propuesta = propuesta_final
     }
 
-    const { error: updateError } = await supabase
+    const { data: tareaCompleta, error: updateError } = await db
       .from('agente_tareas')
       .update(updateData)
       .eq('id', tarea_id)
+      .eq('estado', tareaInicial.estado)
+      .select('*')
+      .single()
 
     if (updateError) {
       console.error('Error al actualizar tarea:', updateError)
       return NextResponse.json({ error: 'Error al actualizar tarea' }, { status: 500 })
     }
 
-    // Cargar tarea completa para aplicar + aprendizaje
-    const { data: tareaCompleta } = await supabase
-      .from('agente_tareas')
-      .select('*')
-      .eq('id', tarea_id)
-      .single()
-
     if (tareaCompleta) {
       const tarea = tareaCompleta as AgenteTarea
 
-      // Si aprobado o modificado → ejecutar acción real en BD (fire-and-forget)
-      if (decision === 'aprobado' || decision === 'modificado') {
-        aplicarTarea(tarea).catch(err =>
-          console.error('[tareas] Error aplicando tarea:', err)
-        )
+      // Si aprobado o modificado → esperar la acción real antes de responder.
+      if (decisionValidada === 'aprobado' || decisionValidada === 'modificado') {
+        let resultadoAplicacion: Awaited<ReturnType<typeof aplicarTarea>>
+        try {
+          resultadoAplicacion = await aplicarTarea(tarea)
+        } catch (error) {
+          console.error('[tareas] Error aplicando tarea:', error)
+          resultadoAplicacion = { ok: false, mensaje: 'Error inesperado al aplicar la tarea' }
+        }
+
+        if (!resultadoAplicacion.ok) {
+          const errorAplicacion = resultadoAplicacion.mensaje ?? 'No se pudo aplicar la tarea'
+          const { error: persistError } = await db
+            .from('agente_tareas')
+            .update({ error_aplicacion: errorAplicacion })
+            .eq('id', tarea_id)
+
+          if (persistError) {
+            console.error('[tareas] Error guardando fallo de aplicación:', persistError)
+          }
+
+          registrarAprendizaje(tarea, decisionValidada, propuesta_final, comentario_coach).catch(() => null)
+          return NextResponse.json({
+            error: 'La decisión se guardó, pero no se pudo aplicar.',
+            codigo: 'TASK_APPLICATION_FAILED',
+            accion: 'Revisa el error de aplicación de la tarea y reintenta.',
+          }, { status: 409 })
+        }
       }
 
       // Registrar señal de aprendizaje (fire-and-forget)
-      registrarAprendizaje(tarea, decision, propuesta_final, comentario_coach).catch(() => null)
+      registrarAprendizaje(tarea, decisionValidada, propuesta_final, comentario_coach).catch(() => null)
     }
 
     return NextResponse.json({ ok: true })
