@@ -1,7 +1,7 @@
 # Motor inicial y de recálculo integrado — Especificación de diseño
 
 **Fecha:** 30-09-2026  
-**Estado:** Pendiente de revisión final de Carlos  
+**Estado:** Aprobado por Carlos para planificación e implementación
 **Ámbito:** NutriCoach — nutrición, entrenamiento, Garmin, Strava y seguimiento del cliente  
 **Dirección:** Codex  
 **Colaboración técnica:** Claude  
