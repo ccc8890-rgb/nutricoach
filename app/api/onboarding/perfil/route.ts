@@ -108,13 +108,11 @@ export async function POST(request: NextRequest) {
     .update({ onboarding_completado: true })
     .eq('id', cliente.id)
 
-  // Ahora sí lanzamos la generación del plan con todos los datos disponibles
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  fetch(`${baseUrl}/api/generar-plan-inicial`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cliente_id: cliente.id }),
-  }).catch(() => {})
-
-  return NextResponse.json({ cliente_id: cliente.id })
+  return NextResponse.json({
+    cliente_id: cliente.id,
+    generation: {
+      idempotency_key: `onboarding:${cliente.id}`,
+      estado: 'pendiente' as const,
+    },
+  })
 }

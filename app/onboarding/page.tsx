@@ -17,6 +17,10 @@ import StepTiming from '@/components/onboarding/StepTiming'
 import StepHealth from '@/components/onboarding/StepHealth'
 import StepSports from '@/components/onboarding/StepSports'
 import StepAnalisis from '@/components/onboarding/StepAnalisis'
+import {
+  GenerationClientError,
+  generarPlanInicialDesdeCliente,
+} from '@/lib/planes/generation-client'
 
 interface FormState {
   // Básico
@@ -78,6 +82,19 @@ interface FormState {
   vo2max: number
 }
 
+interface PendingGeneration {
+  clienteId: string
+  idempotencyKey: string
+}
+
+interface OnboardingCompletionResponse {
+  cliente_id: string
+  generation: {
+    idempotency_key: string
+    estado: 'pendiente'
+  }
+}
+
 const INITIAL: FormState = {
   segmento: '', objetivo: '',
   body: { peso: 0, altura: 0, edad: 0, sexo: '' },
@@ -122,6 +139,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [pendingGeneration, setPendingGeneration] = useState<PendingGeneration | null>(null)
   const [animDir, setAnimDir] = useState<'forward' | 'back'>('forward')
   const [visible, setVisible] = useState(true)
   const [autoAdvanceReq, setAutoAdvanceReq] = useState({ id: 0, fromStep: 0 })
@@ -181,6 +199,58 @@ export default function OnboardingPage() {
     if (k === 'cocina')     return !!form.nivelCocina
     if (k === 'dieta_real') return form.diaTipico.trim().length > 10
     return true
+  }
+
+  async function generarPlanYRedirigir(generation: PendingGeneration) {
+    const resultado = await generarPlanInicialDesdeCliente({
+      cliente_id: generation.clienteId,
+      idempotency_key: generation.idempotencyKey,
+    })
+
+    if (resultado.estado === 'completada') {
+      router.push('/cliente?onboarding=completo')
+      return
+    }
+
+    if (resultado.estado === 'procesando') {
+      router.push('/cliente?onboarding=completo&generacion=procesando')
+      return
+    }
+
+    throw new GenerationClientError(
+      'GENERATION_FAILED',
+      'No se pudo completar la generación inicial.',
+      'Reintenta; tu plan anterior sigue activo.',
+      true,
+    )
+  }
+
+  function mensajeErrorGeneracion(error: unknown): string {
+    if (!(error instanceof GenerationClientError)) {
+      return error instanceof Error ? error.message : 'Error inesperado'
+    }
+
+    if (error.codigo === 'AUTH_EXPIRED') {
+      return `Tu sesión ha caducado. ${error.accion}`
+    }
+    if (error.codigo === 'RATE_LIMITED') {
+      return `Hay un límite temporal de solicitudes. ${error.accion}`
+    }
+    return `${error.message} ${error.accion}`
+  }
+
+  async function reintentarGeneracion() {
+    if (!pendingGeneration) return
+
+    setLoading(true)
+    setError('')
+    try {
+      await generarPlanYRedirigir(pendingGeneration)
+    } catch (error: unknown) {
+      setError(mensajeErrorGeneracion(error))
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function handleSubmit() {
@@ -250,11 +320,18 @@ export default function OnboardingPage() {
           notas_analisis: form.notasAnalisis || null,
         }),
       })
-      const data = await res.json()
+      const data = await res.json() as OnboardingCompletionResponse & { error?: string }
       if (!res.ok) throw new Error(data.error || 'Error al guardar')
-      router.push('/cliente?onboarding=completo')
+
+      const generation: PendingGeneration = {
+        clienteId: data.cliente_id,
+        idempotencyKey: data.generation.idempotency_key,
+      }
+      setPendingGeneration(generation)
+      await generarPlanYRedirigir(generation)
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error inesperado')
+      setError(mensajeErrorGeneracion(e))
+    } finally {
       setLoading(false)
     }
   }
@@ -448,7 +525,18 @@ export default function OnboardingPage() {
 
           {error && (
             <div className="mt-5 px-4 py-3 rounded-2xl text-sm" style={{ background: 'rgba(255,69,58,0.08)', color: '#FF453A', border: '1px solid rgba(255,69,58,0.2)' }}>
-              {error}
+              <p>{error}</p>
+              {pendingGeneration && (
+                <button
+                  type="button"
+                  onClick={reintentarGeneracion}
+                  disabled={loading}
+                  className="mt-3 rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-50"
+                  style={{ background: 'rgba(255,69,58,0.14)', color: '#FF453A', border: '1px solid rgba(255,69,58,0.3)' }}
+                >
+                  Reintentar creación del plan
+                </button>
+              )}
             </div>
           )}
         </div>
