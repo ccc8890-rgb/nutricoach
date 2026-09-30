@@ -94,10 +94,7 @@ async function probarHelper() {
 }
 
 async function probarAutorizacionAntesDeMutar() {
-  for (const routePath of [
-    'app/api/aprobar-cliente/route.ts',
-    'app/api/agentes/tareas/route.ts',
-  ]) {
+  for (const routePath of ['app/api/agentes/tareas/route.ts']) {
     const source = await readFile(new URL(`../${routePath}`, import.meta.url), 'utf8')
     const importIndex = source.indexOf("@/lib/auth/autorizar-coach-cliente")
     const authorizationIndex = source.indexOf('await autorizarCoachCliente(')

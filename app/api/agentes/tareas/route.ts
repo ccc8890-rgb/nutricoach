@@ -144,6 +144,23 @@ export async function PATCH(request: NextRequest) {
       .select('*')
       .single()
 
+    if (updateError?.code === 'PGRST116' || (!updateError && !tareaCompleta)) {
+      const { data: tareaActual } = await db
+        .from('agente_tareas')
+        .select('estado')
+        .eq('id', tarea_id)
+        .maybeSingle()
+      const estadoFinal = tareaActual?.estado === 'aplicado' || tareaActual?.estado === 'rechazado'
+
+      return NextResponse.json({
+        error: estadoFinal
+          ? 'La tarea ya está cerrada y no admite otra decisión.'
+          : 'La tarea cambió mientras se procesaba la decisión.',
+        codigo: estadoFinal ? 'TASK_ALREADY_FINAL' : 'STATE_CONFLICT',
+        accion: estadoFinal ? null : 'Recarga la tarea antes de volver a decidir.',
+      }, { status: 409 })
+    }
+
     if (updateError) {
       console.error('Error al actualizar tarea:', updateError)
       return NextResponse.json({ error: 'Error al actualizar tarea' }, { status: 500 })

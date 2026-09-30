@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { sendPlanListoEmail } from '@/lib/emails/plan-listo'
-import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
+
+type AprobarClienteRpcRow = {
+    ok: boolean
+    codigo: 'CLIENT_APPROVED' | 'CLIENT_NOT_FOUND' | 'CLIENT_NOT_OWNED' | 'ACTIVE_PLANS_REQUIRED'
+    mensaje: string
+    accion: string | null
+    cliente_profile_id: string | null
+}
 
 export async function POST(request: NextRequest) {
     const supabase = createApiSupabase(request)
@@ -13,72 +20,45 @@ export async function POST(request: NextRequest) {
     if (!cliente_id) return NextResponse.json({ error: 'cliente_id requerido' }, { status: 400 })
 
     const db = createServiceSupabase()
-    const autorizacion = await autorizarCoachCliente(db, { userId: user.id, clienteId: cliente_id })
-    if (!autorizacion.ok) {
-        return NextResponse.json({
-            error: autorizacion.mensaje,
-            codigo: autorizacion.codigo,
-        }, { status: autorizacion.status })
-    }
+    const { data: rpcData, error: rpcError } = await db.rpc('aprobar_cliente_atomico', {
+        p_cliente_id: cliente_id,
+        p_actor_id: user.id,
+    })
+    const resultado = (rpcData as AprobarClienteRpcRow[] | null)?.[0]
 
-    const [planNutricion, planEntrenamiento] = await Promise.all([
-        db
-            .from('planes_nutricion')
-            .select('id', { count: 'exact', head: true })
-            .eq('cliente_id', cliente_id)
-            .eq('activo', true),
-        db
-            .from('planes_entrenamiento')
-            .select('id', { count: 'exact', head: true })
-            .eq('cliente_id', cliente_id)
-            .eq('activo', true),
-    ])
-
-    if (planNutricion.error || planEntrenamiento.error) {
-        console.error('[aprobar-cliente] Error comprobando planes activos:', {
-            nutricion: planNutricion.error,
-            entrenamiento: planEntrenamiento.error,
-        })
+    if (rpcError || !resultado) {
+        console.error('[aprobar-cliente] Error en aprobación atómica:', rpcError)
         return NextResponse.json({
-            error: 'No se pudieron comprobar los planes activos.',
-            codigo: 'ACTIVE_PLANS_LOOKUP_FAILED',
+            error: 'No se pudo aprobar el cliente.',
+            codigo: 'CLIENT_APPROVAL_FAILED',
             accion: 'Reintenta en unos segundos.',
         }, { status: 500 })
     }
 
-    if ((planNutricion.count ?? 0) < 1 || (planEntrenamiento.count ?? 0) < 1) {
+    if (!resultado.ok) {
+        const status = resultado.codigo === 'CLIENT_NOT_FOUND'
+            ? 404
+            : resultado.codigo === 'CLIENT_NOT_OWNED'
+                ? 403
+                : resultado.codigo === 'ACTIVE_PLANS_REQUIRED'
+                    ? 409
+                    : 500
         return NextResponse.json({
-            error: 'El cliente necesita un plan activo de nutrición y otro de entrenamiento.',
-            codigo: 'ACTIVE_PLANS_REQUIRED',
-            accion: 'Activa ambos planes antes de aprobar al cliente.',
-        }, { status: 409 })
+            error: resultado.mensaje,
+            codigo: resultado.codigo,
+            accion: resultado.accion,
+        }, { status })
     }
 
-    // Activar cliente
-    const { error, count } = await db
-        .from('clientes')
-        .update({ revisado_por_coach: true, activo: true }, { count: 'exact' })
-        .eq('id', cliente_id)
-        .eq('coach_id', user.id)
-
-    if (error || count !== 1) {
-        console.error('[aprobar-cliente] No se pudo activar el cliente:', error ?? { count })
-        return NextResponse.json({
-            error: 'No se pudo activar el cliente.',
-            codigo: 'CLIENT_ACTIVATION_FAILED',
-            accion: 'Reintenta en unos segundos.',
-        }, { status: 500 })
-    }
-
-    // Enviar email (no bloquea si falla)
+    // La RPC ya ha confirmado la transacción. El email posterior no bloquea la aprobación.
     const warnings: string[] = []
     try {
-        if (!autorizacion.cliente.profile_id) throw new Error('El cliente no tiene perfil asociado')
+        if (!resultado.cliente_profile_id) throw new Error('El cliente no tiene perfil asociado')
 
         const { data: profile, error: profileError } = await db
             .from('profiles')
             .select('nombre, email')
-            .eq('id', autorizacion.cliente.profile_id)
+            .eq('id', resultado.cliente_profile_id)
             .single()
 
         if (profileError) throw profileError
