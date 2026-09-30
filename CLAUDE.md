@@ -1,5 +1,37 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 30-09-2026 (Codex) — Director semanal ejecutado, dry-run, auditoría persistente y panel de actividad
+
+### Estado real encontrado
+- Supabase contiene **4 clientes activos**, no 11 como indicaba la documentación anterior.
+- El director semanal estaba configurado en Vercel, pero no había evidencia persistente de su ejecución del lunes 28-09-2026. Los logs históricos de Vercel no estaban disponibles para confirmarlo.
+- El proyecto está en Vercel Hobby. Los cron pueden ejecutarse en cualquier momento dentro de la hora programada.
+
+### Ejecución real autorizada por Carlos
+- Primero se añadió y verificó un modo seguro `dryRun=true` que calcula los planes por cliente sin llamar agentes ni escribir tareas.
+- Simulación contra los 4 clientes: 0 errores y `agente_tareas` quedó en 17 antes/17 después.
+- Tras confirmación explícita de Carlos se ejecutó `ejecutarDirector('semanal')` en producción.
+- Resultado: **4 clientes procesados, 7 tareas nuevas, 0 errores, 27,1 s**.
+- Tareas generadas: 3 `actualizacion_plan`, 3 `revision_semanal_entreno` y 1 `alerta_readiness`; todas quedaron `pendiente`, ninguna se autoaplicó.
+
+### Mejoras implantadas
+1. **Dry-run del director** (`78448a3`): `ejecutarDirector(modo, { dryRun })`, disponible también en `/api/agentes/ejecutar?modo=semanal&dryRun=true`. El aprendizaje colectivo tampoco se ejecuta en simulación.
+2. **Auditoría persistente** (`214eb6e`): migración `20260930092916_agente_ejecuciones_auditoria.sql`, tabla `agente_ejecuciones` con RLS y acceso exclusivo mediante service role. Registra modo, origen, dry-run, estado, clientes, tareas, errores, duración e inicio/fin.
+3. **Cron semanal separado**: pasó de lunes `06:00 UTC` a lunes `10:00 UTC` para no coincidir con `/api/cron/sync-integraciones`. La colisión es una hipótesis preventiva, no una causa raíz demostrada.
+4. **Historial visible para el coach** (`f312f86`): nuevo endpoint `GET /api/agentes/ejecuciones` (solo rol `coach`) y sección plegable “Actividad del director” en `/agentes`, responsive y con actualización tras ejecuciones manuales.
+
+### Verificación
+- Tests: `scripts/orquestador-director.test.ts` y `scripts/agente-ejecuciones.test.ts`.
+- Endpoint nuevo sin sesión: 401 confirmado.
+- Migración local/remota sincronizada y consulta real de auditoría correcta.
+- ESLint específico y `npm run build` limpios.
+- Los tres commits están en `origin/main` y sus despliegues de Vercel terminaron `Ready`.
+
+### Próxima comprobación
+- El lunes 05-10-2026, revisar en `/agentes` que exista una ejecución con `origen=cron`, `modo=semanal` y estado finalizado. Si no aparece, investigar el historial de Cron Jobs desde el dashboard de Vercel; no volver a inferir la ejecución únicamente por las tareas generadas.
+
+---
+
 ## ✅ SESIÓN 29-09-2026 (madrugada, Claude) — Auditoría de matches de ingredientes: 2 casos de Carlos + 3 patrones sistémicos (T45)
 
 ### Contexto
