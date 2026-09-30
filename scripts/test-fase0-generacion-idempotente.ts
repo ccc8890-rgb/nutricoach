@@ -7,6 +7,7 @@ import {
 
 type RpcRow = {
   generacion_id: string
+  intento_token: string | null
   accion: 'generar' | 'esperar' | 'reutilizar'
   estado: 'procesando' | 'completada' | 'fallida'
   plan_nutricion_id: string | null
@@ -19,6 +20,7 @@ const calls: Array<{ name: string; args: Record<string, unknown> }> = []
 const responses: RpcRow[] = [
   {
     generacion_id: 'gen-1',
+    intento_token: 'token-a',
     accion: 'generar',
     estado: 'procesando',
     plan_nutricion_id: null,
@@ -28,6 +30,7 @@ const responses: RpcRow[] = [
   },
   {
     generacion_id: 'gen-1',
+    intento_token: null,
     accion: 'esperar',
     estado: 'procesando',
     plan_nutricion_id: null,
@@ -37,6 +40,7 @@ const responses: RpcRow[] = [
   },
   {
     generacion_id: 'gen-1',
+    intento_token: null,
     accion: 'reutilizar',
     estado: 'completada',
     plan_nutricion_id: 'nutri-1',
@@ -46,6 +50,7 @@ const responses: RpcRow[] = [
   },
   {
     generacion_id: 'gen-1',
+    intento_token: 'token-b',
     accion: 'generar',
     estado: 'procesando',
     plan_nutricion_id: null,
@@ -55,26 +60,18 @@ const responses: RpcRow[] = [
   },
 ]
 
-const failureUpdates: Array<Record<string, unknown>> = []
+let generationState = 'procesando'
 const db = {
   async rpc(name: string, args: Record<string, unknown>) {
     calls.push({ name, args })
-    return { data: [responses.shift()], error: null }
-  },
-  from(table: string) {
-    assert.equal(table, 'generaciones_plan_inicial')
-    return {
-      update(values: Record<string, unknown>) {
-        failureUpdates.push(values)
-        return {
-          eq(column: string, value: string) {
-            assert.equal(column, 'id')
-            assert.equal(value, 'gen-1')
-            return Promise.resolve({ error: null })
-          },
-        }
-      },
+    if (name === 'claim_generacion_plan_inicial') {
+      return { data: [responses.shift()], error: null }
     }
+    if (args.p_intento_token !== 'token-b') {
+      return { data: null, error: { message: 'LEASE_MISMATCH' } }
+    }
+    if (name === 'marcar_generacion_inicial_fallida') generationState = 'fallida'
+    return { data: null, error: null }
   },
 }
 
@@ -84,43 +81,10 @@ const input = {
   actorId: 'user-1',
 }
 
-type Draft = { id: string; generacion_inicial_id: string; activo: boolean }
-const drafts: Record<string, Draft[]> = {
-  planes_nutricion: [
-    { id: 'nutri-huerfano', generacion_inicial_id: 'gen-1', activo: false },
-    { id: 'nutri-activo', generacion_inicial_id: 'gen-1', activo: true },
-    { id: 'nutri-otro', generacion_inicial_id: 'gen-2', activo: false },
-  ],
-  planes_entrenamiento: [
-    { id: 'entreno-huerfano', generacion_inicial_id: 'gen-1', activo: false },
-    { id: 'entreno-activo', generacion_inicial_id: 'gen-1', activo: true },
-  ],
-}
-const cleanupDb = {
-  from(table: string) {
-    const filters: Record<string, unknown> = {}
-    const query = {
-      delete() {
-        return query
-      },
-      eq(column: string, value: unknown) {
-        filters[column] = value
-        return query
-      },
-      then(resolve: (value: { error: null }) => void) {
-        drafts[table] = drafts[table].filter(row =>
-          !Object.entries(filters).every(([column, value]) => row[column as keyof Draft] === value)
-        )
-        resolve({ error: null })
-      },
-    }
-    return query
-  },
-}
-
 async function main() {
   assert.deepEqual(await reclamarGeneracionInicial(db, input), {
     generacionId: 'gen-1',
+    intentoToken: 'token-a',
     accion: 'generar',
     estado: 'procesando',
     planNutricionId: null,
@@ -134,26 +98,49 @@ async function main() {
     args: { p_cliente_id: 'cliente-1', p_clave: 'onboarding:cliente-1', p_actor_id: 'user-1' },
   })
 
+  const retryClaim = await reclamarGeneracionInicial(db, input)
+  assert.equal(retryClaim.accion, 'generar')
+  assert.equal(retryClaim.intentoToken, 'token-b')
+
+  await assert.rejects(
+    limpiarBorradoresGeneracion(db, { generacionId: 'gen-1', intentoToken: 'token-a' }),
+    /LEASE_MISMATCH/,
+  )
+  await assert.rejects(
+    marcarGeneracionFallida(db, {
+      generacionId: 'gen-1',
+      intentoToken: 'token-a',
+      codigo: 'GENERATION_FAILED',
+      mensaje: 'worker A',
+    }),
+    /LEASE_MISMATCH/,
+  )
+  assert.equal(generationState, 'procesando')
+
+  await limpiarBorradoresGeneracion(db, {
+    generacionId: retryClaim.generacionId,
+    intentoToken: retryClaim.intentoToken,
+  })
   await marcarGeneracionFallida(db, {
-    generacionId: 'gen-1',
+    generacionId: retryClaim.generacionId,
+    intentoToken: retryClaim.intentoToken,
     codigo: 'GENERATION_FAILED',
     mensaje: `seguro${'x'.repeat(600)}`,
   })
-  assert.equal(failureUpdates.length, 1)
-  assert.deepEqual(Object.keys(failureUpdates[0]).sort(), [
-    'error_codigo',
-    'error_mensaje',
-    'estado',
-    'updated_at',
-  ])
-  assert.equal(failureUpdates[0].estado, 'fallida')
-  assert.equal((failureUpdates[0].error_mensaje as string).length, 500)
-
-  const retryClaim = await reclamarGeneracionInicial(db, input)
-  assert.equal(retryClaim.accion, 'generar')
-  await limpiarBorradoresGeneracion(cleanupDb, retryClaim.generacionId)
-  assert.deepEqual(drafts.planes_nutricion.map(row => row.id), ['nutri-activo', 'nutri-otro'])
-  assert.deepEqual(drafts.planes_entrenamiento.map(row => row.id), ['entreno-activo'])
+  assert.equal(generationState, 'fallida')
+  assert.deepEqual(calls.at(-2), {
+    name: 'limpiar_borradores_generacion',
+    args: { p_generacion_id: 'gen-1', p_intento_token: 'token-b' },
+  })
+  assert.deepEqual(calls.at(-1), {
+    name: 'marcar_generacion_inicial_fallida',
+    args: {
+      p_generacion_id: 'gen-1',
+      p_intento_token: 'token-b',
+      p_error_codigo: 'GENERATION_FAILED',
+      p_error_mensaje: `seguro${'x'.repeat(494)}`,
+    },
+  })
 
   console.log('fase0 generation idempotency tests passed')
 }

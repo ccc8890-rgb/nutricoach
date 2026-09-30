@@ -7,8 +7,11 @@ create temporary table fase0_fixture_ids (
   plan_nutricion_activo_id uuid not null,
   plan_entrenamiento_activo_id uuid not null,
   generacion_completada_id uuid not null,
+  generacion_completada_token uuid not null,
   generacion_nutricion_activa_id uuid not null,
+  generacion_nutricion_activa_token uuid not null,
   generacion_entrenamiento_activo_id uuid not null,
+  generacion_entrenamiento_activo_token uuid not null,
   nutricion_completada_id uuid not null,
   entrenamiento_completado_id uuid not null,
   nutricion_activa_id uuid not null,
@@ -22,7 +25,8 @@ select
   gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(),
   gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(),
   gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(),
-  gen_random_uuid(), gen_random_uuid();
+  gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(),
+  gen_random_uuid();
 
 insert into auth.users (id, email, raw_user_meta_data)
 select actor_id, concat('fase0-coach+', actor_id, '@example.test'),
@@ -54,46 +58,46 @@ select plan_entrenamiento_activo_id, actor_id, cliente_id, 'Activo entrenamiento
 from fase0_fixture_ids;
 
 insert into public.generaciones_plan_inicial (
-  id, cliente_id, clave_idempotencia, solicitada_por, estado, completed_at
+  id, cliente_id, clave_idempotencia, solicitada_por, estado, completed_at, intento_token
 )
-select generacion_completada_id, cliente_id, 'fase0:test:completada', actor_id, 'completada', now()
+select generacion_completada_id, cliente_id, 'fase0:test:completada', actor_id, 'completada', now(), generacion_completada_token
 from fase0_fixture_ids
 union all
-select generacion_nutricion_activa_id, cliente_id, 'fase0:test:nutricion-activa', actor_id, 'procesando', null
+select generacion_nutricion_activa_id, cliente_id, 'fase0:test:nutricion-activa', actor_id, 'procesando', null, generacion_nutricion_activa_token
 from fase0_fixture_ids
 union all
-select generacion_entrenamiento_activo_id, cliente_id, 'fase0:test:entrenamiento-activo', actor_id, 'procesando', null
+select generacion_entrenamiento_activo_id, cliente_id, 'fase0:test:entrenamiento-activo', actor_id, 'procesando', null, generacion_entrenamiento_activo_token
 from fase0_fixture_ids;
 
 insert into public.planes_nutricion (
-  id, coach_id, cliente_id, nombre, activo, generacion_inicial_id
+  id, coach_id, cliente_id, nombre, activo, generacion_inicial_id, generacion_intento_token
 )
-select nutricion_completada_id, actor_id, cliente_id, 'Borrador nutricion completada', false, generacion_completada_id
+select nutricion_completada_id, actor_id, cliente_id, 'Borrador nutricion completada', false, generacion_completada_id, generacion_completada_token
 from fase0_fixture_ids
 union all
-select nutricion_activa_id, actor_id, cliente_id, 'Candidato nutricion activo', false, generacion_nutricion_activa_id
+select nutricion_activa_id, actor_id, cliente_id, 'Candidato nutricion activo', false, generacion_nutricion_activa_id, generacion_nutricion_activa_token
 from fase0_fixture_ids
 union all
-select nutricion_borrador_id, actor_id, cliente_id, 'Borrador nutricion', false, generacion_entrenamiento_activo_id
+select nutricion_borrador_id, actor_id, cliente_id, 'Borrador nutricion', false, generacion_entrenamiento_activo_id, generacion_entrenamiento_activo_token
 from fase0_fixture_ids;
 
 insert into public.planes_entrenamiento (
-  id, coach_id, cliente_id, nombre, activo, generacion_inicial_id
+  id, coach_id, cliente_id, nombre, activo, generacion_inicial_id, generacion_intento_token
 )
-select entrenamiento_completado_id, actor_id, cliente_id, 'Borrador entrenamiento completado', false, generacion_completada_id
+select entrenamiento_completado_id, actor_id, cliente_id, 'Borrador entrenamiento completado', false, generacion_completada_id, generacion_completada_token
 from fase0_fixture_ids
 union all
-select entrenamiento_borrador_id, actor_id, cliente_id, 'Borrador entrenamiento', false, generacion_nutricion_activa_id
+select entrenamiento_borrador_id, actor_id, cliente_id, 'Borrador entrenamiento', false, generacion_nutricion_activa_id, generacion_nutricion_activa_token
 from fase0_fixture_ids
 union all
-select entrenamiento_activo_id, actor_id, cliente_id, 'Candidato entrenamiento activo', false, generacion_entrenamiento_activo_id
+select entrenamiento_activo_id, actor_id, cliente_id, 'Candidato entrenamiento activo', false, generacion_entrenamiento_activo_id, generacion_entrenamiento_activo_token
 from fase0_fixture_ids;
 
 select plan(14);
 
 select has_table('public'::name, 'generaciones_plan_inicial'::name, 'existe generaciones_plan_inicial');
 select has_function('public', 'claim_generacion_plan_inicial', array['uuid', 'text', 'uuid']);
-select has_function('public', 'activar_planes_generacion', array['uuid', 'uuid', 'uuid']);
+select has_function('public', 'activar_planes_generacion', array['uuid', 'uuid', 'uuid', 'uuid']);
 select has_index(
   'public'::name, 'planes_nutricion'::name, 'uq_plan_nutricion_activo_cliente'::name,
   'existe indice unico de nutricion activa'
@@ -132,7 +136,8 @@ select throws_ok(
   $test$do $attempt$
   begin
     perform public.activar_planes_generacion(
-      generacion_completada_id, nutricion_completada_id, entrenamiento_completado_id
+      generacion_completada_id, generacion_completada_token,
+      nutricion_completada_id, entrenamiento_completado_id
     ) from fase0_fixture_ids;
     raise exception using errcode = 'P0002', message = 'la activacion fue aceptada';
   end
@@ -161,7 +166,8 @@ select throws_ok(
   $test$do $attempt$
   begin
     perform public.activar_planes_generacion(
-      generacion_nutricion_activa_id, nutricion_activa_id, entrenamiento_borrador_id
+      generacion_nutricion_activa_id, generacion_nutricion_activa_token,
+      nutricion_activa_id, entrenamiento_borrador_id
     ) from fase0_fixture_ids;
     raise exception using errcode = 'P0002', message = 'la activacion fue aceptada';
   end
@@ -193,7 +199,8 @@ select throws_ok(
   $test$do $attempt$
   begin
     perform public.activar_planes_generacion(
-      generacion_entrenamiento_activo_id, nutricion_borrador_id, entrenamiento_activo_id
+      generacion_entrenamiento_activo_id, generacion_entrenamiento_activo_token,
+      nutricion_borrador_id, entrenamiento_activo_id
     ) from fase0_fixture_ids;
     raise exception using errcode = 'P0002', message = 'la activacion fue aceptada';
   end

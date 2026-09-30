@@ -2,6 +2,7 @@ export type GenerationAction = 'generar' | 'esperar' | 'reutilizar'
 
 export interface GenerationClaim {
   generacionId: string
+  intentoToken: string | null
   accion: GenerationAction
   estado: 'procesando' | 'completada' | 'fallida'
   planNutricionId: string | null
@@ -21,6 +22,7 @@ export interface GeneracionInicialResponse {
 
 interface GenerationClaimRow {
   generacion_id: string
+  intento_token: string | null
   accion: GenerationAction
   estado: GenerationClaim['estado']
   plan_nutricion_id: string | null
@@ -31,24 +33,9 @@ interface GenerationClaimRow {
 
 interface GenerationDb {
   rpc(
-    name: 'claim_generacion_plan_inicial',
-    args: { p_cliente_id: string; p_clave: string; p_actor_id: string },
+    name: string,
+    args: Record<string, unknown>,
   ): PromiseLike<{ data: GenerationClaimRow[] | GenerationClaimRow | null; error: { message: string } | null }>
-  from(table: 'generaciones_plan_inicial'): {
-    update(values: Record<string, unknown>): {
-      eq(column: 'id', value: string): PromiseLike<{ error: { message: string } | null }>
-    }
-  }
-}
-
-interface GenerationDraftsDb {
-  from(table: 'planes_nutricion' | 'planes_entrenamiento'): {
-    delete(): {
-      eq(column: 'generacion_inicial_id', value: string): {
-        eq(column: 'activo', value: false): PromiseLike<{ error: { message: string } | null }>
-      }
-    }
-  }
 }
 
 export async function reclamarGeneracionInicial(
@@ -65,9 +52,13 @@ export async function reclamarGeneracionInicial(
 
   const row = Array.isArray(data) ? data[0] : data
   if (!row) throw new Error('CLAIM_FAILED:respuesta vacía')
+  if (row.accion === 'generar' && !row.intento_token) {
+    throw new Error('CLAIM_FAILED:lease de intento ausente')
+  }
 
   return {
     generacionId: row.generacion_id,
+    intentoToken: row.intento_token,
     accion: row.accion,
     estado: row.estado,
     planNutricionId: row.plan_nutricion_id,
@@ -80,42 +71,26 @@ export async function reclamarGeneracionInicial(
 
 export async function marcarGeneracionFallida(
   db: GenerationDb,
-  input: { generacionId: string; codigo: string; mensaje: string },
+  input: { generacionId: string; intentoToken: string; codigo: string; mensaje: string },
 ): Promise<void> {
-  const { error } = await db
-    .from('generaciones_plan_inicial')
-    .update({
-      estado: 'fallida',
-      error_codigo: input.codigo,
-      error_mensaje: input.mensaje.slice(0, 500),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', input.generacionId)
+  const { error } = await db.rpc('marcar_generacion_inicial_fallida', {
+    p_generacion_id: input.generacionId,
+    p_intento_token: input.intentoToken,
+    p_error_codigo: input.codigo,
+    p_error_mensaje: input.mensaje.slice(0, 500),
+  })
 
   if (error) throw new Error(`MARK_GENERATION_FAILED:${error.message}`)
 }
 
 export async function limpiarBorradoresGeneracion(
-  db: GenerationDraftsDb,
-  generacionId: string,
+  db: GenerationDb,
+  input: { generacionId: string; intentoToken: string },
 ): Promise<void> {
-  const [nutricion, entrenamiento] = await Promise.all([
-    db
-      .from('planes_nutricion')
-      .delete()
-      .eq('generacion_inicial_id', generacionId)
-      .eq('activo', false),
-    db
-      .from('planes_entrenamiento')
-      .delete()
-      .eq('generacion_inicial_id', generacionId)
-      .eq('activo', false),
-  ])
+  const { error } = await db.rpc('limpiar_borradores_generacion', {
+    p_generacion_id: input.generacionId,
+    p_intento_token: input.intentoToken,
+  })
 
-  if (nutricion.error || entrenamiento.error) {
-    throw new Error([
-      nutricion.error?.message,
-      entrenamiento.error?.message,
-    ].filter(Boolean).join('; ') || 'DRAFT_CLEANUP_FAILED')
-  }
+  if (error) throw new Error(`DRAFT_CLEANUP_FAILED:${error.message}`)
 }

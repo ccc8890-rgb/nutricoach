@@ -174,7 +174,14 @@ function inferirPerfilEntreno(clienteId: string, onboarding: Record<string, any>
 
 async function crearPlanEntrenoDesdePlantilla(
   supabase: ReturnType<typeof createServiceSupabase>,
-  input: { clienteId: string; coachId: string; plantillaId: string; generacionId: string; nombre?: string }
+  input: {
+    clienteId: string
+    coachId: string
+    plantillaId: string
+    generacionId: string
+    intentoToken: string
+    nombre?: string
+  }
 ): Promise<string> {
   const { data: plantilla, error: plantillaError } = await supabase
     .from('plantillas_entrenamiento')
@@ -206,6 +213,7 @@ async function crearPlanEntrenoDesdePlantilla(
       duracion_semanas: plantilla.duracion_semanas ?? null,
       activo: false,
       generacion_inicial_id: input.generacionId,
+      generacion_intento_token: input.intentoToken,
     })
     .select('id')
     .single()
@@ -352,9 +360,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response)
   }
 
+  if (!claim.intentoToken) {
+    return NextResponse.json({
+      error: {
+        codigo: 'CLAIM_FAILED',
+        mensaje: 'No se pudo obtener una lease válida para generar el plan.',
+        accion: 'Reintenta en unos segundos.',
+      },
+    }, { status: 500 })
+  }
+
   let generacionActivada = false
   try {
-  await limpiarBorradoresGeneracion(supabase, claim.generacionId)
+  await limpiarBorradoresGeneracion(supabase, {
+    generacionId: claim.generacionId,
+    intentoToken: claim.intentoToken,
+  })
 
   const { data: perfil } = await supabase
     .from('onboarding_perfil_profundo')
@@ -1230,6 +1251,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
         generado_por_ia: true,
         codigo_publico: codigoPublico,
         generacion_inicial_id: claim.generacionId,
+        generacion_intento_token: claim.intentoToken,
       })
       .select()
       .single()
@@ -1372,6 +1394,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
       coachId: cliente.coach_id,
       plantillaId: plantillaRecomendada.id,
       generacionId: claim.generacionId,
+      intentoToken: claim.intentoToken,
       nombre: `Plan inicial — ${plantillaRecomendada.nombre}`,
     })
   } catch (err) {
@@ -1385,6 +1408,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
 
   const { error: activationError } = await supabase.rpc('activar_planes_generacion', {
     p_generacion_id: claim.generacionId,
+    p_intento_token: claim.intentoToken,
     p_plan_nutricion_id: planId,
     p_plan_entrenamiento_id: planEntrenoId,
   })
@@ -1461,12 +1485,10 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
     console.error('[generar-plan-inicial] Generación fallida:', error)
 
     if (!generacionActivada) {
-      await limpiarBorradoresGeneracion(supabase, claim.generacionId)
-        .catch(cleanupError => console.error('[generar-plan-inicial] Error limpiando borradores:', cleanupError))
-
       try {
         await marcarGeneracionFallida(supabase, {
           generacionId: claim.generacionId,
+          intentoToken: claim.intentoToken,
           codigo: 'GENERATION_FAILED',
           mensaje: 'No se pudo completar la generación inicial.',
         })
