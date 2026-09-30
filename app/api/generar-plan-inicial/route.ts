@@ -20,6 +20,7 @@ import { getContextoCoach, getContextoClienteClinico, getTargetsComidas } from '
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { extraerDietaHabitual, formatearDietaHabitualParaPrompt, guardarDietaHabitualCliente, type PlatoHabitualCliente } from '@/lib/dieta-habitual'
 import {
+  limpiarBorradoresGeneracion,
   marcarGeneracionFallida,
   reclamarGeneracionInicial,
   type GeneracionInicialResponse,
@@ -353,6 +354,7 @@ export async function POST(request: NextRequest) {
 
   let generacionActivada = false
   try {
+  await limpiarBorradoresGeneracion(supabase, claim.generacionId)
 
   const { data: perfil } = await supabase
     .from('onboarding_perfil_profundo')
@@ -1459,23 +1461,8 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
     console.error('[generar-plan-inicial] Generación fallida:', error)
 
     if (!generacionActivada) {
-      const { error: cleanupNutritionError } = await supabase
-        .from('planes_nutricion')
-        .delete()
-        .eq('generacion_inicial_id', claim.generacionId)
-        .eq('activo', false)
-      const { error: cleanupTrainingError } = await supabase
-        .from('planes_entrenamiento')
-        .delete()
-        .eq('generacion_inicial_id', claim.generacionId)
-        .eq('activo', false)
-
-      if (cleanupNutritionError || cleanupTrainingError) {
-        console.error('[generar-plan-inicial] Error limpiando borradores:', {
-          nutricion: cleanupNutritionError?.message,
-          entrenamiento: cleanupTrainingError?.message,
-        })
-      }
+      await limpiarBorradoresGeneracion(supabase, claim.generacionId)
+        .catch(cleanupError => console.error('[generar-plan-inicial] Error limpiando borradores:', cleanupError))
 
       try {
         await marcarGeneracionFallida(supabase, {

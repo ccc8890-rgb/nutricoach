@@ -285,11 +285,12 @@ export default function RevisarPlanPage() {
         setErrorPlan('No se puede generar dieta: el cliente aún no ha completado el onboarding.')
         return
       }
+      const idempotencyKey = `coach:${crypto.randomUUID()}`
       const res = await fetch('/api/generar-plan-inicial', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ cliente_id: params.id }),
+        body: JSON.stringify({ cliente_id: params.id, idempotency_key: idempotencyKey }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok) {

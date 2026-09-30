@@ -157,11 +157,12 @@ export default function RevisarRapidoPage() {
     setRegenerando(true)
     setError(null)
     try {
+      const idempotencyKey = `coach:${crypto.randomUUID()}`
       const res = await fetch('/api/generar-plan-inicial', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ cliente_id: id }),
+        body: JSON.stringify({ cliente_id: id, idempotency_key: idempotencyKey }),
       })
       if (!res.ok) throw new Error('No se ha podido regenerar el plan')
       await cargarDatos()

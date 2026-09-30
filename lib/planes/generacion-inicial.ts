@@ -41,6 +41,16 @@ interface GenerationDb {
   }
 }
 
+interface GenerationDraftsDb {
+  from(table: 'planes_nutricion' | 'planes_entrenamiento'): {
+    delete(): {
+      eq(column: 'generacion_inicial_id', value: string): {
+        eq(column: 'activo', value: false): PromiseLike<{ error: { message: string } | null }>
+      }
+    }
+  }
+}
+
 export async function reclamarGeneracionInicial(
   db: GenerationDb,
   input: { clienteId: string; clave: string; actorId: string },
@@ -83,4 +93,29 @@ export async function marcarGeneracionFallida(
     .eq('id', input.generacionId)
 
   if (error) throw new Error(`MARK_GENERATION_FAILED:${error.message}`)
+}
+
+export async function limpiarBorradoresGeneracion(
+  db: GenerationDraftsDb,
+  generacionId: string,
+): Promise<void> {
+  const [nutricion, entrenamiento] = await Promise.all([
+    db
+      .from('planes_nutricion')
+      .delete()
+      .eq('generacion_inicial_id', generacionId)
+      .eq('activo', false),
+    db
+      .from('planes_entrenamiento')
+      .delete()
+      .eq('generacion_inicial_id', generacionId)
+      .eq('activo', false),
+  ])
+
+  if (nutricion.error || entrenamiento.error) {
+    throw new Error([
+      nutricion.error?.message,
+      entrenamiento.error?.message,
+    ].filter(Boolean).join('; ') || 'DRAFT_CLEANUP_FAILED')
+  }
 }

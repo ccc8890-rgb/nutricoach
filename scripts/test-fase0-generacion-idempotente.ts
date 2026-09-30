@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {
+  limpiarBorradoresGeneracion,
   marcarGeneracionFallida,
   reclamarGeneracionInicial,
 } from '../lib/planes/generacion-inicial'
@@ -43,6 +44,15 @@ const responses: RpcRow[] = [
     error_codigo: null,
     error_mensaje: null,
   },
+  {
+    generacion_id: 'gen-1',
+    accion: 'generar',
+    estado: 'procesando',
+    plan_nutricion_id: null,
+    plan_entrenamiento_id: null,
+    error_codigo: null,
+    error_mensaje: null,
+  },
 ]
 
 const failureUpdates: Array<Record<string, unknown>> = []
@@ -72,6 +82,40 @@ const input = {
   clienteId: 'cliente-1',
   clave: 'onboarding:cliente-1',
   actorId: 'user-1',
+}
+
+type Draft = { id: string; generacion_inicial_id: string; activo: boolean }
+const drafts: Record<string, Draft[]> = {
+  planes_nutricion: [
+    { id: 'nutri-huerfano', generacion_inicial_id: 'gen-1', activo: false },
+    { id: 'nutri-activo', generacion_inicial_id: 'gen-1', activo: true },
+    { id: 'nutri-otro', generacion_inicial_id: 'gen-2', activo: false },
+  ],
+  planes_entrenamiento: [
+    { id: 'entreno-huerfano', generacion_inicial_id: 'gen-1', activo: false },
+    { id: 'entreno-activo', generacion_inicial_id: 'gen-1', activo: true },
+  ],
+}
+const cleanupDb = {
+  from(table: string) {
+    const filters: Record<string, unknown> = {}
+    const query = {
+      delete() {
+        return query
+      },
+      eq(column: string, value: unknown) {
+        filters[column] = value
+        return query
+      },
+      then(resolve: (value: { error: null }) => void) {
+        drafts[table] = drafts[table].filter(row =>
+          !Object.entries(filters).every(([column, value]) => row[column as keyof Draft] === value)
+        )
+        resolve({ error: null })
+      },
+    }
+    return query
+  },
 }
 
 async function main() {
@@ -104,6 +148,12 @@ async function main() {
   ])
   assert.equal(failureUpdates[0].estado, 'fallida')
   assert.equal((failureUpdates[0].error_mensaje as string).length, 500)
+
+  const retryClaim = await reclamarGeneracionInicial(db, input)
+  assert.equal(retryClaim.accion, 'generar')
+  await limpiarBorradoresGeneracion(cleanupDb, retryClaim.generacionId)
+  assert.deepEqual(drafts.planes_nutricion.map(row => row.id), ['nutri-activo', 'nutri-otro'])
+  assert.deepEqual(drafts.planes_entrenamiento.map(row => row.id), ['entreno-activo'])
 
   console.log('fase0 generation idempotency tests passed')
 }
