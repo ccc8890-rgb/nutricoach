@@ -176,11 +176,12 @@ set search_path = public
 as $$
 declare
   v_cliente_id uuid;
+  v_estado_generacion text;
   v_nutricion_valida boolean;
   v_entrenamiento_valido boolean;
 begin
-  select g.cliente_id
-  into v_cliente_id
+  select g.cliente_id, g.estado
+  into v_cliente_id, v_estado_generacion
   from public.generaciones_plan_inicial g
   where g.id = p_generacion_id
   for update;
@@ -191,11 +192,18 @@ begin
       message = 'No existe la generación inicial indicada';
   end if;
 
+  if v_estado_generacion <> 'procesando' then
+    raise exception using
+      errcode = 'P0001',
+      message = 'La generación inicial no está en estado procesando';
+  end if;
+
   perform 1
   from public.planes_nutricion p
   where p.id = p_plan_nutricion_id
     and p.cliente_id = v_cliente_id
     and p.generacion_inicial_id = p_generacion_id
+    and p.activo is false
   for update;
   v_nutricion_valida := found;
 
@@ -204,13 +212,14 @@ begin
   where p.id = p_plan_entrenamiento_id
     and p.cliente_id = v_cliente_id
     and p.generacion_inicial_id = p_generacion_id
+    and p.activo is false
   for update;
   v_entrenamiento_valido := found;
 
   if not v_nutricion_valida or not v_entrenamiento_valido then
     raise exception using
       errcode = 'P0001',
-      message = 'Falta uno de los borradores vinculados a la generación inicial';
+      message = 'Falta un borrador inactivo vinculado a la generación inicial';
   end if;
 
   update public.planes_nutricion
