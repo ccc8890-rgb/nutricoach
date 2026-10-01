@@ -42,6 +42,7 @@ with ranked as (
     ) as rn
   from public.planes_nutricion
   where activo
+    and cliente_id is not null
 )
 update public.planes_nutricion p
 set activo = false
@@ -58,6 +59,7 @@ with ranked as (
     ) as rn
   from public.planes_entrenamiento
   where activo
+    and cliente_id is not null
 )
 update public.planes_entrenamiento p
 set activo = false
