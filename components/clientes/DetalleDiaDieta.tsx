@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Apple, Clock, ExternalLink, Loader2, Plus, RefreshCw, Search, Video, X } from 'lucide-react'
+import { Apple, Clock, ExternalLink, Loader2, PlayCircle, Plus, RefreshCw, Search, Video, X } from 'lucide-react'
 import type { DetalleDia } from '@/lib/nutricion/detalle-dia'
 
 type Objetivo = { kcal: number | null; p: number | null; c: number | null; g: number | null }
@@ -240,6 +240,11 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                       {c.receta && (
                         <a href={`/recetas/${c.receta.id}`} target="_blank" rel="noreferrer" className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
                           <ExternalLink size={11} /> Ver receta
+                        </a>
+                      )}
+                      {c.receta?.url_origen && /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(c.receta.url_origen) && (
+                        <a href={c.receta.url_origen} target="_blank" rel="noreferrer" className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
+                          <PlayCircle size={11} /> Ver vídeo
                         </a>
                       )}
                       {!c.recurrente && (

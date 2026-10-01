@@ -131,13 +131,18 @@ async function main() {
   for (const r of candidatas) {
     i++
     const origen = await obtenerOrigen(r)
-    if (origen.tipo === 'instagram') await pausa(4000)
+    if (origen.tipo === 'instagram' && !existsSync(resolve(CACHE, `${r.id}.json`) + '.visto')) await pausa(5000)
     if (!origen.texto) { console.log(`[${i}/${candidatas.length}] ${r.nombre} — sin texto de origen (${origen.error ?? 'vacío'})`); resultados.push({ receta: r.nombre, receta_id: r.id, url: r.url_origen, estado: 'sin_origen', error: origen.error }); continue }
     if (SOLO_DESCARGAR) { console.log(`[${i}/${candidatas.length}] ${r.nombre} — origen guardado (${origen.texto.length} car.)`); continue }
     const { data: ings } = await db.from('receta_ingredientes').select('nombre_libre, cantidad_gramos').eq('receta_id', r.id)
     try {
-      const { text } = await generateText({ model: deepseek(MODELO), prompt: prompt(r, ings ?? [], origen), temperature: 0.1, maxOutputTokens: 8000, abortSignal: AbortSignal.timeout(240000) })
-      const json = JSON.parse(text.match(/\{[\s\S]*\}/)[0])
+      let json = null
+      for (let intento = 0; intento < 3 && !json; intento++) {
+        const { text } = await generateText({ model: deepseek(MODELO), prompt: prompt(r, ings ?? [], origen), temperature: 0.1, maxOutputTokens: 16000, abortSignal: AbortSignal.timeout(300000) })
+        const m = text.match(/\{[\s\S]*\}/)
+        if (m) { try { json = JSON.parse(m[0]) } catch { /* reintenta */ } }
+      }
+      if (!json) throw new Error('sin JSON tras 3 intentos')
       const hallazgos = (json.inventados?.length ?? 0) + (json.sustituidos?.length ?? 0) + (json.faltan?.length ?? 0)
       resultados.push({ receta: r.nombre, receta_id: r.id, url: r.url_origen, estado: json.origen_tiene_ingredientes ? 'comparada' : 'origen_sin_ingredientes', ...json })
       console.log(`[${i}/${candidatas.length}] ${r.nombre} — ${json.origen_tiene_ingredientes ? `${hallazgos} diferencias` : 'el original no lista ingredientes'}`)

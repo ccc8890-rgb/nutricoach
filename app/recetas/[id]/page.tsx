@@ -629,11 +629,18 @@ export default function DetalleRecetaPage() {
               </div>
 
               {/* Fuente */}
-              {r.url_origen && (
-                <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs hover:underline w-fit" style={{ color: 'var(--info)' }}>
-                  <ExternalLink size={12} /> Fuente original
-                </a>
+              {r.url_origen && /^https?:/.test(r.url_origen) && (
+                /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(r.url_origen) ? (
+                  <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 w-fit" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+                    <PlayCircle size={14} /> Ver vídeo original
+                  </a>
+                ) : (
+                  <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs hover:underline w-fit" style={{ color: 'var(--info)' }}>
+                    <ExternalLink size={12} /> Fuente original
+                  </a>
+                )
               )}
             </div>
           </div>

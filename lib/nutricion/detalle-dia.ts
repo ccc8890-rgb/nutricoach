@@ -11,7 +11,7 @@ import type { RolIngrediente } from '@/types'
 import type { SlotComida } from '@/lib/tipos-comida'
 
 export type IngredienteDetalle = { nombre: string; gramos: number; kcal: number; p: number; c: number; g: number }
-export type RecetaDetalle = { id: string; nombre: string; imagen_url: string | null; tiempo_prep_min: number | null; contenido_estado: string | null }
+export type RecetaDetalle = { id: string; nombre: string; imagen_url: string | null; tiempo_prep_min: number | null; contenido_estado: string | null; url_origen: string | null }
 // Postre/complemento: un alimento suelto (fila) o un postre-receta (receta_id, todos sus ingredientes juntos)
 export type ComplementoDetalle = { fila?: string; receta_id?: string; nombre: string; gramos: number | null; kcal: number; p: number; c: number; g: number }
 export type ComidaDetalle = {
@@ -32,7 +32,7 @@ const redondear = (t: { kcal: number; p: number; c: number; g: number }) => ({ k
 
 export async function detalleDiaEnCurso(db: SupabaseClient, planId: string, dia: string): Promise<DetalleDia> {
   const { data, error } = await db.from('comidas')
-    .select('id, nombre, dia_semana, orden, receta:recetas(id, nombre, imagen_url, tiempo_prep_min, contenido_estado), comida_alimentos(id, cantidad_gramos, es_complemento, complemento_receta_id, alimento:alimentos(nombre, calorias, proteinas, carbohidratos, grasas))')
+    .select('id, nombre, dia_semana, orden, receta:recetas(id, nombre, imagen_url, tiempo_prep_min, contenido_estado, url_origen), comida_alimentos(id, cantidad_gramos, es_complemento, complemento_receta_id, alimento:alimentos(nombre, calorias, proteinas, carbohidratos, grasas))')
     .eq('plan_id', planId)
   if (error) throw new Error('No se pudo leer el día')
   const filas = (data ?? []) as unknown as { id: string; nombre: string; dia_semana: string | null; orden: number; receta: RecetaDetalle | null; comida_alimentos: { id: string; cantidad_gramos: number; es_complemento: boolean; complemento_receta_id: string | null; alimento: Alimento | null }[] }[]
@@ -70,7 +70,7 @@ export async function detalleDiaFutura(db: SupabaseClient, plan: PlanObjetivo, s
 
   const ids = [...new Set(filas.map(f => f.receta_id))]
   const { data: recs } = ids.length === 0 ? { data: [] } : await db.from('recetas')
-    .select('id, nombre, imagen_url, tiempo_prep_min, contenido_estado, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, rol_ingrediente, es_cantidad_fija, orden, alimento:alimentos(nombre, calorias, proteinas, carbohidratos, grasas))')
+    .select('id, nombre, imagen_url, tiempo_prep_min, contenido_estado, url_origen, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, rol_ingrediente, es_cantidad_fija, orden, alimento:alimentos(nombre, calorias, proteinas, carbohidratos, grasas))')
     .in('id', ids)
   type RecRow = RecetaDetalle & { receta_ingredientes: { cantidad_gramos: number | null; rol_ingrediente: RolIngrediente | null; es_cantidad_fija: boolean | null; orden: number | null; alimento: Alimento | null }[] }
   const porId = new Map(((recs ?? []) as unknown as RecRow[]).map(r => [r.id, r]))
@@ -90,7 +90,7 @@ export async function detalleDiaFutura(db: SupabaseClient, plan: PlanObjetivo, s
       const gramos = redondearGramajePractico(Number(i.cantidad_gramos) * factores[k])
       return { nombre: i.alimento!.nombre, gramos, ...macrosDe(i.alimento!, gramos) }
     })
-    const receta = r ? { id: r.id, nombre: r.nombre, imagen_url: r.imagen_url, tiempo_prep_min: r.tiempo_prep_min, contenido_estado: r.contenido_estado } : null
+    const receta = r ? { id: r.id, nombre: r.nombre, imagen_url: r.imagen_url, tiempo_prep_min: r.tiempo_prep_min, contenido_estado: r.contenido_estado, url_origen: r.url_origen } : null
     return { id: f.id, franja: f.franja, recurrente: false, receta, ingredientes, complementos: [], ...redondear(sumar(ingredientes)) }
   })
   return { dia, semana, estimado: true, comidas, total: redondear(sumar(comidas)) }
