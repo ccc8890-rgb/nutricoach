@@ -33,6 +33,28 @@ const norm = s => (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase
 const SIN_KCAL = /^(sal|agua|hielo|pimienta|salt|water)\b/
 const hoy = new Date().toISOString().slice(0, 10)
 
+// DeepSeek v4-pro por defecto; si no hay saldo (o se pide con --ia=gemini) usa Gemini 2.5 Flash
+let usarGemini = args.includes('--ia=gemini')
+async function llamarIA(texto) {
+  if (!usarGemini) {
+    try {
+      const { text } = await generateText({ model: deepseek(MODELO), prompt: texto, temperature: 0.1, maxOutputTokens: 16000, abortSignal: AbortSignal.timeout(300000) })
+      return text
+    } catch (e) {
+      if (!/Insufficient Balance/i.test(String(e.message))) throw e
+      console.log('   (DeepSeek sin saldo: se usa Gemini)'); usarGemini = true
+    }
+  }
+  const key = env.GEMINI_API_KEY || env.GOOGLE_GENERATIVE_AI_API_KEY
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(180000),
+    body: JSON.stringify({ contents: [{ parts: [{ text: texto }] }], generationConfig: { temperature: 0.1, responseMimeType: 'application/json', maxOutputTokens: 16000 } }),
+  })
+  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 120)}`)
+  const j = await res.json()
+  return j.candidates?.[0]?.content?.parts?.map(p => p.text).join('') ?? ''
+}
+
 function prompt(r, ings, origen) {
   return `Reconstruye la lista de ingredientes de una receta a partir de su TEXTO ORIGINAL (pie de un vídeo o página web; puede estar en italiano, inglés o español).
 
@@ -47,6 +69,7 @@ ${ings.map(i => `- ${i.nombre_libre} ${i.cantidad_gramos} g`).join('\n')}
 Responde SOLO un JSON:
 {"porciones": <nº de raciones que indica el original, o null si no lo dice>,
  "ingredientes": [{"nombre": "nombre en español, genérico y corto (p. ej. 'Carne picada', 'Harina de trigo')", "gramos": <número, receta ENTERA>, "origen": "cómo lo dice el original (p. ej. '2 cucharadas')", "estimada": true|false}],
+ "instrucciones": "pasos numerados en español («1. …\\n2. …»), basados SOLO en el texto original; null si el original no describe la preparación",
  "comentarios": "una frase sobre qué cambia respecto a la base de datos"}
 
 Reglas:
@@ -54,25 +77,35 @@ Reglas:
 - Convierte medidas a gramos de la receta entera: 1 cucharada ≈ 15 g (aceite 14 g), 1 cucharadita ≈ 5 g, 1 taza ≈ 240 g (harina 120 g, azúcar 200 g), 1 huevo ≈ 55 g, 1 diente de ajo ≈ 5 g, 1 cebolla mediana ≈ 150 g, 1 limón ≈ 60 g de zumo si pide zumo. Líquidos en ml ≈ g.
 - Si el original no da cantidad ("a ojo", "al gusto"), pon una cantidad típica y pequeña y marca "estimada": true.
 - Si el original lista varias partes (masa, salsa…), junta todo en una sola lista.
+- Las instrucciones deben coincidir con la lista de ingredientes: no nombres ningún ingrediente que no esté en ella ni pongas cantidades (las cantidades van en la lista). Conserva el orden y la técnica del original.
 - Si el texto original no contiene ingredientes, responde {"ingredientes": [], "comentarios": "el original no lista ingredientes"}.`
 }
 
+const SINONIMOS = [[/camarones?/g, 'gambas'], [/\bjugo\b/g, 'zumo'], [/\bcilantro\b/g, 'cilantro'], [/tortillas? de ma[ií]z o trigo/g, 'tortilla de trigo']]
+const ENVASE = /\b(paquete|botella|frasco|bandeja|hacendado|eroski|lidl|carrefour|mercadona|alcampo|consum|pack|lata|tarrito|brik|bote|bolsa|caja|ultracongelad[oa]|congelad[oa])\b/
 async function buscarAlimento(nombre, reuso) {
-  const n = norm(nombre)
+  let limpio = nombre.toLowerCase().trim()
+  for (const [re, nuevo] of SINONIMOS) limpio = limpio.replace(re, nuevo)
+  const n = norm(limpio)
   // 1) reutiliza el ingrediente que ya tenía la receta si se parece
   const toks = n.split(' ').filter(t => t.length > 2)
   const hit = reuso.find(i => { const m = norm(i.nombre_libre); return m === n || (toks.length > 0 && toks.every(t => m.includes(t))) })
   if (hit?.alimento) return { alimento: hit.alimento, via: 'existente' }
-  // 2) busca en el catálogo: contiene todas las palabras, el nombre más corto (el más genérico)
-  const palabras = toks.slice(0, 3)
-  if (palabras.length === 0) return null
-  let q = db.from('alimentos').select('id, nombre, calorias, proteinas, carbohidratos, grasas, fibra').eq('es_comestible', true).limit(300)
-  for (const p of palabras) q = q.ilike('nombre', `%${p}%`)
+  const campos = 'id, nombre, calorias, proteinas, carbohidratos, grasas, fibra'
+  const valido = a => SIN_KCAL.test(n) || a.calorias > 0
+  // 2) nombre exacto (sin distinguir mayúsculas ni tildes)
+  const { data: exactos } = await db.from('alimentos').select(campos).eq('es_comestible', true).ilike('nombre', limpio).limit(20)
+  const exacto = (exactos ?? []).filter(valido).sort((a, b) => a.nombre.length - b.nombre.length)[0]
+  if (exacto) return { alimento: exacto, via: 'exacto' }
+  // 3) todas las palabras (con sus tildes en la consulta), palabras completas, sin envases y lo más genérico
+  const palabrasConTilde = limpio.replace(/[^a-záéíóúñü0-9 ]/g, ' ').split(/\s+/).filter(t => t.length > 2).slice(0, 3)
+  if (palabrasConTilde.length === 0) return null
+  let q = db.from('alimentos').select(campos).eq('es_comestible', true).limit(1000)
+  for (const p of palabrasConTilde) q = q.ilike('nombre', `%${p}%`)
   const { data } = await q
-  // Palabras COMPLETAS (que «sal» no case con «Salmón») y, a igualdad, el nombre más corto y genérico
-  const palabrasDe = x => norm(x.nombre).split(' ')
-  const ok = (data ?? []).filter(a => (SIN_KCAL.test(n) || a.calorias > 0) && palabras.every(p => palabrasDe(a).includes(p)))
-  ok.sort((a, b) => (norm(a.nombre) === n ? -1 : 0) - (norm(b.nombre) === n ? -1 : 0) || a.nombre.length - b.nombre.length)
+  const palabras = palabrasConTilde.map(norm)
+  const ok = (data ?? []).filter(a => valido(a) && palabras.every(p => norm(a.nombre).split(' ').includes(p)))
+  ok.sort((a, b) => (ENVASE.test(norm(a.nombre)) ? 1 : 0) - (ENVASE.test(norm(b.nombre)) ? 1 : 0) || a.nombre.length - b.nombre.length)
   return ok[0] ? { alimento: ok[0], via: 'catalogo' } : null
 }
 
@@ -100,9 +133,9 @@ async function main() {
     let json = null
     for (let t = 0; t < 3 && !json; t++) {
       try {
-        const { text } = await generateText({ model: deepseek(MODELO), prompt: prompt(r, ings ?? [], origen), temperature: 0.1, maxOutputTokens: 16000, abortSignal: AbortSignal.timeout(300000) })
+        const text = await llamarIA(prompt(r, ings ?? [], origen))
         const m = text.match(/\{[\s\S]*\}/); if (m) json = JSON.parse(m[0])
-      } catch { /* reintenta */ }
+      } catch (e) { console.log('   error IA:', String(e.message).slice(0, 160)) }
     }
     if (!json || !json.ingredientes?.length) { console.log(`[${i + 1}] ${r.nombre} — sin propuesta (${json?.comentarios ?? 'error IA'})`); continue }
 
@@ -117,7 +150,7 @@ async function main() {
     const sinVincular = nuevos.filter(n => !n.alimento).map(n => n.nombre)
     const usados = new Set(nuevos.map(n => n.alimento?.id).filter(Boolean))
     const quitar = (ings ?? []).filter(a => !usados.has(a.alimento_id)).map(a => `${a.nombre_libre} ${a.cantidad_gramos} g`)
-    propuestas.push({ receta_id: r.id, receta: r.nombre, url: origen.url, porciones_actual: r.porciones, porciones_propuesta: porciones, antes, despues, comentarios: json.comentarios, quitar, sin_vincular: sinVincular,
+    propuestas.push({ receta_id: r.id, receta: r.nombre, url: origen.url, porciones_actual: r.porciones, porciones_propuesta: porciones, antes, despues, comentarios: json.comentarios, instrucciones: json.instrucciones ?? null, quitar, sin_vincular: sinVincular,
       ingredientes: nuevos.map(n => ({ nombre: n.nombre, gramos: n.gramos, origen: n.origen, estimada: n.estimada, alimento_id: n.alimento?.id ?? null, alimento: n.alimento?.nombre ?? null, via: n.via })) })
     console.log(`[${i + 1}/${objetivo.length}] ${r.nombre} — ${nuevos.length} ingredientes, ${sinVincular.length} sin vincular · kcal/ración ${antes.kcal} → ${despues.kcal}`)
   }
