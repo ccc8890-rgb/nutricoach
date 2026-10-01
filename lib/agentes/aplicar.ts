@@ -36,7 +36,11 @@ export function crearPlanEntrenoUpdateSeguro(input: PlanEntrenoUpdateInput): Pla
   if (input.planUpdate?.sesiones_por_semana != null) {
     notas.push(`[IA coach] Objetivo operativo: ${input.planUpdate.sesiones_por_semana} sesiones/semana`)
   }
-  if (input.propuesta) {
+  const hayDeltaPlan = input.planUpdate?.duracion_semanas != null
+    || input.planUpdate?.sesiones_por_semana != null
+    || Boolean(input.planUpdate?.sesiones?.length)
+
+  if (hayDeltaPlan && input.propuesta) {
     const propuesta = textoSeguro(input.propuesta, 1800)
     if (propuesta) notas.push(`[IA coach] ${propuesta}`)
   }
@@ -256,14 +260,18 @@ export function crearSesionesEntrenoUpdatesSeguros(input: {
 }
 
 export type AplicarTareaResult =
-  | { ok: true; codigo: 'APPLIED' | 'NO_MUTATION'; mensaje: string }
+  | { ok: true; codigo: 'APPLIED'; mensaje: string }
   | {
       ok: false
-      codigo: 'NO_CLIENT' | 'NO_ACTIVE_PLAN' | 'TASK_NOT_APPROVED' | 'UNMATCHED_TARGET' | 'DB_ERROR'
+      codigo: 'NO_CLIENT' | 'NO_ACTIVE_PLAN' | 'TASK_NOT_APPROVED' | 'UNMATCHED_TARGET' | 'INVALID_PAYLOAD' | 'DB_ERROR'
       mensaje: string
     }
 
 type AplicarTareaErrorCode = Extract<AplicarTareaResult, { ok: false }>['codigo']
+
+function esPayloadObjeto(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 export function codigoErrorRpc(mensaje: string): AplicarTareaErrorCode {
   const normalizado = mensaje.toLowerCase()
@@ -305,9 +313,9 @@ export async function aplicarTarea(tarea: AgenteTarea): Promise<AplicarTareaResu
 
     default:
       return {
-        ok: true,
-        codigo: 'NO_MUTATION',
-        mensaje: 'Tipo sin acción automática — registrado como aprobado',
+        ok: false,
+        codigo: 'INVALID_PAYLOAD',
+        mensaje: 'El tipo de tarea no tiene una aplicación automática definida',
       }
   }
 }
@@ -318,6 +326,10 @@ async function aplicarAjusteMacros(
   tarea: AgenteTarea
 ): Promise<AplicarTareaResult> {
   if (!tarea.cliente_id) return { ok: false, codigo: 'NO_CLIENT', mensaje: 'Sin cliente_id' }
+
+  if (!esPayloadObjeto(tarea.payload)) {
+    return { ok: false, codigo: 'INVALID_PAYLOAD', mensaje: 'El payload de macros debe ser un objeto' }
+  }
 
   const payload = tarea.payload as {
     ajustes?: {
@@ -337,7 +349,7 @@ async function aplicarAjusteMacros(
   if (ajustes.grasas != null) campos.grasas_objetivo = ajustes.grasas
 
   if (!Object.keys(campos).length) {
-    return { ok: true, codigo: 'NO_MUTATION', mensaje: 'Sin ajustes numéricos en el payload' }
+    return { ok: false, codigo: 'INVALID_PAYLOAD', mensaje: 'Sin ajustes numéricos válidos en el payload' }
   }
 
   const { error } = await db.rpc('aplicar_ajuste_macros_seguro', {
@@ -360,17 +372,21 @@ async function aplicarMensajeCliente(
   tarea: AgenteTarea
 ): Promise<AplicarTareaResult> {
   if (!tarea.cliente_id) return { ok: false, codigo: 'NO_CLIENT', mensaje: 'Sin cliente_id' }
+  if (!esPayloadObjeto(tarea.payload)) {
+    return { ok: false, codigo: 'INVALID_PAYLOAD', mensaje: 'El payload de mensaje debe ser un objeto' }
+  }
+
   const payload = tarea.payload as { mensaje_cliente?: string }
   // `tarea.propuesta` es la recomendación interna para el coach (kanban),
   // nunca debe usarse como fallback: se filtró al chat real de un cliente
   // (auditoría 28-09-2026) con texto como "Contacta urgentemente al
   // cliente... no ajustes el plan hasta comprender la situación".
   const contenido = payload.mensaje_cliente
-  if (!contenido) {
+  if (!contenido?.trim()) {
     return {
-      ok: true,
-      codigo: 'NO_MUTATION',
-      mensaje: 'Sin mensaje_cliente en el payload — no se envía la propuesta interna al chat',
+      ok: false,
+      codigo: 'INVALID_PAYLOAD',
+      mensaje: 'Sin mensaje_cliente válido en el payload — no se envía la propuesta interna al chat',
     }
   }
 
@@ -394,6 +410,19 @@ export function evaluarPreflightActualizacionPlan(input: {
   camposPlan: PlanEntrenoUpdateSeguro['campos']
   mensajeCliente?: string | null
 }): AplicarTareaResult | null {
+  const hayMutacion = Object.keys(input.camposPlan).length > 0
+    || input.updates.sesiones.length > 0
+    || input.updates.ejercicios.length > 0
+    || Boolean(input.mensajeCliente?.trim())
+
+  if (!hayMutacion) {
+    return {
+      ok: false,
+      codigo: 'INVALID_PAYLOAD',
+      mensaje: 'La actualización no contiene cambios aplicables',
+    }
+  }
+
   if (!input.planId) {
     return {
       ok: false,
@@ -410,19 +439,6 @@ export function evaluarPreflightActualizacionPlan(input: {
     }
   }
 
-  const hayMutacion = Object.keys(input.camposPlan).length > 0
-    || input.updates.sesiones.length > 0
-    || input.updates.ejercicios.length > 0
-    || Boolean(input.mensajeCliente?.trim())
-
-  if (!hayMutacion) {
-    return {
-      ok: true,
-      codigo: 'NO_MUTATION',
-      mensaje: 'La actualización no contiene cambios aplicables',
-    }
-  }
-
   return null
 }
 
@@ -432,6 +448,10 @@ async function aplicarActualizacionPlan(
   tarea: AgenteTarea
 ): Promise<AplicarTareaResult> {
   if (!tarea.cliente_id) return { ok: false, codigo: 'NO_CLIENT', mensaje: 'Sin cliente_id' }
+
+  if (!esPayloadObjeto(tarea.payload)) {
+    return { ok: false, codigo: 'INVALID_PAYLOAD', mensaje: 'El payload de entrenamiento debe ser un objeto' }
+  }
 
   const payload = tarea.payload as {
     plan_update?: {

@@ -66,10 +66,27 @@ async function probarConflictoDeEstado() {
   assert.ok(genericErrorIndex > conflictIndex, 'el conflicto debe resolverse antes que el error 500 genérico')
 }
 
+async function probarContratoPayloadInvalido() {
+  const route = await readFile(
+    new URL('../app/api/agentes/tareas/route.ts', import.meta.url),
+    'utf8',
+  )
+  const falloAplicacion = route.indexOf('if (!resultadoAplicacion.ok)')
+  const persistenciaError = route.indexOf(".update({ error_aplicacion: errorAplicacion })", falloAplicacion)
+  const estado422 = route.indexOf("resultadoAplicacion.codigo === 'INVALID_PAYLOAD' ? 422 : 409", falloAplicacion)
+  const codigoRespuesta = route.indexOf('codigo: resultadoAplicacion.codigo', falloAplicacion)
+
+  assert.ok(falloAplicacion >= 0, 'PATCH debe procesar fallos tipados de aplicación')
+  assert.ok(persistenciaError > falloAplicacion, 'PATCH debe persistir error_aplicacion antes de responder')
+  assert.ok(estado422 > persistenciaError, 'INVALID_PAYLOAD debe responder 422 tras persistir el error')
+  assert.ok(codigoRespuesta > estado422, 'PATCH debe exponer el código tipado de aplicación')
+}
+
 async function main() {
   await probarAprobacionPorRpc()
   await probarContratoMigracion()
   await probarConflictoDeEstado()
+  await probarContratoPayloadInvalido()
   console.log('fase0 atomic approval contract tests passed')
 }
 

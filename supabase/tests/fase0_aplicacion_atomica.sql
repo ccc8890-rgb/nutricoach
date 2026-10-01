@@ -136,7 +136,7 @@ create trigger fase0_forzar_error_chat_aplicacion
 before insert on public.chat_mensajes
 for each row execute function public.fase0_forzar_error_chat_aplicacion();
 
-select plan(30);
+select plan(33);
 
 select has_function(
   'public', 'aplicar_ajuste_macros_seguro', array['uuid', 'uuid', 'jsonb']
@@ -204,6 +204,13 @@ select throws_ok(
     tarea_macros_id, cliente_id, '{"grasas_objetivo":null}'::jsonb
   ) from fase0_aplicacion_ids$test$,
   'P0001', null, 'rechaza macro null'
+);
+
+select throws_ok(
+  $test$select public.aplicar_ajuste_macros_seguro(
+    tarea_macros_id, cliente_id, '{}'::jsonb
+  ) from fase0_aplicacion_ids$test$,
+  'P0001', null, 'rechaza payload de macros vacío'
 );
 
 select throws_ok(
@@ -286,6 +293,19 @@ select throws_ok(
     tarea_entreno_id,
     cliente_id,
     plan_entrenamiento_id,
+    '{}'::jsonb,
+    '[]'::jsonb,
+    '[]'::jsonb,
+    null
+  ) from fase0_aplicacion_ids$test$,
+  'P0001', null, 'rechaza actualización estructural vacía'
+);
+
+select throws_ok(
+  $test$select public.aplicar_actualizacion_entreno_segura(
+    tarea_entreno_id,
+    cliente_id,
+    plan_entrenamiento_id,
     '{"descripcion_append":"No debe persistir"}'::jsonb,
     '[]'::jsonb,
     jsonb_build_array(jsonb_build_object(
@@ -314,6 +334,13 @@ select throws_ok(
     'Forzar error chat atomico'
   ) from fase0_aplicacion_ids$test$,
   'P0001', null, 'un error al insertar chat revierte toda la aplicacion'
+);
+
+select throws_ok(
+  $test$select public.aplicar_mensaje_cliente_seguro(
+    tarea_chat_error_id, cliente_id, null
+  ) from fase0_aplicacion_ids$test$,
+  'P0001', null, 'rechaza mensaje ausente'
 );
 
 select ok(

@@ -195,11 +195,12 @@ export async function PATCH(request: NextRequest) {
           }
 
           registrarAprendizaje(tarea, decisionValidada, propuesta_final, comentario_coach).catch(() => null)
+          const statusAplicacion = resultadoAplicacion.codigo === 'INVALID_PAYLOAD' ? 422 : 409
           return NextResponse.json({
             error: 'La decisión se guardó, pero no se pudo aplicar.',
-            codigo: 'TASK_APPLICATION_FAILED',
+            codigo: resultadoAplicacion.codigo,
             accion: 'Revisa el error de aplicación de la tarea y reintenta.',
-          }, { status: 409 })
+          }, { status: statusAplicacion })
         }
       }
 

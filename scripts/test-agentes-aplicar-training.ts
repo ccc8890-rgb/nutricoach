@@ -27,6 +27,12 @@ const empty = crearPlanEntrenoUpdateSeguro({
 assert.deepEqual(empty.campos, {})
 assert.equal(empty.mensaje, 'Sin actualización estructural segura')
 
+const propuestaSinDelta = crearPlanEntrenoUpdateSeguro({
+  planUpdate: {},
+  propuesta: 'No debe convertirse por sí sola en una mutación de plan.',
+})
+assert.deepEqual(propuestaSinDelta.campos, {})
+
 const sessionUpdates = crearSesionesEntrenoUpdatesSeguros({
   sesionesActuales: [
     {
@@ -114,8 +120,8 @@ const payloadVacio = evaluarPreflightActualizacionPlan({
   updates: updatesVacios,
   mensajeCliente: '   ',
 })
-assert.equal(payloadVacio?.codigo, 'NO_MUTATION')
-assert.equal(payloadVacio?.ok, true)
+assert.equal(payloadVacio?.codigo, 'INVALID_PAYLOAD')
+assert.equal(payloadVacio?.ok, false)
 
 assert.equal(
   codigoErrorRpc('Una sesión no pertenece al plan de entrenamiento activo'),
