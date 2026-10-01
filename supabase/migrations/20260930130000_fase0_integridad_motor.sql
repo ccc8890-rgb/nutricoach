@@ -318,10 +318,33 @@ begin
       'grasas_objetivo'
     )
       or jsonb_typeof(p_campos -> key) <> 'number'
+      or p_campos ->> key in ('NaN', 'Infinity', '-Infinity')
   ) then
     raise exception using
       errcode = 'P0001',
       message = 'La aplicación contiene claves de macros no permitidas';
+  end if;
+
+  if (p_campos ? 'kcal_objetivo' and (
+      (p_campos ->> 'kcal_objetivo')::numeric < 500
+      or (p_campos ->> 'kcal_objetivo')::numeric > 10000
+    ))
+    or (p_campos ? 'proteinas_objetivo' and (
+      (p_campos ->> 'proteinas_objetivo')::numeric < 0
+      or (p_campos ->> 'proteinas_objetivo')::numeric > 1000
+    ))
+    or (p_campos ? 'carbohidratos_objetivo' and (
+      (p_campos ->> 'carbohidratos_objetivo')::numeric < 0
+      or (p_campos ->> 'carbohidratos_objetivo')::numeric > 2000
+    ))
+    or (p_campos ? 'grasas_objetivo' and (
+      (p_campos ->> 'grasas_objetivo')::numeric < 0
+      or (p_campos ->> 'grasas_objetivo')::numeric > 1000
+    ))
+  then
+    raise exception using
+      errcode = 'P0001',
+      message = 'La aplicación contiene macros fuera de rango';
   end if;
 
   select p.id
@@ -444,19 +467,33 @@ begin
   if exists (
     select 1
     from jsonb_object_keys(coalesce(p_campos_plan, '{}'::jsonb)) key
-    where key not in ('descripcion', 'duracion_semanas')
+    where key not in ('descripcion_append', 'duracion_semanas')
   ) then
     raise exception using
       errcode = 'P0001',
       message = 'La actualización del plan contiene campos no permitidos';
   end if;
 
-  if coalesce(p_campos_plan, '{}'::jsonb) ? 'duracion_semanas'
-    and jsonb_typeof(p_campos_plan -> 'duracion_semanas') <> 'number'
+  if (coalesce(p_campos_plan, '{}'::jsonb) ? 'descripcion_append'
+      and (
+        jsonb_typeof(p_campos_plan -> 'descripcion_append') <> 'string'
+        or nullif(btrim(p_campos_plan ->> 'descripcion_append'), '') is null
+        or char_length(p_campos_plan ->> 'descripcion_append') > 2000
+      ))
+    or (coalesce(p_campos_plan, '{}'::jsonb) ? 'duracion_semanas'
+      and (
+        jsonb_typeof(p_campos_plan -> 'duracion_semanas') <> 'number'
+        or case
+          when char_length(p_campos_plan ->> 'duracion_semanas') <= 3
+            and (p_campos_plan ->> 'duracion_semanas') ~ '^[0-9]+$'
+            then (p_campos_plan ->> 'duracion_semanas')::integer not between 1 and 104
+          else true
+        end
+      ))
   then
     raise exception using
       errcode = 'P0001',
-      message = 'La duración del plan debe ser numérica';
+      message = 'Los campos del plan no tienen tipo o rango válidos';
   end if;
 
   if exists (
@@ -470,8 +507,30 @@ begin
       or exists (
         select 1
         from jsonb_object_keys(item -> 'campos') key
-        where key not in ('notas', 'duracion_estimada_min', 'contexto_ia')
+        where key not in ('notas_append', 'duracion_estimada_min', 'contexto_ia_append')
       )
+      or (item -> 'campos' ? 'duracion_estimada_min'
+        and (
+          jsonb_typeof(item -> 'campos' -> 'duracion_estimada_min') <> 'number'
+          or case
+            when char_length(item -> 'campos' ->> 'duracion_estimada_min') <= 3
+              and (item -> 'campos' ->> 'duracion_estimada_min') ~ '^[0-9]+$'
+              then (item -> 'campos' ->> 'duracion_estimada_min')::integer not between 10 and 180
+            else true
+          end
+        ))
+      or (item -> 'campos' ? 'notas_append'
+        and (
+          jsonb_typeof(item -> 'campos' -> 'notas_append') <> 'string'
+          or nullif(btrim(item -> 'campos' ->> 'notas_append'), '') is null
+          or char_length(item -> 'campos' ->> 'notas_append') > 2000
+        ))
+      or (item -> 'campos' ? 'contexto_ia_append'
+        and (
+          jsonb_typeof(item -> 'campos' -> 'contexto_ia_append') <> 'string'
+          or nullif(btrim(item -> 'campos' ->> 'contexto_ia_append'), '') is null
+          or char_length(item -> 'campos' ->> 'contexto_ia_append') > 2000
+        ))
   ) then
     raise exception using
       errcode = 'P0001',
@@ -491,8 +550,46 @@ begin
         from jsonb_object_keys(item -> 'campos') key
         where key not in (
           'series', 'repeticiones', 'descanso_segundos', 'peso_sugerido',
-          'rpe', 'notas', 'instruccion_ejercicio'
+          'rpe', 'notas_append', 'instruccion_ejercicio_append'
         )
+      )
+      or (item -> 'campos' ? 'series'
+        and (
+          jsonb_typeof(item -> 'campos' -> 'series') <> 'number'
+          or case
+            when char_length(item -> 'campos' ->> 'series') <= 2
+              and (item -> 'campos' ->> 'series') ~ '^[0-9]+$'
+              then (item -> 'campos' ->> 'series')::integer not between 1 and 12
+            else true
+          end
+        ))
+      or (item -> 'campos' ? 'descanso_segundos'
+        and (
+          jsonb_typeof(item -> 'campos' -> 'descanso_segundos') <> 'number'
+          or case
+            when char_length(item -> 'campos' ->> 'descanso_segundos') <= 3
+              and (item -> 'campos' ->> 'descanso_segundos') ~ '^[0-9]+$'
+              then (item -> 'campos' ->> 'descanso_segundos')::integer not between 15 and 600
+            else true
+          end
+        ))
+      or exists (
+        select 1
+        from unnest(array[
+          'repeticiones', 'peso_sugerido', 'rpe',
+          'notas_append', 'instruccion_ejercicio_append'
+        ]) key
+        where item -> 'campos' ? key
+          and (
+            jsonb_typeof(item -> 'campos' -> key) <> 'string'
+            or nullif(btrim(item -> 'campos' ->> key), '') is null
+            or char_length(item -> 'campos' ->> key) > case key
+              when 'repeticiones' then 40
+              when 'peso_sugerido' then 60
+              when 'rpe' then 12
+              else 2000
+            end
+          )
       )
   ) then
     raise exception using
@@ -599,7 +696,14 @@ begin
   if coalesce(p_campos_plan, '{}'::jsonb) <> '{}'::jsonb then
     update public.planes_entrenamiento
     set
-      descripcion = coalesce(p_campos_plan->>'descripcion', descripcion),
+      descripcion = case
+        when p_campos_plan ? 'descripcion_append' then concat_ws(
+          E'\n\n',
+          nullif(btrim(descripcion), ''),
+          p_campos_plan ->> 'descripcion_append'
+        )
+        else descripcion
+      end,
       duracion_semanas = coalesce((p_campos_plan->>'duracion_semanas')::integer, duracion_semanas)
     where id = p_plan_id;
 
@@ -614,9 +718,23 @@ begin
   if v_expected_sesiones > 0 then
     update public.sesiones_entrenamiento s
     set
-      notas = coalesce(item.campos->>'notas', s.notas),
+      notas = case
+        when item.campos ? 'notas_append' then concat_ws(
+          E'\n\n',
+          nullif(btrim(s.notas), ''),
+          item.campos ->> 'notas_append'
+        )
+        else s.notas
+      end,
       duracion_estimada_min = coalesce((item.campos->>'duracion_estimada_min')::integer, s.duracion_estimada_min),
-      contexto_ia = coalesce(item.campos->>'contexto_ia', s.contexto_ia)
+      contexto_ia = case
+        when item.campos ? 'contexto_ia_append' then concat_ws(
+          E'\n\n',
+          nullif(btrim(s.contexto_ia), ''),
+          item.campos ->> 'contexto_ia_append'
+        )
+        else s.contexto_ia
+      end
     from (
       select
         (value->>'id')::uuid as id,
@@ -641,8 +759,22 @@ begin
       descanso_segundos = coalesce((item.campos->>'descanso_segundos')::integer, se.descanso_segundos),
       peso_sugerido = coalesce(item.campos->>'peso_sugerido', se.peso_sugerido),
       rpe = coalesce(item.campos->>'rpe', se.rpe),
-      notas = coalesce(item.campos->>'notas', se.notas),
-      instruccion_ejercicio = coalesce(item.campos->>'instruccion_ejercicio', se.instruccion_ejercicio)
+      notas = case
+        when item.campos ? 'notas_append' then concat_ws(
+          E'\n\n',
+          nullif(btrim(se.notas), ''),
+          item.campos ->> 'notas_append'
+        )
+        else se.notas
+      end,
+      instruccion_ejercicio = case
+        when item.campos ? 'instruccion_ejercicio_append' then concat_ws(
+          E'\n\n',
+          nullif(btrim(se.instruccion_ejercicio), ''),
+          item.campos ->> 'instruccion_ejercicio_append'
+        )
+        else se.instruccion_ejercicio
+      end
     from (
       select
         (value->>'id')::uuid as id,

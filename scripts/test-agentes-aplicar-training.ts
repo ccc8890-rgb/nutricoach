@@ -2,11 +2,11 @@ import assert from 'node:assert/strict'
 import {
   crearPlanEntrenoUpdateSeguro,
   crearSesionesEntrenoUpdatesSeguros,
+  codigoErrorRpc,
   evaluarPreflightActualizacionPlan,
 } from '../lib/agentes/aplicar'
 
 const update = crearPlanEntrenoUpdateSeguro({
-  descripcionActual: 'Plan HYROX base',
   planUpdate: {
     sesiones_por_semana: 4,
     duracion_semanas: 8,
@@ -16,13 +16,11 @@ const update = crearPlanEntrenoUpdateSeguro({
 
 assert.equal(update.campos.duracion_semanas, 8)
 assert.ok(!('sesiones_por_semana' in update.campos))
-assert.ok(update.campos.descripcion.includes('Plan HYROX base'))
-assert.ok(update.campos.descripcion.includes('[IA coach] Objetivo operativo: 4 sesiones/semana'))
-assert.ok(update.campos.descripcion.includes('Reducir temporalmente la semana a 4 sesiones'))
+assert.ok(update.campos.descripcion_append?.includes('[IA coach] Objetivo operativo: 4 sesiones/semana'))
+assert.ok(update.campos.descripcion_append?.includes('Reducir temporalmente la semana a 4 sesiones'))
 assert.equal(update.mensaje, 'Plan de entrenamiento anotado: duración y objetivo semanal operativo')
 
 const empty = crearPlanEntrenoUpdateSeguro({
-  descripcionActual: null,
   planUpdate: {},
   propuesta: null,
 })
@@ -74,16 +72,14 @@ const sessionUpdates = crearSesionesEntrenoUpdatesSeguros({
 assert.equal(sessionUpdates.sesiones.length, 1)
 assert.equal(sessionUpdates.sesiones[0].id, 'sesion-fuerza')
 assert.equal(sessionUpdates.sesiones[0].campos.duracion_estimada_min, 45)
-assert.ok(sessionUpdates.sesiones[0].campos.notas?.includes('Sentadilla principal'))
-assert.ok(sessionUpdates.sesiones[0].campos.notas?.includes('[IA coach] Semana de descarga por fatiga alta.'))
-assert.ok(sessionUpdates.sesiones[0].campos.contexto_ia?.includes('Descarga neural'))
+assert.equal(sessionUpdates.sesiones[0].campos.notas_append, '[IA coach] Semana de descarga por fatiga alta.')
+assert.equal(sessionUpdates.sesiones[0].campos.contexto_ia_append, '[IA coach] Descarga neural')
 assert.equal(sessionUpdates.ejercicios.length, 1)
 assert.equal(sessionUpdates.ejercicios[0].id, 'ej-sentadilla')
 assert.equal(sessionUpdates.ejercicios[0].campos.series, 3)
 assert.equal(sessionUpdates.ejercicios[0].campos.repeticiones, '6')
 assert.equal(sessionUpdates.ejercicios[0].campos.rpe, '6')
-assert.ok(sessionUpdates.ejercicios[0].campos.notas?.includes('Trabajo pesado'))
-assert.ok(sessionUpdates.ejercicios[0].campos.notas?.includes('[IA coach] Bajar carga'))
+assert.equal(sessionUpdates.ejercicios[0].campos.notas_append, '[IA coach] Bajar carga y dejar 3 repeticiones en recámara.')
 assert.equal(sessionUpdates.resumen, '1 sesión y 1 ejercicio ajustados')
 
 const updatesVacios = crearSesionesEntrenoUpdatesSeguros({
@@ -93,7 +89,7 @@ const updatesVacios = crearSesionesEntrenoUpdatesSeguros({
 
 const sinPlan = evaluarPreflightActualizacionPlan({
   planId: null,
-  camposPlan: { descripcion: 'Cambio pendiente' },
+  camposPlan: { descripcion_append: 'Cambio pendiente' },
   updates: updatesVacios,
   mensajeCliente: null,
 })
@@ -102,7 +98,7 @@ assert.equal(sinPlan?.ok, false)
 
 const targetNoEncontrado = evaluarPreflightActualizacionPlan({
   planId: 'plan-activo',
-  camposPlan: { descripcion: 'No debe persistirse' },
+  camposPlan: { descripcion_append: 'No debe persistirse' },
   updates: {
     ...updatesVacios,
     noAplicados: ['Sesión inexistente'],
@@ -120,5 +116,10 @@ const payloadVacio = evaluarPreflightActualizacionPlan({
 })
 assert.equal(payloadVacio?.codigo, 'NO_MUTATION')
 assert.equal(payloadVacio?.ok, true)
+
+assert.equal(
+  codigoErrorRpc('Una sesión no pertenece al plan de entrenamiento activo'),
+  'UNMATCHED_TARGET'
+)
 
 console.log('agentes aplicar training tests passed')

@@ -11,10 +11,13 @@ create temporary table fase0_aplicacion_ids (
   sesion_ajena_id uuid not null,
   ejercicio_catalogo_id uuid not null,
   ejercicio_sesion_id uuid not null,
+  ejercicio_ajeno_sesion_id uuid not null,
   tarea_macros_id uuid not null,
   tarea_pendiente_id uuid not null,
   tarea_entreno_id uuid not null,
-  tarea_chat_error_id uuid not null
+  tarea_chat_error_id uuid not null,
+  tarea_concurrente_a_id uuid not null,
+  tarea_concurrente_b_id uuid not null
 ) on commit drop;
 
 insert into fase0_aplicacion_ids
@@ -22,7 +25,8 @@ select
   gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(),
   gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(),
   gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(),
-  gen_random_uuid(), gen_random_uuid();
+  gen_random_uuid(), gen_random_uuid(), gen_random_uuid(), gen_random_uuid(),
+  gen_random_uuid();
 
 insert into auth.users (id, email, raw_user_meta_data)
 select coach_id, concat('fase0-aplicar-coach+', coach_id, '@example.test'),
@@ -84,6 +88,9 @@ insert into public.sesion_ejercicios (
   id, sesion_id, ejercicio_id, series, repeticiones, descanso_segundos, orden
 )
 select ejercicio_sesion_id, sesion_id, ejercicio_catalogo_id, 4, '8', 120, 1
+from fase0_aplicacion_ids
+union all
+select ejercicio_ajeno_sesion_id, sesion_ajena_id, ejercicio_catalogo_id, 5, '5', 150, 1
 from fase0_aplicacion_ids;
 
 insert into public.agente_tareas (
@@ -103,6 +110,14 @@ from fase0_aplicacion_ids
 union all
 select tarea_chat_error_id, 'actualizacion_plan', cliente_id, 'revisor_semanal',
   'aprobado', 2, '{}'::jsonb, 'Forzar fallo de chat'
+from fase0_aplicacion_ids
+union all
+select tarea_concurrente_a_id, 'actualizacion_plan', cliente_id, 'revisor_semanal',
+  'aprobado', 2, '{}'::jsonb, 'Append A'
+from fase0_aplicacion_ids
+union all
+select tarea_concurrente_b_id, 'actualizacion_plan', cliente_id, 'revisor_semanal',
+  'aprobado', 2, '{}'::jsonb, 'Append B'
 from fase0_aplicacion_ids;
 
 create function public.fase0_forzar_error_chat_aplicacion()
@@ -121,7 +136,7 @@ create trigger fase0_forzar_error_chat_aplicacion
 before insert on public.chat_mensajes
 for each row execute function public.fase0_forzar_error_chat_aplicacion();
 
-select plan(22);
+select plan(30);
 
 select has_function(
   'public', 'aplicar_ajuste_macros_seguro', array['uuid', 'uuid', 'jsonb']
@@ -184,6 +199,29 @@ select ok(
   'las claves de macros no permitidas no mutan ni marcan aplicada la tarea'
 );
 
+select throws_ok(
+  $test$select public.aplicar_ajuste_macros_seguro(
+    tarea_macros_id, cliente_id, '{"grasas_objetivo":null}'::jsonb
+  ) from fase0_aplicacion_ids$test$,
+  'P0001', null, 'rechaza macro null'
+);
+
+select throws_ok(
+  $test$select public.aplicar_ajuste_macros_seguro(
+    tarea_macros_id, cliente_id, '{"kcal_objetivo":-1}'::jsonb
+  ) from fase0_aplicacion_ids$test$,
+  'P0001', null, 'rechaza macro fuera de rango'
+);
+
+select ok(
+  (select pn.kcal_objetivo = 2000 and pn.grasas_objetivo = 65
+      and t.estado = 'aprobado' and t.aplicado_at is null
+   from fase0_aplicacion_ids f
+   join public.planes_nutricion pn on pn.id = f.plan_nutricion_id
+   join public.agente_tareas t on t.id = f.tarea_macros_id),
+  'un macro inválido no deja cambios parciales'
+);
+
 select lives_ok(
   $test$select public.aplicar_ajuste_macros_seguro(
     tarea_macros_id, cliente_id,
@@ -208,7 +246,7 @@ select throws_ok(
     tarea_entreno_id,
     cliente_id,
     plan_entrenamiento_id,
-    '{"descripcion":"Descripcion nueva","duracion_semanas":8}'::jsonb,
+    '{"descripcion_append":"Descripcion nueva","duracion_semanas":8}'::jsonb,
     jsonb_build_array(jsonb_build_object(
       'id', sesion_ajena_id,
       'campos', jsonb_build_object('duracion_estimada_min', 45)
@@ -232,24 +270,63 @@ select ok(
 
 select throws_ok(
   $test$select public.aplicar_actualizacion_entreno_segura(
+    tarea_entreno_id,
+    cliente_id,
+    plan_entrenamiento_id,
+    '{"descripcion_append":null}'::jsonb,
+    '[]'::jsonb,
+    '[]'::jsonb,
+    null
+  ) from fase0_aplicacion_ids$test$,
+  'P0001', null, 'rechaza delta de plan null'
+);
+
+select throws_ok(
+  $test$select public.aplicar_actualizacion_entreno_segura(
+    tarea_entreno_id,
+    cliente_id,
+    plan_entrenamiento_id,
+    '{"descripcion_append":"No debe persistir"}'::jsonb,
+    '[]'::jsonb,
+    jsonb_build_array(jsonb_build_object(
+      'id', ejercicio_ajeno_sesion_id,
+      'campos', jsonb_build_object('series', 3)
+    )),
+    null
+  ) from fase0_aplicacion_ids$test$,
+  'P0001', null, 'rechaza un ejercicio que no pertenece al plan activo'
+);
+
+select throws_ok(
+  $test$select public.aplicar_actualizacion_entreno_segura(
     tarea_chat_error_id,
     cliente_id,
     plan_entrenamiento_id,
-    '{"descripcion":"No debe persistir"}'::jsonb,
-    '[]'::jsonb,
-    '[]'::jsonb,
+    '{"descripcion_append":"No debe persistir"}'::jsonb,
+    jsonb_build_array(jsonb_build_object(
+      'id', sesion_id,
+      'campos', jsonb_build_object('duracion_estimada_min', 44)
+    )),
+    jsonb_build_array(jsonb_build_object(
+      'id', ejercicio_sesion_id,
+      'campos', jsonb_build_object('series', 2)
+    )),
     'Forzar error chat atomico'
   ) from fase0_aplicacion_ids$test$,
   'P0001', null, 'un error al insertar chat revierte toda la aplicacion'
 );
 
 select ok(
-  (select pe.descripcion = 'Descripcion original' and t.estado = 'aprobado'
+  (select pe.descripcion = 'Descripcion original'
+      and s.duracion_estimada_min = 60 and se.series = 4
+      and t.estado = 'aprobado'
       and t.aplicado_at is null
    from fase0_aplicacion_ids f
    join public.planes_entrenamiento pe on pe.id = f.plan_entrenamiento_id
+   join public.sesiones_entrenamiento s on s.id = f.sesion_id
+   join public.sesion_ejercicios se on se.id = f.ejercicio_sesion_id
    join public.agente_tareas t on t.id = f.tarea_chat_error_id),
-  'el fallo de chat no deja plan ni tarea parcialmente aplicados'
+  'el fallo de chat no deja plan, sesion, ejercicio ni tarea parcialmente aplicados'
 );
 
 select lives_ok(
@@ -257,13 +334,13 @@ select lives_ok(
     tarea_entreno_id,
     cliente_id,
     plan_entrenamiento_id,
-    '{"descripcion":"Descripcion nueva","duracion_semanas":8}'::jsonb,
+    '{"descripcion_append":"Descripcion nueva","duracion_semanas":8}'::jsonb,
     jsonb_build_array(jsonb_build_object(
       'id', sesion_id,
       'campos', jsonb_build_object(
-        'notas', 'Notas nuevas',
+        'notas_append', 'Notas nuevas',
         'duracion_estimada_min', 45,
-        'contexto_ia', 'Descarga'
+        'contexto_ia_append', 'Descarga'
       )
     )),
     jsonb_build_array(jsonb_build_object(
@@ -281,8 +358,8 @@ select lives_ok(
 );
 
 select ok(
-  (select pe.descripcion = 'Descripcion nueva' and pe.duracion_semanas = 8
-      and s.notas = 'Notas nuevas' and s.duracion_estimada_min = 45
+  (select pe.descripcion = E'Descripcion original\n\nDescripcion nueva' and pe.duracion_semanas = 8
+      and s.notas = E'Notas originales\n\nNotas nuevas' and s.duracion_estimada_min = 45
       and s.contexto_ia = 'Descarga'
       and se.series = 3 and se.repeticiones = '6'
       and se.descanso_segundos = 90 and se.rpe = '6'
@@ -293,6 +370,39 @@ select ok(
    join public.sesion_ejercicios se on se.id = f.ejercicio_sesion_id
    join public.agente_tareas t on t.id = f.tarea_entreno_id),
   'plan, sesion, ejercicio y tarea cambian juntos'
+);
+
+select lives_ok(
+  $test$select public.aplicar_actualizacion_entreno_segura(
+    tarea_concurrente_a_id, cliente_id, plan_entrenamiento_id,
+    '{"descripcion_append":"Append A"}'::jsonb,
+    jsonb_build_array(jsonb_build_object(
+      'id', sesion_id, 'campos', jsonb_build_object('notas_append', 'Nota A')
+    )),
+    '[]'::jsonb, null
+  ) from fase0_aplicacion_ids$test$,
+  'el primer delta se compone dentro de la RPC bloqueada'
+);
+
+select lives_ok(
+  $test$select public.aplicar_actualizacion_entreno_segura(
+    tarea_concurrente_b_id, cliente_id, plan_entrenamiento_id,
+    '{"descripcion_append":"Append B"}'::jsonb,
+    jsonb_build_array(jsonb_build_object(
+      'id', sesion_id, 'campos', jsonb_build_object('notas_append', 'Nota B')
+    )),
+    '[]'::jsonb, null
+  ) from fase0_aplicacion_ids$test$,
+  'el segundo delta conserva el primero en una secuencia determinista'
+);
+
+select ok(
+  (select pe.descripcion = E'Descripcion original\n\nDescripcion nueva\n\nAppend A\n\nAppend B'
+      and s.notas = E'Notas originales\n\nNotas nuevas\n\nNota A\n\nNota B'
+   from fase0_aplicacion_ids f
+   join public.planes_entrenamiento pe on pe.id = f.plan_entrenamiento_id
+   join public.sesiones_entrenamiento s on s.id = f.sesion_id),
+  'deltas sucesivos no pierden descripción ni notas previas'
 );
 
 select is(

@@ -9,7 +9,6 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 import type { AgenteTarea } from './types'
 
 export interface PlanEntrenoUpdateInput {
-  descripcionActual: string | null
   planUpdate?: {
     sesiones_por_semana?: number | null
     duracion_semanas?: number | null
@@ -20,7 +19,7 @@ export interface PlanEntrenoUpdateInput {
 
 export interface PlanEntrenoUpdateSeguro {
   campos: {
-    descripcion?: string
+    descripcion_append?: string
     duracion_semanas?: number
   }
   mensaje: string
@@ -38,13 +37,12 @@ export function crearPlanEntrenoUpdateSeguro(input: PlanEntrenoUpdateInput): Pla
     notas.push(`[IA coach] Objetivo operativo: ${input.planUpdate.sesiones_por_semana} sesiones/semana`)
   }
   if (input.propuesta) {
-    notas.push(`[IA coach] ${input.propuesta}`)
+    const propuesta = textoSeguro(input.propuesta, 1800)
+    if (propuesta) notas.push(`[IA coach] ${propuesta}`)
   }
 
   if (notas.length > 0) {
-    campos.descripcion = [input.descripcionActual, ...notas]
-      .filter((item): item is string => Boolean(item?.trim()))
-      .join('\n\n')
+    campos.descripcion_append = notas.join('\n\n')
   }
 
   const touched = Object.keys(campos)
@@ -53,7 +51,7 @@ export function crearPlanEntrenoUpdateSeguro(input: PlanEntrenoUpdateInput): Pla
     mensaje: touched.length
       ? `Plan de entrenamiento anotado: ${[
           campos.duracion_semanas != null ? 'duración' : null,
-          campos.descripcion ? 'objetivo semanal operativo' : null,
+          campos.descripcion_append ? 'objetivo semanal operativo' : null,
         ].filter(Boolean).join(' y ')}`
       : 'Sin actualización estructural segura',
   }
@@ -63,9 +61,7 @@ export interface SesionEntrenoActual {
   id: string
   nombre: string | null
   dia_semana: string | null
-  notas: string | null
   duracion_estimada_min?: number | null
-  contexto_ia?: string | null
   ejercicios?: EjercicioSesionActual[] | null
 }
 
@@ -78,8 +74,6 @@ export interface EjercicioSesionActual {
   descanso_segundos?: number | null
   peso_sugerido?: string | null
   rpe?: string | null
-  notas?: string | null
-  instruccion_ejercicio?: string | null
 }
 
 export interface SesionEntrenoPayload {
@@ -110,9 +104,9 @@ export interface SesionesEntrenoUpdatesSeguros {
   sesiones: Array<{
     id: string
     campos: {
-      notas?: string
+      notas_append?: string
       duracion_estimada_min?: number
-      contexto_ia?: string
+      contexto_ia_append?: string
     }
   }>
   ejercicios: Array<{
@@ -123,8 +117,8 @@ export interface SesionesEntrenoUpdatesSeguros {
       descanso_segundos?: number
       peso_sugerido?: string
       rpe?: string
-      notas?: string
-      instruccion_ejercicio?: string
+      notas_append?: string
+      instruccion_ejercicio_append?: string
     }
   }>
   noAplicados: string[]
@@ -149,13 +143,10 @@ function textoSeguro(value: string | number | null | undefined, max = 240): stri
   return text.slice(0, max)
 }
 
-function appendIaNote(actual: string | null | undefined, nota: string | null | undefined): string | undefined {
+function crearNotaIa(nota: string | null | undefined): string | undefined {
   const safe = textoSeguro(nota, 500)
   if (!safe) return undefined
-  const iaNote = `[IA coach] ${safe}`
-  const base = actual?.trim()
-  if (base?.includes(iaNote)) return base
-  return [base, iaNote].filter(Boolean).join('\n\n')
+  return `[IA coach] ${safe}`
 }
 
 function matchSesion(sesiones: SesionEntrenoActual[], payload: SesionEntrenoPayload): SesionEntrenoActual | undefined {
@@ -210,11 +201,11 @@ export function crearSesionesEntrenoUpdatesSeguros(input: {
     const duracion = numeroEnRango(payloadSesion.duracion_estimada_min, 10, 180)
     if (duracion != null) camposSesion.duracion_estimada_min = duracion
 
-    const notas = appendIaNote(sesionActual.notas, payloadSesion.notas)
-    if (notas) camposSesion.notas = notas
+    const notas = crearNotaIa(payloadSesion.notas)
+    if (notas) camposSesion.notas_append = notas
 
-    const contexto = appendIaNote(sesionActual.contexto_ia, payloadSesion.contexto_ia || payloadSesion.foco)
-    if (contexto) camposSesion.contexto_ia = contexto
+    const contexto = crearNotaIa(payloadSesion.contexto_ia || payloadSesion.foco)
+    if (contexto) camposSesion.contexto_ia_append = contexto
 
     if (Object.keys(camposSesion).length) {
       sesiones.push({ id: sesionActual.id, campos: camposSesion })
@@ -234,16 +225,16 @@ export function crearSesionesEntrenoUpdatesSeguros(input: {
       const repeticiones = textoSeguro(payloadEjercicio.repeticiones, 40)
       const rpe = textoSeguro(payloadEjercicio.rpe, 12)
       const peso = textoSeguro(payloadEjercicio.peso_sugerido, 60)
-      const notasEjercicio = appendIaNote(ejercicioActual.notas, payloadEjercicio.notas)
-      const instruccion = appendIaNote(ejercicioActual.instruccion_ejercicio, payloadEjercicio.instruccion_ejercicio)
+      const notasEjercicio = crearNotaIa(payloadEjercicio.notas)
+      const instruccion = crearNotaIa(payloadEjercicio.instruccion_ejercicio)
 
       if (series != null) camposEjercicio.series = series
       if (descanso != null) camposEjercicio.descanso_segundos = descanso
       if (repeticiones) camposEjercicio.repeticiones = repeticiones
       if (rpe) camposEjercicio.rpe = rpe
       if (peso) camposEjercicio.peso_sugerido = peso
-      if (notasEjercicio) camposEjercicio.notas = notasEjercicio
-      if (instruccion) camposEjercicio.instruccion_ejercicio = instruccion
+      if (notasEjercicio) camposEjercicio.notas_append = notasEjercicio
+      if (instruccion) camposEjercicio.instruccion_ejercicio_append = instruccion
 
       if (Object.keys(camposEjercicio).length) {
         ejercicios.push({ id: ejercicioActual.id, campos: camposEjercicio })
@@ -274,11 +265,11 @@ export type AplicarTareaResult =
 
 type AplicarTareaErrorCode = Extract<AplicarTareaResult, { ok: false }>['codigo']
 
-function codigoErrorRpc(mensaje: string): AplicarTareaErrorCode {
+export function codigoErrorRpc(mensaje: string): AplicarTareaErrorCode {
   const normalizado = mensaje.toLowerCase()
+  if (normalizado.includes('no pertenece') || normalizado.includes('target')) return 'UNMATCHED_TARGET'
   if (normalizado.includes('plan') && normalizado.includes('activo')) return 'NO_ACTIVE_PLAN'
   if (normalizado.includes('aprobada') || normalizado.includes('modificada')) return 'TASK_NOT_APPROVED'
-  if (normalizado.includes('pertenece')) return 'UNMATCHED_TARGET'
   return 'DB_ERROR'
 }
 
@@ -453,7 +444,7 @@ async function aplicarActualizacionPlan(
 
   const { data: planActual, error: planError } = await db
     .from('planes_entrenamiento')
-    .select('id, descripcion')
+    .select('id')
     .eq('cliente_id', tarea.cliente_id)
     .eq('activo', true)
     .maybeSingle()
@@ -464,7 +455,6 @@ async function aplicarActualizacionPlan(
   }
 
   const updateSeguro = crearPlanEntrenoUpdateSeguro({
-    descripcionActual: (planActual?.descripcion as string | null) ?? null,
     planUpdate: payload.plan_update,
     propuesta: tarea.propuesta,
   })
@@ -490,19 +480,9 @@ async function aplicarActualizacionPlan(
         id,
         nombre,
         dia_semana,
-        notas,
-        duracion_estimada_min,
-        contexto_ia,
         ejercicios:sesion_ejercicios(
           id,
           ejercicio_id,
-          series,
-          repeticiones,
-          descanso_segundos,
-          peso_sugerido,
-          rpe,
-          notas,
-          instruccion_ejercicio,
           ejercicio:ejercicios(nombre)
         )
       `)
@@ -518,9 +498,6 @@ async function aplicarActualizacionPlan(
       id: string
       nombre: string | null
       dia_semana: string | null
-      notas: string | null
-      duracion_estimada_min: number | null
-      contexto_ia: string | null
       ejercicios?: Array<EjercicioSesionActual & { ejercicio?: { nombre?: string | null } | null }>
     }>).map(sesion => ({
       ...sesion,
