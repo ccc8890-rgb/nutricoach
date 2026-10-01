@@ -264,7 +264,36 @@ export function crearSesionesEntrenoUpdatesSeguros(input: {
   }
 }
 
-export async function aplicarTarea(tarea: AgenteTarea): Promise<{ ok: boolean; mensaje?: string }> {
+export type AplicarTareaResult =
+  | { ok: true; codigo: 'APPLIED' | 'NO_MUTATION'; mensaje: string }
+  | {
+      ok: false
+      codigo: 'NO_CLIENT' | 'NO_ACTIVE_PLAN' | 'TASK_NOT_APPROVED' | 'UNMATCHED_TARGET' | 'DB_ERROR'
+      mensaje: string
+    }
+
+type AplicarTareaErrorCode = Extract<AplicarTareaResult, { ok: false }>['codigo']
+
+function codigoErrorRpc(mensaje: string): AplicarTareaErrorCode {
+  const normalizado = mensaje.toLowerCase()
+  if (normalizado.includes('plan') && normalizado.includes('activo')) return 'NO_ACTIVE_PLAN'
+  if (normalizado.includes('aprobada') || normalizado.includes('modificada')) return 'TASK_NOT_APPROVED'
+  if (normalizado.includes('pertenece')) return 'UNMATCHED_TARGET'
+  return 'DB_ERROR'
+}
+
+export async function aplicarTarea(tarea: AgenteTarea): Promise<AplicarTareaResult> {
+  if (!tarea.cliente_id) {
+    return { ok: false, codigo: 'NO_CLIENT', mensaje: 'Sin cliente_id' }
+  }
+  if (tarea.estado !== 'aprobado' && tarea.estado !== 'modificado') {
+    return {
+      ok: false,
+      codigo: 'TASK_NOT_APPROVED',
+      mensaje: 'La tarea debe estar aprobada o modificada antes de aplicarse',
+    }
+  }
+
   const db = createServiceSupabase()
 
   switch (tarea.tipo) {
@@ -284,7 +313,11 @@ export async function aplicarTarea(tarea: AgenteTarea): Promise<{ ok: boolean; m
       return aplicarActualizacionPlan(db, tarea)
 
     default:
-      return { ok: true, mensaje: 'Tipo sin acción automática — registrado como aprobado' }
+      return {
+        ok: true,
+        codigo: 'NO_MUTATION',
+        mensaje: 'Tipo sin acción automática — registrado como aprobado',
+      }
   }
 }
 
@@ -292,8 +325,8 @@ export async function aplicarTarea(tarea: AgenteTarea): Promise<{ ok: boolean; m
 async function aplicarAjusteMacros(
   db: ReturnType<typeof createServiceSupabase>,
   tarea: AgenteTarea
-): Promise<{ ok: boolean; mensaje?: string }> {
-  if (!tarea.cliente_id) return { ok: false, mensaje: 'Sin cliente_id' }
+): Promise<AplicarTareaResult> {
+  if (!tarea.cliente_id) return { ok: false, codigo: 'NO_CLIENT', mensaje: 'Sin cliente_id' }
 
   const payload = tarea.payload as {
     ajustes?: {
@@ -313,69 +346,101 @@ async function aplicarAjusteMacros(
   if (ajustes.grasas != null) campos.grasas_objetivo = ajustes.grasas
 
   if (!Object.keys(campos).length) {
-    return { ok: true, mensaje: 'Sin ajustes numéricos en el payload' }
+    return { ok: true, codigo: 'NO_MUTATION', mensaje: 'Sin ajustes numéricos en el payload' }
   }
 
-  const { error } = await db
-    .from('planes_nutricion')
-    .update(campos)
-    .eq('cliente_id', tarea.cliente_id)
-    .eq('activo', true)
+  const { error } = await db.rpc('aplicar_ajuste_macros_seguro', {
+    p_tarea_id: tarea.id,
+    p_cliente_id: tarea.cliente_id,
+    p_campos: campos,
+  })
 
   if (error) {
     console.error('[aplicar] Error ajuste macros:', error)
-    return { ok: false, mensaje: error.message }
+    return { ok: false, codigo: codigoErrorRpc(error.message), mensaje: error.message }
   }
 
-  // Marcar como aplicado
-  await db
-    .from('agente_tareas')
-    .update({ estado: 'aplicado', aplicado_at: new Date().toISOString() })
-    .eq('id', tarea.id)
-
-  return { ok: true, mensaje: `Plan actualizado: ${JSON.stringify(campos)}` }
+  return { ok: true, codigo: 'APPLIED', mensaje: `Plan actualizado: ${JSON.stringify(campos)}` }
 }
 
 // ── Enviar mensaje al cliente via chat_mensajes ───────────────
 async function aplicarMensajeCliente(
   db: ReturnType<typeof createServiceSupabase>,
   tarea: AgenteTarea
-): Promise<{ ok: boolean; mensaje?: string }> {
-  if (!tarea.cliente_id) return { ok: false, mensaje: 'Sin cliente_id' }
+): Promise<AplicarTareaResult> {
+  if (!tarea.cliente_id) return { ok: false, codigo: 'NO_CLIENT', mensaje: 'Sin cliente_id' }
   const payload = tarea.payload as { mensaje_cliente?: string }
   // `tarea.propuesta` es la recomendación interna para el coach (kanban),
   // nunca debe usarse como fallback: se filtró al chat real de un cliente
   // (auditoría 28-09-2026) con texto como "Contacta urgentemente al
   // cliente... no ajustes el plan hasta comprender la situación".
   const contenido = payload.mensaje_cliente
-  if (!contenido) return { ok: false, mensaje: 'Sin mensaje_cliente en el payload — no se envía la propuesta interna al chat' }
+  if (!contenido) {
+    return {
+      ok: true,
+      codigo: 'NO_MUTATION',
+      mensaje: 'Sin mensaje_cliente en el payload — no se envía la propuesta interna al chat',
+    }
+  }
 
-  const { error } = await db.from('chat_mensajes').insert({
-    cliente_id: tarea.cliente_id,
-    remitente: 'coach',
-    contenido,
-    leido: false,
+  const { error } = await db.rpc('aplicar_mensaje_cliente_seguro', {
+    p_tarea_id: tarea.id,
+    p_cliente_id: tarea.cliente_id,
+    p_mensaje: contenido,
   })
 
   if (error) {
     console.error('[aplicar] Error mensaje cliente:', error)
-    return { ok: false, mensaje: error.message }
+    return { ok: false, codigo: 'DB_ERROR', mensaje: error.message }
   }
 
-  await db
-    .from('agente_tareas')
-    .update({ estado: 'aplicado', aplicado_at: new Date().toISOString() })
-    .eq('id', tarea.id)
+  return { ok: true, codigo: 'APPLIED', mensaje: 'Mensaje enviado al cliente' }
+}
 
-  return { ok: true, mensaje: 'Mensaje enviado al cliente' }
+export function evaluarPreflightActualizacionPlan(input: {
+  planId: string | null | undefined
+  updates: SesionesEntrenoUpdatesSeguros
+  camposPlan: PlanEntrenoUpdateSeguro['campos']
+  mensajeCliente?: string | null
+}): AplicarTareaResult | null {
+  if (!input.planId) {
+    return {
+      ok: false,
+      codigo: 'NO_ACTIVE_PLAN',
+      mensaje: 'Sin plan de entrenamiento activo para aplicar la actualización',
+    }
+  }
+
+  if (input.updates.noAplicados.length > 0) {
+    return {
+      ok: false,
+      codigo: 'UNMATCHED_TARGET',
+      mensaje: `No se encontraron todos los targets: ${input.updates.noAplicados.join(', ')}`,
+    }
+  }
+
+  const hayMutacion = Object.keys(input.camposPlan).length > 0
+    || input.updates.sesiones.length > 0
+    || input.updates.ejercicios.length > 0
+    || Boolean(input.mensajeCliente?.trim())
+
+  if (!hayMutacion) {
+    return {
+      ok: true,
+      codigo: 'NO_MUTATION',
+      mensaje: 'La actualización no contiene cambios aplicables',
+    }
+  }
+
+  return null
 }
 
 // ── Actualización estructural del plan ────────────────────────
 async function aplicarActualizacionPlan(
   db: ReturnType<typeof createServiceSupabase>,
   tarea: AgenteTarea
-): Promise<{ ok: boolean; mensaje?: string }> {
-  if (!tarea.cliente_id) return { ok: false, mensaje: 'Sin cliente_id' }
+): Promise<AplicarTareaResult> {
+  if (!tarea.cliente_id) return { ok: false, codigo: 'NO_CLIENT', mensaje: 'Sin cliente_id' }
 
   const payload = tarea.payload as {
     plan_update?: {
@@ -395,7 +460,7 @@ async function aplicarActualizacionPlan(
 
   if (planError) {
     console.error('[aplicar] Error leyendo plan entrenamiento:', planError)
-    return { ok: false, mensaje: planError.message }
+    return { ok: false, codigo: 'DB_ERROR', mensaje: planError.message }
   }
 
   const updateSeguro = crearPlanEntrenoUpdateSeguro({
@@ -404,26 +469,19 @@ async function aplicarActualizacionPlan(
     propuesta: tarea.propuesta,
   })
 
-  if (Object.keys(updateSeguro.campos).length && !planActual?.id) {
-    return { ok: false, mensaje: 'Sin plan de entrenamiento activo para aplicar actualización' }
+  let updatesSesiones: SesionesEntrenoUpdatesSeguros = {
+    sesiones: [],
+    ejercicios: [],
+    noAplicados: [],
+    resumen: 'Sin ajustes de sesiones aplicables',
   }
-
-  if (Object.keys(updateSeguro.campos).length && planActual?.id) {
-    const { error } = await db
-      .from('planes_entrenamiento')
-      .update(updateSeguro.campos)
-      .eq('id', planActual?.id)
-
-    if (error) {
-      console.error('[aplicar] Error actualizacion plan:', error)
-      return { ok: false, mensaje: error.message }
-    }
-  }
-
-  let sesionesResumen: string | null = null
   if (payload.plan_update?.sesiones?.length) {
     if (!planActual?.id) {
-      return { ok: false, mensaje: 'Sin plan de entrenamiento activo para aplicar sesiones' }
+      return {
+        ok: false,
+        codigo: 'NO_ACTIVE_PLAN',
+        mensaje: 'Sin plan de entrenamiento activo para aplicar sesiones',
+      }
     }
 
     const { data: sesionesData, error: sesionesError } = await db
@@ -453,7 +511,7 @@ async function aplicarActualizacionPlan(
 
     if (sesionesError) {
       console.error('[aplicar] Error leyendo sesiones entrenamiento:', sesionesError)
-      return { ok: false, mensaje: sesionesError.message }
+      return { ok: false, codigo: 'DB_ERROR', mensaje: sesionesError.message }
     }
 
     const sesionesActuales = ((sesionesData ?? []) as Array<{
@@ -472,58 +530,46 @@ async function aplicarActualizacionPlan(
       })),
     }))
 
-    const updatesSesiones = crearSesionesEntrenoUpdatesSeguros({
+    updatesSesiones = crearSesionesEntrenoUpdatesSeguros({
       sesionesActuales,
       sesionesPayload: payload.plan_update.sesiones,
     })
-
-    for (const sesionUpdate of updatesSesiones.sesiones) {
-      const { error } = await db
-        .from('sesiones_entrenamiento')
-        .update(sesionUpdate.campos)
-        .eq('id', sesionUpdate.id)
-
-      if (error) {
-        console.error('[aplicar] Error actualizando sesión entrenamiento:', error)
-        return { ok: false, mensaje: error.message }
-      }
-    }
-
-    for (const ejercicioUpdate of updatesSesiones.ejercicios) {
-      const { error } = await db
-        .from('sesion_ejercicios')
-        .update(ejercicioUpdate.campos)
-        .eq('id', ejercicioUpdate.id)
-
-      if (error) {
-        console.error('[aplicar] Error actualizando ejercicio sesión:', error)
-        return { ok: false, mensaje: error.message }
-      }
-    }
-
-    sesionesResumen = updatesSesiones.noAplicados.length
-      ? `${updatesSesiones.resumen}. No aplicados: ${updatesSesiones.noAplicados.join(', ')}`
-      : updatesSesiones.resumen
   }
 
-  if (payload.mensaje_cliente) {
-    await db.from('chat_mensajes').insert({
-      cliente_id: tarea.cliente_id,
-      remitente: 'coach',
-      contenido: payload.mensaje_cliente,
-      leido: false,
-    })
-  }
+  const preflight = evaluarPreflightActualizacionPlan({
+    planId: planActual?.id,
+    updates: updatesSesiones,
+    camposPlan: updateSeguro.campos,
+    mensajeCliente: payload.mensaje_cliente,
+  })
+  if (preflight) return preflight
 
-  await db
-    .from('agente_tareas')
-    .update({ estado: 'aplicado', aplicado_at: new Date().toISOString() })
-    .eq('id', tarea.id)
+  const { error } = await db.rpc('aplicar_actualizacion_entreno_segura', {
+    p_tarea_id: tarea.id,
+    p_cliente_id: tarea.cliente_id,
+    p_plan_id: planActual!.id,
+    p_campos_plan: updateSeguro.campos,
+    p_sesiones: updatesSesiones.sesiones,
+    p_ejercicios: updatesSesiones.ejercicios,
+    p_mensaje: payload.mensaje_cliente?.trim() || null,
+  })
+
+  if (error) {
+    console.error('[aplicar] Error actualización atómica de entrenamiento:', error)
+    return { ok: false, codigo: codigoErrorRpc(error.message), mensaje: error.message }
+  }
 
   const mensajes = [
     Object.keys(updateSeguro.campos).length ? updateSeguro.mensaje : null,
-    sesionesResumen,
+    updatesSesiones.sesiones.length || updatesSesiones.ejercicios.length
+      ? updatesSesiones.resumen
+      : null,
+    payload.mensaje_cliente?.trim() ? 'Mensaje enviado al cliente' : null,
   ].filter(Boolean)
 
-  return { ok: true, mensaje: mensajes.length ? mensajes.join(' · ') : 'Actualización de plan registrada' }
+  return {
+    ok: true,
+    codigo: 'APPLIED',
+    mensaje: mensajes.length ? mensajes.join(' · ') : 'Actualización de plan aplicada',
+  }
 }

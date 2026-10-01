@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict'
-import { crearPlanEntrenoUpdateSeguro, crearSesionesEntrenoUpdatesSeguros } from '../lib/agentes/aplicar'
+import {
+  crearPlanEntrenoUpdateSeguro,
+  crearSesionesEntrenoUpdatesSeguros,
+  evaluarPreflightActualizacionPlan,
+} from '../lib/agentes/aplicar'
 
 const update = crearPlanEntrenoUpdateSeguro({
   descripcionActual: 'Plan HYROX base',
@@ -81,5 +85,40 @@ assert.equal(sessionUpdates.ejercicios[0].campos.rpe, '6')
 assert.ok(sessionUpdates.ejercicios[0].campos.notas?.includes('Trabajo pesado'))
 assert.ok(sessionUpdates.ejercicios[0].campos.notas?.includes('[IA coach] Bajar carga'))
 assert.equal(sessionUpdates.resumen, '1 sesión y 1 ejercicio ajustados')
+
+const updatesVacios = crearSesionesEntrenoUpdatesSeguros({
+  sesionesActuales: [],
+  sesionesPayload: [],
+})
+
+const sinPlan = evaluarPreflightActualizacionPlan({
+  planId: null,
+  camposPlan: { descripcion: 'Cambio pendiente' },
+  updates: updatesVacios,
+  mensajeCliente: null,
+})
+assert.equal(sinPlan?.codigo, 'NO_ACTIVE_PLAN')
+assert.equal(sinPlan?.ok, false)
+
+const targetNoEncontrado = evaluarPreflightActualizacionPlan({
+  planId: 'plan-activo',
+  camposPlan: { descripcion: 'No debe persistirse' },
+  updates: {
+    ...updatesVacios,
+    noAplicados: ['Sesión inexistente'],
+  },
+  mensajeCliente: null,
+})
+assert.equal(targetNoEncontrado?.codigo, 'UNMATCHED_TARGET')
+assert.equal(targetNoEncontrado?.ok, false)
+
+const payloadVacio = evaluarPreflightActualizacionPlan({
+  planId: 'plan-activo',
+  camposPlan: {},
+  updates: updatesVacios,
+  mensajeCliente: '   ',
+})
+assert.equal(payloadVacio?.codigo, 'NO_MUTATION')
+assert.equal(payloadVacio?.ok, true)
 
 console.log('agentes aplicar training tests passed')

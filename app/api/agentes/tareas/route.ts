@@ -176,7 +176,11 @@ export async function PATCH(request: NextRequest) {
           resultadoAplicacion = await aplicarTarea(tarea)
         } catch (error) {
           console.error('[tareas] Error aplicando tarea:', error)
-          resultadoAplicacion = { ok: false, mensaje: 'Error inesperado al aplicar la tarea' }
+          resultadoAplicacion = {
+            ok: false,
+            codigo: 'DB_ERROR',
+            mensaje: 'Error inesperado al aplicar la tarea',
+          }
         }
 
         if (!resultadoAplicacion.ok) {
