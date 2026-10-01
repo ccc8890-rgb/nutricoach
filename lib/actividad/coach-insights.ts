@@ -1,4 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import {
+  evaluarSaludFuente,
+  sanitizarErrorIntegracion,
+  type SaludFuente,
+} from '@/lib/integraciones/salud-fuente'
 
 export type ActividadFlagTipo =
   | 'sync_inactiva'
@@ -37,10 +42,18 @@ export interface ActividadResumen {
 }
 
 export interface ActividadCoachData {
-  integraciones: Array<Record<string, unknown>>
+  integraciones: ActividadIntegracion[]
   resumen: ActividadResumen
   actividades: Array<Record<string, unknown>>
   flags: ActividadFlag[]
+}
+
+export interface ActividadIntegracion extends Record<string, unknown> {
+  proveedor: string
+  activa: boolean
+  ultima_sync: string | null
+  error_ultimo: string | null
+  salud: SaludFuente
 }
 
 function asNumber(value: unknown): number | null {
@@ -97,7 +110,7 @@ export function calcularResumenActividad(rows: Array<Record<string, unknown>>, d
 
 export function calcularFlagsActividad(params: {
   resumen: ActividadResumen
-  integraciones: Array<Record<string, unknown>>
+  integraciones: Array<Record<string, unknown> & { salud?: SaludFuente }>
   planKcalObjetivo?: number | null
   registrosApp7d?: number
 }): ActividadFlag[] {
@@ -105,24 +118,20 @@ export function calcularFlagsActividad(params: {
   const flags: ActividadFlag[] = []
 
   const integracionesActivas = integraciones.filter(i => i.activa !== false)
-  const ultimaSyncMs = Math.max(
-    0,
-    ...integracionesActivas
-      .map(i => i.ultima_sync ? new Date(String(i.ultima_sync)).getTime() : 0)
-      .filter(Number.isFinite)
-  )
-  const diasSinSync = ultimaSyncMs ? Math.floor((Date.now() - ultimaSyncMs) / 86_400_000) : null
-
-  if (integracionesActivas.length > 0 && (diasSinSync === null || diasSinSync >= 3)) {
+  for (const integracion of integracionesActivas) {
+    const salud = integracion.salud
+    if (!salud || salud.estado === 'saludable') continue
     flags.push({
       tipo: 'sync_inactiva',
       severidad: 'media',
-      titulo: 'Sin sincronización reciente',
-      descripcion: diasSinSync === null ? 'Hay integraciones activas sin una sincronización registrada.' : `La última sincronización fue hace ${diasSinSync} días.`,
-      accion: 'Revisar conexión antes de interpretar carga o recuperación.',
-      valor: diasSinSync,
+      titulo: `${String(integracion.proveedor ?? 'Fuente')} · ${salud.estado.replace('_', ' ')}`,
+      descripcion: salud.mensaje,
+      accion: salud.accion ?? 'Revisar la fuente antes de interpretar sus datos.',
+      valor: salud.antiguedadHoras,
     })
   }
+
+  const puedeInterpretarAusencia = integracionesActivas.some(i => i.salud?.puedeInterpretarAusencia === true)
 
   if ((resumen.hrv_media !== null && resumen.hrv_media < 45) || (resumen.readiness_media !== null && resumen.readiness_media < 45) || (resumen.body_battery_media !== null && resumen.body_battery_media < 35)) {
     flags.push({
@@ -157,7 +166,7 @@ export function calcularFlagsActividad(params: {
     })
   }
 
-  if (resumen.tiene_datos && resumen.pasos_media > 0 && resumen.pasos_media < 4500 && resumen.sesiones === 0) {
+  if (puedeInterpretarAusencia && resumen.tiene_datos && resumen.pasos_media > 0 && resumen.pasos_media < 4500 && resumen.sesiones === 0) {
     flags.push({
       tipo: 'actividad_baja',
       severidad: 'media',
@@ -189,7 +198,7 @@ export async function cargarActividadCoach(
 ): Promise<ActividadCoachData> {
   const desde = new Date(Date.now() - dias * 86_400_000).toISOString().split('T')[0]
 
-  const [integracionesRes, actividadRes, planRes, registrosRes] = await Promise.all([
+  const [integracionesRes, actividadRes, ultimaActividadRes, planRes, registrosRes] = await Promise.all([
     db
       .from('integraciones_cliente')
       .select('id, proveedor, activa, ultima_sync, error_ultimo, created_at')
@@ -202,6 +211,12 @@ export async function cargarActividadCoach(
       .gte('fecha', desde)
       .order('fecha', { ascending: false })
       .limit(120),
+    db
+      .from('actividad_externa_cliente')
+      .select('proveedor, fecha')
+      .eq('cliente_id', clienteId)
+      .order('fecha', { ascending: false })
+      .limit(500),
     db
       .from('planes_nutricion')
       .select('kcal_objetivo')
@@ -219,9 +234,43 @@ export async function cargarActividadCoach(
 
   if (integracionesRes.error) throw new Error(integracionesRes.error.message)
   if (actividadRes.error) throw new Error(actividadRes.error.message)
+  if (ultimaActividadRes.error) throw new Error(ultimaActividadRes.error.message)
 
   const actividades = (actividadRes.data ?? []) as Array<Record<string, unknown>>
-  const integraciones = (integracionesRes.data ?? []) as Array<Record<string, unknown>>
+  const ultimaActividadPorProveedor = new Map<string, string>()
+  for (const row of ultimaActividadRes.data ?? []) {
+    if (!ultimaActividadPorProveedor.has(row.proveedor)) {
+      ultimaActividadPorProveedor.set(row.proveedor, row.fecha)
+    }
+  }
+  const integracionesPorProveedor = new Map(
+    (integracionesRes.data ?? []).map(integracion => [integracion.proveedor, integracion])
+  )
+  for (const proveedor of ultimaActividadPorProveedor.keys()) {
+    if (!integracionesPorProveedor.has(proveedor)) {
+      integracionesPorProveedor.set(proveedor, {
+        id: `actividad:${proveedor}`,
+        proveedor,
+        activa: true,
+        ultima_sync: null,
+        error_ultimo: null,
+        created_at: null,
+      })
+    }
+  }
+  const integraciones = Array.from(integracionesPorProveedor.values()).map(integracion => {
+    const errorSanitizado = sanitizarErrorIntegracion(integracion.error_ultimo)
+    return {
+      ...integracion,
+      error_ultimo: errorSanitizado,
+      salud: evaluarSaludFuente({
+        activa: integracion.activa !== false,
+        ultima_sync: integracion.ultima_sync,
+        error_ultimo: errorSanitizado,
+        ultima_fecha_datos: ultimaActividadPorProveedor.get(integracion.proveedor) ?? null,
+      }),
+    }
+  }) as ActividadIntegracion[]
   const resumen = calcularResumenActividad(actividades, dias)
   const flags = calcularFlagsActividad({
     resumen,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { evaluarSaludFuente, sanitizarErrorIntegracion } from '@/lib/integraciones/salud-fuente'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ codigo: string }> }) {
   const { codigo } = await params
@@ -12,7 +13,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
 
   const desde14dias = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const [{ data: integraciones }, { data: garminRow }, { data: stravaRows }, { data: actividadRows }] = await Promise.all([
+  const [{ data: integraciones }, { data: garminRow }, { data: stravaRows }, { data: actividadRows }, { data: ultimasActividades }] = await Promise.all([
     db.from('integraciones_cliente')
       .select('proveedor, activa, ultima_sync, error_ultimo')
       .eq('cliente_id', clienteId),
@@ -37,15 +38,50 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
       .eq('cliente_id', clienteId)
       .gte('fecha', desde14dias)
       .order('fecha', { ascending: false }),
+    db.from('actividad_externa_cliente')
+      .select('proveedor, fecha')
+      .eq('cliente_id', clienteId)
+      .order('fecha', { ascending: false })
+      .limit(500),
   ])
 
-  const garminIntegration = (integraciones ?? []).find(i => i.proveedor === 'garmin_connect')
+  const ultimaActividadPorProveedor = new Map<string, string>()
+  for (const row of ultimasActividades ?? []) {
+    if (!ultimaActividadPorProveedor.has(row.proveedor)) {
+      ultimaActividadPorProveedor.set(row.proveedor, row.fecha)
+    }
+  }
+
+  const integracionesSeguras = (integraciones ?? []).map(integracion => {
+    const errorSanitizado = sanitizarErrorIntegracion(integracion.error_ultimo)
+    return {
+      proveedor: integracion.proveedor,
+      activa: integracion.activa,
+      ultima_sync: integracion.ultima_sync,
+      error_ultimo: errorSanitizado,
+      salud: evaluarSaludFuente({
+        activa: integracion.activa !== false,
+        ultima_sync: integracion.ultima_sync,
+        error_ultimo: errorSanitizado,
+        ultima_fecha_datos: ultimaActividadPorProveedor.get(integracion.proveedor) ?? null,
+      }),
+    }
+  })
+
+  const garminIntegration = integracionesSeguras.find(i => i.proveedor === 'garmin_connect')
   const garminRaw = garminRow?.raw_data as Record<string, unknown> | null | undefined
+  const garminActiva = garminIntegration?.activa ?? Boolean(garminRow)
   const garminConnect = garminRow
     ? {
-        activa: true,
+        activa: garminActiva,
         ultima_sync: garminIntegration?.ultima_sync ?? garminRow.fecha,
         error_ultimo: garminIntegration?.error_ultimo ?? null,
+        salud: evaluarSaludFuente({
+          activa: garminActiva,
+          ultima_sync: garminIntegration?.ultima_sync ?? null,
+          error_ultimo: garminIntegration?.error_ultimo ?? null,
+          ultima_fecha_datos: garminRow.fecha,
+        }),
         datos_hoy: {
           body_battery_end: garminRow.body_battery_end,
           training_readiness: garminRow.training_readiness,
@@ -67,17 +103,30 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
         activa: garminIntegration?.activa ?? false,
         ultima_sync: garminIntegration?.ultima_sync ?? null,
         error_ultimo: garminIntegration?.error_ultimo ?? null,
+        salud: evaluarSaludFuente({
+          activa: garminIntegration?.activa ?? false,
+          ultima_sync: garminIntegration?.ultima_sync ?? null,
+          error_ultimo: garminIntegration?.error_ultimo ?? null,
+          ultima_fecha_datos: null,
+        }),
         datos_hoy: null,
       }
 
+  const stravaIntegration = integracionesSeguras.find(i => i.proveedor === 'strava')
   const stravaResumen = {
     actividades: stravaRows ?? [],
     sesiones_14d: stravaRows?.length ?? 0,
     minutos_14d: (stravaRows ?? []).reduce((acc, row) => acc + (row.duracion_min ?? 0), 0),
     distancia_14d: Number((stravaRows ?? []).reduce((acc, row) => acc + Number(row.distancia_entreno_km ?? 0), 0).toFixed(1)),
+    salud: evaluarSaludFuente({
+      activa: stravaIntegration?.activa ?? false,
+      ultima_sync: stravaIntegration?.ultima_sync ?? null,
+      error_ultimo: stravaIntegration?.error_ultimo ?? null,
+      ultima_fecha_datos: ultimaActividadPorProveedor.get('strava') ?? null,
+    }),
   }
 
-  const integracionesPorProveedor = new Map((integraciones ?? []).map(i => [i.proveedor, i]))
+  const integracionesPorProveedor = new Map(integracionesSeguras.map(i => [i.proveedor, i]))
   const actividadPorProveedor = new Map<string, NonNullable<typeof actividadRows>>()
 
   for (const row of actividadRows ?? []) {
@@ -96,11 +145,18 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
     const rows = actividadPorProveedor.get(proveedor) ?? []
     const integracion = integracionesPorProveedor.get(proveedor)
     const ultima = rows[0] ?? null
+    const salud = evaluarSaludFuente({
+      activa: integracion?.activa ?? rows.length > 0,
+      ultima_sync: integracion?.ultima_sync ?? null,
+      error_ultimo: integracion?.error_ultimo ?? null,
+      ultima_fecha_datos: ultimaActividadPorProveedor.get(proveedor) ?? null,
+    })
     return {
       proveedor,
       activa: integracion?.activa ?? rows.length > 0,
       ultima_sync: integracion?.ultima_sync ?? ultima?.fecha ?? null,
       error_ultimo: integracion?.error_ultimo ?? null,
+      salud,
       registros_14d: rows.length,
       minutos_14d: rows.reduce((acc, row) => acc + (row.duracion_min ?? row.minutos_activo ?? 0), 0),
       distancia_14d: Number(rows.reduce((acc, row) => acc + Number(row.distancia_entreno_km ?? row.distancia_km ?? 0), 0).toFixed(1)),
@@ -117,7 +173,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
     .eq('activa', true)
 
   return NextResponse.json({
-    integraciones: integraciones ?? [],
+    integraciones: integracionesSeguras,
     garmin_connect: garminConnect,
     strava_resumen: stravaResumen,
     resumenes_proveedor,
@@ -125,6 +181,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cod
       terra_user_id: r.terra_user_id,
       provider: r.provider,
       ultima_sync: r.ultima_sync,
+      salud: evaluarSaludFuente({
+        activa: r.activa !== false,
+        ultima_sync: r.ultima_sync,
+        error_ultimo: null,
+        ultima_fecha_datos: ultimaActividadPorProveedor.get(r.provider.toLowerCase()) ?? null,
+      }),
     })),
   })
 }

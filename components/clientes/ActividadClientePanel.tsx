@@ -15,6 +15,7 @@ import {
   Route,
   Watch,
 } from 'lucide-react'
+import type { SaludFuente } from '@/lib/integraciones/salud-fuente'
 
 type ActividadFlag = {
   tipo: string
@@ -71,6 +72,7 @@ type IntegracionRow = {
   activa: boolean
   ultima_sync: string | null
   error_ultimo: string | null
+  salud: SaludFuente
 }
 
 type ActividadResponse = {
@@ -89,6 +91,29 @@ function proveedorLabel(proveedor: string) {
   if (proveedor === 'garmin_connect') return 'Garmin Connect'
   if (proveedor === 'google_fit') return 'Google Fit'
   return proveedor.charAt(0).toUpperCase() + proveedor.slice(1)
+}
+
+function estadoSaludLabel(estado: SaludFuente['estado']) {
+  return {
+    desconectada: 'Desconectado',
+    sin_datos: 'Sin datos',
+    saludable: 'Conectado',
+    retrasada: 'Retrasado',
+    desactualizada: 'Desactualizado',
+    error: 'Error',
+  }[estado]
+}
+
+function antiguedadLabel(horas: number | null) {
+  if (horas === null) return null
+  return horas < 24 ? `${Math.round(horas)} h` : `${Math.round(horas / 24)} d`
+}
+
+function saludStyle(estado: SaludFuente['estado']) {
+  if (estado === 'saludable') return { background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(48,209,88,0.2)' }
+  if (estado === 'retrasada') return { background: 'var(--warning-bg)', color: 'var(--warning)', border: '1px solid rgba(201,169,110,0.22)' }
+  if (estado === 'error' || estado === 'desactualizada') return { background: 'var(--error-bg)', color: 'var(--error)', border: '1px solid rgba(255,69,58,0.22)' }
+  return { background: 'var(--surface-hover)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
 }
 
 function flagStyle(severidad: ActividadFlag['severidad']) {
@@ -114,12 +139,19 @@ export default function ActividadClientePanel({ clienteId }: { clienteId: string
   const [loading, setLoading] = useState(true)
   const [dias, setDias] = useState(14)
   const [syncing, setSyncing] = useState(false)
+  const [errorCarga, setErrorCarga] = useState<string | null>(null)
+  const [errorSync, setErrorSync] = useState<string | null>(null)
 
   async function load(nextDias = dias) {
     setLoading(true)
+    setErrorCarga(null)
     try {
       const res = await fetch(`/api/clientes/${clienteId}/actividad?dias=${nextDias}`)
-      if (res.ok) setData(await res.json())
+      const payload = await res.json().catch(() => null) as ActividadResponse | { error?: string } | null
+      if (!res.ok) throw new Error(payload && 'error' in payload ? payload.error ?? 'No se pudo cargar la actividad' : 'No se pudo cargar la actividad')
+      setData(payload as ActividadResponse)
+    } catch (error) {
+      setErrorCarga(error instanceof Error ? error.message : 'No se pudo cargar la actividad')
     } finally {
       setLoading(false)
     }
@@ -132,13 +164,21 @@ export default function ActividadClientePanel({ clienteId }: { clienteId: string
 
   async function syncNow() {
     setSyncing(true)
+    setErrorSync(null)
     try {
-      await fetch('/api/integraciones/garmin-connect/sync', {
+      const res = await fetch('/api/integraciones/garmin-connect/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cliente_id: clienteId, dias: 7 }),
-      }).catch(() => null)
+      })
+      const payload = await res.json().catch(() => null) as { error?: string; errores?: string[] } | null
+      if (!res.ok) throw new Error(payload?.error ?? 'No se pudo sincronizar')
+      if ((payload?.errores?.length ?? 0) > 0) {
+        throw new Error(`La sincronización terminó con ${payload?.errores?.length} errores. Revisa la conexión e inténtalo de nuevo.`)
+      }
       await load(dias)
+    } catch (error) {
+      setErrorSync(error instanceof Error ? error.message : 'No se pudo sincronizar')
     } finally {
       setSyncing(false)
     }
@@ -160,8 +200,19 @@ export default function ActividadClientePanel({ clienteId }: { clienteId: string
     )
   }
 
-  if (!data) return null
+  if (!data) {
+    return (
+      <div className="rounded-2xl p-5" style={{ background: 'var(--error-bg)', color: 'var(--error)', border: '1px solid rgba(255,69,58,0.22)' }}>
+        <p className="text-sm font-semibold">No se pudo cargar la actividad</p>
+        <p className="text-xs mt-1">{errorCarga ?? 'Error desconocido'}</p>
+        <button className="btn-secondary btn-sm mt-3" onClick={() => load(dias)}>
+          <RefreshCw size={13} /> Reintentar
+        </button>
+      </div>
+    )
+  }
   const resumen = data.resumen
+  const ausenciaInterpretable = data.integraciones.some(intg => intg.activa && intg.salud.puedeInterpretarAusencia)
 
   return (
     <section className="rounded-2xl p-4 sm:p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
@@ -194,21 +245,41 @@ export default function ActividadClientePanel({ clienteId }: { clienteId: string
         </div>
       </div>
 
+      {(errorCarga || errorSync) && (
+        <div className="rounded-2xl p-3 mb-4" style={{ background: 'var(--error-bg)', color: 'var(--error)', border: '1px solid rgba(255,69,58,0.22)' }}>
+          <p className="text-sm font-semibold">{errorSync ? 'Error de sincronización' : 'Error de carga'}</p>
+          <p className="text-xs mt-0.5">{errorSync ?? errorCarga}</p>
+          {errorCarga && (
+            <button className="btn-secondary btn-sm mt-2" onClick={() => load(dias)}>
+              <RefreshCw size={13} /> Reintentar
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none">
         {data.integraciones.length === 0 ? (
           <span className="text-xs px-3 py-1.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
             Sin integraciones conectadas
           </span>
         ) : data.integraciones.map(intg => (
-          <span
+          <div
             key={intg.id}
-            className="text-xs px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 whitespace-nowrap"
-            style={intg.activa ? { background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(48,209,88,0.2)' } : { background: 'var(--surface-hover)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+            className="text-xs px-3 py-2 rounded-2xl min-w-[190px]"
+            style={saludStyle(intg.salud.estado)}
           >
-            {intg.activa ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
-            {proveedorLabel(intg.proveedor)}
-            {intg.ultima_sync ? ` · ${new Date(intg.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}` : ''}
-          </span>
+            <span className="font-semibold inline-flex items-center gap-1.5">
+              {intg.salud.estado === 'saludable' ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
+              {proveedorLabel(intg.proveedor)} · {estadoSaludLabel(intg.salud.estado)}
+            </span>
+            <p className="mt-0.5 opacity-80">
+              {intg.salud.ultimaRecepcion
+                ? `Última recepción hace ${antiguedadLabel(intg.salud.antiguedadHoras)}`
+                : 'Sin recepción registrada'}
+            </p>
+            {intg.error_ultimo && <p className="mt-1 font-medium break-words">{intg.error_ultimo}</p>}
+            {intg.salud.accion && <p className="mt-1 opacity-90">{intg.salud.accion}</p>}
+          </div>
         ))}
       </div>
 
@@ -247,8 +318,14 @@ export default function ActividadClientePanel({ clienteId }: { clienteId: string
         </div>
         {actividadesEntreno.length === 0 ? (
           <div className="rounded-2xl p-5 text-center" style={{ background: 'var(--bg)', border: '1px dashed var(--border)' }}>
-            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sin entrenos externos en este periodo</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Cuando Garmin o Strava sincronicen sesiones, aparecerán aquí.</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+              {ausenciaInterpretable ? 'Sin entrenos externos en este periodo' : 'No hay datos fiables para interpretar este periodo'}
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              {ausenciaInterpretable
+                ? 'Las fuentes están operativas y no han registrado sesiones en el periodo.'
+                : 'Revisa el estado de sincronización de las fuentes antes de concluir que no hubo actividad.'}
+            </p>
           </div>
         ) : (
           <div className="divide-y rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)', borderColor: 'var(--border)' }}>

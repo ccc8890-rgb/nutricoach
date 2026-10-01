@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Smartphone, Heart, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp, Lock, Eye, EyeOff, RefreshCw, Route, Clock } from 'lucide-react'
+import { Smartphone, Zap, CheckCircle, XCircle, Loader2, Footprints, BatteryMedium, Brain, Wind, Flame, TrendingUp, Lock, Eye, EyeOff, RefreshCw, Route, Clock } from 'lucide-react'
+import type { SaludFuente } from '@/lib/integraciones/salud-fuente'
 
 // ─── Brand icons ─────────────────────────────────────────────────────────────
 
@@ -36,6 +37,7 @@ interface IntegracionInfo {
   activa: boolean
   ultima_sync: string | null
   error_ultimo: string | null
+  salud: SaludFuente
 }
 
 interface StravaActividad {
@@ -55,11 +57,14 @@ interface StravaResumen {
   sesiones_14d: number
   minutos_14d: number
   distancia_14d: number
+  salud: SaludFuente
 }
 
 interface GarminConnectStatus {
   activa: boolean
   ultima_sync: string | null
+  error_ultimo: string | null
+  salud: SaludFuente
   datos_hoy: {
     body_battery_end: number | null
     training_readiness: number | null
@@ -146,6 +151,48 @@ function GaugeBar({ value, max = 100, color }: { value: number; max?: number; co
   )
 }
 
+function estadoSaludLabel(estado: SaludFuente['estado']) {
+  return {
+    desconectada: 'Desconectado',
+    sin_datos: 'Sin datos',
+    saludable: 'Conectado',
+    retrasada: 'Retrasado',
+    desactualizada: 'Desactualizado',
+    error: 'Error',
+  }[estado]
+}
+
+function saludColor(estado: SaludFuente['estado']) {
+  if (estado === 'saludable') return '#22c55e'
+  if (estado === 'retrasada') return '#f59e0b'
+  if (estado === 'sin_datos' || estado === 'desconectada') return 'var(--text-muted)'
+  return '#ef4444'
+}
+
+function IconoSalud({ salud }: { salud: SaludFuente }) {
+  const color = saludColor(salud.estado)
+  return salud.estado === 'saludable'
+    ? <CheckCircle size={14} style={{ color }} />
+    : <XCircle size={14} style={{ color }} />
+}
+
+function SaludFuenteInfo({ salud, error }: { salud: SaludFuente; error?: string | null }) {
+  const color = saludColor(salud.estado)
+  const antiguedad = salud.antiguedadHoras === null
+    ? null
+    : salud.antiguedadHoras < 24
+      ? `${Math.round(salud.antiguedadHoras)} h`
+      : `${Math.round(salud.antiguedadHoras / 24)} d`
+
+  return (
+    <div className="mt-1.5 text-[10px]" style={{ color }}>
+      <p className="font-semibold">{estadoSaludLabel(salud.estado)}{antiguedad ? ` · hace ${antiguedad}` : ''}</p>
+      {error && <p className="mt-0.5 break-words">{error}</p>}
+      {salud.accion && <p className="mt-0.5">{salud.accion}</p>}
+    </div>
+  )
+}
+
 // ─── Proveedores OAuth (Strava, Garmin API oficial, Google Fit) ────────────
 
 const OAUTH_PROVEEDORES = [
@@ -178,23 +225,7 @@ interface TerraConexion {
   terra_user_id: string
   provider: string
   ultima_sync: string | null
-}
-
-// Proveedores que Terra expone (con sus íconos y etiquetas)
-const TERRA_PROVIDER_META: Record<string, { label: string; icon: string; color: string }> = {
-  TRAININGPEAKS: { label: 'TrainingPeaks', icon: '/icons/trainingpeaks.jpg', color: '#5C33F6' },
-  COROS:         { label: 'COROS',          icon: '/icons/coros.jpg',         color: '#1A1A2E' },
-  WHOOP:         { label: 'Whoop',          icon: '',                          color: '#111111' },
-  GARMIN:        { label: 'Garmin',         icon: '/icons/garmin-connect.jpg', color: '#007CC3' },
-  POLAR:         { label: 'Polar',          icon: '',                          color: '#D7263D' },
-  WAHOO:         { label: 'Wahoo',          icon: '',                          color: '#E8175D' },
-  SUUNTO:        { label: 'Suunto',         icon: '',                          color: '#E4003A' },
-  WITHINGS:      { label: 'Withings',       icon: '',                          color: '#00B0B9' },
-  OURA:          { label: 'Oura',           icon: '',                          color: '#B08D57' },
-}
-
-function terraMeta(provider: string) {
-  return TERRA_PROVIDER_META[provider.toUpperCase()] ?? { label: provider, icon: '', color: '#64748B' }
+  salud: SaludFuente
 }
 
 export default function IntegracionesPanel({ codigo, clienteId }: Props) {
@@ -206,6 +237,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [syncMessage, setSyncMessage] = useState<string | null>(null)
+  const [errorCarga, setErrorCarga] = useState<string | null>(null)
 
   // Garmin Connect credentials form
   const [gcForm, setGcForm] = useState({ email: '', password: '', showPassword: false })
@@ -213,10 +245,17 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   const [gcError, setGcError] = useState<string | null>(null)
 
   async function cargarDatos() {
-    const [intData, garminData] = await Promise.all([
-      fetch(`/api/cliente/${codigo}/integraciones`).then(r => r.json()),
-      fetch(`/api/cliente/${codigo}/garmin-resumen`).then(r => r.json()),
+    setErrorCarga(null)
+    const [intRes, garminRes] = await Promise.all([
+      fetch(`/api/cliente/${codigo}/integraciones`),
+      fetch(`/api/cliente/${codigo}/garmin-resumen`),
     ])
+    const [intData, garminData] = await Promise.all([
+      intRes.json().catch(() => null),
+      garminRes.json().catch(() => null),
+    ])
+    if (!intRes.ok) throw new Error(intData?.error ?? 'No se pudieron cargar las integraciones')
+    if (!garminRes.ok) throw new Error(garminData?.error ?? 'No se pudieron cargar los datos de Garmin')
     setIntegraciones(intData.integraciones ?? [])
     setGarminConnect(intData.garmin_connect ?? null)
     setStravaResumen(intData.strava_resumen ?? null)
@@ -225,14 +264,16 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   }
 
   useEffect(() => {
-    cargarDatos().finally(() => setLoading(false))
+    cargarDatos()
+      .catch(error => setErrorCarga(error instanceof Error ? error.message : 'No se pudieron cargar las integraciones'))
+      .finally(() => setLoading(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [codigo])
 
   const getEstado = (key: string) => integraciones.find(i => i.proveedor === key)
 
   const handleConnect = (proveedor: string) => {
-    window.location.href = `/api/integraciones/${proveedor}/connect?cliente_id=${clienteId}&codigo=${codigo}`
+    window.location.replace(`/api/integraciones/${proveedor}/connect?cliente_id=${clienteId}&codigo=${codigo}`)
   }
 
   const handleDisconnect = async (proveedor: string) => {
@@ -288,7 +329,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
       if (!res.ok) {
         setGcError(data.error ?? 'Error desconocido')
       } else {
-        setGarminConnect({ activa: true, ultima_sync: null, datos_hoy: null })
+        await cargarDatos()
         setGcForm({ email: '', password: '', showPassword: false })
       }
     } catch {
@@ -312,6 +353,24 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   if (loading) return (
     <div className="flex items-center justify-center py-12">
       <Loader2 className="animate-spin text-[var(--primary)]" size={24} />
+    </div>
+  )
+
+  if (errorCarga) return (
+    <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
+      <p className="text-sm font-semibold">No se pudieron cargar las integraciones</p>
+      <p className="text-xs mt-1">{errorCarga}</p>
+      <button
+        className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold"
+        onClick={() => {
+          setLoading(true)
+          cargarDatos()
+            .catch(error => setErrorCarga(error instanceof Error ? error.message : 'No se pudieron cargar las integraciones'))
+            .finally(() => setLoading(false))
+        }}
+      >
+        <RefreshCw size={12} /> Reintentar
+      </button>
     </div>
   )
 
@@ -355,8 +414,8 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-[var(--text)]">Garmin Connect</span>
-                {garminConnect?.activa
-                  ? <CheckCircle size={14} className="text-green-500" />
+                {garminConnect?.activa && garminConnect.salud
+                  ? <IconoSalud salud={garminConnect.salud} />
                   : <XCircle size={14} className="text-[var(--text-muted)]" />}
               </div>
               <p className="text-xs text-[var(--text-muted)]">Pasos, HRV, sueño, TDEE y recuperación</p>
@@ -365,12 +424,16 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                   Última sync: {new Date(garminConnect.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
               )}
+              {garminConnect?.salud && <SaludFuenteInfo salud={garminConnect.salud} error={garminConnect.error_ultimo} />}
             </div>
           </div>
           {garminConnect?.activa ? (
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
-                Activo
+              <span
+                className="text-[10px] font-medium rounded-full px-2 py-0.5"
+                style={{ color: saludColor(garminConnect.salud.estado), border: '1px solid currentColor', background: 'var(--surface)' }}
+              >
+                {garminConnect.salud ? estadoSaludLabel(garminConnect.salud.estado) : 'Conectado'}
               </span>
               <button
                 onClick={handleGarminConnectDisconnect}
@@ -508,9 +571,11 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
         {garminConnect?.activa && !hoy && (
           <div className="mt-4 pt-4 border-t border-[var(--border)]">
             <div className="rounded-xl border px-3 py-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <p className="text-xs font-medium text-[var(--text)]">Sin datos recientes de Garmin</p>
+              <p className="text-xs font-medium text-[var(--text)]">
+                {garminConnect.salud?.puedeInterpretarAusencia ? 'Sin datos recientes de Garmin' : 'Garmin no tiene datos fiables recientes'}
+              </p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
-                Abre la app <strong>Garmin Connect</strong> en tu móvil para que el reloj sincronice los datos del día. Después pulsa <strong>Actualizar</strong> aquí.
+                {garminConnect.salud?.accion ?? 'Abre Garmin Connect en tu móvil y después pulsa Actualizar.'}
               </p>
             </div>
           </div>
@@ -594,9 +659,12 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-[var(--text)]">Strava</span>
-                  <CheckCircle size={14} className="text-green-500" />
+                  {stravaResumen?.salud
+                    ? <IconoSalud salud={stravaResumen.salud} />
+                    : <CheckCircle size={14} className="text-green-500" />}
                 </div>
                 <p className="text-xs text-[var(--text-muted)]">Entrenos registrados que el coach tendrá en cuenta</p>
+                {stravaResumen?.salud && <SaludFuenteInfo salud={stravaResumen.salud} error={getEstado('strava')?.error_ultimo} />}
               </div>
             </div>
             <span className="text-[10px] font-medium rounded-full px-2 py-0.5" style={{ background: '#FC4C021A', color: '#FC4C02' }}>
@@ -644,9 +712,13 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
             </>
           ) : (
             <div className="rounded-xl border px-3 py-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <p className="text-xs font-medium text-[var(--text)]">Strava conectado, sin entrenos recientes importados</p>
+              <p className="text-xs font-medium text-[var(--text)]">
+                {stravaResumen?.salud?.puedeInterpretarAusencia
+                  ? 'Strava conectado, sin entrenos recientes importados'
+                  : `Strava · ${stravaResumen?.salud ? estadoSaludLabel(stravaResumen.salud.estado) : 'Sin datos'}`}
+              </p>
               <p className="text-xs text-[var(--text-muted)] mt-1">
-                Pulsa Actualizar después de subir una actividad para que aparezca aquí y entre en los cálculos del coach.
+                {stravaResumen?.salud?.accion ?? 'Pulsa Actualizar después de subir una actividad para que aparezca aquí.'}
               </p>
             </div>
           )}
@@ -679,7 +751,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                   {!disponible && (
                     <span className="text-[10px] bg-[var(--surface)] text-[var(--text-muted)] px-1.5 py-0.5 rounded-full">Próximamente</span>
                   )}
-                  {conectado && <CheckCircle size={14} className="text-green-500" />}
+                  {conectado && estado?.salud && <IconoSalud salud={estado.salud} />}
                 </div>
                 <p className="text-xs text-[var(--text-muted)]">{descripcion}</p>
                 {ultimaSync && <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Última sync: {ultimaSync}</p>}
@@ -688,6 +760,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                     <XCircle size={10} /> Error de conexión
                   </p>
                 )}
+                {estado?.salud && <SaludFuenteInfo salud={estado.salud} error={estado.error_ultimo} />}
               </div>
             </div>
 
@@ -725,7 +798,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-[var(--text)]">TrainingPeaks</span>
-                    {conn ? <CheckCircle size={14} className="text-green-500" /> : <XCircle size={14} className="text-[var(--text-muted)]" />}
+                    {conn ? <IconoSalud salud={conn.salud} /> : <XCircle size={14} className="text-[var(--text-muted)]" />}
                   </div>
                   <p className="text-xs text-[var(--text-muted)]">Plan de entrenamiento, TSS y carga de trabajo</p>
                   {conn?.ultima_sync && (
@@ -733,11 +806,12 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                       Última sync: {new Date(conn.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   )}
+                  {conn?.salud && <SaludFuenteInfo salud={conn.salud} />}
                 </div>
               </div>
               {conn ? (
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">Activo</span>
+                  <span className="text-[10px] font-medium rounded-full px-2 py-0.5" style={{ color: saludColor(conn.salud.estado), border: '1px solid currentColor' }}>{estadoSaludLabel(conn.salud.estado)}</span>
                   <button
                     onClick={async () => {
                       if (!confirm('¿Desconectar TrainingPeaks?')) return
@@ -749,7 +823,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                 </div>
               ) : (
                 <button
-                  onClick={() => { window.location.href = `/api/integraciones/terra/widget?codigo=${codigo}&provider=TRAININGPEAKS` }}
+                  onClick={() => { window.location.replace(`/api/integraciones/terra/widget?codigo=${codigo}&provider=TRAININGPEAKS`) }}
                   className="btn-primary text-xs px-3 py-1.5 shrink-0"
                 >Conectar</button>
               )}
@@ -771,7 +845,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-[var(--text)]">Whoop</span>
-                    {conn ? <CheckCircle size={14} className="text-green-500" /> : <XCircle size={14} className="text-[var(--text-muted)]" />}
+                    {conn ? <IconoSalud salud={conn.salud} /> : <XCircle size={14} className="text-[var(--text-muted)]" />}
                   </div>
                   <p className="text-xs text-[var(--text-muted)]">HRV, recuperación, sueño y strain diario</p>
                   {conn?.ultima_sync && (
@@ -779,11 +853,12 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                       Última sync: {new Date(conn.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   )}
+                  {conn?.salud && <SaludFuenteInfo salud={conn.salud} />}
                 </div>
               </div>
               {conn ? (
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">Activo</span>
+                  <span className="text-[10px] font-medium rounded-full px-2 py-0.5" style={{ color: saludColor(conn.salud.estado), border: '1px solid currentColor' }}>{estadoSaludLabel(conn.salud.estado)}</span>
                   <button
                     onClick={async () => {
                       if (!confirm('¿Desconectar Whoop?')) return
@@ -795,7 +870,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                 </div>
               ) : (
                 <button
-                  onClick={() => { window.location.href = `/api/integraciones/terra/widget?codigo=${codigo}&provider=WHOOP` }}
+                  onClick={() => { window.location.replace(`/api/integraciones/terra/widget?codigo=${codigo}&provider=WHOOP`) }}
                   className="btn-primary text-xs px-3 py-1.5 shrink-0"
                 >Conectar</button>
               )}
@@ -808,7 +883,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
       {(() => {
         const connTerra = terraConexiones.find(c => c.provider.toUpperCase() === 'COROS')
         const connOAuth = getEstado('coros')
-        const conn = connTerra ?? (connOAuth?.activa ? { terra_user_id: '', provider: 'COROS', ultima_sync: connOAuth.ultima_sync } : undefined)
+        const conn = connTerra ?? (connOAuth?.activa ? { terra_user_id: '', provider: 'COROS', ultima_sync: connOAuth.ultima_sync, salud: connOAuth.salud } : undefined)
         const isTerra = !!connTerra
         return (
           <div className="card p-4">
@@ -820,7 +895,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-[var(--text)]">COROS</span>
-                    {conn ? <CheckCircle size={14} className="text-green-500" /> : <XCircle size={14} className="text-[var(--text-muted)]" />}
+                    {conn ? <IconoSalud salud={conn.salud} /> : <XCircle size={14} className="text-[var(--text-muted)]" />}
                   </div>
                   <p className="text-xs text-[var(--text-muted)]">Entrenos GPS, frecuencia cardíaca y recuperación</p>
                   {conn?.ultima_sync && (
@@ -828,11 +903,12 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                       Última sync: {new Date(conn.ultima_sync).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   )}
+                  {conn?.salud && <SaludFuenteInfo salud={conn.salud} error={connOAuth?.error_ultimo} />}
                 </div>
               </div>
               {conn ? (
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px] font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">Activo</span>
+                  <span className="text-[10px] font-medium rounded-full px-2 py-0.5" style={{ color: saludColor(conn.salud.estado), border: '1px solid currentColor' }}>{estadoSaludLabel(conn.salud.estado)}</span>
                   <button
                     onClick={async () => {
                       if (!confirm('¿Desconectar COROS?')) return
@@ -849,7 +925,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
                 </div>
               ) : (
                 <button
-                  onClick={() => { window.location.href = `/api/integraciones/terra/widget?codigo=${codigo}&provider=COROS` }}
+                  onClick={() => { window.location.replace(`/api/integraciones/terra/widget?codigo=${codigo}&provider=COROS`) }}
                   className="btn-primary text-xs px-3 py-1.5 shrink-0"
                 >Conectar</button>
               )}
