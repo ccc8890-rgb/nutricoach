@@ -77,4 +77,21 @@ assert.equal(claveProteina('Bowl de atún'), 'atun')
   assert.deepEqual(r.asignaciones.map(a => `${a.dia}-${a.franja}`), h.map(x => `${x.dia}-${x.franja}`))
 }
 
+// --- recetas a evitar (otras semanas): se saltan mientras haya alternativas ---
+{
+  const r = repartirSemanaSinRepetir(
+    { Comida: [c('a'), c('b'), c('c'), c('d')] },
+    huecos(['Comida'], ['Lunes', 'Martes']),
+    ['a', 'b'],
+  )
+  assert.deepEqual(r.asignaciones.map(x => x.receta_id), ['c', 'd'])
+  assert.ok(r.asignaciones.every(x => !x.repetida))
+}
+// ...y si no queda otra, se repiten marcadas
+{
+  const r = repartirSemanaSinRepetir({ Comida: [c('a'), c('b')] }, huecos(['Comida'], ['Lunes', 'Martes']), ['a', 'b'])
+  assert.equal(r.asignaciones.length, 2)
+  assert.ok(r.asignaciones.every(x => x.repetida))
+}
+
 console.log('generar-semana: OK')

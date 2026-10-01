@@ -19,8 +19,11 @@ export function claveProteina(nombre: string): string | null {
 export function repartirSemanaSinRepetir(
   candidatasPorFranja: Record<string, CandidataSemana[]>,
   huecos: Hueco[],
+  // Recetas ya usadas en otras semanas: se evitan igual que las de esta semana (solo se repiten si no queda otra)
+  evitar?: Iterable<string>,
 ): { asignaciones: Asignacion[]; sinCubrir: Hueco[] } {
   const usos = new Map<string, number>()
+  for (const id of evitar ?? []) usos.set(id, 1)
   const ultimaClave = new Map<string, string | null>()
   const clavesFranja = new Map<string, Map<string, number>>()
   const resultado = new Map<Hueco, Asignacion>()

@@ -1,14 +1,19 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BadgeCheck, CalendarDays, Loader2, Maximize2, Minimize2, Plus, Search, Sparkles, Video, X } from 'lucide-react'
+import { BadgeCheck, CalendarDays, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
 
 type Receta = { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null }
 type Comida = { id: string; nombre: string; recurrente: boolean; receta: Receta | null; kcal: number; p: number; c: number; g: number }
-type Dia = { dia: string; comidas: Comida[]; total: { kcal: number; p: number; c: number; g: number } }
+type Total = { kcal: number; p: number; c: number; g: number }
+type Dia = { dia: string; comidas: Comida[]; total: Total }
 type Plan = { id: string; nombre: string; kcal_objetivo: number | null; proteinas_objetivo: number | null }
 type RecetaOpcion = Receta & { kcal: number; proteinas: number; tiempo_prep_min: number | null }
 type ResultadoSemana = { ok: boolean; asignadas: number; repetidas: number; sinCubrir: { dia: string; franja: string }[]; errores: { dia: string; franja: string; error: string }[]; mensaje?: string }
+type Hueco = { dia: string; franja: string; semana: number | null }
+type Tamano = { col: string; dia: string; diaKcal: string; card: string; label: string; nombre: string; macros: string; hueco: string; grid: string }
+
+const VISTAS = [{ semanas: 1, texto: '1 semana' }, { semanas: 2, texto: '2 semanas' }, { semanas: 4, texto: 'Mes' }]
 
 function colorDesvio(real: number, objetivo: number | null) {
   if (!objetivo) return 'var(--text-muted)'
@@ -16,21 +21,90 @@ function colorDesvio(real: number, objetivo: number | null) {
   return d <= 0.1 ? 'var(--success)' : d <= 0.2 ? 'var(--warning)' : 'var(--error)'
 }
 
+function media(dias: Dia[]): Total | null {
+  const con = dias.filter(d => d.comidas.length > 0)
+  if (con.length === 0) return null
+  const s = con.reduce((a, d) => ({ kcal: a.kcal + d.total.kcal, p: a.p + d.total.p, c: a.c + d.total.c, g: a.g + d.total.g }), { kcal: 0, p: 0, c: 0, g: 0 })
+  return { kcal: Math.round(s.kcal / con.length), p: Math.round(s.p / con.length), c: Math.round(s.c / con.length), g: Math.round(s.g / con.length) }
+}
+
+// Rejilla de 7 días: las franjas en su orden, con los huecos vacíos en su sitio
+function SemanaGrid({ dias, franjas, T, kcalObjetivo, semana, onHueco, onQuitar, onGrabar }: {
+  dias: Dia[]; franjas: string[]; T: Tamano; kcalObjetivo: number | null; semana: number | null
+  onHueco: (h: Hueco) => void; onQuitar: (c: Comida, semana: number | null) => void; onGrabar: (r: Receta) => void
+}) {
+  const posicion = (f: string) => { const i = franjas.indexOf(f); return i === -1 ? franjas.length : i }
+  return (
+    <div className={`flex gap-2 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-7 ${T.grid} lg:overflow-visible lg:pb-0`}>
+      {dias.map(d => {
+        const items: ({ tipo: 'comida'; c: Comida } | { tipo: 'hueco'; f: string })[] = [
+          ...d.comidas.map(c => ({ tipo: 'comida' as const, c })),
+          ...franjas.filter(f => !d.comidas.some(c => c.nombre === f)).map(f => ({ tipo: 'hueco' as const, f })),
+        ].sort((a, b) => posicion(a.tipo === 'comida' ? a.c.nombre : a.f) - posicion(b.tipo === 'comida' ? b.c.nombre : b.f))
+        return (
+          <div key={d.dia} className={`min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2 lg:min-w-0 lg:w-auto ${T.col}`} style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+            <div className="flex items-baseline justify-between mb-2">
+              <p className={`${T.dia} font-semibold`} style={{ color: 'var(--text)' }}>{d.dia}</p>
+              <p className={`${T.diaKcal} font-data font-bold`} style={{ color: colorDesvio(d.total.kcal, kcalObjetivo) }}>{d.total.kcal} kcal</p>
+            </div>
+            <div className="space-y-1.5">
+              {items.map(it => {
+                if (it.tipo === 'hueco') return (
+                  <button key={it.f} onClick={() => onHueco({ dia: d.dia, franja: it.f, semana })}
+                    className={`w-full rounded-lg ${T.hueco} flex items-center gap-1 justify-center`}
+                    style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
+                    <Plus size={11} /> {it.f}
+                  </button>
+                )
+                const c = it.c
+                return (
+                  <div key={c.id} className={`rounded-lg ${T.card}`} style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    <div className="flex items-center justify-between gap-1">
+                      <button className={`${T.label} font-semibold uppercase tracking-wide text-left`} style={{ color: 'var(--text-muted)' }} onClick={() => onHueco({ dia: d.dia, franja: c.nombre, semana })}>
+                        {c.nombre}{c.recurrente ? ' · diario' : ''}
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {c.receta && (
+                          <button title="Para grabar → grabada → nada" onClick={() => onGrabar(c.receta!)}
+                            style={{ color: c.receta.contenido_estado === 'para_grabar' ? 'var(--warning)' : c.receta.contenido_estado === 'grabada' ? 'var(--success)' : 'var(--text-muted)', opacity: c.receta.contenido_estado ? 1 : 0.45 }}>
+                            <Video size={13} />
+                          </button>
+                        )}
+                        {!c.recurrente && <button title="Quitar" onClick={() => onQuitar(c, semana)} style={{ color: 'var(--text-muted)' }}><X size={13} /></button>}
+                      </div>
+                    </div>
+                    <button className={`${T.nombre} font-medium text-left mt-0.5 w-full`} style={{ color: 'var(--text)' }} onClick={() => onHueco({ dia: d.dia, franja: c.nombre, semana })}>
+                      {c.receta?.nombre ?? 'Sin receta'}
+                    </button>
+                    <p className={`${T.macros} mt-0.5`} style={{ color: 'var(--text-muted)' }}>{c.kcal} · P{c.p} C{c.c} G{c.g}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function SemanaDietaPlanner({ clienteId }: { clienteId: string }) {
   const [plan, setPlan] = useState<Plan | null>(null)
   const [dias, setDias] = useState<Dia[]>([])
+  const [futuras, setFuturas] = useState<{ semana: number; dias: Dia[] }[]>([])
   const [franjas, setFranjas] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [hueco, setHueco] = useState<{ dia: string; franja: string } | null>(null)
+  const [hueco, setHueco] = useState<Hueco | null>(null)
   const [busqueda, setBusqueda] = useState('')
   const [opciones, setOpciones] = useState<RecetaOpcion[]>([])
   const [buscando, setBuscando] = useState(false)
   const [guardando, setGuardando] = useState(false)
-  const [generando, setGenerando] = useState(false)
+  const [ocupado, setOcupado] = useState<string | null>(null)
   const [resultado, setResultado] = useState<ResultadoSemana | null>(null)
   const [franjasGen, setFranjasGen] = useState<string[] | null>(null)
   const [ampliado, setAmpliado] = useState(false)
+  const [vista, setVista] = useState(1)
 
   // Franjas que se rellenan al generar: por defecto las que ya usa el plan; el coach puede añadir o quitar
   const franjasPlan = useMemo(() => franjas.filter(f => dias.some(d => d.comidas.some(c => c.nombre === f))), [franjas, dias])
@@ -45,7 +119,19 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
     setPlan(data.plan); setDias(data.dias ?? []); setFranjas(data.franjas ?? []); setLoading(false)
   }, [clienteId])
 
+  const cargarFuturas = useCallback(async (v: number) => {
+    if (v <= 1) { setFuturas([]); return }
+    const res = await fetch(`/api/clientes/${clienteId}/semana-dieta/futuras?semanas=${v - 1}`)
+    const data = await res.json().catch(() => null)
+    if (!res.ok) { setError(data?.error ?? 'No se pudieron cargar las semanas planificadas'); return }
+    setFuturas((data.semanas ?? []).map((s: { semana: number; dias: { dia: string; comidas: Omit<Comida, 'recurrente'>[]; total: Total }[] }) => ({
+      semana: s.semana,
+      dias: s.dias.map(d => ({ ...d, comidas: d.comidas.map(c => ({ ...c, recurrente: false })) })),
+    })))
+  }, [clienteId])
+
   useEffect(() => { cargar() }, [cargar])
+  useEffect(() => { cargarFuturas(vista) }, [vista, cargarFuturas])
 
   useEffect(() => {
     if (!hueco) return
@@ -58,40 +144,60 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
     return () => clearTimeout(t)
   }, [hueco, busqueda, clienteId])
 
+  async function llamar(url: string, metodo: string, body?: unknown) {
+    const res = await fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined })
+    const data = await res.json().catch(() => null)
+    if (!res.ok) { setError(data?.error ?? 'No se pudo completar la acción'); return null }
+    return data
+  }
+
   async function asignar(recetaId: string) {
     if (!hueco) return
     setGuardando(true)
-    const res = await fetch(`/api/clientes/${clienteId}/semana-dieta`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dia: hueco.dia, franja: hueco.franja, receta_id: recetaId }),
-    })
-    const data = await res.json().catch(() => null)
+    const base = `/api/clientes/${clienteId}/semana-dieta`
+    const data = hueco.semana
+      ? await llamar(`${base}/futuras`, 'POST', { semana: hueco.semana, dia: hueco.dia, franja: hueco.franja, receta_id: recetaId })
+      : await llamar(base, 'POST', { dia: hueco.dia, franja: hueco.franja, receta_id: recetaId })
     setGuardando(false)
-    if (!res.ok) { setError(data?.error ?? 'No se pudo asignar'); return }
-    setHueco(null); setBusqueda(''); await cargar()
+    if (!data) return
+    setHueco(null); setBusqueda(''); await Promise.all([cargar(), cargarFuturas(vista)])
   }
 
-  async function quitar(comidaId: string) {
+  async function quitar(c: Comida, semana: number | null) {
     if (!confirm('¿Quitar esta comida de ese día?')) return
-    const res = await fetch(`/api/clientes/${clienteId}/semana-dieta?comida_id=${comidaId}`, { method: 'DELETE' })
-    const data = await res.json().catch(() => null)
-    if (!res.ok) { setError(data?.error ?? 'No se pudo quitar'); return }
-    await cargar()
+    const base = `/api/clientes/${clienteId}/semana-dieta`
+    const data = semana ? await llamar(`${base}/futuras?id=${c.id}`, 'DELETE') : await llamar(`${base}?comida_id=${c.id}`, 'DELETE')
+    if (data) await Promise.all([cargar(), cargarFuturas(vista)])
   }
 
   async function generarSemana() {
     if (seleccion.length === 0) { setError('Elige al menos una franja'); return }
     const conReceta = dias.flatMap(d => d.comidas).filter(c => c.receta && seleccion.includes(c.nombre)).length
     if (conReceta > 0 && !confirm(`Las franjas elegidas ya tienen ${conReceta} comidas con receta. ¿Sustituirlas por una semana nueva sin repetir recetas?`)) return
-    setGenerando(true); setError(null); setResultado(null)
-    const res = await fetch(`/api/clientes/${clienteId}/semana-dieta/generar`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reemplazar: conReceta > 0, franjas: seleccion }),
-    })
-    const data = await res.json().catch(() => null)
-    setGenerando(false)
-    if (!res.ok) { setError(data?.error ?? 'No se pudo generar la semana'); return }
-    setResultado(data); await cargar()
+    setOcupado('actual'); setError(null); setResultado(null)
+    const data = await llamar(`/api/clientes/${clienteId}/semana-dieta/generar`, 'POST', { reemplazar: conReceta > 0, franjas: seleccion })
+    setOcupado(null)
+    if (data) { setResultado(data); await cargar() }
+  }
+
+  async function accionFutura(semana: number, accion: 'generar' | 'copiar' | 'vaciar' | 'activar') {
+    const s = futuras.find(f => f.semana === semana)
+    const tiene = !!s && s.dias.some(d => d.comidas.length > 0)
+    const base = `/api/clientes/${clienteId}/semana-dieta/futuras`
+    if (accion === 'generar' && seleccion.length === 0) { setError('Elige al menos una franja'); return }
+    if ((accion === 'generar' || accion === 'copiar') && tiene && !confirm(`La semana +${semana} ya tiene recetas. ¿Sustituirlas?`)) return
+    if (accion === 'vaciar' && !confirm(`¿Vaciar la semana +${semana} planificada?`)) return
+    if (accion === 'activar' && !confirm('Esto cambia lo que ve el cliente: la semana planificada pasa a ser su semana en curso (sustituye la actual) y las siguientes se adelantan. ¿Activar?')) return
+    setOcupado(`${accion}-${semana}`); setError(null); setResultado(null)
+    const data = accion === 'generar' ? await llamar(`${base}/generar`, 'POST', { semana, franjas: seleccion, reemplazar: tiene })
+      : accion === 'copiar' ? await llamar(`${base}/copiar`, 'POST', { semana })
+      : accion === 'vaciar' ? await llamar(`${base}?semana=${semana}`, 'DELETE')
+      : await llamar(`${base}/activar`, 'POST')
+    setOcupado(null)
+    if (!data) return
+    if (accion === 'generar') setResultado({ ok: true, asignadas: data.asignadas, repetidas: data.repetidas, sinCubrir: data.sinCubrir ?? [], errores: [], mensaje: data.mensaje })
+    if (accion === 'activar') setResultado({ ok: data.ok, asignadas: data.activadas, repetidas: 0, sinCubrir: [], errores: data.errores ?? [], mensaje: data.ok ? `Semana activada: ${data.activadas} comidas ya son la semana en curso del cliente.` : undefined })
+    await Promise.all([cargar(), cargarFuturas(vista)])
   }
 
   async function alternarGrabar(receta: Receta) {
@@ -100,38 +206,48 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contenido_estado: siguiente }),
     })
-    if (res.ok) await cargar()
+    if (res.ok) await Promise.all([cargar(), cargarFuturas(vista)])
   }
 
   if (loading) return <div className="rounded-2xl h-40 animate-pulse" style={{ background: 'var(--surface)' }} />
   if (!plan) return null
 
   // Tamaños: normal (cabe la semana en un portátil) o ampliado (pantalla completa, letra y casillas grandes)
-  const T = ampliado
+  const T: Tamano = ampliado
     ? { col: 'p-3', dia: 'text-lg', diaKcal: 'text-sm', card: 'p-3', label: 'text-xs', nombre: 'text-base leading-snug line-clamp-4', macros: 'text-xs', hueco: 'p-3 text-sm', grid: 'lg:gap-3' }
     : { col: 'lg:p-2', dia: 'text-sm', diaKcal: 'text-xs', card: 'p-2', label: 'text-[10px]', nombre: 'text-xs lg:text-[13px] leading-snug line-clamp-3', macros: 'text-[10px]', hueco: 'p-1.5 text-[11px]', grid: 'lg:gap-1.5' }
+  const btnSec = 'rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1 disabled:opacity-50'
+  const mediaActual = media(dias)
 
   return (
     <section className={ampliado ? 'fixed inset-0 z-[60] overflow-auto p-6' : 'rounded-2xl p-4'} style={{ background: ampliado ? 'var(--bg)' : 'var(--surface)', border: ampliado ? 'none' : '1px solid var(--border)' }}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Planificador semanal</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Planificador</p>
           <h3 className="font-bold flex items-center gap-2" style={{ color: 'var(--text)' }}><CalendarDays size={16} /> {plan.nombre}</h3>
           <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Objetivo {plan.kcal_objetivo ?? '—'} kcal · {plan.proteinas_objetivo ?? '—'} g proteína · toca un hueco para elegir receta · <Video size={11} className="inline" /> para grabar
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-        <button onClick={() => setAmpliado(a => !a)} title={ampliado ? 'Volver al tamaño normal' : 'Ver en pantalla completa'}
-          className="rounded-xl p-2" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-          {ampliado ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-        </button>
-        <button onClick={generarSemana} disabled={generando}
-          className="flex-shrink-0 rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-60"
-          style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
-          {generando ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
-          {generando ? 'Generando…' : 'Generar semana'}
-        </button>
+          <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+            {VISTAS.map(v => (
+              <button key={v.semanas} onClick={() => setVista(v.semanas)} className="px-2.5 py-2 text-xs font-medium"
+                style={{ background: vista === v.semanas ? 'var(--primary)' : 'transparent', color: vista === v.semanas ? 'var(--bg)' : 'var(--text-muted)' }}>
+                {v.texto}
+              </button>
+            ))}
+          </div>
+          <button onClick={() => setAmpliado(a => !a)} title={ampliado ? 'Volver al tamaño normal' : 'Ver en pantalla completa'}
+            className="rounded-xl p-2" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+            {ampliado ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+          </button>
+          <button onClick={generarSemana} disabled={ocupado !== null}
+            className="rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-60"
+            style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
+            {ocupado === 'actual' ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+            {ocupado === 'actual' ? 'Generando…' : 'Generar semana'}
+          </button>
         </div>
       </div>
 
@@ -140,7 +256,7 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
         {franjas.map(f => {
           const activa = seleccion.includes(f)
           return (
-            <button key={f} onClick={() => alternarFranja(f)} disabled={generando}
+            <button key={f} onClick={() => alternarFranja(f)} disabled={ocupado !== null}
               className="rounded-full px-2.5 py-1 text-[11px] font-medium"
               style={{ background: activa ? 'var(--primary)' : 'transparent', color: activa ? 'var(--bg)' : 'var(--text-muted)', border: `1px solid ${activa ? 'var(--primary)' : 'var(--border)'}` }}>
               {f}
@@ -168,64 +284,51 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
         </div>
       )}
 
-      <div className={`flex gap-2 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-7 ${T.grid} lg:overflow-visible lg:pb-0`}>
-        {dias.map(d => {
-          // Cada franja en su sitio: las comidas ordenadas por franja y los huecos vacíos entre ellas
-          const posicion = (f: string) => { const i = franjas.indexOf(f); return i === -1 ? franjas.length : i }
-          const items: ({ tipo: 'comida'; c: Comida } | { tipo: 'hueco'; f: string })[] = [
-            ...d.comidas.map(c => ({ tipo: 'comida' as const, c })),
-            ...franjas.filter(f => !d.comidas.some(c => c.nombre === f)).map(f => ({ tipo: 'hueco' as const, f })),
-          ].sort((a, b) => posicion(a.tipo === 'comida' ? a.c.nombre : a.f) - posicion(b.tipo === 'comida' ? b.c.nombre : b.f))
-          return (
-            <div key={d.dia} className={`min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2 lg:min-w-0 lg:w-auto ${T.col}`} style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-              <div className="flex items-baseline justify-between mb-2">
-                <p className={`${T.dia} font-semibold`} style={{ color: 'var(--text)' }}>{d.dia}</p>
-                <p className={`${T.diaKcal} font-data font-bold`} style={{ color: colorDesvio(d.total.kcal, plan.kcal_objetivo) }}>{d.total.kcal} kcal</p>
-              </div>
-              <div className="space-y-1.5">
-                {items.map(it => {
-                  if (it.tipo === 'hueco') return (
-                  <button key={it.f} onClick={() => setHueco({ dia: d.dia, franja: it.f })}
-                    className={`w-full rounded-lg ${T.hueco} flex items-center gap-1 justify-center`}
-                    style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
-                    <Plus size={11} /> {it.f}
+      {vista > 1 && (
+        <p className="text-sm font-semibold mb-1.5" style={{ color: 'var(--text)' }}>
+          Semana en curso <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· lo que ve el cliente{mediaActual ? ` · media ${mediaActual.kcal} kcal · P${mediaActual.p} C${mediaActual.c} G${mediaActual.g}` : ''}</span>
+        </p>
+      )}
+      <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} semana={null} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
+
+      {futuras.map(s => {
+        const m = media(s.dias)
+        const vacia = !m
+        return (
+          <div key={s.semana} className="mt-5">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                Semana +{s.semana} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· planificada, el cliente no la ve{m ? ` · media estimada ${m.kcal} kcal · P${m.p} C${m.c} G${m.g}` : ' · vacía'}</span>
+              </p>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button className={btnSec} style={{ border: '1px solid var(--border)', color: 'var(--text)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'generar')}>
+                  {ocupado === `generar-${s.semana}` ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />} Generar
+                </button>
+                <button className={btnSec} style={{ border: '1px solid var(--border)', color: 'var(--text)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'copiar')}>
+                  {ocupado === `copiar-${s.semana}` ? <Loader2 size={12} className="animate-spin" /> : <Copy size={12} />} Copiar semana en curso
+                </button>
+                {!vacia && (
+                  <button className={btnSec} style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'vaciar')}>
+                    <Trash2 size={12} /> Vaciar
                   </button>
-                  )
-                  const c = it.c
-                  return (
-                  <div key={c.id} className={`rounded-lg ${T.card}`} style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    <div className="flex items-center justify-between gap-1">
-                      <button className={`${T.label} font-semibold uppercase tracking-wide text-left`} style={{ color: 'var(--text-muted)' }} onClick={() => setHueco({ dia: d.dia, franja: c.nombre })}>
-                        {c.nombre}{c.recurrente ? ' · diario' : ''}
-                      </button>
-                      <div className="flex items-center gap-1">
-                        {c.receta && (
-                          <button title="Para grabar → grabada → nada" onClick={() => alternarGrabar(c.receta!)}
-                            style={{ color: c.receta.contenido_estado === 'para_grabar' ? 'var(--warning)' : c.receta.contenido_estado === 'grabada' ? 'var(--success)' : 'var(--text-muted)', opacity: c.receta.contenido_estado ? 1 : 0.45 }}>
-                            <Video size={13} />
-                          </button>
-                        )}
-                        {!c.recurrente && <button title="Quitar" onClick={() => quitar(c.id)} style={{ color: 'var(--text-muted)' }}><X size={13} /></button>}
-                      </div>
-                    </div>
-                     <button className={`${T.nombre} font-medium text-left mt-0.5 w-full`} style={{ color: 'var(--text)' }} onClick={() => setHueco({ dia: d.dia, franja: c.nombre })}>
-                      {c.receta?.nombre ?? 'Sin receta'}
-                    </button>
-                    <p className={`${T.macros} mt-0.5`} style={{ color: 'var(--text-muted)' }}>{c.kcal} · P{c.p} C{c.c} G{c.g}</p>
-                  </div>
-                  )
-                })}
+                )}
+                {s.semana === 1 && !vacia && (
+                  <button className={btnSec} style={{ background: 'var(--primary)', color: 'var(--bg)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'activar')}>
+                    {ocupado === `activar-${s.semana}` ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />} Activar como semana en curso
+                  </button>
+                )}
               </div>
             </div>
-          )
-        })}
-      </div>
+            <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} semana={s.semana} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
+          </div>
+        )
+      })}
 
       {hueco && (
         <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={() => setHueco(null)}>
           <div className="w-full sm:max-w-lg max-h-[85vh] flex flex-col rounded-t-2xl sm:rounded-2xl p-4" style={{ background: 'var(--surface)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
-              <p className="font-semibold" style={{ color: 'var(--text)' }}>{hueco.franja} · {hueco.dia}</p>
+              <p className="font-semibold" style={{ color: 'var(--text)' }}>{hueco.franja} · {hueco.dia}{hueco.semana ? ` · semana +${hueco.semana}` : ''}</p>
               <button onClick={() => setHueco(null)} style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
             </div>
             <div className="relative mb-3">

@@ -14,11 +14,50 @@ const CONCURRENCIA = 4
 // Franjas por defecto si el plan aún no tiene comidas con nombre de franja
 const FRANJAS_BASE: SlotComida[] = ['Desayuno', 'Comida', 'Cena']
 
-type PlanObjetivo = {
+export type PlanObjetivo = {
   id: string; kcal_objetivo: number | null; proteinas_objetivo: number | null
   carbohidratos_objetivo: number | null; grasas_objetivo: number | null
 }
 export type ComidaExistente = { id: string; nombre: string; dia_semana: string | null; receta_id: string | null }
+
+// Candidatas por franja con el mismo motor que la generación inicial, pero viendo el catálogo entero.
+// `franjasDia` son todas las franjas del día (reparto de kcal); `franjas` las que se van a rellenar.
+export async function candidatasPorFranja(
+  db: SupabaseClient,
+  clienteId: string,
+  plan: PlanObjetivo,
+  franjas: SlotComida[],
+  franjasDia: SlotComida[],
+  necesarias: Record<string, number>,
+) {
+  const [{ data: onboarding }, { data: perfil }, { data: perfilEntreno }] = await Promise.all([
+    db.from('onboarding_responses').select('*').eq('cliente_id', clienteId).maybeSingle(),
+    db.from('onboarding_perfil_profundo').select('*').eq('cliente_id', clienteId).maybeSingle(),
+    db.from('perfil_entreno_cliente').select('sport_modality').eq('cliente_id', clienteId).maybeSingle(),
+  ])
+  const { filtroCliente, tagsClinicos } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
+  const candidatas: Record<string, CandidataSemana[]> = {}
+  const shares = new Map<string, number>()
+  for (const franja of franjas) {
+    const share = REPARTO[franja] / franjasDia.reduce((t, f) => t + REPARTO[f], 0)
+    shares.set(franja, share)
+    const t = (v: number | null) => (v ? v * share : 0)
+    const pedir = (tags?: typeof tagsClinicos) => filtrarRecetasPorSlot(
+      db, franja, t(plan.kcal_objetivo), t(plan.proteinas_objetivo), filtroCliente, CANDIDATAS_POR_FRANJA,
+      clienteId, onboarding?.objetivo, tags && Object.keys(tags).length > 0 ? tags : undefined,
+      perfilEntreno?.sport_modality ?? null,
+      t(plan.carbohidratos_objetivo) || undefined, t(plan.grasas_objetivo) || undefined, POOL_MAX,
+    )
+    let lista = await pedir(tagsClinicos)
+    // El filtro de etiquetas (p. ej. rendimiento) es una preferencia: si deja menos recetas que días, se completa sin él
+    if (lista.length < (necesarias[franja] ?? 0) && Object.keys(tagsClinicos).length > 0) {
+      const vistas = new Set(lista.map(c => c.id))
+      lista = [...lista, ...(await pedir(undefined)).filter(c => !vistas.has(c.id))]
+    }
+    candidatas[franja] = lista.map(c => ({ id: c.id, nombre: c.nombre }))
+  }
+  return { candidatas, shares }
+}
 
 export async function planificarSemana(
   db: SupabaseClient,
@@ -27,13 +66,7 @@ export async function planificarSemana(
   reemplazar: boolean,
   franjasElegidas?: SlotComida[],
 ) {
-  const [{ data: onboarding }, { data: perfil }, { data: perfilEntreno }, { data: comidas }] = await Promise.all([
-    db.from('onboarding_responses').select('*').eq('cliente_id', clienteId).maybeSingle(),
-    db.from('onboarding_perfil_profundo').select('*').eq('cliente_id', clienteId).maybeSingle(),
-    db.from('perfil_entreno_cliente').select('sport_modality').eq('cliente_id', clienteId).maybeSingle(),
-    db.from('comidas').select('id, nombre, dia_semana, receta_id').eq('plan_id', plan.id),
-  ])
-  const { filtroCliente, tagsClinicos } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
+  const { data: comidas } = await db.from('comidas').select('id, nombre, dia_semana, receta_id').eq('plan_id', plan.id)
   const existentes = (comidas ?? []) as ComidaExistente[]
 
   const franjasPlan = FRANJAS.filter(f => existentes.some(c => c.nombre === f))
@@ -51,30 +84,10 @@ export async function planificarSemana(
     }
   }
 
-  // Candidatas por franja con el mismo motor que la generación inicial, pero viendo el catálogo entero
-  const candidatas: Record<string, CandidataSemana[]> = {}
-  const shares = new Map<string, number>()
-  for (const franja of [...new Set(huecos.map(h => h.franja))] as SlotComida[]) {
-    // Reparto sobre todas las franjas del día: las que ya tiene el plan más las elegidas
-    const delDia = FRANJAS.filter(f => franjas.includes(f) || existentes.some(c => c.nombre === f))
-    const share = REPARTO[franja] / delDia.reduce((t, f) => t + REPARTO[f], 0)
-    shares.set(franja, share)
-    const t = (v: number | null) => (v ? v * share : 0)
-    const pedir = (tags?: typeof tagsClinicos) => filtrarRecetasPorSlot(
-      db, franja, t(plan.kcal_objetivo), t(plan.proteinas_objetivo), filtroCliente, CANDIDATAS_POR_FRANJA,
-      clienteId, onboarding?.objetivo, tags && Object.keys(tags).length > 0 ? tags : undefined,
-      perfilEntreno?.sport_modality ?? null,
-      t(plan.carbohidratos_objetivo) || undefined, t(plan.grasas_objetivo) || undefined, POOL_MAX,
-    )
-    const necesarias = huecos.filter(h => h.franja === franja).length
-    let lista = await pedir(tagsClinicos)
-    // El filtro de etiquetas (p. ej. rendimiento) es una preferencia: si deja menos recetas que días, se completa sin él
-    if (lista.length < necesarias && Object.keys(tagsClinicos).length > 0) {
-      const vistas = new Set(lista.map(c => c.id))
-      lista = [...lista, ...(await pedir(undefined)).filter(c => !vistas.has(c.id))]
-    }
-    candidatas[franja] = lista.map(c => ({ id: c.id, nombre: c.nombre }))
-  }
+  const franjasConHueco = [...new Set(huecos.map(h => h.franja))] as SlotComida[]
+  const franjasDia = FRANJAS.filter(f => franjas.includes(f) || existentes.some(c => c.nombre === f))
+  const necesarias = Object.fromEntries(franjasConHueco.map(f => [f, huecos.filter(h => h.franja === f).length]))
+  const { candidatas, shares } = await candidatasPorFranja(db, clienteId, plan, franjasConHueco, franjasDia, necesarias)
 
   const { asignaciones, sinCubrir } = repartirSemanaSinRepetir(candidatas, huecos)
   return { huecos, candidatas, asignaciones: asignaciones as Asignacion[], sinCubrir, shares, existentes }
