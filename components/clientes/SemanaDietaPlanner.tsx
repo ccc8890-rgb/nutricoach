@@ -154,9 +154,9 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
             </div>
             <div className="relative mb-3">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-              <input autoFocus autoComplete="off" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar receta…" className="input search-input w-full text-sm" />
+              <input autoFocus autoComplete="off" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar receta…" className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
             </div>
-            <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Las cantidades se ajustan solas a los macros de esta franja.</p>
+            <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Ordenadas por cómo encajan con tus macros. Las cantidades se ajustan solas al elegir.</p>
             <div className="overflow-y-auto space-y-1.5 flex-1">
               {buscando ? <div className="py-6 flex justify-center"><Loader2 size={18} className="animate-spin" /></div> :
                 opciones.length === 0 ? <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>Sin recetas para esta franja</p> :

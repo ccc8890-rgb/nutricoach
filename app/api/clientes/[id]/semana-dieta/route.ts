@@ -29,6 +29,13 @@ async function autorizar(request: NextRequest, clienteId: string) {
   return { admin, plan }
 }
 
+async function repartoFranja(db: ReturnType<typeof createServiceSupabase>, planId: string, franja: SlotComida) {
+  const { data } = await db.from('comidas').select('nombre').eq('plan_id', planId)
+  const franjas = new Set([...(data ?? []).map(c => c.nombre), franja].filter(f => FRANJAS.includes(f as SlotComida)))
+  const total = [...franjas].reduce((s, f) => s + REPARTO[f as SlotComida], 0)
+  return REPARTO[franja] / total
+}
+
 function macros(c: ComidaFila) {
   return (c.comida_alimentos ?? []).reduce((acc, ca) => {
     const a = ca.alimento
@@ -56,9 +63,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (texto) q = q.ilike('nombre', `%${texto}%`)
     const { data, error } = await q
     if (error) return NextResponse.json({ error: 'Error cargando recetas' }, { status: 500 })
+    // Las cantidades se reescalan al asignar, así que importa la PROPORCIÓN de macros, no las kcal
+    const kcalObj = plan.kcal_objetivo || 0
+    const reparto = (v: number | null) => (kcalObj > 0 && v ? v / kcalObj : null)
+    const obj = { p: reparto((plan.proteinas_objetivo ?? 0) * 4), c: reparto((plan.carbohidratos_objetivo ?? 0) * 4), g: reparto((plan.grasas_objetivo ?? 0) * 9) }
+    const encaje = (x: { kcal: number; proteinas: number; carbohidratos: number; grasas: number }) => {
+      if (!x.kcal) return 9
+      const r = { p: (x.proteinas * 4) / x.kcal, c: (x.carbohidratos * 4) / x.kcal, g: (x.grasas * 9) / x.kcal }
+      return (obj.p != null ? 2 * Math.abs(r.p - obj.p) : 0) + (obj.c != null ? Math.abs(r.c - obj.c) : 0) + (obj.g != null ? Math.abs(r.g - obj.g) : 0)
+    }
     const recetas = (data ?? [])
       .filter(x => tipoPlatoCompatibleConSlot(franja, x.tipo_plato))
-      .sort((a, b) => Number(!!b.verificacion) - Number(!!a.verificacion) || a.nombre.localeCompare(b.nombre))
+      .sort((a, b) => Number(!!b.verificacion) - Number(!!a.verificacion) || encaje(a) - encaje(b))
       .slice(0, 60)
     return NextResponse.json({ recetas })
   }
@@ -105,9 +121,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       comida = nueva
     }
 
-    const franjasDia = new Set([...(delDia ?? []).map(c => c.nombre), body.franja])
-    const repartoTotal = [...franjasDia].reduce((s, f) => s + (REPARTO[f as SlotComida] ?? 0.2), 0)
-    const share = REPARTO[body.franja] / repartoTotal
+    // Reparto según las franjas del plan en toda la semana: así el objetivo de una franja
+    // no depende de cuántas comidas tenga ya ese día concreto
+    const share = await repartoFranja(admin, plan.id, body.franja)
     const objetivo = (v: number | null) => (v ? v * share : undefined)
 
     await aplicarRecetaAComida(admin, {
