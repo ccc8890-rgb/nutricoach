@@ -39,6 +39,7 @@ const DecisionesIACliente = dynamic(() => import('@/components/clientes/Decision
 const EntrenoCalendarioKanban = dynamic(() => import('@/components/clientes/EntrenoCalendarioKanban'), { ssr: false, loading: () => <TabSkeleton /> })
 const RutinaSemanaAccordion = dynamic(() => import('@/components/clientes/RutinaSemanaAccordion'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioMes = dynamic(() => import('@/components/clientes/EntrenoCalendarioMes'), { ssr: false, loading: () => <TabSkeleton /> })
+const SemanaDietaPlanner = dynamic(() => import('@/components/clientes/SemanaDietaPlanner'), { ssr: false, loading: () => <TabSkeleton /> })
 
 function TabSkeleton() {
   return <div className="animate-pulse rounded-2xl h-48 w-full" style={{ background: 'var(--surface)' }} />
@@ -874,6 +875,9 @@ export default function ClienteDetallePage() {
 
         ) : tabActiva === 'nutricion' ? (
           <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-4">
+            <div className="xl:col-span-2">
+              <ErrorBoundary><SemanaDietaPlanner clienteId={id} /></ErrorBoundary>
+            </div>
             <WorkCard
               title="Plan nutricional"
               kicker="Trabajo activo"

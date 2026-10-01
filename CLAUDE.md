@@ -18,8 +18,14 @@
 - Lote 1 `scripts/lotes/2026-10-01_desayunos-proteicos.json`: 22 desayunos (27-47% kcal proteína). Lote 2 `scripts/lotes/2026-10-01_pre-post-entreno.json`: 9 pre + 11 post con `es_pre_entreno`/`es_post_entreno`. Las 42 en `en_revision`, pendientes de aprobación de Carlos.
 - Quality gate (`lib/recetas/profesional.ts`), 2 falsos positivos corregidos: "proteína sabor vainilla" no es especia; un vaso de zumo de naranja no es aliño (la regla >120 g solo aplica a zumo de limón/lima, vinagre, salsas).
 
+### 4. Recetario de confianza (tarde)
+- **Paso 1 — completar y corregir datos**: script de etiquetas `generar-intolerancias-y-consejos.ts` arreglado (no paginaba ingredientes; comparaba con tildes contra texto sin tildes; avena no era gluten; marisco no contaba como carne) + modo `AUDITAR=true`. 27 recetas con promesas falsas corregidas (boquerones "Vegano", lubina "Vegetariano", 20 con avena "Sin Gluten"…), 74 sin etiquetas rellenadas. `fix-vinculos-2026-10-01.mjs`: 17 ingredientes mal vinculados. `completar-recetas-aprobadas.ts`, `estimar-tiempo-recetas.ts`, `fix-roles-hidratos.ts` (66 hidratos/cacao/miel marcados como proteína → el optimizador no podía ajustar hidratos). Aprobadas completas salvo foto: 140 → 454/474.
+- **Paso 2 — verificadas**: migración `recetas.verificacion` ('auto'|'coach') + `verificada_at`; `scripts/verificar-recetas-auto.ts` (386 verificadas; re-ejecutar tras aprobar lotes). Motor (`lib/plan-recetas.ts`) filtro blando ≥3 verificadas; alternativas del portal y `/api/recetas/sugeridas` priorizan verificadas. El motor tarda 0,1-0,7 s por franja; la lentitud del plan es DeepSeek.
+- **Paso 3 — planificador semanal del coach**: `components/clientes/SemanaDietaPlanner.tsx` arriba de la pestaña Nutrición de la ficha. API `app/api/clientes/[id]/semana-dieta` (GET semana + `?franja=&q=` selector; POST asignar receta a día+franja con objetivos = objetivo diario × reparto por franja, usa el optimizador; DELETE quitar comida de un día). Comidas recurrentes se materializan con `lib/nutricion/materializar-comidas.ts` (la ruta cliente `/comidas/materializar` aún tiene su copia). Marca de contenido: migración `recetas.contenido_estado` ('para_grabar'|'grabada') + `PATCH /api/recetas/[id]/contenido` (solo coach); en la UI el icono de vídeo rota para grabar → grabada → nada. Probado sobre cliente ficticio (Andrés): desayuno 663 kcal vs 707 objetivo, P −3%, C +6%.
+
 ### Pendiente
-1. Carlos aprueba las 42 recetas en `/recetas/revisar`.
+1. Carlos aprueba las 42 recetas en `/recetas/revisar` y se re-ejecuta `verificar-recetas-auto.ts --apply`.
+1b. Ingrediente "Yogur griego natural 0%" vinculado a "Yogur griego con mango" (al menos en "Tortitas de avena y canela con sirope casero"): revisar usos.
 2. Semana de Carlos descuadrada (1.003–4.192 kcal/día) por mover platos en el kanban de dieta; falta aviso de kcal al mover.
 3. Siguiente lote: vegano + proteína. Fotos de las 302 recetas sin imagen (T44).
 4. Idea nueva de Carlos: agentes de revisión del recetario alimentados con sus marcas desde el portal cliente (diseño en curso).
