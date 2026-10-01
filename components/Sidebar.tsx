@@ -19,6 +19,7 @@ import {
   House,
   ListChecks,
   LogOut,
+  KeyRound,
   Menu,
   Moon,
   Settings,
@@ -503,6 +504,10 @@ export default function Sidebar() {
       </nav>
 
       <div className="flex-shrink-0 p-3 border-t space-y-1" style={{ borderColor: 'var(--glass-border)' }}>
+        <Link href="/nueva-contrasena" className="sidebar-link w-full" style={{ color: 'var(--text-muted)' }}>
+          <KeyRound size={18} />
+          <span>Cambiar contraseña</span>
+        </Link>
         <button
           onClick={handleLogout}
           className="sidebar-link w-full"
