@@ -165,8 +165,8 @@ function validarCantidadesSospechosas(ing: IngredienteProfesionalInput): string 
   if (/^sal\b/.test(nombre) && gramos > 10) return 'cantidades_sospechosas'
   // Ralladura/cascara/piel de citrico > 10g
   if (/(ralladura|cascara|piel)\s*(de\s*)?(limon|lima|naranja|pomelo|mandarina)/.test(nombre) && gramos > 10) return 'cantidades_sospechosas'
-  // Especias secas > 20g
-  if (/(canela|clavo|nuez moscada|jengibre|curcuma|pimenton|oregano|tomillo|romero|laurel|comino|cilantro|perejil|albahaca|menta|hierbabuena|eneldo|estragon|salvia|cebollino|ajo en polvo|cebolla en polvo|mostaza en polvo|curry|garam masala|chile|pimienta|cardamomo|anís|vainilla|azafran)/.test(nombre) && gramos > 20) return 'cantidades_sospechosas'
+  // Especias secas > 20g ("proteína sabor vainilla" o "yogur sabor canela" no son especias)
+  if (!/\bsabor\b|prote/.test(nombre) && /(canela|clavo|nuez moscada|jengibre|curcuma|pimenton|oregano|tomillo|romero|laurel|comino|cilantro|perejil|albahaca|menta|hierbabuena|eneldo|estragon|salvia|cebollino|ajo en polvo|cebolla en polvo|mostaza en polvo|curry|garam masala|chile|pimienta|cardamomo|anís|vainilla|azafran)/.test(nombre) && gramos > 20) return 'cantidades_sospechosas'
   // Aceite > 60g por receta (we'll check per ingredient, but total will be checked later)
   if (/(aceite|aceite de oliva|aceite de girasol|aceite de coco|aceite de aguacate|aceite de sesamo|aceite de cacahuete|aceite de soja|aceite de maiz|aceite de canola|aceite vegetal|aceite de palma|aceite de almendras|aceite de nuez|aceite de avellana|aceite de uva|aceite de linaza|aceite de onagra|aceite de borraja|aceite de pescado|aceite de higado de bacalao)/.test(nombre) && gramos > 60) return 'cantidades_sospechosas'
   // Condimentos tipo vinagre/zumo/limon > 120g salvo bebida (solo líquidos/condimentos, no frutas enteras)

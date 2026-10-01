@@ -1,0 +1,222 @@
+{
+  "lote": "desayunos-proteicos-2026-10-01",
+  "tipo_plato": "Desayuno",
+  "fuente": "lote_verificado",
+  "criterios": { "kcal_min": 280, "kcal_max": 520, "proteina_pct_min": 0.30, "proteina_pct_min_vegano": 0.25 },
+  "alimentos": {
+    "clara":        { "nombre": "Claras de huevo líquidas pasteurizadas", "prefijo": "4e4cda47", "rol": "proteina_principal", "alergenos": ["Huevos"], "origen": "huevo" },
+    "huevo":        { "nombre": "Huevo entero, crudo", "prefijo": "6cd81fed", "rol": "proteina_principal", "alergenos": ["Huevos"], "origen": "huevo" },
+    "avena":        { "nombre": "Avena", "prefijo": "31b21452", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "harina_avena": { "nombre": "Harina De Avena", "prefijo": "95db3d38", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "skyr":         { "nombre": "Skyr natural", "prefijo": "edc8a060", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "qfb":          { "nombre": "Queso fresco batido desnatado 0% MG", "prefijo": "1380d26a", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "cottage":      { "nombre": "Cottage 0% Materia Grasa", "prefijo": "30dbfc8a", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "queso_fresco": { "nombre": "Queso Fresco 0% Pack de", "prefijo": "6bc5fa33", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "whey":         { "nombre": "Proteína en polvo sabor vainilla", "prefijo": "9076c191", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "leche":        { "nombre": "leche semidesnatada", "prefijo": "8469bf72", "rol": "lacteo_complemento", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "soja":         { "nombre": "Bebida de soja con calcio y vitaminas sin azúcares añadidos", "prefijo": "8de6665d", "rol": "lacteo_complemento", "alergenos": ["Soja"], "origen": "vegetal" },
+    "tofu":         { "nombre": "Tofu firme", "prefijo": "c0736451", "rol": "proteina_principal", "alergenos": ["Soja"], "origen": "vegetal" },
+    "pan_integral": { "nombre": "Pan integral", "prefijo": "1948a73a", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "pan_centeno":  { "nombre": "Pan de centeno", "prefijo": "80dffe34", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "tortilla":     { "nombre": "Tortilla de Trigo", "prefijo": "bd6dc3a5", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "platano":      { "nombre": "Plátano", "prefijo": "1131a576", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "fresas":       { "nombre": "Fresas", "prefijo": "16665787", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "arandanos":    { "nombre": "Arándanos", "prefijo": "508e2d88", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "frutos_rojos": { "nombre": "Frutos rojos congelados", "prefijo": "ebedfe6f", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "manzana":      { "nombre": "Manzana", "prefijo": "7d5a031f", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "kiwi":         { "nombre": "Kiwi", "prefijo": "97fdee99", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "mango":        { "nombre": "Mango", "prefijo": "4166da6e", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "cacahuete":    { "nombre": "Crema de cacahuete (sin azúcar)", "prefijo": "8694be48", "rol": "grasa_saludable", "alergenos": ["Cacahuetes"], "origen": "vegetal" },
+    "nueces":       { "nombre": "Nueces", "prefijo": "63c26672", "rol": "grasa_saludable", "alergenos": ["Frutos Secos"], "origen": "vegetal" },
+    "almendras":    { "nombre": "Almendras", "prefijo": "3cbe24f8", "rol": "grasa_saludable", "alergenos": ["Frutos Secos"], "origen": "vegetal" },
+    "chia":         { "nombre": "Semillas de chía", "prefijo": "b5b5e57f", "rol": "grasa_saludable", "alergenos": [], "origen": "vegetal" },
+    "cacao":        { "nombre": "Cacao Puro en Polvo sin Azúcar", "prefijo": "f928aff3", "rol": "especias_aromaticos", "alergenos": [], "origen": "vegetal" },
+    "pavo":         { "nombre": "Fiambre de Pechuga de Pavo", "prefijo": "a279ae71", "rol": "proteina_principal", "alergenos": [], "origen": "carne" },
+    "jamon":        { "nombre": "Jamón Cocido Bonnatur 96 % Carne", "prefijo": "1b2141ba", "rol": "proteina_principal", "alergenos": [], "origen": "cerdo" },
+    "salmon":       { "nombre": "Salmón ahumado", "prefijo": "de0eb774", "rol": "proteina_principal", "alergenos": ["Pescado"], "origen": "pescado" },
+    "tomate":       { "nombre": "Tomate", "prefijo": "7f40a393", "rol": "verdura_volumen", "alergenos": [], "origen": "vegetal" },
+    "aguacate":     { "nombre": "Aguacate", "prefijo": "91ad5545", "rol": "grasa_saludable", "alergenos": [], "origen": "vegetal" },
+    "espinacas":    { "nombre": "Espinacas", "prefijo": "cb57d667", "rol": "verdura_volumen", "alergenos": [], "origen": "vegetal" },
+    "champinon":    { "nombre": "Champiñón", "prefijo": "3afe2356", "rol": "verdura_volumen", "alergenos": [], "origen": "vegetal" },
+    "aove":         { "nombre": "Aceite de oliva virgen extra", "prefijo": "efdb0f46", "rol": "grasa_saludable", "alergenos": [], "origen": "vegetal" },
+    "miel":         { "nombre": "Miel", "prefijo": "8619b09f", "rol": "salsa_condimento", "alergenos": [], "origen": "miel" }
+  },
+  "recetas": [
+    {
+      "nombre": "Tostada de centeno con salmón ahumado, queso batido y aguacate",
+      "descripcion": "Desayuno salado y rápido: pan de centeno con una base cremosa de queso fresco batido, salmón ahumado y unas láminas de aguacate.",
+      "tiempo_prep_min": 5,
+      "ingredientes": [["pan_centeno", 60], ["qfb", 80], ["salmon", 70], ["aguacate", 30], ["tomate", 40]],
+      "instrucciones": "1. Tuesta el pan de centeno.\n2. Unta el queso fresco batido sobre la tostada.\n3. Coloca encima el salmón ahumado y el aguacate en láminas finas.\n4. Acompaña con el tomate en rodajas y un poco de pimienta negra.",
+      "consejos": "Si buscas menos grasa, cambia el aguacate por pepino en láminas."
+    },
+    {
+      "nombre": "Tortilla de claras con espinacas y champiñones y tostada integral",
+      "descripcion": "Tortilla jugosa de claras y huevo con verduras salteadas, acompañada de pan integral.",
+      "tiempo_prep_min": 10,
+      "ingredientes": [["clara", 200], ["huevo", 60], ["espinacas", 60], ["champinon", 80], ["aove", 5], ["pan_integral", 50]],
+      "instrucciones": "1. Lamina los champiñones y saltéalos 3 minutos con el aceite en una sartén antiadherente.\n2. Añade las espinacas y deja que reduzcan 1 minuto.\n3. Bate las claras con el huevo, viértelas sobre las verduras y cuaja a fuego medio.\n4. Dobla la tortilla y sirve con el pan integral tostado.",
+      "consejos": "Prepara las verduras salteadas la noche anterior para hacerla en 3 minutos."
+    },
+    {
+      "nombre": "Revuelto de claras con pavo y tomate sobre pan integral",
+      "descripcion": "Revuelto cremoso de claras con taquitos de pechuga de pavo y tomate, servido sobre pan integral.",
+      "tiempo_prep_min": 8,
+      "ingredientes": [["clara", 180], ["pavo", 60], ["tomate", 80], ["pan_integral", 60], ["aove", 5]],
+      "instrucciones": "1. Corta el pavo en taquitos y el tomate en dados.\n2. Saltea el tomate 2 minutos con el aceite.\n3. Añade el pavo y las claras y remueve a fuego bajo hasta que cuajen cremosas.\n4. Sirve sobre el pan integral tostado.",
+      "consejos": "Añade orégano o pimentón para dar más sabor sin calorías."
+    },
+    {
+      "nombre": "Sándwich integral de pavo, queso fresco y tomate",
+      "descripcion": "Sándwich frío para llevar, con pechuga de pavo, queso fresco 0% y tomate.",
+      "tiempo_prep_min": 5,
+      "ingredientes": [["pan_integral", 80], ["pavo", 80], ["queso_fresco", 80], ["tomate", 60]],
+      "instrucciones": "1. Corta el queso fresco y el tomate en lonchas.\n2. Monta el sándwich con el pan integral, el pavo, el queso y el tomate.\n3. Tuéstalo en sartén o sándwichera 2 minutos por lado si lo prefieres caliente.",
+      "consejos": "Ideal para desayunar fuera de casa: envuélvelo en papel de horno."
+    },
+    {
+      "nombre": "Bol salado de cottage con tomate, aguacate y centeno",
+      "descripcion": "Bol fresco de queso cottage con tomate, aguacate y pan de centeno para mojar.",
+      "tiempo_prep_min": 5,
+      "ingredientes": [["cottage", 200], ["tomate", 100], ["aguacate", 30], ["pan_centeno", 50], ["aove", 3]],
+      "instrucciones": "1. Pon el cottage en un bol.\n2. Añade el tomate en dados y el aguacate en cubos.\n3. Aliña con el aceite, sal y pimienta.\n4. Acompaña con el pan de centeno tostado.",
+      "consejos": "Un toque de zumo de lima y cebollino le sienta muy bien."
+    },
+    {
+      "nombre": "Tortilla francesa de claras con jamón cocido y pan con tomate",
+      "descripcion": "Desayuno salado clásico: tortilla de claras con jamón cocido y una tostada con tomate rallado.",
+      "tiempo_prep_min": 8,
+      "ingredientes": [["clara", 200], ["jamon", 50], ["pan_integral", 60], ["tomate", 60], ["aove", 5]],
+      "instrucciones": "1. Ralla el tomate y reserva.\n2. Bate las claras y cuájalas en sartén antiadherente; añade el jamón en tiras antes de doblarla.\n3. Tuesta el pan, cúbrelo con el tomate rallado y el aceite.\n4. Sirve la tortilla junto a la tostada.",
+      "consejos": "Cambia el jamón por pavo si quieres una versión sin cerdo."
+    },
+    {
+      "nombre": "Tofu revuelto con espinacas y tomate y tostada integral",
+      "descripcion": "Alternativa vegetal al revuelto de huevo: tofu firme desmenuzado con espinacas y tomate.",
+      "tiempo_prep_min": 10,
+      "ingredientes": [["tofu", 220], ["espinacas", 60], ["tomate", 80], ["aove", 5], ["pan_integral", 50]],
+      "instrucciones": "1. Escurre el tofu y desmenúzalo con un tenedor.\n2. Saltea el tomate en dados con el aceite 2 minutos.\n3. Añade el tofu, una pizca de cúrcuma y sal, y cocina 4 minutos.\n4. Incorpora las espinacas hasta que reduzcan y sirve con el pan tostado.",
+      "consejos": "La sal kala namak le da un sabor muy parecido al huevo."
+    },
+    {
+      "nombre": "Wrap de claras, pavo y espinacas",
+      "descripcion": "Wrap caliente de tortilla de trigo relleno de claras, pechuga de pavo y espinacas.",
+      "tiempo_prep_min": 8,
+      "ingredientes": [["tortilla", 60], ["clara", 180], ["pavo", 40], ["espinacas", 40]],
+      "instrucciones": "1. Cuaja las claras en una sartén antiadherente como una tortilla fina.\n2. Calienta la tortilla de trigo 30 segundos por lado.\n3. Rellena con la tortilla de claras, el pavo y las espinacas.\n4. Enrolla y marca en la sartén 1 minuto para sellar.",
+      "consejos": "Se puede preparar la noche anterior y calentar por la mañana."
+    },
+    {
+      "nombre": "Porridge proteico de avena con plátano",
+      "descripcion": "Gachas de avena cremosas con proteína de vainilla y plátano, perfectas para antes de entrenar.",
+      "tiempo_prep_min": 7,
+      "ingredientes": [["avena", 45], ["leche", 200], ["whey", 30], ["platano", 80]],
+      "instrucciones": "1. Cuece la avena con la leche a fuego medio 4-5 minutos, removiendo.\n2. Retira del fuego y deja templar 1 minuto.\n3. Incorpora la proteína en polvo removiendo para que no haga grumos.\n4. Sirve con el plátano en rodajas y canela al gusto.",
+      "consejos": "Añade la proteína fuera del fuego: así queda cremosa y no se apelmaza."
+    },
+    {
+      "nombre": "Overnight oats de skyr con frutos rojos y chía",
+      "descripcion": "Avena hidratada la noche anterior con skyr, frutos rojos y chía. Lista para comer al levantarte.",
+      "tiempo_prep_min": 5,
+      "ingredientes": [["avena", 40], ["skyr", 200], ["leche", 80], ["frutos_rojos", 80], ["chia", 8]],
+      "instrucciones": "1. Mezcla en un tarro la avena, el skyr, la leche y la chía.\n2. Añade los frutos rojos por encima.\n3. Tapa y deja en la nevera toda la noche.\n4. Por la mañana remueve y come frío.",
+      "consejos": "Dura 3 días en la nevera: prepara varios tarros a la vez."
+    },
+    {
+      "nombre": "Bol de skyr con fresas, arándanos y nueces",
+      "descripcion": "Bol fresco de skyr natural con fruta del bosque y un puñado pequeño de nueces.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["skyr", 250], ["fresas", 100], ["arandanos", 50], ["nueces", 12], ["avena", 20]],
+      "instrucciones": "1. Pon el skyr en un bol.\n2. Añade las fresas troceadas y los arándanos.\n3. Termina con las nueces picadas y la avena por encima.",
+      "consejos": "Si te resulta ácido, añade unas gotas de vainilla o canela."
+    },
+    {
+      "nombre": "Tortitas de avena y claras con plátano",
+      "descripcion": "Tortitas esponjosas de avena y claras, con plátano y un hilo de miel.",
+      "tiempo_prep_min": 12,
+      "ingredientes": [["harina_avena", 50], ["clara", 150], ["platano", 60], ["qfb", 80], ["miel", 8]],
+      "instrucciones": "1. Tritura la harina de avena con las claras y la mitad del plátano hasta tener una masa lisa.\n2. Cocina pequeñas tortitas en sartén antiadherente, 2 minutos por lado.\n3. Sirve con el queso fresco batido, el resto del plátano en rodajas y la miel.",
+      "consejos": "Añade una pizca de levadura química para que queden más altas."
+    },
+    {
+      "nombre": "Bol de queso batido con mango y almendras",
+      "descripcion": "Queso fresco batido 0% con mango en dados, almendras y un toque de avena.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["qfb", 250], ["mango", 100], ["almendras", 12], ["avena", 20]],
+      "instrucciones": "1. Pon el queso fresco batido en un bol.\n2. Añade el mango en dados.\n3. Termina con las almendras laminadas y la avena.",
+      "consejos": "Con mango congelado queda como un helado cremoso."
+    },
+    {
+      "nombre": "Batido proteico de plátano y avena",
+      "descripcion": "Batido rápido de plátano, avena, leche y proteína de vainilla. Para desayunar en 2 minutos.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["leche", 250], ["whey", 30], ["avena", 40], ["platano", 100]],
+      "instrucciones": "1. Pon todos los ingredientes en la batidora.\n2. Tritura 30-40 segundos hasta que quede homogéneo.\n3. Sirve al momento con hielo si lo quieres frío.",
+      "consejos": "Con plátano congelado queda más espeso."
+    },
+    {
+      "nombre": "Crepes de avena y claras rellenas de queso batido y fresas",
+      "descripcion": "Crepes finos de avena y claras, rellenos de queso fresco batido y fresas.",
+      "tiempo_prep_min": 12,
+      "ingredientes": [["harina_avena", 40], ["clara", 150], ["qfb", 150], ["fresas", 120]],
+      "instrucciones": "1. Bate la harina de avena con las claras hasta tener una masa líquida.\n2. Cocina crepes finos en sartén antiadherente, 1 minuto por lado.\n3. Rellena con el queso fresco batido y las fresas laminadas.\n4. Enrolla y sirve.",
+      "consejos": "Un poco de vainilla o canela en la masa les da mucho sabor."
+    },
+    {
+      "nombre": "Pudding de chía con skyr y kiwi",
+      "descripcion": "Pudding de chía con skyr, preparado la noche anterior, con kiwi fresco por encima.",
+      "tiempo_prep_min": 5,
+      "ingredientes": [["chia", 15], ["leche", 100], ["skyr", 220], ["kiwi", 120], ["avena", 15]],
+      "instrucciones": "1. Mezcla la chía con la leche y deja reposar 10 minutos removiendo un par de veces.\n2. Incorpora el skyr y mezcla bien.\n3. Deja en la nevera toda la noche.\n4. Sirve con el kiwi en dados y la avena por encima.",
+      "consejos": "Endulza con canela o unas gotas de vainilla si lo necesitas."
+    },
+    {
+      "nombre": "Cottage dulce con manzana, canela y nueces",
+      "descripcion": "Queso cottage con manzana en dados, canela y nueces: dulce sin azúcar añadido.",
+      "tiempo_prep_min": 4,
+      "ingredientes": [["cottage", 250], ["manzana", 120], ["nueces", 12], ["avena", 25]],
+      "instrucciones": "1. Pon el cottage en un bol.\n2. Añade la manzana en dados y abundante canela.\n3. Termina con las nueces picadas y la avena.",
+      "consejos": "Con la manzana salteada 2 minutos en sartén queda tipo tarta de manzana."
+    },
+    {
+      "nombre": "Bol de queso batido con cacao, plátano y crema de cacahuete",
+      "descripcion": "Bol con sabor a chocolate: queso fresco batido con cacao puro, plátano y crema de cacahuete.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["qfb", 250], ["cacao", 8], ["platano", 90], ["cacahuete", 10]],
+      "instrucciones": "1. Mezcla el queso fresco batido con el cacao puro hasta que quede uniforme.\n2. Añade el plátano en rodajas.\n3. Termina con la crema de cacahuete por encima.",
+      "consejos": "Un poco de edulcorante o canela ayuda si el cacao te resulta amargo."
+    },
+    {
+      "nombre": "Gachas esponjosas de avena con claras y arándanos",
+      "descripcion": "Avena cocinada con claras de huevo para unas gachas muy esponjosas y proteicas, con arándanos.",
+      "tiempo_prep_min": 8,
+      "ingredientes": [["avena", 50], ["leche", 150], ["clara", 150], ["arandanos", 80]],
+      "instrucciones": "1. Cuece la avena con la leche 3 minutos.\n2. Baja el fuego y añade las claras poco a poco sin dejar de remover.\n3. Cocina 2 minutos más hasta que espese y quede esponjosa.\n4. Sirve con los arándanos y canela.",
+      "consejos": "No dejes de remover al añadir las claras para que no cuajen en grumos."
+    },
+    {
+      "nombre": "Tostadas de queso batido con fresas y miel",
+      "descripcion": "Tostadas de pan integral con una capa gruesa de queso fresco batido, fresas y un hilo de miel.",
+      "tiempo_prep_min": 4,
+      "ingredientes": [["pan_integral", 70], ["qfb", 200], ["fresas", 100], ["miel", 8]],
+      "instrucciones": "1. Tuesta el pan integral.\n2. Cubre con el queso fresco batido.\n3. Coloca las fresas laminadas y termina con la miel.",
+      "consejos": "Funciona igual con frambuesas o higos de temporada."
+    },
+    {
+      "nombre": "Muffins proteicos de avena y plátano",
+      "descripcion": "Muffins de avena, plátano, claras y proteína para dejar hechos y desayunar toda la semana.",
+      "tiempo_prep_min": 25,
+      "ingredientes": [["harina_avena", 50], ["platano", 80], ["clara", 120], ["whey", 20], ["arandanos", 40]],
+      "instrucciones": "1. Precalienta el horno a 180 °C.\n2. Tritura la harina de avena, el plátano, las claras y la proteína.\n3. Añade los arándanos y reparte en moldes de muffin.\n4. Hornea 18-20 minutos. Esta cantidad es una ración (3 muffins).",
+      "consejos": "Multiplica la receta y congélalos: duran 2 meses."
+    },
+    {
+      "nombre": "Batido verde de skyr, espinacas y mango",
+      "descripcion": "Batido fresco de skyr con espinacas y mango, suave y nada amargo.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["skyr", 250], ["espinacas", 40], ["mango", 120], ["leche", 100], ["avena", 25]],
+      "instrucciones": "1. Pon todos los ingredientes en la batidora.\n2. Tritura 40 segundos hasta que quede liso.\n3. Sirve al momento.",
+      "consejos": "El mango tapa por completo el sabor de las espinacas."
+    }
+  ]
+}
