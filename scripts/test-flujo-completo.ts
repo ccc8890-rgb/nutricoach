@@ -310,6 +310,18 @@ async function main() {
     console.log('   coach_id correcto → no bloquea en check de acceso')
   }
 
+  for (const tabla of ['planes_nutricion', 'planes_entrenamiento'] as const) {
+    const { count } = await db
+      .from(tabla)
+      .select('id', { count: 'exact', head: true })
+      .eq('cliente_id', clienteId)
+      .eq('activo', true)
+    console.log(`   ${tabla} activos: ${count ?? 0}`)
+    if ((count ?? 0) > 1) {
+      bugs.push({ severidad: '🔴', descripcion: `${count} ${tabla} activos para el mismo cliente`, detalle: 'Fase 0 exige como máximo un plan activo por dominio' })
+    }
+  }
+
   // ── 10. Verificar filtro intolerancias en /api/recetas/sugeridas ─────────
   console.log('\n10. Verificando lógica del endpoint /api/recetas/sugeridas con cliente_id...')
   const { data: onbForCheck } = await db
