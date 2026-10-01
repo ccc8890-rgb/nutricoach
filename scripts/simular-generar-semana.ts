@@ -42,6 +42,15 @@ async function main() {
   const prot = r.asignaciones.map(a => claveProteina(porId.get(a.receta_id)!.nombre) ?? 'otra')
   const cuenta: Record<string, number> = {}
   for (const p of prot) cuenta[p] = (cuenta[p] ?? 0) + 1
+  const dias = [...new Set(r.asignaciones.map(a => a.dia))]
+  let repetidosDia = 0
+  for (const dia of dias) {
+    const claves = r.asignaciones.filter(a => a.dia === dia).map(a => claveProteina(porId.get(a.receta_id)!.nombre)).filter(Boolean)
+    const dup = claves.length - new Set(claves).size
+    repetidosDia += dup
+    console.log(`  ${dia.padEnd(10)} ${claves.join(' · ')}${dup ? '   ← repite' : ''}`)
+  }
+  console.log('Días con proteína repetida entre franjas:', repetidosDia)
   console.log('\nProteína en el nombre:', Object.entries(cuenta).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', '))
   console.log(`Recetas distintas: ${ids.length} de ${r.asignaciones.length} · repetidas: ${r.asignaciones.filter(a => a.repetida).length}`)
 }

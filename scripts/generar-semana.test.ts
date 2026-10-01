@@ -94,4 +94,22 @@ assert.equal(claveProteina('Bowl de atún'), 'atun')
   assert.ok(r.asignaciones.every(x => x.repetida))
 }
 
+// --- misma proteína en dos franjas del mismo día: se evita si hay alternativa ---
+{
+  const r = repartirSemanaSinRepetir(
+    { Comida: [c('pa', 'Pollo asado'), c('s1', 'Salmón al horno'), c('t1', 'Ternera salteada')], Cena: [c('pb', 'Pollo al curry'), c('t2', 'Ternera con arroz'), c('s2', 'Salmón a la plancha')] },
+    huecos(['Comida', 'Cena'], ['Lunes', 'Martes', 'Miércoles']),
+  )
+  for (const dia of ['Lunes', 'Martes', 'Miércoles']) {
+    const del = r.asignaciones.filter(a => a.dia === dia)
+    const claves = del.map(a => claveProteina(({ pa: 'Pollo', pb: 'Pollo', s1: 'Salmón', s2: 'Salmón', t1: 'Ternera', t2: 'Ternera' } as Record<string, string>)[a.receta_id]))
+    assert.equal(new Set(claves).size, claves.length, `${dia}: proteína repetida ${claves}`)
+  }
+}
+// ...pero si no hay otra opción no se bloquea
+{
+  const r = repartirSemanaSinRepetir({ Comida: [c('a', 'Pollo A')], Cena: [c('b', 'Pollo B')] }, huecos(['Comida', 'Cena'], ['Lunes']))
+  assert.equal(r.asignaciones.length, 2)
+}
+
 console.log('generar-semana: OK')
