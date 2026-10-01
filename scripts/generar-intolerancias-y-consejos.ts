@@ -65,6 +65,7 @@ const KEYWORDS = {
         'cerveza',
         'pan rallado', 'pan de hamburguesa', 'pan de perrito',
         'pretzel', 'bagel', 'brioche', 'churro', 'berlin',
+        'avena',
     ],
     SIN_LACTOSA: [
         // Lácteos
@@ -103,7 +104,7 @@ const KEYWORDS = {
         'cerdo', 'panceta', 'bacon', 'beicon', 'chorizo', 'salchichón',
         'morcilla', 'fuet', 'longaniza', 'sobrasada', 'jamón', 'jamón serrano',
         'jamón cocido', 'lomo embuchado', 'lomo de cerdo', 'costilla de cerdo',
-        'chicharrón', 'tocino', 'butifarra',
+        'chicharrón', 'tocino', 'butifarra', 'york',
     ],
     SIN_SOJA: [
         'soja', 'tofu', 'tempeh', 'edamame', 'miso', 'tamari',
@@ -124,7 +125,7 @@ const POSITIVOS: [string, string][] = [
     ['empanada', 'Gluten'], ['seitán', 'Gluten'], ['gluten', 'Gluten'], ['sémola', 'Gluten'],
     ['cuscús', 'Gluten'], ['cereales', 'Gluten'], ['centeno', 'Gluten'], ['cebada', 'Gluten'],
     ['espelta', 'Gluten'], ['pan rallado', 'Gluten'], ['bagel', 'Gluten'], ['brioche', 'Gluten'],
-    ['churro', 'Gluten'], ['pretzel', 'Gluten'],
+    ['churro', 'Gluten'], ['pretzel', 'Gluten'], ['avena', 'Gluten'],
     // Lácteos
     ['leche', 'Lácteos'], ['queso', 'Lácteos'], ['yogur', 'Lácteos'], ['yogurt', 'Lácteos'],
     ['nata', 'Lácteos'], ['crema de leche', 'Lácteos'], ['lactosa', 'Lácteos'],
@@ -192,6 +193,19 @@ const ANIMAL_KEYWORDS = [
     'sobrasada', 'mortadela', 'pastrami',
 ]
 
+// Las listas llevan tildes pero se comparan contra texto normalizado sin tildes:
+// sin esto "jamón", "salmón" o "requesón" nunca coincidían.
+for (const k of Object.keys(KEYWORDS) as (keyof typeof KEYWORDS)[]) KEYWORDS[k] = KEYWORDS[k].map(normalizar)
+POSITIVOS.forEach(par => { par[0] = normalizar(par[0]) })
+ANIMAL_KEYWORDS.forEach((kw, i) => { ANIMAL_KEYWORDS[i] = normalizar(kw) })
+// Carne, pescado y marisco: todo lo anterior a 'huevo' en ANIMAL_KEYWORDS
+const CARNE_PESCADO_KEYWORDS = ANIMAL_KEYWORDS.slice(0, ANIMAL_KEYWORDS.indexOf('huevo'))
+// Bebidas vegetales: contienen "leche" en el nombre pero no son lácteos
+const BEBIDA_VEGETAL = /(leche|bebida|nata|yogur|queso|mantequilla) (vegetal|de coco|de almendras?|de avena|de soja|de arroz|de anacardo|de cacahuete)/
+const sinBebidaVegetal = (n: string) => n.replace(BEBIDA_VEGETAL, ' ')
+// Falsos positivos de carne/huevo: "queso de vaca", "tortilla de trigo/maiz"
+const sinFalsosAnimales = (n: string) => n.replace(/de vaca|de cabra|de oveja/g, ' ').replace(/tortilla(s)? (de )?(trigo|maiz|harina)|mini tortilla/g, ' ')
+
 // ─── Normalizar texto ────────────────────────────────────────────
 function normalizar(n: string): string {
     return n
@@ -219,17 +233,17 @@ function detectarIntoleranciasPorNombre(nombreNormalizado: string): Partial<Into
     const result: Partial<IntoleranciaSet> = {}
 
     // Sin Gluten
-    if (KEYWORDS.SIN_GLUTEN.some(kw => nombreNormalizado.includes(kw))) {
+    if (!nombreNormalizado.includes('sin gluten') && KEYWORDS.SIN_GLUTEN.some(kw => nombreNormalizado.includes(kw))) {
         result.sinGluten = false
     }
 
     // Sin Lactosa
-    if (KEYWORDS.SIN_LACTOSA.some(kw => nombreNormalizado.includes(kw))) {
+    if (KEYWORDS.SIN_LACTOSA.some(kw => sinBebidaVegetal(nombreNormalizado).includes(kw))) {
         result.sinLactosa = false
     }
 
     // Sin Huevo
-    if (KEYWORDS.SIN_HUEVO.some(kw => nombreNormalizado.includes(kw))) {
+    if (KEYWORDS.SIN_HUEVO.some(kw => sinFalsosAnimales(nombreNormalizado).includes(kw))) {
         result.sinHuevo = false
     }
 
@@ -325,15 +339,22 @@ async function faseIntolerancias() {
     console.log('\n📋 FASE 1: DEDUCIR INTOLERANCIAS DESDE INGREDIENTES\n')
 
     // Cargar todas las recetas con sus ingredientes
-    const { data: recetas } = await supabase.from('recetas').select('id, nombre, intolerancias')
+    const AUDITAR = process.env.AUDITAR === 'true'
+    const { data: recetas } = await supabase.from('recetas').select('id, nombre, intolerancias, estado')
     if (!recetas) { console.log('❌ No se pudieron cargar recetas'); return }
 
     // Cargar todos los ingredientes con alimento_id
-    const { data: ingredientes } = await supabase
-        .from('receta_ingredientes')
-        .select('receta_id, alimento_id, nombre_libre')
-
-    if (!ingredientes) { console.log('❌ No se pudieron cargar ingredientes'); return }
+    // Paginado: sin .range() Supabase corta en 1000 filas y casi todas las recetas quedaban sin ingredientes
+    const ingredientes: { receta_id: string; alimento_id: string | null; nombre_libre: string | null }[] = []
+    for (let desde = 0; ; desde += 1000) {
+        const { data, error } = await supabase
+            .from('receta_ingredientes')
+            .select('receta_id, alimento_id, nombre_libre')
+            .range(desde, desde + 999)
+        if (error) { console.log('❌ No se pudieron cargar ingredientes'); return }
+        ingredientes.push(...(data ?? []))
+        if (!data || data.length < 1000) break
+    }
 
     // Cargar alimentos para tener los nombres
     let alimentos: any[] = []
@@ -362,7 +383,8 @@ async function faseIntolerancias() {
 
     for (const receta of recetas) {
         // Saltar si ya tiene intolerancias
-        if (receta.intolerancias && Array.isArray(receta.intolerancias) && receta.intolerancias.length > 0) {
+        const tieneEtiquetas = Array.isArray(receta.intolerancias) && receta.intolerancias.length > 0
+        if (AUDITAR ? !tieneEtiquetas || receta.estado !== 'aprobada' : tieneEtiquetas) {
             saltados++
             continue
         }
@@ -389,9 +411,9 @@ async function faseIntolerancias() {
             detecciones.push(det)
 
             // Track qué tipo de ingrediente es
-            const esCarnePescado = ANIMAL_KEYWORDS.slice(0, 45).some(kw => nombreAnalizar.includes(kw))
-            const esLacteo = KEYWORDS.SIN_LACTOSA.some(kw => nombreAnalizar.includes(kw))
-            const esHuevo = KEYWORDS.SIN_HUEVO.some(kw => nombreAnalizar.includes(kw))
+            const esCarnePescado = CARNE_PESCADO_KEYWORDS.some(kw => sinFalsosAnimales(nombreAnalizar).includes(kw))
+            const esLacteo = KEYWORDS.SIN_LACTOSA.some(kw => sinBebidaVegetal(nombreAnalizar).includes(kw))
+            const esHuevo = KEYWORDS.SIN_HUEVO.some(kw => sinFalsosAnimales(nombreAnalizar).includes(kw))
 
             if (esCarnePescado) tuvoCarne = true
             if (esLacteo || esHuevo) tuvoLacteoOHuevo = true
@@ -431,7 +453,9 @@ async function faseIntolerancias() {
         const positivosEncontrados = new Set<string>()
         for (const n of nombresAnalizar) {
             for (const [kw, alergeno] of POSITIVOS) {
-                if (n.includes(kw)) {
+                if (alergeno === 'Gluten' && n.includes('sin gluten')) continue
+                const texto = alergeno === 'Lácteos' ? sinBebidaVegetal(n) : alergeno === 'Huevos' ? sinFalsosAnimales(n) : n
+                if (texto.includes(kw)) {
                     positivosEncontrados.add(alergeno)
                 }
             }
@@ -454,6 +478,25 @@ async function faseIntolerancias() {
             continue
         }
 
+        // Auditoría: etiquetas existentes que prometen algo que los ingredientes contradicen
+        if (AUDITAR) {
+            const PROMESAS = ['Sin Gluten', 'Sin Lactosa', 'Sin Huevo', 'Sin Frutos Secos', 'Sin Mariscos', 'Sin Cerdo', 'Sin Soja', 'Vegetariano', 'Vegano']
+            const falsas = PROMESAS.filter(t => (receta.intolerancias as string[]).includes(t) && !tags.includes(t))
+            if (falsas.length) {
+                actualizados++
+                console.log(`  ⚠️  ${receta.nombre.substring(0, 55).padEnd(57)} dice ${falsas.join(', ')}`)
+                if (!DRY_RUN) {
+                    // Conservador: quita solo las promesas falsas y añade los alérgenos detectados
+                    const actuales = receta.intolerancias as string[]
+                    const positivos = tags.filter(t => !PROMESAS.includes(t) && !actuales.includes(t))
+                    const nuevas = [...actuales.filter(t => !falsas.includes(t)), ...positivos]
+                    const { error } = await supabase.from('recetas').update({ intolerancias: nuevas }).eq('id', receta.id)
+                    if (error) console.log(`     ❌ ${error.message}`)
+                }
+            }
+            continue
+        }
+
         // Actualizar en DB
         if (!DRY_RUN) {
             const { error } = await supabase
@@ -473,7 +516,9 @@ async function faseIntolerancias() {
         }
     }
 
-    console.log(`\n  📊 Intolerancias: ${actualizados} actualizadas, ${saltados} saltadas`)
+    console.log(AUDITAR
+        ? `\n  📊 Auditoría: ${actualizados} recetas aprobadas con etiquetas contradichas por sus ingredientes`
+        : `\n  📊 Intolerancias: ${actualizados} actualizadas, ${saltados} saltadas`)
 }
 
 // ─── FASE 2: Generar consejos con DeepSeek ──────────────────────
