@@ -876,33 +876,7 @@ export default function ClienteDetallePage() {
 
         ) : tabActiva === 'nutricion' ? (
           <div className="space-y-4">
-            {dietaActiva ? (
-              <div className="rounded-2xl px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Plan activo</p>
-                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{dietaActiva.nombre}</p>
-                </div>
-                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 font-data text-sm">
-                  <span className="font-semibold" style={{ color: 'var(--text)' }}>{dietaActiva.kcal_objetivo ?? '—'} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>kcal</span></span>
-                  <span style={{ color: '#30D158' }}>P {dietaActiva.proteinas_objetivo ?? '—'} g</span>
-                  <span style={{ color: '#FF9F0A' }}>C {dietaActiva.carbohidratos_objetivo ?? '—'} g</span>
-                  <span style={{ color: '#64D2FF' }}>G {dietaActiva.grasas_objetivo ?? '—'} g</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 ml-auto">
-                  <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm">Abrir <ExternalLink size={12} /></Link>
-                  <Link href={`/clientes/${id}/revisar-plan`} className="btn-secondary btn-sm"><RefreshCw size={13} /> Revisar o regenerar</Link>
-                  {dietaActiva.codigo_publico && (
-                    <button
-                      className="btn-secondary btn-sm"
-                      onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/cliente/${dietaActiva.codigo_publico}`); addToast({ type: 'success', title: 'Enlace copiado', message: 'Portal del cliente copiado' }) }}
-                    >
-                      <Link2 size={13} /> Copiar portal
-                    </button>
-                  )}
-                  <Link href={`/dietas/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>
-                </div>
-              </div>
-            ) : (
+            {!dietaActiva && (
               <WorkCard title="Plan nutricional" kicker="Trabajo activo" icon={UtensilsCrossed} action={<Link href={`/dietas/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>}>
                 <EmptyModule
                   icon={UtensilsCrossed}
@@ -913,7 +887,7 @@ export default function ClienteDetallePage() {
               </WorkCard>
             )}
 
-            <ErrorBoundary><SemanaDietaPlanner clienteId={id} /></ErrorBoundary>
+            <ErrorBoundary><SemanaDietaPlanner clienteId={id} accionExtra={dietaActiva ? <Link href={`/dietas/nueva?cliente=${id}`} className="btn-secondary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link> : undefined} /></ErrorBoundary>
 
             <div>
               <button

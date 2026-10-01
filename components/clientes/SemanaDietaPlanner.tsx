@@ -91,7 +91,7 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, semana, diaSel, onDia, onH
   )
 }
 
-export default function SemanaDietaPlanner({ clienteId }: { clienteId: string }) {
+export default function SemanaDietaPlanner({ clienteId, accionExtra }: { clienteId: string; accionExtra?: React.ReactNode }) {
   const [plan, setPlan] = useState<Plan | null>(null)
   const [dias, setDias] = useState<Dia[]>([])
   const [futuras, setFuturas] = useState<{ semana: number; dias: Dia[] }[]>([])
@@ -253,6 +253,7 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
               </button>
             ))}
           </div>
+          {accionExtra}
           <button onClick={() => setAmpliado(a => !a)} title={ampliado ? 'Volver al tamaño normal' : 'Ver en pantalla completa'}
             className="rounded-xl p-2" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             {ampliado ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
