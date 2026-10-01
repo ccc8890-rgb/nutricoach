@@ -1,13 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { BadgeCheck, CalendarDays, Loader2, Plus, Search, Video, X } from 'lucide-react'
+import { BadgeCheck, CalendarDays, Loader2, Plus, Search, Sparkles, Video, X } from 'lucide-react'
 
 type Receta = { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null }
 type Comida = { id: string; nombre: string; recurrente: boolean; receta: Receta | null; kcal: number; p: number; c: number; g: number }
 type Dia = { dia: string; comidas: Comida[]; total: { kcal: number; p: number; c: number; g: number } }
 type Plan = { id: string; nombre: string; kcal_objetivo: number | null; proteinas_objetivo: number | null }
 type RecetaOpcion = Receta & { kcal: number; proteinas: number; tiempo_prep_min: number | null }
+type ResultadoSemana = { ok: boolean; asignadas: number; repetidas: number; sinCubrir: { dia: string; franja: string }[]; errores: { dia: string; franja: string; error: string }[]; mensaje?: string }
 
 function colorDesvio(real: number, objetivo: number | null) {
   if (!objetivo) return 'var(--text-muted)'
@@ -26,6 +27,8 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
   const [opciones, setOpciones] = useState<RecetaOpcion[]>([])
   const [buscando, setBuscando] = useState(false)
   const [guardando, setGuardando] = useState(false)
+  const [generando, setGenerando] = useState(false)
+  const [resultado, setResultado] = useState<ResultadoSemana | null>(null)
 
   const cargar = useCallback(async () => {
     setError(null)
@@ -69,6 +72,20 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
     await cargar()
   }
 
+  async function generarSemana() {
+    const conReceta = dias.flatMap(d => d.comidas).filter(c => c.receta).length
+    if (conReceta > 0 && !confirm(`La semana ya tiene ${conReceta} comidas con receta. ¿Sustituirlas todas por una semana nueva sin repetir recetas?`)) return
+    setGenerando(true); setError(null); setResultado(null)
+    const res = await fetch(`/api/clientes/${clienteId}/semana-dieta/generar`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reemplazar: conReceta > 0 }),
+    })
+    const data = await res.json().catch(() => null)
+    setGenerando(false)
+    if (!res.ok) { setError(data?.error ?? 'No se pudo generar la semana'); return }
+    setResultado(data); await cargar()
+  }
+
   async function alternarGrabar(receta: Receta) {
     const siguiente = receta.contenido_estado === 'para_grabar' ? 'grabada' : receta.contenido_estado === 'grabada' ? null : 'para_grabar'
     const res = await fetch(`/api/recetas/${receta.id}/contenido`, {
@@ -91,7 +108,25 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
             Objetivo {plan.kcal_objetivo ?? '—'} kcal · {plan.proteinas_objetivo ?? '—'} g proteína · toca un hueco para elegir receta · <Video size={11} className="inline" /> para grabar
           </p>
         </div>
+        <button onClick={generarSemana} disabled={generando}
+          className="flex-shrink-0 rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-60"
+          style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
+          {generando ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+          {generando ? 'Generando…' : 'Generar semana'}
+        </button>
       </div>
+
+      {resultado && (
+        <div className="rounded-xl p-2.5 mb-3 text-xs flex justify-between gap-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+          <span>
+            {resultado.mensaje ?? `Semana generada: ${resultado.asignadas} comidas.`}
+            {resultado.repetidas > 0 && ` ${resultado.repetidas} repetidas por falta de recetas en esa franja.`}
+            {resultado.sinCubrir.length > 0 && ` Sin receta disponible: ${[...new Set(resultado.sinCubrir.map(h => h.franja))].join(', ')}.`}
+            {resultado.errores.length > 0 && ` ${resultado.errores.length} no se pudieron asignar.`}
+          </span>
+          <button onClick={() => setResultado(null)}><X size={13} /></button>
+        </div>
+      )}
 
       {error && (
         <div className="rounded-xl p-2.5 mb-3 text-xs flex justify-between gap-2" style={{ background: 'var(--error-bg)', color: 'var(--error)' }}>

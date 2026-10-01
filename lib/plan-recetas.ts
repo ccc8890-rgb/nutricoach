@@ -101,7 +101,12 @@ export async function filtrarRecetasPorSlot(
   // una bien equilibrada, y el plan final podía desviarse ~40% en
   // carbohidratos aunque las kcal cuadraran.
   targetCarb?: number,
-  targetGrasa?: number
+  targetGrasa?: number,
+  // La consulta lee `poolMax` filas sin ORDER BY antes de filtrar y puntuar. Con
+  // el valor por defecto (80), en franjas con más recetas (comida 119, cena 166
+  // aprobadas) el motor solo ve una porción arbitraria del catálogo. El
+  // planificador semanal lo sube para poder repartir sin repetir.
+  poolMax = 80
 ): Promise<RecetaCandidata[]> {
   const categorias = SLOT_CATEGORIAS[slotNombre] ?? SLOT_CATEGORIAS['Comida']
   const tiposPermitidos = SLOT_TIPOS_PERMITIDOS[slotNombre] ?? ['completa']
@@ -153,7 +158,7 @@ export async function filtrarRecetasPorSlot(
     query = query.contains('momentos', [momentoTaxonomia])
   }
 
-  const { data: recetas } = await query.limit(80)
+  const { data: recetas } = await query.limit(poolMax)
   if (!recetas || recetas.length === 0) return []
 
   // Mapeo restricciones cliente → alérgenos EU presentes en recetas

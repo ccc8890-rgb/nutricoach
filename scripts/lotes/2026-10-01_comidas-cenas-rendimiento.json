@@ -1,0 +1,925 @@
+{
+ "lote": "comidas-cenas-rendimiento-2026-10-01",
+ "tipo_plato": "Comida",
+ "fuente": "lote_verificado",
+ "apto_rendimiento": true,
+ "criterios": {
+  "kcal_min": 450,
+  "kcal_max": 750,
+  "proteina_pct_min": 0.22,
+  "hc_pct_min": 0.4,
+  "grasa_pct_max": 0.3
+ },
+ "alimentos": {
+  "ternera": {
+   "nombre": "Solomillo de ternera",
+   "prefijo": "ccd5d912",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "cerdo_solomillo": {
+   "nombre": "Solomillo de cerdo",
+   "prefijo": "96328c86",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "cerdo"
+  },
+  "cerdo_lomo": {
+   "nombre": "Lomo de cerdo trozo",
+   "prefijo": "def86692",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "cerdo"
+  },
+  "merluza": {
+   "nombre": "Merluza",
+   "prefijo": "974247da",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "bacalao": {
+   "nombre": "Bacalao (fresco)",
+   "prefijo": "15c94b4b",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "tofu": {
+   "nombre": "Tofu firme",
+   "prefijo": "c0736451",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "pavo": {
+   "nombre": "Pechuga de pavo",
+   "prefijo": "7312fdee",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "gambas": {
+   "nombre": "Gambas Peladas Mediana",
+   "prefijo": "07d6dcc1",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Crustáceos"
+   ],
+   "origen": "marisco"
+  },
+  "arroz": {
+   "nombre": "Arroz",
+   "prefijo": "463f97f0",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "basmati": {
+   "nombre": "Arroz basmati",
+   "prefijo": "49156dfd",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pasta": {
+   "nombre": "Pasta integral (seca)",
+   "prefijo": "f74bcffa",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "patata": {
+   "nombre": "Patata",
+   "prefijo": "0b223775",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "boniato": {
+   "nombre": "Boniato",
+   "prefijo": "6c5d82a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "quinoa": {
+   "nombre": "Quinoa",
+   "prefijo": "53587262",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cuscus": {
+   "nombre": "Cuscús",
+   "prefijo": "11d56939",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "lentejas": {
+   "nombre": "Lentejas cocidas",
+   "prefijo": "e69fd4f0",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "garbanzos": {
+   "nombre": "Garbanzos cocidos",
+   "prefijo": "1f1a4cd3",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "alubia": {
+   "nombre": "Alubia cocida roja",
+   "prefijo": "35e28212",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tortilla": {
+   "nombre": "Tortilla de Trigo",
+   "prefijo": "bd6dc3a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "pimiento": {
+   "nombre": "Pimiento rojo",
+   "prefijo": "d106e3bb",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cebolla": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "zanahoria": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "calabacin": {
+   "nombre": "Calabacín",
+   "prefijo": "f8586302",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "brocoli": {
+   "nombre": "Brócoli",
+   "prefijo": "8820b293",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "espinacas": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "champi": {
+   "nombre": "Champiñones",
+   "prefijo": "5b7e9a7d",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "judias": {
+   "nombre": "Judías verdes",
+   "prefijo": "95efbbab",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "guisantes": {
+   "nombre": "Guisantes frescos",
+   "prefijo": "3eb4a47a",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tomate_triturado": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tomate_frito": {
+   "nombre": "Tomate frito",
+   "prefijo": "3b71ee6a",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajo": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aceite": {
+   "nombre": "Aceite de oliva",
+   "prefijo": "bf392211",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "soja": {
+   "nombre": "Salsa de soja",
+   "prefijo": "caa47a33",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Soja",
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "pimenton": {
+   "nombre": "Pimentón dulce",
+   "prefijo": "e4fdfad8",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "qfb": {
+   "nombre": "Queso fresco batido desnatado 0% MG",
+   "prefijo": "1380d26a",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Arroz salteado con ternera y pimientos",
+   "tipo_plato": "Comida",
+   "descripcion": "Plato de arroz con solomillo de ternera en tiras y verduras salteadas, con toque de soja.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "ternera",
+     150
+    ],
+    [
+     "arroz",
+     75
+    ],
+    [
+     "pimiento",
+     80
+    ],
+    [
+     "cebolla",
+     40
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "soja",
+     10
+    ],
+    [
+     "ajo",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece el arroz en agua con sal según el paquete y escúrrelo.\n2. Corta la ternera en tiras finas, el pimiento en juliana y la cebolla en pluma; pica el ajo.\n3. Saltea en una sartén grande con el aceite las verduras 4 minutos a fuego fuerte.\n4. Añade la ternera y el ajo y saltea 2-3 minutos más, hasta que cambie de color.\n5. Incorpora el arroz y la salsa de soja, mezcla 1 minuto y sirve.",
+   "consejos": "Saltea la ternera al final y poco tiempo para que quede tierna."
+  },
+  {
+   "nombre": "Pasta integral con ternera magra y tomate",
+   "tipo_plato": "Comida",
+   "descripcion": "Pasta integral con una salsa casera de ternera magra picada a cuchillo y tomate.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "pasta",
+     80
+    ],
+    [
+     "ternera",
+     130
+    ],
+    [
+     "tomate_triturado",
+     150
+    ],
+    [
+     "cebolla",
+     50
+    ],
+    [
+     "aceite",
+     5
+    ],
+    [
+     "ajo",
+     5
+    ]
+   ],
+   "instrucciones": "1. Pon a cocer la pasta integral en agua con sal el tiempo que indique el paquete.\n2. Pica la ternera muy fina a cuchillo y la cebolla y el ajo en dados pequeños.\n3. Rehoga la cebolla y el ajo con el aceite 3 minutos; añade la ternera y dórala 3 minutos.\n4. Vierte el tomate triturado, sazona y cocina 8 minutos a fuego medio.\n5. Mezcla la pasta escurrida con la salsa y sirve caliente.",
+   "consejos": "Si tienes prisa, usa el tomate triturado sin cocinarlo mucho: la ternera ya aporta sabor."
+  },
+  {
+   "nombre": "Lomo de cerdo con patatas y judías verdes",
+   "tipo_plato": "Comida",
+   "descripcion": "Lomo de cerdo a la plancha con patatas cocidas y judías verdes salteadas.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "cerdo_lomo",
+     150
+    ],
+    [
+     "patata",
+     300
+    ],
+    [
+     "judias",
+     120
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "ajo",
+     5
+    ]
+   ],
+   "instrucciones": "1. Pela las patatas, córtalas en rodajas gruesas y cuécelas 12 minutos en agua con sal.\n2. Cuece las judías verdes 6 minutos y escúrrelas.\n3. Dora el lomo en una plancha o sartén con unas gotas de aceite 3 minutos por lado.\n4. Saltea las judías con el ajo laminado y el resto del aceite 2 minutos.\n5. Sirve el lomo con las patatas y las judías.",
+   "consejos": "Deja reposar el lomo un par de minutos antes de cortarlo para que no pierda jugo."
+  },
+  {
+   "nombre": "Solomillo de cerdo con boniato asado y brócoli",
+   "tipo_plato": "Comida",
+   "descripcion": "Medallones de solomillo con boniato al horno y brócoli al vapor.",
+   "tiempo_prep_min": 30,
+   "ingredientes": [
+    [
+     "cerdo_solomillo",
+     150
+    ],
+    [
+     "boniato",
+     300
+    ],
+    [
+     "brocoli",
+     150
+    ],
+    [
+     "aceite",
+     5
+    ],
+    [
+     "pimenton",
+     2
+    ]
+   ],
+   "instrucciones": "1. Precalienta el horno a 200 °C. Corta el boniato en bastones y mézclalo con la mitad del aceite y el pimentón.\n2. Hornea el boniato 22 minutos, dándole la vuelta a mitad.\n3. Corta el solomillo en medallones y márcalos 2-3 minutos por lado en sartén con el resto del aceite.\n4. Cuece el brócoli al vapor 5 minutos.\n5. Sirve todo junto con sal y pimienta.",
+   "consejos": "Los medallones de unos 2 cm quedan jugosos en poco tiempo."
+  },
+  {
+   "nombre": "Merluza con patatas y guisantes",
+   "tipo_plato": "Comida",
+   "descripcion": "Merluza a la plancha con patata cocida y guisantes salteados con ajo.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "merluza",
+     200
+    ],
+    [
+     "patata",
+     250
+    ],
+    [
+     "guisantes",
+     100
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "ajo",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece las patatas en rodajas 12 minutos y escúrrelas.\n2. Cuece los guisantes 4 minutos.\n3. Dora el ajo laminado con el aceite, añade los guisantes y las patatas y saltea 2 minutos.\n4. Marca la merluza en una sartén antiadherente 3 minutos por lado con sal.\n5. Sirve la merluza sobre la guarnición.",
+   "consejos": "Seca bien el pescado antes de cocinarlo para que se dore en vez de cocerse."
+  },
+  {
+   "nombre": "Bacalao con arroz y verduras al horno",
+   "tipo_plato": "Comida",
+   "descripcion": "Lomos de bacalao fresco con arroz y verduras al horno en una sola bandeja.",
+   "tiempo_prep_min": 30,
+   "ingredientes": [
+    [
+     "bacalao",
+     180
+    ],
+    [
+     "arroz",
+     70
+    ],
+    [
+     "pimiento",
+     80
+    ],
+    [
+     "calabacin",
+     100
+    ],
+    [
+     "aceite",
+     8
+    ]
+   ],
+   "instrucciones": "1. Precalienta el horno a 200 °C. Cuece el arroz en agua con sal y escúrrelo.\n2. Corta el pimiento y el calabacín en cuadrados y hornéalos 12 minutos con la mitad del aceite.\n3. Añade el bacalao con el resto del aceite y hornea 8 minutos más.\n4. Sirve el bacalao y las verduras sobre el arroz.",
+   "consejos": "Si el bacalao es muy grueso, añade 2 minutos más de horno."
+  },
+  {
+   "nombre": "Tofu salteado con arroz basmati y verduras",
+   "tipo_plato": "Comida",
+   "descripcion": "Tofu firme dorado con arroz basmati, brócoli y zanahoria.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "tofu",
+     280
+    ],
+    [
+     "basmati",
+     75
+    ],
+    [
+     "brocoli",
+     100
+    ],
+    [
+     "zanahoria",
+     60
+    ],
+    [
+     "soja",
+     15
+    ],
+    [
+     "aceite",
+     4
+    ]
+   ],
+   "instrucciones": "1. Cuece el arroz basmati y escúrrelo.\n2. Escurre el tofu, sécalo y córtalo en dados.\n3. Dóralo en sartén con el aceite 6 minutos hasta que tenga costra.\n4. Añade la zanahoria en bastones finos y el brócoli en ramilletes y saltea 5 minutos con un chorrito de agua.\n5. Agrega la salsa de soja, mezcla con el arroz y sirve.",
+   "consejos": "Prensa el tofu 10 minutos con un peso encima si quieres que quede más crujiente."
+  },
+  {
+   "nombre": "Lentejas con pavo y verduras",
+   "tipo_plato": "Comida",
+   "descripcion": "Guiso rápido de lentejas ya cocidas con pechuga de pavo, zanahoria y pimentón.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "lentejas",
+     250
+    ],
+    [
+     "pavo",
+     120
+    ],
+    [
+     "zanahoria",
+     60
+    ],
+    [
+     "cebolla",
+     40
+    ],
+    [
+     "pimenton",
+     3
+    ],
+    [
+     "aceite",
+     6
+    ]
+   ],
+   "instrucciones": "1. Pica la cebolla y la zanahoria en dados pequeños y rehógalas con el aceite 5 minutos.\n2. Añade el pimentón y remueve 10 segundos para que no se queme.\n3. Incorpora el pavo en dados y dóralo 3 minutos.\n4. Agrega las lentejas escurridas con un vaso de agua y cocina 8 minutos.\n5. Rectifica de sal y sirve.",
+   "consejos": "Usa lentejas cocidas de bote bien escurridas y enjuagadas."
+  },
+  {
+   "nombre": "Garbanzos con gambas y espinacas",
+   "tipo_plato": "Comida",
+   "descripcion": "Salteado de garbanzos cocidos con gambas, espinacas y ajo.",
+   "tiempo_prep_min": 20,
+   "ingredientes": [
+    [
+     "garbanzos",
+     250
+    ],
+    [
+     "gambas",
+     150
+    ],
+    [
+     "espinacas",
+     100
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "pimenton",
+     2
+    ]
+   ],
+   "instrucciones": "1. Lamina el ajo y dóralo con el aceite 30 segundos.\n2. Añade las gambas peladas y saltéalas 2 minutos; resérvalas.\n3. En la misma sartén pon las espinacas y deja que reduzcan 2 minutos.\n4. Incorpora los garbanzos, el pimentón y un chorrito de agua y calienta 4 minutos.\n5. Vuelve a añadir las gambas, mezcla y sirve.",
+   "consejos": "Si usas gambas congeladas, descongélalas y sécalas antes de saltear."
+  },
+  {
+   "nombre": "Salteado de pavo con arroz y verduras",
+   "tipo_plato": "Comida",
+   "descripcion": "Pavo en tiras con arroz y verduras salteadas estilo wok.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "pavo",
+     150
+    ],
+    [
+     "arroz",
+     75
+    ],
+    [
+     "pimiento",
+     60
+    ],
+    [
+     "zanahoria",
+     50
+    ],
+    [
+     "cebolla",
+     40
+    ],
+    [
+     "soja",
+     15
+    ],
+    [
+     "aceite",
+     6
+    ]
+   ],
+   "instrucciones": "1. Cuece el arroz y escúrrelo.\n2. Corta el pavo en tiras y las verduras en juliana fina.\n3. Saltea la zanahoria y la cebolla con el aceite en fuego fuerte 3 minutos.\n4. Añade el pimiento y el pavo y saltea 4 minutos.\n5. Incorpora el arroz y la salsa de soja y mezcla 1 minuto.",
+   "consejos": "Mantén el fuego fuerte y no llenes la sartén para que se saltee en vez de cocerse."
+  },
+  {
+   "nombre": "Merluza al horno con boniato y brócoli",
+   "tipo_plato": "Cena",
+   "descripcion": "Merluza con boniato asado y brócoli, cena ligera con buena base de hidratos.",
+   "tiempo_prep_min": 30,
+   "ingredientes": [
+    [
+     "merluza",
+     200
+    ],
+    [
+     "boniato",
+     250
+    ],
+    [
+     "brocoli",
+     120
+    ],
+    [
+     "aceite",
+     8
+    ]
+   ],
+   "instrucciones": "1. Precalienta el horno a 200 °C. Corta el boniato en rodajas y hornéalo 15 minutos con la mitad del aceite.\n2. Coloca la merluza y el brócoli en la bandeja con el resto del aceite y sal.\n3. Hornea 10-12 minutos hasta que el pescado esté opaco.\n4. Sirve con un chorrito de limón si te gusta.",
+   "consejos": "Añade ajo en láminas al aceite para dar más sabor sin más calorías."
+  },
+  {
+   "nombre": "Bacalao con tomate y patata",
+   "tipo_plato": "Cena",
+   "descripcion": "Bacalao fresco guisado en tomate con patata y pimiento.",
+   "tiempo_prep_min": 30,
+   "ingredientes": [
+    [
+     "bacalao",
+     200
+    ],
+    [
+     "patata",
+     250
+    ],
+    [
+     "tomate_triturado",
+     150
+    ],
+    [
+     "cebolla",
+     50
+    ],
+    [
+     "pimiento",
+     60
+    ],
+    [
+     "aceite",
+     8
+    ]
+   ],
+   "instrucciones": "1. Pela y corta la patata en rodajas finas; cuécela 8 minutos en agua con sal.\n2. Rehoga la cebolla y el pimiento picados con el aceite 5 minutos.\n3. Añade el tomate triturado y cocina 5 minutos.\n4. Coloca el bacalao y las patatas en la salsa, tapa y cuece 6 minutos.\n5. Sirve caliente.",
+   "consejos": "El bacalao fresco se cuece muy rápido: no lo pases para que no se seque."
+  },
+  {
+   "nombre": "Cuscús con gambas y verduras",
+   "tipo_plato": "Cena",
+   "descripcion": "Cuscús rápido con gambas, calabacín y pimiento.",
+   "tiempo_prep_min": 20,
+   "ingredientes": [
+    [
+     "cuscus",
+     80
+    ],
+    [
+     "gambas",
+     180
+    ],
+    [
+     "calabacin",
+     100
+    ],
+    [
+     "pimiento",
+     80
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "aceite",
+     8
+    ]
+   ],
+   "instrucciones": "1. Hidrata el cuscús con la misma cantidad de agua caliente y tápalo 5 minutos; suéltalo con un tenedor.\n2. Corta el calabacín y el pimiento en dados pequeños.\n3. Saltea las verduras con el aceite y el ajo 5 minutos.\n4. Añade las gambas y cocina 2-3 minutos.\n5. Mezcla con el cuscús y sirve.",
+   "consejos": "Un toque de limón al final realza mucho las gambas."
+  },
+  {
+   "nombre": "Quinoa con solomillo de cerdo y espinacas",
+   "tipo_plato": "Cena",
+   "descripcion": "Quinoa con solomillo en dados y espinacas salteadas.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "quinoa",
+     90
+    ],
+    [
+     "cerdo_solomillo",
+     140
+    ],
+    [
+     "espinacas",
+     100
+    ],
+    [
+     "cebolla",
+     40
+    ],
+    [
+     "aceite",
+     6
+    ]
+   ],
+   "instrucciones": "1. Enjuaga la quinoa y cuécela 12 minutos en el doble de agua con sal; escúrrela.\n2. Corta el solomillo en dados y la cebolla en dados pequeños.\n3. Dora el solomillo con la mitad del aceite 4 minutos y resérvalo.\n4. Rehoga la cebolla con el resto del aceite, añade las espinacas y reduce 2 minutos.\n5. Mezcla todo con la quinoa y sirve.",
+   "consejos": "Enjuagar la quinoa quita el amargor natural de su cubierta."
+  },
+  {
+   "nombre": "Pasta integral con gambas y calabacín",
+   "tipo_plato": "Cena",
+   "descripcion": "Pasta integral con gambas salteadas, calabacín y un toque de tomate.",
+   "tiempo_prep_min": 20,
+   "ingredientes": [
+    [
+     "pasta",
+     80
+    ],
+    [
+     "gambas",
+     150
+    ],
+    [
+     "calabacin",
+     150
+    ],
+    [
+     "tomate_triturado",
+     100
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "aceite",
+     8
+    ]
+   ],
+   "instrucciones": "1. Cuece la pasta en agua con sal y escúrrela guardando un poco del agua.\n2. Corta el calabacín en cubitos y saltéalo con el aceite y el ajo 4 minutos.\n3. Añade las gambas y saltea 2 minutos.\n4. Vierte el tomate triturado y cocina 3 minutos.\n5. Mezcla con la pasta y un chorrito del agua de cocción.",
+   "consejos": "El agua de cocción de la pasta ayuda a ligar la salsa sin añadir grasa."
+  },
+  {
+   "nombre": "Burritos de pavo y alubias",
+   "tipo_plato": "Cena",
+   "descripcion": "Tortillas de trigo rellenas de pavo, alubias rojas y pimiento.",
+   "tiempo_prep_min": 20,
+   "ingredientes": [
+    [
+     "tortilla",
+     100
+    ],
+    [
+     "pavo",
+     130
+    ],
+    [
+     "alubia",
+     120
+    ],
+    [
+     "tomate_frito",
+     50
+    ],
+    [
+     "pimiento",
+     60
+    ],
+    [
+     "aceite",
+     4
+    ]
+   ],
+   "instrucciones": "1. Corta el pavo en tiras y el pimiento en juliana.\n2. Saltea el pavo con el aceite 4 minutos; añade el pimiento 3 minutos más.\n3. Agrega las alubias escurridas y el tomate frito y calienta 3 minutos.\n4. Calienta las tortillas 20 segundos por lado.\n5. Rellena, enrolla y sirve.",
+   "consejos": "Calienta las tortillas en seco para que no se rompan al enrollar."
+  },
+  {
+   "nombre": "Salteado de tofu con quinoa y brócoli",
+   "tipo_plato": "Cena",
+   "descripcion": "Tofu dorado sin aceite con quinoa y brócoli, salseado con soja.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "tofu",
+     200
+    ],
+    [
+     "quinoa",
+     80
+    ],
+    [
+     "brocoli",
+     120
+    ],
+    [
+     "soja",
+     12
+    ]
+   ],
+   "instrucciones": "1. Cuece la quinoa 12 minutos y escúrrela.\n2. Corta el tofu en dados y dóralo en una sartén antiadherente sin aceite 8 minutos.\n3. Cuece el brócoli al vapor 5 minutos.\n4. Añade el brócoli y la salsa de soja al tofu y saltea 1 minuto.\n5. Sirve sobre la quinoa.",
+   "consejos": "Una sartén antiadherente bien caliente permite dorar el tofu sin grasa."
+  },
+  {
+   "nombre": "Ternera salteada con boniato y judías verdes",
+   "tipo_plato": "Cena",
+   "descripcion": "Solomillo de ternera salteado con boniato asado y judías verdes.",
+   "tiempo_prep_min": 30,
+   "ingredientes": [
+    [
+     "ternera",
+     150
+    ],
+    [
+     "boniato",
+     250
+    ],
+    [
+     "judias",
+     120
+    ],
+    [
+     "aceite",
+     4
+    ]
+   ],
+   "instrucciones": "1. Precalienta el horno a 200 °C. Corta el boniato en dados y hornéalo 20 minutos.\n2. Cuece las judías verdes 6 minutos y escúrrelas.\n3. Corta la ternera en tiras y saltéala con el aceite 3 minutos a fuego fuerte.\n4. Añade las judías y saltea 1 minuto.\n5. Sirve con el boniato.",
+   "consejos": "Sazona la ternera justo antes de cocinarla."
+  },
+  {
+   "nombre": "Pavo en salsa de champiñones con patata",
+   "tipo_plato": "Cena",
+   "descripcion": "Pechuga de pavo en salsa ligera de champiñones con patata cocida.",
+   "tiempo_prep_min": 30,
+   "ingredientes": [
+    [
+     "pavo",
+     160
+    ],
+    [
+     "patata",
+     300
+    ],
+    [
+     "champi",
+     150
+    ],
+    [
+     "cebolla",
+     40
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "qfb",
+     60
+    ]
+   ],
+   "instrucciones": "1. Cuece las patatas en rodajas 12 minutos.\n2. Rehoga la cebolla picada con el aceite 4 minutos y añade los champiñones laminados 5 minutos.\n3. Añade el pavo en filetes y dóralo 3 minutos por lado.\n4. Baja el fuego e incorpora el queso fresco batido para ligar la salsa 1 minuto.\n5. Sirve con las patatas.",
+   "consejos": "El queso batido da cremosidad sin nata."
+  },
+  {
+   "nombre": "Bacalao con garbanzos y espinacas",
+   "tipo_plato": "Cena",
+   "descripcion": "Bacalao fresco sobre una cama de garbanzos y espinacas al pimentón.",
+   "tiempo_prep_min": 25,
+   "ingredientes": [
+    [
+     "bacalao",
+     160
+    ],
+    [
+     "garbanzos",
+     250
+    ],
+    [
+     "espinacas",
+     100
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "pimenton",
+     2
+    ]
+   ],
+   "instrucciones": "1. Dora el ajo laminado en el aceite 30 segundos y añade el pimentón.\n2. Incorpora las espinacas y reduce 2 minutos.\n3. Añade los garbanzos escurridos y un chorrito de agua; cocina 4 minutos.\n4. Coloca el bacalao encima, tapa y cuece 5 minutos.\n5. Sirve caliente.",
+   "consejos": "El pimentón se quema muy rápido: añádelo con el fuego bajo."
+  }
+ ]
+}

@@ -1,39 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
+import { autorizarSemanaDieta as autorizar, FRANJAS, repartoFranja } from '@/lib/nutricion/semana-dieta'
 import { comidasDelDia, DIAS_SEMANA } from '@/lib/nutricion/comidas-dia'
 import { materializarComidasRecurrentes } from '@/lib/nutricion/materializar-comidas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { tipoPlatoCompatibleConSlot, type SlotComida } from '@/lib/tipos-comida'
 
-const FRANJAS: SlotComida[] = ['Desayuno', 'Media mañana', 'Comida', 'Merienda', 'Cena']
-// Reparto orientativo del objetivo diario por franja; se renormaliza con las franjas que tenga el día
-const REPARTO: Record<SlotComida, number> = { 'Desayuno': 0.25, 'Media mañana': 0.1, 'Comida': 0.35, 'Merienda': 0.1, 'Cena': 0.3 }
-
 type ComidaFila = {
   id: string; nombre: string; dia_semana: string | null; orden: number; receta_id: string | null
   receta: { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null } | null
   comida_alimentos: { cantidad_gramos: number; alimento: { calorias: number; proteinas: number; carbohidratos: number; grasas: number } | null }[]
-}
-
-async function autorizar(request: NextRequest, clienteId: string) {
-  const supabase = createApiSupabase(request)
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: NextResponse.json({ error: 'No autenticado' }, { status: 401 }) }
-  const admin = createServiceSupabase()
-  const auth = await autorizarCoachCliente(admin, { userId: user.id, clienteId })
-  if (!auth.ok) return { error: NextResponse.json({ error: auth.mensaje }, { status: auth.status }) }
-  const { data: plan } = await admin.from('planes_nutricion')
-    .select('id, nombre, kcal_objetivo, proteinas_objetivo, carbohidratos_objetivo, grasas_objetivo')
-    .eq('cliente_id', clienteId).eq('activo', true).maybeSingle()
-  return { admin, plan }
-}
-
-async function repartoFranja(db: ReturnType<typeof createServiceSupabase>, planId: string, franja: SlotComida) {
-  const { data } = await db.from('comidas').select('nombre').eq('plan_id', planId)
-  const franjas = new Set([...(data ?? []).map(c => c.nombre), franja].filter(f => FRANJAS.includes(f as SlotComida)))
-  const total = [...franjas].reduce((s, f) => s + REPARTO[f as SlotComida], 0)
-  return REPARTO[franja] / total
 }
 
 function macros(c: ComidaFila) {

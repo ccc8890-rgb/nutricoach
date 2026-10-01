@@ -30,6 +30,7 @@ type RecetaLote = {
 }
 type Lote = {
   lote: string; tipo_plato: string; fuente: string
+  apto_rendimiento?: boolean
   criterios?: Criterios
   criterios_por_perfil?: Partial<Record<Perfil, Criterios>>
   alimentos: Record<string, AlimentoLote>; recetas: RecetaLote[]
@@ -138,7 +139,7 @@ async function main() {
       descripcion: receta.descripcion,
       categoria: receta.tipo_plato ?? lote.tipo_plato,
       tipo_plato: receta.tipo_plato ?? lote.tipo_plato,
-      ...(receta.perfil ? { es_pre_entreno: receta.perfil === 'pre', es_post_entreno: receta.perfil === 'post', apto_rendimiento: true } : {}),
+      ...(receta.perfil ? { es_pre_entreno: receta.perfil === 'pre', es_post_entreno: receta.perfil === 'post', apto_rendimiento: true } : lote.apto_rendimiento ? { apto_rendimiento: true } : {}),
       porciones: receta.porciones ?? 1,
       tiempo_prep_min: receta.tiempo_prep_min,
       ...macros,

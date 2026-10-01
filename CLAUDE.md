@@ -26,7 +26,15 @@
 - **Revisión en sesión real de coach** (handoff `browse --headed`): quitar comida y asignar receta funcionan contra el plan real de Carlos. Corregido: el reparto por franja usa las franjas del plan en toda la semana (antes un día casi vacío daba ~45% de kcal al primer plato) y el selector ordena por encaje de proporción P/C/G. Desayuno miércoles de Carlos: 807 kcal / P37 C100 G29 vs objetivo 785 / 36 / 99 / 29. Commit `0f64912`.
 - **Recuperar contraseña** (no existía): enlace en `/login` → `/recuperar-contrasena` → email → `/auth/callback?next=/nueva-contrasena`. El enlace solo vale en el mismo navegador que lo pidió (PKCE) y caduca al pedir otro. Pendiente: `/auth/callback` ignora `?error=` y manda a `/login` sin mensaje.
 
+### 5. Variedad por franja, 'Generar semana' y lote comidas/cenas (noche, local sin commit)
+- **Medición** (`scripts/medir-variedad-franja.ts`, solo lectura, replica el embudo del motor franja a franja): para Carlos la comida/cena no falta de cantidad; pierde variedad por el `.limit(80)` sin orden de `filtrarRecetasPorSlot`, por la preferencia `apto_rendimiento` (filtro blando que deja 5 recetas en desayuno/merienda) y por la exclusión de recientes. Falta variedad de proteína (pollo domina) y de meriendas.
+- **Motor**: `filtrarRecetasPorSlot(..., poolMax = 80)` (último parámetro, retrocompatible).
+- **Botón 'Generar semana'**: `POST /api/clientes/[id]/semana-dieta/generar` → `generarSemana()` en `lib/nutricion/planificar-semana.ts` (`planificarSemana` es solo lectura). Selección pura en `lib/nutricion/generar-semana.ts` con test `scripts/generar-semana.test.ts`. Rellena huecos o, con `reemplazar`, sustituye toda la semana (la UI pide confirmación si ya hay recetas). Simulación sin escribir: `scripts/simular-generar-semana.ts [cliente] [--reemplazar]`.
+- **Lote** `scripts/lotes/2026-10-01_comidas-cenas-rendimiento.json` (20 recetas sin pollo, `en_revision`). Importador: nuevo campo de lote `apto_rendimiento`. Lección: el quality gate marca `cantidad_muy_pequena` si un ingrediente principal (ajo incluido) pesa <5 g.
+- Verificado: `tsc`, eslint, `npm run build`, 401 sin sesión, test unitario, escritura end-to-end sobre cliente ficticio Andrés (su semana quedó regenerada). Sin verificar visualmente el botón ni ejecutado sobre la semana real de Carlos.
+
 ### Pendiente
+0. Aprobar las 20 recetas nuevas (junto con las 42) y re-ejecutar `verificar-recetas-auto.ts --apply`; decidir tope de 80 / filtro `apto_rendimiento` en la generación inicial; lote de meriendas/media mañana de rendimiento; semana sucesiva; vista 'para grabar' + lista de la compra.
 1. Carlos aprueba las 42 recetas en `/recetas/revisar` y se re-ejecuta `verificar-recetas-auto.ts --apply`.
 1b. Ingrediente "Yogur griego natural 0%" vinculado a "Yogur griego con mango" (al menos en "Tortitas de avena y canela con sirope casero"): revisar usos.
 2. Semana de Carlos descuadrada (1.003–4.192 kcal/día) por mover platos en el kanban de dieta; falta aviso de kcal al mover.
