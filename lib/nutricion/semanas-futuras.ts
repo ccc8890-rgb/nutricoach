@@ -47,11 +47,11 @@ export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, sem
   const ingredientes = new Map<string, IngredienteOptimizable[]>()
   if (ids.length > 0) {
     const { data } = await db.from('recetas')
-      .select('id, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, rol_ingrediente, es_cantidad_fija, alimento:alimentos(calorias, proteinas, carbohidratos, grasas))')
+      .select('id, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, rol_ingrediente, es_cantidad_fija, alimento:alimentos(calorias, proteinas, carbohidratos, grasas))')
       .in('id', ids)
-    for (const r of (data ?? []) as unknown as { id: string; receta_ingredientes: { cantidad_gramos: number | null; rol_ingrediente: RolIngrediente | null; es_cantidad_fija: boolean | null; alimento: { calorias: number; proteinas: number; carbohidratos: number; grasas: number } | null }[] }[]) {
+    for (const r of (data ?? []) as unknown as { id: string; porciones: number | null; receta_ingredientes: { cantidad_gramos: number | null; rol_ingrediente: RolIngrediente | null; es_cantidad_fija: boolean | null; alimento: { calorias: number; proteinas: number; carbohidratos: number; grasas: number } | null }[] }[]) {
       ingredientes.set(r.id, r.receta_ingredientes.filter(i => i.alimento && Number(i.cantidad_gramos) > 0).map(i => ({
-        rol: i.rol_ingrediente, gramos: Number(i.cantidad_gramos), fija: i.es_cantidad_fija === true,
+        rol: i.rol_ingrediente, gramos: Number(i.cantidad_gramos) / Math.max(1, Number(r.porciones ?? 1)), fija: i.es_cantidad_fija === true,
         por100: { kcal: Number(i.alimento!.calorias ?? 0), p: Number(i.alimento!.proteinas ?? 0), c: Number(i.alimento!.carbohidratos ?? 0), g: Number(i.alimento!.grasas ?? 0) },
       })))
     }

@@ -143,7 +143,11 @@ export async function aplicarRecetaAComida(
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
 
   const porciones = Math.max(1, Number(receta.porciones ?? 1))
-  const kcalIngredientesReceta = Number(receta.kcal ?? 0) * porciones
+  // Las cantidades de receta_ingredientes son de la receta ENTERA (porciones raciones). Todo el escalado
+  // (factor por kcal, reglas por rol y optimizador) trabaja sobre UNA RACIÓN: cantidad / porciones. Antes se
+  // usaba la receta entera y los límites de escala (mín. 0,25) hacían que una receta de 8-12 raciones saliera
+  // con 2-3 raciones de comida (Tepache de 12 raciones: 378 kcal por ración → salía 2175).
+  const kcalIngredientesReceta = Number(receta.kcal ?? 0)
   const targetKcal = Number(objetivoPlato.kcal ?? 0)
   const factor = kcalIngredientesReceta > 0 && targetKcal > 0
     ? Math.min(2, Math.max(0.2, targetKcal / kcalIngredientesReceta))
@@ -164,7 +168,7 @@ export async function aplicarRecetaAComida(
     ? optimizarFactoresReceta(
         ingredientesConAlimento.map(ing => ({
           rol: ing.rol_ingrediente,
-          gramos: Number(ing.cantidad_gramos),
+          gramos: Number(ing.cantidad_gramos) / porciones,
           fija: ing.es_cantidad_fija === true,
           por100: {
             kcal: Number(ing.alimento!.calorias ?? 0),
@@ -184,7 +188,7 @@ export async function aplicarRecetaAComida(
 
   const ingredientesValidos = ingredientesConAlimento
     .map((ing, idx) => {
-      const cantidadBase = Number(ing.cantidad_gramos)
+      const cantidadBase = Number(ing.cantidad_gramos) / porciones
       const cantidadAplicada = calcularCantidadAplicadaReceta(
         cantidadBase,
         ing.rol_ingrediente,
