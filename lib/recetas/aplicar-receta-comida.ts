@@ -100,6 +100,28 @@ export async function aplicarRecetaAComida(
   const { comidaId, recetaId } = params
   const reemplazar = params.reemplazar ?? true
 
+  // Postre/complemento ya añadido a esta comida: cuenta en sus macros y se descuenta del objetivo del plato
+  // principal para que la comida siga en su objetivo (con un suelo del 40% para no vaciar el plato).
+  const { data: complementosData } = await db.from('comida_alimentos')
+    .select('cantidad_gramos, alimento:alimentos(calorias, proteinas, carbohidratos, grasas)')
+    .eq('comida_id', comidaId).eq('es_complemento', true)
+  const complementos = ((complementosData ?? []) as unknown as { cantidad_gramos: number; alimento: { calorias: number; proteinas: number; carbohidratos: number; grasas: number } | null }[])
+    .reduce((acc, c) => {
+      if (!c.alimento) return acc
+      const f = Number(c.cantidad_gramos) / 100
+      return { kcal: acc.kcal + c.alimento.calorias * f, p: acc.p + c.alimento.proteinas * f, c: acc.c + c.alimento.carbohidratos * f, g: acc.g + c.alimento.grasas * f }
+    }, { kcal: 0, p: 0, c: 0, g: 0 })
+  const descontar = (objetivo: number | null | undefined, aporte: number) => {
+    const t = Number(objetivo ?? 0)
+    return t > 0 ? Math.max(t - aporte, t * 0.4) : objetivo
+  }
+  const objetivoPlato = {
+    kcal: descontar(params.targetKcal, complementos.kcal),
+    p: descontar(params.targetProteinas, complementos.p),
+    c: descontar(params.targetCarbohidratos, complementos.c),
+    g: descontar(params.targetGrasas, complementos.g),
+  }
+
   const { data: receta, error: recetaError } = await db
     .from('recetas')
     .select(`
@@ -122,7 +144,7 @@ export async function aplicarRecetaAComida(
 
   const porciones = Math.max(1, Number(receta.porciones ?? 1))
   const kcalIngredientesReceta = Number(receta.kcal ?? 0) * porciones
-  const targetKcal = Number(params.targetKcal ?? 0)
+  const targetKcal = Number(objetivoPlato.kcal ?? 0)
   const factor = kcalIngredientesReceta > 0 && targetKcal > 0
     ? Math.min(2, Math.max(0.2, targetKcal / kcalIngredientesReceta))
     : 1
@@ -130,7 +152,7 @@ export async function aplicarRecetaAComida(
   const ingredientesConAlimento = ingredientesRaw
     .filter(ing => ing.alimento_id && ing.alimento && Number(ing.cantidad_gramos ?? 0) > 0)
 
-  const hayObjetivosMacro = [params.targetProteinas, params.targetCarbohidratos, params.targetGrasas]
+  const hayObjetivosMacro = [objetivoPlato.p, objetivoPlato.c, objetivoPlato.g]
     .some(t => Number(t ?? 0) > 0)
 
   // Con objetivos de macro, un optimizador calcula a la vez el factor de cada
@@ -153,9 +175,9 @@ export async function aplicarRecetaAComida(
         })),
         {
           kcal: targetKcal,
-          p: params.targetProteinas ?? null,
-          c: params.targetCarbohidratos ?? null,
-          g: params.targetGrasas ?? null,
+          p: objetivoPlato.p ?? null,
+          c: objetivoPlato.c ?? null,
+          g: objetivoPlato.g ?? null,
         },
       )
     : null
@@ -189,6 +211,7 @@ export async function aplicarRecetaAComida(
       .from('comida_alimentos')
       .delete()
       .eq('comida_id', comidaId)
+      .eq('es_complemento', false)
     if (deleteError) throw new Error(deleteError.message)
   }
 
@@ -220,10 +243,10 @@ export async function aplicarRecetaAComida(
     .from('comidas')
     .update({
       receta_id: receta.id,
-      kcal_target: Math.round(macrosAplicados.kcal) || (params.targetKcal ? Math.round(Number(params.targetKcal)) : Math.round(Number(receta.kcal ?? 0)) || null),
-      proteinas_target: Math.round(macrosAplicados.proteinas) || null,
-      carbos_target: Math.round(macrosAplicados.carbohidratos) || null,
-      grasas_target: Math.round(macrosAplicados.grasas) || null,
+      kcal_target: Math.round(macrosAplicados.kcal + complementos.kcal) || (params.targetKcal ? Math.round(Number(params.targetKcal)) : Math.round(Number(receta.kcal ?? 0)) || null),
+      proteinas_target: Math.round(macrosAplicados.proteinas + complementos.p) || null,
+      carbos_target: Math.round(macrosAplicados.carbohidratos + complementos.c) || null,
+      grasas_target: Math.round(macrosAplicados.grasas + complementos.g) || null,
     })
     .eq('id', comidaId)
   if (comidaError) throw new Error(comidaError.message)

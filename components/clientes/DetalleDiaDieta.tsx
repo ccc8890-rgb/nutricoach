@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Clock, ExternalLink, Loader2, RefreshCw, Video, X } from 'lucide-react'
+import { Apple, Clock, ExternalLink, Loader2, Plus, RefreshCw, Search, Video, X } from 'lucide-react'
 import type { DetalleDia } from '@/lib/nutricion/detalle-dia'
 
 type Objetivo = { kcal: number | null; p: number | null; c: number | null; g: number | null }
@@ -25,10 +25,117 @@ function Barra({ etiqueta, valor, objetivo, color, unidad }: { etiqueta: string;
   )
 }
 
-export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, version, onCambiar, onQuitar }: {
-  clienteId: string; dia: string; semana: number | null; objetivo: Objetivo; version: number
-  onCambiar: (franja: string) => void; onQuitar: (comidaId: string, recurrente: boolean) => void
+type AlimentoBusqueda = { id: string; nombre: string; calorias: number; proteinas: number; carbohidratos: number; grasas: number }
+type PostreBusqueda = { id: string; nombre: string; kcal: number; proteinas: number; imagen_url: string | null }
+
+// Buscador para añadir un postre/complemento (alimento suelto o receta dulce) a una comida
+function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clienteId: string; dia: string; franja: string; onCerrar: () => void; onHecho: () => void }) {
+  const [modo, setModo] = useState<'alimento' | 'postre'>('alimento')
+  const [q, setQ] = useState('')
+  const [alimentos, setAlimentos] = useState<AlimentoBusqueda[]>([])
+  const [postres, setPostres] = useState<PostreBusqueda[]>([])
+  const [buscando, setBuscando] = useState(false)
+  const [elegido, setElegido] = useState<AlimentoBusqueda | null>(null)
+  const [gramos, setGramos] = useState(100)
+  const [ajustar, setAjustar] = useState(true)
+  const [guardando, setGuardando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setBuscando(true)
+    const t = setTimeout(async () => {
+      if (modo === 'alimento') {
+        if (q.trim().length < 2) { setAlimentos([]); setBuscando(false); return }
+        const res = await fetch(`/api/alimentos?q=${encodeURIComponent(q.trim())}&soloConDatos=true`)
+        const data = await res.json().catch(() => [])
+        setAlimentos(Array.isArray(data) ? data.slice(0, 40) : [])
+      } else {
+        const res = await fetch(`/api/clientes/${clienteId}/semana-dieta?franja=${encodeURIComponent(franja)}&postres=1&q=${encodeURIComponent(q.trim())}`)
+        const data = await res.json().catch(() => null)
+        setPostres(data?.recetas ?? [])
+      }
+      setBuscando(false)
+    }, 250)
+    return () => clearTimeout(t)
+  }, [modo, q, clienteId, franja])
+
+  async function anadir(body: Record<string, unknown>) {
+    setGuardando(true); setError(null)
+    const res = await fetch(`/api/clientes/${clienteId}/semana-dieta/complemento`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dia, franja, ajustar, ...body }),
+    })
+    const data = await res.json().catch(() => null)
+    setGuardando(false)
+    if (!res.ok) { setError(data?.error ?? 'No se pudo añadir'); return }
+    onHecho()
+  }
+
+  const kcalPreview = elegido ? Math.round((elegido.calorias * gramos) / 100) : 0
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={onCerrar}>
+      <div className="w-full sm:max-w-lg max-h-[85vh] flex flex-col rounded-t-2xl sm:rounded-2xl p-4" style={{ background: 'var(--surface)' }} onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-3">
+          <p className="font-semibold" style={{ color: 'var(--text)' }}>Postre / complemento · {franja} · {dia}</p>
+          <button onClick={onCerrar} style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
+        </div>
+        <div className="flex rounded-xl overflow-hidden mb-3" style={{ border: '1px solid var(--border)' }}>
+          {([['alimento', 'Fruta / alimento'], ['postre', 'Postre (receta)']] as const).map(([k, t]) => (
+            <button key={k} onClick={() => { setModo(k); setElegido(null); setQ('') }} className="flex-1 px-3 py-2 text-xs font-medium"
+              style={{ background: modo === k ? 'var(--primary)' : 'transparent', color: modo === k ? 'var(--bg)' : 'var(--text-muted)' }}>{t}</button>
+          ))}
+        </div>
+        <div className="relative mb-3">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+          <input autoFocus autoComplete="off" value={q} onChange={e => { setQ(e.target.value); setElegido(null) }} placeholder={modo === 'alimento' ? 'Plátano, yogur, chocolate negro…' : 'Buscar postre…'} className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
+        </div>
+        <label className="flex items-center gap-2 text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>
+          <input type="checkbox" checked={ajustar} onChange={e => setAjustar(e.target.checked)} />
+          Reajustar el plato principal para que la comida siga en su objetivo
+        </label>
+        {error && <p className="text-xs mb-2" style={{ color: 'var(--error)' }}>{error}</p>}
+        <div className="overflow-y-auto space-y-1.5 flex-1">
+          {buscando ? <div className="py-6 flex justify-center"><Loader2 size={18} className="animate-spin" /></div> : modo === 'alimento' ? (
+            elegido ? (
+              <div className="rounded-xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                <p className="text-sm font-medium mb-2" style={{ color: 'var(--text)' }}>{elegido.nombre}</p>
+                <div className="flex items-center gap-2">
+                  <input type="number" min={1} max={2000} value={gramos} onChange={e => setGramos(Number(e.target.value))} className="input w-24 text-sm" />
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>g · {kcalPreview} kcal · P {Math.round((elegido.proteinas * gramos) / 100)} · C {Math.round((elegido.carbohidratos * gramos) / 100)} · G {Math.round((elegido.grasas * gramos) / 100)}</span>
+                </div>
+                <div className="flex gap-1.5 mt-2">
+                  {[50, 100, 150, 200].map(g => <button key={g} onClick={() => setGramos(g)} className="rounded-lg px-2 py-1 text-[11px]" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>{g} g</button>)}
+                </div>
+                <button disabled={guardando || gramos <= 0} onClick={() => anadir({ alimento_id: elegido.id, gramos })} className="mt-3 w-full rounded-xl px-3 py-2 text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-60" style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
+                  {guardando ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />} Añadir a {franja}
+                </button>
+              </div>
+            ) : alimentos.length === 0 ? (
+              <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>{q.trim().length < 2 ? 'Escribe al menos 2 letras' : 'Sin resultados'}</p>
+            ) : alimentos.map(a => (
+              <button key={a.id} onClick={() => setElegido(a)} className="w-full text-left rounded-xl p-2.5 flex items-center justify-between gap-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                <span className="text-sm truncate" style={{ color: 'var(--text)' }}>{a.nombre}</span>
+                <span className="text-[11px] font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{Math.round(a.calorias)} kcal/100 g</span>
+              </button>
+            ))
+          ) : postres.length === 0 ? (
+            <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>Sin postres</p>
+          ) : postres.map(r => (
+            <button key={r.id} disabled={guardando} onClick={() => anadir({ receta_id: r.id })} className="w-full text-left rounded-xl p-2.5 flex items-center justify-between gap-2 disabled:opacity-50" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <span className="text-sm truncate" style={{ color: 'var(--text)' }}>{r.nombre}</span>
+              <span className="text-[11px] font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)} (ración base)</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, version, franjas, onCambiar, onQuitar, onCambioDatos }: {
+  clienteId: string; dia: string; semana: number | null; objetivo: Objetivo; version: number; franjas: string[]
+  onCambiar: (franja: string) => void; onQuitar: (comidaId: string, recurrente: boolean) => void; onCambioDatos: () => void
 }) {
+  const [complementoEn, setComplementoEn] = useState<string | null>(null)
   const [detalle, setDetalle] = useState<DetalleDia | null>(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -45,6 +152,13 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
       })
     return () => { vigente = false }
   }, [clienteId, dia, semana, version])
+
+  async function quitarComplemento(comidaId: string, x: { fila?: string; receta_id?: string }) {
+    const q = `comida_id=${comidaId}${x.fila ? `&fila=${x.fila}` : ''}${x.receta_id ? `&receta=${x.receta_id}` : ''}`
+    const res = await fetch(`/api/clientes/${clienteId}/semana-dieta/complemento?${q}`, { method: 'DELETE' })
+    if (res.ok) onCambioDatos()
+    else setError((await res.json().catch(() => null))?.error ?? 'No se pudo quitar')
+  }
 
   return (
     <div className="mt-3 rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
@@ -102,6 +216,23 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                         ))}
                       </tbody>
                     </table>
+                    {(c.complementos.length > 0 || !semana) && (
+                      <div className="rounded-lg p-2" style={{ background: 'var(--bg)' }}>
+                        <p className="text-[10px] font-semibold uppercase tracking-wide mb-1 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}><Apple size={11} /> Postre / complemento</p>
+                        {c.complementos.map((x, k) => (
+                          <div key={k} className="flex items-center justify-between gap-2 text-xs py-0.5">
+                            <span style={{ color: 'var(--text)' }}>{x.nombre}{x.gramos ? ` · ${x.gramos} g` : ''}</span>
+                            <span className="flex items-center gap-2 font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                              {x.kcal} kcal
+                              <button title="Quitar" onClick={() => quitarComplemento(c.id, x)}><X size={12} /></button>
+                            </span>
+                          </div>
+                        ))}
+                        {!semana && (
+                          <button onClick={() => setComplementoEn(c.franja)} className="text-[11px] font-medium flex items-center gap-1 mt-1" style={{ color: 'var(--text)' }}><Plus size={11} /> Añadir postre o fruta</button>
+                        )}
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-1.5 mt-auto pt-1">
                       <button onClick={() => onCambiar(c.franja)} className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
                         <RefreshCw size={11} /> Cambiar receta
@@ -122,7 +253,24 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
               ))}
             </div>
           )}
+
+          {!semana && (() => {
+            const libres = franjas.filter(f => !detalle.comidas.some(c => c.franja === f))
+            return libres.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Solo postre o fruta en:</span>
+                {libres.map(f => (
+                  <button key={f} onClick={() => setComplementoEn(f)} className="rounded-full px-2.5 py-1 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
+                    <Plus size={11} /> {f}
+                  </button>
+                ))}
+              </div>
+            ) : null
+          })()}
         </>
+      )}
+      {complementoEn && (
+        <ModalComplemento clienteId={clienteId} dia={dia} franja={complementoEn} onCerrar={() => setComplementoEn(null)} onHecho={() => { setComplementoEn(null); onCambioDatos() }} />
       )}
     </div>
   )

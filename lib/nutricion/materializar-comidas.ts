@@ -11,7 +11,7 @@ export async function materializarComidasRecurrentes(db: SupabaseClient, planId:
   if (error) throw new Error('Error al leer comidas')
   for (const comida of recurrentes ?? []) {
     const { data: alimentos } = await db.from('comida_alimentos')
-      .select('alimento_id, cantidad_gramos, factor_ajuste').eq('comida_id', comida.id)
+      .select('alimento_id, cantidad_gramos, factor_ajuste, es_complemento, complemento_receta_id').eq('comida_id', comida.id)
     const { data: creadas, error: insertError } = await db.from('comidas')
       .insert(DIAS_SEMANA.map(dia => ({
         plan_id: comida.plan_id,
@@ -33,7 +33,7 @@ export async function materializarComidasRecurrentes(db: SupabaseClient, planId:
     if (insertError || !creadas) throw new Error(`No se pudo materializar "${comida.nombre}"`)
     if (alimentos?.length) {
       const { error: e } = await db.from('comida_alimentos').insert(
-        creadas.flatMap(n => alimentos.map(a => ({ comida_id: n.id, alimento_id: a.alimento_id, cantidad_gramos: a.cantidad_gramos, factor_ajuste: a.factor_ajuste })))
+        creadas.flatMap(n => alimentos.map(a => ({ comida_id: n.id, alimento_id: a.alimento_id, cantidad_gramos: a.cantidad_gramos, factor_ajuste: a.factor_ajuste, es_complemento: a.es_complemento, complemento_receta_id: a.complemento_receta_id })))
       )
       if (e) throw new Error(`No se pudieron copiar los ingredientes de "${comida.nombre}"`)
     }

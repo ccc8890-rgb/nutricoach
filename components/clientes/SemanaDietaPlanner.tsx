@@ -229,7 +229,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra }: { cliente
     <DetalleDiaDieta clienteId={clienteId} dia={diaSel.dia} semana={semana} version={version}
       objetivo={{ kcal: plan.kcal_objetivo, p: plan.proteinas_objetivo, c: plan.carbohidratos_objetivo, g: plan.grasas_objetivo }}
       onCambiar={franja => setHueco({ dia: diaSel.dia, franja, semana })}
-      onQuitar={(id) => quitar({ id } as Comida, semana)} />
+      onQuitar={(id) => quitar({ id } as Comida, semana)}
+      franjas={franjas} onCambioDatos={() => { void Promise.all([cargar(), cargarFuturas(vista)]) }} />
   ) : null
   const btnSec = 'rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1 disabled:opacity-50'
   const mediaActual = media(dias)
