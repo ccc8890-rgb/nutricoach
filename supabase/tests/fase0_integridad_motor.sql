@@ -60,7 +60,7 @@ from fase0_fixture_ids;
 insert into public.generaciones_plan_inicial (
   id, cliente_id, clave_idempotencia, solicitada_por, estado, completed_at, intento_token
 )
-select generacion_completada_id, cliente_id, 'fase0:test:completada', actor_id, 'completada', now(), generacion_completada_token
+select generacion_completada_id, cliente_id, 'fase0:test:completada', actor_id, 'procesando', null::timestamptz, generacion_completada_token
 from fase0_fixture_ids
 union all
 select generacion_nutricion_activa_id, cliente_id, 'fase0:test:nutricion-activa', actor_id, 'procesando', null, generacion_nutricion_activa_token
@@ -92,6 +92,12 @@ from fase0_fixture_ids
 union all
 select entrenamiento_activo_id, actor_id, cliente_id, 'Candidato entrenamiento activo', false, generacion_entrenamiento_activo_id, generacion_entrenamiento_activo_token
 from fase0_fixture_ids;
+
+-- Los planes se insertan mientras la generación está en curso; después se completa.
+update public.generaciones_plan_inicial g
+set estado = 'completada', completed_at = now()
+from fase0_fixture_ids f
+where g.id = f.generacion_completada_id;
 
 select plan(14);
 
