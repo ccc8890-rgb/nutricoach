@@ -1,18 +1,20 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import DetalleDiaDieta from './DetalleDiaDieta'
 import { BadgeCheck, CalendarDays, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
 
 type Receta = { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null }
 type Comida = { id: string; nombre: string; recurrente: boolean; receta: Receta | null; kcal: number; p: number; c: number; g: number }
 type Total = { kcal: number; p: number; c: number; g: number }
 type Dia = { dia: string; comidas: Comida[]; total: Total }
-type Plan = { id: string; nombre: string; kcal_objetivo: number | null; proteinas_objetivo: number | null }
+type Plan = { id: string; nombre: string; kcal_objetivo: number | null; proteinas_objetivo: number | null; carbohidratos_objetivo: number | null; grasas_objetivo: number | null }
 type RecetaOpcion = Receta & { kcal: number; proteinas: number; tiempo_prep_min: number | null }
 type ResultadoSemana = { ok: boolean; asignadas: number; repetidas: number; sinCubrir: { dia: string; franja: string }[]; errores: { dia: string; franja: string; error: string }[]; mensaje?: string }
 type Hueco = { dia: string; franja: string; semana: number | null }
 type Tamano = { col: string; dia: string; diaKcal: string; card: string; label: string; nombre: string; macros: string; hueco: string; grid: string }
 
+const DIAS_ORDEN = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const VISTAS = [{ semanas: 1, texto: '1 semana' }, { semanas: 2, texto: '2 semanas' }, { semanas: 4, texto: 'Mes' }]
 
 function colorDesvio(real: number, objetivo: number | null) {
@@ -29,8 +31,9 @@ function media(dias: Dia[]): Total | null {
 }
 
 // Rejilla de 7 días: las franjas en su orden, con los huecos vacíos en su sitio
-function SemanaGrid({ dias, franjas, T, kcalObjetivo, semana, onHueco, onQuitar, onGrabar }: {
+function SemanaGrid({ dias, franjas, T, kcalObjetivo, semana, diaSel, onDia, onHueco, onQuitar, onGrabar }: {
   dias: Dia[]; franjas: string[]; T: Tamano; kcalObjetivo: number | null; semana: number | null
+  diaSel: { dia: string; semana: number | null } | null; onDia: (dia: string, semana: number | null) => void
   onHueco: (h: Hueco) => void; onQuitar: (c: Comida, semana: number | null) => void; onGrabar: (r: Receta) => void
 }) {
   const posicion = (f: string) => { const i = franjas.indexOf(f); return i === -1 ? franjas.length : i }
@@ -42,9 +45,9 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, semana, onHueco, onQuitar,
           ...franjas.filter(f => !d.comidas.some(c => c.nombre === f)).map(f => ({ tipo: 'hueco' as const, f })),
         ].sort((a, b) => posicion(a.tipo === 'comida' ? a.c.nombre : a.f) - posicion(b.tipo === 'comida' ? b.c.nombre : b.f))
         return (
-          <div key={d.dia} className={`min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2 lg:min-w-0 lg:w-auto ${T.col}`} style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+          <div key={d.dia} className={`min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2 lg:min-w-0 lg:w-auto ${T.col}`} style={{ background: 'var(--bg)', border: `1px solid ${diaSel?.dia === d.dia && diaSel.semana === semana ? 'var(--primary)' : 'var(--border)'}` }}>
             <div className="flex items-baseline justify-between mb-2">
-              <p className={`${T.dia} font-semibold`} style={{ color: 'var(--text)' }}>{d.dia}</p>
+              <button className={`${T.dia} font-semibold text-left`} style={{ color: 'var(--text)' }} title="Ver el detalle del día" onClick={() => onDia(d.dia, semana)}>{d.dia}</button>
               <p className={`${T.diaKcal} font-data font-bold`} style={{ color: colorDesvio(d.total.kcal, kcalObjetivo) }}>{d.total.kcal} kcal</p>
             </div>
             <div className="space-y-1.5">
@@ -105,6 +108,8 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
   const [franjasGen, setFranjasGen] = useState<string[] | null>(null)
   const [ampliado, setAmpliado] = useState(false)
   const [vista, setVista] = useState(1)
+  const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
+  const [version, setVersion] = useState(0)
 
   // Franjas que se rellenan al generar: por defecto las que ya usa el plan; el coach puede añadir o quitar
   const franjasPlan = useMemo(() => franjas.filter(f => dias.some(d => d.comidas.some(c => c.nombre === f))), [franjas, dias])
@@ -117,6 +122,8 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
     const data = await res.json().catch(() => null)
     if (!res.ok) { setError(data?.error ?? 'No se pudo cargar la semana'); setLoading(false); return }
     setPlan(data.plan); setDias(data.dias ?? []); setFranjas(data.franjas ?? []); setLoading(false)
+    setDiaSel(prev => prev ?? { dia: DIAS_ORDEN[(new Date().getDay() + 6) % 7], semana: null })
+    setVersion(v => v + 1)
   }, [clienteId])
 
   const cargarFuturas = useCallback(async (v: number) => {
@@ -128,6 +135,7 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
       semana: s.semana,
       dias: s.dias.map(d => ({ ...d, comidas: d.comidas.map(c => ({ ...c, recurrente: false })) })),
     })))
+    setVersion(v => v + 1)
   }, [clienteId])
 
   useEffect(() => { cargar() }, [cargar])
@@ -216,6 +224,13 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
   const T: Tamano = ampliado
     ? { col: 'p-3', dia: 'text-lg', diaKcal: 'text-sm', card: 'p-3', label: 'text-xs', nombre: 'text-base leading-snug line-clamp-4', macros: 'text-xs', hueco: 'p-3 text-sm', grid: 'lg:gap-3' }
     : { col: 'lg:p-2', dia: 'text-sm', diaKcal: 'text-xs', card: 'p-2', label: 'text-[10px]', nombre: 'text-xs lg:text-[13px] leading-snug line-clamp-3', macros: 'text-[10px]', hueco: 'p-1.5 text-[11px]', grid: 'lg:gap-1.5' }
+  // El detalle del día aparece justo debajo de la semana a la que pertenece el día seleccionado
+  const detalle = (semana: number | null) => diaSel && diaSel.semana === semana ? (
+    <DetalleDiaDieta clienteId={clienteId} dia={diaSel.dia} semana={semana} version={version}
+      objetivo={{ kcal: plan.kcal_objetivo, p: plan.proteinas_objetivo, c: plan.carbohidratos_objetivo, g: plan.grasas_objetivo }}
+      onCambiar={franja => setHueco({ dia: diaSel.dia, franja, semana })}
+      onQuitar={(id) => quitar({ id } as Comida, semana)} />
+  ) : null
   const btnSec = 'rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1 disabled:opacity-50'
   const mediaActual = media(dias)
 
@@ -289,7 +304,8 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
           Semana en curso <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· lo que ve el cliente{mediaActual ? ` · media ${mediaActual.kcal} kcal · P${mediaActual.p} C${mediaActual.c} G${mediaActual.g}` : ''}</span>
         </p>
       )}
-      <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} semana={null} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
+      <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
+      {detalle(null)}
 
       {futuras.map(s => {
         const m = media(s.dias)
@@ -319,7 +335,8 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
                 )}
               </div>
             </div>
-            <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} semana={s.semana} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
+            <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
+            {detalle(s.semana)}
           </div>
         )
       })}

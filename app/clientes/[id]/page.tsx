@@ -10,7 +10,7 @@ import {
   ArrowLeft, UtensilsCrossed, Dumbbell, Weight,
   Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2,
   Bot, CopyPlus, X, Activity, PersonStanding,
-  ChevronRight, RefreshCw, Pencil, Flame, Beef, Wheat, Droplets,
+  ChevronRight, ChevronDown, RefreshCw, Pencil, Flame, Beef, Wheat, Droplets,
   ExternalLink, Send, AlertTriangle, MessageCircle, HeartPulse,
   ShieldCheck, BookOpen, Target, Copy, RotateCcw,
 } from 'lucide-react'
@@ -487,6 +487,7 @@ export default function ClienteDetallePage() {
   const [vistaCalendarioEntreno, setVistaCalendarioEntreno] = useState<'semana' | 'mes'>('semana')
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false)
   const [eliminando, setEliminando] = useState(false)
+  const [verHerramientasNutri, setVerHerramientasNutri] = useState(false)
   const [showSelectorPlantilla, setShowSelectorPlantilla] = useState(false)
   const [plantillaSeleccionada, setPlantillaSeleccionada] = useState<PlantillaEntrenamiento | null>(null)
   const [creandoPlan, setCreandoPlan] = useState(false)
@@ -874,59 +875,57 @@ export default function ClienteDetallePage() {
           </div>
 
         ) : tabActiva === 'nutricion' ? (
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-4">
-            <div className="xl:col-span-2">
-              <ErrorBoundary><SemanaDietaPlanner clienteId={id} /></ErrorBoundary>
-            </div>
-            <WorkCard
-              title="Plan nutricional"
-              kicker="Trabajo activo"
-              icon={UtensilsCrossed}
-              action={<Link href={`/dietas/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>}
-            >
-              {dietaActiva ? (
-                <div className="space-y-4">
-                  <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{dietaActiva.nombre}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Plan activo · macros diarios</p>
-                      </div>
-                      <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm flex-shrink-0">
-                        Abrir <ExternalLink size={12} />
-                      </Link>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <MacroBar label="Kcal" value={dietaActiva.kcal_objetivo ?? 0} max={3500} color="var(--accent)" icon={Flame} />
-                      <MacroBar label="Prot" value={dietaActiva.proteinas_objetivo ?? 0} max={250} color="#30D158" icon={Beef} />
-                      <MacroBar label="Carbs" value={dietaActiva.carbohidratos_objetivo ?? 0} max={400} color="#FF9F0A" icon={Wheat} />
-                      <MacroBar label="Grasas" value={dietaActiva.grasas_objetivo ?? 0} max={150} color="#64D2FF" icon={Droplets} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <Link href={`/clientes/${id}/revisar-plan`} className="btn-secondary btn-sm justify-center">
-                      <RefreshCw size={13} /> Revisar o regenerar
-                    </Link>
-                    {dietaActiva.codigo_publico && (
-                      <button
-                        className="btn-secondary btn-sm justify-center"
-                        onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/cliente/${dietaActiva.codigo_publico}`); addToast({ type: 'success', title: 'Enlace copiado', message: 'Portal del cliente copiado' }) }}
-                      >
-                        <Link2 size={13} /> Copiar portal
-                      </button>
-                    )}
-                  </div>
+          <div className="space-y-4">
+            {dietaActiva ? (
+              <div className="rounded-2xl px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Plan activo</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{dietaActiva.nombre}</p>
                 </div>
-              ) : (
+                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 font-data text-sm">
+                  <span className="font-semibold" style={{ color: 'var(--text)' }}>{dietaActiva.kcal_objetivo ?? '—'} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>kcal</span></span>
+                  <span style={{ color: '#30D158' }}>P {dietaActiva.proteinas_objetivo ?? '—'} g</span>
+                  <span style={{ color: '#FF9F0A' }}>C {dietaActiva.carbohidratos_objetivo ?? '—'} g</span>
+                  <span style={{ color: '#64D2FF' }}>G {dietaActiva.grasas_objetivo ?? '—'} g</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 ml-auto">
+                  <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm">Abrir <ExternalLink size={12} /></Link>
+                  <Link href={`/clientes/${id}/revisar-plan`} className="btn-secondary btn-sm"><RefreshCw size={13} /> Revisar o regenerar</Link>
+                  {dietaActiva.codigo_publico && (
+                    <button
+                      className="btn-secondary btn-sm"
+                      onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/cliente/${dietaActiva.codigo_publico}`); addToast({ type: 'success', title: 'Enlace copiado', message: 'Portal del cliente copiado' }) }}
+                    >
+                      <Link2 size={13} /> Copiar portal
+                    </button>
+                  )}
+                  <Link href={`/dietas/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>
+                </div>
+              </div>
+            ) : (
+              <WorkCard title="Plan nutricional" kicker="Trabajo activo" icon={UtensilsCrossed} action={<Link href={`/dietas/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>}>
                 <EmptyModule
                   icon={UtensilsCrossed}
                   title="Sin dieta activa"
                   text="Crea un plan desde cero o revisa el plan IA antes de activar el cliente."
                   action={<Link href={`/clientes/${id}/revisar-plan`} className="btn-primary btn-sm">Generar dieta IA</Link>}
                 />
-              )}
-            </WorkCard>
+              </WorkCard>
+            )}
 
+            <ErrorBoundary><SemanaDietaPlanner clienteId={id} /></ErrorBoundary>
+
+            <div>
+              <button
+                onClick={() => setVerHerramientasNutri(v => !v)}
+                className="w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
+              >
+                <span>Más herramientas <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· control de cambios con IA, planes guardados, coste y periodización</span></span>
+                <ChevronDown size={16} style={{ transform: verHerramientasNutri ? 'rotate(180deg)' : undefined, color: 'var(--text-muted)' }} />
+              </button>
+              {verHerramientasNutri && (
+                <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-4 mt-4">
             <WorkCard title="Control de cambios" kicker="IA y versiones" icon={Brain}>
               <div className="space-y-3">
                 <AjusteMacrosIA clienteId={id as string} onApplied={loadData} />
@@ -957,6 +956,9 @@ export default function ClienteDetallePage() {
             <div className="space-y-4">
               <CosteSemanalCard clienteId={id} />
               <ErrorBoundary><PeriodizacionPanel clienteId={id as string} /></ErrorBoundary>
+            </div>
+                </div>
+              )}
             </div>
           </div>
 
