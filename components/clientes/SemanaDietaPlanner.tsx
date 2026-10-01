@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BadgeCheck, CalendarDays, Loader2, Plus, Search, Sparkles, Video, X } from 'lucide-react'
 
 type Receta = { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null }
@@ -29,6 +29,12 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
   const [guardando, setGuardando] = useState(false)
   const [generando, setGenerando] = useState(false)
   const [resultado, setResultado] = useState<ResultadoSemana | null>(null)
+  const [franjasGen, setFranjasGen] = useState<string[] | null>(null)
+
+  // Franjas que se rellenan al generar: por defecto las que ya usa el plan; el coach puede añadir o quitar
+  const franjasPlan = useMemo(() => franjas.filter(f => dias.some(d => d.comidas.some(c => c.nombre === f))), [franjas, dias])
+  const seleccion = franjasGen ?? (franjasPlan.length > 0 ? franjasPlan : ['Desayuno', 'Comida', 'Cena'])
+  const alternarFranja = (f: string) => setFranjasGen(seleccion.includes(f) ? seleccion.filter(x => x !== f) : [...seleccion, f])
 
   const cargar = useCallback(async () => {
     setError(null)
@@ -73,12 +79,13 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
   }
 
   async function generarSemana() {
-    const conReceta = dias.flatMap(d => d.comidas).filter(c => c.receta).length
-    if (conReceta > 0 && !confirm(`La semana ya tiene ${conReceta} comidas con receta. ¿Sustituirlas todas por una semana nueva sin repetir recetas?`)) return
+    if (seleccion.length === 0) { setError('Elige al menos una franja'); return }
+    const conReceta = dias.flatMap(d => d.comidas).filter(c => c.receta && seleccion.includes(c.nombre)).length
+    if (conReceta > 0 && !confirm(`Las franjas elegidas ya tienen ${conReceta} comidas con receta. ¿Sustituirlas por una semana nueva sin repetir recetas?`)) return
     setGenerando(true); setError(null); setResultado(null)
     const res = await fetch(`/api/clientes/${clienteId}/semana-dieta/generar`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reemplazar: conReceta > 0 }),
+      body: JSON.stringify({ reemplazar: conReceta > 0, franjas: seleccion }),
     })
     const data = await res.json().catch(() => null)
     setGenerando(false)
@@ -116,6 +123,21 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
         </button>
       </div>
 
+      <div className="flex flex-wrap items-center gap-1.5 mb-3">
+        <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Generar:</span>
+        {franjas.map(f => {
+          const activa = seleccion.includes(f)
+          return (
+            <button key={f} onClick={() => alternarFranja(f)} disabled={generando}
+              className="rounded-full px-2.5 py-1 text-[11px] font-medium"
+              style={{ background: activa ? 'var(--primary)' : 'transparent', color: activa ? 'var(--bg)' : 'var(--text-muted)', border: `1px solid ${activa ? 'var(--primary)' : 'var(--border)'}` }}>
+              {f}
+            </button>
+          )
+        })}
+        <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>· media mañana, merienda o peri-entreno solo si los marcas</span>
+      </div>
+
       {resultado && (
         <div className="rounded-xl p-2.5 mb-3 text-xs flex justify-between gap-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}>
           <span>
@@ -134,7 +156,7 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
         </div>
       )}
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-7 lg:gap-1.5 lg:overflow-visible lg:pb-0">
         {dias.map(d => {
           // Cada franja en su sitio: las comidas ordenadas por franja y los huecos vacíos entre ellas
           const posicion = (f: string) => { const i = franjas.indexOf(f); return i === -1 ? franjas.length : i }
@@ -143,10 +165,10 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
             ...franjas.filter(f => !d.comidas.some(c => c.nombre === f)).map(f => ({ tipo: 'hueco' as const, f })),
           ].sort((a, b) => posicion(a.tipo === 'comida' ? a.c.nombre : a.f) - posicion(b.tipo === 'comida' ? b.c.nombre : b.f))
           return (
-            <div key={d.dia} className="min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+            <div key={d.dia} className="min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2 lg:min-w-0 lg:w-auto lg:p-1.5" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
               <div className="flex items-baseline justify-between mb-2">
-                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{d.dia}</p>
-                <p className="text-xs font-data font-bold" style={{ color: colorDesvio(d.total.kcal, plan.kcal_objetivo) }}>{d.total.kcal} kcal</p>
+                <p className="text-sm lg:text-xs font-semibold" style={{ color: 'var(--text)' }}>{d.dia}</p>
+                <p className="text-xs lg:text-[11px] font-data font-bold" style={{ color: colorDesvio(d.total.kcal, plan.kcal_objetivo) }}>{d.total.kcal} kcal</p>
               </div>
               <div className="space-y-1.5">
                 {items.map(it => {
@@ -159,7 +181,7 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
                   )
                   const c = it.c
                   return (
-                  <div key={c.id} className="rounded-lg p-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <div key={c.id} className="rounded-lg p-2 lg:p-1.5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                     <div className="flex items-center justify-between gap-1">
                       <button className="text-[10px] font-semibold uppercase tracking-wide text-left" style={{ color: 'var(--text-muted)' }} onClick={() => setHueco({ dia: d.dia, franja: c.nombre })}>
                         {c.nombre}{c.recurrente ? ' · diario' : ''}
@@ -174,10 +196,10 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
                         {!c.recurrente && <button title="Quitar" onClick={() => quitar(c.id)} style={{ color: 'var(--text-muted)' }}><X size={13} /></button>}
                       </div>
                     </div>
-                    <button className="text-xs font-medium text-left leading-snug mt-0.5 w-full" style={{ color: 'var(--text)' }} onClick={() => setHueco({ dia: d.dia, franja: c.nombre })}>
+                     <button className="text-xs lg:text-[11px] font-medium text-left leading-snug mt-0.5 w-full line-clamp-3" style={{ color: 'var(--text)' }} onClick={() => setHueco({ dia: d.dia, franja: c.nombre })}>
                       {c.receta?.nombre ?? 'Sin receta'}
                     </button>
-                    <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{c.kcal} kcal · P {c.p} · C {c.c} · G {c.g}</p>
+                    <p className="text-[10px] lg:text-[9px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{c.kcal} · P{c.p} C{c.c} G{c.g}</p>
                   </div>
                   )
                 })}

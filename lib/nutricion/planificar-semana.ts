@@ -2,7 +2,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DIAS_SEMANA } from './comidas-dia'
 import { materializarComidasRecurrentes } from './materializar-comidas'
-import { construirFiltroCliente, FRANJAS, repartoFranja } from './semana-dieta'
+import { construirFiltroCliente, FRANJAS, REPARTO } from './semana-dieta'
 import { repartirSemanaSinRepetir, type Asignacion, type CandidataSemana, type Hueco } from './generar-semana'
 import { filtrarRecetasPorSlot } from '@/lib/plan-recetas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
@@ -25,6 +25,7 @@ export async function planificarSemana(
   clienteId: string,
   plan: PlanObjetivo,
   reemplazar: boolean,
+  franjasElegidas?: SlotComida[],
 ) {
   const [{ data: onboarding }, { data: perfil }, { data: perfilEntreno }, { data: comidas }] = await Promise.all([
     db.from('onboarding_responses').select('*').eq('cliente_id', clienteId).maybeSingle(),
@@ -36,7 +37,9 @@ export async function planificarSemana(
   const existentes = (comidas ?? []) as ComidaExistente[]
 
   const franjasPlan = FRANJAS.filter(f => existentes.some(c => c.nombre === f))
-  const franjas = franjasPlan.length > 0 ? franjasPlan : FRANJAS_BASE
+  // Si el coach elige franjas, mandan; si no, las que ya usa el plan (media mañana, merienda, peri-entreno: solo si se piden)
+  const elegidas = FRANJAS.filter(f => franjasElegidas?.includes(f))
+  const franjas = elegidas.length > 0 ? elegidas : franjasPlan.length > 0 ? franjasPlan : FRANJAS_BASE
 
   // Una comida sin día es "de todos los días": cuenta como ocupada en cualquier día
   const ocupado = (dia: string, franja: string) => existentes.some(c => c.nombre === franja && (c.dia_semana === dia || c.dia_semana == null) && c.receta_id)
@@ -52,7 +55,9 @@ export async function planificarSemana(
   const candidatas: Record<string, CandidataSemana[]> = {}
   const shares = new Map<string, number>()
   for (const franja of [...new Set(huecos.map(h => h.franja))] as SlotComida[]) {
-    const share = await repartoFranja(db, plan.id, franja)
+    // Reparto sobre todas las franjas del día: las que ya tiene el plan más las elegidas
+    const delDia = FRANJAS.filter(f => franjas.includes(f) || existentes.some(c => c.nombre === f))
+    const share = REPARTO[franja] / delDia.reduce((t, f) => t + REPARTO[f], 0)
     shares.set(franja, share)
     const t = (v: number | null) => (v ? v * share : 0)
     const pedir = (tags?: typeof tagsClinicos) => filtrarRecetasPorSlot(
@@ -104,11 +109,12 @@ export async function generarSemana(
   clienteId: string,
   plan: PlanObjetivo,
   reemplazar: boolean,
+  franjasElegidas?: SlotComida[],
 ): Promise<ResultadoSemana> {
   // Con días concretos ya no hay comidas "de todos los días" que interpretar
   await materializarComidasRecurrentes(db, plan.id)
   if (reemplazar) await quitarComidasDuplicadas(db, plan.id)
-  const { huecos, asignaciones, sinCubrir, shares, existentes } = await planificarSemana(db, clienteId, plan, reemplazar)
+  const { huecos, asignaciones, sinCubrir, shares, existentes } = await planificarSemana(db, clienteId, plan, reemplazar, franjasElegidas)
   if (huecos.length === 0) return { ok: true, asignadas: 0, repetidas: 0, sinCubrir: [], errores: [], mensaje: 'La semana ya está completa' }
 
   const faltan = asignaciones.filter(a => !existentes.some(c => c.dia_semana === a.dia && c.nombre === a.franja))
