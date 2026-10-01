@@ -163,6 +163,7 @@ function PortalClientePageContent() {
     const tabParam = searchParams.get('tab')
     return TABS_VALIDOS.includes(tabParam as Tab) ? (tabParam as Tab) : 'hoy'
   })
+  const [subRecetas, setSubRecetas] = useState<'plan' | 'recetario' | null>(null)
   const [peso, setPeso] = useState('')
   const [notaPeso, setNotaPeso] = useState('')
   const [guardandoPeso, setGuardandoPeso] = useState(false)
@@ -724,7 +725,21 @@ function PortalClientePageContent() {
           <div className="flex flex-col gap-6">
             {codigo && cliente ? (
               <>
-                {recetasDelPlan().length > 0 && (
+                {(() => {
+                  const activa = subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')
+                  return (
+                    <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                      {([['plan', 'En tu plan'], ['recetario', 'Recetario completo']] as const).map(([k, t]) => (
+                        <button key={k} onClick={() => setSubRecetas(k)} className="flex-1 px-3 py-2.5 text-xs font-semibold"
+                          style={{ background: activa === k ? 'var(--primary)' : 'transparent', color: activa === k ? 'var(--bg)' : 'var(--text-muted)' }}>
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  )
+                })()}
+
+                {(subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')) === 'plan' && recetasDelPlan().length > 0 && (
                   <div className="flex flex-col gap-3">
                     <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>En tu plan</h2>
                     <div className="grid grid-cols-2 gap-3">
@@ -756,9 +771,18 @@ function PortalClientePageContent() {
                   </div>
                 )}
 
-                <MisPlatos codigo={codigo} clienteId={cliente.id} />
+                {(subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')) === 'plan' && (
+                  <>
+                    {recetasDelPlan().length === 0 && (
+                      <EmptyState icon={BookOpenText} text="Aún no tienes recetas en tu plan. Mira el recetario completo." />
+                    )}
+                    <MisPlatos codigo={codigo} clienteId={cliente.id} />
+                  </>
+                )}
 
-                <RecetarioExplorador codigo={codigo} recetaHref={recetaHref} />
+                {(subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')) === 'recetario' && (
+                  <RecetarioExplorador codigo={codigo} recetaHref={recetaHref} />
+                )}
               </>
             ) : (
               <EmptyState icon={BookOpenText} text="Activa un plan de dieta para ver tus recetas" />
