@@ -41,7 +41,8 @@ export function StepByStep({ pasos, className = '' }: StepByStepProps) {
                                 className="absolute left-0 top-2 w-[30px] h-[30px] rounded-full flex items-center justify-center text-xs font-bold z-10"
                                 style={{
                                     background: 'var(--accent)',
-                                    color: '#ffffff',
+                                    // var(--bg) se invierte con el tema: en oscuro el acento es casi blanco y el blanco fijo no se leía
+                                    color: 'var(--bg)',
                                     border: '2px solid var(--accent)',
                                 }}
                             >

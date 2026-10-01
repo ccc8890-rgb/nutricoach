@@ -11,7 +11,7 @@ export async function GET(
 
     const { data: plan, error: planError } = await supabase
       .from('planes_nutricion')
-      .select('id, comidas(id, receta_id, alternativas_receta_ids)')
+      .select('id, cliente_id, comidas(id, receta_id, alternativas_receta_ids)')
       .eq('codigo_publico', codigo)
       .eq('activo', true)
       .single()
@@ -46,8 +46,12 @@ export async function GET(
       return NextResponse.json({ error: 'Receta no disponible' }, { status: 403 })
     }
 
+    // El vídeo original solo se muestra a los clientes a los que el coach se lo ha activado
+    const { data: ajuste } = await supabase.from('clientes').select('ver_video_recetas').eq('id', plan.cliente_id).maybeSingle()
+    const receta = ajuste?.ver_video_recetas ? recetaRes.data : { ...recetaRes.data, url_origen: null }
+
     return NextResponse.json({
-      receta: recetaRes.data,
+      receta,
       ingredientes: ingredientesRes.data ?? [],
     })
   } catch (err) {

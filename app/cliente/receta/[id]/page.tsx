@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, Clock, Loader2, AlertTriangle, UtensilsCrossed } from 'lucide-react'
+import { ArrowLeft, Clock, Loader2, AlertTriangle, UtensilsCrossed, PlayCircle } from 'lucide-react'
 import { MacroRing } from '@/components/premium/MacroRing'
 import { IngredientChecklist } from '@/components/premium/IngredientChecklist'
 import { StepByStep } from '@/components/premium/StepByStep'
@@ -14,6 +14,7 @@ interface RecetaDetalle {
   imagen_url?: string | null
   descripcion?: string | null
   instrucciones?: string | null
+  url_origen?: string | null
   consejos?: string | null
   porciones?: number
   kcal?: number | null
@@ -140,6 +141,14 @@ export default function RecetaClientePage() {
                 ) : null}
                 {receta.porciones ? <span>{receta.porciones} {receta.porciones === 1 ? 'porción' : 'porciones'}</span> : null}
               </div>
+              {/* Solo llega si el coach ha activado el vídeo para este cliente */}
+              {receta.url_origen && /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(receta.url_origen) && (
+                <a href={receta.url_origen} target="_blank" rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+                  <PlayCircle size={15} /> Ver vídeo original
+                </a>
+              )}
             </div>
 
             <div className="flex justify-center py-2">

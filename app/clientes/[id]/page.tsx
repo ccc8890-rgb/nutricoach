@@ -454,6 +454,15 @@ export default function ClienteDetallePage() {
     fin: '',
   })
   const [guardandoMembresia, setGuardandoMembresia] = useState(false)
+  const [verVideoRecetas, setVerVideoRecetas] = useState(false)
+
+  async function alternarVerVideo(valor: boolean) {
+    if (!id) return
+    setVerVideoRecetas(valor)
+    const { error } = await supabase.from('clientes').update({ ver_video_recetas: valor }).eq('id', id as string)
+    if (error) { setVerVideoRecetas(!valor); addToast({ type: 'error', title: 'Error', message: 'No se pudo guardar el ajuste' }) }
+    else addToast({ type: 'success', title: valor ? 'Vídeo activado' : 'Vídeo desactivado', message: valor ? 'El cliente verá el vídeo original en sus recetas' : 'El cliente ya no verá el vídeo original' })
+  }
 
   async function guardarMembresia() {
     if (!id) return
@@ -545,6 +554,7 @@ export default function ClienteDetallePage() {
       supabase.from('notas_coach').select('*').eq('cliente_id', id).order('created_at', { ascending: false }).limit(20),
     ])
     setCliente(clienteRes.data)
+    setVerVideoRecetas(!!(clienteRes.data as Record<string, unknown> | null)?.ver_video_recetas)
     if (clienteRes.data) {
       setMembresiaEdit({
         tipo: (clienteRes.data as Record<string, string | null>).tipo_membresia ?? '',
@@ -1259,6 +1269,13 @@ export default function ClienteDetallePage() {
           <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-4">
             <WorkCard title="Perfil y planificación" kicker="Datos base" icon={PersonStanding}>
               <div className="space-y-4">
+                <label className="flex items-start gap-3 rounded-2xl p-4 cursor-pointer" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                  <input type="checkbox" className="mt-0.5" checked={verVideoRecetas} onChange={e => alternarVerVideo(e.target.checked)} />
+                  <span>
+                    <span className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Mostrar el vídeo original de las recetas</span>
+                    <span className="block text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>En el portal del cliente, las recetas con enlace de Instagram, TikTok o YouTube enseñan un botón «Ver vídeo original».</span>
+                  </span>
+                </label>
                 {(cliente.notas || cliente.restricciones_alimentarias) && (
                   <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                     {cliente.restricciones_alimentarias && (
