@@ -80,6 +80,24 @@ export type ResultadoSemana = {
   errores: { dia: string; franja: string; error: string }[]; mensaje?: string
 }
 
+// Si hay varias comidas con la misma franja el mismo día (restos de pruebas o ediciones), deja una
+// (la que ya tiene receta) y borra las demás con sus ingredientes.
+async function quitarComidasDuplicadas(db: SupabaseClient, planId: string) {
+  const { data } = await db.from('comidas').select('id, nombre, dia_semana, receta_id, orden').eq('plan_id', planId).order('orden')
+  const vistos = new Map<string, string>()
+  const sobran: string[] = []
+  const filas = [...(data ?? [])].sort((a, b) => Number(!!b.receta_id) - Number(!!a.receta_id))
+  for (const c of filas) {
+    if (!c.dia_semana) continue
+    const clave = `${c.dia_semana}|${c.nombre}`
+    if (vistos.has(clave)) sobran.push(c.id)
+    else vistos.set(clave, c.id)
+  }
+  if (sobran.length === 0) return
+  await db.from('comida_alimentos').delete().in('comida_id', sobran)
+  await db.from('comidas').delete().in('id', sobran)
+}
+
 // Escribe la semana: materializa las comidas "de todos los días", crea las que falten y aplica cada receta.
 export async function generarSemana(
   db: SupabaseClient,
@@ -89,6 +107,7 @@ export async function generarSemana(
 ): Promise<ResultadoSemana> {
   // Con días concretos ya no hay comidas "de todos los días" que interpretar
   await materializarComidasRecurrentes(db, plan.id)
+  if (reemplazar) await quitarComidasDuplicadas(db, plan.id)
   const { huecos, asignaciones, sinCubrir, shares, existentes } = await planificarSemana(db, clienteId, plan, reemplazar)
   if (huecos.length === 0) return { ok: true, asignadas: 0, repetidas: 0, sinCubrir: [], errores: [], mensaje: 'La semana ya está completa' }
 

@@ -136,8 +136,12 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
 
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
         {dias.map(d => {
-          const nombres = new Set(d.comidas.map(c => c.nombre))
-          const libres = franjas.filter(f => !nombres.has(f))
+          // Cada franja en su sitio: las comidas ordenadas por franja y los huecos vacíos entre ellas
+          const posicion = (f: string) => { const i = franjas.indexOf(f); return i === -1 ? franjas.length : i }
+          const items: ({ tipo: 'comida'; c: Comida } | { tipo: 'hueco'; f: string })[] = [
+            ...d.comidas.map(c => ({ tipo: 'comida' as const, c })),
+            ...franjas.filter(f => !d.comidas.some(c => c.nombre === f)).map(f => ({ tipo: 'hueco' as const, f })),
+          ].sort((a, b) => posicion(a.tipo === 'comida' ? a.c.nombre : a.f) - posicion(b.tipo === 'comida' ? b.c.nombre : b.f))
           return (
             <div key={d.dia} className="min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
               <div className="flex items-baseline justify-between mb-2">
@@ -145,7 +149,16 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
                 <p className="text-xs font-data font-bold" style={{ color: colorDesvio(d.total.kcal, plan.kcal_objetivo) }}>{d.total.kcal} kcal</p>
               </div>
               <div className="space-y-1.5">
-                {d.comidas.map(c => (
+                {items.map(it => {
+                  if (it.tipo === 'hueco') return (
+                  <button key={it.f} onClick={() => setHueco({ dia: d.dia, franja: it.f })}
+                    className="w-full rounded-lg p-1.5 text-[11px] flex items-center gap-1 justify-center"
+                    style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
+                    <Plus size={11} /> {it.f}
+                  </button>
+                  )
+                  const c = it.c
+                  return (
                   <div key={c.id} className="rounded-lg p-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                     <div className="flex items-center justify-between gap-1">
                       <button className="text-[10px] font-semibold uppercase tracking-wide text-left" style={{ color: 'var(--text-muted)' }} onClick={() => setHueco({ dia: d.dia, franja: c.nombre })}>
@@ -166,14 +179,8 @@ export default function SemanaDietaPlanner({ clienteId }: { clienteId: string })
                     </button>
                     <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{c.kcal} kcal · P {c.p} · C {c.c} · G {c.g}</p>
                   </div>
-                ))}
-                {libres.map(f => (
-                  <button key={f} onClick={() => setHueco({ dia: d.dia, franja: f })}
-                    className="w-full rounded-lg p-1.5 text-[11px] flex items-center gap-1 justify-center"
-                    style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
-                    <Plus size={11} /> {f}
-                  </button>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )
