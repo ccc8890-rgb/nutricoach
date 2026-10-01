@@ -140,7 +140,7 @@ export async function filtrarRecetasPorSlot(
   // para ningún cliente, aunque el código los usara como si existieran.
   let query = supabase
     .from('recetas')
-    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, recipe_intelligence_score, macro_flex_score, planning_roles, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad, apto_sop, apto_hashimoto, apto_rendimiento, es_post_entreno, es_pre_entreno, densidad_proteica, score_saciedad, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
+    .select('id, nombre, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, imagen_url, url_origen, intolerancias, score_calidad, verificacion, recipe_intelligence_score, macro_flex_score, planning_roles, apta_cliente, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score, densidad_energetica, digestibilidad, apto_sop, apto_hashimoto, apto_rendimiento, es_post_entreno, es_pre_entreno, densidad_proteica, score_saciedad, receta_ingredientes!receta_ingredientes_receta_id_fkey(nombre_libre, alimento:alimentos(nombre))')
     .eq('estado', 'aprobada')
     .gt('kcal', 0)
     .in('categoria', categorias)
@@ -226,6 +226,10 @@ export async function filtrarRecetasPorSlot(
 
   // Filtro duro: dislikes del cliente
   candidatas = candidatas.filter(r => !dislikeIds.has(r.id))
+
+  // Recetario de confianza: preferir recetas verificadas si hay suficientes
+  const verificadas = candidatas.filter(r => r.verificacion != null)
+  if (verificadas.length >= 3) candidatas = verificadas
 
   // Filtro blando: score_calidad mínimo (solo si quedan >=3)
   const aptasCalidad = candidatas.filter(r => (r.score_calidad ?? 50) >= 50)

@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     const buildQuery = (extraFilters?: { tipos?: string[]; excludeIds?: string[]; relaxedMacros?: boolean }) => {
         let q = db
             .from('recetas')
-            .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min, score_calidad, recipe_intelligence_score, macro_flex_score, planning_roles, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score')
+            .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min, score_calidad, verificacion, recipe_intelligence_score, macro_flex_score, planning_roles, objetivos, deportes, momentos, estilos, premium_chef, adherencia_score')
             .eq('estado', 'aprobada')
             .order('kcal', { ascending: true })
             .limit(extraFilters?.excludeIds ? limite * 2 : limite * 4)
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
                 preferirChefHealthy,
             }),
         }))
-        .sort((a, b) => b._agent_score - a._agent_score || a._dist - b._dist)
+        .sort((a, b) => Number(!!b.verificacion) - Number(!!a.verificacion) || b._agent_score - a._agent_score || a._dist - b._dist)
         .slice(0, limite)
         .map(({ _dist, _agent_score, ...r }) => {
             void _dist

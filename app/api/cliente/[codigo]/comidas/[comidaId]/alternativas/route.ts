@@ -56,7 +56,7 @@ export async function GET(
 
     const { data: recetas } = await db
       .from('recetas')
-      .select('id, kcal, proteinas, intolerancias, tipo_plato')
+      .select('id, kcal, proteinas, intolerancias, tipo_plato, verificacion')
       .eq('estado', 'aprobada')
       .in('tipo_plato', tiposPermitidos.length ? tiposPermitidos : ['Comida', 'Cena', 'Desayuno', 'Merienda', 'Snack', 'Postre'])
       .gt('kcal', 0)
@@ -74,7 +74,9 @@ export async function GET(
         id: r.id,
         dist:
           (targetKcal > 0 ? Math.abs(Number(r.kcal) - targetKcal) / targetKcal : 0) +
-          (targetProt > 0 ? Math.abs(Number(r.proteinas ?? 0) - targetProt) / targetProt : 0),
+          (targetProt > 0 ? Math.abs(Number(r.proteinas ?? 0) - targetProt) / targetProt : 0) +
+          // Recetario de confianza: las no verificadas solo salen si no hay verificadas cercanas
+          (r.verificacion ? 0 : 0.5),
       }))
       .sort((a, b) => a.dist - b.dist)
       .slice(0, 3 - alternativaIds.length)
