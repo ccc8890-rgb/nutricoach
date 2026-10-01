@@ -33,6 +33,16 @@
 - **Lote** `scripts/lotes/2026-10-01_comidas-cenas-rendimiento.json` (20 recetas sin pollo, `en_revision`). Importador: nuevo campo de lote `apto_rendimiento`. Lección: el quality gate marca `cantidad_muy_pequena` si un ingrediente principal (ajo incluido) pesa <5 g.
 - Verificado: `tsc`, eslint, `npm run build`, 401 sin sesión, test unitario, escritura end-to-end sobre cliente ficticio Andrés (su semana quedó regenerada). Sin verificar visualmente el botón ni ejecutado sobre la semana real de Carlos.
 
+### 6. Cierre 01→02-10-2026 — lecciones y estado (Claude)
+- **Lección motor:** las cantidades de `receta_ingredientes` son de la receta ENTERA; todo escalado (factor por kcal, `SCALING_RULES`, optimizador con límites 0,25/0,5) debe partir de UNA ración (`cantidad / porciones`). Medido con `scripts/medir-escalado-raciones.ts`: antes +105 %/+229 % de kcal en 5+/9+ raciones. Cualquier código nuevo que lea `receta_ingredientes` para un plato debe dividir por `porciones`.
+- **Lección auditoría:** comparar con el texto ORIGINAL (pie del vídeo) es la fuente de verdad; la similitud de texto o las instrucciones solas no bastan (ya lo decía T46). Instagram necesita sesión: `yt-dlp --cookies-from-browser safari` requiere «Acceso total al disco» para el terminal/VS Code. `deepseek-chat` se cuelga a veces y `deepseek-v4-pro` es lento (~40 s/receta) y consume saldo; Gemini 2.5 Flash va en <10 s.
+- **Lección buscador de alimentos (scripts):** `ilike` no ignora tildes y un `limit` bajo recorta resultados («sal» → «Salmón», «Sal de ajo»); buscar nombre exacto primero, con tildes y palabras completas, penalizando envases. Los prefijos de id de alimento se buscan por rango de UUID, no con `limit`.
+- **Complementos:** `comida_alimentos.es_complemento` + `complemento_receta_id`; `materializarComidasRecurrentes` y `aplicarRecetaAComida` los preservan. API `semana-dieta/complemento`.
+- **Semanas futuras:** `comidas_planificadas` (RLS sin políticas, solo service role); nada de eso lo ve el cliente hasta `activar`.
+- **Vídeo original:** `clientes.ver_video_recetas` (activado solo para Carlos). La API `/api/cliente/[codigo]/recetas/[recetaId]` ya no envía `url_origen` si está apagado.
+- **Deploy:** un fallo transitorio de Vercel (`next/font/google` no resuelve) se arregla con `vercel redeploy <url>`; no es del código.
+- Detalle completo y pendientes en `../ESTADO-COMPARTIDO.md` (entrada «CIERRE 01→02-10-2026»).
+
 ### Pendiente
 0. Aprobar las 20 recetas nuevas (junto con las 42) y re-ejecutar `verificar-recetas-auto.ts --apply`; decidir tope de 80 / filtro `apto_rendimiento` en la generación inicial; lote de meriendas/media mañana de rendimiento; semana sucesiva; vista 'para grabar' + lista de la compra.
 1. Carlos aprueba las 42 recetas en `/recetas/revisar` y se re-ejecuta `verificar-recetas-auto.ts --apply`.
