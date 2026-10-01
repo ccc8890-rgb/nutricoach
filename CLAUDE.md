@@ -1,5 +1,31 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 01-10-2026 (Claude, coordinado con Codex) — Fase 0 en producción, precisión de macros, estudio del recetario y 2 lotes nuevos
+
+### 1. Motor Integrado Fase 0 — en producción
+- Codex hizo Tasks 1-5 (+ Task 6 propia); Claude hizo Task 6 en paralelo (descartada, se adoptó la de Codex por mejor sanitizado) y Task 7 (`scripts/test-fase0-integridad-static.ts` + check ≤1 plan activo por dominio en `test-flujo-completo.ts`).
+- Verificación local con Docker vía **Colima** (`colima start`; Supabase local necesita `DOCKER_HOST=unix://$HOME/.colima/default/docker.sock` y `supabase start -x vector,logflare`). Laboratorio = `supabase db dump --linked` (solo esquema) + migraciones nuevas, en carpeta temporal (las migraciones del repo no reconstruyen la BD desde cero). pgTAP 82/82 + concurrencia OK. Fixture de `fase0_integridad_motor.sql` corregido.
+- Fix antes de aplicar: la deduplicación de planes activos agrupaba los `cliente_id NULL` (habría desactivado un plan huérfano). 4 migraciones aplicadas con `supabase db push --linked` (permiso explícito de Carlos). `main` desplegado, Vercel Ready.
+
+### 2. Precisión de macros de las dietas (`42a3682`, en producción)
+- Auditoría (`scripts/auditar-precision-macros.ts`, solo lectura): planes con kcal ±7% pero proteína −5/−22% y grasa +16/+40%. Causa: cada rol se escalaba al 100% de su macro ignorando lo que aportan los demás ingredientes, y la corrección final por kcal arrastraba la proteína.
+- Nuevo `lib/recetas/optimizar-factores.ts`: factor por grupo de rol (P/C/G/resto) minimizando a la vez el error de kcal+P+C+G (pesos 3/3/1/0.7, límites por grupo, regularización hacia escalado uniforme). Usado por `aplicarRecetaAComida` solo si hay objetivos de macro.
+- Simulación (`scripts/simular-precision-macros.ts`): proteína → −3/−2/−8%, grasa → +4/+9/+23%, kcal ±2%. Solo afecta a planes nuevos; los activos no se recalcularon (decisión de Carlos).
+
+### 3. Estudio del recetario + importador seguro + 42 recetas nuevas
+- Estudio: `../salidas/01-10-2026_estudio-cobertura-recetario.md` (script `scripts/estudio-cobertura-recetario.ts`). Huecos: desayunos proteicos 8/77, vegano+proteína 3, pre/post entreno 7, cenas rendimiento 7, snacks pérdida grasa 2, meriendas sin lactosa 3. 302/474 sin foto. Sobran dulces (32%).
+- **`scripts/importar-lote-verificado.ts` — usar SIEMPRE para lotes nuevos**: cada ingrediente apunta a un alimento por nombre exacto + prefijo de id (falla si no hay exactamente 1), macros calculadas desde BD, intolerancias deducidas del catálogo del lote, `rol_ingrediente` fijado, criterios por lote o por perfil (`pre`/`post`), detección de duplicados, dry-run por defecto. `importar-lote-deepseek.ts` deja `alimento_id` null y confía en las kcal del JSON: no usar.
+- Lote 1 `scripts/lotes/2026-10-01_desayunos-proteicos.json`: 22 desayunos (27-47% kcal proteína). Lote 2 `scripts/lotes/2026-10-01_pre-post-entreno.json`: 9 pre + 11 post con `es_pre_entreno`/`es_post_entreno`. Las 42 en `en_revision`, pendientes de aprobación de Carlos.
+- Quality gate (`lib/recetas/profesional.ts`), 2 falsos positivos corregidos: "proteína sabor vainilla" no es especia; un vaso de zumo de naranja no es aliño (la regla >120 g solo aplica a zumo de limón/lima, vinagre, salsas).
+
+### Pendiente
+1. Carlos aprueba las 42 recetas en `/recetas/revisar`.
+2. Semana de Carlos descuadrada (1.003–4.192 kcal/día) por mover platos en el kanban de dieta; falta aviso de kcal al mover.
+3. Siguiente lote: vegano + proteína. Fotos de las 302 recetas sin imagen (T44).
+4. Idea nueva de Carlos: agentes de revisión del recetario alimentados con sus marcas desde el portal cliente (diseño en curso).
+
+---
+
 ## ✅ SESIÓN 30-09-2026 (Codex) — Director semanal ejecutado, dry-run, auditoría persistente y panel de actividad
 
 ### Estado real encontrado
