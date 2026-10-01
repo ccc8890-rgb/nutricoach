@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { LogIn, Sparkles } from 'lucide-react'
@@ -224,7 +225,10 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm mt-6" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-center text-sm mt-4">
+            <Link href="/recuperar-contrasena" style={{ color: 'var(--text-muted)' }} className="underline">¿Olvidaste tu contraseña?</Link>
+          </p>
+          <p className="text-center text-sm mt-3" style={{ color: 'var(--text-muted)' }}>
             ¿No tienes cuenta? Pide acceso a tu coach.
           </p>
         </div>
