@@ -1,0 +1,225 @@
+{
+  "lote": "pre-post-entreno-2026-10-01",
+  "tipo_plato": "Snack",
+  "fuente": "lote_verificado",
+  "criterios_por_perfil": {
+    "pre":  { "kcal_min": 180, "kcal_max": 400, "hc_pct_min": 0.55, "grasa_pct_max": 0.20 },
+    "post": { "kcal_min": 280, "kcal_max": 520, "proteina_pct_min": 0.25, "hc_pct_min": 0.40, "grasa_pct_max": 0.30 }
+  },
+  "alimentos": {
+    "tortitas_arroz":  { "nombre": "Tortitas de Arroz Integral Paquete", "prefijo": "072975ac", "rol": "carbohidrato_base", "alergenos": [], "origen": "vegetal" },
+    "pan_blanco":      { "nombre": "Pan blanco", "prefijo": "cfd2a454", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "pan_molde":       { "nombre": "Pan de molde blanco", "prefijo": "a1204fc6", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "bagel":           { "nombre": "Bagels Clásico", "prefijo": "3da49223", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "tortilla":        { "nombre": "Tortilla de Trigo", "prefijo": "bd6dc3a5", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "copos_maiz":      { "nombre": "copos de maíz", "prefijo": "7e0288f3", "rol": "carbohidrato_base", "alergenos": [], "origen": "vegetal" },
+    "avena":           { "nombre": "Avena", "prefijo": "31b21452", "rol": "carbohidrato_base", "alergenos": ["Gluten"], "origen": "vegetal" },
+    "arroz":           { "nombre": "Arroz blanco", "prefijo": "d262ebde", "rol": "carbohidrato_base", "alergenos": [], "origen": "vegetal" },
+    "boniato":         { "nombre": "Boniato", "prefijo": "6c5d82a5", "rol": "carbohidrato_base", "alergenos": [], "origen": "vegetal" },
+    "patata":          { "nombre": "Patata", "prefijo": "0b223775", "rol": "carbohidrato_base", "alergenos": [], "origen": "vegetal" },
+    "mermelada":       { "nombre": "Mermelada Albaricoque Frasco", "prefijo": "85270c68", "rol": "salsa_condimento", "alergenos": [], "origen": "vegetal" },
+    "membrillo":       { "nombre": "Dulce de membrillo taco", "prefijo": "97545736", "rol": "salsa_condimento", "alergenos": [], "origen": "vegetal" },
+    "miel":            { "nombre": "Miel", "prefijo": "8619b09f", "rol": "salsa_condimento", "alergenos": [], "origen": "miel" },
+    "datiles":         { "nombre": "Dátiles medjool", "prefijo": "e6dd0fa6", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "platano":         { "nombre": "Plátano", "prefijo": "1131a576", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "uvas":            { "nombre": "Uvas", "prefijo": "1fc15618", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "frutos_rojos":    { "nombre": "Frutos rojos congelados", "prefijo": "ebedfe6f", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "zumo":            { "nombre": "Zumo de naranja", "prefijo": "f2671248", "rol": "fruta_complemento", "alergenos": [], "origen": "vegetal" },
+    "tomate":          { "nombre": "Tomate", "prefijo": "7f40a393", "rol": "verdura_volumen", "alergenos": [], "origen": "vegetal" },
+    "yogur_desnatado": { "nombre": "Yogur natural desnatado", "prefijo": "b0646b89", "rol": "lacteo_complemento", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "leche_desnatada": { "nombre": "Leche desnatada", "prefijo": "88f3975a", "rol": "lacteo_complemento", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "skyr":            { "nombre": "Skyr natural", "prefijo": "edc8a060", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "qfb":             { "nombre": "Queso fresco batido desnatado 0% MG", "prefijo": "1380d26a", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "cottage":         { "nombre": "Cottage 0% Materia Grasa", "prefijo": "30dbfc8a", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "queso_fresco":    { "nombre": "Queso Fresco 0% Pack de", "prefijo": "6bc5fa33", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "whey":            { "nombre": "Proteína en polvo sabor vainilla", "prefijo": "9076c191", "rol": "proteina_principal", "alergenos": ["Lácteos"], "origen": "lacteo" },
+    "pavo":            { "nombre": "Fiambre de Pechuga de Pavo", "prefijo": "a279ae71", "rol": "proteina_principal", "alergenos": [], "origen": "carne" },
+    "jamon":           { "nombre": "Jamón Cocido Bonnatur 96 % Carne", "prefijo": "1b2141ba", "rol": "proteina_principal", "alergenos": [], "origen": "cerdo" },
+    "clara":           { "nombre": "Claras de huevo líquidas pasteurizadas", "prefijo": "4e4cda47", "rol": "proteina_principal", "alergenos": ["Huevos"], "origen": "huevo" },
+    "huevo":           { "nombre": "Huevo entero, crudo", "prefijo": "6cd81fed", "rol": "proteina_principal", "alergenos": ["Huevos"], "origen": "huevo" },
+    "cacao":           { "nombre": "Cacao Puro en Polvo sin Azúcar", "prefijo": "f928aff3", "rol": "especias_aromaticos", "alergenos": [], "origen": "vegetal" },
+    "aove":            { "nombre": "Aceite de oliva virgen extra", "prefijo": "efdb0f46", "rol": "grasa_saludable", "alergenos": [], "origen": "vegetal" }
+  },
+  "recetas": [
+    {
+      "nombre": "Tortitas de arroz con mermelada y plátano",
+      "perfil": "pre", "tipo_plato": "Snack",
+      "descripcion": "Snack pre-entreno de digestión rápida: tortitas de arroz con mermelada y plátano en rodajas.",
+      "tiempo_prep_min": 2,
+      "ingredientes": [["tortitas_arroz", 30], ["mermelada", 20], ["platano", 100]],
+      "instrucciones": "1. Unta la mermelada sobre las tortitas de arroz.\n2. Cubre con el plátano en rodajas.\n3. Tómalo entre 45 y 60 minutos antes de entrenar.",
+      "consejos": "Si entrenas muy temprano, con solo el plátano y una tortita es suficiente."
+    },
+    {
+      "nombre": "Tostada de pan blanco con membrillo y queso fresco",
+      "perfil": "pre", "tipo_plato": "Snack",
+      "descripcion": "Tostada clásica pre-entreno: pan blanco, dulce de membrillo y un poco de queso fresco 0%.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["pan_blanco", 60], ["membrillo", 30], ["queso_fresco", 40]],
+      "instrucciones": "1. Tuesta el pan.\n2. Coloca encima el queso fresco en lonchas finas.\n3. Termina con el membrillo cortado en láminas.\n4. Tómala 60-90 minutos antes de entrenar.",
+      "consejos": "El pan blanco se digiere mejor que el integral justo antes de entrenar."
+    },
+    {
+      "nombre": "Bol de dátiles, yogur y copos de maíz",
+      "perfil": "pre", "tipo_plato": "Snack",
+      "descripcion": "Bol ligero y dulce con dátiles, yogur natural desnatado y copos de maíz crujientes.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["yogur_desnatado", 125], ["datiles", 40], ["copos_maiz", 20]],
+      "instrucciones": "1. Pon el yogur en un bol.\n2. Añade los dátiles troceados sin hueso.\n3. Termina con los copos de maíz justo antes de comer para que sigan crujientes.",
+      "consejos": "Los dátiles aportan energía rápida: ideales para sesiones largas o de alta intensidad."
+    },
+    {
+      "nombre": "Bagel con mermelada y zumo de naranja",
+      "perfil": "pre", "tipo_plato": "Snack",
+      "descripcion": "Combinación clásica de los corredores antes de una sesión larga: bagel con mermelada y zumo.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["bagel", 85], ["mermelada", 20], ["zumo", 200]],
+      "instrucciones": "1. Abre el bagel y tuéstalo.\n2. Unta la mermelada.\n3. Acompaña con el zumo de naranja.\n4. Tómalo 60-90 minutos antes de una tirada larga o una competición.",
+      "consejos": "Muy útil el día de una carrera o una sesión de más de 90 minutos."
+    },
+    {
+      "nombre": "Copos de maíz con leche desnatada y plátano",
+      "perfil": "pre", "tipo_plato": "Snack",
+      "descripcion": "Bol rápido de cereales con leche desnatada y plátano, fácil de digerir.",
+      "tiempo_prep_min": 2,
+      "ingredientes": [["copos_maiz", 40], ["leche_desnatada", 200], ["platano", 80]],
+      "instrucciones": "1. Sirve los copos de maíz en un bol.\n2. Añade la leche desnatada.\n3. Corta el plátano por encima.",
+      "consejos": "Si tienes el estómago sensible, usa leche sin lactosa."
+    },
+    {
+      "nombre": "Sándwich ligero de pavo y miel",
+      "perfil": "pre", "tipo_plato": "Snack",
+      "descripcion": "Mini sándwich de pan de molde con pechuga de pavo y un hilo de miel: dulce-salado y ligero.",
+      "tiempo_prep_min": 2,
+      "ingredientes": [["pan_molde", 60], ["pavo", 30], ["miel", 10]],
+      "instrucciones": "1. Coloca el pavo entre las rebanadas de pan.\n2. Añade un hilo de miel sobre el pavo.\n3. Cierra y tómalo 60 minutos antes de entrenar.",
+      "consejos": "Fácil de llevar en la mochila del gimnasio."
+    },
+    {
+      "nombre": "Batido pre-entreno de plátano y naranja",
+      "perfil": "pre", "tipo_plato": "Snack",
+      "descripcion": "Batido suave de plátano, zumo de naranja y yogur desnatado. Energía rápida sin pesadez.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["platano", 120], ["zumo", 150], ["yogur_desnatado", 125]],
+      "instrucciones": "1. Pon todo en la batidora.\n2. Tritura 30 segundos.\n3. Tómalo 30-45 minutos antes de entrenar.",
+      "consejos": "Con hielo es muy refrescante en verano."
+    },
+    {
+      "nombre": "Tortitas de arroz con queso batido y uvas",
+      "perfil": "pre", "tipo_plato": "Snack",
+      "descripcion": "Tortitas de arroz con una capa de queso fresco batido y uvas frescas.",
+      "tiempo_prep_min": 2,
+      "ingredientes": [["tortitas_arroz", 20], ["qfb", 80], ["uvas", 150]],
+      "instrucciones": "1. Unta el queso fresco batido sobre las tortitas.\n2. Acompaña con las uvas.\n3. Tómalo 60 minutos antes de entrenar.",
+      "consejos": "Congela las uvas: quedan como un granizado natural."
+    },
+    {
+      "nombre": "Boniato asado con miel y canela",
+      "perfil": "pre", "tipo_plato": "Snack",
+      "descripcion": "Boniato asado con un toque de miel y canela: hidratos de calidad antes de una sesión larga.",
+      "tiempo_prep_min": 35,
+      "ingredientes": [["boniato", 200], ["miel", 10]],
+      "instrucciones": "1. Asa el boniato entero a 200 °C unos 30-35 minutos (o 8 minutos en el microondas).\n2. Ábrelo y añade la miel y abundante canela.\n3. Tómalo 90 minutos antes de entrenar.",
+      "consejos": "Asa varios a la vez y guárdalos en la nevera: se recalientan en 1 minuto."
+    },
+    {
+      "nombre": "Batido de recuperación de plátano y proteína",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Batido post-entreno con leche desnatada, proteína de vainilla y plátano para recuperar.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["leche_desnatada", 300], ["whey", 30], ["platano", 120]],
+      "instrucciones": "1. Pon todos los ingredientes en la batidora.\n2. Tritura 30 segundos.\n3. Tómalo en la primera hora tras entrenar.",
+      "consejos": "Llévalo en una botella térmica para tomarlo al salir del gimnasio."
+    },
+    {
+      "nombre": "Skyr con copos de maíz, frutos rojos y miel",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Bol de recuperación con skyr, copos de maíz crujientes, frutos rojos y un toque de miel.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["skyr", 200], ["copos_maiz", 40], ["frutos_rojos", 100], ["miel", 10]],
+      "instrucciones": "1. Pon el skyr en un bol.\n2. Añade los frutos rojos y la miel.\n3. Termina con los copos de maíz justo antes de comer.",
+      "consejos": "Con los frutos rojos congelados queda tipo helado."
+    },
+    {
+      "nombre": "Bagel de pavo, queso fresco y tomate",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Bagel salado para después de entrenar con pechuga de pavo, queso fresco 0% y tomate.",
+      "tiempo_prep_min": 4,
+      "ingredientes": [["bagel", 85], ["pavo", 60], ["queso_fresco", 60], ["tomate", 40]],
+      "instrucciones": "1. Abre el bagel y tuéstalo ligeramente.\n2. Rellena con el queso fresco, el pavo y el tomate en rodajas.\n3. Cierra y sirve.",
+      "consejos": "Añade unas hojas de rúcula o espinacas para más volumen."
+    },
+    {
+      "nombre": "Tortilla de patata ligera con claras",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Versión ligera de la tortilla de patata: patata, claras y un huevo, con muy poco aceite.",
+      "tiempo_prep_min": 20,
+      "ingredientes": [["patata", 200], ["clara", 150], ["huevo", 50], ["aove", 5]],
+      "instrucciones": "1. Corta la patata en láminas finas y cuécela en el microondas 6-7 minutos tapada.\n2. Dórala 2 minutos en sartén con el aceite.\n3. Bate las claras con el huevo, mezcla con la patata y cuaja a fuego medio por ambos lados.",
+      "consejos": "Hazla grande y guárdala en porciones: aguanta 3 días en la nevera."
+    },
+    {
+      "nombre": "Tostadas de jamón cocido con tomate y zumo de naranja",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Merienda post-entreno salada: pan blanco con tomate y jamón cocido, acompañada de zumo.",
+      "tiempo_prep_min": 4,
+      "ingredientes": [["pan_blanco", 80], ["jamon", 90], ["tomate", 60], ["zumo", 200]],
+      "instrucciones": "1. Tuesta el pan y frota o ralla el tomate por encima.\n2. Coloca el jamón cocido.\n3. Acompaña con el zumo de naranja.",
+      "consejos": "Cambia el jamón por pavo para una versión sin cerdo."
+    },
+    {
+      "nombre": "Bol de yogur proteico con avena y plátano",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Yogur desnatado enriquecido con proteína, avena y plátano: recuperación completa en un bol.",
+      "tiempo_prep_min": 3,
+      "ingredientes": [["yogur_desnatado", 250], ["whey", 20], ["avena", 40], ["platano", 80]],
+      "instrucciones": "1. Mezcla el yogur con la proteína en polvo hasta que quede cremoso.\n2. Añade la avena.\n3. Termina con el plátano en rodajas.",
+      "consejos": "Deja reposar 10 minutos para que la avena se ablande."
+    },
+    {
+      "nombre": "Arroz con leche proteico",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Arroz con leche desnatada y proteína de vainilla, con canela. Postre de recuperación.",
+      "tiempo_prep_min": 30,
+      "ingredientes": [["arroz", 50], ["leche_desnatada", 300], ["whey", 25]],
+      "instrucciones": "1. Cuece el arroz en la leche con una rama de canela y piel de limón a fuego bajo 25 minutos, removiendo.\n2. Retira del fuego y deja templar 5 minutos.\n3. Incorpora la proteína en polvo removiendo bien.\n4. Sirve con canela en polvo.",
+      "consejos": "Prepara varias raciones y guárdalas en la nevera hasta 3 días."
+    },
+    {
+      "nombre": "Boniato con cottage y miel",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Boniato asado relleno de queso cottage con un hilo de miel.",
+      "tiempo_prep_min": 35,
+      "ingredientes": [["boniato", 200], ["cottage", 150], ["miel", 10]],
+      "instrucciones": "1. Asa el boniato a 200 °C 30-35 minutos (o 8 minutos en el microondas).\n2. Ábrelo por la mitad y rellena con el cottage.\n3. Termina con la miel y canela.",
+      "consejos": "Si prefieres salado, cambia la miel por pimentón y orégano."
+    },
+    {
+      "nombre": "Wrap de pavo y queso batido",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Wrap rápido de tortilla de trigo con pechuga de pavo, queso fresco batido y tomate.",
+      "tiempo_prep_min": 4,
+      "ingredientes": [["tortilla", 60], ["pavo", 80], ["qfb", 50], ["tomate", 50]],
+      "instrucciones": "1. Calienta la tortilla 30 segundos en la sartén.\n2. Unta el queso fresco batido.\n3. Añade el pavo y el tomate en rodajas.\n4. Enrolla y sirve.",
+      "consejos": "Añade hojas verdes al gusto para más volumen."
+    },
+    {
+      "nombre": "Tortitas de arroz con queso batido y mermelada",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "Tortitas de arroz con una capa generosa de queso fresco batido y mermelada.",
+      "tiempo_prep_min": 2,
+      "ingredientes": [["tortitas_arroz", 30], ["qfb", 200], ["mermelada", 20]],
+      "instrucciones": "1. Unta el queso fresco batido sobre las tortitas de arroz.\n2. Termina con la mermelada por encima.",
+      "consejos": "Tómalo en la primera hora después de entrenar."
+    },
+    {
+      "nombre": "Leche con cacao, miel y tortitas de arroz",
+      "perfil": "post", "tipo_plato": "Merienda",
+      "descripcion": "La clásica leche con cacao como bebida de recuperación, con tortitas de arroz.",
+      "tiempo_prep_min": 2,
+      "ingredientes": [["leche_desnatada", 450], ["cacao", 10], ["miel", 10], ["tortitas_arroz", 20]],
+      "instrucciones": "1. Calienta la leche o úsala fría.\n2. Disuelve el cacao y la miel removiendo bien.\n3. Acompaña con las tortitas de arroz.",
+      "consejos": "La leche con cacao tiene una proporción de hidratos y proteína muy buena para recuperar."
+    }
+  ]
+}

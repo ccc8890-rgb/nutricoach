@@ -18,13 +18,20 @@ const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPAB
 
 type Origen = 'vegetal' | 'huevo' | 'lacteo' | 'miel' | 'carne' | 'cerdo' | 'pescado' | 'marisco'
 type AlimentoLote = { nombre: string; prefijo: string; rol: string; alergenos: string[]; origen: Origen }
+type Perfil = 'pre' | 'post'
+type Criterios = {
+  kcal_min: number; kcal_max: number; proteina_pct_min?: number; proteina_pct_min_vegano?: number
+  hc_pct_min?: number; grasa_pct_max?: number
+}
 type RecetaLote = {
   nombre: string; descripcion: string; tiempo_prep_min: number; porciones?: number
+  tipo_plato?: string; perfil?: Perfil
   ingredientes: [string, number][]; instrucciones: string; consejos?: string
 }
 type Lote = {
   lote: string; tipo_plato: string; fuente: string
-  criterios: { kcal_min: number; kcal_max: number; proteina_pct_min: number; proteina_pct_min_vegano?: number }
+  criterios?: Criterios
+  criterios_por_perfil?: Partial<Record<Perfil, Criterios>>
   alimentos: Record<string, AlimentoLote>; recetas: RecetaLote[]
 }
 type AlimentoBD = { id: string; nombre: string; calorias: number; proteinas: number; carbohidratos: number; grasas: number; fibra: number | null }
@@ -78,7 +85,6 @@ async function main() {
   }
   console.log(`✓ ${alimentos.size} alimentos verificados en BD\n`)
 
-  const { criterios } = lote
   const aceptadas: Array<{ receta: RecetaLote; macros: Record<string, number>; intolerancias: string[] }> = []
   let rechazadas = 0
 
@@ -95,16 +101,22 @@ async function main() {
     const r = (v: number) => Math.round((v / porciones) * 10) / 10
     const macros = { kcal: Math.round(total.kcal / porciones), proteinas: r(total.p), carbohidratos: r(total.c), grasas: r(total.g), fibra: r(total.fibra) }
     const intolerancias = intoleranciasDe(receta.ingredientes.map(([k]) => k))
+    const criterios = (receta.perfil && lote.criterios_por_perfil?.[receta.perfil]) || lote.criterios
+    if (!criterios) throw new Error(`"${receta.nombre}": sin criterios para validar`)
     const pctP = (macros.proteinas * 4) / macros.kcal
-    const minP = intolerancias.includes('Vegano') ? (criterios.proteina_pct_min_vegano ?? criterios.proteina_pct_min) : criterios.proteina_pct_min
+    const pctC = (macros.carbohidratos * 4) / macros.kcal
+    const pctG = (macros.grasas * 9) / macros.kcal
+    const minP = (intolerancias.includes('Vegano') ? criterios.proteina_pct_min_vegano : undefined) ?? criterios.proteina_pct_min ?? 0
 
     const { count: duplicada } = await db.from('recetas').select('id', { count: 'exact', head: true }).ilike('nombre', receta.nombre)
     const motivos: string[] = []
     if (macros.kcal < criterios.kcal_min || macros.kcal > criterios.kcal_max) motivos.push(`kcal ${macros.kcal} fuera de ${criterios.kcal_min}-${criterios.kcal_max}`)
     if (pctP < minP) motivos.push(`proteína ${Math.round(pctP * 100)}% < ${Math.round(minP * 100)}%`)
+    if (criterios.hc_pct_min && pctC < criterios.hc_pct_min) motivos.push(`hidratos ${Math.round(pctC * 100)}% < ${Math.round(criterios.hc_pct_min * 100)}%`)
+    if (criterios.grasa_pct_max && pctG > criterios.grasa_pct_max) motivos.push(`grasa ${Math.round(pctG * 100)}% > ${Math.round(criterios.grasa_pct_max * 100)}%`)
     if (duplicada) motivos.push('ya existe una receta con ese nombre')
 
-    const linea = `${String(macros.kcal).padStart(4)} kcal · P ${String(macros.proteinas).padStart(5)} (${Math.round(pctP * 100)}%) · C ${String(macros.carbohidratos).padStart(5)} · G ${String(macros.grasas).padStart(4)}`
+    const linea = `${receta.perfil ? `[${receta.perfil}] ` : ''}${String(macros.kcal).padStart(4)} kcal · P ${String(macros.proteinas).padStart(5)} (${Math.round(pctP * 100)}%) · C ${String(macros.carbohidratos).padStart(5)} (${Math.round(pctC * 100)}%) · G ${String(macros.grasas).padStart(4)} (${Math.round(pctG * 100)}%) · fibra ${macros.fibra}`
     if (motivos.length) {
       rechazadas++
       console.log(`✗ ${receta.nombre}\n    ${linea}\n    → ${motivos.join('; ')}`)
@@ -124,8 +136,9 @@ async function main() {
     const { data, error } = await db.from('recetas').insert({
       nombre: receta.nombre,
       descripcion: receta.descripcion,
-      categoria: lote.tipo_plato,
-      tipo_plato: lote.tipo_plato,
+      categoria: receta.tipo_plato ?? lote.tipo_plato,
+      tipo_plato: receta.tipo_plato ?? lote.tipo_plato,
+      ...(receta.perfil ? { es_pre_entreno: receta.perfil === 'pre', es_post_entreno: receta.perfil === 'post', apto_rendimiento: true } : {}),
       porciones: receta.porciones ?? 1,
       tiempo_prep_min: receta.tiempo_prep_min,
       ...macros,
