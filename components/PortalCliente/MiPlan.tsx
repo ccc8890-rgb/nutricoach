@@ -223,8 +223,9 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
     // redirige a cualquier rol "cliente" de vuelta a /cliente sin avisar —
     // "Ver receta" desde el portal cliente nunca funcionó de verdad. Ruta
     // propia sin CoachShell: /cliente/receta/[id].
-    const recetaHref = (recetaId: string) =>
-        `/cliente/receta/${recetaId}?codigo=${encodeURIComponent(codigo)}&returnTo=${encodeURIComponent(dietReturnTo)}`
+    // `comidaId`: la comida del plan, para que la receta enseñe «tu ración» y no la receta entera
+    const recetaHref = (recetaId: string, comidaId?: string) =>
+        `/cliente/receta/${recetaId}?codigo=${encodeURIComponent(codigo)}&returnTo=${encodeURIComponent(dietReturnTo)}${comidaId ? `&comida=${encodeURIComponent(comidaId)}` : ''}`
 
     useEffect(() => {
         setPlanState(plan)
@@ -652,7 +653,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                                             </p>
                                             {comida.receta_id && (
                                                 <Link
-                                                    href={recetaHref(comida.receta_id)}
+                                                    href={recetaHref(comida.receta_id, comida.id)}
                                                     onClick={e => e.stopPropagation()}
                                                     className="inline-flex items-center gap-1 text-[10px] font-medium"
                                                     style={{ color: 'var(--text-secondary)' }}

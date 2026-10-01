@@ -9,6 +9,8 @@ import { normalizarReceta, clasificarIntolerancia, normalizarIntolerancias } fro
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
 import { MacroRing, IngredientChecklist, StepByStep } from '@/components/premium'
+import { SelectorRaciones, escalarGramos } from '@/components/premium/SelectorRaciones'
+import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
 import type { Alimento } from '@/types'
 
 interface RecetaDetalle {
@@ -117,6 +119,7 @@ export default function DetalleRecetaPage() {
   const [borrando, setBorrando] = useState(false)
   const [accionando, setAccionando] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
+  const [racionesVista, setRacionesVista] = useState<number | null>(null)
   const [copiedToLista, setCopiedToLista] = useState(false)
   const [quality, setQuality] = useState<RecetaQuality | null>(null)
 
@@ -271,18 +274,24 @@ export default function DetalleRecetaPage() {
   const tiempoTotal = (receta.tiempo_prep_min ?? 0) + (receta.tiempo_coccion_min ?? 0)
   const intolerancias = receta.intolerancias ? normalizarIntolerancias(receta.intolerancias) : []
 
+  // Raciones para las que se cocina: por defecto las de la receta original; el selector recalcula las cantidades
+  const porcionesReceta = Math.max(1, receta.porciones ?? 1)
+  const nVista = racionesVista ?? porcionesReceta
+  const factorVista = nVista / porcionesReceta
+
   // Ingredientes para el checklist
   const checklistItems = ingredientes.map(ing => ({
     id: ing.id,
     nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
-    cantidad: `${ing.cantidad_gramos}g`,
-    kcal: ing.alimento ? calcularMacrosPorCantidad(
+    cantidad: `${escalarGramos(ing.cantidad_gramos, factorVista)}g`,
+    kcal: ing.alimento ? Math.round(calcularMacrosPorCantidad(
       ing.alimento.calorias, ing.alimento.proteinas, ing.alimento.carbohidratos, ing.alimento.grasas, ing.alimento.fibra ?? 0, ing.cantidad_gramos
-    ).calorias : undefined,
+    ).calorias * factorVista) : undefined,
   }))
 
-  // Pasos para StepByStep
-  const pasos = parsePasos(r.instrucciones ?? receta.instrucciones)
+  // Pasos para StepByStep: si se cambian las raciones, las cantidades escritas en los pasos ya no valen
+  const pasos = parsePasos(r.instrucciones ?? receta.instrucciones).map(p =>
+    nVista !== porcionesReceta ? { ...p, content: quitarCifras(p.content), title: p.title ? quitarCifras(p.title) : p.title } : p)
 
   return (
     <PageTransition>
@@ -688,15 +697,25 @@ export default function DetalleRecetaPage() {
         {/* ═══════ INGREDIENTES (Checklist estilo Crouton) ═══════ */}
         <FadeIn delay={0.25}>
           {ingredientes.length > 0 && (
-            <div
-              className="rounded-2xl p-5 mb-6"
-              style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <IngredientChecklist ingredientes={checklistItems} />
-            </div>
+            <>
+              <div className="mb-3">
+                <SelectorRaciones original={porcionesReceta} valor={nVista} onChange={setRacionesVista} kcalRacion={macrosPorPorcion?.kcal} />
+              </div>
+              <div
+                className="rounded-2xl p-5 mb-6"
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <IngredientChecklist ingredientes={checklistItems} />
+                {nVista !== porcionesReceta && (
+                  <p className="text-[11px] mt-3" style={{ color: 'var(--text-muted)' }}>
+                    Cantidades recalculadas para {nVista} {nVista === 1 ? 'ración' : 'raciones'}; los pasos van sin cantidades.
+                  </p>
+                )}
+              </div>
+            </>
           )}
         </FadeIn>
 

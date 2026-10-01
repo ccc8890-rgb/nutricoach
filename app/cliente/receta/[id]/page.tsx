@@ -7,6 +7,9 @@ import { ArrowLeft, Clock, Loader2, AlertTriangle, UtensilsCrossed, PlayCircle }
 import { MacroRing } from '@/components/premium/MacroRing'
 import { IngredientChecklist } from '@/components/premium/IngredientChecklist'
 import { StepByStep } from '@/components/premium/StepByStep'
+import type { Racion } from '@/lib/nutricion/racion'
+import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
+import { SelectorRaciones, escalarGramos } from '@/components/premium/SelectorRaciones'
 
 interface RecetaDetalle {
   id: string
@@ -50,6 +53,8 @@ function parsePasos(text: string | null | undefined): { number: number; content:
   return lines.map((l, i) => ({ number: i + 1, content: l.trim() }))
 }
 
+// Las cantidades de los pasos son las de la receta ENTERA (p. ej. «1 kg de carne» para 5 raciones) y no
+// coinciden con la ración del cliente: se quitan y se remite a su lista de ingredientes.
 export default function RecetaClientePage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
@@ -58,12 +63,16 @@ export default function RecetaClientePage() {
 
   const [receta, setReceta] = useState<RecetaDetalle | null>(null)
   const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
+  const [racion, setRacion] = useState<Racion | null>(null)
+  const [cocinarPara, setCocinarPara] = useState(1)
+  const [racionesVista, setRacionesVista] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (!codigo) { setError('Falta el código del plan.'); setLoading(false); return }
-    fetch(`/api/cliente/${codigo}/recetas/${id}`)
+    const comida = searchParams.get('comida')
+    fetch(`/api/cliente/${codigo}/recetas/${id}${comida ? `?comida=${encodeURIComponent(comida)}` : ''}`)
       .then(r => {
         if (!r.ok) throw new Error('No se pudo cargar la receta.')
         return r.json()
@@ -71,17 +80,29 @@ export default function RecetaClientePage() {
       .then(data => {
         setReceta(data.receta)
         setIngredientes(data.ingredientes ?? [])
+        setRacion(data.racion ?? null)
       })
       .catch(() => setError('No se pudo cargar la receta.'))
       .finally(() => setLoading(false))
-  }, [codigo, id])
+  }, [codigo, id, searchParams])
 
-  const pasos = parsePasos(receta?.instrucciones)
-  const ingredientesFormato = ingredientes.map(ing => ({
-    id: ing.id,
-    nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
-    cantidad: `${ing.cantidad_gramos}g`,
-  }))
+  const porciones = Math.max(1, Number(receta?.porciones ?? 1))
+  const k = racion ? cocinarPara : 1
+  // Con ración: la lista es la del cliente (cantidades ya escaladas a su comida), multiplicada si cocina varias
+  // Sin ración de un plan (recetario): el cliente elige para cuántas raciones cocina y se recalcula
+  const nVista = racionesVista ?? porciones
+  const factorVista = nVista / porciones
+  const ingredientesFormato = racion
+    ? racion.plato.ingredientes.map((ing, i) => ({ id: `r${i}`, nombre: ing.nombre, cantidad: `${Math.round(ing.gramos * k)}g` }))
+    : ingredientes.map(ing => ({
+        id: ing.id,
+        nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
+        cantidad: `${escalarGramos(ing.cantidad_gramos, factorVista)}g`,
+      }))
+  const cantidadesDistintas = racion
+    ? porciones > 1 || (receta?.kcal ? Math.abs(racion.plato.kcal / receta.kcal - 1) > 0.1 : false)
+    : nVista !== porciones
+  const pasos = parsePasos(receta?.instrucciones).map(p => cantidadesDistintas ? { ...p, content: quitarCifras(p.content), title: p.title ? quitarCifras(p.title) : p.title } : p)
 
   return (
     <div className="min-h-screen pb-8" style={{ background: 'var(--bg)' }}>
@@ -151,19 +172,71 @@ export default function RecetaClientePage() {
               )}
             </div>
 
-            <div className="flex justify-center py-2">
-              <MacroRing
-                kcal={receta.kcal ?? 0}
-                proteinas={receta.proteinas ?? 0}
-                carbohidratos={receta.carbohidratos ?? 0}
-                grasas={receta.grasas ?? 0}
-              />
-            </div>
-
-            {ingredientesFormato.length > 0 && (
-              <IngredientChecklist ingredientes={ingredientesFormato} />
+            {racion ? (
+              <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Tu ración · {racion.franja}</p>
+                <p className="text-3xl font-bold mt-1" style={{ color: 'var(--text)' }}>{racion.total.kcal} <span className="text-base font-semibold" style={{ color: 'var(--text-muted)' }}>kcal</span></p>
+                <p className="text-sm mt-1 font-data" style={{ color: 'var(--text-secondary)' }}>
+                  <span style={{ color: '#30D158' }}>P {racion.total.p} g</span> · <span style={{ color: '#FF9F0A' }}>C {racion.total.c} g</span> · <span style={{ color: '#64D2FF' }}>G {racion.total.g} g</span>
+                </p>
+                {racion.complementos.length > 0 && (
+                  <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                    Incluye el plato ({racion.plato.kcal} kcal) y, además: {racion.complementos.map(c => `${c.nombre} ${c.gramos} g`).join(', ')}.
+                  </p>
+                )}
+                {porciones > 1 && (
+                  <p className="text-sm mt-3" style={{ color: 'var(--text)' }}>
+                    Esta receta está pensada para <strong>{porciones} raciones</strong>. Tú comes <strong>1 ración</strong>: la lista de ingredientes de abajo ya es la tuya.
+                  </p>
+                )}
+                {porciones > 1 && (
+                  <div className="mt-3">
+                    <p className="text-[11px] mb-1.5" style={{ color: 'var(--text-muted)' }}>¿Cuánto vas a cocinar?</p>
+                    <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+                      {[1, porciones].map(n => (
+                        <button key={n} onClick={() => setCocinarPara(n)} className="flex-1 px-3 py-2 text-xs font-semibold"
+                          style={{ background: cocinarPara === n ? 'var(--primary)' : 'transparent', color: cocinarPara === n ? 'var(--bg)' : 'var(--text-muted)' }}>
+                          {n === 1 ? 'Solo mi ración' : `${n} raciones (batch cooking)`}
+                        </button>
+                      ))}
+                    </div>
+                    {cocinarPara > 1 && (
+                      <p className="text-[11px] mt-2" style={{ color: 'var(--text-muted)' }}>
+                        Te salen {cocinarPara} raciones iguales a la tuya: come 1 y guarda las otras {cocinarPara - 1} en táper (nevera o congelador).
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-center py-2">
+                  <MacroRing
+                    kcal={receta.kcal ?? 0}
+                    proteinas={receta.proteinas ?? 0}
+                    carbohidratos={receta.carbohidratos ?? 0}
+                    grasas={receta.grasas ?? 0}
+                  />
+                </div>
+                <p className="text-center text-[11px] -mt-1" style={{ color: 'var(--text-muted)' }}>Valores por ración</p>
+                <SelectorRaciones original={porciones} valor={nVista} onChange={setRacionesVista} kcalRacion={receta.kcal} />
+              </>
             )}
 
+            {ingredientesFormato.length > 0 && (
+              <div>
+                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                  {racion ? `Cantidades para ${k === 1 ? 'tu ración' : `${k} raciones`}.` : `Cantidades para ${nVista} ${nVista === 1 ? 'ración' : 'raciones'}.`}
+                </p>
+                <IngredientChecklist ingredientes={ingredientesFormato} />
+              </div>
+            )}
+
+            {cantidadesDistintas && pasos.length > 0 && (
+              <p className="text-xs rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                Los pasos no llevan cantidades: usa siempre las de la lista de ingredientes de arriba, que están ajustadas {racion ? 'a tu ración' : `a ${nVista} ${nVista === 1 ? 'ración' : 'raciones'}`}.
+              </p>
+            )}
             {pasos.length > 0 && <StepByStep pasos={pasos} />}
 
             {receta.consejos && (

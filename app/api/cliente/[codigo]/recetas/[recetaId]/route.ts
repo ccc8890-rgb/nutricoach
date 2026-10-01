@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { elegirComida, racionDeComida } from '@/lib/nutricion/racion'
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ codigo: string; recetaId: string }> }
 ) {
   try {
@@ -11,7 +12,7 @@ export async function GET(
 
     const { data: plan, error: planError } = await supabase
       .from('planes_nutricion')
-      .select('id, cliente_id, comidas(id, receta_id, alternativas_receta_ids)')
+      .select('id, cliente_id, comidas(id, nombre, dia_semana, receta_id, alternativas_receta_ids)')
       .eq('codigo_publico', codigo)
       .eq('activo', true)
       .single()
@@ -50,7 +51,12 @@ export async function GET(
     const { data: ajuste } = await supabase.from('clientes').select('ver_video_recetas').eq('id', plan.cliente_id).maybeSingle()
     const receta = ajuste?.ver_video_recetas ? recetaRes.data : { ...recetaRes.data, url_origen: null }
 
+    // "Tu ración": la comida del plan que lleva esta receta (indicada en el enlace o la de hoy)
+    const comidaPlan = elegirComida((plan.comidas ?? []) as { id: string; nombre: string; dia_semana: string | null; receta_id: string | null }[], recetaId, new URL(request.url).searchParams.get('comida'))
+    const racion = comidaPlan ? await racionDeComida(supabase, comidaPlan) : null
+
     return NextResponse.json({
+      racion,
       receta,
       ingredientes: ingredientesRes.data ?? [],
     })
