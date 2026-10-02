@@ -6,15 +6,8 @@ import { supabase } from '@/lib/supabase'
 import { Loader2, CheckCircle, ChevronDown, ChevronUp, User, Utensils, ExternalLink, Dumbbell, RefreshCw } from 'lucide-react'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
+import { generarCodigoPublico } from '@/lib/codigo-publico'
 
-function generarCodigoPublico(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let codigo = ''
-  for (let i = 0; i < 8; i++) {
-    codigo += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return codigo
-}
 
 interface OnboardingData {
   objetivo: string

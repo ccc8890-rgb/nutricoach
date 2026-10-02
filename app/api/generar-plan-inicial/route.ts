@@ -27,6 +27,7 @@ import {
   type GeneracionInicialResponse,
 } from '@/lib/planes/generacion-inicial'
 import type { PerfilEntrenoCliente, RecetaCandidata, SportModality } from '@/types'
+import { generarCodigoPublico } from '@/lib/codigo-publico'
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
@@ -1239,7 +1240,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
   // Sin esto, alimentos y recetas NO aparecen en la UI del coach/cliente
   let planId: string | null = null
   try {
-    const codigoPublico = crypto.randomUUID().slice(0, 10)
+    const codigoPublico = generarCodigoPublico()
     const comidasData = (planJson.distribucion_comidas as Array<Record<string, unknown>> ?? [])
     if (comidasData.length === 0) {
       throw new Error('MEALS_NOT_GENERATED')

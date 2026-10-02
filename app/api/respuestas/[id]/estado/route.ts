@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase-server'
+import { generarCodigoPublico } from '@/lib/codigo-publico'
 
 // Estados válidos según el nuevo schema extendido
 const ESTADOS_VALIDOS = ['nueva', 'procesando', 'dieta_lista', 'dieta_aprobada', 'dieta_rechazada']
@@ -76,11 +77,3 @@ export async function PUT(
     }
 }
 
-function generarCodigoPublico(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    let codigo = ''
-    for (let i = 0; i < 12; i++) {
-        codigo += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return codigo
-}

@@ -1,15 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase-server'
+import { generarCodigoPublico } from '@/lib/codigo-publico'
 
 // Generar código público único de 8 caracteres
-function generarCodigoPublico(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    let codigo = ''
-    for (let i = 0; i < 8; i++) {
-        codigo += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return codigo
-}
 
 // GET /api/cuestionarios — Listar cuestionarios del coach
 export async function GET() {
