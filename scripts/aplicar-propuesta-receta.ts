@@ -27,7 +27,7 @@ const OVERRIDES: Record<string, Record<string, string | null>> = {
     'patatas pequeñas': '0b223775', 'albahaca fresca': '20f15ab2', 'cebollino fresco': '03f57b8d', 'sal': 'SAL', 'nata agria': '894e649b', 'crema agria': '894e649b',
   },
   'a9aaeb13-26e8-4a80-816e-1a7f256428e9': { // Healthy Shrimp Tacos con Mango y Chipotle
-    'chalota': 'e6e90355', 'chile chipotle en polvo': '67d8123e', 'pimentón ahumado': '21a40eb5', 'cilantro fresco': '0e40c366', 'lima (zumo y ralladura)': '65756599',
+    'chalota': 'e6e90355', 'chile chipotle en polvo': '67d8123e', 'pimentón ahumado': '21a40eb5', 'cilantro fresco': '0e40c366', 'lima (zumo y ralladura)': '65756599', 'zumo de lima fresco': '65756599', 'ralladura y zumo de lima': null, 'cilantro fresco picado': '0e40c366', 'nata agria': '894e649b', 'aguacate maduro': '91ad5545',
   },
 }
 
