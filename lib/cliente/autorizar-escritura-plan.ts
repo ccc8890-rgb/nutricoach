@@ -27,9 +27,10 @@ export async function autorizarEscrituraPlan(
 
     const admin = createServiceSupabase()
 
+    // Plan y cliente en una sola consulta (un viaje menos a la BD por cada llamada).
     const { data: plan, error: planError } = await admin
       .from('planes_nutricion')
-      .select('id, cliente_id')
+      .select('id, cliente_id, cliente:clientes(profile_id, coach_id)')
       .eq('codigo_publico', codigo)
       .eq('activo', true)
       .single()
@@ -38,13 +39,8 @@ export async function autorizarEscrituraPlan(
       return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 })
     }
 
-    const { data: cliente, error: clienteError } = await admin
-      .from('clientes')
-      .select('profile_id, coach_id')
-      .eq('id', plan.cliente_id)
-      .single()
-
-    if (clienteError || !cliente) {
+    const cliente = Array.isArray(plan.cliente) ? plan.cliente[0] : plan.cliente
+    if (!cliente) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
     }
 

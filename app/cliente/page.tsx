@@ -191,6 +191,25 @@ function PortalClientePageContent() {
   // aunque el cliente estuviera en Dieta/Entreno/Recetas. Mantener la URL
   // sincronizada con la pestaña activa hace que ese "atrás" nativo vuelva
   // al sitio correcto.
+  // Pestañas ya visitadas: se quedan montadas (ocultas) para volver a ellas al instante, sin repetir peticiones.
+  const [visitadas, setVisitadas] = useState<Set<Tab>>(() => new Set([tab]))
+  useEffect(() => {
+    setVisitadas(prev => (prev.has(tab) ? prev : new Set(prev).add(tab)))
+  }, [tab])
+
+  // Con el portal ya pintado, se descarga en segundo plano el código de las pestañas pesadas.
+  useEffect(() => {
+    if (loading) return
+    const precargar = () => {
+      import('@/components/PortalCliente/MiPlan')
+      import('@/components/training/EntrenoSubTabs')
+      import('@/components/PortalCliente/RecetarioExplorador')
+      import('@/components/PortalCliente/AjustesTabs')
+    }
+    const id = window.setTimeout(precargar, 600)
+    return () => window.clearTimeout(id)
+  }, [loading])
+
   useEffect(() => {
     window.history.replaceState(window.history.state, '', `/cliente?tab=${tab}`)
   }, [tab])
@@ -391,8 +410,8 @@ function PortalClientePageContent() {
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-28">
 
         {/* ─── HOY ─── */}
-        {tab === 'hoy' && (
-          <div className="flex flex-col gap-4">
+        {visitadas.has('hoy') && (
+          <div className="flex flex-col gap-4" style={tab !== 'hoy' ? { display: 'none' } : undefined}>
 
             {/* Hero: Calorías */}
             {totalDia ? (
@@ -576,8 +595,8 @@ function PortalClientePageContent() {
         )}
 
         {/* ─── DIETA ─── */}
-        {tab === 'dieta' && (
-          <div className="flex flex-col gap-4">
+        {visitadas.has('dieta') && (
+          <div className="flex flex-col gap-4" style={tab !== 'dieta' ? { display: 'none' } : undefined}>
             {dieta ? (
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <MiPlan codigo={codigo} plan={dieta as any} />
@@ -588,8 +607,8 @@ function PortalClientePageContent() {
         )}
 
         {/* ─── ENTRENO ─── */}
-        {tab === 'entreno' && (
-          <div className="flex flex-col gap-4">
+        {visitadas.has('entreno') && (
+          <div className="flex flex-col gap-4" style={tab !== 'entreno' ? { display: 'none' } : undefined}>
             {entreno ? (
               <EntrenoSubTabs planId={entreno.id} planNombre={entreno.nombre} />
             ) : (
@@ -724,8 +743,8 @@ function PortalClientePageContent() {
           </div>
         )}
 
-        {tab === 'recetas' && (
-          <div className="flex flex-col gap-6">
+        {visitadas.has('recetas') && (
+          <div className="flex flex-col gap-6" style={tab !== 'recetas' ? { display: 'none' } : undefined}>
             {codigo && cliente ? (
               <>
                 {(() => {
@@ -804,8 +823,8 @@ function PortalClientePageContent() {
           </div>
         )}
 
-        {tab === 'perfil' && (
-          <div className="flex flex-col gap-4">
+        {visitadas.has('perfil') && (
+          <div className="flex flex-col gap-4" style={tab !== 'perfil' ? { display: 'none' } : undefined}>
             {cliente ? (
               <AjustesTabs codigo={codigo} clienteId={cliente.id} profile={profile} cliente={cliente} />
             ) : (
