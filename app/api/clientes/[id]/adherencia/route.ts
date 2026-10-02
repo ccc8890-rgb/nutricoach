@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { calcularAdherencia } from '@/lib/adherencia/score'
+import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
+import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 
 export async function GET(
   request: NextRequest,
@@ -13,6 +15,10 @@ export async function GET(
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const db = createServiceSupabase()
+
+  // Solo el coach dueño del cliente (antes cualquier usuario logueado podía leer la adherencia de otro).
+  const autorizacion = await autorizarCoachCliente(db, { userId: user.id, clienteId })
+  if (!autorizacion.ok) return NextResponse.json({ error: autorizacion.mensaje }, { status: autorizacion.status })
 
   // Check-ins semanales (auto-reportados)
   const { data: checkins } = await db
@@ -31,21 +37,32 @@ export async function GET(
     .gte('fecha', hace14d)
     .order('fecha', { ascending: false })
 
-  // Calcular adherencia diaria por día (% comidas hechas vs total)
-  const porDia: Record<string, { hechas: number; total: number }> = {}
+  // Adherencia diaria = comidas hechas/cambiadas ÷ comidas PLANIFICADAS ese día (no solo las registradas:
+  // antes, registrar 1 comida y saltarse el resto daba 100 %). Solo cuentan los días con algún registro;
+  // un día sin registro puede ser "no abrió la app", no "no cumplió", y se informa aparte.
+  const { data: plan } = await db
+    .from('planes_nutricion')
+    .select('comidas(id, orden, dia_semana)')
+    .eq('cliente_id', clienteId)
+    .eq('activo', true)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const comidasPlan = (plan?.comidas ?? []) as { id: string; orden: number; dia_semana: string | null }[]
+
+  const porDia: Record<string, { hechas: number; registradas: number }> = {}
   for (const r of (registros ?? [])) {
-    if (!porDia[r.fecha]) porDia[r.fecha] = { hechas: 0, total: 0 }
-    porDia[r.fecha].total++
+    if (!porDia[r.fecha]) porDia[r.fecha] = { hechas: 0, registradas: 0 }
+    porDia[r.fecha].registradas++
     if (r.estado === 'hecha' || r.estado === 'cambiada') porDia[r.fecha].hechas++
   }
 
   const diasConRegistro = Object.entries(porDia)
-    .map(([fecha, { hechas, total }]) => ({
-      fecha,
-      pct: total > 0 ? Math.round((hechas / total) * 100) : 0,
-      hechas,
-      total,
-    }))
+    .map(([fecha, { hechas, registradas }]) => {
+      const planificadas = comidasDelDia(comidasPlan, diaActualIndex(new Date(`${fecha}T12:00:00`))).length
+      const total = Math.max(planificadas, registradas) // plan cambiado o sin plan activo: nunca por debajo de lo registrado
+      return { fecha, pct: total > 0 ? Math.min(100, Math.round((hechas / total) * 100)) : 0, hechas, total }
+    })
     .sort((a, b) => b.fecha.localeCompare(a.fecha))
 
   const score = calcularAdherencia(checkins ?? [])
@@ -60,5 +77,6 @@ export async function GET(
     registro_diario: diasConRegistro,
     media_registro_diario: mediaRegistroDiario,
     dias_con_registro: diasConRegistro.length,
+    dias_sin_registro: Math.max(0, 14 - diasConRegistro.length),
   })
 }

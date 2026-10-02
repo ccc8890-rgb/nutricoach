@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
+const ESTADOS_VALIDOS = ['hecha', 'saltada', 'cambiada']
+const FECHA_VALIDA = /^\d{4}-\d{2}-\d{2}$/
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
@@ -24,6 +27,13 @@ export async function POST(
 
     if (!comida_id || !estado) {
       return NextResponse.json({ error: 'comida_id y estado son requeridos' }, { status: 400 })
+    }
+
+    if (!ESTADOS_VALIDOS.includes(estado)) {
+      return NextResponse.json({ error: 'estado inválido' }, { status: 400 })
+    }
+    if (fecha !== undefined && !FECHA_VALIDA.test(fecha)) {
+      return NextResponse.json({ error: 'fecha inválida' }, { status: 400 })
     }
 
     const { data: plan } = await supabase
@@ -65,7 +75,7 @@ export async function POST(
 
     if (error) {
       console.error('Error al registrar comida:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: 'Error interno' }, { status: 500 })
     }
 
     return NextResponse.json({ ok: true })
@@ -134,7 +144,7 @@ export async function DELETE(
 
     if (error) {
       console.error('Error al deshacer comida:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: 'Error interno' }, { status: 500 })
     }
 
     return NextResponse.json({ ok: true })
