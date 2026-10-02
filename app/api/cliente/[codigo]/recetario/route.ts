@@ -37,33 +37,6 @@ export async function GET(
   const page = Math.max(parseInt(searchParams.get('page') ?? '0', 10) || 0, 0)
 
   const supabase = createServiceSupabase()
-
-  const { data: plan } = await supabase
-    .from('planes_nutricion')
-    .select('cliente_id')
-    .eq('codigo_publico', codigo)
-    .maybeSingle()
-
-  if (!plan) {
-    return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
-  }
-
-  const { data: onboarding } = await supabase
-    .from('onboarding_responses')
-    .select('restricciones')
-    .eq('cliente_id', plan.cliente_id)
-    .maybeSingle()
-
-  const restricciones = (onboarding?.restricciones as string[] | null) ?? []
-  const alergenosExcluir = [...new Set(
-    restricciones.flatMap(r => RESTRICCION_A_ALERGENOS[r.toLowerCase()] ?? [])
-  )]
-  const tagsPositivosRequeridos = [...new Set(
-    restricciones
-      .map(r => RESTRICCION_A_TAG_POSITIVO[r.toLowerCase()])
-      .filter((tag): tag is string => Boolean(tag))
-  )]
-
   // El filtro por restricciones se aplica en memoria (negar "no contiene X
   // en un array" no es una query simple), así que se pagina también en
   // memoria: paginar primero en la query y filtrar después dejaría páginas
@@ -84,8 +57,23 @@ export async function GET(
   // independiente de `categoria` (tipo de comida) — se pueden combinar.
   if (tag) query = query.contains('tags', [tag])
 
-  const { data: recetas } = await query
+  // clienteId viene del guard (antes se repetía la consulta del plan); onboarding y recetas van en paralelo.
+  const [{ data: onboarding }, { data: recetas }] = await Promise.all([
+    supabase.from('onboarding_responses').select('restricciones').eq('cliente_id', auth.clienteId).maybeSingle(),
+    query,
+  ])
   if (!recetas) return NextResponse.json({ recetas: [], hayMas: false })
+
+  const restricciones = (onboarding?.restricciones as string[] | null) ?? []
+  const alergenosExcluir = [...new Set(
+    restricciones.flatMap(r => RESTRICCION_A_ALERGENOS[r.toLowerCase()] ?? [])
+  )]
+  const tagsPositivosRequeridos = [...new Set(
+    restricciones
+      .map(r => RESTRICCION_A_TAG_POSITIVO[r.toLowerCase()])
+      .filter((tag): tag is string => Boolean(tag))
+  )]
+
 
   const filtradas = recetas.filter(r => {
     const intol: string[] = r.intolerancias ?? []
