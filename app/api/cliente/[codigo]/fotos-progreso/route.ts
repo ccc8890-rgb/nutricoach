@@ -1,11 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function GET(
-    _request: Request,
+    _request: NextRequest,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     const { codigo } = await params
+    const auth = await autorizarAccesoPlan(_request, codigo)
+    if (auth instanceof NextResponse) return auth
     const db = createServiceSupabase()
 
     // Buscar el cliente por código de su plan activo

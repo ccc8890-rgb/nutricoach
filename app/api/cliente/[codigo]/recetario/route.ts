@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 // Mismo mapeo restricción → alérgenos EU que ya usan lib/plan-recetas.ts
 // y app/api/recetas/sugeridas/route.ts para generar planes. Se duplica
@@ -27,6 +28,8 @@ export async function GET(
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   const { codigo } = await params
+  const auth = await autorizarAccesoPlan(request, codigo)
+  if (auth instanceof NextResponse) return auth
   const { searchParams } = new URL(request.url)
   const q = searchParams.get('q')?.trim() ?? ''
   const categoria = searchParams.get('categoria')?.trim() ?? ''

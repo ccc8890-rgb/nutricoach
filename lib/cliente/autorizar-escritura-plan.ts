@@ -68,3 +68,6 @@ export async function autorizarEscrituraPlan(
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 }
+
+/** Mismo guard para lecturas: solo el propio cliente o su coach (antes bastaba con conocer el código público). */
+export const autorizarAccesoPlan = autorizarEscrituraPlan

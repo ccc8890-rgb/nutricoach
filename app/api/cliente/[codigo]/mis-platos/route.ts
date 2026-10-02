@@ -1,12 +1,15 @@
 // app/api/cliente/[codigo]/mis-platos/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   const { codigo } = await params
+  const auth = await autorizarAccesoPlan(_request, codigo)
+  if (auth instanceof NextResponse) return auth
   const supabase = createServiceSupabase()
 
   // Bug real (revisión 27-09-2026): `clientes` no tiene columna

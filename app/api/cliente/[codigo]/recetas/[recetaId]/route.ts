@@ -1,13 +1,16 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { elegirComida, racionDeComida } from '@/lib/nutricion/racion'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ codigo: string; recetaId: string }> }
 ) {
   try {
     const { codigo, recetaId } = await params
+    const auth = await autorizarAccesoPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
     const supabase = createServiceSupabase()
 
     const { data: plan, error: planError } = await supabase

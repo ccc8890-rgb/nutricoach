@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import {
     calcularOptimizacionMultiSuper,
@@ -13,6 +13,7 @@ import {
 import { canonicalizarItemCompra, esIngredienteBasicoNoCompra, normalizarNombreCompra } from '@/lib/lista-compra/filtros'
 import { esComidaDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
 import type { IngredienteSemanal, PrecioOpcion } from '@/types'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export interface ItemListaCompra {
     alimento_id: string
@@ -34,10 +35,12 @@ function esNoComestibleLista(nombre: string, categoria: string) {
 }
 
 export async function GET(
-    request: Request,
+    request: NextRequest,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     const { codigo } = await params
+    const auth = await autorizarAccesoPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
     const diaFiltro = new URL(request.url).searchParams.get('dia')
     const db = createServiceSupabase()
 

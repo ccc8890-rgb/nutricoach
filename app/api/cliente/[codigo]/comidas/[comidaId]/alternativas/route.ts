@@ -1,12 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { inferirSlotComida, tipoPlatoCompatibleConSlot, tiposPermitidosPorSlot } from '@/lib/tipos-comida'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 export async function GET(
-  _request: Request,
+  _request: NextRequest,
   { params }: { params: Promise<{ codigo: string; comidaId: string }> }
 ) {
   const { codigo, comidaId } = await params
+  const auth = await autorizarAccesoPlan(_request, codigo)
+  if (auth instanceof NextResponse) return auth
   const db = createServiceSupabase()
 
   const { data: plan } = await db

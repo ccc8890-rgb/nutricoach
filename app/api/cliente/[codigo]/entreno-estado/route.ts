@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 function startOfWeek(date = new Date()) {
   const result = new Date(date)
@@ -21,12 +22,14 @@ function toISODate(date: Date) {
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ codigo: string }> }
 ) {
   try {
     const supabase = createServiceSupabase()
     const { codigo } = await params
+    const auth = await autorizarAccesoPlan(request, codigo)
+    if (auth instanceof NextResponse) return auth
     const { searchParams } = new URL(request.url)
     const planId = searchParams.get('plan_id')
 

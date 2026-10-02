@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 // Cliente admin para endpoints públicos (sin autenticación)
 const supabaseAdmin = createClient(
@@ -8,11 +9,13 @@ const supabaseAdmin = createClient(
 )
 
 export async function GET(
-    _request: Request,
+    _request: NextRequest,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     try {
         const { codigo } = await params
+        const auth = await autorizarAccesoPlan(_request, codigo)
+        if (auth instanceof NextResponse) return auth
         const url = new URL(_request.url)
         const page = parseInt(url.searchParams.get('page') || '1')
         const limit = parseInt(url.searchParams.get('limit') || '20')

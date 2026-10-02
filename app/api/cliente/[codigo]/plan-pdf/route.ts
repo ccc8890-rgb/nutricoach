@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { canonicalizarItemCompra, esIngredienteBasicoNoCompra } from '@/lib/lista-compra/filtros'
 import { convertirGramosACompra } from '@/lib/lista-compra/inteligente'
@@ -6,6 +6,7 @@ import { escapeHtml } from '@/lib/html/escape'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
 import type { Macros } from '@/types'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
@@ -78,11 +79,13 @@ interface GenerarHtmlParams {
 }
 
 export async function GET(
-    _request: Request,
+    _request: NextRequest,
     { params }: { params: Promise<{ codigo: string }> }
 ) {
     try {
         const { codigo } = await params
+        const auth = await autorizarAccesoPlan(_request, codigo)
+        if (auth instanceof NextResponse) return auth
         const supabase = createServiceSupabase()
 
         const { data: plan, error: planError } = await supabase

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { inferirSlotComida, tipoPlatoCompatibleConSlot } from '@/lib/tipos-comida'
 import { rateLimit } from '@/lib/rate-limit'
+import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
 interface ComidaOrdenable {
     orden: number
@@ -34,6 +35,8 @@ export async function GET(
     try {
         const supabase = createServiceSupabase()
         const { codigo } = await params
+        const auth = await autorizarAccesoPlan(request, codigo)
+        if (auth instanceof NextResponse) return auth
 
         // 1. Buscar plan por código público
         const { data: plan, error: planError } = await supabase
