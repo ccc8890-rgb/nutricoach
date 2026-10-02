@@ -1,8 +1,28 @@
 # ESTADO — NutriCoach Training Pro
 
-**Última actualización:** 22-05-2026 (sesión 33c — auditoría de bugs + 7 fixes)
+**Última actualización:** 03-10-2026 (rendimiento portal cliente + auditoría de seguridad)
 
 **Hito:** 22-05-2026 — Auditoría de bugs completa. 7 bugs encontrados y corregidos (2 🔴, 2 🟠, 2 🟡, 1 🟢). Documentado en [`docs/auditoria-bugs-2026-05-22.md`](docs/auditoria-bugs-2026-05-22.md). Sistema de no comestibles documentado en [`docs/scraping-no-comestibles.md`](docs/scraping-no-comestibles.md). 957 productos no comestibles eliminados de la BD.
+
+---
+
+## ✅ Sesión 02/03-10-2026 — Rendimiento del portal cliente + auditoría de seguridad
+
+Commits en `nutricoach/main`: `0a04646`, `034643a`, `8cbec59`, `2f9d1f1`, `2f9e556`, `e4aa988`, `10b9358`, `6e8c1cd`, `c859ece`, `c5ea46f`. Todo desplegado en Vercel.
+
+**Rendimiento:** funciones en `cdg1`, portal con carga paralela y pestañas persistentes, plan de dieta ligero, `semana-completa` y `recetario` con menos viajes a BD, 193 imágenes de recetas migradas a Cloudinary con loader propio (1,5 MB → ~24 KB por miniatura), error boundaries por pestaña.
+
+**Seguridad:** IDOR en adherencia, códigos públicos con `crypto` de 16 chars, `state` OAuth firmado con HMAC, desconexiones Terra/Coros protegidas, 14 lecturas por código ahora exigen sesión.
+
+**Adherencia (Fase C):** ya existía; corregido el denominador (comidas planificadas) y la validación de `registrar-comida`.
+
+**Pendiente:**
+- 8 recetas con propuesta de reconstrucción sin aplicar (`salidas/propuestas-recetas-2026-10-02.*`); revisión manual de raciones.
+- Que Carlos pruebe el portal con su cuenta de cliente y diga qué pestaña sigue lenta (no se pudo medir autenticado).
+- Confirmar región de Supabase (¿`fra1`?).
+- Bucket `recetas` de Supabase Storage: originales, no borrar sin confirmar.
+- Wearables Terra: registro en tryterra.co, claves en Vercel, webhook y SQL `terra_usuarios`.
+- 3.150 alimentos con 0 kcal por clasificar; 147 imágenes de recetas malas por regenerar.
 
 ---
 
