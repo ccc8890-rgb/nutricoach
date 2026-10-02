@@ -3,6 +3,7 @@
 // Documentación: https://developer.garmin.com/gc-developer-program/health-api/
 import type { IntegracionCliente, ActividadExterna, ProveedorIntegracion } from './types'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { firmarState } from '@/lib/integraciones/state'
 
 const BASE = 'https://connect.garmin.com'
 const API = 'https://apis.garmin.com'
@@ -14,7 +15,7 @@ export const garminProvider: ProveedorIntegracion = {
   proveedor: 'garmin',
 
   getAuthUrl(clienteId: string, _coachId: string): string {
-    const state = Buffer.from(JSON.stringify({ clienteId })).toString('base64url')
+    const state = firmarState({ clienteId })
     const params = new URLSearchParams({
       client_id: CLIENT_ID,
       redirect_uri: `${APP_URL}/api/integraciones/garmin/callback`,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { stravaProvider } from '@/lib/integraciones/strava'
 import { persistirActividades } from '@/lib/integraciones/normalizer'
+import { leerState } from '@/lib/integraciones/state'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
 
   let clienteId: string
   try {
-    const decoded = JSON.parse(Buffer.from(state, 'base64url').toString())
+    const decoded = leerState<{ clienteId: string }>(state)
     clienteId = decoded.clienteId
   } catch {
     return NextResponse.redirect(`${APP_URL}/?error=state_invalido`)

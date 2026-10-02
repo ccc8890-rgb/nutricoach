@@ -1,6 +1,7 @@
 // lib/integraciones/strava.ts
 import type { IntegracionCliente, ActividadExterna, ProveedorIntegracion } from './types'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { firmarState } from '@/lib/integraciones/state'
 
 const BASE = 'https://www.strava.com'
 const CLIENT_ID = process.env.STRAVA_CLIENT_ID!
@@ -18,7 +19,7 @@ export const stravaProvider: ProveedorIntegracion = {
   proveedor: 'strava',
 
   getAuthUrl(clienteId: string, coachId: string): string {
-    const state = Buffer.from(JSON.stringify({ clienteId, coachId })).toString('base64url')
+    const state = firmarState({ clienteId, coachId })
     const params = new URLSearchParams({
       client_id: CLIENT_ID,
       redirect_uri: `${APP_URL}/api/integraciones/strava/callback`,

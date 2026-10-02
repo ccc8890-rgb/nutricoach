@@ -3,6 +3,7 @@
 // NOTA: requiere aprobación de partner program antes de usar en producción
 // OAuth2 credentials obtenidas en: https://developer.whoop.com/
 import type { IntegracionCliente, ActividadExterna, ProveedorIntegracion } from './types'
+import { firmarState } from '@/lib/integraciones/state'
 
 const BASE = 'https://api.prod.whoop.com/developer'
 const AUTH_URL = 'https://api.prod.whoop.com/oauth/oauth2/auth'
@@ -15,7 +16,7 @@ export const whoopProvider: ProveedorIntegracion = {
   proveedor: 'whoop',
 
   getAuthUrl(clienteId: string, _coachId: string): string {
-    const state = Buffer.from(JSON.stringify({ clienteId })).toString('base64url')
+    const state = firmarState({ clienteId })
     const params = new URLSearchParams({
       client_id: CLIENT_ID,
       redirect_uri: `${APP_URL}/api/integraciones/whoop/callback`,

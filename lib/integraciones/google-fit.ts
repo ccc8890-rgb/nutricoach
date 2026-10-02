@@ -2,6 +2,7 @@
 // Google Fit REST API — https://developers.google.com/fit/rest
 import type { IntegracionCliente, ActividadExterna, ProveedorIntegracion } from './types'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { firmarState } from '@/lib/integraciones/state'
 
 const OAUTH_BASE = 'https://accounts.google.com/o/oauth2/v2/auth'
 const TOKEN_URL = 'https://oauth2.googleapis.com/token'
@@ -21,7 +22,7 @@ export const googleFitProvider: ProveedorIntegracion = {
   proveedor: 'google_fit',
 
   getAuthUrl(clienteId: string, _coachId: string): string {
-    const state = Buffer.from(JSON.stringify({ clienteId })).toString('base64url')
+    const state = firmarState({ clienteId })
     const params = new URLSearchParams({
       client_id: CLIENT_ID,
       redirect_uri: `${APP_URL}/api/integraciones/google-fit/callback`,

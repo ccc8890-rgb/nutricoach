@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { garminProvider } from '@/lib/integraciones/garmin'
 import { persistirActividades } from '@/lib/integraciones/normalizer'
+import { leerState } from '@/lib/integraciones/state'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!
 
@@ -12,7 +13,7 @@ export async function GET(req: NextRequest) {
   if (!code || !state) return NextResponse.redirect(`${APP_URL}/cliente/integraciones?error=garmin_denegado`)
 
   let clienteId: string
-  try { clienteId = JSON.parse(Buffer.from(state, 'base64url').toString()).clienteId }
+  try { clienteId = leerState<{ clienteId: string }>(state).clienteId }
   catch { return NextResponse.redirect(`${APP_URL}/cliente/integraciones?error=state_invalido`) }
 
   const db = createServiceSupabase()
