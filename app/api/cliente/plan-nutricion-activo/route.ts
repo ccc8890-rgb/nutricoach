@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       *,
       comidas(
         *,
-        alimentos:comida_alimentos(*, alimento:alimentos(*)),
+        alimentos:comida_alimentos(*, alimento:alimentos(id, nombre, calorias, proteinas, carbohidratos, grasas, fibra)),
         receta:recetas(id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min)
       )
     `)

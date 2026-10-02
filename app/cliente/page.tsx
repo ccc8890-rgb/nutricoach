@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
@@ -13,20 +14,20 @@ import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
-import GraficoPeso from '@/components/PortalCliente/GraficoPeso'
-import GaleriaFotosProgreso from '@/components/PortalCliente/GaleriaFotosProgreso'
-import MilestonesLogros from '@/components/PortalCliente/MilestonesLogros'
-import CheckInForm from '@/components/PortalCliente/CheckInForm'
-import HistorialCheckins from '@/components/PortalCliente/HistorialCheckins'
-import NotasCoach from '@/components/PortalCliente/NotasCoach'
-import TLSGauge from '@/components/PortalCliente/TLSGauge'
-import MiPlan from '@/components/PortalCliente/MiPlan'
-import EntrenoSubTabs from '@/components/training/EntrenoSubTabs'
-import ListaCompraPortal from '@/components/PortalCliente/ListaCompraPortal'
-import MisPlatos from '@/components/PortalCliente/MisPlatos'
-import RecetarioExplorador from '@/components/PortalCliente/RecetarioExplorador'
-import ChatPanel from '@/components/PortalCliente/ChatPanel'
-import AjustesTabs from '@/components/PortalCliente/AjustesTabs'
+const GraficoPeso = dynamic(() => import('@/components/PortalCliente/GraficoPeso'))
+const GaleriaFotosProgreso = dynamic(() => import('@/components/PortalCliente/GaleriaFotosProgreso'))
+const MilestonesLogros = dynamic(() => import('@/components/PortalCliente/MilestonesLogros'))
+const CheckInForm = dynamic(() => import('@/components/PortalCliente/CheckInForm'))
+const HistorialCheckins = dynamic(() => import('@/components/PortalCliente/HistorialCheckins'))
+const NotasCoach = dynamic(() => import('@/components/PortalCliente/NotasCoach'))
+const TLSGauge = dynamic(() => import('@/components/PortalCliente/TLSGauge'))
+const MiPlan = dynamic(() => import('@/components/PortalCliente/MiPlan'))
+const EntrenoSubTabs = dynamic(() => import('@/components/training/EntrenoSubTabs'))
+const ListaCompraPortal = dynamic(() => import('@/components/PortalCliente/ListaCompraPortal'))
+const MisPlatos = dynamic(() => import('@/components/PortalCliente/MisPlatos'))
+const RecetarioExplorador = dynamic(() => import('@/components/PortalCliente/RecetarioExplorador'))
+const ChatPanel = dynamic(() => import('@/components/PortalCliente/ChatPanel'))
+const AjustesTabs = dynamic(() => import('@/components/PortalCliente/AjustesTabs'))
 import { useTheme } from '@/components/ThemeProvider'
 
 type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'perfil'
@@ -191,44 +192,46 @@ function PortalClientePageContent() {
   // sincronizada con la pestaña activa hace que ese "atrás" nativo vuelva
   // al sitio correcto.
   useEffect(() => {
-    router.replace(`/cliente?tab=${tab}`, { scroll: false })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.history.replaceState(window.history.state, '', `/cliente?tab=${tab}`)
   }, [tab])
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
+      // getSession lee el token local (sin ida y vuelta a Auth); cada dato va por RLS o por API que
+      // vuelve a validar al usuario. Todo lo demás se pide en paralelo en vez de en cascada.
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
       if (!user) { window.location.replace('/login'); return }
-
-      const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (prof?.role === 'coach') { window.location.replace('/dashboard'); return }
-      setProfile(prof as Profile)
 
       fetch('/api/cliente/registrar-acceso', { method: 'POST' }).catch(() => {})
 
-      const { data: cli } = await supabase.from('clientes').select('*').eq('profile_id', user.id).single()
-      setCliente(cli as Cliente)
+      // Bug real (revisión 27-09-2026): plan de dieta/entreno van por API con service role porque RLS
+      // silencia los joins anidados desde el cliente (arrays vacíos sin error). No volver a joins directos.
+      const [profRes, cliRes, dietaRes, entrenoRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('clientes').select('*').eq('profile_id', user.id).single().then(async r => ({
+          ...r,
+          peso: r.data
+            ? await supabase.from('seguimiento_peso').select('*').eq('cliente_id', r.data.id)
+                .order('fecha', { ascending: false }).limit(15)
+            : null,
+        })),
+        fetch('/api/cliente/plan-nutricion-activo').then(r => r.ok ? r.json() : { plan: null }).catch(() => ({ plan: null })),
+        fetch('/api/cliente/plan-entrenamiento-activo').then(r => r.ok ? r.json() : { plan: null }).catch(() => ({ plan: null })),
+      ])
 
+      const prof = profRes.data
+      if (prof?.role === 'coach') { window.location.replace('/dashboard'); return }
+      setProfile(prof as Profile)
+
+      const cli = cliRes.data
+      setCliente(cli as Cliente)
       if (cli && !cli.onboarding_completado) {
         window.location.replace('/onboarding')
         return
       }
 
       if (cli) {
-        // Bug real (revisión 27-09-2026): estas dos consultas cruzaban
-        // planes_nutricion/planes_entrenamiento con sus tablas hijas
-        // (comidas/sesiones) en un join anidado desde el cliente Supabase.
-        // RLS silencia esos joins (sin error, sin 403) devolviendo arrays
-        // vacíos — TODO cliente real veía su dieta y su entreno activos con
-        // 0 comidas / 0 sesiones aunque existieran en BD. Ahora se piden a
-        // APIs con service role, mismo patrón que el resto del portal.
-        const [dietaRes, entrenoRes, histRes] = await Promise.all([
-          fetch('/api/cliente/plan-nutricion-activo').then(r => r.ok ? r.json() : { plan: null }),
-          fetch('/api/cliente/plan-entrenamiento-activo').then(r => r.ok ? r.json() : { plan: null }),
-          supabase.from('seguimiento_peso')
-            .select('*').eq('cliente_id', cli.id)
-            .order('fecha', { ascending: false }).limit(15),
-        ])
         if (dietaRes.plan) {
           const ordenadas = ((dietaRes.plan as PlanNutricion).comidas ?? []).sort((a, b) => a.orden - b.orden)
           setDieta({ ...dietaRes.plan as PlanNutricion, comidas: ordenadas })
@@ -237,7 +240,7 @@ function PortalClientePageContent() {
           const ordenadas = ((entrenoRes.plan as PlanEntrenamiento).sesiones ?? []).sort((a, b) => a.orden - b.orden)
           setEntreno({ ...entrenoRes.plan as PlanEntrenamiento, sesiones: ordenadas })
         }
-        setHistorialPeso(histRes.data as SeguimientoPeso[] ?? [])
+        setHistorialPeso(cliRes.peso?.data as SeguimientoPeso[] ?? [])
       }
       setLoading(false)
     }
