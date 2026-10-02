@@ -24,69 +24,60 @@ export async function GET(request: NextRequest) {
 
   const admin = createServiceSupabase()
 
-  const { data: clienteData } = await admin
-    .from('clientes')
-    .select('id')
-    .eq('profile_id', user.id)
-    .single()
-
-  if (!clienteData) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
-
+  // Plan activo y cliente en una sola consulta (join interno por profile_id).
   const { data: planEntreno } = await admin
     .from('planes_entrenamiento')
-    .select('id, nombre, created_at, duracion_semanas')
-    .eq('cliente_id', clienteData.id)
+    .select('id, nombre, created_at, duracion_semanas, cliente_id, cliente:clientes!inner(profile_id)')
+    .eq('cliente.profile_id', user.id)
     .eq('activo', true)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
-  if (!planEntreno) return NextResponse.json({ sesiones: [], plan_nombre: '' })
-
-  const { data: sesData } = await admin
-    .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, duracion_estimada_min, contexto_ia, fase_bloque')
-    .eq('plan_id', planEntreno.id)
-    .order('orden')
-
-  if (!sesData || sesData.length === 0) {
-    return NextResponse.json({ sesiones: [], plan_nombre: planEntreno.nombre })
+  if (!planEntreno) {
+    // Sin plan: se distingue "no hay cliente" de "cliente sin plan" como antes.
+    const { data: clienteData } = await admin.from('clientes').select('id').eq('profile_id', user.id).maybeSingle()
+    if (!clienteData) return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
+    return NextResponse.json({ sesiones: [], plan_nombre: '' })
   }
 
-  const sesIds = sesData.map(s => s.id)
-
-  const { data: ejData } = await admin
-    .from('sesion_ejercicios')
-    .select('id, sesion_id, ejercicio:ejercicios(tipo)')
-    .in('sesion_id', sesIds)
-
-  const ejCountBySesion: Record<string, number> = {}
-  const ejIdsBySesion: Record<string, string[]> = {}
-  for (const ej of ejData ?? []) {
-    ejCountBySesion[ej.sesion_id] = (ejCountBySesion[ej.sesion_id] ?? 0) + 1
-    if (!ejIdsBySesion[ej.sesion_id]) ejIdsBySesion[ej.sesion_id] = []
-    ejIdsBySesion[ej.sesion_id].push(ej.id)
-  }
-
-  const allEjIds = (ejData ?? []).map(e => e.id)
   const weekStart = startOfWeek()
   const weekEnd = new Date(weekStart)
   weekEnd.setDate(weekStart.getDate() + 6)
 
-  const { data: registros } = allEjIds.length > 0
-    ? await admin
-        .from('registros_sets')
-        .select('sesion_ejercicio_id, fecha')
-        .eq('cliente_id', clienteData.id)
-        .gte('fecha', toISODate(weekStart))
-        .lte('fecha', toISODate(weekEnd))
-        .in('sesion_ejercicio_id', allEjIds)
-    : { data: [] }
+  // Sesiones con sus ejercicios y registros de la semana en paralelo (no dependen entre sí).
+  const [{ data: sesRaw }, { data: registros }] = await Promise.all([
+    admin
+      .from('sesiones_entrenamiento')
+      .select('id, nombre, dia_semana, duracion_estimada_min, contexto_ia, fase_bloque, sesion_ejercicios(id, ejercicio:ejercicios(tipo))')
+      .eq('plan_id', planEntreno.id)
+      .order('orden'),
+    admin
+      .from('registros_sets')
+      .select('sesion_ejercicio_id, fecha')
+      .eq('cliente_id', planEntreno.cliente_id)
+      .gte('fecha', toISODate(weekStart))
+      .lte('fecha', toISODate(weekEnd)),
+  ])
+
+  const sesData = sesRaw ?? []
+  if (sesData.length === 0) {
+    return NextResponse.json({ sesiones: [], plan_nombre: planEntreno.nombre })
+  }
+
+  // Aplanado equivalente al antiguo select sobre sesion_ejercicios (id, sesion_id, ejercicio)
+  const ejData = sesData.flatMap(s =>
+    ((s as unknown as { sesion_ejercicios: { id: string; ejercicio: { tipo: string | null } | { tipo: string | null }[] | null }[] }).sesion_ejercicios ?? [])
+      .map(e => ({ id: e.id, sesion_id: s.id, ejercicio: Array.isArray(e.ejercicio) ? e.ejercicio[0] ?? null : e.ejercicio }))
+  )
+
+  const ejCountBySesion: Record<string, number> = {}
+  for (const ej of ejData) ejCountBySesion[ej.sesion_id] = (ejCountBySesion[ej.sesion_id] ?? 0) + 1
 
   // Count registros per sesion_id
   const registrosPorSesion: Record<string, number> = {}
   for (const r of registros ?? []) {
-    const ejSesId = (ejData ?? []).find(e => e.id === r.sesion_ejercicio_id)?.sesion_id
+    const ejSesId = ejData.find(e => e.id === r.sesion_ejercicio_id)?.sesion_id
     if (ejSesId) registrosPorSesion[ejSesId] = (registrosPorSesion[ejSesId] ?? 0) + 1
   }
 
@@ -96,8 +87,8 @@ export async function GET(request: NextRequest) {
   }
 
   const tiposPorSesion: Record<string, string[]> = {}
-  for (const ej of ejData ?? []) {
-    const tipo = (ej as unknown as { ejercicio: { tipo: string | null } | null }).ejercicio?.tipo
+  for (const ej of ejData) {
+    const tipo = ej.ejercicio?.tipo
     if (!tipo) continue
     if (!tiposPorSesion[ej.sesion_id]) tiposPorSesion[ej.sesion_id] = []
     tiposPorSesion[ej.sesion_id].push(tipo)

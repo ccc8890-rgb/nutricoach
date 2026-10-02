@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, type ComponentType } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
@@ -14,21 +14,29 @@ import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
-const GraficoPeso = dynamic(() => import('@/components/PortalCliente/GraficoPeso'))
-const GaleriaFotosProgreso = dynamic(() => import('@/components/PortalCliente/GaleriaFotosProgreso'))
-const MilestonesLogros = dynamic(() => import('@/components/PortalCliente/MilestonesLogros'))
-const CheckInForm = dynamic(() => import('@/components/PortalCliente/CheckInForm'))
-const HistorialCheckins = dynamic(() => import('@/components/PortalCliente/HistorialCheckins'))
-const NotasCoach = dynamic(() => import('@/components/PortalCliente/NotasCoach'))
-const TLSGauge = dynamic(() => import('@/components/PortalCliente/TLSGauge'))
-const MiPlan = dynamic(() => import('@/components/PortalCliente/MiPlan'))
-const EntrenoSubTabs = dynamic(() => import('@/components/training/EntrenoSubTabs'))
-const ListaCompraPortal = dynamic(() => import('@/components/PortalCliente/ListaCompraPortal'))
-const MisPlatos = dynamic(() => import('@/components/PortalCliente/MisPlatos'))
-const RecetarioExplorador = dynamic(() => import('@/components/PortalCliente/RecetarioExplorador'))
-const ChatPanel = dynamic(() => import('@/components/PortalCliente/ChatPanel'))
-const AjustesTabs = dynamic(() => import('@/components/PortalCliente/AjustesTabs'))
+// Un fallo de render en una pestaña no tumba el portal entero: muestra el error con botón de reintentar.
+function aislar<P extends object>(Componente: ComponentType<P>): ComponentType<P> {
+  return function Aislado(props: P) {
+    return <ErrorBoundary><Componente {...props} /></ErrorBoundary>
+  }
+}
+
+const GraficoPeso = aislar(dynamic(() => import('@/components/PortalCliente/GraficoPeso')))
+const GaleriaFotosProgreso = aislar(dynamic(() => import('@/components/PortalCliente/GaleriaFotosProgreso')))
+const MilestonesLogros = aislar(dynamic(() => import('@/components/PortalCliente/MilestonesLogros')))
+const CheckInForm = aislar(dynamic(() => import('@/components/PortalCliente/CheckInForm')))
+const HistorialCheckins = aislar(dynamic(() => import('@/components/PortalCliente/HistorialCheckins')))
+const NotasCoach = aislar(dynamic(() => import('@/components/PortalCliente/NotasCoach')))
+const TLSGauge = aislar(dynamic(() => import('@/components/PortalCliente/TLSGauge')))
+const MiPlan = aislar(dynamic(() => import('@/components/PortalCliente/MiPlan')))
+const EntrenoSubTabs = aislar(dynamic(() => import('@/components/training/EntrenoSubTabs')))
+const ListaCompraPortal = aislar(dynamic(() => import('@/components/PortalCliente/ListaCompraPortal')))
+const MisPlatos = aislar(dynamic(() => import('@/components/PortalCliente/MisPlatos')))
+const RecetarioExplorador = aislar(dynamic(() => import('@/components/PortalCliente/RecetarioExplorador')))
+const ChatPanel = aislar(dynamic(() => import('@/components/PortalCliente/ChatPanel')))
+const AjustesTabs = aislar(dynamic(() => import('@/components/PortalCliente/AjustesTabs')))
 import { useTheme } from '@/components/ThemeProvider'
+import ErrorBoundary from '@/components/ui/ErrorBoundary'
 
 type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'perfil'
 const TABS_VALIDOS: Tab[] = ['hoy', 'dieta', 'entreno', 'checkin', 'progreso', 'compra', 'recetas', 'chat', 'perfil']
