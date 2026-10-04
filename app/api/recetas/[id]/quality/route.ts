@@ -66,6 +66,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       avisos: audit.score.avisos,
       estado_sugerido: audit.resumen.estado_sugerido,
       clasificacion: audit.clasificacion,
+      clasificacion_manual: Boolean(audit.receta.clasificacion_manual),
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)

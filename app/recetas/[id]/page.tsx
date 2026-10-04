@@ -1,4 +1,5 @@
 'use client'
+import ClasificacionEditor from '@/components/recetas/ClasificacionEditor'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -71,6 +72,7 @@ interface RecetaQuality {
     apta_cliente: string
     alcohol_culinario: boolean
   }
+  clasificacion_manual?: boolean
   issues: Array<{
     severity: 'bloqueante' | 'revisar' | 'aviso'
     codigo: string
@@ -433,21 +435,13 @@ export default function DetalleRecetaPage() {
                     <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
                       {quality.banda_calidad}
                     </span>
-                    <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
-                      {quality.clasificacion.nivel_fit}
-                    </span>
-                    <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
-                      {quality.clasificacion.tipo_uso}
-                    </span>
-                    <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>
-                      {quality.clasificacion.apta_cliente}
-                    </span>
-                    {quality.clasificacion.alcohol_culinario && (
-                      <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--warning)' }}>
-                        alcohol culinario
-                      </span>
-                    )}
                   </div>
+                  <ClasificacionEditor
+                    recetaId={id}
+                    clasificacion={quality.clasificacion}
+                    manual={Boolean(quality.clasificacion_manual)}
+                    onGuardado={(c, manual) => setQuality(q => (q ? { ...q, clasificacion: c, clasificacion_manual: manual } : q))}
+                  />
                   {quality.issues.length === 0 ? (
                     <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
                       Sin bloqueos de ingredientes, cantidades o coste. Clasificada para uso profesional.

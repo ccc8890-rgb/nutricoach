@@ -2,6 +2,10 @@ export type NivelFit = 'fit' | 'equilibrada' | 'flexible' | 'indulgente' | 'no_f
 export type TipoUso = 'diario' | 'ocasional' | 'deportivo' | 'clinico' | 'restaurante' | 'batch_cooking' | 'snack' | 'postre' | 'celebracion'
 export type ContextoUso = 'pre_entreno' | 'post_entreno' | 'cena_ligera' | 'comida_familiar' | 'menu_horeca' | 'desayuno_rapido' | 'tupper' | 'general'
 export type AptaCliente = 'general' | 'atleta' | 'perdida_grasa' | 'ganancia_muscular' | 'mantenimiento' | 'clinica' | 'requiere_revision'
+export const NIVELES_FIT: readonly NivelFit[] = ['fit', 'equilibrada', 'flexible', 'indulgente', 'no_fit']
+export const TIPOS_USO: readonly TipoUso[] = ['diario', 'ocasional', 'deportivo', 'clinico', 'restaurante', 'batch_cooking', 'snack', 'postre', 'celebracion']
+export const CONTEXTOS_USO: readonly ContextoUso[] = ['pre_entreno', 'post_entreno', 'cena_ligera', 'comida_familiar', 'menu_horeca', 'desayuno_rapido', 'tupper', 'general']
+export const APTAS_CLIENTE: readonly AptaCliente[] = ['general', 'atleta', 'perdida_grasa', 'ganancia_muscular', 'mantenimiento', 'clinica', 'requiere_revision']
 export type EstadoSugerido = 'aprobada' | 'en_revision' | 'bloqueada'
 export type BandaCalidad = 'excelente' | 'buena' | 'revisar' | 'bloqueada'
 

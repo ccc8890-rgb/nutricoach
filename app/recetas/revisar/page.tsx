@@ -1,4 +1,5 @@
 'use client'
+import { NIVELES_FIT, TIPOS_USO, APTAS_CLIENTE } from '@/lib/recetas/profesional'
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Search, AlertTriangle, Check, X, ExternalLink, FileText, ImageIcon, MessageSquare, Hash, ChefHat, FileWarning, RefreshCw, List, BarChart } from 'lucide-react'
@@ -85,6 +86,9 @@ export default function RevisarRecetasPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [busqueda, setBusqueda] = useState('')
+    const [filtroNivel, setFiltroNivel] = useState('')
+    const [filtroUso, setFiltroUso] = useState('')
+    const [filtroApta, setFiltroApta] = useState('')
     const [filtroCampo, setFiltroCampo] = useState<CampoKey | 'todos' | 'incompletas'>('todos')
     const [pagina, setPagina] = useState(1)
     const [soloProblemas, setSoloProblemas] = useState(false)
@@ -173,6 +177,11 @@ export default function RevisarRecetasPage() {
             recetas = recetas.filter(r => r.nombre.toLowerCase().includes(q))
         }
 
+        // Filtros por clasificación profesional
+        if (filtroNivel) recetas = recetas.filter(r => r.nivel_fit === filtroNivel)
+        if (filtroUso) recetas = recetas.filter(r => r.tipo_uso === filtroUso)
+        if (filtroApta) recetas = recetas.filter(r => r.apta_cliente === filtroApta)
+
         // Filtro por campo faltante
         if (filtroCampo === 'incompletas') {
             recetas = recetas.filter(r =>
@@ -185,7 +194,7 @@ export default function RevisarRecetasPage() {
         }
 
         return recetas
-    }, [data, busqueda, filtroCampo, soloProblemas])
+    }, [data, busqueda, filtroCampo, soloProblemas, filtroNivel, filtroUso, filtroApta])
 
     return (
         <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
@@ -338,6 +347,23 @@ export default function RevisarRecetasPage() {
                             </option>
                         ))}
                     </select>
+                    {([
+                        ['Nivel fit', filtroNivel, setFiltroNivel, NIVELES_FIT],
+                        ['Tipo de uso', filtroUso, setFiltroUso, TIPOS_USO],
+                        ['Apta para', filtroApta, setFiltroApta, APTAS_CLIENTE],
+                    ] as const).map(([etiqueta, valor, setValor, opciones]) => (
+                        <select
+                            key={etiqueta}
+                            value={valor}
+                            onChange={e => setValor(e.target.value)}
+                            aria-label={etiqueta}
+                            className="text-sm px-3 py-2 rounded-lg border outline-none"
+                            style={{ color: 'var(--text)', background: 'var(--surface)', borderColor: valor ? 'var(--accent)' : 'var(--border)' }}
+                        >
+                            <option value="">{etiqueta}: todos</option>
+                            {opciones.map(o => <option key={o} value={o}>{o.replace(/_/g, ' ')}</option>)}
+                        </select>
+                    ))}
                 </div>
 
                 {/* ═══ Loading ═══ */}

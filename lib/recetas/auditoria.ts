@@ -32,6 +32,7 @@ interface RecetaDb {
   contexto_uso?: string | null
   apta_cliente?: string | null
   alcohol_culinario?: boolean | null
+  clasificacion_manual?: boolean | null
   quality_estado_sugerido?: string | null
 }
 
@@ -91,7 +92,7 @@ export async function auditarRecetaProfesional(
         id, nombre, descripcion, instrucciones, categoria, tipo_plato, dificultad,
         imagen_url, url_origen, kcal, proteinas, carbohidratos, grasas, fibra,
         porciones, intolerancias, tags, score_calidad, nivel_fit, tipo_uso,
-        contexto_uso, apta_cliente, alcohol_culinario, quality_estado_sugerido
+        contexto_uso, apta_cliente, alcohol_culinario, clasificacion_manual, quality_estado_sugerido
       `)
       .eq('id', recetaId)
       .single(),
@@ -115,7 +116,17 @@ export async function auditarRecetaProfesional(
 
   const conPrecio = new Set((precios || []).map(p => p.alimento_id as string))
   const input = toInput(typedReceta, typedIngredientes, conPrecio)
-  const clasificacion = clasificarRecetaProfesional(input)
+  const clasificacionAuto = clasificarRecetaProfesional(input)
+  // Clasificación editada a mano por el coach: se respeta tal cual; solo el score se sigue recalculando.
+  const clasificacion = typedReceta.clasificacion_manual
+    ? {
+        nivel_fit: (typedReceta.nivel_fit ?? clasificacionAuto.nivel_fit) as typeof clasificacionAuto.nivel_fit,
+        tipo_uso: (typedReceta.tipo_uso ?? clasificacionAuto.tipo_uso) as typeof clasificacionAuto.tipo_uso,
+        contexto_uso: (typedReceta.contexto_uso ?? clasificacionAuto.contexto_uso) as typeof clasificacionAuto.contexto_uso,
+        apta_cliente: (typedReceta.apta_cliente ?? clasificacionAuto.apta_cliente) as typeof clasificacionAuto.apta_cliente,
+        alcohol_culinario: typedReceta.alcohol_culinario ?? clasificacionAuto.alcohol_culinario,
+      }
+    : clasificacionAuto
   const score = calcularScoreCalidadReceta(input)
   const resumen = resumenCalidadReceta(score)
 
