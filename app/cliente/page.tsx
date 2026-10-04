@@ -16,6 +16,14 @@ import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
+// Pestañas principales con import estático: un componente diferido (dynamic/lazy) hace que React retenga toda la
+// pantalla hasta 300 ms (su temporizador anti-parpadeo de Suspense) aunque el JS ya esté en caché.
+import TLSGaugeEstatico from '@/components/PortalCliente/TLSGauge'
+import NotasCoachEstatico from '@/components/PortalCliente/NotasCoach'
+import MiPlanEstatico from '@/components/PortalCliente/MiPlan'
+import EntrenoSubTabsEstatico from '@/components/training/EntrenoSubTabs'
+import RecetarioExploradorEstatico from '@/components/PortalCliente/RecetarioExplorador'
+import AjustesTabsEstatico from '@/components/PortalCliente/AjustesTabs'
 // Un fallo de render en una pestaña no tumba el portal entero: muestra el error con botón de reintentar.
 function aislar<P extends object>(Componente: ComponentType<P>): ComponentType<P> {
   return function Aislado(props: P) {
@@ -28,15 +36,15 @@ const GaleriaFotosProgreso = aislar(dynamic(() => import('@/components/PortalCli
 const MilestonesLogros = aislar(dynamic(() => import('@/components/PortalCliente/MilestonesLogros')))
 const CheckInForm = aislar(dynamic(() => import('@/components/PortalCliente/CheckInForm')))
 const HistorialCheckins = aislar(dynamic(() => import('@/components/PortalCliente/HistorialCheckins')))
-const NotasCoach = aislar(dynamic(() => import('@/components/PortalCliente/NotasCoach')))
-const TLSGauge = aislar(dynamic(() => import('@/components/PortalCliente/TLSGauge')))
-const MiPlan = aislar(dynamic(() => import('@/components/PortalCliente/MiPlan')))
-const EntrenoSubTabs = aislar(dynamic(() => import('@/components/training/EntrenoSubTabs')))
+const NotasCoach = aislar(NotasCoachEstatico)
+const TLSGauge = aislar(TLSGaugeEstatico)
+const MiPlan = aislar(MiPlanEstatico)
+const EntrenoSubTabs = aislar(EntrenoSubTabsEstatico)
 const ListaCompraPortal = aislar(dynamic(() => import('@/components/PortalCliente/ListaCompraPortal')))
 const MisPlatos = aislar(dynamic(() => import('@/components/PortalCliente/MisPlatos')))
-const RecetarioExplorador = aislar(dynamic(() => import('@/components/PortalCliente/RecetarioExplorador')))
+const RecetarioExplorador = aislar(RecetarioExploradorEstatico)
 const ChatPanel = aislar(dynamic(() => import('@/components/PortalCliente/ChatPanel')))
-const AjustesTabs = aislar(dynamic(() => import('@/components/PortalCliente/AjustesTabs')))
+const AjustesTabs = aislar(AjustesTabsEstatico)
 import { useTheme } from '@/components/ThemeProvider'
 import ErrorBoundary from '@/components/ui/ErrorBoundary'
 
@@ -308,10 +316,6 @@ function PortalClientePageContent() {
     let cancelado = false
     const arrancar = async () => {
       // Una petición cada vez y en reposo: no compite con lo que el cliente está viendo o tocando.
-      import('@/components/PortalCliente/MiPlan')
-      import('@/components/training/EntrenoSubTabs')
-      import('@/components/PortalCliente/RecetarioExplorador')
-      import('@/components/PortalCliente/AjustesTabs')
       const claves = [
         ...(hayEntreno ? ['/api/entrenos/semana-completa'] : []),
         ...(codigoPlan ? [`/api/cliente/${codigoPlan}/recetario?page=0`] : []),
