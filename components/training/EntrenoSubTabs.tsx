@@ -1,5 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
+import useSWR from 'swr'
+import { fetchJson } from '@/lib/cliente/cache-swr'
 import { Dumbbell, Footprints, Loader2, CircleDashed } from 'lucide-react'
 import CalendarioMesEntreno from './CalendarioMesEntreno'
 import EntrenoKanban from './EntrenoKanban'
@@ -25,20 +27,15 @@ function iconoTipo(tipo: SesionSemana['tipo_sesion'], size = 16) {
 
 export default function EntrenoSubTabs({ planNombre }: { planId: string; planNombre: string }) {
   const [subTab, setSubTab] = useState<'hoy' | 'semana' | 'mes'>('hoy')
-  const [sesiones, setSesiones] = useState<SesionSemana[]>([])
-  const [loading, setLoading] = useState(true)
-  const [bloque, setBloque] = useState<{ fase: string; semana_actual: number; semanas_totales: number } | null>(null)
+  // Datos desde la caché compartida (precargada por el portal): sin espera al abrir la pestaña.
+  const { data: semana, isLoading } = useSWR<{
+    sesiones?: SesionSemana[]
+    bloque?: { fase: string; semana_actual: number; semanas_totales: number } | null
+  }>('/api/entrenos/semana-completa', fetchJson)
+  const sesiones = semana?.sesiones ?? []
+  const bloque = semana?.bloque ?? null
+  const loading = isLoading && !semana
   const [detalles, setDetalles] = useState<Record<string, EjercicioDetalle[] | 'cargando'>>({})
-
-  useEffect(() => {
-    fetch('/api/entrenos/semana-completa')
-      .then(r => r.ok ? r.json() : { sesiones: [] })
-      .then(data => {
-        setSesiones(data.sesiones ?? [])
-        setBloque(data.bloque ?? null)
-      })
-      .finally(() => setLoading(false))
-  }, [])
 
   async function cargarDetalle(sesionId: string) {
     if (detalles[sesionId] && detalles[sesionId] !== 'cargando') return

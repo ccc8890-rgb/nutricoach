@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import useSWR from 'swr'
+import { fetchJson } from '@/lib/cliente/cache-swr'
 import Image from 'next/image'
 import { MagnifyingGlass, ForkKnife, SlidersHorizontal, X } from '@phosphor-icons/react'
 
@@ -32,13 +34,28 @@ export default function RecetarioExplorador({
   const [categoria, setCategoria] = useState<string>('Todos')
   const [tag, setTag] = useState<string | null>(null)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
-  const [recetas, setRecetas] = useState<RecetaCatalogo[]>([])
+  // Primera página sin filtros: viene de la caché compartida (precargada por el portal).
+  const sinFiltros = !q.trim() && categoria === 'Todos' && !tag
+  const { data: inicial, error: errorInicial } = useSWR<{ recetas?: RecetaCatalogo[]; hayMas?: boolean }>(
+    `/api/cliente/${codigo}/recetario?page=0`, fetchJson,
+  )
+  const [recetas, setRecetas] = useState<RecetaCatalogo[]>(inicial?.recetas ?? [])
   const [page, setPage] = useState(0)
-  const [hayMas, setHayMas] = useState(false)
-  const [cargando, setCargando] = useState(true)
+  const [hayMas, setHayMas] = useState(Boolean(inicial?.hayMas))
+  const [cargando, setCargando] = useState(!inicial)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    if (!sinFiltros) return
+    if (!inicial) { if (errorInicial) setCargando(false); return }
+    setRecetas(inicial.recetas ?? [])
+    setHayMas(Boolean(inicial.hayMas))
+    setPage(0)
+    setCargando(false)
+  }, [sinFiltros, inicial, errorInicial])
+
+  useEffect(() => {
+    if (sinFiltros) return
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setPage(0)
@@ -46,7 +63,7 @@ export default function RecetarioExplorador({
     }, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, categoria, tag])
+  }, [q, categoria, tag, sinFiltros])
 
   async function cargar(paginaSolicitada: number, reemplazar: boolean) {
     setCargando(true)

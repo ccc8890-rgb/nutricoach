@@ -1,9 +1,11 @@
 'use client'
 import { useEffect, useState, Suspense, type ComponentType } from 'react'
+import useSWR, { SWRConfig, useSWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
+import { proveedorCachePersistente, borrarCachePortal, fetchJson } from '@/lib/cliente/cache-swr'
 import {
   House, BookOpenText, ClipboardText, ChartLineUp, SignOut,
   ForkKnife, Barbell, Scales, Trophy, Sun, Moon, Gear,
@@ -158,6 +160,64 @@ function LoadingPortal() {
   )
 }
 
+/* ── Carga inicial (SWR: se pinta desde caché y se revalida en segundo plano) ── */
+interface PortalBootstrap {
+  profile: Profile
+  cliente: Cliente | null
+  dieta: PlanNutricion | null
+  entreno: PlanEntrenamiento | null
+  peso: SeguimientoPeso[]
+}
+
+async function cargarPortal(): Promise<PortalBootstrap | null> {
+  // getSession lee el token local (sin ida y vuelta a Auth); cada dato va por RLS o por API que
+  // vuelve a validar al usuario. Todo lo demás se pide en paralelo en vez de en cascada.
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
+  if (!user) { window.location.replace('/login'); return null }
+
+  fetch('/api/cliente/registrar-acceso', { method: 'POST' }).catch(() => {})
+
+  // Bug real (revisión 27-09-2026): plan de dieta/entreno van por API con service role porque RLS
+  // silencia los joins anidados desde el cliente (arrays vacíos sin error). No volver a joins directos.
+  const [profRes, cliRes, dietaRes, entrenoRes] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('clientes').select('*').eq('profile_id', user.id).single().then(async r => ({
+      ...r,
+      peso: r.data
+        ? await supabase.from('seguimiento_peso').select('*').eq('cliente_id', r.data.id)
+            .order('fecha', { ascending: false }).limit(15)
+        : null,
+    })),
+    fetch('/api/cliente/plan-nutricion-activo').then(r => r.ok ? r.json() : { plan: null }).catch(() => ({ plan: null })),
+    fetch('/api/cliente/plan-entrenamiento-activo').then(r => r.ok ? r.json() : { plan: null }).catch(() => ({ plan: null })),
+  ])
+
+  const prof = profRes.data
+  if (prof?.role === 'coach') { window.location.replace('/dashboard'); return null }
+
+  const cli = cliRes.data
+  if (cli && !cli.onboarding_completado) { window.location.replace('/onboarding'); return null }
+
+  let dieta: PlanNutricion | null = null
+  let entreno: PlanEntrenamiento | null = null
+  if (cli && dietaRes.plan) {
+    const ordenadas = ((dietaRes.plan as PlanNutricion).comidas ?? []).sort((a, b) => a.orden - b.orden)
+    dieta = { ...dietaRes.plan as PlanNutricion, comidas: ordenadas }
+  }
+  if (cli && entrenoRes.plan) {
+    const ordenadas = ((entrenoRes.plan as PlanEntrenamiento).sesiones ?? []).sort((a, b) => a.orden - b.orden)
+    entreno = { ...entrenoRes.plan as PlanEntrenamiento, sesiones: ordenadas }
+  }
+  return {
+    profile: prof as Profile,
+    cliente: cli as Cliente | null,
+    dieta,
+    entreno,
+    peso: cli ? (cliRes.peso?.data as SeguimientoPeso[] ?? []) : [],
+  }
+}
+
 /* ── Main component ─────────────────────────────── */
 function PortalClientePageContent() {
   const router = useRouter()
@@ -222,57 +282,48 @@ function PortalClientePageContent() {
     window.history.replaceState(window.history.state, '', `/cliente?tab=${tab}`)
   }, [tab])
 
+  // `montado` evita desajuste de hidratación: el servidor pinta la pantalla de carga, y la caché
+  // (localStorage) solo existe en el cliente.
+  const [montado, setMontado] = useState(false)
+  useEffect(() => setMontado(true), [])
+  const { mutate } = useSWRConfig()
+  const { data: boot } = useSWR('portal:bootstrap', cargarPortal)
+
   useEffect(() => {
-    async function load() {
-      // getSession lee el token local (sin ida y vuelta a Auth); cada dato va por RLS o por API que
-      // vuelve a validar al usuario. Todo lo demás se pide en paralelo en vez de en cascada.
-      const { data: { session } } = await supabase.auth.getSession()
-      const user = session?.user
-      if (!user) { window.location.replace('/login'); return }
+    if (!boot) return
+    setProfile(boot.profile)
+    setCliente(boot.cliente)
+    setDieta(boot.dieta)
+    setEntreno(boot.entreno)
+    setHistorialPeso(boot.peso)
+    setLoading(false)
+  }, [boot])
 
-      fetch('/api/cliente/registrar-acceso', { method: 'POST' }).catch(() => {})
+  // Sesión cerrada o caducada: no puede quedar nada del cliente en el dispositivo.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(evento => {
+      if (evento === 'SIGNED_OUT') borrarCachePortal()
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
-      // Bug real (revisión 27-09-2026): plan de dieta/entreno van por API con service role porque RLS
-      // silencia los joins anidados desde el cliente (arrays vacíos sin error). No volver a joins directos.
-      const [profRes, cliRes, dietaRes, entrenoRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).single(),
-        supabase.from('clientes').select('*').eq('profile_id', user.id).single().then(async r => ({
-          ...r,
-          peso: r.data
-            ? await supabase.from('seguimiento_peso').select('*').eq('cliente_id', r.data.id)
-                .order('fecha', { ascending: false }).limit(15)
-            : null,
-        })),
-        fetch('/api/cliente/plan-nutricion-activo').then(r => r.ok ? r.json() : { plan: null }).catch(() => ({ plan: null })),
-        fetch('/api/cliente/plan-entrenamiento-activo').then(r => r.ok ? r.json() : { plan: null }).catch(() => ({ plan: null })),
-      ])
-
-      const prof = profRes.data
-      if (prof?.role === 'coach') { window.location.replace('/dashboard'); return }
-      setProfile(prof as Profile)
-
-      const cli = cliRes.data
-      setCliente(cli as Cliente)
-      if (cli && !cli.onboarding_completado) {
-        window.location.replace('/onboarding')
-        return
-      }
-
-      if (cli) {
-        if (dietaRes.plan) {
-          const ordenadas = ((dietaRes.plan as PlanNutricion).comidas ?? []).sort((a, b) => a.orden - b.orden)
-          setDieta({ ...dietaRes.plan as PlanNutricion, comidas: ordenadas })
-        }
-        if (entrenoRes.plan) {
-          const ordenadas = ((entrenoRes.plan as PlanEntrenamiento).sesiones ?? []).sort((a, b) => a.orden - b.orden)
-          setEntreno({ ...entrenoRes.plan as PlanEntrenamiento, sesiones: ordenadas })
-        }
-        setHistorialPeso(cliRes.peso?.data as SeguimientoPeso[] ?? [])
-      }
-      setLoading(false)
-    }
-    load()
-  }, [router])
+  // Con el portal pintado se calientan en segundo plano los datos de las pestañas pesadas,
+  // para que la primera visita a cada una también sea instantánea.
+  const codigoPlan = dieta?.codigo_publico ?? ''
+  const hayEntreno = Boolean(entreno)
+  useEffect(() => {
+    if (loading) return
+    const id = window.setTimeout(() => {
+      const claves = [
+        ...(hayEntreno ? ['/api/entrenos/semana-completa'] : []),
+        ...(codigoPlan ? [`/api/cliente/${codigoPlan}/recetario?page=0`] : []),
+      ]
+      claves.forEach(k => {
+        fetchJson(k).then(d => mutate(k, d, { revalidate: false })).catch(() => {})
+      })
+    }, 600)
+    return () => window.clearTimeout(id)
+  }, [loading, hayEntreno, codigoPlan, mutate])
 
   function comidasHoyDeDieta() {
     return comidasDelDia(dieta?.comidas, diaActualIndex())
@@ -329,11 +380,12 @@ function PortalClientePageContent() {
   }
 
   async function handleLogout() {
+    borrarCachePortal()
     await supabase.auth.signOut()
     router.push('/login')
   }
 
-  if (loading) return <LoadingPortal />
+  if (!montado || loading) return <LoadingPortal />
 
   const totalDia = calcMacrosDia()
   const codigo = dieta?.codigo_publico ?? ''
@@ -882,10 +934,16 @@ function PortalClientePageContent() {
 
 export default function PortalClientePage() {
   return (
-    <Suspense fallback={
-      <LoadingPortal />
-    }>
-      <PortalClientePageContent />
-    </Suspense>
+    <SWRConfig value={{
+      provider: proveedorCachePersistente,
+      shouldRetryOnError: false,
+      focusThrottleInterval: 30000,
+    }}>
+      <Suspense fallback={
+        <LoadingPortal />
+      }>
+        <PortalClientePageContent />
+      </Suspense>
+    </SWRConfig>
   )
 }
