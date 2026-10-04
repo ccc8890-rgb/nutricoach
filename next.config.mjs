@@ -3,6 +3,8 @@ const nextConfig = {
   images: {
     loader: 'custom',
     loaderFile: './lib/cloudinary-loader.ts',
+    deviceSizes: [640, 1080],
+    imageSizes: [48, 96, 256, 384],
     remotePatterns: [
       { protocol: "https", hostname: "**" },
     ],
