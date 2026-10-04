@@ -2,10 +2,9 @@
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import { fetchJson, claveReceta } from '@/lib/cliente/cache-swr'
-import { propsImagenReceta } from '@/lib/cliente/imagen-receta'
+import FotoReceta from '@/components/PortalCliente/FotoReceta'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { ArrowLeft, Clock, Loader2, AlertTriangle, UtensilsCrossed, PlayCircle } from 'lucide-react'
 import { MacroRing } from '@/components/premium/MacroRing'
 import { IngredientChecklist } from '@/components/premium/IngredientChecklist'
@@ -138,7 +137,7 @@ export default function RecetaClientePage() {
           <>
             <div className="w-full aspect-square rounded-3xl overflow-hidden" style={{ background: 'var(--surface)' }}>
               {receta.imagen_url ? (
-                <Image {...propsImagenReceta(receta.imagen_url, receta.nombre)} className="w-full h-full object-cover" priority />
+                <FotoReceta src={receta.imagen_url} alt={receta.nombre} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <UtensilsCrossed size={40} style={{ color: 'var(--text-muted)' }} />
