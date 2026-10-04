@@ -48,6 +48,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" data-scroll-behavior="smooth" className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Fotos de recetas: abre conexión con Cloudinary desde el principio (ahorra DNS+TLS en la primera foto) */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+      </head>
       <body
         className="min-h-full font-sans overflow-x-hidden"
         style={{

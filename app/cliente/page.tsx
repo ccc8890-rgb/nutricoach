@@ -160,14 +160,6 @@ function LoadingPortal() {
   )
 }
 
-// El código de las pestañas pesadas se descarga ya, en paralelo a la hidratación, no tras pintar.
-if (typeof window !== 'undefined') {
-  import('@/components/PortalCliente/MiPlan')
-  import('@/components/training/EntrenoSubTabs')
-  import('@/components/PortalCliente/RecetarioExplorador')
-  import('@/components/PortalCliente/AjustesTabs')
-}
-
 /* ── Carga inicial (SWR: se pinta desde caché y se revalida en segundo plano) ── */
 interface PortalBootstrap {
   profile: Profile
@@ -308,23 +300,39 @@ function PortalClientePageContent() {
   const hayEntreno = Boolean(entreno)
   useEffect(() => {
     if (loading) return
-    const id = window.setTimeout(() => {
+    let cancelado = false
+    const arrancar = async () => {
+      // Una petición cada vez y en reposo: no compite con lo que el cliente está viendo o tocando.
+      import('@/components/PortalCliente/MiPlan')
+      import('@/components/training/EntrenoSubTabs')
+      import('@/components/PortalCliente/RecetarioExplorador')
+      import('@/components/PortalCliente/AjustesTabs')
       const claves = [
         ...(hayEntreno ? ['/api/entrenos/semana-completa'] : []),
         ...(codigoPlan ? [`/api/cliente/${codigoPlan}/recetario?page=0`] : []),
       ]
-      claves.forEach(k => {
-        fetchJson(k).then(d => mutate(k, d, { revalidate: false })).catch(() => {})
-      })
+      for (const k of claves) {
+        if (cancelado) return
+        await fetchJson(k).then(d => mutate(k, d, { revalidate: false })).catch(() => {})
+      }
       // Recetas de las comidas de hoy: abrirlas (datos + foto) es instantáneo.
       if (codigoPlan) {
-        comidasDelDia(dieta?.comidas, diaActualIndex())
+        const hoy = comidasDelDia(dieta?.comidas, diaActualIndex())
           .filter(c => (c as { receta_id?: string | null }).receta_id)
-          .slice(0, 6)
-          .forEach(c => precalentarReceta(mutate as never, cache, claveReceta(codigoPlan, (c as unknown as { receta_id: string }).receta_id, c.id)))
+          .slice(0, 4)
+        for (const c of hoy) {
+          if (cancelado) return
+          await precalentarReceta(mutate as never, cache, claveReceta(codigoPlan, (c as unknown as { receta_id: string }).receta_id, c.id))
+        }
       }
-    }, 600)
-    return () => window.clearTimeout(id)
+    }
+    const idle = (window as unknown as { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+    const id = idle ? idle(arrancar, { timeout: 2500 }) : window.setTimeout(arrancar, 1500)
+    return () => {
+      cancelado = true
+      const cancel = (window as unknown as { cancelIdleCallback?: (n: number) => void }).cancelIdleCallback
+      if (idle && cancel) cancel(id); else window.clearTimeout(id)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, hayEntreno, codigoPlan, mutate, cache])
 
