@@ -160,6 +160,14 @@ function LoadingPortal() {
   )
 }
 
+// El código de las pestañas pesadas se descarga ya, en paralelo a la hidratación, no tras pintar.
+if (typeof window !== 'undefined') {
+  import('@/components/PortalCliente/MiPlan')
+  import('@/components/training/EntrenoSubTabs')
+  import('@/components/PortalCliente/RecetarioExplorador')
+  import('@/components/PortalCliente/AjustesTabs')
+}
+
 /* ── Carga inicial (SWR: se pinta desde caché y se revalida en segundo plano) ── */
 interface PortalBootstrap {
   profile: Profile
@@ -264,19 +272,6 @@ function PortalClientePageContent() {
   useEffect(() => {
     setVisitadas(prev => (prev.has(tab) ? prev : new Set(prev).add(tab)))
   }, [tab])
-
-  // Con el portal ya pintado, se descarga en segundo plano el código de las pestañas pesadas.
-  useEffect(() => {
-    if (loading) return
-    const precargar = () => {
-      import('@/components/PortalCliente/MiPlan')
-      import('@/components/training/EntrenoSubTabs')
-      import('@/components/PortalCliente/RecetarioExplorador')
-      import('@/components/PortalCliente/AjustesTabs')
-    }
-    const id = window.setTimeout(precargar, 600)
-    return () => window.clearTimeout(id)
-  }, [loading])
 
   useEffect(() => {
     window.history.replaceState(window.history.state, '', `/cliente?tab=${tab}`)

@@ -85,7 +85,9 @@ export async function proxy(request: NextRequest) {
     // No redirigimos /login desde aquí: si una cookie queda a medias,
     // bloquearía la recuperación manual de sesión.
     try {
-        await supabase.auth.getUser()
+        // getClaims valida el JWT en local (sin ida y vuelta a Supabase Auth en cada navegación)
+        // y refresca la sesión si está caducada. Si el proyecto usa clave simétrica, cae a getUser.
+        await supabase.auth.getClaims()
     } catch {
         // Ignorar errores de auth (token inválido, etc.) para evitar bucles
     }
