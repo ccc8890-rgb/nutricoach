@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
-import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta } from '@/lib/cliente/cache-swr'
+import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta, marca } from '@/lib/cliente/cache-swr'
 import {
   House, BookOpenText, ClipboardText, ChartLineUp, SignOut,
   ForkKnife, Barbell, Scales, Trophy, Sun, Moon, Gear,
@@ -160,6 +160,8 @@ function LoadingPortal() {
   )
 }
 
+marca('nc:modulo-portal')
+
 /* ── Carga inicial (SWR: se pinta desde caché y se revalida en segundo plano) ── */
 interface PortalBootstrap {
   profile: Profile
@@ -220,6 +222,7 @@ async function cargarPortal(): Promise<PortalBootstrap | null> {
 
 /* ── Main component ─────────────────────────────── */
 function PortalClientePageContent() {
+  marca('nc:render-portal')
   const router = useRouter()
   const searchParams = useSearchParams()
   const { theme, toggleTheme } = useTheme()
@@ -272,12 +275,14 @@ function PortalClientePageContent() {
   // `montado` evita desajuste de hidratación: el servidor pinta la pantalla de carga, y la caché
   // (localStorage) solo existe en el cliente.
   const [montado, setMontado] = useState(false)
-  useEffect(() => setMontado(true), [])
+  useEffect(() => { marca('nc:montado'); setMontado(true) }, [])
+  useEffect(() => { if (!loading) marca('nc:contenido-commit') }, [loading])
   const { mutate, cache } = useSWRConfig()
   const { data: boot } = useSWR('portal:bootstrap', cargarPortal)
 
   useEffect(() => {
     if (!boot) return
+    marca('nc:boot-aplicado')
     setProfile(boot.profile)
     setCliente(boot.cliente)
     setDieta(boot.dieta)
@@ -397,6 +402,7 @@ function PortalClientePageContent() {
   }
 
   if (!montado || loading) return <LoadingPortal />
+  marca('nc:contenido-render')
 
   const totalDia = calcMacrosDia()
   const codigo = dieta?.codigo_publico ?? ''

@@ -5,12 +5,17 @@ const CLAVE = 'nc:swr-cache:v1'
 let mapaActual: Map<string, { data: unknown }> | null = null
 let descartada = false
 
+// Marcas de arranque (performance.mark) para medir dónde se va el tiempo; se leen con performance.getEntriesByType('mark').
+export const marca = (n: string) => { try { performance.mark(n) } catch { /* sin Performance API */ } }
+
 export function proveedorCachePersistente(): Map<string, { data: unknown }> {
   if (typeof window === 'undefined') return new Map()
+  marca('nc:cache-leer-ini')
   let mapa = new Map<string, { data: unknown }>()
   try {
     mapa = new Map(JSON.parse(localStorage.getItem(CLAVE) || '[]'))
   } catch { /* caché corrupta o storage bloqueado: se arranca vacía */ }
+  marca('nc:cache-leer-fin')
   mapaActual = mapa
   descartada = false
 
