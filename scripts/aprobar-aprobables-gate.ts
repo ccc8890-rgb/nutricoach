@@ -8,6 +8,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
+import { auditarLoteRecetas } from '../lib/recetas/post-import-audit'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
   const m = l.match(/^([A-Z0-9_]+)=(.*)$/)
@@ -36,5 +37,7 @@ async function main() {
   const { error: e2 } = await db.from('recetas').update({ estado: 'aprobada' }).in('id', aprobables.map(r => r.id)).eq('estado', 'en_revision')
   if (e2) throw e2
   console.log(`Aprobadas ${aprobables.length} recetas.`)
+  await auditarLoteRecetas(db as never, aprobables.map(r => r.id), 'script_aprobar_gate', 'aprobada_lote')   // deja el evento en recetas_auditoria
+  console.log('Eventos de auditoría registrados.')
 }
 main().catch(e => { console.error(e); process.exit(1) })

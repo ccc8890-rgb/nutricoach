@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { autoTagReceta } from '../lib/auto-tag'
+import { auditarLoteRecetas } from '../lib/recetas/post-import-audit'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
   const m = l.match(/^([A-Z0-9_]+)=(.*)$/)
@@ -132,6 +133,7 @@ async function main() {
   if (rechazadas) throw new Error('Hay recetas rechazadas: corrige el lote antes de importar')
 
   const coachId = await resolverCoachId()
+  const idsCreadas: string[] = []
   for (const { receta, macros, intolerancias } of aceptadas) {
     const ingredientesTag = receta.ingredientes.map(([k]) => ({ nombre_libre: alimentos.get(k)!.nombre }))
     const { data, error } = await db.from('recetas').insert({
@@ -172,8 +174,11 @@ async function main() {
       throw new Error(`Ingredientes "${receta.nombre}": ${ingError.message} (receta revertida)`)
     }
     console.log(`  + ${receta.nombre} → ${data.id}`)
+    idsCreadas.push(data.id)
   }
   console.log(`\n✅ ${aceptadas.length} recetas importadas en estado en_revision`)
+  const auditoria = await auditarLoteRecetas(db as never, idsCreadas, 'script_importar_lote_verificado')
+  console.log(`   Auditadas ${auditoria.length} (score medio ${(auditoria.reduce((t, a) => t + a.score, 0) / (auditoria.length || 1)).toFixed(1)}, aprobables ${auditoria.filter(a => a.aprobable).length})`)
 }
 
 main().catch(e => { console.error('❌', e.message ?? e); process.exit(1) })

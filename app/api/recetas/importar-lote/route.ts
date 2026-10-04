@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { normalizarRecetasGeneradas } from '@/lib/recetas/importar-lote'
+import { auditarLoteRecetas } from '@/lib/recetas/post-import-audit'
 
 export async function POST(request: NextRequest) {
   const auth = createApiSupabase(request)
@@ -68,10 +69,14 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Score, clasificación y evento de auditoría de cada receta importada (antes solo lo hacía scrape-receta).
+  const auditoria = await auditarLoteRecetas(db, creadas.map(c => c.id), 'api_recetas_importar_lote')
+
   return NextResponse.json({
     ok: true,
     creadas,
     total: creadas.length,
+    auditoria: auditoria.map(a => ({ id: a.id, score: a.score, aprobable: a.aprobable, bloqueantes: a.bloqueantes })),
     aviso: 'Recetas guardadas en revisión. Requieren quality gate y aprobación manual.',
   })
 }
