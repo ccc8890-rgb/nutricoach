@@ -1,5 +1,34 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 04-10-2026 (Claude) — Velocidad "instantánea" del portal cliente: caché, fotos y Suspense
+
+Carlos: la app cargaba al abrir y al pinchar pestañas; "no es instantáneo como debería en cualquier app". Se midió en su sesión real (`browse --headed` + handoff) y se corrigieron 4 causas. Commits `ed9698e`→`13bb69c`, todo en producción.
+
+### Causas y arreglos
+1. **Todo esperaba al servidor en cada apertura** → caché SWR persistida en localStorage (`lib/cliente/cache-swr.ts`, provider en `components/PortalCliente/CachePortal.tsx`, montado en `app/cliente/layout.tsx` para compartirla entre `/cliente` y `/cliente/receta/[id]`). Se pinta lo último conocido y se revalida en segundo plano. Se borra en `SIGNED_OUT` y al cerrar sesión. `focusThrottleInterval` 30 s, sin reintentos en error.
+2. **Datos de pestañas pedidos al abrirlas** → precarga escalonada en reposo (`requestIdleCallback`) tras pintar: `semana-completa`, recetario página 0 y las 4 primeras recetas de hoy (datos + foto). Al tocar un enlace a receta (`pointerdown`) se pide su detalle antes del clic.
+3. **Fotos lentas (la causa mayor): `f_auto,q_auto` de Cloudinary responde con `Vary: Accept, User-Agent, Save-Data`** → una copia en CDN por navegador; la primera petición de cada uno tardaba ~0,8 s aunque se hubiera precalentado con curl. Loader ahora `f_webp,q_75,w_N,c_limit` fijos (`lib/cloudinary-loader.ts`), `deviceSizes [640,1080]` / `imageSizes [48,96,256,384]` en `next.config.mjs`, `preconnect` a res.cloudinary.com en `app/layout.tsx`. Foto de receta en dos capas (`components/PortalCliente/FotoReceta.tsx`): la de 640 px que la tarjeta ya descargó + la grande fundiéndose encima.
+4. **React retenía la pantalla 300 ms (FALLBACK_THROTTLE_MS de Suspense)** por componentes `dynamic()`/lazy: contenido listo a los 145 ms, pintado a los 450 ms. Import estático de TLSGauge, NotasCoach, MiPlan, EntrenoSubTabs, RecetarioExplorador y AjustesTabs en `app/cliente/page.tsx`. Mejor caso: primera pintada 488 → 252 ms; commit del contenido tras montar 300 → ~15 ms.
+- Otros: proxy usa `getClaims()` (JWT ES256, validación local) en vez de `getUser()` (llamada a Supabase Auth en cada navegación); `lib/cliente/imagen-receta.ts` (misma medida de foto para precargar y pintar).
+
+### Herramientas nuevas
+- `scripts/calentar-imagenes-cloudinary.mjs`: precalienta las 4 variantes (96/384/640/1080) de todas las recetas. **Ejecutar tras importar/regenerar fotos** (pedir permiso: consume transformaciones de Cloudinary). Las subidas vía `uploadToCloudinary()` ya se calientan solas (`calentarVariantes`). **Ojo:** las fotos que suba el bridge de Content-Radar (Python) NO pasan por ahí → ejecutar el script después de cada lote.
+- Marcas `performance.mark('nc:...')` permanentes en `page.tsx` y `cache-swr.ts` para medir el arranque (`modulo-portal`, `montado`, `contenido-commit`…).
+
+### Lecciones
+- **Medir antes de optimizar**: dos de las cuatro causas (Vary por navegador y el throttle de Suspense de 300 ms) no eran las sospechadas; salieron de números reales en la sesión del cliente.
+- No usar `f_auto`/`q_auto` en el loader. No usar `dynamic`/`lazy` en lo que se ve en las pestañas principales del portal (solo en lo raro: check-in, chat, compra).
+- `browse` no permite throttling de red/CPU (CDP bloqueado a propósito, no saltarlo): los números son de ordenador, no de iPhone. Tras cada deploy el móvil baja el JS nuevo: valorar siempre la SEGUNDA apertura.
+- Un `getUser()` en el proxy (middleware) es una ida y vuelta a Supabase por navegación; con claves asimétricas `getClaims()` valida en local.
+
+### Auditoría de seguridad de lo tocado
+- La caché guarda datos del cliente (plan, perfil, peso, recetas) en localStorage: se borra en `SIGNED_OUT` y en logout; claves ligadas a la sesión. Riesgo residual: móvil compartido con sesión aún válida. Sin secretos nuevos en código; el script de calentado lee `.env.local` y no escribe nada. El proxy no bloquea accesos (solo sincroniza cookies), cambiar a `getClaims` no altera la seguridad.
+
+### Pendiente (de esta línea)
+1. Medir en iPhone real (Carlos: "lo veo parecido, mejor que antes"). Quedan sin precalentar Compra, Chat, Check-in, Progreso y detalle de sesión de entreno.
+2. Transición al abrir una receta (página aparte con su propio paso de carga): si se nota salto, medir con marcas.
+3. Opcional: miniatura→foto sin fundido; `ver pendiente` de recetas sin foto (≈300, T44).
+
 ## ✅ SESIÓN 01-10-2026 (Claude, coordinado con Codex) — Fase 0 en producción, precisión de macros, estudio del recetario y 2 lotes nuevos
 
 ### 1. Motor Integrado Fase 0 — en producción
