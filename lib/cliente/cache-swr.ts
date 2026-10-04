@@ -42,3 +42,22 @@ export async function fetchJson<T = unknown>(url: string): Promise<T> {
   if (!r.ok) throw new Error(String(r.status))
   return r.json()
 }
+
+/* ── Detalle de receta: la clave es la misma URL que pide la página, para compartir caché ── */
+export const claveReceta = (codigo: string, id: string, comida?: string | null) =>
+  `/api/cliente/${codigo}/recetas/${id}${comida ? `?comida=${encodeURIComponent(comida)}` : ''}`
+
+// Calienta el detalle (y la foto) de una receta antes de abrirla. No repite si ya está en caché.
+export async function precalentarReceta(
+  mutate: (clave: string, datos: unknown, opts: { revalidate: boolean }) => Promise<unknown>,
+  cache: { get: (k: string) => unknown },
+  clave: string,
+) {
+  if (cache.get(clave)) return
+  try {
+    const datos = await fetchJson<{ receta?: { imagen_url?: string | null } }>(clave)
+    await mutate(clave, datos, { revalidate: false })
+    const { precargarImagenReceta } = await import('./imagen-receta')
+    precargarImagenReceta(datos.receta?.imagen_url)
+  } catch { /* se cargará al abrirla */ }
+}

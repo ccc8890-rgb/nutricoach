@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import CachePortal from '@/components/PortalCliente/CachePortal'
 
 export const metadata: Metadata = {
   title: 'Casanova Cliente',
@@ -11,5 +12,5 @@ export const metadata: Metadata = {
 }
 
 export default function ClienteLayout({ children }: { children: React.ReactNode }) {
-  return children
+  return <CachePortal>{children}</CachePortal>
 }

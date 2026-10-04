@@ -1,5 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
+import useSWR from 'swr'
+import { fetchJson, claveReceta } from '@/lib/cliente/cache-swr'
+import { propsImagenReceta } from '@/lib/cliente/imagen-receta'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -61,30 +64,22 @@ export default function RecetaClientePage() {
   const codigo = searchParams.get('codigo')
   const returnTo = searchParams.get('returnTo') || '/cliente'
 
-  const [receta, setReceta] = useState<RecetaDetalle | null>(null)
-  const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
-  const [racion, setRacion] = useState<Racion | null>(null)
   const [cocinarPara, setCocinarPara] = useState(1)
   const [racionesVista, setRacionesVista] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    if (!codigo) { setError('Falta el código del plan.'); setLoading(false); return }
-    const comida = searchParams.get('comida')
-    fetch(`/api/cliente/${codigo}/recetas/${id}${comida ? `?comida=${encodeURIComponent(comida)}` : ''}`)
-      .then(r => {
-        if (!r.ok) throw new Error('No se pudo cargar la receta.')
-        return r.json()
-      })
-      .then(data => {
-        setReceta(data.receta)
-        setIngredientes(data.ingredientes ?? [])
-        setRacion(data.racion ?? null)
-      })
-      .catch(() => setError('No se pudo cargar la receta.'))
-      .finally(() => setLoading(false))
-  }, [codigo, id, searchParams])
+  // Caché compartida con el portal (persistente): al reabrir una receta el detalle y la foto salen al instante.
+  // `montado` evita desajuste de hidratación: la caché solo existe en el cliente.
+  const [montado, setMontado] = useState(false)
+  useEffect(() => setMontado(true), [])
+  const { data, error: errorSwr, isLoading } = useSWR<{
+    receta: RecetaDetalle
+    ingredientes?: IngredienteConAlimento[]
+    racion?: Racion | null
+  }>(codigo ? claveReceta(codigo, id, searchParams.get('comida')) : null, fetchJson)
+  const receta = data?.receta ?? null
+  const ingredientes = data?.ingredientes ?? []
+  const racion = data?.racion ?? null
+  const loading = !montado || (Boolean(codigo) && isLoading && !data)
+  const error = !codigo ? 'Falta el código del plan.' : errorSwr ? 'No se pudo cargar la receta.' : ''
 
   const porciones = Math.max(1, Number(receta?.porciones ?? 1))
   const k = racion ? cocinarPara : 1
@@ -143,7 +138,7 @@ export default function RecetaClientePage() {
           <>
             <div className="w-full aspect-square rounded-3xl overflow-hidden" style={{ background: 'var(--surface)' }}>
               {receta.imagen_url ? (
-                <Image src={receta.imagen_url} alt={receta.nombre} width={512} height={512} className="w-full h-full object-cover" priority />
+                <Image {...propsImagenReceta(receta.imagen_url, receta.nombre)} className="w-full h-full object-cover" priority />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <UtensilsCrossed size={40} style={{ color: 'var(--text-muted)' }} />

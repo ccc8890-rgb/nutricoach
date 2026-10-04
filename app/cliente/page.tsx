@@ -1,11 +1,11 @@
 'use client'
 import { useEffect, useState, Suspense, type ComponentType } from 'react'
-import useSWR, { SWRConfig, useSWRConfig } from 'swr'
+import useSWR, { useSWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
-import { proveedorCachePersistente, borrarCachePortal, fetchJson } from '@/lib/cliente/cache-swr'
+import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta } from '@/lib/cliente/cache-swr'
 import {
   House, BookOpenText, ClipboardText, ChartLineUp, SignOut,
   ForkKnife, Barbell, Scales, Trophy, Sun, Moon, Gear,
@@ -281,7 +281,7 @@ function PortalClientePageContent() {
   // (localStorage) solo existe en el cliente.
   const [montado, setMontado] = useState(false)
   useEffect(() => setMontado(true), [])
-  const { mutate } = useSWRConfig()
+  const { mutate, cache } = useSWRConfig()
   const { data: boot } = useSWR('portal:bootstrap', cargarPortal)
 
   useEffect(() => {
@@ -316,9 +316,17 @@ function PortalClientePageContent() {
       claves.forEach(k => {
         fetchJson(k).then(d => mutate(k, d, { revalidate: false })).catch(() => {})
       })
+      // Recetas de las comidas de hoy: abrirlas (datos + foto) es instantáneo.
+      if (codigoPlan) {
+        comidasDelDia(dieta?.comidas, diaActualIndex())
+          .filter(c => (c as { receta_id?: string | null }).receta_id)
+          .slice(0, 6)
+          .forEach(c => precalentarReceta(mutate as never, cache, claveReceta(codigoPlan, (c as unknown as { receta_id: string }).receta_id, c.id)))
+      }
     }, 600)
     return () => window.clearTimeout(id)
-  }, [loading, hayEntreno, codigoPlan, mutate])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, hayEntreno, codigoPlan, mutate, cache])
 
   function comidasHoyDeDieta() {
     return comidasDelDia(dieta?.comidas, diaActualIndex())
@@ -929,16 +937,10 @@ function PortalClientePageContent() {
 
 export default function PortalClientePage() {
   return (
-    <SWRConfig value={{
-      provider: proveedorCachePersistente,
-      shouldRetryOnError: false,
-      focusThrottleInterval: 30000,
-    }}>
-      <Suspense fallback={
-        <LoadingPortal />
-      }>
-        <PortalClientePageContent />
-      </Suspense>
-    </SWRConfig>
+    <Suspense fallback={
+      <LoadingPortal />
+    }>
+      <PortalClientePageContent />
+    </Suspense>
   )
 }
