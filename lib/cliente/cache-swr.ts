@@ -53,7 +53,13 @@ export async function precalentarReceta(
   cache: { get: (k: string) => unknown },
   clave: string,
 ) {
-  if (cache.get(clave)) return
+  // Datos ya en caché (p. ej. persistida de otra sesión): la foto del navegador no lo está, se precarga igualmente.
+  const previo = (cache.get(clave) as { data?: { receta?: { imagen_url?: string | null } } } | undefined)?.data
+  if (previo) {
+    const { precargarImagenReceta } = await import('./imagen-receta')
+    precargarImagenReceta(previo.receta?.imagen_url)
+    return
+  }
   try {
     const datos = await fetchJson<{ receta?: { imagen_url?: string | null } }>(clave)
     await mutate(clave, datos, { revalidate: false })

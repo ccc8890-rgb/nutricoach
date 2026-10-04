@@ -13,6 +13,17 @@ interface UploadOptions {
   format?: string
 }
 
+// Anchos que pide la app (ver deviceSizes/imageSizes en next.config.mjs). Deben coincidir con lib/cloudinary-loader.ts.
+const ANCHOS_APP = [96, 384, 640, 1080]
+
+// Cloudinary genera cada variante la primera vez que se pide (~0,8 s). Se piden aquí para que el cliente no la pague.
+export async function calentarVariantes(url: string): Promise<void> {
+  if (!url.includes('/upload/')) return
+  await Promise.allSettled(ANCHOS_APP.map(w =>
+    fetch(url.replace('/upload/', `/upload/f_webp,q_75,w_${w},c_limit/`), { signal: AbortSignal.timeout(5000) }).then(r => r.arrayBuffer())
+  ))
+}
+
 export async function uploadToCloudinary(buffer: Buffer, options: UploadOptions): Promise<string> {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -26,7 +37,7 @@ export async function uploadToCloudinary(buffer: Buffer, options: UploadOptions)
       },
       (error, result) => {
         if (error || !result) return reject(error ?? new Error('Cloudinary: sin resultado'))
-        resolve(result.secure_url)
+        calentarVariantes(result.secure_url).finally(() => resolve(result.secure_url))
       }
     )
     stream.end(buffer)
