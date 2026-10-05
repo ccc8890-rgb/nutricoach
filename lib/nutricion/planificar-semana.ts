@@ -8,10 +8,13 @@ import { filtrarRecetasPorSlot } from '@/lib/plan-recetas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { completarSemana } from './completar-comidas'
 import { objetivosPorDia } from './objetivo-dia'
+import { contextoRecetaCompeticion } from './receta-competicion'
 import type { SlotComida } from '@/lib/tipos-comida'
 
 const POOL_MAX = 400
 const CANDIDATAS_POR_FRANJA = 60
+const CANDIDATAS_COMPETICION = 120
+const POOL_MAX_COMPETICION = 600
 const CONCURRENCIA = 4
 // Franjas por defecto si el plan aún no tiene comidas con nombre de franja
 const FRANJAS_BASE: SlotComida[] = ['Desayuno', 'Comida', 'Cena']
@@ -31,6 +34,7 @@ export async function candidatasPorFranja(
   franjas: SlotComida[],
   franjasDia: SlotComida[],
   necesarias: Record<string, number>,
+  franjasCompeticion: Iterable<SlotComida> = [],
 ) {
   const [{ data: onboarding }, { data: perfil }, { data: perfilEntreno }] = await Promise.all([
     db.from('onboarding_responses').select('*').eq('cliente_id', clienteId).maybeSingle(),
@@ -40,15 +44,18 @@ export async function candidatasPorFranja(
   const { filtroCliente, tagsClinicos } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
   const candidatas: Record<string, CandidataSemana[]> = {}
   const shares = new Map<string, number>()
+  const conCompeticion = new Set(franjasCompeticion)
   for (const franja of franjas) {
     const share = REPARTO[franja] / franjasDia.reduce((t, f) => t + REPARTO[f], 0)
     shares.set(franja, share)
     const t = (v: number | null) => (v ? v * share : 0)
+    const limite = conCompeticion.has(franja) ? CANDIDATAS_COMPETICION : CANDIDATAS_POR_FRANJA
+    const poolMax = conCompeticion.has(franja) ? POOL_MAX_COMPETICION : POOL_MAX
     const pedir = (tags?: typeof tagsClinicos) => filtrarRecetasPorSlot(
-      db, franja, t(plan.kcal_objetivo), t(plan.proteinas_objetivo), filtroCliente, CANDIDATAS_POR_FRANJA,
+      db, franja, t(plan.kcal_objetivo), t(plan.proteinas_objetivo), filtroCliente, limite,
       clienteId, onboarding?.objetivo, tags && Object.keys(tags).length > 0 ? tags : undefined,
       perfilEntreno?.sport_modality ?? null,
-      t(plan.carbohidratos_objetivo) || undefined, t(plan.grasas_objetivo) || undefined, POOL_MAX,
+      t(plan.carbohidratos_objetivo) || undefined, t(plan.grasas_objetivo) || undefined, poolMax,
     )
     let lista = await pedir(tagsClinicos)
     // El filtro de etiquetas (p. ej. rendimiento) es una preferencia: si deja menos recetas que días, se completa sin él
@@ -56,7 +63,11 @@ export async function candidatasPorFranja(
       const vistas = new Set(lista.map(c => c.id))
       lista = [...lista, ...(await pedir(undefined)).filter(c => !vistas.has(c.id))]
     }
-    candidatas[franja] = lista.map(c => ({ id: c.id, nombre: c.nombre, pre: (c as { es_pre_entreno?: boolean }).es_pre_entreno === true, post: (c as { es_post_entreno?: boolean }).es_post_entreno === true }))
+    candidatas[franja] = lista.map(c => ({
+      id: c.id, nombre: c.nombre, kcal: c.kcal, proteinas: c.proteinas, carbohidratos: c.carbohidratos,
+      grasas: c.grasas, fibra: c.fibra, planningRoles: c.planning_roles,
+      pre: c.es_pre_entreno === true, post: c.es_post_entreno === true,
+    }))
   }
   return { candidatas, shares }
 }
@@ -86,14 +97,16 @@ export async function planificarSemana(
     for (const franja of franjas) {
       if (!reemplazar && ocupado(dia, franja)) continue
       const m = objDiaPlan[dia]?.momento
-      huecos.push({ dia, franja, ...(m?.pre === franja ? { momento: 'pre' as const } : m?.post === franja ? { momento: 'post' as const } : {}) })
+      const competicion = contextoRecetaCompeticion(objDiaPlan[dia])
+      huecos.push({ dia, franja, ...(m?.pre === franja ? { momento: 'pre' as const } : m?.post === franja ? { momento: 'post' as const } : {}), ...(competicion ? { competicion } : {}) })
     }
   }
 
   const franjasConHueco = [...new Set(huecos.map(h => h.franja))] as SlotComida[]
   const franjasDia = FRANJAS.filter(f => franjas.includes(f) || existentes.some(c => c.nombre === f))
   const necesarias = Object.fromEntries(franjasConHueco.map(f => [f, huecos.filter(h => h.franja === f).length]))
-  const { candidatas, shares } = await candidatasPorFranja(db, clienteId, plan, franjasConHueco, franjasDia, necesarias)
+  const franjasCompeticion = franjasConHueco.filter(f => huecos.some(h => h.franja === f && h.competicion))
+  const { candidatas, shares } = await candidatasPorFranja(db, clienteId, plan, franjasConHueco, franjasDia, necesarias, franjasCompeticion)
 
   const { asignaciones, sinCubrir } = repartirSemanaSinRepetir(candidatas, huecos)
   return { huecos, candidatas, asignaciones: asignaciones as Asignacion[], sinCubrir, shares, existentes }

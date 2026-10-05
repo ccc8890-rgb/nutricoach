@@ -1137,6 +1137,7 @@ export interface RecetaCandidata {
   proteinas: number
   carbohidratos: number
   grasas: number
+  fibra?: number | null
   tiempo_prep_min?: number | null
   tipo_receta?: TipoReceta | null
   imagen_url?: string | null
@@ -1154,6 +1155,9 @@ export interface RecetaCandidata {
   digestibilidad?: string | null
   _dist?: number
   _sort_score?: number
+  planning_roles?: string[] | null
+  es_pre_entreno?: boolean | null
+  es_post_entreno?: boolean | null
 }
 
 export interface RecetaInteraccionCliente {

@@ -9,6 +9,7 @@ import { repartirSemanaSinRepetir, type Hueco } from './generar-semana'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { completarSemana } from './completar-comidas'
 import { objetivosPorDia, type ObjetivoDia } from './objetivo-dia'
+import { contextoRecetaCompeticion } from './receta-competicion'
 import { construirFiltroCliente } from './semana-dieta'
 import { optimizarFactoresReceta, type IngredienteOptimizable } from '@/lib/recetas/optimizar-factores'
 import type { RolIngrediente } from '@/types'
@@ -182,14 +183,16 @@ export async function generarFutura(
   for (const dia of DIAS_SEMANA) for (const franja of franjas) {
     if (!p.reemplazar && propias.some(r => r.dia_semana === dia && r.franja === franja)) continue
     const m = objDia[dia]?.momento
-    huecos.push({ dia, franja, ...(m?.pre === franja ? { momento: 'pre' as const } : m?.post === franja ? { momento: 'post' as const } : {}) })
+    const competicion = contextoRecetaCompeticion(objDia[dia])
+    huecos.push({ dia, franja, ...(m?.pre === franja ? { momento: 'pre' as const } : m?.post === franja ? { momento: 'post' as const } : {}), ...(competicion ? { competicion } : {}) })
   }
   if (huecos.length === 0) return { asignadas: 0, repetidas: 0, sinCubrir: [] as Hueco[], mensaje: 'Esa semana ya está completa' }
 
   const franjasConHueco = [...new Set(huecos.map(h => h.franja))] as SlotComida[]
   const franjasDia = FRANJAS.filter(f => franjas.includes(f) || franjasPropias.includes(f))
   const necesarias = Object.fromEntries(franjasConHueco.map(f => [f, huecos.filter(h => h.franja === f).length]))
-  const { candidatas } = await candidatasPorFranja(db, clienteId, plan, franjasConHueco, franjasDia, necesarias)
+  const franjasCompeticion = franjasConHueco.filter(f => huecos.some(h => h.franja === f && h.competicion))
+  const { candidatas } = await candidatasPorFranja(db, clienteId, plan, franjasConHueco, franjasDia, necesarias, franjasCompeticion)
 
   const evitar = new Set<string>([
     ...enCurso.flatMap(c => (c.receta_id ? [c.receta_id] : [])),

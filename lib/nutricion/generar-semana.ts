@@ -1,9 +1,14 @@
 // Selección pura de recetas para una semana: sin repetir, franjas escasas primero y variedad de proteína.
 // Las candidatas llegan ya filtradas y ordenadas por el motor (restricciones, verificadas, encaje de macros).
+import { puntuarRecetaCompeticion, type ContextoRecetaCompeticion } from './receta-competicion'
 
-export type CandidataSemana = { id: string; nombre: string; pre?: boolean; post?: boolean }
+export type CandidataSemana = {
+  id: string; nombre: string; pre?: boolean; post?: boolean
+  kcal?: number | null; proteinas?: number | null; carbohidratos?: number | null
+  grasas?: number | null; fibra?: number | null; planningRoles?: string[] | null
+}
 // `momento`: la comida cae antes (pre) o después (post) del entrenamiento de ese día
-export type Hueco = { dia: string; franja: string; momento?: 'pre' | 'post' }
+export type Hueco = { dia: string; franja: string; momento?: 'pre' | 'post'; competicion?: ContextoRecetaCompeticion }
 export type Asignacion = Hueco & { receta_id: string; repetida: boolean }
 
 const PROTEINAS = ['pollo', 'pavo', 'ternera', 'cerdo', 'salmon', 'atun', 'merluza', 'bacalao', 'gamba', 'langostino', 'huevo', 'tofu', 'garbanzo', 'lenteja', 'skyr', 'yogur', 'queso']
@@ -11,12 +16,23 @@ const PROTEINAS = ['pollo', 'pavo', 'ternera', 'cerdo', 'salmon', 'atun', 'merlu
 const VENTANA_VARIEDAD = 8
 // Para no repetir proteína el mismo día se busca más lejos: es una petición explícita del coach
 const VENTANA_MISMO_DIA = 30
+// Solo reordena candidatas que ya están cerca por encaje base; evita rescatar un plato nutricionalmente absurdo del fondo.
+const VENTANA_COMPETICION = 24
 
 const sinTildes = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 export function claveProteina(nombre: string): string | null {
   const n = sinTildes(nombre)
   return PROTEINAS.find(p => n.includes(p)) ?? null
+}
+
+function preferirParaCompeticion(lista: CandidataSemana[], hueco: Hueco): CandidataSemana[] {
+  if (!hueco.competicion || lista.length < 2) return lista
+  const cercanas = lista.slice(0, VENTANA_COMPETICION)
+    .map((receta, indice) => ({ receta, indice, score: puntuarRecetaCompeticion(receta, hueco.competicion!, hueco.franja) - indice * 0.2 }))
+    .sort((a, b) => b.score - a.score || a.indice - b.indice)
+    .map(x => x.receta)
+  return [...cercanas, ...lista.slice(VENTANA_COMPETICION)]
 }
 
 export function repartirSemanaSinRepetir(
@@ -44,7 +60,8 @@ export function repartirSemanaSinRepetir(
     // Antes/después de entrenar se prefieren las recetas pensadas para ese momento (sin saltarse las reglas de variedad)
     const libresTodas = lista.filter(c => !usos.has(c.id))
     const adecuada = (c: CandidataSemana) => (hueco.momento === 'pre' ? c.pre : hueco.momento === 'post' ? c.post : false)
-    const libres = hueco.momento && libresTodas.some(adecuada) ? [...libresTodas.filter(adecuada), ...libresTodas.filter(c => !adecuada(c))] : libresTodas
+    const preferidasMomento = hueco.momento && libresTodas.some(adecuada) ? [...libresTodas.filter(adecuada), ...libresTodas.filter(c => !adecuada(c))] : libresTodas
+    const libres = preferirParaCompeticion(preferidasMomento, hueco)
     let elegida: CandidataSemana
     let repetida = false
     if (libres.length > 0) {
