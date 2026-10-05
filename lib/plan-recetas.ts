@@ -24,11 +24,12 @@ const SLOT_CATEGORIAS: Record<string, string[]> = {
 
 const SLOT_TIPOS_PERMITIDOS: Record<string, TipoReceta[]> = {
   'Desayuno':      ['desayuno', 'completa'],
-  'Media mañana':  ['snack_postre', 'desayuno', 'guarnicion'],
-  'Snack':         ['snack_postre', 'desayuno', 'guarnicion'],
+  // Una guarnición no es un plato: va como complemento de una comida o cena (lib/nutricion/completar-comidas.ts)
+  'Media mañana':  ['snack_postre', 'desayuno'],
+  'Snack':         ['snack_postre', 'desayuno'],
   'Comida':        ['completa'],
   'Merienda':      ['snack_postre', 'desayuno'],
-  'Cena':          ['completa', 'guarnicion'],
+  'Cena':          ['completa'],
 }
 
 // Distancia normalizada a los macros objetivo. Antes solo comparaba

@@ -6,6 +6,7 @@ import { construirFiltroCliente, FRANJAS, REPARTO } from './semana-dieta'
 import { repartirSemanaSinRepetir, type Asignacion, type CandidataSemana, type Hueco } from './generar-semana'
 import { filtrarRecetasPorSlot } from '@/lib/plan-recetas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
+import { completarSemana } from './completar-comidas'
 import type { SlotComida } from '@/lib/tipos-comida'
 
 const POOL_MAX = 400
@@ -95,7 +96,7 @@ export async function planificarSemana(
 
 export type ResultadoSemana = {
   ok: boolean; asignadas: number; repetidas: number; sinCubrir: Hueco[]
-  errores: { dia: string; franja: string; error: string }[]; mensaje?: string
+  errores: { dia: string; franja: string; error: string }[]; mensaje?: string; complementos?: number
 }
 
 // Si hay varias comidas con la misma franja el mismo día (restos de pruebas o ediciones), deja una
@@ -123,6 +124,7 @@ export async function generarSemana(
   plan: PlanObjetivo,
   reemplazar: boolean,
   franjasElegidas?: SlotComida[],
+  complementar = true,
 ): Promise<ResultadoSemana> {
   // Con días concretos ya no hay comidas "de todos los días" que interpretar
   await materializarComidasRecurrentes(db, plan.id)
@@ -158,11 +160,25 @@ export async function generarSemana(
       }
     }))
   }
+  // Los platos no siempre llegan al objetivo de su franja: guarnición y postre cierran el hueco
+  let complementos = 0
+  if (complementar && errores.length === 0) {
+    try {
+      const [{ data: onboarding }, { data: perfil }] = await Promise.all([
+        db.from('onboarding_responses').select('*').eq('cliente_id', clienteId).maybeSingle(),
+        db.from('onboarding_perfil_profundo').select('*').eq('cliente_id', clienteId).maybeSingle(),
+      ])
+      const { filtroCliente } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
+      const r = await completarSemana(db, plan, clienteId, { franjas: [...new Set(asignaciones.map(a => a.franja))] as SlotComida[], restricciones: filtroCliente.restricciones })
+      complementos = r.anadidos
+    } catch (e) { console.error('[generarSemana] complementos', e) }
+  }
   return {
     ok: errores.length === 0,
     asignadas: asignaciones.length - errores.length,
     repetidas: asignaciones.filter(a => a.repetida).length,
     sinCubrir,
     errores,
+    complementos,
   }
 }
