@@ -664,7 +664,6 @@ export default function ClienteDetallePage() {
   const initials = [p.nombre?.[0], p.apellidos?.[0]].filter(Boolean).join('').toUpperCase() || '?'
   const dietaActiva = dietas.find(d => d.activo)
   const entrenoActivo = entrenos.find(e => e.activo)
-  const ultimoCheckin = checkins[0]
   const ultimoPeso = seguimiento[0]?.peso ?? cliente.peso_inicial
 
   const alertasClinicas = informe?.flags_activos?.filter(f => f.severidad === 'critico' || f.severidad === 'alto').length
