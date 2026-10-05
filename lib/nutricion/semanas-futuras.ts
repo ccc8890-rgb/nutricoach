@@ -8,6 +8,7 @@ import { candidatasPorFranja, type PlanObjetivo } from './planificar-semana'
 import { repartirSemanaSinRepetir, type Hueco } from './generar-semana'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { completarSemana } from './completar-comidas'
+import { objetivosPorDia, type ObjetivoDia } from './objetivo-dia'
 import { construirFiltroCliente } from './semana-dieta'
 import { optimizarFactoresReceta, type IngredienteOptimizable } from '@/lib/recetas/optimizar-factores'
 import type { RolIngrediente } from '@/types'
@@ -42,7 +43,7 @@ async function filasPlanificadas(db: SupabaseClient, planId: string, hasta = MAX
 
 // Estima las macros de cada comida con el mismo optimizador que usa la activación (reparto de kcal y
 // macros del plan por franja), para poder comparar días y semanas con lo que se aplicaría de verdad.
-export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, semanas: number): Promise<SemanaFutura[]> {
+export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, semanas: number, objetivosDia?: Record<string, ObjetivoDia>): Promise<SemanaFutura[]> {
   const n = Math.min(semanas, MAX_SEMANAS)
   const filas = await filasPlanificadas(db, plan.id, n)
   const ids = [...new Set(filas.map(f => f.receta_id))]
@@ -68,7 +69,8 @@ export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, sem
       const comidas = delaSemana.filter(r => r.dia_semana === dia).sort((a, b) => orden(a.franja) - orden(b.franja)).map(r => {
         const rec = r.receta
         const share = REPARTO[r.franja as SlotComida] / sumaReparto
-        const objetivo = { kcal: (plan.kcal_objetivo ?? 0) * share, p: (plan.proteinas_objetivo ?? 0) * share, c: (plan.carbohidratos_objetivo ?? 0) * share, g: (plan.grasas_objetivo ?? 0) * share }
+        const od = objetivosDia?.[dia]
+        const objetivo = od && od.kcal ? { kcal: od.kcal * share, p: od.p * share, c: od.c * share, g: od.g * share } : { kcal: (plan.kcal_objetivo ?? 0) * share, p: (plan.proteinas_objetivo ?? 0) * share, c: (plan.carbohidratos_objetivo ?? 0) * share, g: (plan.grasas_objetivo ?? 0) * share }
         const ings = ingredientes.get(r.receta_id) ?? []
         let m = { kcal: rec?.kcal ?? 0, p: rec?.proteinas ?? 0, c: rec?.carbohidratos ?? 0, g: rec?.grasas ?? 0 }
         if (ings.length > 0 && objetivo.kcal > 0) {
@@ -214,18 +216,20 @@ export async function activarProximaSemana(db: SupabaseClient, clienteId: string
   const idsAplicar = filas.flatMap(r => vigentes.find(c => c.dia_semana === r.dia_semana && c.nombre === r.franja)?.id ?? [])
   if (idsAplicar.length > 0) await db.from('comida_alimentos').delete().in('comida_id', idsAplicar).eq('es_complemento', true)
 
+  const objDia = await objetivosPorDia(db, clienteId, plan)
   const errores: { dia: string; franja: string; error: string }[] = []
   for (let i = 0; i < filas.length; i += CONCURRENCIA) {
     await Promise.all(filas.slice(i, i + CONCURRENCIA).map(async r => {
       const share = REPARTO[r.franja as SlotComida] / sumaReparto
-      const objetivo = (v: number | null) => (v ? v * share : undefined)
+      const od = objDia[r.dia_semana]
+      const objetivo = (v: number | null | undefined) => (v ? v * share : undefined)
       const comida = vigentes.find(c => c.dia_semana === r.dia_semana && c.nombre === r.franja)
       try {
         if (!comida) throw new Error('Comida no encontrada')
         await aplicarRecetaAComida(db, {
           comidaId: comida.id, recetaId: r.receta_id, clienteId, planId: plan.id, comidaSlot: r.franja,
-          targetKcal: objetivo(plan.kcal_objetivo), targetProteinas: objetivo(plan.proteinas_objetivo),
-          targetCarbohidratos: objetivo(plan.carbohidratos_objetivo), targetGrasas: objetivo(plan.grasas_objetivo),
+          targetKcal: objetivo(od?.kcal ?? plan.kcal_objetivo), targetProteinas: objetivo(od?.p ?? plan.proteinas_objetivo),
+          targetCarbohidratos: objetivo(od?.c ?? plan.carbohidratos_objetivo), targetGrasas: objetivo(od?.g ?? plan.grasas_objetivo),
           tipoInteraccion: 'asignada_plan', reemplazar: true,
         })
       } catch (e) {
@@ -242,7 +246,7 @@ export async function activarProximaSemana(db: SupabaseClient, clienteId: string
         db.from('onboarding_perfil_profundo').select('*').eq('cliente_id', clienteId).maybeSingle(),
       ])
       const { filtroCliente } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
-      await completarSemana(db, plan, clienteId, { franjas: franjasNuevas, restricciones: filtroCliente.restricciones })
+      await completarSemana(db, plan, clienteId, { franjas: franjasNuevas, restricciones: filtroCliente.restricciones, objetivosDia: objDia })
     } catch (e) { console.error('[activarProximaSemana] complementos', e) }
     await db.from('comidas_planificadas').delete().eq('plan_id', plan.id).eq('semana', 1)
     for (let s = 2; s <= MAX_SEMANAS; s++) {

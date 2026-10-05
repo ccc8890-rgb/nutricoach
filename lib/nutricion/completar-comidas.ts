@@ -7,6 +7,7 @@ import { DIAS_SEMANA } from './comidas-dia'
 import { FRANJAS, REPARTO } from './semana-dieta'
 import { anadirComplemento } from './complementos'
 import type { PlanObjetivo } from './planificar-semana'
+import type { ObjetivoDia } from './objetivo-dia'
 import type { SlotComida } from '@/lib/tipos-comida'
 
 // Nombres exactos del catálogo de alimentos (cocinados, para que los gramos sean los del plato)
@@ -36,7 +37,7 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 
 export async function completarSemana(
   db: SupabaseClient, plan: PlanObjetivo, clienteId: string,
-  opts: { franjas: SlotComida[]; restricciones?: string[] },
+  opts: { franjas: SlotComida[]; restricciones?: string[]; objetivosDia?: Record<string, ObjetivoDia> },
 ): Promise<ResultadoComplementos> {
   const res: ResultadoComplementos = { anadidos: 0, detalle: [], errores: 0 }
   if (!plan.kcal_objetivo) return res
@@ -88,7 +89,10 @@ export async function completarSemana(
   for (const c of ordenadas) {
     if (c.comida_alimentos.some(x => x.es_complemento)) continue // ya tiene complementos: no se tocan
     const share = REPARTO[c.nombre as SlotComida] / sumaReparto
-    const objetivo: Macros = { kcal: plan.kcal_objetivo * share, p: (plan.proteinas_objetivo ?? 0) * share, c: (plan.carbohidratos_objetivo ?? 0) * share, g: (plan.grasas_objetivo ?? 0) * share }
+    const od = opts.objetivosDia?.[c.dia_semana]
+    const objetivo: Macros = od && od.kcal
+      ? { kcal: od.kcal * share, p: od.p * share, c: od.c * share, g: od.g * share }
+      : { kcal: plan.kcal_objetivo * share, p: (plan.proteinas_objetivo ?? 0) * share, c: (plan.carbohidratos_objetivo ?? 0) * share, g: (plan.grasas_objetivo ?? 0) * share }
     const actual = c.comida_alimentos.reduce((t, x) => {
       const a = x.alimento; if (!a) return t
       const f = (x.cantidad_gramos ?? 0) / 100

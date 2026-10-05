@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { autorizarSemanaDieta as autorizar, FRANJAS, repartoFranja } from '@/lib/nutricion/semana-dieta'
 import { comidasDelDia, DIAS_SEMANA } from '@/lib/nutricion/comidas-dia'
+import { objetivosPorDia } from '@/lib/nutricion/objetivo-dia'
 import { materializarComidasRecurrentes } from '@/lib/nutricion/materializar-comidas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { tipoPlatoCompatibleConSlot, type SlotComida } from '@/lib/tipos-comida'
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const total = delDia.reduce((a, c) => ({ kcal: a.kcal + c.kcal, p: a.p + c.p, c: a.c + c.c, g: a.g + c.g }), { kcal: 0, p: 0, c: 0, g: 0 })
     return { dia, comidas: delDia, total }
   })
-  return NextResponse.json({ plan, dias, franjas: FRANJAS })
+  return NextResponse.json({ plan, dias, franjas: FRANJAS, objetivos_dia: await objetivosPorDia(admin, clienteId, plan) })
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -104,7 +105,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Reparto según las franjas del plan en toda la semana: así el objetivo de una franja
     // no depende de cuántas comidas tenga ya ese día concreto
     const share = await repartoFranja(admin, plan.id, body.franja)
-    const objetivo = (v: number | null) => (v ? v * share : undefined)
+    const od = (await objetivosPorDia(admin, clienteId, plan))[body.dia]
+    const objetivo = (v: number | null | undefined) => (v ? v * share : undefined)
 
     await aplicarRecetaAComida(admin, {
       comidaId: comida.id,
@@ -112,10 +114,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       clienteId,
       planId: plan.id,
       comidaSlot: body.franja,
-      targetKcal: objetivo(plan.kcal_objetivo),
-      targetProteinas: objetivo(plan.proteinas_objetivo),
-      targetCarbohidratos: objetivo(plan.carbohidratos_objetivo),
-      targetGrasas: objetivo(plan.grasas_objetivo),
+      targetKcal: objetivo(od?.kcal || plan.kcal_objetivo),
+      targetProteinas: objetivo(od?.kcal ? od.p : plan.proteinas_objetivo),
+      targetCarbohidratos: objetivo(od?.kcal ? od.c : plan.carbohidratos_objetivo),
+      targetGrasas: objetivo(od?.kcal ? od.g : plan.grasas_objetivo),
       tipoInteraccion: 'asignada_plan',
       reemplazar: true,
     })

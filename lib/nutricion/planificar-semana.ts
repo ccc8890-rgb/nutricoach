@@ -7,6 +7,7 @@ import { repartirSemanaSinRepetir, type Asignacion, type CandidataSemana, type H
 import { filtrarRecetasPorSlot } from '@/lib/plan-recetas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { completarSemana } from './completar-comidas'
+import { objetivosPorDia } from './objetivo-dia'
 import type { SlotComida } from '@/lib/tipos-comida'
 
 const POOL_MAX = 400
@@ -145,18 +146,21 @@ export async function generarSemana(
   const idsAplicar = asignaciones.flatMap(a => existentes.find(c => c.dia_semana === a.dia && c.nombre === a.franja)?.id ?? [])
   if (idsAplicar.length > 0) await db.from('comida_alimentos').delete().in('comida_id', idsAplicar).eq('es_complemento', true)
 
+  // Cada día se calcula con su propio objetivo: más hidratos si entrena, menos si descansa
+  const objDia = await objetivosPorDia(db, clienteId, plan)
   const errores: ResultadoSemana['errores'] = []
   for (let i = 0; i < asignaciones.length; i += CONCURRENCIA) {
     await Promise.all(asignaciones.slice(i, i + CONCURRENCIA).map(async a => {
       const share = shares.get(a.franja) ?? 1
-      const objetivo = (v: number | null) => (v ? v * share : undefined)
+      const od = objDia[a.dia]
+      const objetivo = (v: number | null, dia: number) => (v ? v * share : dia ? dia * share : undefined)
       const comida = existentes.find(c => c.dia_semana === a.dia && c.nombre === a.franja)
       try {
         if (!comida) throw new Error('Comida no encontrada')
         await aplicarRecetaAComida(db, {
           comidaId: comida.id, recetaId: a.receta_id, clienteId, planId: plan.id, comidaSlot: a.franja,
-          targetKcal: objetivo(plan.kcal_objetivo), targetProteinas: objetivo(plan.proteinas_objetivo),
-          targetCarbohidratos: objetivo(plan.carbohidratos_objetivo), targetGrasas: objetivo(plan.grasas_objetivo),
+          targetKcal: objetivo(od?.kcal ?? plan.kcal_objetivo, 0), targetProteinas: objetivo(od?.p ?? plan.proteinas_objetivo, 0),
+          targetCarbohidratos: objetivo(od?.c ?? plan.carbohidratos_objetivo, 0), targetGrasas: objetivo(od?.g ?? plan.grasas_objetivo, 0),
           tipoInteraccion: 'asignada_plan', reemplazar: true,
         })
       } catch (e) {
@@ -173,7 +177,7 @@ export async function generarSemana(
         db.from('onboarding_perfil_profundo').select('*').eq('cliente_id', clienteId).maybeSingle(),
       ])
       const { filtroCliente } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
-      const r = await completarSemana(db, plan, clienteId, { franjas: [...new Set(asignaciones.map(a => a.franja))] as SlotComida[], restricciones: filtroCliente.restricciones })
+      const r = await completarSemana(db, plan, clienteId, { franjas: [...new Set(asignaciones.map(a => a.franja))] as SlotComida[], restricciones: filtroCliente.restricciones, objetivosDia: objDia })
       complementos = r.anadidos
     } catch (e) { console.error('[generarSemana] complementos', e) }
   }
@@ -185,4 +189,44 @@ export async function generarSemana(
     errores,
     complementos,
   }
+}
+
+// Mantiene las recetas de la semana en curso y vuelve a calcular las cantidades con el objetivo de cada día
+// (más hidratos si entrena, menos si descansa); los complementos se recalculan al final.
+export async function reajustarSemana(db: SupabaseClient, clienteId: string, plan: PlanObjetivo): Promise<{ reajustadas: number; complementos: number; errores: number }> {
+  await materializarComidasRecurrentes(db, plan.id)
+  const { data } = await db.from('comidas').select('id, nombre, dia_semana, receta_id').eq('plan_id', plan.id).not('dia_semana', 'is', null).not('receta_id', 'is', null)
+  const comidas = ((data ?? []) as ComidaExistente[]).filter(c => FRANJAS.includes(c.nombre as SlotComida))
+  if (comidas.length === 0) return { reajustadas: 0, complementos: 0, errores: 0 }
+  const franjasPlan = FRANJAS.filter(f => comidas.some(c => c.nombre === f))
+  const suma = franjasPlan.reduce((t, f) => t + REPARTO[f], 0) || 1
+  const objDia = await objetivosPorDia(db, clienteId, plan)
+  await db.from('comida_alimentos').delete().in('comida_id', comidas.map(c => c.id)).eq('es_complemento', true)
+
+  let errores = 0
+  for (let i = 0; i < comidas.length; i += CONCURRENCIA) {
+    await Promise.all(comidas.slice(i, i + CONCURRENCIA).map(async c => {
+      const share = REPARTO[c.nombre as SlotComida] / suma
+      const od = objDia[c.dia_semana as string]
+      const t = (v: number | null | undefined) => (v ? v * share : undefined)
+      try {
+        await aplicarRecetaAComida(db, {
+          comidaId: c.id, recetaId: c.receta_id as string, clienteId, planId: plan.id, comidaSlot: c.nombre,
+          targetKcal: t(od?.kcal || plan.kcal_objetivo), targetProteinas: t(od?.kcal ? od.p : plan.proteinas_objetivo),
+          targetCarbohidratos: t(od?.kcal ? od.c : plan.carbohidratos_objetivo), targetGrasas: t(od?.kcal ? od.g : plan.grasas_objetivo),
+          tipoInteraccion: 'asignada_plan', reemplazar: true,
+        })
+      } catch { errores++ }
+    }))
+  }
+  let complementos = 0
+  try {
+    const [{ data: onboarding }, { data: perfil }] = await Promise.all([
+      db.from('onboarding_responses').select('*').eq('cliente_id', clienteId).maybeSingle(),
+      db.from('onboarding_perfil_profundo').select('*').eq('cliente_id', clienteId).maybeSingle(),
+    ])
+    const { filtroCliente } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
+    complementos = (await completarSemana(db, plan, clienteId, { franjas: franjasPlan, restricciones: filtroCliente.restricciones, objetivosDia: objDia })).anadidos
+  } catch (e) { console.error('[reajustarSemana] complementos', e) }
+  return { reajustadas: comidas.length - errores, complementos, errores }
 }

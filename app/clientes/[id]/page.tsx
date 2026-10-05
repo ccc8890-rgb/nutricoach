@@ -745,7 +745,7 @@ export default function ClienteDetallePage() {
             <div className="mt-3 sm:mt-4 pt-3 sm:pt-4" style={{ borderTop: '1px solid var(--border)' }}>
               <div className="flex items-center justify-between mb-2 sm:mb-3 gap-3">
                 <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                  Plan activo — {dietaActiva.nombre}{resumenDia ? <span className="normal-case tracking-normal font-normal"> · comparado con {resumenDia.etiqueta}</span> : null}
+                  Plan activo — {dietaActiva.nombre}{resumenDia ? <span className="normal-case tracking-normal font-normal"> · comparado con {resumenDia.etiqueta}{resumenDia.tipoDia ? ` (${resumenDia.tipoDia})` : ''}</span> : null}
                 </span>
                 <div className="hidden sm:flex gap-2">
                   <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="text-xs flex items-center gap-1 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
@@ -769,10 +769,10 @@ export default function ClienteDetallePage() {
                 </Link>
               </div>
               <div className="hidden sm:flex gap-4">
-                <MacroBar label="Kcal" value={dietaActiva.kcal_objetivo ?? 0} max={3500} color="var(--accent)" icon={Flame} dia={resumenDia?.dia.kcal} media={resumenDia?.media?.kcal} />
-                <MacroBar label="Prot" value={dietaActiva.proteinas_objetivo ?? 0} max={250} color="#30D158" icon={Beef} dia={resumenDia?.dia.p} media={resumenDia?.media?.p} />
-                <MacroBar label="Carbs" value={dietaActiva.carbohidratos_objetivo ?? 0} max={400} color="#FF9F0A" icon={Wheat} dia={resumenDia?.dia.c} media={resumenDia?.media?.c} />
-                <MacroBar label="Grasas" value={dietaActiva.grasas_objetivo ?? 0} max={150} color="#64D2FF" icon={Droplets} dia={resumenDia?.dia.g} media={resumenDia?.media?.g} />
+                <MacroBar label="Kcal" value={resumenDia?.objetivo?.kcal ?? dietaActiva.kcal_objetivo ?? 0} max={3500} color="var(--accent)" icon={Flame} dia={resumenDia?.dia.kcal} media={resumenDia?.media?.kcal} />
+                <MacroBar label="Prot" value={resumenDia?.objetivo?.p ?? dietaActiva.proteinas_objetivo ?? 0} max={250} color="#30D158" icon={Beef} dia={resumenDia?.dia.p} media={resumenDia?.media?.p} />
+                <MacroBar label="Carbs" value={resumenDia?.objetivo?.c ?? dietaActiva.carbohidratos_objetivo ?? 0} max={400} color="#FF9F0A" icon={Wheat} dia={resumenDia?.dia.c} media={resumenDia?.media?.c} />
+                <MacroBar label="Grasas" value={resumenDia?.objetivo?.g ?? dietaActiva.grasas_objetivo ?? 0} max={150} color="#64D2FF" icon={Droplets} dia={resumenDia?.dia.g} media={resumenDia?.media?.g} />
               </div>
             </div>
           ) : (

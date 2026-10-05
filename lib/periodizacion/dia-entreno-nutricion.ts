@@ -87,7 +87,7 @@ export function clasificarDiaNutricional(
 
   const n = nombreSesion.toLowerCase()
 
-  if (/hyrox|crossfit|funcional|wod|hiit|metcon/.test(n)) return 'entreno_hibrido'
+  if (/hyrox|crossfit|funcional|wod|hiit|metcon|h[ií]brid/.test(n)) return 'entreno_hibrido'
   if (/running|carrera|rodillo|bici|ciclismo|nataci[oó]n|nadar|cardio|aerobic/.test(n)) return 'entreno_cardio'
   if (/fuerza|gym|pecho|espalda|pierna|braz|hombro|pull|push|tier|hipert|peso/.test(n)) return 'entreno_fuerza'
 

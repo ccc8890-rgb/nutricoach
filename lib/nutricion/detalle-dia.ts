@@ -5,6 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { comidasDelDia, DIAS_SEMANA } from './comidas-dia'
 import { FRANJAS, REPARTO } from './semana-dieta'
 import type { PlanObjetivo } from './planificar-semana'
+import type { ObjetivoDia } from './objetivo-dia'
 import { optimizarFactoresReceta } from '@/lib/recetas/optimizar-factores'
 import { redondearGramajePractico } from '@/lib/recetas/aplicar-receta-comida'
 import type { RolIngrediente } from '@/types'
@@ -67,7 +68,7 @@ export async function detalleDiaEnCurso(db: SupabaseClient, planId: string, dia:
   return semana.find(d => d.dia === dia) ?? { dia, semana: null, estimado: false, comidas: [], total: { kcal: 0, p: 0, c: 0, g: 0 } }
 }
 
-export async function detalleSemanaFutura(db: SupabaseClient, plan: PlanObjetivo, semana: number): Promise<DetalleDia[]> {
+export async function detalleSemanaFutura(db: SupabaseClient, plan: PlanObjetivo, semana: number, objetivosDia?: Record<string, ObjetivoDia>): Promise<DetalleDia[]> {
   const { data: filasData, error } = await db.from('comidas_planificadas')
     .select('id, franja, receta_id, dia_semana').eq('plan_id', plan.id).eq('semana', semana)
   if (error) throw new Error('No se pudo leer la semana')
@@ -89,7 +90,8 @@ export async function detalleSemanaFutura(db: SupabaseClient, plan: PlanObjetivo
     const porciones = Math.max(1, Number(r?.porciones ?? 1))
     const ings = (r?.receta_ingredientes ?? []).filter(i => i.alimento && Number(i.cantidad_gramos) > 0).sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
     const share = REPARTO[f.franja as SlotComida] / suma
-    const objetivo = { kcal: (plan.kcal_objetivo ?? 0) * share, p: (plan.proteinas_objetivo ?? 0) * share, c: (plan.carbohidratos_objetivo ?? 0) * share, g: (plan.grasas_objetivo ?? 0) * share }
+    const od = objetivosDia?.[dia]
+    const objetivo = od && od.kcal ? { kcal: od.kcal * share, p: od.p * share, c: od.c * share, g: od.g * share } : { kcal: (plan.kcal_objetivo ?? 0) * share, p: (plan.proteinas_objetivo ?? 0) * share, c: (plan.carbohidratos_objetivo ?? 0) * share, g: (plan.grasas_objetivo ?? 0) * share }
     const factores = objetivo.kcal > 0 && ings.length > 0
       ? optimizarFactoresReceta(ings.map(i => ({
           rol: i.rol_ingrediente, gramos: Number(i.cantidad_gramos) / porciones, fija: i.es_cantidad_fija === true,
@@ -107,7 +109,7 @@ export async function detalleSemanaFutura(db: SupabaseClient, plan: PlanObjetivo
   })
 }
 
-export async function detalleDiaFutura(db: SupabaseClient, plan: PlanObjetivo, semana: number, dia: string): Promise<DetalleDia> {
-  const dias = await detalleSemanaFutura(db, plan, semana)
+export async function detalleDiaFutura(db: SupabaseClient, plan: PlanObjetivo, semana: number, dia: string, objetivosDia?: Record<string, ObjetivoDia>): Promise<DetalleDia> {
+  const dias = await detalleSemanaFutura(db, plan, semana, objetivosDia)
   return dias.find(d => d.dia === dia) ?? { dia, semana, estimado: true, comidas: [], total: { kcal: 0, p: 0, c: 0, g: 0 } }
 }

@@ -6,20 +6,23 @@ import { DIAS_SEMANA } from './comidas-dia'
 import { materializarComidasRecurrentes } from './materializar-comidas'
 import { FRANJAS, repartoFranja } from './semana-dieta'
 import type { PlanObjetivo } from './planificar-semana'
+import { objetivosPorDia } from './objetivo-dia'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import type { SlotComida } from '@/lib/tipos-comida'
 
 const MAX_GRAMOS = 2000
 
 // Reescala el plato principal para que la comida siga en su objetivo contando los complementos
-async function reajustarPlato(db: SupabaseClient, plan: PlanObjetivo, clienteId: string, comida: { id: string; nombre: string; receta_id: string | null }) {
+async function reajustarPlato(db: SupabaseClient, plan: PlanObjetivo, clienteId: string, comida: { id: string; nombre: string; receta_id: string | null; dia_semana?: string | null }) {
   if (!comida.receta_id) return
   const share = await repartoFranja(db, plan.id, comida.nombre as SlotComida)
+  const od = comida.dia_semana ? (await objetivosPorDia(db, clienteId, plan))[comida.dia_semana] : undefined
+  const dia = (v: number | null, d: number | undefined) => (od?.kcal && d ? d : v)
   const objetivo = (v: number | null) => (v ? v * share : undefined)
   await aplicarRecetaAComida(db, {
     comidaId: comida.id, recetaId: comida.receta_id, clienteId, planId: plan.id, comidaSlot: comida.nombre,
-    targetKcal: objetivo(plan.kcal_objetivo), targetProteinas: objetivo(plan.proteinas_objetivo),
-    targetCarbohidratos: objetivo(plan.carbohidratos_objetivo), targetGrasas: objetivo(plan.grasas_objetivo),
+    targetKcal: objetivo(dia(plan.kcal_objetivo, od?.kcal)), targetProteinas: objetivo(dia(plan.proteinas_objetivo, od?.p)),
+    targetCarbohidratos: objetivo(dia(plan.carbohidratos_objetivo, od?.c)), targetGrasas: objetivo(dia(plan.grasas_objetivo, od?.g)),
     reemplazar: true,
   })
 }
@@ -32,13 +35,13 @@ export async function anadirComplemento(
   if (!p.alimento_id && !p.receta_id) throw new Error('Elige un alimento o una receta')
 
   await materializarComidasRecurrentes(db, plan.id)
-  const { data: existente } = await db.from('comidas').select('id, nombre, receta_id').eq('plan_id', plan.id).eq('dia_semana', p.dia).eq('nombre', p.franja).limit(1).maybeSingle()
+  const { data: existente } = await db.from('comidas').select('id, nombre, receta_id, dia_semana').eq('plan_id', plan.id).eq('dia_semana', p.dia).eq('nombre', p.franja).limit(1).maybeSingle()
   let comida = existente
   if (!comida) {
     // Un complemento puede ir solo (p. ej. una fruta en la media mañana)
     const { data: nueva, error } = await db.from('comidas')
       .insert({ plan_id: plan.id, nombre: p.franja, dia_semana: p.dia, orden: FRANJAS.indexOf(p.franja as SlotComida) + 1 })
-      .select('id, nombre, receta_id').single()
+      .select('id, nombre, receta_id, dia_semana').single()
     if (error || !nueva) throw new Error('No se pudo crear la comida')
     comida = nueva
   }
@@ -71,7 +74,7 @@ export async function quitarComplemento(
   db: SupabaseClient, plan: PlanObjetivo, clienteId: string,
   p: { comida_id: string; fila?: string; receta?: string; ajustar?: boolean },
 ) {
-  const { data: comida } = await db.from('comidas').select('id, nombre, receta_id').eq('id', p.comida_id).eq('plan_id', plan.id).maybeSingle()
+  const { data: comida } = await db.from('comidas').select('id, nombre, receta_id, dia_semana').eq('id', p.comida_id).eq('plan_id', plan.id).maybeSingle()
   if (!comida) throw new Error('Comida no encontrada en el plan')
   let q = db.from('comida_alimentos').delete().eq('comida_id', comida.id).eq('es_complemento', true)
   if (p.fila) q = q.eq('id', p.fila)
