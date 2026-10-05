@@ -92,7 +92,9 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, semana, diaSel, onDia, onH
   )
 }
 
-export default function SemanaDietaPlanner({ clienteId, accionExtra }: { clienteId: string; accionExtra?: React.ReactNode }) {
+export type ResumenDia = { etiqueta: string; dia: Total; media: Total | null }
+
+export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }: { clienteId: string; accionExtra?: React.ReactNode; onResumen?: (r: ResumenDia | null) => void }) {
   const [plan, setPlan] = useState<Plan | null>(null)
   const [dias, setDias] = useState<Dia[]>([])
   const [futuras, setFuturas] = useState<{ semana: number; dias: Dia[] }[]>([])
@@ -116,6 +118,16 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra }: { cliente
   const franjasPlan = useMemo(() => franjas.filter(f => dias.some(d => d.comidas.some(c => c.nombre === f))), [franjas, dias])
   const seleccion = franjasGen ?? (franjasPlan.length > 0 ? franjasPlan : ['Desayuno', 'Comida', 'Cena'])
   const alternarFranja = (f: string) => setFranjasGen(seleccion.includes(f) ? seleccion.filter(x => x !== f) : [...seleccion, f])
+
+  // Avisa a la ficha del día seleccionado y de la media de la semana en curso, para compararlos con el objetivo
+  useEffect(() => {
+    if (!onResumen) return
+    if (!diaSel) { onResumen(null); return }
+    const lista = diaSel.semana == null ? dias : futuras.find(f => f.semana === diaSel.semana)?.dias ?? []
+    const d = lista.find(x => x.dia === diaSel.dia)
+    onResumen(d ? { etiqueta: `${diaSel.dia}${diaSel.semana ? ` · semana +${diaSel.semana}` : ''}`, dia: d.total, media: media(dias) } : null)
+  }, [diaSel, dias, futuras, onResumen])
+  useEffect(() => () => onResumen?.(null), [onResumen])
 
   const cargar = useCallback(async () => {
     setError(null)

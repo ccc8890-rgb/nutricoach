@@ -40,6 +40,7 @@ const DecisionesIACliente = dynamic(() => import('@/components/clientes/Decision
 const EntrenoCalendarioKanban = dynamic(() => import('@/components/clientes/EntrenoCalendarioKanban'), { ssr: false, loading: () => <TabSkeleton /> })
 const RutinaSemanaAccordion = dynamic(() => import('@/components/clientes/RutinaSemanaAccordion'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioMes = dynamic(() => import('@/components/clientes/EntrenoCalendarioMes'), { ssr: false, loading: () => <TabSkeleton /> })
+import type { ResumenDia } from '@/components/clientes/SemanaDietaPlanner'
 const SemanaDietaPlanner = dynamic(() => import('@/components/clientes/SemanaDietaPlanner'), { ssr: false, loading: () => <TabSkeleton /> })
 
 function TabSkeleton() {
@@ -84,20 +85,38 @@ interface InformeCasoClinico {
 type ClienteConExtra = Cliente & { fecha_proxima_revision?: string; revisado_por_coach?: boolean | null; profile?: { nombre?: string; apellidos?: string; email?: string; telefono?: string } }
 
 // ── MacroBar ──────────────────────────────────────────────────────────────────
-function MacroBar({ label, value, max, color, icon: Icon }: {
-  label: string; value: number; max: number; color: string; icon: React.ElementType
+// Con `dia`, la barra muestra lo que lleva el día seleccionado frente al objetivo y cuánto falta
+function MacroBar({ label, value, max, color, icon: Icon, dia, media }: {
+  label: string; value: number; max: number; color: string; icon: React.ElementType; dia?: number; media?: number | null
 }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0
+  const unidad = label === 'Kcal' ? '' : 'g'
+  const conDia = dia != null && value > 0
+  const pct = conDia ? Math.min((dia! / value) * 100, 100) : max > 0 ? Math.min((value / max) * 100, 100) : 0
+  const resta = conDia ? Math.round(value - dia!) : 0
+  const desvio = conDia ? Math.abs(resta) / value : 0
+  const estado = desvio <= 0.1 ? 'var(--success)' : desvio <= 0.2 ? 'var(--warning)' : 'var(--error)'
   return (
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-1 mb-1">
         <Icon size={11} style={{ color }} />
         <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
       </div>
-      <div className="text-base font-bold" style={{ color: 'var(--text)' }}>{value > 0 ? value : '—'}<span className="text-xs font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>{value > 0 ? (label === 'Kcal' ? '' : 'g') : ''}</span></div>
+      {conDia ? (
+        <div className="text-base font-bold font-data" style={{ color: 'var(--text)' }}>
+          {Math.round(dia!)}<span className="text-xs font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>/ {value}{unidad}</span>
+        </div>
+      ) : (
+        <div className="text-base font-bold" style={{ color: 'var(--text)' }}>{value > 0 ? value : '—'}<span className="text-xs font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>{value > 0 ? unidad : ''}</span></div>
+      )}
       <div className="h-1 rounded-full mt-1.5 overflow-hidden" style={{ background: 'var(--border)' }}>
         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
       </div>
+      {conDia && (
+        <p className="text-[11px] mt-1 font-data" style={{ color: 'var(--text-muted)' }}>
+          <span className="font-semibold" style={{ color: estado }}>{resta > 0 ? `faltan ${resta}${unidad}` : resta < 0 ? `+${-resta}${unidad} de más` : 'completo'}</span>
+          {media != null && <span> · media semana {Math.round(media)}</span>}
+        </p>
+      )}
     </div>
   )
 }
@@ -456,6 +475,7 @@ export default function ClienteDetallePage() {
   })
   const [guardandoMembresia, setGuardandoMembresia] = useState(false)
   const [verVideoRecetas, setVerVideoRecetas] = useState(false)
+  const [resumenDia, setResumenDia] = useState<ResumenDia | null>(null)
 
   async function alternarVerVideo(valor: boolean) {
     if (!id) return
@@ -726,7 +746,7 @@ export default function ClienteDetallePage() {
             <div className="mt-3 sm:mt-4 pt-3 sm:pt-4" style={{ borderTop: '1px solid var(--border)' }}>
               <div className="flex items-center justify-between mb-2 sm:mb-3 gap-3">
                 <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                  Plan activo — {dietaActiva.nombre}
+                  Plan activo — {dietaActiva.nombre}{resumenDia ? <span className="normal-case tracking-normal font-normal"> · comparado con {resumenDia.etiqueta}</span> : null}
                 </span>
                 <div className="hidden sm:flex gap-2">
                   <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="text-xs flex items-center gap-1 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
@@ -750,10 +770,10 @@ export default function ClienteDetallePage() {
                 </Link>
               </div>
               <div className="hidden sm:flex gap-4">
-                <MacroBar label="Kcal" value={dietaActiva.kcal_objetivo ?? 0} max={3500} color="var(--accent)" icon={Flame} />
-                <MacroBar label="Prot" value={dietaActiva.proteinas_objetivo ?? 0} max={250} color="#30D158" icon={Beef} />
-                <MacroBar label="Carbs" value={dietaActiva.carbohidratos_objetivo ?? 0} max={400} color="#FF9F0A" icon={Wheat} />
-                <MacroBar label="Grasas" value={dietaActiva.grasas_objetivo ?? 0} max={150} color="#64D2FF" icon={Droplets} />
+                <MacroBar label="Kcal" value={dietaActiva.kcal_objetivo ?? 0} max={3500} color="var(--accent)" icon={Flame} dia={resumenDia?.dia.kcal} media={resumenDia?.media?.kcal} />
+                <MacroBar label="Prot" value={dietaActiva.proteinas_objetivo ?? 0} max={250} color="#30D158" icon={Beef} dia={resumenDia?.dia.p} media={resumenDia?.media?.p} />
+                <MacroBar label="Carbs" value={dietaActiva.carbohidratos_objetivo ?? 0} max={400} color="#FF9F0A" icon={Wheat} dia={resumenDia?.dia.c} media={resumenDia?.media?.c} />
+                <MacroBar label="Grasas" value={dietaActiva.grasas_objetivo ?? 0} max={150} color="#64D2FF" icon={Droplets} dia={resumenDia?.dia.g} media={resumenDia?.media?.g} />
               </div>
             </div>
           ) : (
@@ -858,7 +878,7 @@ export default function ClienteDetallePage() {
               </WorkCard>
             )}
 
-            <ErrorBoundary><SemanaDietaPlanner clienteId={id} accionExtra={dietaActiva ? <Link href={`/dietas/nueva?cliente=${id}`} className="btn-secondary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link> : undefined} /></ErrorBoundary>
+            <ErrorBoundary><SemanaDietaPlanner clienteId={id} onResumen={setResumenDia} accionExtra={dietaActiva ? <Link href={`/dietas/nueva?cliente=${id}`} className="btn-secondary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link> : undefined} /></ErrorBoundary>
 
             <div>
               <button
