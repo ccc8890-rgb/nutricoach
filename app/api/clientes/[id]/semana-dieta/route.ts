@@ -32,12 +32,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (franja) {
     // Selector de recetas para una franja: verificadas primero, con búsqueda opcional
     let q = admin.from('recetas')
-      .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tiempo_prep_min, verificacion, contenido_estado')
+      .select('id, nombre, imagen_url, kcal, proteinas, carbohidratos, grasas, tipo_plato, tipo_receta, tiempo_prep_min, verificacion, contenido_estado')
       .eq('estado', 'aprobada').gt('kcal', 0).limit(200)
     const texto = url.searchParams.get('q')?.trim()
     if (texto) q = q.ilike('nombre', `%${texto}%`)
     // Modo postres: recetas dulces o de picoteo para añadir como complemento de una comida
     const soloPostres = url.searchParams.get('postres') === '1'
+    // Modo platos: cualquier receta aprobada (guarniciones primero) para sumar varios platos a una misma comida
+    const todas = url.searchParams.get('todas') === '1'
     if (soloPostres) q = q.or('tipo_plato.eq.Postre,tipo_receta.eq.snack_postre')
     const { data, error } = await q
     if (error) return NextResponse.json({ error: 'Error cargando recetas' }, { status: 500 })
@@ -51,8 +53,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return (obj.p != null ? 2 * Math.abs(r.p - obj.p) : 0) + (obj.c != null ? Math.abs(r.c - obj.c) : 0) + (obj.g != null ? Math.abs(r.g - obj.g) : 0)
     }
     const recetas = (data ?? [])
-      .filter(x => soloPostres || tipoPlatoCompatibleConSlot(franja, x.tipo_plato))
-      .sort((a, b) => Number(!!b.verificacion) - Number(!!a.verificacion) || encaje(a) - encaje(b))
+      .filter(x => soloPostres || todas || tipoPlatoCompatibleConSlot(franja, x.tipo_plato))
+      .sort((a, b) => (todas ? Number(b.tipo_receta === 'guarnicion') - Number(a.tipo_receta === 'guarnicion') : 0) || Number(!!b.verificacion) - Number(!!a.verificacion) || encaje(a) - encaje(b))
       .slice(0, 60)
     return NextResponse.json({ recetas })
   }

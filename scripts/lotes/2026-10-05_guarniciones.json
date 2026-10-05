@@ -1,0 +1,613 @@
+{
+ "lote": "guarniciones-2026-10-05",
+ "tipo_plato": "Comida",
+ "tipo_receta": "guarnicion",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 90,
+  "kcal_max": 380
+ },
+ "alimentos": {
+  "patata": {
+   "nombre": "Patata",
+   "prefijo": "0b223775",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "boniato": {
+   "nombre": "Boniato",
+   "prefijo": "6c5d82a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "arroz_cocido": {
+   "nombre": "Arroz blanco (cocido)",
+   "prefijo": "3980ed",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "quinoa": {
+   "nombre": "Quinoa (cocida)",
+   "prefijo": "fa56e3",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cuscus": {
+   "nombre": "Cuscús (cocido)",
+   "prefijo": "83946e",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "aceite": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimenton": {
+   "nombre": "Pimentón",
+   "prefijo": "21a40eb5",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajo": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "perejil": {
+   "nombre": "Perejil",
+   "prefijo": "fea7cbe9",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "canela": {
+   "nombre": "Canela molida",
+   "prefijo": "57a8bd13",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "comino": {
+   "nombre": "Comino",
+   "prefijo": "88959dfb",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tomate": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "brocoli": {
+   "nombre": "Brócoli",
+   "prefijo": "8820b293",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "esparragos": {
+   "nombre": "Espárragos",
+   "prefijo": "c7ad7588",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "calabacin": {
+   "nombre": "Calabacín",
+   "prefijo": "f8586302",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "berenjena": {
+   "nombre": "Berenjena",
+   "prefijo": "e152c2f2",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "champi": {
+   "nombre": "Champiñón",
+   "prefijo": "3afe2356",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "judias": {
+   "nombre": "Judías verdes",
+   "prefijo": "95efbbab",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "calabaza": {
+   "nombre": "Calabaza",
+   "prefijo": "cfd9ca77",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "zanahoria": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "coliflor": {
+   "nombre": "Coliflor",
+   "prefijo": "e5efc372",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pepino": {
+   "nombre": "Pepino",
+   "prefijo": "2e8d5d64",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimiento": {
+   "nombre": "Pimiento rojo",
+   "prefijo": "d106e3bb",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cebolla": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "espinacas": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aguacate": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aceitunas": {
+   "nombre": "aceitunas",
+   "prefijo": "bccd610a",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "almendra_lam": {
+   "nombre": "Almendra laminada",
+   "prefijo": "39bdbb82",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Patatas asadas al pimentón y ajo",
+   "descripcion": "Patata en dados asada al horno con pimentón y ajo: la guarnición clásica para carnes y pescados.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "patata",
+     200
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "pimenton",
+     2
+    ],
+    [
+     "ajo",
+     3
+    ],
+    [
+     "perejil",
+     2
+    ]
+   ],
+   "instrucciones": "1. Precalienta el horno a 200 °C.\n2. Corta la patata en dados y mézclala con el aceite, el pimentón y el ajo picado.\n3. Hornea 30-35 minutos removiendo a mitad.\n4. Termina con perejil picado.",
+   "consejos": "Con la freidora de aire queda crujiente en 20 minutos."
+  },
+  {
+   "nombre": "Boniato asado con canela",
+   "descripcion": "Boniato asado a gajos con un toque de canela, dulce y saciante.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "boniato",
+     200
+    ],
+    [
+     "aceite",
+     5
+    ],
+    [
+     "canela",
+     1
+    ]
+   ],
+   "instrucciones": "1. Precalienta el horno a 200 °C.\n2. Corta el boniato en gajos y mézclalo con el aceite y la canela.\n3. Hornea 30-35 minutos hasta que esté tierno y dorado.",
+   "consejos": "Acompaña muy bien pollo, pavo o cerdo."
+  },
+  {
+   "nombre": "Arroz con tomate y ajo",
+   "descripcion": "Arroz blanco cocido salteado con tomate y un toque de ajo.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "arroz_cocido",
+     150
+    ],
+    [
+     "tomate",
+     80
+    ],
+    [
+     "ajo",
+     2
+    ],
+    [
+     "aceite",
+     6
+    ]
+   ],
+   "instrucciones": "1. Sofríe el ajo laminado en el aceite.\n2. Añade el tomate rallado y cocina 4 minutos.\n3. Incorpora el arroz cocido y saltea 2 minutos.",
+   "consejos": "Aprovecha arroz cocido del día anterior."
+  },
+  {
+   "nombre": "Arroz salteado con verduras",
+   "descripcion": "Arroz cocido salteado con zanahoria y pimiento en dados pequeños.",
+   "tiempo_prep_min": 12,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "arroz_cocido",
+     150
+    ],
+    [
+     "zanahoria",
+     40
+    ],
+    [
+     "pimiento",
+     40
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "perejil",
+     2
+    ]
+   ],
+   "instrucciones": "1. Saltea la zanahoria y el pimiento en dados pequeños en el aceite 5 minutos.\n2. Añade el arroz cocido y saltea 3 minutos más.\n3. Termina con perejil picado."
+  },
+  {
+   "nombre": "Brócoli al ajillo",
+   "descripcion": "Brócoli al vapor salteado con ajo y unas gotas de limón.",
+   "tiempo_prep_min": 12,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "brocoli",
+     200
+    ],
+    [
+     "ajo",
+     4
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "limon",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece el brócoli al vapor 6-7 minutos.\n2. Dora el ajo laminado en el aceite.\n3. Saltea el brócoli 2 minutos y termina con limón."
+  },
+  {
+   "nombre": "Espárragos a la plancha con limón",
+   "descripcion": "Espárragos verdes a la plancha con aceite y limón.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "esparragos",
+     200
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "limon",
+     5
+    ]
+   ],
+   "instrucciones": "1. Limpia los espárragos y marca en plancha caliente 5-6 minutos.\n2. Aliña con el aceite y el limón."
+  },
+  {
+   "nombre": "Calabacín y berenjena asados",
+   "descripcion": "Calabacín y berenjena en rodajas asados al horno con un chorrito de aceite.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "calabacin",
+     100
+    ],
+    [
+     "berenjena",
+     100
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "pimenton",
+     1
+    ]
+   ],
+   "instrucciones": "1. Corta las verduras en rodajas gruesas.\n2. Mézclalas con aceite y pimentón.\n3. Hornea a 200 °C unos 25 minutos."
+  },
+  {
+   "nombre": "Champiñones salteados con ajo y perejil",
+   "descripcion": "Champiñones laminados salteados con ajo y perejil.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "champi",
+     150
+    ],
+    [
+     "aceite",
+     7
+    ],
+    [
+     "ajo",
+     3
+    ],
+    [
+     "perejil",
+     2
+    ]
+   ],
+   "instrucciones": "1. Lamina los champiñones.\n2. Saltéalos en sartén caliente con el aceite hasta que suelten el agua y se doren.\n3. Añade ajo y perejil picados al final."
+  },
+  {
+   "nombre": "Judías verdes salteadas con ajo",
+   "descripcion": "Judías verdes cocidas y salteadas con ajo laminado.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "judias",
+     200
+    ],
+    [
+     "aceite",
+     7
+    ],
+    [
+     "ajo",
+     3
+    ]
+   ],
+   "instrucciones": "1. Cuece las judías 8-10 minutos y escúrrelas.\n2. Saltéalas con el ajo laminado en el aceite 3 minutos."
+  },
+  {
+   "nombre": "Puré de calabaza y zanahoria",
+   "descripcion": "Puré suave de calabaza y zanahoria con un hilo de aceite.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "calabaza",
+     200
+    ],
+    [
+     "zanahoria",
+     80
+    ],
+    [
+     "aceite",
+     6
+    ]
+   ],
+   "instrucciones": "1. Cuece la calabaza y la zanahoria troceadas hasta que estén blandas.\n2. Tritura con un poco del agua de cocción.\n3. Termina con el aceite crudo.",
+   "consejos": "Con un poco de comino resulta más aromático."
+  },
+  {
+   "nombre": "Ensalada de tomate y pepino con aceitunas",
+   "descripcion": "Ensalada fresca de tomate, pepino y aceitunas, aliñada con limón.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "tomate",
+     120
+    ],
+    [
+     "pepino",
+     100
+    ],
+    [
+     "aceitunas",
+     20
+    ],
+    [
+     "aceite",
+     8
+    ],
+    [
+     "limon",
+     5
+    ]
+   ],
+   "instrucciones": "1. Trocea el tomate y el pepino.\n2. Añade las aceitunas.\n3. Aliña con el aceite y el limón."
+  },
+  {
+   "nombre": "Cuscús con calabacín y pimiento",
+   "descripcion": "Cuscús cocido con calabacín y pimiento salteados.",
+   "tiempo_prep_min": 12,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "cuscus",
+     150
+    ],
+    [
+     "calabacin",
+     50
+    ],
+    [
+     "pimiento",
+     40
+    ],
+    [
+     "aceite",
+     5
+    ]
+   ],
+   "instrucciones": "1. Saltea el calabacín y el pimiento en dados pequeños 5 minutos.\n2. Mezcla con el cuscús cocido y calienta 2 minutos."
+  },
+  {
+   "nombre": "Quinoa con espinacas y almendra",
+   "descripcion": "Quinoa cocida con espinacas salteadas y almendra laminada.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "quinoa",
+     150
+    ],
+    [
+     "espinacas",
+     50
+    ],
+    [
+     "almendra_lam",
+     10
+    ],
+    [
+     "aceite",
+     5
+    ]
+   ],
+   "instrucciones": "1. Saltea las espinacas en el aceite 2 minutos.\n2. Añade la quinoa cocida y calienta.\n3. Termina con la almendra laminada."
+  },
+  {
+   "nombre": "Zanahorias asadas al comino",
+   "descripcion": "Zanahorias asadas al horno con comino.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "zanahoria",
+     200
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "comino",
+     1
+    ]
+   ],
+   "instrucciones": "1. Corta las zanahorias en bastones.\n2. Mézclalas con aceite y comino.\n3. Hornea a 200 °C unos 25-30 minutos."
+  },
+  {
+   "nombre": "Coliflor asada al pimentón",
+   "descripcion": "Ramitos de coliflor asados con pimentón.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "coliflor",
+     200
+    ],
+    [
+     "aceite",
+     7
+    ],
+    [
+     "pimenton",
+     2
+    ]
+   ],
+   "instrucciones": "1. Separa la coliflor en ramitos.\n2. Mézclala con aceite y pimentón.\n3. Hornea a 210 °C 25 minutos."
+  },
+  {
+   "nombre": "Guacamole fresco",
+   "descripcion": "Guacamole sencillo de aguacate, tomate y cebolla con limón.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "aguacate",
+     80
+    ],
+    [
+     "tomate",
+     40
+    ],
+    [
+     "cebolla",
+     10
+    ],
+    [
+     "limon",
+     8
+    ]
+   ],
+   "instrucciones": "1. Machaca el aguacate con un tenedor.\n2. Mezcla con tomate y cebolla picados muy finos.\n3. Aliña con limón."
+  }
+ ]
+}

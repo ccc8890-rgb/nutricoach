@@ -10,18 +10,24 @@ import type { PlanObjetivo } from './planificar-semana'
 import type { SlotComida } from '@/lib/tipos-comida'
 
 // Nombres exactos del catálogo de alimentos (cocinados, para que los gramos sean los del plato)
-const GUARNICIONES = [
-  { nombre: 'Arroz blanco (cocido)', gluten: false }, { nombre: 'Patata (cocida)', gluten: false },
-  { nombre: 'Pasta (cocinada)', gluten: true }, { nombre: 'Boniato cocido', gluten: false },
-  { nombre: 'Quinoa (cocida)', gluten: false }, { nombre: 'Cuscús (cocido)', gluten: true },
-  { nombre: 'Pan integral', gluten: true },
+type Base = { nombre: string; gluten: boolean; min: number; max: number }
+// Guarniciones de comida/cena (cocinadas) y bases de desayuno (pan, avena); min/max = ración razonable en gramos
+const GUARNICIONES: Base[] = [
+  { nombre: 'Arroz blanco (cocido)', gluten: false, min: 80, max: 250 }, { nombre: 'Patata (cocida)', gluten: false, min: 100, max: 250 },
+  { nombre: 'Pasta (cocinada)', gluten: true, min: 80, max: 250 }, { nombre: 'Boniato cocido', gluten: false, min: 100, max: 250 },
+  { nombre: 'Quinoa (cocida)', gluten: false, min: 80, max: 220 }, { nombre: 'Cuscús (cocido)', gluten: true, min: 80, max: 220 },
+  { nombre: 'Pan integral', gluten: true, min: 40, max: 100 },
+]
+const BASES_DESAYUNO: Base[] = [
+  { nombre: 'Pan integral', gluten: true, min: 40, max: 100 }, { nombre: 'Pan de centeno', gluten: true, min: 40, max: 100 },
+  { nombre: 'Avena', gluten: true, min: 25, max: 70 },
 ]
 const FRUTAS = ['Plátano', 'Manzana', 'Naranja', 'Kiwi', 'Pera', 'Uvas', 'Mandarina', 'Fresas', 'Arándanos', 'Melocotón']
 const LACTEOS = ['Skyr natural', 'Yogur griego natural', 'Requesón']
 
 type Macros = { kcal: number; p: number; c: number; g: number }
 type Alim = { id: string; nombre: string; calorias: number; proteinas: number; carbohidratos: number; grasas: number }
-type Opcion = { tipo: 'alimento'; alimento: Alim } | { tipo: 'receta'; id: string; nombre: string; kcal: number; proteinas: number; carbohidratos: number }
+type Opcion = { tipo: 'alimento'; alimento: Alim; min: number; max: number } | { tipo: 'receta'; id: string; nombre: string; kcal: number; proteinas: number; carbohidratos: number }
 export type ResultadoComplementos = { anadidos: number; detalle: { dia: string; franja: string; que: string }[]; errores: number }
 
 const vacio = (): Macros => ({ kcal: 0, p: 0, c: 0, g: 0 })
@@ -41,19 +47,21 @@ export async function completarSemana(
   const vegetariano = vegano || restr.some(r => r.includes('vegetarian'))
 
   // Catálogo de opciones por nombre exacto
-  const nombres = [...GUARNICIONES.map(g => g.nombre), ...FRUTAS, ...LACTEOS]
+  const nombres = [...new Set([...GUARNICIONES.map(g => g.nombre), ...BASES_DESAYUNO.map(g => g.nombre), ...FRUTAS, ...LACTEOS])]
   const { data: alims } = await db.from('alimentos')
     .select('id, nombre, calorias, proteinas, carbohidratos, grasas').eq('es_comestible', true).in('nombre', nombres)
   const porNombre = new Map<string, Alim>()
   for (const a of (alims ?? []) as Alim[]) if (!porNombre.has(a.nombre) && a.calorias > 0) porNombre.set(a.nombre, a)
   const get = (n: string) => porNombre.get(n)
 
-  const guarnicionesAlim = GUARNICIONES.filter(g => !(sinGluten && g.gluten)).map(g => get(g.nombre)).filter((a): a is Alim => !!a)
+  const conRango = (bs: Base[]) => bs.filter(g => !(sinGluten && g.gluten)).flatMap(g => { const a = get(g.nombre); return a ? [{ alimento: a, min: g.min, max: g.max }] : [] })
+  const guarnicionesAlim = conRango(GUARNICIONES)
+  const basesDesayuno = conRango(BASES_DESAYUNO)
   const frutas = FRUTAS.map(get).filter((a): a is Alim => !!a)
   const lacteos = sinLacteos ? [] : LACTEOS.map(get).filter((a): a is Alim => !!a)
 
   // Recetas marcadas como guarnición, compatibles con las restricciones del cliente
-  const { data: recG } = await db.from('recetas').select('id, nombre, kcal, proteinas, carbohidratos, intolerancias')
+  const { data: recG } = await db.from('recetas').select('id, nombre, kcal, proteinas, carbohidratos, intolerancias, tipo_plato')
     .eq('estado', 'aprobada').eq('tipo_receta', 'guarnicion').gt('kcal', 0)
   const recetasG = (recG ?? []).filter(r => {
     const t = (r.intolerancias ?? []) as string[]
@@ -100,19 +108,21 @@ export async function completarSemana(
     }
     let restante = hueco.kcal, huecoP = hueco.p
 
-    // 1) Guarnición en comida y cena si faltan hidratos
-    if ((c.nombre === 'Comida' || c.nombre === 'Cena') && hueco.c >= 15 && restante >= 150) {
-      const meta = clamp(restante * 0.65, 100, 450)
+    // 1) Guarnición (comida y cena) o base (desayuno: tostada, crema, avena) si faltan hidratos
+    const esDesayuno = c.nombre === 'Desayuno'
+    if ((c.nombre === 'Comida' || c.nombre === 'Cena' || esDesayuno) && hueco.c >= 15 && restante >= (esDesayuno ? 120 : 150)) {
+      const meta = clamp(restante * 0.65, 100, esDesayuno ? 300 : 450)
       const opciones: Opcion[] = [
-        ...recetasG.filter(r => r.kcal >= meta * 0.5 && r.kcal <= meta * 1.5).map(r => ({ tipo: 'receta' as const, id: r.id, nombre: r.nombre, kcal: Number(r.kcal), proteinas: Number(r.proteinas), carbohidratos: Number(r.carbohidratos) })),
-        ...guarnicionesAlim.map(a => ({ tipo: 'alimento' as const, alimento: a })),
+        ...recetasG.filter(r => (r.tipo_plato === 'Desayuno') === esDesayuno && r.kcal >= meta * 0.5 && r.kcal <= meta * 1.5)
+          .map(r => ({ tipo: 'receta' as const, id: r.id, nombre: r.nombre, kcal: Number(r.kcal), proteinas: Number(r.proteinas), carbohidratos: Number(r.carbohidratos) })),
+        ...(esDesayuno ? basesDesayuno : guarnicionesAlim).map(b => ({ tipo: 'alimento' as const, ...b })),
       ].filter(o => !usados.has(o.tipo === 'receta' ? o.nombre : o.alimento.nombre))
       if (opciones.length > 0) {
         const o = opciones[rotacion++ % opciones.length]
         if (o.tipo === 'receta') {
           if (await anadir({ receta_id: o.id }, o.nombre)) { restante -= o.kcal; huecoP -= o.proteinas }
         } else {
-          const gramos = clamp(redondeo10((meta / o.alimento.calorias) * 100), 60, 250)
+          const gramos = clamp(redondeo10((meta / o.alimento.calorias) * 100), o.min, o.max)
           if (await anadir({ alimento_id: o.alimento.id, gramos }, o.alimento.nombre)) { restante -= (o.alimento.calorias * gramos) / 100; huecoP -= (o.alimento.proteinas * gramos) / 100 }
         }
       }

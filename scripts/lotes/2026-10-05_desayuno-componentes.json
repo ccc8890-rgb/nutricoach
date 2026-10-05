@@ -1,0 +1,522 @@
+{
+ "lote": "desayuno-componentes-2026-10-05",
+ "tipo_plato": "Desayuno",
+ "tipo_receta": "guarnicion",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 90,
+  "kcal_max": 380
+ },
+ "alimentos": {
+  "pan_int": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "pan_cen": {
+   "nombre": "Pan de centeno",
+   "prefijo": "80dffe34",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "platano": {
+   "nombre": "Plátano",
+   "prefijo": "1131a576",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "miel": {
+   "nombre": "Miel",
+   "prefijo": "8619b09f",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "miel"
+  },
+  "canela": {
+   "nombre": "Canela molida",
+   "prefijo": "57a8bd13",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aguacate": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tomate": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aceite": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "requeson": {
+   "nombre": "Requesón",
+   "prefijo": "b2c88c97",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "frutos_rojos": {
+   "nombre": "Frutos rojos congelados",
+   "prefijo": "ebedfe6f",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cacahuete": {
+   "nombre": "Crema de cacahuete (natural)",
+   "prefijo": "6328f4b9",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Cacahuetes"
+   ],
+   "origen": "vegetal"
+  },
+  "manzana": {
+   "nombre": "Manzana",
+   "prefijo": "7d5a031f",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "jamon": {
+   "nombre": "Jamón serrano",
+   "prefijo": "be2022de",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "cerdo"
+  },
+  "queso_crema": {
+   "nombre": "Queso crema light",
+   "prefijo": "6f64e109",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "mermelada": {
+   "nombre": "Mermelada Arandano",
+   "prefijo": "2a83e016",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "arroz": {
+   "nombre": "Arroz",
+   "prefijo": "463f97f0",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "leche": {
+   "nombre": "leche semidesnatada",
+   "prefijo": "8469bf72",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "avena": {
+   "nombre": "Avena",
+   "prefijo": "31b21452",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "yogur_griego": {
+   "nombre": "Yogur griego natural",
+   "prefijo": "585bd18b",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "yogur": {
+   "nombre": "Yogur natural",
+   "prefijo": "38fe1a4e",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "granola": {
+   "nombre": "Granola",
+   "prefijo": "54fee582",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "nueces": {
+   "nombre": "Nueces",
+   "prefijo": "63c26672",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "skyr": {
+   "nombre": "Skyr natural",
+   "prefijo": "edc8a060",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "fresas": {
+   "nombre": "Fresas",
+   "prefijo": "166657",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "chia": {
+   "nombre": "Semillas de chía",
+   "prefijo": "b5b5e57f",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cafe": {
+   "nombre": "Café Botella",
+   "prefijo": "ba6be4f4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tortitas": {
+   "nombre": "Tortitas de Arroz Integral Paquete",
+   "prefijo": "072975ac",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Tostada de plátano y miel",
+   "descripcion": "Tostada de pan integral con plátano en rodajas, un hilo de miel y canela.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pan_int",
+     40
+    ],
+    [
+     "platano",
+     80
+    ],
+    [
+     "miel",
+     8
+    ],
+    [
+     "canela",
+     1
+    ]
+   ],
+   "instrucciones": "1. Tuesta el pan integral.\n2. Coloca encima el plátano en rodajas.\n3. Termina con la miel y una pizca de canela."
+  },
+  {
+   "nombre": "Tostada de aguacate y tomate",
+   "descripcion": "Tostada de pan integral con aguacate machacado, tomate y aceite de oliva.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pan_int",
+     50
+    ],
+    [
+     "aguacate",
+     50
+    ],
+    [
+     "tomate",
+     40
+    ],
+    [
+     "aceite",
+     4
+    ]
+   ],
+   "instrucciones": "1. Tuesta el pan.\n2. Machaca el aguacate y extiéndelo sobre la tostada.\n3. Añade el tomate en rodajas y el aceite."
+  },
+  {
+   "nombre": "Tostada de requesón y frutos rojos",
+   "descripcion": "Tostada de centeno con requesón, frutos rojos y un toque de miel.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pan_cen",
+     50
+    ],
+    [
+     "requeson",
+     60
+    ],
+    [
+     "frutos_rojos",
+     40
+    ],
+    [
+     "miel",
+     5
+    ]
+   ],
+   "instrucciones": "1. Tuesta el pan de centeno.\n2. Unta el requesón.\n3. Añade los frutos rojos descongelados y la miel."
+  },
+  {
+   "nombre": "Tostada de crema de cacahuete y manzana",
+   "descripcion": "Tostada integral con crema de cacahuete y láminas de manzana.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pan_int",
+     40
+    ],
+    [
+     "cacahuete",
+     15
+    ],
+    [
+     "manzana",
+     80
+    ]
+   ],
+   "instrucciones": "1. Tuesta el pan.\n2. Unta la crema de cacahuete.\n3. Cubre con la manzana en láminas finas."
+  },
+  {
+   "nombre": "Tostada de jamón serrano y tomate",
+   "descripcion": "Tostada de centeno con tomate rallado, jamón serrano y aceite de oliva.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pan_cen",
+     50
+    ],
+    [
+     "jamon",
+     25
+    ],
+    [
+     "tomate",
+     50
+    ],
+    [
+     "aceite",
+     4
+    ]
+   ],
+   "instrucciones": "1. Tuesta el pan de centeno.\n2. Extiende el tomate rallado.\n3. Añade el jamón y un hilo de aceite."
+  },
+  {
+   "nombre": "Tostada de queso crema y mermelada",
+   "descripcion": "Tostada integral con queso crema light y mermelada de arándanos.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "pan_int",
+     40
+    ],
+    [
+     "queso_crema",
+     30
+    ],
+    [
+     "mermelada",
+     15
+    ]
+   ],
+   "instrucciones": "1. Tuesta el pan.\n2. Unta el queso crema.\n3. Termina con la mermelada."
+  },
+  {
+   "nombre": "Crema de arroz con plátano y canela",
+   "descripcion": "Crema de arroz cocinada en leche, con plátano y canela: un desayuno reconfortante y rico en hidratos.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "arroz",
+     30
+    ],
+    [
+     "leche",
+     200
+    ],
+    [
+     "canela",
+     1
+    ],
+    [
+     "platano",
+     60
+    ]
+   ],
+   "instrucciones": "1. Cuece el arroz en la leche a fuego suave 15-18 minutos, removiendo, hasta que quede cremoso.\n2. Sirve con el plátano en rodajas y la canela.",
+   "consejos": "Para más cremosidad, tritura una parte del arroz con la leche."
+  },
+  {
+   "nombre": "Porridge de avena con frutos rojos",
+   "descripcion": "Avena cocinada en leche con frutos rojos y un toque de miel.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "avena",
+     35
+    ],
+    [
+     "leche",
+     150
+    ],
+    [
+     "frutos_rojos",
+     50
+    ],
+    [
+     "miel",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece la avena con la leche 4-5 minutos removiendo.\n2. Sirve con los frutos rojos y la miel."
+  },
+  {
+   "nombre": "Yogur griego con granola y frutos rojos",
+   "descripcion": "Yogur griego natural con granola crujiente y frutos rojos.",
+   "tiempo_prep_min": 3,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "yogur_griego",
+     125
+    ],
+    [
+     "granola",
+     25
+    ],
+    [
+     "frutos_rojos",
+     40
+    ]
+   ],
+   "instrucciones": "1. Pon el yogur en un bol.\n2. Añade los frutos rojos y la granola justo antes de comer para que siga crujiente."
+  },
+  {
+   "nombre": "Yogur natural con nueces y miel",
+   "descripcion": "Yogur natural con nueces troceadas y un hilo de miel.",
+   "tiempo_prep_min": 3,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "yogur",
+     125
+    ],
+    [
+     "nueces",
+     12
+    ],
+    [
+     "miel",
+     8
+    ]
+   ],
+   "instrucciones": "1. Pon el yogur en un bol.\n2. Añade las nueces troceadas y la miel."
+  },
+  {
+   "nombre": "Skyr con fresas y chía",
+   "descripcion": "Skyr natural con fresas troceadas y semillas de chía.",
+   "tiempo_prep_min": 3,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "skyr",
+     150
+    ],
+    [
+     "fresas",
+     80
+    ],
+    [
+     "chia",
+     8
+    ]
+   ],
+   "instrucciones": "1. Pon el skyr en un bol.\n2. Añade las fresas troceadas y la chía."
+  },
+  {
+   "nombre": "Café con leche",
+   "descripcion": "Café con leche semidesnatada.",
+   "tiempo_prep_min": 3,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "cafe",
+     100
+    ],
+    [
+     "leche",
+     200
+    ]
+   ],
+   "instrucciones": "1. Prepara el café.\n2. Calienta la leche y mézclalos.",
+   "consejos": "Sin azúcar; si lo necesitas, mejor una pizca de canela."
+  },
+  {
+   "nombre": "Tortitas de arroz con requesón y plátano",
+   "descripcion": "Tortitas de arroz integral con requesón y plátano.",
+   "tiempo_prep_min": 3,
+   "porciones": 1,
+   "ingredientes": [
+    [
+     "tortitas",
+     20
+    ],
+    [
+     "requeson",
+     60
+    ],
+    [
+     "platano",
+     60
+    ]
+   ],
+   "instrucciones": "1. Unta las tortitas con el requesón.\n2. Cubre con el plátano en rodajas."
+  }
+ ]
+}

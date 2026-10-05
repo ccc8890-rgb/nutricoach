@@ -7,6 +7,8 @@ import { FRANJAS, REPARTO } from './semana-dieta'
 import { candidatasPorFranja, type PlanObjetivo } from './planificar-semana'
 import { repartirSemanaSinRepetir, type Hueco } from './generar-semana'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
+import { completarSemana } from './completar-comidas'
+import { construirFiltroCliente } from './semana-dieta'
 import { optimizarFactoresReceta, type IngredienteOptimizable } from '@/lib/recetas/optimizar-factores'
 import type { RolIngrediente } from '@/types'
 import type { SlotComida } from '@/lib/tipos-comida'
@@ -208,6 +210,10 @@ export async function activarProximaSemana(db: SupabaseClient, clienteId: string
     vigentes.push(...(nuevas as typeof vigentes))
   }
 
+  // Los complementos de la semana anterior no valen para las recetas nuevas: se recalculan al final
+  const idsAplicar = filas.flatMap(r => vigentes.find(c => c.dia_semana === r.dia_semana && c.nombre === r.franja)?.id ?? [])
+  if (idsAplicar.length > 0) await db.from('comida_alimentos').delete().in('comida_id', idsAplicar).eq('es_complemento', true)
+
   const errores: { dia: string; franja: string; error: string }[] = []
   for (let i = 0; i < filas.length; i += CONCURRENCIA) {
     await Promise.all(filas.slice(i, i + CONCURRENCIA).map(async r => {
@@ -230,6 +236,14 @@ export async function activarProximaSemana(db: SupabaseClient, clienteId: string
 
   // Solo si todo salió bien se consume la semana planificada y se adelantan las siguientes
   if (errores.length === 0) {
+    try {
+      const [{ data: onboarding }, { data: perfil }] = await Promise.all([
+        db.from('onboarding_responses').select('*').eq('cliente_id', clienteId).maybeSingle(),
+        db.from('onboarding_perfil_profundo').select('*').eq('cliente_id', clienteId).maybeSingle(),
+      ])
+      const { filtroCliente } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
+      await completarSemana(db, plan, clienteId, { franjas: franjasNuevas, restricciones: filtroCliente.restricciones })
+    } catch (e) { console.error('[activarProximaSemana] complementos', e) }
     await db.from('comidas_planificadas').delete().eq('plan_id', plan.id).eq('semana', 1)
     for (let s = 2; s <= MAX_SEMANAS; s++) {
       await db.from('comidas_planificadas').update({ semana: s - 1 }).eq('plan_id', plan.id).eq('semana', s)

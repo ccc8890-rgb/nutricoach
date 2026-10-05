@@ -26,11 +26,11 @@ function Barra({ etiqueta, valor, objetivo, color, unidad }: { etiqueta: string;
 }
 
 type AlimentoBusqueda = { id: string; nombre: string; calorias: number; proteinas: number; carbohidratos: number; grasas: number }
-type PostreBusqueda = { id: string; nombre: string; kcal: number; proteinas: number; imagen_url: string | null }
+type PostreBusqueda = { id: string; nombre: string; kcal: number; proteinas: number; imagen_url: string | null; tipo_receta?: string | null }
 
 // Buscador para añadir un postre/complemento (alimento suelto o receta dulce) a una comida
 function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clienteId: string; dia: string; franja: string; onCerrar: () => void; onHecho: () => void }) {
-  const [modo, setModo] = useState<'alimento' | 'postre'>('alimento')
+  const [modo, setModo] = useState<'alimento' | 'postre' | 'plato'>('alimento')
   const [q, setQ] = useState('')
   const [alimentos, setAlimentos] = useState<AlimentoBusqueda[]>([])
   const [postres, setPostres] = useState<PostreBusqueda[]>([])
@@ -50,7 +50,7 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
         const data = await res.json().catch(() => [])
         setAlimentos(Array.isArray(data) ? data.slice(0, 40) : [])
       } else {
-        const res = await fetch(`/api/clientes/${clienteId}/semana-dieta?franja=${encodeURIComponent(franja)}&postres=1&q=${encodeURIComponent(q.trim())}`)
+        const res = await fetch(`/api/clientes/${clienteId}/semana-dieta?franja=${encodeURIComponent(franja)}${modo === 'postre' ? '&postres=1' : '&todas=1'}&q=${encodeURIComponent(q.trim())}`)
         const data = await res.json().catch(() => null)
         setPostres(data?.recetas ?? [])
       }
@@ -75,18 +75,18 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
     <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={onCerrar}>
       <div className="w-full sm:max-w-lg max-h-[85vh] flex flex-col rounded-t-2xl sm:rounded-2xl p-4" style={{ background: 'var(--surface)' }} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-3">
-          <p className="font-semibold" style={{ color: 'var(--text)' }}>Postre / complemento · {franja} · {dia}</p>
+          <p className="font-semibold" style={{ color: 'var(--text)' }}>Añadir a {franja} · {dia}</p>
           <button onClick={onCerrar} style={{ color: 'var(--text-muted)' }}><X size={16} /></button>
         </div>
         <div className="flex rounded-xl overflow-hidden mb-3" style={{ border: '1px solid var(--border)' }}>
-          {([['alimento', 'Fruta / alimento'], ['postre', 'Postre (receta)']] as const).map(([k, t]) => (
+          {([['alimento', 'Fruta / alimento'], ['plato', 'Plato / guarnición'], ['postre', 'Postre']] as const).map(([k, t]) => (
             <button key={k} onClick={() => { setModo(k); setElegido(null); setQ('') }} className="flex-1 px-3 py-2 text-xs font-medium"
               style={{ background: modo === k ? 'var(--primary)' : 'transparent', color: modo === k ? 'var(--bg)' : 'var(--text-muted)' }}>{t}</button>
           ))}
         </div>
         <div className="relative mb-3">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
-          <input autoFocus autoComplete="off" value={q} onChange={e => { setQ(e.target.value); setElegido(null) }} placeholder={modo === 'alimento' ? 'Plátano, yogur, chocolate negro…' : 'Buscar postre…'} className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
+          <input autoFocus autoComplete="off" value={q} onChange={e => { setQ(e.target.value); setElegido(null) }} placeholder={modo === 'alimento' ? 'Plátano, yogur, chocolate negro…' : modo === 'plato' ? 'Tostada, arroz, patatas, yogur con granola…' : 'Buscar postre…'} className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
         </div>
         <label className="flex items-center gap-2 text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>
           <input type="checkbox" checked={ajustar} onChange={e => setAjustar(e.target.checked)} />
@@ -118,11 +118,11 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
               </button>
             ))
           ) : postres.length === 0 ? (
-            <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>Sin postres</p>
+            <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>{modo === 'plato' ? 'Sin recetas' : 'Sin postres'}</p>
           ) : postres.map(r => (
             <button key={r.id} disabled={guardando} onClick={() => anadir({ receta_id: r.id })} className="w-full text-left rounded-xl p-2.5 flex items-center justify-between gap-2 disabled:opacity-50" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-              <span className="text-sm truncate" style={{ color: 'var(--text)' }}>{r.nombre}</span>
-              <span className="text-[11px] font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)} (ración base)</span>
+              <span className="text-sm truncate" style={{ color: 'var(--text)' }}>{r.tipo_receta === 'guarnicion' ? '◦ ' : ''}{r.nombre}</span>
+              <span className="text-[11px] font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)} (1 ración)</span>
             </button>
           ))}
         </div>
@@ -223,7 +223,7 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                     </table>
                     {(c.complementos.length > 0 || !semana) && (
                       <div className="rounded-lg p-2" style={{ background: 'var(--bg)' }}>
-                        <p className="text-[10px] font-semibold uppercase tracking-wide mb-1 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}><Apple size={11} /> Postre / complemento</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-wide mb-1 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}><Apple size={11} /> Platos y complementos</p>
                         {c.complementos.map((x, k) => (
                           <div key={k} className="flex items-center justify-between gap-2 text-xs py-0.5">
                             <span style={{ color: 'var(--text)' }}>{x.nombre}{x.gramos ? ` · ${x.gramos} g` : ''}</span>
@@ -234,7 +234,7 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                           </div>
                         ))}
                         {!semana && (
-                          <button onClick={() => setComplementoEn(c.franja)} className="text-[11px] font-medium flex items-center gap-1 mt-1" style={{ color: 'var(--text)' }}><Plus size={11} /> Añadir postre o fruta</button>
+                          <button onClick={() => setComplementoEn(c.franja)} className="text-[11px] font-medium flex items-center gap-1 mt-1" style={{ color: 'var(--text)' }}><Plus size={11} /> Añadir plato, fruta o postre</button>
                         )}
                       </div>
                     )}
@@ -268,7 +268,7 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
             const libres = franjas.filter(f => !detalle.comidas.some(c => c.franja === f))
             return libres.length > 0 ? (
               <div className="flex flex-wrap items-center gap-1.5 mt-3">
-                <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Solo postre o fruta en:</span>
+                <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Añadir solo un plato, fruta o postre en:</span>
                 {libres.map(f => (
                   <button key={f} onClick={() => setComplementoEn(f)} className="rounded-full px-2.5 py-1 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
                     <Plus size={11} /> {f}

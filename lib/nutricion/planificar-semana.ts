@@ -141,6 +141,10 @@ export async function generarSemana(
     existentes.push(...(nuevas as ComidaExistente[]))
   }
 
+  // Los complementos de la semana anterior no valen para las recetas nuevas: se recalculan al final
+  const idsAplicar = asignaciones.flatMap(a => existentes.find(c => c.dia_semana === a.dia && c.nombre === a.franja)?.id ?? [])
+  if (idsAplicar.length > 0) await db.from('comida_alimentos').delete().in('comida_id', idsAplicar).eq('es_complemento', true)
+
   const errores: ResultadoSemana['errores'] = []
   for (let i = 0; i < asignaciones.length; i += CONCURRENCIA) {
     await Promise.all(asignaciones.slice(i, i + CONCURRENCIA).map(async a => {
