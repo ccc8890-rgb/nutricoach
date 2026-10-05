@@ -2,7 +2,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DIAS_SEMANA } from './comidas-dia'
 import { materializarComidasRecurrentes } from './materializar-comidas'
-import { construirFiltroCliente, FRANJAS, REPARTO } from './semana-dieta'
+import { construirFiltroCliente, franjasDelCliente, FRANJAS, REPARTO } from './semana-dieta'
 import { repartirSemanaSinRepetir, type Asignacion, type CandidataSemana, type Hueco } from './generar-semana'
 import { filtrarRecetasPorSlot } from '@/lib/plan-recetas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
@@ -73,9 +73,10 @@ export async function planificarSemana(
   const existentes = (comidas ?? []) as ComidaExistente[]
 
   const franjasPlan = FRANJAS.filter(f => existentes.some(c => c.nombre === f))
-  // Si el coach elige franjas, mandan; si no, las que ya usa el plan (media mañana, merienda, peri-entreno: solo si se piden)
+  // Si el coach elige franjas, mandan; después las comidas al día del cliente; si no, las que ya usa el plan
   const elegidas = FRANJAS.filter(f => franjasElegidas?.includes(f))
-  const franjas = elegidas.length > 0 ? elegidas : franjasPlan.length > 0 ? franjasPlan : FRANJAS_BASE
+  const franjasCliente = elegidas.length > 0 ? [] : await franjasDelCliente(db, clienteId)
+  const franjas = elegidas.length > 0 ? elegidas : franjasCliente.length > 0 ? franjasCliente : franjasPlan.length > 0 ? franjasPlan : FRANJAS_BASE
 
   // Una comida sin día es "de todos los días": cuenta como ocupada en cualquier día
   const ocupado = (dia: string, franja: string) => existentes.some(c => c.nombre === franja && (c.dia_semana === dia || c.dia_semana == null) && c.receta_id)

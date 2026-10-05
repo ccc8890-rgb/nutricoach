@@ -89,7 +89,7 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
   if (!base.kcal) return sinAjuste
   const { data: entreno } = await db.from('planes_entrenamiento').select('id').eq('cliente_id', clienteId).eq('activo', true).limit(1).maybeSingle()
   if (!entreno) return sinAjuste
-  const { data: sesiones } = await db.from('sesiones_entrenamiento').select('nombre, dia_semana').eq('plan_id', entreno.id)
+  const { data: sesiones } = await db.from('sesiones_entrenamiento').select('nombre, dia_semana, hora_inicio').eq('plan_id', entreno.id)
   if (!sesiones || sesiones.length === 0) return sinAjuste
   // Hora habitual de entreno del cuestionario y franjas que usa el plan, para saber qué comida cae antes/después
   const [{ data: onboarding }, { data: nombres }] = await Promise.all([
@@ -98,9 +98,12 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
   ])
   const franjas = FRANJAS.filter(f => (nombres ?? []).some(n => n.nombre === f)) as SlotComida[]
   return Object.fromEntries(DIAS_SEMANA.map((dia, i) => {
-    const tipos = sesiones.filter(s => s.dia_semana === dia).map(s => clasificarDiaNutricional(s.nombre, true))
+    const delDia = sesiones.filter(s => s.dia_semana === dia)
+    const tipos = delDia.map(s => clasificarDiaNutricional(s.nombre, true))
     const tipo = PRIORIDAD.find(t => tipos.includes(t)) ?? 'descanso_activo'
-    return [dia, aplicarCompeticion(i) ?? { ...ajustarObjetivo(plan, tipo), momento: momentoDeEntreno(onboarding?.hora_entreno, tipo, franjas) }]
+    // La hora propia de la sesión manda sobre la hora habitual del cuestionario
+    const horaSesion = delDia.find(s => clasificarDiaNutricional(s.nombre, true) === tipo)?.hora_inicio
+    return [dia, aplicarCompeticion(i) ?? { ...ajustarObjetivo(plan, tipo), momento: momentoDeEntreno(horaSesion ?? onboarding?.hora_entreno, tipo, franjas) }]
   })) as Record<string, ObjetivoDia>
 }
 

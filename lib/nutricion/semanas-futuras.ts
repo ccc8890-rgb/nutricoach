@@ -3,7 +3,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DIAS_SEMANA } from './comidas-dia'
 import { materializarComidasRecurrentes } from './materializar-comidas'
-import { FRANJAS, REPARTO } from './semana-dieta'
+import { FRANJAS, REPARTO, franjasDelCliente } from './semana-dieta'
 import { candidatasPorFranja, type PlanObjetivo } from './planificar-semana'
 import { repartirSemanaSinRepetir, type Hueco } from './generar-semana'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
@@ -174,7 +174,8 @@ export async function generarFutura(
   const elegidas = FRANJAS.filter(f => p.franjas?.includes(f))
   const franjasEnCurso = FRANJAS.filter(f => enCurso.some(c => c.nombre === f))
   const franjasPropias = FRANJAS.filter(f => propias.some(r => r.franja === f))
-  const franjas = elegidas.length > 0 ? elegidas : franjasPropias.length > 0 ? franjasPropias : franjasEnCurso.length > 0 ? franjasEnCurso : FRANJAS_BASE
+  const franjasCliente = elegidas.length > 0 || franjasPropias.length > 0 ? [] : await franjasDelCliente(db, clienteId)
+  const franjas = elegidas.length > 0 ? elegidas : franjasPropias.length > 0 ? franjasPropias : franjasCliente.length > 0 ? franjasCliente : franjasEnCurso.length > 0 ? franjasEnCurso : FRANJAS_BASE
 
   const objDia = await objetivosPorDia(db, clienteId, plan, p.semana)
   const huecos: Hueco[] = []

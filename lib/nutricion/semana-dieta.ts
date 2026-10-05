@@ -8,6 +8,19 @@ export const FRANJAS: SlotComida[] = ['Desayuno', 'Media mañana', 'Comida', 'Me
 // Reparto orientativo del objetivo diario por franja; se renormaliza con las franjas que tenga el plan
 export const REPARTO: Record<SlotComida, number> = { 'Desayuno': 0.25, 'Media mañana': 0.1, 'Comida': 0.35, 'Merienda': 0.1, 'Cena': 0.3 }
 
+// Franjas que corresponden a «n comidas al día» del cliente (2-5); fuera de ese rango no impone nada
+export function franjasDeComidasDia(n: number | null | undefined): SlotComida[] {
+  const tabla: Record<number, SlotComida[]> = {
+    2: ['Comida', 'Cena'], 3: ['Desayuno', 'Comida', 'Cena'], 4: ['Desayuno', 'Comida', 'Merienda', 'Cena'], 5: [...FRANJAS],
+  }
+  return n != null && tabla[n] ? tabla[n] : []
+}
+
+export async function franjasDelCliente(db: SupabaseClient, clienteId: string): Promise<SlotComida[]> {
+  const { data } = await db.from('clientes').select('comidas_dia').eq('id', clienteId).maybeSingle()
+  return franjasDeComidasDia(data?.comidas_dia)
+}
+
 export async function repartoFranja(db: SupabaseClient, planId: string, franja: SlotComida) {
   const { data } = await db.from('comidas').select('nombre').eq('plan_id', planId)
   const franjas = new Set([...(data ?? []).map(c => c.nombre), franja].filter(f => FRANJAS.includes(f as SlotComida)))
