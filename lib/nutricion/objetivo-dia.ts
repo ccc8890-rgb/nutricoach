@@ -59,12 +59,28 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
     const ajuste = ajusteCompeticion(fase, c.dias, c.disciplina)
     return ajuste ? { ajuste, competicion: { fase, nombre: c.nombre, dias_restantes: c.dias } } : null
   })
+  // Peso para la carga de hidratos en g/kg: último check-in, o el peso inicial del cliente
+  let pesoKg = 0
+  if (ajustesCompeticion.some(a => a?.ajuste.cho_g_kg)) {
+    const [{ data: ck }, { data: cl }] = await Promise.all([
+      db.from('checkins').select('peso').eq('cliente_id', clienteId).not('peso', 'is', null).order('fecha', { ascending: false }).limit(1).maybeSingle(),
+      db.from('clientes').select('peso_inicial').eq('id', clienteId).maybeSingle(),
+    ])
+    pesoKg = Number(ck?.peso ?? cl?.peso_inicial) || 0
+  }
   const aplicarCompeticion = (i: number): ObjetivoDia | null => {
     const comp = ajustesCompeticion[i]
     if (!comp || !base.kcal) return null
     const a = comp.ajuste
-    const kcal = base.kcal * (1 + a.ajuste_kcal_pct / 100)
     const p = base.p * (1 + a.ajuste_proteinas_pct / 100)
+    // Carga de hidratos en g/kg (si hay peso): las kcal salen de los macros y la grasa baja a lo mínimo razonable
+    if (a.cho_g_kg && pesoKg > 0) {
+      const c = a.cho_g_kg * pesoKg
+      const g = Math.max(0.6 * pesoKg, base.g * 0.5)
+      const kcal = 4 * p + 4 * c + 9 * g
+      return { kcal: Math.round(kcal), p: Math.round(p), c: Math.round(c), g: Math.round(g), tipo: null, label: a.label, consejo: a.consejo, ajuste_kcal_pct: Math.round((kcal / base.kcal - 1) * 100), competicion: comp.competicion }
+    }
+    const kcal = base.kcal * (1 + a.ajuste_kcal_pct / 100)
     const c = base.c * (1 + a.ajuste_cho_pct / 100)
     const g = Math.max(base.g * 0.6, (kcal - 4 * p - 4 * c) / 9)
     return { kcal: Math.round(kcal), p: Math.round(p), c: Math.round(c), g: Math.round(g), tipo: null, label: a.label, consejo: a.consejo, ajuste_kcal_pct: a.ajuste_kcal_pct, competicion: comp.competicion }

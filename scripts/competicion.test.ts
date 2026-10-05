@@ -21,6 +21,9 @@ const inminenteLarga = ajusteCompeticion('carrera_inminente', 2, 'ultra')!
 const inminenteCorta = ajusteCompeticion('carrera_inminente', 2, 'hyrox')!
 assert.deepEqual([inminenteLarga.ajuste_kcal_pct, inminenteLarga.ajuste_cho_pct], [10, 30])
 assert.deepEqual([inminenteCorta.ajuste_kcal_pct, inminenteCorta.ajuste_cho_pct], [5, 15])
+assert.equal(inminenteLarga.cho_g_kg, 10)
+assert.equal(ajusteCompeticion('carrera_inminente', 3, 'ultra')!.cho_g_kg, undefined)
+assert.equal(inminenteCorta.cho_g_kg, undefined)
 const vispera = ajusteCompeticion('carrera_inminente', 1, 'ironman')!
 assert.match(vispera.consejo, /bajos en fibra y grasa/)
 const race = ajusteCompeticion('race_day', 0, 'running_hm')!

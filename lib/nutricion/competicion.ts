@@ -4,6 +4,8 @@ export type AjusteCompeticion = {
   ajuste_kcal_pct: number
   ajuste_cho_pct: number
   ajuste_proteinas_pct: number
+  /** Carga de hidratos en g/kg para las últimas 36-48 h de pruebas largas (Burke 2011: 10-12 g/kg); si hay peso sustituye al porcentaje */
+  cho_g_kg?: number
   label: string
   consejo: string
 }
@@ -43,6 +45,7 @@ export function ajusteCompeticion(fase: FaseCompeticion, diasRestantes: number, 
   }
   if (fase === 'carrera_inminente') return {
     ajuste_kcal_pct: larga ? 10 : 5, ajuste_cho_pct: larga ? 30 : 15, ajuste_proteinas_pct: 0,
+    ...(larga && diasRestantes <= 2 ? { cho_g_kg: 10 } : {}),
     label: diasRestantes === 1 ? 'Víspera de competición' : 'Precompetición',
     consejo: diasRestantes === 1
       ? 'Prioriza alimentos ricos en hidratos y bajos en fibra y grasa; evita probar alimentos nuevos.'
