@@ -11,6 +11,7 @@ interface ListaCompraProps {
     planId: string
     clienteId: string
     semanaInicio?: string   // YYYY-MM-DD, opcional — usa el lunes actual si se omite
+    semanaFutura?: number
     nombrePlan?: string
     /** 'coach' | 'cliente' — determina seleccionado_por al guardar */
     rol?: 'coach' | 'cliente'
@@ -27,8 +28,12 @@ function getLunesActual(): string {
 
 function formatearEuro(n: number) { return `${n.toFixed(2)} €` }
 
-export default function ListaCompra({ planId, clienteId, semanaInicio, nombrePlan, rol = 'cliente' }: ListaCompraProps) {
-    const semana = semanaInicio || getLunesActual()
+export default function ListaCompra({ planId, clienteId, semanaInicio, semanaFutura, nombrePlan, rol = 'cliente' }: ListaCompraProps) {
+    const semana = semanaInicio || (() => {
+        const lunes = new Date(`${getLunesActual()}T12:00:00`)
+        lunes.setDate(lunes.getDate() + (semanaFutura ?? 0) * 7)
+        return lunes.toISOString().split('T')[0]
+    })()
     const [abierto, setAbierto] = useState(false)
     const [datos, setDatos] = useState<ListaCompraSemanal | null>(null)
     const [cargando, setCargando] = useState(false)
@@ -42,7 +47,8 @@ export default function ListaCompra({ planId, clienteId, semanaInicio, nombrePla
         setCargando(true)
         setError('')
         try {
-            const res = await fetch(`/api/lista-compra/semanal?plan_id=${planId}&semana_inicio=${semana}`)
+            const queryFutura = semanaFutura ? `&semana=${semanaFutura}` : ''
+            const res = await fetch(`/api/lista-compra/semanal?plan_id=${planId}&semana_inicio=${semana}${queryFutura}`)
             const json = await res.json()
             if (!res.ok) setError(json.error || 'Error al cargar lista')
             else setDatos(json)
@@ -51,7 +57,7 @@ export default function ListaCompra({ planId, clienteId, semanaInicio, nombrePla
         } finally {
             setCargando(false)
         }
-    }, [planId, semana])
+    }, [planId, semana, semanaFutura])
 
     useEffect(() => {
         if (abierto && !datos) cargar()

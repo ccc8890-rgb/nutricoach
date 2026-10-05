@@ -24,6 +24,13 @@ type RecetaResumen = {
 }
 type FilaPlanificada = { id: string; semana: number; dia_semana: string; franja: string; receta_id: string; receta: RecetaResumen | null }
 
+type IngredienteRecetaCargado = IngredienteOptimizable & {
+  alimento_id: string
+  alimento_nombre: string
+  categoria: string
+  es_generico: boolean
+}
+
 export type ComidaFutura = {
   id: string; nombre: string; receta: Omit<RecetaResumen, 'kcal' | 'proteinas' | 'carbohidratos' | 'grasas'> | null
   kcal: number; p: number; c: number; g: number
@@ -32,6 +39,36 @@ export type DiaFuturo = { dia: string; comidas: ComidaFutura[]; total: { kcal: n
 export type SemanaFutura = { semana: number; dias: DiaFuturo[] }
 
 const orden = (f: string) => FRANJAS.indexOf(f as SlotComida)
+
+async function cargarIngredientesRecetas(db: SupabaseClient, ids: string[]) {
+  const ingredientes = new Map<string, IngredienteRecetaCargado[]>()
+  if (ids.length === 0) return ingredientes
+  const { data, error } = await db.from('recetas')
+    .select('id, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, rol_ingrediente, es_cantidad_fija, alimento:alimentos(id, nombre, categoria, es_generico, calorias, proteinas, carbohidratos, grasas))')
+    .in('id', ids)
+  if (error) throw new Error('No se pudieron leer los ingredientes de las recetas')
+  for (const r of (data ?? []) as unknown as { id: string; porciones: number | null; receta_ingredientes: { cantidad_gramos: number | null; rol_ingrediente: RolIngrediente | null; es_cantidad_fija: boolean | null; alimento: { id: string; nombre: string; categoria: string | null; es_generico: boolean | null; calorias: number; proteinas: number; carbohidratos: number; grasas: number } | null }[] }[]) {
+    ingredientes.set(r.id, r.receta_ingredientes.filter(i => i.alimento && Number(i.cantidad_gramos) > 0).map(i => ({
+      alimento_id: i.alimento!.id, alimento_nombre: i.alimento!.nombre, categoria: i.alimento!.categoria ?? 'Otros', es_generico: i.alimento!.es_generico ?? false,
+      rol: i.rol_ingrediente, gramos: Number(i.cantidad_gramos) / Math.max(1, Number(r.porciones ?? 1)), fija: i.es_cantidad_fija === true,
+      por100: { kcal: Number(i.alimento!.calorias ?? 0), p: Number(i.alimento!.proteinas ?? 0), c: Number(i.alimento!.carbohidratos ?? 0), g: Number(i.alimento!.grasas ?? 0) },
+    })))
+  }
+  return ingredientes
+}
+
+function factoresParaComida(
+  ingredientes: IngredienteOptimizable[], plan: PlanObjetivo, dia: string, franja: string,
+  franjasSemana: string[], objetivosDia?: Record<string, ObjetivoDia>,
+) {
+  const sumaReparto = franjasSemana.reduce((t, f) => t + REPARTO[f as SlotComida], 0) || 1
+  const share = REPARTO[franja as SlotComida] / sumaReparto
+  const od = objetivosDia?.[dia]
+  const objetivo = od && od.kcal
+    ? { kcal: od.kcal * share, p: od.p * share, c: od.c * share, g: od.g * share }
+    : { kcal: (plan.kcal_objetivo ?? 0) * share, p: (plan.proteinas_objetivo ?? 0) * share, c: (plan.carbohidratos_objetivo ?? 0) * share, g: (plan.grasas_objetivo ?? 0) * share }
+  return objetivo.kcal > 0 ? optimizarFactoresReceta(ingredientes, objetivo).factores : ingredientes.map(() => 1)
+}
 
 async function filasPlanificadas(db: SupabaseClient, planId: string, hasta = MAX_SEMANAS): Promise<FilaPlanificada[]> {
   const { data, error } = await db.from('comidas_planificadas')
@@ -47,34 +84,19 @@ export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, sem
   const n = Math.min(semanas, MAX_SEMANAS)
   const filas = await filasPlanificadas(db, plan.id, n)
   const ids = [...new Set(filas.map(f => f.receta_id))]
-  const ingredientes = new Map<string, IngredienteOptimizable[]>()
-  if (ids.length > 0) {
-    const { data } = await db.from('recetas')
-      .select('id, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, rol_ingrediente, es_cantidad_fija, alimento:alimentos(calorias, proteinas, carbohidratos, grasas))')
-      .in('id', ids)
-    for (const r of (data ?? []) as unknown as { id: string; porciones: number | null; receta_ingredientes: { cantidad_gramos: number | null; rol_ingrediente: RolIngrediente | null; es_cantidad_fija: boolean | null; alimento: { calorias: number; proteinas: number; carbohidratos: number; grasas: number } | null }[] }[]) {
-      ingredientes.set(r.id, r.receta_ingredientes.filter(i => i.alimento && Number(i.cantidad_gramos) > 0).map(i => ({
-        rol: i.rol_ingrediente, gramos: Number(i.cantidad_gramos) / Math.max(1, Number(r.porciones ?? 1)), fija: i.es_cantidad_fija === true,
-        por100: { kcal: Number(i.alimento!.calorias ?? 0), p: Number(i.alimento!.proteinas ?? 0), c: Number(i.alimento!.carbohidratos ?? 0), g: Number(i.alimento!.grasas ?? 0) },
-      })))
-    }
-  }
+  const ingredientes = await cargarIngredientesRecetas(db, ids)
 
   const resultado: SemanaFutura[] = []
   for (let semana = 1; semana <= n; semana++) {
     const delaSemana = filas.filter(f => f.semana === semana)
     const franjasSemana = FRANJAS.filter(f => delaSemana.some(r => r.franja === f))
-    const sumaReparto = franjasSemana.reduce((t, f) => t + REPARTO[f], 0) || 1
     const dias: DiaFuturo[] = DIAS_SEMANA.map(dia => {
       const comidas = delaSemana.filter(r => r.dia_semana === dia).sort((a, b) => orden(a.franja) - orden(b.franja)).map(r => {
         const rec = r.receta
-        const share = REPARTO[r.franja as SlotComida] / sumaReparto
-        const od = objetivosDia?.[dia]
-        const objetivo = od && od.kcal ? { kcal: od.kcal * share, p: od.p * share, c: od.c * share, g: od.g * share } : { kcal: (plan.kcal_objetivo ?? 0) * share, p: (plan.proteinas_objetivo ?? 0) * share, c: (plan.carbohidratos_objetivo ?? 0) * share, g: (plan.grasas_objetivo ?? 0) * share }
         const ings = ingredientes.get(r.receta_id) ?? []
         let m = { kcal: rec?.kcal ?? 0, p: rec?.proteinas ?? 0, c: rec?.carbohidratos ?? 0, g: rec?.grasas ?? 0 }
-        if (ings.length > 0 && objetivo.kcal > 0) {
-          const { factores } = optimizarFactoresReceta(ings, objetivo)
+        if (ings.length > 0) {
+          const factores = factoresParaComida(ings, plan, dia, r.franja, franjasSemana, objetivosDia)
           m = ings.reduce((a, ing, i) => ({
             kcal: a.kcal + ing.por100.kcal * ing.gramos * factores[i] / 100, p: a.p + ing.por100.p * ing.gramos * factores[i] / 100,
             c: a.c + ing.por100.c * ing.gramos * factores[i] / 100, g: a.g + ing.por100.g * ing.gramos * factores[i] / 100,
@@ -89,6 +111,33 @@ export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, sem
     resultado.push({ semana, dias })
   }
   return resultado
+}
+
+export type IngredienteSemanaFutura = {
+  alimento_id: string; alimento_nombre: string; categoria: string; es_generico: boolean
+  cantidad_gramos: number; receta_nombre: string
+}
+
+/** Ingredientes por racion de una semana planificada, ajustados igual que en obtenerFuturas. */
+export async function obtenerIngredientesSemanaFutura(
+  db: SupabaseClient, plan: PlanObjetivo, semana: number, objetivosDia?: Record<string, ObjetivoDia>,
+): Promise<IngredienteSemanaFutura[]> {
+  if (!Number.isInteger(semana) || semana < 1 || semana > MAX_SEMANAS) throw new Error('Semana no valida')
+  const filas = (await filasPlanificadas(db, plan.id, semana)).filter(f => f.semana === semana)
+  const ingredientes = await cargarIngredientesRecetas(db, [...new Set(filas.map(f => f.receta_id))])
+  const franjasSemana = FRANJAS.filter(f => filas.some(r => r.franja === f))
+  return filas.flatMap(fila => {
+    const ings = ingredientes.get(fila.receta_id) ?? []
+    const factores = factoresParaComida(ings, plan, fila.dia_semana, fila.franja, franjasSemana, objetivosDia)
+    return ings.map((ing, i) => ({
+      alimento_id: ing.alimento_id,
+      alimento_nombre: ing.alimento_nombre,
+      categoria: ing.categoria,
+      es_generico: ing.es_generico,
+      cantidad_gramos: ing.gramos * factores[i],
+      receta_nombre: fila.receta?.nombre ?? fila.franja,
+    }))
+  })
 }
 
 export async function asignarFutura(db: SupabaseClient, planId: string, p: { semana: number; dia: string; franja: string; receta_id: string }) {

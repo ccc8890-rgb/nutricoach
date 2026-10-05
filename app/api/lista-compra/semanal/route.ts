@@ -11,6 +11,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { canonicalizarItemCompra, esIngredienteBasicoNoCompra } from '@/lib/lista-compra/filtros'
+import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
+import { objetivosPorDia } from '@/lib/nutricion/objetivo-dia'
+import { MAX_SEMANAS, obtenerIngredientesSemanaFutura } from '@/lib/nutricion/semanas-futuras'
 import type { IngredienteSemanal, PrecioOpcion, ResumenSupermercado } from '@/types'
 
 function getLunesActual(): string {
@@ -22,12 +25,53 @@ function getLunesActual(): string {
     return lunes.toISOString().split('T')[0]
 }
 
+function getInicioSemanaFutura(semana: number): string {
+    const fecha = new Date(`${getLunesActual()}T12:00:00`)
+    fecha.setDate(fecha.getDate() + semana * 7)
+    return fecha.toISOString().split('T')[0]
+}
+
+type FuenteIngrediente = { alimento_id: string; alimento_nombre: string; categoria: string; es_generico: boolean; cantidad_gramos: number; receta_nombre: string }
+type IngredienteAgregado = Omit<IngredienteSemanal, 'precios' | 'seleccion'> & { alimento_ids: string[] }
+type ComidaActual = { nombre: string; comida_alimentos: { cantidad_gramos: number | null; alimentos: { id: string; nombre: string; categoria: string | null; es_generico: boolean | null } | null }[] }
+type SeleccionGuardada = {
+    id: string; alimento_id: string; supermercado_id: string | null; producto_nombre?: string; precio_por_kg?: number
+    url_producto?: string; seleccionado_por: 'coach' | 'cliente'; supermercados?: { nombre?: string } | null
+}
+
+function agregarIngredientes(fuentes: FuenteIngrediente[]) {
+    const mapa = new Map<string, IngredienteAgregado>()
+    for (const fuente of fuentes) {
+        if (esIngredienteBasicoNoCompra(fuente.alimento_nombre)) continue
+        const canonical = canonicalizarItemCompra({ id: fuente.alimento_id, nombre: fuente.alimento_nombre, categoria: fuente.categoria })
+        const existing = mapa.get(canonical.key)
+        if (existing) {
+            existing.cantidad_gramos_total += fuente.cantidad_gramos || 0
+            existing.alimento_ids = Array.from(new Set([...existing.alimento_ids, fuente.alimento_id]))
+            if (!existing.recetas_origen.includes(fuente.receta_nombre)) existing.recetas_origen.push(fuente.receta_nombre)
+        } else {
+            mapa.set(canonical.key, {
+                alimento_id: fuente.alimento_id, alimento_ids: [fuente.alimento_id], alimento_nombre: canonical.nombre,
+                categoria: canonical.categoria, es_generico: fuente.es_generico, cantidad_gramos_total: fuente.cantidad_gramos || 0,
+                recetas_origen: [fuente.receta_nombre],
+            })
+        }
+    }
+    return mapa
+}
+
 export async function GET(request: NextRequest) {
     try {
         const supabase = createApiSupabase(request)
         const { searchParams } = new URL(request.url)
         const planId = searchParams.get('plan_id')
-        const semanaInicio = searchParams.get('semana_inicio') || getLunesActual()
+        const semanaRaw = searchParams.get('semana')
+        const semana = semanaRaw === null ? null : Number(semanaRaw)
+
+        if (semanaRaw !== null && (!Number.isInteger(semana) || Number(semana) < 1 || Number(semana) > MAX_SEMANAS)) {
+            return NextResponse.json({ error: `semana debe ser un entero entre 1 y ${MAX_SEMANAS}` }, { status: 400 })
+        }
+        const semanaInicio = searchParams.get('semana_inicio') || (semana ? getInicioSemanaFutura(semana) : getLunesActual())
 
         if (!planId) {
             return NextResponse.json({ error: 'Falta plan_id' }, { status: 400 })
@@ -43,7 +87,7 @@ export async function GET(request: NextRequest) {
         // 1. Obtener cliente_id del plan
         const { data: plan } = await srv
             .from('planes_nutricion')
-            .select('id, cliente_id')
+            .select('id, cliente_id, kcal_objetivo, proteinas_objetivo, carbohidratos_objetivo, grasas_objetivo')
             .eq('id', planId)
             .single()
 
@@ -51,13 +95,27 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 })
         }
 
-        // 2. Obtener todas las comidas del plan con sus alimentos
-        const { data: comidas } = await srv
-            .from('comidas')
-            .select('nombre, comida_alimentos(cantidad_gramos, alimentos(id, nombre, categoria, es_generico))')
-            .eq('plan_id', planId)
+        if (semana) {
+            const auth = await autorizarCoachCliente(srv, { userId: user.id, clienteId: plan.cliente_id })
+            if (!auth.ok) return NextResponse.json({ error: auth.mensaje }, { status: auth.status })
+        }
 
-        if (!comidas || comidas.length === 0) {
+        let fuentes: FuenteIngrediente[] = []
+        if (semana) {
+            fuentes = (await obtenerIngredientesSemanaFutura(srv, plan, semana, await objetivosPorDia(srv, plan.cliente_id, plan)))
+                .map(i => ({ ...i }))
+        } else {
+            const { data: comidas } = await srv
+                .from('comidas')
+                .select('nombre, comida_alimentos(cantidad_gramos, alimentos(id, nombre, categoria, es_generico))')
+                .eq('plan_id', planId)
+            fuentes = ((comidas ?? []) as unknown as ComidaActual[]).flatMap(comida => (comida.comida_alimentos || []).flatMap(ca => ca.alimentos ? [{
+                alimento_id: ca.alimentos.id, alimento_nombre: ca.alimentos.nombre, categoria: ca.alimentos.categoria ?? 'Otros',
+                es_generico: ca.alimentos.es_generico ?? false, cantidad_gramos: ca.cantidad_gramos || 0, receta_nombre: comida.nombre,
+            }] : []))
+        }
+
+        if (fuentes.length === 0) {
             return NextResponse.json({
                 plan_id: planId,
                 semana_inicio: semanaInicio,
@@ -69,42 +127,7 @@ export async function GET(request: NextRequest) {
         }
 
         // 3. Agregar cantidades por alimento (sumar si aparece en varias comidas)
-        const mapaAlimentos = new Map<string, {
-            alimento_id: string
-            alimento_ids: string[]
-            alimento_nombre: string
-            categoria: string
-            es_generico: boolean
-            cantidad_gramos_total: number
-            recetas_origen: string[]
-        }>()
-
-        for (const comida of comidas) {
-            for (const ca of (comida.comida_alimentos || []) as any[]) {
-                const a = ca.alimentos
-                if (!a) continue
-                if (esIngredienteBasicoNoCompra(a.nombre)) continue
-                const canonical = canonicalizarItemCompra({ id: a.id, nombre: a.nombre, categoria: a.categoria })
-                const existing = mapaAlimentos.get(canonical.key)
-                if (existing) {
-                    existing.cantidad_gramos_total += ca.cantidad_gramos || 0
-                    existing.alimento_ids = Array.from(new Set([...existing.alimento_ids, a.id]))
-                    if (!existing.recetas_origen.includes(comida.nombre)) {
-                        existing.recetas_origen.push(comida.nombre)
-                    }
-                } else {
-                    mapaAlimentos.set(canonical.key, {
-                        alimento_id: a.id,
-                        alimento_ids: [a.id],
-                        alimento_nombre: canonical.nombre,
-                        categoria: canonical.categoria,
-                        es_generico: a.es_generico ?? false,
-                        cantidad_gramos_total: ca.cantidad_gramos || 0,
-                        recetas_origen: [comida.nombre],
-                    })
-                }
-            }
-        }
+        const mapaAlimentos = agregarIngredientes(fuentes)
 
         const alimentoIds = Array.from(new Set(Array.from(mapaAlimentos.values()).flatMap(item => item.alimento_ids)))
 
@@ -145,8 +168,8 @@ export async function GET(request: NextRequest) {
             .eq('plan_id', planId)
             .eq('semana_inicio', semanaInicio)
 
-        const mapaSelecciones = new Map<string, any>()
-        for (const s of selecciones || []) {
+        const mapaSelecciones = new Map<string, SeleccionGuardada>()
+        for (const s of (selecciones ?? []) as unknown as SeleccionGuardada[]) {
             mapaSelecciones.set(s.alimento_id, s)
         }
 

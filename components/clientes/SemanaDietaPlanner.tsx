@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import DetalleDiaDieta from './DetalleDiaDieta'
+import ListaCompra from '@/components/ListaCompra'
 import { Activity, BadgeCheck, CalendarDays, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
 
 type Receta = { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null }
@@ -380,6 +381,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             </div>
             <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
             {detalle(s.semana)}
+            {!vacia && <div className="mt-2"><ListaCompra planId={plan.id} clienteId={clienteId} semanaFutura={s.semana} nombrePlan={`${plan.nombre} · semana +${s.semana}`} rol="coach" /></div>}
           </div>
         )
       })}
