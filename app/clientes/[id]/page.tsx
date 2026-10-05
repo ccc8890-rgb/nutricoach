@@ -28,6 +28,7 @@ const ConversacionesIA = dynamic(() => import('@/components/ConversacionesIA'), 
 const ProtocoloCompeticion = dynamic(() => import('@/components/ProtocoloCompeticion'), { ssr: false, loading: () => <TabSkeleton /> })
 const PerfilEntrenoForm = dynamic(() => import('@/components/training/PerfilEntrenoForm'), { ssr: false, loading: () => <TabSkeleton /> })
 const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
+const SuplementacionPanel = dynamic(() => import('@/components/clientes/SuplementacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const HistorialEntreno = dynamic(() => import('@/components/training/HistorialEntreno'), { ssr: false, loading: () => <TabSkeleton /> })
 const CompeticionesManager = dynamic(() => import('@/components/CompeticionesManager'), { ssr: false, loading: () => <TabSkeleton /> })
 const CosteSemanalCard = dynamic(() => import('@/components/clientes/CosteSemanal'), { ssr: false, loading: () => <div className="lg:col-span-2 h-12 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
@@ -920,6 +921,7 @@ export default function ClienteDetallePage() {
             <div className="space-y-4">
               <CosteSemanalCard clienteId={id} />
               <ErrorBoundary><PeriodizacionPanel clienteId={id as string} /></ErrorBoundary>
+              <ErrorBoundary><SuplementacionPanel clienteId={id as string} /></ErrorBoundary>
             </div>
                 </div>
               )}
