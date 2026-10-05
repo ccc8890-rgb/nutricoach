@@ -37,6 +37,7 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
   const [sesiones, setSesiones] = useState<Sesion[] | null>(null)
   const [abiertos, setAbiertos] = useState<Set<string>>(new Set())
   const [guardandoHora, setGuardandoHora] = useState<string | null>(null)
+  const [guardandoDuracion, setGuardandoDuracion] = useState<string | null>(null)
   const { addToast } = useToast()
 
   useEffect(() => {
@@ -81,6 +82,25 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
     }
   }
 
+  async function guardarDuracion(sesion: Sesion, input: HTMLInputElement) {
+    const nuevaDuracion = input.value === '' ? null : Number(input.value)
+    if (nuevaDuracion === sesion.duracion_estimada_min) return
+    const anterior = sesion.duracion_estimada_min
+    setSesiones(prev => prev?.map(s => s.id === sesion.id ? { ...s, duracion_estimada_min: nuevaDuracion } : s) ?? null)
+    setGuardandoDuracion(sesion.id)
+    const res = await fetch(`/api/entrenos/sesion/${sesion.id}/hora`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ duracion_estimada_min: nuevaDuracion }),
+    }).catch(() => null)
+    setGuardandoDuracion(null)
+    if (!res?.ok) {
+      input.value = anterior?.toString() ?? ''
+      setSesiones(prev => prev?.map(s => s.id === sesion.id ? { ...s, duracion_estimada_min: anterior } : s) ?? null)
+      addToast({ type: 'error', title: 'No se pudo guardar la duración', message: 'Se ha restaurado el valor anterior.' })
+    }
+  }
+
   if (sesiones === null) {
     return (
       <div className="flex items-center justify-center py-10">
@@ -113,7 +133,7 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
                 <div className="min-w-0">
                   <p className="text-base font-semibold truncate" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
                   <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                    {sesion.ejercicios.length} {sesion.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'}{sesion.duracion_estimada_min ? ` · ~${sesion.duracion_estimada_min} min` : ''}
+                    {sesion.ejercicios.length} {sesion.ejercicios.length === 1 ? 'ejercicio' : 'ejercicios'}{sesion.duracion_estimada_min ? ` · ${sesion.duracion_estimada_min} min` : ''}
                     {sesion.contexto_ia && <span className="font-medium" style={{ color: 'var(--semantic-info-text)' }}> · {sesion.contexto_ia}</span>}
                   </p>
                 </div>
@@ -124,20 +144,41 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
             {abierto && (
               <div className="px-4 pb-4 space-y-2">
                 <div className="rounded-lg px-3.5 py-3" style={{ background: 'var(--surface-elevated,var(--border))' }}>
-                  <label className="flex flex-wrap items-center gap-2 text-sm font-medium" style={{ color: 'var(--text)' }}>
-                    Hora de inicio
-                    <input
-                      type="time"
-                      defaultValue={sesion.hora_inicio ?? ''}
-                      disabled={guardandoHora === sesion.id}
-                      onBlur={e => { void guardarHora(sesion, e.currentTarget) }}
-                      className="rounded-lg px-2.5 py-1.5 text-sm disabled:opacity-60"
-                      style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
-                    />
-                    {guardandoHora === sesion.id && <Loader2 size={13} className="animate-spin" style={{ color: 'var(--text-muted)' }} />}
-                  </label>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+                    <label className="flex flex-wrap items-center gap-2 text-sm font-medium" style={{ color: 'var(--text)' }}>
+                      Hora de inicio
+                      <input
+                        type="time"
+                        defaultValue={sesion.hora_inicio ?? ''}
+                        disabled={guardandoHora === sesion.id}
+                        onBlur={e => { void guardarHora(sesion, e.currentTarget) }}
+                        className="rounded-lg px-2.5 py-1.5 text-sm disabled:opacity-60"
+                        style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                      />
+                      {guardandoHora === sesion.id && <Loader2 size={13} className="animate-spin" style={{ color: 'var(--text-muted)' }} />}
+                    </label>
+                    <label className="flex flex-wrap items-center gap-2 text-sm font-medium" style={{ color: 'var(--text)' }}>
+                      Duración (min)
+                      <input
+                        type="number"
+                        min={10}
+                        max={480}
+                        step={1}
+                        inputMode="numeric"
+                        defaultValue={sesion.duracion_estimada_min ?? ''}
+                        disabled={guardandoDuracion === sesion.id}
+                        onBlur={e => { void guardarDuracion(sesion, e.currentTarget) }}
+                        className="w-24 rounded-lg px-2.5 py-1.5 text-sm tabular-nums disabled:opacity-60"
+                        style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                      />
+                      {guardandoDuracion === sesion.id && <Loader2 size={13} className="animate-spin" style={{ color: 'var(--text-muted)' }} />}
+                    </label>
+                  </div>
                   <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
                     Hora a la que entrena este día. Si la dejas vacía se usa la hora habitual del cuestionario.
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    Minutos que dura la sesión; se usa para calcular hidratos y sodio durante el esfuerzo.
                   </p>
                 </div>
                 {sesion.ejercicios.length === 0 ? (

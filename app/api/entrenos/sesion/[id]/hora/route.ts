@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
-import { normalizarHoraInicio } from '@/lib/ajustes-coach-validacion'
+import { normalizarDuracionEstimadaMin, normalizarHoraInicio } from '@/lib/ajustes-coach-validacion'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -9,12 +9,26 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (authError || !user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
     const body: unknown = await request.json().catch(() => null)
-    const horaInicio = normalizarHoraInicio(
-      body && typeof body === 'object' && !Array.isArray(body)
-        ? (body as Record<string, unknown>).hora_inicio
-        : undefined,
-    )
-    if (horaInicio === undefined) return NextResponse.json({ error: 'Hora de inicio inválida' }, { status: 400 })
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'Datos inválidos' }, { status: 400 })
+    }
+    const payload = body as Record<string, unknown>
+    const incluyeHora = Object.hasOwn(payload, 'hora_inicio')
+    const incluyeDuracion = Object.hasOwn(payload, 'duracion_estimada_min')
+    if (!incluyeHora && !incluyeDuracion) {
+      return NextResponse.json({ error: 'Indica la hora de inicio o la duración estimada' }, { status: 400 })
+    }
+
+    const horaInicio = incluyeHora ? normalizarHoraInicio(payload.hora_inicio) : undefined
+    if (incluyeHora && horaInicio === undefined) {
+      return NextResponse.json({ error: 'Hora de inicio inválida' }, { status: 400 })
+    }
+    const duracionEstimadaMin = incluyeDuracion
+      ? normalizarDuracionEstimadaMin(payload.duracion_estimada_min)
+      : undefined
+    if (incluyeDuracion && duracionEstimadaMin === undefined) {
+      return NextResponse.json({ error: 'Duración estimada inválida' }, { status: 400 })
+    }
 
     const { id } = await params
     const db = createServiceSupabase()
@@ -41,11 +55,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const acceso = await autorizarCoachCliente(db, { userId: user.id, clienteId: plan.cliente_id })
     if (!acceso.ok) return NextResponse.json({ error: acceso.mensaje }, { status: acceso.status })
 
+    const cambios: { hora_inicio?: string | null; duracion_estimada_min?: number | null } = {}
+    if (incluyeHora) cambios.hora_inicio = horaInicio ?? null
+    if (incluyeDuracion) cambios.duracion_estimada_min = duracionEstimadaMin ?? null
+
     const { data, error } = await db
       .from('sesiones_entrenamiento')
-      .update({ hora_inicio: horaInicio })
+      .update(cambios)
       .eq('id', id)
-      .select('id,hora_inicio')
+      .select('id,hora_inicio,duracion_estimada_min')
       .single()
     if (error) throw new Error('No se pudo actualizar la sesión')
 
