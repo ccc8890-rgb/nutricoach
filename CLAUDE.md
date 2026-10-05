@@ -1,5 +1,39 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 05-10-2026 (tarde, Claude + Codex) — Periodización por competición, suplementación y hora por sesión
+
+Pedido de Carlos: seguir con los pendientes de la lista. Hecho de punta a punta y probado en producción con su sesión de coach (handoff). Commits en `main`: `c1aeb68`, `048a2ca`, `84ae038`, `6361854`, `3bdc301`, `5ee0ac4`, `8b37cda`.
+
+### Flujo de trabajo (cambio importante)
+Desde hoy **solo Claude y Codex**; DeepSeek (sin saldo, 402) y Gemini quedan fuera del flujo hasta nuevo aviso (memoria `config_delegation_rules`). Codex: `~/.claude/scripts/codex_ejecutor.sh "BRIEFING" <dir> workspace-write` (si «at capacity», `CODEX_MODELO=gpt-6-sol`). No escribe fuera de `nutricoach/`, no hace commit y `tsx` le falla por EPERM: Claude revisa el diff, ejecuta `tsc` y tests y commitea.
+
+### Periodización por competición (`lib/nutricion/competicion.ts`, `objetivo-dia.ts`)
+- `faseEnFecha(fechaPrueba, fecha, disciplina?)` replica la vista SQL `fase_deportiva_cliente` por fecha (sirve para semanas futuras). `objetivosPorDia(db, clienteId, plan, semana = 0)` calcula la fecha real de cada día, consulta `competiciones` activas y **sustituye** el ajuste por tipo de entreno en tapering, víspera, día de carrera y recuperación (10 días). Las semanas futuras, la lista de la compra y `planificar-semana` pasan el offset de semana.
+- Perfil por disciplina: corta (5k, 10k, CrossFit), media (Hyrox, triatlón sprint), larga (media/maratón, trail, 70.3, olímpico, ciclismo de fondo), muy larga (Ironman, ultra). **Tapering** 7 / 10 / 14 días (Mujika & Padilla 2003, Bosquet 2007). **Carga de hidratos** en g/kg con el peso del cliente (último check-in o `peso_inicial`): 10 g/kg las últimas 36-48 h en pruebas largas, 12 en Ironman/ultra, 8 el día previo en Hyrox/sprint (Burke 2011). Más de 7 días antes: −5 % kcal y hidratos por kilo constantes.
+- Los umbrales de perfil, las duraciones típicas y los 8 g/kg de Hyrox son decisión de criterio dentro de las guías, no cifras de un paper; revisarlos como dietista.
+
+### Suplementación (`lib/nutricion/suplementos.ts`)
+- Catálogo cerrado con dosis calculadas por peso: cafeína 3-6 mg/kg, creatina 3-5 g/día, hidratos intra (30-60 g/h; 60-90 con glucosa:fructosa 2:1; geles tipo Maurten con evidencia limitada de ventaja sobre geles convencionales), sodio solo >2 h, beta-alanina, bicarbonato y nitrato como opcionales a probar, recuperación 1,0-1,2 g/kg CHO + 0,3 g/kg proteína. Vitamina D y hierro **solo con analítica** (<30 ng/mL); sin analítica sale el aviso. Renal/hipertensión/embarazo excluyen lo contraindicado. En la prueba manda la duración típica de la disciplina, no la del entreno de hoy. Avisos propios para Hyrox (evidencia directa limitada), triatlón (ingerir en la bici) y pruebas muy largas.
+- `GET/PATCH /api/clientes/[id]/suplementacion` (solo coach propietario). Decisiones en la tabla **`suplementacion_cliente`** (migración `20261005180000`, aplicada; RLS: coach gestiona, el cliente solo lee lo `aprobada`). Panel `components/clientes/SuplementacionPanel.tsx` en Nutrición → «Más herramientas»: aprobar, descartar, deshacer, editar dosis/momento/nota. Nada llega al cliente sin aprobar; **el portal del cliente aún no lo muestra**.
+
+### Hora por sesión y comidas al día
+- Migración `20261005170000` (aplicada con `supabase db query --linked`, el historial local de migraciones sigue desincronizado): `sesiones_entrenamiento.hora_inicio` (text HH:MM) y `clientes.comidas_dia` (2-5, nullable). El motor usa la hora de la sesión sobre `onboarding_perfil_profundo.hora_entreno` para pre/post, y `franjasDelCliente` (tras las franjas que elija el coach) para generar semana. UI: campo de hora en cada sesión de la rutina (guarda al salir del campo) y selector «Comidas al día» en el planificador. `PATCH /api/entrenos/sesion/[id]/hora` y `PATCH /api/clientes/[id]/comidas-dia`.
+
+### Base de conocimiento
+- 20 trabajos de referencia añadidos a `knowledge_base` (230 → 250) con `scripts/cargar-papers-clave.ts` (simula por defecto, `--apply` inserta; DOI verificado en PubMed, abstract real, tags para el motor): consensos IOC/ISSN, Jeukendrup 2011/2014, «Training the gut», bicarbonato y nitrato (paraguas), CrossFit/Hyrox, triatlón, ultra, tapering. Los puntos clave solo dicen para qué se usa cada paper; no resumen resultados. `categoria`/`disciplina` están restringidas por CHECK (lista cerrada). Falta el consenso de hiponatremia 2015 (PubMed sin abstract).
+
+### Verificación y lecciones
+- Tests: `scripts/competicion.test.ts`, `suplementos.test.ts`, `hora-sesion-comidas-dia.test.ts`, `ajustes-coach-validacion.test.ts` (ejecutar con `npx tsx`). `tsc` limpio.
+- Probado en producción: panel (aprobar → persiste tras recargar → deshacer), selector de comidas al día y hora de sesión (el planificador pasó de «entrena sobre las 14:03» a «07:30»). Todo revertido en el cliente de Carlos.
+- La hora de entreno del cuestionario de Carlos es 14:03 (valor raro, revisar). Las sesiones no tienen `duracion_estimada_min`, por eso «Entreno de hoy» sale vacío.
+- `<input type="time">` no dispara el guardado hasta salir del campo; `browse fill` no acepta valor vacío (vaciar con JS y el setter nativo).
+- Los ajustes de periodización se probaron con base de datos simulada y en producción solo sin competiciones; **falta probarlos con una competición real cargada** (Carlos no tiene ninguna).
+
+### Pendiente
+1. Menú de víspera y comida previa a la carrera con recetas concretas (hoy solo kcal/hidratos y texto).
+2. Mostrar la suplementación aprobada en el portal del cliente; guardar analíticas; pedir duración estimada en las sesiones.
+3. Cargar una competición de prueba en un cliente ficticio y revisar la semana de carga en el planificador.
+
 ## ✅ SESIÓN 05-10-2026 (Claude) — Planificador semanal: rendimiento, Resumen, guarniciones, varios platos por comida, objetivo por entreno y pre/post
 
 Carlos: el planificador semanal del coach iba lento y no seleccionaba bien el día; la pestaña Resumen era redundante; en la semana regenerada salían "patatas gajo" como media mañana. De ahí salió un rediseño del motor para que **una comida pueda llevar varios platos "como un dietista"** y para que el objetivo dependa del entrenamiento. Commits en `main`: `eb2c1a1`, `b49a3a8`, `cbac7b0`, `a52c432`, `25c824b`, `d70702b`, `30fcec2`, `c7ee385`, `1dcea64` (todos desplegados en Vercel; Carlos prueba recargando la webapp, ver memoria `feedback_push_directo_main`).
