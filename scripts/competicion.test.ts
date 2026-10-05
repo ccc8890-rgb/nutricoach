@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { ajusteCompeticion, faseEnFecha } from '../lib/nutricion/competicion'
+import { ajusteCompeticion, faseEnFecha, perfilPrueba } from '../lib/nutricion/competicion'
 
 // Los límites replican fase_deportiva_cliente, también para fechas futuras.
 assert.equal(faseEnFecha('2026-10-05', '2026-07-06'), 'base')
@@ -21,7 +21,10 @@ const inminenteLarga = ajusteCompeticion('carrera_inminente', 2, 'ultra')!
 const inminenteCorta = ajusteCompeticion('carrera_inminente', 2, 'hyrox')!
 assert.deepEqual([inminenteLarga.ajuste_kcal_pct, inminenteLarga.ajuste_cho_pct], [10, 30])
 assert.deepEqual([inminenteCorta.ajuste_kcal_pct, inminenteCorta.ajuste_cho_pct], [5, 15])
-assert.equal(inminenteLarga.cho_g_kg, 10)
+assert.equal(inminenteLarga.cho_g_kg, 12) // ultra: 10-12 g/kg, tope
+assert.equal(ajusteCompeticion('carrera_inminente', 2, 'running_maraton')!.cho_g_kg, 10)
+assert.equal(ajusteCompeticion('carrera_inminente', 1, 'hyrox')!.cho_g_kg, 8)
+assert.equal(ajusteCompeticion('carrera_inminente', 1, 'running_5k')!.cho_g_kg, undefined)
 assert.equal(ajusteCompeticion('carrera_inminente', 3, 'ultra')!.cho_g_kg, undefined)
 assert.equal(inminenteCorta.cho_g_kg, undefined)
 const vispera = ajusteCompeticion('carrera_inminente', 1, 'ironman')!
@@ -37,4 +40,12 @@ assert.deepEqual([recuperacion5.ajuste_cho_pct, recuperacion5.ajuste_proteinas_p
 assert.equal(ajusteCompeticion('base', 120, 'ironman'), null)
 assert.equal(ajusteCompeticion('finalizada', -11, 'ironman'), null)
 
+// Tapering según disciplina: 14 días en maratón, 7 en 5 km
+assert.equal(faseEnFecha('2026-10-05', '2026-09-25', 'running_maraton'), 'tapering')
+assert.equal(faseEnFecha('2026-10-05', '2026-09-25', 'running_5k'), 'pico_maximo')
+assert.equal(faseEnFecha('2026-10-05', '2026-09-27', 'running_hm'), 'tapering')
+assert.equal(perfilPrueba('ironman'), 'muy_larga')
+assert.equal(perfilPrueba('hyrox'), 'media')
+const taperTemprano = ajusteCompeticion('tapering', 12, 'running_maraton')!
+assert.deepEqual([taperTemprano.ajuste_kcal_pct, taperTemprano.ajuste_cho_pct], [-5, 0])
 console.log('competicion: OK')

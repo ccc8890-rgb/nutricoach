@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       edad: clienteRes.data.edad ?? undefined,
       objetivo: clienteRes.data.objetivo ?? undefined,
       disciplina: competicionRes.data?.disciplina ?? undefined,
-      fase_competicion: competicionRes.data ? faseEnFecha(competicionRes.data.fecha_competicion, hoy) : undefined,
+      fase_competicion: competicionRes.data ? faseEnFecha(competicionRes.data.fecha_competicion, hoy, competicionRes.data.disciplina) : undefined,
       duracion_min: sesion?.duracion_estimada_min ?? undefined,
       tipo_sesion: tipo === 'entreno_hibrido' ? 'hibrido' : tipo === 'entreno_cardio' ? 'cardio' : tipo === 'entreno_fuerza' ? 'fuerza' : undefined,
       hora_inicio: onboardingRes.data?.hora_entreno ?? undefined,

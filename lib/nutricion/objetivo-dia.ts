@@ -55,7 +55,7 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
       .sort((a, b) => Math.abs(a.dias) - Math.abs(b.dias))
     const c = aplicables[0]
     if (!c) return null
-    const fase = faseEnFecha(c.fecha_competicion, fecha)
+    const fase = faseEnFecha(c.fecha_competicion, fecha, c.disciplina)
     const ajuste = ajusteCompeticion(fase, c.dias, c.disciplina)
     return ajuste ? { ajuste, competicion: { fase, nombre: c.nombre, dias_restantes: c.dias } } : null
   })
