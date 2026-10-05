@@ -136,22 +136,27 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
   onCambiar: (franja: string) => void; onQuitar: (comidaId: string, recurrente: boolean) => void; onCambioDatos: () => void
 }) {
   const [complementoEn, setComplementoEn] = useState<string | null>(null)
-  const [detalle, setDetalle] = useState<DetalleDia | null>(null)
+  // Se cargan los 7 días de la semana de una vez: cambiar de día es instantáneo y nunca se ve el día anterior
+  const [semanaDatos, setSemanaDatos] = useState<DetalleDia[] | null>(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let vigente = true
     setCargando(true)
-    fetch(`/api/clientes/${clienteId}/semana-dieta/dia?dia=${encodeURIComponent(dia)}${semana ? `&semana=${semana}` : ''}`)
+    fetch(`/api/clientes/${clienteId}/semana-dieta/dia${semana ? `?semana=${semana}` : ''}`)
       .then(async res => ({ ok: res.ok, data: await res.json().catch(() => null) }))
       .then(({ ok, data }) => {
         if (!vigente) return
-        if (!ok) { setError(data?.error ?? 'No se pudo cargar el día'); setDetalle(null) } else { setError(null); setDetalle(data) }
+        if (!ok) setError(data?.error ?? 'No se pudo cargar el día')
+        else { setError(null); setSemanaDatos(data.dias ?? []) }
         setCargando(false)
       })
+      .catch(() => { if (vigente) { setError('No se pudo cargar el día'); setCargando(false) } })
     return () => { vigente = false }
-  }, [clienteId, dia, semana, version])
+  }, [clienteId, semana, version])
+
+  const detalle = semanaDatos?.find(d => d.dia === dia) ?? null
 
   async function quitarComplemento(comidaId: string, x: { fila?: string; receta_id?: string }) {
     const q = `comida_id=${comidaId}${x.fila ? `&fila=${x.fila}` : ''}${x.receta_id ? `&receta=${x.receta_id}` : ''}`

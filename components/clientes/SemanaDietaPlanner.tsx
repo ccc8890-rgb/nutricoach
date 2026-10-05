@@ -40,16 +40,17 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, semana, diaSel, onDia, onH
   return (
     <div className={`flex gap-2 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-7 ${T.grid} lg:overflow-visible lg:pb-0`}>
       {dias.map(d => {
+        const sel = diaSel?.dia === d.dia && diaSel.semana === semana
         const items: ({ tipo: 'comida'; c: Comida } | { tipo: 'hueco'; f: string })[] = [
           ...d.comidas.map(c => ({ tipo: 'comida' as const, c })),
           ...franjas.filter(f => !d.comidas.some(c => c.nombre === f)).map(f => ({ tipo: 'hueco' as const, f })),
         ].sort((a, b) => posicion(a.tipo === 'comida' ? a.c.nombre : a.f) - posicion(b.tipo === 'comida' ? b.c.nombre : b.f))
         return (
-          <div key={d.dia} className={`min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2 lg:min-w-0 lg:w-auto ${T.col}`} style={{ background: 'var(--bg)', border: `1px solid ${diaSel?.dia === d.dia && diaSel.semana === semana ? 'var(--primary)' : 'var(--border)'}` }}>
-            <div className="flex items-baseline justify-between mb-2">
-              <button className={`${T.dia} font-semibold text-left`} style={{ color: 'var(--text)' }} title="Ver el detalle del día" onClick={() => onDia(d.dia, semana)}>{d.dia}</button>
-              <p className={`${T.diaKcal} font-data font-bold`} style={{ color: colorDesvio(d.total.kcal, kcalObjetivo) }}>{d.total.kcal} kcal</p>
-            </div>
+          <div key={d.dia} className={`min-w-[180px] w-[180px] flex-shrink-0 rounded-xl p-2 lg:min-w-0 lg:w-auto ${T.col}`} style={{ background: sel ? 'var(--surface)' : 'var(--bg)', border: `1px solid ${sel ? 'var(--primary)' : 'var(--border)'}`, boxShadow: sel ? '0 0 0 1px var(--primary)' : undefined }}>
+            <button className="flex w-full items-baseline justify-between mb-2 text-left rounded-md" title="Ver el detalle del día" aria-pressed={sel} onClick={() => onDia(d.dia, semana)}>
+              <span className={`${T.dia} font-semibold`} style={{ color: 'var(--text)' }}>{d.dia}</span>
+              <span className={`${T.diaKcal} font-data font-bold`} style={{ color: colorDesvio(d.total.kcal, kcalObjetivo) }}>{d.total.kcal} kcal</span>
+            </button>
             <div className="space-y-1.5">
               {items.map(it => {
                 if (it.tipo === 'hueco') return (

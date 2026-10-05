@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 import ChatPanel from '@/components/PortalCliente/ChatPanel'
+import ResumenCliente from '@/components/clientes/ResumenCliente'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import { OBJETIVO_LABELS } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
@@ -800,50 +801,10 @@ export default function ClienteDetallePage() {
           <ClienteEditar cliente={cliente} onSave={() => { setIsEditando(false); recargarCliente() }} onCancel={() => setIsEditando(false)} />
         ) : tabActiva === 'resumen' ? (
           <div className="space-y-4">
-            {/* Score de adherencia */}
+            <ResumenCliente id={id} cliente={cliente} dietaActiva={dietaActiva} entrenoActivo={entrenoActivo} checkins={checkins} seguimiento={seguimiento} noLeidosChat={noLeidosChat} onTab={t => { setTabActiva(t); setIsEditando(false) }} />
+
             <AdherenciaScoreCard clienteId={id} />
-
-            {/* Heatmap de adherencia diaria de comidas */}
             <MealAdherenciaHeatmap clienteId={id} />
-
-            {/* Last check-in + weight snapshot */}
-            {(ultimoCheckin || ultimoPeso) && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {ultimoPeso && (
-                  <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Peso actual</p>
-                    <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{ultimoPeso}<span className="text-sm font-normal ml-1" style={{ color: 'var(--text-muted)' }}>kg</span></p>
-                    {cliente.peso_inicial && ultimoPeso !== cliente.peso_inicial && (
-                      <p className="text-xs mt-1" style={{ color: ultimoPeso < cliente.peso_inicial ? '#30D158' : '#FF453A' }}>
-                        {ultimoPeso < cliente.peso_inicial ? '↓' : '↑'} {Math.abs(ultimoPeso - cliente.peso_inicial).toFixed(1)} kg desde inicio
-                      </p>
-                    )}
-                  </div>
-                )}
-                {ultimoCheckin && (
-                  <>
-                    {ultimoCheckin.adherencia && (
-                      <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Adherencia</p>
-                        <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{ultimoCheckin.adherencia}<span className="text-sm font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>/10</span></p>
-                      </div>
-                    )}
-                    {ultimoCheckin.energia && (
-                      <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Energía</p>
-                        <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{ultimoCheckin.energia}<span className="text-sm font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>/10</span></p>
-                      </div>
-                    )}
-                    {ultimoCheckin.sueno && (
-                      <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Sueño</p>
-                        <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{ultimoCheckin.sueno}<span className="text-sm font-normal ml-0.5" style={{ color: 'var(--text-muted)' }}>/10</span></p>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
 
             {/* Notes + restrictions */}
             {(cliente.notas || cliente.restricciones_alimentarias) && (

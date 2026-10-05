@@ -30,7 +30,8 @@ const sumar = (xs: { kcal: number; p: number; c: number; g: number }[]) =>
   xs.reduce((a, x) => ({ kcal: a.kcal + x.kcal, p: a.p + x.p, c: a.c + x.c, g: a.g + x.g }), { kcal: 0, p: 0, c: 0, g: 0 })
 const redondear = (t: { kcal: number; p: number; c: number; g: number }) => ({ kcal: Math.round(t.kcal), p: Math.round(t.p), c: Math.round(t.c), g: Math.round(t.g) })
 
-export async function detalleDiaEnCurso(db: SupabaseClient, planId: string, dia: string): Promise<DetalleDia> {
+// Una sola lectura del plan para los 7 días (antes se releía todo el plan al tocar cada día)
+export async function detalleSemanaEnCurso(db: SupabaseClient, planId: string): Promise<DetalleDia[]> {
   const { data, error } = await db.from('comidas')
     .select('id, nombre, dia_semana, orden, receta:recetas(id, nombre, imagen_url, tiempo_prep_min, contenido_estado, url_origen), comida_alimentos(id, cantidad_gramos, es_complemento, complemento_receta_id, alimento:alimentos(nombre, calorias, proteinas, carbohidratos, grasas))')
     .eq('plan_id', planId)
@@ -39,7 +40,8 @@ export async function detalleDiaEnCurso(db: SupabaseClient, planId: string, dia:
   const idsPostre = [...new Set(filas.flatMap(c => c.comida_alimentos.map(x => x.complemento_receta_id)).filter((x): x is string => !!x))]
   const { data: nombresPostre } = idsPostre.length ? await db.from('recetas').select('id, nombre').in('id', idsPostre) : { data: [] }
   const nombrePostre = new Map((nombresPostre ?? []).map(r => [r.id, r.nombre as string]))
-  const comidas: ComidaDetalle[] = comidasDelDia(filas, DIAS_SEMANA.indexOf(dia as typeof DIAS_SEMANA[number]))
+  return DIAS_SEMANA.map((dia, idx) => {
+  const comidas: ComidaDetalle[] = comidasDelDia(filas, idx)
     .sort((a, b) => orden(a.nombre) - orden(b.nombre))
     .map(c => {
       const validas = c.comida_alimentos.filter(x => x.alimento)
@@ -57,24 +59,31 @@ export async function detalleDiaEnCurso(db: SupabaseClient, planId: string, dia:
       return { id: c.id, franja: c.nombre, recurrente: !c.dia_semana, receta: c.receta, ingredientes, complementos, ...redondear(sumar([...ingredientes, ...complementos])) }
     })
   return { dia, semana: null, estimado: false, comidas, total: redondear(sumar(comidas)) }
+  })
 }
 
-export async function detalleDiaFutura(db: SupabaseClient, plan: PlanObjetivo, semana: number, dia: string): Promise<DetalleDia> {
+export async function detalleDiaEnCurso(db: SupabaseClient, planId: string, dia: string): Promise<DetalleDia> {
+  const semana = await detalleSemanaEnCurso(db, planId)
+  return semana.find(d => d.dia === dia) ?? { dia, semana: null, estimado: false, comidas: [], total: { kcal: 0, p: 0, c: 0, g: 0 } }
+}
+
+export async function detalleSemanaFutura(db: SupabaseClient, plan: PlanObjetivo, semana: number): Promise<DetalleDia[]> {
   const { data: filasData, error } = await db.from('comidas_planificadas')
-    .select('id, franja, receta_id').eq('plan_id', plan.id).eq('semana', semana).eq('dia_semana', dia)
-  if (error) throw new Error('No se pudo leer el día')
-  const filas = (filasData ?? []) as { id: string; franja: string; receta_id: string }[]
-  const { data: todas } = await db.from('comidas_planificadas').select('franja').eq('plan_id', plan.id).eq('semana', semana)
-  const franjasSemana = FRANJAS.filter(f => (todas ?? []).some(r => r.franja === f))
+    .select('id, franja, receta_id, dia_semana').eq('plan_id', plan.id).eq('semana', semana)
+  if (error) throw new Error('No se pudo leer la semana')
+  const todasFilas = (filasData ?? []) as { id: string; franja: string; receta_id: string; dia_semana: string }[]
+  const franjasSemana = FRANJAS.filter(f => todasFilas.some(r => r.franja === f))
   const suma = franjasSemana.reduce((t, f) => t + REPARTO[f], 0) || 1
 
-  const ids = [...new Set(filas.map(f => f.receta_id))]
+  const ids = [...new Set(todasFilas.map(f => f.receta_id))]
   const { data: recs } = ids.length === 0 ? { data: [] } : await db.from('recetas')
     .select('id, nombre, imagen_url, tiempo_prep_min, contenido_estado, url_origen, porciones, receta_ingredientes!receta_ingredientes_receta_id_fkey(cantidad_gramos, rol_ingrediente, es_cantidad_fija, orden, alimento:alimentos(nombre, calorias, proteinas, carbohidratos, grasas))')
     .in('id', ids)
   type RecRow = RecetaDetalle & { porciones: number | null; receta_ingredientes: { cantidad_gramos: number | null; rol_ingrediente: RolIngrediente | null; es_cantidad_fija: boolean | null; orden: number | null; alimento: Alimento | null }[] }
   const porId = new Map(((recs ?? []) as unknown as RecRow[]).map(r => [r.id, r]))
 
+  return DIAS_SEMANA.map(dia => {
+  const filas = todasFilas.filter(f => f.dia_semana === dia)
   const comidas: ComidaDetalle[] = filas.sort((a, b) => orden(a.franja) - orden(b.franja)).map(f => {
     const r = porId.get(f.receta_id)
     const porciones = Math.max(1, Number(r?.porciones ?? 1))
@@ -95,4 +104,10 @@ export async function detalleDiaFutura(db: SupabaseClient, plan: PlanObjetivo, s
     return { id: f.id, franja: f.franja, recurrente: false, receta, ingredientes, complementos: [], ...redondear(sumar(ingredientes)) }
   })
   return { dia, semana, estimado: true, comidas, total: redondear(sumar(comidas)) }
+  })
+}
+
+export async function detalleDiaFutura(db: SupabaseClient, plan: PlanObjetivo, semana: number, dia: string): Promise<DetalleDia> {
+  const dias = await detalleSemanaFutura(db, plan, semana)
+  return dias.find(d => d.dia === dia) ?? { dia, semana, estimado: true, comidas: [], total: { kcal: 0, p: 0, c: 0, g: 0 } }
 }
