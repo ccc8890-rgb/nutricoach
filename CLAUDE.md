@@ -1,5 +1,53 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 05-10-2026 (Claude) — Planificador semanal: rendimiento, Resumen, guarniciones, varios platos por comida, objetivo por entreno y pre/post
+
+Carlos: el planificador semanal del coach iba lento y no seleccionaba bien el día; la pestaña Resumen era redundante; en la semana regenerada salían "patatas gajo" como media mañana. De ahí salió un rediseño del motor para que **una comida pueda llevar varios platos "como un dietista"** y para que el objetivo dependa del entrenamiento. Commits en `main`: `eb2c1a1`, `b49a3a8`, `cbac7b0`, `a52c432`, `25c824b`, `d70702b`, `30fcec2`, `c7ee385`, `1dcea64` (todos desplegados en Vercel; Carlos prueba recargando la webapp, ver memoria `feedback_push_directo_main`).
+
+### Planificador: rendimiento y selección de día
+- **Causa 1:** `DetalleDiaDieta` mostraba el nombre del día nuevo con el contenido del anterior hasta que respondía el servidor. **Causa 2:** cada clic pedía `/semana-dieta/dia` y el servidor releía todo el plan (7 días con alimentos anidados) para quedarse con uno.
+- **Arreglo:** `detalleSemanaEnCurso` / `detalleSemanaFutura` (`lib/nutricion/detalle-dia.ts`) devuelven los 7 días en una lectura (`GET /semana-dieta/dia` sin `dia`); el componente los carga una vez por semana y cambiar de día es instantáneo. Cabecera del día entera clicable y día seleccionado resaltado.
+- **Resumen de la ficha** (`components/clientes/ResumenCliente.tsx`): "Requiere tu atención" (plan sin revisar, sin dieta/entreno, check-in atrasado o sin respuesta, chat sin leer, revisión vencida, membresía por caducar) + "Evolución" (peso, tendencia, adherencia/energía/sueño vs check-in previo). Quitado el snapshot redundante.
+- **Tarjeta "Plan activo"** de la ficha: cada macro se compara con el día seleccionado en el planificador (`onResumen` → `ResumenDia`): `faltan X` / `+X de más` y media de la semana. Solo en escritorio y solo se actualiza desde la pestaña Nutrición.
+- **Kanban de dieta del portal cliente:** kcal por plato y por día, color según desviación y toast de aviso si el día destino se desvía >20 %.
+
+### Motor: complementos, guarniciones y varios platos por comida
+- **`lib/nutricion/completar-comidas.ts`** (`completarSemana`): tras asignar los platos principales cierra el hueco de kcal/macros de cada comida con hasta 3 complementos (guarnición o base, fruta o lácteo, grasa buena). Para cada candidato prueba su ración óptima (pasos de 10 g, mín/máx por alimento) y gana el que deja menos macros por cubrir; **pasarse penaliza el doble** que quedarse corto, repetir en la semana penaliza (×1,12 por uso) y para si ya no mejora un 8 %. Respeta restricciones (sin gluten/lactosa/vegano/vegetariano). Los complementos son `comida_alimentos.es_complemento` (alimento suelto) o receta (`complemento_receta_id`, 1 ración).
+- **Se ejecuta** al final de `generarSemana` (parámetro `complementar`, por defecto sí), de `activarProximaSemana` y de `reajustarSemana`. Al regenerar/activar se **borran antes** los complementos de la semana anterior (si no, quedaban pegados a recetas que ya no estaban).
+- **`tipo_receta = 'guarnicion'`** = no es plato: ya no sale como plato suelto en Comida/Cena/Media mañana/Snack (`SLOT_TIPOS_PERMITIDOS` en `lib/plan-recetas.ts`; antes Cena y Media mañana lo admitían). En desayuno, las recetas `guarnicion` con `tipo_plato='Desayuno'` son componentes (tostadas, yogur con granola, crema de arroz…).
+- **UI:** en el detalle de cada comida, "Añadir plato, fruta o postre" con pestañas *Fruta / alimento*, *Plato / guarnición* (cualquier receta aprobada, guarniciones primero; `GET /semana-dieta?franja=…&todas=1`) y *Postre*. Varios platos por comida a mano.
+- **Recetas nuevas (29, aprobadas):** `scripts/lotes/2026-10-05_guarniciones.json` (16: patatas, boniato, arroces, verduras, puré, ensalada, cuscús, quinoa, guacamole) y `2026-10-05_desayuno-componentes.json` (13: 6 tostadas, crema de arroz, porridge, yogures, skyr, café con leche, tortitas). `importar-lote-verificado.ts` admite `tipo_receta` por lote o por receta. 5 guarniciones se rechazaban por llevar <5 g de ajo (regla del gate `cantidad_muy_pequena`): se subió a 5 g y se recalcularon macros. Hay 35 guarniciones/componentes aprobados en total.
+- **Fotos:** `generar-fotos-lote.mjs --desde=2026-10-01 --genera` (OpenAI recargado por Carlos): 91 recetas, ~3,1 $. Prueba de 3 correcta (estilo food blogger), resto en segundo plano.
+
+### Motor: objetivo por día según el entrenamiento y comidas pre/post
+- **`lib/nutricion/objetivo-dia.ts`** (`objetivosPorDia`): con las sesiones del plan de entreno activo clasifica cada día (`clasificarDiaNutricional`, helper de `lib/periodizacion/dia-entreno-nutricion.ts`; se añadió `h[ií]brid` al regex para "Híbrida…") y ajusta kcal/proteína/hidratos (fuerza +8 %, cardio +10 %, híbrido +12 %, descanso −5 %); la grasa es lo que cuadra las kcal (mín. 60 % de la base). Sin plan de entreno activo = objetivo base. Se usa al generar semana, asignar receta (`POST semana-dieta`), `reajustarPlato` de complementos, activar semana, estimaciones de semanas futuras y la UI (columna del día con tipo y objetivo, detalle y tarjeta de macros). **Botón "Ajustar al entreno"** (`POST /semana-dieta/reajustar`, `reajustarSemana`): mantiene recetas, recalcula cantidades por día y rehace complementos.
+- **`lib/nutricion/momentos-entreno.ts`** (`momentoDeEntreno`): con la **hora habitual de entreno (`onboarding_perfil_profundo.hora_entreno`**, NO está en `onboarding_responses`) decide qué comida cae pre y cuál post cada día de entreno (horas por defecto: D 08:00, MM 11:00, C 14:30, Mer 17:30, Cen 21:00; sesión de 75 min; una comida que cae durante la sesión se retrasa a después). Con 3 comidas la "comida previa" puede quedar lejos: nota de tentempié de hidratos. Efecto: `Hueco.momento` hace que `repartirSemanaSinRepetir` prefiera recetas `es_pre_entreno`/`es_post_entreno`; en `completarSemana` pre pesa hidratos ×1,5 y post proteína ×1,5, y no se añade grasa suelta. UI: "· pre/· post" en la comida y línea "Entrena sobre las 14:03 · antes… · después…" en el detalle.
+
+### Datos reales tocados (con permiso de Carlos)
+- Semana en curso de Carlos regenerada varias veces (franjas: **3 comidas D/C/C**; yo usé 5 por error la primera vez porque había media mañana/merienda sueltas; se borraron 14 comidas). Días finales 2.570–3.128 kcal vs objetivo 3.108–3.164 en días de entreno, 2.684 en descanso.
+- 5 recetas guarnición recalculadas (ajo 5 g); 6 recetas marcadas `guarnicion` de las existentes (gajos de patata al chimichurri, ensaladas de aguacate-pepino y pepino chafado + 3 que ya lo eran).
+
+### Lecciones
+- **Franjas por defecto:** "Generar semana" toma las franjas que ya existen en el plan; unas comidas sueltas de media mañana/merienda activan las 5 casillas. Aún no se guarda cuántas comidas al día tiene cada cliente (pendiente, ver abajo).
+- **Dónde está el dato:** antes de leer una columna de onboarding comprobar en qué tabla vive (`hora_entreno` está en `onboarding_perfil_profundo`); un `select` a una columna inexistente devuelve `null` sin error visible.
+- Una receta con un ingrediente <5 g (ajo incluido) la rechaza el quality gate; subir a 5 g.
+- Medir antes de dar por bueno: probar cada cambio del motor sobre la semana real y leer desviaciones por día (se detectó el clasificador "Híbrida→fuerza" y los complementos a ración máxima gracias a ello).
+- `sed -i` de macOS no admite el mismo formato que GNU: editar con Python.
+
+### Seguridad de lo tocado
+Rutas nuevas (`semana-dieta/reajustar`, `/dia` por semana) usan `autorizarSemanaDieta` (coach propietario del cliente) y `createServiceSupabase` solo tras autorizar; sin secretos nuevos; los lotes de recetas entran en `en_revision` salvo aprobación explícita.
+
+### Pendiente — próximas sesiones (por orden)
+1. **Periodización por competición (tapering y carga):** semanas de carga y tapering según carreras programadas (`competiciones` y vista `fase_deportiva_cliente` ya existen para nutrición): objetivo de kcal/CHO por semana y por día, menú del día antes y del día de la carrera, comidas pre-carrera (cena de víspera, desayuno precarrera) y recuperación. Conectar con `objetivosPorDia`.
+2. **Suplementación:** pre / intra / post entreno según tipo de sesión, duración y condiciones, y **suplementación diaria** según perfil (edad, sexo, deporte, analíticas/condiciones del informe clínico: vitamina D, hierro, omega-3, creatina, magnesio…). Con evidencia citada (KB de papers), aprobación del coach y sin sustituir a la dieta. Guardar como complemento del plan y mostrarlo en el portal cliente.
+3. **Hora de entreno por sesión** (columna en `sesiones_entrenamiento`; migración, requiere permiso): hoy una sola hora para todos los días y a Carlos a veces corre antes.
+4. **Guardar comidas al día por cliente** para que "Generar semana" no dependa de las franjas existentes.
+5. Semanas futuras (+1…): la vista previa no muestra complementos (se calculan al activar). Valorar mostrarlos estimados.
+6. Más recetas de guarnición y de pre/post (coherentes con el tipo de deporte), y Fase B (coste semanal por cliente, lista de la compra inteligente).
+7. Pendientes anteriores: 142 hallazgos de ingredientes por revisar a mano, 8 recetas divergentes, velocidad portal (precalentar pestañas), `/auth/callback` ignora `?error=`.
+
+---
+
 ## ✅ SESIÓN 04-10-2026 (Claude) — Velocidad "instantánea" del portal cliente: caché, fotos y Suspense
 
 Carlos: la app cargaba al abrir y al pinchar pestañas; "no es instantáneo como debería en cualquier app". Se midió en su sesión real (`browse --headed` + handoff) y se corrigieron 4 causas. Commits `ed9698e`→`13bb69c`, todo en producción.
