@@ -67,6 +67,7 @@ export async function planificarSemana(
   plan: PlanObjetivo,
   reemplazar: boolean,
   franjasElegidas?: SlotComida[],
+  semana = 0,
 ) {
   const { data: comidas } = await db.from('comidas').select('id, nombre, dia_semana, receta_id').eq('plan_id', plan.id)
   const existentes = (comidas ?? []) as ComidaExistente[]
@@ -78,7 +79,7 @@ export async function planificarSemana(
 
   // Una comida sin día es "de todos los días": cuenta como ocupada en cualquier día
   const ocupado = (dia: string, franja: string) => existentes.some(c => c.nombre === franja && (c.dia_semana === dia || c.dia_semana == null) && c.receta_id)
-  const objDiaPlan = await objetivosPorDia(db, clienteId, plan)
+  const objDiaPlan = await objetivosPorDia(db, clienteId, plan, semana)
   const huecos: Hueco[] = []
   for (const dia of DIAS_SEMANA) {
     for (const franja of franjas) {
@@ -128,11 +129,12 @@ export async function generarSemana(
   reemplazar: boolean,
   franjasElegidas?: SlotComida[],
   complementar = true,
+  semana = 0,
 ): Promise<ResultadoSemana> {
   // Con días concretos ya no hay comidas "de todos los días" que interpretar
   await materializarComidasRecurrentes(db, plan.id)
   if (reemplazar) await quitarComidasDuplicadas(db, plan.id)
-  const { huecos, asignaciones, sinCubrir, shares, existentes } = await planificarSemana(db, clienteId, plan, reemplazar, franjasElegidas)
+  const { huecos, asignaciones, sinCubrir, shares, existentes } = await planificarSemana(db, clienteId, plan, reemplazar, franjasElegidas, semana)
   if (huecos.length === 0) return { ok: true, asignadas: 0, repetidas: 0, sinCubrir: [], errores: [], mensaje: 'La semana ya está completa' }
 
   const faltan = asignaciones.filter(a => !existentes.some(c => c.dia_semana === a.dia && c.nombre === a.franja))
@@ -149,7 +151,7 @@ export async function generarSemana(
   if (idsAplicar.length > 0) await db.from('comida_alimentos').delete().in('comida_id', idsAplicar).eq('es_complemento', true)
 
   // Cada día se calcula con su propio objetivo: más hidratos si entrena, menos si descansa
-  const objDia = await objetivosPorDia(db, clienteId, plan)
+  const objDia = await objetivosPorDia(db, clienteId, plan, semana)
   const errores: ResultadoSemana['errores'] = []
   for (let i = 0; i < asignaciones.length; i += CONCURRENCIA) {
     await Promise.all(asignaciones.slice(i, i + CONCURRENCIA).map(async a => {

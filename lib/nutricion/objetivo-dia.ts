@@ -7,11 +7,13 @@ import type { PlanObjetivo } from './planificar-semana'
 import { momentoDeEntreno, type MomentoDia } from './momentos-entreno'
 import { FRANJAS } from './semana-dieta'
 import type { SlotComida } from '@/lib/tipos-comida'
+import { ajusteCompeticion, faseEnFecha, type FaseCompeticion } from './competicion'
 
 export type ObjetivoDia = {
   kcal: number; p: number; c: number; g: number
   tipo: TipoDiaNutricional | null; label: string | null; consejo: string | null; ajuste_kcal_pct: number
   momento?: MomentoDia | null
+  competicion?: { fase: FaseCompeticion; nombre: string; dias_restantes: number }
 }
 
 // Si un día tiene varias sesiones manda la más exigente
@@ -34,9 +36,40 @@ export function ajustarObjetivo(plan: PlanObjetivo, tipo: TipoDiaNutricional): O
 }
 
 // Sin plan de entreno activo no hay nada que ajustar: todos los días con el objetivo base
-export async function objetivosPorDia(db: SupabaseClient, clienteId: string, plan: PlanObjetivo): Promise<Record<string, ObjetivoDia>> {
+export async function objetivosPorDia(db: SupabaseClient, clienteId: string, plan: PlanObjetivo, semana = 0): Promise<Record<string, ObjetivoDia>> {
   const base = objetivoBase(plan)
-  const sinAjuste = Object.fromEntries(DIAS_SEMANA.map(d => [d, base])) as Record<string, ObjetivoDia>
+  const inicio = new Date()
+  const lunes = new Date(Date.UTC(inicio.getFullYear(), inicio.getMonth(), inicio.getDate()))
+  const desplazamiento = (lunes.getUTCDay() + 6) % 7
+  lunes.setUTCDate(lunes.getUTCDate() - desplazamiento + semana * 7)
+  const fechas = DIAS_SEMANA.map((_, i) => {
+    const fecha = new Date(lunes)
+    fecha.setUTCDate(fecha.getUTCDate() + i)
+    return fecha.toISOString().slice(0, 10)
+  })
+  const { data: competiciones } = await db.from('competiciones').select('nombre, disciplina, fecha_competicion').eq('cliente_id', clienteId).eq('activo', true)
+  const ajustesCompeticion = DIAS_SEMANA.map((_, i) => {
+    const fecha = fechas[i]
+    const aplicables = (competiciones ?? []).map(c => ({ ...c, dias: Math.round((Date.parse(`${c.fecha_competicion}T00:00:00Z`) - Date.parse(`${fecha}T00:00:00Z`)) / 86_400_000) }))
+      .filter(c => c.dias >= -10)
+      .sort((a, b) => Math.abs(a.dias) - Math.abs(b.dias))
+    const c = aplicables[0]
+    if (!c) return null
+    const fase = faseEnFecha(c.fecha_competicion, fecha)
+    const ajuste = ajusteCompeticion(fase, c.dias, c.disciplina)
+    return ajuste ? { ajuste, competicion: { fase, nombre: c.nombre, dias_restantes: c.dias } } : null
+  })
+  const aplicarCompeticion = (i: number): ObjetivoDia | null => {
+    const comp = ajustesCompeticion[i]
+    if (!comp || !base.kcal) return null
+    const a = comp.ajuste
+    const kcal = base.kcal * (1 + a.ajuste_kcal_pct / 100)
+    const p = base.p * (1 + a.ajuste_proteinas_pct / 100)
+    const c = base.c * (1 + a.ajuste_cho_pct / 100)
+    const g = Math.max(base.g * 0.6, (kcal - 4 * p - 4 * c) / 9)
+    return { kcal: Math.round(kcal), p: Math.round(p), c: Math.round(c), g: Math.round(g), tipo: null, label: a.label, consejo: a.consejo, ajuste_kcal_pct: a.ajuste_kcal_pct, competicion: comp.competicion }
+  }
+  const sinAjuste = Object.fromEntries(DIAS_SEMANA.map((d, i) => [d, aplicarCompeticion(i) ?? base])) as Record<string, ObjetivoDia>
   if (!base.kcal) return sinAjuste
   const { data: entreno } = await db.from('planes_entrenamiento').select('id').eq('cliente_id', clienteId).eq('activo', true).limit(1).maybeSingle()
   if (!entreno) return sinAjuste
@@ -48,10 +81,10 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
     db.from('comidas').select('nombre').eq('plan_id', plan.id),
   ])
   const franjas = FRANJAS.filter(f => (nombres ?? []).some(n => n.nombre === f)) as SlotComida[]
-  return Object.fromEntries(DIAS_SEMANA.map(dia => {
+  return Object.fromEntries(DIAS_SEMANA.map((dia, i) => {
     const tipos = sesiones.filter(s => s.dia_semana === dia).map(s => clasificarDiaNutricional(s.nombre, true))
     const tipo = PRIORIDAD.find(t => tipos.includes(t)) ?? 'descanso_activo'
-    return [dia, { ...ajustarObjetivo(plan, tipo), momento: momentoDeEntreno(onboarding?.hora_entreno, tipo, franjas) }]
+    return [dia, aplicarCompeticion(i) ?? { ...ajustarObjetivo(plan, tipo), momento: momentoDeEntreno(onboarding?.hora_entreno, tipo, franjas) }]
   })) as Record<string, ObjetivoDia>
 }
 

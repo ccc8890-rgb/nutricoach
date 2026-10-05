@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
 
         let fuentes: FuenteIngrediente[] = []
         if (semana) {
-            fuentes = (await obtenerIngredientesSemanaFutura(srv, plan, semana, await objetivosPorDia(srv, plan.cliente_id, plan)))
+            fuentes = (await obtenerIngredientesSemanaFutura(srv, plan, semana, await objetivosPorDia(srv, plan.cliente_id, plan, semana)))
                 .map(i => ({ ...i }))
         } else {
             const { data: comidas } = await srv

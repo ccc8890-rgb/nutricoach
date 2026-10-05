@@ -80,7 +80,7 @@ async function filasPlanificadas(db: SupabaseClient, planId: string, hasta = MAX
 
 // Estima las macros de cada comida con el mismo optimizador que usa la activación (reparto de kcal y
 // macros del plan por franja), para poder comparar días y semanas con lo que se aplicaría de verdad.
-export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, semanas: number, objetivosDia?: Record<string, ObjetivoDia>): Promise<SemanaFutura[]> {
+export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, semanas: number, objetivosDia?: Record<string, ObjetivoDia>, cargarObjetivos?: (semana: number) => Promise<Record<string, ObjetivoDia>>): Promise<SemanaFutura[]> {
   const n = Math.min(semanas, MAX_SEMANAS)
   const filas = await filasPlanificadas(db, plan.id, n)
   const ids = [...new Set(filas.map(f => f.receta_id))]
@@ -88,6 +88,7 @@ export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, sem
 
   const resultado: SemanaFutura[] = []
   for (let semana = 1; semana <= n; semana++) {
+    const objetivosSemana = cargarObjetivos ? await cargarObjetivos(semana) : objetivosDia
     const delaSemana = filas.filter(f => f.semana === semana)
     const franjasSemana = FRANJAS.filter(f => delaSemana.some(r => r.franja === f))
     const dias: DiaFuturo[] = DIAS_SEMANA.map(dia => {
@@ -96,7 +97,7 @@ export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, sem
         const ings = ingredientes.get(r.receta_id) ?? []
         let m = { kcal: rec?.kcal ?? 0, p: rec?.proteinas ?? 0, c: rec?.carbohidratos ?? 0, g: rec?.grasas ?? 0 }
         if (ings.length > 0) {
-          const factores = factoresParaComida(ings, plan, dia, r.franja, franjasSemana, objetivosDia)
+          const factores = factoresParaComida(ings, plan, dia, r.franja, franjasSemana, objetivosSemana)
           m = ings.reduce((a, ing, i) => ({
             kcal: a.kcal + ing.por100.kcal * ing.gramos * factores[i] / 100, p: a.p + ing.por100.p * ing.gramos * factores[i] / 100,
             c: a.c + ing.por100.c * ing.gramos * factores[i] / 100, g: a.g + ing.por100.g * ing.gramos * factores[i] / 100,
@@ -175,7 +176,7 @@ export async function generarFutura(
   const franjasPropias = FRANJAS.filter(f => propias.some(r => r.franja === f))
   const franjas = elegidas.length > 0 ? elegidas : franjasPropias.length > 0 ? franjasPropias : franjasEnCurso.length > 0 ? franjasEnCurso : FRANJAS_BASE
 
-  const objDia = await objetivosPorDia(db, clienteId, plan)
+  const objDia = await objetivosPorDia(db, clienteId, plan, p.semana)
   const huecos: Hueco[] = []
   for (const dia of DIAS_SEMANA) for (const franja of franjas) {
     if (!p.reemplazar && propias.some(r => r.dia_semana === dia && r.franja === franja)) continue
@@ -267,7 +268,7 @@ export async function activarProximaSemana(db: SupabaseClient, clienteId: string
   const idsAplicar = filas.flatMap(r => vigentes.find(c => c.dia_semana === r.dia_semana && c.nombre === r.franja)?.id ?? [])
   if (idsAplicar.length > 0) await db.from('comida_alimentos').delete().in('comida_id', idsAplicar).eq('es_complemento', true)
 
-  const objDia = await objetivosPorDia(db, clienteId, plan)
+  const objDia = await objetivosPorDia(db, clienteId, plan, 1)
   const errores: { dia: string; franja: string; error: string }[] = []
   for (let i = 0; i < filas.length; i += CONCURRENCIA) {
     await Promise.all(filas.slice(i, i + CONCURRENCIA).map(async r => {

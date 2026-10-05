@@ -12,7 +12,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   if (!r.plan) return NextResponse.json({ semanas: [] })
   const n = Math.min(Math.max(Number(new URL(request.url).searchParams.get('semanas')) || 1, 1), MAX_SEMANAS)
   try {
-    return NextResponse.json({ semanas: await obtenerFuturas(r.admin, r.plan, n, await objetivosPorDia(r.admin, id, r.plan)) })
+    return NextResponse.json({ semanas: await obtenerFuturas(r.admin, r.plan, n, undefined, semana => objetivosPorDia(r.admin, id, r.plan!, semana)) })
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : 'Error' }, { status: 500 })
   }
