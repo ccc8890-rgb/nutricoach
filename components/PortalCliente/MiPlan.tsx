@@ -461,7 +461,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             {/* Vista semanal — Kanban por día, arrastrar comidas entre días.
                 Usa comidasParaSemana (plan original, referencia estable) */}
             {vistaActual === 'semana' && (<>
-                <DietaKanban comidas={comidasParaSemana} codigo={codigo} onMaterializado={() => window.location.reload()} />
+                <DietaKanban comidas={comidasParaSemana} codigo={codigo} kcalObjetivo={plan.kcal_objetivo ?? null} onMaterializado={() => window.location.reload()} />
                 {/* Lista de la compra semanal — un nivel por debajo, no compite con el toggle de arriba */}
                 <div>
                     <button

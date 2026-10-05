@@ -34,11 +34,28 @@ interface ComidaKanban {
     nombre: string
     dia_semana?: string | null
     receta?: { nombre: string; imagen_url: string | null; kcal: number } | null
+    alimentos?: { cantidad_gramos: number; alimento?: { calorias: number } | null }[]
+}
+
+// kcal reales del plato (ingredientes ya escalados), no las de la receta base
+function kcalDe(c: ComidaKanban): number {
+    if (c.alimentos && c.alimentos.length > 0) {
+        return Math.round(c.alimentos.reduce((t, a) => t + ((a.alimento?.calorias ?? 0) * (a.cantidad_gramos ?? 0)) / 100, 0))
+    }
+    return 0
+}
+const totalDia = (cs: ComidaKanban[]) => cs.reduce((t, c) => t + kcalDe(c), 0)
+// Verde dentro de ±10 % del objetivo, ámbar hasta ±20 %, rojo más allá
+function colorKcal(kcal: number, objetivo: number | null) {
+    if (!objetivo || kcal === 0) return 'var(--text-muted)'
+    const d = Math.abs(kcal - objetivo) / objetivo
+    return d <= 0.1 ? 'var(--success)' : d <= 0.2 ? 'var(--warning)' : 'var(--error)'
 }
 
 interface DietaKanbanProps {
     comidas: ComidaKanban[]
     codigo: string
+    kcalObjetivo?: number | null
     onMaterializado: () => void
 }
 
@@ -71,6 +88,7 @@ function ComidaCard({ comida }: { comida: ComidaKanban }) {
                     )}
                 </div>
                 <p className="text-[10px] font-medium leading-tight truncate min-w-0 flex-1" style={{ color: 'var(--text)' }}>{nombreMostrado}</p>
+                {kcalDe(comida) > 0 && <span className="text-[9px] font-data flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{kcalDe(comida)}</span>}
             </div>
         </div>
     )
@@ -97,14 +115,18 @@ function FranjaLane({ dia, franja, comidas, droppable }: { dia: string; franja: 
     )
 }
 
-function DiaColumna({ dia, comidas }: { dia: string; comidas: ComidaKanban[] }) {
+function DiaColumna({ dia, comidas, kcalObjetivo }: { dia: string; comidas: ComidaKanban[]; kcalObjetivo: number | null }) {
+    const kcalDia = totalDia(comidas)
     const otras = comidas.filter(c => franjaDe(c.nombre) === 'Otras')
     return (
         <div className="rounded-xl p-1.5 flex-1 min-w-[130px]" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-0.5" style={{ color: 'var(--text-muted)' }}>
-                <span className="sm:hidden">{DIAS_ABREV[dia]}</span>
-                <span className="hidden sm:inline">{dia}</span>
-            </p>
+            <div className="flex items-baseline justify-between mb-1.5 px-0.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                    <span className="sm:hidden">{DIAS_ABREV[dia]}</span>
+                    <span className="hidden sm:inline">{dia}</span>
+                </p>
+                {kcalDia > 0 && <span className="text-[10px] font-data font-bold" style={{ color: colorKcal(kcalDia, kcalObjetivo) }}>{kcalDia}</span>}
+            </div>
             <div className="flex flex-col gap-1.5">
                 {FRANJAS.map(franja => (
                     <FranjaLane
@@ -123,7 +145,7 @@ function DiaColumna({ dia, comidas }: { dia: string; comidas: ComidaKanban[] }) 
     )
 }
 
-export default function DietaKanban({ comidas, codigo, onMaterializado }: DietaKanbanProps) {
+export default function DietaKanban({ comidas, codigo, kcalObjetivo = null, onMaterializado }: DietaKanbanProps) {
     const [moviendo, setMoviendo] = useState(false)
     const [materializando, setMaterializando] = useState(false)
     const [comidasLocal, setComidasLocal] = useState(comidas)
@@ -173,10 +195,15 @@ export default function DietaKanban({ comidas, codigo, onMaterializado }: DietaK
             })
             const data = await res.json().catch(() => null)
             if (!res.ok) throw new Error(data?.error || 'No se pudo mover la comida')
-            addToast({
-                type: 'success',
-                title: nombreNuevo !== nombreAnterior ? `Movida a ${nuevaFranja} · ${nuevoDia}` : `Movida a ${nuevoDia}`,
-            })
+            const titulo = nombreNuevo !== nombreAnterior ? `Movida a ${nuevaFranja} · ${nuevoDia}` : `Movida a ${nuevoDia}`
+            // Aviso si el día destino queda lejos del objetivo (el plato conserva sus cantidades)
+            const kcalDestino = totalDia(comidasLocal.filter(c => c.dia_semana === nuevoDia && c.id !== comida.id)) + kcalDe(comida)
+            const desvio = kcalObjetivo && kcalDestino > 0 ? (kcalDestino - kcalObjetivo) / kcalObjetivo : 0
+            if (Math.abs(desvio) > 0.2) {
+                addToast({ type: 'warning', title: titulo, message: `${nuevoDia} queda en ${kcalDestino} kcal (${desvio > 0 ? '+' : ''}${Math.round(desvio * 100)}% sobre el objetivo de ${Math.round(kcalObjetivo!)}).` })
+            } else {
+                addToast({ type: 'success', title: titulo })
+            }
         } catch (err) {
             setComidasLocal(prev => prev.map(c => c.id === comida.id ? { ...c, dia_semana: diaAnterior, nombre: nombreAnterior } : c))
             addToast({ type: 'error', title: (err as Error).message })
@@ -214,7 +241,7 @@ export default function DietaKanban({ comidas, codigo, onMaterializado }: DietaK
             <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
                 <div className="flex gap-1.5 overflow-x-auto pb-1">
                     {DIAS.map(dia => (
-                        <DiaColumna key={dia} dia={dia} comidas={comidasLocal.filter(c => c.dia_semana === dia)} />
+                        <DiaColumna key={dia} dia={dia} comidas={comidasLocal.filter(c => c.dia_semana === dia)} kcalObjetivo={kcalObjetivo} />
                     ))}
                 </div>
             </DndContext>
