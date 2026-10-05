@@ -24,6 +24,7 @@ import MiPlanEstatico from '@/components/PortalCliente/MiPlan'
 import EntrenoSubTabsEstatico from '@/components/training/EntrenoSubTabs'
 import RecetarioExploradorEstatico from '@/components/PortalCliente/RecetarioExplorador'
 import AjustesTabsEstatico from '@/components/PortalCliente/AjustesTabs'
+import SuplementacionPortalEstatico from '@/components/PortalCliente/SuplementacionPortal'
 // Un fallo de render en una pestaña no tumba el portal entero: muestra el error con botón de reintentar.
 function aislar<P extends object>(Componente: ComponentType<P>): ComponentType<P> {
   return function Aislado(props: P) {
@@ -45,6 +46,7 @@ const MisPlatos = aislar(dynamic(() => import('@/components/PortalCliente/MisPla
 const RecetarioExplorador = aislar(RecetarioExploradorEstatico)
 const ChatPanel = aislar(dynamic(() => import('@/components/PortalCliente/ChatPanel')))
 const AjustesTabs = aislar(AjustesTabsEstatico)
+const SuplementacionPortal = aislar(SuplementacionPortalEstatico)
 import { useTheme } from '@/components/ThemeProvider'
 import ErrorBoundary from '@/components/ui/ErrorBoundary'
 
@@ -684,6 +686,7 @@ function PortalClientePageContent() {
             ) : (
               <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
+            <SuplementacionPortal />
           </div>
         )}
 

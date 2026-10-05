@@ -1,5 +1,19 @@
 import assert from 'node:assert/strict'
-import { NOTA_ANTIDOPAJE, recomendarSuplementos } from '../lib/nutricion/suplementos'
+import { getFichaSuplemento, NOTA_ANTIDOPAJE, recomendarSuplementos } from '../lib/nutricion/suplementos'
+
+const fichaCreatina = getFichaSuplemento('creatina')
+assert.deepEqual(fichaCreatina, {
+  id: 'creatina',
+  nombre: 'Creatina',
+  evidencia: 'A',
+  fuentes: ['IOC 2018 (Maughan et al., Br J Sports Med 52:439-455)', 'ISSN 2017 (Kreider et al.)'],
+  precauciones: [
+    'Puede aumentar 1-2 kg de agua; valora su uso en running puro si el peso es critico',
+    'Consulta al medico si tienes enfermedad renal',
+    NOTA_ANTIDOPAJE,
+  ],
+})
+assert.equal(getFichaSuplemento('no_existe'), null)
 
 const base = { peso_kg: 75, disciplina: 'hyrox', duracion_min: 180, intensidad: 'alta' as const, fase_competicion: 'race_day' }
 const r = recomendarSuplementos(base)

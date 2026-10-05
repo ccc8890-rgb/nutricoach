@@ -20,6 +20,16 @@ function esDecision(body: unknown): body is Decision {
     && ['dosis', 'timing', 'notas'].every(campo => datos[campo] === undefined || (typeof datos[campo] === 'string' && datos[campo].length <= 300))
 }
 
+// Analítica del onboarding (analisis_valores: { vitamina_d, ferritina } en ng/mL); solo valores numéricos válidos
+function analiticaDe(valores: unknown): ContextoSuplementos['analitica'] {
+  if (!valores || typeof valores !== 'object') return undefined
+  const v = valores as Record<string, unknown>
+  const num = (x: unknown) => { const n = typeof x === 'string' ? Number(x.replace(',', '.')) : typeof x === 'number' ? x : NaN; return Number.isFinite(n) && n > 0 ? n : undefined }
+  const vitamina_d_ngml = num(v.vitamina_d)
+  const ferritina_ngml = num(v.ferritina)
+  return vitamina_d_ngml === undefined && ferritina_ngml === undefined ? undefined : { vitamina_d_ngml, ferritina_ngml }
+}
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { data: { user }, error: authError } = await createApiSupabase(request).auth.getUser()
@@ -37,7 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       db.from('checkins').select('peso').eq('cliente_id', id).not('peso', 'is', null).order('fecha', { ascending: false }).limit(1).maybeSingle(),
       db.from('competiciones').select('disciplina,fecha_competicion').eq('cliente_id', id).eq('activo', true).gte('fecha_competicion', limite.toISOString().slice(0, 10)).order('fecha_competicion', { ascending: true }).limit(1).maybeSingle(),
       db.from('planes_entrenamiento').select('id').eq('cliente_id', id).eq('activo', true).limit(1).maybeSingle(),
-      db.from('onboarding_perfil_profundo').select('hora_entreno,condiciones_salud').eq('cliente_id', id).maybeSingle(),
+      db.from('onboarding_perfil_profundo').select('hora_entreno,condiciones_salud,analisis_valores').eq('cliente_id', id).maybeSingle(),
     ])
     if (clienteRes.error || pesoRes.error || competicionRes.error || planRes.error || onboardingRes.error || !clienteRes.data) throw new Error('Error al consultar contexto de suplementacion')
     const peso = Number(pesoRes.data?.peso ?? clienteRes.data.peso_inicial)
@@ -67,6 +77,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       tipo_sesion: tipo === 'entreno_hibrido' ? 'hibrido' : tipo === 'entreno_cardio' ? 'cardio' : tipo === 'entreno_fuerza' ? 'fuerza' : undefined,
       hora_inicio: onboardingRes.data?.hora_entreno ?? undefined,
       condiciones: onboardingRes.data?.condiciones_salud ? [onboardingRes.data.condiciones_salud] : undefined,
+      analitica: analiticaDe(onboardingRes.data?.analisis_valores),
     }
     const guardadasRes = await db.from('suplementacion_cliente')
       .select('suplemento_id,ambito,estado,dosis,timing,notas').eq('cliente_id', id)
