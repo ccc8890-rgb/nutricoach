@@ -1,0 +1,582 @@
+{
+ "lote": "meriendas-rendimiento-2026-10-05",
+ "tipo_plato": "Merienda",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 180,
+  "kcal_max": 400,
+  "proteina_pct_min": 0.25,
+  "proteina_pct_min_vegano": 0.22,
+  "grasa_pct_max": 0.35
+ },
+ "alimentos": {
+  "skyr": {
+   "nombre": "Skyr natural",
+   "prefijo": "edc8a060",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "kiwi": {
+   "nombre": "Kiwi",
+   "prefijo": "97fdee99",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "almendras": {
+   "nombre": "Almendras",
+   "prefijo": "3cbe24f8",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "cottage": {
+   "nombre": "Cottage 0% Materia Grasa",
+   "prefijo": "30dbfc8a",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "fresas": {
+   "nombre": "Fresas",
+   "prefijo": "16665787",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "chia": {
+   "nombre": "Semillas de chía",
+   "prefijo": "b5b5e57f",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "requeson": {
+   "nombre": "Requesón",
+   "prefijo": "b2c88c97",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "manzana": {
+   "nombre": "Manzana",
+   "prefijo": "7d5a031f",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "canela": {
+   "nombre": "Canela molida",
+   "prefijo": "57a8bd13",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "platano": {
+   "nombre": "Plátano",
+   "prefijo": "1131a576",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cacao": {
+   "nombre": "Cacao Puro en Polvo sin Azúcar",
+   "prefijo": "f928aff3",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "leche": {
+   "nombre": "Leche desnatada",
+   "prefijo": "88f3975a",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "pavo": {
+   "nombre": "Fiambre de Pechuga de Pavo",
+   "prefijo": "a279ae71",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "tortitas": {
+   "nombre": "Tortitas de Arroz Integral Paquete",
+   "prefijo": "072975ac",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aguacate": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tomate": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "claras": {
+   "nombre": "Claras de huevo líquidas pasteurizadas",
+   "prefijo": "4e4cda47",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "espinacas": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "patata": {
+   "nombre": "Patata",
+   "prefijo": "0b223775",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aceite": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "salmon": {
+   "nombre": "Salmón ahumado",
+   "prefijo": "de0eb774",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "pepino": {
+   "nombre": "Pepino",
+   "prefijo": "2e8d5d64",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "lentejas": {
+   "nombre": "Lentejas cocidas",
+   "prefijo": "e69fd4f0",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimiento": {
+   "nombre": "Pimiento rojo",
+   "prefijo": "d106e3bb",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "alubias": {
+   "nombre": "Alubia cocida roja",
+   "prefijo": "35e28212",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "cebolla": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tomate_triturado": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pimenton": {
+   "nombre": "Pimentón",
+   "prefijo": "21a40eb5",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pan_int": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "queso_batido": {
+   "nombre": "Queso fresco batido desnatado 0% MG",
+   "prefijo": "1380d26a",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "pan_cen": {
+   "nombre": "Pan de centeno",
+   "prefijo": "80dffe34",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "tortilla_trigo": {
+   "nombre": "Tortilla de Trigo",
+   "prefijo": "bd6dc3a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "queso_crema": {
+   "nombre": "Queso crema light",
+   "prefijo": "6f64e109",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Skyr con kiwi y almendras",
+   "tipo_plato": "Merienda",
+   "descripcion": "Merienda alta en proteína, fresca y de 3 minutos.",
+   "tiempo_prep_min": 3,
+   "ingredientes": [
+    [
+     "skyr",
+     200
+    ],
+    [
+     "kiwi",
+     80
+    ],
+    [
+     "almendras",
+     10
+    ]
+   ],
+   "instrucciones": "1. Pon el skyr en un bol.\n2. Corta el kiwi en dados y añádelo.\n3. Termina con las almendras troceadas.",
+   "consejos": "Con kiwi muy maduro no hace falta endulzar."
+  },
+  {
+   "nombre": "Cottage con fresas y chía",
+   "tipo_plato": "Merienda",
+   "descripcion": "Cottage cremoso con fresas y semillas de chía.",
+   "tiempo_prep_min": 3,
+   "ingredientes": [
+    [
+     "cottage",
+     200
+    ],
+    [
+     "fresas",
+     100
+    ],
+    [
+     "chia",
+     8
+    ]
+   ],
+   "instrucciones": "1. Pon el cottage en un bol.\n2. Corta las fresas en láminas y colócalas encima.\n3. Espolvorea la chía.",
+   "consejos": "Deja reposar 5 minutos si quieres que la chía se hidrate un poco."
+  },
+  {
+   "nombre": "Requesón con manzana y canela",
+   "tipo_plato": "Merienda",
+   "descripcion": "Requesón templado con manzana y canela, merienda saciante.",
+   "tiempo_prep_min": 5,
+   "ingredientes": [
+    [
+     "requeson",
+     150
+    ],
+    [
+     "manzana",
+     120
+    ],
+    [
+     "canela",
+     2
+    ]
+   ],
+   "instrucciones": "1. Corta la manzana en dados pequeños.\n2. Caliéntala 1 minuto en el microondas.\n3. Mézclala con el requesón y espolvorea la canela.",
+   "consejos": "Si la manzana es ácida, calienta 30 segundos más."
+  },
+  {
+   "nombre": "Batido de skyr, plátano y cacao",
+   "tipo_plato": "Merienda",
+   "descripcion": "Batido espeso de recuperación ligera con skyr, plátano y cacao.",
+   "tiempo_prep_min": 3,
+   "ingredientes": [
+    [
+     "skyr",
+     200
+    ],
+    [
+     "platano",
+     100
+    ],
+    [
+     "cacao",
+     8
+    ],
+    [
+     "leche",
+     150
+    ]
+   ],
+   "instrucciones": "1. Trocea el plátano.\n2. Bate el skyr, el plátano, el cacao y la leche desnatada hasta que quede cremoso.\n3. Sirve al momento.",
+   "consejos": "Con el plátano congelado queda más espeso."
+  },
+  {
+   "nombre": "Tortitas de arroz con pavo y aguacate",
+   "tipo_plato": "Merienda",
+   "descripcion": "Tortitas de arroz sin gluten con pavo, aguacate y tomate.",
+   "tiempo_prep_min": 4,
+   "ingredientes": [
+    [
+     "tortitas",
+     20
+    ],
+    [
+     "pavo",
+     80
+    ],
+    [
+     "aguacate",
+     40
+    ],
+    [
+     "tomate",
+     50
+    ]
+   ],
+   "instrucciones": "1. Chafa el aguacate con un tenedor.\n2. Úntalo sobre las tortitas de arroz.\n3. Añade el pavo y el tomate en rodajas.",
+   "consejos": "Un chorrito de limón evita que el aguacate se oscurezca."
+  },
+  {
+   "nombre": "Tortilla de claras con espinacas y patata",
+   "tipo_plato": "Merienda",
+   "descripcion": "Tortilla ligera sin lácteos ni gluten, rica en proteína.",
+   "tiempo_prep_min": 10,
+   "ingredientes": [
+    [
+     "claras",
+     200
+    ],
+    [
+     "espinacas",
+     50
+    ],
+    [
+     "patata",
+     80
+    ],
+    [
+     "aceite",
+     5
+    ]
+   ],
+   "instrucciones": "1. Pela la patata, córtala en láminas finas y dórala 4 minutos en una sartén con el aceite.\n2. Añade las espinacas y cocínalas 1 minuto.\n3. Vierte las claras y cuaja la tortilla por ambos lados.",
+   "consejos": "Cuece la patata en el microondas antes para ahorrar tiempo."
+  },
+  {
+   "nombre": "Tortitas de arroz con salmón ahumado y pepino",
+   "tipo_plato": "Merienda",
+   "descripcion": "Merienda salada sin gluten con salmón ahumado, pepino y limón.",
+   "tiempo_prep_min": 4,
+   "ingredientes": [
+    [
+     "tortitas",
+     25
+    ],
+    [
+     "salmon",
+     60
+    ],
+    [
+     "pepino",
+     60
+    ],
+    [
+     "limon",
+     5
+    ]
+   ],
+   "instrucciones": "1. Corta el pepino en rodajas finas.\n2. Coloca el salmón ahumado sobre las tortitas de arroz.\n3. Añade el pepino y unas gotas de limón.",
+   "consejos": "Si el salmón ahumado está salado, no añadas sal."
+  },
+  {
+   "nombre": "Ensalada tibia de lentejas con tomate y pimiento",
+   "tipo_plato": "Merienda",
+   "descripcion": "Merienda vegana con legumbre, tomate y pimiento.",
+   "tiempo_prep_min": 8,
+   "ingredientes": [
+    [
+     "lentejas",
+     150
+    ],
+    [
+     "tomate",
+     80
+    ],
+    [
+     "pimiento",
+     50
+    ],
+    [
+     "limon",
+     5
+    ]
+   ],
+   "instrucciones": "1. Calienta las lentejas cocidas 1 minuto en el microondas.\n2. Corta el tomate y el pimiento en dados.\n3. Mézclalo todo y aliña con unas gotas de limón.",
+   "consejos": "Usa lentejas cocidas de bote bien escurridas."
+  },
+  {
+   "nombre": "Alubias rojas con pimiento y cebolla",
+   "tipo_plato": "Merienda",
+   "descripcion": "Salteado vegano de alubias con pimiento, cebolla y tomate.",
+   "tiempo_prep_min": 10,
+   "ingredientes": [
+    [
+     "alubias",
+     150
+    ],
+    [
+     "pimiento",
+     60
+    ],
+    [
+     "cebolla",
+     40
+    ],
+    [
+     "tomate_triturado",
+     60
+    ],
+    [
+     "pimenton",
+     1
+    ]
+   ],
+   "instrucciones": "1. Pica la cebolla y el pimiento y saltéalos 4 minutos en una sartén antideslizante.\n2. Añade el tomate triturado y el pimentón y cocina 2 minutos.\n3. Incorpora las alubias cocidas y calienta 2 minutos más.",
+   "consejos": "Sirve templado; también sale bien frío."
+  },
+  {
+   "nombre": "Sándwich integral de pavo, queso batido y tomate",
+   "tipo_plato": "Merienda",
+   "descripcion": "Sándwich de pan integral con pavo, queso batido y tomate.",
+   "tiempo_prep_min": 4,
+   "ingredientes": [
+    [
+     "pan_int",
+     45
+    ],
+    [
+     "pavo",
+     70
+    ],
+    [
+     "tomate",
+     40
+    ],
+    [
+     "queso_batido",
+     40
+    ]
+   ],
+   "instrucciones": "1. Unta el queso batido sobre el pan.\n2. Coloca el pavo y el tomate en rodajas.\n3. Cierra el sándwich y córtalo por la mitad.",
+   "consejos": "Tuesta el pan antes si quieres textura crujiente."
+  },
+  {
+   "nombre": "Tostada de centeno con cottage, salmón y pepino",
+   "tipo_plato": "Merienda",
+   "descripcion": "Tostada de centeno con cottage, salmón ahumado y pepino.",
+   "tiempo_prep_min": 5,
+   "ingredientes": [
+    [
+     "pan_cen",
+     40
+    ],
+    [
+     "cottage",
+     60
+    ],
+    [
+     "salmon",
+     40
+    ],
+    [
+     "pepino",
+     40
+    ]
+   ],
+   "instrucciones": "1. Tuesta el pan de centeno.\n2. Extiende el cottage encima.\n3. Añade el salmón ahumado y el pepino en rodajas.",
+   "consejos": "Un poco de pimienta negra le va muy bien."
+  },
+  {
+   "nombre": "Wrap de pavo, espinacas y queso crema",
+   "tipo_plato": "Merienda",
+   "descripcion": "Wrap rápido de pavo con espinacas y queso crema light.",
+   "tiempo_prep_min": 5,
+   "ingredientes": [
+    [
+     "tortilla_trigo",
+     30
+    ],
+    [
+     "pavo",
+     70
+    ],
+    [
+     "espinacas",
+     30
+    ],
+    [
+     "queso_crema",
+     20
+    ]
+   ],
+   "instrucciones": "1. Unta el queso crema sobre la tortilla.\n2. Coloca el pavo y las espinacas.\n3. Enrolla bien y corta por la mitad.",
+   "consejos": "Caliéntalo 20 segundos en la sartén para que quede más sabroso."
+  }
+ ]
+}
