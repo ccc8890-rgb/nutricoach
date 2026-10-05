@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown, Dumbbell, Loader2 } from 'lucide-react'
 import { DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
+import { useToast } from '@/components/ui/Toast'
 
 const HOY_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][new Date().getDay()]
 
@@ -22,6 +23,7 @@ interface Sesion {
   id: string
   nombre: string
   dia_semana: string
+  hora_inicio: string | null
   orden: number | null
   duracion_estimada_min: number | null
   contexto_ia: string | null
@@ -34,6 +36,8 @@ interface Sesion {
 export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
   const [sesiones, setSesiones] = useState<Sesion[] | null>(null)
   const [abiertos, setAbiertos] = useState<Set<string>>(new Set())
+  const [guardandoHora, setGuardandoHora] = useState<string | null>(null)
+  const { addToast } = useToast()
 
   useEffect(() => {
     let cancelado = false
@@ -52,9 +56,29 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
   function toggle(id: string) {
     setAbiertos(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
+  }
+
+  async function guardarHora(sesion: Sesion, input: HTMLInputElement) {
+    const nuevaHora = input.value || null
+    if (nuevaHora === sesion.hora_inicio) return
+    const anterior = sesion.hora_inicio
+    setSesiones(prev => prev?.map(s => s.id === sesion.id ? { ...s, hora_inicio: nuevaHora } : s) ?? null)
+    setGuardandoHora(sesion.id)
+    const res = await fetch(`/api/entrenos/sesion/${sesion.id}/hora`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hora_inicio: nuevaHora }),
+    }).catch(() => null)
+    setGuardandoHora(null)
+    if (!res?.ok) {
+      input.value = anterior ?? ''
+      setSesiones(prev => prev?.map(s => s.id === sesion.id ? { ...s, hora_inicio: anterior } : s) ?? null)
+      addToast({ type: 'error', title: 'No se pudo guardar la hora', message: 'Se ha restaurado el valor anterior.' })
+    }
   }
 
   if (sesiones === null) {
@@ -99,6 +123,23 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
 
             {abierto && (
               <div className="px-4 pb-4 space-y-2">
+                <div className="rounded-lg px-3.5 py-3" style={{ background: 'var(--surface-elevated,var(--border))' }}>
+                  <label className="flex flex-wrap items-center gap-2 text-sm font-medium" style={{ color: 'var(--text)' }}>
+                    Hora de inicio
+                    <input
+                      type="time"
+                      defaultValue={sesion.hora_inicio ?? ''}
+                      disabled={guardandoHora === sesion.id}
+                      onBlur={e => { void guardarHora(sesion, e.currentTarget) }}
+                      className="rounded-lg px-2.5 py-1.5 text-sm disabled:opacity-60"
+                      style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                    />
+                    {guardandoHora === sesion.id && <Loader2 size={13} className="animate-spin" style={{ color: 'var(--text-muted)' }} />}
+                  </label>
+                  <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
+                    Hora a la que entrena este día. Si la dejas vacía se usa la hora habitual del cuestionario.
+                  </p>
+                </div>
                 {sesion.ejercicios.length === 0 ? (
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin ejercicios cargados.</p>
                 ) : (

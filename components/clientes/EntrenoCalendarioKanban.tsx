@@ -32,6 +32,7 @@ interface SesionKanban {
   id: string
   nombre: string
   dia_semana: string | null
+  hora_inicio: string | null
   duracion_estimada_min: number | null
   fase_bloque: string | null
   contexto_ia: string | null
@@ -67,6 +68,9 @@ function SesionCard({ sesion, expandida, onToggle }: { sesion: SesionKanban; exp
               <p className="text-xs mt-1 font-medium" style={{ color: 'var(--semantic-info-text)' }}>{sesion.contexto_ia}</p>
             )}
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {sesion.hora_inicio ? (
+                <span className="text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>{sesion.hora_inicio}</span>
+              ) : null}
               {sesion.duracion_estimada_min ? (
                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{sesion.duracion_estimada_min} min</span>
               ) : null}
@@ -219,7 +223,7 @@ export default function EntrenoCalendarioKanban({ planId }: { planId: string }) 
     const { data, error } = await supabase
       .from('sesiones_entrenamiento')
       .insert({ plan_id: planId, nombre, dia_semana: dia, orden: ordenMax + 1 })
-      .select('id, nombre, dia_semana, duracion_estimada_min, fase_bloque, contexto_ia')
+      .select('id, nombre, dia_semana, hora_inicio, duracion_estimada_min, fase_bloque, contexto_ia')
       .single()
     if (error || !data) {
       addToast({ type: 'error', title: 'No se pudo crear la sesión' })

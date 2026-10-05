@@ -15,6 +15,7 @@ export const PLAN_EDITOR_SESIONES_SELECT = `
   id,
   nombre,
   dia_semana,
+  hora_inicio,
   orden,
   duracion_estimada_min,
   contexto_ia,

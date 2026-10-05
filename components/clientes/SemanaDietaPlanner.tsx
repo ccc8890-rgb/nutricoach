@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import DetalleDiaDieta from './DetalleDiaDieta'
 import ListaCompra from '@/components/ListaCompra'
 import { Activity, BadgeCheck, CalendarDays, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
 
 type Receta = { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null }
 type Comida = { id: string; nombre: string; recurrente: boolean; receta: Receta | null; kcal: number; p: number; c: number; g: number }
@@ -124,6 +125,9 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
   const [version, setVersion] = useState(0)
   const [objetivosDia, setObjetivosDia] = useState<Record<string, ObjetivoDia>>({})
+  const [comidasDia, setComidasDia] = useState<2 | 3 | 4 | 5 | null>(null)
+  const [guardandoComidasDia, setGuardandoComidasDia] = useState(false)
+  const { addToast } = useToast()
 
   // Franjas que se rellenan al generar: por defecto las que ya usa el plan; el coach puede añadir o quitar
   const franjasPlan = useMemo(() => franjas.filter(f => dias.some(d => d.comidas.some(c => c.nombre === f))), [franjas, dias])
@@ -146,7 +150,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     const res = await fetch(`/api/clientes/${clienteId}/semana-dieta`)
     const data = await res.json().catch(() => null)
     if (!res.ok) { setError(data?.error ?? 'No se pudo cargar la semana'); setLoading(false); return }
-    setPlan(data.plan); setDias(data.dias ?? []); setFranjas(data.franjas ?? []); setObjetivosDia(data.objetivos_dia ?? {}); setLoading(false)
+    setPlan(data.plan); setDias(data.dias ?? []); setFranjas(data.franjas ?? []); setObjetivosDia(data.objetivos_dia ?? {}); setComidasDia(data.comidas_dia ?? null); setLoading(false)
     setDiaSel(prev => prev ?? { dia: DIAS_ORDEN[(new Date().getDay() + 6) % 7], semana: null })
     setVersion(v => v + 1)
   }, [clienteId])
@@ -250,6 +254,25 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     if (res.ok) await Promise.all([cargar(), cargarFuturas(vista)])
   }
 
+  async function cambiarComidasDia(valor: string) {
+    const siguiente = valor === '' ? null : Number(valor) as 2 | 3 | 4 | 5
+    const anterior = comidasDia
+    setComidasDia(siguiente)
+    setGuardandoComidasDia(true)
+    const res = await fetch(`/api/clientes/${clienteId}/comidas-dia`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comidas_dia: siguiente }),
+    }).catch(() => null)
+    setGuardandoComidasDia(false)
+    if (!res?.ok) {
+      setComidasDia(anterior)
+      addToast({ type: 'error', title: 'No se pudo guardar las comidas al día', message: 'Se ha restaurado el valor anterior.' })
+      return
+    }
+    addToast({ type: 'success', title: 'Comidas al día actualizadas' })
+  }
+
   if (loading) return <div className="rounded-2xl h-40 animate-pulse" style={{ background: 'var(--surface)' }} />
   if (!plan) return null
 
@@ -322,6 +345,29 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           )
         })}
         <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>· media mañana, merienda o peri-entreno solo si los marcas</span>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-xl p-3 mb-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+        <label className="flex items-center gap-2 text-xs font-semibold flex-shrink-0" style={{ color: 'var(--text)' }}>
+          Comidas al día
+          <select
+            value={comidasDia ?? ''}
+            disabled={guardandoComidasDia}
+            onChange={e => { void cambiarComidasDia(e.target.value) }}
+            className="rounded-lg px-2.5 py-1.5 text-xs disabled:opacity-60"
+            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }}
+          >
+            <option value="">Auto</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+          {guardandoComidasDia && <Loader2 size={13} className="animate-spin" style={{ color: 'var(--text-muted)' }} />}
+        </label>
+        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+          Si lo fijas, Generar semana usa estas franjas aunque el plan tenga comidas sueltas. 2 = Comida + Cena; 3 = Desayuno + Comida + Cena; 4 = añade Merienda; 5 = las cinco.
+        </p>
       </div>
 
       {resultado && (

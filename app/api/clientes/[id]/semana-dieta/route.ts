@@ -60,10 +60,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ recetas })
   }
 
-  const { data: comidas, error } = await admin.from('comidas')
-    .select('id, nombre, dia_semana, orden, receta_id, receta:recetas(id, nombre, imagen_url, contenido_estado, verificacion), comida_alimentos(cantidad_gramos, alimento:alimentos(calorias, proteinas, carbohidratos, grasas))')
-    .eq('plan_id', plan.id)
+  const [{ data: comidas, error }, { data: cliente, error: clienteError }] = await Promise.all([
+    admin.from('comidas')
+      .select('id, nombre, dia_semana, orden, receta_id, receta:recetas(id, nombre, imagen_url, contenido_estado, verificacion), comida_alimentos(cantidad_gramos, alimento:alimentos(calorias, proteinas, carbohidratos, grasas))')
+      .eq('plan_id', plan.id),
+    admin.from('clientes').select('comidas_dia').eq('id', clienteId).single(),
+  ])
   if (error) return NextResponse.json({ error: 'Error cargando comidas' }, { status: 500 })
+  if (clienteError) return NextResponse.json({ error: 'Error cargando cliente' }, { status: 500 })
 
   const filas = (comidas ?? []) as unknown as ComidaFila[]
   const dias = DIAS_SEMANA.map((dia, i) => {
@@ -74,7 +78,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const total = delDia.reduce((a, c) => ({ kcal: a.kcal + c.kcal, p: a.p + c.p, c: a.c + c.c, g: a.g + c.g }), { kcal: 0, p: 0, c: 0, g: 0 })
     return { dia, comidas: delDia, total }
   })
-  return NextResponse.json({ plan, dias, franjas: FRANJAS, objetivos_dia: await objetivosPorDia(admin, clienteId, plan) })
+  return NextResponse.json({ plan, dias, franjas: FRANJAS, objetivos_dia: await objetivosPorDia(admin, clienteId, plan), comidas_dia: cliente?.comidas_dia ?? null })
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
