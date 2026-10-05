@@ -29,10 +29,18 @@ Desde hoy **solo Claude y Codex**; DeepSeek (sin saldo, 402) y Gemini quedan fue
 - `<input type="time">` no dispara el guardado hasta salir del campo; `browse fill` no acepta valor vacío (vaciar con JS y el setter nativo).
 - Los ajustes de periodización se probaron con base de datos simulada y en producción solo sin competiciones; **falta probarlos con una competición real cargada** (Carlos no tiene ninguna).
 
+### Segunda tanda de la noche (commits `9992f39`, `4468c53`, `3d58173`)
+- **Portal del cliente:** `GET /api/cliente/suplementacion` (sesión del cliente, solo filas `aprobada` de su propio cliente) y `components/PortalCliente/SuplementacionPortal.tsx`, tarjeta colapsable en la pestaña de dieta de `app/cliente/page.tsx`. Codex unificó el catálogo (`getFichaSuplemento`) para no duplicar textos. **No probado visualmente** (el cliente de Carlos no tiene nada aprobado ahora mismo).
+- **Analíticas:** `analiticaDe()` en la ruta del coach lee `onboarding_perfil_profundo.analisis_valores` (`vitamina_d`, `ferritina`, ng/mL) y activa vitamina D/hierro si <30. Hoy ningún cliente tiene analítica guardada.
+- **Víspera / día de carrera / recuperación en el motor:** `lib/nutricion/receta-competicion.ts` puntúa (hidratos/kcal, fibra y grasa bajas, pre-entreno en el desayuno de carrera, absorción fácil en la víspera) y `generar-semana.ts` solo **reordena** las 24 candidatas más cercanas; sin competición el resultado es idéntico. Se añadió `fibra` al select de recetas (las 575 aprobadas la tienen).
+- **Límite medido con datos reales (maratón simulado el 11-10 en el plan de Carlos, solo lectura):** los huecos salen etiquetados, pero la mejora de recetas es modesta (el desayuno de carrera salió un wrap con 42 % de las kcal en hidratos). Causa: el pool de candidatas se filtra por kcal/proteína del plan, no por el objetivo del día, y el reparto sin repeticiones mueve las mejores a otros huecos. Probé ventana 60 y penalización suave: no mejoró, se revirtió. Mejora real pendiente: pedir candidatas por día con el objetivo de hidratos del día.
+- **Duración de sesión:** el mismo `PATCH /api/entrenos/sesion/[id]/hora` admite `duracion_estimada_min` (10-480); campo «Duración (min)» en la rutina del coach. Alimenta hidratos y sodio del «Entreno de hoy».
+- **Lección de herramientas:** Codex lee `~/.Codex/AGENTS.md` (copia de las reglas globales con Director/DeepSeek) y dos de cuatro tareas se negaron a escribir código «porque había que delegar en DeepSeek». Arreglado añadiendo la regla vigente (solo Claude y Codex) al prompt de `~/.claude/scripts/codex_ejecutor.sh`. Si vuelve a pasar, revisar ese prompt.
+
 ### Pendiente
-1. Menú de víspera y comida previa a la carrera con recetas concretas (hoy solo kcal/hidratos y texto).
-2. Mostrar la suplementación aprobada en el portal del cliente; guardar analíticas; pedir duración estimada en las sesiones.
-3. Cargar una competición de prueba en un cliente ficticio y revisar la semana de carga en el planificador.
+1. Elegir recetas de víspera/carrera con el objetivo de hidratos del día (ver límite arriba) y probar la semana de carga en el planificador con una competición cargada de verdad.
+2. Probar visualmente la tarjeta de suplementación del portal con un cliente que tenga algo aprobado, y el campo de duración en la rutina.
+3. Pantalla para guardar las analíticas del cliente (hoy solo se rellenan en el onboarding).
 
 ## ✅ SESIÓN 05-10-2026 (Claude) — Planificador semanal: rendimiento, Resumen, guarniciones, varios platos por comida, objetivo por entreno y pre/post
 
