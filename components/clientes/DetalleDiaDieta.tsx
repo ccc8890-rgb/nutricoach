@@ -131,8 +131,9 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
   )
 }
 
-export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, version, franjas, onCambiar, onQuitar, onCambioDatos }: {
+export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, version, franjas, momento, onCambiar, onQuitar, onCambioDatos }: {
   clienteId: string; dia: string; semana: number | null; objetivo: Objetivo; version: number; franjas: string[]
+  momento?: { hora: string; pre: string | null; post: string | null; nota: string | null } | null
   onCambiar: (franja: string) => void; onQuitar: (comidaId: string, recurrente: boolean) => void; onCambioDatos: () => void
 }) {
   const [complementoEn, setComplementoEn] = useState<string | null>(null)
@@ -174,6 +175,15 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
         {cargando && <Loader2 size={14} className="animate-spin" style={{ color: 'var(--text-muted)' }} />}
       </div>
 
+      {momento && (
+        <p className="text-xs mb-3 rounded-lg px-3 py-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+          Entrena sobre las <span className="font-semibold" style={{ color: 'var(--text)' }}>{momento.hora}</span>
+          {momento.pre ? <> · antes: <span className="font-semibold" style={{ color: 'var(--text)' }}>{momento.pre}</span></> : null}
+          {momento.post ? <> · después: <span className="font-semibold" style={{ color: 'var(--text)' }}>{momento.post}</span></> : null}
+          {momento.nota ? <span> — {momento.nota}</span> : null}
+        </p>
+      )}
+
       {error && <p className="text-sm" style={{ color: 'var(--error)' }}>{error}</p>}
 
       {detalle && (
@@ -198,7 +208,7 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                   <div className="p-3 flex-1 flex flex-col gap-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{c.franja}{c.recurrente ? ' · diario' : ''}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{c.franja}{c.recurrente ? ' · diario' : ''}{momento?.pre === c.franja ? ' · pre-entreno' : momento?.post === c.franja ? ' · post-entreno' : ''}</p>
                         <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text)' }}>{c.receta?.nombre ?? 'Sin receta'}</p>
                       </div>
                       {c.receta?.contenido_estado && <Video size={14} style={{ color: c.receta.contenido_estado === 'grabada' ? 'var(--success)' : 'var(--warning)' }} />}

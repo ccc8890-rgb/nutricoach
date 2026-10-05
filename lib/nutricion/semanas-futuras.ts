@@ -126,10 +126,12 @@ export async function generarFutura(
   const franjasPropias = FRANJAS.filter(f => propias.some(r => r.franja === f))
   const franjas = elegidas.length > 0 ? elegidas : franjasPropias.length > 0 ? franjasPropias : franjasEnCurso.length > 0 ? franjasEnCurso : FRANJAS_BASE
 
+  const objDia = await objetivosPorDia(db, clienteId, plan)
   const huecos: Hueco[] = []
   for (const dia of DIAS_SEMANA) for (const franja of franjas) {
     if (!p.reemplazar && propias.some(r => r.dia_semana === dia && r.franja === franja)) continue
-    huecos.push({ dia, franja })
+    const m = objDia[dia]?.momento
+    huecos.push({ dia, franja, ...(m?.pre === franja ? { momento: 'pre' as const } : m?.post === franja ? { momento: 'post' as const } : {}) })
   }
   if (huecos.length === 0) return { asignadas: 0, repetidas: 0, sinCubrir: [] as Hueco[], mensaje: 'Esa semana ya está completa' }
 

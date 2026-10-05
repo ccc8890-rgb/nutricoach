@@ -49,9 +49,11 @@ const sumar = (a: Macros, b: Macros): Macros => ({ kcal: a.kcal + b.kcal, p: a.p
 const por = (a: Alim, gramos: number): Macros => ({ kcal: (a.calorias * gramos) / 100, p: (a.proteinas * gramos) / 100, c: (a.carbohidratos * gramos) / 100, g: (a.grasas * gramos) / 100 })
 
 // Lo que queda por cubrir: quedarse corto cuesta 1, pasarse cuesta 2 (un hueco pequeño es mejor que un exceso)
-function coste(resto: Macros, objetivo: Macros): number {
+// Antes de entrenar pesan más los hidratos (y menos la grasa); después, la proteína y los hidratos
+function coste(resto: Macros, objetivo: Macros, momento?: 'pre' | 'post'): number {
   const pen = (x: number, t: number) => (t > 0 ? (x > 0 ? x : -2 * x) / t : 0)
-  return pen(resto.kcal, objetivo.kcal) + pen(resto.p, objetivo.p) + pen(resto.c, objetivo.c) + 0.7 * pen(resto.g, objetivo.g)
+  const w = momento === 'pre' ? { p: 1, c: 1.5, g: 0.4 } : momento === 'post' ? { p: 1.5, c: 1.2, g: 0.5 } : { p: 1, c: 1, g: 0.7 }
+  return pen(resto.kcal, objetivo.kcal) + w.p * pen(resto.p, objetivo.p) + w.c * pen(resto.c, objetivo.c) + w.g * pen(resto.g, objetivo.g)
 }
 
 export async function completarSemana(
@@ -117,6 +119,8 @@ export async function completarSemana(
     const usados = usadoHoy.get(c.dia_semana) ?? new Set<string>()
     usadoHoy.set(c.dia_semana, usados)
     const esDesayuno = franja === 'Desayuno'
+    const m = od?.momento
+    const momento: 'pre' | 'post' | undefined = m?.pre === franja ? 'pre' : m?.post === franja ? 'post' : undefined
     // Candidatos de esta franja: alimentos sueltos y recetas de guarnición/desayuno
     const candidatos: Cand[] = [
       ...alimentos.filter(a => a.tipo !== 'alimento' || (a.franjas ?? [franja]).includes(franja)),
@@ -129,18 +133,19 @@ export async function completarSemana(
 
     // Hasta 3 complementos: en cada paso, el candidato con ración óptima que más baja el coste
     for (let paso = 0; paso < 3 && resto.kcal >= 70; paso++) {
-      const costeActual = coste(resto, objetivo)
+      const costeActual = coste(resto, objetivo, momento)
       let mejor: { cand: Cand; gramos?: number; coste: number } | null = null
       for (const cand of candidatos) {
         if (catsUsadas.has(cand.cat) || usados.has(cand.clave)) continue
+        if (momento && cand.cat === 'grasa') continue // sin frutos secos ni aguacate justo antes o después de entrenar
         const penVariedad = 1 + 0.12 * (usosSemana.get(cand.clave) ?? 0)
         if (cand.tipo === 'receta') {
-          const k = coste({ kcal: resto.kcal - cand.m.kcal, p: resto.p - cand.m.p, c: resto.c - cand.m.c, g: resto.g - cand.m.g }, objetivo) * penVariedad
+          const k = coste({ kcal: resto.kcal - cand.m.kcal, p: resto.p - cand.m.p, c: resto.c - cand.m.c, g: resto.g - cand.m.g }, objetivo, momento) * penVariedad
           if (!mejor || k < mejor.coste) mejor = { cand, coste: k }
         } else {
           for (let g = cand.min; g <= cand.max; g += 10) {
             const m = por(cand.alim, g)
-            const k = coste({ kcal: resto.kcal - m.kcal, p: resto.p - m.p, c: resto.c - m.c, g: resto.g - m.g }, objetivo) * penVariedad
+            const k = coste({ kcal: resto.kcal - m.kcal, p: resto.p - m.p, c: resto.c - m.c, g: resto.g - m.g }, objetivo, momento) * penVariedad
             if (!mejor || k < mejor.coste) mejor = { cand, gramos: g, coste: k }
           }
         }

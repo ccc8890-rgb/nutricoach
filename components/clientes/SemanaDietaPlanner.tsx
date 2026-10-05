@@ -72,7 +72,7 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
                   <div key={c.id} className={`rounded-lg ${T.card}`} style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                     <div className="flex items-center justify-between gap-1">
                       <button className={`${T.label} font-semibold uppercase tracking-wide text-left`} style={{ color: 'var(--text-muted)' }} onClick={() => onHueco({ dia: d.dia, franja: c.nombre, semana })}>
-                        {c.nombre}{c.recurrente ? ' · diario' : ''}
+                        {c.nombre}{c.recurrente ? ' · diario' : ''}{objetivos[d.dia]?.momento?.pre === c.nombre ? ' · pre' : objetivos[d.dia]?.momento?.post === c.nombre ? ' · post' : ''}
                       </button>
                       <div className="flex items-center gap-1">
                         {c.receta && (
@@ -99,7 +99,8 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
   )
 }
 
-type ObjetivoDia = { kcal: number; p: number; c: number; g: number; label: string | null; consejo: string | null; ajuste_kcal_pct: number }
+export type MomentoDia = { hora: string; pre: string | null; post: string | null; nota: string | null }
+type ObjetivoDia = { kcal: number; p: number; c: number; g: number; label: string | null; consejo: string | null; ajuste_kcal_pct: number; momento?: MomentoDia | null }
 export type ResumenDia = { etiqueta: string; dia: Total; media: Total | null; objetivo: Total | null; tipoDia: string | null }
 
 export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }: { clienteId: string; accionExtra?: React.ReactNode; onResumen?: (r: ResumenDia | null) => void }) {
@@ -259,6 +260,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const detalle = (semana: number | null) => diaSel && diaSel.semana === semana ? (
     <DetalleDiaDieta clienteId={clienteId} dia={diaSel.dia} semana={semana} version={version}
       objetivo={objetivosDia[diaSel.dia]?.kcal ? { kcal: objetivosDia[diaSel.dia].kcal, p: objetivosDia[diaSel.dia].p, c: objetivosDia[diaSel.dia].c, g: objetivosDia[diaSel.dia].g } : { kcal: plan.kcal_objetivo, p: plan.proteinas_objetivo, c: plan.carbohidratos_objetivo, g: plan.grasas_objetivo }}
+      momento={objetivosDia[diaSel.dia]?.momento ?? null}
       onCambiar={franja => setHueco({ dia: diaSel.dia, franja, semana })}
       onQuitar={(id) => quitar({ id } as Comida, semana)}
       franjas={franjas} onCambioDatos={() => { void Promise.all([cargar(), cargarFuturas(vista)]) }} />

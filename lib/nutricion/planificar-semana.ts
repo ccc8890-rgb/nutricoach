@@ -56,7 +56,7 @@ export async function candidatasPorFranja(
       const vistas = new Set(lista.map(c => c.id))
       lista = [...lista, ...(await pedir(undefined)).filter(c => !vistas.has(c.id))]
     }
-    candidatas[franja] = lista.map(c => ({ id: c.id, nombre: c.nombre }))
+    candidatas[franja] = lista.map(c => ({ id: c.id, nombre: c.nombre, pre: (c as { es_pre_entreno?: boolean }).es_pre_entreno === true, post: (c as { es_post_entreno?: boolean }).es_post_entreno === true }))
   }
   return { candidatas, shares }
 }
@@ -78,11 +78,13 @@ export async function planificarSemana(
 
   // Una comida sin día es "de todos los días": cuenta como ocupada en cualquier día
   const ocupado = (dia: string, franja: string) => existentes.some(c => c.nombre === franja && (c.dia_semana === dia || c.dia_semana == null) && c.receta_id)
+  const objDiaPlan = await objetivosPorDia(db, clienteId, plan)
   const huecos: Hueco[] = []
   for (const dia of DIAS_SEMANA) {
     for (const franja of franjas) {
       if (!reemplazar && ocupado(dia, franja)) continue
-      huecos.push({ dia, franja })
+      const m = objDiaPlan[dia]?.momento
+      huecos.push({ dia, franja, ...(m?.pre === franja ? { momento: 'pre' as const } : m?.post === franja ? { momento: 'post' as const } : {}) })
     }
   }
 

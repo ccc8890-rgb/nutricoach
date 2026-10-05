@@ -4,10 +4,14 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { DIAS_SEMANA } from './comidas-dia'
 import { clasificarDiaNutricional, getAjusteDiaNutricional, type TipoDiaNutricional } from '@/lib/periodizacion/dia-entreno-nutricion'
 import type { PlanObjetivo } from './planificar-semana'
+import { momentoDeEntreno, type MomentoDia } from './momentos-entreno'
+import { FRANJAS } from './semana-dieta'
+import type { SlotComida } from '@/lib/tipos-comida'
 
 export type ObjetivoDia = {
   kcal: number; p: number; c: number; g: number
   tipo: TipoDiaNutricional | null; label: string | null; consejo: string | null; ajuste_kcal_pct: number
+  momento?: MomentoDia | null
 }
 
 // Si un día tiene varias sesiones manda la más exigente
@@ -38,10 +42,16 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
   if (!entreno) return sinAjuste
   const { data: sesiones } = await db.from('sesiones_entrenamiento').select('nombre, dia_semana').eq('plan_id', entreno.id)
   if (!sesiones || sesiones.length === 0) return sinAjuste
+  // Hora habitual de entreno del cuestionario y franjas que usa el plan, para saber qué comida cae antes/después
+  const [{ data: onboarding }, { data: nombres }] = await Promise.all([
+    db.from('onboarding_perfil_profundo').select('hora_entreno').eq('cliente_id', clienteId).maybeSingle(),
+    db.from('comidas').select('nombre').eq('plan_id', plan.id),
+  ])
+  const franjas = FRANJAS.filter(f => (nombres ?? []).some(n => n.nombre === f)) as SlotComida[]
   return Object.fromEntries(DIAS_SEMANA.map(dia => {
     const tipos = sesiones.filter(s => s.dia_semana === dia).map(s => clasificarDiaNutricional(s.nombre, true))
     const tipo = PRIORIDAD.find(t => tipos.includes(t)) ?? 'descanso_activo'
-    return [dia, ajustarObjetivo(plan, tipo)]
+    return [dia, { ...ajustarObjetivo(plan, tipo), momento: momentoDeEntreno(onboarding?.hora_entreno, tipo, franjas) }]
   })) as Record<string, ObjetivoDia>
 }
 

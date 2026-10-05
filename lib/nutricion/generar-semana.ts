@@ -1,8 +1,9 @@
 // Selección pura de recetas para una semana: sin repetir, franjas escasas primero y variedad de proteína.
 // Las candidatas llegan ya filtradas y ordenadas por el motor (restricciones, verificadas, encaje de macros).
 
-export type CandidataSemana = { id: string; nombre: string }
-export type Hueco = { dia: string; franja: string }
+export type CandidataSemana = { id: string; nombre: string; pre?: boolean; post?: boolean }
+// `momento`: la comida cae antes (pre) o después (post) del entrenamiento de ese día
+export type Hueco = { dia: string; franja: string; momento?: 'pre' | 'post' }
 export type Asignacion = Hueco & { receta_id: string; repetida: boolean }
 
 const PROTEINAS = ['pollo', 'pavo', 'ternera', 'cerdo', 'salmon', 'atun', 'merluza', 'bacalao', 'gamba', 'langostino', 'huevo', 'tofu', 'garbanzo', 'lenteja', 'skyr', 'yogur', 'queso']
@@ -40,7 +41,10 @@ export function repartirSemanaSinRepetir(
     const lista = candidatasPorFranja[hueco.franja] ?? []
     if (lista.length === 0) { sinCubrir.push(hueco); continue }
 
-    const libres = lista.filter(c => !usos.has(c.id))
+    // Antes/después de entrenar se prefieren las recetas pensadas para ese momento (sin saltarse las reglas de variedad)
+    const libresTodas = lista.filter(c => !usos.has(c.id))
+    const adecuada = (c: CandidataSemana) => (hueco.momento === 'pre' ? c.pre : hueco.momento === 'post' ? c.post : false)
+    const libres = hueco.momento && libresTodas.some(adecuada) ? [...libresTodas.filter(adecuada), ...libresTodas.filter(c => !adecuada(c))] : libresTodas
     let elegida: CandidataSemana
     let repetida = false
     if (libres.length > 0) {
