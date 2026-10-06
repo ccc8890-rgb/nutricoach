@@ -3,11 +3,11 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { DIAS_SEMANA } from './comidas-dia'
 import { materializarComidasRecurrentes } from './materializar-comidas'
 import { construirFiltroCliente, franjasDelCliente, FRANJAS, REPARTO } from './semana-dieta'
-import { repartirSemanaSinRepetir, type Asignacion, type CandidataSemana, type Hueco } from './generar-semana'
+import { claveCompeticion, repartirSemanaSinRepetir, type Asignacion, type CandidataSemana, type Hueco } from './generar-semana'
 import { filtrarRecetasPorSlot } from '@/lib/plan-recetas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { completarSemana } from './completar-comidas'
-import { objetivosPorDia } from './objetivo-dia'
+import { objetivosPorDia, planDelDia, type ObjetivoDia } from './objetivo-dia'
 import { contextoRecetaCompeticion } from './receta-competicion'
 import type { SlotComida } from '@/lib/tipos-comida'
 
@@ -72,6 +72,32 @@ export async function candidatasPorFranja(
   return { candidatas, shares }
 }
 
+// Candidatas para los huecos de víspera, día de carrera y recuperación, pedidas con el OBJETIVO DE ESE DÍA
+// (hidratos altos) y no con el del plan base: así el filtro de encaje ya busca platos ricos en hidratos.
+export async function candidatasDeCompeticion(
+  db: SupabaseClient,
+  clienteId: string,
+  plan: PlanObjetivo,
+  huecos: Hueco[],
+  objDia: Record<string, ObjetivoDia>,
+  franjasDia: SlotComida[],
+) {
+  const grupos = new Map<string, { franja: SlotComida; dia: string; n: number }>()
+  for (const h of huecos) {
+    if (!h.competicion) continue
+    const clave = claveCompeticion(h.competicion, h.franja)
+    const g = grupos.get(clave)
+    if (g) g.n += 1
+    else grupos.set(clave, { franja: h.franja as SlotComida, dia: h.dia, n: 1 })
+  }
+  const resultado: Record<string, CandidataSemana[]> = {}
+  await Promise.all([...grupos].map(async ([clave, g]) => {
+    const { candidatas } = await candidatasPorFranja(db, clienteId, planDelDia(plan, objDia[g.dia]), [g.franja], franjasDia, { [g.franja]: g.n }, [g.franja])
+    resultado[clave] = candidatas[g.franja] ?? []
+  }))
+  return resultado
+}
+
 export async function planificarSemana(
   db: SupabaseClient,
   clienteId: string,
@@ -108,7 +134,8 @@ export async function planificarSemana(
   const franjasCompeticion = franjasConHueco.filter(f => huecos.some(h => h.franja === f && h.competicion))
   const { candidatas, shares } = await candidatasPorFranja(db, clienteId, plan, franjasConHueco, franjasDia, necesarias, franjasCompeticion)
 
-  const { asignaciones, sinCubrir } = repartirSemanaSinRepetir(candidatas, huecos)
+  const candidatasComp = await candidatasDeCompeticion(db, clienteId, plan, huecos, objDiaPlan, franjasDia)
+  const { asignaciones, sinCubrir } = repartirSemanaSinRepetir(candidatas, huecos, undefined, candidatasComp)
   return { huecos, candidatas, asignaciones: asignaciones as Asignacion[], sinCubrir, shares, existentes }
 }
 

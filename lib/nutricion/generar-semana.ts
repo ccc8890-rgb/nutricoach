@@ -19,6 +19,9 @@ const VENTANA_MISMO_DIA = 30
 // Solo reordena candidatas que ya están cerca por encaje base; evita rescatar un plato nutricionalmente absurdo del fondo.
 const VENTANA_COMPETICION = 24
 
+// Clave de las candidatas pedidas con el objetivo de un día de competición (p. ej. 'vispera:Comida')
+export const claveCompeticion = (contexto: string, franja: string) => `${contexto}:${franja}`
+
 const sinTildes = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 export function claveProteina(nombre: string): string | null {
@@ -40,6 +43,8 @@ export function repartirSemanaSinRepetir(
   huecos: Hueco[],
   // Recetas ya usadas en otras semanas: se evitan igual que las de esta semana (solo se repiten si no queda otra)
   evitar?: Iterable<string>,
+  // Candidatas de víspera/carrera/recuperación pedidas con el objetivo de ese día (hidratos altos); si faltan, se usan las de la franja
+  candidatasCompeticion?: Record<string, CandidataSemana[]>,
 ): { asignaciones: Asignacion[]; sinCubrir: Hueco[] } {
   const usos = new Map<string, number>()
   for (const id of evitar ?? []) usos.set(id, 1)
@@ -54,7 +59,8 @@ export function repartirSemanaSinRepetir(
   const orden = [...huecos].sort((a, b) => escasez(a.franja) - escasez(b.franja))
 
   for (const hueco of orden) {
-    const lista = candidatasPorFranja[hueco.franja] ?? []
+    const especifica = hueco.competicion ? candidatasCompeticion?.[claveCompeticion(hueco.competicion, hueco.franja)] : undefined
+    const lista = especifica && especifica.length > 0 ? especifica : (candidatasPorFranja[hueco.franja] ?? [])
     if (lista.length === 0) { sinCubrir.push(hueco); continue }
 
     // Antes/después de entrenar se prefieren las recetas pensadas para ese momento (sin saltarse las reglas de variedad)

@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { DIAS_SEMANA } from './comidas-dia'
 import { materializarComidasRecurrentes } from './materializar-comidas'
 import { FRANJAS, REPARTO, franjasDelCliente } from './semana-dieta'
-import { candidatasPorFranja, type PlanObjetivo } from './planificar-semana'
+import { candidatasDeCompeticion, candidatasPorFranja, type PlanObjetivo } from './planificar-semana'
 import { repartirSemanaSinRepetir, type Hueco } from './generar-semana'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { completarSemana } from './completar-comidas'
@@ -199,7 +199,8 @@ export async function generarFutura(
     ...filas.filter(f => f.semana !== p.semana).map(f => f.receta_id),
     ...(p.reemplazar ? [] : propias.map(r => r.receta_id)),
   ])
-  const { asignaciones, sinCubrir } = repartirSemanaSinRepetir(candidatas, huecos, evitar)
+  const candidatasComp = await candidatasDeCompeticion(db, clienteId, plan, huecos, objDia, franjasDia)
+  const { asignaciones, sinCubrir } = repartirSemanaSinRepetir(candidatas, huecos, evitar, candidatasComp)
   if (asignaciones.length > 0) {
     const { error } = await db.from('comidas_planificadas').upsert(
       asignaciones.map(a => ({ plan_id: plan.id, semana: p.semana, dia_semana: a.dia, franja: a.franja, receta_id: a.receta_id })),

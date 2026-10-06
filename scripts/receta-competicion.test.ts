@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { contextoRecetaCompeticion, puntuarRecetaCompeticion } from '../lib/nutricion/receta-competicion'
 import type { ObjetivoDia } from '../lib/nutricion/objetivo-dia'
-import { repartirSemanaSinRepetir, type CandidataSemana, type Hueco } from '../lib/nutricion/generar-semana'
+import { claveCompeticion, repartirSemanaSinRepetir, type CandidataSemana, type Hueco } from '../lib/nutricion/generar-semana'
 
 const receta = (id: string, datos: Partial<CandidataSemana> = {}): CandidataSemana => ({
   id,
@@ -71,6 +71,19 @@ assert.equal(contextoRecetaCompeticion(objetivo('recuperacion', -3)), undefined)
   }
   const huecos: Hueco[] = [{ dia: 'Lunes', franja: 'Comida' }]
   assert.equal(repartirSemanaSinRepetir(candidatas, huecos).asignaciones[0].receta_id, 'primera')
+}
+
+// Candidatas pedidas con el objetivo del día de competición: el hueco de víspera usa su lista; el resto, la de la franja
+{
+  const base: CandidataSemana[] = [{ id: 'base', nombre: 'Plato base', kcal: 500, carbohidratos: 30, grasas: 25 }]
+  const vispera: CandidataSemana[] = [{ id: 'vispera', nombre: 'Arroz blanco con pollo', kcal: 600, carbohidratos: 85, grasas: 10 }]
+  const huecos: Hueco[] = [{ dia: 'Sábado', franja: 'Comida', competicion: 'vispera' }, { dia: 'Lunes', franja: 'Comida' }]
+  const r = repartirSemanaSinRepetir({ Comida: base }, huecos, undefined, { [claveCompeticion('vispera', 'Comida')]: vispera })
+  assert.equal(r.asignaciones.find(a => a.dia === 'Sábado')!.receta_id, 'vispera')
+  assert.equal(r.asignaciones.find(a => a.dia === 'Lunes')!.receta_id, 'base')
+  // Sin lista específica o vacía se recurre a la de la franja
+  assert.equal(repartirSemanaSinRepetir({ Comida: base }, [huecos[0]], undefined, { [claveCompeticion('vispera', 'Comida')]: [] }).asignaciones[0].receta_id, 'base')
+  assert.equal(repartirSemanaSinRepetir({ Comida: base }, [huecos[0]]).asignaciones[0].receta_id, 'base')
 }
 
 console.log('receta-competicion: OK')
