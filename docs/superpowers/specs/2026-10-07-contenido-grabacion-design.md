@@ -107,3 +107,19 @@ Días de grabación y de publicación, con dieta y entreno en pequeño para evit
 
 - El puente Content Radar → NutriCoach no se ha probado con datos reales (pendiente #1). Mitigado: Contenido no depende de la extracción.
 - Los dos mecanismos de estado (`contenido_estado` y piezas) conviven un tiempo; el planificador pasa a escribir solo en piezas para evitar divergencia.
+
+## Cambios respecto al diseño inicial (decididos al implementar, 07-10-2026)
+
+| Diseño inicial | Como quedó | Por qué |
+|---|---|---|
+| "Con enlace, se lanza Content Radar" | Carlos comparte el reel a Content Radar como siempre; Contenido enlaza la pieza con la receta buscando `recetas.url_origen` (enlace normalizado) | La app no puede disparar Content Radar (vive en Notion/Shortcut/Telegram + GitHub Actions) |
+| El icono del planificador "lee y escribe en la pieza" | Escribe en piezas; `recetas.contenido_estado` es un caché derivado | Lo leen 4 sitios que así no se tocan |
+| Compra con coste por supermercado | Coste estimado con el precio más barato por ingrediente | El desglose por supermercado depende de selecciones por plan |
+| Orden de cocinado por tiempo, horno y reposo | Solo por `tiempo_prep_min` | No hay columna fiable de tipo de cocción |
+| Tablero con tarjetas arrastrables | Selector de estado por tarjeta | Menos fricción y menos código |
+| Calendario con dieta y entreno | Grabación, publicación y **dieta de cada día**; sin entreno | Carlos: el entreno se graba aparte |
+| "Colocar en mi dieta" en el día de grabación y siguientes | Solo semanas +1…+8; la semana en curso avisa y no coloca | La semana en curso usa otra tabla (`comidas`) |
+| Tanda parte de las cantidades de la dieta | Cantidades completas de la receta | Para grabar se cocina la receta entera |
+| "Ya lo tengo" en la compra | Se guarda en el navegador (localStorage) | Comodidad por dispositivo |
+| (no previsto) | Se puede añadir **cualquier receta** del recetario a la tanda y dejar fuera de la dieta las que solo se graban (casilla "Entra en mi dieta") | Petición de Carlos: grabar algo distinto a lo que come |
+| (no previsto) | `enlace_referencia` solo acepta http(s) | Hallazgo de la auditoría: se pinta como `<a href>` |

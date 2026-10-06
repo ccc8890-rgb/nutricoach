@@ -1,5 +1,8 @@
 # ESTADO NutriCoach — 29-05-2026 (Sesión 46 — Rediseño /clientes + Agente Retención ✅)
 
+> **07-10-2026:** este documento está desactualizado desde mayo; el historial real por sesión vive en `CLAUDE.md` (último bloque: «SESIÓN 07-10-2026 — Apartado Contenido»).
+
+
 > Leer al inicio de CADA sesión. Documento dinámico actualizado al cerrar (29-05-2026).
 
 ---

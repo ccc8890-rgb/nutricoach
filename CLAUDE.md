@@ -1,5 +1,37 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 07-10-2026 (Claude) — Apartado «Contenido»: ideas, tandas de grabación y publicación
+
+Pedido de Carlos: apuntar recetas que ve en Instagram/TikTok o que ya tiene en el recetario, documentarlas y organizar días de grabación en tanda, alineados con su dieta y con la compra. Spec: `docs/superpowers/specs/2026-10-07-contenido-grabacion-design.md`; plan: `docs/superpowers/plans/2026-10-07-contenido-grabacion.md` (13 tareas, ejecutado en modo nativo con TDD). Commits `52b7e63`→`e21db3e` más el cierre.
+
+### Qué hay
+- **Menú del coach → «Contenido»** (`/contenido`), 4 vistas: **Bandeja** (entrada rápida: nota, enlace o ambos), **Día de grabación** (compra consolidada, orden de cocinado, escaleta de 6 planos con casillas, «Añadir desde mi dieta», «Añadir otra receta del recetario», casilla «Entra en mi dieta» y «Colocar en mi dieta»), **Tablero** (7 estados, fechas de grabación y publicación) y **Calendario** (semana con grabación, publicación y lo que comes cada día; 🎬 si una receta «para grabar» ya está en la dieta).
+- **Tabla `piezas_contenido`** (migración `20261007120000`, **aplicada en producción** con `supabase db query --linked` tras confirmación de Carlos): estado `idea→documentada→para_grabar→grabada→editada→programada→publicada`, `receta_id`/`plan_id` opcionales, `planos_hechos text[]`, RLS por `coach_id`. Las rutas usan service role y filtran por coach.
+- **Módulos puros con test** en `lib/contenido/` (`estados`, `escaleta`, `fechas`, `enlace`, `tanda`, `validacion`) y con cliente Supabase falso (`piezas`, `compra-tanda`). Tests: `scripts/contenido-*.test.ts` y `scripts/lista-compra-agregar.test.ts` (ejecutar con `npx tsx`). `agregarIngredientes` se extrajo de la ruta semanal a `lib/lista-compra/agregar.ts` (la ruta no cambia de comportamiento).
+- **El icono de vídeo del planificador** (`/api/recetas/[id]/contenido`) ahora escribe en piezas y `recetas.contenido_estado` es un **caché derivado** (`sincronizarIconoReceta`): no tocar sus 4 lectores.
+- Un enlace de Instagram/TikTok se enlaza con la receta buscando `recetas.url_origen` normalizado (sin `www`, parámetros ni barra final; YouTube conserva `v`). **No se lanza Content Radar desde la app**: Carlos sigue compartiendo el reel a Content Radar y la pieza se enlaza sola cuando la receta aparece.
+
+### Auditoría de la sesión
+- Toda ruta `app/api/contenido/**` y la del icono pasan por `autorizarCoach`; las que reciben `cliente_id` comprueban además `autorizarSemanaDieta` (coach propietario). Sin `err.message` en respuestas, sin claves en componentes cliente, UUID y fechas validados.
+- **Hallazgo corregido con TDD:** `enlace_referencia` aceptaba `javascript:` y se pinta como `<a href>`. Ahora solo http(s).
+- RLS y restricciones comprobadas contra la BD real: estado inválido rechazado, pieza válida insertada y borrada, 0 restos.
+- **Menores aplazados:** el caché del icono se actualiza por `receta_id` sin comprobar de qué coach es la receta (hoy hay un solo coach); un PATCH con `estado` y `planos_hechos` a la vez no los reconcilia; `plan_id`/`receta_id` llegan del cliente sin comprobar pertenencia (solo referencias).
+
+### Límites conscientes
+- «Colocar en mi dieta» solo cubre las semanas +1…+8 (`comidas_planificadas`); la semana en curso avisa y no coloca. **Sustituye** lo que haya en esos huecos de Comida/Cena (pide confirmación).
+- La tanda usa las cantidades completas de la receta (se cocina entera para grabar); el coste usa el precio más barato por ingrediente; «ya lo tengo» vive en localStorage.
+- Sin entreno en el calendario ni arrastre en el tablero (decisión de Carlos: el entreno se graba aparte).
+
+### Pendiente
+1. **Probar la interfaz en navegador con Carlos** (no se pudo: exige que inicie sesión; `browse --headed` + handoff). Recorrido: apuntar idea con enlace → marcar para grabar → fecha → día de grabación → marcar planos → colocar en dieta (semana +1) → calendario con dieta. Comprobar que el icono del planificador y el contador «en la dieta» cuadran.
+2. Probar con un reel real ya extraído por Content Radar que el enlace automático por `url_origen` funciona (el puente Content Radar→NutriCoach sigue sin probarse con datos reales: pendiente #1 del CLAUDE.md raíz).
+3. Si estorba: entreno en el calendario, arrastrar tarjetas, coste por supermercado, tipo de cocción en el orden.
+
+### Lecciones
+- Verificar el plan contra el código antes de prometer: la primera versión del plan prometía lanzar Content Radar desde la app, algo imposible; salió al leer cómo funciona Content Radar.
+- Los módulos con base de datos también se testean TDD con un cliente Supabase falso (tabla → filas fijas, registra escrituras); cubrió el enlace por `url_origen` y la sincronización del icono.
+- Escribir un componente de UI una sola vez cuando tres tareas lo comparten, y dejarlo anotado, es más barato que reescribirlo tres veces.
+
 ## ✅ SESIÓN 06-10-2026 (Claude + Codex) — Recetas de víspera/carrera, bandeja única de revisión y analíticas
 
 Commits en `main`: `0ceec65`, `ebdb424`, `b060c51` y dos correcciones visuales (`fix:` botones Aprobar invisibles y tabla cortada).
