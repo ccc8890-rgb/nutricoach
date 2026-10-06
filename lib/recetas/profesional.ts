@@ -226,7 +226,7 @@ function validarAlimentoCeroKcal(ing: IngredienteProfesionalInput): string | nul
   const nombre = normalizarStr(ing.nombre_libre || '')
   const alimento = normalizarStr(ing.nombre_alimento || '')
   // allowed zero‑kcal ingredients
-  const permitidos = /^(agua|hielo|sal|vinagre|especia|edulcorante|gelatina 0|infusión|infusion)$/
+  const permitidos = /^(agua|hielo|sal|flor de sal|sal marina|vinagre|especia|edulcorante|gelatina 0|infusión|infusion)(\s|$)/
   if (permitidos.test(nombre) || permitidos.test(alimento)) return null
   return 'alimento_cero_kcal'
 }
@@ -238,6 +238,8 @@ function validarCantidadMuyPequena(ing: IngredienteProfesionalInput): string | n
   // only flag if it looks like a main ingredient (protein, cereal, legume, dairy, fruit, vegetable)
   const principal = /(pollo|ternera|cerdo|pescado|huevo|tofu|seitan|arroz|pasta|pan|avena|quinoa|legumbre|lenteja|garbanzo|alubia|leche|yogur|queso|requesón|fruta|verdura|hortaliza|espinaca|brócoli|zanahoria|tomate|cebolla|ajo|pimiento|calabacín|berenjena|patata|boniato|calabaza)/i
   if (!principal.test(nombre)) return null
+  // aromáticos que se usan en cantidades de 1-4 g por ración (ajo, cebolla/ajo en polvo): no son ingrediente principal
+  if (/(\bajo\b|en polvo|deshidratad)/i.test(nombre) && cantidad >= 1) return null
   return 'cantidad_muy_pequena'
 }
 

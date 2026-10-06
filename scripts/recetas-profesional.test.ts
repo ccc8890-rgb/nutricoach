@@ -246,6 +246,22 @@ assert.equal(resumen.estado_sugerido, 'bloqueada')
   assert.ok(score.bloqueantes.includes('alimento_cero_kcal'), 'Debería bloquear alimento_cero_kcal')
 }
 
+// 3b. Aromáticos pequeños (ajo 3 g) y agua/sal con nombre largo no bloquean
+{
+  const input: RecetaProfesionalInput = {
+    ...base,
+    ingredientes: [
+      { nombre_libre: 'Ajo', cantidad_gramos: 3, tiene_precio: true },
+      { nombre_libre: 'Ajo en polvo', cantidad_gramos: 1, tiene_precio: true },
+      { nombre_libre: 'Agua mineral con gas', nombre_alimento: 'Agua Mineral Gas', cantidad_gramos: 200, tiene_precio: true, kcal_alimento: 0 },
+      { nombre_libre: 'Flor de sal', nombre_alimento: 'Flor de sal', cantidad_gramos: 40, tiene_precio: true, kcal_alimento: 0 },
+    ],
+  }
+  const score = calcularScoreCalidadReceta(input)
+  assert.ok(!score.bloqueantes.includes('cantidad_muy_pequena'), 'Ajo 1-4 g no debe bloquear')
+  assert.ok(!score.bloqueantes.includes('alimento_cero_kcal'), 'Agua/flor de sal no deben bloquear')
+}
+
 // 4. Pechuga de pollo 3g => bloqueantes incluye 'cantidad_muy_pequena'
 {
   const input: RecetaProfesionalInput = {
