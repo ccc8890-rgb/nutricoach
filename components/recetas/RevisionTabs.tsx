@@ -5,14 +5,9 @@ import { usePathname } from 'next/navigation'
 
 const TABS = [
   { href: '/recetas/revisar', label: 'Revisión' },
-  { href: '/recetas/cola', label: 'Pendientes' },
   { href: '/recetas/imagenes', label: 'Imágenes' },
 ]
 
-// Antes eran 3 entradas separadas en el menú principal. En el fondo son la
-// misma tarea (recetas que necesitan atención antes de publicarse), así que
-// aquí viven como pestañas dentro de una sola pantalla en vez de 3 enlaces
-// distintos en el sidebar.
 export default function RevisionTabs() {
   const pathname = usePathname()
 

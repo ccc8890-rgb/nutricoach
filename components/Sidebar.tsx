@@ -362,7 +362,7 @@ export default function Sidebar() {
       label: 'Recetario',
       icon: ChefHat,
       badge: recetasPendientes,
-      items: RECETARIO_ITEMS.map(item => item.href === '/recetas/cola' ? { ...item, badge: recetasPendientes } : item),
+      items: RECETARIO_ITEMS.map(item => item.href === '/recetas/revisar' ? { ...item, badge: recetasPendientes } : item),
     },
     {
       type: 'group',
