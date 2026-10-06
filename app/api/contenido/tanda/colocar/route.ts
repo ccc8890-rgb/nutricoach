@@ -10,13 +10,13 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // Reparte las recetas de la tanda (o solo las de `pieza_ids`) en Comida y Cena desde la fecha de grabación, en las semanas planificadas (+1…+8) del plan.
 export async function POST(request: NextRequest) {
+  const c = await autorizarCoach(request)
+  if ('error' in c) return c.error
   const b = await request.json().catch(() => null) as { fecha?: unknown; cliente_id?: unknown; pieza_ids?: unknown } | null
   if (typeof b?.fecha !== 'string' || !FECHA.test(b.fecha)) return NextResponse.json({ error: 'Fecha no válida' }, { status: 400 })
   if (typeof b.cliente_id !== 'string' || !UUID.test(b.cliente_id)) return NextResponse.json({ error: 'Cliente no válido' }, { status: 400 })
   const soloIds = b.pieza_ids === undefined ? null : Array.isArray(b.pieza_ids) && b.pieza_ids.every(x => typeof x === 'string' && UUID.test(x)) ? b.pieza_ids as string[] : undefined
   if (soloIds === undefined) return NextResponse.json({ error: 'Piezas no válidas' }, { status: 400 })
-  const c = await autorizarCoach(request)
-  if ('error' in c) return c.error
   const a = await autorizarSemanaDieta(request, b.cliente_id)
   if ('error' in a) return a.error
   if (!a.plan) return NextResponse.json({ error: 'El cliente no tiene plan de dieta activo' }, { status: 409 })
