@@ -1,5 +1,6 @@
 import { esEstadoPieza, type EstadoPieza } from './estados'
 import { IDS_PLANOS } from './escaleta'
+import { normalizarEnlace } from './enlace'
 
 export type CambiosPieza = {
   titulo?: string
@@ -34,6 +35,8 @@ export function limpiarCambios(body: unknown): { ok: true; cambios: CambiosPieza
     const v = b[k]
     if (v === null || v === '') { c[k] = null; continue }
     if (typeof v !== 'string' || v.trim().length > LIMITES[k]) return { ok: false, error: `${k} no válido` }
+    // El enlace se pinta como <a href>: solo http(s)
+    if (k === 'enlace_referencia' && normalizarEnlace(v) === null) return { ok: false, error: 'El enlace debe empezar por http:// o https://' }
     c[k] = v.trim()
   }
   if ('estado' in b) {

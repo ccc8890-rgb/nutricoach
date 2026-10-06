@@ -24,6 +24,12 @@ mal({ planos_hechos: 'plato' })
 mal({ receta_id: 'no-uuid' })
 mal({ notas: 5 })
 
+// El enlace se pinta como <a href>: solo http(s), nunca javascript: ni texto suelto
+assert.deepEqual(ok({ enlace_referencia: 'https://www.instagram.com/reel/ABC/' }), { enlace_referencia: 'https://www.instagram.com/reel/ABC/' })
+mal({ enlace_referencia: 'javascript:alert(1)' })
+mal({ enlace_referencia: 'data:text/html,<script>alert(1)</script>' })
+mal({ enlace_referencia: 'una nota cualquiera' })
+
 // Campos no permitidos se ignoran
 assert.deepEqual(ok({ titulo: 'A', coach_id: 'otro', id: 'x' }), { titulo: 'A' })
 
