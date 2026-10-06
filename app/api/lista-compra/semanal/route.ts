@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { canonicalizarItemCompra, esIngredienteBasicoNoCompra } from '@/lib/lista-compra/filtros'
+import { agregarIngredientes, type FuenteIngrediente } from '@/lib/lista-compra/agregar'
 import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 import { objetivosPorDia } from '@/lib/nutricion/objetivo-dia'
 import { MAX_SEMANAS, obtenerIngredientesSemanaFutura } from '@/lib/nutricion/semanas-futuras'
@@ -31,33 +31,10 @@ function getInicioSemanaFutura(semana: number): string {
     return fecha.toISOString().split('T')[0]
 }
 
-type FuenteIngrediente = { alimento_id: string; alimento_nombre: string; categoria: string; es_generico: boolean; cantidad_gramos: number; receta_nombre: string }
-type IngredienteAgregado = Omit<IngredienteSemanal, 'precios' | 'seleccion'> & { alimento_ids: string[] }
 type ComidaActual = { nombre: string; comida_alimentos: { cantidad_gramos: number | null; alimentos: { id: string; nombre: string; categoria: string | null; es_generico: boolean | null } | null }[] }
 type SeleccionGuardada = {
     id: string; alimento_id: string; supermercado_id: string | null; producto_nombre?: string; precio_por_kg?: number
     url_producto?: string; seleccionado_por: 'coach' | 'cliente'; supermercados?: { nombre?: string } | null
-}
-
-function agregarIngredientes(fuentes: FuenteIngrediente[]) {
-    const mapa = new Map<string, IngredienteAgregado>()
-    for (const fuente of fuentes) {
-        if (esIngredienteBasicoNoCompra(fuente.alimento_nombre)) continue
-        const canonical = canonicalizarItemCompra({ id: fuente.alimento_id, nombre: fuente.alimento_nombre, categoria: fuente.categoria })
-        const existing = mapa.get(canonical.key)
-        if (existing) {
-            existing.cantidad_gramos_total += fuente.cantidad_gramos || 0
-            existing.alimento_ids = Array.from(new Set([...existing.alimento_ids, fuente.alimento_id]))
-            if (!existing.recetas_origen.includes(fuente.receta_nombre)) existing.recetas_origen.push(fuente.receta_nombre)
-        } else {
-            mapa.set(canonical.key, {
-                alimento_id: fuente.alimento_id, alimento_ids: [fuente.alimento_id], alimento_nombre: canonical.nombre,
-                categoria: canonical.categoria, es_generico: fuente.es_generico, cantidad_gramos_total: fuente.cantidad_gramos || 0,
-                recetas_origen: [fuente.receta_nombre],
-            })
-        }
-    }
-    return mapa
 }
 
 export async function GET(request: NextRequest) {
