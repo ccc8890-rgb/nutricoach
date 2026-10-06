@@ -208,7 +208,7 @@ export default function RevisarRecetasPage() {
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{respuesta ? `${respuesta.total} resultados en este filtro` : 'Cargando…'}</p>
           </div>
           <button onClick={() => cargar()} aria-label="Actualizar" className="rounded-xl border p-2.5" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}><RefreshCw size={16} /></button>
-          <button onClick={aprobarAprobables} disabled={aprobandoLote || !respuesta?.aprobablesIds.length} className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold disabled:opacity-40" style={{ color: 'var(--primary-foreground)', background: 'var(--primary)' }}>
+          <button onClick={aprobarAprobables} disabled={aprobandoLote || !respuesta?.aprobablesIds.length} className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold disabled:opacity-40" style={{ color: 'var(--bg)', background: 'var(--primary)' }}>
             {aprobandoLote ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
             Aprobar aprobables ({respuesta?.aprobablesIds.length ?? 0})
           </button>
@@ -288,7 +288,7 @@ function Acciones({ receta, busy, onEstado }: { receta: RecetaRevision; busy: bo
   const aprobable = esRecetaAprobable(receta.estado, receta.quality_issues)
   const motivo = receta.quality_issues?.bloqueantes?.join(' · ') || (receta.estado === 'aprobada' ? 'La receta ya está aprobada' : 'Solo se aprueban recetas pendientes')
   return <div className="flex flex-wrap gap-1.5">
-    <button disabled={busy || !aprobable} title={aprobable ? 'Aprobar receta' : motivo} onClick={() => onEstado(receta, 'aprobada')} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40" style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}>{busy ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}Aprobar</button>
+    <button disabled={busy || !aprobable} title={aprobable ? 'Aprobar receta' : motivo} onClick={() => onEstado(receta, 'aprobada')} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40" style={{ background: 'var(--primary)', color: 'var(--bg)' }}>{busy ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}Aprobar</button>
     <button disabled={busy || receta.estado === 'descartada'} onClick={() => onEstado(receta, 'descartada')} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold disabled:opacity-40" style={{ borderColor: 'var(--error)', color: 'var(--error)' }}><Trash2 size={13} />Descartar</button>
     <Link href={`/recetas/${receta.id}`} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>Abrir <ExternalLink size={12} /></Link>
   </div>
