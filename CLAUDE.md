@@ -18,7 +18,7 @@ Commits en `main`: `0ceec65`, `ebdb424`, `b060c51` y dos correcciones visuales (
 - `GET/PATCH /api/clientes/[id]/analiticas` (solo coach propietario; fusiona con `analisis_valores`, `null` borra una clave, valida claves/valores) y `components/clientes/AnaliticasPanel.tsx` en la pestaña **Perfil**. `lib/analiticas-marcadores.ts` es la lista única de marcadores (la usa también el onboarding). Vitamina D y ferritina <30 ng/mL activan esas propuestas en Suplementación. Cargado y revisado en producción; **no se probó a guardar** (no se quiso escribir en la ficha de Carlos).
 
 ### Pendiente
-1. Más recetas de víspera (comidas con ≥60 % de hidratos y fibra <6 g, desayunos bajos en fibra) y probar la semana de carga con una competición real cargada.
+1. Aprobar el 2.º lote de víspera (`scripts/lotes/2026-10-06_vispera-carrera-2.json`: 11 recetas con atún, pescadilla, dorada, pavo, pollo y jamón, y 4 desayunos pre-carrera; ya importadas **en revisión**, las 11 aprobables → «Aprobar aprobables» en la bandeja) y probar la semana de carga con una competición real cargada. Se descartaron los ñoquis por llevar 7,5 g de fibra.
 2. Probar el guardado de analíticas y la tarjeta de suplementación del portal con un cliente que tenga datos.
 3. Revisar el descuadre de 3 recetas y quién lanzó el lote de aprobación; la API `GET /api/recetas/revisar` solo exige sesión (no rol coach).
 
