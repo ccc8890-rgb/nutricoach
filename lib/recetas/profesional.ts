@@ -170,11 +170,13 @@ function validarCantidadesSospechosas(ing: IngredienteProfesionalInput): string 
   // Ralladura/cascara/piel de citrico > 10g
   if (/(ralladura|cascara|piel)\s*(de\s*)?(limon|lima|naranja|pomelo|mandarina)/.test(nombre) && gramos > 10) return 'cantidades_sospechosas'
   // Especias secas > 20g ("proteína sabor vainilla" o "yogur sabor canela" no son especias)
-  if (!/\bsabor\b|prote/.test(nombre) && /(canela|clavo|nuez moscada|jengibre|curcuma|pimenton|oregano|tomillo|romero|laurel|comino|cilantro|perejil|albahaca|menta|hierbabuena|eneldo|estragon|salvia|cebollino|ajo en polvo|cebolla en polvo|mostaza en polvo|curry|garam masala|chile|pimienta|cardamomo|anís|vainilla|azafran)/.test(nombre) && gramos > 20) return 'cantidades_sospechosas'
-  // Aceite > 60g por receta (we'll check per ingredient, but total will be checked later)
-  if (/(aceite|aceite de oliva|aceite de girasol|aceite de coco|aceite de aguacate|aceite de sesamo|aceite de cacahuete|aceite de soja|aceite de maiz|aceite de canola|aceite vegetal|aceite de palma|aceite de almendras|aceite de nuez|aceite de avellana|aceite de uva|aceite de linaza|aceite de onagra|aceite de borraja|aceite de pescado|aceite de higado de bacalao)/.test(nombre) && gramos > 60) return 'cantidades_sospechosas'
+  // (\b: 'menta' no debe coincidir con 'emmental'; hierbas frescas hasta 60 g; salsas/pesto no son especias)
+  const umbralEspecia = /fresc/.test(nombre) ? 60 : 20
+  if (!/\bsabor\b|prote|^salsa|^pesto/.test(nombre) && /\b(canela|clavo|nuez moscada|jengibre|curcuma|pimenton|oregano|tomillo|romero|laurel|comino|cilantro|perejil|albahaca|menta|hierbabuena|eneldo|estragon|salvia|cebollino|ajo en polvo|cebolla en polvo|mostaza en polvo|curry|garam masala|chile|pimienta|cardamomo|anis|vainilla|azafran)\b/.test(nombre) && gramos > umbralEspecia) return 'cantidades_sospechosas'
+  // Aceite > 120g por receta (recetas de tanda: salsas, mayonesas, masas; el límite por ración lo cubre el rango de kcal)
+  if (/(aceite|aceite de oliva|aceite de girasol|aceite de coco|aceite de aguacate|aceite de sesamo|aceite de cacahuete|aceite de soja|aceite de maiz|aceite de canola|aceite vegetal|aceite de palma|aceite de almendras|aceite de nuez|aceite de avellana|aceite de uva|aceite de linaza|aceite de onagra|aceite de borraja|aceite de pescado|aceite de higado de bacalao)/.test(nombre) && gramos > 120) return 'cantidades_sospechosas'
   // Condimentos tipo vinagre/zumo/limon > 120g salvo bebida (solo líquidos/condimentos, no frutas enteras)
-  if (/(vinagre|(zumo|jugo) de (limon|lima)|limon|lima|salsa|aliño|aderezo)/.test(nombre) && gramos > 120) return 'cantidades_sospechosas'
+  if (/(vinagre|(zumo|jugo) de (limon|lima)|limon|lima|salsa|aliño|aderezo)/.test(nombre) && !/salsa (de )?(tomate|pesto)|tomate frito|ragu/.test(nombre) && gramos > 120) return 'cantidades_sospechosas'
   return null
 }
 
@@ -236,7 +238,7 @@ function validarCantidadMuyPequena(ing: IngredienteProfesionalInput): string | n
   if (cantidad >= 5) return null
   const nombre = normalizarStr(ing.nombre_libre || '')
   // only flag if it looks like a main ingredient (protein, cereal, legume, dairy, fruit, vegetable)
-  const principal = /(pollo|ternera|cerdo|pescado|huevo|tofu|seitan|arroz|pasta|pan|avena|quinoa|legumbre|lenteja|garbanzo|alubia|leche|yogur|queso|requesón|fruta|verdura|hortaliza|espinaca|brócoli|zanahoria|tomate|cebolla|ajo|pimiento|calabacín|berenjena|patata|boniato|calabaza)/i
+  const principal = /(pollo|ternera|cerdo|pescado|huevo|tofu|seitan|arroz|pasta|\bpan\b|avena|quinoa|legumbre|lenteja|garbanzo|alubia|leche|yogur|queso|requesón|fruta|verdura|hortaliza|espinaca|brócoli|zanahoria|tomate|cebolla|ajo|pimiento|calabacín|berenjena|patata|boniato|calabaza)/i
   if (!principal.test(nombre)) return null
   // aromáticos que se usan en cantidades de 1-4 g por ración (ajo, cebolla/ajo en polvo): no son ingrediente principal
   if (/(\bajo\b|en polvo|deshidratad)/i.test(nombre) && cantidad >= 1) return null
