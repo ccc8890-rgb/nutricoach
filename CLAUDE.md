@@ -1,5 +1,27 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 06-10-2026 (Claude + Codex) — Recetas de víspera/carrera, bandeja única de revisión y analíticas
+
+Commits en `main`: `0ceec65`, `ebdb424`, `b060c51` y dos correcciones visuales (`fix:` botones Aprobar invisibles y tabla cortada).
+
+### Recetas de víspera y carrera
+- `candidatasDeCompeticion()` (`planificar-semana.ts`) pide candidatas **con el objetivo del día** (660 g de hidratos la víspera de un maratón, no los 356 g del plan) para los huecos de víspera, carrera y recuperación; `repartirSemanaSinRepetir` las usa por clave `contexto:franja` (`claveCompeticion`) y recurre a las de la franja si no hay. Con un test en `scripts/receta-competicion.test.ts`.
+- **El cuello de botella era el recetario, no el algoritmo:** de 242 recetas de Comida/Cena solo 17 servían para víspera (≥55 % de las kcal en hidratos, fibra <6 g, grasa ≤20 g). Se creó `scripts/lotes/2026-10-06_vispera-carrera.json` (10 recetas: arroz blanco, macarrones, fideos, bocadillo y 4 desayunos pre-carrera marcados `es_pre_entreno`), importadas con `importar-lote-verificado.ts`. Lección repetida: ajo/perejil <5 g bloquean el quality gate (`cantidad_muy_pequena`); el importador no inserta nada si hay una rechazada (usar un lote temporal solo con las nuevas).
+- Medido con el plan real de Carlos y un maratón simulado el 11-10 (solo lectura): CHO medio de las 6 comidas de víspera/carrera **52 % → 59 %**. El día de carrera sale bien (tostadas con mermelada y plátano, macarrones, fideos); la víspera mejora menos (porridge con 7,9 g de fibra y un wrap con 47 % de hidratos). Falta más variedad de recetas de víspera.
+
+### Bandeja única de revisión (`/recetas/revisar`)
+- Antes: Revisión, Pendientes (`/recetas/cola`), Imágenes, Auditoría y Cobertura se pisaban y `/revisar` listaba las 699 recetas por nombre, así que las pendientes se perdían. Ahora `/recetas/revisar` es la **Bandeja de revisión** con pestañas por tarea y contador: Pendientes, Nuevas hoy, Con bloqueos, Sin foto, Todas; buscador, «Más filtros» (nivel fit, tipo de uso, apta para), aprobar/descartar/abrir en cada fila y «Aprobar aprobables». `/recetas/cola` redirige aquí; el menú tiene una sola entrada «Revisión» con el badge de pendientes. `lib/recetas/revision.ts` (+ test) tiene las reglas de tarea y el día en hora de Madrid. Imágenes sigue como pantalla propia, enlazada desde la columna Foto.
+- **Bugs vistos al probarlo en producción con Carlos:** `var(--primary-foreground)` no existe en el tema (botón Aprobar con texto del color del fondo; el patrón del proyecto es `color: var(--bg)`), y a 1280 px la tabla cortaba la columna de acciones (ahora tarjetas hasta `2xl` y acciones fijas en la tabla). Barrido de variables CSS no definidas en los componentes de hoy: ninguna más.
+- **Cuidado con sesiones paralelas:** a las 12:41-12:43 otra sesión aprobó por lote las 118 pendientes (eventos `aprobada_lote`) y verificó 649 con `verificacion_auto`; la bandeja quedó con 0 pendientes. Las 10 recetas de víspera/carrera están aprobadas. No se pudo explicar un descuadre de 3 recetas entre `en_revision` (121→118) y `descartada` (3→6) antes de ese lote; las 6 descartadas son de mayo/junio.
+
+### Analíticas del cliente
+- `GET/PATCH /api/clientes/[id]/analiticas` (solo coach propietario; fusiona con `analisis_valores`, `null` borra una clave, valida claves/valores) y `components/clientes/AnaliticasPanel.tsx` en la pestaña **Perfil**. `lib/analiticas-marcadores.ts` es la lista única de marcadores (la usa también el onboarding). Vitamina D y ferritina <30 ng/mL activan esas propuestas en Suplementación. Cargado y revisado en producción; **no se probó a guardar** (no se quiso escribir en la ficha de Carlos).
+
+### Pendiente
+1. Más recetas de víspera (comidas con ≥60 % de hidratos y fibra <6 g, desayunos bajos en fibra) y probar la semana de carga con una competición real cargada.
+2. Probar el guardado de analíticas y la tarjeta de suplementación del portal con un cliente que tenga datos.
+3. Revisar el descuadre de 3 recetas y quién lanzó el lote de aprobación; la API `GET /api/recetas/revisar` solo exige sesión (no rol coach).
+
 ## ✅ SESIÓN 05-10-2026 (tarde, Claude + Codex) — Periodización por competición, suplementación y hora por sesión
 
 Pedido de Carlos: seguir con los pendientes de la lista. Hecho de punta a punta y probado en producción con su sesión de coach (handoff). Commits en `main`: `c1aeb68`, `048a2ca`, `84ae038`, `6361854`, `3bdc301`, `5ee0ac4`, `8b37cda`.
