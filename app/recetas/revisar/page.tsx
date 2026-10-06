@@ -252,13 +252,13 @@ export default function RevisarRecetasPage() {
           <div className="space-y-2">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-28 animate-pulse rounded-2xl" style={{ background: 'var(--surface)' }} />)}</div>
         ) : respuesta?.data.length ? (
           <>
-            <div className="grid gap-3 lg:hidden">
+            <div className="grid gap-3 2xl:hidden">
               {respuesta.data.map(receta => <RecetaCard key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} />)}
             </div>
-            <div className="hidden overflow-x-auto rounded-2xl border lg:block" style={{ borderColor: 'var(--border)' }}>
+            <div className="hidden overflow-x-auto rounded-2xl border 2xl:block" style={{ borderColor: 'var(--border)' }}>
               <table className="w-full text-left text-sm">
                 <thead style={{ background: 'var(--surface)' }}><tr className="border-b" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
-                  {['Foto', 'Receta', 'Macros/ración', 'Calidad', 'Estado y alta', 'Acciones'].map(label => <th key={label} className="px-3 py-3 text-xs font-semibold">{label}</th>)}
+                  {['Foto', 'Receta', 'Macros/ración', 'Calidad', 'Estado y alta', 'Acciones'].map(label => <th key={label} className={`px-3 py-3 text-xs font-semibold${label === 'Acciones' ? ' sticky right-0' : ''}`} style={label === 'Acciones' ? { background: 'var(--surface)' } : undefined}>{label}</th>)}
                 </tr></thead>
                 <tbody>{respuesta.data.map(receta => <RecetaFila key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} />)}</tbody>
               </table>
@@ -309,6 +309,6 @@ function RecetaFila({ receta, busy, onEstado }: { receta: RecetaRevision; busy: 
     <td className="whitespace-nowrap px-3 py-3 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}><b style={{ color: 'var(--text)' }}>{Math.round(receta.kcal ?? 0)} kcal</b><br />P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</td>
     <td className="max-w-[310px] px-3 py-3"><div className="mb-1 text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}/100</div><ChipsCalidad issues={receta.quality_issues} /></td>
     <td className="whitespace-nowrap px-3 py-3 text-xs" style={{ color: 'var(--text-secondary)' }}><span className="rounded-full px-2 py-1" style={{ background: 'var(--surface)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><br /><span className="mt-2 inline-block" style={{ color: 'var(--text-muted)' }}>{fechaAlta(receta.created_at)}</span></td>
-    <td className="px-3 py-3"><Acciones receta={receta} busy={busy} onEstado={onEstado} /></td>
+    <td className="sticky right-0 px-3 py-3" style={{ background: 'var(--bg)' }}><Acciones receta={receta} busy={busy} onEstado={onEstado} /></td>
   </tr>
 }
