@@ -13,6 +13,7 @@ import {
   ChevronRight, ChevronDown, RefreshCw, Pencil, Flame, Beef, Wheat, Droplets,
   ExternalLink, Send, AlertTriangle, MessageCircle, HeartPulse,
   ShieldCheck, BookOpen, Target, Copy, RotateCcw,
+  FlaskConical,
 } from 'lucide-react'
 import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 import ChatPanel from '@/components/PortalCliente/ChatPanel'
@@ -29,6 +30,7 @@ const ProtocoloCompeticion = dynamic(() => import('@/components/ProtocoloCompeti
 const PerfilEntrenoForm = dynamic(() => import('@/components/training/PerfilEntrenoForm'), { ssr: false, loading: () => <TabSkeleton /> })
 const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const SuplementacionPanel = dynamic(() => import('@/components/clientes/SuplementacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
+const AnaliticasPanel = dynamic(() => import('@/components/clientes/AnaliticasPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const HistorialEntreno = dynamic(() => import('@/components/training/HistorialEntreno'), { ssr: false, loading: () => <TabSkeleton /> })
 const CompeticionesManager = dynamic(() => import('@/components/CompeticionesManager'), { ssr: false, loading: () => <TabSkeleton /> })
 const CosteSemanalCard = dynamic(() => import('@/components/clientes/CosteSemanal'), { ssr: false, loading: () => <div className="lg:col-span-2 h-12 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
@@ -1294,6 +1296,14 @@ export default function ClienteDetallePage() {
                 onRegenerar={() => cargarInforme(true)}
               />
             </WorkCard>
+
+            <div className="xl:col-span-2">
+              <WorkCard title="Analíticas" kicker="Marcadores clínicos" icon={FlaskConical}>
+                <ErrorBoundary>
+                  <AnaliticasPanel clienteId={id as string} />
+                </ErrorBoundary>
+              </WorkCard>
+            </div>
 
             {/* Membresía */}
             <div className="xl:col-span-2 rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
