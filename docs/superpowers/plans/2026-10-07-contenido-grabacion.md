@@ -50,6 +50,7 @@ Entradas o condiciones que el spec implica pero que ninguna prueba obvia cubrir�
 6. **Mismo alimento en varias recetas, y agua o sal**: se suman las cantidades, y agua y sal no aparecen en la compra. → Tarea 5.
 7. **Cuerpo de API con estado inventado, fecha mal formada o `planos_hechos` desconocidos**: 400, nunca se guarda. → Tarea 7.
 8. **Calendario en una semana pasada, a más de 8 semanas o con un cliente sin plan de dieta**: no da error; muestra un aviso y deja visibles grabación y publicación. → Tarea 12 (prueba manual).
+9. **Receta grabada que no entra en la dieta**: añadirla a la tanda y dejarla fuera de "Entra en mi dieta" no la coloca en la dieta ni cambia lo que Carlos come. → Tareas 10 y 11 (prueba manual).
 
 ---
 
@@ -1746,7 +1747,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 
 ---
 
-### Task 10: Añadir a la tanda desde la dieta de la semana
+### Task 10: Añadir a la tanda desde la dieta o desde cualquier receta del recetario
 
 **Files:**
 - Create: `app/api/contenido/dieta-semana/route.ts`, `app/api/contenido/tanda/anadir/route.ts`
@@ -1814,12 +1815,15 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 3: Botón y panel "Desde mi dieta" en `DiaGrabacion`**
+- [ ] **Step 3: Botones "Desde mi dieta" y "Otra receta del recetario" en `DiaGrabacion`**
 
-En `components/contenido/DiaGrabacion.tsx`, añadir estado y función dentro del componente:
+La tanda no depende de tu dieta: puedes grabar recetas que no comes ese día o esa semana. Los dos botones añaden a la misma tanda; el primero lista lo que ya está en la dieta y el segundo busca en todo el recetario.
+
+En `components/contenido/DiaGrabacion.tsx`, importar `SelectorReceta from './SelectorReceta'` y añadir estado y funciones dentro del componente:
 
 ```tsx
 const [dieta, setDieta] = useState<{ id: string; nombre: string; origen: string }[] | null>(null)
+const [buscando, setBuscando] = useState(false)
 
 async function abrirDieta() {
   if (!clienteId) { addToast({ type: 'error', title: 'Elige primero una dieta' }); return }
@@ -1828,7 +1832,7 @@ async function abrirDieta() {
   else addToast({ type: 'error', title: 'No se pudo cargar la dieta', message: r.error })
 }
 
-async function anadirDesdeDieta(id: string) {
+async function anadirATanda(id: string) {
   const r = await api('/api/contenido/tanda/anadir', { method: 'POST', body: JSON.stringify({ fecha, receta_ids: [id] }) })
   if (!r.ok) { addToast({ type: 'error', title: 'No se pudo añadir', message: r.error }); return }
   cargar()
@@ -1850,12 +1854,16 @@ Y en el JSX, después de la barra de día y dieta:
         return (
           <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '4px 0' }}>
             <span style={{ fontSize: 14 }}>{r.nombre} <span style={{ color: 'var(--text-muted)' }}>· {r.origen}</span></span>
-            <button className="btn btn-ghost btn-sm" disabled={yaEsta} onClick={() => anadirDesdeDieta(r.id)}>{yaEsta ? 'En la tanda' : 'Añadir'}</button>
+            <button className="btn btn-ghost btn-sm" disabled={yaEsta} onClick={() => anadirATanda(r.id)}>{yaEsta ? 'En la tanda' : 'Añadir'}</button>
           </div>
         )
       })}
     </div>
   )}
+</div>
+<div>
+  <button className="btn btn-secondary btn-sm" onClick={() => setBuscando(b => !b)}>{buscando ? 'Cerrar' : 'Añadir otra receta del recetario'}</button>
+  {buscando && <div style={{ marginTop: 6 }}><SelectorReceta onElegir={r => { anadirATanda(r.id); setBuscando(false) }} /></div>}
 </div>
 ```
 
@@ -1864,7 +1872,7 @@ Y en el JSX, después de la barra de día y dieta:
 Run: `cd nutricoach && npx tsc --noEmit --pretty false`
 Expected: sin errores.
 
-Probar con `browse --headed` + handoff: elegir el cliente Carlos Casanova, abrir "Añadir desde mi dieta", añadir una receta y comprobar que aparece en la tanda con su compra y que el icono de vídeo de esa receta en el planificador de la dieta pasa a "para grabar" (recargar el planificador). Comprobar que añadir la misma receta otra vez no duplica la pieza.
+Probar con `browse --headed` + handoff: elegir el cliente Carlos Casanova, abrir "Añadir desde mi dieta", añadir una receta y comprobar que aparece en la tanda con su compra y que el icono de vídeo de esa receta en el planificador de la dieta pasa a "para grabar" (recargar el planificador). Comprobar que añadir la misma receta otra vez no duplica la pieza. Después, con "Añadir otra receta del recetario", añadir una receta que **no** esté en tu dieta de esa semana: debe entrar en la tanda con su compra y su escaleta, y el contador "en la dieta" del resumen no debe subir.
 
 - [ ] **Step 5: Commit**
 
@@ -1885,7 +1893,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: `repartirEnDieta`, `semanaYDia`, `hoyMadrid` (Task 3); `ordenarCocinado` (Task 4); `asignarFutura` de `@/lib/nutricion/semanas-futuras`; `autorizarSemanaDieta`
-- Produces: `POST /api/contenido/tanda/colocar` con `{ fecha, cliente_id }` → `{ colocadas: number, omitidas: { titulo: string; motivo: string }[] }`
+- Produces: `POST /api/contenido/tanda/colocar` con `{ fecha, cliente_id, pieza_ids? }` → `{ colocadas: number, omitidas: { titulo: string; motivo: string }[] }`. Con `pieza_ids` solo se colocan esas piezas; las demás de la tanda se graban pero no tocan la dieta.
 
 - [ ] **Step 1: Ruta**
 
@@ -1901,11 +1909,13 @@ import { ordenarCocinado } from '@/lib/contenido/tanda'
 const FECHA = /^\d{4}-\d{2}-\d{2}$/
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// Reparte las recetas de la tanda en Comida y Cena desde la fecha de grabación, en las semanas planificadas (+1…+8) del plan.
+// Reparte las recetas de la tanda (o solo las de `pieza_ids`) en Comida y Cena desde la fecha de grabación, en las semanas planificadas (+1…+8) del plan.
 export async function POST(request: NextRequest) {
-  const b = await request.json().catch(() => null) as { fecha?: unknown; cliente_id?: unknown } | null
+  const b = await request.json().catch(() => null) as { fecha?: unknown; cliente_id?: unknown; pieza_ids?: unknown } | null
   if (typeof b?.fecha !== 'string' || !FECHA.test(b.fecha)) return NextResponse.json({ error: 'Fecha no válida' }, { status: 400 })
   if (typeof b.cliente_id !== 'string' || !UUID.test(b.cliente_id)) return NextResponse.json({ error: 'Cliente no válido' }, { status: 400 })
+  const soloIds = b.pieza_ids === undefined ? null : Array.isArray(b.pieza_ids) && b.pieza_ids.every(x => typeof x === 'string' && UUID.test(x)) ? b.pieza_ids as string[] : undefined
+  if (soloIds === undefined) return NextResponse.json({ error: 'Piezas no válidas' }, { status: 400 })
   const c = await autorizarCoach(request)
   if ('error' in c) return c.error
   const a = await autorizarSemanaDieta(request, b.cliente_id)
@@ -1918,7 +1928,7 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: 'No se pudo cargar la tanda' }, { status: 500 })
 
   type Fila = { id: string; titulo: string; receta_id: string; receta: { tiempo_prep_min: number | null } | null }
-  const piezas = ordenarCocinado(((data ?? []) as unknown as Fila[]).map(p => ({ ...p, nombre: p.titulo, tiempo_prep_min: p.receta?.tiempo_prep_min ?? null })))
+  const piezas = ordenarCocinado(((data ?? []) as unknown as Fila[]).filter(p => !soloIds || soloIds.includes(p.id)).map(p => ({ ...p, nombre: p.titulo, tiempo_prep_min: p.receta?.tiempo_prep_min ?? null })))
   const destinos = repartirEnDieta(piezas.length, b.fecha)
   const hoy = hoyMadrid()
 
@@ -1939,17 +1949,38 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 2: Botón en `DiaGrabacion`**
+- [ ] **Step 2: Botón y casilla "Entra en mi dieta" en `DiaGrabacion`**
 
-Añadir dentro del componente:
+Por defecto todas las recetas de la tanda entran en la dieta; con la casilla de cada tarjeta se dejan fuera las que solo grabas (por ejemplo, un plato que no comerás esa semana).
+
+Añadir el estado dentro del componente:
+
+```tsx
+const [fueraDeDieta, setFueraDeDieta] = useState<string[]>([])
+const alternarDieta = (id: string) => setFueraDeDieta(f => (f.includes(id) ? f.filter(x => x !== id) : [...f, id]))
+```
+
+En la tarjeta de cada pieza (la que pinta `{tanda?.piezas.map((p, i) => (`), justo debajo del título, solo si la pieza tiene receta:
+
+```tsx
+{p.receta_id && (
+  <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13, color: 'var(--text-secondary)' }}>
+    <input type="checkbox" checked={!fueraDeDieta.includes(p.id)} onChange={() => alternarDieta(p.id)} />
+    Entra en mi dieta
+  </label>
+)}
+```
+
+Y la función del botón:
 
 ```tsx
 async function colocarEnDieta() {
   if (!clienteId || !tanda) return
-  const hechas = tanda.piezas.filter(p => p.receta_id).length
-  if (!confirm(`Se colocarán ${hechas} recetas en Comida y Cena desde el ${formatoFecha(fecha)}. Sustituye lo que haya en esos huecos de las semanas planificadas. ¿Continuar?`)) return
+  const incluidas = tanda.piezas.filter(p => p.receta_id && !fueraDeDieta.includes(p.id))
+  if (incluidas.length === 0) { addToast({ type: 'error', title: 'No hay recetas marcadas para la dieta' }); return }
+  if (!confirm(`Se colocarán ${incluidas.length} recetas en Comida y Cena desde el ${formatoFecha(fecha)}. Sustituye lo que haya en esos huecos de las semanas planificadas. ¿Continuar?`)) return
   const r = await api<{ colocadas: number; omitidas: { titulo: string; motivo: string }[] }>('/api/contenido/tanda/colocar', {
-    method: 'POST', body: JSON.stringify({ fecha, cliente_id: clienteId }),
+    method: 'POST', body: JSON.stringify({ fecha, cliente_id: clienteId, pieza_ids: incluidas.map(p => p.id) }),
   })
   if (!r.ok) { addToast({ type: 'error', title: 'No se pudo colocar en la dieta', message: r.error }); return }
   addToast({
@@ -1974,7 +2005,7 @@ Y junto al botón "Añadir desde mi dieta":
 Run: `cd nutricoach && npx tsc --noEmit --pretty false`
 Expected: sin errores.
 
-Probar con `browse --headed` + handoff: crear una tanda para una fecha de la semana que viene (p. ej. el próximo sábado), pulsar "Colocar en mi dieta", confirmar, y comprobar en el planificador de Carlos (semana +1) que las recetas ocupan Comida y Cena de ese día y el siguiente. Probar una tanda con fecha de la semana en curso: debe avisar de las omitidas sin dar error.
+Probar con `browse --headed` + handoff: crear una tanda de tres recetas para una fecha de la semana que viene (p. ej. el próximo sábado), desmarcar "Entra en mi dieta" en una de ellas, pulsar "Colocar en mi dieta", confirmar, y comprobar en el planificador de Carlos (semana +1) que solo las otras dos ocupan Comida y Cena de ese día, y que la desmarcada no aparece en la dieta pero sigue en la tanda. Probar una tanda con fecha de la semana en curso: debe avisar de las omitidas sin dar error.
 
 - [ ] **Step 4: Commit**
 
