@@ -19,7 +19,7 @@
 | Compra con coste por supermercado | Coste estimado con el precio más barato por ingrediente. | El desglose por supermercado depende de selecciones por plan; es un refactor grande. Ampliable después. |
 | Orden de cocinado por tiempo, horno y reposo | Solo por `tiempo_prep_min` (más largo primero, sin tiempo al final). | No hay columna fiable de tipo de cocción en el código. |
 | Tablero con tarjetas arrastrables | Tarjetas con selector de estado. | Menos fricción y menos código; el arrastre se añade después si hace falta. |
-| Calendario con dieta y entreno en pequeño | Solo grabación y publicación. | Cruzar dieta y entreno añade dos fuentes de datos; fuera de la primera versión. |
+| Calendario con dieta y entreno en pequeño | Calendario con grabación, publicación **y lo que comes cada día** (semana en curso y hasta +8). Sin entreno. | La dieta se lee de rutas que ya existen. El entreno añade otra fuente de datos y queda fuera de la primera versión. |
 | "Colocar en mi dieta" en el día de grabación y siguientes | Solo para fechas en las semanas +1…+8 (las futuras de `comidas_planificadas`). Si la fecha cae en la semana en curso, avisa y no coloca. | La semana en curso usa otra tabla (`comidas`) con otra lógica. |
 | La tanda parte de las cantidades de la dieta | La tanda usa las cantidades **completas** de la receta (lo que cocinas para grabar). | Para grabar cocinas la receta entera, no la ración ajustada a la dieta. |
 | "Ya lo tengo" en la compra | Se guarda en el navegador (localStorage), no en base de datos. | Es una comodidad por dispositivo, no un dato a conservar. |
@@ -49,6 +49,7 @@ Entradas o condiciones que el spec implica pero que ninguna prueba obvia cubrir�
 5. **Tanda vacía o receta sin ingredientes vinculados / sin tiempo**: la compra sale vacía sin error y la receta sin tiempo va la última. → Tareas 4 y 5.
 6. **Mismo alimento en varias recetas, y agua o sal**: se suman las cantidades, y agua y sal no aparecen en la compra. → Tarea 5.
 7. **Cuerpo de API con estado inventado, fecha mal formada o `planos_hechos` desconocidos**: 400, nunca se guarda. → Tarea 7.
+8. **Calendario en una semana pasada, a más de 8 semanas o con un cliente sin plan de dieta**: no da error; muestra un aviso y deja visibles grabación y publicación. → Tarea 12 (prueba manual).
 
 ---
 
@@ -1993,7 +1994,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
 - Modify: `app/contenido/page.tsx`
 
 **Interfaces:**
-- Consumes: `ESTADOS_PIEZA`, `ETIQUETA_ESTADO` (Task 1); `lunesDe`, `sumarDias`, `formatoFecha`, `hoyMadrid` (Task 3); `api`, `Pieza`
+- Consumes: `ESTADOS_PIEZA`, `ETIQUETA_ESTADO` (Task 1); `lunesDe`, `sumarDias`, `formatoFecha`, `hoyMadrid` (Task 3); `api`, `Pieza`; rutas existentes `GET /api/clientes`, `GET /api/clientes/[id]/semana-dieta` (semana en curso, devuelve `dias[].comidas[]`) y `GET /api/clientes/[id]/semana-dieta/futuras?semanas=n` (devuelve `semanas[].dias[].comidas[]`)
 - Produces: `TableroContenido()`, `CalendarioContenido({ onAbrirDia(fecha) })`
 
 - [ ] **Step 1: Tablero**
@@ -2068,13 +2069,15 @@ export default function TableroContenido() {
 }
 ```
 
-- [ ] **Step 2: Calendario semanal**
+- [ ] **Step 2: Calendario semanal con grabación, publicación y dieta**
+
+El calendario muestra, por día: lo que grabas (🎬), lo que publicas (📤) y lo que comes según la dieta del cliente elegido (Carlos por defecto). Una comida cuya receta está "para grabar" se marca con 🎬 para ver cuándo te encaja grabar algo que ya vas a comer. Las semanas pasadas o a más de 8 semanas no muestran dieta (no hay datos), sin error.
 
 ```tsx
 // components/contenido/CalendarioContenido.tsx
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { formatoFecha, hoyMadrid, lunesDe, sumarDias } from '@/lib/contenido/fechas'
@@ -2082,11 +2085,26 @@ import { api } from './api'
 import type { Pieza } from './tipos'
 
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+const NOMBRES_DIA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+const MAX_SEMANAS = 8
+
+type ComidaDia = { id: string; nombre: string; receta: { id: string; nombre: string } | null }
+type DiaDieta = { dia: string; comidas: ComidaDia[] }
+type ClienteLista = { id: string; nombre: string }
+
+const SEMANA_MS = 7 * 86_400_000
 
 export default function CalendarioContenido({ onAbrirDia }: { onAbrirDia: (fecha: string) => void }) {
   const { addToast } = useToast()
-  const [lunes, setLunes] = useState(lunesDe(hoyMadrid()))
+  const hoy = hoyMadrid()
+  const [lunes, setLunes] = useState(lunesDe(hoy))
   const [piezas, setPiezas] = useState<Pieza[]>([])
+  const [clientes, setClientes] = useState<ClienteLista[]>([])
+  const [clienteId, setClienteId] = useState('')
+  const [dieta, setDieta] = useState<DiaDieta[] | null>(null)
+
+  // 0 = semana en curso, 1 = la próxima…, negativo = pasada
+  const offset = Math.round((Date.parse(lunes) - Date.parse(lunesDe(hoy))) / SEMANA_MS)
 
   const cargar = useCallback(async () => {
     const r = await api<{ piezas: Pieza[] }>('/api/contenido/piezas')
@@ -2095,31 +2113,72 @@ export default function CalendarioContenido({ onAbrirDia }: { onAbrirDia: (fecha
   }, [addToast])
   useEffect(() => { cargar() }, [cargar])
 
-  const dias = DIAS.map((nombre, i) => ({ nombre, fecha: sumarDias(lunes, i) }))
-  const hoy = hoyMadrid()
+  useEffect(() => {
+    api<{ clientes?: ClienteLista[] } | ClienteLista[]>('/api/clientes').then(r => {
+      if (!r.ok) return
+      const lista = Array.isArray(r.data) ? r.data : r.data.clientes ?? []
+      setClientes(lista)
+      setClienteId(prev => prev || (lista.find(c => /casanova/i.test(c.nombre)) ?? lista[0])?.id || '')
+    })
+  }, [])
+
+  useEffect(() => {
+    let activo = true
+    async function cargarDieta() {
+      if (!clienteId || offset < 0 || offset > MAX_SEMANAS) { setDieta(null); return }
+      if (offset === 0) {
+        const r = await api<{ dias?: DiaDieta[] }>(`/api/clientes/${clienteId}/semana-dieta`)
+        if (activo) setDieta(r.ok ? r.data.dias ?? null : null)
+      } else {
+        const r = await api<{ semanas?: { semana: number; dias: DiaDieta[] }[] }>(`/api/clientes/${clienteId}/semana-dieta/futuras?semanas=${offset}`)
+        if (activo) setDieta(r.ok ? r.data.semanas?.find(s => s.semana === offset)?.dias ?? null : null)
+      }
+    }
+    cargarDieta()
+    return () => { activo = false }
+  }, [clienteId, offset])
+
+  // Recetas marcadas "para grabar": se señalan en la dieta para ver qué días ya las vas a comer.
+  const paraGrabar = useMemo(() => new Set(piezas.filter(p => p.estado === 'para_grabar' && p.receta_id).map(p => p.receta_id as string)), [piezas])
+
+  const dias = DIAS.map((nombre, i) => ({ nombre, fecha: sumarDias(lunes, i), comidas: dieta?.find(d => d.dia === NOMBRES_DIA[i])?.comidas ?? [] }))
 
   return (
     <div style={{ display: 'grid', gap: 12 }}>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button className="btn btn-secondary btn-sm" onClick={() => setLunes(sumarDias(lunes, -7))} aria-label="Semana anterior"><ChevronLeft size={16} /></button>
         <strong>Semana del {formatoFecha(lunes)}</strong>
         <button className="btn btn-secondary btn-sm" onClick={() => setLunes(sumarDias(lunes, 7))} aria-label="Semana siguiente"><ChevronRight size={16} /></button>
         <button className="btn btn-ghost btn-sm" onClick={() => setLunes(lunesDe(hoy))}>Hoy</button>
+        <label style={{ marginLeft: 'auto' }}>Dieta de{' '}
+          <select className="input" value={clienteId} onChange={e => setClienteId(e.target.value)}>
+            <option value="">(sin dieta)</option>
+            {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+          </select>
+        </label>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 }}>
+      {clienteId && !dieta && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No hay dieta para esta semana (solo se muestra la semana en curso y hasta 8 semanas planificadas).</p>}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 }}>
         {dias.map(d => {
           const grabar = piezas.filter(p => p.fecha_grabacion === d.fecha)
           const publicar = piezas.filter(p => p.fecha_publicacion === d.fecha)
           return (
-            <div key={d.fecha} className="card" style={{ padding: 8, minHeight: 110, outline: d.fecha === hoy ? '1px solid var(--accent)' : 'none' }}>
+            <div key={d.fecha} className="card" style={{ padding: 8, minHeight: 130, outline: d.fecha === hoy ? '1px solid var(--accent)' : 'none', display: 'grid', alignContent: 'start', gap: 4 }}>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.nombre} {formatoFecha(d.fecha).slice(0, 5)}</div>
               {grabar.length > 0 && (
-                <button className="btn btn-secondary btn-sm" style={{ margin: '6px 0 2px', width: '100%' }} onClick={() => onAbrirDia(d.fecha)}>
-                  🎬 Grabar ({grabar.length})
-                </button>
+                <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={() => onAbrirDia(d.fecha)}>🎬 Grabar ({grabar.length})</button>
               )}
               {grabar.map(p => <div key={`g${p.id}`} style={{ fontSize: 12 }}>{p.titulo}</div>)}
               {publicar.map(p => <div key={`p${p.id}`} style={{ fontSize: 12, color: 'var(--success)' }}>📤 {p.titulo}</div>)}
+              {d.comidas.length > 0 && (
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 4, display: 'grid', gap: 2 }}>
+                  {d.comidas.map(c => (
+                    <div key={c.id} style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>{c.nombre}:</span> {c.receta?.nombre ?? '—'}{c.receta && paraGrabar.has(c.receta.id) ? ' 🎬' : ''}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )
         })}
@@ -2178,7 +2237,7 @@ export default function ContenidoPage() {
 Run: `cd nutricoach && npx tsc --noEmit --pretty false`
 Expected: sin errores.
 
-Probar con `browse --headed` + handoff: en el tablero asignar fecha de grabación y de publicación a una pieza; abrir el calendario, comprobar que aparece el 🎬 y el 📤 en los días correctos; pulsar "Grabar" y comprobar que abre el día de grabación con esa fecha. Cambiar el estado desde el selector hasta `publicada` y comprobar que el icono de vídeo de esa receta en el planificador cambia a grabada.
+Probar con `browse --headed` + handoff: en el tablero asignar fecha de grabación y de publicación a una pieza; abrir el calendario con la dieta de Carlos Casanova y comprobar que aparece el 🎬 y el 📤 en los días correctos y, debajo, lo que comes cada día (Desayuno, Comida, Cena…); comprobar que una receta marcada "para grabar" que está en tu dieta lleva el 🎬 junto a su comida; pasar a la semana +1 y a una semana pasada (esta última debe mostrar el aviso de que no hay dieta, sin error); pulsar "Grabar" y comprobar que abre el día de grabación con esa fecha. Cambiar el estado desde el selector hasta `publicada` y comprobar que el icono de vídeo de esa receta en el planificador cambia a grabada.
 
 - [ ] **Step 5: Commit**
 
