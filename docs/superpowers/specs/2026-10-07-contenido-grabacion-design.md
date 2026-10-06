@@ -16,7 +16,7 @@ Carlos usa NutriCoach para ordenar su propia dieta y entreno (es su propio clien
 
 Herramienta del coach. No aparece en el portal cliente. Apartado propio **Contenido** en el menú del coach, independiente de cualquier cliente. El vínculo con la dieta es opcional por pieza.
 
-Fuera de la primera versión: conexión directa con Instagram, guion o shot list, métricas de publicaciones.
+Fuera de la primera versión: conexión directa con Instagram, guion personalizado por vídeo, métricas de publicaciones. Sí entra una escaleta de grabación estándar y fija (ver Pantallas).
 
 ## Principios
 
@@ -35,6 +35,8 @@ Tabla nueva `piezas_contenido`, fuente de verdad del estado de contenido:
 - `titulo`, `enlace_referencia`, `notas`
 - `estado`: `idea` → `documentada` → `para_grabar` → `grabada` → `editada` → `programada` → `publicada`
 - `fecha_grabacion`, `fecha_publicacion`
+- `planos_hechos` (lista de ids de planos de la escaleta ya grabados)
+- `gancho` (nota opcional de una línea)
 - `created_at`, `updated_at`
 
 Reglas:
@@ -53,6 +55,14 @@ Reglas:
 - **Compra consolidada** de la tanda: ingredientes agregados por alimento, agrupados por categoría, con las recetas que los usan, coste por supermercado y marca "ya lo tengo".
 - **Orden de cocinado** sugerido según el tiempo de preparación de cada receta (lo más largo o con horno/reposo primero).
 - **Resumen:** tiempo total, número de recetas y cuántas entran en la dieta esa semana.
+- **Escaleta de grabación** bajo cada receta de la tanda, con casillas. Es estándar y fija para todas las recetas, sin escribir nada por receta:
+  1. Ingredientes sobre la mesa (plano general)
+  2. Preparación: 3 o 4 planos del proceso
+  3. Cocinado o montaje (el momento que engancha)
+  4. Plato terminado, plano cenital
+  5. Plano de detalle o primer bocado
+  6. Texto en pantalla con los macros
+  Debajo se muestran los pasos de la receta (de `instrucciones`) como recordatorio de momentos clave. Al marcar todos los planos, la pieza pasa a `grabada`. La tanda muestra los planos pendientes en total. Nota opcional `gancho` de una línea por pieza.
 - **"Colocar en mi dieta":** reparte las recetas de la tanda en las comidas del día de grabación y siguientes, usando `comidas_planificadas`.
 
 ### Bandeja de ideas
@@ -72,7 +82,7 @@ Días de grabación y de publicación, con dieta y entreno en pequeño para evit
 
 ## Código
 
-- `lib/contenido/`: estados y transiciones, cálculo de tanda (orden de cocinado, resumen).
+- `lib/contenido/`: estados y transiciones, cálculo de tanda (orden de cocinado, resumen) y la escaleta estándar (constante en código en v1; cambiarla es un cambio de código, no una pantalla de ajustes).
 - `lib/lista-compra/`: extraer `agregarIngredientes` de `app/api/lista-compra/semanal/route.ts` para compartirla. La ruta semanal importa la función sin cambiar su comportamiento. La tanda la alimenta con recetas (`receta_ingredientes` × porciones) en lugar de un plan.
 - `app/api/contenido/...`: piezas, tanda, colocar en dieta.
 - `app/contenido/...`: las pantallas; nueva entrada en `components/Sidebar.tsx`.
@@ -88,7 +98,7 @@ Días de grabación y de publicación, con dieta y entreno en pequeño para evit
 
 ## Pruebas
 
-- Unitarias: transiciones de estado, orden de cocinado, agregación de compra de varias recetas.
+- Unitarias: transiciones de estado (incluido pasar a `grabada` al marcar todos los planos), orden de cocinado, agregación de compra de varias recetas.
 - Verificación contra Supabase real con service role (RLS puede devolver listas vacías sin error).
 - Prueba en producción con recetas reales de Carlos.
 - La migración SQL se aplica con confirmación de Carlos; no se aplica sola al hacer push.
