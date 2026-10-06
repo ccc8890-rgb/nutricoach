@@ -10,6 +10,7 @@ import {
   Brain,
   ChefHat,
   ChartPie,
+  Clapperboard,
   ChevronDown,
   ChevronRight,
   ClipboardList,
@@ -67,6 +68,7 @@ type NavSection = {
 const PRIMARY_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Inicio', icon: House },
   { href: '/clientes', label: 'Clientes', icon: UsersRound },
+  { href: '/contenido', label: 'Contenido', icon: Clapperboard },
 ]
 
 const NUTRICION_ITEMS: NavItem[] = [
