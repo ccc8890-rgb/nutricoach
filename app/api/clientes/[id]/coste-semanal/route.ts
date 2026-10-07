@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
+import { MAX_SEMANAS, obtenerIngredientesSemanaFutura } from '@/lib/nutricion/semanas-futuras'
+import { objetivosPorDia } from '@/lib/nutricion/objetivo-dia'
 
 export interface CosteIngrediente {
   alimento_id: string
@@ -17,6 +20,7 @@ export interface CosteSemanal {
   sin_precio: string[]
   multiplicador_semana?: number
   dias_construidos?: number
+  semana?: number
 }
 
 export async function GET(
@@ -31,10 +35,20 @@ export async function GET(
 
   const db = createServiceSupabase()
 
+  const auth = await autorizarCoachCliente(db, { userId: user.id, clienteId })
+  if (!auth.ok) return NextResponse.json({ error: auth.mensaje }, { status: auth.status })
+
+  // ?semana=N (1…8): semanas planificadas; sin parámetro, la semana en curso
+  const semanaRaw = new URL(request.url).searchParams.get('semana')
+  const semana = semanaRaw === null ? null : Number(semanaRaw)
+  if (semana !== null && (!Number.isInteger(semana) || semana < 1 || semana > MAX_SEMANAS)) {
+    return NextResponse.json({ error: `semana debe ser un entero entre 1 y ${MAX_SEMANAS}` }, { status: 400 })
+  }
+
   // 1. Plan activo del cliente
   const { data: plan } = await db
     .from('planes_nutricion')
-    .select('id')
+    .select('id, cliente_id, kcal_objetivo, proteinas_objetivo, carbohidratos_objetivo, grasas_objetivo')
     .eq('cliente_id', clienteId)
     .eq('activo', true)
     .order('created_at', { ascending: false })
@@ -43,38 +57,52 @@ export async function GET(
 
   if (!plan) return NextResponse.json({ error: 'Sin plan activo' }, { status: 404 })
 
-  // 2. Comidas del plan
-  const { data: comidas } = await db
-    .from('comidas')
-    .select('id, dia_semana')
-    .eq('plan_id', plan.id)
-
-  if (!comidas?.length) return NextResponse.json({ coste_total: 0, cobertura_pct: 0, ingredientes: [], sin_precio: [] })
-
-  const comidaIds = comidas.map(c => c.id)
-
-  // 3. Alimentos de esas comidas
-  const { data: items } = await db
-    .from('comida_alimentos')
-    .select('alimento_id, cantidad_gramos, alimento:alimentos(nombre)')
-    .in('comida_id', comidaIds)
-
-  if (!items?.length) return NextResponse.json({ coste_total: 0, cobertura_pct: 0, ingredientes: [], sin_precio: [] })
-
-  const diasConstruidos = new Set((comidas ?? []).map(c => c.dia_semana).filter(Boolean))
-  const multiplicadorSemana = diasConstruidos.size > 1 ? 1 : 7
-
-  // 4. Agregar cantidades por alimento_id. Si el plan ya tiene varios días construidos,
-  // las cantidades ya son semanales; solo multiplicamos x7 en planes legacy de un día.
+  // 2-4. Cantidades por alimento: de la semana planificada o de las comidas del plan en curso
+  let multiplicadorSemana = 1
+  let diasConstruidos = 0
   const agg = new Map<string, { nombre: string; gramos: number }>()
-  for (const item of items) {
-    const alimento = Array.isArray(item.alimento) ? item.alimento[0] : item.alimento
-    const nombre = (alimento as { nombre: string } | null)?.nombre ?? item.alimento_id
-    const prev = agg.get(item.alimento_id)
-    agg.set(item.alimento_id, {
-      nombre,
-      gramos: (prev?.gramos ?? 0) + (item.cantidad_gramos ?? 0),
-    })
+  if (semana !== null) {
+    const objetivos = await objetivosPorDia(db, plan.cliente_id, plan, semana)
+    const fuentes = await obtenerIngredientesSemanaFutura(db, plan, semana, objetivos)
+    for (const f of fuentes) {
+      const prev = agg.get(f.alimento_id)
+      agg.set(f.alimento_id, { nombre: f.alimento_nombre, gramos: (prev?.gramos ?? 0) + f.cantidad_gramos })
+    }
+    if (agg.size === 0) return NextResponse.json({ coste_total: 0, cobertura_pct: 0, ingredientes: [], sin_precio: [], semana } satisfies CosteSemanal)
+  } else {
+    const { data: comidas } = await db
+      .from('comidas')
+      .select('id, dia_semana')
+      .eq('plan_id', plan.id)
+
+    if (!comidas?.length) return NextResponse.json({ coste_total: 0, cobertura_pct: 0, ingredientes: [], sin_precio: [] })
+
+    const comidaIds = comidas.map(c => c.id)
+
+    // 3. Alimentos de esas comidas
+    const { data: items } = await db
+      .from('comida_alimentos')
+      .select('alimento_id, cantidad_gramos, alimento:alimentos(nombre)')
+      .in('comida_id', comidaIds)
+
+    if (!items?.length) return NextResponse.json({ coste_total: 0, cobertura_pct: 0, ingredientes: [], sin_precio: [] })
+
+    const dias = new Set((comidas ?? []).map(c => c.dia_semana).filter(Boolean))
+    diasConstruidos = dias.size
+    multiplicadorSemana = dias.size > 1 ? 1 : 7
+
+    // 4. Agregar cantidades por alimento_id. Si el plan ya tiene varios días construidos,
+    // las cantidades ya son semanales; solo multiplicamos x7 en planes legacy de un día.
+    for (const item of items) {
+      const alimento = Array.isArray(item.alimento) ? item.alimento[0] : item.alimento
+      const nombre = (alimento as { nombre: string } | null)?.nombre ?? item.alimento_id
+      const prev = agg.get(item.alimento_id)
+      agg.set(item.alimento_id, {
+        nombre,
+        gramos: (prev?.gramos ?? 0) + (item.cantidad_gramos ?? 0),
+      })
+  }
+
   }
 
   const alimentoIds = [...agg.keys()]
@@ -122,6 +150,7 @@ export async function GET(
     ingredientes,
     sin_precio,
     multiplicador_semana: multiplicadorSemana,
-    dias_construidos: diasConstruidos.size,
+    dias_construidos: diasConstruidos,
+    ...(semana !== null ? { semana } : {}),
   } satisfies CosteSemanal)
 }

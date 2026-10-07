@@ -13,17 +13,22 @@ export default function CosteSemanalCard({ clienteId }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(false)
+  const [semana, setSemana] = useState(0) // 0 = en curso, 1…8 = planificadas
 
   useEffect(() => {
-    fetch(`/api/clientes/${clienteId}/coste-semanal`)
+    let vigente = true
+    setError(null)
+    fetch(`/api/clientes/${clienteId}/coste-semanal${semana ? `?semana=${semana}` : ''}`)
       .then(r => r.json())
       .then(d => {
+        if (!vigente) return
         if (d.error) setError(d.error)
         else setData(d)
       })
-      .catch(() => setError('Error al cargar'))
-      .finally(() => setLoading(false))
-  }, [clienteId])
+      .catch(() => vigente && setError('Error al cargar'))
+      .finally(() => vigente && setLoading(false))
+    return () => { vigente = false }
+  }, [clienteId, semana])
 
   if (loading) return (
     <div className="rounded-xl border p-4 animate-pulse" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
@@ -57,8 +62,16 @@ export default function CosteSemanalCard({ clienteId }: Props) {
 
       {expanded && (
         <div className="border-t px-4 pb-4 space-y-3" style={{ borderColor: 'var(--border)' }}>
+          <label className="flex items-center gap-2 pt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+            Semana
+            <select className="input" style={{ padding: '2px 6px', fontSize: 12 }} value={semana} onChange={e => setSemana(Number(e.target.value))}>
+              <option value={0}>En curso</option>
+              {Array.from({ length: 8 }, (_, i) => <option key={i + 1} value={i + 1}>{`+${i + 1}`}</option>)}
+            </select>
+          </label>
+
           {/* Cobertura */}
-          <div className="flex items-center justify-between pt-3">
+          <div className="flex items-center justify-between">
             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Cobertura de precios</span>
             <span className="text-xs font-medium" style={{ color: data.cobertura_pct >= 80 ? '#22c55e' : data.cobertura_pct >= 50 ? '#f59e0b' : '#ef4444' }}>
               {data.cobertura_pct}%
@@ -98,7 +111,7 @@ export default function CosteSemanalCard({ clienteId }: Props) {
           )}
 
           <p className="text-xs pt-1" style={{ color: 'var(--text-muted)' }}>
-            Estimación basada en el plan activo × 7 días. Precio más barato disponible por ingrediente.
+            {semana ? `Estimación de la semana planificada +${semana}.` : 'Estimación basada en el plan activo × 7 días.'} Precio más barato disponible por ingrediente.
           </p>
         </div>
       )}
