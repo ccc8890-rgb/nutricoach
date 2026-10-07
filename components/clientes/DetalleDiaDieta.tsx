@@ -134,8 +134,8 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
 const ROLES: { rol: RolComplemento; etiqueta: string; color: string }[] = [
   { rol: 'plato', etiqueta: 'Plato', color: '#FF9F0A' },
   { rol: 'guarnicion', etiqueta: 'Guarnición', color: '#30D158' },
-  { rol: 'fruta', etiqueta: 'Fruta y extras', color: '#64D2FF' },
   { rol: 'postre', etiqueta: 'Postre', color: '#BF5AF2' },
+  { rol: 'extra', etiqueta: 'Otros extras', color: '#64D2FF' },
 ]
 
 export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, version, franjas, momento, onCambiar, onQuitar, onCambioDatos }: {
