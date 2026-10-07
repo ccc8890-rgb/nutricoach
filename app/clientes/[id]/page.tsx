@@ -1214,7 +1214,7 @@ export default function ClienteDetallePage() {
           </div>
 
         ) : tabActiva === 'perfil' ? (
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-4 items-start">
+          <div className="grid grid-cols-1 gap-4">
             <WorkCard title="Perfil y planificación" icon={PersonStanding}>
               <div className="space-y-4">
                 <label className="flex items-start gap-3 rounded-2xl p-4 cursor-pointer" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
