@@ -45,6 +45,7 @@ export async function POST(
       comidaSlot: comida.nombre,
       targetKcal: comida.kcal_target,
       tipoInteraccion: 'swap_elegida',
+      registrarDescarte: true,
       reemplazar: true,
     })
     return NextResponse.json(resultado)

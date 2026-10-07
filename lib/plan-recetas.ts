@@ -2,6 +2,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RecetaCandidata, TipoReceta } from '@/types'
 import { obtenerPerfilCliente } from '@/lib/agentes/perfil-gusto'
+import { afinidadHabitual, cargarPreferencias, lleva, type PreferenciasCliente } from '@/lib/nutricion/preferencias-cliente'
 import { inferirMomentoDesdeTipo, requiereMomentoExacto, scoreRecetaParaAgente } from '@/lib/recetario-taxonomia'
 
 const SLOT_KCAL_PCT: Record<string, [number, number]> = {
@@ -233,6 +234,18 @@ export async function filtrarRecetasPorSlot(
   // Filtro duro: dislikes del cliente
   candidatas = candidatas.filter(r => !dislikeIds.has(r.id))
 
+  // Lo que el cliente ya ha cambiado por otra receta (la rechazó al elegir una alternativa) y lo que come habitualmente
+  const prefs: PreferenciasCliente | null = clienteId ? await cargarPreferencias(supabase, clienteId).catch(() => null) : null
+  if (prefs) {
+    // Cambiada 2 veces o más: fuera (si quedan suficientes); 1 vez: solo baja en el ranking
+    const sinRechazadas = candidatas.filter(r => (prefs.rechazos.get(r.id) ?? 0) < 2)
+    if (sinRechazadas.length >= 3) candidatas = sinRechazadas
+    if (prefs.evitar.length > 0) {
+      const sinEvitar = candidatas.filter(r => !lleva(`${r.nombre} ${((r as Record<string, unknown>).receta_ingredientes as { nombre_libre?: string }[] | undefined)?.map(i => i.nombre_libre ?? '').join(' ') ?? ''}`, prefs.evitar))
+      if (sinEvitar.length >= 3) candidatas = sinEvitar
+    }
+  }
+
   // Recetario de confianza: preferir recetas verificadas si hay suficientes
   const verificadas = candidatas.filter(r => r.verificacion != null)
   if (verificadas.length >= 3) candidatas = verificadas
@@ -380,6 +393,13 @@ export async function filtrarRecetasPorSlot(
         adherenciaScore * 0.07 +
         macroFlexScore * 0.03 +
         chefHealthyScore * 0.02
+    }
+
+    // «No romper con su vida»: bonus si se parece a lo que ya come en esta franja; baja si ya la cambió una vez
+    if (prefs) {
+      const ing = ((rec.receta_ingredientes as { nombre_libre?: string }[] | undefined) ?? []).map(i => i.nombre_libre ?? '').join(' ')
+      sortScore += 0.1 * afinidadHabitual(`${r.nombre} ${ing}`, slotNombre, prefs.habituales)
+      if ((prefs.rechazos.get(r.id) ?? 0) === 1) sortScore *= 0.85
     }
 
     return { ...r, _dist: dist, _sort_score: sortScore }

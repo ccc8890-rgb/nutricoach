@@ -94,6 +94,8 @@ export async function aplicarRecetaAComida(
     targetCarbohidratos?: number | null
     targetGrasas?: number | null
     tipoInteraccion?: TipoInteraccion
+    // El cliente cambió esta receta por otra de las alternativas: se anota la anterior como descartada (aprendizaje de gustos)
+    registrarDescarte?: boolean
     reemplazar?: boolean
   }
 ) {
@@ -243,6 +245,7 @@ export async function aplicarRecetaAComida(
     return acc
   }, { kcal: 0, proteinas: 0, carbohidratos: 0, grasas: 0 })
 
+  const { data: previa } = params.registrarDescarte ? await db.from('comidas').select('receta_id').eq('id', comidaId).maybeSingle() : { data: null }
   const { error: comidaError } = await db
     .from('comidas')
     .update({
@@ -263,6 +266,11 @@ export async function aplicarRecetaAComida(
       plan_id: params.planId ?? null,
       comida_slot: params.comidaSlot ?? null,
     })
+    if (params.registrarDescarte && previa?.receta_id && previa.receta_id !== receta.id) {
+      await db.from('receta_interacciones_cliente').insert({
+        cliente_id: params.clienteId, receta_id: previa.receta_id, tipo: 'swap_rechazada', plan_id: params.planId ?? null, comida_slot: params.comidaSlot ?? null,
+      })
+    }
   }
 
   const ingredientes = ((insertados ?? []) as unknown as IngredienteComidaAplicado[]).map(ing => ({

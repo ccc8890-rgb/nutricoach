@@ -11,6 +11,7 @@ import { anadirComplemento } from './complementos'
 import type { PlanObjetivo } from './planificar-semana'
 import type { ObjetivoDia } from './objetivo-dia'
 import type { SlotComida } from '@/lib/tipos-comida'
+import { cargarPreferencias, esHabitualComplemento, lleva } from './preferencias-cliente'
 
 type Cat = 'base' | 'fruta' | 'lacteo' | 'grasa'
 // raciones: medidas reales en gramos (1 manzana, 1 yogur, un puñado de nueces…), no cualquier cifra
@@ -107,6 +108,8 @@ export async function completarSemana(
   const sinLactosa = restr.some(r => r.includes('vegan') || r.includes('lactosa'))
   const sinGluten = restr.some(r => r.includes('gluten'))
   const vegano = restr.some(r => r.includes('vegan'))
+  // Lo que el cliente suele comer y lo que evita: los complementos se acercan a su vida, no a un catálogo genérico
+  const prefs = await cargarPreferencias(db, clienteId).catch(() => null)
   const vegetariano = vegano || restr.some(r => r.includes('vegetarian'))
 
   const { data: alims } = await db.from('alimentos')
@@ -183,7 +186,8 @@ export async function completarSemana(
         if (catsUsadas.has(cand.cat) || usados.has(cand.clave)) continue
         if (momento && cand.cat === 'grasa') continue // sin frutos secos ni aguacate justo antes o después de entrenar
         if (!tieneSentido(cand, ctx, franja)) continue
-        const penVariedad = 1 + 0.12 * (usosSemana.get(cand.clave) ?? 0)
+        if (prefs && lleva(cand.nombre, prefs.evitar)) continue
+        const penVariedad = (1 + 0.12 * (usosSemana.get(cand.clave) ?? 0)) * (prefs && esHabitualComplemento(cand.nombre, franja, prefs.habituales) ? 0.85 : 1)
         if (cand.tipo === 'receta') {
           const k = coste({ kcal: resto.kcal - cand.m.kcal, p: resto.p - cand.m.p, c: resto.c - cand.m.c, g: resto.g - cand.m.g }, objetivo, momento) * penVariedad
           if (!mejor || k < mejor.coste) mejor = { cand, coste: k }
