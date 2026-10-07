@@ -25,13 +25,13 @@ export default function NumerosClave({ operacion, negocio, loading, negocioError
   const sinMembresia = negocio ? negocio.resumen.clientes_sin_membresia : 0
 
   return (
-    <section>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <section className="coach-dashboard-metrics">
+      <div className="coach-dashboard-metrics-grid grid grid-cols-2 gap-px overflow-hidden rounded-xl lg:grid-cols-4">
         {tiles.map(t => (
-          <Link key={t.label} href={t.href} className="rounded-2xl border p-4 active:scale-[0.99]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <p className="text-[11px] font-medium" style={{ color: DASHBOARD_MUTED }}>{t.label}</p>
+          <Link key={t.label} href={t.href} className="coach-dashboard-metric p-5 active:scale-[0.99]" style={{ background: 'var(--surface)' }}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: DASHBOARD_MUTED }}>{t.label}</p>
             {loading ? <div className="mt-2 h-8 w-20 rounded-lg skeleton" /> : (
-              <p className="font-data mt-1 text-3xl font-semibold" style={{ color: 'var(--text)' }}>{t.value}</p>
+              <p className="font-data mt-2 text-3xl font-medium tracking-[-0.06em]" style={{ color: 'var(--text)' }}>{t.value}</p>
             )}
           </Link>
         ))}

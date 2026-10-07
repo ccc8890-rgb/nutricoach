@@ -138,8 +138,8 @@ type Props = {
 
 export default function DetalleColapsable({ command, costes, negocio, loading }: Props) {
   return (
-    <details className="group rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 text-sm font-bold" style={{ color: 'var(--text)' }}>
+    <details className="coach-dashboard-detail group rounded-xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <summary className="flex cursor-pointer list-none flex-col items-start justify-between gap-1 px-5 py-5 text-sm font-semibold sm:flex-row sm:items-center" style={{ color: 'var(--text)' }}>
         Más detalle
         <span className="text-xs font-medium" style={{ color: DASHBOARD_MUTED }}>Calendario, costes, renovaciones, pagos y transacciones</span>
       </summary>

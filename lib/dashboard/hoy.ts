@@ -5,7 +5,7 @@ export type Tono = 'critico' | 'pendiente' | 'ok'
 export type CasoHoy = { id: string; titulo: string; detalle: string; href: string }
 
 export type TarjetaHoy = {
-  id: 'checkins' | 'riesgo' | 'ia'
+  id: 'checkins' | 'riesgo' | 'ia' | 'altas'
   titulo: string
   total: number
   tono: Tono
@@ -53,6 +53,16 @@ export function resumirHoy(c: CommandData): ResumenHoy {
     casos: c.inbox_ia.slice(0, MAX_CASOS).map(t => ({ id: t.id, titulo: t.cliente_nombre, detalle: t.tipo.replaceAll('_', ' '), href: t.href })),
   }
 
-  const tarjetas = [checkins, riesgo, ia]
+  const accionesAltas = c.hoy.filter(a => a.tipo === 'plan' || a.tipo === 'onboarding' || a.tipo === 'competicion')
+  const altas: TarjetaHoy = {
+    id: 'altas',
+    titulo: 'Planes, altas y pruebas',
+    total: accionesAltas.length,
+    tono: tonoDe(accionesAltas.length, accionesAltas.some(a => a.severity === 'critica')),
+    href: '/clientes',
+    casos: accionesAltas.slice(0, MAX_CASOS).map(a => ({ id: a.id, titulo: a.cliente_nombre, detalle: a.title, href: a.href })),
+  }
+
+  const tarjetas = [checkins, riesgo, ia, altas]
   return { tarjetas, todoAlDia: tarjetas.every(t => t.total === 0) }
 }

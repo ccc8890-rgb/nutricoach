@@ -26,10 +26,10 @@ export default function Accesos() {
   ]
 
   return (
-    <section className="grid grid-cols-3 gap-2 sm:gap-3">
+    <section className="coach-dashboard-access grid grid-cols-2 gap-px overflow-hidden rounded-xl sm:grid-cols-3 lg:grid-cols-6">
       {items.map(({ label, href, icon: Icon, badge }) => (
-        <Link key={label} href={href} className="relative flex flex-col items-center justify-center gap-2 rounded-2xl border px-2 py-4 text-center active:scale-[0.97]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-          <Icon size={24} weight="duotone" style={{ color: 'var(--accent)' }} />
+        <Link key={label} href={href} className="coach-dashboard-access-item relative flex min-h-24 flex-col items-start justify-between gap-4 px-4 py-4 text-left active:scale-[0.98]" style={{ background: 'var(--surface)' }}>
+          <Icon size={19} weight="regular" style={{ color: 'var(--accent)' }} />
           <span className="text-xs font-semibold leading-tight" style={{ color: 'var(--text)' }}>{label}</span>
           {badge > 0 && (
             <span className="font-data absolute right-2 top-2 rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>{badge}</span>

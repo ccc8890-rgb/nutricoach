@@ -1,0 +1,149 @@
+.coach-dashboard-shell {
+  --dashboard-line: color-mix(in srgb, var(--text) 10%, transparent);
+  --dashboard-line-strong: color-mix(in srgb, var(--text) 16%, transparent);
+  --dashboard-wash: color-mix(in srgb, var(--surface) 74%, var(--bg));
+  position: relative;
+  isolation: isolate;
+}
+
+.coach-dashboard-shell::before {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 24rem;
+  pointer-events: none;
+  content: '';
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 34%),
+    linear-gradient(to bottom, var(--dashboard-wash), transparent 88%);
+  opacity: 0.9;
+}
+
+.coach-dashboard-hero {
+  position: relative;
+  padding-block: 0.5rem 1rem;
+}
+
+.coach-dashboard-hero::after {
+  display: block;
+  width: 3rem;
+  height: 1px;
+  margin-top: 1.5rem;
+  content: '';
+  background: var(--accent);
+  opacity: 0.8;
+}
+
+.coach-dashboard-eyebrow {
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+.coach-dashboard-title {
+  max-width: 18ch;
+  text-wrap: balance;
+}
+
+.coach-dashboard-intro {
+  text-wrap: pretty;
+}
+
+.coach-dashboard-priorities,
+.coach-dashboard-metrics-grid,
+.coach-dashboard-access {
+  border: 1px solid var(--dashboard-line);
+  background: var(--dashboard-line);
+}
+
+.coach-dashboard-priority,
+.coach-dashboard-metric,
+.coach-dashboard-access-item {
+  position: relative;
+  min-width: 0;
+  transition:
+    background-color 180ms var(--ease-out-strong),
+    transform 180ms var(--ease-out-strong);
+}
+
+.coach-dashboard-priority::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  content: '';
+  background: var(--priority-color);
+  opacity: 0.72;
+}
+
+.coach-dashboard-case {
+  border-top: 1px solid var(--dashboard-line);
+  transition: background-color 180ms var(--ease-out-strong);
+}
+
+.coach-dashboard-case:first-child {
+  border-top: 0;
+}
+
+.coach-dashboard-priority:hover,
+.coach-dashboard-metric:hover,
+.coach-dashboard-access-item:hover {
+  background: var(--surface-hover) !important;
+}
+
+.coach-dashboard-case:hover {
+  background: color-mix(in srgb, var(--surface-hover) 76%, transparent);
+}
+
+.coach-dashboard-access-item::after {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  content: '↗';
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  opacity: 0;
+  transform: translate(-2px, 2px);
+  transition: opacity 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong);
+}
+
+.coach-dashboard-access-item:hover::after {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.coach-dashboard-link:focus-visible,
+.coach-dashboard-case:focus-visible,
+.coach-dashboard-metric:focus-visible,
+.coach-dashboard-access-item:focus-visible,
+.coach-dashboard-detail summary:focus-visible {
+  z-index: 2;
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.coach-dashboard-detail {
+  overflow: clip;
+  box-shadow: none;
+}
+
+.coach-dashboard-detail summary {
+  transition: background-color 180ms var(--ease-out-strong);
+}
+
+.coach-dashboard-detail summary:hover {
+  background: var(--surface-hover);
+}
+
+.coach-dashboard-detail[open] > summary {
+  border-bottom: 1px solid var(--dashboard-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-dashboard-priority,
+  .coach-dashboard-metric,
+  .coach-dashboard-access-item,
+  .coach-dashboard-access-item::after,
+  .coach-dashboard-case,
+  .coach-dashboard-detail summary {
+    transition: none;
+  }
+}

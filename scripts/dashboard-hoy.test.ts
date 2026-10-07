@@ -17,7 +17,7 @@ const base: CommandData = {
 // Todo vacío → todo al día, tonos ok
 const vacio = resumirHoy(base)
 assert.equal(vacio.todoAlDia, true)
-assert.deepEqual(vacio.tarjetas.map(t => [t.id, t.total, t.tono]), [['checkins', 0, 'ok'], ['riesgo', 0, 'ok'], ['ia', 0, 'ok']])
+assert.deepEqual(vacio.tarjetas.map(t => [t.id, t.total, t.tono]), [['checkins', 0, 'ok'], ['riesgo', 0, 'ok'], ['ia', 0, 'ok'], ['altas', 0, 'ok']])
 
 // Check-ins: total = checkins + respuestas; casos solo de tipo checkin/respuesta, máximo 3; crítico si algún caso lo es
 const accion = (id: string, tipo: string, severity: 'critica' | 'alta' | 'media' | 'baja') => ({
@@ -60,5 +60,18 @@ assert.equal(ti.total, 1)
 assert.equal(ti.tono, 'pendiente')
 assert.deepEqual(ti.casos[0], { id: 'x', titulo: 'Ana', detalle: 'actualizacion plan', href: '/clientes' })
 assert.equal(ti.href, '/entrenos/brain-ia')
+
+// Planes y altas: acciones plan/onboarding/competicion; total = nº de acciones, máx 3 casos, crítico si alguna lo es
+const altas = resumirHoy({
+  ...base,
+  hoy: [accion('p', 'plan', 'media'), accion('o', 'onboarding', 'alta'), accion('c', 'competicion', 'critica'), accion('k', 'checkin', 'critica'), accion('p2', 'plan', 'baja')],
+})
+const ta = altas.tarjetas.find(t => t.id === 'altas')!
+assert.equal(ta.total, 4)
+assert.deepEqual(ta.casos.map(c => c.id), ['p', 'o', 'c'])
+assert.equal(ta.tono, 'critico')
+assert.equal(altas.todoAlDia, false)
+// Con solo una acción de plan ya no es 'todo al día'
+assert.equal(resumirHoy({ ...base, hoy: [accion('p', 'plan', 'media')] }).todoAlDia, false)
 
 console.log('dashboard-hoy: OK')
