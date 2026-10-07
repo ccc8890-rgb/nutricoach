@@ -1,5 +1,16 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 08-10-2026 (Codex) — Bienvenida contextual al primer plan
+
+- Sustituida la bienvenida antigua, que solo aparecía con `?onboarding=completo`, usaba una clave global y afirmaba que existían dieta y entrenamiento aunque faltara alguno.
+- `app/cliente/page.tsx` muestra ahora una tarjeta cuando el cliente tiene su primer plan nutricional activo y todavía no la ha visto en ese dispositivo.
+- La persistencia está aislada por cliente con `nutricoach:bienvenida-plan:<clienteId>`; cerrar la tarjeta o usar un CTA la marca como vista.
+- CTA principal **Ver mi dieta**. CTA **Ver entrenamiento** únicamente cuando existe un plan de entrenamiento activo.
+- Sin migraciones ni escrituras en base de datos. Helper puro: `lib/cliente/bienvenida-plan.ts`. Regresión: `scripts/bienvenida-plan.test.ts`.
+- Verificación: test específico, ESLint focalizado, `tsc --noEmit`, `node scripts/audit-portal-patterns.mjs` y `npm run build`, todo limpio.
+- Commit y despliegue: `2db9de4`; Vercel Production `Ready`.
+- Se respetaron los cambios paralelos del dashboard coach y `supabase/.temp/cli-latest`; no se incluyeron en el commit.
+
 ## ✅ SESIÓN 07-10-2026 (noche, Claude) — Ficha cliente: cabecera del plan de entreno simplificada
 
 Carlos: el bloque «Training desk / Plan activo» de Entrenamiento tenía demasiada información. Ahora es una sola fila (nombre del plan, semanas y botones Abrir plan / Regenerar / Plantilla / Nuevo plan) y debajo «Rutina de la semana» sin el «De un vistazo…». Eliminadas las 3 tarjetas (plan, historial, siguiente acción) y el panel «Acceso rápido». Archivo: `app/clientes/[id]/page.tsx`, commit `dfeaa41` (en `origin/main`; el primer push dio un 500 de GitHub pero sí llegó). `tsc` limpio. **Revisado y aprobado por Carlos.**
