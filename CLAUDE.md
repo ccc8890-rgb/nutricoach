@@ -11,6 +11,35 @@
 - Commit y despliegue: `2db9de4`; Vercel Production `Ready`.
 - Se respetaron los cambios paralelos del dashboard coach y `supabase/.temp/cli-latest`; no se incluyeron en el commit.
 
+## ✅ SESIÓN 08-10-2026 (madrugada, Claude) — Dashboard del coach reorganizado en una pantalla
+
+Carlos: el dashboard tenía «una lista enorme de cosas, nada visual ni intuitivo». Proceso: brainstorming → spec → plan → ejecución nativa. Spec: `docs/superpowers/specs/2026-10-08-dashboard-coach-reorganizacion-design.md`; plan: `docs/superpowers/plans/2026-10-08-dashboard-coach-reorganizacion.md`. Commits `2ac63aa`, `c9727a2`, `f942687`, `5a565f6`. Carlos lo vio en local y dijo «está chulo».
+
+### Qué hay ahora (`app/dashboard/page.tsx`, de 825 a ~95 líneas, sin pestañas)
+- **4 tarjetas «Hoy»** (`components/dashboard/HoyCards.tsx`): Check-ins por revisar, Clientes en riesgo, Listo para aprobar (IA) y **Planes, altas y pruebas** (acciones `plan`, `onboarding`, `competicion` de `command.hoy`). Número grande + 3 primeros casos; color rojo/ámbar/verde. Si todo está a 0 sale un solo «Todo al día».
+- **4 cifras** (`NumerosClave.tsx`): clientes activos, ingresos del mes, MRR, renuevan 7d; avisos de pagos pendientes y sin membresía. Si falla `/api/dashboard/negocio` muestran «—» con «Reintentar» sin romper las tarjetas.
+- **6 accesos** (`Accesos.tsx`): Nuevo cliente, Clientes, Revisar recetas (badge de `en_revision`), Contenido, Dietas, Entrenos.
+- **«Más detalle» plegado** (`DetalleColapsable.tsx`, `<details>`): calendario deportivo, coste/fricción alimentaria, renovaciones, pagos pendientes, transacciones, embudo. Los subcomponentes antiguos se movieron tal cual.
+- Lógica pura y testeada en `lib/dashboard/hoy.ts` (`resumirHoy`) con `scripts/dashboard-hoy.test.ts` (ejecutar con `npx tsx`). Tipos en `lib/dashboard/tipos.ts`, helpers en `components/dashboard/comun.tsx`. Estilo visual en `app/dashboard/dashboard.css` (clases `coach-dashboard-*`, test `scripts/dashboard-visual-system.test.ts`).
+- **Sin cambios de API**: usa `command-center`, `costes-clientes` y `negocio`. Las dos primeras y `negocio` se piden a la vez al abrir.
+
+### Eliminado a propósito
+Pestañas Hoy/Negocio, «Foco semanal» y «Operación semanal» (repetían check-ins, riesgo e IA). Primera versión solo cubría check-ins/respuestas: se perdían los avisos de plan por revisar y cliente nuevo; por eso la cuarta tarjeta.
+
+### Auditoría de seguridad
+Sin secretos, `innerHTML` ni `err.message` en lo nuevo. Las 3 rutas que consume exigen sesión (401) y filtran por `coach_id`; no se tocó ninguna. `Accesos` cuenta recetas `en_revision` con el cliente Supabase del navegador (mismo patrón que `Sidebar`). Riesgo residual: esas rutas usan service role tras comprobar solo usuario logueado + filtro `coach_id` (código anterior, no auditado a fondo hoy).
+
+### Lecciones
+- Al mover código con `sed` por rangos de línea, comprobar con `tsc`: faltó importar el tipo `Competicion`.
+- Al reducir un panel, listar qué tipos de aviso mostraba antes; quitar bloques «repetidos» escondió 3 tipos que no lo eran.
+- Dos sesiones sobre el mismo repo (otra reestilaba el dashboard y `/cliente` sin commitear): commitear solo rutas propias con `git add <ruta>` y no hacer push hasta que la otra cierre.
+
+### Pendiente
+1. Las cifras y los avisos de pago llevan todos a `/clientes` (no a una pantalla específica).
+2. Sin gráficas: las APIs solo dan totales, no series en el tiempo.
+3. Repaso visual a 390 px y en modo oscuro con capturas (Carlos lo vio solo en escritorio).
+4. La otra sesión tiene sin commitear el estilo de `/cliente` (`app/cliente/page.tsx`, `cliente.css`, `scripts/cliente-visual-system.test.ts`).
+
 ## ✅ SESIÓN 07-10-2026 (noche, Claude) — Ficha cliente: cabecera del plan de entreno simplificada
 
 Carlos: el bloque «Training desk / Plan activo» de Entrenamiento tenía demasiada información. Ahora es una sola fila (nombre del plan, semanas y botones Abrir plan / Regenerar / Plantilla / Nuevo plan) y debajo «Rutina de la semana» sin el «De un vistazo…». Eliminadas las 3 tarjetas (plan, historial, siguiente acción) y el panel «Acceso rápido». Archivo: `app/clientes/[id]/page.tsx`, commit `dfeaa41` (en `origin/main`; el primer push dio un 500 de GitHub pero sí llegó). `tsc` limpio. **Revisado y aprobado por Carlos.**
