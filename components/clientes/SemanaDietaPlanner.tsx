@@ -161,8 +161,9 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     const res = await fetch(`/api/clientes/${clienteId}/semana-dieta/futuras?semanas=${v - 1}`)
     const data = await res.json().catch(() => null)
     if (!res.ok) { setError(data?.error ?? 'No se pudieron cargar las semanas planificadas'); return }
-    setFuturas((data.semanas ?? []).map((s: { semana: number; dias: { dia: string; comidas: Omit<Comida, 'recurrente'>[]; total: Total }[] }) => ({
+    setFuturas((data.semanas ?? []).map((s: { semana: number; dias: { dia: string; comidas: Omit<Comida, 'recurrente'>[]; total: Total }[]; objetivos?: Record<string, ObjetivoDia> }) => ({
       semana: s.semana,
+      objetivos: s.objetivos,
       dias: s.dias.map(d => ({ ...d, comidas: d.comidas.map(c => ({ ...c, recurrente: false })) })),
     })))
     setVersion(v => v + 1)
