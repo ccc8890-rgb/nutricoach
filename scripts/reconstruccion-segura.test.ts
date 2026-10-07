@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { calidadVinculo, raicesBusqueda, evaluarReconstruccion, type IngredienteResuelto } from '../lib/recetas/reconstruccion-segura'
+import { acotarCantidad, nombreParaGuardar, aliasAlimento, limpiarNombreIngrediente, calidadVinculo, raicesBusqueda, evaluarReconstruccion, type IngredienteResuelto } from '../lib/recetas/reconstruccion-segura'
 
 // --- Calidad de la vinculación (casos reales de las propuestas del 02-10)
 const q = calidadVinculo
@@ -50,6 +50,31 @@ assert.equal(q('Pan rallado panko', 'Pan Rallado Estilo Japonés Panko'), 'buena
 assert.equal(q('Salsa picante', 'Salsa Picante Louisiana'), 'dudosa') // marca desconocida: conservador
 assert.equal(q('Tortillas de trigo', 'Maxi tortillas de trigo'), 'buena')
 
+// --- Equivalencias revisadas ingrediente → alimento del catálogo
+assert.equal(aliasAlimento('Col verde'), 'Repollo')
+assert.equal(aliasAlimento('  COL   verde '), 'Repollo')
+assert.equal(aliasAlimento('Tomate enlatado'), 'Tomate pelado')
+assert.equal(aliasAlimento('Zumaque'), 'Pimentón dulce')
+assert.equal(aliasAlimento('Pasta de tomate'), 'Tomate Doble Concentrado Lata')
+assert.equal(aliasAlimento('Algo desconocido'), null)
+// "Aceite para freír" NO tiene equivalencia: el aceite de la sartén no se come entero
+assert.equal(aliasAlimento('Aceite para freír'), null)
+// Nombre limpio: la ralladura de cítrico no cuenta como cantidad aparte
+assert.equal(limpiarNombreIngrediente('Zumo y ralladura de lima'), 'Zumo de lima')
+assert.equal(limpiarNombreIngrediente('Zumo de lima'), 'Zumo de lima')
+
+// --- Nombre guardado: el gate exige palabras en común con el alimento; los sinónimos lo conservan visible
+assert.equal(nombreParaGuardar('Camarones', 'Gambas'), 'Gambas (Camarones)')
+assert.equal(nombreParaGuardar('Pollo', 'Pechuga de pollo'), 'Pollo')
+assert.equal(nombreParaGuardar('Zumaque', 'Pimentón dulce'), 'Pimentón dulce (Zumaque)')
+
+// --- Cantidades que el quality gate considera sospechosas (sal > 10 g en toda la receta): se acotan y se avisa
+assert.deepEqual(acotarCantidad('Sal', 11), { gramos: 10, ajustado: true })
+assert.deepEqual(acotarCantidad('Sal kosher', 15), { gramos: 10, ajustado: true })
+assert.deepEqual(acotarCantidad('Sal', 5), { gramos: 5, ajustado: false })
+assert.deepEqual(acotarCantidad('Salsa de soja', 30), { gramos: 30, ajustado: false })
+assert.deepEqual(acotarCantidad('Salmón', 200), { gramos: 200, ajustado: false })
+
 // --- Palabras de búsqueda en el catálogo
 assert.deepEqual(raicesBusqueda('Zumo y ralladura de lima'), ['lima'])
 assert.ok(raicesBusqueda('Tomates Roma').includes('tomate'))
@@ -93,12 +118,25 @@ assert.match(r.motivos.join(' '), /kcal por ración/i)
 assert.match(r.motivos.join(' '), /con \d+ raciones? sald/)
 
 // Gran divergencia con lo actual (±35 %) sin que lo actual sea absurdo: bloquea para revisión
-r = evaluarReconstruccion({ ingredientes: base(), porciones_propuesta: 4, actual: { ...actual, kcal: 800 } })
+r = evaluarReconstruccion({ ingredientes: base(), porciones_propuesta: 6, actual: { ...actual, kcal: 800 } }) // ajustar exigiría 2 raciones (−4)
 assert.equal(r.ok, false)
 assert.match(r.motivos.join(' '), /diverge/i)
 // …pero si lo actual ya era absurdo (125 kcal en una comida completa) se permite corregirlo
 r = evaluarReconstruccion({ ingredientes: base(), porciones_propuesta: 4, actual: { ...actual, kcal: 125 } })
 assert.equal(r.ok, true, r.motivos.join(';'))
+
+// Misma ración, tanda mayor: la propuesta (2 raciones = 889 kcal) se ajusta a 4 raciones (~444) porque la actual era de ~450 kcal
+r = evaluarReconstruccion({ ingredientes: base(), porciones_propuesta: 2, actual: { ...actual, porciones: 2, kcal: 450 } })
+assert.equal(r.ok, true, r.motivos.join(';'))
+assert.equal(r.porciones_final, 4)
+assert.equal(r.nuevo.kcal, Math.round((500 * 1.1 + 300 * 3.5 + 20 * 8.84) / 4))
+assert.match(r.ajustes.join(' '), /raciones 2 → 4/)
+// Sin ajuste cuando no hace falta
+r = evaluarReconstruccion({ ingredientes: base(), porciones_propuesta: 4, actual })
+assert.equal(r.porciones_final, 4); assert.deepEqual(r.ajustes, [])
+// Un ajuste que se aleja demasiado de lo propuesto (más de 3 raciones) no se hace
+r = evaluarReconstruccion({ ingredientes: base(), porciones_propuesta: 1, actual: { ...actual, porciones: 2, kcal: 250 } })
+assert.equal(r.ok, false)
 
 // Cambio de raciones desproporcionado (2 → 8): bloquea
 r = evaluarReconstruccion({ ingredientes: base(), porciones_propuesta: 8, actual: { ...actual, porciones: 2, kcal: 900 } })

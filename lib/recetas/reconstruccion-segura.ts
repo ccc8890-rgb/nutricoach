@@ -10,6 +10,8 @@ export type Evaluacion = {
   motivos: string[]
   descartados: string[]
   ingredientesFinales: IngredienteResuelto[]
+  porciones_final: number
+  ajustes: string[]
   nuevo: { kcal: number; proteinas: number; carbohidratos: number; grasas: number; fibra: number; gramos_racion: number }
 }
 
@@ -70,6 +72,44 @@ export function raicesBusqueda(nombre: string): string[] {
   return [...new Set(raices)].slice(0, 6)
 }
 
+/**
+ * Equivalencias revisadas a mano: ingrediente (normalizado) → nombre EXACTO de un alimento genérico del catálogo.
+ * Solo equivalencias nutricionalmente próximas; se aceptan como vínculo "buena". Añadir aquí solo tras comprobar el alimento.
+ */
+const ALIAS: Record<string, string> = {
+  'col verde': 'Repollo',
+  'queso cottage bajo en grasa': 'Queso cottage',
+  'yogurt griego sin grasa': 'Yogur griego natural (0%)',
+  'yogur griego sin grasa': 'Yogur griego natural (0%)',
+  'leche vegetal': 'Leche de almendras',
+  'tomate enlatado': 'Tomate pelado',
+  'queso duro': 'Queso manchego semicurado',
+  'carne picada de cordero': 'Cordero',
+  'zumaque': 'Pimentón dulce',            // especia en polvo de densidad energética similar (~280 kcal/100 g)
+  'pan lavash': 'Pan de pita',
+  'cheddar blanco': 'Queso cheddar',
+  'queso cheddar rallado bajo en grasa o mezcla mexicana': 'Queso cheddar',
+  'pasta de tomate': 'Tomate Doble Concentrado Lata',
+  'aceite de aguacate': 'Aceite de Aguacate Cristal',
+  'salchicha de pavo para desayuno': 'Salchicha de pavo',
+  'huevo frito': 'Huevo',
+  'panko': 'Pan Rallado Estilo Japonés Panko',
+}
+export function aliasAlimento(nombre: string): string | null {
+  return ALIAS[quitarAcentos(nombre).replace(/\s+/g, ' ').trim()] ?? null
+}
+
+/** El quality gate marca como sospechosa la sal > 10 g por receta: se acota (la sal no cambia los macros). */
+export function acotarCantidad(nombre: string, gramos: number): { gramos: number; ajustado: boolean } {
+  if (/^sal\b/.test(quitarAcentos(nombre).trim()) && gramos > 10) return { gramos: 10, ajustado: true }
+  return { gramos, ajustado: false }
+}
+
+/** La ralladura de cítrico no es un ingrediente aparte (el gate la limita a 10 g): "Zumo y ralladura de lima" → "Zumo de lima". */
+export function limpiarNombreIngrediente(nombre: string): string {
+  return nombre.replace(/\s+y\s+ralladura/i, '').replace(/\s+/g, ' ').trim()
+}
+
 const RANGO: Record<CalidadVinculo, number> = { exacta: 3, buena: 2, dudosa: 1, sin: 0 }
 
 /** ¿El alimento vinculado es realmente el ingrediente? exacta/buena se aceptan; dudosa no. Con "A o B" vale la mejor alternativa. */
@@ -80,7 +120,7 @@ export function calidadVinculo(libre: string, alimento: string): CalidadVinculo 
 
 const r1 = (v: number) => Math.round(v * 10) / 10
 
-export function evaluarReconstruccion(p: { ingredientes: IngredienteResuelto[]; porciones_propuesta: number; actual: RecetaActual }): Evaluacion {
+function evaluarConRaciones(p: { ingredientes: IngredienteResuelto[]; porciones_propuesta: number; actual: RecetaActual }): Evaluacion {
   const motivos: string[] = []
   const descartados: string[] = []
   const finales: IngredienteResuelto[] = []
@@ -116,8 +156,10 @@ export function evaluarReconstruccion(p: { ingredientes: IngredienteResuelto[]; 
   }
   if (principal && completa && (nuevo.gramos_racion < 100 || nuevo.gramos_racion > 900)) motivos.push(`${nuevo.gramos_racion} g por ración no es plausible`)
 
+  // Cambiar mucho las raciones solo es aceptable si la ración sigue pesando lo mismo (tanda mayor del mismo plato)
   const ratio = p.porciones_propuesta / Math.max(1, p.actual.porciones)
-  if (ratio > 2 || ratio < 0.5) motivos.push(`Cambio de raciones desproporcionado (${p.actual.porciones} → ${p.porciones_propuesta})`)
+  const divergeKcal = p.actual.kcal > 0 ? Math.abs(nuevo.kcal - p.actual.kcal) / p.actual.kcal : 0
+  if ((ratio > 2 || ratio < 0.5) && divergeKcal > 0.15) motivos.push(`Cambio de raciones desproporcionado (${p.actual.porciones} → ${p.porciones_propuesta})`)
 
   // Frente a lo actual: solo se permite un salto grande si lo actual ya era claramente absurdo
   const actualAbsurdo = p.actual.kcal < banda[0] || p.actual.kcal > banda[1]
@@ -125,5 +167,31 @@ export function evaluarReconstruccion(p: { ingredientes: IngredienteResuelto[]; 
     motivos.push(`La propuesta diverge un ${Math.round(Math.abs(nuevo.kcal - p.actual.kcal) / p.actual.kcal * 100)} % de la receta actual (${p.actual.kcal} → ${nuevo.kcal} kcal): revisar`)
   }
 
-  return { ok: motivos.length === 0, motivos, descartados, ingredientesFinales: finales, nuevo }
+  return { ok: motivos.length === 0, motivos, descartados, ingredientesFinales: finales, nuevo, porciones_final: por, ajustes: [] }
+}
+
+const SOLO_RACIONES = /kcal por ración|diverge|raciones desproporcionado|g por ración/
+
+/**
+ * Evalúa la reconstrucción. Si el único problema es el tamaño de ración, prueba con las raciones que conservarían la ración actual
+ * (±15 % de kcal), siempre que no se alejen del doble ni de más de 3 raciones sobre lo propuesto.
+ */
+export function evaluarReconstruccion(p: { ingredientes: IngredienteResuelto[]; porciones_propuesta: number; actual: RecetaActual }): Evaluacion {
+  const base = evaluarConRaciones(p)
+  if (base.ok || base.motivos.some(m => !SOLO_RACIONES.test(m)) || p.actual.kcal <= 0) return base
+  const kcalTotal = p.ingredientes.filter(i => i.calidad === 'exacta' || i.calidad === 'buena').reduce((t, i) => t + (i.alimento ? i.alimento.calorias * i.gramos / 100 : 0), 0)
+  const n = Math.min(12, Math.max(1, Math.round(kcalTotal / p.actual.kcal)))
+  const propuesta = Math.max(1, p.porciones_propuesta)
+  if (n === propuesta || n > propuesta * 2 || n < propuesta / 2 || Math.abs(n - propuesta) > 3) return base
+  const alt = evaluarConRaciones({ ...p, porciones_propuesta: n })
+  if (!alt.ok) return base
+  return { ...alt, ajustes: [`raciones ${propuesta} → ${n} para conservar el tamaño de ración actual (~${p.actual.kcal} kcal; con ${propuesta} serían ${base.nuevo.kcal})`] }
+}
+
+const tokensSinSinonimos = (s: string) => quitarAcentos(s).replace(/\([^)]*\)/g, ' ').replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(t => t.length > 2 && !STOP.has(t))
+
+/** El quality gate exige palabras en común entre el ingrediente y el alimento; si solo son sinónimos, se guarda con ambos nombres. */
+export function nombreParaGuardar(libre: string, alimento: string): string {
+  const A = new Set(tokensSinSinonimos(alimento))
+  return tokensSinSinonimos(libre).some(t => tiene(A, t)) ? libre : `${alimento} (${libre})`
 }

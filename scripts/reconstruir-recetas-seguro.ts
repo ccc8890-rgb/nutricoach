@@ -8,7 +8,7 @@ import { createClient } from '@supabase/supabase-js'
 import { inferirRolIngrediente } from '../lib/ingredient-roles'
 import { auditarRecetaProfesional } from '../lib/recetas/auditoria'
 import { calcularScoreCalidadReceta } from '../lib/recetas/profesional'
-import { calidadVinculo, evaluarReconstruccion, raicesBusqueda, type CalidadVinculo, type IngredienteResuelto } from '../lib/recetas/reconstruccion-segura'
+import { acotarCantidad, aliasAlimento, calidadVinculo, evaluarReconstruccion, limpiarNombreIngrediente, nombreParaGuardar, raicesBusqueda, type CalidadVinculo, type IngredienteResuelto } from '../lib/recetas/reconstruccion-segura'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
   const m = l.match(/^([A-Z0-9_]+)=(.*)$/)
@@ -45,9 +45,20 @@ async function buscarMejor(nombre: string): Promise<{ al: Al; calidad: CalidadVi
   return puntuados[0] ?? null
 }
 
-async function resolver(ing: { nombre: string; gramos: number; alimento_id: string | null }): Promise<IngredienteResuelto & { al: Al | null }> {
+const ajustesCantidad: string[] = []
+async function resolver(ingOriginal: { nombre: string; gramos: number; alimento_id: string | null }): Promise<IngredienteResuelto & { al: Al | null }> {
+  const nombreLimpio = limpiarNombreIngrediente(ingOriginal.nombre)
+  const acotado = acotarCantidad(nombreLimpio, ingOriginal.gramos)
+  const ing = { ...ingOriginal, nombre: nombreLimpio, gramos: acotado.gramos }
+  if (acotado.ajustado) ajustesCantidad.push(`${nombreLimpio}: ${ingOriginal.gramos} g → ${acotado.gramos} g (tope del quality gate)`)
   let al: Al | null = null
   let calidad: CalidadVinculo = 'sin'
+  // Equivalencia revisada a mano (tiene prioridad sobre cualquier vínculo que traiga la propuesta)
+  const alias = aliasAlimento(ing.nombre)
+  if (alias) {
+    const { data } = await db.from('alimentos').select(CAMPOS).eq('nombre', alias).eq('es_comestible', true).order('es_generico', { ascending: false }).limit(1)
+    if (data?.[0]) return { nombre: ing.nombre, gramos: ing.gramos, alimento: data[0] as Al, calidad: 'buena', al: data[0] as Al }
+  }
   if (ing.alimento_id) {
     const { data } = await db.from('alimentos').select(CAMPOS).eq('id', ing.alimento_id).maybeSingle()
     if (data) { al = data as Al; calidad = calidadVinculo(ing.nombre, al.nombre) }
@@ -67,7 +78,9 @@ async function procesar(prop: any): Promise<Resultado> {
   const { data: r } = await db.from('recetas').select('id, nombre, porciones, kcal, proteinas, carbohidratos, grasas, fibra, instrucciones, tipo_plato, tipo_receta, descripcion, categoria, dificultad, imagen_url, url_origen, intolerancias, tags').eq('id', id).single()
   if (!r) return { id, nombre: prop.receta ?? id, estado: 'error', detalle: ['Receta no encontrada'] }
 
+  ajustesCantidad.length = 0
   const resueltos = await Promise.all((prop.ingredientes as any[]).map(resolver))
+  const notasCantidad = [...ajustesCantidad]
   const ev = evaluarReconstruccion({
     ingredientes: resueltos, porciones_propuesta: Number(prop.porciones_propuesta ?? r.porciones ?? 1),
     actual: { porciones: Number(r.porciones ?? 1), kcal: Number(r.kcal ?? 0), tipo_plato: r.tipo_plato, tipo_receta: r.tipo_receta },
@@ -77,14 +90,16 @@ async function procesar(prop: any): Promise<Resultado> {
     const gate = calcularScoreCalidadReceta({
       nombre: r.nombre, descripcion: r.descripcion, instrucciones: prop.instrucciones ?? r.instrucciones, categoria: r.categoria, tipo_plato: r.tipo_plato,
       dificultad: r.dificultad, imagen_url: r.imagen_url, url_origen: r.url_origen, kcal: ev.nuevo.kcal, proteinas: ev.nuevo.proteinas, carbohidratos: ev.nuevo.carbohidratos,
-      grasas: ev.nuevo.grasas, fibra: ev.nuevo.fibra, porciones: Number(prop.porciones_propuesta ?? r.porciones), intolerancias: r.intolerancias, tags: r.tags,
-      ingredientes: ev.ingredientesFinales.map(i => ({ alimento_id: (i as any).al.id, nombre_libre: i.nombre, cantidad_gramos: i.gramos, tiene_precio: true, nombre_alimento: i.alimento!.nombre, kcal_alimento: i.alimento!.calorias })),
+      grasas: ev.nuevo.grasas, fibra: ev.nuevo.fibra, porciones: ev.porciones_final, intolerancias: r.intolerancias, tags: r.tags,
+      ingredientes: ev.ingredientesFinales.map(i => ({ alimento_id: (i as any).al.id, nombre_libre: nombreParaGuardar(i.nombre, i.alimento!.nombre), cantidad_gramos: i.gramos, tiene_precio: true, nombre_alimento: i.alimento!.nombre, kcal_alimento: i.alimento!.calorias })),
     } as any)
     for (const b of gate.bloqueantes) ev.motivos.push(`El quality gate bloquearía: ${b}`)
     ev.ok = ev.motivos.length === 0
   }
   const detalle = [
     ...ev.motivos.map(m => `⛔ ${m}`),
+    ...ev.ajustes.map(a => `🔧 ${a}`),
+    ...notasCantidad.map(a => `🔧 ${a}`),
     ...ev.descartados.map(d => `ℹ️ omitido por ser despreciable y sin vínculo fiable: ${d}`),
     ...resueltos.filter(x => x.alimento && x.calidad === 'buena').map(x => `ℹ️ vínculo aproximado: «${x.nombre}» → «${x.alimento!.nombre}»`),
   ]
@@ -107,13 +122,13 @@ async function procesar(prop: any): Promise<Resultado> {
   try {
     await db.from('receta_ingredientes').delete().eq('receta_id', id)
     const { error: e2 } = await db.from('receta_ingredientes').insert(finales.map((f, orden) => ({
-      receta_id: id, alimento_id: f.al.id, nombre_libre: f.nombre, cantidad_gramos: f.gramos, es_cantidad_fija: false, orden,
+      receta_id: id, alimento_id: f.al.id, nombre_libre: nombreParaGuardar(f.nombre, f.al.nombre), cantidad_gramos: f.gramos, es_cantidad_fija: false, orden,
       rol_ingrediente: inferirRolIngrediente(f.al as any, f.nombre),
     })))
     if (e2) throw new Error(e2.message)
     const { error: e3 } = await db.from('recetas').update({
       kcal: ev.nuevo.kcal, proteinas: ev.nuevo.proteinas, carbohidratos: ev.nuevo.carbohidratos, grasas: ev.nuevo.grasas, fibra: ev.nuevo.fibra,
-      porciones: Number(prop.porciones_propuesta ?? r.porciones), ...(prop.instrucciones ? { instrucciones: prop.instrucciones } : {}),
+      porciones: ev.porciones_final, ...(prop.instrucciones ? { instrucciones: prop.instrucciones } : {}),
     }).eq('id', id)
     if (e3) throw new Error(e3.message)
     const audit = await auditarRecetaProfesional(db as any, id, 'reconstruccion_segura', 'sistema')
