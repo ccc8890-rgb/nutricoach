@@ -32,6 +32,26 @@ Pedido de Carlos: apuntar recetas que ve en Instagram/TikTok o que ya tiene en e
 - Los módulos con base de datos también se testean TDD con un cliente Supabase falso (tabla → filas fijas, registra escrituras); cubrió el enlace por `url_origen` y la sincronización del icono.
 - Escribir un componente de UI una sola vez cuando tres tareas lo comparten, y dejarlo anotado, es más barato que reescribirlo tres veces.
 
+## ✅ SESIÓN 07-10-2026 (Claude) — Prueba de extremo a extremo con Carlos y fallos encontrados
+
+Carlos pidió probar todo con su propio cliente (`04cc53b3`) y apuntar los fallos. Probado en producción: analíticas, duración/hora de sesión, competición, planificador (semana +2), suplementación (propuestas, aprobar/descartar), bandeja de recetas y API con entradas inválidas.
+
+**Fallos encontrados y corregidos**
+1. **Dos sistemas contradictorios en Competiciones:** la tarjeta antigua (`CompeticionesManager` + `lib/alto-rendimiento/macros-por-fase.ts`) decía «Pico máximo, 9 g/kg» a 18 días (y 10 g/kg de tapering), contra el motor nuevo. Ahora `GET /api/clientes/[id]/fase-deportiva` calcula la fase con `faseEnFecha(…, disciplina)` y devuelve `objetivo_hoy` del mismo motor; la tarjeta lo muestra con g/kg y el consejo del día. `macros-por-fase.ts` quedó **sin usos** (código muerto, no borrado).
+2. **Aprobar desde la bandeja no verificaba:** el motor solo usa recetas verificadas si hay ≥3 (`lib/plan-recetas.ts`), así que las recetas recién aprobadas quedaban fuera de los planes sin avisar. Nuevo `lib/recetas/verificacion-auto.ts` (`motivosIncompleta`, `verificarRecetasCompletas`) llamado al aprobar (lote y individual); el script `verificar-recetas-auto.ts` lo reutiliza. Efecto medido: la semana +2 de Carlos con Hyrox el 25-10 pasó a usar las recetas nuevas (víspera 3.086 kcal frente a un objetivo de 3.109).
+3. **Instrucciones demasiado cortas** (<80 caracteres) en 3 recetas del lote 2: ampliadas.
+4. Botón «Aprobar aprobables» mostraba (0) mientras cargaba: ahora «…».
+
+**Pendiente / no corregido**
+- Si se aprueba por API sin `dosis`/`timing`, el portal del cliente la muestra vacía (el panel del coach siempre las manda).
+- La ruta de suplementación no pasa `intensidad`, así que cafeína/beta-alanina «de sesión» por intensidad alta nunca se activan fuera de Hyrox/prueba.
+- `condiciones_salud = "Ninguna"` entra como condición en el contexto (inofensivo).
+- La vista previa de semanas futuras no incluye complementos (la semana +1 de Carlos marca 2.314 kcal estimadas frente a ~3.100 de objetivo).
+- **Dos sesiones de Claude Code a la vez comparten el mismo navegador de pruebas (`browse`, una sola pestaña) y la misma base de datos:** produjeron lecturas incoherentes (contadores a 0, clics ambiguos, pestaña movida) y archivos temporales ajenos. No lanzar dos sesiones sobre este proyecto a la vez.
+- Falta comprobar la tarjeta de suplementación del portal con la sesión del cliente (requiere que Carlos inicie sesión como cliente).
+
+**Datos de prueba creados en el cliente de Carlos (hay que limpiarlos):** competición «Hyrox de prueba (borrar)», analíticas simuladas (vitamina D 22, ferritina 25 y una nota), 4 propuestas de suplementación aprobadas y 1 descartada, hora 18:30 y duración 130 min en la sesión del miércoles, la semana +2 del planificador y la tabla temporal `public._backup_test_20261007` (copia de su semana +1 real).
+
 ## ✅ SESIÓN 06-10-2026 (Claude + Codex) — Recetas de víspera/carrera, bandeja única de revisión y analíticas
 
 Commits en `main`: `0ceec65`, `ebdb424`, `b060c51` y dos correcciones visuales (`fix:` botones Aprobar invisibles y tabla cortada).
