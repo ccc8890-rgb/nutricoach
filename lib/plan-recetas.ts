@@ -2,6 +2,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { RecetaCandidata, TipoReceta } from '@/types'
 import { obtenerPerfilCliente } from '@/lib/agentes/perfil-gusto'
+import { ajusteClinico, reglasClinicas } from '@/lib/nutricion/reglas-clinicas'
 import { afinidadHabitual, cargarPreferencias, lleva, type PreferenciasCliente } from '@/lib/nutricion/preferencias-cliente'
 import { inferirMomentoDesdeTipo, requiereMomentoExacto, scoreRecetaParaAgente } from '@/lib/recetario-taxonomia'
 
@@ -26,10 +27,12 @@ const SLOT_CATEGORIAS: Record<string, string[]> = {
 const SLOT_TIPOS_PERMITIDOS: Record<string, TipoReceta[]> = {
   'Desayuno':      ['desayuno', 'completa'],
   // Una guarnición no es un plato: va como complemento de una comida o cena (lib/nutricion/completar-comidas.ts)
-  'Media mañana':  ['snack_postre', 'desayuno'],
-  'Snack':         ['snack_postre', 'desayuno'],
+  // `completa` también: muchas meriendas reales (wraps, batidos, bagels, bowls) están guardadas como receta completa
+  // de categoría Merienda/Snack y quedaban fuera, dejando ~7 candidatas para toda la semana
+  'Media mañana':  ['snack_postre', 'desayuno', 'completa'],
+  'Snack':         ['snack_postre', 'desayuno', 'completa'],
   'Comida':        ['completa'],
-  'Merienda':      ['snack_postre', 'desayuno'],
+  'Merienda':      ['snack_postre', 'desayuno', 'completa'],
   'Cena':          ['completa'],
 }
 
@@ -74,6 +77,8 @@ interface FiltroCliente {
   alimentos_evitar_extra?: string[] | string | null
   tiempo_cocina_min?: number | null
   alimentos_base?: string[] | null
+  // Texto libre del cuestionario: de aquí salen las reglas clínicas (dislipidemia, hipertensión, diabetes, anemia)
+  condiciones_salud?: string | null
 }
 
 // Mapeo objetivo → valores apta_cliente aceptados
@@ -239,6 +244,14 @@ export async function filtrarRecetasPorSlot(
       ]
       return !evitarLower.some(term => textosReceta.some(texto => texto.includes(term)))
     })
+  }
+
+  // Reglas clínicas: se excluyen las recetas incompatibles con la condición (si quedan al menos 3) y el resto se ajusta al puntuar
+  const reglasCli = reglasClinicas(filtroCliente.condiciones_salud)
+  const ingredientesDe = (r: unknown) => ((r as { receta_ingredientes?: { nombre_libre?: string | null; alimento?: { nombre?: string | null } | null }[] }).receta_ingredientes ?? []).flatMap(i => [i.nombre_libre ?? '', i.alimento?.nombre ?? ''])
+  if (reglasCli.condiciones.length > 0) {
+    const compatibles = candidatas.filter(r => !ajusteClinico(reglasCli, r.nombre, ingredientesDe(r)).excluir)
+    if (compatibles.length >= 3) candidatas = compatibles
   }
 
   // Filtro duro: dislikes del cliente
@@ -410,6 +423,11 @@ export async function filtrarRecetasPorSlot(
       const ing = ((rec.receta_ingredientes as { nombre_libre?: string }[] | undefined) ?? []).map(i => i.nombre_libre ?? '').join(' ')
       sortScore += 0.1 * afinidadHabitual(`${r.nombre} ${ing}`, slotNombre, prefs.habituales)
       if ((prefs.rechazos.get(r.id) ?? 0) === 1) sortScore *= 0.85
+    }
+
+    if (reglasCli.condiciones.length > 0) {
+      const aj = ajusteClinico(reglasCli, r.nombre, ingredientesDe(r), rec)
+      sortScore = sortScore * aj.mult + aj.bonus
     }
 
     return { ...r, _dist: dist, _sort_score: sortScore }

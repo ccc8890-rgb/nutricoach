@@ -61,6 +61,7 @@ export function construirFiltroCliente(onboarding: OnboardingFiltro, perfil: Per
       alimentos_evitar_extra: aEvitar,
       tiempo_cocina_min: onboarding.tiempo_cocina_min,
       alimentos_base: onboarding.alimentos_base ?? null,
+      condiciones_salud: perfil?.condiciones_salud ?? null,
     },
     tagsClinicos: {
       ...((condicion.includes('sop') || (onboarding.restricciones ?? []).includes('sop')) && { apto_sop: true as const }),
