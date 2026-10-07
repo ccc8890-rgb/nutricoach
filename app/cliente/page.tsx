@@ -17,6 +17,7 @@ import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
 import { claveBienvenidaPlan, debeMostrarBienvenidaPlan } from '@/lib/cliente/bienvenida-plan'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
+import './cliente.css'
 // Pestañas principales con import estático: un componente diferido (dynamic/lazy) hace que React retenga toda la
 // pantalla hasta 300 ms (su temporizador anti-parpadeo de Suspense) aunque el JS ya esté en caché.
 import TLSGaugeEstatico from '@/components/PortalCliente/TLSGauge'
@@ -77,7 +78,7 @@ function MacroRing({
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
       <circle cx={size / 2} cy={size / 2} r={r} fill="none"
-        stroke="rgba(255,255,255,0.07)" strokeWidth={stroke} />
+        stroke="color-mix(in srgb, var(--text) 9%, transparent)" strokeWidth={stroke} />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none"
         stroke={color} strokeWidth={stroke}
         strokeDasharray={`${dash} ${circ}`}
@@ -119,8 +120,8 @@ function StatBadge({ icon: Icon, label, value, sub, color }: {
   icon: React.ElementType; label: string; value: string; sub?: string; color: string
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: 'var(--surface)' }}>
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+    <div className="cliente-stat flex items-center gap-3 p-4" style={{ background: 'var(--surface)' }}>
+      <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
         style={{ background: `${color}18` }}>
         <Icon size={16} style={{ color }} />
       </div>
@@ -437,15 +438,15 @@ function PortalClientePageContent() {
   ]
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+    <div className="cliente-portal-shell min-h-screen" style={{ background: 'var(--bg)' }}>
 
       {/* ── Header ── */}
-      <div className="sticky top-0 z-20 px-4 pt-safe"
+      <div className="cliente-portal-header sticky top-0 z-20 px-4 pt-safe"
         style={{ background: 'color-mix(in srgb, var(--bg) 88%, transparent)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-2xl mx-auto flex items-center justify-between h-16">
           {/* Avatar + name */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-bold flex-shrink-0"
+            <div className="cliente-avatar w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: 'var(--surface-elevated)', color: 'var(--text)', border: '1px solid var(--border)' }}>
               {iniciales}
             </div>
@@ -527,31 +528,31 @@ function PortalClientePageContent() {
       )}
 
       {/* ── Content ── */}
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-28">
+      <div className="cliente-portal-content max-w-2xl mx-auto px-4 pt-6 pb-28">
 
         {/* ─── HOY ─── */}
         {visitadas.has('hoy') && (
-          <div className="flex flex-col gap-4" style={tab !== 'hoy' ? { display: 'none' } : undefined}>
+          <div className="cliente-hoy flex flex-col gap-5" style={tab !== 'hoy' ? { display: 'none' } : undefined}>
 
             {/* Hero: Calorías */}
             {totalDia ? (
-              <section className="rounded-[1.75rem] p-5 overflow-hidden relative"
+              <section className="cliente-plan-hero overflow-hidden relative p-5 sm:p-6"
                 style={{
                   background: 'var(--surface)',
                   border: '1px solid var(--border)',
-                  boxShadow: 'var(--shadow-md)',
+                  boxShadow: 'none',
                 }}>
                 <div className="flex items-start justify-between gap-4 mb-6">
                   <div>
-                    <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>
+                    <p className="cliente-eyebrow text-[10px] font-semibold mb-2 uppercase" style={{ color: 'var(--text-muted)' }}>
                       Plan de hoy
                     </p>
-                    <h1 className="text-2xl font-extrabold leading-tight tracking-tight" style={{ color: 'var(--text)' }}>
+                    <h1 className="cliente-plan-title text-2xl font-semibold leading-tight tracking-[-0.04em] sm:text-3xl" style={{ color: 'var(--text)' }}>
                       {primerNombre}, foco en cumplir lo básico
                     </h1>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-4xl font-black leading-none font-data" style={{ color: 'var(--text)' }}>
+                    <p className="text-4xl font-medium leading-none tracking-[-0.08em] font-data" style={{ color: 'var(--text)' }}>
                       {totalDia.calorias.toFixed(0)}
                     </p>
                     <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>
@@ -560,16 +561,16 @@ function PortalClientePageContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 mb-5">
-                  <div className="rounded-2xl px-3 py-3" style={{ background: 'var(--bg-subtle)' }}>
+                <div className="cliente-plan-stats grid grid-cols-3 gap-px mb-6 overflow-hidden">
+                  <div className="cliente-plan-stat px-3 py-3.5" style={{ background: 'var(--bg-subtle)' }}>
                     <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Comidas</p>
                     <p className="font-data text-xl font-bold" style={{ color: 'var(--text)' }}>{comidasDia}</p>
                   </div>
-                  <div className="rounded-2xl px-3 py-3" style={{ background: 'var(--bg-subtle)' }}>
+                  <div className="cliente-plan-stat px-3 py-3.5" style={{ background: 'var(--bg-subtle)' }}>
                     <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Entrenos</p>
                     <p className="font-data text-xl font-bold" style={{ color: 'var(--text)' }}>{sesionesSemana}</p>
                   </div>
-                  <div className="rounded-2xl px-3 py-3" style={{ background: 'var(--bg-subtle)' }}>
+                  <div className="cliente-plan-stat px-3 py-3.5" style={{ background: 'var(--bg-subtle)' }}>
                     <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Peso</p>
                     <p className="font-data text-xl font-bold" style={{ color: 'var(--text)' }}>{ultimoPeso ? `${ultimoPeso}` : '—'}</p>
                   </div>
@@ -603,7 +604,7 @@ function PortalClientePageContent() {
 
             {/* Bento: peso + entreno de hoy */}
             {(ultimoPeso || entreno) && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="cliente-bento grid grid-cols-2 gap-px overflow-hidden">
                 {ultimoPeso && (
                   <StatBadge
                     icon={Scales}
@@ -618,10 +619,10 @@ function PortalClientePageContent() {
                 {entreno && (
                   <button
                     onClick={() => setTab('entreno')}
-                    className="flex items-center gap-3 p-3 rounded-2xl text-left cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="cliente-stat flex items-center gap-3 p-4 text-left cursor-pointer transition-all active:scale-[0.98]"
                     style={{ background: 'var(--surface)' }}
                   >
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ background: 'rgba(116,185,224,0.12)' }}>
                       <Barbell size={16} style={{ color: '#74B9E0' }} />
                     </div>
@@ -641,10 +642,10 @@ function PortalClientePageContent() {
                 <p className="text-[11px] font-semibold uppercase tracking-wide mb-2 px-1" style={{ color: 'var(--text-muted)' }}>
                   Accesos rápidos
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="cliente-quick-grid grid grid-cols-2 gap-px overflow-hidden">
                   <button
                     onClick={() => setTab('checkin')}
-                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                    className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                   >
                     <ClipboardText size={17} style={{ color: '#52B788' }} />
@@ -652,7 +653,7 @@ function PortalClientePageContent() {
                   </button>
                   <button
                     onClick={() => setTab('progreso')}
-                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                    className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                   >
                     <ChartLineUp size={17} style={{ color: '#4A9FCC' }} />
@@ -660,7 +661,7 @@ function PortalClientePageContent() {
                   </button>
                   <button
                     onClick={() => setTab('compra')}
-                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                    className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                   >
                     <ShoppingCart size={17} style={{ color: '#D9A441' }} />
@@ -668,7 +669,7 @@ function PortalClientePageContent() {
                   </button>
                   <button
                     onClick={() => setTab('chat')}
-                    className="rounded-2xl px-2 py-3 text-left transition-all active:scale-[0.98]"
+                    className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                   >
                     <ChatCircleDots size={17} style={{ color: '#EF4444' }} />
@@ -692,10 +693,10 @@ function PortalClientePageContent() {
             {codigo && (
               <button
                 onClick={() => setTab('checkin')}
-                className="w-full flex items-center justify-between px-5 py-4 rounded-2xl cursor-pointer transition-all active:scale-[0.98]"
+                className="cliente-checkin-cta w-full flex items-center justify-between px-5 py-4 cursor-pointer transition-all active:scale-[0.98]"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(82,183,136,0.12) 0%, rgba(82,183,136,0.06) 100%)',
-                  border: '1px solid rgba(82,183,136,0.2)',
+                  background: 'var(--success-bg)',
+                  border: '1px solid color-mix(in srgb, var(--success) 22%, transparent)',
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -956,7 +957,7 @@ function PortalClientePageContent() {
       </div>
 
       {/* ── Bottom navigation ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-30"
+      <div className="cliente-bottom-nav fixed bottom-0 left-0 right-0 z-30"
         style={{
           background: 'var(--glass-bg)',
           backdropFilter: 'blur(20px)',
@@ -971,14 +972,10 @@ function PortalClientePageContent() {
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className="flex-1 flex flex-col items-center justify-center gap-1 py-3 cursor-pointer transition-all"
+                className={`cliente-bottom-item flex-1 flex flex-col items-center justify-center gap-1 py-3 cursor-pointer transition-all ${active ? 'is-active' : ''}`}
                 style={{ color: active ? 'var(--accent)' : 'var(--text-muted)' }}
               >
                 <div className="relative">
-                  {active && (
-                    <div className="absolute inset-0 rounded-full scale-[2.5] opacity-10"
-                      style={{ background: 'var(--accent)' }} />
-                  )}
                   <Icon size={20} weight={active ? 'fill' : 'regular'} />
                 </div>
                 <span className="text-[10px] font-medium tracking-tight">{label}</span>
