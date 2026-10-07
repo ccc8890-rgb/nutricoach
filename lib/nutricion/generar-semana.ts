@@ -29,7 +29,8 @@ export const claveCompeticion = (contexto: string, franja: string) => `${context
 const sinTildes = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 export function claveProteina(nombre: string): string | null {
-  const n = sinTildes(nombre)
+  // Recetas con nombre en inglés: «chicken» es pollo, «beef» ternera…
+  const n = sinTildes(nombre).replace(/chicken/g, 'pollo').replace(/beef/g, 'ternera').replace(/tuna/g, 'atun').replace(/salmon/g, 'salmon').replace(/shrimp/g, 'gamba')
   return PROTEINAS.find(p => n.includes(p)) ?? null
 }
 
