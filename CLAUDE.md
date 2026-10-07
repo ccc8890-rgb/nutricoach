@@ -1,5 +1,9 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 07-10-2026 (noche, Claude) — Ficha cliente: cabecera del plan de entreno simplificada
+
+Carlos: el bloque «Training desk / Plan activo» de Entrenamiento tenía demasiada información. Ahora es una sola fila (nombre del plan, semanas y botones Abrir plan / Regenerar / Plantilla / Nuevo plan) y debajo «Rutina de la semana» sin el «De un vistazo…». Eliminadas las 3 tarjetas (plan, historial, siguiente acción) y el panel «Acceso rápido». Archivo: `app/clientes/[id]/page.tsx`, commit `dfeaa41` (en `origin/main`; el primer push dio un 500 de GitHub pero sí llegó). `tsc` limpio. **Pendiente: Carlos lo revisa en pantalla.**
+
 ## ✅ SESIÓN 07-10-2026 (tarde, Claude) — Contenido probado, Fase B cerrada, víspera corregida y reconstrucción autónoma de recetas
 
 Commits en `main`: `f1340d2`, `a5194c5` (Contenido), `7b41642` (coste), `c4fc3ad` (micronutrientes), `d6435a7` (víspera), `db23c2d` (reconstrucción segura) y docs.
