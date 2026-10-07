@@ -1,0 +1,606 @@
+{
+ "lote": "veganas-comida-cena-2026-10-07",
+ "tipo_plato": "Comida",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 400,
+  "kcal_max": 850,
+  "proteina_pct_min_vegano": 0.13
+ },
+ "alimentos": {
+  "a18": {
+   "nombre": "Lentejas",
+   "prefijo": "ff64faff",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a16": {
+   "nombre": "Leche de coco",
+   "prefijo": "c661ff5c",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a4": {
+   "nombre": "Arroz integral",
+   "prefijo": "b5839902",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a8": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a34": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a11": {
+   "nombre": "Cúrcuma",
+   "prefijo": "94ba864e",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a10": {
+   "nombre": "Comino",
+   "prefijo": "88959dfb",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a0": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a9": {
+   "nombre": "Cilantro",
+   "prefijo": "0e40c366",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a32": {
+   "nombre": "Tempeh",
+   "prefijo": "bca25e6d",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "a5": {
+   "nombre": "Brócoli",
+   "prefijo": "8820b293",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a30": {
+   "nombre": "Salsa de soja",
+   "prefijo": "caa47a33",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Soja",
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a2": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a31": {
+   "nombre": "Semillas de sésamo",
+   "prefijo": "4218ee8b",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Sésamo"
+   ],
+   "origen": "vegetal"
+  },
+  "a12": {
+   "nombre": "Edamame",
+   "prefijo": "642cd6e3",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "a27": {
+   "nombre": "Quinoa",
+   "prefijo": "53587262",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a1": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a37": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a23": {
+   "nombre": "Pepino",
+   "prefijo": "2e8d5d64",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a20": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a22": {
+   "nombre": "Pasta integral",
+   "prefijo": "08e6f429",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a7": {
+   "nombre": "Calabaza",
+   "prefijo": "cfd9ca77",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a14": {
+   "nombre": "Garbanzos cocidos",
+   "prefijo": "1f1a4cd3",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a24": {
+   "nombre": "Pimentón dulce",
+   "prefijo": "e4fdfad8",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a35": {
+   "nombre": "Tortilla de maíz",
+   "prefijo": "24eb4d1c",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a15": {
+   "nombre": "Hummus",
+   "prefijo": "2856bf23",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Sésamo"
+   ],
+   "origen": "vegetal"
+  },
+  "a25": {
+   "nombre": "Pimiento rojo",
+   "prefijo": "d106e3bb",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a17": {
+   "nombre": "Lechuga",
+   "prefijo": "7fb4b7ea",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a3": {
+   "nombre": "Alubia cocida roja",
+   "prefijo": "35e28212",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a13": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a33": {
+   "nombre": "Tofu firme",
+   "prefijo": "c0736451",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "a6": {
+   "nombre": "Calabacín",
+   "prefijo": "f8586302",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a26": {
+   "nombre": "Pimiento verde",
+   "prefijo": "5a2b6b52",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a19": {
+   "nombre": "Lentejas cocidas",
+   "prefijo": "e69fd4f0",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a28": {
+   "nombre": "Remolacha",
+   "prefijo": "ac0c0a04",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a29": {
+   "nombre": "Rúcula",
+   "prefijo": "d23e1bdd",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a21": {
+   "nombre": "Nueces",
+   "prefijo": "63c26672",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "a36": {
+   "nombre": "Vinagre",
+   "prefijo": "46e4dee0",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Curry de lentejas con leche de coco y arroz integral",
+   "descripcion": "Plato vegano especiado, con proteína de legumbre y cereal integral.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla con el aceite, la cúrcuma y el comino.\n2. Añade las lentejas lavadas, el tomate y agua que las cubra y cuece 20 minutos.\n3. Incorpora la leche de coco y sirve con el arroz integral cocido y el cilantro.",
+   "consejos": "Las lentejas rojas se hacen en 15 minutos si las tienes.",
+   "ingredientes": [
+    [
+     "a18",
+     70
+    ],
+    [
+     "a16",
+     80
+    ],
+    [
+     "a4",
+     60
+    ],
+    [
+     "a8",
+     50
+    ],
+    [
+     "a34",
+     100
+    ],
+    [
+     "a11",
+     2
+    ],
+    [
+     "a10",
+     2
+    ],
+    [
+     "a0",
+     5
+    ],
+    [
+     "a9",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Tempeh a la plancha con arroz integral y brócoli",
+   "descripcion": "Plato vegano de alta proteína con cereal integral y verdura.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Cuece el arroz integral 25 minutos.\n2. Dora el tempeh en lonchas con el ajo y el aceite, y termina con la salsa de soja.\n3. Cuece el brócoli al vapor y sirve todo con el sésamo por encima.",
+   "consejos": "Marinar el tempeh 15 minutos en la soja le da más sabor.",
+   "ingredientes": [
+    [
+     "a32",
+     150
+    ],
+    [
+     "a4",
+     70
+    ],
+    [
+     "a5",
+     150
+    ],
+    [
+     "a30",
+     10
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a2",
+     3
+    ],
+    [
+     "a31",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Bol de edamame, quinoa y aguacate",
+   "descripcion": "Bol vegano fresco con proteína completa y grasa buena.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la quinoa 12 minutos y deja enfriar.\n2. Cuece el edamame 4 minutos.\n3. Monta el bol con la quinoa, el edamame, el aguacate, la zanahoria rallada y el pepino, y aliña con soja y limón.",
+   "consejos": "Admite edamame congelado sin desgranar.",
+   "ingredientes": [
+    [
+     "a12",
+     120
+    ],
+    [
+     "a27",
+     70
+    ],
+    [
+     "a1",
+     60
+    ],
+    [
+     "a37",
+     60
+    ],
+    [
+     "a23",
+     60
+    ],
+    [
+     "a30",
+     8
+    ],
+    [
+     "a20",
+     10
+    ],
+    [
+     "a31",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Pasta integral con crema de calabaza y garbanzos",
+   "descripcion": "Pasta vegana cremosa sin lácteos.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la calabaza y tritúrala con el ajo y el aceite hasta obtener una crema.\n2. Cuece la pasta integral y escúrrela.\n3. Mezcla con la crema, añade los garbanzos y espolvorea el pimentón.",
+   "consejos": "Guarda un poco del agua de la pasta para aligerar la crema.",
+   "ingredientes": [
+    [
+     "a22",
+     80
+    ],
+    [
+     "a7",
+     200
+    ],
+    [
+     "a14",
+     120
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a2",
+     3
+    ],
+    [
+     "a24",
+     2
+    ]
+   ]
+  },
+  {
+   "nombre": "Wrap de tortilla de maíz con hummus y verduras",
+   "descripcion": "Comida vegana rápida de preparar y fácil de llevar.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "instrucciones": "1. Calienta las tortillas en una sartén seca.\n2. Unta el hummus y reparte los garbanzos, el pimiento, la lechuga y el pepino en tiras.\n3. Enrolla y córtalo por la mitad.",
+   "consejos": "Añade unas gotas de limón al relleno.",
+   "ingredientes": [
+    [
+     "a35",
+     100
+    ],
+    [
+     "a15",
+     80
+    ],
+    [
+     "a14",
+     80
+    ],
+    [
+     "a25",
+     60
+    ],
+    [
+     "a17",
+     30
+    ],
+    [
+     "a23",
+     50
+    ],
+    [
+     "a0",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Estofado de alubias con calabaza y espinacas",
+   "descripcion": "Plato de cuchara vegano, saciante y de bajo coste.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla con el aceite y el pimentón.\n2. Añade la calabaza en dados y un vaso de agua y cuece 10 minutos.\n3. Incorpora las alubias y las espinacas y cuece 5 minutos más.",
+   "consejos": "Mejora de un día para otro.",
+   "ingredientes": [
+    [
+     "a3",
+     250
+    ],
+    [
+     "a7",
+     150
+    ],
+    [
+     "a13",
+     100
+    ],
+    [
+     "a8",
+     40
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a24",
+     2
+    ]
+   ]
+  },
+  {
+   "nombre": "Arroz integral con tofu al curry y verduras",
+   "descripcion": "Plato vegano completo con arroz, tofu y verdura.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Cuece el arroz integral.\n2. Dora el tofu en dados con el aceite y la cúrcuma.\n3. Saltea el calabacín, el pimiento y la cebolla, une con el tofu y sirve sobre el arroz.",
+   "consejos": "Un chorrito de zumo de lima al final lo aviva.",
+   "ingredientes": [
+    [
+     "a4",
+     70
+    ],
+    [
+     "a33",
+     150
+    ],
+    [
+     "a6",
+     100
+    ],
+    [
+     "a26",
+     60
+    ],
+    [
+     "a11",
+     2
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a8",
+     40
+    ]
+   ]
+  },
+  {
+   "nombre": "Ensalada templada de lentejas, quinoa y remolacha",
+   "descripcion": "Ensalada vegana completa con legumbre, cereal y frutos secos.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la quinoa 12 minutos.\n2. Mezcla las lentejas, la quinoa tibia, la remolacha cocida en dados y la rúcula.\n3. Aliña con el aceite y el vinagre y reparte las nueces troceadas.",
+   "consejos": "La remolacha cocida de bote ahorra tiempo.",
+   "ingredientes": [
+    [
+     "a19",
+     200
+    ],
+    [
+     "a27",
+     40
+    ],
+    [
+     "a28",
+     100
+    ],
+    [
+     "a29",
+     40
+    ],
+    [
+     "a21",
+     15
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a36",
+     10
+    ]
+   ]
+  }
+ ],
+ "tipo_receta": "completa"
+}

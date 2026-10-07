@@ -39,3 +39,7 @@ Semana regenerada con las reglas nuevas (complementos con sentido, platos habitu
 - **Recetas nuevas en `en_revision` (34):** `2026-10-07_desayunos-deportista` (11: salados y dulces 640–800 kcal, 3 veganos), `2026-10-07_meriendas-reales` (12: 4 veganas), `2026-10-07_comidas-ligeras` (11: pescado, pollo, legumbres, 5 veganas/vegetarianas; aptas dislipidemia e hipertensión por composición). Generador: `scripts/lotes/_generar-lotes-2026-10-07.py`.
 - **Pendiente tuyo:** aprobarlas en `/recetas/revisar` («Aprobar aprobables») y verificar con `verificar-recetas-auto.ts --apply`; sin foto (OpenAI sin saldo).
 - **Sigue pendiente:** campo propio de sabor (dulce/salado) y de «mini-comida» (necesita migración), barrido más amplio de `tipo_receta`, ampliar veganas de cena y variedad de desayunos dulces con menos azúcar.
+
+## Segunda tanda de recetas (en `en_revision`, 35)
+`scripts/lotes/_generar-lotes-2026-10-07-b.py`: `veganas-comida-cena` (8), `comidas-cenas-variedad` (11: salmón, lubina, atún, rape, pulpo, mejillones, ternera, pavo, pollo, tortilla), `desayunos-menos-azucar` (8, sin mermelada ni miel) y `meriendas-variedad` (8). Alimentos nuevos verificados en el catálogo: tempeh, edamame, tahini, leche de coco, lentejas, pasta/arroz integral, tortilla de maíz, hummus, remolacha, rúcula, piña, higos, pasas, anacardos…
+Pendiente: aprobar en `/recetas/revisar` y comprobar que el planificador las verifica; sin fotos.

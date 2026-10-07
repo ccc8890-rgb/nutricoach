@@ -1,0 +1,670 @@
+{
+ "lote": "comidas-cenas-variedad-2026-10-07",
+ "tipo_plato": "Comida",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 380,
+  "kcal_max": 800,
+  "grasa_pct_max": 0.38
+ },
+ "alimentos": {
+  "a30": {
+   "nombre": "Salmón fresco",
+   "prefijo": "09a34011",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a20": {
+   "nombre": "Patata",
+   "prefijo": "0b223775",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a10": {
+   "nombre": "Espárragos",
+   "prefijo": "c7ad7588",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a0": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a16": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a26": {
+   "nombre": "Pollo",
+   "prefijo": "12616b3d",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a2": {
+   "nombre": "Arroz integral",
+   "prefijo": "b5839902",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a6": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a14": {
+   "nombre": "Leche de coco",
+   "prefijo": "c661ff5c",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a5": {
+   "nombre": "Calabacín",
+   "prefijo": "f8586302",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a9": {
+   "nombre": "Cúrcuma",
+   "prefijo": "94ba864e",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a17": {
+   "nombre": "Lubina",
+   "prefijo": "2435e7ae",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a4": {
+   "nombre": "Boniato",
+   "prefijo": "6c5d82a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a13": {
+   "nombre": "Judías verdes",
+   "prefijo": "95efbbab",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a32": {
+   "nombre": "Solomillo de ternera",
+   "prefijo": "ccd5d912",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a25": {
+   "nombre": "Pimiento verde",
+   "prefijo": "5a2b6b52",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a7": {
+   "nombre": "Champiñones",
+   "prefijo": "5b7e9a7d",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a31": {
+   "nombre": "Salsa de soja",
+   "prefijo": "caa47a33",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Soja",
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a21": {
+   "nombre": "Pavo",
+   "prefijo": "d03f44ad",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a35": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a11": {
+   "nombre": "Guisantes frescos",
+   "prefijo": "3eb4a47a",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a24": {
+   "nombre": "Pimentón",
+   "prefijo": "21a40eb5",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a3": {
+   "nombre": "Atún fresco",
+   "prefijo": "f4e5e641",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a28": {
+   "nombre": "Quinoa",
+   "prefijo": "53587262",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a33": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a22": {
+   "nombre": "Pepino",
+   "prefijo": "2e8d5d64",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a15": {
+   "nombre": "Lechuga",
+   "prefijo": "7fb4b7ea",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a12": {
+   "nombre": "Huevo entero, crudo",
+   "prefijo": "6cd81fed",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "a8": {
+   "nombre": "Clara de huevo",
+   "prefijo": "8f023610",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "a19": {
+   "nombre": "Pasta integral",
+   "prefijo": "08e6f429",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a34": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a1": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a18": {
+   "nombre": "Mejillones",
+   "prefijo": "92c4eb12",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Moluscos"
+   ],
+   "origen": "marisco"
+  },
+  "a29": {
+   "nombre": "Rape",
+   "prefijo": "e28f1cb2",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a27": {
+   "nombre": "Pulpo",
+   "prefijo": "afd14b81",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Moluscos"
+   ],
+   "origen": "marisco"
+  },
+  "a23": {
+   "nombre": "Perejil",
+   "prefijo": "fea7cbe9",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Salmón al horno con patata y espárragos",
+   "descripcion": "Pescado azul al horno con guarnición de patata y verdura.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Corta la patata en rodajas y hornéala 15 minutos a 200 °C.\n2. Añade el salmón y los espárragos con el aceite.\n3. Hornea 12 minutos más y termina con limón.",
+   "consejos": "No pases el salmón para que quede jugoso.",
+   "ingredientes": [
+    [
+     "a30",
+     140
+    ],
+    [
+     "a20",
+     250
+    ],
+    [
+     "a10",
+     100
+    ],
+    [
+     "a0",
+     4
+    ],
+    [
+     "a16",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Pollo al curry suave con arroz integral",
+   "descripcion": "Plato de ave especiado con cereal integral.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Cuece el arroz integral.\n2. Dora el pollo en dados con la cebolla y la cúrcuma.\n3. Añade el calabacín y la leche de coco y cocina 8 minutos. Sirve con el arroz.",
+   "consejos": "Con leche de coco ligera baja la grasa.",
+   "ingredientes": [
+    [
+     "a26",
+     200
+    ],
+    [
+     "a2",
+     80
+    ],
+    [
+     "a6",
+     50
+    ],
+    [
+     "a14",
+     30
+    ],
+    [
+     "a5",
+     80
+    ],
+    [
+     "a9",
+     2
+    ],
+    [
+     "a0",
+     3
+    ]
+   ]
+  },
+  {
+   "nombre": "Lubina al horno con boniato y judías verdes",
+   "descripcion": "Pescado blanco al horno con hidrato de absorción lenta.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Hornea el boniato en rodajas 15 minutos a 200 °C.\n2. Añade la lubina y las judías con el aceite.\n3. Hornea 12 minutos más y sirve con limón.",
+   "consejos": "Pide la lubina en lomos sin espinas.",
+   "ingredientes": [
+    [
+     "a17",
+     220
+    ],
+    [
+     "a4",
+     200
+    ],
+    [
+     "a13",
+     120
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a16",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Ternera salteada con verduras y arroz integral",
+   "descripcion": "Salteado de ternera magra con verduras y cereal integral.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Cuece el arroz integral.\n2. Saltea la ternera en tiras a fuego fuerte y retírala.\n3. Saltea las verduras, vuelve a añadir la carne con la soja y sirve con el arroz.",
+   "consejos": "Corta la carne a contrafibra para que quede tierna.",
+   "ingredientes": [
+    [
+     "a32",
+     150
+    ],
+    [
+     "a2",
+     70
+    ],
+    [
+     "a25",
+     80
+    ],
+    [
+     "a6",
+     40
+    ],
+    [
+     "a7",
+     80
+    ],
+    [
+     "a31",
+     10
+    ],
+    [
+     "a0",
+     6
+    ]
+   ]
+  },
+  {
+   "nombre": "Pavo estofado con patata y zanahoria",
+   "descripcion": "Plato de cuchara de ave magra con verduras.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla con el aceite y el pimentón.\n2. Añade el pavo en dados, la patata y la zanahoria con agua que casi lo cubra.\n3. Cuece 20 minutos y añade los guisantes los últimos 5.",
+   "consejos": "Queda mejor si reposa 10 minutos.",
+   "ingredientes": [
+    [
+     "a21",
+     180
+    ],
+    [
+     "a20",
+     200
+    ],
+    [
+     "a35",
+     80
+    ],
+    [
+     "a6",
+     50
+    ],
+    [
+     "a11",
+     80
+    ],
+    [
+     "a24",
+     2
+    ],
+    [
+     "a0",
+     8
+    ]
+   ]
+  },
+  {
+   "nombre": "Atún fresco a la plancha con quinoa y ensalada",
+   "descripcion": "Plato fresco con pescado azul, cereal y ensalada.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la quinoa 12 minutos.\n2. Marca el atún a la plancha 2 minutos por lado.\n3. Prepara la ensalada, aliña con aceite y limón y sirve todo junto.",
+   "consejos": "Mejor poco hecho por dentro para que no se seque.",
+   "ingredientes": [
+    [
+     "a3",
+     180
+    ],
+    [
+     "a28",
+     70
+    ],
+    [
+     "a33",
+     100
+    ],
+    [
+     "a22",
+     60
+    ],
+    [
+     "a15",
+     30
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a16",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Tortilla de patata ligera con ensalada",
+   "descripcion": "Cena ligera con huevo, claras y patata.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la patata en láminas en el microondas 6 minutos.\n2. Mezcla con los huevos, las claras y la cebolla pochada y cuaja la tortilla en sartén.\n3. Sirve con la ensalada aliñada.",
+   "consejos": "Con sartén antiadherente basta una cucharadita de aceite.",
+   "ingredientes": [
+    [
+     "a12",
+     100
+    ],
+    [
+     "a8",
+     100
+    ],
+    [
+     "a20",
+     200
+    ],
+    [
+     "a6",
+     40
+    ],
+    [
+     "a15",
+     40
+    ],
+    [
+     "a33",
+     80
+    ],
+    [
+     "a0",
+     8
+    ]
+   ]
+  },
+  {
+   "nombre": "Pasta integral con pollo y verduras",
+   "descripcion": "Plato de pasta integral con proteína magra y verduras.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la pasta integral.\n2. Dora el pollo en dados con el ajo y añade el calabacín.\n3. Agrega el tomate, cocina 8 minutos y mezcla con la pasta.",
+   "consejos": "Añade albahaca fresca al servir.",
+   "ingredientes": [
+    [
+     "a19",
+     80
+    ],
+    [
+     "a26",
+     150
+    ],
+    [
+     "a5",
+     100
+    ],
+    [
+     "a34",
+     100
+    ],
+    [
+     "a1",
+     3
+    ],
+    [
+     "a0",
+     8
+    ]
+   ]
+  },
+  {
+   "nombre": "Mejillones al vapor con patatas y ensalada",
+   "descripcion": "Plato ligero de marisco con patata cocida.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la patata en dados.\n2. Abre los mejillones al vapor con un chorrito de agua y limón.\n3. Sirve con las patatas y la ensalada aliñada.",
+   "consejos": "Desecha los que no se abran.",
+   "ingredientes": [
+    [
+     "a18",
+     300
+    ],
+    [
+     "a20",
+     200
+    ],
+    [
+     "a33",
+     100
+    ],
+    [
+     "a15",
+     40
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a16",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Rape con verduras salteadas y arroz integral",
+   "descripcion": "Pescado blanco con verduras salteadas y cereal integral.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Cuece el arroz integral.\n2. Saltea el rape en trozos con el ajo y retíralo.\n3. Saltea las verduras, une con el pescado y sirve con el arroz.",
+   "consejos": "El rape suelta agua: sécalo antes de saltearlo.",
+   "ingredientes": [
+    [
+     "a29",
+     220
+    ],
+    [
+     "a2",
+     60
+    ],
+    [
+     "a5",
+     100
+    ],
+    [
+     "a25",
+     60
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a1",
+     3
+    ]
+   ]
+  },
+  {
+   "nombre": "Pulpo con patata y pimentón",
+   "descripcion": "Plato ligero de pulpo con patata cocida.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la patata en rodajas.\n2. Calienta el pulpo cocido en láminas.\n3. Monta sobre la patata, aliña con aceite y espolvorea pimentón y perejil.",
+   "consejos": "Usa pulpo cocido envasado para ir más rápido.",
+   "ingredientes": [
+    [
+     "a27",
+     200
+    ],
+    [
+     "a20",
+     250
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a24",
+     2
+    ],
+    [
+     "a23",
+     3
+    ]
+   ]
+  }
+ ],
+ "tipo_receta": "completa"
+}

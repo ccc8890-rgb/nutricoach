@@ -1,0 +1,375 @@
+{
+ "lote": "meriendas-variedad-2026-10-07",
+ "tipo_plato": "Merienda",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 130,
+  "kcal_max": 420
+ },
+ "alimentos": {
+  "a9": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a5": {
+   "nombre": "Hummus",
+   "prefijo": "2856bf23",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Sésamo"
+   ],
+   "origen": "vegetal"
+  },
+  "a11": {
+   "nombre": "Pepino",
+   "prefijo": "2e8d5d64",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a20": {
+   "nombre": "Yogur natural",
+   "prefijo": "38fe1a4e",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a12": {
+   "nombre": "Pera",
+   "prefijo": "19e6ca0e",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a7": {
+   "nombre": "Nueces",
+   "prefijo": "63c26672",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "a15": {
+   "nombre": "Requesón",
+   "prefijo": "b2c88c97",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a13": {
+   "nombre": "Piña",
+   "prefijo": "8810f4f6",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a16": {
+   "nombre": "Semillas de girasol",
+   "prefijo": "f7d27312",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a21": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a8": {
+   "nombre": "Pan de pita",
+   "prefijo": "d21b8e95",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a4": {
+   "nombre": "Huevo entero, crudo",
+   "prefijo": "6cd81fed",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "a17": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a0": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a14": {
+   "nombre": "Queso fresco",
+   "prefijo": "197f0661",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a3": {
+   "nombre": "Higos",
+   "prefijo": "9241af66",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a18": {
+   "nombre": "Tortilla de maíz",
+   "prefijo": "24eb4d1c",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a2": {
+   "nombre": "Fiambre de Pechuga de Pavo",
+   "prefijo": "a279ae71",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a6": {
+   "nombre": "Lechuga",
+   "prefijo": "7fb4b7ea",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a19": {
+   "nombre": "Yogur griego natural",
+   "prefijo": "585bd18b",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a10": {
+   "nombre": "Pasas",
+   "prefijo": "ad30a656",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a1": {
+   "nombre": "Anacardos",
+   "prefijo": "c98f36fc",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Tostada de hummus y pepino",
+   "descripcion": "Merienda vegana ligera y fresca.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "instrucciones": "1. Tuesta el pan.\n2. Unta el hummus y cubre con el pepino en rodajas.",
+   "consejos": "Añade pimentón por encima.",
+   "ingredientes": [
+    [
+     "a9",
+     50
+    ],
+    [
+     "a5",
+     40
+    ],
+    [
+     "a11",
+     40
+    ]
+   ]
+  },
+  {
+   "nombre": "Yogur con pera y nueces",
+   "descripcion": "Merienda cremosa y rápida.",
+   "tiempo_prep_min": 3,
+   "porciones": 1,
+   "instrucciones": "1. Pon el yogur en un bol.\n2. Añade la pera en dados y las nueces troceadas.",
+   "consejos": "Sírvelo frío.",
+   "ingredientes": [
+    [
+     "a20",
+     125
+    ],
+    [
+     "a12",
+     100
+    ],
+    [
+     "a7",
+     15
+    ]
+   ]
+  },
+  {
+   "nombre": "Requesón con piña y semillas",
+   "descripcion": "Merienda con proteína y fruta fresca.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "instrucciones": "1. Pon el requesón en un bol.\n2. Añade la piña en dados y las semillas.",
+   "consejos": "Prueba con melocotón en verano.",
+   "ingredientes": [
+    [
+     "a15",
+     120
+    ],
+    [
+     "a13",
+     100
+    ],
+    [
+     "a16",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Verduras con hummus y pan de pita",
+   "descripcion": "Merienda vegana para picar.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "instrucciones": "1. Corta la zanahoria y el pepino en bastones.\n2. Tuesta el pan de pita y córtalo en triángulos.\n3. Sirve con el hummus para mojar.",
+   "consejos": "Pimiento rojo en tiras también va muy bien.",
+   "ingredientes": [
+    [
+     "a21",
+     80
+    ],
+    [
+     "a11",
+     60
+    ],
+    [
+     "a5",
+     60
+    ],
+    [
+     "a8",
+     30
+    ]
+   ]
+  },
+  {
+   "nombre": "Tortilla francesa pequeña con pan y tomate",
+   "descripcion": "Merienda salada con proteína.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "instrucciones": "1. Haz la tortilla francesa en sartén antiadherente con el aceite.\n2. Tuesta el pan, frota el tomate y coloca la tortilla encima.",
+   "consejos": "Con una pizca de orégano.",
+   "ingredientes": [
+    [
+     "a4",
+     100
+    ],
+    [
+     "a9",
+     40
+    ],
+    [
+     "a17",
+     40
+    ],
+    [
+     "a0",
+     4
+    ]
+   ]
+  },
+  {
+   "nombre": "Queso fresco con higos y nueces",
+   "descripcion": "Merienda dulce y suave con proteína.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "instrucciones": "1. Corta el queso fresco y los higos.\n2. Sirve con las nueces troceadas.",
+   "consejos": "Con higos secos queda más dulce y calórico.",
+   "ingredientes": [
+    [
+     "a14",
+     100
+    ],
+    [
+     "a3",
+     60
+    ],
+    [
+     "a7",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Tortilla de maíz con pavo y queso fresco",
+   "descripcion": "Merienda salada y ligera, sin gluten.",
+   "tiempo_prep_min": 6,
+   "porciones": 1,
+   "instrucciones": "1. Calienta la tortilla en sartén seca.\n2. Rellena con el pavo, el queso fresco y la lechuga y dóblala.",
+   "consejos": "Úntala con mostaza suave.",
+   "ingredientes": [
+    [
+     "a18",
+     40
+    ],
+    [
+     "a2",
+     40
+    ],
+    [
+     "a14",
+     50
+    ],
+    [
+     "a6",
+     20
+    ]
+   ]
+  },
+  {
+   "nombre": "Yogur griego con pasas y anacardos",
+   "descripcion": "Merienda de proteína y energía rápida.",
+   "tiempo_prep_min": 3,
+   "porciones": 1,
+   "instrucciones": "1. Pon el yogur en un bol.\n2. Añade las pasas y los anacardos.",
+   "consejos": "Tuesta los anacardos en seco para más sabor.",
+   "ingredientes": [
+    [
+     "a19",
+     125
+    ],
+    [
+     "a10",
+     20
+    ],
+    [
+     "a1",
+     15
+    ]
+   ]
+  }
+ ]
+}

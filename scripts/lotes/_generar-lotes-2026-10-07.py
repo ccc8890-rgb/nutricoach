@@ -3,7 +3,8 @@
 import json, glob, os
 base = os.path.dirname(__file__)
 cat = {}
-NUEVOS = ('2026-10-07_desayunos-deportista.json', '2026-10-07_meriendas-reales.json', '2026-10-07_comidas-ligeras.json')
+NUEVOS = ('2026-10-07_desayunos-deportista.json', '2026-10-07_meriendas-reales.json', '2026-10-07_comidas-ligeras.json',
+          '2026-10-07_veganas-comida-cena.json', '2026-10-07_comidas-cenas-variedad.json', '2026-10-07_desayunos-menos-azucar.json', '2026-10-07_meriendas-variedad.json')
 for f in sorted(x for x in glob.glob(os.path.join(base, '*.json')) if os.path.basename(x) not in NUEVOS):
     for k, v in json.load(open(f))['alimentos'].items():
         cat.setdefault(v['nombre'], v)

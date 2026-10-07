@@ -1,0 +1,480 @@
+{
+ "lote": "desayunos-menos-azucar-2026-10-07",
+ "tipo_plato": "Desayuno",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 420,
+  "kcal_max": 850
+ },
+ "alimentos": {
+  "a4": {
+   "nombre": "Avena",
+   "prefijo": "31b21452",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a26": {
+   "nombre": "leche semidesnatada",
+   "prefijo": "8469bf72",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a11": {
+   "nombre": "Manzana",
+   "prefijo": "7d5a031f",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a12": {
+   "nombre": "Nueces",
+   "prefijo": "63c26672",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "a5": {
+   "nombre": "Canela molida",
+   "prefijo": "57a8bd13",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a9": {
+   "nombre": "Harina De Avena",
+   "prefijo": "95db3d38",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a10": {
+   "nombre": "Huevo entero, crudo",
+   "prefijo": "6cd81fed",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "a6": {
+   "nombre": "Clara de huevo",
+   "prefijo": "8f023610",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "a17": {
+   "nombre": "Plátano",
+   "prefijo": "1131a576",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a8": {
+   "nombre": "Frutos rojos congelados",
+   "prefijo": "ebedfe6f",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a24": {
+   "nombre": "Yogur griego natural",
+   "prefijo": "585bd18b",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a15": {
+   "nombre": "Pera",
+   "prefijo": "19e6ca0e",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a2": {
+   "nombre": "Almendras",
+   "prefijo": "3cbe24f8",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "a14": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a19": {
+   "nombre": "Requesón",
+   "prefijo": "b2c88c97",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a22": {
+   "nombre": "Skyr natural",
+   "prefijo": "edc8a060",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a21": {
+   "nombre": "Semillas de chía",
+   "prefijo": "b5b5e57f",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a7": {
+   "nombre": "Cottage 0% Materia Grasa",
+   "prefijo": "30dbfc8a",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a16": {
+   "nombre": "Piña",
+   "prefijo": "8810f4f6",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a20": {
+   "nombre": "Semillas de calabaza",
+   "prefijo": "7cbf0ffb",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a13": {
+   "nombre": "Pan de centeno",
+   "prefijo": "80dffe34",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a1": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a18": {
+   "nombre": "Queso fresco",
+   "prefijo": "197f0661",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a23": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a0": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a3": {
+   "nombre": "Atún en lata al natural",
+   "prefijo": "83505726",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a25": {
+   "nombre": "Zumo de naranja",
+   "prefijo": "f2671248",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Porridge de avena con manzana, canela y nueces",
+   "descripcion": "Desayuno dulce sin azúcar añadido, con fibra y grasa buena.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la avena con la leche 5 minutos removiendo.\n2. Añade la manzana en dados y la canela y cuece 2 minutos más.\n3. Sirve con las nueces troceadas.",
+   "consejos": "La manzana madura endulza lo suficiente.",
+   "ingredientes": [
+    [
+     "a4",
+     70
+    ],
+    [
+     "a26",
+     250
+    ],
+    [
+     "a11",
+     120
+    ],
+    [
+     "a12",
+     15
+    ],
+    [
+     "a5",
+     2
+    ]
+   ]
+  },
+  {
+   "nombre": "Tortitas de avena y claras con plátano y yogur",
+   "descripcion": "Tortitas altas en proteína sin azúcar añadido.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "instrucciones": "1. Tritura la harina, el huevo, las claras, el plátano y la canela.\n2. Cocina las tortitas en sartén antiadherente por ambos lados.\n3. Sirve con el yogur y los frutos rojos.",
+   "consejos": "Un plátano muy maduro sustituye al azúcar.",
+   "ingredientes": [
+    [
+     "a9",
+     80
+    ],
+    [
+     "a10",
+     60
+    ],
+    [
+     "a6",
+     100
+    ],
+    [
+     "a17",
+     100
+    ],
+    [
+     "a5",
+     2
+    ],
+    [
+     "a8",
+     80
+    ],
+    [
+     "a24",
+     100
+    ]
+   ]
+  },
+  {
+   "nombre": "Yogur griego con avena, pera y almendras",
+   "descripcion": "Desayuno frío y rápido, sin azúcar añadido.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "instrucciones": "1. Mezcla el yogur con la avena y deja reposar 5 minutos.\n2. Añade la pera en dados y las almendras troceadas.\n3. Espolvorea la canela.",
+   "consejos": "Si lo prepares la noche anterior, la avena queda más suave.",
+   "ingredientes": [
+    [
+     "a24",
+     200
+    ],
+    [
+     "a4",
+     50
+    ],
+    [
+     "a15",
+     120
+    ],
+    [
+     "a2",
+     15
+    ],
+    [
+     "a5",
+     2
+    ]
+   ]
+  },
+  {
+   "nombre": "Tostadas de pan integral con requesón, pera y nueces",
+   "descripcion": "Tostadas dulces con proteína y sin mermelada.",
+   "tiempo_prep_min": 7,
+   "porciones": 1,
+   "instrucciones": "1. Tuesta el pan integral.\n2. Extiende el requesón y reparte la pera en láminas.\n3. Termina con las nueces troceadas y la canela.",
+   "consejos": "Se puede cambiar la pera por fresas.",
+   "ingredientes": [
+    [
+     "a14",
+     100
+    ],
+    [
+     "a19",
+     120
+    ],
+    [
+     "a15",
+     100
+    ],
+    [
+     "a12",
+     15
+    ],
+    [
+     "a5",
+     1
+    ]
+   ]
+  },
+  {
+   "nombre": "Overnight de avena, skyr y frutos rojos",
+   "descripcion": "Desayuno preparado la noche anterior, alto en proteína.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "instrucciones": "1. Mezcla la avena, el skyr, la leche y la chía en un bote.\n2. Añade los frutos rojos y refrigera toda la noche.\n3. Remueve y consume frío.",
+   "consejos": "Aguanta 2 días en la nevera.",
+   "ingredientes": [
+    [
+     "a4",
+     60
+    ],
+    [
+     "a22",
+     150
+    ],
+    [
+     "a26",
+     150
+    ],
+    [
+     "a8",
+     100
+    ],
+    [
+     "a21",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Bol de cottage con piña y semillas de calabaza con pan de centeno",
+   "descripcion": "Desayuno fresco con proteína y fruta.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "instrucciones": "1. Pon el cottage en un bol y añade la piña en dados.\n2. Reparte las semillas de calabaza.\n3. Acompaña con el pan de centeno tostado.",
+   "consejos": "Con piña natural queda más dulce que la de lata.",
+   "ingredientes": [
+    [
+     "a7",
+     200
+    ],
+    [
+     "a16",
+     120
+    ],
+    [
+     "a20",
+     15
+    ],
+    [
+     "a13",
+     80
+    ]
+   ]
+  },
+  {
+   "nombre": "Tostadas de pan integral con aguacate, queso fresco y tomate",
+   "descripcion": "Tostadas saladas con grasa buena y proteína.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "instrucciones": "1. Tuesta el pan.\n2. Aplasta el aguacate y extiéndelo, y reparte el queso fresco.\n3. Añade el tomate en rodajas y un hilo de aceite.",
+   "consejos": "Pimienta recién molida por encima.",
+   "ingredientes": [
+    [
+     "a14",
+     100
+    ],
+    [
+     "a1",
+     60
+    ],
+    [
+     "a18",
+     80
+    ],
+    [
+     "a23",
+     80
+    ],
+    [
+     "a0",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Bocadillo integral de huevo, atún y tomate con zumo",
+   "descripcion": "Bocadillo completo y saciante para llevar.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "instrucciones": "1. Cuece el huevo 10 minutos y pícalo.\n2. Mezcla con el atún escurrido.\n3. Rellena el pan con tomate y la mezcla. Acompaña con el zumo.",
+   "consejos": "Añade un poco de mostaza si te gusta.",
+   "ingredientes": [
+    [
+     "a14",
+     120
+    ],
+    [
+     "a10",
+     100
+    ],
+    [
+     "a3",
+     60
+    ],
+    [
+     "a23",
+     60
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a25",
+     200
+    ]
+   ]
+  }
+ ]
+}
