@@ -94,4 +94,17 @@ assert.equal(contextoRecetaCompeticion(objetivo('recuperacion', -3)), undefined)
   assert.equal(contextoRecetaCompeticion({ ...base, competicion: { fase: 'carrera_inminente', nombre: '10K', dias_restantes: 1 } }), 'vispera')
 }
 
+// Víspera: una receta ideal que el encaje de macros dejó lejos (posición 40 de 60) se rescata frente a un plato graso de cabecera
+{
+  const relleno = (i: number): CandidataSemana => ({ id: `r${i}`, nombre: `Plato ${i}`, kcal: 600, carbohidratos: 30, grasas: 30, fibra: 8 })
+  const lista = Array.from({ length: 60 }, (_, i) => i === 40
+    ? { id: 'ideal', nombre: 'Arroz blanco con pavo', kcal: 570, carbohidratos: 87, grasas: 8, fibra: 2 } as CandidataSemana
+    : relleno(i))
+  const huecos: Hueco[] = [{ dia: 'Sábado', franja: 'Comida', competicion: 'vispera' }]
+  assert.equal(repartirSemanaSinRepetir({ Comida: lista }, huecos).asignaciones[0].receta_id, 'ideal')
+  // Fuera de la víspera la ventana sigue siendo corta: no se rescata del fondo
+  const sinContexto: Hueco[] = [{ dia: 'Sábado', franja: 'Comida', competicion: 'carrera' }]
+  assert.notEqual(repartirSemanaSinRepetir({ Comida: lista }, sinContexto).asignaciones[0].receta_id, 'ideal')
+}
+
 console.log('receta-competicion: OK')

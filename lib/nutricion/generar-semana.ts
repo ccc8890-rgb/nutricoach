@@ -18,6 +18,10 @@ const VENTANA_VARIEDAD = 8
 const VENTANA_MISMO_DIA = 30
 // Solo reordena candidatas que ya están cerca por encaje base; evita rescatar un plato nutricionalmente absurdo del fondo.
 const VENTANA_COMPETICION = 24
+// Víspera / carga de hidratos: el encaje de macros contra un objetivo enorme deja recetas ideales (arroz, pasta) lejos de
+// la cabecera, así que se mira todo el catálogo candidato y se penaliza poco la posición; la puntuación ya castiga grasa y fibra.
+const VENTANA_VISPERA = 80
+const PENALIZACION_POSICION = { vispera: 0.05, otras: 0.2 } as const
 
 // Clave de las candidatas pedidas con el objetivo de un día de competición (p. ej. 'vispera:Comida')
 export const claveCompeticion = (contexto: string, franja: string) => `${contexto}:${franja}`
@@ -31,11 +35,12 @@ export function claveProteina(nombre: string): string | null {
 
 function preferirParaCompeticion(lista: CandidataSemana[], hueco: Hueco): CandidataSemana[] {
   if (!hueco.competicion || lista.length < 2) return lista
-  const cercanas = lista.slice(0, VENTANA_COMPETICION)
-    .map((receta, indice) => ({ receta, indice, score: puntuarRecetaCompeticion(receta, hueco.competicion!, hueco.franja) - indice * 0.2 }))
+  const vispera = hueco.competicion === 'vispera'
+  const cercanas = lista.slice(0, vispera ? VENTANA_VISPERA : VENTANA_COMPETICION)
+    .map((receta, indice) => ({ receta, indice, score: puntuarRecetaCompeticion(receta, hueco.competicion!, hueco.franja) - indice * (vispera ? PENALIZACION_POSICION.vispera : PENALIZACION_POSICION.otras) }))
     .sort((a, b) => b.score - a.score || a.indice - b.indice)
     .map(x => x.receta)
-  return [...cercanas, ...lista.slice(VENTANA_COMPETICION)]
+  return [...cercanas, ...lista.slice(vispera ? VENTANA_VISPERA : VENTANA_COMPETICION)]
 }
 
 export function repartirSemanaSinRepetir(
