@@ -66,4 +66,10 @@ assert.match(maratonCarga.carrera.find(r => r.id === 'bebida_hidratos')!.dosis, 
 const hmDia = recomendarSuplementos({ peso_kg: 82, disciplina: 'running_hm', fase_competicion: 'race_day' })
 assert.match(hmDia.carrera.find(r => r.id === 'hidratacion_previa')!.dosis, /410-574 mL/)
 assert.match(maraton.carrera.find(r => r.id === 'electrolitos_sodio')!.timing, /pastillas/)
+// Intensidad de la sesión de hoy: la cafeína de sesión solo sale si es alta; las pautas diarias no cambian
+const altaSesion = recomendarSuplementos({ peso_kg: 66, intensidad_sesion: 'alta', duracion_min: 60, hora_inicio: '18:30' })
+assert.ok(altaSesion.sesion.some(r => r.id === 'cafeina'))
+assert.ok(altaSesion.avisos.some(a => /tarde/.test(a)))
+assert.ok(!recomendarSuplementos({ peso_kg: 66, intensidad_sesion: 'media', duracion_min: 60 }).sesion.some(r => r.id === 'cafeina'))
+assert.deepEqual(altaSesion.diaria.map(r => r.id), recomendarSuplementos({ peso_kg: 66, intensidad_sesion: 'media', duracion_min: 60 }).diaria.map(r => r.id))
 console.log('suplementos: OK')

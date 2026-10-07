@@ -2,7 +2,7 @@ import { perfilPrueba } from './competicion'
 export type GrupoSuplemento = 'rendimiento' | 'nutricion_deportiva' | 'salud'
 export type Evidencia = 'A' | 'B' | 'C'
 export type Recomendacion = { id: string; nombre: string; grupo: GrupoSuplemento; dosis: string; timing: string; evidencia: Evidencia; fuentes: string[]; precauciones: string[]; estado: 'propuesta' }
-export type ContextoSuplementos = { peso_kg: number; sexo?: 'hombre' | 'mujer' | 'otro'; edad?: number; objetivo?: string; disciplina?: string; duracion_min?: number; duracion_prueba_min?: number; intensidad?: 'baja' | 'media' | 'alta'; tipo_sesion?: 'fuerza' | 'cardio' | 'hibrido'; fase_competicion?: string; cafeina_habitual_mg?: number; analitica?: { vitamina_d_ngml?: number; ferritina_ngml?: number }; condiciones?: string[]; hora_inicio?: string }
+export type ContextoSuplementos = { peso_kg: number; sexo?: 'hombre' | 'mujer' | 'otro'; edad?: number; objetivo?: string; disciplina?: string; duracion_min?: number; duracion_prueba_min?: number; intensidad_sesion?: 'baja' | 'media' | 'alta'; intensidad?: 'baja' | 'media' | 'alta'; tipo_sesion?: 'fuerza' | 'cardio' | 'hibrido'; fase_competicion?: string; cafeina_habitual_mg?: number; analitica?: { vitamina_d_ngml?: number; ferritina_ngml?: number }; condiciones?: string[]; hora_inicio?: string }
 export type ResultadoSuplementos = { sesion: Recomendacion[]; diaria: Recomendacion[]; carrera: Recomendacion[]; avisos: string[] }
 export const NOTA_ANTIDOPAJE = 'Elige productos con certificacion antidopaje (Informed Sport / NSF Certified for Sport): hay riesgo de contaminacion.'
 const IOC = 'IOC 2018 (Maughan et al., Br J Sports Med 52:439-455)'
@@ -73,7 +73,7 @@ export function recomendarSuplementos(ctx: ContextoSuplementos): ResultadoSuplem
   if (hyrox || ctx.intensidad === 'alta') resultado.diaria.push(crear('beta_alanina', '4-6 g/dia repartidos en tomas de ~1,6 g', 'Durante al menos 2-4 semanas'))
   if (ctx.analitica?.vitamina_d_ngml !== undefined && ctx.analitica.vitamina_d_ngml < 30) resultado.diaria.push(crear('vitamina_d', 'Dosis fijada por medico o coach segun analitica', 'Segun pauta individual'))
   if (ctx.analitica?.ferritina_ngml !== undefined && ctx.analitica.ferritina_ngml < 30) resultado.diaria.push(crear('hierro', 'Dosis bajo supervision profesional segun analitica', 'Segun pauta individual'))
-  if (!hipertension && (ctx.intensidad === 'alta' || ctx.fase_competicion === 'race_day')) resultado.sesion.push(cafeina())
+  if (!hipertension && (ctx.intensidad === 'alta' || ctx.intensidad_sesion === 'alta' || ctx.fase_competicion === 'race_day')) resultado.sesion.push(cafeina())
   if (duracion >= 45) resultado.sesion.push(carbohidratos())
   if (duracion > 120) resultado.sesion.push(sodio())
   if (duracion >= 90 || ctx.fase_competicion === 'race_day') resultado.sesion.push(recuperacion())
