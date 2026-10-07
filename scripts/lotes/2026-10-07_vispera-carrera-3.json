@@ -343,7 +343,7 @@
  "recetas": [
   {
    "nombre": "Fideos con gambas y ajo",
-   "descripcion": "Fideos finos con gambas, ajo y limón: pescado ligero y casi sin fibra para la víspera.",
+   "descripcion": "Fideos finos con gambas, ajo y limón: pescado ligero y casi sin fibra.",
    "tiempo_prep_min": 18,
    "porciones": 1,
    "tipo_plato": "Cena",
@@ -374,7 +374,7 @@
     ]
    ],
    "instrucciones": "1. Cuece los fideos en agua con sal y escúrrelos.\n2. Dora el ajo laminado en el aceite y añade las gambas 2 minutos.\n3. Mezcla con los fideos, el limón y el perejil.\n4. Sirve enseguida.",
-   "consejos": "Quita bien el exceso de aceite: menos grasa antes de la prueba."
+   "consejos": "Escurre bien el aceite sobrante para dejar el plato más ligero."
   },
   {
    "nombre": "Macarrones con merluza y tomate",
@@ -440,7 +440,7 @@
   },
   {
    "nombre": "Arroz blanco con pollo y huevo",
-   "descripcion": "Plato de recuperación: arroz blanco con pollo y huevo, hidratos y proteína tras el esfuerzo.",
+   "descripcion": "Arroz blanco con pollo, huevo cocido y tomate: hidratos y proteína completos tras un entreno exigente.",
    "tiempo_prep_min": 25,
    "porciones": 1,
    "tipo_plato": "Comida",
@@ -472,11 +472,11 @@
     ]
    ],
    "instrucciones": "1. Cuece el arroz en el doble de agua con sal.\n2. Marca el pollo en tiras a la plancha con el ajo.\n3. Cuece el huevo 8 minutos y pícalo.\n4. Sirve el arroz con el pollo, el huevo y el tomate caliente.",
-   "consejos": "Tómalo en las 2 horas siguientes a terminar la prueba."
+   "consejos": "Tómalo en las 2 horas siguientes a entrenar si buscas reponer energía."
   },
   {
-   "nombre": "Batido de recuperación de plátano y leche",
-   "descripcion": "Batido de recuperación con leche desnatada, plátano, proteína en polvo y miel: hidratos y proteína líquidos tras la prueba.",
+   "nombre": "Batido de plátano y leche con proteína",
+   "descripcion": "Batido con leche desnatada, plátano, proteína en polvo y miel: hidratos y proteína líquidos, fáciles de tomar tras entrenar.",
    "tiempo_prep_min": 5,
    "porciones": 1,
    "tipo_plato": "Merienda",
@@ -503,8 +503,8 @@
    "consejos": "Si no toleras la lactosa, usa bebida de soja sin azúcar."
   },
   {
-   "nombre": "Bocadillo de pavo y queso fresco de recuperación",
-   "descripcion": "Bocadillo de pan blanco con pavo, queso fresco batido y tomate: hidratos y proteína sencillos para recuperar.",
+   "nombre": "Bocadillo de pavo y queso fresco",
+   "descripcion": "Bocadillo de pan blanco con pavo, queso fresco batido y tomate: hidratos y proteína sencillos.",
    "tiempo_prep_min": 8,
    "porciones": 1,
    "tipo_plato": "Cena",
@@ -527,12 +527,12 @@
      60
     ]
    ],
-   "instrucciones": "1. Abre el pan y unta el queso fresco batido.\n2. Añade el pavo y el tomate en rodajas.\n3. Cierra, corta por la mitad y tómalo tras la prueba.",
-   "consejos": "Acompáñalo de fruta y una bebida con electrolitos."
+   "instrucciones": "1. Abre el pan y unta el queso fresco batido.\n2. Añade el pavo y el tomate en rodajas.\n3. Cierra, corta por la mitad y tómalo enseguida.",
+   "consejos": "Acompáñalo de fruta y una bebida con electrolitos si has entrenado fuerte."
   },
   {
-   "nombre": "Pasta con pollo y tomate de recuperación",
-   "descripcion": "Macarrones con pollo y tomate para los 2 días posteriores a la prueba: hidratos para reponer glucógeno y proteína para reparar.",
+   "nombre": "Pasta con pollo y tomate",
+   "descripcion": "Macarrones con pollo y tomate: hidratos para reponer energía y proteína de calidad.",
    "tiempo_prep_min": 22,
    "porciones": 1,
    "tipo_plato": "Cena",
@@ -564,7 +564,7 @@
     ]
    ],
    "instrucciones": "1. Cuece los macarrones en agua con sal.\n2. Marca el pollo en dados con el ajo picado.\n3. Calienta el tomate triturado con el aceite 8 minutos.\n4. Mezcla todo y termina con perejil.",
-   "consejos": "Los 2 días posteriores a la prueba prioriza hidratos y proteína de calidad."
+   "consejos": "Un plato completo para días de entreno exigente."
   }
  ]
 }

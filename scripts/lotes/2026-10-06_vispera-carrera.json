@@ -213,7 +213,7 @@
  "recetas": [
   {
    "nombre": "Macarrones con tomate y pavo a la plancha",
-   "descripcion": "Pasta con salsa de tomate suave y pavo: plato clásico de víspera de prueba, alto en hidratos y bajo en fibra y grasa.",
+   "descripcion": "Pasta con salsa de tomate suave y pavo a la plancha: plato completo, rico en hidratos y bajo en fibra y grasa.",
    "tiempo_prep_min": 25,
    "porciones": 1,
    "tipo_plato": "Comida",
@@ -244,11 +244,11 @@
     ]
    ],
    "instrucciones": "1. Cuece los macarrones en agua con sal.\n2. Dora el ajo laminado en el aceite, añade el tomate triturado y cocina 10 minutos.\n3. Marca el pavo en dados a la plancha y únelo a la salsa.\n4. Mezcla con la pasta escurrida y termina con perejil.",
-   "consejos": "Es una comida para la víspera: sin salsas picantes ni alimentos que no hayas probado antes."
+   "consejos": "Un plato sencillo y de digestión fácil; combina bien con una pieza de fruta."
   },
   {
    "nombre": "Arroz blanco con pollo a la plancha y tomate",
-   "descripcion": "Arroz blanco suelto con pollo y tomate triturado, de digestión fácil para la víspera o la comida previa.",
+   "descripcion": "Arroz blanco suelto con pollo a la plancha y tomate triturado: ligero, saciante y de digestión fácil.",
    "tiempo_prep_min": 25,
    "porciones": 1,
    "tipo_plato": "Comida",
@@ -275,11 +275,11 @@
     ]
    ],
    "instrucciones": "1. Cuece el arroz en el doble de agua con sal unos 15 minutos.\n2. Marca el pollo en tiras a la plancha con el ajo.\n3. Calienta el tomate triturado con el aceite.\n4. Sirve el arroz con el pollo y el tomate por encima.",
-   "consejos": "Usa arroz blanco y no integral: tiene menos fibra y se digiere mejor antes de competir."
+   "consejos": "Con arroz blanco el plato queda más ligero que con integral."
   },
   {
    "nombre": "Merluza al limón con arroz blanco",
-   "descripcion": "Arroz blanco con merluza a la plancha y limón: ligero, bajo en grasa y en fibra, para la víspera o la comida previa.",
+   "descripcion": "Arroz blanco con merluza a la plancha y limón: ligero, bajo en grasa y en fibra.",
    "tiempo_prep_min": 30,
    "porciones": 1,
    "tipo_plato": "Cena",
@@ -310,11 +310,11 @@
     ]
    ],
    "instrucciones": "1. Cuece el arroz en el doble de agua con sal unos 15 minutos.\n2. Marca la merluza a la plancha con el ajo picado.\n3. Aliña con el aceite, el limón y el perejil.\n4. Sirve el pescado sobre el arroz.",
-   "consejos": "Pescado blanco a la plancha: digestión fácil antes de competir."
+   "consejos": "Pescado blanco a la plancha: digestión fácil y poca grasa."
   },
   {
    "nombre": "Fideos con pollo y zanahoria",
-   "descripcion": "Fideos finos con pollo y zanahoria en poco caldo: cena de víspera fácil de digerir.",
+   "descripcion": "Fideos finos con pollo y zanahoria en poco caldo: plato ligero y reconfortante.",
    "tiempo_prep_min": 20,
    "porciones": 1,
    "tipo_plato": "Cena",
@@ -380,7 +380,7 @@
   },
   {
    "nombre": "Bocadillo de pavo y tomate",
-   "descripcion": "Bocadillo de pan blanco con fiambre de pavo y tomate: cena ligera y rica en hidratos para la víspera.",
+   "descripcion": "Bocadillo de pan blanco con pavo y tomate: rápido, ligero y rico en hidratos.",
    "tiempo_prep_min": 8,
    "porciones": 1,
    "tipo_plato": "Cena",
@@ -403,11 +403,11 @@
     ]
    ],
    "instrucciones": "1. Abre el pan y unta el aceite.\n2. Rellena con el pavo y el tomate en rodajas.",
-   "consejos": "Pan blanco y no integral: menos fibra antes de la prueba."
+   "consejos": "Pan blanco y no integral si buscas un bocadillo más ligero."
   },
   {
    "nombre": "Tostadas con mermelada y plátano",
-   "descripcion": "Desayuno previo a la prueba: pan blanco con mermelada y plátano, hidratos de digestión rápida y casi sin grasa ni fibra.",
+   "descripcion": "Desayuno rápido con pan blanco, mermelada y plátano: hidratos de digestión fácil y casi sin grasa.",
    "tiempo_prep_min": 5,
    "porciones": 1,
    "tipo_plato": "Desayuno",
@@ -426,12 +426,12 @@
      120
     ]
    ],
-   "instrucciones": "1. Tuesta el pan.\n2. Unta la mermelada y cubre con el plátano en rodajas.\n3. Tómalo 2-3 horas antes de la salida.",
-   "consejos": "Si te cuesta comer temprano, adelanta la hora o reduce la ración, pero no pruebes nada nuevo."
+   "instrucciones": "1. Tuesta el pan.\n2. Unta la mermelada y cubre con el plátano en rodajas.\n3. Tómalo recién preparado.",
+   "consejos": "Si te cuesta comer temprano, reduce la ración y mantén el plátano."
   },
   {
    "nombre": "Copos de maíz con leche y plátano",
-   "descripcion": "Desayuno previo a la prueba con cereal de bajo contenido en fibra, leche desnatada y plátano.",
+   "descripcion": "Desayuno ligero con copos de maíz, leche desnatada y plátano, bajo en fibra y en grasa.",
    "tiempo_prep_min": 4,
    "porciones": 1,
    "tipo_plato": "Desayuno",
@@ -455,11 +455,11 @@
     ]
    ],
    "instrucciones": "1. Pon los copos en un bol con la leche.\n2. Añade el plátano troceado y la miel.",
-   "consejos": "Elige copos sin azúcar añadido si los encuentras, y prueba esta combinación antes en un entreno largo."
+   "consejos": "Elige copos sin azúcar añadido si los encuentras."
   },
   {
    "nombre": "Arroz con leche exprés",
-   "descripcion": "Arroz con leche desnatada, canela y miel: desayuno previo a la prueba de digestión fácil.",
+   "descripcion": "Arroz con leche desnatada, canela y miel: desayuno o postre ligero de digestión fácil.",
    "tiempo_prep_min": 20,
    "porciones": 1,
    "tipo_plato": "Desayuno",

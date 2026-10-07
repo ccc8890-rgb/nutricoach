@@ -301,7 +301,7 @@
  "recetas": [
   {
    "nombre": "Macarrones con atún y tomate",
-   "descripcion": "Pasta con atún en lata y tomate triturado: plato de víspera rápido, muy rico en hidratos y bajo en fibra y grasa.",
+   "descripcion": "Pasta con atún en lata y tomate triturado: plato rápido, muy rico en hidratos y bajo en fibra y grasa.",
    "tiempo_prep_min": 20,
    "porciones": 1,
    "tipo_plato": "Comida",
@@ -332,7 +332,7 @@
     ]
    ],
    "instrucciones": "1. Cuece los macarrones en agua con sal.\n2. Dora el ajo laminado en el aceite y añade el tomate triturado 8 minutos.\n3. Incorpora el atún escurrido y mezcla con la pasta.\n4. Termina con perejil.",
-   "consejos": "Atún al natural y bien escurrido: menos grasa antes de competir."
+   "consejos": "Con atún al natural y bien escurrido, queda con menos grasa."
   },
   {
    "nombre": "Arroz blanco con atún y tomate",
@@ -367,7 +367,7 @@
   },
   {
    "nombre": "Fideos con pescadilla y zanahoria",
-   "descripcion": "Fideos finos con pescadilla y zanahoria en poco caldo, para una cena de víspera ligera.",
+   "descripcion": "Fideos finos con pescadilla y zanahoria en poco caldo: cena ligera y fácil de digerir.",
    "tiempo_prep_min": 20,
    "porciones": 1,
    "tipo_plato": "Cena",
@@ -402,7 +402,7 @@
   },
   {
    "nombre": "Arroz blanco con dorada al limón",
-   "descripcion": "Arroz blanco con dorada a la plancha y limón: pescado blanco ligero para la víspera.",
+   "descripcion": "Arroz blanco con dorada a la plancha y limón: pescado blanco ligero y bajo en grasa.",
    "tiempo_prep_min": 25,
    "porciones": 1,
    "tipo_plato": "Cena",
@@ -437,7 +437,7 @@
   },
   {
    "nombre": "Pan de pita con pollo y tomate",
-   "descripcion": "Pita de pan blanco con pollo a la plancha y tomate: cena sencilla y rica en hidratos para la víspera.",
+   "descripcion": "Pita de pan blanco con pollo a la plancha y tomate: cena sencilla y rica en hidratos.",
    "tiempo_prep_min": 15,
    "porciones": 1,
    "tipo_plato": "Cena",
@@ -460,7 +460,7 @@
     ]
    ],
    "instrucciones": "1. Marca el pollo en tiras a la plancha.\n2. Calienta la pita.\n3. Rellénala con el pollo, el tomate en rodajas y el aceite.",
-   "consejos": "Pan blanco: menos fibra que el integral antes de la prueba."
+   "consejos": "Pan blanco: menos fibra que el integral."
   },
   {
    "nombre": "Sándwich de jamón cocido y queso fresco",
@@ -487,11 +487,11 @@
     ]
    ],
    "instrucciones": "1. Unta el queso fresco batido en el pan.\n2. Añade el jamón y el tomate en rodajas.\n3. Cierra y corta.",
-   "consejos": "Opción rápida para una comida previa o cena de víspera."
+   "consejos": "Opción rápida para una comida o cena ligera."
   },
   {
    "nombre": "Arroz blanco con pavo y zanahoria",
-   "descripcion": "Arroz blanco con pavo y zanahoria cocida: plato muy suave para la víspera.",
+   "descripcion": "Arroz blanco con pavo y zanahoria cocida: plato muy suave y fácil de digerir.",
    "tiempo_prep_min": 25,
    "porciones": 1,
    "tipo_plato": "Comida",
@@ -522,7 +522,7 @@
   },
   {
    "nombre": "Bagel con queso crema light y mermelada",
-   "descripcion": "Desayuno previo a la prueba: bagel con queso crema light y mermelada, hidratos de digestión rápida.",
+   "descripcion": "Desayuno o merienda: bagel con queso crema light y mermelada, hidratos de digestión rápida.",
    "tiempo_prep_min": 5,
    "porciones": 1,
    "tipo_plato": "Desayuno",
@@ -541,12 +541,12 @@
      30
     ]
    ],
-   "instrucciones": "1. Tuesta el bagel.\n2. Unta el queso crema y la mermelada.\n3. Tómalo 2-3 horas antes de la salida.",
-   "consejos": "No pruebes nada nuevo el día de la carrera: ensayalo antes en un entreno largo."
+   "instrucciones": "1. Tuesta el bagel.\n2. Unta el queso crema y la mermelada.\n3. Tómalo recién preparado.",
+   "consejos": "Prueba siempre las combinaciones nuevas en un día normal antes de repetirlas en un día importante."
   },
   {
    "nombre": "Yogur con copos de maíz, plátano y miel",
-   "descripcion": "Desayuno previo a la prueba con yogur desnatado, copos de maíz, plátano y miel.",
+   "descripcion": "Yogur desnatado con copos de maíz, plátano y miel: desayuno ligero, alto en hidratos y casi sin grasa.",
    "tiempo_prep_min": 4,
    "porciones": 1,
    "tipo_plato": "Desayuno",
@@ -569,12 +569,12 @@
      15
     ]
    ],
-   "instrucciones": "1. Pon el yogur en un bol.\n2. Añade los copos de maíz justo antes de comer para que se mantengan crujientes.\n3. Incorpora el plátano troceado y la miel.\n4. Tómalo 2-3 horas antes de la salida.",
+   "instrucciones": "1. Pon el yogur en un bol.\n2. Añade los copos de maíz justo antes de comer para que se mantengan crujientes.\n3. Incorpora el plátano troceado y la miel.\n4. Tómalo recién preparado.",
    "consejos": "Si te cuesta comer temprano, reduce el yogur y mantén los hidratos."
   },
   {
    "nombre": "Tostadas con requesón, miel y plátano",
-   "descripcion": "Desayuno previo con pan blanco, requesón, miel y plátano: poca fibra y poca grasa.",
+   "descripcion": "Tostadas de pan blanco con requesón, miel y plátano: poca fibra y poca grasa.",
    "tiempo_prep_min": 5,
    "porciones": 1,
    "tipo_plato": "Desayuno",
@@ -597,8 +597,8 @@
      100
     ]
    ],
-   "instrucciones": "1. Tuesta el pan hasta que quede dorado.\n2. Unta el requesón y cubre con el plátano en rodajas.\n3. Termina con un hilo de miel.\n4. Tómalo 2-3 horas antes de la prueba.",
-   "consejos": "Tómalo 2-3 horas antes de la prueba."
+   "instrucciones": "1. Tuesta el pan hasta que quede dorado.\n2. Unta el requesón y cubre con el plátano en rodajas.\n3. Termina con un hilo de miel.\n4. Tómalo recién hecho.",
+   "consejos": "Buena opción para un desayuno rápido."
   },
   {
    "nombre": "Tostada con mermelada y batido de plátano",
