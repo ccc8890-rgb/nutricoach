@@ -38,3 +38,11 @@ export async function anadirRecetasATanda(db: SupabaseClient, coachId: string, f
   }
   return n
 }
+
+/** El plan de dieta existe y su cliente es de este coach (los `plan_id` llegan del navegador). */
+export async function planEsDelCoach(db: SupabaseClient, planId: string, coachId: string): Promise<boolean> {
+  const { data: plan } = await db.from('planes_nutricion').select('cliente_id').eq('id', planId).limit(1)
+  if (!plan?.length) return false
+  const { data: cliente } = await db.from('clientes').select('id').eq('id', plan[0].cliente_id).eq('coach_id', coachId).limit(1)
+  return !!cliente?.length
+}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { autorizarCoach } from '@/lib/contenido/auth'
 import { limpiarCambios } from '@/lib/contenido/validacion'
 import { planosTrasEstado } from '@/lib/contenido/escaleta'
-import { buscarRecetaPorEnlace, SELECT_PIEZA, sincronizarIconoReceta } from '@/lib/contenido/piezas'
+import { buscarRecetaPorEnlace, planEsDelCoach, SELECT_PIEZA, sincronizarIconoReceta } from '@/lib/contenido/piezas'
 
 export async function GET(request: NextRequest) {
   const r = await autorizarCoach(request)
@@ -20,6 +20,8 @@ export async function POST(request: NextRequest) {
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 })
   const c = v.cambios
   if (!c.titulo) return NextResponse.json({ error: 'Falta el título' }, { status: 400 })
+
+  if (c.plan_id && !(await planEsDelCoach(r.admin, c.plan_id, r.userId))) return NextResponse.json({ error: 'Plan no válido' }, { status: 400 })
 
   const recetaId = c.receta_id ?? (c.enlace_referencia ? (await buscarRecetaPorEnlace(r.admin, c.enlace_referencia))?.id ?? null : null)
   const estado = c.estado ?? 'idea'

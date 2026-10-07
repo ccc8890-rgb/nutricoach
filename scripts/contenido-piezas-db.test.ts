@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { anadirRecetasATanda, buscarRecetaPorEnlace, sincronizarIconoReceta } from '../lib/contenido/piezas'
+import { anadirRecetasATanda, buscarRecetaPorEnlace, planEsDelCoach, sincronizarIconoReceta } from '../lib/contenido/piezas'
 
 type Op = { tabla: string; op: 'update' | 'insert'; payload: unknown }
 
@@ -33,6 +33,11 @@ async function main() {
   const sinConsulta = fakeDb({ recetas: filas })
   assert.equal(await buscarRecetaPorEnlace(sinConsulta.db, 'una idea cualquiera'), null)
   assert.equal(sinConsulta.consultas(), 0)
+
+  // Un plan solo se acepta si su cliente es del coach
+  assert.equal(await planEsDelCoach(fakeDb({ planes_nutricion: [{ cliente_id: 'c1' }], clientes: [{ id: 'c1' }] }).db, 'p1', 'coach1'), true)
+  assert.equal(await planEsDelCoach(fakeDb({ planes_nutricion: [], clientes: [{ id: 'c1' }] }).db, 'p1', 'coach1'), false)
+  assert.equal(await planEsDelCoach(fakeDb({ planes_nutricion: [{ cliente_id: 'c1' }], clientes: [] }).db, 'p1', 'coach1'), false)
 
   // El icono (caché en recetas.contenido_estado) refleja las piezas: lo pendiente manda
   const mixta = fakeDb({ piezas_contenido: [{ estado: 'grabada' }, { estado: 'para_grabar' }] })

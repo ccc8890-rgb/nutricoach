@@ -3,7 +3,7 @@ import { autorizarCoach } from '@/lib/contenido/auth'
 import { limpiarCambios } from '@/lib/contenido/validacion'
 import { estadoTrasPlanos, planosTrasEstado } from '@/lib/contenido/escaleta'
 import type { EstadoPieza } from '@/lib/contenido/estados'
-import { SELECT_PIEZA, sincronizarIconoReceta } from '@/lib/contenido/piezas'
+import { planEsDelCoach, SELECT_PIEZA, sincronizarIconoReceta } from '@/lib/contenido/piezas'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -18,9 +18,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     .eq('id', id).eq('coach_id', r.userId).maybeSingle()
   if (!actual) return NextResponse.json({ error: 'Pieza no encontrada' }, { status: 404 })
 
+  if (v.cambios.plan_id && !(await planEsDelCoach(r.admin, v.cambios.plan_id, r.userId))) return NextResponse.json({ error: 'Plan no válido' }, { status: 400 })
+
   const cambios: Record<string, unknown> = { ...v.cambios, updated_at: new Date().toISOString() }
   const c = v.cambios
   if (c.estado && c.planos_hechos === undefined) cambios.planos_hechos = planosTrasEstado(c.estado, actual.planos_hechos ?? [])
+  if (c.estado && c.planos_hechos) cambios.planos_hechos = planosTrasEstado(c.estado, c.planos_hechos) // estado y planos a la vez: manda el estado
   if (c.planos_hechos && !c.estado) cambios.estado = estadoTrasPlanos(actual.estado as EstadoPieza, c.planos_hechos)
 
   const { data, error } = await r.admin.from('piezas_contenido').update(cambios)
