@@ -7,6 +7,7 @@ import { claveCompeticion, repartirSemanaSinRepetir, type Asignacion, type Candi
 import { filtrarRecetasPorSlot } from '@/lib/plan-recetas'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 import { completarSemana } from './completar-comidas'
+import { cargarPreferencias, franjasDeHabitual } from './preferencias-cliente'
 import { objetivosPorDia, planDelDia, type ObjetivoDia } from './objetivo-dia'
 import { contextoRecetaCompeticion } from './receta-competicion'
 import type { SlotComida } from '@/lib/tipos-comida'
@@ -113,7 +114,11 @@ export async function planificarSemana(
   // Si el coach elige franjas, mandan; después las comidas al día del cliente; si no, las que ya usa el plan
   const elegidas = FRANJAS.filter(f => franjasElegidas?.includes(f))
   const franjasCliente = elegidas.length > 0 ? [] : await franjasDelCliente(db, clienteId)
-  const franjas = elegidas.length > 0 ? elegidas : franjasCliente.length > 0 ? franjasCliente : franjasPlan.length > 0 ? franjasPlan : FRANJAS_BASE
+  // Sin nada de lo anterior, las comidas que el cliente contó en el cuestionario inicial (en vez de 3 por defecto)
+  const habituales = elegidas.length === 0 && franjasCliente.length === 0 && franjasPlan.length === 0
+    ? (await cargarPreferencias(db, clienteId).catch(() => null))?.habituales ?? [] : []
+  const franjasHabituales = FRANJAS.filter(f => franjasDeHabitual(habituales).includes(f))
+  const franjas = elegidas.length > 0 ? elegidas : franjasCliente.length > 0 ? franjasCliente : franjasPlan.length > 0 ? franjasPlan : franjasHabituales.length > 0 ? franjasHabituales : FRANJAS_BASE
 
   // Una comida sin día es "de todos los días": cuenta como ocupada en cualquier día
   const ocupado = (dia: string, franja: string) => existentes.some(c => c.nombre === franja && (c.dia_semana === dia || c.dia_semana == null) && c.receta_id)

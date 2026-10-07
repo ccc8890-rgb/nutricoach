@@ -218,8 +218,18 @@ export async function filtrarRecetasPorSlot(
       ? evitarRaw.split(',').map(s => s.trim()).filter(Boolean)
       : []
 
+  // «Pescado azul», «marisco»… son grupos: se excluye cualquiera de sus alimentos, no solo recetas que lleven esa frase
+  const GRUPOS_EVITAR: [RegExp, string[]][] = [
+    [/pescado azul|pescados azules/, ['salmón', 'salmon', 'atún', 'atun', 'caballa', 'sardina', 'anchoa', 'boquerón', 'boqueron', 'bonito', 'arenque', 'jurel']],
+    [/marisco/, ['gamba', 'langostino', 'mejillón', 'mejillon', 'almeja', 'calamar', 'sepia', 'pulpo', 'zamburiña', 'cangrejo', 'berberecho']],
+    [/carne roja/, ['ternera', 'cerdo', 'cordero', 'buey', 'solomillo', 'chorizo']],
+    [/lácteo|lacteo/, ['leche', 'yogur', 'queso', 'skyr', 'requesón', 'requeson', 'nata', 'mantequilla']],
+    [/frutos secos/, ['almendra', 'nuez', 'nueces', 'avellana', 'pistacho', 'anacardo', 'cacahuete']],
+  ]
+  const expandirEvitar = (a: string) => [a, ...GRUPOS_EVITAR.filter(([re]) => re.test(a)).flatMap(([, l]) => l)]
+
   if (evitarArr.length > 0) {
-    const evitarLower = evitarArr.map(a => a.toLowerCase())
+    const evitarLower = evitarArr.map(a => a.toLowerCase()).flatMap(expandirEvitar)
     candidatas = candidatas.filter(r => {
       const rIng = (r as unknown as { receta_ingredientes?: Array<{ nombre_libre?: string | null; alimento?: { nombre?: string | null } | null }> }).receta_ingredientes ?? []
       const textosReceta = [

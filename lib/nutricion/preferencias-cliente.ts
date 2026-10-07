@@ -52,3 +52,10 @@ export const esHabitualComplemento = (nombre: string, franja: string, habituales
   afinidadHabitual(nombre, franja, habituales.filter(h => h.importancia_adherencia !== 'baja')) > 0
 
 export const lleva = (texto: string, evitar: string[]) => { const t = sinTildes(texto); return evitar.some(e => t.includes(e)) }
+
+// Comidas al día que el cliente dijo hacer en el cuestionario (desayuno, media mañana…); hace falta que cite al menos 3
+const SLOT_DE_MOMENTO: Record<string, string> = { desayuno: 'Desayuno', media_manana: 'Media mañana', comida: 'Comida', merienda: 'Merienda', cena: 'Cena' }
+export function franjasDeHabitual(habituales: PlatoHabitualCliente[]): string[] {
+  const f = new Set(habituales.map(h => SLOT_DE_MOMENTO[h.momento]).filter(Boolean))
+  return f.size >= 3 ? [...f] : []
+}
