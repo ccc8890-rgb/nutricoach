@@ -1,3 +1,4 @@
+import { verificarRecetasCompletas } from '@/lib/recetas/verificacion-auto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
@@ -71,7 +72,10 @@ export async function PATCH(
       'api_receta_estado'
     )
 
-    return NextResponse.json({ data: { id, estado } })
+    // Aprobar sin verificar deja la receta fuera de los planes: se verifica si está completa
+    const verif = estado === 'aprobada' ? await verificarRecetasCompletas(createServiceSupabase(), [id]).catch(() => null) : null
+
+    return NextResponse.json({ data: { id, estado }, ...(verif ? { verificada: verif.verificadas > 0, faltan: verif.incompletas[0]?.motivos ?? [] } : {}) })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })

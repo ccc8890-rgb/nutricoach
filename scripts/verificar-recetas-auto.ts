@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { auditarRecetaProfesional } from '../lib/recetas/auditoria'
+import { motivosIncompleta } from '../lib/recetas/verificacion-auto'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
   const m = l.match(/^([A-Z0-9_]+)=(.*)$/)
@@ -19,19 +20,6 @@ type Receta = {
   id: string; nombre: string; tipo_plato: string | null; instrucciones: string | null; intolerancias: string[] | null
   tiempo_prep_min: number | null; verificacion: string | null
   receta_ingredientes: { alimento_id: string | null; rol_ingrediente: string | null }[]
-}
-
-function motivosIncompleta(r: Receta): string[] {
-  const ings = r.receta_ingredientes ?? []
-  return [
-    (!r.instrucciones || r.instrucciones.length < 80) && 'instrucciones',
-    ings.length < 3 && '<3 ingredientes',
-    ings.some(i => !i.alimento_id) && 'ingrediente sin vincular',
-    ings.some(i => !i.rol_ingrediente) && 'ingrediente sin rol',
-    !r.tipo_plato && 'sin franja',
-    !(r.intolerancias ?? []).length && 'sin etiquetas',
-    !r.tiempo_prep_min && 'sin tiempo',
-  ].filter(Boolean) as string[]
 }
 
 async function main() {

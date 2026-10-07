@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verificarRecetasCompletas } from '@/lib/recetas/verificacion-auto'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 import { inicioFinDiaMadridUtc, normalizarTareaRevision, type TareaRevision } from '@/lib/recetas/revision'
@@ -131,6 +132,7 @@ export async function POST(request: NextRequest) {
     const { data: recetas, error } = await supabase.from('recetas').select('id, nombre, estado').in('id', ids)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
+    let verificadasAuto = 0
     const bloqueadas: Array<{ id: string; nombre: string; motivos: string[] }> = []
     const aprobables: string[] = []
     for (const receta of recetas ?? []) {
@@ -144,9 +146,11 @@ export async function POST(request: NextRequest) {
       const { error: updateError } = await supabase.from('recetas').update({ estado: 'aprobada' }).in('id', aprobables)
       if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
       await Promise.all(aprobables.map(id => auditarRecetaProfesional(supabase, id, 'aprobada_lote', 'api_recetas_revisar')))
+      // Sin verificar, el motor de planes no las usaría: se verifican las completas (instrucciones, ingredientes, franja, etiquetas, tiempo)
+      verificadasAuto = (await verificarRecetasCompletas(supabase, aprobables).catch(() => ({ verificadas: 0, incompletas: [] }))).verificadas
     }
 
-    return NextResponse.json({ ok: bloqueadas.length === 0, aprobadas: aprobables.length, bloqueadas })
+    return NextResponse.json({ ok: bloqueadas.length === 0, aprobadas: aprobables.length, verificadas: verificadasAuto, bloqueadas })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido'
     return NextResponse.json({ error: message }, { status: 500 })

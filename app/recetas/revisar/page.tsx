@@ -210,7 +210,7 @@ export default function RevisarRecetasPage() {
           <button onClick={() => cargar()} aria-label="Actualizar" className="rounded-xl border p-2.5" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}><RefreshCw size={16} /></button>
           <button onClick={aprobarAprobables} disabled={aprobandoLote || !respuesta?.aprobablesIds.length} className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold disabled:opacity-40" style={{ color: 'var(--bg)', background: 'var(--primary)' }}>
             {aprobandoLote ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
-            Aprobar aprobables ({respuesta?.aprobablesIds.length ?? 0})
+            Aprobar aprobables ({respuesta ? respuesta.aprobablesIds.length : '…'})
           </button>
         </div>
       </header>
