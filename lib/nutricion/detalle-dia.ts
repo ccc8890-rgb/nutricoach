@@ -14,7 +14,9 @@ import type { SlotComida } from '@/lib/tipos-comida'
 export type IngredienteDetalle = { nombre: string; gramos: number; kcal: number; p: number; c: number; g: number }
 export type RecetaDetalle = { id: string; nombre: string; imagen_url: string | null; tiempo_prep_min: number | null; contenido_estado: string | null; url_origen: string | null }
 // Postre/complemento: un alimento suelto (fila) o un postre-receta (receta_id, todos sus ingredientes juntos)
-export type ComplementoDetalle = { fila?: string; receta_id?: string; nombre: string; gramos: number | null; kcal: number; p: number; c: number; g: number }
+// rol: dónde se coloca en la tarjeta (se deduce de la receta o del tipo de alimento; no se guarda)
+export type RolComplemento = 'plato' | 'guarnicion' | 'fruta' | 'postre'
+export type ComplementoDetalle = { fila?: string; receta_id?: string; rol: RolComplemento; nombre: string; gramos: number | null; kcal: number; p: number; c: number; g: number }
 export type ComidaDetalle = {
   id: string; franja: string; recurrente: boolean; receta: RecetaDetalle | null
   kcal: number; p: number; c: number; g: number; ingredientes: IngredienteDetalle[]; complementos: ComplementoDetalle[]
@@ -22,6 +24,8 @@ export type ComidaDetalle = {
 export type DetalleDia = { dia: string; semana: number | null; estimado: boolean; comidas: ComidaDetalle[]; total: { kcal: number; p: number; c: number; g: number } }
 
 type Alimento = { nombre: string; calorias: number; proteinas: number; carbohidratos: number; grasas: number }
+const rolDeReceta = (r?: { tipo_receta?: string | null; tipo_plato?: string | null }): RolComplemento =>
+  r?.tipo_receta === 'guarnicion' ? 'guarnicion' : /postre|dulce/i.test(r?.tipo_plato ?? '') ? 'postre' : 'plato'
 const orden = (f: string) => FRANJAS.indexOf(f as SlotComida)
 const macrosDe = (a: Alimento, gramos: number) => ({
   kcal: Math.round((a.calorias * gramos) / 100), p: Math.round(((a.proteinas * gramos) / 100) * 10) / 10,
@@ -39,8 +43,9 @@ export async function detalleSemanaEnCurso(db: SupabaseClient, planId: string): 
   if (error) throw new Error('No se pudo leer el día')
   const filas = (data ?? []) as unknown as { id: string; nombre: string; dia_semana: string | null; orden: number; receta: RecetaDetalle | null; comida_alimentos: { id: string; cantidad_gramos: number; es_complemento: boolean; complemento_receta_id: string | null; alimento: Alimento | null }[] }[]
   const idsPostre = [...new Set(filas.flatMap(c => c.comida_alimentos.map(x => x.complemento_receta_id)).filter((x): x is string => !!x))]
-  const { data: nombresPostre } = idsPostre.length ? await db.from('recetas').select('id, nombre').in('id', idsPostre) : { data: [] }
+  const { data: nombresPostre } = idsPostre.length ? await db.from('recetas').select('id, nombre, tipo_receta, tipo_plato').in('id', idsPostre) : { data: [] }
   const nombrePostre = new Map((nombresPostre ?? []).map(r => [r.id, r.nombre as string]))
+  const rolPostre = new Map((nombresPostre ?? []).map(r => [r.id, rolDeReceta(r)]))
   return DIAS_SEMANA.map((dia, idx) => {
   const comidas: ComidaDetalle[] = comidasDelDia(filas, idx)
     .sort((a, b) => orden(a.nombre) - orden(b.nombre))
@@ -54,8 +59,8 @@ export async function detalleSemanaEnCurso(db: SupabaseClient, planId: string): 
         if (x.complemento_receta_id) {
           const g = porPostre.get(x.complemento_receta_id)
           if (g) { g.kcal += m.kcal; g.p += m.p; g.c += m.c; g.g += m.g }
-          else { const n: ComplementoDetalle = { receta_id: x.complemento_receta_id, nombre: `${nombrePostre.get(x.complemento_receta_id) ?? 'Postre'} (1 ración)`, gramos: null, ...m }; porPostre.set(x.complemento_receta_id, n); complementos.push(n) }
-        } else complementos.push({ fila: x.id, nombre: x.alimento!.nombre, gramos: Math.round(x.cantidad_gramos), ...m })
+          else { const n: ComplementoDetalle = { receta_id: x.complemento_receta_id, rol: rolPostre.get(x.complemento_receta_id) ?? 'plato', nombre: `${nombrePostre.get(x.complemento_receta_id) ?? 'Postre'} (1 ración)`, gramos: null, ...m }; porPostre.set(x.complemento_receta_id, n); complementos.push(n) }
+        } else complementos.push({ fila: x.id, rol: 'fruta', nombre: x.alimento!.nombre, gramos: Math.round(x.cantidad_gramos), ...m })
       }
       return { id: c.id, franja: c.nombre, recurrente: !c.dia_semana, receta: c.receta, ingredientes, complementos, ...redondear(sumar([...ingredientes, ...complementos])) }
     })

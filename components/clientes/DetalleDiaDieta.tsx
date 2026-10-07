@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Apple, Clock, ExternalLink, Loader2, PlayCircle, Plus, RefreshCw, Search, Video, X } from 'lucide-react'
-import type { DetalleDia } from '@/lib/nutricion/detalle-dia'
+import { Clock, ExternalLink, Loader2, PlayCircle, Plus, RefreshCw, Search, Video, X } from 'lucide-react'
+import type { ComplementoDetalle, DetalleDia, RolComplemento } from '@/lib/nutricion/detalle-dia'
 
 type Objetivo = { kcal: number | null; p: number | null; c: number | null; g: number | null }
 
@@ -131,6 +131,13 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
   )
 }
 
+const ROLES: { rol: RolComplemento; etiqueta: string; color: string }[] = [
+  { rol: 'plato', etiqueta: 'Plato', color: '#FF9F0A' },
+  { rol: 'guarnicion', etiqueta: 'Guarnición', color: '#30D158' },
+  { rol: 'fruta', etiqueta: 'Fruta y extras', color: '#64D2FF' },
+  { rol: 'postre', etiqueta: 'Postre', color: '#BF5AF2' },
+]
+
 export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, version, franjas, momento, onCambiar, onQuitar, onCambioDatos }: {
   clienteId: string; dia: string; semana: number | null; objetivo: Objetivo; version: number; franjas: string[]
   momento?: { hora: string; pre: string | null; post: string | null; nota: string | null } | null
@@ -158,6 +165,15 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
   }, [clienteId, semana, version])
 
   const detalle = semanaDatos?.find(d => d.dia === dia) ?? null
+
+  async function moverComplemento(comidaId: string, x: ComplementoDetalle, franjaDestino: string) {
+    const res = await fetch(`/api/clientes/${clienteId}/semana-dieta/complemento`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comida_id: comidaId, fila: x.fila, receta: x.receta_id, franja_destino: franjaDestino }),
+    })
+    if (res.ok) onCambioDatos()
+    else setError((await res.json().catch(() => null))?.error ?? 'No se pudo mover')
+  }
 
   async function quitarComplemento(comidaId: string, x: { fila?: string; receta_id?: string }) {
     const q = `comida_id=${comidaId}${x.fila ? `&fila=${x.fila}` : ''}${x.receta_id ? `&receta=${x.receta_id}` : ''}`
@@ -220,6 +236,7 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                       <span style={{ color: '#64D2FF' }}>G {c.g}</span>
                       {c.receta?.tiempo_prep_min ? <span className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}><Clock size={11} />{c.receta.tiempo_prep_min} min</span> : null}
                     </div>
+                    {c.complementos.length > 0 && <p className="text-[10px] font-semibold uppercase tracking-wide -mb-1" style={{ color: 'var(--text-muted)' }}><span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style={{ background: '#FF9F0A' }} />Plato principal</p>}
                     <table className="w-full text-xs">
                       <tbody>
                         {c.ingredientes.map((i, k) => (
@@ -232,19 +249,36 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                       </tbody>
                     </table>
                     {(c.complementos.length > 0 || !semana) && (
-                      <div className="rounded-lg p-2" style={{ background: 'var(--bg)' }}>
-                        <p className="text-[10px] font-semibold uppercase tracking-wide mb-1 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}><Apple size={11} /> Platos y complementos</p>
-                        {c.complementos.map((x, k) => (
-                          <div key={k} className="flex items-center justify-between gap-2 text-xs py-0.5">
-                            <span style={{ color: 'var(--text)' }}>{x.nombre}{x.gramos ? ` · ${x.gramos} g` : ''}</span>
-                            <span className="flex items-center gap-2 font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
-                              {x.kcal} kcal
-                              <button title="Quitar" onClick={() => quitarComplemento(c.id, x)}><X size={12} /></button>
-                            </span>
-                          </div>
-                        ))}
+                      <div className="rounded-lg p-2.5 space-y-2" style={{ background: 'var(--bg)' }}>
+                        {ROLES.map(({ rol, etiqueta, color }) => {
+                          const items = c.complementos.filter(x => x.rol === rol)
+                          if (items.length === 0) return null
+                          return (
+                            <div key={rol}>
+                              <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                                <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: color }} />{etiqueta}
+                              </p>
+                              {items.map((x, k) => (
+                                <div key={k} className="flex items-center justify-between gap-2 text-xs py-1" style={{ borderTop: k ? '1px solid var(--border)' : undefined }}>
+                                  <span className="min-w-0 truncate" style={{ color: 'var(--text)' }}>{x.nombre}{x.gramos ? ` · ${x.gramos} g` : ''}</span>
+                                  <span className="flex items-center gap-2 font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                                    {x.kcal} kcal
+                                    {!semana && (
+                                      <select aria-label="Mover a otra comida" value="" onChange={e => e.target.value && moverComplemento(c.id, x, e.target.value)}
+                                        className="rounded-md text-[11px] py-0.5 px-1 bg-transparent" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                                        <option value="">Mover a…</option>
+                                        {franjas.filter(f => f !== c.franja).map(f => <option key={f} value={f}>{f}</option>)}
+                                      </select>
+                                    )}
+                                    <button title="Quitar" onClick={() => quitarComplemento(c.id, x)}><X size={12} /></button>
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        })}
                         {!semana && (
-                          <button onClick={() => setComplementoEn(c.franja)} className="text-[11px] font-medium flex items-center gap-1 mt-1" style={{ color: 'var(--text)' }}><Plus size={11} /> Añadir plato, fruta o postre</button>
+                          <button onClick={() => setComplementoEn(c.franja)} className="text-[11px] font-medium flex items-center gap-1" style={{ color: 'var(--text)' }}><Plus size={11} /> Añadir plato, guarnición, fruta o postre</button>
                         )}
                       </div>
                     )}

@@ -84,3 +84,37 @@ export async function quitarComplemento(
   if (error) throw new Error('No se pudo quitar el complemento')
   if (p.ajustar !== false) await reajustarPlato(db, plan, clienteId, comida)
 }
+
+// Mueve un complemento (alimento suelto o postre/plato completo) a otra comida del MISMO día.
+// Se reajusta el plato principal de origen y de destino para que ambas comidas sigan en su objetivo.
+export async function moverComplemento(
+  db: SupabaseClient, plan: PlanObjetivo, clienteId: string,
+  p: { comida_id: string; fila?: string; receta?: string; franja_destino: string; ajustar?: boolean },
+) {
+  if (!FRANJAS.includes(p.franja_destino as SlotComida)) throw new Error('Franja no válida')
+  if (!p.fila && !p.receta) throw new Error('Falta qué complemento mover')
+  await materializarComidasRecurrentes(db, plan.id)
+  const { data: origen } = await db.from('comidas').select('id, nombre, receta_id, dia_semana').eq('id', p.comida_id).eq('plan_id', plan.id).maybeSingle()
+  if (!origen?.dia_semana) throw new Error('Comida no encontrada en el plan')
+  if (origen.nombre === p.franja_destino) return
+
+  const { data: existente } = await db.from('comidas').select('id, nombre, receta_id, dia_semana').eq('plan_id', plan.id).eq('dia_semana', origen.dia_semana).eq('nombre', p.franja_destino).limit(1).maybeSingle()
+  let destino = existente
+  if (!destino) {
+    const { data: nueva, error } = await db.from('comidas')
+      .insert({ plan_id: plan.id, nombre: p.franja_destino, dia_semana: origen.dia_semana, orden: FRANJAS.indexOf(p.franja_destino as SlotComida) + 1 })
+      .select('id, nombre, receta_id, dia_semana').single()
+    if (error || !nueva) throw new Error('No se pudo crear la comida de destino')
+    destino = nueva
+  }
+
+  let q = db.from('comida_alimentos').update({ comida_id: destino.id }).eq('comida_id', origen.id).eq('es_complemento', true)
+  q = p.fila ? q.eq('id', p.fila) : q.eq('complemento_receta_id', p.receta!)
+  const { error } = await q
+  if (error) throw new Error('No se pudo mover el complemento')
+
+  if (p.ajustar !== false) {
+    await reajustarPlato(db, plan, clienteId, origen)
+    await reajustarPlato(db, plan, clienteId, destino)
+  }
+}
