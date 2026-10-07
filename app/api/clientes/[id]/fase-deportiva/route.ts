@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 import { faseEnFecha } from '@/lib/nutricion/competicion'
 import { objetivosPorDia } from '@/lib/nutricion/objetivo-dia'
 import { DIAS_SEMANA } from '@/lib/nutricion/comidas-dia'
@@ -16,6 +17,9 @@ export async function GET(
         if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
         const serviceSb = createServiceSupabase()
+        // Solo el coach propietario: la respuesta incluye competiciones, peso y objetivo de hoy del cliente
+        const acceso = await autorizarCoachCliente(serviceSb, { userId: user.id, clienteId: id })
+        if (!acceso.ok) return NextResponse.json({ error: acceso.mensaje }, { status: acceso.status })
 
         // Fase deportiva activa (próxima competición)
         const { data: fase } = await serviceSb
@@ -88,6 +92,9 @@ export async function POST(
             return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
         }
 
+        const accesoPost = await autorizarCoachCliente(createServiceSupabase(), { userId: user.id, clienteId: id })
+        if (!accesoPost.ok) return NextResponse.json({ error: accesoPost.mensaje }, { status: accesoPost.status })
+
         const { nombre, disciplina, fecha_competicion, objetivo, tiempo_objetivo_min, notas } = body
         if (!nombre || !disciplina || !fecha_competicion) {
             return NextResponse.json(
@@ -145,6 +152,8 @@ export async function DELETE(
         }
 
         const serviceSb = createServiceSupabase()
+        const accesoDel = await autorizarCoachCliente(serviceSb, { userId: user.id, clienteId })
+        if (!accesoDel.ok) return NextResponse.json({ error: accesoDel.mensaje }, { status: accesoDel.status })
         const { error } = await serviceSb
             .from('competiciones')
             .update({ activo: false })

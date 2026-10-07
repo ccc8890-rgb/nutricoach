@@ -6,10 +6,13 @@ import { inicioFinDiaMadridUtc, normalizarTareaRevision, type TareaRevision } fr
 
 export const dynamic = 'force-dynamic'
 
+// Solo el coach: la bandeja lista el recetario con su calidad interna y permite aprobar recetas en lote
 async function requireUser(request: NextRequest) {
   const auth = createApiSupabase(request)
   const { data: { user } } = await auth.auth.getUser()
-  return user
+  if (!user) return null
+  const { data: perfil } = await createServiceSupabase().from('profiles').select('role').eq('id', user.id).maybeSingle()
+  return perfil?.role === 'coach' ? user : null
 }
 
 function filtrosTexto(searchParams: URLSearchParams) {
