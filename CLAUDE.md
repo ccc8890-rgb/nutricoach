@@ -10,6 +10,14 @@ Más ajustes de la misma ficha (`app/clientes/[id]/page.tsx`), pedidos por Carlo
 - Decisión abierta: el calendario del Perfil duplica el de Entrenamiento; si estorba, quitarlo.
 - Nota: el push a `main` muestra «Changes must be made through a pull request» pero los commits llegan igualmente; comprobar con `git branch -r --contains HEAD`. `supabase/.temp/cli-latest` modificado no es de esta sesión.
 
+## ✅ SESIÓN 07-10-2026 (noche, Claude) — Complementos con sentido, aprendizaje de gustos y prueba con 4 clientes ficticios
+
+Commits en `main`: complementos agrupados y movibles, reglas del motor (`lib/nutricion/completar-comidas.ts`), preferencias (`lib/nutricion/preferencias-cliente.ts`), grupos a evitar y comidas al día desde el cuestionario. Tests: `scripts/completar-comidas-reglas.test.ts`, `scripts/preferencias-cliente.test.ts`. Scripts: `regenerar-semana-cliente.ts` (con copia previa en `salidas/`), `crear-clienta-trail.ts`, `auditar-etiquetas-vegano-2026-10-07.mjs`.
+- Tarjeta de comida: Plato principal / Plato / Guarnición / Postre / Otros extras, «Mover a…» entre comidas del día (`PATCH …/semana-dieta/complemento`), buscador de alimentos acotado (`/api/alimentos?generico=1`).
+- Datos corregidos: 8 etiquetas Vegano/Vegetariano falsas (caballa «Vegano»…), 4 salsas → `salsa_base`, 4 bebidas → `bebida`, focaccias y tsukemono → `guarnicion`.
+- Clientes de prueba: Carlos Rodríguez ahora **Marcos**; nueva **Laura Vidal** (trail, ultra 15-11-2026).
+- **Pendiente:** fallos del motor y recetas por crear en `docs/07-10-2026_fallos-motor-y-recetas-pendientes.md` (reglas clínicas por patología, ampliar recetario de desayunos/meriendas de deportista, aptas dislipidemia y veganas, barrido de `tipo_receta`).
+
 ## ✅ SESIÓN 07-10-2026 (tarde, Claude) — Contenido probado, Fase B cerrada, víspera corregida y reconstrucción autónoma de recetas
 
 Commits en `main`: `f1340d2`, `a5194c5` (Contenido), `7b41642` (coste), `c4fc3ad` (micronutrientes), `d6435a7` (víspera), `db23c2d` (reconstrucción segura) y docs.
