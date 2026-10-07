@@ -14,6 +14,7 @@ import {
 } from '@phosphor-icons/react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
+import { claveBienvenidaPlan, debeMostrarBienvenidaPlan } from '@/lib/cliente/bienvenida-plan'
 import type { Profile, Cliente, PlanNutricion, PlanEntrenamiento, ComidaAlimento, SeguimientoPeso } from '@/types'
 import InstallBanner from '@/components/PortalCliente/InstallBanner'
 // Pestañas principales con import estático: un componente diferido (dynamic/lazy) hace que React retenga toda la
@@ -253,16 +254,6 @@ function PortalClientePageContent() {
   const [checkinKey, setCheckinKey] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (searchParams.get('onboarding') === 'completo') {
-      const visto = localStorage.getItem('bienvenida_vista')
-      if (!visto) {
-        setShowBienvenida(true)
-        localStorage.setItem('bienvenida_vista', '1')
-      }
-    }
-  }, [searchParams])
-
   // Cambiar de pestaña (barra inferior) solo movía el estado de React, nunca
   // la URL — el botón "Volver" de páginas como /cliente/receta/[id] sí
   // codifica `returnTo=/cliente?tab=X` y funciona, pero el gesto nativo de
@@ -300,6 +291,16 @@ function PortalClientePageContent() {
     setHistorialPeso(boot.peso)
     setLoading(false)
   }, [boot])
+
+  useEffect(() => {
+    if (loading || !cliente?.id) return
+    const clave = claveBienvenidaPlan(cliente.id)
+    setShowBienvenida(debeMostrarBienvenidaPlan({
+      clienteId: cliente.id,
+      tienePlan: Boolean(dieta),
+      yaVista: localStorage.getItem(clave) === '1',
+    }))
+  }, [cliente?.id, dieta, loading])
 
   // Sesión cerrada o caducada: no puede quedar nada del cliente en el dispositivo.
   useEffect(() => {
@@ -407,6 +408,12 @@ function PortalClientePageContent() {
     router.push('/login')
   }
 
+  function cerrarBienvenida(destino?: Tab) {
+    if (cliente?.id) localStorage.setItem(claveBienvenidaPlan(cliente.id), '1')
+    setShowBienvenida(false)
+    if (destino) setTab(destino)
+  }
+
   if (!montado || loading) return <LoadingPortal />
   marca('nc:contenido-render')
 
@@ -476,15 +483,45 @@ function PortalClientePageContent() {
       {/* ── Bienvenida banner ── */}
       {showBienvenida && (
         <div className="px-4 pt-3 max-w-2xl mx-auto">
-          <div className="flex items-start justify-between gap-3 px-4 py-3 rounded-2xl text-sm"
+          <div className="relative overflow-hidden rounded-[1.5rem] px-5 py-5"
             style={{ background: 'var(--success-bg)', border: '1px solid rgba(48,209,88,0.22)' }}>
-            <p style={{ color: 'var(--success)' }} className="font-medium text-sm leading-relaxed">
-              Tu plan ya está listo. Carlos ha preparado la dieta, el entrenamiento y el seguimiento semanal.
-            </p>
-            <button onClick={() => setShowBienvenida(false)} className="flex-shrink-0 cursor-pointer"
-              style={{ color: 'var(--success)' }}>
+            <button
+              onClick={() => cerrarBienvenida()}
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-xl cursor-pointer"
+              style={{ color: 'var(--success)', background: 'color-mix(in srgb, var(--success) 10%, transparent)' }}
+              aria-label="Cerrar bienvenida"
+            >
               <X size={16} />
             </button>
+            <div className="pr-9">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--success)' }}>
+                Primeros pasos
+              </p>
+              <h2 className="mt-1 text-xl font-extrabold tracking-tight" style={{ color: 'var(--text)' }}>
+                Tu plan está listo, {primerNombre}
+              </h2>
+              <p className="mt-2 max-w-lg text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                He preparado tus primeras pautas para que sepas exactamente por dónde empezar.
+              </p>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                onClick={() => cerrarBienvenida('dieta')}
+                className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white cursor-pointer"
+                style={{ background: 'var(--success)' }}
+              >
+                Ver mi dieta <CaretRight size={14} weight="bold" />
+              </button>
+              {entreno && (
+                <button
+                  onClick={() => cerrarBienvenida('entreno')}
+                  className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold cursor-pointer"
+                  style={{ color: 'var(--text)', background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  Ver entrenamiento <CaretRight size={14} weight="bold" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
