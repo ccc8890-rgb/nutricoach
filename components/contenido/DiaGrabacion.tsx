@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/Toast'
 import { formatoFecha, hoyMadrid } from '@/lib/contenido/fechas'
 import type { LineaCompraTanda } from '@/lib/contenido/compra-tanda'
 import { api } from './api'
+import { useClientes } from './useClientes'
 import EscaletaPlanos from './EscaletaPlanos'
 import SelectorReceta from './SelectorReceta'
 import type { Pieza } from './tipos'
@@ -15,17 +16,18 @@ type Tanda = {
   compra: { lineas: LineaCompraTanda[]; costeEstimado: number }
   resumen: { recetas: number; minutos: number; planosPendientes: number; enDieta: number }
 }
-type ClienteLista = { id: string; nombre: string }
 type RecetaDieta = { id: string; nombre: string; origen: string }
 
 const clave = (fecha: string) => `contenido:tengo:${fecha}`
+const CLAVE_DIA = 'contenido:dia'
+const diaGuardado = () => { try { return sessionStorage.getItem(CLAVE_DIA) } catch { return null } }
 const pasosDe = (texto: string | null | undefined) => (texto ?? '').split(/\n+/).map(s => s.trim()).filter(Boolean)
 
 export default function DiaGrabacion({ fechaInicial }: { fechaInicial?: string }) {
   const { addToast } = useToast()
-  const [fecha, setFecha] = useState(fechaInicial ?? hoyMadrid())
-  const [clientes, setClientes] = useState<ClienteLista[]>([])
-  const [clienteId, setClienteId] = useState('')
+  const [fecha, setFechaEstado] = useState(fechaInicial ?? hoyMadrid())
+  const { clientes, clienteId, setClienteId } = useClientes()
+  const [resultado, setResultado] = useState<{ colocadas: number; omitidas: { titulo: string; motivo: string }[] } | null>(null)
   const [tanda, setTanda] = useState<Tanda | null>(null)
   const [tengo, setTengo] = useState<string[]>([])
   const [dieta, setDieta] = useState<RecetaDieta[] | null>(null)
@@ -33,13 +35,15 @@ export default function DiaGrabacion({ fechaInicial }: { fechaInicial?: string }
   const [fueraDeDieta, setFueraDeDieta] = useState<string[]>([])
 
   useEffect(() => {
-    api<{ clientes?: ClienteLista[] } | ClienteLista[]>('/api/clientes').then(r => {
-      if (!r.ok) return
-      const lista = Array.isArray(r.data) ? r.data : r.data.clientes ?? []
-      setClientes(lista)
-      setClienteId(prev => prev || (lista.find(c => /casanova/i.test(c.nombre)) ?? lista[0])?.id || '')
-    })
-  }, [])
+    const guardado = fechaInicial ? null : diaGuardado()
+    if (guardado) setFechaEstado(guardado)
+  }, [fechaInicial])
+
+  function setFecha(f: string) {
+    setFechaEstado(f)
+    setResultado(null)
+    try { sessionStorage.setItem(CLAVE_DIA, f) } catch { /* sin almacenamiento */ }
+  }
 
   useEffect(() => {
     try { setTengo(JSON.parse(localStorage.getItem(clave(fecha)) ?? '[]')) } catch { setTengo([]) }
@@ -84,11 +88,7 @@ export default function DiaGrabacion({ fechaInicial }: { fechaInicial?: string }
       method: 'POST', body: JSON.stringify({ fecha, cliente_id: clienteId, pieza_ids: incluidas.map(p => p.id) }),
     })
     if (!r.ok) { addToast({ type: 'error', title: 'No se pudo colocar en la dieta', message: r.error }); return }
-    addToast({
-      type: r.data.omitidas.length ? 'error' : 'success',
-      title: `${r.data.colocadas} recetas colocadas en la dieta`,
-      message: r.data.omitidas.map(o => `${o.titulo}: ${o.motivo}`).join(' · ') || undefined,
-    })
+    setResultado(r.data)
     cargar()
   }
 
@@ -105,7 +105,7 @@ export default function DiaGrabacion({ fechaInicial }: { fechaInicial?: string }
         <label>Dieta de{' '}
           <select className="input" value={clienteId} onChange={e => setClienteId(e.target.value)}>
             <option value="">(sin dieta)</option>
-            {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+            {clientes.map(c => <option key={c.id} value={c.id}>{c.etiqueta}</option>)}
           </select>
         </label>
         <span style={{ color: 'var(--text-muted)' }}>{formatoFecha(fecha)}</span>
@@ -129,6 +129,13 @@ export default function DiaGrabacion({ fechaInicial }: { fechaInicial?: string }
           Colocar en mi dieta
         </button>
       </div>
+
+      {resultado && (
+        <div className="card" role="status" style={{ padding: 12, borderColor: resultado.omitidas.length ? 'var(--warning, #d97706)' : 'var(--success, #16a34a)' }}>
+          <strong>{resultado.colocadas} {resultado.colocadas === 1 ? 'receta colocada' : 'recetas colocadas'} en la dieta</strong>
+          {resultado.omitidas.map(o => <p key={o.titulo} style={{ margin: '4px 0 0', fontSize: 13 }}>{o.titulo}: {o.motivo}</p>)}
+        </div>
+      )}
 
       {dieta && (
         <div className="card" style={{ padding: 8, maxHeight: 260, overflowY: 'auto' }}>

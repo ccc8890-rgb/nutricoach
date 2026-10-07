@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         .order('created_at', { ascending: false })
         .limit(500)
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'No se pudieron cargar los clientes' }, { status: 500 })
 
     const clientes = (clientesRaw ?? []) as ClienteRow[]
     const clienteIds = clientes.map(cliente => cliente.id)

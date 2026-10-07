@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { formatoFecha, hoyMadrid, lunesDe, sumarDias } from '@/lib/contenido/fechas'
 import { api } from './api'
+import { useClientes } from './useClientes'
 import type { Pieza } from './tipos'
 
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -13,7 +14,6 @@ const MAX_SEMANAS = 8
 
 type ComidaDia = { id: string; nombre: string; receta: { id: string; nombre: string } | null }
 type DiaDieta = { dia: string; comidas: ComidaDia[] }
-type ClienteLista = { id: string; nombre: string }
 
 const SEMANA_MS = 7 * 86_400_000
 
@@ -22,8 +22,7 @@ export default function CalendarioContenido({ onAbrirDia }: { onAbrirDia: (fecha
   const hoy = hoyMadrid()
   const [lunes, setLunes] = useState(lunesDe(hoy))
   const [piezas, setPiezas] = useState<Pieza[]>([])
-  const [clientes, setClientes] = useState<ClienteLista[]>([])
-  const [clienteId, setClienteId] = useState('')
+  const { clientes, clienteId, setClienteId } = useClientes()
   const [dieta, setDieta] = useState<DiaDieta[] | null>(null)
 
   // 0 = semana en curso, 1 = la próxima…, negativo = pasada
@@ -35,15 +34,6 @@ export default function CalendarioContenido({ onAbrirDia }: { onAbrirDia: (fecha
     else addToast({ type: 'error', title: 'No se pudo cargar el calendario', message: r.error })
   }, [addToast])
   useEffect(() => { cargar() }, [cargar])
-
-  useEffect(() => {
-    api<{ clientes?: ClienteLista[] } | ClienteLista[]>('/api/clientes').then(r => {
-      if (!r.ok) return
-      const lista = Array.isArray(r.data) ? r.data : r.data.clientes ?? []
-      setClientes(lista)
-      setClienteId(prev => prev || (lista.find(c => /casanova/i.test(c.nombre)) ?? lista[0])?.id || '')
-    })
-  }, [])
 
   useEffect(() => {
     let activo = true
@@ -76,7 +66,7 @@ export default function CalendarioContenido({ onAbrirDia }: { onAbrirDia: (fecha
         <label style={{ marginLeft: 'auto' }}>Dieta de{' '}
           <select className="input" value={clienteId} onChange={e => setClienteId(e.target.value)}>
             <option value="">(sin dieta)</option>
-            {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+            {clientes.map(c => <option key={c.id} value={c.id}>{c.etiqueta}</option>)}
           </select>
         </label>
       </div>
