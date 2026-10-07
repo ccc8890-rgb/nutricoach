@@ -52,7 +52,11 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
             <button className="block w-full mb-2 text-left rounded-md" title={objetivos[d.dia]?.consejo ?? 'Ver el detalle del día'} aria-pressed={sel} onClick={() => onDia(d.dia, semana)}>
               <span className="flex w-full items-baseline justify-between">
                 <span className={`${T.dia} font-semibold`} style={{ color: 'var(--text)' }}>{d.dia}</span>
-                <span className={`${T.diaKcal} font-data font-bold`} style={{ color: colorDesvio(d.total.kcal, objetivos[d.dia]?.kcal || kcalObjetivo) }}>{d.total.kcal} kcal</span>
+                {/* En las semanas planificadas la vista previa no lleva guarniciones ni complementos (se añaden al activar la semana):
+                    por debajo del objetivo no es un fallo, solo se marca en rojo si ya se pasa */}
+                <span className={`${T.diaKcal} font-data font-bold`}
+                  title={semana != null ? 'Vista previa sin guarniciones ni complementos: se añaden al activar la semana' : undefined}
+                  style={{ color: semana != null ? ((objetivos[d.dia]?.kcal || kcalObjetivo) && d.total.kcal > (objetivos[d.dia]?.kcal || kcalObjetivo || 0) * 1.1 ? 'var(--error)' : 'var(--text-muted)') : colorDesvio(d.total.kcal, objetivos[d.dia]?.kcal || kcalObjetivo) }}>{semana != null && d.total.kcal > 0 ? '≈ ' : ''}{d.total.kcal} kcal</span>
               </span>
               {objetivos[d.dia]?.label && (
                 <span className="block text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -406,7 +410,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           <div key={s.semana} className="mt-5">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
               <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                Semana +{s.semana} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· planificada, el cliente no la ve{m ? ` · media estimada ${m.kcal} kcal · P${m.p} C${m.c} G${m.g}` : ' · vacía'}</span>
+                Semana +{s.semana} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· planificada, el cliente no la ve{m ? ` · media estimada sin complementos ${m.kcal} kcal · P${m.p} C${m.c} G${m.g}` : ' · vacía'}</span>
               </p>
               <div className="flex flex-wrap items-center gap-1.5">
                 <button className={btnSec} style={{ border: '1px solid var(--border)', color: 'var(--text)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'generar')}>
