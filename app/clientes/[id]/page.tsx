@@ -948,66 +948,27 @@ export default function ClienteDetallePage() {
 
             {subTabEntreno === 'plan' ? (
               <div className="space-y-4">
-                <section className="rounded-2xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                  <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
-                    <div className="p-4 sm:p-5 xl:p-6" style={{ borderRight: '1px solid var(--border)' }}>
-                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: 'var(--text-muted)' }}>Training desk</p>
-                          <h2 className="text-xl sm:text-2xl font-semibold leading-tight" style={{ color: 'var(--text)' }}>Plan activo</h2>
-                          <p className="text-sm mt-2 max-w-2xl" style={{ color: 'var(--text-muted)' }}>
-                            Estado del bloque actual, carga externa y siguiente decisión: progresar, descargar o cambiar estímulo.
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
-                          <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
-                        <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Plan activo</p>
-                          <p className="text-sm font-semibold mt-2 line-clamp-2" style={{ color: 'var(--text)' }}>{entrenoActivo?.nombre ?? 'Sin plan asignado'}</p>
-                          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{entrenoActivo?.duracion_semanas ? `${entrenoActivo.duracion_semanas} semanas programadas` : 'Pendiente de programación'}</p>
-                        </div>
-                        <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Historial</p>
-                          <p className="text-2xl font-semibold mt-2 tabular-nums" style={{ color: 'var(--text)' }}>{entrenos.length}</p>
-                          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>versiones guardadas</p>
-                        </div>
-                        <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Siguiente acción</p>
-                          <p className="text-sm font-semibold mt-2" style={{ color: 'var(--text)' }}>{entrenoActivo ? 'Revisar ejecución' : 'Asignar plantilla'}</p>
-                          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{entrenoActivo ? 'Cruzar sesiones internas, Strava y Garmin' : 'El motor usará el perfil atleta'}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <aside className="p-4 sm:p-5 xl:p-6 flex flex-col justify-between gap-4" style={{ background: 'var(--bg)' }}>
-                      {entrenoActivo ? (
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] mb-2" style={{ color: 'var(--text-muted)' }}>Acceso rápido</p>
-                          <p className="text-sm font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{entrenoActivo.nombre}</p>
-                          <div className="flex flex-wrap gap-2 mt-4">
-                            <Link href={`/entrenos/${entrenoActivo.id}?returnTo=/clientes/${id}`} className="btn-primary btn-sm">Abrir plan <ExternalLink size={12} /></Link>
-                            <Link href={`/clientes/${id}/revisar-plan`} className="btn-secondary btn-sm"><RefreshCw size={12} /> Regenerar</Link>
-                          </div>
-                        </div>
-                      ) : (
-                        <EmptyModule
-                          icon={Dumbbell}
-                          title="Sin entrenamiento activo"
-                          text="Asigna una plantilla o crea una programación específica para activar el seguimiento."
-                          action={<button className="btn-primary btn-sm" onClick={() => setShowSelectorPlantilla(true)}>Asignar plantilla</button>}
-                        />
-                      )}
-                    </aside>
+                <section className="rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-semibold leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{entrenoActivo?.nombre ?? 'Sin plan asignado'}</h2>
+                    {entrenoActivo?.duracion_semanas ? (
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{entrenoActivo.duracion_semanas} semanas</p>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {entrenoActivo && (
+                      <>
+                        <Link href={`/entrenos/${entrenoActivo.id}?returnTo=/clientes/${id}`} className="btn-primary btn-sm">Abrir plan <ExternalLink size={12} /></Link>
+                        <Link href={`/clientes/${id}/revisar-plan`} className="btn-secondary btn-sm"><RefreshCw size={12} /> Regenerar</Link>
+                      </>
+                    )}
+                    <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
+                    <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-secondary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link>
                   </div>
                 </section>
 
                 {entrenoActivo && (
-                  <WorkCard title="Rutina de la semana" kicker="De un vistazo, sin salir de aquí" icon={Dumbbell}>
+                  <WorkCard title="Rutina de la semana" icon={Dumbbell}>
                     <ErrorBoundary><RutinaSemanaAccordion planId={entrenoActivo.id} /></ErrorBoundary>
                   </WorkCard>
                 )}
