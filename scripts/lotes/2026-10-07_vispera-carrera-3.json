@@ -1,0 +1,570 @@
+{
+ "lote": "vispera-carrera-3-2026-10-07",
+ "tipo_plato": "Comida",
+ "fuente": "lote_verificado",
+ "apto_rendimiento": true,
+ "criterios": {
+  "kcal_min": 380,
+  "kcal_max": 800,
+  "hc_pct_min": 0.55,
+  "grasa_pct_max": 0.2
+ },
+ "criterios_por_perfil": {
+  "pre": {
+   "kcal_min": 300,
+   "kcal_max": 700,
+   "hc_pct_min": 0.6,
+   "grasa_pct_max": 0.15
+  },
+  "post": {
+   "kcal_min": 350,
+   "kcal_max": 800,
+   "proteina_pct_min": 0.2,
+   "hc_pct_min": 0.45
+  }
+ },
+ "alimentos": {
+  "macarrones": {
+   "nombre": "Macarrones",
+   "prefijo": "f3068317",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "arroz": {
+   "nombre": "Arroz blanco",
+   "prefijo": "d262ebde",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "patata": {
+   "nombre": "Patata",
+   "prefijo": "0b223775",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "fideos": {
+   "nombre": "Fideos",
+   "prefijo": "794bf491",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "pan": {
+   "nombre": "Pan blanco",
+   "prefijo": "cfd2a454",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "copos_maiz": {
+   "nombre": "copos de maíz",
+   "prefijo": "7e0288f3",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "tortitas_arroz": {
+   "nombre": "Tortitas de Arroz Integral Paquete",
+   "prefijo": "072975ac",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "pollo": {
+   "nombre": "Pechuga de pollo",
+   "prefijo": "4ad8714c",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "pavo": {
+   "nombre": "Pechuga de pavo",
+   "prefijo": "7312fdee",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "fiambre_pavo": {
+   "nombre": "Fiambre de Pechuga de Pavo",
+   "prefijo": "a279ae71",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "merluza": {
+   "nombre": "Merluza",
+   "prefijo": "974247da",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "bacalao": {
+   "nombre": "Bacalao (fresco)",
+   "prefijo": "15c94b4b",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "requeson": {
+   "nombre": "Requesón",
+   "prefijo": "b2c88c97",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "tomate_triturado": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "tomate": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "zanahoria": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "aceite": {
+   "nombre": "Aceite de oliva",
+   "prefijo": "bf392211",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "ajo": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "perejil": {
+   "nombre": "Perejil",
+   "prefijo": "fea7cbe9",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "limon": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "canela": {
+   "nombre": "Canela molida",
+   "prefijo": "57a8bd13",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "platano": {
+   "nombre": "Plátano",
+   "prefijo": "1131a576",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "mermelada": {
+   "nombre": "Mermelada Albaricoque Frasco",
+   "prefijo": "85270c68",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "miel": {
+   "nombre": "Miel",
+   "prefijo": "8619b09f",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "miel"
+  },
+  "leche_desnatada": {
+   "nombre": "Leche desnatada",
+   "prefijo": "88f3975a",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "atun": {
+   "nombre": "Atún en lata al natural",
+   "prefijo": "83505726",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "noquis": {
+   "nombre": "Ñoquis frescos",
+   "prefijo": "079aa047",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "pescadilla": {
+   "nombre": "Pescadilla",
+   "prefijo": "65313d07",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "dorada": {
+   "nombre": "Dorada",
+   "prefijo": "7320ea42",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "pan_pita": {
+   "nombre": "Pan de pita",
+   "prefijo": "d21b8e95",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "jamon_cocido": {
+   "nombre": "Jamón Cocido Bonnatur 96 % Carne",
+   "prefijo": "1b2141ba",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "cerdo"
+  },
+  "qfb": {
+   "nombre": "Queso fresco batido desnatado 0% MG",
+   "prefijo": "1380d26a",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "bagel": {
+   "nombre": "Bagels Clásico",
+   "prefijo": "3da49223",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "queso_crema": {
+   "nombre": "Queso crema light",
+   "prefijo": "6f64e109",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "yogur_desnatado": {
+   "nombre": "Yogur natural desnatado",
+   "prefijo": "b0646b89",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "cuscus": {
+   "nombre": "Cuscús",
+   "prefijo": "11d56939",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "gambas": {
+   "nombre": "Gambas Peladas Mediana",
+   "prefijo": "07d6dcc1",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Crustáceos"
+   ],
+   "origen": "marisco"
+  },
+  "whey": {
+   "nombre": "Proteína en polvo sabor vainilla",
+   "prefijo": "9076c191",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "huevo": {
+   "nombre": "Huevo entero, crudo",
+   "prefijo": "6cd81fed",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Fideos con gambas y ajo",
+   "descripcion": "Fideos finos con gambas, ajo y limón: pescado ligero y casi sin fibra para la víspera.",
+   "tiempo_prep_min": 18,
+   "porciones": 1,
+   "tipo_plato": "Cena",
+   "ingredientes": [
+    [
+     "fideos",
+     110
+    ],
+    [
+     "gambas",
+     120
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "limon",
+     20
+    ],
+    [
+     "perejil",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece los fideos en agua con sal y escúrrelos.\n2. Dora el ajo laminado en el aceite y añade las gambas 2 minutos.\n3. Mezcla con los fideos, el limón y el perejil.\n4. Sirve enseguida.",
+   "consejos": "Quita bien el exceso de aceite: menos grasa antes de la prueba."
+  },
+  {
+   "nombre": "Macarrones con merluza y tomate",
+   "descripcion": "Macarrones con merluza en trozos y tomate triturado: pasta con pescado blanco, baja en grasa.",
+   "tiempo_prep_min": 22,
+   "porciones": 1,
+   "tipo_plato": "Comida",
+   "ingredientes": [
+    [
+     "macarrones",
+     115
+    ],
+    [
+     "merluza",
+     150
+    ],
+    [
+     "tomate_triturado",
+     110
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "perejil",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece los macarrones en agua con sal.\n2. Sofríe el ajo, añade el tomate y cocina 6 minutos.\n3. Incorpora la merluza en trozos 4 minutos más.\n4. Mezcla con la pasta y termina con perejil.",
+   "consejos": "Pide la merluza sin espinas."
+  },
+  {
+   "nombre": "Tortitas de arroz con atún y tomate",
+   "descripcion": "Tortitas de arroz con atún al natural y tomate: cena muy ligera y alta en hidratos.",
+   "tiempo_prep_min": 6,
+   "porciones": 1,
+   "tipo_plato": "Cena",
+   "ingredientes": [
+    [
+     "tortitas_arroz",
+     70
+    ],
+    [
+     "atun",
+     80
+    ],
+    [
+     "tomate",
+     80
+    ],
+    [
+     "aceite",
+     4
+    ]
+   ],
+   "instrucciones": "1. Escurre bien el atún.\n2. Corta el tomate en rodajas finas.\n3. Reparte el atún y el tomate sobre las tortitas.\n4. Termina con un hilo de aceite.",
+   "consejos": "Si te quedas corto de hidratos, añade una pieza de fruta madura."
+  },
+  {
+   "nombre": "Arroz blanco con pollo y huevo",
+   "descripcion": "Plato de recuperación: arroz blanco con pollo y huevo, hidratos y proteína tras el esfuerzo.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "tipo_plato": "Comida",
+   "perfil": "post",
+   "ingredientes": [
+    [
+     "arroz",
+     110
+    ],
+    [
+     "pollo",
+     130
+    ],
+    [
+     "huevo",
+     60
+    ],
+    [
+     "tomate_triturado",
+     80
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "ajo",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece el arroz en el doble de agua con sal.\n2. Marca el pollo en tiras a la plancha con el ajo.\n3. Cuece el huevo 8 minutos y pícalo.\n4. Sirve el arroz con el pollo, el huevo y el tomate caliente.",
+   "consejos": "Tómalo en las 2 horas siguientes a terminar la prueba."
+  },
+  {
+   "nombre": "Batido de recuperación de plátano y leche",
+   "descripcion": "Batido de recuperación con leche desnatada, plátano, proteína en polvo y miel: hidratos y proteína líquidos tras la prueba.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "tipo_plato": "Merienda",
+   "perfil": "post",
+   "ingredientes": [
+    [
+     "leche_desnatada",
+     350
+    ],
+    [
+     "platano",
+     150
+    ],
+    [
+     "whey",
+     30
+    ],
+    [
+     "miel",
+     15
+    ]
+   ],
+   "instrucciones": "1. Pon la leche, el plátano troceado y la proteína en la batidora.\n2. Añade la miel y tritura 30 segundos.\n3. Tómalo en la primera hora tras terminar.",
+   "consejos": "Si no toleras la lactosa, usa bebida de soja sin azúcar."
+  },
+  {
+   "nombre": "Bocadillo de pavo y queso fresco de recuperación",
+   "descripcion": "Bocadillo de pan blanco con pavo, queso fresco batido y tomate: hidratos y proteína sencillos para recuperar.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "tipo_plato": "Cena",
+   "perfil": "post",
+   "ingredientes": [
+    [
+     "pan",
+     140
+    ],
+    [
+     "fiambre_pavo",
+     80
+    ],
+    [
+     "qfb",
+     70
+    ],
+    [
+     "tomate",
+     60
+    ]
+   ],
+   "instrucciones": "1. Abre el pan y unta el queso fresco batido.\n2. Añade el pavo y el tomate en rodajas.\n3. Cierra, corta por la mitad y tómalo tras la prueba.",
+   "consejos": "Acompáñalo de fruta y una bebida con electrolitos."
+  },
+  {
+   "nombre": "Pasta con pollo y tomate de recuperación",
+   "descripcion": "Macarrones con pollo y tomate para los 2 días posteriores a la prueba: hidratos para reponer glucógeno y proteína para reparar.",
+   "tiempo_prep_min": 22,
+   "porciones": 1,
+   "tipo_plato": "Cena",
+   "perfil": "post",
+   "ingredientes": [
+    [
+     "macarrones",
+     120
+    ],
+    [
+     "pollo",
+     130
+    ],
+    [
+     "tomate_triturado",
+     110
+    ],
+    [
+     "aceite",
+     6
+    ],
+    [
+     "ajo",
+     5
+    ],
+    [
+     "perejil",
+     5
+    ]
+   ],
+   "instrucciones": "1. Cuece los macarrones en agua con sal.\n2. Marca el pollo en dados con el ajo picado.\n3. Calienta el tomate triturado con el aceite 8 minutos.\n4. Mezcla todo y termina con perejil.",
+   "consejos": "Los 2 días posteriores a la prueba prioriza hidratos y proteína de calidad."
+  }
+ ]
+}
