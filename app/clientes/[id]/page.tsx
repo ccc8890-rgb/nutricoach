@@ -295,11 +295,12 @@ function InformeClinicoPanel({ informe, cargando, regenerando, onRegenerar }: {
   )
 
   if (!informe) return (
-    <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-      <HeartPulse size={40} className="mx-auto mb-3 opacity-30" style={{ color: 'var(--text-muted)' }} />
-      <p className="font-semibold mb-1" style={{ color: 'var(--text)' }}>Sin informe clínico</p>
-      <p className="text-sm mb-5" style={{ color: 'var(--text-muted)' }}>El cliente necesita al menos 1 check-in para generar el análisis clínico.</p>
-      <button className="btn-primary btn-sm" onClick={onRegenerar} disabled={regenerando}>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sin informe clínico</p>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Necesita al menos 1 check-in.</p>
+      </div>
+      <button className="btn-secondary btn-sm" onClick={onRegenerar} disabled={regenerando}>
         {regenerando ? <><Loader2 size={13} className="animate-spin" /> Generando…</> : <><RotateCcw size={13} /> Generar ahora</>}
       </button>
     </div>
@@ -1213,14 +1214,14 @@ export default function ClienteDetallePage() {
           </div>
 
         ) : tabActiva === 'perfil' ? (
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-4">
-            <WorkCard title="Perfil y planificación" kicker="Datos base" icon={PersonStanding}>
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)] gap-4 items-start">
+            <WorkCard title="Perfil y planificación" icon={PersonStanding}>
               <div className="space-y-4">
                 <label className="flex items-start gap-3 rounded-2xl p-4 cursor-pointer" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                   <input type="checkbox" className="mt-0.5" checked={verVideoRecetas} onChange={e => alternarVerVideo(e.target.checked)} />
                   <span>
                     <span className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Mostrar el vídeo original de las recetas</span>
-                    <span className="block text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>En el portal del cliente, las recetas con enlace de Instagram, TikTok o YouTube enseñan un botón «Ver vídeo original».</span>
+                    <span className="block text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Botón «Ver vídeo original» en el portal del cliente.</span>
                   </span>
                 </label>
                 {(cliente.notas || cliente.restricciones_alimentarias) && (
@@ -1239,19 +1240,24 @@ export default function ClienteDetallePage() {
                     )}
                   </div>
                 )}
-                <ErrorBoundary>
-                  <PlanificacionCalendario
-                    clienteId={id as string}
-                    fechaRevision={cliente.fecha_proxima_revision ?? null}
-                    dietas={dietas.map(d => ({ id: d.id, nombre: d.nombre, activo: d.activo, created_at: d.created_at }))}
-                    entrenos={entrenos.map(e => ({ id: e.id, nombre: e.nombre, activo: e.activo, duracion_semanas: e.duracion_semanas ?? 0, created_at: e.created_at }))}
-                    onUpdateRevision={recargarCliente}
-                  />
-                </ErrorBoundary>
+                <details className="rounded-2xl" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                  <summary className="cursor-pointer px-4 py-3 text-sm font-semibold" style={{ color: 'var(--text)' }}>Calendario y revisión</summary>
+                  <div className="p-3">
+                    <ErrorBoundary>
+                      <PlanificacionCalendario
+                        clienteId={id as string}
+                        fechaRevision={cliente.fecha_proxima_revision ?? null}
+                        dietas={dietas.map(d => ({ id: d.id, nombre: d.nombre, activo: d.activo, created_at: d.created_at }))}
+                        entrenos={entrenos.map(e => ({ id: e.id, nombre: e.nombre, activo: e.activo, duracion_semanas: e.duracion_semanas ?? 0, created_at: e.created_at }))}
+                        onUpdateRevision={recargarCliente}
+                      />
+                    </ErrorBoundary>
+                  </div>
+                </details>
               </div>
             </WorkCard>
 
-            <WorkCard title="Inteligencia clínica" kicker="Flags y criterios" icon={HeartPulse}>
+            <WorkCard title="Inteligencia clínica" icon={HeartPulse}>
               <InformeClinicoPanel
                 informe={informe}
                 cargando={cargandoInforme}
