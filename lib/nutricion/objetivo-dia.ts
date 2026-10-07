@@ -47,7 +47,7 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
     fecha.setUTCDate(fecha.getUTCDate() + i)
     return fecha.toISOString().slice(0, 10)
   })
-  const { data: competiciones } = await db.from('competiciones').select('nombre, disciplina, fecha_competicion').eq('cliente_id', clienteId).eq('activo', true)
+  const { data: competiciones } = await db.from('competiciones').select('nombre, disciplina, fecha_competicion, tiempo_objetivo_min').eq('cliente_id', clienteId).eq('activo', true)
   const ajustesCompeticion = DIAS_SEMANA.map((_, i) => {
     const fecha = fechas[i]
     const aplicables = (competiciones ?? []).map(c => ({ ...c, dias: Math.round((Date.parse(`${c.fecha_competicion}T00:00:00Z`) - Date.parse(`${fecha}T00:00:00Z`)) / 86_400_000) }))
@@ -56,7 +56,7 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
     const c = aplicables[0]
     if (!c) return null
     const fase = faseEnFecha(c.fecha_competicion, fecha, c.disciplina)
-    const ajuste = ajusteCompeticion(fase, c.dias, c.disciplina)
+    const ajuste = ajusteCompeticion(fase, c.dias, c.disciplina, c.tiempo_objetivo_min)
     return ajuste ? { ajuste, competicion: { fase, nombre: c.nombre, dias_restantes: c.dias } } : null
   })
   // Peso para la carga de hidratos en g/kg: último check-in, o el peso inicial del cliente

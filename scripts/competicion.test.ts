@@ -21,8 +21,13 @@ const inminenteLarga = ajusteCompeticion('carrera_inminente', 2, 'ultra')!
 const inminenteCorta = ajusteCompeticion('carrera_inminente', 2, 'hyrox')!
 assert.deepEqual([inminenteLarga.ajuste_kcal_pct, inminenteLarga.ajuste_cho_pct], [10, 30])
 assert.deepEqual([inminenteCorta.ajuste_kcal_pct, inminenteCorta.ajuste_cho_pct], [5, 15])
-assert.equal(inminenteLarga.cho_g_kg, 12) // ultra: 10-12 g/kg, tope
+assert.equal(inminenteLarga.cho_g_kg, 10) // ultra (>150 min): 10 g/kg
 assert.equal(ajusteCompeticion('carrera_inminente', 2, 'running_maraton')!.cho_g_kg, 10)
+assert.equal(ajusteCompeticion('carrera_inminente', 2, 'running_hm')!.cho_g_kg, 8) // media maratón (90-150 min): 8 g/kg
+assert.equal(ajusteCompeticion('carrera_inminente', 2, 'running_hm', 80)!.cho_g_kg, undefined) // sub-1:30: es de 60-90 min, solo el día previo
+assert.equal(ajusteCompeticion('carrera_inminente', 1, 'running_hm', 80)!.cho_g_kg, 8)
+assert.equal(ajusteCompeticion('carrera_inminente', 2, 'running_hm', 200)!.cho_g_kg, 10) // tiempo objetivo largo
+assert.match(ajusteCompeticion('carrera_inminente', 2, 'running_hm')!.consejo, /5-6 tomas/)
 assert.equal(ajusteCompeticion('carrera_inminente', 1, 'hyrox')!.cho_g_kg, 8)
 assert.equal(ajusteCompeticion('carrera_inminente', 1, 'running_5k')!.cho_g_kg, undefined)
 assert.equal(ajusteCompeticion('carrera_inminente', 3, 'ultra')!.cho_g_kg, undefined)
@@ -46,6 +51,10 @@ assert.equal(faseEnFecha('2026-10-05', '2026-09-25', 'running_5k'), 'pico_maximo
 assert.equal(faseEnFecha('2026-10-05', '2026-09-27', 'running_hm'), 'tapering')
 assert.equal(perfilPrueba('ironman'), 'muy_larga')
 assert.equal(perfilPrueba('hyrox'), 'media')
+assert.equal(perfilPrueba('running_hm'), 'larga')
+assert.equal(perfilPrueba('running_maraton'), 'muy_larga')
+assert.equal(perfilPrueba('running_hm', 80), 'media')
+assert.equal(perfilPrueba('running_5k', 200), 'muy_larga')
 const taperTemprano = ajusteCompeticion('tapering', 12, 'running_maraton')!
 assert.deepEqual([taperTemprano.ajuste_kcal_pct, taperTemprano.ajuste_cho_pct], [-5, 0])
 console.log('competicion: OK')

@@ -4,22 +4,28 @@ export type AjusteCompeticion = {
   ajuste_kcal_pct: number
   ajuste_cho_pct: number
   ajuste_proteinas_pct: number
-  /** Carga de hidratos en g/kg para las últimas 36-48 h de pruebas largas (Burke 2011: 10-12 g/kg); si hay peso sustituye al porcentaje */
+  /** Carga de hidratos en g/kg para las últimas 36-48 h; si hay peso sustituye al porcentaje.
+   *  Metaanálisis 2026 (Sports Med / Scand J Med Sci Sports, doi 10.1111/sms.70379): >8 g/kg/día durante 36-48 h; guía clásica (Burke 2011): 10-12 g/kg en pruebas >90 min.
+   *  Se usa 8 g/kg a partir de 90 min y 10 g/kg (extremo bajo de la guía) a partir de 150 min, por practicidad. */
   cho_g_kg?: number
   label: string
   consejo: string
 }
 
-// Perfil de esfuerzo de cada prueba (aficionado): decide carga de hidratos y duración del tapering.
-//  corta <60 min · media 60-90 min · larga >90 min · muy_larga >4 h (Burke 2011; Thomas 2016)
+// Perfil de esfuerzo de cada prueba: decide la carga de hidratos y la duración del tapering. Se clasifica por la duración
+// (umbral de 90 min de Burke 2011 / Thomas 2016): corta ≤60 min · media 60-90 · larga 90-150 · muy_larga >150.
+// Si la competición tiene tiempo objetivo se usa ese tiempo; si no, la duración típica de la disciplina (aficionado).
 export type PerfilPrueba = 'corta' | 'media' | 'larga' | 'muy_larga'
 const PERFIL_PRUEBA: Record<string, PerfilPrueba> = {
   running_5k: 'corta', running_10k: 'corta', crossfit: 'corta', triatlon_sprint: 'media', hyrox: 'media',
-  running_hm: 'larga', trail_corto: 'larga', triatlon_olimpico: 'larga', ciclismo_fondo: 'larga', running_maraton: 'larga', trail_largo: 'larga', triatlon_70_3: 'larga',
-  ironman: 'muy_larga', ultra: 'muy_larga',
+  running_hm: 'larga', trail_corto: 'larga', triatlon_olimpico: 'larga',
+  running_maraton: 'muy_larga', trail_largo: 'muy_larga', triatlon_70_3: 'muy_larga', ciclismo_fondo: 'muy_larga', ironman: 'muy_larga', ultra: 'muy_larga',
 }
-export const perfilPrueba = (disciplina?: string): PerfilPrueba => PERFIL_PRUEBA[disciplina ?? ''] ?? 'corta'
-const esLarga = (disciplina?: string) => ['larga', 'muy_larga'].includes(perfilPrueba(disciplina))
+export function perfilPorDuracion(minutos: number): PerfilPrueba {
+  return minutos <= 60 ? 'corta' : minutos <= 90 ? 'media' : minutos <= 150 ? 'larga' : 'muy_larga'
+}
+export const perfilPrueba = (disciplina?: string, tiempoObjetivoMin?: number | null): PerfilPrueba =>
+  tiempoObjetivoMin != null && Number.isFinite(tiempoObjetivoMin) && tiempoObjetivoMin > 0 ? perfilPorDuracion(tiempoObjetivoMin) : (PERFIL_PRUEBA[disciplina ?? ''] ?? 'corta')
 
 // Días de tapering por disciplina. La evidencia sitúa el óptimo en 8-14 días con menos volumen y misma intensidad
 // (Mujika & Padilla 2003, Med Sci Sports Exerc 35:1182; Bosquet et al. 2007, Med Sci Sports Exerc 39:1358).
@@ -53,10 +59,10 @@ function fechaPartes(fecha: string | Date): [number, number, number] {
 }
 
 /** Ajustes deportivos basados en Burke et al. 2011, J Sports Sci 29(S1), y Thomas/Erdman/Burke 2016 (ACSM/AND/DC). */
-export function ajusteCompeticion(fase: FaseCompeticion, diasRestantes: number, disciplina: string): AjusteCompeticion | null {
+export function ajusteCompeticion(fase: FaseCompeticion, diasRestantes: number, disciplina: string, tiempoObjetivoMin?: number | null): AjusteCompeticion | null {
   if (['base', 'construccion', 'pico', 'pico_maximo', 'finalizada'].includes(fase)) return null
-  const larga = esLarga(disciplina)
-  const perfil = perfilPrueba(disciplina)
+  const perfil = perfilPrueba(disciplina, tiempoObjetivoMin)
+  const larga = perfil === 'larga' || perfil === 'muy_larga'
   // Más de una semana antes: menos volumen, así que baja algo la energía y se mantienen los hidratos en g/kg
   if (fase === 'tapering' && diasRestantes > 7) return {
     ajuste_kcal_pct: -5, ajuste_cho_pct: 0, ajuste_proteinas_pct: 0,
@@ -68,12 +74,13 @@ export function ajusteCompeticion(fase: FaseCompeticion, diasRestantes: number, 
   }
   if (fase === 'carrera_inminente') return {
     ajuste_kcal_pct: larga ? 10 : 5, ajuste_cho_pct: larga ? 30 : 15, ajuste_proteinas_pct: 0,
-    // Carga de hidratos (Burke 2011): 10-12 g/kg en las últimas 36-48 h si pasa de 90 min; 8 g/kg el día previo en pruebas de ~60-90 min
-    ...(perfil === 'muy_larga' && diasRestantes <= 2 ? { cho_g_kg: 12 } : perfil === 'larga' && diasRestantes <= 2 ? { cho_g_kg: 10 } : perfil === 'media' && diasRestantes === 1 ? { cho_g_kg: 8 } : {}),
+    // Carga de hidratos: 10 g/kg en las últimas 36-48 h si pasa de 150 min; 8 g/kg si dura 90-150 min; 8 g/kg solo el día previo en pruebas de 60-90 min
+    ...(perfil === 'muy_larga' && diasRestantes <= 2 ? { cho_g_kg: 10 } : perfil === 'larga' && diasRestantes <= 2 ? { cho_g_kg: 8 } : perfil === 'media' && diasRestantes === 1 ? { cho_g_kg: 8 } : {}),
     label: diasRestantes === 1 ? 'Víspera de competición' : 'Precompetición',
-    consejo: diasRestantes === 1
+    consejo: (diasRestantes === 1
       ? 'Prioriza alimentos ricos en hidratos y bajos en fibra y grasa; evita probar alimentos nuevos.'
-      : 'Prioriza hidratos de carbono conocidos y fáciles de digerir para completar las reservas.',
+      : 'Prioriza hidratos de carbono conocidos y fáciles de digerir para completar las reservas.')
+      + (larga && diasRestantes <= 2 ? ' Reparte los hidratos en 5-6 tomas, con bebidas y alimentos de poco residuo; si no llegas a la cifra, manda la comodidad digestiva.' : ''),
   }
   if (fase === 'race_day') return {
     ajuste_kcal_pct: larga ? 10 : 5, ajuste_cho_pct: larga ? 20 : 10, ajuste_proteinas_pct: 0,

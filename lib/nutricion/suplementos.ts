@@ -1,7 +1,7 @@
 export type GrupoSuplemento = 'rendimiento' | 'nutricion_deportiva' | 'salud'
 export type Evidencia = 'A' | 'B' | 'C'
 export type Recomendacion = { id: string; nombre: string; grupo: GrupoSuplemento; dosis: string; timing: string; evidencia: Evidencia; fuentes: string[]; precauciones: string[]; estado: 'propuesta' }
-export type ContextoSuplementos = { peso_kg: number; sexo?: 'hombre' | 'mujer' | 'otro'; edad?: number; objetivo?: string; disciplina?: string; duracion_min?: number; intensidad?: 'baja' | 'media' | 'alta'; tipo_sesion?: 'fuerza' | 'cardio' | 'hibrido'; fase_competicion?: string; cafeina_habitual_mg?: number; analitica?: { vitamina_d_ngml?: number; ferritina_ngml?: number }; condiciones?: string[]; hora_inicio?: string }
+export type ContextoSuplementos = { peso_kg: number; sexo?: 'hombre' | 'mujer' | 'otro'; edad?: number; objetivo?: string; disciplina?: string; duracion_min?: number; duracion_prueba_min?: number; intensidad?: 'baja' | 'media' | 'alta'; tipo_sesion?: 'fuerza' | 'cardio' | 'hibrido'; fase_competicion?: string; cafeina_habitual_mg?: number; analitica?: { vitamina_d_ngml?: number; ferritina_ngml?: number }; condiciones?: string[]; hora_inicio?: string }
 export type ResultadoSuplementos = { sesion: Recomendacion[]; diaria: Recomendacion[]; carrera: Recomendacion[]; avisos: string[] }
 export const NOTA_ANTIDOPAJE = 'Elige productos con certificacion antidopaje (Informed Sport / NSF Certified for Sport): hay riesgo de contaminacion.'
 const IOC = 'IOC 2018 (Maughan et al., Br J Sports Med 52:439-455)'
@@ -62,7 +62,7 @@ export function recomendarSuplementos(ctx: ContextoSuplementos): ResultadoSuplem
   const competicion = ctx.fase_competicion === 'race_day' || ctx.fase_competicion === 'carrera_inminente'
   const cafeina = () => crear('cafeina', `${fmt(3 * peso)}-${fmt(6 * peso)} mg`, '45-60 min antes')
   // En la prueba manda la duración típica de la disciplina (orientativa, atleta aficionado), no la del entreno de hoy
-  const duracionPrueba = DURACION_PRUEBA_MIN[disciplina] ?? duracion
+  const duracionPrueba = ctx.duracion_prueba_min ?? DURACION_PRUEBA_MIN[disciplina] ?? duracion
   const carbohidratos = (d = duracion) => crear('carbohidratos_intra', d < 45 ? 'Nada o solo enjuague' : d <= 75 ? 'Hasta 30 g/h' : d <= 150 ? '30-60 g/h' : '60-90 g/h con maltodextrina (glucosa):fructosa 2:1', 'Durante el esfuerzo')
   const sodio = () => crear('electrolitos_sodio', '300-600 mg de sodio por hora', 'Durante el esfuerzo')
   const recuperacion = () => crear('recuperacion', `${fmt(peso)}-${fmt(1.2 * peso)} g de carbohidratos + ${fmt(0.3 * peso)} g de proteina`, 'Primera hora tras esfuerzo largo o si hay dos sesiones el mismo dia')

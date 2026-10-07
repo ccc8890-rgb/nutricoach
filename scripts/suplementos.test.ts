@@ -50,4 +50,7 @@ assert.ok(!hyroxCarrera.carrera.some(r => r.id === 'electrolitos_sodio'))
 assert.ok(hyroxCarrera.avisos.some(a => /Hyrox limitada/.test(a)))
 const tri = recomendarSuplementos({ peso_kg: 70, disciplina: 'ironman', fase_competicion: 'race_day' })
 assert.ok(tri.avisos.some(a => /bici/.test(a)) && tri.avisos.some(a => /muy larga/.test(a)))
+// Tiempo objetivo de la prueba manda sobre la duración típica de la disciplina
+const hmRapida = recomendarSuplementos({ peso_kg: 70, disciplina: 'running_hm', duracion_prueba_min: 70, fase_competicion: 'race_day' })
+assert.match(hmRapida.carrera.find(r => r.id === 'carbohidratos_intra')!.dosis, /30 g\/h/)
 console.log('suplementos: OK')

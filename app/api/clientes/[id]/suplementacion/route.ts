@@ -45,7 +45,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const [clienteRes, pesoRes, competicionRes, planRes, onboardingRes] = await Promise.all([
       db.from('clientes').select('objetivo,peso_inicial,edad,sexo').eq('id', id).single(),
       db.from('checkins').select('peso').eq('cliente_id', id).not('peso', 'is', null).order('fecha', { ascending: false }).limit(1).maybeSingle(),
-      db.from('competiciones').select('disciplina,fecha_competicion').eq('cliente_id', id).eq('activo', true).gte('fecha_competicion', limite.toISOString().slice(0, 10)).order('fecha_competicion', { ascending: true }).limit(1).maybeSingle(),
+      db.from('competiciones').select('disciplina,fecha_competicion,tiempo_objetivo_min').eq('cliente_id', id).eq('activo', true).gte('fecha_competicion', limite.toISOString().slice(0, 10)).order('fecha_competicion', { ascending: true }).limit(1).maybeSingle(),
       db.from('planes_entrenamiento').select('id').eq('cliente_id', id).eq('activo', true).limit(1).maybeSingle(),
       db.from('onboarding_perfil_profundo').select('hora_entreno,condiciones_salud,analisis_valores').eq('cliente_id', id).maybeSingle(),
     ])
@@ -72,6 +72,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       edad: clienteRes.data.edad ?? undefined,
       objetivo: clienteRes.data.objetivo ?? undefined,
       disciplina: competicionRes.data?.disciplina ?? undefined,
+      duracion_prueba_min: competicionRes.data?.tiempo_objetivo_min ?? undefined,
       fase_competicion: competicionRes.data ? faseEnFecha(competicionRes.data.fecha_competicion, hoy, competicionRes.data.disciplina) : undefined,
       duracion_min: sesion?.duracion_estimada_min ?? undefined,
       tipo_sesion: tipo === 'entreno_hibrido' ? 'hibrido' : tipo === 'entreno_cardio' ? 'cardio' : tipo === 'entreno_fuerza' ? 'fuerza' : undefined,
