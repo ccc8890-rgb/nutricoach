@@ -18,7 +18,8 @@ export function contextoRecetaCompeticion(objetivo: ObjetivoDia | undefined): Co
   const competicion = objetivo?.competicion
   if (!competicion) return undefined
   if (competicion.fase === 'race_day') return 'carrera'
-  if (competicion.fase === 'carrera_inminente' && competicion.dias_restantes === 1) return 'vispera'
+  // Víspera, o días de carga de hidratos (10-12 g/kg en pruebas largas): mismas preferencias de recetas
+  if (competicion.fase === 'carrera_inminente' && (competicion.dias_restantes === 1 || competicion.carga)) return 'vispera'
   if (competicion.fase === 'recuperacion' && competicion.dias_restantes >= -2) return 'recuperacion'
   return undefined
 }

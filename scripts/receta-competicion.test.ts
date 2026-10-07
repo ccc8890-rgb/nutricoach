@@ -86,4 +86,12 @@ assert.equal(contextoRecetaCompeticion(objetivo('recuperacion', -3)), undefined)
   assert.equal(repartirSemanaSinRepetir({ Comida: base }, [huecos[0]]).asignaciones[0].receta_id, 'base')
 }
 
+// Días de carga de hidratos (marca `carga`) se tratan como víspera; sin carga, a 2 días no hay contexto
+{
+  const base = { kcal: 4000, p: 150, c: 800, g: 50, tipo: null, label: null, consejo: null, ajuste_kcal_pct: 0 } as ObjetivoDia
+  assert.equal(contextoRecetaCompeticion({ ...base, competicion: { fase: 'carrera_inminente', nombre: 'HM', dias_restantes: 2, carga: true } }), 'vispera')
+  assert.equal(contextoRecetaCompeticion({ ...base, competicion: { fase: 'carrera_inminente', nombre: '10K', dias_restantes: 2 } }), undefined)
+  assert.equal(contextoRecetaCompeticion({ ...base, competicion: { fase: 'carrera_inminente', nombre: '10K', dias_restantes: 1 } }), 'vispera')
+}
+
 console.log('receta-competicion: OK')

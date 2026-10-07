@@ -13,7 +13,7 @@ export type ObjetivoDia = {
   kcal: number; p: number; c: number; g: number
   tipo: TipoDiaNutricional | null; label: string | null; consejo: string | null; ajuste_kcal_pct: number
   momento?: MomentoDia | null
-  competicion?: { fase: FaseCompeticion; nombre: string; dias_restantes: number }
+  competicion?: { fase: FaseCompeticion; nombre: string; dias_restantes: number; carga?: boolean }
 }
 
 // Si un día tiene varias sesiones manda la más exigente
@@ -78,7 +78,7 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
       const c = a.cho_g_kg * pesoKg
       const g = Math.max(0.6 * pesoKg, base.g * 0.5)
       const kcal = 4 * p + 4 * c + 9 * g
-      return { kcal: Math.round(kcal), p: Math.round(p), c: Math.round(c), g: Math.round(g), tipo: null, label: a.label, consejo: a.consejo, ajuste_kcal_pct: Math.round((kcal / base.kcal - 1) * 100), competicion: comp.competicion }
+      return { kcal: Math.round(kcal), p: Math.round(p), c: Math.round(c), g: Math.round(g), tipo: null, label: a.label, consejo: a.consejo, ajuste_kcal_pct: Math.round((kcal / base.kcal - 1) * 100), competicion: { ...comp.competicion, carga: true } }
     }
     const kcal = base.kcal * (1 + a.ajuste_kcal_pct / 100)
     const c = base.c * (1 + a.ajuste_cho_pct / 100)
