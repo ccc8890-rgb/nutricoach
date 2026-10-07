@@ -108,7 +108,7 @@ export type ResumenDia = { etiqueta: string; dia: Total; media: Total | null; ob
 export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }: { clienteId: string; accionExtra?: React.ReactNode; onResumen?: (r: ResumenDia | null) => void }) {
   const [plan, setPlan] = useState<Plan | null>(null)
   const [dias, setDias] = useState<Dia[]>([])
-  const [futuras, setFuturas] = useState<{ semana: number; dias: Dia[] }[]>([])
+  const [futuras, setFuturas] = useState<{ semana: number; dias: Dia[]; objetivos?: Record<string, ObjetivoDia> }[]>([])
   const [franjas, setFranjas] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -140,7 +140,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     if (!diaSel) { onResumen(null); return }
     const lista = diaSel.semana == null ? dias : futuras.find(f => f.semana === diaSel.semana)?.dias ?? []
     const d = lista.find(x => x.dia === diaSel.dia)
-    const od = objetivosDia[diaSel.dia]
+    // Cada semana futura trae sus propios objetivos (tapering, víspera, carrera...): no los de la semana en curso
+    const od = (diaSel.semana == null ? objetivosDia : futuras.find(f => f.semana === diaSel.semana)?.objetivos ?? objetivosDia)[diaSel.dia]
     onResumen(d ? { etiqueta: `${diaSel.dia}${diaSel.semana ? ` · semana +${diaSel.semana}` : ''}`, dia: d.total, media: media(dias), objetivo: od?.kcal ? { kcal: od.kcal, p: od.p, c: od.c, g: od.g } : null, tipoDia: od?.label ? `${od.label}${od.ajuste_kcal_pct ? ` ${od.ajuste_kcal_pct > 0 ? '+' : ''}${od.ajuste_kcal_pct}% kcal` : ''}` : null } : null)
   }, [diaSel, dias, futuras, objetivosDia, onResumen])
   useEffect(() => () => onResumen?.(null), [onResumen])
@@ -425,7 +426,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
                 )}
               </div>
             </div>
-            <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
+            <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
             {detalle(s.semana)}
             {!vacia && <div className="mt-2"><ListaCompra planId={plan.id} clienteId={clienteId} semanaFutura={s.semana} nombrePlan={`${plan.nombre} · semana +${s.semana}`} rol="coach" /></div>}
           </div>

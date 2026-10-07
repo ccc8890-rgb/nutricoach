@@ -37,7 +37,7 @@ export type ComidaFutura = {
   kcal: number; p: number; c: number; g: number
 }
 export type DiaFuturo = { dia: string; comidas: ComidaFutura[]; total: { kcal: number; p: number; c: number; g: number } }
-export type SemanaFutura = { semana: number; dias: DiaFuturo[] }
+export type SemanaFutura = { semana: number; dias: DiaFuturo[]; objetivos?: Record<string, ObjetivoDia> }
 
 const orden = (f: string) => FRANJAS.indexOf(f as SlotComida)
 
@@ -110,7 +110,7 @@ export async function obtenerFuturas(db: SupabaseClient, plan: PlanObjetivo, sem
       const total = comidas.reduce((a, c) => ({ kcal: a.kcal + c.kcal, p: a.p + c.p, c: a.c + c.c, g: a.g + c.g }), { kcal: 0, p: 0, c: 0, g: 0 })
       return { dia, comidas, total }
     })
-    resultado.push({ semana, dias })
+    resultado.push({ semana, dias, objetivos: objetivosSemana })
   }
   return resultado
 }
