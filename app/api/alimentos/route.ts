@@ -9,6 +9,22 @@ import { esProductoNoComestible } from '@/lib/scraping/guard-no-comestible'
  * NO duplicar listas de stopwords aquí — mantener un solo punto de verdad.
  */
 
+const sinTildes = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+// Categorías de producto elaborado: casi nunca es lo que se busca al añadir fruta, arroz o yogur a una comida
+const CATEGORIAS_ELABORADAS = /bebida|condimento|dulce|boller|snack|platos preparados|suplemento/i
+
+// Primero el alimento tal cual («Manzana»), luego los que empiezan por la palabra, luego los que la contienen;
+// los productos elaborados (zumos, refrescos, bollería) quedan al final y los nombres cortos antes que los largos
+function rankearGenericos<T extends { nombre: string | null; categoria?: string | null }>(filas: T[], q: string): T[] {
+    const qn = sinTildes(q.trim())
+    const puntuar = (a: T) => {
+        const n = sinTildes(a.nombre ?? '')
+        const tier = n === qn ? 0 : n.startsWith(qn) ? 1 : new RegExp(`\\b${qn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(n) ? 3 : 5
+        return tier + (CATEGORIAS_ELABORADAS.test(a.categoria ?? '') ? 4 : 0) + Math.min(n.length, 80) / 100
+    }
+    return filas.map(a => ({ a, s: puntuar(a) })).sort((x, y) => x.s - y.s).slice(0, 12).map(x => x.a)
+}
+
 export async function GET(request: NextRequest) {
     try {
         const supabase = createServiceSupabase()
@@ -35,7 +51,12 @@ export async function GET(request: NextRequest) {
             query = query.gt('calorias', 0)
         }
 
-        if (q) {
+        // generico=1: búsqueda acotada para añadir un alimento a una comida (la fruta, no «bebida sabor a …»)
+        const generico = searchParams.get('generico') === '1' && q.trim().length >= 2
+
+        if (generico) {
+            query = query.order("nombre", { ascending: true }).limit(500)
+        } else if (q) {
             query = query.order("calorias", { ascending: false, nullsFirst: false })
             query = query.order("nombre", { ascending: true })
             query = query.limit(80)
@@ -58,6 +79,8 @@ export async function GET(request: NextRequest) {
             if (!a.nombre) return true
             return !esProductoNoComestible(a.nombre)
         })
+
+        if (generico) return NextResponse.json(rankearGenericos(filtrados, q))
 
         const response = filtrados as typeof data
         return NextResponse.json(response)

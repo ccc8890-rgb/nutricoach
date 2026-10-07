@@ -46,9 +46,9 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
     const t = setTimeout(async () => {
       if (modo === 'alimento') {
         if (q.trim().length < 2) { setAlimentos([]); setBuscando(false); return }
-        const res = await fetch(`/api/alimentos?q=${encodeURIComponent(q.trim())}&soloConDatos=true`)
+        const res = await fetch(`/api/alimentos?q=${encodeURIComponent(q.trim())}&soloConDatos=true&generico=1`)
         const data = await res.json().catch(() => [])
-        setAlimentos(Array.isArray(data) ? data.slice(0, 40) : [])
+        setAlimentos(Array.isArray(data) ? data.slice(0, 12) : [])
       } else {
         const res = await fetch(`/api/clientes/${clienteId}/semana-dieta?franja=${encodeURIComponent(franja)}${modo === 'postre' ? '&postres=1' : '&todas=1'}&q=${encodeURIComponent(q.trim())}`)
         const data = await res.json().catch(() => null)
