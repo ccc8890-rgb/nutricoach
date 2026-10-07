@@ -11,7 +11,7 @@ export type CandidataSemana = {
 export type Hueco = { dia: string; franja: string; momento?: 'pre' | 'post'; competicion?: ContextoRecetaCompeticion }
 export type Asignacion = Hueco & { receta_id: string; repetida: boolean }
 
-const PROTEINAS = ['pollo', 'pavo', 'ternera', 'cerdo', 'salmon', 'atun', 'merluza', 'bacalao', 'gamba', 'langostino', 'huevo', 'tofu', 'garbanzo', 'lenteja', 'skyr', 'yogur', 'queso']
+const PROTEINAS = ['pollo', 'pavo', 'ternera', 'cerdo', 'salmon', 'atun', 'merluza', 'bacalao', 'gamba', 'langostino', 'huevo', 'tofu', 'garbanzo', 'lenteja', 'alubia', 'dorada', 'pescadilla', 'lubina', 'rape', 'sepia', 'mejillon', 'corvina', 'caballa', 'sardina', 'skyr', 'yogur', 'queso']
 // Cuántas candidatas de cabecera se miran para encontrar otra proteína sin sacrificar demasiado el encaje de macros
 const VENTANA_VARIEDAD = 8
 // Para no repetir proteína el mismo día se busca más lejos: es una petición explícita del coach
@@ -56,6 +56,7 @@ export function repartirSemanaSinRepetir(
   const ultimaClave = new Map<string, string | null>()
   const clavesFranja = new Map<string, Map<string, number>>()
   const clavesDia = new Map<string, Set<string>>()
+  const idsDia = new Map<string, Set<string>>() // recetas ya puestas cada día: si el catálogo se agota, no se repite la misma receta el mismo día
   const resultado = new Map<Hueco, Asignacion>()
   const sinCubrir: Hueco[] = []
 
@@ -89,11 +90,16 @@ export function repartirSemanaSinRepetir(
       elegida = distinta ?? libres[0]
     } else {
       // Catálogo agotado para esta semana: la menos usada, y a igualdad la mejor ordenada
-      elegida = lista.reduce((mejor, c) => ((usos.get(c.id) ?? 0) < (usos.get(mejor.id) ?? 0) ? c : mejor), lista[0])
+      const delDiaIds = idsDia.get(hueco.dia) ?? new Set<string>()
+      const claveDia = clavesDia.get(hueco.dia) ?? new Set<string>()
+      // Primero las que no están ya ese día, y entre ellas otra proteína; después la menos usada
+      const coste = (c: CandidataSemana) => (delDiaIds.has(c.id) ? 1000 : 0) + ((() => { const k = claveProteina(c.nombre); return k && claveDia.has(k) ? 10 : 0 })()) + (usos.get(c.id) ?? 0)
+      elegida = lista.reduce((mejor, c) => (coste(c) < coste(mejor) ? c : mejor), lista[0])
       repetida = true
     }
 
     usos.set(elegida.id, (usos.get(elegida.id) ?? 0) + 1)
+    idsDia.set(hueco.dia, (idsDia.get(hueco.dia) ?? new Set<string>()).add(elegida.id))
     const k = claveProteina(elegida.nombre)
     ultimaClave.set(hueco.franja, k)
     if (k) clavesDia.set(hueco.dia, (clavesDia.get(hueco.dia) ?? new Set<string>()).add(k))
