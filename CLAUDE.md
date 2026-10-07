@@ -2,7 +2,13 @@
 
 ## ✅ SESIÓN 07-10-2026 (noche, Claude) — Ficha cliente: cabecera del plan de entreno simplificada
 
-Carlos: el bloque «Training desk / Plan activo» de Entrenamiento tenía demasiada información. Ahora es una sola fila (nombre del plan, semanas y botones Abrir plan / Regenerar / Plantilla / Nuevo plan) y debajo «Rutina de la semana» sin el «De un vistazo…». Eliminadas las 3 tarjetas (plan, historial, siguiente acción) y el panel «Acceso rápido». Archivo: `app/clientes/[id]/page.tsx`, commit `dfeaa41` (en `origin/main`; el primer push dio un 500 de GitHub pero sí llegó). `tsc` limpio. **Pendiente: Carlos lo revisa en pantalla.**
+Carlos: el bloque «Training desk / Plan activo» de Entrenamiento tenía demasiada información. Ahora es una sola fila (nombre del plan, semanas y botones Abrir plan / Regenerar / Plantilla / Nuevo plan) y debajo «Rutina de la semana» sin el «De un vistazo…». Eliminadas las 3 tarjetas (plan, historial, siguiente acción) y el panel «Acceso rápido». Archivo: `app/clientes/[id]/page.tsx`, commit `dfeaa41` (en `origin/main`; el primer push dio un 500 de GitHub pero sí llegó). `tsc` limpio. **Revisado y aprobado por Carlos.**
+
+Más ajustes de la misma ficha (`app/clientes/[id]/page.tsx`), pedidos por Carlos por ocupar pantalla con poca información:
+- **Tarjeta «Plan activo» (kcal/prot/carbs/grasas)** ahora solo en la pestaña **Nutrición** (antes arriba en todas). El aviso «Sin dieta activa / Generar dieta IA» también. Revisado y aprobado.
+- **Pestaña Perfil:** una sola columna (Perfil y planificación → Inteligencia clínica → Analíticas → Membresía). El informe clínico vacío es una fila («Sin informe clínico · Necesita al menos 1 check-in» + Generar ahora) en vez de una tarjeta grande; el calendario (`PlanificacionCalendario`) va plegado en «Calendario y revisión» (la fecha de próxima revisión se edita ahí); quitados los rótulos «Datos base» / «Flags y criterios» y acortado el texto del vídeo original. **Pendiente: Carlos lo revisa en pantalla.**
+- Decisión abierta: el calendario del Perfil duplica el de Entrenamiento; si estorba, quitarlo.
+- Nota: el push a `main` muestra «Changes must be made through a pull request» pero los commits llegan igualmente; comprobar con `git branch -r --contains HEAD`. `supabase/.temp/cli-latest` modificado no es de esta sesión.
 
 ## ✅ SESIÓN 07-10-2026 (tarde, Claude) — Contenido probado, Fase B cerrada, víspera corregida y reconstrucción autónoma de recetas
 
