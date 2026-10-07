@@ -1,0 +1,638 @@
+{
+ "lote": "desayunos-deportista-2026-10-07",
+ "tipo_plato": "Desayuno",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 550,
+  "kcal_max": 950
+ },
+ "alimentos": {
+  "a18": {
+   "nombre": "Pan blanco",
+   "prefijo": "cfd2a454",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a14": {
+   "nombre": "Huevo entero, crudo",
+   "prefijo": "6cd81fed",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "a15": {
+   "nombre": "Jamón Cocido Bonnatur 96 % Carne",
+   "prefijo": "1b2141ba",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "cerdo"
+  },
+  "a28": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a0": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a30": {
+   "nombre": "Zumo de naranja",
+   "prefijo": "f2671248",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a20": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a1": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a2": {
+   "nombre": "Avena",
+   "prefijo": "31b21452",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a31": {
+   "nombre": "leche semidesnatada",
+   "prefijo": "8469bf72",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a22": {
+   "nombre": "Plátano",
+   "prefijo": "1131a576",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a7": {
+   "nombre": "Crema de cacahuete (natural)",
+   "prefijo": "6328f4b9",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Cacahuetes"
+   ],
+   "origen": "vegetal"
+  },
+  "a16": {
+   "nombre": "Miel",
+   "prefijo": "8619b09f",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "miel"
+  },
+  "a6": {
+   "nombre": "Canela molida",
+   "prefijo": "57a8bd13",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a13": {
+   "nombre": "Harina De Avena",
+   "prefijo": "95db3d38",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a29": {
+   "nombre": "Yogur griego natural",
+   "prefijo": "585bd18b",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a11": {
+   "nombre": "Frutos rojos congelados",
+   "prefijo": "ebedfe6f",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a19": {
+   "nombre": "Pan de centeno",
+   "prefijo": "80dffe34",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a23": {
+   "nombre": "Queso crema light",
+   "prefijo": "6f64e109",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a24": {
+   "nombre": "Salmón ahumado",
+   "prefijo": "de0eb774",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a21": {
+   "nombre": "Pepino",
+   "prefijo": "2e8d5d64",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a26": {
+   "nombre": "Skyr natural",
+   "prefijo": "edc8a060",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a12": {
+   "nombre": "Granola",
+   "prefijo": "54fee582",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a17": {
+   "nombre": "Nueces",
+   "prefijo": "63c26672",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "a3": {
+   "nombre": "Bagels Clásico",
+   "prefijo": "3da49223",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a10": {
+   "nombre": "Fiambre de Pechuga de Pavo",
+   "prefijo": "a279ae71",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a5": {
+   "nombre": "Boniato",
+   "prefijo": "6c5d82a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a9": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a4": {
+   "nombre": "Bebida de soja con calcio y vitaminas sin azúcares añadidos",
+   "prefijo": "8de6665d",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "a25": {
+   "nombre": "Semillas de chía",
+   "prefijo": "b5b5e57f",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a8": {
+   "nombre": "Dátiles medjool",
+   "prefijo": "e6dd0fa6",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a27": {
+   "nombre": "Tofu firme",
+   "prefijo": "c0736451",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Bocadillo de tortilla francesa con jamón y zumo de naranja",
+   "descripcion": "Desayuno completo y saciante con hidratos y proteína, para días de mucho entrenamiento.",
+   "tiempo_prep_min": 12,
+   "porciones": 1,
+   "instrucciones": "1. Bate los huevos y haz una tortilla francesa en una sartén con parte del aceite.\n2. Abre el pan, unta el tomate rallado con el resto del aceite y añade el jamón.\n3. Rellena con la tortilla caliente y sirve con el zumo.",
+   "consejos": "Con pan de centeno o integral sube la fibra.",
+   "ingredientes": [
+    [
+     "a18",
+     120
+    ],
+    [
+     "a14",
+     150
+    ],
+    [
+     "a15",
+     40
+    ],
+    [
+     "a28",
+     60
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a30",
+     200
+    ]
+   ]
+  },
+  {
+   "nombre": "Tostadas integrales con huevos revueltos, aguacate y tomate",
+   "descripcion": "Desayuno salado con grasa buena, proteína y buena cantidad de hidratos.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "instrucciones": "1. Tuesta el pan.\n2. Haz los huevos revueltos a fuego suave con el aceite.\n3. Aplasta el aguacate sobre las tostadas, añade el tomate en rodajas y los huevos. Acompaña con el zumo.",
+   "consejos": "Añade una pizca de pimentón o pimienta recién molida.",
+   "ingredientes": [
+    [
+     "a20",
+     120
+    ],
+    [
+     "a14",
+     150
+    ],
+    [
+     "a1",
+     70
+    ],
+    [
+     "a28",
+     80
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a30",
+     200
+    ]
+   ]
+  },
+  {
+   "nombre": "Porridge grande de avena con plátano y crema de cacahuete",
+   "descripcion": "Desayuno dulce, calórico y de absorción sostenida.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "instrucciones": "1. Calienta la leche con la avena a fuego medio 5 minutos removiendo.\n2. Sirve en un bol con el plátano en rodajas.\n3. Termina con la crema de cacahuete, la miel y la canela.",
+   "consejos": "Prepáralo la noche anterior en frío (overnight) si no tienes tiempo.",
+   "ingredientes": [
+    [
+     "a2",
+     90
+    ],
+    [
+     "a31",
+     300
+    ],
+    [
+     "a22",
+     120
+    ],
+    [
+     "a7",
+     20
+    ],
+    [
+     "a16",
+     10
+    ],
+    [
+     "a6",
+     2
+    ]
+   ]
+  },
+  {
+   "nombre": "Tortitas de avena y yogur griego con frutos rojos",
+   "descripcion": "Tortitas altas en proteína con fruta y yogur para un desayuno de fin de semana o de gran gasto.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "instrucciones": "1. Tritura la harina, los huevos y el plátano hasta obtener una masa lisa.\n2. Cocina las tortitas en sartén antiadherente a fuego medio por ambos lados.\n3. Sirve con el yogur, los frutos rojos y la miel.",
+   "consejos": "Los frutos rojos congelados se descongelan en 5 minutos en el microondas.",
+   "ingredientes": [
+    [
+     "a13",
+     90
+    ],
+    [
+     "a14",
+     100
+    ],
+    [
+     "a22",
+     100
+    ],
+    [
+     "a29",
+     150
+    ],
+    [
+     "a11",
+     80
+    ],
+    [
+     "a16",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Tostadas de centeno con huevo poché, queso crema y salmón ahumado",
+   "descripcion": "Desayuno salado y completo con proteína de calidad.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "instrucciones": "1. Cuece los huevos en agua con un chorrito de vinagre durante 3 minutos.\n2. Tuesta el pan y unta el queso crema.\n3. Coloca el salmón, el pepino y el huevo encima. Sirve con el zumo.",
+   "consejos": "Si no te sale el poché, usa huevo cocido en rodajas.",
+   "ingredientes": [
+    [
+     "a19",
+     110
+    ],
+    [
+     "a23",
+     60
+    ],
+    [
+     "a24",
+     50
+    ],
+    [
+     "a14",
+     100
+    ],
+    [
+     "a21",
+     50
+    ],
+    [
+     "a30",
+     150
+    ]
+   ]
+  },
+  {
+   "nombre": "Bol de skyr con granola, plátano y nueces",
+   "descripcion": "Bol rápido con mucha proteína y energía, listo en cinco minutos.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "instrucciones": "1. Pon el skyr en un bol grande.\n2. Añade el plátano en rodajas y la granola por encima.\n3. Termina con las nueces troceadas y la miel.",
+   "consejos": "Añade la granola justo antes de comer para que siga crujiente.",
+   "ingredientes": [
+    [
+     "a26",
+     250
+    ],
+    [
+     "a12",
+     80
+    ],
+    [
+     "a22",
+     120
+    ],
+    [
+     "a17",
+     20
+    ],
+    [
+     "a16",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Bagel de pavo, huevo y queso crema con zumo",
+   "descripcion": "Bocadillo caliente y compacto, fácil de llevar.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "instrucciones": "1. Tuesta el bagel abierto por la mitad.\n2. Prepara el huevo a la plancha.\n3. Unta el queso crema, añade el pavo, el tomate y el huevo, y cierra. Acompaña con el zumo.",
+   "consejos": "Cambia el pavo por jamón cocido si prefieres.",
+   "ingredientes": [
+    [
+     "a3",
+     100
+    ],
+    [
+     "a10",
+     60
+    ],
+    [
+     "a14",
+     100
+    ],
+    [
+     "a23",
+     40
+    ],
+    [
+     "a28",
+     60
+    ],
+    [
+     "a30",
+     200
+    ]
+   ]
+  },
+  {
+   "nombre": "Huevos revueltos con boniato asado y espinacas",
+   "descripcion": "Desayuno salado con hidratos de absorción lenta y verdura.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "instrucciones": "1. Corta el boniato en dados y hornéalo a 200 °C unos 20 minutos con la mitad del aceite.\n2. Saltea las espinacas y añade los huevos batidos hasta que cuajen.\n3. Sirve con el boniato y el pan tostado.",
+   "consejos": "Prepara el boniato asado de varios días y recaliéntalo.",
+   "ingredientes": [
+    [
+     "a14",
+     150
+    ],
+    [
+     "a5",
+     200
+    ],
+    [
+     "a9",
+     60
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a20",
+     60
+    ]
+   ]
+  },
+  {
+   "nombre": "Porridge de avena con bebida de soja, plátano y crema de cacahuete",
+   "descripcion": "Desayuno dulce 100 % vegetal, calórico y saciante.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "instrucciones": "1. Calienta la bebida con la avena a fuego medio 5 minutos.\n2. Añade el plátano en rodajas y los dátiles troceados.\n3. Termina con la crema de cacahuete y las semillas de chía.",
+   "consejos": "Sin cocinar: deja la avena en remojo en frío toda la noche.",
+   "ingredientes": [
+    [
+     "a2",
+     80
+    ],
+    [
+     "a4",
+     300
+    ],
+    [
+     "a22",
+     120
+    ],
+    [
+     "a7",
+     25
+    ],
+    [
+     "a25",
+     10
+    ],
+    [
+     "a8",
+     30
+    ]
+   ]
+  },
+  {
+   "nombre": "Tostadas integrales con tofu revuelto, aguacate y tomate",
+   "descripcion": "Desayuno salado vegano con proteína completa.",
+   "tiempo_prep_min": 12,
+   "porciones": 1,
+   "instrucciones": "1. Desmenuza el tofu y saltéalo con el aceite y una pizca de pimentón o cúrcuma.\n2. Tuesta el pan y cúbrelo con el aguacate aplastado.\n3. Añade el tofu y el tomate en rodajas. Acompaña con el zumo.",
+   "consejos": "Una pizca de sal negra (kala namak) le da sabor a huevo.",
+   "ingredientes": [
+    [
+     "a27",
+     150
+    ],
+    [
+     "a20",
+     100
+    ],
+    [
+     "a1",
+     70
+    ],
+    [
+     "a28",
+     80
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a30",
+     200
+    ]
+   ]
+  },
+  {
+   "nombre": "Bol de avena con frutos rojos, nueces y bebida de soja",
+   "descripcion": "Bol vegetal energético, con fruta y grasa buena.",
+   "tiempo_prep_min": 6,
+   "porciones": 1,
+   "instrucciones": "1. Cocina la avena con la bebida de soja unos 4 minutos.\n2. Pásala a un bol y añade el plátano en rodajas y los frutos rojos.\n3. Termina con las nueces y las semillas de chía.",
+   "consejos": "Los frutos rojos congelados enfrían el bol: añádelos al final si la quieres caliente.",
+   "ingredientes": [
+    [
+     "a2",
+     70
+    ],
+    [
+     "a4",
+     250
+    ],
+    [
+     "a11",
+     100
+    ],
+    [
+     "a17",
+     20
+    ],
+    [
+     "a25",
+     10
+    ],
+    [
+     "a22",
+     100
+    ]
+   ]
+  }
+ ],
+ "apto_rendimiento": true
+}

@@ -1,0 +1,687 @@
+{
+ "lote": "comidas-ligeras-2026-10-07",
+ "tipo_plato": "Comida",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 380,
+  "kcal_max": 750,
+  "grasa_pct_max": 0.35
+ },
+ "alimentos": {
+  "a21": {
+   "nombre": "Merluza",
+   "prefijo": "974247da",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a22": {
+   "nombre": "Patata",
+   "prefijo": "0b223775",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a11": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a29": {
+   "nombre": "Pimiento rojo",
+   "prefijo": "d106e3bb",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a0": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a1": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a25": {
+   "nombre": "Perejil",
+   "prefijo": "fea7cbe9",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a20": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a19": {
+   "nombre": "Lentejas cocidas",
+   "prefijo": "e69fd4f0",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a4": {
+   "nombre": "Arroz blanco",
+   "prefijo": "d262ebde",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a34": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a28": {
+   "nombre": "Pimentón dulce",
+   "prefijo": "e4fdfad8",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a16": {
+   "nombre": "Garbanzos cocidos",
+   "prefijo": "1f1a4cd3",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a14": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a5": {
+   "nombre": "Bacalao (fresco)",
+   "prefijo": "15c94b4b",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a27": {
+   "nombre": "Pimentón",
+   "prefijo": "21a40eb5",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a24": {
+   "nombre": "Pechuga de pollo",
+   "prefijo": "4ad8714c",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a7": {
+   "nombre": "Boniato",
+   "prefijo": "6c5d82a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a18": {
+   "nombre": "Judías verdes",
+   "prefijo": "95efbbab",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a23": {
+   "nombre": "Pechuga de pavo",
+   "prefijo": "7312fdee",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a30": {
+   "nombre": "Quinoa",
+   "prefijo": "53587262",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a9": {
+   "nombre": "Calabacín",
+   "prefijo": "f8586302",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a13": {
+   "nombre": "Dorada",
+   "prefijo": "7320ea42",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a10": {
+   "nombre": "Calabaza",
+   "prefijo": "cfd9ca77",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a15": {
+   "nombre": "Espárragos",
+   "prefijo": "c7ad7588",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a26": {
+   "nombre": "Pescadilla",
+   "prefijo": "65313d07",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a17": {
+   "nombre": "Guisantes frescos",
+   "prefijo": "3eb4a47a",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a2": {
+   "nombre": "Alubia cocida roja",
+   "prefijo": "35e28212",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a32": {
+   "nombre": "Tofu firme",
+   "prefijo": "c0736451",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "a8": {
+   "nombre": "Brócoli",
+   "prefijo": "8820b293",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a31": {
+   "nombre": "Salsa de soja",
+   "prefijo": "caa47a33",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Soja",
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a33": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a3": {
+   "nombre": "Arroz basmati",
+   "prefijo": "49156dfd",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a12": {
+   "nombre": "Comino",
+   "prefijo": "88959dfb",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a6": {
+   "nombre": "Berenjena",
+   "prefijo": "e152c2f2",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Merluza al horno con patata y verduras",
+   "descripcion": "Plato de pescado blanco al horno, ligero y completo.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "instrucciones": "1. Corta la patata, la cebolla y el pimiento en rodajas y colócalos en una bandeja con la mitad del aceite.\n2. Hornea a 200 °C 20 minutos y añade la merluza con el ajo y el perejil.\n3. Termina 10 minutos más y aliña con limón y el resto del aceite.",
+   "consejos": "La patata debe quedar casi hecha antes de añadir el pescado.",
+   "ingredientes": [
+    [
+     "a21",
+     200
+    ],
+    [
+     "a22",
+     200
+    ],
+    [
+     "a11",
+     50
+    ],
+    [
+     "a29",
+     60
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a1",
+     3
+    ],
+    [
+     "a25",
+     3
+    ],
+    [
+     "a20",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Lentejas estofadas con verduras y arroz",
+   "descripcion": "Plato de legumbre completo y saciante.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla, la zanahoria y el ajo con el aceite.\n2. Añade el pimentón, las lentejas y el arroz con agua que lo cubra.\n3. Cuece 15 minutos hasta que el arroz esté tierno.",
+   "consejos": "Si usas lentejas secas, cuécelas aparte con antelación.",
+   "ingredientes": [
+    [
+     "a19",
+     250
+    ],
+    [
+     "a4",
+     50
+    ],
+    [
+     "a34",
+     60
+    ],
+    [
+     "a11",
+     50
+    ],
+    [
+     "a28",
+     2
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a1",
+     3
+    ]
+   ]
+  },
+  {
+   "nombre": "Garbanzos con espinacas y bacalao",
+   "descripcion": "Plato de cuchara con legumbre y pescado, rico en proteína.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla y el ajo con el aceite y el pimentón.\n2. Añade los garbanzos y las espinacas y cuece 5 minutos.\n3. Incorpora el bacalao en trozos y cocina 6 minutos más.",
+   "consejos": "Desala el bacalao si es salado antes de usarlo.",
+   "ingredientes": [
+    [
+     "a16",
+     200
+    ],
+    [
+     "a14",
+     150
+    ],
+    [
+     "a5",
+     150
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a1",
+     3
+    ],
+    [
+     "a27",
+     2
+    ],
+    [
+     "a11",
+     40
+    ]
+   ]
+  },
+  {
+   "nombre": "Pollo al limón con boniato asado y judías verdes",
+   "descripcion": "Plato equilibrado de ave con guarnición de hidrato y verdura.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "instrucciones": "1. Hornea el boniato en dados a 200 °C 25 minutos.\n2. Marca el pollo a la plancha con el ajo y termina con zumo de limón.\n3. Cuece las judías verdes y sirve todo junto con el aceite.",
+   "consejos": "Corta el pollo en filetes finos para que se haga rápido.",
+   "ingredientes": [
+    [
+     "a24",
+     200
+    ],
+    [
+     "a7",
+     200
+    ],
+    [
+     "a18",
+     150
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a20",
+     15
+    ],
+    [
+     "a1",
+     3
+    ]
+   ]
+  },
+  {
+   "nombre": "Pavo con verduras salteadas y quinoa",
+   "descripcion": "Plato ligero con proteína magra y cereal completo.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la quinoa 12 minutos y escúrrela.\n2. Saltea el pavo en tacos con el aceite y retíralo.\n3. Saltea las verduras, vuelve a añadir el pavo y sirve con la quinoa.",
+   "consejos": "Lava bien la quinoa antes de cocerla para quitar el amargor.",
+   "ingredientes": [
+    [
+     "a23",
+     180
+    ],
+    [
+     "a30",
+     70
+    ],
+    [
+     "a9",
+     100
+    ],
+    [
+     "a29",
+     80
+    ],
+    [
+     "a34",
+     50
+    ],
+    [
+     "a0",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Dorada al horno con calabaza y espárragos",
+   "descripcion": "Pescado al horno con verdura de temporada.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Corta la calabaza y la patata en dados y hornéalas 15 minutos a 200 °C.\n2. Añade la dorada y los espárragos con parte del aceite.\n3. Hornea 12 minutos más y termina con limón.",
+   "consejos": "Pide la dorada ya limpia y en lomos.",
+   "ingredientes": [
+    [
+     "a13",
+     220
+    ],
+    [
+     "a10",
+     200
+    ],
+    [
+     "a22",
+     120
+    ],
+    [
+     "a15",
+     100
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a20",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Pescadilla con guisantes y patata",
+   "descripcion": "Pescado blanco en salsa ligera con guarnición de patata.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla con el aceite y añade la patata en rodajas con agua que la cubra.\n2. Cuece 12 minutos y añade los guisantes y la pescadilla.\n3. Cocina 6 minutos más y termina con perejil.",
+   "consejos": "Añade el pescado al final para que no se deshaga.",
+   "ingredientes": [
+    [
+     "a26",
+     200
+    ],
+    [
+     "a17",
+     100
+    ],
+    [
+     "a22",
+     180
+    ],
+    [
+     "a11",
+     40
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a25",
+     3
+    ]
+   ]
+  },
+  {
+   "nombre": "Alubias con verduras",
+   "descripcion": "Plato de legumbre ligero y sin carne.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla, el pimiento, la zanahoria y el ajo con el aceite.\n2. Añade el pimentón y las alubias con un poco de agua.\n3. Cuece 12 minutos a fuego suave.",
+   "consejos": "Mejora al día siguiente: ideal para preparar en tandas.",
+   "ingredientes": [
+    [
+     "a2",
+     250
+    ],
+    [
+     "a34",
+     60
+    ],
+    [
+     "a29",
+     60
+    ],
+    [
+     "a11",
+     40
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a27",
+     2
+    ],
+    [
+     "a1",
+     3
+    ]
+   ]
+  },
+  {
+   "nombre": "Tofu salteado con quinoa y verduras",
+   "descripcion": "Plato vegano con proteína completa.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la quinoa 12 minutos y escúrrela.\n2. Dora el tofu en dados con el aceite y el ajo.\n3. Añade el brócoli y la zanahoria, saltea 5 minutos y termina con la salsa de soja.",
+   "consejos": "Presiona el tofu 10 minutos antes para que quede más firme.",
+   "ingredientes": [
+    [
+     "a32",
+     180
+    ],
+    [
+     "a30",
+     70
+    ],
+    [
+     "a8",
+     100
+    ],
+    [
+     "a34",
+     60
+    ],
+    [
+     "a31",
+     10
+    ],
+    [
+     "a0",
+     4
+    ],
+    [
+     "a1",
+     3
+    ]
+   ]
+  },
+  {
+   "nombre": "Curry de garbanzos con calabaza y arroz basmati",
+   "descripcion": "Plato vegano especiado y reconfortante.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla con el aceite y las especias.\n2. Añade la calabaza, el tomate y los garbanzos con un poco de agua y cuece 15 minutos.\n3. Sirve con el arroz basmati cocido aparte.",
+   "consejos": "Los garbanzos de bote funcionan igual: acláralos antes.",
+   "ingredientes": [
+    [
+     "a16",
+     200
+    ],
+    [
+     "a10",
+     150
+    ],
+    [
+     "a33",
+     100
+    ],
+    [
+     "a11",
+     50
+    ],
+    [
+     "a3",
+     60
+    ],
+    [
+     "a12",
+     2
+    ],
+    [
+     "a27",
+     2
+    ],
+    [
+     "a0",
+     8
+    ]
+   ]
+  },
+  {
+   "nombre": "Berenjena y calabacín al horno con garbanzos y quinoa",
+   "descripcion": "Plato vegano de verduras al horno con legumbre y cereal.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "instrucciones": "1. Corta la berenjena y el calabacín en dados y hornéalos 20 minutos a 200 °C con el aceite.\n2. Cuece la quinoa 12 minutos.\n3. Mezcla las verduras con los garbanzos, el tomate y el comino, y sirve con la quinoa y el perejil.",
+   "consejos": "Salar la berenjena 10 minutos antes reduce el amargor.",
+   "ingredientes": [
+    [
+     "a6",
+     120
+    ],
+    [
+     "a9",
+     100
+    ],
+    [
+     "a16",
+     120
+    ],
+    [
+     "a30",
+     60
+    ],
+    [
+     "a33",
+     80
+    ],
+    [
+     "a0",
+     10
+    ],
+    [
+     "a12",
+     1
+    ],
+    [
+     "a25",
+     3
+    ]
+   ]
+  }
+ ],
+ "tipo_receta": "completa"
+}

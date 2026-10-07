@@ -1,0 +1,556 @@
+{
+ "lote": "meriendas-reales-2026-10-07",
+ "tipo_plato": "Merienda",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 180,
+  "kcal_max": 420
+ },
+ "alimentos": {
+  "a20": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a9": {
+   "nombre": "Fiambre de Pechuga de Pavo",
+   "prefijo": "a279ae71",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a24": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a0": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a28": {
+   "nombre": "Yogur natural",
+   "prefijo": "38fe1a4e",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a12": {
+   "nombre": "Granola",
+   "prefijo": "54fee582",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a10": {
+   "nombre": "Fresas",
+   "prefijo": "16665787",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a1": {
+   "nombre": "Aguacate",
+   "prefijo": "91ad5545",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a13": {
+   "nombre": "Huevo entero, crudo",
+   "prefijo": "6cd81fed",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "a30": {
+   "nombre": "leche semidesnatada",
+   "prefijo": "8469bf72",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a21": {
+   "nombre": "Plátano",
+   "prefijo": "1131a576",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a4": {
+   "nombre": "Avena",
+   "prefijo": "31b21452",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a5": {
+   "nombre": "Cacao Puro en Polvo sin Azúcar",
+   "prefijo": "f928aff3",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a26": {
+   "nombre": "Tortitas de Arroz Integral Paquete",
+   "prefijo": "072975ac",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a23": {
+   "nombre": "Requesón",
+   "prefijo": "b2c88c97",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a17": {
+   "nombre": "Miel",
+   "prefijo": "8619b09f",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "miel"
+  },
+  "a15": {
+   "nombre": "Manzana",
+   "prefijo": "7d5a031f",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a8": {
+   "nombre": "Crema de cacahuete (natural)",
+   "prefijo": "6328f4b9",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Cacahuetes"
+   ],
+   "origen": "vegetal"
+  },
+  "a27": {
+   "nombre": "Yogur griego natural",
+   "prefijo": "585bd18b",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a18": {
+   "nombre": "Nueces",
+   "prefijo": "63c26672",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "a2": {
+   "nombre": "Almendras",
+   "prefijo": "3cbe24f8",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "a19": {
+   "nombre": "Pan de centeno",
+   "prefijo": "80dffe34",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a22": {
+   "nombre": "Queso fresco batido desnatado 0% MG",
+   "prefijo": "1380d26a",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a16": {
+   "nombre": "Mermelada Arandano",
+   "prefijo": "2a83e016",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a25": {
+   "nombre": "Tortilla de Trigo",
+   "prefijo": "bd6dc3a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a3": {
+   "nombre": "Atún en lata al natural",
+   "prefijo": "83505726",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a6": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a11": {
+   "nombre": "Garbanzos cocidos",
+   "prefijo": "1f1a4cd3",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a14": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a7": {
+   "nombre": "Comino",
+   "prefijo": "88959dfb",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a29": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Bocadillo pequeño de pavo y tomate",
+   "descripcion": "Merienda salada, ligera y saciante.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "instrucciones": "1. Abre el pan y unta el tomate rallado con el aceite.\n2. Añade las lonchas de pavo y cierra.",
+   "consejos": "Con pan de centeno queda más contundente.",
+   "ingredientes": [
+    [
+     "a20",
+     60
+    ],
+    [
+     "a9",
+     40
+    ],
+    [
+     "a24",
+     40
+    ],
+    [
+     "a0",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Yogur con granola y fresas",
+   "descripcion": "Merienda fresca de preparación inmediata.",
+   "tiempo_prep_min": 3,
+   "porciones": 1,
+   "instrucciones": "1. Pon el yogur en un vaso o bol.\n2. Añade las fresas troceadas y la granola por encima justo antes de comer.",
+   "consejos": "Cambia las fresas por la fruta de temporada.",
+   "ingredientes": [
+    [
+     "a28",
+     125
+    ],
+    [
+     "a12",
+     30
+    ],
+    [
+     "a10",
+     80
+    ]
+   ]
+  },
+  {
+   "nombre": "Tostada de aguacate y huevo cocido",
+   "descripcion": "Merienda con grasa buena y proteína.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "instrucciones": "1. Cuece el huevo 10 minutos y pélalo.\n2. Tuesta el pan, extiende el aguacate aplastado y corona con el huevo en rodajas.",
+   "consejos": "Unas gotas de limón evitan que el aguacate se oscurezca.",
+   "ingredientes": [
+    [
+     "a20",
+     50
+    ],
+    [
+     "a1",
+     50
+    ],
+    [
+     "a13",
+     60
+    ]
+   ]
+  },
+  {
+   "nombre": "Batido de plátano, leche y avena",
+   "descripcion": "Batido espeso y energético, fácil de llevar.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "instrucciones": "1. Pon todos los ingredientes en la batidora.\n2. Tritura hasta que quede homogéneo y sirve frío.",
+   "consejos": "Con el plátano congelado queda más cremoso.",
+   "ingredientes": [
+    [
+     "a30",
+     250
+    ],
+    [
+     "a21",
+     120
+    ],
+    [
+     "a4",
+     30
+    ],
+    [
+     "a5",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Tortitas de arroz con requesón y fresas",
+   "descripcion": "Merienda ligera y dulce con proteína.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "instrucciones": "1. Unta el requesón sobre las tortitas.\n2. Añade las fresas laminadas y un hilo de miel.",
+   "consejos": "Sírvelas al momento para que no se reblandezcan.",
+   "ingredientes": [
+    [
+     "a26",
+     30
+    ],
+    [
+     "a23",
+     100
+    ],
+    [
+     "a10",
+     80
+    ],
+    [
+     "a17",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Manzana con crema de cacahuete y yogur griego",
+   "descripcion": "Merienda de fruta, proteína y grasa buena.",
+   "tiempo_prep_min": 5,
+   "porciones": 1,
+   "instrucciones": "1. Corta la manzana en gajos.\n2. Mezcla la crema de cacahuete con el yogur y úsalo para mojar la manzana.",
+   "consejos": "Sirve con canela por encima.",
+   "ingredientes": [
+    [
+     "a15",
+     150
+    ],
+    [
+     "a8",
+     20
+    ],
+    [
+     "a27",
+     100
+    ]
+   ]
+  },
+  {
+   "nombre": "Fruta y frutos secos",
+   "descripcion": "Merienda de preparación inmediata, rica en grasa buena.",
+   "tiempo_prep_min": 2,
+   "porciones": 1,
+   "instrucciones": "1. Lava y corta la manzana.\n2. Acompáñala con un puñado de nueces y almendras.",
+   "consejos": "Pésalos una vez y usa siempre el mismo puñado.",
+   "ingredientes": [
+    [
+     "a15",
+     150
+    ],
+    [
+     "a18",
+     25
+    ],
+    [
+     "a2",
+     15
+    ]
+   ]
+  },
+  {
+   "nombre": "Tostada de queso fresco y mermelada",
+   "descripcion": "Merienda dulce y suave con proteína.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "instrucciones": "1. Tuesta el pan de centeno.\n2. Extiende el queso fresco batido y termina con la mermelada.",
+   "consejos": "Usa mermelada sin azúcares añadidos.",
+   "ingredientes": [
+    [
+     "a19",
+     50
+    ],
+    [
+     "a22",
+     100
+    ],
+    [
+     "a16",
+     15
+    ]
+   ]
+  },
+  {
+   "nombre": "Wrap pequeño de atún y verduras",
+   "descripcion": "Merienda salada con proteína de pescado.",
+   "tiempo_prep_min": 7,
+   "porciones": 1,
+   "instrucciones": "1. Escurre el atún y mézclalo con el tomate y la cebolla picados.\n2. Rellena la tortilla, enróllala y córtala por la mitad.",
+   "consejos": "Caliéntala 20 segundos en sartén para sellarla.",
+   "ingredientes": [
+    [
+     "a25",
+     50
+    ],
+    [
+     "a3",
+     50
+    ],
+    [
+     "a24",
+     40
+    ],
+    [
+     "a6",
+     10
+    ],
+    [
+     "a0",
+     4
+    ]
+   ]
+  },
+  {
+   "nombre": "Tortitas de arroz con hummus casero y zanahoria",
+   "descripcion": "Merienda 100 % vegetal con proteína de legumbre.",
+   "tiempo_prep_min": 8,
+   "porciones": 1,
+   "instrucciones": "1. Tritura los garbanzos con el aceite, el limón y el comino hasta obtener una crema.\n2. Úntala sobre las tortitas y acompaña con la zanahoria en bastones.",
+   "consejos": "Si queda espeso, añade una cucharada de agua.",
+   "ingredientes": [
+    [
+     "a11",
+     80
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a14",
+     10
+    ],
+    [
+     "a7",
+     1
+    ],
+    [
+     "a26",
+     30
+    ],
+    [
+     "a29",
+     60
+    ]
+   ]
+  },
+  {
+   "nombre": "Plátano con crema de cacahuete y avena",
+   "descripcion": "Merienda vegetal, energética y rápida.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "instrucciones": "1. Corta el plátano en rodajas gruesas.\n2. Cúbrelo con la crema de cacahuete y espolvorea la avena.",
+   "consejos": "Tuesta la avena unos minutos en seco para más sabor.",
+   "ingredientes": [
+    [
+     "a21",
+     120
+    ],
+    [
+     "a8",
+     20
+    ],
+    [
+     "a4",
+     30
+    ]
+   ]
+  },
+  {
+   "nombre": "Tostada de crema de cacahuete y fresas",
+   "descripcion": "Merienda dulce vegana con fruta.",
+   "tiempo_prep_min": 4,
+   "porciones": 1,
+   "instrucciones": "1. Tuesta el pan integral.\n2. Unta la crema de cacahuete y coloca las fresas laminadas.",
+   "consejos": "Añade semillas de chía por encima.",
+   "ingredientes": [
+    [
+     "a20",
+     60
+    ],
+    [
+     "a8",
+     15
+    ],
+    [
+     "a10",
+     80
+    ]
+   ]
+  }
+ ]
+}

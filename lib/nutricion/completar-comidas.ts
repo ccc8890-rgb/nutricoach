@@ -20,10 +20,10 @@ type Rango = { nombre: string; cat: Cat; gluten?: boolean; raciones: number[]; f
 // Nombres exactos del catálogo de alimentos
 const CATALOGO: Rango[] = [
   // Guarniciones de comida y cena (cocinadas, para que los gramos sean los del plato)
-  { nombre: 'Arroz blanco (cocido)', cat: 'base', raciones: [100, 150, 200, 250], franjas: ['Comida', 'Cena'] },
-  { nombre: 'Patata (cocida)', cat: 'base', raciones: [150, 200, 250], franjas: ['Comida', 'Cena'] },
-  { nombre: 'Pasta (cocinada)', cat: 'base', gluten: true, raciones: [100, 150, 200, 250], franjas: ['Comida', 'Cena'] },
-  { nombre: 'Boniato cocido', cat: 'base', raciones: [150, 200, 250], franjas: ['Comida', 'Cena'] },
+  { nombre: 'Arroz blanco (cocido)', cat: 'base', raciones: [100, 150, 200], franjas: ['Comida', 'Cena'] },
+  { nombre: 'Patata (cocida)', cat: 'base', raciones: [150, 200], franjas: ['Comida', 'Cena'] },
+  { nombre: 'Pasta (cocinada)', cat: 'base', gluten: true, raciones: [100, 150, 200], franjas: ['Comida', 'Cena'] },
+  { nombre: 'Boniato cocido', cat: 'base', raciones: [150, 200], franjas: ['Comida', 'Cena'] },
   { nombre: 'Quinoa (cocida)', cat: 'base', raciones: [100, 150, 200], franjas: ['Comida', 'Cena'] },
   { nombre: 'Cuscús (cocido)', cat: 'base', gluten: true, raciones: [100, 150, 200], franjas: ['Comida', 'Cena'] },
   { nombre: 'Pan integral', cat: 'base', gluten: true, raciones: [40, 80], franjas: ['Comida', 'Cena'] },

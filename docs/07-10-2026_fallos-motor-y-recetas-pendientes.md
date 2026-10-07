@@ -31,3 +31,11 @@ Semana regenerada con las reglas nuevas (complementos con sentido, platos habitu
 2. Barrido de `tipo_receta` (platos mal marcados como snack o postre).
 3. Lotes de recetas de la lista de arriba con `importar-lote-verificado.ts`.
 4. Etiqueta de sabor y de «mini-comida» en recetas.
+
+## Avance (misma noche)
+- **Hecho:** reglas clínicas (`lib/nutricion/reglas-clinicas.ts`: dislipidemia, hipertensión, diabetes, anemia) con exclusión y ajuste de ranking; Andrés ya no recibe hígado, burgers ni kebab (pescado, legumbres y pollo en su lugar).
+- **Hecho:** el pool de meriendas y medias mañanas admite recetas `completa` (antes solo `snack_postre`/`desayuno`): 7 → 22 candidatas. Salteado de pollo y shakshuka reclasificados a Comida.
+- **Hecho:** topes de guarnición (arroz, pasta, patata, boniato) a 200 g.
+- **Recetas nuevas en `en_revision` (34):** `2026-10-07_desayunos-deportista` (11: salados y dulces 640–800 kcal, 3 veganos), `2026-10-07_meriendas-reales` (12: 4 veganas), `2026-10-07_comidas-ligeras` (11: pescado, pollo, legumbres, 5 veganas/vegetarianas; aptas dislipidemia e hipertensión por composición). Generador: `scripts/lotes/_generar-lotes-2026-10-07.py`.
+- **Pendiente tuyo:** aprobarlas en `/recetas/revisar` («Aprobar aprobables») y verificar con `verificar-recetas-auto.ts --apply`; sin foto (OpenAI sin saldo).
+- **Sigue pendiente:** campo propio de sabor (dulce/salado) y de «mini-comida» (necesita migración), barrido más amplio de `tipo_receta`, ampliar veganas de cena y variedad de desayunos dulces con menos azúcar.
