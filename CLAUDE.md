@@ -42,10 +42,7 @@ Carlos pidió probar todo con su propio cliente (`04cc53b3`) y apuntar los fallo
 3. **Instrucciones demasiado cortas** (<80 caracteres) en 3 recetas del lote 2: ampliadas.
 4. Botón «Aprobar aprobables» mostraba (0) mientras cargaba: ahora «…».
 
-**Pendiente / no corregido**
-- Si se aprueba por API sin `dosis`/`timing`, el portal del cliente la muestra vacía (el panel del coach siempre las manda).
-- La ruta de suplementación no pasa `intensidad`, así que cafeína/beta-alanina «de sesión» por intensidad alta nunca se activan fuera de Hyrox/prueba.
-- `condiciones_salud = "Ninguna"` entra como condición en el contexto (inofensivo).
+**Pendiente / no corregido** (las otras 3 incidencias de la lista original se corrigieron después: aprobar sin dosis la completa con la propuesta actual, `intensidad_sesion` deducida de la sesión de hoy para la cafeína de sesión —sin cambiar las pautas diarias— y «Ninguna» ya no cuenta como condición; contexto en `lib/nutricion/contexto-suplementos.ts` con test)
 - La vista previa de semanas futuras no incluye complementos (la semana +1 de Carlos marca 2.314 kcal estimadas frente a ~3.100 de objetivo).
 - **Dos sesiones de Claude Code a la vez comparten el mismo navegador de pruebas (`browse`, una sola pestaña) y la misma base de datos:** produjeron lecturas incoherentes (contadores a 0, clics ambiguos, pestaña movida) y archivos temporales ajenos. No lanzar dos sesiones sobre este proyecto a la vez.
 - **Tarjeta de suplementación del portal comprobada** con la sesión del cliente: agrupa por «Día a día» / «Día de carrera», muestra dosis, momento y nota del coach, no enseña lo descartado, usa «Según la pauta del coach» cuando falta dosis y no desborda a 390 px.
