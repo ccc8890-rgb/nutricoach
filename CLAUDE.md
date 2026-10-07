@@ -10,13 +10,41 @@ Más ajustes de la misma ficha (`app/clientes/[id]/page.tsx`), pedidos por Carlo
 - Decisión abierta: el calendario del Perfil duplica el de Entrenamiento; si estorba, quitarlo.
 - Nota: el push a `main` muestra «Changes must be made through a pull request» pero los commits llegan igualmente; comprobar con `git branch -r --contains HEAD`. `supabase/.temp/cli-latest` modificado no es de esta sesión.
 
-## ✅ SESIÓN 07-10-2026 (noche, Claude) — Complementos con sentido, aprendizaje de gustos y prueba con 4 clientes ficticios
+## ✅ SESIÓN 07→08-10-2026 (noche, Claude) — Motor de dietas con sentido, aprendizaje de gustos, reglas clínicas y recetario limpio
 
-Commits en `main`: complementos agrupados y movibles, reglas del motor (`lib/nutricion/completar-comidas.ts`), preferencias (`lib/nutricion/preferencias-cliente.ts`), grupos a evitar y comidas al día desde el cuestionario. Tests: `scripts/completar-comidas-reglas.test.ts`, `scripts/preferencias-cliente.test.ts`. Scripts: `regenerar-semana-cliente.ts` (con copia previa en `salidas/`), `crear-clienta-trail.ts`, `auditar-etiquetas-vegano-2026-10-07.mjs`.
-- Tarjeta de comida: Plato principal / Plato / Guarnición / Postre / Otros extras, «Mover a…» entre comidas del día (`PATCH …/semana-dieta/complemento`), buscador de alimentos acotado (`/api/alimentos?generico=1`).
-- Datos corregidos: 8 etiquetas Vegano/Vegetariano falsas (caballa «Vegano»…), 4 salsas → `salsa_base`, 4 bebidas → `bebida`, focaccias y tsukemono → `guarnicion`.
-- Clientes de prueba: Carlos Rodríguez ahora **Marcos**; nueva **Laura Vidal** (trail, ultra 15-11-2026).
-- **Pendiente:** fallos del motor y recetas por crear en `docs/07-10-2026_fallos-motor-y-recetas-pendientes.md` (reglas clínicas por patología, ampliar recetario de desayunos/meriendas de deportista, aptas dislipidemia y veganas, barrido de `tipo_receta`).
+Todo en `main` (último commit de código `bf987e4`+; docs al cierre). Sin migraciones de BD (se reutilizó `swap_rechazada`, que ya existía en el CHECK de `receta_interacciones_cliente`). Detalle de fallos y recetas pendientes: `docs/07-10-2026_fallos-motor-y-recetas-pendientes.md`.
+
+### Tarjeta de comida del coach (`components/clientes/DetalleDiaDieta.tsx`)
+- Complementos agrupados: Plato principal / Plato / Guarnición / Postre / Otros extras (`rol` deducido de la receta o de la categoría del alimento, no se guarda). «Mover a…» entre comidas del mismo día (`PATCH /api/clientes/[id]/semana-dieta/complemento` → `moverComplemento`, reajusta origen y destino). Buscador de alimentos acotado (`GET /api/alimentos?generico=1`: exacto > empieza por > contiene, elaborados al final, 12 resultados).
+
+### Motor de complementos (`lib/nutricion/completar-comidas.ts`)
+- Reglas (`tieneSentido`, test `scripts/completar-comidas-reglas.test.ts`): sin base de hidrato repetida, fruta/yogur de postre en comida y cena, sin lácteo tras pescado, sin grasa extra si el plato ya es graso, desayuno dulce con dulce y salado con salado (por palabras del nombre), raciones en medidas reales (1 manzana, 1 yogur, puñado de nueces), guarniciones máx. 200 g, sin avena ni pan sueltos (el desayuno se completa con recetas componente). Si nada encaja, deja el hueco y avisa (`avisos`, visible al generar la semana).
+
+### Aprendizaje de gustos (`lib/nutricion/preferencias-cliente.ts`, test `scripts/preferencias-cliente.test.ts`)
+- Platos habituales del cuestionario (`dieta_habitual_cliente`) puntúan recetas y complementos de su franja (+0,1; «sustituible» pesa la mitad); alimentos a evitar del perfil excluyen complementos; recetas que el **cliente** cambia por otra se anotan como `swap_rechazada` (1 vez: ×0,85; ≥2: fuera si quedan ≥3). Las comidas al día salen del cuestionario si no hay `comidas_dia` ni franjas en el plan (`franjasDeHabitual`).
+- Grupos a evitar: «pescado azul», «marisco», «carne roja», «lácteos», «frutos secos» se expanden a sus alimentos (`lib/plan-recetas.ts`).
+
+### Reglas clínicas (`lib/nutricion/reglas-clinicas.ts`, test `scripts/reglas-clinicas.test.ts`)
+- Desde `condiciones_salud` (texto libre): dislipidemia (excluye vísceras y embutidos, penaliza burgers/kebab/queso/fritos, favorece legumbre y pescado), hipertensión, diabetes/prediabetes (penaliza azúcares), anemia (favorece hierro). Se aplican en `filtrarRecetasPorSlot`; «sin diabetes» o «TA normal-alta» no activan nada.
+
+### Recetario (743→~755 aprobadas)
+- **Pool de merienda:** `SLOT_TIPOS_PERMITIDOS` ahora admite `completa` en Merienda/Media mañana/Snack (7→22 candidatas).
+- **96 recetas nuevas** (en 7 lotes `scripts/lotes/2026-10-07_*.json`, generadores `_generar-lotes-2026-10-07*.py`): desayunos de deportista, meriendas, comidas ligeras, veganas, variedad de proteínas, desayunos con menos azúcar. Aprobadas por Carlos y verificadas.
+- **Mantenimiento** (`scripts/mantenimiento-recetario-2026-10-07.mjs`, `corregir-raciones-ligeras-…`, `variantes-recetario-…`, `auditar-recetario-uso-…`, `auditar-etiquetas-vegano-…`): 43 recetas sin categoría hechas visibles, 8 etiquetas Vegano/Vegetariano falsas retiradas (caballa «Vegano»…), salsas/bebidas/panes reclasificados (`salsa_base`, `bebida`, `guarnicion`), 19 nombres en castellano, 2 títulos «Pre-Running» limpiados, 23 recetas descartadas (duplicados y variantes casi idénticas), 10 platos únicos con ración real. Copias y `--revertir` en los scripts.
+- **Clientes de prueba:** «Carlos Rodríguez» renombrado a **Marcos**; nueva **Laura Vidal** (`scripts/crear-clienta-trail.ts`, ultra 50 km el 15-11-2026). `scripts/regenerar-semana-cliente.ts [prefijo]` regenera y muestra la semana con copia previa.
+
+### Lecciones
+- Probar el motor con clientes distintos (vegana, dislipidemia, deportista de 3.000 kcal) destapa fallos de datos que no se ven con uno solo: una etiqueta «Vegano» falsa, tipos de receta mal puestos y un pool de merienda recortado por el tipo.
+- `tipo_receta`, `categoria` y `tipo_plato` deciden qué ve el planificador; una receta sin categoría es invisible. Auditar esos tres campos tras cada importación.
+- Una receta con ración mal marcada engaña al motor (kcal/ración baja); antes de «corregir» comprobar la proteína por ración resultante (60-70 g = no).
+- La repetición de proteína se calcula por palabras del nombre: nombres en inglés o ingredientes nuevos (alubia, dorada…) hay que añadirlos a `PROTEINAS`.
+- GitHub devolvió «Internal Server Error» en un push durante varios minutos con «All Systems Operational»; reintentar más tarde (no es del código).
+
+### Auditoría de seguridad de lo tocado
+- Ruta nueva `PATCH …/semana-dieta/complemento` usa `autorizarSemanaDieta` (coach propietario). `GET /api/alimentos?generico=1` es el mismo endpoint público de catálogo (solo lectura, sin datos de clientes). Scripts nuevos leen `.env.local`, ningún secreto en commits (revisado). Los lotes y mantenimientos operan con service role solo desde terminal.
+
+### Pendiente
+1. Fotos (≈389 recetas sin foto; OpenAI sin saldo). 2. 19 recetas con <3 ingredientes y 2 con datos erróneos (arroz con pollo y salsa de cilantro, lentejas estofadas). 3. Decidir Mealprep Carne / Kebab / Pollo burger (siguen saliendo en planes). 4. Más recetas veganas y cenas ligeras. 5. Migración para sabor (dulce/salado) y mini-comida. 6. Que el coach vea por qué se propone cada plato y una pantalla de lo aprendido del cliente. 7. El aviso de huecos solo sale al generar la semana (no al reajustar ni activar).
 
 ## ✅ SESIÓN 07-10-2026 (tarde, Claude) — Contenido probado, Fase B cerrada, víspera corregida y reconstrucción autónoma de recetas
 
