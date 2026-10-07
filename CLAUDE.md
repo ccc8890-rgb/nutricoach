@@ -48,9 +48,9 @@ Carlos pidió probar todo con su propio cliente (`04cc53b3`) y apuntar los fallo
 - `condiciones_salud = "Ninguna"` entra como condición en el contexto (inofensivo).
 - La vista previa de semanas futuras no incluye complementos (la semana +1 de Carlos marca 2.314 kcal estimadas frente a ~3.100 de objetivo).
 - **Dos sesiones de Claude Code a la vez comparten el mismo navegador de pruebas (`browse`, una sola pestaña) y la misma base de datos:** produjeron lecturas incoherentes (contadores a 0, clics ambiguos, pestaña movida) y archivos temporales ajenos. No lanzar dos sesiones sobre este proyecto a la vez.
-- Falta comprobar la tarjeta de suplementación del portal con la sesión del cliente (requiere que Carlos inicie sesión como cliente).
+- **Tarjeta de suplementación del portal comprobada** con la sesión del cliente: agrupa por «Día a día» / «Día de carrera», muestra dosis, momento y nota del coach, no enseña lo descartado, usa «Según la pauta del coach» cuando falta dosis y no desborda a 390 px.
 
-**Datos de prueba creados en el cliente de Carlos (hay que limpiarlos):** competición «Hyrox de prueba (borrar)», analíticas simuladas (vitamina D 22, ferritina 25 y una nota), 4 propuestas de suplementación aprobadas y 1 descartada, hora 18:30 y duración 130 min en la sesión del miércoles, la semana +2 del planificador y la tabla temporal `public._backup_test_20261007` (copia de su semana +1 real).
+**Datos de prueba: ya limpiados (07-10-2026).** Se borraron la competición, las analíticas simuladas, las propuestas aprobadas (queda la fila original de creatina en «propuesta»), la hora/duración de la sesión del miércoles, la semana +2 y la tabla temporal de respaldo; la semana +1 real de Carlos quedó idéntica a su respaldo (24 comidas, 0 diferencias).
 
 ## ✅ SESIÓN 06-10-2026 (Claude + Codex) — Recetas de víspera/carrera, bandeja única de revisión y analíticas
 
