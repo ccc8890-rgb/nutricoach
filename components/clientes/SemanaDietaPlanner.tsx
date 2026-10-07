@@ -12,7 +12,7 @@ type Total = { kcal: number; p: number; c: number; g: number }
 type Dia = { dia: string; comidas: Comida[]; total: Total }
 type Plan = { id: string; nombre: string; kcal_objetivo: number | null; proteinas_objetivo: number | null; carbohidratos_objetivo: number | null; grasas_objetivo: number | null }
 type RecetaOpcion = Receta & { kcal: number; proteinas: number; tiempo_prep_min: number | null }
-type ResultadoSemana = { ok: boolean; complementos?: number; asignadas: number; repetidas: number; sinCubrir: { dia: string; franja: string }[]; errores: { dia: string; franja: string; error: string }[]; mensaje?: string }
+type ResultadoSemana = { ok: boolean; complementos?: number; avisos?: { dia: string; franja: string; motivo: string }[]; asignadas: number; repetidas: number; sinCubrir: { dia: string; franja: string }[]; errores: { dia: string; franja: string; error: string }[]; mensaje?: string }
 type Hueco = { dia: string; franja: string; semana: number | null }
 type Tamano = { col: string; dia: string; diaKcal: string; card: string; label: string; nombre: string; macros: string; hueco: string; grid: string }
 
@@ -238,7 +238,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
       : await llamar(`${base}/activar`, 'POST')
     setOcupado(null)
     if (!data) return
-    if (accion === 'generar') setResultado({ ok: true, complementos: data.complementos, asignadas: data.asignadas, repetidas: data.repetidas, sinCubrir: data.sinCubrir ?? [], errores: [], mensaje: data.mensaje })
+    if (accion === 'generar') setResultado({ ok: true, complementos: data.complementos, avisos: data.avisos ?? [], asignadas: data.asignadas, repetidas: data.repetidas, sinCubrir: data.sinCubrir ?? [], errores: [], mensaje: data.mensaje })
     if (accion === 'activar') setResultado({ ok: data.ok, asignadas: data.activadas, repetidas: 0, sinCubrir: [], errores: data.errores ?? [], mensaje: data.ok ? `Semana activada: ${data.activadas} comidas ya son la semana en curso del cliente.` : undefined })
     await Promise.all([cargar(), cargarFuturas(vista)])
   }
@@ -384,6 +384,11 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             {resultado.repetidas > 0 && ` ${resultado.repetidas} repetidas por falta de recetas en esa franja.`}
             {resultado.sinCubrir.length > 0 && ` Sin receta disponible: ${[...new Set(resultado.sinCubrir.map(h => h.franja))].join(', ')}.`}
             {resultado.errores.length > 0 && ` ${resultado.errores.length} no se pudieron asignar.`}
+            {(resultado.avisos?.length ?? 0) > 0 && (
+              <span className="block mt-1" style={{ color: 'var(--warning)' }}>
+                Revisar a mano: {resultado.avisos!.map(a => `${a.dia} ${a.franja} (${a.motivo})`).join('; ')}.
+              </span>
+            )}
           </span>
           <button onClick={() => setResultado(null)}><X size={13} /></button>
         </div>

@@ -141,7 +141,7 @@ export async function planificarSemana(
 
 export type ResultadoSemana = {
   ok: boolean; asignadas: number; repetidas: number; sinCubrir: Hueco[]
-  errores: { dia: string; franja: string; error: string }[]; mensaje?: string; complementos?: number
+  errores: { dia: string; franja: string; error: string }[]; mensaje?: string; complementos?: number; avisos?: { dia: string; franja: string; motivo: string }[]
 }
 
 // Si hay varias comidas con la misma franja el mismo día (restos de pruebas o ediciones), deja una
@@ -215,6 +215,7 @@ export async function generarSemana(
   }
   // Los platos no siempre llegan al objetivo de su franja: guarnición y postre cierran el hueco
   let complementos = 0
+  let avisos: { dia: string; franja: string; motivo: string }[] = []
   if (complementar && errores.length === 0) {
     try {
       const [{ data: onboarding }, { data: perfil }] = await Promise.all([
@@ -224,6 +225,7 @@ export async function generarSemana(
       const { filtroCliente } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
       const r = await completarSemana(db, plan, clienteId, { franjas: [...new Set(asignaciones.map(a => a.franja))] as SlotComida[], restricciones: filtroCliente.restricciones, objetivosDia: objDia })
       complementos = r.anadidos
+      avisos = r.avisos
     } catch (e) { console.error('[generarSemana] complementos', e) }
   }
   return {
@@ -233,6 +235,7 @@ export async function generarSemana(
     sinCubrir,
     errores,
     complementos,
+    avisos,
   }
 }
 
