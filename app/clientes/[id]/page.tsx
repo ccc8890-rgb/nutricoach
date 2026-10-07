@@ -33,6 +33,7 @@ const SuplementacionPanel = dynamic(() => import('@/components/clientes/Suplemen
 const AnaliticasPanel = dynamic(() => import('@/components/clientes/AnaliticasPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const HistorialEntreno = dynamic(() => import('@/components/training/HistorialEntreno'), { ssr: false, loading: () => <TabSkeleton /> })
 const CompeticionesManager = dynamic(() => import('@/components/CompeticionesManager'), { ssr: false, loading: () => <TabSkeleton /> })
+const MicronutrientesCoach = dynamic(() => import('@/components/clientes/MicronutrientesCoach'), { ssr: false })
 const CosteSemanalCard = dynamic(() => import('@/components/clientes/CosteSemanal'), { ssr: false, loading: () => <div className="lg:col-span-2 h-12 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const AdherenciaScoreCard = dynamic(() => import('@/components/clientes/AdherenciaScore'), { ssr: false, loading: () => <div className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAdherenciaHeatmap'), { ssr: false, loading: () => <div className="h-32 rounded-2xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
@@ -922,6 +923,7 @@ export default function ClienteDetallePage() {
 
             <div className="space-y-4">
               <CosteSemanalCard clienteId={id} />
+              <ErrorBoundary><MicronutrientesCoach clienteId={id as string} /></ErrorBoundary>
               <ErrorBoundary><PeriodizacionPanel clienteId={id as string} /></ErrorBoundary>
               <ErrorBoundary><SuplementacionPanel clienteId={id as string} /></ErrorBoundary>
             </div>
