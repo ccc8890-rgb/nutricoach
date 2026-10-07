@@ -1,8 +1,19 @@
 # ESTADO — NutriCoach Training Pro
 
-**Última actualización:** 03-10-2026 (rendimiento portal cliente + auditoría de seguridad)
+**Última actualización:** 07-10-2026 (Contenido probado, Fase B cerrada, víspera corregida, reconstrucción autónoma de recetas)
 
 **Hito:** 22-05-2026 — Auditoría de bugs completa. 7 bugs encontrados y corregidos (2 🔴, 2 🟠, 2 🟡, 1 🟢). Documentado en [`docs/auditoria-bugs-2026-05-22.md`](docs/auditoria-bugs-2026-05-22.md). Sistema de no comestibles documentado en [`docs/scraping-no-comestibles.md`](docs/scraping-no-comestibles.md). 957 productos no comestibles eliminados de la BD.
+
+---
+
+## ✅ Sesión 07-10-2026 (tarde) — Contenido probado, Fase B, víspera y reconstrucción autónoma de recetas
+
+Detalle completo, lecciones y pendientes en `CLAUDE.md` (sección «SESIÓN 07-10-2026 (tarde)»). Resumen:
+- **Contenido** probado en producción con Carlos; arreglados selector de cliente, aviso al colocar y día recordado. Auditoría: `plan_id` del coach, estado+planos.
+- **Fase B** verificada: coste semanal con semanas +1…+8 y autorización de coach (IDOR); informe de micronutrientes para el coach con media diaria.
+- **Planificador de víspera/carrera**: las recetas sin `verificacion` eran invisibles; ventana de re-puntuación ampliada.
+- **Reconstrucción autónoma de recetas** (`lib/recetas/reconstruccion-segura.ts`, 8 de 11 propuestas aplicadas, 3 bloqueadas a propósito) con copia, verificación y reversión.
+- Auditoría de cierre: 14 suites de tests en verde, `tsc` y lint sin errores, 0 restos de datos de prueba, sin secretos en lo commiteado, rutas nuevas con autenticación y comprobación de propiedad.
 
 ---
 
