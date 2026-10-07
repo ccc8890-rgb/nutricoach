@@ -1,5 +1,42 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 07-10-2026 (tarde, Claude) — Contenido probado, Fase B cerrada, víspera corregida y reconstrucción autónoma de recetas
+
+Commits en `main`: `f1340d2`, `a5194c5` (Contenido), `7b41642` (coste), `c4fc3ad` (micronutrientes), `d6435a7` (víspera), `db23c2d` (reconstrucción segura) y docs.
+
+### Contenido (probado en producción con la sesión de Carlos)
+- Recorrido completo bien: Bandeja → Tablero → Día de grabación (compra, orden, escaleta, planos persistentes) → Colocar en dieta → Calendario con 🎬. Verificado también en BD (`comidas_planificadas`) y restaurado todo lo tocado.
+- Arreglado: selector «Dieta de» (`/api/clientes` devuelve `nombre` y `apellidos` por separado; el regex buscaba «casanova» solo en `nombre`) → hook `components/contenido/useClientes.ts` + `lib/contenido/clientes.ts` (etiquetas sin duplicados por plan, recuerda la elección); resultado de «Colocar» ahora es un cuadro fijo (el toast pasaba desapercibido; con la semana en curso no coloca y lo explica); el día de grabación se recuerda por pestaña (`sessionStorage`).
+- Auditoría: `plan_id` de una pieza debe ser de un cliente del coach (`planEsDelCoach`); `estado` + `planos_hechos` a la vez manda el estado; `/api/clientes` ya no expone `error.message`.
+
+### Fase B (verificada: casi todo existía desde mayo)
+- Coste semanal admite semanas planificadas +1…+8 (`?semana=N`, selector en la tarjeta) y **ahora comprueba que el cliente es del coach** (antes cualquier usuario logueado lo leía).
+- Informe de micronutrientes para el coach (`lib/micronutrientes/plan.ts`, tarjeta «Micronutrientes del plan» en Nutrición → «Más herramientas»). Corrige un fallo del portal: sumaba TODAS las comidas del plan contra objetivos diarios (×7 en planes de 7 días); ahora media diaria.
+
+### Planificador de víspera/carrera
+- Causa 1: el planificador descarta recetas sin `verificacion` si hay ≥3 verificadas → tras aprobar un lote hay que ejecutar `verificar-recetas-auto.ts --apply`. Causa 2: `repartirSemanaSinRepetir` solo re-puntuaba las 24 primeras candidatas por encaje de macros; en víspera ahora mira 80 con penalización 0,05 por posición. Probado con un maratón ficticio en Andrés (borrado).
+
+### Sistema autónomo de reconstrucción de recetas (`lib/recetas/reconstruccion-segura.ts`)
+- `scripts/reconstruir-recetas-seguro.ts [--apply]` + `scripts/restaurar-receta.ts <id> --apply`. Valida cada vínculo (exacta/buena/dudosa), tabla `ALIAS` revisada, puertas de plausibilidad, ajuste de raciones que conserva el tamaño de ración, mismo quality gate ANTES de escribir, copia + verificación + reversión automática, informe en `salidas/`.
+- 8 de 11 propuestas aplicadas. Bloqueadas (decisión humana): Mealprep Carne, Kebab de ternera, Pollo burger (propuesta absurda de 2.925 kcal).
+- Creado el alimento «Mayonesa ligera» (275 kcal/100 g, `fuente='coach'`, `fuente_nutricional='desconocida'`: el `CHECK` de `fuente` solo admite coach/curada/ia/bedca/openfoodfacts).
+
+### Datos de Carlos corregidos
+- Plan rendimiento, comida «Pollo Shawarma Crujiente»: salsa de soja 100 g (alimento basura «Daqui pii») → 15 g de «Salsa de soja»; sodio 6.390 → 1.721 mg. El alimento «Daqui pii» sigue en el catálogo sin uso (borrar solo con confirmación).
+
+### Lecciones
+- Un `alimento_id` ya rellenado en una propuesta no es prueba de que el vínculo sea correcto: validar SIEMPRE el nombre.
+- Al filtrar salidas con `grep` por palabras clave se pueden atribuir líneas a la receta equivocada (el «wok con bloqueantes» era un error mío: los bloqueantes eran de las 2 siguientes, descartadas). Ver el JSON completo antes de afirmar.
+- Antes de crear alimentos «que faltan», buscar el equivalente en el catálogo con otro nombre (Col=Repollo, etc.).
+- `comida_alimentos.cantidad_gramos` es la cantidad final aplicada; `factor_ajuste` solo informa de la proporción frente a la receta base.
+- Sesiones en paralelo (Codex): `git status` mostraba cambios que no eran míos; commitear solo los ficheros propios (`git add <rutas>`).
+- Prueba contra producción: refs de `browse` caducan al re-renderizar; usar `js` con `find` por texto y esperar 4-6 s tras cada clic.
+
+### Pendiente para la próxima sesión (Carlos revisa la app y plantea cambios)
+1. Revisar en pantalla: tarjetas de coste y micronutrientes (Nutrición → «Más herramientas»), recetas reconstruidas (Kebaprol 6 raciones, Burrito 5, Tofu 2, Ensalada de pollo 762 kcal) y el apartado Contenido.
+2. Decidir Mealprep Carne y Kebab (versión actual o propuesta); Pollo burger no aplicar.
+3. Menores: «Colocar» y fecha en la semana en curso no se coloca (solo +1…+8); fotos de las 11 recetas de víspera (OpenAI sin saldo); borrar el alimento «Daqui pii» si Carlos confirma; reel real de Content Radar para probar el enlace automático por `url_origen`.
+
 ## ✅ SESIÓN 07-10-2026 (Claude) — Apartado «Contenido»: ideas, tandas de grabación y publicación
 
 Pedido de Carlos: apuntar recetas que ve en Instagram/TikTok o que ya tiene en el recetario, documentarlas y organizar días de grabación en tanda, alineados con su dieta y con la compra. Spec: `docs/superpowers/specs/2026-10-07-contenido-grabacion-design.md`; plan: `docs/superpowers/plans/2026-10-07-contenido-grabacion.md` (13 tareas, ejecutado en modo nativo con TDD). Commits `52b7e63`→`e21db3e` más el cierre.
@@ -47,7 +84,7 @@ Carlos pidió probar todo con su propio cliente (`04cc53b3`) y apuntar los fallo
 - **Dos sesiones de Claude Code a la vez comparten el mismo navegador de pruebas (`browse`, una sola pestaña) y la misma base de datos:** produjeron lecturas incoherentes (contadores a 0, clics ambiguos, pestaña movida) y archivos temporales ajenos. No lanzar dos sesiones sobre este proyecto a la vez.
 - **Tarjeta de suplementación del portal comprobada** con la sesión del cliente: agrupa por «Día a día» / «Día de carrera», muestra dosis, momento y nota del coach, no enseña lo descartado, usa «Según la pauta del coach» cuando falta dosis y no desborda a 390 px.
 
-**3.er lote de víspera/carrera/recuperación (07-10-2026):** `scripts/lotes/2026-10-07_vispera-carrera-3.json`, 7 recetas importadas **en revisión** (todas aprobables, calidad media 82,3): macarrones con merluza, fideos con gambas, tortitas de arroz con atún y 4 de **recuperación** marcadas `es_post_entreno` (arroz con pollo y huevo, batido de plátano/leche/proteína, bocadillo de pavo y queso fresco, pasta con pollo). Se descartaron 2 de cuscús (6,3-6,7 g de fibra por la propia composición). Al aprobarlas desde la bandeja se verifican solas. **Regla de Carlos (07-10-2026): las recetas para víspera/carrera/recuperación no llevan ese uso en el título ni en los textos** (se usó para renombrar 3 recetas y reescribir descripciones, consejos e instrucciones de los 3 lotes en tono general; el uso se marca con `perfil: pre|post` y la composición).
+**3.er lote de víspera/carrera/recuperación (07-10-2026):** `scripts/lotes/2026-10-07_vispera-carrera-3.json`, 7 recetas importadas **en revisión** (todas aprobables, calidad media 82,3): macarrones con merluza, fideos con gambas, tortitas de arroz con atún y 4 de **recuperación** marcadas `es_post_entreno` (arroz con pollo y huevo, batido de plátano/leche/proteína, bocadillo de pavo y queso fresco, pasta con pollo). Se descartaron 2 de cuscús (6,3-6,7 g de fibra por la propia composición). Al aprobarlas desde la bandeja se verifican solas. **Regla de Carlos (07-10-2026): las recetas para víspera/carrera/recuperación no llevan ese uso en el título ni en los textos** (se usó para renombrar 3 recetas y reescribir descripciones, consejos e instrucciones de los 3 lotes en tono general; el uso se marca con `perfil: pre|post` y la composición). Revisado también **todo el recetario**: se renombraron 4 recetas antiguas («Batido de recuperación de plátano y proteína», «Batido pre-entreno de plátano y naranja», «Pre-carrera: pan blanco con mermelada y plátano» —ahora con `es_pre_entreno`—, «Smoothie Verde de Recuperación…») y se reescribieron los textos de «Bowl de Patata Asada con Pollo y Salsa de Yogur»; ninguna estaba en un plan. Comprobado: 0 títulos y 0 descripciones/consejos con ese tipo de uso.
 
 **Datos de prueba: ya limpiados (07-10-2026).** Se borraron la competición, las analíticas simuladas, las propuestas aprobadas (queda la fila original de creatina en «propuesta»), la hora/duración de la sesión del miércoles, la semana +2 y la tabla temporal de respaldo; la semana +1 real de Carlos quedó idéntica a su respaldo (24 comidas, 0 diferencias).
 
