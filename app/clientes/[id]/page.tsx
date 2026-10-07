@@ -744,8 +744,8 @@ export default function ClienteDetallePage() {
             </div>
           </div>
 
-          {/* ── Macros del plan activo ── */}
-          {dietaActiva && (dietaActiva.kcal_objetivo || dietaActiva.proteinas_objetivo) ? (
+          {/* ── Macros del plan activo (solo en la pestaña Nutrición) ── */}
+          {tabActiva !== 'nutricion' ? null : dietaActiva && (dietaActiva.kcal_objetivo || dietaActiva.proteinas_objetivo) ? (
             <div className="mt-3 sm:mt-4 pt-3 sm:pt-4" style={{ borderTop: '1px solid var(--border)' }}>
               <div className="flex items-center justify-between mb-2 sm:mb-3 gap-3">
                 <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
