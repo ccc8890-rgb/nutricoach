@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { faseEnFecha } from '@/lib/nutricion/competicion'
+import { objetivosPorDia } from '@/lib/nutricion/objetivo-dia'
+import { DIAS_SEMANA } from '@/lib/nutricion/comidas-dia'
 
 export async function GET(
     request: NextRequest,
@@ -32,9 +35,34 @@ export async function GET(
             .eq('activo', true)
             .order('fecha_competicion', { ascending: true })
 
+        // La fase y el objetivo de hoy salen del MISMO motor que el planificador (ventana de tapering por disciplina,
+        // carga de hidratos por duración); antes esta tarjeta usaba una tabla propia que decía otra cosa.
+        const hoy = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+        let faseMotor = fase ?? null
+        let objetivoHoy: { kcal: number; p: number; c: number; g: number; label: string | null; consejo: string | null; peso_kg: number | null } | null = null
+        if (fase) {
+            faseMotor = { ...fase, fase_actual: faseEnFecha(fase.fecha_competicion, hoy, fase.disciplina) }
+            try {
+                const [{ data: plan }, { data: ck }, { data: cl }] = await Promise.all([
+                    serviceSb.from('planes_nutricion').select('*').eq('cliente_id', id).eq('activo', true).limit(1).maybeSingle(),
+                    serviceSb.from('checkins').select('peso').eq('cliente_id', id).not('peso', 'is', null).order('fecha', { ascending: false }).limit(1).maybeSingle(),
+                    serviceSb.from('clientes').select('peso_inicial').eq('id', id).maybeSingle(),
+                ])
+                if (plan?.kcal_objetivo) {
+                    const dia = DIAS_SEMANA[(new Date(`${hoy}T12:00:00Z`).getUTCDay() + 6) % 7]
+                    const o = (await objetivosPorDia(serviceSb, id, plan, 0))[dia]
+                    const peso = Number(ck?.peso ?? cl?.peso_inicial) || null
+                    if (o?.kcal) objetivoHoy = { kcal: o.kcal, p: o.p, c: o.c, g: o.g, label: o.label, consejo: o.consejo, peso_kg: peso }
+                }
+            } catch (e) {
+                console.error('Error calculando el objetivo de hoy en fase-deportiva:', e)
+            }
+        }
+
         return NextResponse.json({
-            fase_activa: fase ?? null,
+            fase_activa: faseMotor,
             competiciones: competiciones ?? [],
+            objetivo_hoy: objetivoHoy,
         })
     } catch (err) {
         console.error('Error en GET /api/clientes/[id]/fase-deportiva:', err)

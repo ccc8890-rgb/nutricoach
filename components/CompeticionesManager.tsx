@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Plus, Trash2, Calendar, Trophy, Loader2, AlertTriangle } from 'lucide-react'
-import { DISCIPLINA_LABELS, FASE_LABELS, FASE_COLORES, getMacrosPorFase } from '@/lib/alto-rendimiento/macros-por-fase'
+import { DISCIPLINA_LABELS, FASE_LABELS, FASE_COLORES } from '@/lib/alto-rendimiento/macros-por-fase'
 import type { FaseDeportiva, Disciplina } from '@/lib/alto-rendimiento/macros-por-fase'
 
 interface Competicion {
@@ -23,6 +23,11 @@ interface FaseActiva {
     dias_restantes: number
     fase_actual: FaseDeportiva
     alerta_tapering_activa: boolean
+}
+
+interface ObjetivoHoy {
+    kcal: number; p: number; c: number; g: number
+    label: string | null; consejo: string | null; peso_kg: number | null
 }
 
 interface Props {
@@ -49,6 +54,7 @@ const FORM_VACIO = {
 export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
     const [competiciones, setCompeticiones] = useState<Competicion[]>([])
     const [faseActiva, setFaseActiva] = useState<FaseActiva | null>(null)
+    const [objetivoHoy, setObjetivoHoy] = useState<ObjetivoHoy | null>(null)
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [form, setForm] = useState(FORM_VACIO)
@@ -62,6 +68,7 @@ export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
             const data = await res.json()
             setCompeticiones(data.competiciones ?? [])
             setFaseActiva(data.fase_activa ?? null)
+            setObjetivoHoy(data.objetivo_hoy ?? null)
         } catch {
             // silencioso — no es crítico
         } finally {
@@ -117,7 +124,7 @@ export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
         <div className="space-y-4">
             {/* Fase deportiva activa */}
             {faseActiva && (
-                <FaseDeportivaCard fase={faseActiva} pesoKg={pesoKg} />
+                <FaseDeportivaCard fase={faseActiva} objetivo={objetivoHoy} pesoKg={pesoKg} />
             )}
 
             {/* Lista de competiciones */}
@@ -265,18 +272,20 @@ export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
 }
 
 // ── FaseDeportivaCard (inline) ──────────────────────────────────
-function FaseDeportivaCard({ fase, pesoKg }: { fase: FaseActiva; pesoKg?: number }) {
+function FaseDeportivaCard({ fase, objetivo, pesoKg }: { fase: FaseActiva; objetivo: ObjetivoHoy | null; pesoKg?: number }) {
     const cfg = FASE_COLORES[fase.fase_actual]
-    const macros = pesoKg ? getMacrosPorFase(fase.disciplina, fase.fase_actual) : null
+    // Objetivo de HOY calculado por el mismo motor que el planificador de dieta
+    const peso = objetivo?.peso_kg ?? pesoKg ?? null
+    const porKg = (g: number) => (peso ? `${(g / peso).toFixed(1)}g/kg` : '')
 
     return (
         <div className="card overflow-hidden">
             {/* Alerta tapering */}
-            {fase.alerta_tapering_activa && (
+            {(fase.fase_actual === 'tapering' || fase.fase_actual === 'carrera_inminente') && (
                 <div className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium"
                     style={{ background: '#FEF3C7', color: '#92400E', borderBottom: '1px solid #FDE68A' }}>
                     <AlertTriangle size={15} />
-                    <span>⚠️ Semana de TAPERING — mantener o aumentar CHO. No reducir.</span>
+                    <span>⚠️ TAPERING — menos volumen de entreno, pero mantén los hidratos por kilo de peso; la carga fuerte se hace solo en las últimas 36-48 h.</span>
                 </div>
             )}
 
@@ -305,28 +314,33 @@ function FaseDeportivaCard({ fase, pesoKg }: { fase: FaseActiva; pesoKg?: number
                     </span>
                 </div>
 
-                {/* Macros recomendados */}
-                {macros && pesoKg && (
-                    <div className="mt-3 grid grid-cols-3 gap-2">
-                        {[
-                            { label: 'CHO', value: `${(macros.cho_gkg * pesoKg).toFixed(0)}g`, sub: `${macros.cho_gkg}g/kg` },
-                            { label: 'Prot', value: `${(macros.prot_gkg * pesoKg).toFixed(0)}g`, sub: `${macros.prot_gkg}g/kg` },
-                            { label: 'Grasa', value: `${(macros.grasa_gkg * pesoKg).toFixed(0)}g`, sub: `${macros.grasa_gkg}g/kg` },
-                        ].map(m => (
-                            <div key={m.label} className="rounded-xl p-2 text-center"
-                                style={{ background: 'rgba(255,255,255,0.5)' }}>
-                                <p className="text-xs font-medium" style={{ color: cfg.text, opacity: 0.7 }}>{m.label}</p>
-                                <p className="text-base font-bold" style={{ color: cfg.text }}>{m.value}</p>
-                                <p className="text-[10px]" style={{ color: cfg.text, opacity: 0.6 }}>{m.sub}</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-                {!pesoKg && macros && (
+                {/* Objetivo de hoy (mismo motor que el planificador) */}
+                {objetivo ? (
+                    <>
+                        <div className="mt-3 grid grid-cols-4 gap-2">
+                            {[
+                                { label: 'kcal', value: `${objetivo.kcal}`, sub: '' },
+                                { label: 'CHO', value: `${objetivo.c}g`, sub: porKg(objetivo.c) },
+                                { label: 'Prot', value: `${objetivo.p}g`, sub: porKg(objetivo.p) },
+                                { label: 'Grasa', value: `${objetivo.g}g`, sub: porKg(objetivo.g) },
+                            ].map(m => (
+                                <div key={m.label} className="rounded-xl p-2 text-center"
+                                    style={{ background: 'rgba(255,255,255,0.5)' }}>
+                                    <p className="text-xs font-medium" style={{ color: cfg.text, opacity: 0.7 }}>{m.label}</p>
+                                    <p className="text-base font-bold" style={{ color: cfg.text }}>{m.value}</p>
+                                    <p className="text-[10px]" style={{ color: cfg.text, opacity: 0.6 }}>{m.sub}</p>
+                                </div>
+                            ))}
+                        </div>
+                        {(objetivo.label || objetivo.consejo) && (
+                            <p className="text-xs mt-2" style={{ color: cfg.text, opacity: 0.8 }}>
+                                <b>Hoy{objetivo.label ? ` · ${objetivo.label}` : ''}.</b> {objetivo.consejo}
+                            </p>
+                        )}
+                    </>
+                ) : (
                     <p className="text-xs mt-2" style={{ color: cfg.text, opacity: 0.7 }}>
-                        CHO: {macros.cho_gkg}g/kg · Prot: {macros.prot_gkg}g/kg · Grasa: {macros.grasa_gkg}g/kg
-                        <br />
-                        <span style={{ opacity: 0.6 }}>Añade el peso del cliente para ver valores absolutos</span>
+                        Sin plan de dieta activo: no hay objetivo de hoy que mostrar.
                     </p>
                 )}
             </div>
