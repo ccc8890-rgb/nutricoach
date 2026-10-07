@@ -80,7 +80,7 @@ export function ajusteCompeticion(fase: FaseCompeticion, diasRestantes: number, 
     consejo: (diasRestantes === 1
       ? 'Prioriza alimentos ricos en hidratos y bajos en fibra y grasa; evita probar alimentos nuevos.'
       : 'Prioriza hidratos de carbono conocidos y fáciles de digerir para completar las reservas.')
-      + (larga && diasRestantes <= 2 ? ' Reparte los hidratos en 5-6 tomas, con bebidas y alimentos de poco residuo; si no llegas a la cifra, manda la comodidad digestiva.' : ''),
+      + (larga && diasRestantes <= 2 ? ' Reparte los hidratos en 5-6 tomas, con alimentos de poco residuo; una parte (25-40 %) puede ir en bebida de hidratos tipo drink mix de Maurten, más cómoda que comer sólido. Si no llegas a la cifra, manda la comodidad digestiva.' : ''),
   }
   if (fase === 'race_day') return {
     ajuste_kcal_pct: larga ? 10 : 5, ajuste_cho_pct: larga ? 20 : 10, ajuste_proteinas_pct: 0,

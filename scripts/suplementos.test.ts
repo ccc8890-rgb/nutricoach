@@ -53,4 +53,17 @@ assert.ok(tri.avisos.some(a => /bici/.test(a)) && tri.avisos.some(a => /muy larg
 // Tiempo objetivo de la prueba manda sobre la duración típica de la disciplina
 const hmRapida = recomendarSuplementos({ peso_kg: 70, disciplina: 'running_hm', duracion_prueba_min: 70, fase_competicion: 'race_day' })
 assert.match(hmRapida.carrera.find(r => r.id === 'carbohidratos_intra')!.dosis, /30 g\/h/)
+// Bebida de hidratos en los días de carga y hidratación previa el día de la prueba
+const hmCarga = recomendarSuplementos({ peso_kg: 82, disciplina: 'running_hm', fase_competicion: 'carrera_inminente' })
+const bebida = hmCarga.carrera.find(r => r.id === 'bebida_hidratos')!
+assert.match(bebida.dosis, /197 g/) // 30 % de 8 g/kg x 82 kg = 656 g
+assert.match(bebida.dosis, /656 g/)
+assert.match(bebida.dosis, /2 sobres/)
+assert.ok(bebida.precauciones.some(p => /etiqueta/.test(p)))
+assert.ok(!recomendarSuplementos({ peso_kg: 70, disciplina: 'running_5k', fase_competicion: 'carrera_inminente' }).carrera.some(r => r.id === 'bebida_hidratos'))
+const maratonCarga = recomendarSuplementos({ peso_kg: 65, disciplina: 'running_maraton', fase_competicion: 'carrera_inminente' })
+assert.match(maratonCarga.carrera.find(r => r.id === 'bebida_hidratos')!.dosis, /650 g/) // 10 g/kg
+const hmDia = recomendarSuplementos({ peso_kg: 82, disciplina: 'running_hm', fase_competicion: 'race_day' })
+assert.match(hmDia.carrera.find(r => r.id === 'hidratacion_previa')!.dosis, /410-574 mL/)
+assert.match(maraton.carrera.find(r => r.id === 'electrolitos_sodio')!.timing, /pastillas/)
 console.log('suplementos: OK')

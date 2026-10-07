@@ -1,3 +1,4 @@
+import { perfilPrueba } from './competicion'
 export type GrupoSuplemento = 'rendimiento' | 'nutricion_deportiva' | 'salud'
 export type Evidencia = 'A' | 'B' | 'C'
 export type Recomendacion = { id: string; nombre: string; grupo: GrupoSuplemento; dosis: string; timing: string; evidencia: Evidencia; fuentes: string[]; precauciones: string[]; estado: 'propuesta' }
@@ -11,7 +12,9 @@ type FichaSuplemento = Pick<Recomendacion, 'id' | 'nombre' | 'grupo' | 'evidenci
 
 const CATALOGO_SUPLEMENTOS: Record<string, FichaSuplemento> = {
   cafeina: { id: 'cafeina', nombre: 'Cafeina', grupo: 'rendimiento', evidencia: 'A', fuentes: [IOC, 'ISSN 2021 (Guest et al., J Int Soc Sports Nutr 18:1)'], precauciones: ['Puede afectar al sueno si se toma tarde', 'Precaucion en ansiedad e hipertension', 'Prueba la dosis en entreno', 'Maximo 400 mg/dia', NOTA_ANTIDOPAJE] },
-  carbohidratos_intra: { id: 'carbohidratos_intra', nombre: 'Carbohidratos durante el esfuerzo', grupo: 'nutricion_deportiva', evidencia: 'A', fuentes: [IOC, 'Jeukendrup 2014 (Sports Med 44 S1); Jeukendrup 2011 (J Sports Sci 29 S1, maratón/triatlón/ciclismo); Thomas 2016 (ACSM/AND/DC)'], precauciones: ['Opciones: maltodextrina, geles y bebidas isotonicas', 'El hidrogel tipo Maurten no tiene ventaja concluyente frente a geles convencionales a igual cantidad de carbohidratos', 'Entrena el intestino y prueba todo antes de la prueba', NOTA_ANTIDOPAJE] },
+  carbohidratos_intra: { id: 'carbohidratos_intra', nombre: 'Carbohidratos durante el esfuerzo', grupo: 'nutricion_deportiva', evidencia: 'A', fuentes: [IOC, 'Jeukendrup 2014 (Sports Med 44 S1); Jeukendrup 2011 (J Sports Sci 29 S1, maratón/triatlón/ciclismo); Thomas 2016 (ACSM/AND/DC)'], precauciones: ['Opciones: maltodextrina, geles, drink mix tipo Maurten y bebidas isotonicas', 'El hidrogel tipo Maurten no tiene ventaja concluyente frente a geles convencionales a igual cantidad de carbohidratos', 'Entrena el intestino y prueba todo antes de la prueba', NOTA_ANTIDOPAJE] },
+  bebida_hidratos: { id: 'bebida_hidratos', nombre: 'Bebida de hidratos (drink mix tipo Maurten, isotónico en polvo o maltodextrina)', grupo: 'nutricion_deportiva', evidencia: 'A', fuentes: [IOC, 'Burke 2011 (J Sports Sci 29 S1)', 'Metaanálisis 2026 de carga de hidratos (doi 10.1111/sms.70379)'], precauciones: ['Estos hidratos cuentan dentro del total del día: no se suman a la dieta, la sustituyen en parte', 'Los gramos por sobre cambian según el producto: usa la etiqueta (un sobre de drink mix de 320 aporta unos 80 g de hidratos)', 'Prueba la bebida y la dosis en entrenos largos antes de la prueba (tolerancia digestiva)', 'El hidrogel tipo Maurten no tiene ventaja concluyente frente a otras bebidas de hidratos a igual cantidad', NOTA_ANTIDOPAJE] },
+  hidratacion_previa: { id: 'hidratacion_previa', nombre: 'Hidratación previa a la prueba', grupo: 'nutricion_deportiva', evidencia: 'B', fuentes: ['Sawka 2007 (ACSM position stand, Med Sci Sports Exerc 39:377)'], precauciones: ['Bebe despacio y no te pases: sobrehidratar aumenta el riesgo de hiponatremia', 'Una orina de color pajizo claro es una buena guía', 'Una bebida con sodio o un snack salado ayuda a retener el líquido y estimula la sed', NOTA_ANTIDOPAJE] },
   electrolitos_sodio: { id: 'electrolitos_sodio', nombre: 'Sodio', grupo: 'nutricion_deportiva', evidencia: 'B', fuentes: [IOC, 'Thomas 2016 (ACSM/AND/DC); Sawka 2007 (ACSM); Hew-Butler 2015'], precauciones: ['Bebe segun sed y tasa de sudoracion; evita una perdida superior al 2% del peso', 'No sobrehidrates: riesgo de hiponatremia', NOTA_ANTIDOPAJE] },
   recuperacion: { id: 'recuperacion', nombre: 'Recuperacion', grupo: 'nutricion_deportiva', evidencia: 'A', fuentes: [IOC, 'Thomas 2016 (ACSM/AND/DC)'], precauciones: [NOTA_ANTIDOPAJE] },
   creatina: { id: 'creatina', nombre: 'Creatina', grupo: 'rendimiento', evidencia: 'A', fuentes: [IOC, 'ISSN 2017 (Kreider et al.)'], precauciones: ['Puede aumentar 1-2 kg de agua; valora su uso en running puro si el peso es critico', 'Consulta al medico si tienes enfermedad renal', NOTA_ANTIDOPAJE] },
@@ -64,7 +67,7 @@ export function recomendarSuplementos(ctx: ContextoSuplementos): ResultadoSuplem
   // En la prueba manda la duración típica de la disciplina (orientativa, atleta aficionado), no la del entreno de hoy
   const duracionPrueba = ctx.duracion_prueba_min ?? DURACION_PRUEBA_MIN[disciplina] ?? duracion
   const carbohidratos = (d = duracion) => crear('carbohidratos_intra', d < 45 ? 'Nada o solo enjuague' : d <= 75 ? 'Hasta 30 g/h' : d <= 150 ? '30-60 g/h' : '60-90 g/h con maltodextrina (glucosa):fructosa 2:1', 'Durante el esfuerzo')
-  const sodio = () => crear('electrolitos_sodio', '300-600 mg de sodio por hora', 'Durante el esfuerzo')
+  const sodio = () => crear('electrolitos_sodio', '300-600 mg de sodio por hora', 'Durante el esfuerzo (pastillas o cápsulas de sales, sobres de electrolitos, bebida con sodio o geles con sodio)')
   const recuperacion = () => crear('recuperacion', `${fmt(peso)}-${fmt(1.2 * peso)} g de carbohidratos + ${fmt(0.3 * peso)} g de proteina`, 'Primera hora tras esfuerzo largo o si hay dos sesiones el mismo dia')
   if (!renal && (ctx.objetivo === 'rendimiento' || ctx.objetivo === 'ganar_musculo' || hyrox || ctx.tipo_sesion === 'fuerza' || ctx.tipo_sesion === 'hibrido')) resultado.diaria.push(crear('creatina', '3-5 g/dia', 'Continua, sin fase de carga'))
   if (hyrox || ctx.intensidad === 'alta') resultado.diaria.push(crear('beta_alanina', '4-6 g/dia repartidos en tomas de ~1,6 g', 'Durante al menos 2-4 semanas'))
@@ -74,6 +77,17 @@ export function recomendarSuplementos(ctx: ContextoSuplementos): ResultadoSuplem
   if (duracion >= 45) resultado.sesion.push(carbohidratos())
   if (duracion > 120) resultado.sesion.push(sodio())
   if (duracion >= 90 || ctx.fase_competicion === 'race_day') resultado.sesion.push(recuperacion())
+  // Días de carga de hidratos: parte de los hidratos puede ir en bebida (más cómoda). Objetivo g/kg según la duración de la prueba
+  const perfil = perfilPrueba(disciplina, ctx.duracion_prueba_min)
+  const choDiaCarga = perfil === 'muy_larga' ? 10 : perfil === 'larga' || perfil === 'media' ? 8 : 0
+  if (ctx.fase_competicion === 'carrera_inminente' && choDiaCarga > 0 && peso > 0) {
+    const total = choDiaCarga * peso
+    const liquidos = total * 0.3
+    resultado.carrera.push(crear('bebida_hidratos', `Unos ${Math.round(liquidos)} g de hidratos al día en bebida (25-40 % de los ${Math.round(total)} g del día; unos ${Math.max(1, Math.round(liquidos / 80))} sobres de 80 g), en 2-4 tomas`, 'Los días de carga (36-48 h antes), entre comidas o con ellas'))
+  }
+  if (ctx.fase_competicion === 'race_day' && peso > 0) {
+    resultado.carrera.push(crear('hidratacion_previa', `${Math.round(5 * peso)}-${Math.round(7 * peso)} mL de líquido (5-7 mL/kg)`, 'Despacio y al menos 4 h antes de la salida; si la orina sale oscura, 3-5 mL/kg unas 2 h antes. Con bebida con sodio o un snack salado'))
+  }
   if (competicion) {
     if (!hipertension) resultado.carrera.push(cafeina())
     if (duracionPrueba >= 45) resultado.carrera.push(carbohidratos(duracionPrueba))
