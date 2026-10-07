@@ -43,3 +43,8 @@ Semana regenerada con las reglas nuevas (complementos con sentido, platos habitu
 ## Segunda tanda de recetas (en `en_revision`, 35)
 `scripts/lotes/_generar-lotes-2026-10-07-b.py`: `veganas-comida-cena` (8), `comidas-cenas-variedad` (11: salmón, lubina, atún, rape, pulpo, mejillones, ternera, pavo, pollo, tortilla), `desayunos-menos-azucar` (8, sin mermelada ni miel) y `meriendas-variedad` (8). Alimentos nuevos verificados en el catálogo: tempeh, edamame, tahini, leche de coco, lentejas, pasta/arroz integral, tortilla de maíz, hummus, remolacha, rúcula, piña, higos, pasas, anacardos…
 Pendiente: aprobar en `/recetas/revisar` y comprobar que el planificador las verifica; sin fotos.
+
+## Estado final de la noche (08-10-2026)
+- Recetario limpio: 43 recetas sin categoría visibles, 19 nombres en castellano, instrucciones ampliadas, 6 duplicados y 17 variantes casi idénticas descartadas (copias en `salidas/`), cremas/sopas como guarnición y 10 platos únicos con ración real (`scripts/mantenimiento-recetario-2026-10-07.mjs`, `corregir-raciones-ligeras-2026-10-07.mjs`, `variantes-recetario-2026-10-07.mjs`; todos con `--revertir` o copia).
+- Semanas de Natalia, Laura, Marcos y Andrés regeneradas: días entre −9 % y +6 % del objetivo, sin repetir receta ni proteína el mismo día, sin hígado/embutidos para dislipidemia, todo vegano para Natalia.
+- Pendiente: fotos (389 sin foto), 19 recetas con <3 ingredientes, decisión de Mealprep Carne / Kebab / Pollo burger (siguen saliendo en planes), recetas veganas (pocas), campo de sabor y mini-comida (migración), arroz con pollo de salsa de cilantro y lentejas estofadas (datos erróneos).
