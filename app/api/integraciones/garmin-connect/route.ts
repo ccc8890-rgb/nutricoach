@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase } from '@/lib/supabase-server'
 import { createServiceSupabase } from '@/lib/supabase-server'
-import { cifrarCredenciales, verificarCredencialesGarmin } from '@/lib/integraciones/garmin-connect-perclient'
+import { cifrarConexionGarmin, crearConexionGarmin } from '@/lib/integraciones/garmin-connect-perclient'
 import { autorizarCliente, type ClienteLookup } from '@/lib/integraciones/autorizar-cliente'
 
 // Construye el lookup de autorización sobre el cliente service-role.
@@ -91,16 +91,17 @@ export async function POST(req: NextRequest) {
 
   // Verificar que las credenciales son válidas antes de guardar
   let displayName: string
+  let credencialesCifradas: string
   try {
-    displayName = await verificarCredencialesGarmin(email, password)
+    const resultado = await crearConexionGarmin(email, password)
+    displayName = resultado.displayName
+    credencialesCifradas = cifrarConexionGarmin(resultado.conexion)
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Credenciales inválidas'
     return NextResponse.json({ error: `Error de login Garmin: ${msg}` }, { status: 422 })
   }
 
   // Cifrar y guardar
-  const cifrado = cifrarCredenciales(email, password)
-
   const { error: upsertError } = await db
     .from('integraciones_cliente')
     .upsert(
@@ -108,8 +109,9 @@ export async function POST(req: NextRequest) {
         cliente_id: clienteId,
         proveedor: 'garmin_connect',
         activa: true,
-        credenciales_json: cifrado,
+        credenciales_json: credencialesCifradas,
         ultima_sync: null,
+        error_ultimo: null,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'cliente_id,proveedor' }

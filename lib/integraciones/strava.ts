@@ -15,6 +15,16 @@ const TIPO_MAP: Record<string, string> = {
   VirtualRide: 'ride', TrailRun: 'run', Triathlon: 'triathlon',
 }
 
+export function validarScopesStrava(scope: unknown): string {
+  const scopes = typeof scope === 'string'
+    ? scope.split(/[\s,]+/).filter(Boolean)
+    : []
+  if (!scopes.includes('activity:read_all')) {
+    throw new Error('Strava no concedió el permiso activity:read_all')
+  }
+  return scopes.join(',')
+}
+
 export const stravaProvider: ProveedorIntegracion = {
   proveedor: 'strava',
 
@@ -24,14 +34,14 @@ export const stravaProvider: ProveedorIntegracion = {
       client_id: CLIENT_ID,
       redirect_uri: `${APP_URL}/api/integraciones/strava/callback`,
       response_type: 'code',
-      approval_prompt: 'auto',
+      approval_prompt: 'force',
       scope: 'read,activity:read_all',
       state,
     })
     return `${BASE}/oauth/authorize?${params}`
   },
 
-  async handleCallback(code: string, _state: string): Promise<Partial<IntegracionCliente>> {
+  async handleCallback(code: string): Promise<Partial<IntegracionCliente>> {
     const res = await fetch(`${BASE}/oauth/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -44,12 +54,13 @@ export const stravaProvider: ProveedorIntegracion = {
     })
     if (!res.ok) throw new Error(`Strava token exchange failed: ${await res.text()}`)
     const data = await res.json()
+    const scope = validarScopesStrava(data.scope)
     return {
       access_token: data.access_token,
       refresh_token: data.refresh_token,
       token_expires_at: new Date(data.expires_at * 1000).toISOString(),
       proveedor_user_id: String(data.athlete?.id),
-      scope: 'activity:read_all',
+      scope,
       activa: true,
     }
   },

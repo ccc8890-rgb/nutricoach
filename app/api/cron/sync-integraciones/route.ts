@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { sincronizarTodosProveedores } from '@/lib/integraciones/sync'
-import { syncGarminDay, persistirGarminDays, dateRange } from '@/lib/integraciones/garmin-connect-sync'
+import { syncGarminDay, persistirGarminDays } from '@/lib/integraciones/garmin-connect-sync'
 import { syncGarminClientDays } from '@/lib/integraciones/garmin-connect-perclient'
+import { sanitizarErrorIntegracion } from '@/lib/integraciones/salud-fuente'
 
 export const maxDuration = 300
-import { descifrarCredenciales } from '@/lib/integraciones/garmin-connect-perclient'
 
 function checkAuth(req: NextRequest): boolean {
   const authHeader = req.headers.get('authorization')
@@ -44,11 +44,19 @@ export async function GET(req: NextRequest) {
       // Actualizar ultima_sync
       await db
         .from('integraciones_cliente')
-        .update({ ultima_sync: new Date().toISOString() })
+        .update({ ultima_sync: new Date().toISOString(), error_ultimo: null })
         .eq('cliente_id', row.cliente_id)
         .eq('proveedor', 'garmin_connect')
     } catch (e) {
-      gcClientResult.errores.push(`${row.cliente_id}: ${(e as Error).message}`)
+      const message = sanitizarErrorIntegracion(
+        e instanceof Error ? e.message : 'Error sincronizando Garmin Connect'
+      ) ?? 'Error sincronizando Garmin Connect'
+      gcClientResult.errores.push(`${row.cliente_id}: ${message}`)
+      await db
+        .from('integraciones_cliente')
+        .update({ error_ultimo: message, updated_at: new Date().toISOString() })
+        .eq('cliente_id', row.cliente_id)
+        .eq('proveedor', 'garmin_connect')
     }
   }
 
