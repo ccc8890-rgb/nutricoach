@@ -25,9 +25,8 @@ const CATALOGO: Rango[] = [
   { nombre: 'Quinoa (cocida)', cat: 'base', min: 80, max: 220, franjas: ['Comida', 'Cena'] },
   { nombre: 'Cuscús (cocido)', cat: 'base', gluten: true, min: 80, max: 220, franjas: ['Comida', 'Cena'] },
   { nombre: 'Pan integral', cat: 'base', gluten: true, min: 40, max: 100 },
-  // Bases de desayuno
-  { nombre: 'Pan de centeno', cat: 'base', gluten: true, min: 40, max: 100, franjas: ['Desayuno', 'Media mañana', 'Merienda'] },
-  { nombre: 'Avena', cat: 'base', gluten: true, min: 25, max: 70, franjas: ['Desayuno', 'Media mañana', 'Merienda'] },
+  // Sin avena ni pan sueltos: «Avena 65 g» no dice nada al cliente; en desayuno la base sale de recetas
+  // componente con contexto (porridge, tostadas, crema de arroz…), ver `recetas` más abajo
   // Fruta
   ...['Plátano', 'Manzana', 'Naranja', 'Kiwi', 'Pera', 'Uvas', 'Mandarina', 'Fresas', 'Arándanos', 'Melocotón']
     .map((nombre): Rango => ({ nombre, cat: 'fruta', min: 80, max: 200 })),
