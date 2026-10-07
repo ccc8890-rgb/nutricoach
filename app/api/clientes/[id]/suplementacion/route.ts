@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 import { construirContexto } from '@/lib/nutricion/contexto-suplementos'
-import { recomendarSuplementos, type Recomendacion } from '@/lib/nutricion/suplementos'
+import { getFichaSuplemento, recomendarSuplementos, type Recomendacion } from '@/lib/nutricion/suplementos'
 
 type Ambito = 'sesion' | 'diaria' | 'carrera'
 type Estado = 'propuesta' | 'aprobada' | 'descartada'
@@ -68,6 +68,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     const body: unknown = await request.json().catch(() => null)
     if (!esDecision(body)) return NextResponse.json({ error: 'Datos de suplementacion invalidos' }, { status: 400 })
+    if (!getFichaSuplemento(body.suplemento_id)) return NextResponse.json({ error: 'Suplemento desconocido' }, { status: 400 })
     const { suplemento_id, ambito, estado, notas } = body
     let { dosis, timing } = body
     // Aprobar sin dosis/momento (p. ej. por API) dejaría al cliente sin pauta: se completa con la propuesta actual
