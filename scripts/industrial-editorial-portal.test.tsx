@@ -3,6 +3,7 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
   EditorialMasthead,
+  HoyEditorial,
   IndustrialTabs,
   LiquidDock,
   MetricRail,
@@ -64,4 +65,28 @@ assert.match(primitives, /aria-valuenow="72"/)
 assert.match(primitives, /08:00/)
 assert.match(primitives, /Sentadilla/)
 
-console.log('industrial-editorial-portal: 5 contratos renderizados correctamente')
+const hoy = renderToStaticMarkup(
+  <HoyEditorial
+    firstName="Carlos"
+    dateLabel="jueves, 8 de octubre"
+    calories={2187}
+    meals={5}
+    weeklySessions={4}
+    weight={65.2}
+    macros={[
+      { label: 'Proteína', value: 142, target: 150, unit: 'g' },
+      { label: 'Carbohidratos', value: 278, target: 300, unit: 'g' },
+      { label: 'Grasas', value: 67, target: 70, unit: 'g' },
+    ]}
+    trainingName="Fuerza inferior"
+    hasPlan
+    onNavigate={noop}
+  />,
+)
+assert.match(hoy, /01 \/ TODAY/)
+assert.match(hoy, /Carlos/)
+assert.match(hoy, /2187/)
+assert.match(hoy, /Secuencia del día/)
+assert.match(hoy, /Fuerza inferior/)
+
+console.log('industrial-editorial-portal: 6 contratos renderizados correctamente')

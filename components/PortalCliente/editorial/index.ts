@@ -1,4 +1,5 @@
 export { default as EditorialMasthead } from './EditorialMasthead'
+export { default as HoyEditorial } from './HoyEditorial'
 export { default as IndustrialTabs } from './IndustrialTabs'
 export { default as LiquidDock } from './LiquidDock'
 export { default as MetricRail } from './MetricRail'
