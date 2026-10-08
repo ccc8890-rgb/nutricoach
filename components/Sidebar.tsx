@@ -98,6 +98,40 @@ const COSTES_COMPRA_ITEMS: NavItem[] = [
 // Ajustes agrupa también estas pantallas (Método y conocimiento)
 const AJUSTES_PREFIJOS = ['/ajustes', '/sistema', '/coach', '/conocimiento', '/cuestionarios']
 
+function AccionIcono({ label, icon: Icon, href, onClick, activo = false }: {
+  label: string
+  icon: LucideIcon
+  href?: string
+  onClick?: () => void
+  activo?: boolean
+}) {
+  const clases = 'group relative inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface)] focus-visible:bg-[var(--surface)]'
+  const estilo = { color: activo ? 'var(--text)' : 'var(--text-muted)', background: activo ? 'var(--surface)' : undefined }
+  const tooltip = (
+    <span
+      role="tooltip"
+      className="pointer-events-none absolute right-0 top-full z-50 mt-1.5 whitespace-nowrap rounded-md border px-2 py-1 text-[11px] font-medium opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+      style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border)', color: 'var(--text)', boxShadow: 'var(--shadow-sm)' }}
+    >
+      {label}
+    </span>
+  )
+  if (href) {
+    return (
+      <Link href={href} prefetch className={clases} style={estilo} aria-label={label} aria-current={activo ? 'page' : undefined}>
+        <Icon size={17} />
+        {tooltip}
+      </Link>
+    )
+  }
+  return (
+    <button type="button" onClick={onClick} className={clases} style={estilo} aria-label={label}>
+      <Icon size={17} />
+      {tooltip}
+    </button>
+  )
+}
+
 function isActivePath(pathname: string, href: string, exact = false) {
   if (exact) return pathname === href
   return pathname === href || pathname.startsWith(href + '/')
@@ -413,7 +447,7 @@ export default function Sidebar() {
 
   const sidebarContent = (
     <>
-      <div className="flex-shrink-0 p-5 border-b" style={{ borderColor: 'var(--glass-border)' }}>
+      <div className="flex-shrink-0 px-4 py-5 border-b" style={{ borderColor: 'var(--glass-border)' }}>
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
@@ -427,45 +461,20 @@ export default function Sidebar() {
           >
             CN
           </Link>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="font-semibold leading-tight text-[15px] tracking-[-0.025em]" style={{ color: 'var(--text)' }}>
               Casanova Lab
             </p>
-            <p className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
-              Silver Studio
-            </p>
           </div>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="ml-auto inline-flex h-8 items-center rounded-full border p-1 transition-colors"
-            style={{
-              borderColor: 'var(--glass-border)',
-              background: 'var(--surface)',
-              color: 'var(--text-muted)',
-            }}
-            title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-            aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-          >
-            <span
-              className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
-              style={{
-                background: theme === 'light' ? 'var(--surface-elevated)' : 'transparent',
-                color: theme === 'light' ? 'var(--text)' : 'var(--text-muted)',
-              }}
-            >
-              <Sun size={13} />
-            </span>
-            <span
-              className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors"
-              style={{
-                background: theme === 'dark' ? 'var(--surface-elevated)' : 'transparent',
-                color: theme === 'dark' ? 'var(--text)' : 'var(--text-muted)',
-              }}
-            >
-              <Moon size={13} />
-            </span>
-          </button>
+          <div className="flex flex-shrink-0 items-center gap-0.5">
+            <AccionIcono
+              label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+              onClick={toggleTheme}
+              icon={theme === 'dark' ? Sun : Moon}
+            />
+            <AccionIcono label="Ajustes" href="/ajustes" icon={Settings} activo={ajustesActivo} />
+            <AccionIcono label="Cerrar sesión" onClick={handleLogout} icon={LogOut} />
+          </div>
         </div>
       </div>
 
@@ -496,27 +505,6 @@ export default function Sidebar() {
           />
         ))}
       </nav>
-
-      <div className="flex-shrink-0 p-3 border-t space-y-1" style={{ borderColor: 'var(--glass-border)' }}>
-        <Link
-          href="/ajustes"
-          prefetch
-          className={ajustesActivo ? 'sidebar-link active w-full' : 'sidebar-link w-full'}
-          style={{ color: ajustesActivo ? undefined : 'var(--text-muted)' }}
-          aria-current={ajustesActivo ? 'page' : undefined}
-        >
-          <Settings size={18} />
-          <span>Ajustes</span>
-        </Link>
-        <button
-          onClick={handleLogout}
-          className="sidebar-link w-full"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          <LogOut size={18} />
-          <span>Cerrar sesión</span>
-        </button>
-      </div>
     </>
   )
 

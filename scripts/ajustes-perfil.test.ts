@@ -32,7 +32,7 @@ const sidebar = readFileSync(resolve(root, 'components/Sidebar.tsx'), 'utf8')
 const panel = readFileSync(resolve(root, 'components/ajustes/AjustesPanel.tsx'), 'utf8')
 const estilos = readFileSync(resolve(root, 'components/ajustes/ajustes.css'), 'utf8')
 
-assert.match(sidebar, /ajustesActivo \? 'sidebar-link active w-full'/, 'Ajustes debe recibir el mismo estado activo que el resto del menú')
+assert.match(sidebar, /label="Ajustes" href="\/ajustes" icon=\{Settings\} activo=\{ajustesActivo\}/, 'Ajustes debe estar en la cabecera del menú con su estado activo')
 assert.match(panel, /className="ajustes-input/, 'Los campos de Ajustes deben usar un tratamiento visual propio')
 assert.match(estilos, /\.ajustes-input/, 'Los campos deben diferenciarse de la superficie de la tarjeta')
 assert.match(estilos, /focus-visible/, 'Los campos deben conservar un foco claramente visible')
