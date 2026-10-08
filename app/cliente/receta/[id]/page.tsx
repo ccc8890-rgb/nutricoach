@@ -11,7 +11,8 @@ import { IngredientChecklist } from '@/components/premium/IngredientChecklist'
 import { StepByStep } from '@/components/premium/StepByStep'
 import type { Racion } from '@/lib/nutricion/racion'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
-import { SelectorRaciones, escalarGramos } from '@/components/premium/SelectorRaciones'
+import { formatoCantidad } from '@/lib/recetas/equivalencia'
+import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
 
 interface RecetaDetalle {
   id: string
@@ -33,6 +34,8 @@ interface IngredienteConAlimento {
   id: string
   nombre_libre?: string | null
   cantidad_gramos: number
+  cantidad_original?: number | null
+  unidad_display?: string | null
   alimento?: { nombre: string } | null
 }
 
@@ -91,7 +94,7 @@ export default function RecetaClientePage() {
     : ingredientes.map(ing => ({
         id: ing.id,
         nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
-        cantidad: `${escalarGramos(ing.cantidad_gramos, factorVista)}g`,
+        cantidad: formatoCantidad(ing.cantidad_gramos, factorVista, ing.cantidad_original, ing.unidad_display, ing.alimento?.nombre ?? ing.nombre_libre),
       }))
   const cantidadesDistintas = racion
     ? porciones > 1 || (receta?.kcal ? Math.abs(racion.plato.kcal / receta.kcal - 1) > 0.1 : false)

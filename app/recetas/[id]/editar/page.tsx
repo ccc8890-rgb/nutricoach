@@ -7,7 +7,7 @@ import { ArrowLeft, Link2, X, Search, Plus, Trash2, Upload, Hash } from 'lucide-
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import type { Alimento } from '@/types'
-import { CATEGORIAS, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
+import { CATEGORIAS, TIPOS_PLATO, TIPOS_COCCION, INTOLERANCIAS } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { TagInput } from '@/components/ui/TagInput'
@@ -19,6 +19,8 @@ interface Ingrediente {
     alimento_id: string | null
     nombre_libre: string
     cantidad_gramos: number
+    cantidad_original?: number | null
+    unidad_display?: string | null
     alimento?: Alimento
 }
 
@@ -35,6 +37,7 @@ export default function EditarRecetaPage() {
         instrucciones: '',
         consejos: '',
         categoria: '',
+        tipo_plato: '',
         tipo_coccion: '',
         dificultad: '',
         porciones: '1',
@@ -91,6 +94,7 @@ export default function EditarRecetaPage() {
                 instrucciones: receta.instrucciones ?? '',
                 consejos: receta.consejos ?? '',
                 categoria: receta.categoria ?? '',
+                tipo_plato: receta.tipo_plato ?? '',
                 tipo_coccion: receta.tipo_coccion ?? '',
                 dificultad: receta.dificultad ?? '',
                 porciones: String(receta.porciones ?? 1),
@@ -126,6 +130,8 @@ export default function EditarRecetaPage() {
                 alimento_id: ing.alimento_id,
                 nombre_libre: ing.nombre_libre ?? ing.alimento?.nombre ?? '',
                 cantidad_gramos: ing.cantidad_gramos,
+                cantidad_original: ing.cantidad_original ?? null,
+                unidad_display: ing.unidad_display ?? null,
                 alimento: ing.alimento,
             })))
 
@@ -174,7 +180,7 @@ export default function EditarRecetaPage() {
         setResultados([])
     }
 
-    function actualizarIngrediente(tempId: string, campo: 'nombre_libre' | 'cantidad_gramos', valor: string | number) {
+    function actualizarIngrediente(tempId: string, campo: 'nombre_libre' | 'cantidad_gramos' | 'cantidad_original' | 'unidad_display', valor: string | number | null) {
         setIngredientes(prev => prev.map(i => i.tempId === tempId ? { ...i, [campo]: valor } : i))
     }
 
@@ -238,6 +244,7 @@ export default function EditarRecetaPage() {
             instrucciones: form.instrucciones || null,
             consejos: form.consejos || null,
             categoria: form.categoria || null,
+            tipo_plato: form.tipo_plato || null,
             tipo_coccion: form.tipo_coccion || null,
             dificultad: form.dificultad || null,
             intolerancias: intolerancias.length ? intolerancias : null,
@@ -287,6 +294,8 @@ export default function EditarRecetaPage() {
                     alimento_id: ing.alimento_id || null,
                     nombre_libre: ing.nombre_libre || null,
                     cantidad_gramos: ing.cantidad_gramos,
+                    cantidad_original: ing.unidad_display?.trim() ? ing.cantidad_original : null,
+                    unidad_display: ing.unidad_display?.trim() || null,
                     orden: idx,
                 }).eq('id', ing.id)
                 : await supabase.from('receta_ingredientes').insert({
@@ -294,6 +303,8 @@ export default function EditarRecetaPage() {
                     alimento_id: ing.alimento_id || null,
                     nombre_libre: ing.nombre_libre || null,
                     cantidad_gramos: ing.cantidad_gramos,
+                    cantidad_original: ing.unidad_display?.trim() ? ing.cantidad_original : null,
+                    unidad_display: ing.unidad_display?.trim() || null,
                     orden: idx,
                 })
             if (ingErr) addToast({ type: 'error', title: 'Error', message: 'Error al guardar ingrediente: ' + ingErr.message })
@@ -376,6 +387,13 @@ export default function EditarRecetaPage() {
                                     <select className="input" value={form.categoria} onChange={e => setForm(p => ({ ...p, categoria: e.target.value }))}>
                                         <option value="">— Seleccionar —</option>
                                         {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)' }}>Tipo de plato</label>
+                                    <select className="input" value={form.tipo_plato} onChange={e => setForm(p => ({ ...p, tipo_plato: e.target.value }))}>
+                                        <option value="">— Seleccionar —</option>
+                                        {TIPOS_PLATO.map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
                                 </div>
                                 <div>
@@ -558,6 +576,27 @@ export default function EditarRecetaPage() {
                                                     onChange={e => actualizarIngrediente(ing.tempId, 'cantidad_gramos', parseFloat(e.target.value) || 0)}
                                                 />
                                                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{ing.cantidad_gramos === 0 ? 'al gusto' : 'g'}</span>
+                                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>=</span>
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    step="any"
+                                                    placeholder="2"
+                                                    title="Cantidad casera (ej. 2)"
+                                                    className="w-12 text-right border rounded px-2 py-1 text-sm outline-none"
+                                                    style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                                                    value={ing.cantidad_original ?? ''}
+                                                    onChange={e => actualizarIngrediente(ing.tempId, 'cantidad_original', e.target.value === '' ? null : parseFloat(e.target.value))}
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="huevos"
+                                                    title="Unidad casera (huevos, cucharadas, yogur…)"
+                                                    className="w-24 border rounded px-2 py-1 text-sm outline-none"
+                                                    style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                                                    value={ing.unidad_display ?? ''}
+                                                    onChange={e => actualizarIngrediente(ing.tempId, 'unidad_display', e.target.value)}
+                                                />
                                             </div>
 
                                             {/* Macros si vinculado y tiene cantidad */}

@@ -3,6 +3,9 @@ import type { ReactNode } from 'react'
 // ─── Categorías ───
 export const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre', 'Salsa', 'Acompañamiento'] as const
 
+// Tipo de plato (el que usa el planificador para colocar la receta en la dieta)
+export const TIPOS_PLATO = ['Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre', 'Salsa', 'Acompañamiento'] as const
+
 // ─── Sub-categorías contextuales por tipo de plato ───
 // Se muestran en la segunda fila solo cuando hay una categoría activa.
 // Matching: tags[] de la receta O nombre contiene el sub-tag (case-insensitive).

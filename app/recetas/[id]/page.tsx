@@ -11,7 +11,8 @@ import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
 import { MacroRing, IngredientChecklist, StepByStep } from '@/components/premium'
 import { listaRecordada } from '@/lib/useEstadoUrl'
-import { SelectorRaciones, escalarGramos } from '@/components/premium/SelectorRaciones'
+import { formatoCantidad } from '@/lib/recetas/equivalencia'
+import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
 import type { Alimento } from '@/types'
 
@@ -55,6 +56,8 @@ interface IngredienteConAlimento {
   alimento_id?: string | null
   nombre_libre?: string | null
   cantidad_gramos: number
+  cantidad_original?: number | null
+  unidad_display?: string | null
   orden?: number
   alimento?: Alimento | null
 }
@@ -129,7 +132,7 @@ export default function DetalleRecetaPage() {
   async function copiarAListaCompra() {
     const texto = ingredientes.map(ing => {
       const nombre = ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente'
-      return `□ ${nombre} — ${ing.cantidad_gramos}g`
+      return `□ ${nombre} — ${formatoCantidad(ing.cantidad_gramos, 1, ing.cantidad_original, ing.unidad_display, nombre)}`
     }).join('\n')
     try {
       await navigator.clipboard.writeText(texto)
@@ -286,7 +289,7 @@ export default function DetalleRecetaPage() {
   const checklistItems = ingredientes.map(ing => ({
     id: ing.id,
     nombre: ing.alimento?.nombre ?? ing.nombre_libre ?? 'Ingrediente',
-    cantidad: `${escalarGramos(ing.cantidad_gramos, factorVista)}g`,
+    cantidad: formatoCantidad(ing.cantidad_gramos, factorVista, ing.cantidad_original, ing.unidad_display, ing.alimento?.nombre ?? ing.nombre_libre),
     kcal: ing.alimento ? Math.round(calcularMacrosPorCantidad(
       ing.alimento.calorias, ing.alimento.proteinas, ing.alimento.carbohidratos, ing.alimento.grasas, ing.alimento.fibra ?? 0, ing.cantidad_gramos
     ).calorias * factorVista) : undefined,
