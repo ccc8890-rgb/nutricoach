@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Activity, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from 'lucide-react'
+import { Activity, ChevronDown, ChevronUp, Minus, TrendingDown, TrendingUp } from 'lucide-react'
 
 interface SesionReciente {
     fecha: string
@@ -12,7 +12,7 @@ interface SesionReciente {
     notas: string | null
 }
 
-interface TLSData {
+export interface TLSData {
     tls_semana_actual: number
     num_sesiones: number
     tls_promedio_4sem: number
@@ -34,11 +34,11 @@ const TIPO_LABELS: Record<string, string> = {
     otro: 'Otro',
 }
 
-const SEMAFORO_CONFIG = {
-    bajo: { label: 'Carga baja', bg: '#ECFDF5', color: '#059669', bar: '#10B981' },
-    normal: { label: 'Carga óptima', bg: '#EFF6FF', color: '#2563EB', bar: '#3B82F6' },
-    alto: { label: 'Carga alta', bg: '#FFFBEB', color: '#D97706', bar: '#F59E0B' },
-    muy_alto: { label: 'Sobreentrenamiento', bg: '#FEF2F2', color: '#DC2626', bar: '#EF4444' },
+const ESTADO_LABEL: Record<TLSData['semaforo'], string> = {
+    bajo: 'Carga baja',
+    normal: 'Carga en rango',
+    alto: 'Carga alta',
+    muy_alto: 'Revisar recuperación',
 }
 
 interface TLSGaugeProps {
@@ -46,46 +46,10 @@ interface TLSGaugeProps {
     onRegistrar: () => void
 }
 
-export default function TLSGauge({ codigo, onRegistrar }: TLSGaugeProps) {
-    const [data, setData] = useState<TLSData | null>(null)
-    const [loading, setLoading] = useState(true)
+export function TLSPanel({ data, onRegistrar }: { data: TLSData; onRegistrar: () => void }) {
     const [expandido, setExpandido] = useState(false)
-
-    useEffect(() => {
-        fetch(`/api/cliente/${codigo}/registrar-entreno`)
-            .then(r => r.json())
-            .then(d => { setData(d); setLoading(false) })
-            .catch(() => setLoading(false))
-    }, [codigo])
-
-    if (loading) {
-        return (
-            <div className="card p-4 animate-pulse">
-                <div className="h-4 rounded w-1/3 mb-3" style={{ background: 'var(--border)' }} />
-                <div className="h-24 rounded" style={{ background: 'var(--border)' }} />
-            </div>
-        )
-    }
-
-    if (!data || data.tls_semana_actual === undefined) {
-        return (
-            <div className="card p-4 text-center">
-                <Activity size={24} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    Registra tu primer entreno para ver tu carga de entrenamiento
-                </p>
-                <button
-                    onClick={onRegistrar}
-                    className="btn-primary mt-3 text-sm px-4 py-2"
-                >
-                    + Registrar entreno
-                </button>
-            </div>
-        )
-    }
-
-    const cfg = SEMAFORO_CONFIG[data.semaforo]
-    const pct = Math.min(data.porcentaje_umbral, 130)
+    const pct = Math.min(Math.max(data.porcentaje_umbral, 0), 130)
+    const progress = pct / 130
     const tendencia = data.tls_semana_actual > data.tls_promedio_4sem * 1.1
         ? 'up'
         : data.tls_semana_actual < data.tls_promedio_4sem * 0.9
@@ -93,102 +57,110 @@ export default function TLSGauge({ codigo, onRegistrar }: TLSGaugeProps) {
             : 'stable'
 
     return (
-        <div className="card overflow-hidden">
-            {/* Header */}
-            <div className="px-4 pt-4 pb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Activity size={16} style={{ color: cfg.color }} />
-                    <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                        Carga de entrenamiento
-                    </span>
+        <section className={`tls-instrument is-${data.semaforo}`} aria-labelledby="tls-title">
+            <header className="tls-instrument__header">
+                <div>
+                    <p className="editorial-kicker">03 / LOAD</p>
+                    <h2 id="tls-title">Carga semanal</h2>
                 </div>
-                <button
-                    onClick={onRegistrar}
-                    className="text-xs font-medium px-3 py-1 rounded-full"
-                    style={{ background: cfg.bg, color: cfg.color }}
-                >
-                    + Registrar
+                <button type="button" onClick={onRegistrar} className="tls-instrument__register">
+                    Registrar sesión <span aria-hidden="true">↗</span>
                 </button>
-            </div>
+            </header>
 
-            {/* TLS principal */}
-            <div className="px-4 pb-3" style={{ background: cfg.bg }}>
-                <div className="flex items-end gap-2 mb-2">
-                    <span className="text-3xl font-bold" style={{ color: cfg.color }}>
-                        {data.tls_semana_actual}
-                    </span>
-                    <span className="text-sm mb-1" style={{ color: cfg.color }}>pts esta semana</span>
-
-                    {/* Tendencia */}
-                    <div className="ml-auto flex items-center gap-1">
-                        {tendencia === 'up' && <TrendingUp size={14} style={{ color: cfg.color }} />}
-                        {tendencia === 'down' && <TrendingDown size={14} style={{ color: 'var(--text-muted)' }} />}
-                        {tendencia === 'stable' && <Minus size={14} style={{ color: 'var(--text-muted)' }} />}
-                        <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                            Media 4 sem: {data.tls_promedio_4sem}
-                        </span>
+            <div className="tls-instrument__readout">
+                <div className="tls-instrument__primary">
+                    <output>{data.tls_semana_actual}</output>
+                    <span>PTS / SEM</span>
+                </div>
+                <dl className="tls-instrument__telemetry">
+                    <div><dt>Media 4 sem</dt><dd>{data.tls_promedio_4sem}</dd></div>
+                    <div><dt>Umbral</dt><dd>{data.umbral}</dd></div>
+                    <div><dt>Sesiones</dt><dd>{data.num_sesiones}</dd></div>
+                    <div>
+                        <dt>Tendencia</dt>
+                        <dd aria-label={tendencia === 'up' ? 'Subiendo' : tendencia === 'down' ? 'Bajando' : 'Estable'}>
+                            {tendencia === 'up' ? <TrendingUp size={14} /> : tendencia === 'down' ? <TrendingDown size={14} /> : <Minus size={14} />}
+                        </dd>
                     </div>
-                </div>
-
-                {/* Barra de progreso */}
-                <div className="relative h-2 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.08)' }}>
-                    <div
-                        className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
-                        style={{ width: `${pct}%`, background: cfg.bar }}
-                    />
-                    {/* Marcador de umbral (100%) */}
-                    <div
-                        className="absolute top-0 h-full w-px"
-                        style={{ left: `${100 / 1.3}%`, background: 'rgba(0,0,0,0.25)' }}
-                    />
-                </div>
-
-                <div className="flex items-center justify-between mt-1.5">
-                    <span className="text-xs font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
-                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                        Umbral: {data.umbral} pts · {data.num_sesiones} sesión{data.num_sesiones !== 1 ? 'es' : ''}
-                    </span>
-                </div>
+                </dl>
             </div>
 
-            {/* Sesiones recientes (expandibles) */}
-            {data.sesiones_recientes && data.sesiones_recientes.length > 0 && (
-                <div className="border-t" style={{ borderColor: 'var(--border)' }}>
-                    <button
-                        onClick={() => setExpandido(e => !e)}
-                        className="w-full flex items-center justify-between px-4 py-2.5 text-xs"
-                        style={{ color: 'var(--text-secondary)' }}
-                    >
+            <div
+                className="tls-instrument__progress"
+                role="progressbar"
+                aria-label="Carga respecto al umbral"
+                aria-valuemin={0}
+                aria-valuemax={130}
+                aria-valuenow={pct}
+            >
+                <span style={{ transform: `scaleX(${progress})` }} />
+                <i aria-hidden="true" />
+            </div>
+
+            <div className="tls-instrument__status">
+                <span>{ESTADO_LABEL[data.semaforo]}</span>
+                <samp>{pct}% DEL RANGO</samp>
+            </div>
+
+            {data.sesiones_recientes && data.sesiones_recientes.length > 0 ? (
+                <div className="tls-instrument__history">
+                    <button type="button" onClick={() => setExpandido(value => !value)} aria-expanded={expandido}>
                         <span>Últimas sesiones</span>
                         {expandido ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
-
-                    {expandido && (
-                        <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-                            {data.sesiones_recientes.map((s, i) => (
-                                <div key={i} className="px-4 py-2.5 flex items-center gap-3">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>
-                                                {TIPO_LABELS[s.tipo_actividad] ?? s.tipo_actividad}
-                                            </span>
-                                            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                                {new Date(s.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                                            </span>
-                                        </div>
-                                        <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                                            {s.duracion_min} min · RPE {s.rpe}
-                                        </span>
+                    {expandido ? (
+                        <div>
+                            {data.sesiones_recientes.map((sesion, index) => (
+                                <article key={`${sesion.fecha}-${index}`}>
+                                    <span>{String(index + 1).padStart(2, '0')}</span>
+                                    <div>
+                                        <strong>{TIPO_LABELS[sesion.tipo_actividad] ?? sesion.tipo_actividad}</strong>
+                                        <small>{new Date(sesion.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} · {sesion.duracion_min} min · RPE {sesion.rpe}</small>
                                     </div>
-                                    <span className="text-sm font-bold flex-shrink-0" style={{ color: cfg.color }}>
-                                        {s.tls_diario} pts
-                                    </span>
-                                </div>
+                                    <samp>{sesion.tls_diario} PTS</samp>
+                                </article>
                             ))}
                         </div>
-                    )}
+                    ) : null}
                 </div>
-            )}
-        </div>
+            ) : null}
+        </section>
     )
+}
+
+export default function TLSGauge({ codigo, onRegistrar }: TLSGaugeProps) {
+    const [data, setData] = useState<TLSData | null>(null)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        fetch(`/api/cliente/${codigo}/registrar-entreno`)
+            .then(response => response.json())
+            .then(payload => { setData(payload); setLoading(false) })
+            .catch(() => setLoading(false))
+    }, [codigo])
+
+    if (loading) {
+        return (
+            <div className="tls-instrument tls-instrument--loading" aria-label="Cargando carga de entrenamiento">
+                <div /><div /><div />
+            </div>
+        )
+    }
+
+    if (!data || data.tls_semana_actual === undefined) {
+        return (
+            <section className="tls-instrument tls-instrument--empty">
+                <Activity size={18} aria-hidden="true" />
+                <div>
+                    <p className="editorial-kicker">03 / LOAD</p>
+                    <h2>Sin carga registrada</h2>
+                    <p>Registra tu primera sesión para activar esta lectura.</p>
+                </div>
+                <button type="button" onClick={onRegistrar}>Registrar sesión ↗</button>
+            </section>
+        )
+    }
+
+    return <TLSPanel data={data} onRegistrar={onRegistrar} />
 }

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { TLSPanel } from '../components/PortalCliente/TLSGauge'
 import {
   EditorialMasthead,
   HoyEditorial,
@@ -92,4 +93,24 @@ assert.match(hoy, /2187/)
 assert.match(hoy, /Secuencia del día/)
 assert.match(hoy, /Fuerza inferior/)
 
-console.log('industrial-editorial-portal: 6 contratos renderizados correctamente')
+const tls = renderToStaticMarkup(
+  <TLSPanel
+    data={{
+      tls_semana_actual: 0,
+      num_sesiones: 0,
+      tls_promedio_4sem: 0,
+      umbral: 80,
+      porcentaje_umbral: 0,
+      semaforo: 'bajo',
+      sesiones_recientes: [],
+    }}
+    onRegistrar={noop}
+  />,
+)
+assert.match(tls, /03 \/ LOAD/)
+assert.match(tls, /Carga semanal/)
+assert.match(tls, /aria-valuenow="0"/)
+assert.match(tls, /Registrar sesión/)
+assert.doesNotMatch(tls, /#ECFDF5|rounded-full/)
+
+console.log('industrial-editorial-portal: 7 contratos renderizados correctamente')
