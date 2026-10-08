@@ -450,7 +450,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                 const bg = esDescanso ? 'rgba(128,128,136,0.08)' : 'rgba(200,169,106,0.08)'
                 const border = esDescanso ? 'rgba(128,128,136,0.2)' : 'rgba(200,169,106,0.2)'
                 return (
-                    <div className="rounded-2xl p-3 flex items-start gap-3" style={{ background: bg, border: `1px solid ${border}` }}>
+                    <div className="diet-adjustment flex items-start gap-3" style={{ background: bg, borderColor: border }}>
                         <Zap size={16} style={{ color, flexShrink: 0, marginTop: 2 }} />
                         <div className="min-w-0">
                             <p className="text-xs font-semibold" style={{ color }}>
@@ -568,7 +568,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent' }}
                             >
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shrink-0" style={{ backgroundColor: yaHecho ? '#DCFCE7' : 'var(--primary-bg)' }}>
+                                    <div className="diet-meal-thumb w-12 h-12 flex items-center justify-center overflow-hidden shrink-0" style={{ backgroundColor: yaHecho ? '#DCFCE7' : 'var(--primary-bg)' }}>
                                         {comida.receta?.imagen_url ? (
                                             <Image src={comida.receta.imagen_url} alt={recetaNombre} width={48} height={48} className="h-full w-full object-cover" sizes="48px" />
                                         ) : yaHecho ? (
@@ -582,9 +582,9 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                                             <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
                                                 {comida.nombre}{comida.hora_sugerida ? ` · ${comida.hora_sugerida.slice(0, 5)}` : ''}
                                             </p>
-                                            {yaHecho && <span className="text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded">Hecho</span>}
-                                            {tieneCambio && !yaHecho && <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Cambio</span>}
-                                            {saltada && <span className="text-[10px] font-medium text-red-600 bg-red-50 px-1.5 py-0.5 rounded">No hecha</span>}
+                                            {yaHecho && <span className="diet-status-tag" data-state="done">Hecho</span>}
+                                            {tieneCambio && !yaHecho && <span className="diet-status-tag" data-state="changed">Cambio</span>}
+                                            {saltada && <span className="diet-status-tag" data-state="skipped">No hecha</span>}
                                         </div>
                                         <p className="sr-only">{recetaNombre}</p>
                                         <div className="flex items-center gap-2 mt-1">
@@ -614,14 +614,14 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                             )}
 
                             {(comida.alternativa_recetas ?? []).length > 0 && (
-                                <div className="px-5 pb-3 -mt-1 flex flex-wrap gap-2">
+                                <div className="diet-alternatives px-5 pb-3 -mt-1">
                                     {(comida.alternativa_recetas ?? []).slice(0, 3).map(alt => {
                                         const seleccionKey = `${comida.id}:${alt.id}`
                                         const seleccionando = seleccionandoReceta === seleccionKey
                                         return (
                                             <div
                                                 key={alt.id}
-                                                className="inline-flex max-w-full overflow-hidden rounded-full border text-[11px] font-medium"
+                                                className="diet-alternative-row text-[11px] font-medium"
                                                 style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-secondary)' }}
                                             >
                                                 <Link
@@ -654,7 +654,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                             )}
 
                             <div className="px-5 pb-3 pt-0 no-print">
-                                <div className="grid grid-cols-3 gap-1.5 rounded-2xl border p-1" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                                <div className="diet-state-grid grid grid-cols-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
                                     {([
                                         { key: 'hecha' as const, label: 'Hecha', color: '#16A34A', bg: '#DCFCE7' },
                                         { key: 'cambiada' as const, label: 'Cambio', color: '#D97706', bg: '#FEF3C7' },
@@ -675,7 +675,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                                                     }
                                                     handleRegistrar(comida.id, option.key)
                                                 }}
-                                                className="min-h-10 rounded-xl text-xs font-semibold transition-all active:scale-[0.98]"
+                                                className="min-h-10 text-xs font-semibold transition-all active:translate-y-px"
                                                 style={{
                                                     background: active ? option.bg : 'transparent',
                                                     color: active ? option.color : 'var(--text-muted)',

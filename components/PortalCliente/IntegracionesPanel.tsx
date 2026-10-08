@@ -187,7 +187,7 @@ function SaludFuenteInfo({ salud, error }: { salud: SaludFuente; error?: string 
   return (
     <div className="mt-1.5 text-[10px]" style={{ color }}>
       <p className="font-semibold">{estadoSaludLabel(salud.estado)}{antiguedad ? ` · hace ${antiguedad}` : ''}</p>
-      {error && <p className="mt-0.5 break-words">{error}</p>}
+      {error && <p className="mt-0.5 break-words">No hemos podido actualizar esta conexión.</p>}
       {salud.accion && <p className="mt-0.5">{salud.accion}</p>}
     </div>
   )
