@@ -1,5 +1,17 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 08→09-10-2026 (madrugada, Claude) — Flujo Content Radar recuperado y auditoría profunda del motor de recetas
+
+Carlos metió 10 $ en OpenAI y en DeepSeek y pidió recuperar el flujo reel/TikTok → recetario «para ir metiendo recetas poco a poco», que salgan perfectas (foto, macros, ingredientes, raciones, pasos) y que los reels sin receta dejen un **borrador** con lo máximo posible. Todo el código está en `Content-Radar/` (commits `933df14`…`1d82c4d`); informe completo en [`docs/09-10-2026_auditoria-motor-recetas-puente.md`](docs/09-10-2026_auditoria-motor-recetas-puente.md).
+
+- **Estado del flujo:** móvil (atajo iOS) → Notion → servicio automático `com.contentradar.pipeline` (cada 2 h, 5 reels por pasada, necesita el Mac encendido) → receta **en `en_revision`** con foto (miniatura del reel retocada), ingredientes, macros y pasos. Decisión de Carlos: entran en revisión, las aprueba él en `/recetas/revisar`.
+- **Por qué llevaba muerto desde junio:** LaunchAgent con `spawn failed` (launchd no abre logs/WorkingDirectory en Escritorio), OpenAI y DeepSeek sin saldo, paso de foto con txt2img y reintento infinito, claves en inglés (`ingredients`), matcher de ingredientes poco fiable, cookies de Brave ilegibles bajo launchd (→ `IG_COOKIES_FILE`).
+- **Coste medido:** foto (calidad media) ≈ 0,06 $ (6,53 → 6,47 $), DeepSeek ≈ 0,005 $/receta → unos 20 $/mes con 10 recetas/día. El retoque sin `quality` salía a ≈ 0,18 $/foto (corregido).
+- **Auditoría:** `npx tsx scripts/auditar-recetas-puente.ts` (solo lectura). De 188 recetas del puente, **59 % sin fallos graves** (antes 38 %). 15 correcciones en el motor (tipos de plato/receta, pasos, dedup por enlace, trazabilidad `cantidad_original`, estimación de cantidades con IA, pesos por ingrediente, aviso de macros contra el vídeo, borradores intuidos con visión, publicaciones de fotos…).
+- **Borradores:** reels sin receta hablada → receta `Borrador` con foto, enlace y propuesta de ingredientes/pasos intuida (título, pie, audio, miniatura y 6 fotogramas con `gpt-4o-mini`); sin pistas no inventa; sin auto-crear alimentos. Etiqueta `Borrador`/`Revisar macros` y aviso ⚠️ en la descripción.
+- **Pendiente de Carlos (decisiones):** 3 pares de recetas duplicadas por el mismo enlace (Mochi ×2, Gel energético ×2, Mayonesa camarón/camarones), azúcar 80 g por defecto en 5 aprobadas antiguas, raciones de Tiras de pollo crujiente y Poke bowl, 2 fotos `txt2img`. Filtro visual para `Borrador`/`Revisar macros` en la bandeja (diseño, Codex).
+- **Lecciones:** (1) un cálculo de coste sin medir puede estar 5× mal: probar con una unidad real antes de prometer cifras; (2) launchd no es tu terminal (permisos de macOS distintos: logs en Escritorio y cookies del navegador); (3) auditar con datos reales encuentra lo que las pruebas sintéticas no (la mitad de lo hallado salió de recetas antiguas); (4) `.env` con `override=True` pisa las variables del wrapper; (5) `brew link --overwrite` cuando un lanzador antiguo de pip tapa la versión nueva.
+
 ## ✅ SESIÓN 08-10-2026 (noche, Claude) — Seguridad de recetas, avisos de huecos, 16 recetas nuevas y foto diaria del negocio
 
 Codex lleva la parte visual/estética en paralelo: se commitearon solo ficheros propios (`git add <ruta>`). Commits `cea145b`, `16d31b9` y el de cierre.
