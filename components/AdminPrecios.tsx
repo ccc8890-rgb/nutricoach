@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import type { Supermercado, Alimento, PrecioActual } from '@/types'
+import { useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
 
 const PAGE_SIZE = 200
 
@@ -36,10 +37,11 @@ export default function AdminPrecios() {
     const [precios, setPrecios] = useState<PrecioActual[]>([])
     const [totalCount, setTotalCount] = useState(0)
     const [cargando, setCargando] = useState(true)
+    useRestaurarScroll(!cargando)
     const [cargandoSupermercados, setCargandoSupermercados] = useState(true)
     const [errorSupermercados, setErrorSupermercados] = useState<string | null>(null)
-    const [supermercadoSel, setSupermercadoSel] = useState<string | null>(null)
-    const [busqueda, setBusqueda] = useState('')
+    const [supermercadoSel, setSupermercadoSel] = useEstadoUrl<string | null>('super', null)
+    const [busqueda, setBusqueda] = useEstadoUrl<string>('q', '')
     const [mostrarForm, setMostrarForm] = useState(false)
     const [form, setForm] = useState<ProductoForm>(PRODUCTO_VACIO)
     const [guardando, setGuardando] = useState(false)

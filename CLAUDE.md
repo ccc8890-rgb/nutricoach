@@ -10,7 +10,8 @@ Commits `6bfee61` + el de scroll/listas. Sin migraciones. Verificado en local co
 - **Avisos de la ficha:** onboarding incompleto y revisión de plan llevan a Perfil (antes no llevaban a ningún sitio).
 - **Analíticas:** guardado probado en Laura Vidal (vitamina D/ferritina persisten tras recargar) y borrado después.
 - **Lección:** al restaurar scroll hay que no guardar mientras la página carga (el navegador lo mueve solo y pisa el valor) y desactivar el scroll nativo.
-- **Pendiente:** el resto de pantallas de lista (alimentos, precios…) no guardan filtros; el scroll no se restaura en pestañas internas de la ficha.
+- **Alimentos y Precios** (`/dietas/alimentos`, `/precios`) también guardan búsqueda, categoría, supermercado y casillas en la URL y restauran el scroll. Las reglas de vitamina D/hierro con analítica <30 las cubre `scripts/suplementos.test.ts` (OK).
+- **Pendiente:** otras listas menores (escandallo, cobertura, imágenes) no guardan filtros.
 
 ## ✅ SESIÓN 08-10-2026 (mediodía, Claude) — Ajustes, menú limpio y ficha del cliente
 

@@ -7,6 +7,7 @@ import type { Alimento } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
 import { SkeletonCard } from '@/components/ui/Skeleton'
+import { useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
 
 // Todas las categorías existentes en la BD (en orden lógico para display)
 const CATEGORIAS = [
@@ -182,12 +183,20 @@ export default function AlimentosPage() {
     const { addToast } = useToast()
     const [alimentos, setAlimentos] = useState<Alimento[]>([])
     const [loading, setLoading] = useState(true)
+    useRestaurarScroll(!loading)
     const [seedLoading, setSeedLoading] = useState(false)
-    const [search, setSearch] = useState('')
-    const [categoriaFiltro, setCategoriaFiltro] = useState('')
-    const [soloCustom, setSoloCustom] = useState(false)
-    const [soloIA, setSoloIA] = useState(false)
-    const [soloConDatos, setSoloConDatos] = useState(false)
+    // Filtros en la URL: al abrir un alimento o volver atrás se conservan
+    const [search, setSearch] = useEstadoUrl<string>('q', '')
+    const [categoriaFiltro, setCategoriaFiltro] = useEstadoUrl<string>('cat', '')
+    const [customRaw, setCustomRaw] = useEstadoUrl<string>('propios', '0', ['0', '1'])
+    const soloCustom = customRaw === '1'
+    const setSoloCustom = (v: boolean) => setCustomRaw(v ? '1' : '0')
+    const [iaRaw, setIaRaw] = useEstadoUrl<string>('ia', '0', ['0', '1'])
+    const soloIA = iaRaw === '1'
+    const setSoloIA = (v: boolean) => setIaRaw(v ? '1' : '0')
+    const [datosRaw, setDatosRaw] = useEstadoUrl<string>('datos', '0', ['0', '1'])
+    const soloConDatos = datosRaw === '1'
+    const setSoloConDatos = (v: boolean) => setDatosRaw(v ? '1' : '0')
     const debouncedSearch = useDebounce(search, 300)
     const [showForm, setShowForm] = useState(false)
     const [editando, setEditando] = useState<Alimento | null>(null)
