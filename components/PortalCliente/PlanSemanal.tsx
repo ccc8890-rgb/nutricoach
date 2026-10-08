@@ -86,7 +86,7 @@ export default function PlanSemanal({ comidas, targets, codigo }: PlanSemanalPro
     )
 
     return (
-        <div className="space-y-4">
+        <div className="plan-weekly-document space-y-4">
             {/* Selector de día */}
             <div className="grid grid-cols-7 gap-1">
                 {DIAS_SHORT.map((label, i) => (
@@ -128,7 +128,7 @@ export default function PlanSemanal({ comidas, targets, codigo }: PlanSemanalPro
                     <div className="grid grid-cols-3 gap-2 mt-3 text-xs font-medium">
                         <span className="rounded-xl px-2 py-1.5 text-center" style={{ color: '#FF3B30', background: 'var(--bg)' }}>P {totalDia.proteinas.toFixed(0)}g</span>
                         <span className="rounded-xl px-2 py-1.5 text-center" style={{ color: '#FF9500', background: 'var(--bg)' }}>C {totalDia.carbohidratos.toFixed(0)}g</span>
-                        <span className="rounded-xl px-2 py-1.5 text-center" style={{ color: '#0A84FF', background: 'var(--bg)' }}>G {totalDia.grasas.toFixed(0)}g</span>
+                        <span className="rounded-xl px-2 py-1.5 text-center" style={{ color: 'var(--metal-bright)', background: 'var(--bg)' }}>G {totalDia.grasas.toFixed(0)}g</span>
                     </div>
                 </div>
             )}

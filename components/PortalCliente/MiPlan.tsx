@@ -11,6 +11,7 @@ import DietaKanban from './DietaKanban'
 import ListaCompraPortal from './ListaCompraPortal'
 import { getAjusteDesdeNombreSesion } from '@/lib/periodizacion/dia-entreno-nutricion'
 import { esComidaDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
+import { IndustrialTabs, ProgressInstrument, TechnicalRow } from './editorial'
 
 type EstadoComida = RegistroComidaDia['estado']
 
@@ -132,72 +133,6 @@ interface MiPlanProps {
     sesion_hoy?: { nombre: string } | null
 }
 
-function MacroRing({
-    label,
-    value,
-    target,
-    unit,
-    color,
-}: {
-    label: string
-    value: number
-    target?: number | null
-    unit: string
-    color: string
-}) {
-    const safeTarget = Number(target ?? 0)
-    const pct = safeTarget > 0 ? Math.min(125, Math.round((value / safeTarget) * 100)) : 0
-    const radius = 27
-    const center = 34
-    const stroke = 6
-    const circumference = 2 * Math.PI * radius
-    const offset = circumference - (Math.min(pct, 100) / 100) * circumference
-    const delta = safeTarget > 0 ? Math.round(value - safeTarget) : 0
-    const deltaText = safeTarget > 0
-        ? delta === 0
-            ? 'en objetivo'
-            : `${Math.abs(delta)}${unit} ${delta > 0 ? 'sobre' : 'faltan'}`
-        : 'sin objetivo'
-
-    return (
-        <div className="min-w-0 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <div className="mx-auto relative" style={{ width: 68, height: 68 }}>
-                <svg width="68" height="68" viewBox={`0 0 ${center * 2} ${center * 2}`}>
-                    <circle cx={center} cy={center} r={radius} fill="none" stroke="var(--border)" strokeWidth={stroke} />
-                    {safeTarget > 0 && (
-                        <circle
-                            cx={center}
-                            cy={center}
-                            r={radius}
-                            fill="none"
-                            stroke={color}
-                            strokeWidth={stroke}
-                            strokeLinecap="round"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={offset}
-                            transform={`rotate(-90 ${center} ${center})`}
-                            style={{ transition: 'stroke-dashoffset .35s ease' }}
-                        />
-                    )}
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-base font-bold tabular-nums leading-none" style={{ color: 'var(--text)' }}>
-                        {Math.round(value)}
-                    </span>
-                    <span className="text-[10px] leading-none mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                        {unit}
-                    </span>
-                </div>
-            </div>
-            <div className="mt-2 text-center">
-                <p className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{label}</p>
-                <p className="text-[10px] mt-0.5 truncate" style={{ color: safeTarget > 0 && Math.abs(delta) <= Math.max(5, safeTarget * 0.05) ? color : 'var(--text-muted)' }}>
-                    {safeTarget > 0 ? `${pct}% · ${deltaText}` : deltaText}
-                </p>
-            </div>
-        </div>
-    )
-}
 
 export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: MiPlanProps) {
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>({})
@@ -441,22 +376,12 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
     return (
         <div className="space-y-4 print-area">
             {/* Toggle Hoy / Semana */}
-            <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
-                {(['hoy', 'semana'] as const).map(v => (
-                    <button
-                        key={v}
-                        type="button"
-                        onClick={() => setVistaActual(v)}
-                        className="flex-1 py-2.5 text-sm font-semibold transition-colors"
-                        style={{
-                            background: vistaActual === v ? 'var(--primary)' : 'transparent',
-                            color: vistaActual === v ? 'var(--bg)' : 'var(--text-muted)',
-                        }}
-                    >
-                        {v === 'hoy' ? 'Hoy' : 'Semana'}
-                    </button>
-                ))}
-            </div>
+            <IndustrialTabs
+                ariaLabel="Vista del plan nutricional"
+                activeKey={vistaActual === 'compra' ? 'hoy' : vistaActual}
+                items={[{ key: 'hoy', label: 'Hoy' }, { key: 'semana', label: 'Semana' }]}
+                onChange={setVistaActual}
+            />
 
             {/* Vista semanal — Kanban por día, arrastrar comidas entre días.
                 Usa comidasParaSemana (plan original, referencia estable) */}
@@ -484,7 +409,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             {/* Vista diaria */}
             {vistaActual === 'hoy' && (<>
 
-            <div className="grid grid-cols-7 gap-1.5">
+            <div className="diet-day-rail">
                 {DIAS_NUTRICION.map(dia => {
                     const activo = dia === diaActivo
                     const totalDiaChip = (planLocal.comidas ?? []).filter(c => comidaDelDiaActivo(c, dia)).length
@@ -493,11 +418,9 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                             key={dia}
                             type="button"
                             onClick={() => setDiaActivo(dia)}
-                            className="rounded-2xl border py-2 text-center transition-colors"
+                            className={`diet-day ${activo ? 'is-active' : ''}`}
                             style={{
-                                borderColor: activo ? 'var(--primary)' : 'var(--border)',
-                                background: activo ? 'var(--primary-bg)' : 'var(--surface)',
-                                color: activo ? 'var(--primary)' : 'var(--text-muted)',
+                                color: activo ? 'var(--atelier-carbon)' : 'var(--text-muted)',
                             }}
                             aria-label={`Ver dieta de ${dia}`}
                         >
@@ -535,7 +458,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             })()}
 
             {/* Resumen macros + adherencia del día */}
-            <section className="rounded-3xl border p-4 sm:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <section className="diet-document-summary">
                 <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="min-w-0">
                         <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
@@ -557,11 +480,11 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <MacroRing label="Energía" value={totalDia.calorias} target={targets.kcal} unit="kcal" color="#34C759" />
-                    <MacroRing label="Proteína" value={totalDia.proteinas} target={targets.proteinas} unit="g" color="#FF3B30" />
-                    <MacroRing label="Carbohidratos" value={totalDia.carbohidratos} target={targets.carbohidratos} unit="g" color="#FF9500" />
-                    <MacroRing label="Grasas" value={totalDia.grasas} target={targets.grasas} unit="g" color="#0A84FF" />
+                <div className="diet-macro-rail">
+                    <ProgressInstrument label="Energía" value={totalDia.calorias} max={targets.kcal ?? totalDia.calorias} unit=" kcal" />
+                    <ProgressInstrument label="Proteína" value={totalDia.proteinas} max={targets.proteinas ?? totalDia.proteinas} unit=" g" />
+                    <ProgressInstrument label="Carbohidratos" value={totalDia.carbohidratos} max={targets.carbohidratos ?? totalDia.carbohidratos} unit=" g" />
+                    <ProgressInstrument label="Grasas" value={totalDia.grasas} max={targets.grasas ?? totalDia.grasas} unit=" g" />
                 </div>
 
                 {totalComidas > 0 && (
@@ -590,7 +513,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                         <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Revisa la vista semanal o pide a tu coach que complete este día.</p>
                     </div>
                 )}
-                {comidasDia.map(comida => {
+                {comidasDia.map((comida, comidaIndex) => {
                     const alimentos = comida.alimentos ?? []
                     const macros = calcMacrosComida(alimentos)
                     const expanded = expandidas[comida.id]
@@ -609,7 +532,15 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                     }
 
                     return (
-                        <div key={comida.id} className="card overflow-hidden !p-0">
+                        <TechnicalRow
+                            key={comida.id}
+                            index={String(comidaIndex + 1).padStart(2, '0')}
+                            label={recetaNombre}
+                            meta={`${macros.calorias.toFixed(0)} KCAL`}
+                            detail={`${comida.nombre}${comida.hora_sugerida ? ` · ${comida.hora_sugerida.slice(0, 5)}` : ''}`}
+                            className="diet-chapter"
+                        >
+                        <div className="diet-chapter__body">
                             <div
                                 role="button"
                                 tabIndex={0}
@@ -644,9 +575,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                                             {tieneCambio && !yaHecho && <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Cambio</span>}
                                             {saltada && <span className="text-[10px] font-medium text-red-600 bg-red-50 px-1.5 py-0.5 rounded">No hecha</span>}
                                         </div>
-                                        <p className="font-semibold leading-tight line-clamp-2 mt-0.5" style={{ color: 'var(--text)' }}>
-                                            {recetaNombre}
-                                        </p>
+                                        <p className="sr-only">{recetaNombre}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <p className="text-xs whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
                                                 {macros.calorias.toFixed(0)} kcal
@@ -844,6 +773,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                                 </div>
                             )}
                         </div>
+                        </TechnicalRow>
                     )
                 })}
             </div>
