@@ -93,7 +93,7 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
     }
 
     return (
-        <div className="settings-system flex flex-col gap-4">
+        <div className="settings-system settings-console flex flex-col gap-4">
             <IndustrialTabs
                 ariaLabel="Secciones de ajustes"
                 activeKey={subTab}
@@ -107,7 +107,7 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
 
             {subTab === 'perfil' && (
                 <div className="flex flex-col gap-4">
-                    <section className="settings-panel">
+                    <section className="settings-panel settings-console__section">
                         <h2 className="text-sm font-bold mb-2" style={{ color: 'var(--text)' }}>Tus datos</h2>
                         <InfoRow label="Nombre" value={`${profile?.nombre ?? ''} ${profile?.apellidos ?? ''}`.trim()} />
                         <InfoRow label="Email" value={profile?.email} />
@@ -120,7 +120,7 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
                         </p>
                     </section>
 
-                    <section className="settings-panel">
+                    <section className="settings-panel settings-console__section">
                         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--text)' }}>Restricciones alimentarias</h2>
                         <textarea
                             className="input editorial-field w-full resize-none"
@@ -142,7 +142,7 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
                     <button
                         type="button"
                         onClick={toggleTheme}
-                        className="w-full flex items-center justify-between px-5 py-4 rounded-2xl cursor-pointer transition-all active:scale-[0.98]"
+                        className="settings-console__theme w-full flex items-center justify-between px-5 py-4 cursor-pointer transition-all active:scale-[0.98]"
                         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                     >
                         <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
 
             {subTab === 'cuenta' && (
                 <div className="flex flex-col gap-4">
-                    <section className="settings-panel">
+                    <section className="settings-panel settings-console__section">
                         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--text)' }}>Cambiar contraseña</h2>
                         <div className="relative mb-3">
                             <input

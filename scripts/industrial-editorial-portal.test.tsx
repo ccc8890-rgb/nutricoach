@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { TLSPanel } from '../components/PortalCliente/TLSGauge'
@@ -122,4 +123,14 @@ assert.match(calendar, /training-calendar/)
 assert.match(calendar, /training-calendar__period/)
 assert.doesNotMatch(calendar, /rgba\(99,102,241/)
 
-console.log('industrial-editorial-portal: 8 contratos renderizados correctamente')
+const dietSource = readFileSync(new URL('../components/PortalCliente/MiPlan.tsx', import.meta.url), 'utf8')
+assert.match(dietSource, /diet-notebook/)
+assert.match(dietSource, /diet-notebook__summary/)
+assert.match(dietSource, /diet-notebook__meals/)
+
+const settingsSource = readFileSync(new URL('../components/PortalCliente/AjustesTabs.tsx', import.meta.url), 'utf8')
+assert.match(settingsSource, /settings-console/)
+assert.match(settingsSource, /settings-console__section/)
+assert.match(settingsSource, /settings-console__theme/)
+
+console.log('industrial-editorial-portal: 10 contratos renderizados correctamente')

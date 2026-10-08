@@ -3,7 +3,18 @@
 import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { UtensilsCrossed, ChevronDown, ChevronUp, Download, Loader2, CheckCircle2, PencilLine, ExternalLink, Check, Zap } from 'lucide-react'
+import {
+    ArrowSquareOut as ExternalLink,
+    CaretDown as ChevronDown,
+    CaretUp as ChevronUp,
+    Check,
+    CheckCircle as CheckCircle2,
+    CircleNotch as Loader2,
+    DownloadSimple as Download,
+    ForkKnife as UtensilsCrossed,
+    Lightning as Zap,
+    PencilLine,
+} from '@phosphor-icons/react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
@@ -374,7 +385,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
     })()
 
     return (
-        <div className="space-y-4 print-area">
+        <div className="diet-notebook space-y-4 print-area">
             {/* Toggle Hoy / Semana */}
             <IndustrialTabs
                 ariaLabel="Vista del plan nutricional"
@@ -458,7 +469,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             })()}
 
             {/* Resumen macros + adherencia del día */}
-            <section className="diet-document-summary">
+            <section className="diet-document-summary diet-notebook__summary">
                 <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="min-w-0">
                         <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
@@ -506,7 +517,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
             </section>
 
             {/* Comidas */}
-            <div className="space-y-3">
+            <div className="diet-notebook__meals space-y-3">
                 {comidasDia.length === 0 && (
                     <div className="card p-6 text-center">
                         <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>No hay comidas construidas para {diaActivo}</p>
