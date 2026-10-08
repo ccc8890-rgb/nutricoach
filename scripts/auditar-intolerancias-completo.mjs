@@ -84,7 +84,7 @@ console.log('Con avena y sin tag Gluten (solo informe):', cuenta.avena)
 if (process.argv.includes('--disparos')) { for (const [k, v] of Object.entries(disparos).sort()) console.log(String(v).padStart(3), k); process.exit(0) }
 console.log('\nMuestra:'); for (const c of cambios.slice(0, 40)) console.log('-', c.nombre.slice(0, 45).padEnd(46), c.nota.join(' '))
 fs.mkdirSync('salidas', { recursive: true })
-if (APLICA) {
+if (APLICA && cambios.length) {
   const copia = `salidas/copia-intolerancias-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
   fs.writeFileSync(copia, JSON.stringify(cambios, null, 1))
   console.log('Copia antes/después:', copia)
