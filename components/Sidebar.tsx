@@ -440,7 +440,7 @@ export default function Sidebar() {
               Casanova Lab
             </p>
             <p className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
-              Performance Atelier
+              Silver Studio
             </p>
           </div>
           <button
