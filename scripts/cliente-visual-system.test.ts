@@ -11,5 +11,8 @@ assert.match(page, /cliente-portal-shell/, 'El portal cliente debe tener un scop
 assert.match(styles, /\.cliente-portal-shell/, 'Los estilos deben quedar limitados al portal cliente')
 assert.match(styles, /prefers-reduced-motion/, 'El portal debe respetar movimiento reducido')
 assert.match(styles, /focus-visible/, 'La navegación debe conservar foco visible')
+assert.match(page, /cliente-header-hidden/, 'La cabecera debe poder replegarse al hacer scroll')
+assert.match(page, /addEventListener\(['"]scroll['"]/, 'La cabecera debe reaccionar a la dirección del scroll')
+assert.match(styles, /translate3d\(0, calc\(-100% - 1px\), 0\)/, 'La cabecera replegada debe liberar campo visual')
 
 console.log('cliente-visual-system: OK')

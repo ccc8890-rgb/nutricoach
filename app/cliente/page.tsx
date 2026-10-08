@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, Suspense, type ComponentType } from 'react'
+import { useEffect, useRef, useState, Suspense, type ComponentType } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -254,6 +254,41 @@ function PortalClientePageContent() {
   const [historialPeso, setHistorialPeso] = useState<SeguimientoPeso[]>([])
   const [checkinKey, setCheckinKey] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [headerVisible, setHeaderVisible] = useState(true)
+  const ultimoScroll = useRef(0)
+
+  useEffect(() => {
+    ultimoScroll.current = Math.max(window.scrollY, 0)
+    let framePendiente = false
+
+    const actualizarHeader = () => {
+      const scrollActual = Math.max(window.scrollY, 0)
+      const diferencia = scrollActual - ultimoScroll.current
+
+      if (scrollActual <= 24) {
+        setHeaderVisible(true)
+      } else if (Math.abs(diferencia) >= 8) {
+        setHeaderVisible(diferencia < 0 || scrollActual < 72)
+        ultimoScroll.current = scrollActual
+      }
+
+      framePendiente = false
+    }
+
+    const alHacerScroll = () => {
+      if (framePendiente) return
+      framePendiente = true
+      window.requestAnimationFrame(actualizarHeader)
+    }
+
+    window.addEventListener('scroll', alHacerScroll, { passive: true })
+    return () => window.removeEventListener('scroll', alHacerScroll)
+  }, [])
+
+  useEffect(() => {
+    setHeaderVisible(true)
+    ultimoScroll.current = Math.max(window.scrollY, 0)
+  }, [tab])
 
   // Cambiar de pestaña (barra inferior) solo movía el estado de React, nunca
   // la URL — el botón "Volver" de páginas como /cliente/receta/[id] sí
@@ -441,7 +476,7 @@ function PortalClientePageContent() {
     <div className="cliente-portal-shell min-h-screen" style={{ background: 'var(--bg)' }}>
 
       {/* ── Header ── */}
-      <div className="cliente-portal-header sticky top-0 z-20 px-4 pt-safe"
+      <header className={`cliente-portal-header sticky top-0 z-20 px-4 pt-safe ${headerVisible ? 'cliente-header-visible' : 'cliente-header-hidden'}`}
         style={{ background: 'color-mix(in srgb, var(--bg) 88%, transparent)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-2xl mx-auto flex items-center justify-between h-16">
           {/* Avatar + name */}
@@ -479,7 +514,7 @@ function PortalClientePageContent() {
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* ── Bienvenida banner ── */}
       {showBienvenida && (

@@ -21,6 +21,15 @@
 .cliente-portal-header {
   box-shadow: none;
   border-bottom-color: color-mix(in srgb, var(--metal-mid) 48%, var(--border)) !important;
+  transform: translate3d(0, 0, 0);
+  transition: transform 220ms var(--ease-out-strong), opacity 180ms ease-out;
+  will-change: transform;
+}
+
+.cliente-portal-header.cliente-header-hidden {
+  opacity: 0.96;
+  pointer-events: none;
+  transform: translate3d(0, calc(-100% - 1px), 0);
 }
 
 .cliente-avatar {
@@ -142,6 +151,7 @@
 @media (prefers-reduced-motion: reduce) {
   .cliente-stat,
   .cliente-quick-action,
+  .cliente-portal-header,
   .cliente-bottom-item::before {
     transition: none;
   }
