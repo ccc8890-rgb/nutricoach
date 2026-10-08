@@ -11,6 +11,7 @@ import { useTheme } from '@/components/ThemeProvider'
 import { useToast } from '@/components/ui/Toast'
 import IntegracionesPanel from './IntegracionesPanel'
 import type { Profile, Cliente } from '@/types'
+import { IndustrialTabs, TechnicalRow } from './editorial'
 
 const OBJETIVO_LABEL: Record<string, string> = {
     perder_grasa: 'Perder grasa',
@@ -34,10 +35,7 @@ interface AjustesTabsProps {
 
 function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
     return (
-        <div className="flex items-center justify-between py-2.5" style={{ borderBottom: '1px solid var(--border)' }}>
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</span>
-            <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{value || '—'}</span>
-        </div>
+        <TechnicalRow index="·" label={label} meta={value || '—'} className="settings-data-row" />
     )
 }
 
@@ -95,28 +93,13 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
-                {([
-                    { key: 'apps', label: 'Apps', icon: DeviceMobile },
-                    { key: 'perfil', label: 'Perfil', icon: User },
-                    { key: 'cuenta', label: 'Cuenta', icon: Lock },
-                ] as const).map(t => (
-                    <button
-                        key={t.key}
-                        type="button"
-                        onClick={() => setSubTab(t.key)}
-                        className="flex-1 flex flex-col items-center gap-1 py-2.5 text-xs font-semibold transition-colors"
-                        style={{
-                            background: subTab === t.key ? 'var(--primary)' : 'transparent',
-                            color: subTab === t.key ? 'var(--bg)' : 'var(--text-muted)',
-                        }}
-                    >
-                        <t.icon size={15} />
-                        {t.label}
-                    </button>
-                ))}
-            </div>
+        <div className="settings-system flex flex-col gap-4">
+            <IndustrialTabs
+                ariaLabel="Secciones de ajustes"
+                activeKey={subTab}
+                items={[{ key: 'apps', label: 'Apps', icon: DeviceMobile }, { key: 'perfil', label: 'Perfil', icon: User }, { key: 'cuenta', label: 'Cuenta', icon: Lock }]}
+                onChange={setSubTab}
+            />
 
             {subTab === 'apps' && (
                 <IntegracionesPanel codigo={codigo} clienteId={clienteId} />
@@ -124,7 +107,7 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
 
             {subTab === 'perfil' && (
                 <div className="flex flex-col gap-4">
-                    <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    <section className="settings-panel">
                         <h2 className="text-sm font-bold mb-2" style={{ color: 'var(--text)' }}>Tus datos</h2>
                         <InfoRow label="Nombre" value={`${profile?.nombre ?? ''} ${profile?.apellidos ?? ''}`.trim()} />
                         <InfoRow label="Email" value={profile?.email} />
@@ -135,12 +118,12 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
                         <p className="text-[11px] mt-3" style={{ color: 'var(--text-muted)' }}>
                             Estos datos los gestiona tu coach. Si algo cambió (edad, altura, objetivo), avísale por chat.
                         </p>
-                    </div>
+                    </section>
 
-                    <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    <section className="settings-panel">
                         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--text)' }}>Restricciones alimentarias</h2>
                         <textarea
-                            className="input w-full rounded-xl resize-none"
+                            className="input editorial-field w-full resize-none"
                             rows={3}
                             placeholder="Alergias, intolerancias, alimentos que no te gustan…"
                             value={restricciones}
@@ -154,7 +137,7 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
                             {guardandoRestricciones ? <CircleNotch size={16} className="animate-spin" /> : <CheckCircle size={16} />}
                             {guardandoRestricciones ? 'Guardando…' : 'Guardar'}
                         </button>
-                    </div>
+                    </section>
 
                     <button
                         type="button"
@@ -175,12 +158,12 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
 
             {subTab === 'cuenta' && (
                 <div className="flex flex-col gap-4">
-                    <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    <section className="settings-panel">
                         <h2 className="text-sm font-bold mb-3" style={{ color: 'var(--text)' }}>Cambiar contraseña</h2>
                         <div className="relative mb-3">
                             <input
                                 type={mostrarPass ? 'text' : 'password'}
-                                className="input w-full rounded-xl pr-10"
+                                className="input editorial-field w-full pr-10"
                                 placeholder="Nueva contraseña (mín. 6 caracteres)"
                                 value={passNueva}
                                 onChange={e => setPassNueva(e.target.value)}
@@ -201,7 +184,7 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
                         >
                             {cambiandoPass ? 'Guardando…' : 'Actualizar contraseña'}
                         </button>
-                    </div>
+                    </section>
 
                     <button
                         type="button"

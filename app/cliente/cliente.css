@@ -149,6 +149,13 @@
 .recipe-editorial-item.is-featured > div:last-child p:first-child { font-size: 1.25rem; line-height: 1.05; letter-spacing: -0.035em; }
 .recipe-personal-archive { padding-top: 1rem; border-top: 1px solid var(--editorial-rule); }
 .client-recipe-editorial [class*='rounded-3xl'] { border-radius: var(--editorial-radius) !important; }
+.settings-system { border-bottom: 1px solid var(--editorial-rule); }
+.settings-panel { padding: 1.1rem 1rem 1.3rem; border-top: 1px solid var(--editorial-rule); background: color-mix(in srgb, var(--editorial-panel) 84%, transparent); }
+.settings-data-row { grid-template-columns: 2rem minmax(0, 1fr); margin-inline: -1rem; }
+.settings-data-row .technical-row__index { padding-inline: 0.5rem; }
+.settings-data-row .technical-row__heading { align-items: center; }
+.integrations-system > section, .integrations-system > div { border-radius: var(--editorial-radius) !important; box-shadow: none !important; }
+.integrations-system input { border-radius: var(--editorial-radius-sm) !important; background: var(--editorial-field) !important; border-color: var(--editorial-rule) !important; }
 
 @media (min-width: 640px) {
   .editorial-masthead { grid-template-columns: 3.2rem minmax(0, 1fr) minmax(9rem, 0.34fr); }

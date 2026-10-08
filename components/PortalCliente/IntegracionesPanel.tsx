@@ -378,7 +378,7 @@ export default function IntegracionesPanel({ codigo, clienteId }: Props) {
   const promedios = garminResumen?.promedios
 
   return (
-    <div className="space-y-4">
+    <div className="integrations-system space-y-4">
       <div className="mb-4">
         <div className="flex items-start justify-between gap-3">
           <div>
