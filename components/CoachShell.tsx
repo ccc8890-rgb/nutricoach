@@ -82,7 +82,7 @@ function getCoachContext(pathname: string): CoachContext {
     return { area: 'Inicio', title: 'Clientes', actionHref: '/clientes/nuevo', actionLabel: 'Nuevo cliente', actionIcon: UserPlus }
   }
   if (pathname.startsWith('/agentes')) {
-    return { area: 'Sistema', title: 'Revisión IA', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: Home }
+    return { area: 'Inicio', title: 'Revisión IA', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: Home }
   }
   if (pathname.startsWith('/entrenos')) {
     return { area: 'Entrenamiento', title: 'Training OS', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Dumbbell }
@@ -99,11 +99,11 @@ function getCoachContext(pathname: string): CoachContext {
   if (pathname.startsWith('/precios')) {
     return { area: 'Nutrición', title: 'Costes y rentabilidad', actionHref: '/precios/escandallo', actionLabel: 'Escandallo', actionIcon: FilePlus2 }
   }
-  if (pathname.startsWith('/sistema')) {
-    return { area: 'Sistema', title: 'Dashboard sistema', actionHref: '/conocimiento/nueva', actionLabel: 'Nueva nota', actionIcon: Plus }
+  if (pathname.startsWith('/ajustes') || pathname.startsWith('/sistema')) {
+    return { area: 'Ajustes', title: 'Ajustes', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: Home }
   }
   if (pathname.startsWith('/conocimiento') || pathname.startsWith('/coach') || pathname.startsWith('/cuestionarios')) {
-    return { area: 'Sistema', title: 'Método y conocimiento', actionHref: '/conocimiento/nueva', actionLabel: 'Nueva nota', actionIcon: Plus }
+    return { area: 'Ajustes', title: 'Método y conocimiento', actionHref: '/conocimiento/nueva', actionLabel: 'Nueva nota', actionIcon: Plus }
   }
   return { area: 'Inicio', title: 'Dashboard', actionHref: '/clientes/nuevo', actionLabel: 'Nuevo cliente', actionIcon: UserPlus }
 }

@@ -7,25 +7,21 @@ import { supabase } from '@/lib/supabase'
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
-  Brain,
   ChefHat,
   ChartPie,
   Clapperboard,
   ChevronDown,
   ChevronRight,
-  ClipboardList,
   Database,
   Dumbbell,
   FilePlus2,
   House,
   ListChecks,
   LogOut,
-  KeyRound,
   Menu,
   Moon,
   Settings,
   ShoppingCart,
-  SlidersHorizontal,
   Store,
   Sun,
   TrendingUp,
@@ -99,12 +95,8 @@ const COSTES_COMPRA_ITEMS: NavItem[] = [
   { href: '/precios/rentabilidad', label: 'Rentabilidad por cliente', icon: Activity },
 ]
 
-const CONOCIMIENTO_ITEMS: NavItem[] = [
-  { href: '/sistema', label: 'Resumen', icon: House, exact: true },
-  { href: '/coach/metodologia', label: 'Metodología', icon: SlidersHorizontal },
-  { href: '/conocimiento', label: 'Base de conocimiento', icon: Brain },
-  { href: '/cuestionarios', label: 'Cuestionarios', icon: ClipboardList },
-]
+// Ajustes agrupa también estas pantallas (Método y conocimiento)
+const AJUSTES_PREFIJOS = ['/ajustes', '/sistema', '/coach', '/conocimiento', '/cuestionarios']
 
 function isActivePath(pathname: string, href: string, exact = false) {
   if (exact) return pathname === href
@@ -378,7 +370,6 @@ export default function Sidebar() {
   const sections: NavSection[] = [
     { key: 'nutricion', label: 'Nutrición', href: '/nutricion', icon: Utensils, badge: recetasPendientes, items: nutricionItems },
     { key: 'entrenamiento', label: 'Entrenamiento', href: '/entrenos', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
-    { key: 'sistema', label: 'Sistema', href: '/sistema', icon: Settings, items: CONOCIMIENTO_ITEMS },
   ]
 
   useEffect(() => {
@@ -413,6 +404,7 @@ export default function Sidebar() {
   }, [pathname])
 
   const selectedSection = sections.find(section => expanded[section.key]) ?? null
+  const ajustesActivo = AJUSTES_PREFIJOS.some(prefijo => isActivePath(pathname, prefijo))
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -506,9 +498,15 @@ export default function Sidebar() {
       </nav>
 
       <div className="flex-shrink-0 p-3 border-t space-y-1" style={{ borderColor: 'var(--glass-border)' }}>
-        <Link href="/nueva-contrasena" className="sidebar-link w-full" style={{ color: 'var(--text-muted)' }}>
-          <KeyRound size={18} />
-          <span>Cambiar contraseña</span>
+        <Link
+          href="/ajustes"
+          prefetch
+          className="sidebar-link w-full"
+          style={{ color: ajustesActivo ? 'var(--text)' : 'var(--text-muted)' }}
+          aria-current={ajustesActivo ? 'page' : undefined}
+        >
+          <Settings size={18} />
+          <span>Ajustes</span>
         </Link>
         <button
           onClick={handleLogout}
