@@ -1,5 +1,42 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 08-10-2026 (mediodía, Claude) — Ajustes, menú limpio y ficha del cliente
+
+Todo en `main` (último commit de código `caffbcb`), Vercel Ready, verificado en producción con la sesión de Carlos (`browse --headed` + handoff). Sin migraciones. La estética fina la lleva Codex.
+
+### Repaso del dashboard del coach
+A 390 px y en claro/oscuro: sin scroll horizontal ni errores propios. Dos detalles estéticos pasados a Codex (fondo verde solo en la tarjeta de check-ins, hueco bajo la tarjeta «Planes, altas y pruebas»).
+
+### Ajustes sustituye a «Sistema» (spec `docs/superpowers/specs/2026-10-08-ajustes-design.md`)
+- `/ajustes` (una sola página, secciones apiladas): cabecera con nombre, correo y **Cerrar sesión arriba**; Cuenta (nombre, apellidos, teléfono, cambio de contraseña), Apariencia (claro/oscuro; no hay «automático» porque `ThemeProvider` solo conoce esos dos), Método y conocimiento (tarjetas a `/coach/metodologia`, `/conocimiento`, `/cuestionarios`, que no se movieron) y Seguridad (`signOut({ scope: 'global' })` con confirmación).
+- `GET/PATCH /api/ajustes/perfil`: sesión obligatoria, actualiza solo el `profiles` del propio usuario con el `id` de la sesión (service role), validación en `lib/ajustes/perfil.ts` (`limpiarPerfil`: nombre 1-80, apellidos ≤80, teléfono `[+()\d\s.-]{6,20}`; `role`, `email` e `id` se ignoran). Test: `scripts/ajustes-perfil.test.ts`.
+- `/sistema` redirige a `/ajustes`. `CoachShell` ya no tiene área «Sistema».
+- Fuera de alcance a propósito: Mi negocio (la marca «Casanova» está escrita a mano en ~11 archivos y no hay tabla de ajustes), Notificaciones, Integraciones, exportar datos.
+
+### Menú lateral (`components/Sidebar.tsx`)
+- Se quita el módulo «Sistema», el pie del menú y el subtítulo «Silver Studio». Tema, **Ajustes** y **Cerrar sesión** son tres iconos en la cabecera junto al logo (componente `AccionIcono`, tooltip CSS al pasar el ratón). El interruptor de tema pasó de píldora a un solo icono por falta de ancho (el menú mide 256 px).
+- Ajustes se marca activo en `/ajustes`, `/sistema`, `/coach`, `/conocimiento` y `/cuestionarios` (`AJUSTES_PREFIJOS`).
+
+### Ficha del cliente (`app/clientes/[id]/page.tsx`, `components/clientes/ResumenCliente.tsx`)
+- Abre en **Nutrición**; orden: Nutrición, Entrenamiento, Seguimiento, Comunicación, Perfil, **Resumen** (última).
+- Los avisos salieron de Resumen a una franja plegable (`AvisosCliente`, calculada con `avisosCliente`) visible en todas las pestañas solo si hay avisos; cada aviso lleva a su pestaña. Resumen conserva evolución de peso, adherencia y notas/restricciones. **Eliminar cliente** solo en Perfil (el de Resumen se quitó).
+
+### Auditoría de seguridad
+- Sin secretos, `console.log` ni `err.message` en lo nuevo. `/api/ajustes/perfil`: 401 sin sesión (comprobado en producción), 400 con nombre vacío, el `id` nunca viene del cuerpo.
+- Riesgo residual: el cambio de contraseña no pide la actual (usa `supabase.auth.updateUser` con sesión activa), igual que la página `/nueva-contrasena`. Sin límite de frecuencia en el PATCH de perfil. Cualquier usuario autenticado (también un cliente) puede editar su propio nombre/teléfono por esa ruta; no toca nada ajeno.
+- No se probó un cambio real de contraseña para no tocar la de Carlos; sí se probó guardar el perfil con los mismos valores.
+
+### Lecciones
+- `browse` con un daemon en modo headed exige pasar `--headed` en CADA comando (si no, avisa de «config distinta»). El clic con ref a veces da timeout: `js` con `querySelector('[aria-label=…]').click()` funciona.
+- Un `redirect()` de servidor en una página estática (`/sistema`) acaba como redirección en el cliente, con un instante de retraso: comprobar la URL tras unos segundos.
+- Cuando se mueve algo de sitio, buscar si ya existía una copia (Eliminar cliente ya estaba en Perfil).
+
+### Pendiente
+1. Comprobar en producción que cada aviso de la franja de la ficha lleva a su pestaña.
+2. Cifras y pagos del dashboard llevan todos a `/clientes` (que cada uno vaya a su pantalla).
+3. Estética: dejar a Codex la franja de avisos y la cabecera de iconos.
+4. Los de siempre: fotos (decisión de gasto aparcada por Carlos), Mealprep Carne / Kebab, recetas veganas y cenas ligeras, probar guardado de analíticas y tarjeta de suplementación del portal.
+
 ## ✅ SESIÓN 08-10-2026 (Codex) — Bienvenida contextual al primer plan
 
 - Sustituida la bienvenida antigua, que solo aparecía con `?onboarding=completo`, usaba una clave global y afirmaba que existían dieta y entrenamiento aunque faltara alguno.
