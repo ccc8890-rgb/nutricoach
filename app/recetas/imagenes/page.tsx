@@ -19,6 +19,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import RevisionTabs from '@/components/recetas/RevisionTabs'
+import { useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
 
 type FiltroImagen = 'pendientes' | 'sin_imagen' | 'sospechosas' | 'ai' | 'scraped' | 'aprobadas' | 'rechazadas' | 'todas'
 
@@ -342,9 +343,10 @@ function ImagenCard({
 
 export default function RecetasImagenesPage() {
   const [data, setData] = useState<ImagenesResponse | null>(null)
-  const [filtro, setFiltro] = useState<FiltroImagen>('pendientes')
-  const [query, setQuery] = useState('')
+  const [filtro, setFiltro] = useEstadoUrl<FiltroImagen>('filtro', 'pendientes', ['pendientes', 'sin_imagen', 'sospechosas', 'ai', 'scraped', 'aprobadas', 'rechazadas', 'todas'])
+  const [query, setQuery] = useEstadoUrl<string>('q', '')
   const [loading, setLoading] = useState(true)
+  useRestaurarScroll(!loading)
   const [error, setError] = useState<string | null>(null)
 
   async function load(nextFiltro = filtro) {

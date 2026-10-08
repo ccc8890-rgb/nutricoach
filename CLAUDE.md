@@ -11,7 +11,7 @@ Commits `6bfee61` + el de scroll/listas. Sin migraciones. Verificado en local co
 - **Analíticas:** guardado probado en Laura Vidal (vitamina D/ferritina persisten tras recargar) y borrado después.
 - **Lección:** al restaurar scroll hay que no guardar mientras la página carga (el navegador lo mueve solo y pisa el valor) y desactivar el scroll nativo.
 - **Alimentos y Precios** (`/dietas/alimentos`, `/precios`) también guardan búsqueda, categoría, supermercado y casillas en la URL y restauran el scroll. Las reglas de vitamina D/hierro con analítica <30 las cubre `scripts/suplementos.test.ts` (OK).
-- **Pendiente:** otras listas menores (escandallo, cobertura, imágenes) no guardan filtros.
+- Escandallo e imágenes de recetas también guardan filtros y scroll (cobertura no tiene filtros). Sin pendientes de esta línea.
 
 ## ✅ SESIÓN 08-10-2026 (mediodía, Claude) — Ajustes, menú limpio y ficha del cliente
 

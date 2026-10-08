@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import SelectorProducto from '@/components/SelectorProducto'
+import { useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
 
 interface EscandalloCliente {
     cliente_id: string
@@ -65,13 +66,16 @@ interface CoberturaEscandallo {
 export default function EscandalloPage() {
     const [clientes, setClientes] = useState<EscandalloCliente[]>([])
     const [supermercados, setSupermercados] = useState<Supermercado[]>([])
-    const [supermercadoSel, setSupermercadoSel] = useState<string>('')
+    const [supermercadoSel, setSupermercadoSel] = useEstadoUrl<string>('super', '')
     const [cobertura, setCobertura] = useState<CoberturaEscandallo | null>(null)
     const [guardandoPrecio, setGuardandoPrecio] = useState<string | null>(null)
     const [preciosEditados, setPreciosEditados] = useState<Record<string, string>>({})
     const [cargando, setCargando] = useState(true)
+    useRestaurarScroll(!cargando)
     const [error, setError] = useState('')
-    const [vistaDetallada, setVistaDetallada] = useState(false)
+    const [detalleRaw, setDetalleRaw] = useEstadoUrl<string>('detalle', '0', ['0', '1'])
+    const vistaDetallada = detalleRaw === '1'
+    const setVistaDetallada = (v: boolean) => setDetalleRaw(v ? '1' : '0')
 
     const cargarEscandallo = useCallback(async (supermercadoId?: string) => {
         setCargando(true)
