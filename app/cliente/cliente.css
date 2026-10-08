@@ -137,8 +137,45 @@
 .training-exercise-list { border-bottom: 1px solid var(--editorial-rule); }
 .training-exercise-row { grid-template-columns: 2.8rem minmax(0, 1fr); }
 .training-exercise-row > .technical-row__content { padding: 0; }
-.training-exercise-row button { min-height: 3.4rem; padding-inline: 1rem; }
+.training-exercise-row .technical-row__heading { padding: 1rem 1rem 0.2rem; }
+.training-exercise-row .technical-row__index { padding-top: 1.2rem; }
+.training-exercise-row button { min-height: 3.55rem; padding: 0.6rem 1rem 0.85rem; }
 .training-week-session, .training-week-day { border-radius: var(--editorial-radius-sm); }
+
+.training-calendar {
+  --calendar-rule: color-mix(in srgb, var(--metal-mid) 40%, var(--border));
+  --calendar-cell: color-mix(in srgb, var(--surface-elevated) 76%, var(--bg));
+}
+.training-calendar__view-switch { display: grid; grid-template-columns: 1fr 1fr; border-block: 1px solid var(--calendar-rule); background: var(--calendar-rule); gap: 1px; }
+.training-calendar__view-switch button { min-height: 2.8rem; background: var(--editorial-panel); color: var(--text-muted); font: 600 0.64rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.08em; text-transform: uppercase; transition: background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong); }
+.training-calendar__view-switch button.is-active { background: var(--metal-bright); color: var(--atelier-carbon); }
+.training-calendar__period { display: grid; grid-template-columns: 2.75rem 1fr 2.75rem; align-items: stretch; min-height: 3rem; border: 1px solid var(--calendar-rule); background: color-mix(in srgb, var(--editorial-panel) 86%, transparent); }
+.training-calendar__period button { display: grid; place-items: center; color: var(--text-muted); transition: background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong); }
+.training-calendar__period button:first-child { border-right: 1px solid var(--calendar-rule); }
+.training-calendar__period button:last-child { border-left: 1px solid var(--calendar-rule); }
+.training-calendar__period button:hover { background: var(--surface-hover); color: var(--text); }
+.training-calendar__period p { display: flex; align-items: center; justify-content: center; gap: 0.65rem; color: var(--text); font-size: 0.72rem; font-weight: 650; text-transform: capitalize; }
+.training-calendar__period p span { color: var(--text-muted); font: 600 0.56rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.08em; }
+.training-calendar__grid-shell { overflow: hidden; border: 1px solid var(--calendar-rule); background: color-mix(in srgb, var(--editorial-panel) 90%, transparent); }
+.training-calendar__weekdays { border-bottom: 1px solid var(--calendar-rule); }
+.training-calendar__weekdays p { padding: 0.72rem 0.1rem; border-left: 1px solid var(--calendar-rule); color: var(--text-muted); font: 600 0.57rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.08em; }
+.training-calendar__weekdays p:first-child { border-left: 0; }
+.training-calendar__weeks { display: flex; flex-direction: column; }
+.training-calendar__week + .training-calendar__week { border-top: 1px solid var(--calendar-rule); }
+.training-calendar__phase { min-height: 2rem; padding: 0.65rem 0.8rem 0.5rem; border-bottom: 1px solid var(--calendar-rule); color: var(--text-muted); font: 600 0.56rem/1.25 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.07em; text-transform: uppercase; }
+.training-calendar__days { background: var(--calendar-rule); gap: 1px; }
+.training-calendar__day { display: flex; min-width: 0; min-height: 3.75rem; align-items: center; justify-content: center; flex-direction: column; gap: 0.25rem; background: var(--calendar-cell); color: var(--text-muted); font: 650 0.7rem/1 var(--font-geist-mono), ui-monospace, monospace; transition: background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong); }
+.training-calendar__day.is-empty { background: color-mix(in srgb, var(--bg) 74%, var(--surface)); }
+.training-calendar__day.is-rest { opacity: 0.62; }
+.training-calendar__day.is-pending { background: color-mix(in srgb, var(--bg) 84%, var(--surface)); opacity: 0.48; }
+.training-calendar__day.is-run,
+.training-calendar__day.is-strength { background: color-mix(in srgb, var(--metal-mid) 12%, var(--calendar-cell)); color: var(--text-secondary); }
+.training-calendar__day.is-complete { background: color-mix(in srgb, var(--metal-bright) 14%, var(--calendar-cell)); color: var(--text); }
+.training-calendar__day.is-selected { box-shadow: inset 0 0 0 1.5px var(--metal-bright); color: var(--text); }
+.training-calendar__day.is-today:not(.is-selected) { box-shadow: inset 0 -2px 0 var(--metal-mid); }
+.training-calendar__day:active { transform: translateY(1px); }
+.training-calendar__detail { padding: 1.25rem 1.25rem 1.45rem; border: 1px solid var(--calendar-rule); background: color-mix(in srgb, var(--editorial-panel) 88%, transparent); }
+.training-calendar__session-icon { display: grid; width: 2.8rem; height: 2.8rem; flex: none; place-items: center; border: 1px solid var(--calendar-rule); background: var(--editorial-field); color: var(--text-secondary); }
 .client-session-sheet {
   --editorial-rule: color-mix(in srgb, var(--metal-mid) 44%, var(--border));
   --editorial-field: color-mix(in srgb, var(--bg) 70%, var(--surface-elevated));

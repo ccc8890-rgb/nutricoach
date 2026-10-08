@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { TLSPanel } from '../components/PortalCliente/TLSGauge'
+import CalendarioMesEntreno from '../components/training/CalendarioMesEntreno'
 import {
   EditorialMasthead,
   HoyEditorial,
@@ -116,4 +117,9 @@ assert.match(tls, /aria-valuenow="0"/)
 assert.match(tls, /Registrar sesión/)
 assert.doesNotMatch(tls, /#ECFDF5|rounded-full/)
 
-console.log('industrial-editorial-portal: 7 contratos renderizados correctamente')
+const calendar = renderToStaticMarkup(<CalendarioMesEntreno />)
+assert.match(calendar, /training-calendar/)
+assert.match(calendar, /training-calendar__period/)
+assert.doesNotMatch(calendar, /rgba\(99,102,241/)
+
+console.log('industrial-editorial-portal: 8 contratos renderizados correctamente')

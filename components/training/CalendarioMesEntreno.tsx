@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, ChevronLeft, ChevronRight, CircleDashed, Dumbbell, Footprints, Loader2 } from 'lucide-react'
+import { Barbell, CaretLeft, CaretRight, CircleDashed, CircleNotch, Footprints, Warning } from '@phosphor-icons/react'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 
@@ -99,30 +99,24 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
     if (month === 12) { setMonth(1); setYear(y => y + 1) } else setMonth(m => m + 1)
   }
 
-  function colorDia(dia: DiaMes) {
-    if (!dia.fecha) return { background: 'transparent', color: 'transparent' }
-    if (dia.bloque_pendiente) return { background: 'rgba(128,128,128,0.06)', color: 'var(--text-muted)' }
-    if (!dia.sesion) return { background: 'rgba(128,128,128,0.08)', color: 'var(--text-muted)' }
-    if (dia.sesion.completada) return { background: 'var(--semantic-active-bg)', color: 'var(--semantic-active)' }
-    return dia.sesion.tipo_sesion === 'carrera'
-      ? { background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)' }
-      : { background: 'rgba(99,102,241,0.12)', color: '#818CF8' }
+  function estadoDia(dia: DiaMes) {
+    if (!dia.fecha) return 'is-empty'
+    if (dia.bloque_pendiente) return 'is-pending'
+    if (!dia.sesion) return 'is-rest'
+    if (dia.sesion.completada) return 'is-complete'
+    return dia.sesion.tipo_sesion === 'carrera' ? 'is-run' : 'is-strength'
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="training-calendar flex flex-col gap-4">
       {mostrarToggleSemanaMes && (
-        <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+        <div className="training-calendar__view-switch">
           {(['semana', 'mes'] as const).map(m => (
             <button
               key={m}
               type="button"
               onClick={() => setModo(m)}
-              className="flex-1 py-2.5 text-sm font-semibold capitalize transition-colors"
-              style={{
-                background: modo === m ? 'var(--primary)' : 'transparent',
-                color: modo === m ? 'var(--bg)' : 'var(--text-muted)',
-              }}
+              className={modo === m ? 'is-active' : ''}
             >
               {m}
             </button>
@@ -130,36 +124,36 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
         </div>
       )}
 
-      <div className="flex items-center justify-between rounded-2xl p-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <button onClick={mesAnterior} className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ color: 'var(--text-muted)' }}>
-          <ChevronLeft size={18} />
+      <div className="training-calendar__period">
+        <button onClick={mesAnterior} aria-label="Mes anterior">
+          <CaretLeft size={17} />
         </button>
-        <p className="text-sm font-bold capitalize" style={{ color: 'var(--text)' }}>{MESES[month - 1]} {year}</p>
-        <button onClick={mesSiguiente} className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ color: 'var(--text-muted)' }}>
-          <ChevronRight size={18} />
+        <p><span>{String(month).padStart(2, '0')}</span>{MESES[month - 1]} {year}</p>
+        <button onClick={mesSiguiente} aria-label="Mes siguiente">
+          <CaretRight size={17} />
         </button>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <Loader2 size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
+          <CircleNotch size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
         </div>
       ) : error ? (
         <div
           className="flex items-center gap-2 rounded-3xl p-5 text-sm"
           style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
         >
-          <AlertTriangle size={16} style={{ color: 'var(--semantic-alert)' }} />
+          <Warning size={16} style={{ color: 'var(--semantic-alert)' }} />
           {error}
         </div>
       ) : (
-        <div className="rounded-3xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="training-calendar__grid-shell">
+          <div className="training-calendar__weekdays grid grid-cols-7">
             {DIAS_SEMANA_ABREVIATURA.map(d => (
               <p key={d} className="text-center text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>{d}</p>
             ))}
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="training-calendar__weeks">
             {semanasVisibles.map((semana, i) => {
               const fase = semana.find(d => d.fase_bloque)?.fase_bloque
               const pendiente = semana.some(d => d.bloque_pendiente)
@@ -171,38 +165,29 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                     ? `Bloque ${fase}`
                     : null
               return (
-                <div key={i}>
+                <section key={i} className="training-calendar__week">
                   {etiqueta && (
-                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: 'var(--text-muted)' }}>
+                    <p className="training-calendar__phase">
                       {etiqueta}
                     </p>
                   )}
-                  <div className="grid grid-cols-7 gap-1">
+                  <div className="training-calendar__days grid grid-cols-7">
                     {semana.map((dia, j) => {
-                      const style = colorDia(dia)
                       const esHoy = dia.fecha === hoyISO
                       const esSeleccionado = dia.fecha && dia.fecha === diaSeleccionado
                       return (
                         <div key={j} className="flex flex-col items-center gap-0.5">
                           {!dia.fecha ? (
-                            <div className={modo === 'semana' ? 'h-16 w-full' : 'h-10 w-full'} />
+                            <div className="training-calendar__day is-empty" />
                           ) : (
                             <button
                               type="button"
                               onClick={() => setDiaSeleccionado(dia.fecha)}
-                              className={`flex w-full flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-bold transition-transform active:scale-95 ${modo === 'semana' ? 'h-16' : 'h-10'}`}
-                              style={{
-                                ...style,
-                                border: esSeleccionado
-                                  ? '1.5px solid var(--text)'
-                                  : esHoy
-                                    ? '1.5px solid var(--accent)'
-                                    : '1px solid transparent',
-                              }}
+                              className={`training-calendar__day ${estadoDia(dia)} ${esSeleccionado ? 'is-selected' : ''} ${esHoy ? 'is-today' : ''}`}
                             >
                               {Number(dia.fecha.split('-')[2])}
                               {dia.sesion ? (
-                                dia.sesion.tipo_sesion === 'carrera' ? <Footprints size={11} /> : <Dumbbell size={11} />
+                                dia.sesion.tipo_sesion === 'carrera' ? <Footprints size={12} weight="regular" /> : <Barbell size={12} weight="regular" />
                               ) : modo === 'semana' ? (
                                 <CircleDashed size={11} style={{ opacity: 0.5 }} />
                               ) : null}
@@ -212,7 +197,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                       )
                     })}
                   </div>
-                </div>
+                </section>
               )
             })}
           </div>
@@ -221,20 +206,17 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
 
       {/* Detalle del día seleccionado */}
       {!loading && !error && (
-        <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="training-calendar__detail">
           <p className="text-xs font-semibold uppercase tracking-wide first-letter:uppercase" style={{ color: 'var(--text-muted)' }}>
             {formatFechaLarga(diaSeleccionado)}
           </p>
           {diaInfo?.sesion ? (
             <>
               <div className="mt-2 flex items-center gap-3">
-                <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
-                  style={{ background: diaInfo.sesion.tipo_sesion === 'carrera' ? 'var(--semantic-info-bg)' : 'rgba(99,102,241,0.12)' }}
-                >
+                <div className="training-calendar__session-icon">
                   {diaInfo.sesion.tipo_sesion === 'carrera'
-                    ? <Footprints size={18} style={{ color: 'var(--semantic-info)' }} />
-                    : <Dumbbell size={18} style={{ color: '#818CF8' }} />}
+                    ? <Footprints size={19} weight="regular" />
+                    : <Barbell size={19} weight="regular" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold leading-tight" style={{ color: 'var(--text)' }}>{diaInfo.sesion.nombre}</p>
@@ -245,7 +227,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
               </div>
               <div className="mt-3">
                 {detalles[diaInfo.sesion.id] === 'cargando' ? (
-                  <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
+                  <div className="flex justify-center py-6"><CircleNotch size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
                 ) : (
                   <ListaEjerciciosExpandible ejercicios={(detalles[diaInfo.sesion.id] as EjercicioDetalle[]) ?? []} />
                 )}
