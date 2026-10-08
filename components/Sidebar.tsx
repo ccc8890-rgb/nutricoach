@@ -501,8 +501,8 @@ export default function Sidebar() {
         <Link
           href="/ajustes"
           prefetch
-          className="sidebar-link w-full"
-          style={{ color: ajustesActivo ? 'var(--text)' : 'var(--text-muted)' }}
+          className={ajustesActivo ? 'sidebar-link active w-full' : 'sidebar-link w-full'}
+          style={{ color: ajustesActivo ? undefined : 'var(--text-muted)' }}
           aria-current={ajustesActivo ? 'page' : undefined}
         >
           <Settings size={18} />

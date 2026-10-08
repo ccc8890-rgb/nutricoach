@@ -6,11 +6,12 @@ import { useRouter } from 'next/navigation'
 import { Brain, ClipboardList, LogOut, Moon, ShieldAlert, SlidersHorizontal, Sun } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/components/ThemeProvider'
+import './ajustes.css'
 
 type Perfil = { nombre: string; apellidos: string | null; email: string; telefono: string | null }
 
 const cardStyle = { borderColor: 'var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow-sm)' }
-const inputStyle = { borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }
+const inputStyle = { color: 'var(--text)' }
 const buttonStyle = { background: 'var(--text)', color: 'var(--bg)' }
 const ghostButtonStyle = { borderColor: 'var(--border)', color: 'var(--text)' }
 
@@ -146,19 +147,19 @@ export default function AjustesPanel() {
           <form onSubmit={guardarPerfil} className="grid gap-3 sm:grid-cols-2">
             <Campo etiqueta="Nombre">
               <input value={nombre} onChange={e => setNombre(e.target.value)} maxLength={80} required autoComplete="off"
-                className="w-full rounded-xl border px-3 py-2" style={inputStyle} />
+                className="ajustes-input w-full rounded-xl border px-3 py-2" style={inputStyle} />
             </Campo>
             <Campo etiqueta="Apellidos">
               <input value={apellidos} onChange={e => setApellidos(e.target.value)} maxLength={80} autoComplete="off"
-                className="w-full rounded-xl border px-3 py-2" style={inputStyle} />
+                className="ajustes-input w-full rounded-xl border px-3 py-2" style={inputStyle} />
             </Campo>
             <Campo etiqueta="Teléfono">
               <input value={telefono} onChange={e => setTelefono(e.target.value)} inputMode="tel" autoComplete="off"
-                className="w-full rounded-xl border px-3 py-2" style={inputStyle} />
+                className="ajustes-input w-full rounded-xl border px-3 py-2" style={inputStyle} />
             </Campo>
             <Campo etiqueta="Correo">
               <input value={perfil?.email ?? ''} readOnly disabled
-                className="w-full rounded-xl border px-3 py-2 opacity-70" style={inputStyle} />
+                className="ajustes-input w-full rounded-xl border px-3 py-2 opacity-70" style={inputStyle} />
             </Campo>
             <div className="flex items-center gap-3 sm:col-span-2">
               <button type="submit" disabled={guardando || !perfil} className="rounded-xl px-4 py-2 text-sm font-semibold disabled:opacity-50" style={buttonStyle}>
@@ -176,11 +177,11 @@ export default function AjustesPanel() {
             <p className="text-sm font-semibold sm:col-span-2" style={{ color: 'var(--text)' }}>Cambiar contraseña</p>
             <Campo etiqueta="Nueva contraseña">
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password"
-                className="w-full rounded-xl border px-3 py-2" style={inputStyle} />
+                className="ajustes-input w-full rounded-xl border px-3 py-2" style={inputStyle} />
             </Campo>
             <Campo etiqueta="Repetir contraseña">
               <input type="password" value={repetir} onChange={e => setRepetir(e.target.value)} autoComplete="new-password"
-                className="w-full rounded-xl border px-3 py-2" style={inputStyle} />
+                className="ajustes-input w-full rounded-xl border px-3 py-2" style={inputStyle} />
             </Campo>
             <div className="flex items-center gap-3 sm:col-span-2">
               <button type="submit" disabled={cambiando || !password} className="rounded-xl px-4 py-2 text-sm font-semibold disabled:opacity-50" style={buttonStyle}>
