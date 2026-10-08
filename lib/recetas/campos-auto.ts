@@ -39,3 +39,26 @@ export function deducirDificultad(r: { instrucciones?: string | null; tiempo_pre
   if (pasos >= 12 || t >= 90 || nIng >= 18) return 'Medio'
   return 'Fácil'
 }
+
+// Momentos de la dieta donde encaja (solo para recetas con momentos vacíos). Los de entreno/carga NO se deducen.
+export const MOMENTOS_POR_TIPO: Record<string, string[]> = {
+  Desayuno: ['desayuno'],
+  Comida: ['comida'],
+  Cena: ['cena'],
+  Merienda: ['merienda'],
+  Snack: ['media_manana', 'merienda'],
+  Postre: ['postre', 'merienda'],
+}
+
+// Objetivos deducibles de los macros. Calibrado contra 484 recetas ya etiquetadas (F1 ≈ 0,66-0,68 en
+// perdida_grasa/recomposicion). rendimiento y ganancia_muscular NO se deducen (F1 ≈ 0,5).
+// salud_general + mantenimiento sirven de base: el planificador penaliza (0,15) las recetas sin objetivos.
+export function deducirObjetivos(r: { kcal?: number | null; proteinas?: number | null; nivel_fit?: string | null }): string[] {
+  const kcal = r.kcal || 0
+  if (kcal <= 0 || r.nivel_fit === 'indulgente' || r.nivel_fit === 'no_fit') return []
+  const out: string[] = []
+  if (kcal <= 900) out.push('salud_general', 'mantenimiento')
+  const dens = (4 * (r.proteinas || 0)) / kcal
+  if (kcal <= 700 && dens >= 0.3 && (r.proteinas || 0) >= 10) out.push('perdida_grasa', 'recomposicion')
+  return out
+}

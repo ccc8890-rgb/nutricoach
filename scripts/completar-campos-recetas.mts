@@ -5,12 +5,12 @@
  *   npx tsx scripts/completar-campos-recetas.mts --aplica   # escribe (copia antes/después en salidas/)
  * Cambia: dificultad (normaliza/deduce), tipo_coccion, tipo_plato, categoria (a la lista oficial),
  *         tags (si vacíos), descripcion_porcion (si vacía).
- * NO toca momentos/objetivos (vacío = «vale para cualquier hueco» en el planificador).
+ * momentos (solo los de comida, nunca los de entreno) y objetivos (solo si están vacíos; ver lib/recetas/campos-auto.ts).
  */
 import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 import { autoTagReceta } from '../lib/auto-tag'
-import { deducirCoccion, normalizarDificultad, deducirDificultad } from '../lib/recetas/campos-auto'
+import { deducirCoccion, normalizarDificultad, deducirDificultad, MOMENTOS_POR_TIPO, deducirObjetivos } from '../lib/recetas/campos-auto'
 
 const env = Object.fromEntries(fs.readFileSync('.env.local','utf8').split('\n').filter(l=>l.includes('=')&&!l.startsWith('#')).map(l=>{const i=l.indexOf('=');return [l.slice(0,i).trim(),l.slice(i+1).trim().replace(/^["']|["']$/g,'')]}))
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
@@ -21,7 +21,7 @@ const TIPOS=['Desayuno','Comida','Cena','Merienda','Snack','Postre','Salsa','Aco
 const TAG_LEGADO:Record<string,string>={Ensaladas:'Ensalada',Burritos:'Burrito','Fajitas/Tacos':'Tacos',Mealpreps:'Meal prep','Bowls fruta':'Bowl',Tostas:'Tostada',Gofres:'Gofre',Entrante:'Entrante'}
 
 async function todo(t:string,c:string){const o:any[]=[];for(let f=0;;f+=1000){const {data,error}=await sb.from(t).select(c).range(f,f+999);if(error)throw error;o.push(...data!);if(data!.length<1000)break}return o}
-const R=await todo('recetas','id,nombre,descripcion,instrucciones,categoria,tipo_plato,tipo_coccion,dificultad,tiempo_prep_min,tiempo_coccion_min,tags,descripcion_porcion,peso_total_g,porciones,kcal,proteinas,carbohidratos,grasas,url_origen,estado')
+const R=await todo('recetas','id,nombre,descripcion,instrucciones,categoria,tipo_plato,tipo_coccion,dificultad,tiempo_prep_min,tiempo_coccion_min,tags,descripcion_porcion,peso_total_g,porciones,kcal,proteinas,carbohidratos,grasas,url_origen,estado,momentos,objetivos,nivel_fit')
 const I=await todo('receta_ingredientes','receta_id,nombre_libre,cantidad_gramos,alimentos(nombre)')
 const ings=new Map<string,any[]>(); for(const i of I){(ings.get(i.receta_id)??ings.set(i.receta_id,[]).get(i.receta_id)!).push(i)}
 
@@ -51,6 +51,10 @@ for(const r of R){
   if(!(r.tags||[]).length){ const auto=autoTagReceta({nombre:r.nombre,receta_ingredientes:is as any}); tags=Array.from(new Set([...tags,...auto])) }
   if(JSON.stringify(tags)!==JSON.stringify(r.tags||[])&&tags.length) patch.tags=tags
   if(!r.descripcion_porcion&&r.peso_total_g>0&&r.porciones>0){const g=Math.round(r.peso_total_g/r.porciones/5)*5; if(g>0) patch.descripcion_porcion=`1 ración (≈ ${g} g)`}
+  if(r.estado!=='descartada'){
+    if(!(r.momentos||[]).length&&MOMENTOS_POR_TIPO[tipoFinal]) patch.momentos=MOMENTOS_POR_TIPO[tipoFinal]
+    if(!(r.objetivos||[]).length){const o=deducirObjetivos(r); if(o.length) patch.objetivos=o}
+  }
   if(Object.keys(patch).length){ cambios.push({id:r.id,nombre:r.nombre,antes:Object.fromEntries(Object.keys(patch).map(k=>[k,(r as any)[k]])),despues:patch}); for(const k of Object.keys(patch)) cnt[k]=(cnt[k]||0)+1 }
 }
 console.log('recetas',R.length,'| con cambios',cambios.length,'| por campo',cnt)
