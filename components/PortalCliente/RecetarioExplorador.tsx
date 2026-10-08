@@ -90,8 +90,8 @@ export default function RecetarioExplorador({
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Explorar recetario</h2>
+    <div className="recipe-archive flex flex-col gap-3">
+      <div className="recipe-archive__heading"><span>03 / ARCHIVE</span><h2>Recetario</h2><samp>{recetas.length} ITEMS</samp></div>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
@@ -102,13 +102,12 @@ export default function RecetarioExplorador({
             onChange={e => setQ(e.target.value)}
             placeholder="Buscar receta…"
             autoComplete="off"
-            className="w-full rounded-2xl pl-9 pr-3 py-2.5 text-sm"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
+            className="editorial-field w-full pl-9 pr-3 py-2.5 text-sm"
           />
         </div>
         <button
           onClick={() => setMostrarFiltros(v => !v)}
-          className="shrink-0 rounded-2xl px-3 flex items-center justify-center"
+          className="recipe-filter-toggle shrink-0 px-3 flex items-center justify-center"
           style={{
             background: mostrarFiltros || tag ? 'var(--primary)' : 'var(--surface)',
             border: '1px solid var(--border)',
@@ -176,12 +175,12 @@ export default function RecetarioExplorador({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3">
-            {recetas.map(r => (
+          <div className="recipe-editorial-list">
+            {recetas.map((r, index) => (
               <a
                 key={r.id}
                 href={recetaHref(r.id)}
-                className="rounded-2xl overflow-hidden"
+                className={`recipe-editorial-item ${index % 5 === 0 ? 'is-featured' : ''}`}
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
               >
                 <div className="relative w-full h-28" style={{ background: 'var(--surface-elevated)' }}>

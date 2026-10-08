@@ -99,7 +99,7 @@ export default function RecetaClientePage() {
   const pasos = parsePasos(receta?.instrucciones).map(p => cantidadesDistintas ? { ...p, content: quitarCifras(p.content), title: p.title ? quitarCifras(p.title) : p.title } : p)
 
   return (
-    <div className="min-h-screen pb-8" style={{ background: 'var(--bg)' }}>
+    <div className="client-recipe-editorial min-h-screen pb-8" style={{ background: 'var(--bg)' }}>
       <div
         className="sticky top-0 z-10 px-4 pt-safe pb-3"
         style={{
