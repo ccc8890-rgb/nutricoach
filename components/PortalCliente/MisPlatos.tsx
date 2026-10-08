@@ -41,14 +41,14 @@ export default function MisPlatos({ codigo, clienteId }: Props) {
   if (recetas.length === 0) return null
 
   return (
-    <div>
+    <section className="recipe-personal-archive">
       <h2 className="text-sm font-bold mb-1" style={{ color: 'var(--text)' }}>Mis platos</h2>
       <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
         Platos creados especialmente para ti basados en tus preferencias.
       </p>
-      <div className="grid grid-cols-2 gap-3">
-        {recetas.map(r => (
-          <div key={r.id} className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--surface)]">
+      <div className="recipe-editorial-list">
+        {recetas.map((r, index) => (
+          <div key={r.id} className={`recipe-editorial-item ${index === 0 ? 'is-featured' : ''}`}>
             {r.imagen_url ? (
               <div className="relative w-full h-32">
                 <Image
@@ -73,6 +73,6 @@ export default function MisPlatos({ codigo, clienteId }: Props) {
           </div>
         ))}
       </div>
-    </div>
+    </section>
   )
 }

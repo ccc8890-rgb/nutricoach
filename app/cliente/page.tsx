@@ -28,7 +28,7 @@ import EntrenoSubTabsEstatico from '@/components/training/EntrenoSubTabs'
 import RecetarioExploradorEstatico from '@/components/PortalCliente/RecetarioExplorador'
 import AjustesTabsEstatico from '@/components/PortalCliente/AjustesTabs'
 import SuplementacionPortalEstatico from '@/components/PortalCliente/SuplementacionPortal'
-import { HoyEditorial, LiquidDock } from '@/components/PortalCliente/editorial'
+import { HoyEditorial, IndustrialTabs, LiquidDock } from '@/components/PortalCliente/editorial'
 import type { LiquidDockItem } from '@/components/PortalCliente/editorial'
 // Un fallo de render en una pestaña no tumba el portal entero: muestra el error con botón de reintentar.
 function aislar<P extends object>(Componente: ComponentType<P>): ComponentType<P> {
@@ -691,26 +691,24 @@ function PortalClientePageContent() {
                 {(() => {
                   const activa = subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')
                   return (
-                    <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-                      {([['plan', 'En tu plan'], ['recetario', 'Recetario completo']] as const).map(([k, t]) => (
-                        <button key={k} onClick={() => setSubRecetas(k)} className="flex-1 px-3 py-2.5 text-xs font-semibold"
-                          style={{ background: activa === k ? 'var(--primary)' : 'transparent', color: activa === k ? 'var(--bg)' : 'var(--text-muted)' }}>
-                          {t}
-                        </button>
-                      ))}
-                    </div>
+                    <IndustrialTabs
+                      ariaLabel="Vista de recetas"
+                      activeKey={activa}
+                      items={[{ key: 'plan', label: 'En tu plan' }, { key: 'recetario', label: 'Archivo completo' }]}
+                      onChange={setSubRecetas}
+                    />
                   )
                 })()}
 
                 {(subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')) === 'plan' && recetasDelPlan().length > 0 && (
                   <div className="flex flex-col gap-3">
                     <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>En tu plan</h2>
-                    <div className="grid grid-cols-2 gap-3">
-                      {recetasDelPlan().map(r => (
+                    <div className="recipe-editorial-list">
+                      {recetasDelPlan().map((r, index) => (
                         <a
                           key={r.id}
                           href={recetaHref(r.id)}
-                          className="rounded-2xl overflow-hidden"
+                          className={`recipe-editorial-item ${index % 5 === 0 ? 'is-featured' : ''}`}
                           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                         >
                           <div className="relative w-full h-28" style={{ background: 'var(--surface-elevated)' }}>
