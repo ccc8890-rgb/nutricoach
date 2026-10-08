@@ -37,7 +37,7 @@ function SesionCard({ sesion, seleccionada, onSeleccionar }: { sesion: SesionKan
 
     return (
         <div ref={setNodeRef} style={style} {...listeners} {...attributes}
-            className="training-week-session mb-2 touch-none select-none cursor-grab active:cursor-grabbing overflow-hidden"
+            className={`training-week-session mb-2 touch-none select-none cursor-grab active:cursor-grabbing overflow-hidden ${seleccionada ? 'is-selected' : ''}`}
         >
             <button
                 type="button"

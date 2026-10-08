@@ -65,6 +65,9 @@ assert.match(primitives, /aria-valuenow="72"/)
 assert.match(primitives, /08:00/)
 assert.match(primitives, /Sentadilla/)
 
+const emptyProgress = renderToStaticMarkup(<ProgressInstrument label="Sin objetivo" value={0} max={0} />)
+assert.match(emptyProgress, /aria-valuemax="1"/)
+
 const hoy = renderToStaticMarkup(
   <HoyEditorial
     firstName="Carlos"

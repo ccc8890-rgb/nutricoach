@@ -139,7 +139,13 @@
 .training-exercise-row > .technical-row__content { padding: 0; }
 .training-exercise-row button { min-height: 3.4rem; padding-inline: 1rem; }
 .training-week-session, .training-week-day { border-radius: var(--editorial-radius-sm); }
-.client-session-sheet { --primary: var(--metal-bright); --primary-bg: var(--editorial-field); }
+.client-session-sheet {
+  --editorial-rule: color-mix(in srgb, var(--metal-mid) 44%, var(--border));
+  --editorial-field: color-mix(in srgb, var(--bg) 70%, var(--surface-elevated));
+  --primary: var(--metal-bright);
+  --primary-bg: var(--editorial-field);
+}
+.training-week-session.is-selected p { color: var(--atelier-carbon) !important; }
 .client-session-sheet [style*='var(--semantic-info-bg)'] { background: var(--editorial-field) !important; border-color: var(--editorial-rule) !important; }
 .client-session-sheet [style*='var(--semantic-info)'] { color: var(--text-secondary) !important; }
 .editorial-field { border: 1px solid var(--editorial-rule); border-radius: var(--editorial-radius-sm); background: var(--editorial-field); color: var(--text); }
