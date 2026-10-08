@@ -1,6 +1,7 @@
 'use client'
 
-import { AlertTriangle, CheckCircle2, ChevronRight, TrendingDown, TrendingUp, Minus } from 'lucide-react'
+import { useState } from 'react'
+import { AlertTriangle, ChevronDown, ChevronRight, TrendingDown, TrendingUp, Minus } from 'lucide-react'
 import type { CheckIn, PlanEntrenamiento, PlanNutricion, SeguimientoPeso } from '@/types'
 
 type Tab = 'resumen' | 'nutricion' | 'entrenamiento' | 'seguimiento' | 'comunicacion' | 'perfil'
@@ -17,7 +18,7 @@ type ClienteResumen = {
 const DIA_MS = 86_400_000
 const dias = (iso: string) => Math.round((new Date(iso).getTime() - Date.now()) / DIA_MS)
 
-function avisos(p: { id: string; cliente: ClienteResumen; dietaActiva?: PlanNutricion; entrenoActivo?: PlanEntrenamiento; checkins: CheckIn[]; noLeidosChat: number }): Aviso[] {
+export function avisosCliente(p: { id: string; cliente: ClienteResumen; dietaActiva?: PlanNutricion; entrenoActivo?: PlanEntrenamiento; checkins: CheckIn[]; noLeidosChat: number }): Aviso[] {
   const { id, cliente, dietaActiva, entrenoActivo, checkins, noLeidosChat } = p
   const out: Aviso[] = []
   if (cliente.revisado_por_coach === false) out.push({ nivel: 'alto', texto: 'Plan inicial pendiente de tu revisión', href: `/clientes/${id}/revisar-plan` })
@@ -71,12 +72,55 @@ function Sparkline({ valores }: { valores: number[] }) {
   )
 }
 
-export default function ResumenCliente({ id, cliente, dietaActiva, entrenoActivo, checkins, seguimiento, noLeidosChat, onTab }: {
-  id: string; cliente: ClienteResumen; dietaActiva?: PlanNutricion; entrenoActivo?: PlanEntrenamiento
-  checkins: CheckIn[]; seguimiento: SeguimientoPeso[]; noLeidosChat: number; onTab: (t: Tab) => void
-}) {
-  const lista = avisos({ id, cliente, dietaActiva, entrenoActivo, checkins, noLeidosChat })
+export type { Aviso }
 
+export function AvisosCliente({ avisos, onTab }: { avisos: Aviso[]; onTab: (t: Tab) => void }) {
+  const [abierto, setAbierto] = useState(false)
+  if (avisos.length === 0) return null
+  const hayAlto = avisos.some(a => a.nivel === 'alto')
+  const color = hayAlto ? 'var(--error)' : 'var(--warning)'
+  const cls = 'w-full flex items-start gap-2 rounded-xl px-3 py-2 text-left'
+  const estilo = { background: 'var(--bg)', border: '1px solid var(--border)' }
+
+  return (
+    <div className="mb-4 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <button type="button" onClick={() => setAbierto(v => !v)} aria-expanded={abierto} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left">
+        <AlertTriangle size={14} className="flex-shrink-0" style={{ color }} />
+        <span className="flex-1 min-w-0 truncate text-sm" style={{ color: 'var(--text)' }}>
+          <span className="font-semibold">{avisos.length} {avisos.length === 1 ? 'aviso' : 'avisos'}</span>
+          {!abierto && <span style={{ color: 'var(--text-secondary)' }}> · {avisos[0].texto}</span>}
+        </span>
+        <ChevronDown size={14} className="flex-shrink-0 transition-transform" style={{ color: 'var(--text-muted)', transform: abierto ? 'rotate(180deg)' : undefined }} />
+      </button>
+      {abierto && (
+        <ul className="space-y-1.5 px-3 pb-3">
+          {avisos.map((a, i) => {
+            const cuerpo = (
+              <>
+                <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: a.nivel === 'alto' ? 'var(--error)' : 'var(--warning)' }} />
+                <span className="flex-1 min-w-0 text-sm" style={{ color: 'var(--text)' }}>
+                  {a.texto}{a.detalle && <span className="text-xs" style={{ color: 'var(--text-muted)' }}> · {a.detalle}</span>}
+                </span>
+                {(a.tab || a.href) && <ChevronRight size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }} />}
+              </>
+            )
+            return (
+              <li key={i}>
+                {a.href ? <a href={a.href} className={cls} style={estilo}>{cuerpo}</a>
+                  : a.tab ? <button type="button" className={cls} style={estilo} onClick={() => onTab(a.tab!)}>{cuerpo}</button>
+                  : <div className={cls} style={estilo}>{cuerpo}</div>}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+export default function ResumenCliente({ cliente, checkins, seguimiento }: {
+  cliente: ClienteResumen; checkins: CheckIn[]; seguimiento: SeguimientoPeso[]
+}) {
   // Peso: seguimiento viene del más reciente al más antiguo
   const pesos = seguimiento.filter(s => s.peso != null).map(s => Number(s.peso)).reverse()
   const pesoActual = pesos.at(-1) ?? cliente.peso_inicial ?? null
@@ -87,37 +131,7 @@ export default function ResumenCliente({ id, cliente, dietaActiva, entrenoActivo
   const metricas = ult ? ([['Adherencia', ult.adherencia, prev?.adherencia], ['Energía', ult.energia, prev?.energia], ['Sueño', ult.sueno, prev?.sueno]] as const).filter(([, v]) => v != null) : []
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <section className="rounded-2xl p-4 sm:p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <p className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Requiere tu atención</p>
-        {lista.length === 0 ? (
-          <p className="flex items-center gap-2 text-sm" style={{ color: 'var(--text)' }}><CheckCircle2 size={16} style={{ color: 'var(--success)' }} /> Todo al día con este cliente</p>
-        ) : (
-          <ul className="space-y-1.5">
-            {lista.map((a, i) => {
-              const cuerpo = (
-                <>
-                  <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" style={{ color: a.nivel === 'alto' ? 'var(--error)' : 'var(--warning)' }} />
-                  <span className="flex-1 min-w-0 text-sm" style={{ color: 'var(--text)' }}>
-                    {a.texto}{a.detalle && <span className="text-xs" style={{ color: 'var(--text-muted)' }}> · {a.detalle}</span>}
-                  </span>
-                  {(a.tab || a.href) && <ChevronRight size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }} />}
-                </>
-              )
-              const cls = 'w-full flex items-start gap-2 rounded-xl px-3 py-2 text-left'
-              const estilo = { background: 'var(--bg)', border: '1px solid var(--border)' }
-              return (
-                <li key={i}>
-                  {a.href ? <a href={a.href} className={cls} style={estilo}>{cuerpo}</a>
-                    : a.tab ? <button className={cls} style={estilo} onClick={() => onTab(a.tab!)}>{cuerpo}</button>
-                    : <div className={cls} style={estilo}>{cuerpo}</div>}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
-
+    <div>
       <section className="rounded-2xl p-4 sm:p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <p className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Evolución</p>
         {pesoActual == null && metricas.length === 0 ? (

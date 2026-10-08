@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 import ChatPanel from '@/components/PortalCliente/ChatPanel'
-import ResumenCliente from '@/components/clientes/ResumenCliente'
+import ResumenCliente, { AvisosCliente, avisosCliente } from '@/components/clientes/ResumenCliente'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import { OBJETIVO_LABELS } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
@@ -516,7 +516,7 @@ export default function ClienteDetallePage() {
   const [guardandoRespuesta, setGuardandoRespuesta] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [isEditando, setIsEditando] = useState(false)
-  const [tabActiva, setTabActiva] = useState<Tab>('resumen')
+  const [tabActiva, setTabActiva] = useState<Tab>('nutricion')
   const [subTabEntreno, setSubTabEntreno] = useState<SubTabEntreno>('plan')
   const [mostrarPanelIAEntreno, setMostrarPanelIAEntreno] = useState(false)
   const [vistaCalendarioEntreno, setVistaCalendarioEntreno] = useState<'semana' | 'mes'>('semana')
@@ -673,12 +673,12 @@ export default function ClienteDetallePage() {
 
   const alertasClinicas = informe?.flags_activos?.filter(f => f.severidad === 'critico' || f.severidad === 'alto').length
   const TABS: { key: Tab; label: string; icon: React.ElementType; badge?: number }[] = [
-    { key: 'resumen', label: 'Resumen', icon: Info },
     { key: 'nutricion', label: 'Nutrición', icon: UtensilsCrossed, badge: dietas.length },
     { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, badge: entrenos.length },
     { key: 'seguimiento', label: 'Seguimiento', icon: ClipboardCheck, badge: checkins.length },
     { key: 'comunicacion', label: 'Comunicación', icon: MessageCircle, badge: noLeidosChat || notasCoach.length },
     { key: 'perfil', label: 'Perfil', icon: PersonStanding, badge: alertasClinicas },
+    { key: 'resumen', label: 'Resumen', icon: Info },
   ]
 
   return (
@@ -820,12 +820,17 @@ export default function ClienteDetallePage() {
           ))}
         </div>
 
+        <AvisosCliente
+          avisos={avisosCliente({ id, cliente, dietaActiva, entrenoActivo, checkins, noLeidosChat })}
+          onTab={t => { setTabActiva(t); setIsEditando(false) }}
+        />
+
         {/* ── Tab content ── */}
         {isEditando ? (
           <ClienteEditar cliente={cliente} onSave={() => { setIsEditando(false); recargarCliente() }} onCancel={() => setIsEditando(false)} />
         ) : tabActiva === 'resumen' ? (
           <div className="space-y-4">
-            <ResumenCliente id={id} cliente={cliente} dietaActiva={dietaActiva} entrenoActivo={entrenoActivo} checkins={checkins} seguimiento={seguimiento} noLeidosChat={noLeidosChat} onTab={t => { setTabActiva(t); setIsEditando(false) }} />
+            <ResumenCliente cliente={cliente} checkins={checkins} seguimiento={seguimiento} />
 
             <AdherenciaScoreCard clienteId={id} />
             <MealAdherenciaHeatmap clienteId={id} />
@@ -847,26 +852,6 @@ export default function ClienteDetallePage() {
                 )}
               </div>
             )}
-
-            {/* Eliminar cliente */}
-            <div className="rounded-2xl p-4" style={{ border: '1px solid rgba(255,69,58,0.2)', background: 'rgba(255,69,58,0.04)' }}>
-              {!confirmandoEliminar ? (
-                <button className="text-xs px-3 py-1.5 rounded-xl border font-medium transition-colors" style={{ borderColor: 'rgba(255,69,58,0.3)', color: '#FF453A' }} onClick={() => setConfirmandoEliminar(true)}>
-                  Eliminar cliente
-                </button>
-              ) : (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>¿Seguro? No se puede deshacer.</span>
-                  <button className="text-xs px-3 py-1.5 rounded-xl font-medium" style={{ background: '#FF453A', color: '#fff' }} disabled={eliminando} onClick={handleEliminarCliente}>
-                    {eliminando ? 'Eliminando…' : 'Sí, eliminar'}
-                  </button>
-                  <button className="text-xs px-3 py-1.5 rounded-xl" style={{ background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }} onClick={() => setConfirmandoEliminar(false)}>
-                    Cancelar
-                  </button>
-                </div>
-              )}
-              <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Eliminar el cliente borrará su perfil, planes, check-ins y todos sus datos. Esta acción no se puede deshacer.</p>
-            </div>
           </div>
 
         ) : tabActiva === 'nutricion' ? (
