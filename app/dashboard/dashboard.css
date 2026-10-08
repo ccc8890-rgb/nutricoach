@@ -14,20 +14,20 @@
   pointer-events: none;
   content: '';
   background:
-    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 34%),
+    linear-gradient(120deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 42%),
     linear-gradient(to bottom, var(--dashboard-wash), transparent 88%);
   opacity: 0.9;
 }
 
 .coach-dashboard-hero {
   position: relative;
-  padding-block: 0.5rem 1rem;
+  padding-block: 1.5rem 2.5rem;
 }
 
 .coach-dashboard-hero::after {
   display: block;
-  width: 3rem;
-  height: 1px;
+  width: 5rem;
+  height: 3px;
   margin-top: 1.5rem;
   content: '';
   background: var(--accent);
@@ -40,7 +40,10 @@
 }
 
 .coach-dashboard-title {
-  max-width: 18ch;
+  max-width: 15ch;
+  font-size: clamp(2.5rem, 5vw, 4.75rem) !important;
+  font-weight: 520 !important;
+  line-height: 0.96;
   text-wrap: balance;
 }
 
@@ -51,7 +54,8 @@
 .coach-dashboard-priorities,
 .coach-dashboard-metrics-grid,
 .coach-dashboard-access {
-  border: 1px solid var(--dashboard-line);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px !important;
   background: var(--dashboard-line);
 }
 
@@ -65,10 +69,14 @@
     transform 180ms var(--ease-out-strong);
 }
 
+.coach-dashboard-priority:nth-child(1) {
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface)) !important;
+}
+
 .coach-dashboard-priority::before {
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 2px;
+  inset: 0 0 auto;
+  height: 2px;
   content: '';
   background: var(--priority-color);
   opacity: 0.72;
@@ -86,7 +94,7 @@
 .coach-dashboard-priority:hover,
 .coach-dashboard-metric:hover,
 .coach-dashboard-access-item:hover {
-  background: var(--surface-hover) !important;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-hover)) !important;
 }
 
 .coach-dashboard-case:hover {

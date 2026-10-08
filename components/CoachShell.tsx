@@ -153,12 +153,10 @@ function CoachTopBar({ pathname }: { pathname: string }) {
 
   return (
     <div
-      className="sticky top-0 z-20 border-b px-4 py-3 sm:px-6 lg:px-8"
+      className="coach-atelier-topbar sticky top-0 z-20 border-b px-4 py-3 sm:px-6 lg:px-8"
       style={{
         borderColor: 'var(--border)',
-        background: 'color-mix(in srgb, var(--bg) 88%, transparent)',
-        backdropFilter: 'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
+        background: 'color-mix(in srgb, var(--bg) 96%, transparent)',
       }}
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -170,14 +168,14 @@ function CoachTopBar({ pathname }: { pathname: string }) {
             <ChevronRight size={12} />
             <span>{context.area}</span>
           </div>
-          <h1 className="mt-1 truncate text-lg font-semibold tracking-tight sm:text-xl" style={{ color: 'var(--text)' }}>
+          <h1 className="mt-1 truncate text-xl font-semibold tracking-[-0.035em] sm:text-2xl" style={{ color: 'var(--text)' }}>
             {context.title}
           </h1>
         </div>
 
         <div className="flex min-w-0 items-center gap-2">
           <div
-            className="hidden h-10 min-w-[260px] items-center gap-2 rounded-2xl border px-3 lg:flex"
+            className="coach-atelier-search hidden h-10 min-w-[260px] items-center gap-2 rounded-lg border px-3 lg:flex"
             style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text-muted)' }}
           >
             <Search size={15} />
@@ -246,10 +244,10 @@ export default function CoachShell({ children, padded = false }: { children: Rea
   }
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--bg)' }}>
+    <div className="coach-atelier-shell flex min-h-screen" style={{ background: 'var(--bg)' }}>
       <Sidebar />
       <CoachFloatingControls />
-      <main className="flex-1 overflow-auto pb-nav-safe layout-main">
+      <main className="coach-atelier-main flex-1 overflow-auto pb-nav-safe layout-main">
         <CoachTopBar pathname={pathname || '/dashboard'} />
         {padded ? <div className="p-6 max-w-5xl mx-auto">{children}</div> : children}
       </main>

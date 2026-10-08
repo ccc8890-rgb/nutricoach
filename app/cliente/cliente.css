@@ -14,29 +14,35 @@
   pointer-events: none;
   content: '';
   background:
-    radial-gradient(circle at 86% 4%, color-mix(in srgb, var(--success) 7%, transparent), transparent 32%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, transparent), transparent 40%),
     linear-gradient(to bottom, var(--cliente-wash), transparent 92%);
 }
 
 .cliente-portal-header {
   box-shadow: none;
+  border-bottom-color: color-mix(in srgb, var(--accent) 34%, var(--border)) !important;
 }
 
 .cliente-avatar {
   letter-spacing: -0.04em;
+  background: var(--accent) !important;
+  color: var(--atelier-carbon) !important;
+  border-color: var(--accent) !important;
 }
 
 .cliente-plan-hero {
-  border-radius: 0.875rem;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface)) !important;
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border)) !important;
 }
 
 .cliente-plan-hero::after {
   position: absolute;
   inset: 0 0 auto;
-  height: 2px;
+  height: 4px;
   content: '';
-  background: linear-gradient(90deg, var(--success), transparent 68%);
-  opacity: 0.72;
+  background: var(--accent);
+  opacity: 1;
 }
 
 .cliente-eyebrow {
@@ -46,13 +52,16 @@
 .cliente-plan-title {
   max-width: 18ch;
   text-wrap: balance;
+  font-size: clamp(1.85rem, 8vw, 3rem) !important;
+  font-weight: 520 !important;
+  line-height: 0.98 !important;
 }
 
 .cliente-plan-stats,
 .cliente-bento,
 .cliente-quick-grid {
   border: 1px solid var(--cliente-line);
-  border-radius: 0.75rem;
+  border-radius: 0.375rem;
   background: var(--cliente-line);
 }
 
@@ -79,11 +88,13 @@
 }
 
 .cliente-checkin-cta {
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
 }
 
 .cliente-bottom-nav {
-  box-shadow: 0 -12px 40px color-mix(in srgb, var(--bg) 38%, transparent);
+  background: color-mix(in srgb, var(--surface) 96%, transparent) !important;
+  border-top: 2px solid color-mix(in srgb, var(--accent) 55%, var(--border)) !important;
+  box-shadow: 0 -16px 48px color-mix(in srgb, var(--bg) 48%, transparent);
 }
 
 .cliente-bottom-item {
@@ -106,6 +117,11 @@
 .cliente-bottom-item.is-active::before {
   opacity: 1;
   transform: translateX(-50%) scaleX(1);
+}
+
+.cliente-bottom-item.is-active {
+  color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .cliente-portal-shell button:focus-visible,

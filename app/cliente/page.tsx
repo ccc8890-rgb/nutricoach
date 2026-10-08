@@ -582,19 +582,19 @@ function PortalClientePageContent() {
                     label="Proteínas"
                     value={totalDia.proteinas}
                     target={dieta?.proteinas_objetivo ?? totalDia.proteinas}
-                    color="#52B788"
+                    color="var(--macro-protein)"
                   />
                   <MacroPill
                     label="Carbos"
                     value={totalDia.carbohidratos}
                     target={dieta?.carbohidratos_objetivo ?? totalDia.carbohidratos}
-                    color="#4A9FCC"
+                    color="var(--macro-carbs)"
                   />
                   <MacroPill
                     label="Grasas"
                     value={totalDia.grasas}
                     target={dieta?.grasas_objetivo ?? totalDia.grasas}
-                    color="#E07C3A"
+                    color="var(--macro-fat)"
                   />
                 </div>
               </section>
@@ -613,7 +613,7 @@ function PortalClientePageContent() {
                     sub={diffPeso !== null
                       ? `${diffPeso > 0 ? '+' : ''}${diffPeso.toFixed(1)} kg`
                       : undefined}
-                    color={diffPeso !== null ? (diffPeso < 0 ? '#52B788' : '#F4A261') : 'var(--accent)'}
+                    color={diffPeso !== null ? (diffPeso < 0 ? 'var(--success)' : 'var(--warning)') : 'var(--accent)'}
                   />
                 )}
                 {entreno && (
@@ -623,13 +623,13 @@ function PortalClientePageContent() {
                     style={{ background: 'var(--surface)' }}
                   >
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'rgba(116,185,224,0.12)' }}>
-                      <Barbell size={16} style={{ color: '#74B9E0' }} />
+                      style={{ background: 'var(--accent-bg)' }}>
+                      <Barbell size={16} style={{ color: 'var(--accent)' }} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] uppercase tracking-wide font-medium" style={{ color: 'var(--text-muted)' }}>Entreno</p>
                       <p className="font-bold text-sm leading-tight truncate" style={{ color: 'var(--text)' }}>{entreno.nombre}</p>
-                      <p className="text-[10px]" style={{ color: '#74B9E0' }}>Ver plan</p>
+                      <p className="text-[10px]" style={{ color: 'var(--accent)' }}>Ver plan</p>
                     </div>
                   </button>
                 )}
@@ -648,7 +648,7 @@ function PortalClientePageContent() {
                     className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                   >
-                    <ClipboardText size={17} style={{ color: '#52B788' }} />
+                    <ClipboardText size={17} style={{ color: 'var(--accent)' }} />
                     <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Check-in</p>
                   </button>
                   <button
@@ -656,7 +656,7 @@ function PortalClientePageContent() {
                     className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                   >
-                    <ChartLineUp size={17} style={{ color: '#4A9FCC' }} />
+                    <ChartLineUp size={17} style={{ color: 'var(--accent)' }} />
                     <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Progreso</p>
                   </button>
                   <button
@@ -664,7 +664,7 @@ function PortalClientePageContent() {
                     className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                   >
-                    <ShoppingCart size={17} style={{ color: '#D9A441' }} />
+                    <ShoppingCart size={17} style={{ color: 'var(--accent)' }} />
                     <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Compra</p>
                   </button>
                   <button
@@ -672,7 +672,7 @@ function PortalClientePageContent() {
                     className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
                     style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                   >
-                    <ChatCircleDots size={17} style={{ color: '#EF4444' }} />
+                    <ChatCircleDots size={17} style={{ color: 'var(--accent)' }} />
                     <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Chat</p>
                   </button>
                 </div>
@@ -701,15 +701,15 @@ function PortalClientePageContent() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                    style={{ background: 'rgba(82,183,136,0.15)' }}>
-                    <ClipboardText size={16} style={{ color: '#52B788' }} />
+                    style={{ background: 'var(--accent-bg)' }}>
+                    <ClipboardText size={16} style={{ color: 'var(--accent)' }} />
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Check-in semanal</p>
                     <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Registra tu progreso</p>
                   </div>
                 </div>
-                <CaretRight size={16} style={{ color: '#52B788' }} />
+                <CaretRight size={16} style={{ color: 'var(--accent)' }} />
               </button>
             )}
           </div>

@@ -426,7 +426,7 @@ export default function Sidebar() {
           <Link
             href="/dashboard"
             prefetch
-            className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black tracking-tight"
+            className="coach-atelier-mark w-10 h-10 rounded-lg flex items-center justify-center text-sm font-black tracking-tight"
             style={{
               background: 'var(--text)',
               color: 'var(--bg)',
@@ -436,11 +436,11 @@ export default function Sidebar() {
             CN
           </Link>
           <div className="min-w-0">
-            <p className="font-bold leading-tight text-[15px]" style={{ color: 'var(--text)' }}>
-              Casanova
+            <p className="font-semibold leading-tight text-[15px] tracking-[-0.025em]" style={{ color: 'var(--text)' }}>
+              Casanova Lab
             </p>
             <p className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
-              Health OS
+              Performance Atelier
             </p>
           </div>
           <button
@@ -548,17 +548,15 @@ export default function Sidebar() {
       )}
 
       <aside
-        className={`
+        className={`coach-atelier-sidebar
           relative w-64 min-h-screen flex flex-col border-r overflow-hidden
           transition-transform duration-300 ease-out
           max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-40
           ${mounted && mobileOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}
         `}
         style={{
-          background: 'var(--glass-bg)',
+          background: 'color-mix(in srgb, var(--surface) 92%, var(--bg))',
           borderColor: 'var(--glass-border)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
           paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >

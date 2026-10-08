@@ -1,14 +1,13 @@
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
-import { Plus_Jakarta_Sans } from 'next/font/google'
+import { Instrument_Sans } from 'next/font/google'
 import Script from "next/script"
 import "./globals.css"
 
-const plusJakarta = Plus_Jakarta_Sans({
+const instrumentSans = Instrument_Sans({
   subsets: ['latin'],
-  variable: '--font-jakarta',
-  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-instrument',
   display: 'swap',
 })
 import { ToastProvider } from '@/components/ui/Toast'
@@ -47,7 +46,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" data-scroll-behavior="smooth" className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
+    <html lang="es" data-scroll-behavior="smooth" className={`h-full ${GeistSans.variable} ${GeistMono.variable} ${instrumentSans.variable}`} suppressHydrationWarning>
       <head>
         {/* Fotos de recetas: abre conexión con Cloudinary desde el principio (ahorra DNS+TLS en la primera foto) */}
         <link rel="preconnect" href="https://res.cloudinary.com" />
@@ -55,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className="min-h-full font-sans overflow-x-hidden"
         style={{
-          fontFamily: 'var(--font-jakarta), var(--font-geist-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif',
+          fontFamily: 'var(--font-instrument), var(--font-geist-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif',
           WebkitTapHighlightColor: 'transparent',
           overscrollBehavior: 'none',
         }}
