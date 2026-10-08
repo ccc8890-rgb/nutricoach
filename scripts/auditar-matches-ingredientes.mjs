@@ -19,7 +19,7 @@ const ELABORADO=['galleta','galletas','bizcocho','brownie','natilla','natillas',
 const DISCRIMINANTE=new Set(('negro blanco leche griego mozzarella queso salsa coco soja avena almendra integral vainilla chocolate cacao proteina suero whey huevo yema clara arroz papel canela tomate cherry pollo pavo ternera cerdo atun salmon vegetal oliva girasol sesamo cottage skyr mantequilla nata crema harina azucar miel sirope eritritol stevia cebolla ajo limon lima naranja platano manzana patata boniato pan pasta tortilla jamon bacon gamba pulpo tofu tempeh lenteja garbanzo judia quinoa cuscus bebida zumo vinagre mostaza curry pimenton cebollino perejil cilantro albahaca jengibre aguacate mango fresa arandano frambuesa').split(' ').map(sing))
 const wordRe=w=>new RegExp('(^| )'+w+'( |$)')
 const all=async(t,c)=>{const o=[];for(let f=0;;f+=1000){const {data,error}=await sb.from(t).select(c).range(f,f+999);if(error)throw error;o.push(...data);if(data.length<1000)break}return o}
-const ing=await all('receta_ingredientes','receta_id,nombre_libre,alimento_id,cantidad_gramos')
+const ing=await all('receta_ingredientes','id,receta_id,nombre_libre,alimento_id,cantidad_gramos')
 const al=new Map((await all('alimentos','id,nombre,calorias,fuente')).map(a=>[a.id,a]))
 const rec=new Map((await all('recetas','id,nombre')).map(r=>[r.id,r.nombre]))
 const clave=s=>norm(s).split(' ').filter(w=>w.length>2&&!RUIDO.has(w)&&!/^\d+$/.test(w)).map(sing)
@@ -41,7 +41,7 @@ for(const [k,lista] of porNombre){
     const extra=ELABORADO.filter(w=>wordRe(w).test(nA)&&!wordRe(w).test(nI)&&!nI.includes(w))
     if(extra.length) motivos.push(`B: el alimento es «${extra[0]}» y el ingrediente no lo pide`)
     if(a.calorias>0&&med>0&&lista.length>=3&&Math.abs(a.calorias-med)/med>0.4) motivos.push(`D: ${a.calorias} kcal vs ${med} habitual`)
-    if(motivos.length) hallazgos.push({receta:rec.get(i.receta_id),ingrediente:i.nombre_libre.trim(),alimento:a.nombre,kcal:a.calorias,motivos,gramos:i.cantidad_gramos})
+    if(motivos.length) hallazgos.push({id:i.id,receta_id:i.receta_id,alimento_id:a.id,receta:rec.get(i.receta_id),ingrediente:i.nombre_libre.trim(),alimento:a.nombre,kcal:a.calorias,motivos,gramos:i.cantidad_gramos})
   }
   if(alimentosDist.size>=3&&lista.length>=4) hallazgos.push({receta:'(varias)',ingrediente:k,alimento:[...alimentosDist].slice(0,4).map(id=>al.get(id).nombre).join(' | '),motivos:[`E: ${alimentosDist.size} alimentos distintos para el mismo ingrediente`]})
 }
@@ -53,4 +53,5 @@ const porPar=new Map(); for(const h of hallazgos){const key=h.ingrediente+'  →
 const ord=[...porPar.entries()].filter(([k])=>/\[(A|B|C!|D|E)/.test(k)||/; (A|B|C!|D|E)/.test(k)).sort((a,b)=>b[1].length-a[1].length)
 console.log('pares distintos',ord.length); console.log(ord.slice(0,60).map(([k,v])=>v.length+'x '+k).join('\n'))
 fs.mkdirSync('salidas',{recursive:true})
+fs.writeFileSync('salidas/matches-dudosos.json',JSON.stringify(hallazgos.filter(h=>h.id&&h.motivos.some(m=>/^(A|B|C!|D)/.test(m))),null,1))
 fs.writeFileSync('salidas/'+new Date().toISOString().slice(0,10).split('-').reverse().join('-')+'_matches-dudosos.md','# Enlaces ingrediente → alimento dudosos\n\n'+ord.map(([k,v])=>`- ${v.length}x ${k} — ${[...new Set(v)].slice(0,3).join('; ')}`).join('\n'))
