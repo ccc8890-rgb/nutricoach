@@ -1,6 +1,6 @@
 # Ajustes del coach: sustituye a «Sistema»
 
-Fecha: 08-10-2026 · Estado: pendiente de aprobación de Carlos
+Fecha: 08-10-2026 · Estado: implementado y en producción (ec5f9a1)
 
 ## Objetivo
 
@@ -11,7 +11,7 @@ Un único sitio para lo que no es trabajo con clientes: cuenta, parámetros de l
 Ruta nueva `/ajustes`, con cuatro secciones:
 
 1. **Cuenta**: nombre, apellidos y teléfono editables (columnas existentes de `profiles`); correo en solo lectura; cambiar contraseña dentro de la pantalla (misma lógica que `app/nueva-contrasena/page.tsx`, mínimo 8 caracteres y repetir); cerrar sesión.
-2. **Apariencia**: claro, oscuro o automático. Hoy solo hay claro/oscuro: «automático» sigue al sistema.
+2. **Apariencia**: claro u oscuro (no hay modo automático: `ThemeProvider` solo conoce esos dos).
 3. **Seguridad**: «Cerrar sesión en todos los dispositivos» (`supabase.auth.signOut({ scope: 'global' })`) con confirmación.
 4. **Método y conocimiento**: tarjetas hacia Metodología (`/coach/metodologia`), Base de conocimiento (`/conocimiento`) y Cuestionarios (`/cuestionarios`). Esas rutas no se mueven ni se reescriben.
 
@@ -24,12 +24,12 @@ Mi negocio (nombre comercial, logo, firma de emails), Notificaciones, Integracio
 - Menú lateral: se quita el módulo «Sistema» (`CONOCIMIENTO_ITEMS` y su sección). Pie del menú: **Ajustes** y **Cerrar sesión**. «Cambiar contraseña» deja el pie y vive en Ajustes.
 - `/sistema` redirige a `/ajustes`.
 - Las tres rutas de «Método y conocimiento» marcan **Ajustes** como activo en el menú.
-- Escritorio: columna de secciones a la izquierda y contenido a la derecha. Móvil (390 px): lista de secciones que se abren una a una.
+- **Cambio pedido por Carlos:** todo en una sola página con las secciones apiladas (sin submenú lateral), y «Cerrar sesión» arriba, en la cabecera de la cuenta, para no tener que bajar.
 - `/nueva-contrasena` se queda tal cual (la usa el enlace de recuperar contraseña por correo).
 
 ## Datos y seguridad
 
-- Sin migraciones. Solo actualiza `profiles` del propio usuario (`id = auth.uid()`), con el cliente Supabase del navegador. Hay que comprobar que la política RLS lo permite; si no, se hace con una ruta API que compruebe sesión y use solo el `id` de la sesión (nunca uno recibido del cliente).
+- Sin migraciones. `GET/PATCH /api/ajustes/perfil` comprueba la sesión y actualiza solo el `profiles` del propio usuario con el `id` de la sesión (nunca uno recibido del cliente), con service role. Validación en `lib/ajustes/perfil.ts` (test `scripts/ajustes-perfil.test.ts`).
 - Validación: nombre no vacío y máximo 80 caracteres, teléfono con formato razonable o vacío.
 - El rol (`role`) no se puede tocar desde esta pantalla.
 
