@@ -69,6 +69,8 @@ for (const r of recetas) {
   for (const [neg, pos] of Object.entries(NEG)) {
     if (nuevo.includes(neg) && [].concat(pos).some(p => detectado.has(p))) { nuevo = nuevo.filter(x => x !== neg); nota.push('-' + neg); cuenta.quitaSin[neg] = (cuenta.quitaSin[neg] || 0) + 1 }
   }
+  for (const raro of ['Apto Diabéticos']) if (nuevo.includes(raro)) { nuevo = nuevo.filter(x => x !== raro); nota.push('-' + raro) } // etiqueta no estándar
+  nuevo = nuevo.map(x => x.replace(/\s*\(.*\)\s*$/, '')).filter((x, i, a) => a.indexOf(x) === i)
   const hayCarne = nombres.some(n => CARNE.test(n)) || detectado.has('Pescado') || detectado.has('Crustáceos') || detectado.has('Moluscos')
   const hayAnimal = hayCarne || detectado.has('Lácteos') || detectado.has('Huevos') || nombres.some(n => ANIMAL_NO_VEGANO.test(n))
   if (nuevo.includes('Vegetariano') && hayCarne) { nuevo = nuevo.filter(x => x !== 'Vegetariano'); nota.push('-Vegetariano'); cuenta.quitaVeg.Vegetariano = (cuenta.quitaVeg.Vegetariano || 0) + 1 }
