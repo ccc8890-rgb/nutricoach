@@ -11,7 +11,7 @@ export default function ProgressInstrument({ label, value, max, unit = '', detai
   const safeMax = max > 0 ? max : 1
   const percentage = Math.min(100, Math.max(0, (value / safeMax) * 100))
   return (
-    <div className={`progress-instrument is-${tone}`} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={max} aria-valuenow={value}>
+    <div className={`progress-instrument is-${tone}`} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={safeMax} aria-valuenow={Math.min(value, safeMax)}>
       <div className="progress-instrument__header">
         <span>{label}</span>
         <output>{Math.round(value)}{unit}</output>
