@@ -8,7 +8,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta, marca } from '@/lib/cliente/cache-swr'
 import {
-  House, BookOpenText, ClipboardText, ChartLineUp, SignOut,
+  House, BookOpenText, ClipboardText, SignOut,
   ForkKnife, Barbell, Scales, Trophy, Sun, Moon, Gear,
   CaretRight, CaretLeft, X, TrendDown, TrendUp,
   ShoppingCart, ChatCircleDots, DeviceMobile,
@@ -28,6 +28,7 @@ import EntrenoSubTabsEstatico from '@/components/training/EntrenoSubTabs'
 import RecetarioExploradorEstatico from '@/components/PortalCliente/RecetarioExplorador'
 import AjustesTabsEstatico from '@/components/PortalCliente/AjustesTabs'
 import SuplementacionPortalEstatico from '@/components/PortalCliente/SuplementacionPortal'
+import { HoyEditorial } from '@/components/PortalCliente/editorial'
 // Un fallo de render en una pestaña no tumba el portal entero: muestra el error con botón de reintentar.
 function aislar<P extends object>(Componente: ComponentType<P>): ComponentType<P> {
   return function Aislado(props: P) {
@@ -66,73 +67,6 @@ function VolverAHoy({ setTab }: { setTab: (t: Tab) => void }) {
     >
       <CaretLeft size={14} /> Hoy
     </button>
-  )
-}
-
-/* ── Macro ring SVG ─────────────────────────────── */
-function MacroRing({
-  value, max, color, size = 56, stroke = 5,
-}: { value: number; max: number; color: string; size?: number; stroke?: number }) {
-  const r = (size - stroke * 2) / 2
-  const circ = 2 * Math.PI * r
-  const pct = max > 0 ? Math.min(value / max, 1) : 0
-  const dash = circ * pct
-  return (
-    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none"
-        stroke="color-mix(in srgb, var(--text) 9%, transparent)" strokeWidth={stroke} />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none"
-        stroke={color} strokeWidth={stroke}
-        strokeDasharray={`${dash} ${circ}`}
-        strokeLinecap="round"
-        style={{ transition: 'stroke-dasharray 0.6s cubic-bezier(0.23,1,0.32,1)' }}
-      />
-    </svg>
-  )
-}
-
-/* ── Macro pill ─────────────────────────────────── */
-function MacroPill({ label, value, target, color, unit = 'g' }: {
-  label: string; value: number; target: number; color: string; unit?: string
-}) {
-  return (
-    <div className="flex flex-col items-center gap-1.5 cursor-default">
-      <div className="relative">
-        <MacroRing value={value} max={target} color={color} size={60} stroke={5} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-[11px] font-bold" style={{ color: 'var(--text)' }}>
-            {value > 0 ? value.toFixed(0) : '—'}
-          </span>
-        </div>
-      </div>
-      <div className="text-center">
-        <p className="text-[10px] font-semibold tracking-wide uppercase" style={{ color }}>
-          {label}
-        </p>
-        <p className="text-[9px]" style={{ color: 'var(--text-muted)' }}>
-          / {target > 0 ? target.toFixed(0) : '—'}{unit}
-        </p>
-      </div>
-    </div>
-  )
-}
-
-/* ── Stat badge ─────────────────────────────────── */
-function StatBadge({ icon: Icon, label, value, sub, color }: {
-  icon: React.ElementType; label: string; value: string; sub?: string; color: string
-}) {
-  return (
-    <div className="cliente-stat flex items-center gap-3 p-4" style={{ background: 'var(--surface)' }}>
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-        style={{ background: `${color}18` }}>
-        <Icon size={16} style={{ color }} />
-      </div>
-      <div className="min-w-0">
-        <p className="text-[10px] uppercase tracking-wide font-medium" style={{ color: 'var(--text-muted)' }}>{label}</p>
-        <p className="font-bold text-sm leading-tight" style={{ color: 'var(--text)' }}>{value}</p>
-        {sub && <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
-      </div>
-    </div>
   )
 }
 
@@ -572,185 +506,30 @@ function PortalClientePageContent() {
         {/* ─── HOY ─── */}
         {visitadas.has('hoy') && (
           <div className="cliente-hoy flex flex-col gap-5" style={tab !== 'hoy' ? { display: 'none' } : undefined}>
-
-            {/* Hero: Calorías */}
             {totalDia ? (
-              <section className="cliente-plan-hero overflow-hidden relative p-5 sm:p-6"
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  boxShadow: 'none',
-                }}>
-                <div className="flex items-start justify-between gap-4 mb-6">
-                  <div>
-                    <p className="cliente-eyebrow text-[10px] font-semibold mb-2 uppercase" style={{ color: 'var(--text-muted)' }}>
-                      Plan de hoy
-                    </p>
-                    <h1 className="cliente-plan-title text-2xl font-semibold leading-tight tracking-[-0.04em] sm:text-3xl" style={{ color: 'var(--text)' }}>
-                      {primerNombre}, foco en cumplir lo básico
-                    </h1>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-4xl font-medium leading-none tracking-[-0.08em] font-data" style={{ color: 'var(--text)' }}>
-                      {totalDia.calorias.toFixed(0)}
-                    </p>
-                    <p className="text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>
-                      kcal/día
-                    </p>
-                  </div>
-                </div>
-
-                <div className="cliente-plan-stats grid grid-cols-3 gap-px mb-6 overflow-hidden">
-                  <div className="cliente-plan-stat px-3 py-3.5" style={{ background: 'var(--bg-subtle)' }}>
-                    <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Comidas</p>
-                    <p className="font-data text-xl font-bold" style={{ color: 'var(--text)' }}>{comidasDia}</p>
-                  </div>
-                  <div className="cliente-plan-stat px-3 py-3.5" style={{ background: 'var(--bg-subtle)' }}>
-                    <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Entrenos</p>
-                    <p className="font-data text-xl font-bold" style={{ color: 'var(--text)' }}>{sesionesSemana}</p>
-                  </div>
-                  <div className="cliente-plan-stat px-3 py-3.5" style={{ background: 'var(--bg-subtle)' }}>
-                    <p className="text-[10px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Peso</p>
-                    <p className="font-data text-xl font-bold" style={{ color: 'var(--text)' }}>{ultimoPeso ? `${ultimoPeso}` : '—'}</p>
-                  </div>
-                </div>
-
-                {/* Macro rings */}
-                <div className="grid grid-cols-3 gap-3">
-                  <MacroPill
-                    label="Proteínas"
-                    value={totalDia.proteinas}
-                    target={dieta?.proteinas_objetivo ?? totalDia.proteinas}
-                    color="var(--macro-protein)"
-                  />
-                  <MacroPill
-                    label="Carbos"
-                    value={totalDia.carbohidratos}
-                    target={dieta?.carbohidratos_objetivo ?? totalDia.carbohidratos}
-                    color="var(--macro-carbs)"
-                  />
-                  <MacroPill
-                    label="Grasas"
-                    value={totalDia.grasas}
-                    target={dieta?.grasas_objetivo ?? totalDia.grasas}
-                    color="var(--macro-fat)"
-                  />
-                </div>
-              </section>
+              <HoyEditorial
+                firstName={primerNombre}
+                dateLabel={fechaHoy}
+                calories={totalDia.calorias}
+                meals={comidasDia}
+                weeklySessions={sesionesSemana}
+                weight={ultimoPeso}
+                weightDelta={diffPeso}
+                macros={[
+                  { label: 'Proteína', value: totalDia.proteinas, target: dieta?.proteinas_objetivo ?? totalDia.proteinas, unit: 'g' },
+                  { label: 'Carbohidratos', value: totalDia.carbohidratos, target: dieta?.carbohidratos_objetivo ?? totalDia.carbohidratos, unit: 'g' },
+                  { label: 'Grasas', value: totalDia.grasas, target: dieta?.grasas_objetivo ?? totalDia.grasas, unit: 'g' },
+                ]}
+                trainingName={entreno?.nombre}
+                hasPlan={Boolean(dieta)}
+                onNavigate={setTab}
+              />
             ) : (
               <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
 
-            {/* Bento: peso + entreno de hoy */}
-            {(ultimoPeso || entreno) && (
-              <div className="cliente-bento grid grid-cols-2 gap-px overflow-hidden">
-                {ultimoPeso && (
-                  <StatBadge
-                    icon={Scales}
-                    label="Último peso"
-                    value={`${ultimoPeso} kg`}
-                    sub={diffPeso !== null
-                      ? `${diffPeso > 0 ? '+' : ''}${diffPeso.toFixed(1)} kg`
-                      : undefined}
-                    color={diffPeso !== null ? (diffPeso < 0 ? 'var(--success)' : 'var(--warning)') : 'var(--accent)'}
-                  />
-                )}
-                {entreno && (
-                  <button
-                    onClick={() => setTab('entreno')}
-                    className="cliente-stat flex items-center gap-3 p-4 text-left cursor-pointer transition-all active:scale-[0.98]"
-                    style={{ background: 'var(--surface)' }}
-                  >
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'var(--accent-bg)' }}>
-                      <Barbell size={16} style={{ color: 'var(--accent)' }} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase tracking-wide font-medium" style={{ color: 'var(--text-muted)' }}>Entreno</p>
-                      <p className="font-bold text-sm leading-tight truncate" style={{ color: 'var(--text)' }}>{entreno.nombre}</p>
-                      <p className="text-[10px]" style={{ color: 'var(--accent)' }}>Ver plan</p>
-                    </div>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Accesos rápidos: solo lo que NO vive ya en la barra inferior (Hoy/Dieta/Entreno/Recetas) */}
-            {codigo && (
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide mb-2 px-1" style={{ color: 'var(--text-muted)' }}>
-                  Accesos rápidos
-                </p>
-                <div className="cliente-quick-grid grid grid-cols-2 gap-px overflow-hidden">
-                  <button
-                    onClick={() => setTab('checkin')}
-                    className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                  >
-                    <ClipboardText size={17} style={{ color: 'var(--accent)' }} />
-                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Check-in</p>
-                  </button>
-                  <button
-                    onClick={() => setTab('progreso')}
-                    className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                  >
-                    <ChartLineUp size={17} style={{ color: 'var(--accent)' }} />
-                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Progreso</p>
-                  </button>
-                  <button
-                    onClick={() => setTab('compra')}
-                    className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                  >
-                    <ShoppingCart size={17} style={{ color: 'var(--accent)' }} />
-                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Compra</p>
-                  </button>
-                  <button
-                    onClick={() => setTab('chat')}
-                    className="cliente-quick-action px-4 py-4 text-left transition-all active:scale-[0.98]"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                  >
-                    <ChatCircleDots size={17} style={{ color: 'var(--accent)' }} />
-                    <p className="mt-2 text-[11px] font-semibold" style={{ color: 'var(--text)' }}>Chat</p>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* TLS Gauge */}
-            {codigo && (
-              <TLSGauge codigo={codigo} onRegistrar={() => setTab('checkin')} />
-            )}
-
-            {/* Notas del coach */}
-            {codigo && (
-              <NotasCoach codigo={codigo} />
-            )}
-
-            {/* CTA check-in */}
-            {codigo && (
-              <button
-                onClick={() => setTab('checkin')}
-                className="cliente-checkin-cta w-full flex items-center justify-between px-5 py-4 cursor-pointer transition-all active:scale-[0.98]"
-                style={{
-                  background: 'var(--success-bg)',
-                  border: '1px solid color-mix(in srgb, var(--success) 22%, transparent)',
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                    style={{ background: 'var(--accent-bg)' }}>
-                    <ClipboardText size={16} style={{ color: 'var(--accent)' }} />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Check-in semanal</p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Registra tu progreso</p>
-                  </div>
-                </div>
-                <CaretRight size={16} style={{ color: 'var(--accent)' }} />
-              </button>
-            )}
+            {codigo && <TLSGauge codigo={codigo} onRegistrar={() => setTab('checkin')} />}
+            {codigo && <NotasCoach codigo={codigo} />}
           </div>
         )}
 
