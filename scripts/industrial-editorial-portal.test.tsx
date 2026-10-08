@@ -46,6 +46,9 @@ const dock = renderToStaticMarkup(
 assert.match(dock, /aria-label="Navegación principal"/)
 assert.match(dock, /aria-current="page"/)
 assert.match(dock, />Hoy</)
+assert.match(dock, /cliente-bottom-index">01</)
+assert.match(dock, /cliente-bottom-index">02</)
+assert.match(dock, /cliente-bottom-icon/)
 
 const primitives = renderToStaticMarkup(
   <>
