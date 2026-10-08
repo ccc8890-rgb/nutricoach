@@ -6,6 +6,7 @@ import { Dumbbell, Footprints, Loader2, CircleDashed } from 'lucide-react'
 import CalendarioMesEntreno from './CalendarioMesEntreno'
 import EntrenoKanban from './EntrenoKanban'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
+import { EditorialMasthead, IndustrialTabs, TechnicalReadout } from '@/components/PortalCliente/editorial'
 
 interface SesionSemana {
   id: string
@@ -58,31 +59,20 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <p className="font-bold" style={{ color: 'var(--text)' }}>{planNombre}</p>
-        {bloque && (
-          <p className="text-xs font-semibold mt-0.5" style={{ color: 'var(--accent)' }}>
-            Bloque {bloque.fase} · Semana {bloque.semana_actual}/{bloque.semanas_totales}
-          </p>
-        )}
-      </div>
+      <EditorialMasthead
+        index="02 / TRAIN"
+        eyebrow={bloque ? `Bloque ${bloque.fase} · Semana ${bloque.semana_actual}/${bloque.semanas_totales}` : 'Plan de entrenamiento'}
+        title={planNombre}
+        meta="SESIÓN / CARGA / EJECUCIÓN"
+        aside={<TechnicalReadout label="Volumen semanal" value={sesiones.length} unit="ses" />}
+      />
 
-      <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
-        {(['hoy', 'semana', 'mes'] as const).map(t => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setSubTab(t)}
-            className="flex-1 py-2.5 text-sm font-semibold capitalize transition-colors"
-            style={{
-              background: subTab === t ? 'var(--primary)' : 'transparent',
-              color: subTab === t ? 'var(--bg)' : 'var(--text-muted)',
-            }}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+      <IndustrialTabs
+        ariaLabel="Vista del entrenamiento"
+        activeKey={subTab}
+        items={[{ key: 'hoy', label: 'Hoy' }, { key: 'semana', label: 'Semana' }, { key: 'mes', label: 'Mes' }]}
+        onChange={setSubTab}
+      />
 
       {loading ? (
         <div className="flex justify-center py-12">
@@ -90,11 +80,11 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
         </div>
       ) : subTab === 'hoy' ? (
         sesionHoy ? (
-          <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <section className="training-sheet">
             <div className="flex items-center gap-3">
               <div
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
-                style={{ background: sesionHoy.tipo_sesion === 'carrera' ? 'var(--semantic-info-bg)' : 'rgba(99,102,241,0.12)' }}
+                style={{ background: 'var(--editorial-field)', border: '1px solid var(--editorial-rule)' }}
               >
                 {iconoTipo(sesionHoy.tipo_sesion, 18)}
               </div>
@@ -113,7 +103,7 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
                 <ListaEjerciciosExpandible ejercicios={(detalles[sesionHoy.id] as EjercicioDetalle[]) ?? []} />
               )}
             </div>
-          </div>
+          </section>
         ) : (
           <div className="rounded-3xl p-8 flex flex-col items-center gap-2 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             <CircleDashed size={22} style={{ color: 'var(--text-muted)' }} />

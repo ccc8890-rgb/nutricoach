@@ -255,7 +255,7 @@ export default function EjecucionSesionPage() {
   })
 
   return (
-    <div className="min-h-screen flex flex-col pb-6" style={{ background: 'var(--bg)' }}>
+    <div className="client-session-sheet min-h-screen flex flex-col pb-6" style={{ background: 'var(--bg)' }}>
       <div
         className="sticky top-0 z-10 px-4 py-3"
         style={{
