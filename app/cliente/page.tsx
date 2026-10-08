@@ -4,7 +4,7 @@ import useSWR, { useSWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
-import { motion, useReducedMotion } from 'framer-motion'
+import { useReducedMotion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta, marca } from '@/lib/cliente/cache-swr'
 import {
@@ -28,7 +28,8 @@ import EntrenoSubTabsEstatico from '@/components/training/EntrenoSubTabs'
 import RecetarioExploradorEstatico from '@/components/PortalCliente/RecetarioExplorador'
 import AjustesTabsEstatico from '@/components/PortalCliente/AjustesTabs'
 import SuplementacionPortalEstatico from '@/components/PortalCliente/SuplementacionPortal'
-import { HoyEditorial } from '@/components/PortalCliente/editorial'
+import { HoyEditorial, LiquidDock } from '@/components/PortalCliente/editorial'
+import type { LiquidDockItem } from '@/components/PortalCliente/editorial'
 // Un fallo de render en una pestaña no tumba el portal entero: muestra el error con botón de reintentar.
 function aislar<P extends object>(Componente: ComponentType<P>): ComponentType<P> {
   return function Aislado(props: P) {
@@ -401,7 +402,7 @@ function PortalClientePageContent() {
   const comidasDia = comidasHoyDeDieta().length
   const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 
-  const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
+  const TABS: LiquidDockItem<Tab>[] = [
     { key: 'hoy',     label: 'Hoy',      icon: House },
     { key: 'dieta',   label: 'Dieta',    icon: ForkKnife },
     { key: 'entreno', label: 'Entreno',  icon: Barbell },
@@ -774,34 +775,7 @@ function PortalClientePageContent() {
         )}
       </div>
 
-      {/* ── Bottom navigation ── */}
-      <div className="cliente-bottom-nav fixed bottom-0 left-0 right-0 z-30">
-        <div className="cliente-bottom-nav-surface max-w-2xl mx-auto flex">
-          {TABS.map(({ key, label, icon: Icon }) => {
-            const active = tab === key
-            return (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                className={`cliente-bottom-item flex-1 flex flex-col items-center justify-center gap-1 py-3 cursor-pointer ${active ? 'is-active' : ''}`}
-                style={{ color: active ? 'var(--text)' : 'var(--text-muted)' }}
-              >
-                {active && (
-                  <motion.span
-                    layoutId="cliente-nav-active"
-                    className="cliente-bottom-active-surface"
-                    transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 36, mass: 0.7 }}
-                  />
-                )}
-                <div className="relative z-10">
-                  <Icon size={20} weight={active ? 'fill' : 'regular'} />
-                </div>
-                <span className="relative z-10 text-[10px] font-medium tracking-tight">{label}</span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <LiquidDock items={TABS} activeKey={tab} onChange={setTab} reduceMotion={Boolean(reduceMotion)} />
 
       <InstallBanner />
     </div>
