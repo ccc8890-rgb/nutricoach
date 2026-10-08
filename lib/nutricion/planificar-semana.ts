@@ -246,11 +246,11 @@ export async function generarSemana(
 
 // Mantiene las recetas de la semana en curso y vuelve a calcular las cantidades con el objetivo de cada día
 // (más hidratos si entrena, menos si descansa); los complementos se recalculan al final.
-export async function reajustarSemana(db: SupabaseClient, clienteId: string, plan: PlanObjetivo): Promise<{ reajustadas: number; complementos: number; errores: number }> {
+export async function reajustarSemana(db: SupabaseClient, clienteId: string, plan: PlanObjetivo): Promise<{ reajustadas: number; complementos: number; errores: number; avisos: { dia: string; franja: string; motivo: string }[] }> {
   await materializarComidasRecurrentes(db, plan.id)
   const { data } = await db.from('comidas').select('id, nombre, dia_semana, receta_id').eq('plan_id', plan.id).not('dia_semana', 'is', null).not('receta_id', 'is', null)
   const comidas = ((data ?? []) as ComidaExistente[]).filter(c => FRANJAS.includes(c.nombre as SlotComida))
-  if (comidas.length === 0) return { reajustadas: 0, complementos: 0, errores: 0 }
+  if (comidas.length === 0) return { reajustadas: 0, complementos: 0, errores: 0, avisos: [] }
   const franjasPlan = FRANJAS.filter(f => comidas.some(c => c.nombre === f))
   const suma = franjasPlan.reduce((t, f) => t + REPARTO[f], 0) || 1
   const objDia = await objetivosPorDia(db, clienteId, plan)
@@ -273,13 +273,16 @@ export async function reajustarSemana(db: SupabaseClient, clienteId: string, pla
     }))
   }
   let complementos = 0
+  let avisos: { dia: string; franja: string; motivo: string }[] = []
   try {
     const [{ data: onboarding }, { data: perfil }] = await Promise.all([
       db.from('onboarding_responses').select('*').eq('cliente_id', clienteId).maybeSingle(),
       db.from('onboarding_perfil_profundo').select('*').eq('cliente_id', clienteId).maybeSingle(),
     ])
     const { filtroCliente } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
-    complementos = (await completarSemana(db, plan, clienteId, { franjas: franjasPlan, restricciones: filtroCliente.restricciones, objetivosDia: objDia })).anadidos
+    const r = await completarSemana(db, plan, clienteId, { franjas: franjasPlan, restricciones: filtroCliente.restricciones, objetivosDia: objDia })
+    complementos = r.anadidos
+    avisos = r.avisos
   } catch (e) { console.error('[reajustarSemana] complementos', e) }
-  return { reajustadas: comidas.length - errores, complementos, errores }
+  return { reajustadas: comidas.length - errores, complementos, errores, avisos }
 }

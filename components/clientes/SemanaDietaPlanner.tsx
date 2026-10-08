@@ -239,7 +239,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     setOcupado(null)
     if (!data) return
     if (accion === 'generar') setResultado({ ok: true, complementos: data.complementos, avisos: data.avisos ?? [], asignadas: data.asignadas, repetidas: data.repetidas, sinCubrir: data.sinCubrir ?? [], errores: [], mensaje: data.mensaje })
-    if (accion === 'activar') setResultado({ ok: data.ok, asignadas: data.activadas, repetidas: 0, sinCubrir: [], errores: data.errores ?? [], mensaje: data.ok ? `Semana activada: ${data.activadas} comidas ya son la semana en curso del cliente.` : undefined })
+    if (accion === 'activar') setResultado({ ok: data.ok, avisos: data.avisos ?? [], asignadas: data.activadas, repetidas: 0, sinCubrir: [], errores: data.errores ?? [], mensaje: data.ok ? `Semana activada: ${data.activadas} comidas ya son la semana en curso del cliente.` : undefined })
     await Promise.all([cargar(), cargarFuturas(vista)])
   }
 
@@ -248,7 +248,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     setOcupado('reajustar'); setError(null); setResultado(null)
     const data = await llamar(`/api/clientes/${clienteId}/semana-dieta/reajustar`, 'POST')
     setOcupado(null)
-    if (data) { setResultado({ ok: true, complementos: data.complementos, asignadas: data.reajustadas, repetidas: 0, sinCubrir: [], errores: [], mensaje: `Semana ajustada al entrenamiento: ${data.reajustadas} comidas recalculadas.` }); await Promise.all([cargar(), cargarFuturas(vista)]) }
+    if (data) { setResultado({ ok: true, complementos: data.complementos, avisos: data.avisos ?? [], asignadas: data.reajustadas, repetidas: 0, sinCubrir: [], errores: [], mensaje: `Semana ajustada al entrenamiento: ${data.reajustadas} comidas recalculadas.` }); await Promise.all([cargar(), cargarFuturas(vista)]) }
   }
 
   async function alternarGrabar(receta: Receta) {

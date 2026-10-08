@@ -296,6 +296,7 @@ export async function activarProximaSemana(db: SupabaseClient, clienteId: string
   }
 
   // Solo si todo salió bien se consume la semana planificada y se adelantan las siguientes
+  let avisos: { dia: string; franja: string; motivo: string }[] = []
   if (errores.length === 0) {
     try {
       const [{ data: onboarding }, { data: perfil }] = await Promise.all([
@@ -303,12 +304,12 @@ export async function activarProximaSemana(db: SupabaseClient, clienteId: string
         db.from('onboarding_perfil_profundo').select('*').eq('cliente_id', clienteId).maybeSingle(),
       ])
       const { filtroCliente } = construirFiltroCliente(onboarding ?? {}, perfil ?? null)
-      await completarSemana(db, plan, clienteId, { franjas: franjasNuevas, restricciones: filtroCliente.restricciones, objetivosDia: objDia })
+      avisos = (await completarSemana(db, plan, clienteId, { franjas: franjasNuevas, restricciones: filtroCliente.restricciones, objetivosDia: objDia })).avisos
     } catch (e) { console.error('[activarProximaSemana] complementos', e) }
     await db.from('comidas_planificadas').delete().eq('plan_id', plan.id).eq('semana', 1)
     for (let s = 2; s <= MAX_SEMANAS; s++) {
       await db.from('comidas_planificadas').update({ semana: s - 1 }).eq('plan_id', plan.id).eq('semana', s)
     }
   }
-  return { ok: errores.length === 0, activadas: filas.length - errores.length, errores }
+  return { ok: errores.length === 0, activadas: filas.length - errores.length, errores, avisos }
 }

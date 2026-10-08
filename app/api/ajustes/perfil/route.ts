@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { limpiarPerfil } from '@/lib/ajustes/perfil'
+import { rateLimit } from '@/lib/rate-limit'
 
 const COLUMNAS = 'nombre, apellidos, email, telefono'
 
@@ -16,6 +17,9 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const { data: { user } } = await createApiSupabase(request).auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+  if (!rateLimit(`ajustes-perfil:${user.id}`, 10, 60_000)) {
+    return NextResponse.json({ error: 'Demasiados cambios seguidos, espera un minuto' }, { status: 429 })
+  }
 
   const body = await request.json().catch(() => null)
   const limpio = limpiarPerfil(body)
