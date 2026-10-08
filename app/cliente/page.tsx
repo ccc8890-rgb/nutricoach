@@ -8,10 +8,11 @@ import { useReducedMotion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta, marca } from '@/lib/cliente/cache-swr'
 import {
-  House, BookOpenText, ClipboardText, SignOut,
-  ForkKnife, Barbell, Scales, Trophy, Sun, Moon, Gear,
+  BookOpenText, ClipboardText, SignOut,
+  ForkKnife, Barbell, Scales, Trophy, Sun, Moon,
   CaretRight, CaretLeft, X, TrendDown, TrendUp,
   ShoppingCart, ChatCircleDots, DeviceMobile,
+  Pulse, BowlFood, PersonSimpleRun, CookingPot, SlidersHorizontal,
 } from '@phosphor-icons/react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
@@ -403,11 +404,11 @@ function PortalClientePageContent() {
   const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 
   const TABS: LiquidDockItem<Tab>[] = [
-    { key: 'hoy',     label: 'Hoy',      icon: House },
-    { key: 'dieta',   label: 'Dieta',    icon: ForkKnife },
-    { key: 'entreno', label: 'Entreno',  icon: Barbell },
-    { key: 'recetas', label: 'Recetas',  icon: BookOpenText },
-    { key: 'perfil',  label: 'Ajustes',  icon: Gear },
+    { key: 'hoy',     label: 'Hoy',      icon: Pulse },
+    { key: 'dieta',   label: 'Dieta',    icon: BowlFood },
+    { key: 'entreno', label: 'Entreno',  icon: PersonSimpleRun },
+    { key: 'recetas', label: 'Recetas',  icon: CookingPot },
+    { key: 'perfil',  label: 'Ajustes',  icon: SlidersHorizontal },
   ]
 
   return (
