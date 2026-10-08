@@ -254,7 +254,7 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
 
           <div className="flex flex-wrap gap-2">
             {data.plan && (
-              <Link href={`/entrenos/${data.plan.id}?returnTo=/clientes/${clienteId}`} className="btn-secondary btn-sm">
+              <Link href={`/entrenos/${data.plan.id}?returnTo=${encodeURIComponent(`/clientes/${clienteId}?tab=entrenamiento`)}`} className="btn-secondary btn-sm">
                 <Dumbbell size={13} /> Abrir plan
               </Link>
             )}
@@ -314,7 +314,7 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
                 )}
               </div>
               <div className="flex flex-wrap gap-2 lg:justify-end">
-                <Link href={data.plan ? `/entrenos/${data.plan.id}?returnTo=/clientes/${clienteId}` : `/entrenos/nueva?cliente=${clienteId}`} className="btn-primary btn-sm">
+                <Link href={data.plan ? `/entrenos/${data.plan.id}?returnTo=${encodeURIComponent(`/clientes/${clienteId}?tab=entrenamiento`)}` : `/entrenos/nueva?cliente=${clienteId}`} className="btn-primary btn-sm">
                   {coachDesk.primaryAction}
                 </Link>
                 <Link href={coachDesk.primaryAction === 'Revisar IA' ? '#decisiones-ia' : `/entrenos/nueva?cliente=${clienteId}`} className="btn-secondary btn-sm">

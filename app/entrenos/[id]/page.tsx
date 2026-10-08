@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Dumbbell } from 'lucide-react'
@@ -97,6 +97,9 @@ function agruparPorSemanas(sesiones: RawSesion[], duracion: number | null): Sema
 export default function PlanEditorPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const retorno = useSearchParams().get('returnTo')
+  // Solo rutas internas: «Volver» regresa a la ficha del cliente desde la que se abrió el plan
+  const volverHref = retorno && retorno.startsWith('/') && !retorno.startsWith('//') ? retorno : '/entrenos'
   const [plan, setPlan] = useState<PlanInfo | null>(null)
   const [semanas, setSemanas] = useState<SemanaTimeline[]>([])
   const [sesionesFlat, setSesionesFlat] = useState<{ id: string; nombre: string; dia_semana: string; semana: number }[]>([])
@@ -214,7 +217,7 @@ export default function PlanEditorPage() {
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/entrenos" style={{ color: 'var(--text-muted)' }} aria-label="Volver">
+        <Link href={volverHref} style={{ color: 'var(--text-muted)' }} aria-label="Volver">
           <ArrowLeft size={18} />
         </Link>
         <div className="flex-1 min-w-0">

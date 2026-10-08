@@ -8,6 +8,7 @@ import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, SUBCATEGORIAS
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
+import { useEstadoUrl, useRecordarLista } from '@/lib/useEstadoUrl'
 
 const METODOS_COCCION = [
   { value: 'Todos', label: 'Todos' },
@@ -95,17 +96,19 @@ type RecetaRow = {
 export default function RecetasPage() {
   const { addToast } = useToast()
   const [recetas, setRecetas] = useState<RecetaRow[]>([])
-  const [busqueda, setBusqueda] = useState('')
-  const [categoria, setCategoria] = useState('Todos')
-  const [metodoCoccion, setMetodoCoccion] = useState('Todos')
-  const [fechaDesde, setFechaDesde] = useState('')
-  const [fechaHasta, setFechaHasta] = useState('')
-  const [rangoKcal, setRangoKcal] = useState<string | null>(null)
-  const [tiempoPrep, setTiempoPrep] = useState<string | null>(null)
-  const [intoleranciaFilter, setIntoleranciaFilter] = useState<string | null>(null)
-  const [tagFilter, setTagFilter] = useState<string | null>(null)
-  const [curacionFilter, setCuracionFilter] = useState<string | null>(null)
-  const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente')
+  // Filtros en la URL: al abrir una receta y volver atrás el listado reaparece igual
+  useRecordarLista('recetas')
+  const [busqueda, setBusqueda] = useEstadoUrl<string>('q', '')
+  const [categoria, setCategoria] = useEstadoUrl<string>('cat', 'Todos')
+  const [metodoCoccion, setMetodoCoccion] = useEstadoUrl<string>('metodo', 'Todos')
+  const [fechaDesde, setFechaDesde] = useEstadoUrl<string>('desde', '')
+  const [fechaHasta, setFechaHasta] = useEstadoUrl<string>('hasta', '')
+  const [rangoKcal, setRangoKcal] = useEstadoUrl<string | null>('kcal', null)
+  const [tiempoPrep, setTiempoPrep] = useEstadoUrl<string | null>('tiempo', null)
+  const [intoleranciaFilter, setIntoleranciaFilter] = useEstadoUrl<string | null>('apta', null)
+  const [tagFilter, setTagFilter] = useEstadoUrl<string | null>('tag', null)
+  const [curacionFilter, setCuracionFilter] = useEstadoUrl<string | null>('curacion', null)
+  const [orden, setOrden] = useEstadoUrl<'reciente' | 'antiguo'>('orden', 'reciente', ['reciente', 'antiguo'])
   const [loading, setLoading] = useState(true)
   const [showFilterPanel, setShowFilterPanel] = useState(false)
   const [showSearchDrop, setShowSearchDrop] = useState(false)
@@ -114,7 +117,7 @@ export default function RecetasPage() {
   const searchRef = useRef<HTMLDivElement>(null)
 
   // Filtros rápidos: negativo (ej. "Sin Gluten") y dietético (ej. "Vegano")
-  const [filtroRapido, setFiltroRapido] = useState<string | null>(null)
+  const [filtroRapido, setFiltroRapido] = useEstadoUrl<string | null>('rapido', null)
 
   useEffect(() => {
     async function load() {
@@ -148,11 +151,6 @@ export default function RecetasPage() {
       setLoading(false)
     }
     load()
-  }, [])
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('curacion') === 'chef') setCuracionFilter('chef')
   }, [])
 
 

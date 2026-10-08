@@ -11,6 +11,7 @@ const FILTRO_LABELS: Record<Filtro, string> = {
   riesgo: 'Riesgo',
   sin_checkin: 'Sin check-in',
   activos: 'Activos',
+  sin_membresia: 'Sin membresía',
 }
 
 const SORT_LABELS: Record<SortKey, string> = {
@@ -49,7 +50,7 @@ export default function ClientesToolbar({
   sort, onSort,
   counts,
 }: Props) {
-  const statusFiltros: Filtro[] = ['atencion', 'todos', 'riesgo', 'sin_checkin', 'nuevos', 'activos']
+  const statusFiltros: Filtro[] = ['atencion', 'todos', 'riesgo', 'sin_checkin', 'nuevos', 'activos', 'sin_membresia']
   const statusCounts: Partial<Record<Filtro, number>> = {
     atencion: counts.atencion,
     todos: counts.total,
@@ -57,6 +58,7 @@ export default function ClientesToolbar({
     sin_checkin: counts.sin_checkin,
     nuevos: counts.nuevos,
     activos: counts.activos,
+    sin_membresia: counts.sin_membresia,
   }
 
   return (

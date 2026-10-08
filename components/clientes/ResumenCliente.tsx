@@ -24,7 +24,7 @@ export function avisosCliente(p: { id: string; cliente: ClienteResumen; dietaAct
   if (cliente.revisado_por_coach === false) out.push({ nivel: 'alto', texto: 'Plan inicial pendiente de tu revisión', href: `/clientes/${id}/revisar-plan` })
   else if (!dietaActiva) out.push({ nivel: 'alto', texto: 'Sin dieta activa', href: `/clientes/${id}/revisar-plan` })
   if (!entrenoActivo) out.push({ nivel: 'medio', texto: 'Sin plan de entrenamiento activo', tab: 'entrenamiento' })
-  if (cliente.onboarding_completado === false) out.push({ nivel: 'medio', texto: 'No ha completado el onboarding' })
+  if (cliente.onboarding_completado === false) out.push({ nivel: 'medio', texto: 'No ha completado el onboarding', tab: 'perfil' })
 
   const ultimo = checkins[0]
   if (!ultimo) out.push({ nivel: 'medio', texto: 'Todavía no ha hecho ningún check-in', tab: 'seguimiento' })
@@ -38,8 +38,8 @@ export function avisosCliente(p: { id: string; cliente: ClienteResumen; dietaAct
 
   if (cliente.fecha_proxima_revision) {
     const d = dias(cliente.fecha_proxima_revision)
-    if (d < 0) out.push({ nivel: 'alto', texto: `Revisión de plan vencida hace ${-d} días` })
-    else if (d <= 7) out.push({ nivel: 'medio', texto: d === 0 ? 'Revisión de plan hoy' : `Revisión de plan en ${d} días` })
+    if (d < 0) out.push({ nivel: 'alto', texto: `Revisión de plan vencida hace ${-d} días`, tab: 'perfil' })
+    else if (d <= 7) out.push({ nivel: 'medio', texto: d === 0 ? 'Revisión de plan hoy' : `Revisión de plan en ${d} días`, tab: 'perfil' })
   }
   if (cliente.fecha_fin_membresia) {
     const d = dias(cliente.fecha_fin_membresia)

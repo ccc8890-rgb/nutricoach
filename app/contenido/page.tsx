@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import BandejaIdeas from '@/components/contenido/BandejaIdeas'
 import CalendarioContenido from '@/components/contenido/CalendarioContenido'
 import DiaGrabacion from '@/components/contenido/DiaGrabacion'
@@ -15,8 +15,9 @@ const VISTAS = [
 type Vista = typeof VISTAS[number]['id']
 
 export default function ContenidoPage() {
-  const [vista, setVista] = useState<Vista>('bandeja')
-  const [fechaTanda, setFechaTanda] = useState<string | undefined>(undefined)
+  const [vista, setVista] = useEstadoUrl<Vista>('vista', 'bandeja', VISTAS.map(v => v.id))
+  const [fechaTandaUrl, setFechaTanda] = useEstadoUrl<string | null>('fecha', null)
+  const fechaTanda = fechaTandaUrl ?? undefined
 
   return (
     <div style={{ padding: 16, display: 'grid', gap: 16, maxWidth: 1100 }}>

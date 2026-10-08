@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { invalidateCacheKey, useCachedFetch } from '@/lib/useCachedFetch'
 import { useDebounce } from '@/lib/useDebounce'
+import { useEstadoUrl, useRecordarLista } from '@/lib/useEstadoUrl'
 import Link from 'next/link'
 import { ArrowLeft, Check, Link as LinkIcon, Plus, SpinnerGap, UsersThree } from '@phosphor-icons/react'
 import {
@@ -29,21 +30,31 @@ export default function ClientesPage() {
   const [modalLinkOpen, setModalLinkOpen] = useState(false)
 
   // Tabs
-  const [tabActiva, setTabActiva] = useState<TabActiva>('clientes')
+  // El estado de pantalla vive en la URL: al volver desde una ficha reaparece igual
+  useRecordarLista('clientes')
+  const [tabActiva, setTabActiva] = useEstadoUrl<TabActiva>('tab', 'clientes', ['clientes', 'formularios'])
   const [respuestas, setRespuestas] = useState<RespuestaCliente[]>([])
   const [respuestasLoading, setRespuestasLoading] = useState(false)
   const [respuestasNoLeidas, setRespuestasNoLeidas] = useState(0)
   const [formulariosCargados, setFormulariosCargados] = useState(false)
 
   // Filtros
-  const [busqueda, setBusqueda] = useState('')
+  const [busqueda, setBusqueda] = useEstadoUrl<string>('q', '')
   const busquedaDebounced = useDebounce(busqueda, 250)
-  const [filtro, setFiltro] = useState<Filtro>('atencion')
-  const [caducaPronte, setCaducaPronte] = useState(false)
-  const [filtroAlta, setFiltroAlta] = useState<FiltroAlta>(null)
-  const [filtroRevisiones, setFiltroRevisiones] = useState(false)
-  const [filtroChats, setFiltroChats] = useState(false)
-  const [sort, setSort] = useState<SortKey>('checkin')
+  const [filtro, setFiltro] = useEstadoUrl<Filtro>('filtro', 'atencion', ['todos', 'atencion', 'nuevos', 'riesgo', 'sin_checkin', 'activos', 'sin_membresia'])
+  // caduca: 0 = sin filtro, 1 = próximos 30 días, 7 = próximos 7 días (viene del dashboard)
+  const [caducaRaw, setCaducaRaw] = useEstadoUrl<string>('caduca', '0', ['0', '1', '7'])
+  const caducaPronte = caducaRaw !== '0'
+  const caducaDias = caducaRaw === '7' ? 7 : 30
+  const setCaducaPronte = (v: boolean) => setCaducaRaw(v ? '1' : '0')
+  const [filtroAlta, setFiltroAlta] = useEstadoUrl<FiltroAlta>('alta', null, ['mes', 'trimestre'])
+  const [revisionesRaw, setRevisionesRaw] = useEstadoUrl<string>('revisiones', '0', ['0', '1'])
+  const filtroRevisiones = revisionesRaw === '1'
+  const setFiltroRevisiones = (v: boolean) => setRevisionesRaw(v ? '1' : '0')
+  const [chatsRaw, setChatsRaw] = useEstadoUrl<string>('chats', '0', ['0', '1'])
+  const filtroChats = chatsRaw === '1'
+  const setFiltroChats = (v: boolean) => setChatsRaw(v ? '1' : '0')
+  const [sort, setSort] = useEstadoUrl<SortKey>('sort', 'checkin', ['checkin', 'nombre', 'membresia_caduca', 'score_adherencia', 'deuda_atencion'])
 
   const loadRespuestas = useCallback(async () => {
     setRespuestasLoading(true)
@@ -199,6 +210,7 @@ export default function ClientesPage() {
     riesgo: clientes.filter(c => (c.dias_sin_checkin ?? 0) > 10).length,
     sin_checkin: clientes.filter(c => (c.dias_sin_checkin ?? 0) > 4).length,
     activos: clientes.filter(c => c.activo).length,
+    sin_membresia: clientes.filter(c => c.activo && !c.tipo_membresia).length,
     caduca_pronto: clientes.filter(c => { const d = diasHastaCaducidad(c); return d !== null && d >= 0 && d <= 30 }).length,
     chats_sin_leer: clientes.filter(c => (c.chats_sin_leer ?? 0) > 0).length,
     revisiones_proximas: clientes.filter(c => {
@@ -210,10 +222,10 @@ export default function ClientesPage() {
 
   const filtrados = useMemo(() =>
     aplicarSort(
-      aplicarFiltros(clientes, filtro, busquedaDebounced, caducaPronte, filtroAlta, filtroRevisiones, filtroChats),
+      aplicarFiltros(clientes, filtro, busquedaDebounced, caducaPronte, filtroAlta, filtroRevisiones, filtroChats, caducaDias),
       sort
     ),
-    [clientes, filtro, busquedaDebounced, caducaPronte, filtroAlta, filtroRevisiones, filtroChats, sort]
+    [clientes, filtro, busquedaDebounced, caducaPronte, caducaDias, filtroAlta, filtroRevisiones, filtroChats, sort]
   )
 
   return (

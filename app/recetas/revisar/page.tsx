@@ -7,6 +7,7 @@ import { AlertTriangle, ArrowLeft, Check, ChevronDown, ExternalLink, ImageOff, L
 import RevisionTabs from '@/components/recetas/RevisionTabs'
 import { useToast } from '@/components/ui/Toast'
 import { APTAS_CLIENTE, NIVELES_FIT, TIPOS_USO } from '@/lib/recetas/profesional'
+import { useEstadoUrl, useRecordarLista } from '@/lib/useEstadoUrl'
 import { esRecetaAprobable, type QualityIssues, type TareaRevision } from '@/lib/recetas/revision'
 
 type RecetaRevision = {
@@ -89,12 +90,16 @@ export default function RevisarRecetasPage() {
   const [respuesta, setRespuesta] = useState<RespuestaRevision | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [tarea, setTarea] = useState<TareaRevision>('pendientes')
-  const [pagina, setPagina] = useState(1)
-  const [busqueda, setBusqueda] = useState('')
-  const [nivel, setNivel] = useState('')
-  const [uso, setUso] = useState('')
-  const [apta, setApta] = useState('')
+  // Tarea, página y filtros en la URL: al abrir una receta y volver, la bandeja reaparece igual
+  useRecordarLista('revisar')
+  const [tarea, setTarea] = useEstadoUrl<TareaRevision>('tarea', 'pendientes')
+  const [paginaRaw, setPaginaRaw] = useEstadoUrl<string>('pagina', '1')
+  const pagina = Math.max(1, Number(paginaRaw) || 1)
+  const setPagina = (n: number) => setPaginaRaw(String(n))
+  const [busqueda, setBusqueda] = useEstadoUrl<string>('q', '')
+  const [nivel, setNivel] = useEstadoUrl<string>('nivel', '')
+  const [uso, setUso] = useEstadoUrl<string>('uso', '')
+  const [apta, setApta] = useEstadoUrl<string>('apta', '')
   const [procesando, setProcesando] = useState<Set<string>>(new Set())
   const [aprobandoLote, setAprobandoLote] = useState(false)
 
@@ -269,9 +274,9 @@ export default function RevisarRecetasPage() {
         )}
 
         {respuesta && respuesta.totalPages > 1 && <div className="flex items-center justify-center gap-3">
-          <button disabled={pagina <= 1} onClick={() => setPagina(value => value - 1)} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-30" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>Anterior</button>
+          <button disabled={pagina <= 1} onClick={() => setPagina(pagina - 1)} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-30" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>Anterior</button>
           <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Página {pagina} de {respuesta.totalPages}</span>
-          <button disabled={pagina >= respuesta.totalPages} onClick={() => setPagina(value => value + 1)} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-30" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>Siguiente</button>
+          <button disabled={pagina >= respuesta.totalPages} onClick={() => setPagina(pagina + 1)} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-30" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>Siguiente</button>
         </div>}
       </div>
     </main>
@@ -290,7 +295,7 @@ function Acciones({ receta, busy, onEstado }: { receta: RecetaRevision; busy: bo
   return <div className="flex flex-wrap gap-1.5">
     <button disabled={busy || !aprobable} title={aprobable ? 'Aprobar receta' : motivo} onClick={() => onEstado(receta, 'aprobada')} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40" style={{ background: 'var(--primary)', color: 'var(--bg)' }}>{busy ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}Aprobar</button>
     <button disabled={busy || receta.estado === 'descartada'} onClick={() => onEstado(receta, 'descartada')} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold disabled:opacity-40" style={{ borderColor: 'var(--error)', color: 'var(--error)' }}><Trash2 size={13} />Descartar</button>
-    <Link href={`/recetas/${receta.id}`} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>Abrir <ExternalLink size={12} /></Link>
+    <Link href={`/recetas/${receta.id}?returnTo=${encodeURIComponent(typeof window === 'undefined' ? '/recetas/revisar' : window.location.pathname + window.location.search)}`} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>Abrir <ExternalLink size={12} /></Link>
   </div>
 }
 

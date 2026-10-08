@@ -10,6 +10,7 @@ import { normalizarReceta, clasificarIntolerancia, normalizarIntolerancias } fro
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
 import { MacroRing, IngredientChecklist, StepByStep } from '@/components/premium'
+import { listaRecordada } from '@/lib/useEstadoUrl'
 import { SelectorRaciones, escalarGramos } from '@/components/premium/SelectorRaciones'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
 import type { Alimento } from '@/types'
@@ -105,7 +106,7 @@ function parsePasos(text: string | null | undefined): { number: number; content:
 export default function DetalleRecetaPage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
-  const returnTo = searchParams.get('returnTo') || '/recetas'
+  const returnTo = searchParams.get('returnTo') || listaRecordada('recetas', '/recetas')
   const returnPath = (() => {
     try {
       return new URL(returnTo, 'http://localhost').pathname

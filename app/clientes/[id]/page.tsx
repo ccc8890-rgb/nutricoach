@@ -20,6 +20,7 @@ import ChatPanel from '@/components/PortalCliente/ChatPanel'
 import ResumenCliente, { AvisosCliente, avisosCliente } from '@/components/clientes/ResumenCliente'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import { OBJETIVO_LABELS } from '@/lib/utils'
+import { listaRecordada, useEstadoUrl } from '@/lib/useEstadoUrl'
 import { useToast } from '@/components/ui/Toast'
 
 const PlanificacionCalendario = dynamic(() => import('@/components/PlanificacionCalendario'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -53,7 +54,9 @@ function TabSkeleton() {
 
 type NotaCoachRow = { id: string; cliente_id: string; mensaje: string; created_at: string }
 type Tab = 'resumen' | 'nutricion' | 'entrenamiento' | 'seguimiento' | 'comunicacion' | 'perfil'
+const TABS_VALIDAS: readonly Tab[] = ['resumen', 'nutricion', 'entrenamiento', 'seguimiento', 'comunicacion', 'perfil']
 type SubTabEntreno = 'plan' | 'calendario' | 'historial' | 'perfil-atleta' | 'competiciones'
+const SUBTABS_ENTRENO: readonly SubTabEntreno[] = ['plan', 'calendario', 'historial', 'perfil-atleta', 'competiciones']
 
 interface FlagClinico {
   codigo: string
@@ -516,10 +519,11 @@ export default function ClienteDetallePage() {
   const [guardandoRespuesta, setGuardandoRespuesta] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [isEditando, setIsEditando] = useState(false)
-  const [tabActiva, setTabActiva] = useState<Tab>('nutricion')
-  const [subTabEntreno, setSubTabEntreno] = useState<SubTabEntreno>('plan')
+  // Pestaña, subpestaña y vista en la URL: al volver de un plan o una receta se recupera el mismo sitio
+  const [tabActiva, setTabActiva] = useEstadoUrl<Tab>('tab', 'nutricion', TABS_VALIDAS)
+  const [subTabEntreno, setSubTabEntreno] = useEstadoUrl<SubTabEntreno>('sub', 'plan', SUBTABS_ENTRENO)
   const [mostrarPanelIAEntreno, setMostrarPanelIAEntreno] = useState(false)
-  const [vistaCalendarioEntreno, setVistaCalendarioEntreno] = useState<'semana' | 'mes'>('semana')
+  const [vistaCalendarioEntreno, setVistaCalendarioEntreno] = useEstadoUrl<'semana' | 'mes'>('vista', 'semana', ['semana', 'mes'])
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false)
   const [eliminando, setEliminando] = useState(false)
   const [verHerramientasNutri, setVerHerramientasNutri] = useState(false)
@@ -672,6 +676,8 @@ export default function ClienteDetallePage() {
   const ultimoPeso = seguimiento[0]?.peso ?? cliente.peso_inicial
 
   const alertasClinicas = informe?.flags_activos?.filter(f => f.severidad === 'critico' || f.severidad === 'alto').length
+  // Destino de «Volver» desde un plan o dieta abiertos desde esta ficha
+  const volverAqui = encodeURIComponent(`/clientes/${id}?tab=${tabActiva}${tabActiva === 'entrenamiento' ? `&sub=${subTabEntreno}` : ''}`)
   const TABS: { key: Tab; label: string; icon: React.ElementType; badge?: number }[] = [
     { key: 'nutricion', label: 'Nutrición', icon: UtensilsCrossed, badge: dietas.length },
     { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, badge: entrenos.length },
@@ -686,7 +692,7 @@ export default function ClienteDetallePage() {
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 pt-16 lg:pt-6 overflow-x-hidden">
 
         {/* ── Back ── */}
-        <Link href="/clientes" className="inline-flex items-center gap-1.5 text-sm mb-5 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
+        <Link href={listaRecordada('clientes', '/clientes')} className="inline-flex items-center gap-1.5 text-sm mb-5 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
           <ArrowLeft size={15} /> Clientes
         </Link>
 
@@ -753,7 +759,7 @@ export default function ClienteDetallePage() {
                   Plan activo — {dietaActiva.nombre}{resumenDia ? <span className="normal-case tracking-normal font-normal"> · comparado con {resumenDia.etiqueta}{resumenDia.tipoDia ? ` (${resumenDia.tipoDia})` : ''}</span> : null}
                 </span>
                 <div className="hidden sm:flex gap-2">
-                  <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="text-xs flex items-center gap-1 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
+                  <Link href={`/dietas/${dietaActiva.id}?returnTo=${volverAqui}`} className="text-xs flex items-center gap-1 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
                     Ver dieta <ExternalLink size={11} />
                   </Link>
                   <span style={{ color: 'var(--border)' }}>·</span>
@@ -769,7 +775,7 @@ export default function ClienteDetallePage() {
                   {dietaActiva.carbohidratos_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#FF9F0A' }}>C {dietaActiva.carbohidratos_objetivo}g</span> : null}
                   {dietaActiva.grasas_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#64D2FF' }}>G {dietaActiva.grasas_objetivo}g</span> : null}
                 </div>
-                <Link href={`/dietas/${dietaActiva.id}?returnTo=/clientes/${id}`} className="btn-secondary btn-sm flex-shrink-0">
+                <Link href={`/dietas/${dietaActiva.id}?returnTo=${volverAqui}`} className="btn-secondary btn-sm flex-shrink-0">
                   Abrir
                 </Link>
               </div>
@@ -897,7 +903,7 @@ export default function ClienteDetallePage() {
                   {dietas.map(d => (
                     <PlanListItem
                       key={d.id}
-                      href={`/dietas/${d.id}?returnTo=/clientes/${id}`}
+                      href={`/dietas/${d.id}?returnTo=${volverAqui}`}
                       title={d.nombre}
                       meta={d.kcal_objetivo ? `${d.kcal_objetivo} kcal · ${d.proteinas_objetivo ?? '?'}g proteína` : undefined}
                       active={d.activo}
@@ -944,7 +950,7 @@ export default function ClienteDetallePage() {
                   <div className="flex flex-wrap gap-2">
                     {entrenoActivo && (
                       <>
-                        <Link href={`/entrenos/${entrenoActivo.id}?returnTo=/clientes/${id}`} className="btn-primary btn-sm">Abrir plan <ExternalLink size={12} /></Link>
+                        <Link href={`/entrenos/${entrenoActivo.id}?returnTo=${volverAqui}`} className="btn-primary btn-sm">Abrir plan <ExternalLink size={12} /></Link>
                         <Link href={`/clientes/${id}/revisar-plan`} className="btn-secondary btn-sm"><RefreshCw size={12} /> Regenerar</Link>
                       </>
                     )}
@@ -1032,7 +1038,7 @@ export default function ClienteDetallePage() {
                       {entrenos.map(e => (
                         <PlanListItem
                           key={e.id}
-                          href={`/entrenos/${e.id}?returnTo=/clientes/${id}`}
+                          href={`/entrenos/${e.id}?returnTo=${volverAqui}`}
                           title={e.nombre}
                           meta={e.duracion_semanas ? `${e.duracion_semanas} semanas` : undefined}
                           active={e.activo}

@@ -2,7 +2,7 @@
 import type React from 'react'
 
 export type TipoMembresia = 'trimestral' | 'semestral' | 'anual'
-export type Filtro = 'todos' | 'atencion' | 'nuevos' | 'riesgo' | 'sin_checkin' | 'activos'
+export type Filtro = 'todos' | 'atencion' | 'nuevos' | 'riesgo' | 'sin_checkin' | 'activos' | 'sin_membresia'
 export type FiltroAlta = 'mes' | 'trimestre' | null
 export type SortKey = 'checkin' | 'nombre' | 'membresia_caduca' | 'score_adherencia' | 'deuda_atencion'
 
@@ -42,6 +42,7 @@ export type ToolbarCounts = {
   riesgo: number
   sin_checkin: number
   activos: number
+  sin_membresia: number
   caduca_pronto: number
   chats_sin_leer: number
   revisiones_proximas: number
@@ -124,6 +125,7 @@ export function aplicarFiltros(
   filtroAlta: FiltroAlta,
   filtroRevisiones: boolean,
   filtroChats: boolean,
+  caducaDias = 30,
 ): ClienteRow[] {
   const q = busqueda.toLowerCase()
   const hoy = Date.now()
@@ -139,11 +141,12 @@ export function aplicarFiltros(
     if (filtro === 'riesgo' && (c.dias_sin_checkin ?? 0) <= 10) return false
     if (filtro === 'sin_checkin' && (c.dias_sin_checkin ?? 0) <= 4) return false
     if (filtro === 'activos' && !c.activo) return false
+    if (filtro === 'sin_membresia' && (!c.activo || c.tipo_membresia)) return false
 
     // filtros adicionales (acumulativos)
     if (caducaPronte) {
       const d = diasHastaCaducidad(c)
-      if (d === null || d < 0 || d > 30) return false
+      if (d === null || d < 0 || d > caducaDias) return false
     }
     if (filtroAlta === 'mes') {
       if (!c.fecha_inicio_membresia) return false

@@ -1,8 +1,10 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowRight, CreditCard, ForkKnife, Receipt, Repeat, Trophy } from '@phosphor-icons/react'
 import type { CommandData, Competicion, CosteCliente, NegocioData } from '@/lib/dashboard/tipos'
+import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { DASHBOARD_MUTED, EmptyState, SectionHeader, SkeletonRows, formatDate, formatEuro } from './comun'
 
 function FoodCostFriction({ costes }: { costes: CosteCliente[] }) {
@@ -137,8 +139,21 @@ type Props = {
 }
 
 export default function DetalleColapsable({ command, costes, negocio, loading }: Props) {
+  // `ver` en la URL: abre el detalle y baja a la sección (también al volver atrás)
+  const [ver, setVer] = useEstadoUrl<string | null>('ver', null, ['abierto', 'transacciones', 'pagos', 'renovaciones'])
+  const ref = useRef<HTMLDetailsElement>(null)
+
+  useEffect(() => {
+    if (!ver || !ref.current) return
+    ref.current.open = true
+    if (ver !== 'abierto') document.getElementById(`detalle-${ver}`)?.scrollIntoView({ block: 'start' })
+  }, [ver])
+
   return (
-    <details className="coach-dashboard-detail group rounded-xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+    <details
+      ref={ref}
+      onToggle={e => { const abierto = e.currentTarget.open; if (abierto !== (ver !== null)) setVer(abierto ? 'abierto' : null) }}
+      className="coach-dashboard-detail group rounded-xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
       <summary className="flex cursor-pointer list-none flex-col items-start justify-between gap-1 px-5 py-5 text-sm font-semibold sm:flex-row sm:items-center" style={{ color: 'var(--text)' }}>
         Más detalle
         <span className="text-xs font-medium" style={{ color: DASHBOARD_MUTED }}>Calendario, costes, renovaciones, pagos y transacciones</span>
@@ -152,15 +167,15 @@ export default function DetalleColapsable({ command, costes, negocio, loading }:
           <SectionHeader icon={ForkKnife} title="Coste y fricción alimentaria" href="/precios/escandallo" linkLabel="Abrir escandallo" />
           {loading ? <SkeletonRows rows={3} /> : <FoodCostFriction costes={costes} />}
         </section>
-        <section>
-          <SectionHeader icon={Repeat} title="Renovaciones" href="/clientes" linkLabel="Ver clientes" />
+        <section id="detalle-renovaciones" className="scroll-mt-4">
+          <SectionHeader icon={Repeat} title="Renovaciones" href="/clientes?caduca=1&sort=membresia_caduca" linkLabel="Ver clientes" />
           {!negocio ? <SkeletonRows rows={3} /> : <RenewalsTable rows={negocio.renovaciones} />}
         </section>
-        <section>
-          <SectionHeader icon={CreditCard} title="Pagos pendientes" href="/clientes" linkLabel="Ver clientes" />
+        <section id="detalle-pagos" className="scroll-mt-4">
+          <SectionHeader icon={CreditCard} title="Pagos pendientes" href="/clientes?filtro=sin_membresia" linkLabel="Ver clientes" />
           {!negocio ? <SkeletonRows rows={3} /> : <PaymentIssuesList rows={negocio.pagos_pendientes} />}
         </section>
-        <section className="lg:col-span-2">
+        <section id="detalle-transacciones" className="scroll-mt-4 lg:col-span-2">
           <SectionHeader icon={Receipt} title="Transacciones recientes" />
           {!negocio ? <SkeletonRows rows={3} /> : <TransactionsTable rows={negocio.transacciones_recientes} />}
         </section>

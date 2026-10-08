@@ -16,10 +16,10 @@ type Props = {
 export default function NumerosClave({ operacion, negocio, loading, negocioError, onRetry }: Props) {
   const dash = '—'
   const tiles = [
-    { label: 'Clientes activos', value: operacion ? String(operacion.clientes_activos) : dash, href: '/clientes' },
-    { label: 'Ingresos del mes', value: negocio ? formatEuro(negocio.resumen.ingresos_mes_actual) : dash, href: '/clientes' },
-    { label: 'MRR estimado', value: negocio ? formatEuro(negocio.resumen.mrr_estimado) : dash, href: '/clientes' },
-    { label: 'Renuevan en 7 días', value: negocio ? String(negocio.resumen.membresias_7d) : dash, href: '/clientes' },
+    { label: 'Clientes activos', value: operacion ? String(operacion.clientes_activos) : dash, href: '/clientes?filtro=activos' },
+    { label: 'Ingresos del mes', value: negocio ? formatEuro(negocio.resumen.ingresos_mes_actual) : dash, href: '/dashboard?ver=transacciones' },
+    { label: 'MRR estimado', value: negocio ? formatEuro(negocio.resumen.mrr_estimado) : dash, href: '/clientes?filtro=activos&sort=membresia_caduca' },
+    { label: 'Renuevan en 7 días', value: negocio ? String(negocio.resumen.membresias_7d) : dash, href: '/clientes?caduca=7&sort=membresia_caduca' },
   ]
   const pagos = negocio ? negocio.pagos_pendientes.length : 0
   const sinMembresia = negocio ? negocio.resumen.clientes_sin_membresia : 0
@@ -47,12 +47,12 @@ export default function NumerosClave({ operacion, negocio, loading, negocioError
       {(pagos > 0 || sinMembresia > 0) && (
         <div className="mt-2 flex flex-wrap gap-2">
           {pagos > 0 && (
-            <Link href="/clientes" className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold" style={{ background: 'var(--error-bg)', color: 'var(--error)' }}>
+            <Link href="/dashboard?ver=pagos" className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold" style={{ background: 'var(--error-bg)', color: 'var(--error)' }}>
               <CreditCard size={13} weight="fill" /> {pagos} {pagos === 1 ? 'pago pendiente' : 'pagos pendientes'}
             </Link>
           )}
           {sinMembresia > 0 && (
-            <Link href="/clientes" className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold" style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
+            <Link href="/clientes?filtro=sin_membresia" className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold" style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
               <Warning size={13} weight="fill" /> {sinMembresia} sin membresía
             </Link>
           )}
