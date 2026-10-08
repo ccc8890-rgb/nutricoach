@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createApiSupabase } from '@/lib/supabase-server'
+import { autorizarCoach } from '@/lib/contenido/auth'
 import {
   construirPromptLoteRecetas,
   COSTE_MAXIMO_ESTIMADO_USD,
@@ -14,9 +14,8 @@ const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
 
 export async function POST(request: NextRequest) {
-  const supabase = createApiSupabase(request)
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  const coach = await autorizarCoach(request)
+  if ('error' in coach) return coach.error
 
   const body = await request.json() as LoteRecetasRequest
   const input = normalizarRequestLoteRecetas(body)

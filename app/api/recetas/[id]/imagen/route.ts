@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarCoach } from '@/lib/contenido/auth'
 import { construirPromptImagenReceta, inferirPresetImagenReceta, PRESETS_IMAGEN_RECETA, type PresetImagenReceta } from '@/lib/recetas/imagen-prompts'
 
 const ESTADOS = ['pendiente', 'revisar', 'aprobada', 'rechazada', 'sin_imagen'] as const
@@ -59,9 +60,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const auth = createApiSupabase(request)
-  const { data: { user } } = await auth.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  const coach = await autorizarCoach(request)
+  if ('error' in coach) return coach.error
+  const user = { id: coach.userId }
 
   const body = await request.json()
   const db = createServiceSupabase()

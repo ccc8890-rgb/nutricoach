@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { createServiceSupabase } from '@/lib/supabase-server'
+import { autorizarCoach } from '@/lib/contenido/auth'
 import { normalizarIntolerancias } from '@/lib/recetas-constants'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
 
@@ -116,9 +117,9 @@ export async function POST(
 ) {
   const { id } = await params
 
-  const supabaseAuth = createApiSupabase(req)
-  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
-  if (authError || !user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  const coach = await autorizarCoach(req)
+  if ('error' in coach) return coach.error
+  const user = { id: coach.userId }
 
   const body = await req.json().catch(() => ({}))
   const { specs = '', nombre: nombrePersonalizado = '' } = body
