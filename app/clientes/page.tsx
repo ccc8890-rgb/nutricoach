@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { invalidateCacheKey, useCachedFetch } from '@/lib/useCachedFetch'
 import { useDebounce } from '@/lib/useDebounce'
-import { useEstadoUrl, useRecordarLista } from '@/lib/useEstadoUrl'
+import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import Link from 'next/link'
 import { ArrowLeft, Check, Link as LinkIcon, Plus, SpinnerGap, UsersThree } from '@phosphor-icons/react'
 import {
@@ -198,6 +198,7 @@ export default function ClientesPage() {
   }, [])
 
   const { data: clientesData, loading } = useCachedFetch<ClientesPageData>('clientes-index', fetchClientes, { ttl: 20_000 })
+  useRestaurarScroll(!loading)
   const clientes = useMemo(() => clientesData?.clientes ?? [], [clientesData])
   const formulariosBadge = formulariosCargados ? respuestasNoLeidas : clientesData?.respuestasNoLeidas ?? 0
 

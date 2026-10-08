@@ -1,5 +1,6 @@
 'use client'
-import { useCallback, useState } from 'react'
+import { useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
+import { useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useCachedFetch } from '@/lib/useCachedFetch'
 import Link from 'next/link'
@@ -15,7 +16,7 @@ type PlanRow = {
 }
 
 export default function DietasPage() {
-  const [busqueda, setBusqueda] = useState('')
+  const [busqueda, setBusqueda] = useEstadoUrl<string>('q', '')
 
   const fetchPlanes = useCallback(async () => {
     const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -37,6 +38,7 @@ export default function DietasPage() {
   }, [])
 
   const { data: planesData, loading } = useCachedFetch<PlanRow[]>('dietas-index', fetchPlanes, { ttl: 20_000 })
+  useRestaurarScroll(!loading)
   const planes = planesData ?? []
 
   const filtrados = planes.filter(p =>

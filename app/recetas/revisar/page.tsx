@@ -7,7 +7,7 @@ import { AlertTriangle, ArrowLeft, Check, ChevronDown, ExternalLink, ImageOff, L
 import RevisionTabs from '@/components/recetas/RevisionTabs'
 import { useToast } from '@/components/ui/Toast'
 import { APTAS_CLIENTE, NIVELES_FIT, TIPOS_USO } from '@/lib/recetas/profesional'
-import { useEstadoUrl, useRecordarLista } from '@/lib/useEstadoUrl'
+import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import { esRecetaAprobable, type QualityIssues, type TareaRevision } from '@/lib/recetas/revision'
 
 type RecetaRevision = {
@@ -89,6 +89,7 @@ export default function RevisarRecetasPage() {
   const { addToast } = useToast()
   const [respuesta, setRespuesta] = useState<RespuestaRevision | null>(null)
   const [loading, setLoading] = useState(true)
+  useRestaurarScroll(!loading)
   const [error, setError] = useState<string | null>(null)
   // Tarea, página y filtros en la URL: al abrir una receta y volver, la bandeja reaparece igual
   useRecordarLista('revisar')

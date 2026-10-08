@@ -1,5 +1,17 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 08-10-2026 (tarde, Claude) — «Volver atrás» conserva el sitio, cifras del dashboard a pantallas concretas
+
+Commits `6bfee61` + el de scroll/listas. Sin migraciones. Verificado en local con la sesión de Carlos (`browse --headed` + handoff).
+
+- **`lib/useEstadoUrl.ts`**: `useEstadoUrl(clave, defecto, validos?)` guarda pestaña/filtros en la URL con `replaceState` (sin entradas de historial; `useSyncExternalStore`, sin Suspense). `useRecordarLista` + `listaRecordada` recuerdan la URL del listado para el «Volver» del detalle. `useRestaurarScroll(listo)` guarda el scroll por URL y solo lo recupera al volver con «atrás» (flag de `popstate`, 3 s); pone `scrollRestoration='manual'` y usa `behavior:'instant'` porque el CSS global tiene `scroll-behavior: smooth`.
+- **Aplicado a:** ficha del cliente (`tab`, `sub`, `vista`), `/clientes`, `/recetas`, `/recetas/revisar`, `/contenido`, `/dietas`, `/entrenos` y «Más detalle» del dashboard. `returnTo` de la ficha lleva la pestaña (codificado); `/entrenos/[id]` ahora respeta `returnTo` (solo rutas internas); `/recetas/[id]` sin `returnTo` vuelve al listado con filtros.
+- **Dashboard:** Clientes activos → `?filtro=activos`; MRR → activos por caducidad; Renuevan 7 d → `?caduca=7`; Ingresos y pagos pendientes → `/dashboard?ver=transacciones|pagos` (abre y baja a la sección); «sin membresía» → filtro nuevo `sin_membresia`.
+- **Avisos de la ficha:** onboarding incompleto y revisión de plan llevan a Perfil (antes no llevaban a ningún sitio).
+- **Analíticas:** guardado probado en Laura Vidal (vitamina D/ferritina persisten tras recargar) y borrado después.
+- **Lección:** al restaurar scroll hay que no guardar mientras la página carga (el navegador lo mueve solo y pisa el valor) y desactivar el scroll nativo.
+- **Pendiente:** el resto de pantallas de lista (alimentos, precios…) no guardan filtros; el scroll no se restaura en pestañas internas de la ficha.
+
 ## ✅ SESIÓN 08-10-2026 (mediodía, Claude) — Ajustes, menú limpio y ficha del cliente
 
 Todo en `main` (último commit de código `caffbcb`), Vercel Ready, verificado en producción con la sesión de Carlos (`browse --headed` + handoff). Sin migraciones. La estética fina la lleva Codex.

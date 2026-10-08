@@ -20,7 +20,7 @@ import ChatPanel from '@/components/PortalCliente/ChatPanel'
 import ResumenCliente, { AvisosCliente, avisosCliente } from '@/components/clientes/ResumenCliente'
 import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import { OBJETIVO_LABELS } from '@/lib/utils'
-import { listaRecordada, useEstadoUrl } from '@/lib/useEstadoUrl'
+import { listaRecordada, useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import { useToast } from '@/components/ui/Toast'
 
 const PlanificacionCalendario = dynamic(() => import('@/components/PlanificacionCalendario'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -518,6 +518,7 @@ export default function ClienteDetallePage() {
   const [respuestaCheckin, setRespuestaCheckin] = useState<Record<string, string>>({})
   const [guardandoRespuesta, setGuardandoRespuesta] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  useRestaurarScroll(!loading)
   const [isEditando, setIsEditando] = useState(false)
   // Pestaña, subpestaña y vista en la URL: al volver de un plan o una receta se recupera el mismo sitio
   const [tabActiva, setTabActiva] = useEstadoUrl<Tab>('tab', 'nutricion', TABS_VALIDAS)

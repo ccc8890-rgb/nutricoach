@@ -8,7 +8,7 @@ import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, INTOLERANCIAS, SUBCATEGORIAS
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
-import { useEstadoUrl, useRecordarLista } from '@/lib/useEstadoUrl'
+import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
 
 const METODOS_COCCION = [
   { value: 'Todos', label: 'Todos' },
@@ -110,6 +110,7 @@ export default function RecetasPage() {
   const [curacionFilter, setCuracionFilter] = useEstadoUrl<string | null>('curacion', null)
   const [orden, setOrden] = useEstadoUrl<'reciente' | 'antiguo'>('orden', 'reciente', ['reciente', 'antiguo'])
   const [loading, setLoading] = useState(true)
+  useRestaurarScroll(!loading)
   const [showFilterPanel, setShowFilterPanel] = useState(false)
   const [showSearchDrop, setShowSearchDrop] = useState(false)
   const filterPanelRef = useRef<HTMLDivElement>(null)

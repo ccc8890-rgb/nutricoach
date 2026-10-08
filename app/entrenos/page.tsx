@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
+import { useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import {
   Brain,
@@ -97,8 +98,8 @@ function DashboardSkeleton() {
 }
 
 export default function EntrenosPage() {
-  const [busqueda, setBusqueda] = useState('')
-  const [filtro, setFiltro] = useState<'todos' | CommandCenterEstado | 'accion'>('todos')
+  const [busqueda, setBusqueda] = useEstadoUrl<string>('q', '')
+  const [filtro, setFiltro] = useEstadoUrl<'todos' | CommandCenterEstado | 'accion'>('filtro', 'todos')
 
   const fetchCommandCenter = useCallback(async () => {
     const res = await fetch('/api/entrenos/command-center')
@@ -111,6 +112,7 @@ export default function EntrenosPage() {
   }, [])
 
   const { data, loading, error } = useCachedFetch('entrenos-command-center', fetchCommandCenter, { ttl: 20_000 })
+  useRestaurarScroll(!loading)
   const clientes = useMemo(() => data?.clientes ?? [], [data])
   const stats = data?.stats ?? DEFAULT_STATS
 
