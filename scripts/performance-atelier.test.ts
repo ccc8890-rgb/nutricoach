@@ -9,6 +9,7 @@ const shell = readFileSync(resolve(root, 'components/CoachShell.tsx'), 'utf8')
 const sidebar = readFileSync(resolve(root, 'components/Sidebar.tsx'), 'utf8')
 
 assert.match(globals, /--atelier-accent:/, 'La paleta global debe declarar el acento Atelier')
+assert.doesNotMatch(globals, /#8EDBFF/i, 'El acento decorativo no debe ser azul hielo')
 assert.match(globals, /--atelier-paper:/, 'La paleta global debe declarar el tono papel')
 assert.match(layout, /Instrument_Sans/, 'La interfaz debe usar Instrument Sans')
 assert.match(shell, /coach-atelier-shell/, 'El shell del coach debe usar el lenguaje Atelier')

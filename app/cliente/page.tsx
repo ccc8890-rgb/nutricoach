@@ -4,6 +4,7 @@ import useSWR, { useSWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import { motion, useReducedMotion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta, marca } from '@/lib/cliente/cache-swr'
 import {
@@ -49,6 +50,7 @@ const RecetarioExplorador = aislar(RecetarioExploradorEstatico)
 const ChatPanel = aislar(dynamic(() => import('@/components/PortalCliente/ChatPanel')))
 const AjustesTabs = aislar(AjustesTabsEstatico)
 const SuplementacionPortal = aislar(SuplementacionPortalEstatico)
+const IndustrialAtmosphere = dynamic(() => import('@/components/PortalCliente/IndustrialAtmosphere'), { ssr: false })
 import { useTheme } from '@/components/ThemeProvider'
 import ErrorBoundary from '@/components/ui/ErrorBoundary'
 
@@ -238,6 +240,7 @@ function PortalClientePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { theme, toggleTheme } = useTheme()
+  const reduceMotion = useReducedMotion()
   const [showBienvenida, setShowBienvenida] = useState(false)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [cliente, setCliente] = useState<Cliente | null>(null)
@@ -474,6 +477,7 @@ function PortalClientePageContent() {
 
   return (
     <div className="cliente-portal-shell min-h-screen" style={{ background: 'var(--bg)' }}>
+      <IndustrialAtmosphere />
 
       {/* ── Header ── */}
       <header className={`cliente-portal-header sticky top-0 z-20 px-4 pt-safe ${headerVisible ? 'cliente-header-visible' : 'cliente-header-hidden'}`}
@@ -992,28 +996,28 @@ function PortalClientePageContent() {
       </div>
 
       {/* ── Bottom navigation ── */}
-      <div className="cliente-bottom-nav fixed bottom-0 left-0 right-0 z-30"
-        style={{
-          background: 'var(--glass-bg)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid var(--glass-border)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        }}>
-        <div className="max-w-2xl mx-auto flex">
+      <div className="cliente-bottom-nav fixed bottom-0 left-0 right-0 z-30">
+        <div className="cliente-bottom-nav-surface max-w-2xl mx-auto flex">
           {TABS.map(({ key, label, icon: Icon }) => {
             const active = tab === key
             return (
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className={`cliente-bottom-item flex-1 flex flex-col items-center justify-center gap-1 py-3 cursor-pointer transition-all ${active ? 'is-active' : ''}`}
-                style={{ color: active ? 'var(--accent)' : 'var(--text-muted)' }}
+                className={`cliente-bottom-item flex-1 flex flex-col items-center justify-center gap-1 py-3 cursor-pointer ${active ? 'is-active' : ''}`}
+                style={{ color: active ? 'var(--text)' : 'var(--text-muted)' }}
               >
-                <div className="relative">
+                {active && (
+                  <motion.span
+                    layoutId="cliente-nav-active"
+                    className="cliente-bottom-active-surface"
+                    transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 36, mass: 0.7 }}
+                  />
+                )}
+                <div className="relative z-10">
                   <Icon size={20} weight={active ? 'fill' : 'regular'} />
                 </div>
-                <span className="text-[10px] font-medium tracking-tight">{label}</span>
+                <span className="relative z-10 text-[10px] font-medium tracking-tight">{label}</span>
               </button>
             )
           })}
