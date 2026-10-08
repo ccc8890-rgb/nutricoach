@@ -126,6 +126,15 @@
 .diet-chapter > .technical-row__content { padding-right: 0; }
 .diet-chapter__body { margin: 0.85rem 0 0 -1rem; border-top: 1px solid var(--editorial-rule); }
 .diet-chapter__body > [role='button'] { padding-inline: 1rem; }
+.training-sheet { padding: 1.1rem 1rem 1.3rem; border-block: 1px solid var(--editorial-rule); background: color-mix(in srgb, var(--editorial-panel) 82%, transparent); }
+.training-exercise-list { border-bottom: 1px solid var(--editorial-rule); }
+.training-exercise-row { grid-template-columns: 2.8rem minmax(0, 1fr); }
+.training-exercise-row > .technical-row__content { padding: 0; }
+.training-exercise-row button { min-height: 3.4rem; padding-inline: 1rem; }
+.training-week-session, .training-week-day { border-radius: var(--editorial-radius-sm); }
+.client-session-sheet { --primary: var(--metal-bright); --primary-bg: var(--editorial-field); }
+.client-session-sheet [style*='var(--semantic-info-bg)'] { background: var(--editorial-field) !important; border-color: var(--editorial-rule) !important; }
+.client-session-sheet [style*='var(--semantic-info)'] { color: var(--text-secondary) !important; }
 
 @media (min-width: 640px) {
   .editorial-masthead { grid-template-columns: 3.2rem minmax(0, 1fr) minmax(9rem, 0.34fr); }

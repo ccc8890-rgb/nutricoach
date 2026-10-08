@@ -37,15 +37,16 @@ function SesionCard({ sesion, seleccionada, onSeleccionar }: { sesion: SesionKan
 
     return (
         <div ref={setNodeRef} style={style} {...listeners} {...attributes}
-            className="mb-2 touch-none select-none cursor-grab active:cursor-grabbing rounded-xl overflow-hidden"
+            className="training-week-session mb-2 touch-none select-none cursor-grab active:cursor-grabbing overflow-hidden"
         >
             <button
                 type="button"
                 onClick={onSeleccionar}
                 className="w-full flex items-start gap-2 p-2 text-left"
                 style={{
-                    background: seleccionada ? 'var(--semantic-info-bg,var(--surface-elevated))' : 'var(--surface-elevated,var(--border))',
-                    border: `1px solid ${seleccionada ? 'var(--primary)' : 'var(--border-strong,var(--border))'}`,
+                    background: seleccionada ? 'var(--metal-bright)' : 'var(--surface-elevated,var(--border))',
+                    color: seleccionada ? 'var(--atelier-carbon)' : 'var(--text)',
+                    border: '1px solid var(--editorial-rule)',
                     boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.4)' : 'none',
                     opacity: isDragging ? 0.6 : 1,
                 }}
@@ -75,10 +76,10 @@ function DiaColumna({ dia, sesiones, seleccionadaId, onSeleccionar }: {
     return (
         <div
             ref={setNodeRef}
-            className="rounded-xl p-2 min-h-[100px] flex-1 min-w-[120px] transition-colors"
+            className="training-week-day p-2 min-h-[100px] flex-1 min-w-[120px] transition-colors"
             style={{
-                background: isOver ? 'var(--semantic-info-bg)' : 'var(--bg)',
-                border: `1px dashed ${isOver ? 'var(--semantic-info-border)' : 'var(--border)'}`,
+                background: isOver ? 'var(--editorial-field)' : 'var(--bg)',
+                border: `1px ${isOver ? 'solid' : 'dashed'} var(--editorial-rule)`,
             }}
         >
             <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 px-0.5" style={{ color: 'var(--text-muted)' }}>
