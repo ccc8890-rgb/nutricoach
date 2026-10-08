@@ -1,0 +1,552 @@
+{
+ "lote": "veganas-2-2026-10-08",
+ "tipo_plato": "Comida",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 400,
+  "kcal_max": 850,
+  "proteina_pct_min_vegano": 0.13
+ },
+ "alimentos": {
+  "a28": {
+   "nombre": "Tofu firme",
+   "prefijo": "c0736451",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Soja"
+   ],
+   "origen": "vegetal"
+  },
+  "a14": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a21": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a29": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a13": {
+   "nombre": "Cúrcuma",
+   "prefijo": "94ba864e",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a0": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a16": {
+   "nombre": "Garbanzos cocidos",
+   "prefijo": "1f1a4cd3",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a2": {
+   "nombre": "Avena",
+   "prefijo": "31b21452",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a8": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a11": {
+   "nombre": "Comino",
+   "prefijo": "88959dfb",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a17": {
+   "nombre": "Lechuga",
+   "prefijo": "7fb4b7ea",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a3": {
+   "nombre": "Berenjena",
+   "prefijo": "e152c2f2",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a25": {
+   "nombre": "Quinoa",
+   "prefijo": "53587262",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a18": {
+   "nombre": "Lentejas cocidas",
+   "prefijo": "e69fd4f0",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a30": {
+   "nombre": "Tomate triturado",
+   "prefijo": "1390b7a4",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a4": {
+   "nombre": "Boniato",
+   "prefijo": "6c5d82a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a23": {
+   "nombre": "Pimentón dulce",
+   "prefijo": "e4fdfad8",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a12": {
+   "nombre": "Cuscús",
+   "prefijo": "11d56939",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a6": {
+   "nombre": "Calabacín",
+   "prefijo": "f8586302",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a24": {
+   "nombre": "Pimiento rojo",
+   "prefijo": "d106e3bb",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a22": {
+   "nombre": "Perejil",
+   "prefijo": "fea7cbe9",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a15": {
+   "nombre": "Fideos",
+   "prefijo": "794bf491",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a31": {
+   "nombre": "Zanahoria",
+   "prefijo": "4dacb910",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a5": {
+   "nombre": "Brócoli",
+   "prefijo": "8820b293",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a26": {
+   "nombre": "Salsa de soja",
+   "prefijo": "caa47a33",
+   "rol": "salsa_condimento",
+   "alergenos": [
+    "Soja",
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a1": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a27": {
+   "nombre": "Semillas de sésamo",
+   "prefijo": "4218ee8b",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Sésamo"
+   ],
+   "origen": "vegetal"
+  },
+  "a7": {
+   "nombre": "Calabaza",
+   "prefijo": "cfd9ca77",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a20": {
+   "nombre": "Pan de centeno",
+   "prefijo": "80dffe34",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a10": {
+   "nombre": "Coliflor",
+   "prefijo": "e5efc372",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a19": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a9": {
+   "nombre": "Cilantro",
+   "prefijo": "0e40c366",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Tofu revuelto con espinacas y pan integral",
+   "descripcion": "Plato vegano rápido con proteína de soja y verdura.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "instrucciones": "1. Desmenuza el tofu con las manos.\n2. Saltéalo con el aceite y la cúrcuma 4 minutos.\n3. Añade las espinacas hasta que se reduzcan y sirve con el pan tostado y el tomate en rodajas.",
+   "consejos": "Un poco de pimienta negra potencia la cúrcuma.",
+   "ingredientes": [
+    [
+     "a28",
+     160
+    ],
+    [
+     "a14",
+     80
+    ],
+    [
+     "a21",
+     80
+    ],
+    [
+     "a29",
+     80
+    ],
+    [
+     "a13",
+     1
+    ],
+    [
+     "a0",
+     8
+    ]
+   ]
+  },
+  {
+   "nombre": "Hamburguesa de garbanzos y avena con ensalada",
+   "descripcion": "Hamburguesa vegana casera con legumbre y cereal.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Tritura los garbanzos con la avena, la cebolla picada y el comino hasta lograr una masa.\n2. Forma una hamburguesa y dórala en sartén con la mitad del aceite 4 minutos por lado.\n3. Sirve con la ensalada de lechuga y tomate aliñada con el aceite restante.",
+   "consejos": "Si la masa queda blanda, añade un poco más de avena.",
+   "ingredientes": [
+    [
+     "a16",
+     200
+    ],
+    [
+     "a2",
+     30
+    ],
+    [
+     "a8",
+     30
+    ],
+    [
+     "a11",
+     1
+    ],
+    [
+     "a17",
+     40
+    ],
+    [
+     "a29",
+     80
+    ],
+    [
+     "a0",
+     8
+    ]
+   ]
+  },
+  {
+   "nombre": "Berenjena rellena de quinoa y lentejas",
+   "descripcion": "Plato vegano al horno con legumbre y pseudocereal.",
+   "tiempo_prep_min": 40,
+   "porciones": 1,
+   "instrucciones": "1. Parte la berenjena por la mitad, vacíala y hornea las cáscaras 15 minutos a 200 °C.\n2. Sofríe la cebolla con la pulpa picada, el tomate y el comino y mezcla con la quinoa cocida y las lentejas.\n3. Rellena las berenjenas y hornea 10 minutos más.",
+   "consejos": "Cuece la quinoa el día anterior para ahorrar tiempo.",
+   "ingredientes": [
+    [
+     "a3",
+     250
+    ],
+    [
+     "a25",
+     40
+    ],
+    [
+     "a18",
+     120
+    ],
+    [
+     "a30",
+     80
+    ],
+    [
+     "a8",
+     40
+    ],
+    [
+     "a11",
+     1
+    ],
+    [
+     "a0",
+     8
+    ]
+   ]
+  },
+  {
+   "nombre": "Boniato asado con garbanzos especiados y espinacas",
+   "descripcion": "Plato vegano de horno con hidrato lento y legumbre.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "instrucciones": "1. Corta el boniato en dados y hornéalo 20 minutos a 200 °C.\n2. Mezcla los garbanzos con el pimentón, el comino y el aceite y añádelos los últimos 10 minutos.\n3. Sirve sobre las espinacas frescas.",
+   "consejos": "Con garbanzos de bote bien escurridos y secos quedan crujientes.",
+   "ingredientes": [
+    [
+     "a4",
+     250
+    ],
+    [
+     "a16",
+     150
+    ],
+    [
+     "a14",
+     60
+    ],
+    [
+     "a23",
+     2
+    ],
+    [
+     "a11",
+     1
+    ],
+    [
+     "a0",
+     8
+    ]
+   ]
+  },
+  {
+   "nombre": "Cuscús con verduras salteadas y garbanzos",
+   "descripcion": "Plato vegano rápido con cereal, verdura y legumbre.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "instrucciones": "1. Hidrata el cuscús con agua hirviendo, tapado, 5 minutos.\n2. Saltea el calabacín y el pimiento en dados con el aceite y el comino.\n3. Añade los garbanzos, mezcla con el cuscús y termina con el perejil.",
+   "consejos": "Un chorrito de limón al servir lo refresca.",
+   "ingredientes": [
+    [
+     "a12",
+     70
+    ],
+    [
+     "a6",
+     100
+    ],
+    [
+     "a24",
+     80
+    ],
+    [
+     "a16",
+     120
+    ],
+    [
+     "a11",
+     1
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a22",
+     3
+    ]
+   ]
+  },
+  {
+   "nombre": "Fideos salteados con tofu y verduras",
+   "descripcion": "Salteado vegano de inspiración asiática.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "instrucciones": "1. Cuece los fideos y escúrrelos.\n2. Dora el tofu en dados con el ajo y el aceite, y retíralo.\n3. Saltea la zanahoria y el brócoli, une con los fideos y el tofu, añade la soja y el sésamo.",
+   "consejos": "Corta las verduras finas para que se hagan rápido.",
+   "ingredientes": [
+    [
+     "a15",
+     70
+    ],
+    [
+     "a28",
+     120
+    ],
+    [
+     "a31",
+     60
+    ],
+    [
+     "a5",
+     100
+    ],
+    [
+     "a26",
+     12
+    ],
+    [
+     "a1",
+     3
+    ],
+    [
+     "a27",
+     5
+    ],
+    [
+     "a0",
+     6
+    ]
+   ]
+  },
+  {
+   "nombre": "Crema de calabaza y lentejas con pan de centeno",
+   "descripcion": "Crema vegana saciante con legumbre.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla con el aceite y el comino.\n2. Añade la calabaza en dados y agua que la cubra, y cuece 15 minutos.\n3. Tritura con las lentejas y sirve con el pan de centeno.",
+   "consejos": "Guarda unas lentejas enteras para decorar.",
+   "ingredientes": [
+    [
+     "a7",
+     250
+    ],
+    [
+     "a18",
+     150
+    ],
+    [
+     "a8",
+     40
+    ],
+    [
+     "a11",
+     1
+    ],
+    [
+     "a20",
+     60
+    ],
+    [
+     "a0",
+     8
+    ]
+   ]
+  },
+  {
+   "nombre": "Coliflor asada con garbanzos y quinoa",
+   "descripcion": "Plato vegano de horno con verdura, legumbre y pseudocereal.",
+   "tiempo_prep_min": 35,
+   "porciones": 1,
+   "instrucciones": "1. Corta la coliflor en ramilletes, mézclala con el pimentón y el aceite y hornea 25 minutos a 200 °C.\n2. Cuece la quinoa 12 minutos.\n3. Mezcla todo con los garbanzos, el limón y el cilantro.",
+   "consejos": "Los bordes tostados de la coliflor son lo mejor del plato.",
+   "ingredientes": [
+    [
+     "a10",
+     250
+    ],
+    [
+     "a16",
+     120
+    ],
+    [
+     "a25",
+     60
+    ],
+    [
+     "a23",
+     2
+    ],
+    [
+     "a19",
+     10
+    ],
+    [
+     "a9",
+     5
+    ],
+    [
+     "a0",
+     10
+    ]
+   ]
+  }
+ ],
+ "tipo_receta": "completa"
+}

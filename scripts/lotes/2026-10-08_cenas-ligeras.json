@@ -1,0 +1,527 @@
+{
+ "lote": "cenas-ligeras-2026-10-08",
+ "tipo_plato": "Cena",
+ "fuente": "lote_verificado",
+ "criterios": {
+  "kcal_min": 300,
+  "kcal_max": 650,
+  "grasa_pct_max": 0.38
+ },
+ "alimentos": {
+  "a15": {
+   "nombre": "Merluza",
+   "prefijo": "974247da",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a3": {
+   "nombre": "Calabacín",
+   "prefijo": "f8586302",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a19": {
+   "nombre": "Patata",
+   "prefijo": "0b223775",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a0": {
+   "nombre": "Aceite de oliva virgen extra",
+   "prefijo": "efdb0f46",
+   "rol": "grasa_saludable",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a14": {
+   "nombre": "Limón",
+   "prefijo": "60ad001e",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a22": {
+   "nombre": "Perejil",
+   "prefijo": "fea7cbe9",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a12": {
+   "nombre": "Huevo entero, crudo",
+   "prefijo": "6cd81fed",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "a11": {
+   "nombre": "Gambas Peladas Mediana",
+   "prefijo": "07d6dcc1",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Crustáceos"
+   ],
+   "origen": "marisco"
+  },
+  "a8": {
+   "nombre": "Espinacas",
+   "prefijo": "cb57d667",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a17": {
+   "nombre": "Pan de centeno",
+   "prefijo": "80dffe34",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a1": {
+   "nombre": "Ajo",
+   "prefijo": "bdc11c5a",
+   "rol": "especias_aromaticos",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a20": {
+   "nombre": "Pechuga de pollo",
+   "prefijo": "4ad8714c",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a25": {
+   "nombre": "Quinoa",
+   "prefijo": "53587262",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a26": {
+   "nombre": "Rúcula",
+   "prefijo": "d23e1bdd",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a28": {
+   "nombre": "Tomate",
+   "prefijo": "7f40a393",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a4": {
+   "nombre": "Cebolla",
+   "prefijo": "950afc33",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a24": {
+   "nombre": "Queso crema light",
+   "prefijo": "6f64e109",
+   "rol": "lacteo_complemento",
+   "alergenos": [
+    "Lácteos"
+   ],
+   "origen": "lacteo"
+  },
+  "a10": {
+   "nombre": "Fiambre de Pechuga de Pavo",
+   "prefijo": "a279ae71",
+   "rol": "proteina_principal",
+   "alergenos": [],
+   "origen": "carne"
+  },
+  "a7": {
+   "nombre": "Dorada",
+   "prefijo": "7320ea42",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a9": {
+   "nombre": "Espárragos",
+   "prefijo": "c7ad7588",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a2": {
+   "nombre": "Boniato",
+   "prefijo": "6c5d82a5",
+   "rol": "carbohidrato_base",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a6": {
+   "nombre": "Clara de huevo",
+   "prefijo": "8f023610",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Huevos"
+   ],
+   "origen": "huevo"
+  },
+  "a5": {
+   "nombre": "Champiñones",
+   "prefijo": "5b7e9a7d",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a18": {
+   "nombre": "Pan integral",
+   "prefijo": "1948a73a",
+   "rol": "carbohidrato_base",
+   "alergenos": [
+    "Gluten"
+   ],
+   "origen": "vegetal"
+  },
+  "a27": {
+   "nombre": "Salmón ahumado",
+   "prefijo": "de0eb774",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a21": {
+   "nombre": "Pera",
+   "prefijo": "19e6ca0e",
+   "rol": "fruta_complemento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a16": {
+   "nombre": "Nueces",
+   "prefijo": "63c26672",
+   "rol": "grasa_saludable",
+   "alergenos": [
+    "Frutos Secos"
+   ],
+   "origen": "vegetal"
+  },
+  "a29": {
+   "nombre": "Vinagre",
+   "prefijo": "46e4dee0",
+   "rol": "salsa_condimento",
+   "alergenos": [],
+   "origen": "vegetal"
+  },
+  "a23": {
+   "nombre": "Pescadilla",
+   "prefijo": "65313d07",
+   "rol": "proteina_principal",
+   "alergenos": [
+    "Pescado"
+   ],
+   "origen": "pescado"
+  },
+  "a13": {
+   "nombre": "Judías verdes",
+   "prefijo": "95efbbab",
+   "rol": "verdura_volumen",
+   "alergenos": [],
+   "origen": "vegetal"
+  }
+ },
+ "recetas": [
+  {
+   "nombre": "Merluza al horno con calabacín y patata",
+   "descripcion": "Cena ligera de pescado blanco con verdura y patata.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Corta la patata y el calabacín en rodajas y hornéalos 15 minutos a 200 °C.\n2. Coloca la merluza encima con el aceite y el limón.\n3. Hornea 10 minutos más y termina con perejil.",
+   "consejos": "Si la merluza es congelada, descongélala bien y sécala.",
+   "ingredientes": [
+    [
+     "a15",
+     200
+    ],
+    [
+     "a3",
+     120
+    ],
+    [
+     "a19",
+     150
+    ],
+    [
+     "a0",
+     6
+    ],
+    [
+     "a14",
+     10
+    ],
+    [
+     "a22",
+     3
+    ]
+   ]
+  },
+  {
+   "nombre": "Revuelto de gambas y espinacas con pan de centeno",
+   "descripcion": "Cena rápida y ligera con marisco y huevo.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "instrucciones": "1. Saltea el ajo laminado y las gambas 2 minutos.\n2. Añade las espinacas hasta que se reduzcan.\n3. Incorpora los huevos batidos, remueve hasta cuajar y sirve con el pan de centeno tostado.",
+   "consejos": "Retira del fuego cuando aún esté jugoso.",
+   "ingredientes": [
+    [
+     "a12",
+     100
+    ],
+    [
+     "a11",
+     100
+    ],
+    [
+     "a8",
+     80
+    ],
+    [
+     "a17",
+     50
+    ],
+    [
+     "a1",
+     3
+    ],
+    [
+     "a0",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Pollo a la plancha con ensalada de rúcula y quinoa",
+   "descripcion": "Cena ligera con proteína magra y cereal.",
+   "tiempo_prep_min": 20,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la quinoa 12 minutos y déjala enfriar un poco.\n2. Marca la pechuga a la plancha 5 minutos por lado.\n3. Mezcla la quinoa con la rúcula y el tomate, aliña con aceite y limón y sirve con el pollo.",
+   "consejos": "Aplana la pechuga para que se haga de forma uniforme.",
+   "ingredientes": [
+    [
+     "a20",
+     150
+    ],
+    [
+     "a25",
+     50
+    ],
+    [
+     "a26",
+     40
+    ],
+    [
+     "a28",
+     80
+    ],
+    [
+     "a0",
+     8
+    ],
+    [
+     "a14",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Crema de calabacín y patata con pavo",
+   "descripcion": "Cena de cuchara ligera con un extra de proteína.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Sofríe la cebolla con el aceite y añade el calabacín y la patata en dados con agua que los cubra.\n2. Cuece 15 minutos y tritura con el queso crema.\n3. Sirve con el pavo cortado en tiras por encima y el pan de centeno tostado.",
+   "consejos": "Añade el pavo al final para que no se reseque.",
+   "ingredientes": [
+    [
+     "a3",
+     250
+    ],
+    [
+     "a19",
+     150
+    ],
+    [
+     "a4",
+     40
+    ],
+    [
+     "a24",
+     30
+    ],
+    [
+     "a10",
+     70
+    ],
+    [
+     "a17",
+     40
+    ],
+    [
+     "a0",
+     6
+    ]
+   ]
+  },
+  {
+   "nombre": "Dorada al horno con espárragos y boniato",
+   "descripcion": "Cena de pescado al horno con verdura e hidrato lento.",
+   "tiempo_prep_min": 30,
+   "porciones": 1,
+   "instrucciones": "1. Hornea el boniato en rodajas 15 minutos a 200 °C.\n2. Añade la dorada y los espárragos con el aceite.\n3. Hornea 12 minutos más y sirve con limón.",
+   "consejos": "Pide la dorada limpia y en lomos.",
+   "ingredientes": [
+    [
+     "a7",
+     220
+    ],
+    [
+     "a9",
+     120
+    ],
+    [
+     "a2",
+     150
+    ],
+    [
+     "a0",
+     6
+    ],
+    [
+     "a14",
+     10
+    ]
+   ]
+  },
+  {
+   "nombre": "Tortilla de espinacas y champiñones con tomate",
+   "descripcion": "Cena ligera con huevo, claras y verdura.",
+   "tiempo_prep_min": 15,
+   "porciones": 1,
+   "instrucciones": "1. Saltea los champiñones laminados y las espinacas 4 minutos.\n2. Añade los huevos y las claras batidos y cuaja la tortilla.\n3. Sirve con el tomate aliñado y el pan integral tostado.",
+   "consejos": "Escurre bien las espinacas para que no suelten agua.",
+   "ingredientes": [
+    [
+     "a12",
+     100
+    ],
+    [
+     "a6",
+     100
+    ],
+    [
+     "a8",
+     80
+    ],
+    [
+     "a5",
+     80
+    ],
+    [
+     "a28",
+     100
+    ],
+    [
+     "a18",
+     60
+    ],
+    [
+     "a0",
+     4
+    ]
+   ]
+  },
+  {
+   "nombre": "Ensalada templada de salmón ahumado, pera y nueces",
+   "descripcion": "Cena fría y rápida con grasa buena y proteína.",
+   "tiempo_prep_min": 10,
+   "porciones": 1,
+   "instrucciones": "1. Reparte la rúcula en un plato con la pera en láminas.\n2. Añade el salmón en tiras y las nueces troceadas.\n3. Aliña con el aceite y el vinagre y sirve con el pan integral.",
+   "consejos": "El salmón ahumado ya es salado: no añadas sal.",
+   "ingredientes": [
+    [
+     "a27",
+     70
+    ],
+    [
+     "a26",
+     50
+    ],
+    [
+     "a21",
+     100
+    ],
+    [
+     "a16",
+     8
+    ],
+    [
+     "a18",
+     80
+    ],
+    [
+     "a0",
+     4
+    ],
+    [
+     "a29",
+     5
+    ]
+   ]
+  },
+  {
+   "nombre": "Pescadilla con judías verdes y patata cocida",
+   "descripcion": "Cena ligera de pescado blanco con verdura y patata.",
+   "tiempo_prep_min": 25,
+   "porciones": 1,
+   "instrucciones": "1. Cuece la patata en dados y las judías verdes 10 minutos.\n2. Dora el ajo laminado en el aceite y cocina la pescadilla 3 minutos por lado.\n3. Sirve junto con la verdura y el limón.",
+   "consejos": "Revisa que no queden espinas.",
+   "ingredientes": [
+    [
+     "a23",
+     220
+    ],
+    [
+     "a13",
+     150
+    ],
+    [
+     "a19",
+     150
+    ],
+    [
+     "a0",
+     6
+    ],
+    [
+     "a1",
+     3
+    ],
+    [
+     "a14",
+     10
+    ]
+   ]
+  }
+ ],
+ "tipo_receta": "completa"
+}

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { daysBetween, resumirNegocio, toNumber } from '@/lib/negocio/resumen'
 
 type ClienteProfile = {
   nombre?: string | null
@@ -23,43 +24,10 @@ type ClienteNegocioRow = {
   profile?: ClienteProfile | ClienteProfile[] | null
 }
 
-const PLAN_MESES: Record<string, number> = {
-  trimestral: 3,
-  semestral: 6,
-  anual: 12,
-  base: 3,
-  pro: 6,
-  ultra: 12,
-  custom: 1,
-}
-
 function profileName(profile?: ClienteProfile | ClienteProfile[] | null) {
   const p = Array.isArray(profile) ? profile[0] : profile
   const nombre = [p?.nombre, p?.apellidos].filter(Boolean).join(' ').trim()
   return nombre || p?.email || 'Cliente'
-}
-
-function toNumber(value: number | string | null | undefined) {
-  const n = typeof value === 'number' ? value : Number(value ?? 0)
-  return Number.isFinite(n) ? n : 0
-}
-
-function round2(value: number) {
-  return Math.round(value * 100) / 100
-}
-
-function daysBetween(date: string | null | undefined, now = new Date()) {
-  if (!date) return null
-  const target = new Date(date)
-  if (Number.isNaN(target.getTime())) return null
-  target.setHours(0, 0, 0, 0)
-  const base = new Date(now)
-  base.setHours(0, 0, 0, 0)
-  return Math.ceil((target.getTime() - base.getTime()) / 86_400_000)
-}
-
-function monthsFor(cliente: ClienteNegocioRow) {
-  return PLAN_MESES[cliente.tipo_membresia ?? ''] ?? PLAN_MESES[cliente.plan_tipo ?? ''] ?? 1
 }
 
 function logError(error: unknown) {
@@ -104,19 +72,7 @@ export async function GET() {
       .filter(c => c.pagado_via_stripe && toNumber(c.plan_precio) > 0 && c.fecha_inicio_plan)
       .sort((a, b) => new Date(b.fecha_inicio_plan ?? 0).getTime() - new Date(a.fecha_inicio_plan ?? 0).getTime())
 
-    const ingresos30d = pagosStripe
-      .filter(c => {
-        const fecha = new Date(c.fecha_inicio_plan!)
-        return now.getTime() - fecha.getTime() <= 30 * 86_400_000
-      })
-      .reduce((sum, c) => sum + toNumber(c.plan_precio), 0)
-
-    const ingresosMesActual = pagosStripe
-      .filter(c => {
-        const fecha = new Date(c.fecha_inicio_plan!)
-        return fecha.getFullYear() === now.getFullYear() && fecha.getMonth() === now.getMonth()
-      })
-      .reduce((sum, c) => sum + toNumber(c.plan_precio), 0)
+    const resumenBase = resumirNegocio(clientes, now)
 
     const renovaciones = activos
       .map(c => {
@@ -167,12 +123,6 @@ export async function GET() {
       })
       .sort((a, b) => (a.severity === 'alta' ? -1 : 1) - (b.severity === 'alta' ? -1 : 1))
 
-    const mrrEstimado = activos.reduce((sum, c) => {
-      const precio = toNumber(c.plan_precio)
-      if (!precio) return sum
-      return sum + precio / monthsFor(c)
-    }, 0)
-
     const transaccionesRecientes = pagosStripe.slice(0, 12).map(c => ({
       id: c.stripe_payment_intent_id ?? c.id,
       cliente_id: c.id,
@@ -192,17 +142,14 @@ export async function GET() {
 
     return NextResponse.json({
       resumen: {
-        ingresos_30d: round2(ingresos30d),
-        ingresos_mes_actual: round2(ingresosMesActual),
-        mrr_estimado: round2(mrrEstimado),
+        ingresos_30d: resumenBase.ingresos_30d,
+        ingresos_mes_actual: resumenBase.ingresos_mes_actual,
+        mrr_estimado: resumenBase.mrr_estimado,
         transacciones_30d: pagosStripe.filter(c => now.getTime() - new Date(c.fecha_inicio_plan!).getTime() <= 30 * 86_400_000).length,
-        clientes_membresia_activa: activos.filter(c => {
-          const d = daysBetween(c.fecha_fin_membresia, now)
-          return c.tipo_membresia && (d === null || d >= 0)
-        }).length,
+        clientes_membresia_activa: resumenBase.clientes_membresia_activa,
         membresias_7d: renovaciones.filter(r => r.dias !== null && r.dias >= 0 && r.dias <= 7).length,
         membresias_30d: renovaciones.filter(r => r.dias !== null && r.dias >= 0 && r.dias <= 30).length,
-        clientes_sin_membresia: activos.filter(c => !c.tipo_membresia).length,
+        clientes_sin_membresia: resumenBase.clientes_sin_membresia,
         stripe_configurado: hasStripeColumns,
       },
       transacciones_recientes: transaccionesRecientes,
