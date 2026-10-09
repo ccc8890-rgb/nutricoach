@@ -250,3 +250,64 @@ assert.equal(bajo.propuesta, null)
 assert.match(bajo.motivo, /no hay base para bajarlo/)
 assert.equal(recalibrar(null, [carrera5k], umb, '2026-10-09').sugerencia, 'subir') // sin VDOT previo se propone el estimado
 console.log('vdot: OK')
+
+// ── Plan hacia un objetivo ──
+import { generarPlan, tiempoParaVdot, type PlanObjetivo } from '../lib/rendimiento/plan-objetivo'
+import { validarPasos } from '../lib/entrenos/pasos'
+// La inversa de la fórmula devuelve el tiempo del que salió el VDOT
+for (const [d, t] of [[5000, 1300], [10000, 2640], [21097, 5700], [42195, 12600]] as const) {
+  const v = vdotDeMarca(d, t)!
+  assert.ok(Math.abs(tiempoParaVdot(d, v) - t) <= Math.max(10, t * 0.003), `inversa ${d} → ${tiempoParaVdot(d, v)} vs ${t}`)
+}
+const entradaPlan = { hoy: '2026-10-09', objetivo: { distancia_m: 10000, tiempo_s: 2640, fecha: '2026-12-20' }, vdot: 45, cargaSemanalActual: 150, kmSemanaActual: 25, tiradaMaxKm: 12 }
+const plan = generarPlan(entradaPlan) as PlanObjetivo
+assert.ok(!('error' in plan))
+// 09-10 es viernes: arranca el lunes 12-10; la carrera cae en la semana del 14-12 → 10 semanas
+assert.equal(plan.semanas.length, 10)
+assert.equal(plan.semanas[0].lunes, '2026-10-12')
+assert.equal(plan.semanas[9].fase, 'carrera')
+assert.equal(plan.semanas[9].lunes, '2026-12-14')
+const fases = plan.semanas.map(s => s.fase)
+assert.deepEqual(fases.slice(0, 1), ['base'])
+assert.ok(fases.includes('construccion') && fases.includes('especifica') && fases.includes('taper'))
+// el orden de las fases nunca retrocede
+const orden = ['base', 'construccion', 'especifica', 'taper', 'carrera']
+for (let i = 1; i < fases.length; i++) assert.ok(orden.indexOf(fases[i]) >= orden.indexOf(fases[i - 1]), `fases ${fases.join(',')}`)
+// descarga cada cuarta semana fuera del taper, y esa semana carga menos que la anterior
+const descargas = plan.semanas.filter(s => s.descarga)
+assert.ok(descargas.length >= 1 && descargas.every(s => s.n % 4 === 0))
+for (const s of descargas) {
+  assert.ok(s.tssObjetivo < plan.semanas[s.n - 2].tssObjetivo)
+  assert.ok(s.kmObjetivo <= plan.semanas[s.n - 2].kmObjetivo * 0.85, `descarga km ${s.kmObjetivo} vs ${plan.semanas[s.n - 2].kmObjetivo}`) // la descarga se nota también en los km
+}
+// la carga no sube más de ~10 % de una semana normal a la siguiente
+for (let i = 1; i < plan.semanas.length; i++) {
+  const a = plan.semanas[i - 1], b = plan.semanas[i]
+  if (!a.descarga && b.fase !== 'taper' && b.fase !== 'carrera') assert.ok(b.tssObjetivo <= a.tssObjetivo * 1.1 + 5, `salto ${a.tssObjetivo} → ${b.tssObjetivo}`)
+}
+// en el taper se recorta el volumen y la carrera pesa menos que la semana pico
+const pico = Math.max(...plan.semanas.map(s => s.tssObjetivo))
+assert.ok(plan.semanas[9].tssObjetivo <= pico * 0.55)
+assert.ok(plan.semanas[8].tssObjetivo < pico)
+assert.ok(plan.semanas[9].tiradaKm < plan.semanas[5].tiradaKm)
+// la tirada nunca pasa del tope de un 10K (16 km)
+assert.ok(plan.semanas.every(s => s.tiradaKm <= 16))
+// toda sesión clave es válida para el reloj
+for (const s of plan.semanas) for (const c of s.claves) assert.equal(validarPasos(c.pasos).ok, true, `${s.n} ${c.titulo}`)
+// la fase específica usa el ritmo de carrera del objetivo (44:00 en 10K = 4:24/km = 264 s/km)
+assert.equal(plan.ritmoCarrera_s_km, 264)
+const esp = plan.semanas.find(s => s.fase === 'especifica')!
+assert.match(JSON.stringify(esp.claves[0].pasos), /"min_seg_km":260/)
+// viabilidad: 44:00 (VDOT ≈ 46,4) desde 45 es alcanzable; 38:00 no
+assert.notEqual(plan.viabilidad.nivel, 'poco_realista')
+assert.equal((generarPlan({ ...entradaPlan, objetivo: { ...entradaPlan.objetivo, tiempo_s: 2280 } }) as PlanObjetivo).viabilidad.nivel, 'poco_realista')
+assert.equal((generarPlan({ ...entradaPlan, objetivo: { ...entradaPlan.objetivo, tiempo_s: 2760 } }) as PlanObjetivo).viabilidad.nivel, 'realista') // 46:00, más lento que su nivel
+// entradas inválidas
+assert.ok('error' in (generarPlan({ ...entradaPlan, objetivo: { ...entradaPlan.objetivo, fecha: '2026-10-20' } }) as object)) // menos de 4 semanas
+assert.ok('error' in (generarPlan({ ...entradaPlan, objetivo: { ...entradaPlan.objetivo, fecha: '2026-09-01' } }) as object)) // pasada
+assert.ok('error' in (generarPlan({ ...entradaPlan, objetivo: { ...entradaPlan.objetivo, fecha: '2028-01-01' } }) as object)) // demasiado lejos
+assert.ok('error' in (generarPlan({ ...entradaPlan, objetivo: { ...entradaPlan.objetivo, distancia_m: 800 } }) as object))
+// maratón: taper de 3 semanas
+const mar = generarPlan({ ...entradaPlan, objetivo: { distancia_m: 42195, tiempo_s: 12600, fecha: '2027-02-21' } }) as PlanObjetivo
+assert.equal(mar.semanas.filter(s => s.fase === 'taper' || s.fase === 'carrera').length, 3)
+console.log('plan-objetivo: OK')
