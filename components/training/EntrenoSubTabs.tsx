@@ -7,7 +7,7 @@ import { SneakerMove } from '@phosphor-icons/react'
 import CalendarioMesEntreno from './CalendarioMesEntreno'
 import EntrenoKanban from './EntrenoKanban'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
-import { EditorialMasthead, IndustrialTabs, TechnicalReadout } from '@/components/PortalCliente/editorial'
+import { EditorialMasthead, IndustrialTabs } from '@/components/PortalCliente/editorial'
 
 interface SesionSemana {
   id: string
@@ -65,7 +65,6 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
         eyebrow={bloque ? `Bloque ${bloque.fase} · Semana ${bloque.semana_actual}/${bloque.semanas_totales}` : 'Plan de entrenamiento'}
         title={planNombre}
         meta="SESIÓN / CARGA / EJECUCIÓN"
-        aside={<TechnicalReadout label="Volumen semanal" value={sesiones.length} unit="ses" />}
       />
 
       <IndustrialTabs
