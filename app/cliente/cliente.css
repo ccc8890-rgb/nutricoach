@@ -253,6 +253,7 @@
 .diet-week-shopping { border: 1px solid var(--diet-rule); }
 .training-sheet { padding: 1.1rem 1rem 1.3rem; border-block: 1px solid var(--editorial-rule); background: color-mix(in srgb, var(--editorial-panel) 82%, transparent); }
 .training-session-mark { display: grid; width: 2.8rem; height: 2.8rem; flex: none; place-items: center; border: 1px solid var(--editorial-rule); border-radius: 0.22rem; background: var(--editorial-field); color: var(--text-secondary); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--metal-bright) 8%, transparent); }
+.training-exercise-block-marker { display: block; margin-bottom: 0.5rem; overflow: hidden; color: var(--text-muted); font: 600 0.5rem/1.1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.1em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
 .training-exercise-list { border-bottom: 1px solid var(--editorial-rule); }
 .training-exercise-row { grid-template-columns: 2.8rem minmax(0, 1fr); }
 .training-exercise-row > .technical-row__content { padding: 0; }

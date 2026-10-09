@@ -4,6 +4,7 @@ import { ArrowCounterClockwise, Brain, CaretLeft, CaretRight, CheckCircle, Circl
 import SetRegistroSheet from './SetRegistroSheet'
 import EjercicioDemoModal from './EjercicioDemoModal'
 import { crearSessionExecutionSummary, crearSessionProgressSummary } from '@/lib/training/session-progress'
+import { esInicioDeBloque, etiquetaBloqueSesion, normalizarBloqueSesion, type TipoBloqueSesion } from '@/lib/training/session-blocks'
 
 export interface SetData {
   // Fuerza
@@ -32,6 +33,7 @@ export interface EjercicioCard {
   video_url?: string | null
   foto_url?: string | null
   tipo?: string | null   // 'fuerza' | 'cardio' | 'funcional' | 'flexibilidad'
+  bloque?: TipoBloqueSesion
 }
 
 interface Props {
@@ -156,6 +158,7 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
       totalEjercicio: setsEjercicio.length,
       completado: setsEjercicio.length > 0 && hechosEjercicio === setsEjercicio.length,
       activo: index === ejIdx,
+      inicioBloque: esInicioDeBloque(ejercicios, index),
     }
   })
 
@@ -343,6 +346,11 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
                 }}
                 aria-current={item.activo ? 'step' : undefined}
               >
+                {item.inicioBloque && (
+                  <span className="training-exercise-block-marker">
+                    {etiquetaBloqueSesion(normalizarBloqueSesion(item.bloque))}
+                  </span>
+                )}
                 <div className="flex items-center justify-between gap-2">
                   <span
                     className="flex h-7 w-7 items-center justify-center rounded-xl text-xs font-bold"
@@ -387,7 +395,12 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
             </p>
           </div>
           <div className="flex items-start justify-between mb-1">
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{ej.grupo_muscular}</span>
+            <div>
+              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+                {etiquetaBloqueSesion(normalizarBloqueSesion(ej.bloque))}
+              </p>
+              <span className="mt-1 block text-xs" style={{ color: 'var(--text-muted)' }}>{ej.grupo_muscular}</span>
+            </div>
             <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--semantic-info-bg)', color: 'var(--semantic-info)', border: '1px solid var(--semantic-info-border)' }}>
               {ej.series}×{ej.repeticiones}
             </span>

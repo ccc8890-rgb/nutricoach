@@ -45,3 +45,9 @@ export function crearPresentacionEjercicios<T extends { orden: number; bloque?: 
     items: grupo.items.map(item => ({ ...item, indiceGlobal: ++indiceGlobal })),
   }))
 }
+
+export function esInicioDeBloque(items: Array<{ bloque?: unknown }>, index: number) {
+  if (index === 0) return true
+  if (index < 0 || index >= items.length) return false
+  return normalizarBloqueSesion(items[index].bloque) !== normalizarBloqueSesion(items[index - 1].bloque)
+}

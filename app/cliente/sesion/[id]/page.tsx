@@ -10,12 +10,14 @@ import { crearSesionGuidance } from '@/lib/training/workspace'
 import PasosSesion from '@/components/training/PasosSesion'
 import type { Ritmos } from '@/lib/entrenos/ritmos'
 import { descansoRelevante } from '@/lib/entrenos/descanso-visible'
+import { normalizarBloqueSesion } from '@/lib/training/session-blocks'
 
 type Modo = 'registrar' | 'solo-ver'
 
 interface EjercicioSesion {
   id: string
   orden: number
+  bloque?: string | null
   series: number
   repeticiones: string
   descanso_segundos: number
@@ -249,6 +251,7 @@ export default function EjecucionSesionPage() {
     video_url: ej.ejercicio?.video_url ?? null,
     foto_url: ej.ejercicio?.foto_url ?? null,
     tipo: ej.ejercicio?.tipo ?? null,
+    bloque: normalizarBloqueSesion(ej.bloque),
   }))
 
   const totalSets = sesion.ejercicios.reduce((acc, ej) => acc + (ej.series ?? 0), 0)
