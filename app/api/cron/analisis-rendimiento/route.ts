@@ -6,6 +6,8 @@ export const maxDuration = 300
 
 /** Máximo de atletas por pasada: cada análisis es una llamada a la IA. */
 const MAX_ATLETAS = 15
+/** Presupuesto de tiempo (la función dura 300 s): se corta antes de agotarlo y el resto queda para la siguiente pasada. */
+const PRESUPUESTO_MS = 240_000
 
 function autorizado(req: NextRequest): boolean {
   const secreto = process.env.CRON_SECRET
@@ -24,8 +26,10 @@ export async function GET(req: NextRequest) {
   const { data: filas } = await db.from('entrenos_realizados').select('cliente_id').gte('fecha', desde)
   const atletas = [...new Set((filas ?? []).map(f => f.cliente_id as string))].slice(0, MAX_ATLETAS)
 
+  const inicio = Date.now()
   const resumen = { atletas: atletas.length, generados: 0, omitidos: [] as string[] }
   for (const id of atletas) {
+    if (Date.now() - inicio > PRESUPUESTO_MS) { resumen.omitidos.push('tiempo agotado: el resto queda para la siguiente pasada'); break }
     const r = await ejecutarAnalisisRendimiento(id)
     if (r.ok) resumen.generados++
     else resumen.omitidos.push(`${id.slice(0, 8)}: ${r.motivo}`)

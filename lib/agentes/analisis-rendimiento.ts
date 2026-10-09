@@ -117,7 +117,8 @@ export async function ejecutarAnalisisRendimiento(clienteId: string, opciones: {
   try {
     crudo = await llamarDeepSeek(SYSTEM, `DATOS DEL ATLETA\n\n${ctx.texto}`, 0.25)
   } catch (e) {
-    return { ok: false, motivo: e instanceof Error ? e.message : 'Error al llamar a la IA' }
+    console.error('[analisis-rendimiento] IA:', e instanceof Error ? e.message : e) // el detalle del proveedor no sale al navegador
+    return { ok: false, motivo: 'La IA no ha respondido ahora; inténtalo de nuevo en unos minutos' }
   }
 
   let json: unknown
