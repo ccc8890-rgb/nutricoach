@@ -35,6 +35,7 @@ const MAPA = {
   'aove (aceite de oliva virgen extra)':'Aceite de oliva virgen extra','obleas de arroz (papel de arroz)':'Hojas de papel de arroz',
   'limon (ralladura y zumo)':'Limón','sal (para los panes planos)':'Sal','chocolate negro 75% (derretido)':'Chocolate negro 75-80%',
   'arroz blanco de grano largo':'Arroz blanco',
+  'jamon de york (pechuga de pavo o pollo)':'Jamón York',
 }
 const dud = JSON.parse(fs.readFileSync('salidas/matches-dudosos.json','utf8'))
 const ids = new Map()
