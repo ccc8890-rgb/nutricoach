@@ -14,6 +14,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Barbell, CaretDown, CheckCircle, PersonSimpleRun, SpinnerGap } from '@phosphor-icons/react'
 import { useToast } from '@/components/ui/Toast'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
+import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const DIAS_ABREV: Record<string, string> = { Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J', Viernes: 'V', Sábado: 'S', Domingo: 'D' }
@@ -114,7 +115,10 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, onSelecc
                         {detalles[seleccionadaId] === 'cargando' ? (
                             <div className="flex justify-center py-6"><SpinnerGap size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
                         ) : (
-                            <ListaEjerciciosExpandible ejercicios={(detalles[seleccionadaId] as EjercicioDetalle[]) ?? []} />
+                            <>
+                                {extras[seleccionadaId] && <PasosSesion sesionId={seleccionadaId} {...extras[seleccionadaId]!} />}
+                                <ListaEjerciciosExpandible ejercicios={(detalles[seleccionadaId] as EjercicioDetalle[]) ?? []} />
+                            </>
                         )}
                     </div>
                 )}
@@ -144,6 +148,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
             const res = await fetch(`/api/cliente/sesion/${sesionId}`)
             const data = await res.json()
             setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] }))
+            setExtras(prev => ({ ...prev, [sesionId]: extrasDeRespuesta(data.sesion) }))
         } catch {
             setDetalles(prev => ({ ...prev, [sesionId]: [] }))
         }

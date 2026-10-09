@@ -5,6 +5,17 @@ import { Watch } from '@phosphor-icons/react'
 import { validarPasos, resumenSesion, lineaPaso, type PasoSimple } from '@/lib/entrenos/pasos'
 import { formatearRitmo, type Ritmos } from '@/lib/entrenos/ritmos'
 
+export interface ExtrasSesion {
+  pasos: unknown
+  ritmos: Ritmos | null
+  garmin: { workoutId: string | null; fecha: string | null }
+}
+
+export function extrasDeRespuesta(sesion: { pasos?: unknown; ritmos?: Ritmos | null; garmin?: ExtrasSesion['garmin'] } | undefined): ExtrasSesion | null {
+  if (!sesion?.pasos) return null
+  return { pasos: sesion.pasos, ritmos: sesion.ritmos ?? null, garmin: sesion.garmin ?? { workoutId: null, fecha: null } }
+}
+
 interface Props {
   sesionId: string
   pasos: unknown

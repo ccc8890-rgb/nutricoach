@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Barbell, CaretLeft, CaretRight, CircleDashed, CircleNotch, Footprints, Warning } from '@phosphor-icons/react'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
+import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 
 export interface DiaMes {
   fecha: string
@@ -59,6 +60,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
   const hoyISO = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
   const [diaSeleccionado, setDiaSeleccionado] = useState<string>(hoyISO)
   const [detalles, setDetalles] = useState<Record<string, EjercicioDetalle[] | 'cargando'>>({})
+  const [extras, setExtras] = useState<Record<string, ExtrasSesion | null>>({})
 
   useEffect(() => {
     setLoading(true)
@@ -87,7 +89,10 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
     setDetalles(prev => ({ ...prev, [sesionId]: 'cargando' }))
     fetch(`/api/cliente/sesion/${sesionId}`)
       .then(r => r.json())
-      .then(data => setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] })))
+      .then(data => {
+        setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] }))
+        setExtras(prev => ({ ...prev, [sesionId]: extrasDeRespuesta(data.sesion) }))
+      })
       .catch(() => setDetalles(prev => ({ ...prev, [sesionId]: [] })))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diaInfo?.sesion?.id])
@@ -229,7 +234,10 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                 {detalles[diaInfo.sesion.id] === 'cargando' ? (
                   <div className="flex justify-center py-6"><CircleNotch size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
                 ) : (
-                  <ListaEjerciciosExpandible ejercicios={(detalles[diaInfo.sesion.id] as EjercicioDetalle[]) ?? []} />
+                  <>
+                    {extras[diaInfo.sesion.id] && <PasosSesion sesionId={diaInfo.sesion.id} {...extras[diaInfo.sesion.id]!} />}
+                    <ListaEjerciciosExpandible ejercicios={(detalles[diaInfo.sesion.id] as EjercicioDetalle[]) ?? []} />
+                  </>
                 )}
               </div>
             </>

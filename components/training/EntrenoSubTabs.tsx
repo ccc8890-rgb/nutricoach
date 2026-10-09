@@ -7,6 +7,7 @@ import { SneakerMove } from '@phosphor-icons/react'
 import CalendarioMesEntreno from './CalendarioMesEntreno'
 import EntrenoKanban from './EntrenoKanban'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
+import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { EditorialMasthead, IndustrialTabs } from '@/components/PortalCliente/editorial'
 
 interface SesionSemana {
@@ -38,6 +39,7 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
   const bloque = semana?.bloque ?? null
   const loading = isLoading && !semana
   const [detalles, setDetalles] = useState<Record<string, EjercicioDetalle[] | 'cargando'>>({})
+  const [extras, setExtras] = useState<Record<string, ExtrasSesion | null>>({})
 
   async function cargarDetalle(sesionId: string) {
     if (detalles[sesionId] && detalles[sesionId] !== 'cargando') return
@@ -46,6 +48,7 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
       const res = await fetch(`/api/cliente/sesion/${sesionId}`)
       const data = await res.json()
       setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] }))
+      setExtras(prev => ({ ...prev, [sesionId]: extrasDeRespuesta(data.sesion) }))
     } catch {
       setDetalles(prev => ({ ...prev, [sesionId]: [] }))
     }
@@ -97,7 +100,10 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
               {detalles[sesionHoy.id] === 'cargando' ? (
                 <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
               ) : (
-                <ListaEjerciciosExpandible ejercicios={(detalles[sesionHoy.id] as EjercicioDetalle[]) ?? []} />
+                <>
+                  {extras[sesionHoy.id] && <PasosSesion sesionId={sesionHoy.id} {...extras[sesionHoy.id]!} />}
+                  <ListaEjerciciosExpandible ejercicios={(detalles[sesionHoy.id] as EjercicioDetalle[]) ?? []} />
+                </>
               )}
             </div>
           </section>
