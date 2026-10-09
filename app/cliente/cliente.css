@@ -163,6 +163,17 @@
 .diet-state-grid { overflow: hidden; border: 1px solid var(--diet-rule); border-radius: 0; gap: 1px; background: var(--diet-rule) !important; padding: 0; }
 .diet-state-grid > button { border-radius: 0; background: var(--diet-paper); }
 .diet-state-grid > button:hover { background: color-mix(in srgb, var(--diet-warm) 10%, var(--diet-paper)) !important; }
+.diet-document-tools { display: grid; border: 1px solid var(--diet-rule); background: var(--diet-rule); gap: 1px; }
+.diet-document-tool-wrap { background: var(--diet-paper); }
+.diet-document-tool { display: grid; width: 100%; min-height: 4.35rem; grid-template-columns: 2.8rem minmax(0, 1fr) auto; align-items: center; padding: 0 1rem 0 0; background: var(--diet-paper); color: var(--text-secondary); text-align: left; transition: background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong); }
+.diet-document-tool:hover { background: color-mix(in srgb, var(--diet-warm) 8%, var(--diet-paper)); color: var(--text); }
+.diet-document-tool:active { transform: translateY(1px); }
+.diet-document-tool:focus-visible { outline: 2px solid var(--diet-warm); outline-offset: -2px; }
+.diet-document-tool__index { display: grid; height: 100%; place-items: center; border-right: 1px solid var(--diet-rule); color: var(--diet-warm-muted); font: 600 0.58rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.08em; }
+.diet-document-tool__copy { display: flex; min-width: 0; flex-direction: column; gap: 0.25rem; padding-inline: 0.9rem; }
+.diet-document-tool__copy strong { color: var(--text); font-size: 0.78rem; font-weight: 650; letter-spacing: -0.01em; }
+.diet-document-tool__copy small { color: var(--text-muted); font: 500 0.62rem/1.25 var(--font-geist-mono), ui-monospace, monospace; }
+.diet-document-tool__panel { padding: 0.75rem; border-top: 1px solid var(--diet-rule); }
 .training-sheet { padding: 1.1rem 1rem 1.3rem; border-block: 1px solid var(--editorial-rule); background: color-mix(in srgb, var(--editorial-panel) 82%, transparent); }
 .training-exercise-list { border-bottom: 1px solid var(--editorial-rule); }
 .training-exercise-row { grid-template-columns: 2.8rem minmax(0, 1fr); }

@@ -789,45 +789,41 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                 })}
             </div>
 
-            {/* Lista de la compra del día activo — un nivel por debajo, no compite con el toggle de arriba */}
-            <div>
+            {/* Utilidades del documento nutricional */}
+            <div className="diet-document-tools">
+            <div className="diet-document-tool-wrap">
                 <button
                     type="button"
                     onClick={() => setMostrarCompra(v => !v)}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-2xl"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                    className="diet-document-tool"
                 >
-                    <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                        Lista de la compra {diaActivo === diaActualEspana() ? 'de hoy' : `de ${diaActivo}`}
+                    <span className="diet-document-tool__index">01</span>
+                    <span className="diet-document-tool__copy">
+                        <strong>Lista de la compra</strong>
+                        <small>{diaActivo === diaActualEspana() ? 'Ingredientes para hoy' : `Ingredientes de ${diaActivo}`}</small>
                     </span>
                     {mostrarCompra ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />}
                 </button>
                 {mostrarCompra && (
-                    <div className="mt-3">
+                    <div className="diet-document-tool__panel">
                         <ListaCompraPortal codigo={codigo} diaInicial={diaActivo} />
                     </div>
                 )}
             </div>
 
-            {/* Botón Descargar PDF */}
             <button
                 onClick={handleDescargarPDF}
                 disabled={descargando}
-                className="w-full flex items-center justify-between px-5 py-4 rounded-2xl no-print transition-all active:scale-[0.98]"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                className="diet-document-tool no-print"
             >
-                <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary-bg)' }}>
-                        {descargando ? <Loader2 size={16} className="animate-spin" style={{ color: 'var(--primary)' }} /> : <Download size={16} style={{ color: 'var(--primary)' }} />}
-                    </div>
-                    <div className="text-left">
-                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                            {descargando ? 'Generando…' : 'Descargar plan en PDF'}
-                        </p>
-                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Dieta completa para llevar offline</p>
-                    </div>
-                </div>
+                <span className="diet-document-tool__index">02</span>
+                <span className="diet-document-tool__copy">
+                    <strong>{descargando ? 'Generando documento…' : 'Descargar plan en PDF'}</strong>
+                    <small>Dieta completa para consultar offline</small>
+                </span>
+                {descargando ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
             </button>
+            </div>
 
             </>)}
 
