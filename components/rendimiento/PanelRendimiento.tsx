@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Grafica, { type Fila } from './Grafica'
 import AnalisisIA from './AnalisisIA'
+import ZonasVdot from './ZonasVdot'
 import type { PanelRendimiento as Panel } from '@/lib/rendimiento/panel'
 import type { UmbralesAtleta } from '@/lib/rendimiento/carga'
 import type { ResumenEjecucion } from '@/lib/rendimiento/ejecucion'
@@ -186,6 +187,8 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
           </dl>
         </Bloque>
       </div>
+
+      <ZonasVdot clienteId={clienteId} />
 
       <Bloque titulo="Entrenos recientes" nota="La barra de color es el tiempo en cada zona de pulso (de suave a máximo).">
         <div className="overflow-x-auto">

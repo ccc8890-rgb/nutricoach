@@ -203,3 +203,50 @@ assert.equal(sinCambios({ b: 1, a: 2 }, { a: 2, b: 1 }), true) // el orden de la
 assert.equal(sinCambios(mk(7, 400, 255, 270), mk(6, 400, 255, 270)), false)
 assert.equal(sinCambios(mk(7, 400, 255, 270), mk(7, 400, 255, 272)), false)
 console.log('cambio-sesion: OK')
+
+// ── VDOT desde esfuerzos reales ──
+import { vdotDeMarca, vdotDeUmbral, esfuerzosVdot, recalibrar } from '../lib/rendimiento/vdot'
+// Tablas de Daniels: 5K en 20:00 ≈ VDOT 49,8; 10K en 40:00 ≈ 51,9; 5K en 21:25 ≈ 45
+assert.ok(Math.abs(vdotDeMarca(5000, 1200)! - 49.8) < 0.3, `5K 20:00 → ${vdotDeMarca(5000, 1200)}`)
+assert.ok(Math.abs(vdotDeMarca(10000, 2400)! - 51.9) < 0.4, `10K 40:00 → ${vdotDeMarca(10000, 2400)}`)
+assert.ok(vdotDeMarca(5000, 1300)! < vdotDeMarca(5000, 1200)!) // más lento = menos VDOT
+assert.ok(Math.abs(vdotDeMarca(5000, 1297)! - 45.4) < 0.4, `5K 21:37 → ${vdotDeMarca(5000, 1297)}`) // el 5K de Copenhague
+assert.equal(vdotDeMarca(0, 100), null)
+assert.ok(Math.abs(vdotDeUmbral(3.69)! - 46.5) < 0.5)
+assert.equal(vdotDeUmbral(null), null)
+
+const umb = { fcUmbral: 176, fcMax: 194, velUmbralMs: 3.69 }
+const base = { tipo: 'running', mejores_parciales: null, vueltas: null }
+const carrera5k = { ...base, fecha: '2026-09-19', duracion_s: 1315, distancia_m: 5079, fc_media: 180 } // la carrera de Copenhague
+const rodaje = { ...base, fecha: '2026-09-27', duracion_s: 4166, distancia_m: 12008, fc_media: 159 } // suave: no cuenta
+const cintaV = { ...base, tipo: 'treadmill_running', fecha: '2026-10-02', duracion_s: 1883, distancia_m: 9966, fc_media: 175 } // distancia falsa
+const seriesV = { ...base, fecha: '2026-10-08', duracion_s: 2871, distancia_m: 9018, fc_media: 176, vueltas: Array.from({ length: 6 }, () => [{ tipo: 'ACTIVE', paso: 1, distancia_m: 500, duracion_s: 140, fc_media: 165, velocidad_ms: 3.5 }, { tipo: 'RECOVERY', paso: 2, distancia_m: 170, duracion_s: 60, fc_media: 162, velocidad_ms: 2.8 }]).flat() }
+// Series con vueltas manuales (sin tipo de paso): rápidas y lentas alternadas
+const pistaManual = { ...base, fecha: '2026-09-24', duracion_s: 2281, distancia_m: 7270, fc_media: 175, vueltas: [3.9, 2.5, 4.1, 2.4, 4.0, 2.6, 3.9, 2.5].map((v, i) => ({ tipo: 'INTERVAL', paso: null, distancia_m: 400, duracion_s: 400 / v, fc_media: 170, velocidad_ms: v })) }
+assert.equal(esfuerzosVdot([pistaManual], umb, '2026-10-09').length, 0)
+// Una carrera continua con vueltas parejas sí cuenta
+const continua = { ...carrera5k, vueltas: [3.9, 3.85, 3.8, 3.9, 3.95, 3.7].map(v => ({ tipo: 'INTERVAL', paso: null, distancia_m: 1000, duracion_s: 1000 / v, fc_media: 178, velocidad_ms: v })) }
+assert.equal(esfuerzosVdot([continua], umb, '2026-10-09').length, 1)
+const largo = { ...base, fecha: '2026-10-05', duracion_s: 3000, distancia_m: 10000, fc_media: 172, mejores_parciales: { s1000: 270, s1609: null, s5000: 1380 } }
+const ef = esfuerzosVdot([carrera5k, rodaje, cintaV, seriesV], umb, '2026-10-09')
+assert.equal(ef.length, 1) // solo la carrera: el rodaje es suave, la cintaV no fía y las seriesV son intervalos
+assert.ok(ef[0].vdot > 44.5 && ef[0].vdot < 46, `vdot carrera ${ef[0].vdot}`)
+assert.equal(esfuerzosVdot([carrera5k], { ...umb, fcUmbral: null }, '2026-10-09').length, 0)
+assert.equal(esfuerzosVdot([{ ...carrera5k, fecha: '2025-01-01' }], umb, '2026-10-09').length, 0) // demasiado antigua
+assert.equal(esfuerzosVdot([largo], umb, '2026-10-09').length, 2) // toda la salida + su mejor tramo de 5K
+
+const subir = recalibrar(40, [carrera5k], umb, '2026-10-09')
+assert.equal(subir.sugerencia, 'subir')
+assert.equal(subir.propuesta, 45.5)
+assert.equal(subir.confianza, 'alta') // hace 20 días y a tope
+const igual = recalibrar(45, [carrera5k], umb, '2026-10-09')
+assert.equal(igual.sugerencia, 'mantener')
+assert.equal(igual.propuesta, null)
+const nada = recalibrar(45, [rodaje], umb, '2026-10-09')
+assert.equal(nada.sugerencia, 'sin_evidencia') // jamás se baja el VDOT por falta de pruebas
+const bajo = recalibrar(50, [carrera5k], umb, '2026-10-09')
+assert.equal(bajo.sugerencia, 'mantener')
+assert.equal(bajo.propuesta, null)
+assert.match(bajo.motivo, /no hay base para bajarlo/)
+assert.equal(recalibrar(null, [carrera5k], umb, '2026-10-09').sugerencia, 'subir') // sin VDOT previo se propone el estimado
+console.log('vdot: OK')

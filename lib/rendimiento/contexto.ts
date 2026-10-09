@@ -6,6 +6,7 @@ import { calcularAlertas, type AlertaRendimiento } from './alertas'
 import { leerUmbrales } from './garmin-entrenos'
 import { ritmosDesdeVdot, formatearRitmo } from '@/lib/entrenos/ritmos'
 import { construirEjecucion } from './ejecucion'
+import { recalibrar, type EntrenoParaVdot } from './vdot'
 
 export interface ContextoRendimiento {
   texto: string
@@ -46,7 +47,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   const ejecucion = await construirEjecucion(db, clienteId, hoy)
   const [{ data: cli }, { data: entrenos }, { data: dBien }, umbrales, { data: perfil }, { data: comps }, { data: plan }, { data: previas }] = await Promise.all([
     db.from('clientes').select('profiles:profiles!profile_id(nombre, apellidos)').eq('id', clienteId).single(),
-    db.from('entrenos_realizados').select('fecha,tipo,nombre,duracion_s,distancia_m,ritmo_medio_s_km,fc_media,tss,tss_metodo,carga_garmin,vo2max,tiempo_zona_fc,mejores_parciales,raw').eq('cliente_id', clienteId).order('fecha'),
+    db.from('entrenos_realizados').select('fecha,tipo,nombre,duracion_s,distancia_m,ritmo_medio_s_km,fc_media,tss,tss_metodo,carga_garmin,vo2max,tiempo_zona_fc,mejores_parciales,vueltas,raw').eq('cliente_id', clienteId).order('fecha'),
     db.from('actividad_externa_cliente').select('fecha,rhr,training_readiness,body_battery_max,sueno_h,stress_avg').eq('cliente_id', clienteId).eq('proveedor', 'garmin_connect').gte('fecha', desde60).order('fecha'),
     leerUmbrales(db, clienteId),
     db.from('perfil_entreno_cliente').select('vdot,sport_modality,objetivo_especifico,dias_disponibles,capacidad_recuperacion,patron_lesiones,restricciones_temporales').eq('cliente_id', clienteId).maybeSingle(),
@@ -93,11 +94,13 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
 
   const nombrePerfil = cli?.profiles as { nombre?: string } | { nombre?: string }[] | null | undefined
   const nombre = (Array.isArray(nombrePerfil) ? nombrePerfil[0]?.nombre : nombrePerfil?.nombre) || 'el atleta'
+  const recal = recalibrar(vdot, todos as unknown as EntrenoParaVdot[], umbrales, hoy)
   const L: string[] = []
   L.push(`ATLETA: ${nombre} (habla de ${nombre} en tercera persona; el lector es el coach)`)
   L.push(`FECHA DE HOY: ${hoy}`)
   L.push(`PERFIL: modalidad ${perfil?.sport_modality ?? 'n/d'}; objetivo: ${perfil?.objetivo_especifico ?? 'n/d'}; días disponibles/sem: ${perfil?.dias_disponibles ?? 'n/d'}; recuperación: ${perfil?.capacidad_recuperacion ?? 'n/d'}; lesiones: ${JSON.stringify(perfil?.patron_lesiones ?? [])}; restricciones: ${perfil?.restricciones_temporales ?? 'ninguna'}`)
   L.push(`UMBRALES: VDOT ${vdot ?? 'n/d'}${ritmos ? ` (E ${formatearRitmo(ritmos.E)}, T ${formatearRitmo(ritmos.T)}, I ${formatearRitmo(ritmos.I)}, R ${formatearRitmo(ritmos.R)} /km)` : ''}; Garmin: pulso umbral ${umbrales.fcUmbral ?? 'n/d'}, ritmo umbral ${umbrales.velUmbralMs ? mmss(1000 / umbrales.velUmbralMs) + '/km' : 'n/d'}, FC máx ${umbrales.fcMax ?? 'n/d'}`)
+  L.push(`RECALIBRACIÓN DEL VDOT: ${recal.motivo}${recal.contraste.vdotUmbralGarmin ? ` (el umbral de Garmin equivale a VDOT ${recal.contraste.vdotUmbralGarmin})` : ''}${recal.confianza ? `; confianza ${recal.confianza}` : ''}`)
   L.push(proxima ? `COMPETICIÓN PRÓXIMA: ${proxima.nombre} (${proxima.disciplina}) el ${proxima.fecha_competicion}, en ${diasComp} días; objetivo: ${proxima.objetivo ?? 'n/d'}` : 'COMPETICIÓN PRÓXIMA: ninguna registrada')
   L.push(`PLAN ACTIVO: ${plan?.nombre ?? 'ninguno'}\n${sesionesPlan.map(s => '  - ' + s).join('\n')}`)
   if (r) L.push(`CARGA (TrainingPeaks-like): forma CTL ${r.ctl}, fatiga ATL ${r.atl}, frescura TSB ${r.tsb} (${r.textoEstado}); subida de forma 7d ${r.rampa7}; carga 7d ${Math.round(r.carga7d)}, 28d ${Math.round(r.carga28d)}; monotonía ${r.monotonia ?? 'n/d'}`)
