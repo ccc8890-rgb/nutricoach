@@ -23,13 +23,47 @@ async function deepseek(prompt) {
 }
 if (APLICA) {
   const props = JSON.parse(fs.readFileSync(FICHERO, 'utf8')).filter(p => !SOLO_VALIDAS || !p.errores.length)
+  if (CAMPO === 'limpiar') {
+    const props = JSON.parse(fs.readFileSync(FICHERO, 'utf8')).filter(p => !SOLO_VALIDAS || !p.errores.length)
+    const previos = []; for (const p of props) { const { data } = await sb.from('recetas').select('id,' + p.campo).eq('id', p.id).single(); previos.push({ ...data, campo: p.campo }) }
+    const copia = `salidas/copia-limpiar-${new Date().toISOString().replace(/[:.]/g,'-')}.json`; fs.writeFileSync(copia, JSON.stringify(previos, null, 1)); console.log('Copia:', copia)
+    for (const p of props) { const { error } = await sb.from('recetas').update({ [p.campo]: p.valor }).eq('id', p.id); console.log(error ? 'ERROR ' + p.nombre : 'ok  ' + p.nombre + ' [' + p.campo + ']') }
+    process.exit(0)
+  }
   const col = CAMPO === 'tiempo' ? 'tiempo_prep_min' : 'consejos'
   const previos = []; for (const p of props) { const { data } = await sb.from('recetas').select('id,' + col).eq('id', p.id).single(); previos.push(data) }
   const copia = `salidas/copia-${CAMPO}-${new Date().toISOString().replace(/[:.]/g,'-')}.json`; fs.writeFileSync(copia, JSON.stringify(previos, null, 1)); console.log('Copia:', copia)
   for (const p of props) { const { error } = await sb.from('recetas').update({ [col]: p.valor }).eq('id', p.id); console.log(error ? 'ERROR ' + p.nombre : 'ok  ' + p.nombre) }
   process.exit(0)
 }
-const R = []; for (let f = 0; ; f += 1000) { const { data } = await sb.from('recetas').select('id,nombre,tipo_plato,porciones,tipo_coccion,instrucciones,consejos,tiempo_prep_min,tiempo_coccion_min,estado').range(f, f + 999); R.push(...data); if (data.length < 1000) break }
+const R = []; for (let f = 0; ; f += 1000) { const { data } = await sb.from('recetas').select('id,nombre,descripcion,tipo_plato,porciones,tipo_coccion,instrucciones,consejos,tiempo_prep_min,tiempo_coccion_min,estado').range(f, f + 999); R.push(...data); if (data.length < 1000) break }
+if (CAMPO === 'limpiar') {
+  const BAN = /v[ií]spera|carrera|recuperaci[oó]n|entreno|entrenamiento|marat[oó]n|tapering|competici|endurance|post-?entreno|pre-?entreno|gimnasio|gym/i
+  const trabajos = []
+  for (const r of R.filter(x => x.estado !== 'descartada')) for (const campo of ['descripcion', 'consejos']) if (r[campo] && BAN.test(r[campo])) trabajos.push({ r, campo })
+  console.log('textos a limpiar:', trabajos.length)
+  const props = []
+  for (const { r, campo } of trabajos) {
+    const { data } = await sb.from('receta_ingredientes').select('nombre_libre').eq('receta_id', r.id)
+    const lista = norm(data.map(i => i.nombre_libre).join(' '))
+    const out = await deepseek(`Receta: ${r.nombre} (${r.tipo_plato}). Ingredientes: ${data.map(i => i.nombre_libre).join(', ')}.\nTEXTO ACTUAL de ${campo === 'descripcion' ? 'la descripción' : 'los consejos'}: ${r[campo]}\nReescríbelo SIN ninguna mención a entrenamientos, carreras, competiciones, recuperación, antes/después de entrenar ni deporte. ${campo === 'descripcion' ? 'Describe el plato en UNA frase: qué es y cómo se come (temperatura, textura). Sin adjetivos de marketing.' : 'Da UN solo consejo práctico de técnica o conservación, en UNA frase corta.'} PROHIBIDO: propuestas de sustituir, cambiar o añadir ingredientes; afirmaciones de salud o nutrición (proteínas, probióticos, digestivo, antiinflamatorio, energético, saludable, sin gluten, sin lactosa, etc.); frases como «ideal para», «perfecto para» o «equilibrio perfecto». No inventes ingredientes ni cifras que no estén en el texto actual.\nJSON: {"texto":"..."}`)
+    const valor = out?.texto?.trim() ?? null, errores = []
+    if (!valor) errores.push('sin texto')
+    else {
+      if (BAN.test(valor)) errores.push('sigue mencionando entreno/carrera/recuperación')
+      if (/en lugar de|sustitu|cambia (el|la|los|las)|sin gluten|sin lactosa|probi[oó]tic|antiinflam|bromelina|digestiv|digesti[oó]n|prevent|mejora (la|el)|reduce (la|el)|ayuda a|equilibrio perfecto|perfect[oa] (para|como)|ideal (para|como)|tamari|energ[eé]tic|saludable|aminoácido|vitamina|omega|potasio|magnesio|saciante|nutritiv/.test(norm(valor))) errores.push('afirmación de salud/marketing o sugerencia de sustituir')
+      if (valor.length < 30 || valor.length > 300) errores.push('longitud ' + valor.length)
+      if (valor.split(/(?<=[.!?])\s+/).filter(Boolean).length > 3) errores.push('demasiadas frases')
+      for (const x of ['mozzarella','pesto','yogur','limon','mantequilla','aceite','vinagre','queso','nata','cacao','miel','azucar','sal','pimienta','ajo','cebolla','leche','harina','huevo','tomate','perejil','soja','canela','vainilla','mermelada','aguacate','platano','fresa','pollo','salmon','atun','arroz','avena','patata','proteina'])
+        if (new RegExp(`\\b${x}(s|es)?\\b`).test(norm(valor)) && !lista.includes(x) && !norm(r.nombre).includes(x) && !norm(r[campo]).includes(x)) errores.push('ingrediente nuevo: ' + x)
+    }
+    props.push({ id: r.id, nombre: r.nombre, campo, antes: r[campo], valor, errores })
+    console.log(errores.length ? '✖' : '✔', r.nombre, '[' + campo + ']', errores.length ? '→ ' + errores.join('; ') : '')
+  }
+  fs.writeFileSync(FICHERO, JSON.stringify(props, null, 1))
+  console.log(`\nválidas: ${props.filter(p => !p.errores.length).length}/${props.length} → ${FICHERO} (nada escrito en la BD)`)
+  process.exit(0)
+}
 const cand = R.filter(r => r.estado !== 'descartada' && (CAMPO === 'tiempo' ? !r.tiempo_prep_min : !r.consejos)).slice(0, LIMITE)
 console.log('candidatas', R.filter(r => r.estado !== 'descartada' && (CAMPO === 'tiempo' ? !r.tiempo_prep_min : !r.consejos)).length, '| esta tanda', cand.length)
 const props = []

@@ -58,6 +58,8 @@ for(const r of R){
       if(r.es_pre_entreno&&cumplePreEntreno({...r,tipo_plato:tipoFinal})&&!ext.includes('pre_entreno')) ext.push('pre_entreno')
       if(r.es_post_entreno&&cumplePostEntreno({...r,tipo_plato:tipoFinal})&&!ext.includes('post_entreno')) ext.push('post_entreno')
       if(ext.length!==base.length) patch.momentos=ext
+      if(r.es_pre_entreno&&!cumplePreEntreno({...r,tipo_plato:tipoFinal})&&!ext.includes('pre_entreno')) patch.es_pre_entreno=false
+      if(r.es_post_entreno&&!cumplePostEntreno({...r,tipo_plato:tipoFinal})&&!ext.includes('post_entreno')) patch.es_post_entreno=false
     }
     if(!(r.objetivos||[]).length){const o=deducirObjetivos(r); if(o.length) patch.objetivos=o}
   }
@@ -69,15 +71,17 @@ for(const k of Object.keys(cnt)) console.log('\n'+k+':\n'+muestra(k))
 
 // ── Avisos (no se cambian) ──
 const av:string[]=[]
+const ACT=R.filter(x=>x.estado!=='descartada')
 const nombres=new Map<string,string[]>(); const urls=new Map<string,string[]>()
-for(const r of R){const k=norm(r.nombre).replace(/[^a-z0-9]/g,''); (nombres.get(k)??nombres.set(k,[]).get(k)!).push(r.nombre); if(r.url_origen){const u=r.url_origen.split('?')[0]; (urls.get(u)??urls.set(u,[]).get(u)!).push(r.nombre)}}
-av.push('## Macros: kcal no cuadran con P/H/G (>15 %)'); for(const r of R) if(r.kcal>50&&Math.abs(r.kcal-(4*r.proteinas+4*r.carbohidratos+9*r.grasas))/r.kcal>0.15) av.push(`- ${r.nombre}: ${Math.round(r.kcal)} kcal vs ${Math.round(4*r.proteinas+4*r.carbohidratos+9*r.grasas)} por macros`)
-av.push('\n## kcal por ración extremas (>1000 o <40)'); for(const r of R) if(r.kcal>1000||(r.kcal>0&&r.kcal<40)) av.push(`- ${r.nombre}: ${Math.round(r.kcal)} kcal, ${r.porciones} raciones`)
-av.push('\n## Ingredientes con más de 1000 g'); for(const r of R) for(const i of ings.get(r.id)||[]) if(i.cantidad_gramos>1000) av.push(`- ${r.nombre}: ${i.nombre_libre} ${i.cantidad_gramos} g`)
-av.push('\n## Menos de 3 ingredientes'); for(const r of R) if((ings.get(r.id)||[]).length<3&&r.estado!=='descartada') av.push(`- ${r.nombre} (${(ings.get(r.id)||[]).length})`)
+for(const r of ACT){const k=norm(r.nombre).replace(/[^a-z0-9]/g,''); (nombres.get(k)??nombres.set(k,[]).get(k)!).push(r.nombre); if(r.url_origen){const u=r.url_origen.split('?')[0]; (urls.get(u)??urls.set(u,[]).get(u)!).push(r.nombre)}}
+av.push('## Macros: kcal no cuadran con P/H/G (>15 %)'); const esperado=(r:any)=>4*r.proteinas+4*Math.max(0,r.carbohidratos-(r.fibra||0))+2*(r.fibra||0)+9*r.grasas // la fibra aporta ~2 kcal/g, no 4
+for(const r of ACT) if(r.kcal>50&&Math.abs(r.kcal-esperado(r))/r.kcal>0.2) av.push(`- ${r.nombre}: ${Math.round(r.kcal)} kcal vs ${Math.round(esperado(r))} por macros (con fibra a 2 kcal/g; pueden ser polialcoholes o alcohol)`)
+av.push('\n## kcal por ración extremas (>1000 o <40)'); for(const r of ACT) if(r.kcal>1000||(r.kcal>0&&r.kcal<40)) av.push(`- ${r.nombre}: ${Math.round(r.kcal)} kcal, ${r.porciones} raciones`)
+av.push('\n## Ingredientes con más de 1000 g'); for(const r of ACT) for(const i of ings.get(r.id)||[]) if(i.cantidad_gramos>1000) av.push(`- ${r.nombre}: ${i.nombre_libre} ${i.cantidad_gramos} g`)
+av.push('\n## Menos de 3 ingredientes'); for(const r of ACT) if((ings.get(r.id)||[]).length<2) av.push(`- ${r.nombre} (${(ings.get(r.id)||[]).length})`)
 av.push('\n## Nombres duplicados'); for(const v of nombres.values()) if(v.length>1) av.push(`- ${v.join(' | ')}`)
 av.push('\n## Mismo reel en varias recetas'); for(const [u,v] of urls) if(v.length>1) av.push(`- ${v.join(' | ')}`)
-av.push('\n## Texto con víspera/carrera/recuperación (regla: títulos genéricos)'); for(const r of R) if(/v[ií]spera|carrera|recuperaci/i.test(r.nombre+' '+(r.descripcion||''))) av.push(`- ${r.nombre}`)
+av.push('\n## Texto con víspera/carrera/recuperación (regla: títulos genéricos)'); for(const r of ACT) if(/v[ií]spera|carrera|recuperaci/i.test(r.nombre+' '+(r.descripcion||''))) av.push(`- ${r.nombre}`)
 av.push('\n## Marcadas pre-entreno pero sin cumplir el criterio (hidratos ≥35 g, grasa ≤15 g, fibra ≤10 g, 180-600 kcal)'); for(const r of R) if(r.estado==='aprobada'&&r.es_pre_entreno&&!cumplePreEntreno(r)) av.push(`- ${r.nombre}`)
 av.push('\n## Marcadas post-entreno pero sin cumplir el criterio (proteína ≥20 g, hidratos ≥25 g, grasa ≤28 g, 180-750 kcal)'); for(const r of R) if(r.estado==='aprobada'&&r.es_post_entreno&&!cumplePostEntreno(r)) av.push(`- ${r.nombre}`)
 const fecha=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-')
