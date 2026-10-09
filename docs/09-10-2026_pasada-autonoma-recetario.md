@@ -32,7 +32,7 @@ Cada cambio guarda copia antes/después en `salidas/copia-*.json` (`copia-campos
 - No se deducen `rendimiento`/`ganancia_muscular` ni `apto_*` clínicos (la lógica clínica real va en `lib/nutricion/reglas-clinicas.ts`).
 - Fotos: 392 recetas activas sin foto (OpenAI sin saldo).
 - Recetas nuevas del importador pueden traer vocabulario deportivo en descripciones/consejos: salen en el informe de avisos y se limpian con `rellenar-campos-ia.mjs --campo=limpiar` (supervisado).
-- ~13 recetas conservan pasos originales que no nombran algún ingrediente (la IA los reescribía de más). Par «Mochi» duplicado, Donuts proteicos (cacao 100 g dudoso, texto original restaurado). Detalle: `salidas/09-10-2026_datos-sospechosos.md`.
+- ~13 recetas conservan pasos originales que no nombran algún ingrediente (la IA los reescribía de más). Alimento «Jamón York» creado al cierre (105 kcal/100 g, estimación; regla en `MAPA`). Par «Mochi» duplicado, Donuts proteicos (cacao 100 g dudoso, texto original restaurado). Detalle: `salidas/09-10-2026_datos-sospechosos.md`.
 
 ## Lecciones técnicas
 1. **launchd + macOS (TCC):** `/bin/bash` sobre scripts de ~/Desktop da «Operation not permitted», y logs en Desktop dan `spawn failed 78`. Usar node y logs en `~/Library/Logs`. Así estaba roto el backup nocturno a GitHub desde junio (arreglado: `_scripts/claude-backup-launcher.mjs`).
