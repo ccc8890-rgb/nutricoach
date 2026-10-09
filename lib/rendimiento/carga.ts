@@ -19,9 +19,11 @@ export interface EntrenoParaCarga {
   fc_media: number | null
   /** Segundos en cada zona de pulso Z1..Z5. */
   tiempo_zona_fc: number[] | null
+  /** Esfuerzo percibido de la sesión (1-10) que anota el atleta; en fuerza y Hyrox el pulso infravalora la carga. */
+  rpe?: number | null
 }
 
-export type MetodoTss = 'ritmo' | 'pulso' | 'duracion'
+export type MetodoTss = 'ritmo' | 'pulso' | 'rpe' | 'duracion'
 
 const TIPOS_CARRERA = ['running', 'track_running', 'treadmill_running', 'trail_running', 'virtual_run']
 /** En cinta la velocidad depende de una calibración que suele fallar: solo se fía del pulso. */
@@ -75,6 +77,11 @@ export function calcularTss(
     candidatos.push({ tss: porZonas, metodo: 'pulso' })
   } else if (e.fc_media && u.fcUmbral) {
     candidatos.push({ tss: tssDe(horas, e.fc_media / u.fcUmbral), metodo: 'pulso' })
+  }
+
+  if (typeof e.rpe === 'number' && Number.isFinite(e.rpe) && e.rpe >= 1 && e.rpe <= 10) {
+    // Intensidad relativa = RPE/10 (RPE 10 ≈ umbral o más): 60 min a RPE 7 ≈ 49 de carga.
+    candidatos.push({ tss: tssDe(horas, e.rpe / 10), metodo: 'rpe' })
   }
 
   // En carrera el ritmo medio infravalora las series con pausas: se toma la mayor de las dos lecturas.

@@ -32,6 +32,16 @@ assert.ok(cinta!.tss < 60, `cinta ${cinta!.tss}`)
 const sin = calcularTss({ tipo: 'strength_training', duracion_s: 3600, velocidadMs: null, fc_media: null, tiempo_zona_fc: null }, u)
 assert.equal(sin?.metodo, 'duracion')
 assert.equal(sin?.tss, 40)
+// Fuerza con RPE: el pulso del gimnasio infravalora y gana el esfuerzo percibido (60 min a RPE 7 ≈ 49)
+const fuerzaRpe = calcularTss({ tipo: 'strength_training', duracion_s: 3600, velocidadMs: null, fc_media: 97, tiempo_zona_fc: null, rpe: 7 }, u)
+assert.equal(fuerzaRpe?.metodo, 'rpe')
+assert.equal(fuerzaRpe?.tss, 49)
+const fuerzaSinRpe = calcularTss({ tipo: 'strength_training', duracion_s: 3600, velocidadMs: null, fc_media: 97, tiempo_zona_fc: null }, u)
+assert.equal(fuerzaSinRpe?.metodo, 'pulso')
+assert.ok(fuerzaSinRpe!.tss < fuerzaRpe!.tss)
+// RPE fuera de rango o nulo se ignora
+assert.equal(calcularTss({ tipo: 'strength_training', duracion_s: 3600, velocidadMs: null, fc_media: null, tiempo_zona_fc: null, rpe: 11 }, u)?.metodo, 'duracion')
+assert.equal(calcularTss({ tipo: 'strength_training', duracion_s: 3600, velocidadMs: null, fc_media: null, tiempo_zona_fc: null, rpe: null }, u)?.metodo, 'duracion')
 assert.equal(calcularTss({ tipo: 'running', duracion_s: 0, velocidadMs: 3, fc_media: 150, tiempo_zona_fc: null }, u), null)
 
 // Curva de forma/fatiga: 100 TSS diarios durante 60 días converge hacia 100 y la fatiga lo hace antes
