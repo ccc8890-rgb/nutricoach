@@ -17,7 +17,7 @@ export default function LiquidDock<T extends string>({ items, activeKey, onChang
 }) {
   return (
     <nav className="cliente-bottom-nav fixed bottom-0 left-0 right-0 z-30" aria-label="Navegación principal">
-      <div className="cliente-bottom-nav-surface max-w-2xl mx-auto flex">
+      <div className="cliente-bottom-nav-surface flex">
         {items.map(({ key, label, icon: Icon }) => {
           const active = activeKey === key
           return (

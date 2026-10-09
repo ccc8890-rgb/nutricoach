@@ -382,7 +382,7 @@
 .cliente-portal-content {
   position: relative;
   z-index: 1;
-  padding-bottom: calc(4.25rem + max(0.15rem, calc(env(safe-area-inset-bottom, 0px) - 0.65rem))) !important;
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 .cliente-portal-shell::before {
@@ -482,26 +482,29 @@
 }
 
 .cliente-bottom-nav {
-  padding: 0 0.625rem max(0.15rem, calc(env(safe-area-inset-bottom, 0px) - 0.65rem));
-  background: transparent !important;
+  padding: 0 0 env(safe-area-inset-bottom, 0px);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--metal-bright) 5%, transparent), transparent 58%),
+    color-mix(in srgb, var(--surface) 88%, transparent) !important;
   border: 0 !important;
+  border-top: 1px solid color-mix(in srgb, var(--metal-bright) 20%, var(--border)) !important;
+  box-shadow:
+    0 -12px 34px color-mix(in srgb, var(--atelier-carbon) 30%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--metal-bright) 10%, transparent);
+  backdrop-filter: blur(24px) saturate(1.08);
+  -webkit-backdrop-filter: blur(24px) saturate(1.08);
   pointer-events: none;
 }
 
 .cliente-bottom-nav-surface {
+  width: 100%;
+  max-width: none;
   overflow: hidden;
   padding: 0;
   pointer-events: auto;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--metal-bright) 5%, transparent), transparent 42%),
-    color-mix(in srgb, var(--surface) 82%, transparent);
-  border: 1px solid color-mix(in srgb, var(--metal-bright) 20%, var(--border));
-  border-radius: 0.65rem;
-  box-shadow:
-    0 14px 38px color-mix(in srgb, var(--atelier-carbon) 38%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--metal-bright) 15%, transparent);
-  backdrop-filter: blur(24px) saturate(1.08);
-  -webkit-backdrop-filter: blur(24px) saturate(1.08);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 .cliente-bottom-item {
@@ -535,11 +538,11 @@
 
 .cliente-bottom-active-surface {
   position: absolute;
-  inset: auto 1rem 0;
+  inset: 0 1rem auto;
   height: 2px;
   z-index: 0;
   background: linear-gradient(90deg, var(--metal-dark), var(--metal-bright) 52%, var(--metal-mid));
-  box-shadow: 0 -4px 14px color-mix(in srgb, var(--metal-bright) 20%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--metal-bright) 20%, transparent);
 }
 
 .cliente-bottom-item.is-active {
@@ -584,7 +587,6 @@
 }
 
 @media (max-width: 370px) {
-  .cliente-bottom-nav { padding-inline: 0.35rem; }
   .cliente-bottom-item { padding-inline: 0.45rem; }
   .cliente-bottom-label { font-size: 0.56rem; }
   .diet-day { font-size: 0.68rem; }
