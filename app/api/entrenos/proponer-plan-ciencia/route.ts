@@ -6,6 +6,7 @@ import { obtenerInformeVigente } from '@/lib/inteligencia-clinica'
 import { siguienteFaseBloque, type FaseBloque } from '@/lib/entrenos/bloques'
 import type { PerfilEntrenoCliente } from '@/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { bloqueEjercicioGenerado } from '@/lib/training/generated-session-blocks'
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com/v1/chat/completions'
 const MODEL = 'deepseek-chat'
@@ -295,7 +296,11 @@ LO QUE DEBES HACER:
 REGLAS ABSOLUTAS:
 - Nombres de ejercicios en español (Sentadilla, Press Banca, Peso Muerto, Remo con Barra...)
 - RPE nunca > 9 en semanas 1-2 (adaptación inicial)
-- Siempre incluir calentamiento implícito en notas del primer ejercicio
+- Crear el calentamiento como ejercicios reales y específicos dentro del bloque "calentamiento", no esconderlo en notas
+- Usar "movilidad" solo si prepara el patrón del día, existe una limitación relevante o la sesión es de recuperación
+- Usar "pliometria" solo si objetivo, nivel, fatiga y lesiones permiten trabajo de potencia o economía de carrera
+- Reservar "principal" para el estímulo prioritario y "accesorios" para complementos que no compitan con él
+- Crear "vuelta_calma" cuando aporte valor por la intensidad o el tipo de trabajo, nunca como relleno
 - Deload explícito: al menos una sesión de recuperación activa por semana
 - Las notas de cada ejercicio deben decir el POR QUÉ, no solo el cómo
 
@@ -363,6 +368,7 @@ ${instruccionDuracion}
       "ejercicios": [
         {
           "nombre": "string — nombre español exacto",
+          "bloque": "calentamiento|movilidad|pliometria|principal|accesorios|vuelta_calma",
           "series": number,
           "repeticiones": "string — '8-10' o '30s' o '400m' o '3x5min'",
           "descanso_segundos": number,
@@ -479,6 +485,7 @@ ${instruccionDuracion}
             await sb.from('sesion_ejercicios').insert({
               sesion_id: nuevaSesion.id,
               ejercicio_id: ejercicioId,
+              bloque: bloqueEjercicioGenerado(ej.bloque),
               series: typeof ej.series === 'number' ? ej.series : null,
               repeticiones: ej.repeticiones != null ? String(ej.repeticiones) : null,
               descanso_segundos: typeof ej.descanso_segundos === 'number' ? ej.descanso_segundos : null,
