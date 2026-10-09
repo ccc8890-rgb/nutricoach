@@ -37,6 +37,8 @@ export interface EjercicioCard {
 interface Props {
   ejercicios: EjercicioCard[]
   onEjercicioComplete: (ejId: string, sets: SetData[]) => void
+  /** Si se indica, el progreso se guarda en el dispositivo y se recupera al volver a abrir la sesión. */
+  borradorKey?: string
   onTodosCompletos: (setsMap: Record<string, SetData[]>, meta?: { esfuerzo_percibido: number; notas: string; duracion_sesion_s: number }) => void
 }
 
@@ -56,11 +58,11 @@ function getModo(tipo?: string | null, nombre?: string | null): 'fuerza' | 'card
   return 'fuerza'
 }
 
-export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTodosCompletos }: Props) {
+export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTodosCompletos, borradorKey }: Props) {
   const inicioRef = useRef(Date.now())
   const [ejIdx, setEjIdx] = useState(0)
-  const [setsMap, setSetsMap] = useState<Record<string, SetData[]>>(() =>
-    Object.fromEntries(
+  const [setsMap, setSetsMap] = useState<Record<string, SetData[]>>(() => {
+    const vacio: Record<string, SetData[]> = Object.fromEntries(
       ejercicios.map(e => [
         e.id,
         getModo(e.tipo, e.nombre) === 'cardio'
@@ -68,7 +70,24 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
           : Array.from({ length: e.series }, () => ({ kg: 0, reps: 0, rpe: 7, hecho: false })),
       ])
     )
-  )
+    if (!borradorKey || typeof window === 'undefined') return vacio
+    try {
+      const guardado = JSON.parse(window.localStorage.getItem(borradorKey) ?? 'null') as Record<string, SetData[]> | null
+      if (!guardado) return vacio
+      // Solo se aprovecha lo guardado si encaja con los ejercicios y series actuales
+      return Object.fromEntries(
+        Object.entries(vacio).map(([id, base]) => {
+          const previo = guardado[id]
+          return [id, Array.isArray(previo) && previo.length === base.length ? previo : base]
+        })
+      )
+    } catch { return vacio }
+  })
+
+  useEffect(() => {
+    if (!borradorKey) return
+    try { window.localStorage.setItem(borradorKey, JSON.stringify(setsMap)) } catch { /* sin almacenamiento */ }
+  }, [borradorKey, setsMap])
   const [setActivo, setSetActivo] = useState<{ ejId: string; setIdx: number } | null>(null)
   const [demoAbierto, setDemoAbierto] = useState(false)
   const [restLeft, setRestLeft] = useState(0)
@@ -426,7 +445,11 @@ export default function SesionCardMobile({ ejercicios, onEjercicioComplete, onTo
               return (
                 <button
                   key={i}
-                  onClick={() => { if (!set.hecho) setSetActivo({ ejId: ej.id, setIdx: i }) }}
+                  onClick={() => {
+                    if (!set.hecho) { setSetActivo({ ejId: ej.id, setIdx: i }); return }
+                    // Tocar una serie hecha la desmarca (conserva kg y reps por si se marcó sin querer)
+                    setSetsMap(prev => ({ ...prev, [ej.id]: prev[ej.id].map((x, k) => k === i ? { ...x, hecho: false } : x) }))
+                  }}
                   className="rounded-xl py-3 flex flex-col items-center justify-center transition-all active:scale-[0.98]"
                   style={{
                     background: set.hecho ? 'var(--semantic-active-bg)' : isActive ? 'var(--semantic-info-bg)' : 'var(--bg)',

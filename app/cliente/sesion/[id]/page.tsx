@@ -160,6 +160,7 @@ export default function EjecucionSesionPage() {
       })
       const data = await res.json().catch(() => ({ ok: false, error: 'Error al guardar la sesión' }))
       if (data.ok) {
+        try { window.localStorage.removeItem(`sesion-borrador:${sesion.id}`) } catch { /* sin almacenamiento */ }
         setPrsDetectados(data.prs ?? [])
         setGuardadoOk(true)
       } else {
@@ -400,6 +401,7 @@ export default function EjecucionSesionPage() {
           ) : (
             <SesionCardMobile
               ejercicios={ejerciciosCard}
+              borradorKey={`sesion-borrador:${sesion.id}`}
               onEjercicioComplete={() => {}}
               onTodosCompletos={registrarSesion}
             />
