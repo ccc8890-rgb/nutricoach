@@ -133,6 +133,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
     const [moverId, setMoverId] = useState<string | null>(null)
     const [seleccionadaId, setSeleccionadaId] = useState<string | null>(null)
     const [detalles, setDetalles] = useState<Record<string, EjercicioDetalle[] | 'cargando'>>({})
+    const [extras, setExtras] = useState<Record<string, ExtrasSesion | null>>({})
     const { addToast } = useToast()
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
 
