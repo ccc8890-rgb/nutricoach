@@ -13,6 +13,10 @@ interface Respuesta {
   base: { vdot: number; cargaSemanalActual: number; kmSemanaActual: number; tiradaMaxKm: number }
 }
 
+interface ItemPrev { tipo: string; titulo: string; estado: 'aplicable' | 'aplazada' | 'sin_sesion' | 'invalida' | 'sin_cambios'; motivo?: string; sesionNombre?: string; diaSemana?: string; actual: string[]; nuevo: string[]; distanciaActualKm: number | null; distanciaNuevaKm: number | null }
+interface Prev { semana: number; items: ItemPrev[]; log: { id: string; at: string; semana: number }[] }
+const ESTADO_ITEM: Record<ItemPrev['estado'], string> = { aplicable: 'Se aplicará', aplazada: 'Aplazada', sin_sesion: 'Sin sesión', invalida: 'No válida', sin_cambios: 'Ya está' }
+
 const DISTANCIAS = [{ m: 5000, t: '5 km' }, { m: 10000, t: '10 km' }, { m: 21097, t: 'Media maratón' }, { m: 42195, t: 'Maratón' }]
 const FASES: Record<string, string> = { base: 'Base', construccion: 'Construcción', especifica: 'Específica', taper: 'Puesta a punto', carrera: 'Carrera' }
 const COLOR_FASE: Record<string, string> = { base: '#8A9AB8', construccion: '#5B8DEF', especifica: '#C8A96A', taper: '#6AAF85', carrera: '#E0557A' }
@@ -44,6 +48,9 @@ export default function PlanObjetivo({ clienteId }: { clienteId: string }) {
   const [error, setError] = useState<string | null>(null)
   const [res, setRes] = useState<Respuesta | null>(null)
   const [abierta, setAbierta] = useState<number | null>(null)
+  const [prev, setPrev] = useState<Prev | null>(null)
+  const [trabajando, setTrabajando] = useState(false)
+  const [aviso, setAviso] = useState<string | null>(null)
 
   async function calcular() {
     const s = parsearTiempo(tiempo)
@@ -57,6 +64,42 @@ export default function PlanObjetivo({ clienteId }: { clienteId: string }) {
     } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo calcular') } finally { setCargando(false) }
   }
 
+  async function llamar(cuerpo: Record<string, unknown>) {
+    const t = parsearTiempo(tiempo)
+    const r = await fetch(`/api/clientes/${clienteId}/rendimiento/plan-objetivo/semana`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ distancia_m: distancia, tiempo_s: t, fecha, ...cuerpo }),
+    })
+    const j = await r.json().catch(() => ({}))
+    if (!r.ok) throw new Error(j.error ?? 'No se pudo completar')
+    return j
+  }
+
+  async function verCambios(semana: number) {
+    setTrabajando(true); setError(null); setAviso(null)
+    try { setPrev(await llamar({ accion: 'previsualizar', semana })) } catch (e) { setError(e instanceof Error ? e.message : 'Error'); setPrev(null) } finally { setTrabajando(false) }
+  }
+
+  async function aplicar(semana: number) {
+    if (!window.confirm(`¿Aplicar la semana ${semana} a las sesiones de carrera del plan y enviarlas al reloj? Podrás deshacerlo.`)) return
+    setTrabajando(true); setError(null); setAviso(null)
+    try {
+      const j = await llamar({ accion: 'aplicar', semana })
+      setAviso(`Semana ${semana} aplicada: ${j.aplicadas.map((x: { sesion: string; garmin: string }) => `${x.sesion} (${x.garmin})`).join('; ')}.${j.omitidas ? ` ${j.omitidas} sesión(es) no se tocaron.` : ''}`)
+      setPrev(await llamar({ accion: 'previsualizar', semana }))
+    } catch (e) { setError(e instanceof Error ? e.message : 'Error') } finally { setTrabajando(false) }
+  }
+
+  async function deshacer(logId: string, semana: number) {
+    if (!window.confirm('¿Deshacer este cambio y volver a las sesiones anteriores? Se reenviarán al reloj.')) return
+    setTrabajando(true); setError(null); setAviso(null)
+    try {
+      const j = await llamar({ accion: 'deshacer', logId })
+      setAviso(`Cambio deshecho: ${j.restauradas} sesión(es) restaurada(s).`)
+      setPrev(await llamar({ accion: 'previsualizar', semana }))
+    } catch (e) { setError(e instanceof Error ? e.message : 'Error') } finally { setTrabajando(false) }
+  }
+
   const maxTss = useMemo(() => Math.max(1, ...(res?.plan.semanas.map(s => s.tssObjetivo) ?? [1])), [res])
   const v = res?.plan.viabilidad
 
@@ -64,7 +107,7 @@ export default function PlanObjetivo({ clienteId }: { clienteId: string }) {
     <section className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Plan hacia un objetivo (simulador)</h3>
       <p className="mb-3 mt-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>
-        Prueba una carrera y mira si es realista, qué fases tendría y cuánta carga cada semana. Es solo una simulación: no guarda nada ni cambia el plan.
+        Prueba una carrera y mira si es realista, qué fases tendría y cuánta carga cada semana. Calcular no guarda nada; solo si pulsas «Aplicar» en una semana se cambian las sesiones de carrera del plan (con vista previa y deshacer).
       </p>
 
       <div className="grid gap-2 sm:grid-cols-4">
@@ -86,6 +129,7 @@ export default function PlanObjetivo({ clienteId }: { clienteId: string }) {
         </div>
       </div>
       {error && <p className="mt-2 text-xs" style={{ color: '#E0557A' }}>{error}</p>}
+      {aviso && <p className="mt-2 text-xs" style={{ color: 'var(--text-secondary)' }}>{aviso}</p>}
 
       {res && v && (
         <div className="mt-4 space-y-4">
@@ -112,6 +156,39 @@ export default function PlanObjetivo({ clienteId }: { clienteId: string }) {
                 </button>
                 {abierta === i && (
                   <div className="space-y-2 border-t p-3" style={{ borderColor: 'var(--border-light)' }}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button disabled={trabajando} onClick={() => verCambios(s.n)} className="rounded-md px-2.5 py-1 text-xs font-medium disabled:opacity-60" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-strong)', color: 'var(--text)' }}>
+                        {trabajando ? 'Cargando…' : 'Ver cambios en mi plan'}
+                      </button>
+                      <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Solo se pueden aplicar las semanas que empiezan en los próximos 7 días.</span>
+                    </div>
+                    {prev && prev.semana === s.n && (
+                      <div className="space-y-2 rounded-md p-2.5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                        {prev.items.map(it => (
+                          <div key={it.tipo} className="text-xs">
+                            <p className="font-medium" style={{ color: 'var(--text)' }}>
+                              {it.sesionNombre ?? 'Sin sesión'}{it.diaSemana ? ` (${it.diaSemana})` : ''} → {it.titulo}
+                              <span className="ml-2 rounded-full px-2 py-0.5 text-[10px]" style={{ border: `1px solid ${it.estado === 'aplicable' ? '#6AAF85' : it.estado === 'invalida' ? '#E0557A' : 'var(--border-strong)'}`, color: it.estado === 'aplicable' ? '#6AAF85' : it.estado === 'invalida' ? '#E0557A' : 'var(--text-muted)' }}>{ESTADO_ITEM[it.estado]}</span>
+                            </p>
+                            {it.motivo && <p style={{ color: 'var(--text-muted)' }}>{it.motivo}</p>}
+                            {it.estado === 'aplicable' && (
+                              <div className="mt-1 grid gap-2 sm:grid-cols-2" style={{ color: 'var(--text-secondary)' }}>
+                                <div><p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Ahora{it.distanciaActualKm ? ` · ${it.distanciaActualKm} km` : ''}</p>{it.actual.map((l, k) => <p key={k}>{l}</p>)}</div>
+                                <div><p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Propuesto{it.distanciaNuevaKm ? ` · ${it.distanciaNuevaKm} km` : ''}</p>{it.nuevo.map((l, k) => <p key={k} style={{ color: 'var(--text)' }}>{l}</p>)}</div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        <div className="flex flex-wrap items-center gap-2 border-t pt-2" style={{ borderColor: 'var(--border-light)' }}>
+                          {prev.items.some(i => i.estado === 'aplicable') && (
+                            <button disabled={trabajando} onClick={() => aplicar(s.n)} className="rounded-md px-2.5 py-1 text-xs font-medium disabled:opacity-60" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-strong)', color: 'var(--text)' }}>Aplicar al plan y enviar al reloj</button>
+                          )}
+                          {prev.log.filter(l => l.semana === s.n).map(l => (
+                            <button key={l.id} disabled={trabajando} onClick={() => deshacer(l.id, s.n)} className="rounded-md px-2.5 py-1 text-xs disabled:opacity-60" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Deshacer lo aplicado el {new Date(l.at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {s.claves.map(c => (
                       <div key={c.tipo + c.titulo}>
                         <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{c.titulo} <span className="font-normal tabular-nums" style={{ color: 'var(--text-muted)' }}>· {c.distanciaKm} km</span></p>

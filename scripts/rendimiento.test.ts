@@ -311,3 +311,31 @@ assert.ok('error' in (generarPlan({ ...entradaPlan, objetivo: { ...entradaPlan.o
 const mar = generarPlan({ ...entradaPlan, objetivo: { distancia_m: 42195, tiempo_s: 12600, fecha: '2027-02-21' } }) as PlanObjetivo
 assert.equal(mar.semanas.filter(s => s.fase === 'taper' || s.fase === 'carrera').length, 3)
 console.log('plan-objetivo: OK')
+
+// ── Aplicar semana ──
+import { asignarSesiones, estadoDeItem } from '../lib/rendimiento/aplicar-semana'
+const sesCarlos = [
+  { nombre: 'Carrera: Tirada Larga Aeróbica Z2', dia_semana: 'Domingo' },
+  { nombre: 'Carrera: Tempo Run en Descarga', dia_semana: 'Jueves' },
+  { nombre: 'Carrera: Series Cortas en Descarga', dia_semana: 'Lunes' },
+]
+const asig = asignarSesiones(sesCarlos)
+assert.equal(asig.calidad1?.dia_semana, 'Lunes') // primera calidad = la del lunes
+assert.equal(asig.calidad2?.dia_semana, 'Jueves')
+assert.equal(asig.tirada?.dia_semana, 'Domingo')
+// tras renombrar (ya no se llaman Series/Tempo) la asignación se mantiene
+const renombradas = [{ nombre: 'Carrera: Tirada larga 13 km', dia_semana: 'Domingo' }, { nombre: 'Carrera: Rodaje con progresiones', dia_semana: 'Jueves' }, { nombre: 'Carrera: Tempo en bloques 2×8 min', dia_semana: 'Lunes' }]
+assert.equal(asignarSesiones(renombradas).calidad1?.dia_semana, 'Lunes')
+assert.equal(asignarSesiones(renombradas).tirada?.nombre, 'Carrera: Tirada larga 13 km')
+// sin nombre de tirada, la del último día
+assert.equal(asignarSesiones([{ nombre: 'A', dia_semana: 'Martes' }, { nombre: 'B', dia_semana: 'Jueves' }, { nombre: 'C', dia_semana: 'Sabado' }]).tirada?.nombre, 'C')
+assert.equal(asignarSesiones([]).tirada, undefined)
+// estado de cada sesión clave
+const ok = { ok: true }
+assert.equal(estadoDeItem({ fechaSemana: '2026-10-12', proxima: '2026-10-12', validacion: ok, identico: false }).estado, 'aplicable') // el lunes de la semana 1, hoy lunes
+assert.equal(estadoDeItem({ fechaSemana: '2026-10-12', proxima: '2026-10-15', validacion: ok, identico: false }).estado, 'aplicable') // la próxima es posterior al inicio
+assert.equal(estadoDeItem({ fechaSemana: '2026-10-18', proxima: '2026-10-11', validacion: ok, identico: false }).estado, 'aplazada') // el domingo anterior aún pertenece a la semana vieja
+assert.equal(estadoDeItem({ fechaSemana: '2026-10-12', proxima: '2026-10-12', validacion: { ok: false, error: 'x' }, identico: false }).estado, 'invalida')
+assert.equal(estadoDeItem({ fechaSemana: '2026-10-12', proxima: '2026-10-12', validacion: ok, identico: true }).estado, 'sin_cambios')
+assert.equal(estadoDeItem({ fechaSemana: null, proxima: null, validacion: ok, identico: false }).estado, 'invalida')
+console.log('aplicar-semana: OK')
