@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 
 export type TechnicalRowProps = {
-  index: string
+  index: ReactNode
+  interactiveIndex?: boolean
   label: ReactNode
   meta?: ReactNode
   detail?: ReactNode
@@ -10,10 +11,10 @@ export type TechnicalRowProps = {
   className?: string
 }
 
-export default function TechnicalRow({ index, label, meta, detail, action, children, className = '' }: TechnicalRowProps) {
+export default function TechnicalRow({ index, interactiveIndex = false, label, meta, detail, action, children, className = '' }: TechnicalRowProps) {
   return (
     <article className={`technical-row ${className}`.trim()}>
-      <span className="technical-row__index" aria-hidden="true">{index}</span>
+      <div className="technical-row__index" aria-hidden={interactiveIndex ? undefined : true}>{index}</div>
       <div className="technical-row__content">
         <div className="technical-row__heading">
           <div>

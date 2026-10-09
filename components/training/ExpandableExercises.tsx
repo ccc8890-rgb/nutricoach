@@ -1,8 +1,9 @@
 'use client'
-import { useState } from 'react'
-import { ChevronDown, Clock, Repeat } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Check, ChevronDown, Clock, Repeat } from 'lucide-react'
 import { TechnicalRow } from '@/components/PortalCliente/editorial'
 import { descansoVisible } from '@/lib/entrenos/descanso-visible'
+import { parseExerciseChecklist, toggleExerciseChecklist } from '@/lib/training/exercise-checklist'
 
 export interface EjercicioDetalle {
   id: string
@@ -18,8 +19,25 @@ export interface EjercicioDetalle {
 
 /** Fila de ejercicio: nombre + series/reps/descanso siempre visibles,
  * la explicación (RPE, técnica, contexto) se despliega solo si se toca. */
-export default function ListaEjerciciosExpandible({ ejercicios }: { ejercicios: EjercicioDetalle[] }) {
+export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: { ejercicios: EjercicioDetalle[]; checklistKey?: string }) {
   const [abierto, setAbierto] = useState<string | null>(null)
+  const [completados, setCompletados] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!checklistKey || typeof window === 'undefined') return
+    setCompletados(parseExerciseChecklist(window.localStorage.getItem(checklistKey), ejercicios.map(ej => ej.id)))
+  }, [checklistKey, ejercicios])
+
+  function toggleCompletado(ejercicioId: string) {
+    if (!checklistKey || typeof window === 'undefined') return
+    setCompletados(current => {
+      const marcando = !current.has(ejercicioId)
+      const next = toggleExerciseChecklist(current, ejercicioId)
+      window.localStorage.setItem(checklistKey, JSON.stringify([...next]))
+      if (marcando && navigator.vibrate) navigator.vibrate(24)
+      return next
+    })
+  }
 
   if (ejercicios.length === 0) {
     return <p className="text-xs py-2" style={{ color: 'var(--text-muted)' }}>Sin ejercicios cargados.</p>
@@ -30,8 +48,27 @@ export default function ListaEjerciciosExpandible({ ejercicios }: { ejercicios: 
       {ejercicios.map((ej, index) => {
         const open = abierto === ej.id
         const detalle = ej.notas || ej.contexto_ia
+        const completado = completados.has(ej.id)
+        const nombre = ej.ejercicio?.nombre ?? 'Ejercicio'
         return (
-          <TechnicalRow key={ej.id} index={String(index + 1).padStart(2, '0')} label={ej.ejercicio?.nombre ?? 'Ejercicio'} meta={ej.series ? `${ej.series} × ${ej.repeticiones ?? '-'}` : undefined} className="training-exercise-row">
+          <TechnicalRow
+            key={ej.id}
+            index={checklistKey ? (
+              <button
+                type="button"
+                className={`training-exercise-check ${completado ? 'is-checked' : ''}`}
+                onClick={() => toggleCompletado(ej.id)}
+                aria-label={`${completado ? 'Desmarcar' : 'Marcar'} ${nombre} como completado`}
+                aria-pressed={completado}
+              >
+                {completado ? <Check size={15} strokeWidth={2.5} aria-hidden="true" /> : null}
+              </button>
+            ) : String(index + 1).padStart(2, '0')}
+            interactiveIndex={Boolean(checklistKey)}
+            label={nombre}
+            meta={ej.series ? `${ej.series} × ${ej.repeticiones ?? '-'}` : undefined}
+            className={`training-exercise-row ${completado ? 'is-checked' : ''}`}
+          >
             <button
               type="button"
               onClick={() => detalle && setAbierto(open ? null : ej.id)}

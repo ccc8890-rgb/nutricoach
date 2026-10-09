@@ -9,6 +9,7 @@ import EntrenoKanban from './EntrenoKanban'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { EditorialMasthead, IndustrialTabs } from '@/components/PortalCliente/editorial'
+import { buildExerciseChecklistKey } from '@/lib/training/exercise-checklist'
 
 interface SesionSemana {
   id: string
@@ -102,7 +103,10 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
               ) : (
                 <>
                   {extras[sesionHoy.id] && <PasosSesion sesionId={sesionHoy.id} {...extras[sesionHoy.id]!} />}
-                  <ListaEjerciciosExpandible ejercicios={(detalles[sesionHoy.id] as EjercicioDetalle[]) ?? []} />
+                  <ListaEjerciciosExpandible
+                    ejercicios={(detalles[sesionHoy.id] as EjercicioDetalle[]) ?? []}
+                    checklistKey={buildExerciseChecklistKey(sesionHoy.id)}
+                  />
                 </>
               )}
             </div>
