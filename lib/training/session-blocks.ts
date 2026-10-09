@@ -51,3 +51,7 @@ export function esInicioDeBloque(items: Array<{ bloque?: unknown }>, index: numb
   if (index < 0 || index >= items.length) return false
   return normalizarBloqueSesion(items[index].bloque) !== normalizarBloqueSesion(items[index - 1].bloque)
 }
+
+export function ordenarEjerciciosParaEjecucion<T extends { orden: number; bloque?: unknown }>(items: T[]) {
+  return agruparEjerciciosPorBloque(items).flatMap(grupo => grupo.items)
+}

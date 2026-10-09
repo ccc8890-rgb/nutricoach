@@ -10,7 +10,7 @@ import { crearSesionGuidance } from '@/lib/training/workspace'
 import PasosSesion from '@/components/training/PasosSesion'
 import type { Ritmos } from '@/lib/entrenos/ritmos'
 import { descansoRelevante } from '@/lib/entrenos/descanso-visible'
-import { normalizarBloqueSesion } from '@/lib/training/session-blocks'
+import { normalizarBloqueSesion, ordenarEjerciciosParaEjecucion } from '@/lib/training/session-blocks'
 
 type Modo = 'registrar' | 'solo-ver'
 
@@ -101,8 +101,9 @@ export default function EjecucionSesionPage() {
     if (!json?.sesion) { setLoading(false); return }
 
     const { sesion: data } = json
-    const ejerciciosSorted = ((data.ejercicios as unknown as EjercicioSesion[]) ?? [])
-      .sort((a: EjercicioSesion, b: EjercicioSesion) => a.orden - b.orden)
+    const ejerciciosSorted = ordenarEjerciciosParaEjecucion(
+      (data.ejercicios as unknown as EjercicioSesion[]) ?? [],
+    )
 
     // Pre-rellenar historial de pesos
     const ejercicioIds = ejerciciosSorted

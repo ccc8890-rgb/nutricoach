@@ -68,6 +68,7 @@ interface PlanTimelineProps {
   onToggleContextoIA: (sesionId: string, ejercicioId: string) => void
   onUpdateEjercicio?: (sesionEjercicioId: string, field: 'instruccion_ejercicio', value: string) => Promise<void>
   onUpdateBloque: (sesionEjercicioId: string, bloque: TipoBloqueSesion) => Promise<void>
+  savingBlockIds: Set<string>
   sesionesDisponibles: { id: string; nombre: string; dia_semana: string; semana: number }[]
 }
 
@@ -78,6 +79,7 @@ function SortableEjercicioCard({
   onToggleIA,
   onUpdateEjercicio,
   onUpdateBloque,
+  blockSaving,
 }: {
   ej: EjercicioTimeline
   sesionId: string
@@ -85,6 +87,7 @@ function SortableEjercicioCard({
   onToggleIA: () => void
   onUpdateEjercicio?: (id: string, field: 'instruccion_ejercicio', value: string) => Promise<void>
   onUpdateBloque: (id: string, bloque: TipoBloqueSesion) => Promise<void>
+  blockSaving: boolean
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ej.id })
   const [expanded, setExpanded] = useState(false)
@@ -148,7 +151,11 @@ function SortableEjercicioCard({
           </span>
         )}
 
-        <ExerciseBlockSelect value={ej.bloque} onChange={bloque => onUpdateBloque(ej.id, bloque)} />
+        <ExerciseBlockSelect
+          value={ej.bloque}
+          disabled={blockSaving}
+          onChange={bloque => onUpdateBloque(ej.id, bloque)}
+        />
 
         {onUpdateEjercicio && (
           <button
@@ -217,7 +224,7 @@ function SortableEjercicioCard({
   )
 }
 
-export default function PlanTimeline({ semanas, selectedSesionId, onReorder, onMover, onToggleContextoIA, onUpdateEjercicio, onUpdateBloque, sesionesDisponibles }: PlanTimelineProps) {
+export default function PlanTimeline({ semanas, selectedSesionId, onReorder, onMover, onToggleContextoIA, onUpdateEjercicio, onUpdateBloque, savingBlockIds, sesionesDisponibles }: PlanTimelineProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
   const [moverInfo, setMoverInfo] = useState<MoverDestino | null>(null)
 
@@ -284,6 +291,7 @@ export default function PlanTimeline({ semanas, selectedSesionId, onReorder, onM
                           onToggleIA={() => onToggleContextoIA(sesion.id, ej.id)}
                           onUpdateEjercicio={onUpdateEjercicio}
                           onUpdateBloque={onUpdateBloque}
+                          blockSaving={savingBlockIds.has(ej.id)}
                         />
                       ))}
                     </SortableContext>

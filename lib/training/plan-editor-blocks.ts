@@ -28,3 +28,20 @@ export function combinarOrdenBloque<T extends { id: string; orden: number; bloqu
     .map(item => normalizarBloqueSesion(item.bloque) === bloque ? sustitutos[cursor++] ?? item : item)
     .map((item, orden) => ({ ...item, orden }))
 }
+
+export function crearGuardiaActualizacionBloque() {
+  const activos = new Set<string>()
+  return {
+    iniciar(id: string) {
+      if (activos.has(id)) return false
+      activos.add(id)
+      return true
+    },
+    finalizar(id: string) {
+      activos.delete(id)
+    },
+    estaGuardando(id: string) {
+      return activos.has(id)
+    },
+  }
+}

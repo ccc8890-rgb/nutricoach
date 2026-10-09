@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { combinarOrdenBloque, crearGruposEditorSesion } from '../lib/training/plan-editor-blocks'
+import { combinarOrdenBloque, crearGruposEditorSesion, crearGuardiaActualizacionBloque } from '../lib/training/plan-editor-blocks'
 
 const grupos = crearGruposEditorSesion([
   { id: 'principal-2', orden: 4, bloque: 'principal' },
@@ -21,5 +21,12 @@ const reordenados = combinarOrdenBloque(
 )
 
 assert.deepEqual(reordenados.map(item => item.id), ['warm', 'main-b', 'main-a'])
+
+const guardia = crearGuardiaActualizacionBloque()
+assert.equal(guardia.iniciar('exercise-a'), true)
+assert.equal(guardia.iniciar('exercise-a'), false)
+assert.equal(guardia.estaGuardando('exercise-a'), true)
+guardia.finalizar('exercise-a')
+assert.equal(guardia.iniciar('exercise-a'), true)
 
 console.log('✓ agrupación del editor de entrenamiento')

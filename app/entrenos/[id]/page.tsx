@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
@@ -10,6 +10,7 @@ import PlanTimeline, {
   type EjercicioTimeline,
 } from '@/components/training/PlanTimeline'
 import { normalizarBloqueSesion, type TipoBloqueSesion } from '@/lib/training/session-blocks'
+import { crearGuardiaActualizacionBloque } from '@/lib/training/plan-editor-blocks'
 
 interface PlanInfo {
   id: string
@@ -110,6 +111,8 @@ export default function PlanEditorPage() {
   const [selectedSesionId, setSelectedSesionId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [blockError, setBlockError] = useState<string | null>(null)
+  const [savingBlockIds, setSavingBlockIds] = useState<Set<string>>(new Set())
+  const blockUpdateGuardRef = useRef(crearGuardiaActualizacionBloque())
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/entrenos/${id}`)
@@ -195,15 +198,20 @@ export default function PlanEditorPage() {
   }
 
   async function handleUpdateBloque(sesionEjercicioId: string, bloque: TipoBloqueSesion) {
-    let anterior: TipoBloqueSesion | null = null
+    const guardia = blockUpdateGuardRef.current
+    if (!guardia.iniciar(sesionEjercicioId)) return
+    const anterior = semanas
+      .flatMap(sem => sem.sesiones)
+      .flatMap(ses => ses.ejercicios)
+      .find(ej => ej.id === sesionEjercicioId)?.bloque ?? 'principal'
     setBlockError(null)
+    setSavingBlockIds(ids => new Set(ids).add(sesionEjercicioId))
     setSemanas(prev => prev.map(sem => ({
       ...sem,
       sesiones: sem.sesiones.map(ses => ({
         ...ses,
         ejercicios: ses.ejercicios.map(ej => {
           if (ej.id !== sesionEjercicioId) return ej
-          anterior = ej.bloque
           return { ...ej, bloque }
         }),
       })),
@@ -218,19 +226,23 @@ export default function PlanEditorPage() {
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data.error ?? 'No se pudo cambiar el bloque')
     } catch (error) {
-      if (anterior) {
-        const bloqueAnterior = anterior
-        setSemanas(prev => prev.map(sem => ({
-          ...sem,
-          sesiones: sem.sesiones.map(ses => ({
-            ...ses,
-            ejercicios: ses.ejercicios.map(ej => ej.id === sesionEjercicioId
-              ? { ...ej, bloque: bloqueAnterior }
-              : ej),
-          })),
-        })))
-      }
+      setSemanas(prev => prev.map(sem => ({
+        ...sem,
+        sesiones: sem.sesiones.map(ses => ({
+          ...ses,
+          ejercicios: ses.ejercicios.map(ej => ej.id === sesionEjercicioId
+            ? { ...ej, bloque: anterior }
+            : ej),
+        })),
+      })))
       setBlockError(error instanceof Error ? error.message : 'No se pudo cambiar el bloque')
+    } finally {
+      guardia.finalizar(sesionEjercicioId)
+      setSavingBlockIds(ids => {
+        const next = new Set(ids)
+        next.delete(sesionEjercicioId)
+        return next
+      })
     }
   }
 
@@ -332,6 +344,7 @@ export default function PlanEditorPage() {
               onToggleContextoIA={handleToggleContextoIA}
               onUpdateEjercicio={handleUpdateEjercicio}
               onUpdateBloque={handleUpdateBloque}
+              savingBlockIds={savingBlockIds}
               sesionesDisponibles={sesionesFlat}
             />
           )}
