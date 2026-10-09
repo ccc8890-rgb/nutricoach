@@ -225,7 +225,8 @@
 .training-week-day__label span { font: 650 0.72rem/1 var(--font-geist-mono), ui-monospace, monospace; }
 .training-week-day__label small { color: var(--text-muted); font: 550 0.48rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; }
 .training-week-day__content { min-width: 0; }
-.training-week-rest { display: flex; min-height: 3.2rem; align-items: center; padding: 0 0.9rem; color: var(--text-disabled); font-size: 0.68rem; }
+.training-week-rest { display: flex; min-height: 3.2rem; align-items: center; gap: 0.5rem; padding: 0 0.9rem; color: var(--text-secondary); font: 600 0.63rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+.training-week-rest::before { width: 0.8rem; height: 1px; flex: none; background: var(--metal-mid); content: ''; }
 .training-week-session { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; background: color-mix(in srgb, var(--surface) 74%, transparent); touch-action: pan-y; }
 .training-week-session + .training-week-session { border-top: 1px solid var(--editorial-rule); }
 .training-week-session.is-selected { background: color-mix(in srgb, var(--metal-bright) 8%, var(--surface)); box-shadow: inset 2px 0 0 var(--metal-bright); }
