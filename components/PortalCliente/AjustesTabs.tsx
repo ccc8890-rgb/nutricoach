@@ -9,6 +9,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/components/ThemeProvider'
 import { useToast } from '@/components/ui/Toast'
+import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import IntegracionesPanel from './IntegracionesPanel'
 import type { Profile, Cliente } from '@/types'
 import { IndustrialTabs, TechnicalRow } from './editorial'
@@ -61,9 +62,9 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
                 body: JSON.stringify({ restricciones_alimentarias: restricciones }),
             })
             if (!res.ok) throw new Error()
-            addToast({ type: 'success', title: 'Guardado', message: 'Tu coach verá el cambio.' })
+            emitPortalFeedback(addToast, { type: 'success', title: 'Guardado', message: 'Tu coach verá el cambio.' })
         } catch {
-            addToast({ type: 'error', title: 'No se pudo guardar' })
+            emitPortalFeedback(addToast, { type: 'error', title: 'No se pudo guardar' })
         } finally {
             setGuardandoRestricciones(false)
         }
@@ -71,17 +72,17 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
 
     async function cambiarPassword() {
         if (passNueva.length < 6) {
-            addToast({ type: 'error', title: 'La contraseña nueva debe tener al menos 6 caracteres' })
+            emitPortalFeedback(addToast, { type: 'error', title: 'La contraseña nueva debe tener al menos 6 caracteres' })
             return
         }
         setCambiandoPass(true)
         try {
             const { error } = await supabase.auth.updateUser({ password: passNueva })
             if (error) throw error
-            addToast({ type: 'success', title: 'Contraseña actualizada' })
+            emitPortalFeedback(addToast, { type: 'success', title: 'Contraseña actualizada', importance: 'important' })
             setPassNueva('')
         } catch {
-            addToast({ type: 'error', title: 'No se pudo cambiar la contraseña' })
+            emitPortalFeedback(addToast, { type: 'error', title: 'No se pudo cambiar la contraseña' })
         } finally {
             setCambiandoPass(false)
         }

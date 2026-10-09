@@ -18,6 +18,7 @@ import {
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import type { Macros, RegistroComidaDia } from '@/types'
 import { useToast } from '@/components/ui/Toast'
+import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import DietaKanban from './DietaKanban'
 import ListaCompraPortal from './ListaCompraPortal'
 import { getAjusteDesdeNombreSesion } from '@/lib/periodizacion/dia-entreno-nutricion'
@@ -202,9 +203,9 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                 [key]: { ...(prev[key] ?? {}), comida_id: comidaId, fecha, estado, notas: notas ?? null } as RegistroComidaDia,
             }))
             const title = estado === 'hecha' ? 'Comida registrada' : estado === 'saltada' ? 'Comida marcada como no hecha' : 'Cambio anotado'
-            addToast({ type: 'success', title, message: '' })
+            emitPortalFeedback(addToast, { type: 'success', title, message: '' })
         } catch {
-            addToast({ type: 'error', title: 'Error', message: 'No se pudo registrar la comida' })
+            emitPortalFeedback(addToast, { type: 'error', title: 'Error', message: 'No se pudo registrar la comida' })
         } finally {
             setRegistrando(null)
             setAnotandoCambio(null)
@@ -228,9 +229,9 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                 delete next[key]
                 return next
             })
-            addToast({ type: 'success', title: 'Estado borrado', message: '' })
+            emitPortalFeedback(addToast, { type: 'success', title: 'Estado borrado', message: '' })
         } catch {
-            addToast({ type: 'error', title: 'Error', message: 'No se pudo deshacer el registro' })
+            emitPortalFeedback(addToast, { type: 'error', title: 'Error', message: 'No se pudo deshacer el registro' })
         } finally {
             setRegistrando(null)
             setAnotandoCambio(null)
@@ -311,13 +312,13 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                     }
                 }),
             }))
-            addToast({
+            emitPortalFeedback(addToast, {
                 type: 'success',
                 title: 'Receta principal actualizada',
                 message: 'Se tendrá en cuenta como preferencia para futuras propuestas.',
             })
         } catch {
-            addToast({ type: 'error', title: 'Error', message: 'No se pudo cambiar la receta principal' })
+            emitPortalFeedback(addToast, { type: 'error', title: 'Error', message: 'No se pudo cambiar la receta principal' })
         } finally {
             setSeleccionandoReceta(null)
         }

@@ -14,6 +14,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { Barbell, CaretDown, CheckCircle, PersonSimpleRun, SpinnerGap } from '@phosphor-icons/react'
 import { useToast } from '@/components/ui/Toast'
+import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 
@@ -195,7 +196,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
             })
             const data = await res.json().catch(() => null)
             if (!res.ok) throw new Error(data?.error || 'No se pudo mover la sesión')
-            addToast({ type: 'success', title: `"${sesion.nombre}" movida a ${nuevoDia}` })
+            emitPortalFeedback(addToast, { type: 'success', title: `"${sesion.nombre}" movida a ${nuevoDia}` })
             setMoverId(null)
             void mutate(SEMANA_ENTRENO_KEY)
         } catch (err) {
@@ -205,7 +206,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
                 datos => actualizarDiaEnCache(datos, sesion.id, anterior),
                 { revalidate: false },
             )
-            addToast({ type: 'error', title: (err as Error).message })
+            emitPortalFeedback(addToast, { type: 'error', title: (err as Error).message })
         } finally {
             setMoviendo(false)
         }

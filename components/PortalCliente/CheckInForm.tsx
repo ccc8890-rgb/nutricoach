@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useToast } from '@/components/ui/Toast'
+import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import { Loader2, Send, Clock, Flame, ClipboardCheck, Camera, X, ChevronRight } from 'lucide-react'
 
 interface CheckInFormProps {
@@ -91,7 +92,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         if (!peso) {
-            addToast({ type: 'warning', title: 'Peso requerido', message: 'Introduce tu peso para hacer check-in' })
+            emitPortalFeedback(addToast, { type: 'warning', title: 'Peso requerido', message: 'Introduce tu peso para hacer check-in' })
             return
         }
         setGuardando(true)
@@ -133,7 +134,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
                 }),
             })
             if (!res.ok) throw new Error('Error al guardar')
-            addToast({ type: 'success', title: '¡Check-in completado!', message: 'Tu progreso ha sido registrado' })
+            emitPortalFeedback(addToast, { type: 'success', title: '¡Check-in completado!', message: 'Tu progreso ha sido registrado', importance: 'important' })
             setPeso('')
             setAdherencia(5)
             setEnergia(5)
@@ -142,7 +143,7 @@ export default function CheckInForm({ codigo, onCheckinCreado, ultimoCheckin }: 
             quitarFoto()
             onCheckinCreado()
         } catch {
-            addToast({ type: 'error', title: 'Error', message: 'No se pudo guardar el check-in' })
+            emitPortalFeedback(addToast, { type: 'error', title: 'Error', message: 'No se pudo guardar el check-in' })
         } finally {
             setGuardando(false)
         }

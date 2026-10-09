@@ -14,6 +14,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { CalendarBlank, DotsSixVertical, ForkKnife, SpinnerGap } from '@phosphor-icons/react'
 import { useToast } from '@/components/ui/Toast'
+import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 // Franjas que Carlos pidió que fueran explícitas para poder intercambiar
@@ -218,10 +219,10 @@ export default function DietaKanban({ comidas, codigo, kcalObjetivo = null, onMa
             const res = await fetch(`/api/cliente/${codigo}/comidas/materializar`, { method: 'POST' })
             const data = await res.json().catch(() => null)
             if (!res.ok) throw new Error(data?.error || 'Error al activar por día')
-            addToast({ type: 'success', title: 'Comidas activadas por día', message: 'Ya puedes arrastrarlas entre días.' })
+            emitPortalFeedback(addToast, { type: 'success', title: 'Comidas activadas por día', message: 'Ya puedes arrastrarlas entre días.' })
             onMaterializado()
         } catch (err) {
-            addToast({ type: 'error', title: 'No se pudo activar por día', message: (err as Error).message })
+            emitPortalFeedback(addToast, { type: 'error', title: 'No se pudo activar por día', message: (err as Error).message })
         } finally {
             setMaterializando(false)
         }
@@ -255,13 +256,13 @@ export default function DietaKanban({ comidas, codigo, kcalObjetivo = null, onMa
             const kcalDestino = totalDia(comidasLocal.filter(c => c.dia_semana === nuevoDia && c.id !== comida.id)) + kcalDe(comida)
             const desvio = kcalObjetivo && kcalDestino > 0 ? (kcalDestino - kcalObjetivo) / kcalObjetivo : 0
             if (Math.abs(desvio) > 0.2) {
-                addToast({ type: 'warning', title: titulo, message: `${nuevoDia} queda en ${kcalDestino} kcal (${desvio > 0 ? '+' : ''}${Math.round(desvio * 100)}% sobre el objetivo de ${Math.round(kcalObjetivo!)}).` })
+                emitPortalFeedback(addToast, { type: 'warning', title: titulo, message: `${nuevoDia} queda en ${kcalDestino} kcal (${desvio > 0 ? '+' : ''}${Math.round(desvio * 100)}% sobre el objetivo de ${Math.round(kcalObjetivo!)}).` })
             } else {
-                addToast({ type: 'success', title: titulo })
+                emitPortalFeedback(addToast, { type: 'success', title: titulo })
             }
         } catch (err) {
             setComidasLocal(prev => prev.map(c => c.id === comida.id ? { ...c, dia_semana: diaAnterior, nombre: nombreAnterior } : c))
-            addToast({ type: 'error', title: (err as Error).message })
+            emitPortalFeedback(addToast, { type: 'error', title: (err as Error).message })
         } finally {
             setMoviendo(false)
             setMoverId(null)
