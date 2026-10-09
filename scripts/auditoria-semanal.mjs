@@ -25,6 +25,8 @@ console.log(lineas(cam, /^recetas|^Aplicado|^Avisos/))
 const ri = run('npx', ['tsx', 'scripts/recalcular-recipe-intelligence.ts', '--apply', '--limite=2000'])
 console.log(/"file"/.test(ri) ? 'Puntuaciones de inteligencia de receta recalculadas' : 'ERROR recalculando puntuaciones')
 console.log(lineas(run('npx', ['tsx', 'scripts/batch-audit-profesional.ts', '--apply']), /^Auditadas/))
+const pas = run('node', ['scripts/auditar-pasos-ingredientes.mjs'])
+console.log(pas.split('\n')[0])
 const urg = (mat.match(/URGENTES[^:]*: (\d+)/) || [])[1]
 console.log(`Enlaces urgentes pendientes de revisión manual: ${urg ?? '?'}`)
 
