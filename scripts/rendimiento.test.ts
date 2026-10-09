@@ -119,3 +119,57 @@ assert.ok(codigos(calcularAlertas({ resumen: rs({}), semanas: [sm(0, 0), sm(0, 0
 assert.ok(codigos(calcularAlertas({ resumen: rs({}), semanas: [], diasParaCompeticion: null, rhr: { reciente: 58, base: 51 } })).includes('rhr_alto'))
 assert.ok(codigos(calcularAlertas({ resumen: rs({}), semanas: [], diasParaCompeticion: null, pctIntenso28d: 50 })).includes('demasiada_intensidad'))
 console.log('alertas: OK')
+
+// ── Cumplimiento ──
+import { evaluarCumplimiento, repsPlanificadas, emparejarEntreno, fechaDeLaSemana } from '../lib/rendimiento/cumplimiento'
+import { esCarrera } from '../lib/rendimiento/carga'
+import type { Paso } from '../lib/entrenos/pasos'
+const pasosSeries: Paso[] = [
+  { tipo: 'calentamiento', duracion: { unidad: 'metros', valor: 2000 } },
+  { tipo: 'repetir', veces: 7, pasos: [
+    { tipo: 'trabajo', duracion: { unidad: 'metros', valor: 400 }, objetivo: { tipo: 'ritmo', min_seg_km: 255, max_seg_km: 270 } },
+    { tipo: 'recuperacion', duracion: { unidad: 'metros', valor: 200 } },
+  ] },
+  { tipo: 'enfriamiento', duracion: { unidad: 'metros', valor: 2000 } },
+]
+assert.equal(repsPlanificadas(pasosSeries).length, 7)
+const vuelta = (tipo: string, d: number, t: number) => ({ tipo, paso: null, distancia_m: d, duracion_s: t, fc_media: 160, velocidad_ms: d / t })
+// 400 m en 104 s = 4:20/km (dentro de 4:15-4:30); 400 m en 120 s = 5:00/km (lenta); 400 m en 96 s = 4:00/km (rápida)
+const buena = evaluarCumplimiento(pasosSeries, [vuelta('WARMUP', 2000, 700), ...Array.from({ length: 7 }, () => [vuelta('ACTIVE', 400, 104), vuelta('RECOVERY', 200, 80)]).flat()], null)!
+assert.equal(buena.estado, 'cumplida')
+assert.equal(buena.repsHechas, 7)
+assert.equal(buena.repsEnRango, 7)
+assert.equal(buena.caidaS, 0)
+const fade = evaluarCumplimiento(pasosSeries, [104, 104, 108, 112, 116, 120, 124].map(t => vuelta('ACTIVE', 400, t)), null)!
+assert.ok(fade.caidaS! > 30, `caída ${fade.caidaS}`)
+assert.ok(fade.repsEnRango < 7)
+assert.match(fade.resumen, /cae/)
+const rapida = evaluarCumplimiento(pasosSeries, [vuelta('ACTIVE', 400, 96)], null)!
+assert.equal(rapida.reps[0].estado, 'rapida')
+assert.ok(rapida.reps[0].desvio_s_km < 0)
+assert.equal(rapida.estado, 'no_cumplida') // 1 de 7
+assert.equal(evaluarCumplimiento(pasosSeries, [vuelta('INTERVAL', 1000, 300)], null), null) // rodaje libre: sin repeticiones marcadas
+assert.equal(evaluarCumplimiento(pasosSeries, null, null), null)
+assert.equal(evaluarCumplimiento(pasosSeries, [vuelta('ACTIVE', 50, 20)], null), null) // vuelta de ruido
+// Bloque continuo previsto (tempo 20 min a 5:00 ± 5 s) ejecutado como 6×500 m a 4:49: se evalúa como bloque
+const pasosTempo: Paso[] = [{ tipo: 'trabajo', duracion: { unidad: 'segundos', valor: 1200 }, objetivo: { tipo: 'ritmo', min_seg_km: 295, max_seg_km: 305 } }]
+const tempo = evaluarCumplimiento(pasosTempo, [147, 134, 139, 140, 147, 160].map(t => vuelta('ACTIVE', 500, t)), null)!
+assert.equal(tempo.repsPlanificadas, 1)
+assert.equal(tempo.reps.length, 1)
+assert.equal(tempo.estado, 'parcial') // solo 14 de 20 min, y algo más rápido
+assert.match(tempo.resumen, /6 tramos/)
+assert.deepEqual(tempo.tramos, [294, 268, 278, 280, 294, 320]) // el ritmo de cada tramo se conserva (se ve la caída)
+const tempoOk = evaluarCumplimiento(pasosTempo, [vuelta('ACTIVE', 4000, 1200)], null)! // 4 km en 20 min = 5:00/km
+assert.equal(tempoOk.estado, 'cumplida')
+// Emparejar con el día previsto
+const e1 = { fecha: '2026-10-12', tipo: 'running', duracion_s: 2800, vueltas: null, raw: null }
+const e2 = { fecha: '2026-10-13', tipo: 'running', duracion_s: 3000, vueltas: null, raw: null }
+assert.equal(fechaDeLaSemana('2026-10-12', 'Lunes'), '2026-10-12')
+assert.equal(fechaDeLaSemana('2026-10-12', 'Domingo'), '2026-10-18')
+assert.equal(fechaDeLaSemana('2026-10-12', 'xx'), null)
+assert.equal(emparejarEntreno('2026-10-12', '2026-10-20', [e1, e2], esCarrera).estado, 'hecha')
+assert.equal(emparejarEntreno('2026-10-14', '2026-10-20', [e1, e2], esCarrera).estado, 'otro_dia') // el 13 está a un día
+assert.equal(emparejarEntreno('2026-10-16', '2026-10-20', [e1, e2], esCarrera).estado, 'saltada')
+assert.equal(emparejarEntreno('2026-10-25', '2026-10-20', [e1, e2], esCarrera).estado, 'pendiente')
+assert.equal(emparejarEntreno('2026-10-12', '2026-10-20', [{ ...e1, tipo: 'strength_training' }], esCarrera).estado, 'saltada') // la fuerza no cuenta como carrera
+console.log('cumplimiento: OK')

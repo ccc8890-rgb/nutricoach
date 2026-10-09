@@ -115,3 +115,64 @@ export async function sincronizarEntrenosGarmin(
   if (error) throw new Error(`sincronizarEntrenosGarmin: ${error.message}`)
   return filas.length
 }
+
+export interface VueltaEntreno {
+  tipo: string | null
+  paso: number | null
+  distancia_m: number
+  duracion_s: number
+  fc_media: number | null
+  velocidad_ms: number | null
+}
+
+/** Convierte las vueltas que devuelve Garmin al formato compacto que guardamos. */
+export function mapearVueltasGarmin(respuesta: unknown): VueltaEntreno[] {
+  const laps = (respuesta as { lapDTOs?: ActividadGarmin[] } | null)?.lapDTOs
+  if (!Array.isArray(laps)) return []
+  return laps
+    .filter(l => num(l.distance) !== null && num(l.duration) !== null)
+    .map(l => ({
+      tipo: typeof l.intensityType === 'string' ? l.intensityType : null,
+      paso: num(l.wktStepIndex),
+      distancia_m: Math.round(l.distance),
+      duracion_s: Math.round(l.duration * 10) / 10,
+      fc_media: num(l.averageHR) !== null ? Math.round(l.averageHR) : null,
+      velocidad_ms: num(l.averageSpeed) !== null ? Math.round(l.averageSpeed * 1000) / 1000 : null,
+    }))
+}
+
+const TIPOS_CON_VUELTAS = ['running', 'track_running', 'trail_running']
+
+/**
+ * Descarga las vueltas de los entrenos de carrera que aún no las tienen (más recientes primero).
+ * Una llamada a Garmin por entreno; `maximo` acota cuántos por pasada.
+ */
+export async function sincronizarVueltasGarmin(
+  db: SupabaseClient,
+  clienteId: string,
+  gc: { client: { get<T>(url: string): Promise<T> } },
+  maximo = 10,
+): Promise<number> {
+  const { data: pendientes } = await db
+    .from('entrenos_realizados')
+    .select('id,actividad_id')
+    .eq('cliente_id', clienteId)
+    .eq('fuente', 'garmin_connect')
+    .in('tipo', TIPOS_CON_VUELTAS)
+    .is('vueltas', null)
+    .order('fecha', { ascending: false })
+    .limit(maximo)
+  let hechas = 0
+  for (const p of pendientes ?? []) {
+    try {
+      const r = await gc.client.get<unknown>(`https://connectapi.garmin.com/activity-service/activity/${p.actividad_id}/splits`)
+      const vueltas = mapearVueltasGarmin(r)
+      // Si Garmin no devuelve vueltas se guarda [] para no volver a pedirlas cada día.
+      await db.from('entrenos_realizados').update({ vueltas }).eq('id', p.id)
+      hechas++
+    } catch (e) {
+      console.error('[garmin] vueltas', p.actividad_id, e instanceof Error ? e.message : e)
+    }
+  }
+  return hechas
+}

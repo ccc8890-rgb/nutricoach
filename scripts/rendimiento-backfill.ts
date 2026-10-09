@@ -5,7 +5,7 @@
  */
 import { createClient } from '@supabase/supabase-js'
 import { descifrarConexionGarmin } from '../lib/integraciones/garmin-connect-perclient'
-import { sincronizarEntrenosGarmin } from '../lib/rendimiento/garmin-entrenos'
+import { sincronizarEntrenosGarmin, sincronizarVueltasGarmin } from '../lib/rendimiento/garmin-entrenos'
 
 async function main() {
   const clienteId = process.argv[2]
@@ -18,5 +18,6 @@ async function main() {
   const gc = new GarminConnect({ username: c.email, password: c.password })
   gc.loadToken(c.oauth1!, c.oauth2!)
   console.log('entrenos guardados:', await sincronizarEntrenosGarmin(db, clienteId, gc, limite))
+  console.log('entrenos con vueltas:', await sincronizarVueltasGarmin(db, clienteId, gc, 200))
 }
 main().catch(e => { console.error(e); process.exit(1) })

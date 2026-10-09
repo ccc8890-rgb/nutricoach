@@ -3,6 +3,7 @@ import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 import { construirPanel, type DiaBienestar, type EntrenoPanel } from '@/lib/rendimiento/panel'
 import { leerUmbrales } from '@/lib/rendimiento/garmin-entrenos'
+import { construirEjecucion } from '@/lib/rendimiento/ejecucion'
 
 export async function GET(
   request: NextRequest,
@@ -22,7 +23,7 @@ export async function GET(
   const hoy = new Date().toISOString().slice(0, 10)
   const desdeBienestar = new Date(Date.now() - dias * 86_400_000).toISOString().slice(0, 10)
 
-  const [{ data: entrenos }, { data: dBien }, umbrales] = await Promise.all([
+  const [{ data: entrenos }, { data: dBien }, umbrales, ejecucion] = await Promise.all([
     db.from('entrenos_realizados')
       .select('fecha,tipo,nombre,duracion_s,distancia_m,ritmo_medio_s_km,fc_media,tss,tss_metodo,carga_garmin,vo2max,tiempo_zona_fc,mejores_parciales,raw')
       .eq('cliente_id', clienteId)
@@ -34,6 +35,7 @@ export async function GET(
       .gte('fecha', desdeBienestar)
       .order('fecha', { ascending: true }),
     leerUmbrales(db, clienteId),
+    construirEjecucion(db, clienteId, hoy),
   ])
 
   const bienestar: DiaBienestar[] = (dBien ?? []).map(d => ({
@@ -46,5 +48,5 @@ export async function GET(
   }))
 
   const panel = construirPanel((entrenos ?? []) as EntrenoPanel[], bienestar, hoy, dias)
-  return NextResponse.json({ ...panel, umbrales, hoy })
+  return NextResponse.json({ ...panel, umbrales, ejecucion, hoy })
 }

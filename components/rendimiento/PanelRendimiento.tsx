@@ -4,8 +4,9 @@ import Grafica, { type Fila } from './Grafica'
 import AnalisisIA from './AnalisisIA'
 import type { PanelRendimiento as Panel } from '@/lib/rendimiento/panel'
 import type { UmbralesAtleta } from '@/lib/rendimiento/carga'
+import type { ResumenEjecucion } from '@/lib/rendimiento/ejecucion'
 
-type Respuesta = Panel & { umbrales: UmbralesAtleta; hoy: string }
+type Respuesta = Panel & { umbrales: UmbralesAtleta; ejecucion: ResumenEjecucion; hoy: string }
 
 const COLOR = { forma: '#5B8DEF', fatiga: '#E0557A', fresc: '#6AAF85', carga: '#8A9AB8', ambar: '#C8A96A' }
 const ZONAS_FC = ['#7B818A', '#6AAF85', '#C8A96A', '#E08A4E', '#E0557A']
@@ -97,6 +98,45 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
         <Tarjeta titulo="Carga 7 días" valor={String(Math.round(r.carga7d))} pie={`${Math.round(r.carga28d)} en 28 días`} />
         <Tarjeta titulo="Monotonía" valor={r.monotonia === null ? '—' : String(r.monotonia)} pie={avisoMonotonia ? 'Poca variación entre días' : 'Variación de carga (Foster)'} color={avisoMonotonia ? COLOR.ambar : undefined} />
       </div>
+
+      <Bloque titulo="Plan vs realizado" nota={datos.ejecucion.planNombre ? `Sesiones de carrera estructuradas de «${datos.ejecucion.planNombre}», semana a semana. El color de cada repetición dice si salió en el ritmo previsto.` : undefined}>
+        {datos.ejecucion.sesiones.filter(x => x.estado !== 'pendiente').length === 0 ? (
+          <p className="py-3 text-xs" style={{ color: 'var(--text-muted)' }}>Todavía no hay sesiones estructuradas que comparar.</p>
+        ) : (
+          <ul className="space-y-2">
+            {datos.ejecucion.sesiones.filter(x => x.estado !== 'pendiente').map(x => {
+              const c = x.cumplimiento
+              const etiqueta = x.estado === 'saltada' ? 'No realizada' : x.estado === 'otro_dia' ? `Otro día (${fechaCorta(x.fechaReal!)})` : c ? { cumplida: 'Cumplida', parcial: 'Parcial', no_cumplida: 'No cumplida' }[c.estado] : 'Hecha'
+              const color = x.estado === 'saltada' || c?.estado === 'no_cumplida' ? COLOR.fatiga : c?.estado === 'parcial' ? COLOR.ambar : COLOR.fresc
+              return (
+                <li key={x.sesionId + x.semana} className="rounded-lg p-3" style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-light)' }}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm" style={{ color: 'var(--text)' }}><span className="tabular-nums" style={{ color: 'var(--text-muted)' }}>{fechaCorta(x.fechaPrevista)}</span> · {x.nombre.replace(/^Carrera:\s*/, '')}</p>
+                    <span className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ color, border: `1px solid ${color}` }}>{etiqueta}</span>
+                  </div>
+                  {c && <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>{c.resumen}</p>}
+                  {c?.tramos && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {c.tramos.map((t, i) => <span key={i} className="rounded-md px-1.5 py-0.5 text-[11px] tabular-nums" style={{ border: '1px solid var(--border-strong)', color: 'var(--text)' }}>{mmss(t)}</span>)}
+                    </div>
+                  )}
+                  {c && c.reps.length > 1 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {c.reps.map(r => (
+                        <span key={r.n} className="rounded-md px-1.5 py-0.5 text-[11px] tabular-nums" title={r.objetivo ? `Previsto ${mmss(r.objetivo.min)}–${mmss(r.objetivo.max)}` : undefined}
+                          style={{ border: `1px solid ${r.estado === 'en_rango' || r.estado === 'sin_objetivo' ? COLOR.fresc : r.estado === 'rapida' ? COLOR.forma : COLOR.ambar}`, color: 'var(--text)' }}>
+                          {mmss(r.ritmo_s_km)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {!c && x.estado !== 'saltada' && <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>El reloj no marcó repeticiones (carrera libre): no se puede comparar con lo previsto.</p>}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </Bloque>
 
       <Bloque titulo="Forma, fatiga y frescura" nota="La línea azul es la forma que acumulas; la rosa, el cansancio reciente. Cuando la rosa pasa a la azul vas cargado; con la azul por encima llegas fresco.">
         <Grafica datos={pmc} alto={190}

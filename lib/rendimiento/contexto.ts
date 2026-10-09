@@ -5,6 +5,7 @@ import { construirPanel, type DiaBienestar, type EntrenoPanel } from './panel'
 import { calcularAlertas, type AlertaRendimiento } from './alertas'
 import { leerUmbrales } from './garmin-entrenos'
 import { ritmosDesdeVdot, formatearRitmo } from '@/lib/entrenos/ritmos'
+import { construirEjecucion } from './ejecucion'
 
 export interface ContextoRendimiento {
   texto: string
@@ -42,6 +43,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   const desde28 = new Date(Date.now() - 28 * 86_400_000).toISOString().slice(0, 10)
   const desde60 = new Date(Date.now() - 60 * 86_400_000).toISOString().slice(0, 10)
 
+  const ejecucion = await construirEjecucion(db, clienteId, hoy)
   const [{ data: cli }, { data: entrenos }, { data: dBien }, umbrales, { data: perfil }, { data: comps }, { data: plan }, { data: previas }] = await Promise.all([
     db.from('clientes').select('profiles:profiles!profile_id(nombre, apellidos)').eq('id', clienteId).single(),
     db.from('entrenos_realizados').select('fecha,tipo,nombre,duracion_s,distancia_m,ritmo_medio_s_km,fc_media,tss,tss_metodo,carga_garmin,vo2max,tiempo_zona_fc,mejores_parciales,raw').eq('cliente_id', clienteId).order('fecha'),
@@ -101,6 +103,12 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   if (r) L.push(`CARGA (TrainingPeaks-like): forma CTL ${r.ctl}, fatiga ATL ${r.atl}, frescura TSB ${r.tsb} (${r.textoEstado}); subida de forma 7d ${r.rampa7}; carga 7d ${Math.round(r.carga7d)}, 28d ${Math.round(r.carga28d)}; monotonía ${r.monotonia ?? 'n/d'}`)
   L.push(`SEMANAS (TSS/km/sesiones, antigua→reciente; la última puede estar en curso): ${panel.semanas.slice(-8).map(s => `${s.semana.slice(5)}:${s.tss}/${s.km}/${s.sesiones}`).join(' | ')}`)
   L.push(`EVOLUCIÓN: eficiencia aeróbica ${efTexto}; mejor 5K parcial ${mejor5k ? `${mmss(mejor5k.s5000!)} (${mejor5k.fecha})` : 'n/d'}; VO2max Garmin ${panel.vo2max.at(-1)?.valor ?? 'n/d'}; % tiempo en zonas 4-5 de pulso de Garmin (Z4 = 80-90% del pulso máx, Z5 = >90%) últimas 4 sem: ${pctIntenso !== null ? Math.round(pctIntenso) : 'n/d'}. OJO: con pulso máx ${umbrales.fcMax ?? 'n/d'}, un rodaje suave puede caer en Z4 si hay calor, deriva cardíaca o poca base; contrasta SIEMPRE ritmo y pulso antes de concluir que fue intenso`)
+  const lineasEjec = ejecucion.sesiones.filter(x => x.estado !== 'pendiente').map(x => {
+    const c = x.cumplimiento
+    const base = `${x.fechaPrevista} ${x.nombre}: ${x.estado === 'hecha' ? 'hecha' : x.estado === 'otro_dia' ? `hecha otro día (${x.fechaReal})` : 'NO realizada'}`
+    return '  - ' + base + (c ? ` → ${c.estado}: ${c.resumen}; ritmos por ${c.tramos ? 'tramo' : 'rep'} ${(c.tramos ?? c.reps.map(r => r.ritmo_s_km)).map(mmss).join(' ')}` : x.estado !== 'saltada' ? ' (sin repeticiones marcadas por el reloj: no comparable)' : '')
+  })
+  L.push(`EJECUCIÓN DE LAS SESIONES ESTRUCTURADAS (plan vs realizado, desde que empezó el plan "${ejecucion.planNombre ?? 'n/d'}"):\n${lineasEjec.join('\n') || '  (sin sesiones evaluables)'}`)
   L.push(`BIENESTAR últimos 7 días: ${bienestar.slice(-7).map(b => `${b.fecha.slice(5)} FCreposo ${b.rhr ?? '-'} prepar ${b.readiness ?? '-'} bat ${b.body_battery_max ?? '-'}`).join(' | ')}`)
   L.push(`ENTRENOS ÚLTIMAS 4 SEMANAS:\n${recientes.map(e => '  - ' + lineaEntreno(e)).join('\n') || '  (ninguno)'}`)
   L.push(`ALERTAS AUTOMÁTICAS (hechos calculados, no opiniones):\n${alertas.map(a => `  - [${a.gravedad}] ${a.texto}`).join('\n') || '  (ninguna)'}`)
