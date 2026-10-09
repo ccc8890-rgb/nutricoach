@@ -12,11 +12,10 @@ import {
     type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { UtensilsCrossed, Loader2, CalendarDays } from 'lucide-react'
+import { CalendarBlank, DotsSixVertical, ForkKnife, SpinnerGap } from '@phosphor-icons/react'
 import { useToast } from '@/components/ui/Toast'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-const DIAS_ABREV: Record<string, string> = { Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J', Viernes: 'V', Sábado: 'S', Domingo: 'D' }
 // Franjas que Carlos pidió que fueran explícitas para poder intercambiar
 // un plato de una franja a otra (p.ej. usar una cena como comida) — no
 // solo mover entre días. Cualquier comida cuyo nombre no encaje en estas
@@ -45,13 +44,6 @@ function kcalDe(c: ComidaKanban): number {
     return 0
 }
 const totalDia = (cs: ComidaKanban[]) => cs.reduce((t, c) => t + kcalDe(c), 0)
-// Verde dentro de ±10 % del objetivo, ámbar hasta ±20 %, rojo más allá
-function colorKcal(kcal: number, objetivo: number | null) {
-    if (!objetivo || kcal === 0) return 'var(--text-muted)'
-    const d = Math.abs(kcal - objetivo) / objetivo
-    return d <= 0.1 ? 'var(--success)' : d <= 0.2 ? 'var(--warning)' : 'var(--error)'
-}
-
 interface DietaKanbanProps {
     comidas: ComidaKanban[]
     codigo: string
@@ -59,75 +51,129 @@ interface DietaKanbanProps {
     onMaterializado: () => void
 }
 
-function ComidaCard({ comida }: { comida: ComidaKanban }) {
+function ComidaCard({
+    comida,
+    moverAbierto,
+    onAbrirMover,
+    onMover,
+}: {
+    comida: ComidaKanban
+    moverAbierto: boolean
+    onAbrirMover: () => void
+    onMover: (dia: string, franja: Franja) => void
+}) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: comida.id })
-    const style = transform ? { transform: CSS.Translate.toString(transform), zIndex: 10 } : undefined
+    const style = transform ? { transform: CSS.Translate.toString(transform), zIndex: 10, opacity: 0.62 } : undefined
     const nombreMostrado = comida.receta?.nombre ?? comida.nombre
+    const franjaActual = franjaDe(comida.nombre)
+    const diaActual = comida.dia_semana || DIAS[0]
 
     return (
-        <div ref={setNodeRef} style={style} {...listeners} {...attributes}
-            className="mb-1.5 touch-none select-none cursor-grab active:cursor-grabbing rounded-lg overflow-hidden"
-            title={nombreMostrado}
-        >
-            <div
-                className="flex items-center gap-1.5 p-1.5"
-                style={{
-                    background: 'var(--surface-elevated,var(--border))',
-                    border: '1px solid var(--border-strong,var(--border))',
-                    boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.4)' : 'none',
-                    opacity: isDragging ? 0.6 : 1,
-                }}
-            >
-                <div className="w-8 h-8 rounded-md overflow-hidden flex-shrink-0" style={{ background: 'var(--bg)' }}>
+        <div ref={setNodeRef} style={style} className={`diet-week-meal ${isDragging ? 'is-dragging' : ''}`} title={nombreMostrado}>
+            <div className="diet-week-meal__main">
+                <div className="diet-week-meal__thumb">
                     {comida.receta?.imagen_url ? (
-                        <Image src={comida.receta.imagen_url} alt={nombreMostrado} width={32} height={32} className="w-full h-full object-cover" />
+                        <Image src={comida.receta.imagen_url} alt={nombreMostrado} width={48} height={48} className="h-full w-full object-cover" />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                            <UtensilsCrossed size={12} style={{ color: 'var(--text-muted)' }} />
+                        <div className="flex h-full w-full items-center justify-center">
+                            <ForkKnife size={16} weight="regular" />
                         </div>
                     )}
                 </div>
-                <p className="text-[10px] font-medium leading-tight truncate min-w-0 flex-1" style={{ color: 'var(--text)' }}>{nombreMostrado}</p>
-                {kcalDe(comida) > 0 && <span className="text-[9px] font-data flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{kcalDe(comida)}</span>}
+                <div className="diet-week-meal__copy">
+                    <small>{comida.nombre}</small>
+                    <strong>{nombreMostrado}</strong>
+                    {kcalDe(comida) > 0 && <span>{kcalDe(comida)} kcal</span>}
+                </div>
+                <button
+                    type="button"
+                    className="diet-week-meal__move"
+                    onClick={onAbrirMover}
+                    aria-expanded={moverAbierto}
+                    aria-label={`Mover ${nombreMostrado}`}
+                    {...listeners}
+                    {...attributes}
+                >
+                    <DotsSixVertical size={17} weight="bold" />
+                    <span>Mover</span>
+                </button>
             </div>
-        </div>
-    )
-}
-
-function FranjaLane({ dia, franja, comidas, droppable }: { dia: string; franja: Franja; comidas: ComidaKanban[]; droppable: boolean }) {
-    const { setNodeRef, isOver } = useDroppable({ id: `${dia}|${franja}`, disabled: !droppable })
-    return (
-        <div
-            ref={setNodeRef}
-            className="rounded-lg p-1.5 min-h-[44px] transition-colors"
-            style={{
-                background: isOver ? 'var(--semantic-info-bg)' : 'transparent',
-                border: `1px dashed ${isOver ? 'var(--semantic-info-border)' : 'var(--border)'}`,
-            }}
-        >
-            <p className="text-[8px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-disabled)' }}>{franja}</p>
-            {comidas.length === 0 ? (
-                <p className="text-[9px]" style={{ color: 'var(--text-disabled)' }}>—</p>
-            ) : (
-                comidas.map(c => <ComidaCard key={c.id} comida={c} />)
+            {moverAbierto && (
+                <div className="diet-week-move-panel">
+                    <div>
+                        <span>Día</span>
+                        <div className="diet-week-move-panel__options">
+                            {DIAS.map(dia => (
+                                <button key={dia} type="button" className={dia === diaActual ? 'is-current' : ''} onClick={() => onMover(dia, franjaActual)}>
+                                    {dia.slice(0, 3)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <span>Franja</span>
+                        <div className="diet-week-move-panel__options is-slots">
+                            {FRANJAS.map(franja => (
+                                <button key={franja} type="button" className={franja === franjaActual ? 'is-current' : ''} onClick={() => onMover(diaActual, franja)}>
+                                    {franja}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     )
 }
 
-function DiaColumna({ dia, comidas, kcalObjetivo }: { dia: string; comidas: ComidaKanban[]; kcalObjetivo: number | null }) {
+function FranjaLane({ dia, franja, comidas, droppable, moverId, onAbrirMover, onMover }: {
+    dia: string
+    franja: Franja
+    comidas: ComidaKanban[]
+    droppable: boolean
+    moverId: string | null
+    onAbrirMover: (id: string) => void
+    onMover: (id: string, dia: string, franja: Franja) => void
+}) {
+    const { setNodeRef, isOver } = useDroppable({ id: `${dia}|${franja}`, disabled: !droppable })
+    return (
+        <div ref={setNodeRef} className={`diet-week-slot ${isOver ? 'is-over' : ''}`}>
+            <p>{franja}</p>
+            <div className="diet-week-slot__content">
+                {comidas.length === 0 ? (
+                    <span className="diet-week-slot__empty">Sin plato</span>
+                ) : comidas.map(c => (
+                    <ComidaCard
+                        key={c.id}
+                        comida={c}
+                        moverAbierto={moverId === c.id}
+                        onAbrirMover={() => onAbrirMover(c.id)}
+                        onMover={(nuevoDia, nuevaFranja) => onMover(c.id, nuevoDia, nuevaFranja)}
+                    />
+                ))}
+            </div>
+        </div>
+    )
+}
+
+function DiaSeccion({ dia, indice, comidas, moverId, onAbrirMover, onMover }: {
+    dia: string
+    indice: number
+    comidas: ComidaKanban[]
+    moverId: string | null
+    onAbrirMover: (id: string) => void
+    onMover: (id: string, dia: string, franja: Franja) => void
+}) {
     const kcalDia = totalDia(comidas)
     const otras = comidas.filter(c => franjaDe(c.nombre) === 'Otras')
     return (
-        <div className="rounded-xl p-1.5 flex-1 min-w-[130px]" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-            <div className="flex items-baseline justify-between mb-1.5 px-0.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                    <span className="sm:hidden">{DIAS_ABREV[dia]}</span>
-                    <span className="hidden sm:inline">{dia}</span>
-                </p>
-                {kcalDia > 0 && <span className="text-[10px] font-data font-bold" style={{ color: colorKcal(kcalDia, kcalObjetivo) }}>{kcalDia}</span>}
-            </div>
-            <div className="flex flex-col gap-1.5">
+        <section className="diet-week-day">
+            <header className="diet-week-day__head">
+                <span>{String(indice + 1).padStart(2, '0')}</span>
+                <h3>{dia}</h3>
+                <samp>{kcalDia > 0 ? `${kcalDia} KCAL` : 'SIN PLAN'}</samp>
+            </header>
+            <div className="diet-week-day__slots">
                 {FRANJAS.map(franja => (
                     <FranjaLane
                         key={franja}
@@ -135,13 +181,24 @@ function DiaColumna({ dia, comidas, kcalObjetivo }: { dia: string; comidas: Comi
                         franja={franja}
                         comidas={comidas.filter(c => franjaDe(c.nombre) === franja)}
                         droppable
+                        moverId={moverId}
+                        onAbrirMover={onAbrirMover}
+                        onMover={onMover}
                     />
                 ))}
                 {otras.length > 0 && (
-                    <FranjaLane dia={dia} franja="Otras" comidas={otras} droppable={false} />
+                    <FranjaLane
+                        dia={dia}
+                        franja="Otras"
+                        comidas={otras}
+                        droppable={false}
+                        moverId={moverId}
+                        onAbrirMover={onAbrirMover}
+                        onMover={onMover}
+                    />
                 )}
             </div>
-        </div>
+        </section>
     )
 }
 
@@ -149,6 +206,7 @@ export default function DietaKanban({ comidas, codigo, kcalObjetivo = null, onMa
     const [moviendo, setMoviendo] = useState(false)
     const [materializando, setMaterializando] = useState(false)
     const [comidasLocal, setComidasLocal] = useState(comidas)
+    const [moverId, setMoverId] = useState<string | null>(null)
     const { addToast } = useToast()
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
 
@@ -169,11 +227,8 @@ export default function DietaKanban({ comidas, codigo, kcalObjetivo = null, onMa
         }
     }
 
-    async function handleDragEnd(event: DragEndEvent) {
-        const { active, over } = event
-        if (!over) return
-        const [nuevoDia, nuevaFranja] = String(over.id).split('|')
-        const comida = comidasLocal.find(c => c.id === active.id)
+    async function moverComida(comidaId: string, nuevoDia: string, nuevaFranja: Franja) {
+        const comida = comidasLocal.find(c => c.id === comidaId)
         if (!comida) return
 
         const diaAnterior = comida.dia_semana
@@ -209,39 +264,60 @@ export default function DietaKanban({ comidas, codigo, kcalObjetivo = null, onMa
             addToast({ type: 'error', title: (err as Error).message })
         } finally {
             setMoviendo(false)
+            setMoverId(null)
         }
+    }
+
+    async function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event
+        if (!over) return
+        const [nuevoDia, nuevaFranja] = String(over.id).split('|')
+        await moverComida(String(active.id), nuevoDia, nuevaFranja as Franja)
     }
 
     if (hayRecurrentes) {
         return (
-            <div className="rounded-3xl p-6 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <CalendarDays size={28} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
-                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Tus comidas se repiten igual cada día</p>
-                <p className="text-xs mt-1 mb-4" style={{ color: 'var(--text-muted)' }}>
-                    Actívalas por día para poder arrastrarlas y organizar una semana distinta cada vez.
-                </p>
+            <section className="diet-week-activation">
+                <div className="diet-week-activation__mark"><CalendarBlank size={20} weight="regular" /></div>
+                <div>
+                    <span>Semana editable</span>
+                    <h3>Tus comidas se repiten igual cada día</h3>
+                    <p>Actívalas por día para organizar una semana distinta y mover cada plato de forma independiente.</p>
+                </div>
                 <button
+                    type="button"
                     onClick={materializar}
                     disabled={materializando}
-                    className="btn btn-primary rounded-xl px-5"
+                    className="diet-week-activation__button"
                 >
-                    {materializando ? <Loader2 size={16} className="animate-spin" /> : null}
+                    {materializando ? <SpinnerGap size={16} className="animate-spin" /> : null}
                     {materializando ? 'Activando…' : 'Activar por día'}
                 </button>
-            </div>
+            </section>
         )
     }
 
     return (
-        <div>
-            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-                Arrastra un plato a otro día o a otra franja (p. ej. una cena a comida) para reorganizarlo.
-                {moviendo && <span className="ml-2 inline-flex items-center gap-1"><Loader2 size={11} className="animate-spin" /> Guardando…</span>}
-            </p>
+        <div className="diet-week-view">
+            <div className="diet-week-intro">
+                <div>
+                    <span>Agenda semanal</span>
+                    <p>Revisa todos los platos y usa <strong>Mover</strong> para cambiar su día o franja.</p>
+                </div>
+                {moviendo && <small><SpinnerGap size={12} className="animate-spin" /> Guardando cambio…</small>}
+            </div>
             <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-                <div className="flex gap-1.5 overflow-x-auto pb-1">
-                    {DIAS.map(dia => (
-                        <DiaColumna key={dia} dia={dia} comidas={comidasLocal.filter(c => c.dia_semana === dia)} kcalObjetivo={kcalObjetivo} />
+                <div className="diet-week-agenda">
+                    {DIAS.map((dia, indice) => (
+                        <DiaSeccion
+                            key={dia}
+                            dia={dia}
+                            indice={indice}
+                            comidas={comidasLocal.filter(c => c.dia_semana === dia)}
+                            moverId={moverId}
+                            onAbrirMover={(id) => setMoverId(current => current === id ? null : id)}
+                            onMover={moverComida}
+                        />
                     ))}
                 </div>
             </DndContext>

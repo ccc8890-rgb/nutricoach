@@ -398,19 +398,21 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                 Usa comidasParaSemana (plan original, referencia estable) */}
             {vistaActual === 'semana' && (<>
                 <DietaKanban comidas={comidasParaSemana} codigo={codigo} kcalObjetivo={plan.kcal_objetivo ?? null} onMaterializado={() => window.location.reload()} />
-                {/* Lista de la compra semanal — un nivel por debajo, no compite con el toggle de arriba */}
-                <div>
+                <div className="diet-document-tool-wrap diet-week-shopping">
                     <button
                         type="button"
                         onClick={() => setMostrarCompra(v => !v)}
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-2xl"
-                        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                        className="diet-document-tool"
                     >
-                        <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Lista de la compra semanal</span>
+                        <span className="diet-document-tool__index">03</span>
+                        <span className="diet-document-tool__copy">
+                            <strong>Lista de la compra semanal</strong>
+                            <small>Ingredientes de los siete días</small>
+                        </span>
                         {mostrarCompra ? <ChevronUp size={16} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={16} style={{ color: 'var(--text-muted)' }} />}
                     </button>
                     {mostrarCompra && (
-                        <div className="mt-3">
+                        <div className="diet-document-tool__panel">
                             <ListaCompraPortal codigo={codigo} diaInicial="Semana" />
                             <button
                                 type="button"
