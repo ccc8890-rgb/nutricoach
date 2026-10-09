@@ -304,74 +304,82 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Plan de ${escapeHtml(p.nombreCliente)}</title>
   <style>
-    @page { margin: 14mm; }
+    @page { margin: 13mm; }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: #F5F5F7;
-      color: #1C1C1E;
-      font-family: 'DM Sans', Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.45;
+      background: #E8E5DF;
+      color: #17181A;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.42;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .toolbar {
       position: sticky;
       top: 0;
       z-index: 10;
       display: flex;
-      gap: 8px;
+      gap: 1px;
       align-items: center;
       justify-content: center;
-      padding: max(calc(env(safe-area-inset-top, 0px) + 16px), 28px) 12px 10px;
-      background: rgba(245, 245, 247, .9);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(28, 28, 30, .08);
+      padding: max(calc(env(safe-area-inset-top, 0px) + 12px), 22px) 12px 10px;
+      background: rgba(23, 24, 26, .9);
+      backdrop-filter: blur(22px) saturate(.9);
+      border-bottom: 1px solid #55585E;
     }
     .toolbar a, .toolbar button {
-      min-height: 40px;
-      border: 1px solid rgba(28, 28, 30, .12);
-      border-radius: 999px;
-      background: #fff;
-      color: #1C1C1E;
-      padding: 0 14px;
-      font: inherit;
-      font-size: 13px;
-      font-weight: 700;
+      min-height: 38px;
+      border: 1px solid #55585E;
+      border-radius: 2px;
+      background: #242629;
+      color: #F4F1EB;
+      padding: 0 13px;
+      font: 650 11px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: .05em;
+      text-transform: uppercase;
       text-decoration: none;
       cursor: pointer;
     }
-    .page { max-width: 920px; margin: 0 auto; padding: 24px 18px 44px; }
+    .toolbar a:hover, .toolbar button:hover { background: #34363A; }
+    .page { max-width: 860px; margin: 0 auto; padding: 22px 18px 46px; }
     .cover {
+      position: relative;
       display: grid;
-      gap: 22px;
-      padding: 30px;
-      border-radius: 28px;
-      color: #fff;
-      background:
-        linear-gradient(135deg, rgba(28, 28, 30, .96), rgba(44, 44, 46, .92)),
-        radial-gradient(circle at 85% 10%, rgba(232, 232, 240, .35), transparent 34%);
+      gap: 26px;
+      overflow: hidden;
+      padding: 34px 32px 30px;
+      border: 1px solid #BBB5AA;
+      border-top: 4px solid #17181A;
+      border-radius: 0;
+      color: #17181A;
+      background: #F6F3ED;
     }
-    .brand { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.68); }
-    h1 { margin: 0; font-size: clamp(32px, 8vw, 64px); line-height: .96; letter-spacing: 0; }
-    .cover p { max-width: 620px; margin: 0; color: rgba(255,255,255,.78); font-size: 15px; }
+    .cover::after { position: absolute; top: 0; right: 32px; width: 42px; height: 4px; background: #A4865C; content: ''; }
+    .brand { font: 650 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-transform: uppercase; letter-spacing: .15em; color: #826B4B; }
+    h1 { margin: 0; max-width: 720px; font-size: clamp(34px, 7vw, 58px); line-height: .94; letter-spacing: -.045em; }
+    .cover p { max-width: 620px; margin: 0; color: #62646A; font-size: 14px; }
     .summary {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
+      gap: 1px;
       margin-top: 4px;
+      border: 1px solid #C9C4BA;
+      background: #C9C4BA;
     }
     .summary-card {
-      border-radius: 18px;
-      padding: 14px;
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.16);
+      min-width: 0;
+      border-radius: 0;
+      padding: 13px 12px 14px;
+      background: #EEEAE2;
     }
-    .summary-card strong { display: block; font-size: 22px; line-height: 1; }
-    .summary-card span { display: block; margin-top: 6px; font-size: 11px; color: rgba(255,255,255,.68); text-transform: uppercase; letter-spacing: .08em; }
+    .summary-card strong { display: block; font: 650 20px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-variant-numeric: tabular-nums; }
+    .summary-card span { display: block; margin-top: 7px; color: #74767C; font: 600 9px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-transform: uppercase; letter-spacing: .1em; }
     .day, .shopping, .training {
-      margin-top: 22px;
-      border-radius: 24px;
-      background: #fff;
-      border: 1px solid #D1D1D6;
+      margin-top: 18px;
+      border-radius: 0;
+      background: #F8F6F1;
+      border: 1px solid #C9C4BA;
       overflow: hidden;
       page-break-inside: avoid;
     }
@@ -379,40 +387,41 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
       display: flex;
       justify-content: space-between;
       gap: 14px;
-      padding: 18px 20px;
-      border-bottom: 1px solid #D1D1D6;
-      background: #EBEBED;
+      padding: 15px 18px;
+      border-bottom: 1px solid #C9C4BA;
+      background: #E9E5DD;
     }
-    .day-head h2 { margin: 0; font-size: 20px; }
-    .day-head p { margin: 3px 0 0; color: #636366; font-size: 13px; text-align: right; }
-    .meal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 14px; }
+    .day-head h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    .day-head p { margin: 3px 0 0; color: #6D6F74; font: 600 10px/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-align: right; }
+    .meal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; padding: 0; background: #C9C4BA; }
     .meal {
-      border-radius: 18px;
-      border: 1px solid #D1D1D6;
-      padding: 14px;
-      background: #fff;
+      border: 0;
+      border-radius: 0;
+      padding: 15px;
+      background: #F8F6F1;
       page-break-inside: avoid;
     }
     .meal-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-    .slot { margin: 0 0 4px; color: #7A7A82; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
-    .meal h3 { margin: 0; font-size: 16px; line-height: 1.18; }
-    .meal-kcal { flex: 0 0 auto; border-radius: 999px; background: rgba(61,158,107,.1); color: #2D7A52; padding: 6px 9px; font-size: 12px; font-weight: 800; }
-    .macro-line { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 12px; color: #636366; font-size: 12px; font-weight: 700; }
+    .slot { margin: 0 0 5px; color: #826B4B; font: 650 9px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-transform: uppercase; letter-spacing: .1em; }
+    .meal h3 { margin: 0; font-size: 15px; line-height: 1.2; letter-spacing: -.015em; }
+    .meal-kcal { flex: 0 0 auto; border-left: 2px solid #A4865C; border-radius: 0; background: transparent; color: #5F503B; padding: 2px 0 2px 8px; font: 650 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .macro-line { display: flex; gap: 10px; flex-wrap: wrap; margin: 11px 0 13px; color: #6D6F74; font: 600 10px/1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     .ingredients { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
-    .ingredients li { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: #1C1C1E; }
-    .ingredients strong { color: #1C1C1E; white-space: nowrap; }
-    .shopping, .training { padding: 20px; }
-    .shopping h2, .training h2 { margin: 0 0 14px; font-size: 22px; }
+    .ingredients li { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: #313236; }
+    .ingredients strong { color: #17181A; font: 600 10px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; white-space: nowrap; }
+    .shopping, .training { padding: 18px; }
+    .shopping h2, .training h2 { margin: 0 0 14px; font-size: 19px; letter-spacing: -.02em; }
     .shopping-grid { columns: 2; column-gap: 28px; }
-    .shop-item { break-inside: avoid; display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #E5E5EA; font-size: 13px; }
-    .session { padding: 12px 0; border-bottom: 1px solid #E5E5EA; }
+    .shop-item { break-inside: avoid; display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid #D8D3CA; font-size: 12px; }
+    .shop-item strong { color: #5F503B; font: 600 10px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .session { padding: 11px 0; border-bottom: 1px solid #D8D3CA; }
     .session:last-child { border-bottom: 0; }
     .session strong { display: block; margin-bottom: 6px; }
-    .session span { display: inline-block; margin: 3px 4px 3px 0; padding: 4px 9px; border-radius: 999px; background: #EBEBED; font-size: 12px; }
-    footer { margin-top: 22px; color: #7A7A82; font-size: 12px; text-align: center; }
+    .session span { display: inline-block; margin: 3px 4px 3px 0; padding: 4px 7px; border: 1px solid #C9C4BA; border-radius: 2px; background: #EEEAE2; color: #52545A; font-size: 11px; }
+    footer { margin-top: 20px; padding-top: 12px; border-top: 1px solid #C9C4BA; color: #74767C; font: 500 9px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; text-align: center; text-transform: uppercase; letter-spacing: .05em; }
     @media (max-width: 700px) {
-      .page { padding: 14px 10px 34px; }
-      .cover { padding: 24px; border-radius: 24px; }
+      .page { padding: 12px 10px 32px; }
+      .cover { padding: 25px 20px 22px; }
       .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .day-head { display: block; }
       .day-head p { text-align: left; }
@@ -420,10 +429,9 @@ function generarHtmlPlan(p: GenerarHtmlParams): string {
       .shopping-grid { columns: 1; }
     }
     @media print {
-      body { background: #fff; }
+      body { background: #E8E5DF; }
       .toolbar { display: none; }
       .page { max-width: none; padding: 0; }
-      .cover { border-radius: 0; }
       .day, .shopping, .training { box-shadow: none; }
     }
   </style>

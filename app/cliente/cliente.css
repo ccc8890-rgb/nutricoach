@@ -383,7 +383,7 @@
 .cliente-portal-content {
   position: relative;
   z-index: 1;
-  padding-bottom: calc(3.75rem + max(0px, calc(env(safe-area-inset-bottom, 0px) - 0.25rem))) !important;
+  padding-bottom: calc(3.5rem + max(0px, calc(env(safe-area-inset-bottom, 0px) - 0.5rem))) !important;
 }
 
 .cliente-portal-shell::before {
@@ -483,7 +483,7 @@
 }
 
 .cliente-bottom-nav {
-  padding: 0 0 max(0px, calc(env(safe-area-inset-bottom, 0px) - 0.25rem));
+  padding: 0 0 max(0px, calc(env(safe-area-inset-bottom, 0px) - 0.5rem));
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--metal-bright) 5%, transparent), transparent 58%),
     color-mix(in srgb, var(--surface) 88%, transparent) !important;
@@ -511,7 +511,7 @@
 .cliente-bottom-item {
   position: relative;
   display: flex;
-  min-height: 2.9rem;
+  min-height: 2.8rem;
   align-items: center;
   justify-content: center;
   overflow: hidden;
@@ -535,7 +535,7 @@
   display: grid;
   place-items: center;
   opacity: 0.72;
-  transform: translateY(0.14rem);
+  transform: translateY(0.25rem);
 }
 
 .cliente-bottom-active-surface {
