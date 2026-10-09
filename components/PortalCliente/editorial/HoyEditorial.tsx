@@ -80,12 +80,13 @@ export default function HoyEditorial({ firstName, dateLabel, calories, meals, we
           <ProgressInstrument key={macro.label} label={macro.label} value={macro.value} max={macro.target} unit={macro.unit} detail={`${Math.round(macro.value)} de ${Math.round(macro.target)} ${macro.unit}`} />
         ))}
       </section>
-      <div className="hoy-editorial__section-label"><span>Secuencia del día</span><samp>04 UNITS</samp></div>
-      <TimelineSequence items={sequence} />
-      <nav className="hoy-editorial__utilities" aria-label="Herramientas secundarias">
+      <div className="hoy-editorial__section-label"><span>Accesos rápidos</span><samp>02 TOOLS</samp></div>
+      <nav className="hoy-editorial__utilities" aria-label="Accesos rápidos">
         <Action label="Lista de compra" icon={ShoppingCart} onClick={() => onNavigate('compra')} />
         <Action label="Chat con coach" icon={ChatCircleDots} onClick={() => onNavigate('chat')} />
       </nav>
+      <div className="hoy-editorial__section-label"><span>Secuencia del día</span><samp>04 UNITS</samp></div>
+      <TimelineSequence items={sequence} />
     </div>
   )
 }

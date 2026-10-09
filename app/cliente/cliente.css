@@ -118,7 +118,7 @@
 .hoy-editorial__instruments .progress-instrument:first-of-type { margin-top: 0.7rem; }
 .hoy-editorial__section-label { display: flex; align-items: center; justify-content: space-between; padding: 1.6rem 0 0.65rem; color: var(--text-muted); font: 600 0.62rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.12em; text-transform: uppercase; }
 .hoy-editorial__section-label samp { font-size: 0.58rem; }
-.hoy-editorial__utilities { display: grid; grid-template-columns: 1fr 1fr; margin-top: 1.25rem; border-block: 1px solid var(--editorial-rule); background: var(--editorial-rule); gap: 1px; }
+.hoy-editorial__utilities { display: grid; grid-template-columns: 1fr 1fr; border-block: 1px solid var(--editorial-rule); background: var(--editorial-rule); gap: 1px; }
 .editorial-action { display: inline-flex; min-height: 44px; align-items: center; gap: 0.55rem; padding: 0.7rem 0.85rem; background: var(--editorial-panel); color: var(--text-secondary); font: 600 0.63rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.04em; text-transform: uppercase; transition: background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong); }
 .editorial-action span:nth-child(2) { flex: 1; text-align: left; }
 .editorial-action:hover { background: var(--surface-hover); color: var(--text); }
