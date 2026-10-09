@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
 
 export async function GET(
   request: NextRequest,
@@ -38,7 +39,7 @@ export async function GET(
   // Get session info
   const { data: sesion, error: sesionError } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, notas, contexto_ia, plan_id')
+    .select('id, nombre, dia_semana, notas, contexto_ia, plan_id, pasos, garmin_workout_id, garmin_programado_fecha')
     .eq('id', id)
     .single()
 
@@ -54,6 +55,10 @@ export async function GET(
   if (!plan || plan.cliente_id !== clienteId) {
     return NextResponse.json({ error: 'Sin acceso a esta sesión' }, { status: 403 })
   }
+
+  const { data: perfilEntreno } = await admin
+    .from('perfil_entreno_cliente').select('vdot').eq('cliente_id', clienteId).maybeSingle()
+  const ritmos = perfilEntreno?.vdot ? ritmosDesdeVdot(Number(perfilEntreno.vdot)) : null
 
   // Get exercises with full join
   const { data: ejercicios } = await admin
@@ -75,6 +80,9 @@ export async function GET(
       contexto_ia: sesion.contexto_ia,
       plan: { nombre: plan.nombre, cliente_id: plan.cliente_id },
       ejercicios: ejercicios ?? [],
+      pasos: sesion.pasos ?? null,
+      ritmos,
+      garmin: { workoutId: sesion.garmin_workout_id ?? null, fecha: sesion.garmin_programado_fecha ?? null },
     },
   })
 }

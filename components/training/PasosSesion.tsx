@@ -1,7 +1,7 @@
 // components/training/PasosSesion.tsx
 'use client'
 import { useMemo, useState } from 'react'
-import { WatchIcon } from '@phosphor-icons/react'
+import { Watch } from '@phosphor-icons/react'
 import { validarPasos, resumenSesion, lineaPaso, type PasoSimple } from '@/lib/entrenos/pasos'
 import { formatearRitmo, type Ritmos } from '@/lib/entrenos/ritmos'
 
@@ -87,7 +87,7 @@ export default function PasosSesion({ sesionId, pasos, ritmos, garmin }: Props) 
           className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold active:scale-[0.98] disabled:opacity-60"
           style={{ background: 'var(--semantic-active)', color: '#fff' }}
         >
-          <WatchIcon size={16} />
+          <Watch size={16} />
           {enviando ? 'Enviando…' : estado.workoutId ? 'Reenviar a Garmin' : 'Enviar a Garmin'}
         </button>
         {estado.workoutId && (

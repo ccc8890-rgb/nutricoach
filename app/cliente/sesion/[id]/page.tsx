@@ -7,6 +7,8 @@ import { ArrowLeft, Barbell, Brain, CheckCircle, CircleNotch, Clock, Play, Targe
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
 import EjercicioDemoModal from '@/components/training/EjercicioDemoModal'
 import { crearSesionGuidance } from '@/lib/training/workspace'
+import PasosSesion from '@/components/training/PasosSesion'
+import type { Ritmos } from '@/lib/entrenos/ritmos'
 import { descansoRelevante } from '@/lib/entrenos/descanso-visible'
 
 type Modo = 'registrar' | 'solo-ver'
@@ -37,6 +39,9 @@ interface SesionInfo {
   notas: string
   contexto_ia?: string | null
   ejercicios: EjercicioSesion[]
+  pasos?: unknown | null
+  ritmos?: Ritmos | null
+  garmin?: { workoutId: string | null; fecha: string | null }
   plan?: {
     nombre: string
     cliente_id: string
@@ -363,6 +368,16 @@ export default function EjecucionSesionPage() {
           </div>
         </section>
 
+        {sesion.pasos ? (
+          <div className="px-4 pt-4 max-w-md mx-auto">
+            <PasosSesion
+              sesionId={sesion.id}
+              pasos={sesion.pasos}
+              ritmos={sesion.ritmos ?? null}
+              garmin={sesion.garmin ?? { workoutId: null, fecha: null }}
+            />
+          </div>
+        ) : null}
         {modo === 'registrar' ? (
           guardando ? (
             <div className="flex items-center justify-center py-20">
