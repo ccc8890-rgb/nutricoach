@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { ChevronDown, Clock, Repeat } from 'lucide-react'
 import { TechnicalRow } from '@/components/PortalCliente/editorial'
+import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 
 export interface EjercicioDetalle {
   id: string
@@ -42,7 +43,7 @@ export default function ListaEjerciciosExpandible({ ejercicios }: { ejercicios: 
                   {ej.series && (
                     <span className="inline-flex items-center gap-1"><Repeat size={11} /> {ej.series}×{ej.repeticiones ?? '-'}</span>
                   )}
-                  {ej.descanso_segundos ? (
+                  {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? (
                     <span className="inline-flex items-center gap-1"><Clock size={11} /> {ej.descanso_segundos}s</span>
                   ) : null}
                   {ej.peso_sugerido && <span>{ej.peso_sugerido}</span>}

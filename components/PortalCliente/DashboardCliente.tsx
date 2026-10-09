@@ -19,6 +19,7 @@ import { useTheme } from '@/components/ThemeProvider'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { aplicarSesionesCompletadas, crearClienteWeekSummary } from '@/lib/training/client-week'
 import { inferirSlotComida } from '@/lib/tipos-comida'
+import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 
 interface DashboardData {
     plan: PlanNutricion
@@ -231,7 +232,7 @@ function EntrenoCliente({
             descanso_segundos?: number | null
             peso_sugerido?: string | null
             notas?: string | null
-            ejercicio?: { nombre?: string | null; grupo_muscular?: string | null }
+            ejercicio?: { nombre?: string | null; grupo_muscular?: string | null; tipo?: string | null }
         }>
     }>, [entreno?.sesiones])
     const sesionesDia = sesiones.filter(s => normalizarDia(s.dia_semana) === diaActivo)
@@ -477,7 +478,7 @@ function EntrenoCliente({
                                                     <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
                                                     <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
                                                         {ej.ejercicio?.grupo_muscular ?? 'Trabajo principal'}
-                                                        {(ej.descanso_seg ?? ej.descanso_segundos) ? ` · descanso ${ej.descanso_seg ?? ej.descanso_segundos}s` : ''}
+                                                        {descansoVisible(ej.ejercicio?.tipo, ej.descanso_seg ?? ej.descanso_segundos) ? ` · descanso ${ej.descanso_seg ?? ej.descanso_segundos}s` : ''}
                                                     </p>
                                                     {ej.notas && <p className="text-[11px] mt-0.5 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{ej.notas}</p>}
                                                 </div>

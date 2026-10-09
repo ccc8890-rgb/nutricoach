@@ -5,6 +5,7 @@ import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio,
 import { Dumbbell, Target, ChevronDown, ChevronUp, Check, Crown, AlertTriangle, Sparkles, TrendingUp } from 'lucide-react'
 import { MODALITY_CONFIG, detectarSubcategoriaLegacy } from '@/lib/entrenos/utils'
 import { evaluarPerfilEntreno, type RecomendacionEntreno } from '@/lib/motor-entreno'
+import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 
 interface Props {
     onSeleccionar: (plantilla: PlantillaEntrenamiento) => void
@@ -241,7 +242,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                                         <span>
                                                             {ej.series}×{ej.repeticiones}
                                                             {ej.rpe ? ` · RPE ${ej.rpe}` : ''}
-                                                            {ej.descanso_segundos ? ` · ${ej.descanso_segundos}s` : ''}
+                                                            {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? ` · ${ej.descanso_segundos}s` : ''}
                                                         </span>
                                                     </div>
                                                 ))}

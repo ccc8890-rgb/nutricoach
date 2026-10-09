@@ -77,6 +77,7 @@ function agruparPorSemanas(sesiones: RawSesion[], duracion: number | null): Sema
             series: ej.series,
             repeticiones: ej.repeticiones,
             descanso_segundos: ej.descanso_segundos,
+            tipo: ej.ejercicio?.tipo ?? null,
             peso_sugerido: ej.peso_sugerido ?? '',
             rpe: ej.rpe ?? '',
             notas: ej.notas ?? '',

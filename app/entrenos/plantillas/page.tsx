@@ -24,6 +24,7 @@ import { useDebounce } from '@/lib/useDebounce'
 import { useToast } from '@/components/ui/Toast'
 import { MODALITY_CONFIG, detectarSubcategoriaLegacy } from '@/lib/entrenos/utils'
 import { calcularPlantillaQuality } from '@/lib/training/workspace'
+import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 
 const OBJETIVO_COLOR: Record<string, string> = {
     hipertrofia: 'badge-teal',
@@ -351,7 +352,7 @@ export default function PlantillasEntrenoPage() {
                                                         <span>
                                                             {ej.series}×{ej.repeticiones}
                                                             {ej.rpe ? ` · RPE ${ej.rpe}` : ''}
-                                                            {ej.descanso_segundos ? ` · ${ej.descanso_segundos}s` : ''}
+                                                            {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? ` · ${ej.descanso_segundos}s` : ''}
                                                         </span>
                                                     </div>
                                                 ))}

@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { ArrowUpDown, Brain, ChevronDown, ChevronUp, GripVertical, Video } from 'lucide-react'
+import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 
 export interface EjercicioTimeline {
   id: string
@@ -25,6 +26,7 @@ export interface EjercicioTimeline {
   series: number
   repeticiones: string
   descanso_segundos: number
+  tipo?: string | null
   peso_sugerido: string
   rpe: string
   notas: string
@@ -128,7 +130,7 @@ function SortableEjercicioCard({
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             {ej.series}×{ej.repeticiones}
             {ej.rpe ? ` @RPE${ej.rpe}` : ''}
-            {ej.descanso_segundos > 0 ? ` · ${ej.descanso_segundos}s` : ''}
+            {descansoVisible(ej.tipo, ej.descanso_segundos) > 0 ? ` · ${ej.descanso_segundos}s` : ''}
           </p>
         </div>
 

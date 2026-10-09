@@ -9,6 +9,7 @@ import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSele
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, Ejercicio } from '@/types'
 import { DIAS_SEMANA } from '@/lib/utils'
 import { crearBuilderLoadSummary, duplicarSesionBuilder, moverSesionBuilder, type BuilderSessionDraft } from '@/lib/training/builder'
+import { descansoRelevante } from '@/lib/entrenos/descanso-visible'
 
 type SesionLocal = BuilderSessionDraft
 
@@ -416,7 +417,7 @@ function NuevoEntrenoForm() {
                                       <span className={`badge ${TIPO_COLORS[ej.ejercicio_tipo] ?? 'badge-gray'} text-xs`}>{ej.ejercicio_tipo}</span>
                                     )}
                                   </div>
-                                  <div className="grid grid-cols-4 gap-2">
+                                  <div className={`grid gap-2 ${descansoRelevante(ej.ejercicio_tipo) ? 'grid-cols-4' : 'grid-cols-3'}`}>
                                     <div>
                                       <label className="text-xs text-gray-400 block mb-1">Series</label>
                                       <input type="number" className="input py-1 text-sm text-center" value={ej.series} min={1} max={20}
@@ -427,11 +428,13 @@ function NuevoEntrenoForm() {
                                       <input className="input py-1 text-sm text-center" placeholder="8-12" value={ej.repeticiones}
                                         onChange={e => actualizarEjercicioCampo(sesion.id, ej.id, 'repeticiones', e.target.value)} />
                                     </div>
+                                    {descansoRelevante(ej.ejercicio_tipo) && (
                                     <div>
                                       <label className="text-xs text-gray-400 block mb-1">Descanso</label>
                                       <input type="number" className="input py-1 text-sm text-center" placeholder="90" value={ej.descanso_segundos}
                                         onChange={e => actualizarEjercicioCampo(sesion.id, ej.id, 'descanso_segundos', parseInt(e.target.value) || 90)} />
                                     </div>
+                                    )}
                                     <div>
                                       <label className="text-xs text-gray-400 block mb-1">Peso sugerido</label>
                                       <input className="input py-1 text-sm" placeholder="ej: 60kg" value={ej.peso_sugerido}

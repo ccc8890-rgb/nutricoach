@@ -7,6 +7,7 @@ import { ArrowLeft, Barbell, Brain, CheckCircle, CircleNotch, Clock, Play, Targe
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
 import EjercicioDemoModal from '@/components/training/EjercicioDemoModal'
 import { crearSesionGuidance } from '@/lib/training/workspace'
+import { descansoRelevante } from '@/lib/entrenos/descanso-visible'
 
 type Modo = 'registrar' | 'solo-ver'
 
@@ -234,7 +235,7 @@ export default function EjecucionSesionPage() {
     grupo_muscular: ej.ejercicio?.grupo_muscular ?? '',
     series: ej.series ?? 3,
     repeticiones: ej.repeticiones ?? '',
-    descanso_segundos: ej.descanso_segundos ?? 90,
+    descanso_segundos: descansoRelevante(ej.ejercicio?.tipo) ? (ej.descanso_segundos ?? 90) : 0,
     peso_sugerido: ej.peso_sugerido ?? '',
     instruccion_ejercicio: ej.notas ?? '',
     contexto_ia: ej.contexto_ia ?? null,
