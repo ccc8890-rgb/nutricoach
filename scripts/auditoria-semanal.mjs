@@ -31,6 +31,12 @@ console.log(pas.split('\n')[0])
 const urg = (mat.match(/URGENTES[^:]*: (\d+)/) || [])[1]
 console.log(`Enlaces urgentes pendientes de revisión manual: ${urg ?? '?'}`)
 
+// Si algún paso falló, avisar (antes un fallo silencioso podía pasar semanas sin que nadie lo viera)
+const todo = [int, mat, cor, cam, ri].join('\n')
+if (/(^|\n)(Error|ERROR|TypeError|ReferenceError|SyntaxError|Traceback)|ERROR recalculando|ENOTFOUND|fetch failed/.test(todo)) {
+  console.log('⚠️ La pasada tuvo errores; revisa el log')
+  run('osascript', ['-e', 'display notification "La pasada del recetario tuvo errores. Mira ~/Library/Logs/nutricoach-auditoria.log" with title "NutriCoach ⚠️"'])
+}
 if (/Aplicado en [1-9]|filas a corregir: [1-9]|con cambios: [1-9]/.test(`${int}\n${cor}\n${cam}`)) {
   run('osascript', ['-e', 'display notification "Recetario revisado y corregido. Mira logs/nutricoach-auditoria.log" with title "NutriCoach"'])
 }
