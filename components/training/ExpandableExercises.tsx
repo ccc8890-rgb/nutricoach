@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Check, ChevronDown, Clock, Repeat } from 'lucide-react'
+import { ChevronDown, Clock, Repeat } from 'lucide-react'
 import { TechnicalRow } from '@/components/PortalCliente/editorial'
 import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 import { parseExerciseChecklist, toggleExerciseChecklist } from '@/lib/training/exercise-checklist'
@@ -56,16 +56,16 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
             index={checklistKey ? (
               <button
                 type="button"
-                className={`training-exercise-check ${completado ? 'is-checked' : ''}`}
+                className={`training-exercise-index-toggle ${completado ? 'is-checked' : ''}`}
                 onClick={() => toggleCompletado(ej.id)}
                 aria-label={`${completado ? 'Desmarcar' : 'Marcar'} ${nombre} como completado`}
                 aria-pressed={completado}
               >
-                {completado ? <Check size={15} strokeWidth={2.5} aria-hidden="true" /> : null}
+                {String(index + 1).padStart(2, '0')}
               </button>
             ) : String(index + 1).padStart(2, '0')}
             interactiveIndex={Boolean(checklistKey)}
-            label={nombre}
+            label={<span className="training-exercise-name">{nombre}</span>}
             meta={ej.series ? `${ej.series} × ${ej.repeticiones ?? '-'}` : undefined}
             className={`training-exercise-row ${completado ? 'is-checked' : ''}`}
           >
