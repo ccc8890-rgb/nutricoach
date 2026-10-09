@@ -1,5 +1,28 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 09-10-2026 (tarde-noche, Claude) — Panel de rendimiento tipo TrainingPeaks y entrenador IA para el coach
+
+**Qué se pidió:** un sistema tipo TrainingPeaks/Runna con la ciencia de un entrenador pro de running/Hyrox, que analice los datos de Garmin, ayude al coach a decidir y aprenda de cada atleta.
+
+**Qué se hizo** (detalle completo en [`docs/09-10-2026_rendimiento-entrenador-ia.md`](docs/09-10-2026_rendimiento-entrenador-ia.md)):
+- Tabla `entrenos_realizados` (112 entrenos de Carlos desde feb-2025, con vueltas), carga TSS, CTL/ATL/TSB y panel «Rendimiento» en la ficha.
+- **Plan vs realizado** repetición a repetición; **Entrenador IA** supervisado (alertas deterministas + DeepSeek + aprendizaje de «Me sirve / No encaja»); aplicar cambios de pasos al plan y al reloj con vista previa y deshacer.
+- **Recalibración del VDOT** (45 → los esfuerzos dan 45,6; el umbral de Garmin 46,5) y **simulador de plan hacia una carrera** con «aplicar semana».
+- Series Cortas de Carlos: 7×400 a 4:15–4:30 con 200 m de trote, enviadas al reloj (lunes 12-10).
+
+**Hallazgos sobre Carlos:** su 5K de Copenhague (19-09) fue carrera a tope con poco entreno (21:37); sus 6×500 del 08-10 salieron a 4:28–5:20/km (no a 4:15–4:30) y el último tramo cae; la tirada del 04-10 no se hizo; sus rodajes a 5:30/km con ~160 ppm caen en Z4 de Garmin.
+
+**Auditoría de cierre:** 7 rutas nuevas con autorización de coach o `CRON_SECRET` (fallan cerradas); RLS activo en la tabla nueva; sin secretos. Corregido: el error del proveedor de IA llegaba al navegador y el cron semanal podía agotar los 300 s. Dos tests del repo fallan **desde antes** (`agente-recetario-pro`, `cliente-visual-system`).
+
+**Lecciones:**
+1. Mirar los datos reales antes de diseñar: Garmin devolvía el HRV semanal actual en todas las fechas (gráfica plana y engañosa) y la cinta daba distancias imposibles (10 km en 31 min).
+2. Una comparación literal de pasos se saltó un cambio «idéntico» que solo difería en notas: comparar por contenido (sin notas, claves ordenadas).
+3. Probar con el envío al reloj **simulado** (parámetro `enviar`) y restaurar siempre; una prueba aplicó de verdad un cambio y se deshizo al momento.
+4. La IA acierta mejor con el contexto de ejecución (plan vs realizado) y con reglas explícitas: dirección de los ritmos (menor tiempo = más rápido), citar solo el marco dado, hablar del atleta en tercera persona.
+5. No guardar un objetivo inventado como competición: altera la nutrición real.
+
+**Pendiente:** ver el panel en navegador (390 px y modo oscuro; se verificó por API y tests, no visualmente); comprobar el cron de Garmin (10-10 08:15) y el análisis del lunes 12-10; HRV/sueño cuando haya noches con el reloj; Strava histórico; RPE para fuerza; Hyrox; técnica de carrera; notificar alertas al coach.
+
 ## ✅ SESIÓN 09-10-2026 (mediodía, Claude) — Running estructurado y envío automático a Garmin
 
 **Qué se pidió:** quitar el descanso de las rutinas de fuerza (estorba) y trabajar a fondo las sesiones de carrera (ritmos, series, recuperación) para que lleguen solas al Garmin de Carlos y solo tenga que darle a empezar.
