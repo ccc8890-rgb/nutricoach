@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, ChevronDown, ChevronUp, Check, Send, TrendingDown, Tag, Store } from 'lucide-react'
+import { CaretDown, CaretUp, Check, CircleNotch, PaperPlaneTilt, Storefront, Tag, TrendDown } from '@phosphor-icons/react'
 import type { ItemListaCompra } from '@/app/api/cliente/[codigo]/lista-compra/route'
 import type { ResultadoOptimizacion } from '@/types'
 import type { OfertaDetectada, MensajeWhatsApp, ProyeccionAhorroAnual } from '@/lib/precios-smart-cart'
@@ -114,9 +114,9 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                     onClick={() => setDia(d)}
                     className="shopping-list-editorial__day shrink-0 px-3 py-1.5 text-xs font-semibold"
                     style={{
-                        background: dia === d ? 'var(--primary)' : 'var(--bg)',
-                        color: dia === d ? 'var(--bg)' : 'var(--text-muted)',
-                        border: `1px solid ${dia === d ? 'var(--primary)' : 'var(--border)'}`,
+                        background: dia === d ? 'var(--diet-warm)' : 'var(--diet-paper)',
+                        color: dia === d ? 'var(--atelier-carbon)' : 'var(--text-muted)',
+                        border: `1px solid ${dia === d ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
                     }}
                 >
                     {d === 'Semana' ? 'Semana' : d.slice(0, 3)}
@@ -129,7 +129,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
         <div>
             {selector}
             <div className="flex items-center justify-center py-8">
-                <Loader2 size={20} className="animate-spin" style={{ color: '#0D9488' }} />
+                <CircleNotch size={20} className="animate-spin" style={{ color: 'var(--diet-warm)' }} />
             </div>
         </div>
     )
@@ -191,57 +191,57 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
         <div className="shopping-list-editorial space-y-2">
             {selector}
             {optimizacion && (
-                <div className="rounded-xl border p-3 space-y-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                    <div className="grid grid-cols-3 gap-2">
-                        <div>
-                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Cesta</p>
-                            <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                <section className="shopping-list-editorial__overview" aria-label="Resumen de compra">
+                    <div className="shopping-list-editorial__metrics">
+                        <div className="shopping-list-editorial__metric">
+                            <p>Cesta</p>
+                            <strong>
                                 {formatEuro(optimizacion.coste_total_multi_super)}
-                            </p>
+                            </strong>
                         </div>
-                        <div>
-                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Ahorro</p>
-                            <p className="text-sm font-bold" style={{ color: '#0D9488' }}>
+                        <div className="shopping-list-editorial__metric">
+                            <p>Ahorro</p>
+                            <strong className="shopping-list-editorial__accent">
                                 {formatEuro(Math.max(0, ahorro))}
-                            </p>
+                            </strong>
                         </div>
-                        <div>
-                            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Ofertas</p>
-                            <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                        <div className="shopping-list-editorial__metric">
+                            <p>Ofertas</p>
+                            <strong>
                                 {data?.ofertas?.length ?? 0}
-                            </p>
+                            </strong>
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="shopping-list-editorial__routes">
                         {data?.whatsapp?.deepLink && (
                             <a
                                 href={data.whatsapp.deepLink}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
-                                style={{ background: '#0D9488', color: 'white' }}
+                                className="shopping-list-editorial__share"
                             >
-                                <Send size={13} />
-                                WhatsApp
+                                <PaperPlaneTilt size={14} weight="regular" />
+                                <span>Enviar lista</span>
+                                <small>WhatsApp</small>
                             </a>
                         )}
                         {optimizacion.resumen_por_super.slice(0, 2).map(supermercado => (
-                            <span
+                            <div
                                 key={supermercado.supermercado_id}
-                                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs"
-                                style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}
+                                className="shopping-list-editorial__store"
                             >
-                                <Store size={13} />
-                                {supermercado.supermercado_nombre}: {formatEuro(supermercado.coste)}
-                            </span>
+                                <Storefront size={14} weight="regular" />
+                                <span>{supermercado.supermercado_nombre}</span>
+                                <strong>{formatEuro(supermercado.coste)}</strong>
+                            </div>
                         ))}
                     </div>
 
                     {!!data?.sustitutos_economicos?.length && (
-                        <div className="space-y-1">
-                            <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-                                <TrendingDown size={12} />
+                        <div className="shopping-list-editorial__savings">
+                            <p>
+                                <TrendDown size={13} weight="regular" />
                                 Ahorros destacados
                             </p>
                             {data.sustitutos_economicos.slice(0, 2).map(item => (
@@ -251,7 +251,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                             ))}
                         </div>
                     )}
-                </div>
+                </section>
             )}
 
             {/* Progreso */}
@@ -303,7 +303,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                     {catItems.length}
                                 </span>
                             </div>
-                            {colapsar ? <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} /> : <ChevronUp size={14} style={{ color: 'var(--text-muted)' }} />}
+                            {colapsar ? <CaretDown size={14} style={{ color: 'var(--text-muted)' }} /> : <CaretUp size={14} style={{ color: 'var(--text-muted)' }} />}
                         </button>
 
                         {/* Items */}
@@ -322,11 +322,11 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                             <div
                                                 className="shopping-list-editorial__check w-5 h-5 flex-shrink-0 flex items-center justify-center transition-all"
                                                 style={{
-                                                    borderColor: checked ? '#0D9488' : 'var(--border)',
-                                                    background: checked ? '#0D9488' : 'transparent',
+                                                    borderColor: checked ? 'var(--diet-warm)' : 'var(--diet-rule)',
+                                                    background: checked ? 'var(--diet-warm)' : 'transparent',
                                                 }}
                                             >
-                                                {checked && <Check size={11} color="white" strokeWidth={3} />}
+                                                {checked && <Check size={11} color="var(--atelier-carbon)" weight="bold" />}
                                             </div>
 
                                             {/* Nombre + comidas */}
