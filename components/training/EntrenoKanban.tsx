@@ -73,12 +73,13 @@ function SesionCard({ sesion, seleccionada, moviendo, onSeleccionar, onAbrirMove
     )
 }
 
-function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, onSeleccionar, onAbrirMover, onMover }: {
+function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, onSeleccionar, onAbrirMover, onMover }: {
     dia: string
     sesiones: SesionKanban[]
     seleccionadaId: string | null
     moverId: string | null
     detalles: Record<string, EjercicioDetalle[] | 'cargando'>
+    extras: Record<string, ExtrasSesion | null>
     onSeleccionar: (id: string) => void
     onAbrirMover: (id: string) => void
     onMover: (dia: string) => void
@@ -203,6 +204,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
                             seleccionadaId={seleccionadaId}
                             moverId={moverId}
                             detalles={detalles}
+                            extras={extras}
                             onSeleccionar={toggleSeleccion}
                             onAbrirMover={(id) => setMoverId(current => current === id ? null : id)}
                             onMover={(nuevoDia) => moverId && moverSesion(moverId, nuevoDia)}
