@@ -5,6 +5,7 @@ import { pasosAGarmin } from './garmin-workouts-formato'
 import { validarPasos } from '@/lib/entrenos/pasos'
 import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
 import { proximaFechaDia } from '@/lib/entrenos/proxima-fecha'
+import { huellaPasos } from '@/lib/entrenos/garmin-auto'
 
 export class ErrorGarmin extends Error {
   constructor(public mensaje: string, public status = 400) {
@@ -103,7 +104,7 @@ export async function enviarSesionAGarmin(
   }
 
   await db.from('sesiones_entrenamiento')
-    .update({ garmin_workout_id: workoutId, garmin_programado_fecha: fecha })
+    .update({ garmin_workout_id: workoutId, garmin_programado_fecha: fecha, garmin_pasos_hash: huellaPasos(sesion.pasos, perfil?.vdot ? Number(perfil.vdot) : null) })
     .eq('id', sesionId)
 
   // Guardar tokens renovados para no pedir login completo la próxima vez.
