@@ -1,5 +1,35 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 09-10-2026 (mediodía, Claude) — Running estructurado y envío automático a Garmin
+
+**Qué se pidió:** quitar el descanso de las rutinas de fuerza (estorba) y trabajar a fondo las sesiones de carrera (ritmos, series, recuperación) para que lleguen solas al Garmin de Carlos y solo tenga que darle a empezar.
+
+**Hecho (todo en producción, probado con la cuenta Garmin real de Carlos):**
+- **Descanso solo donde importa:** `lib/entrenos/descanso-visible.ts` (`descansoRelevante`: solo `cardio` y `funcional`). Oculto en fuerza en ExpandableExercises, PlanTimeline, plantillas, dashboard, editor (`entrenos/nueva`) y en la sesión (sin etiqueta «Desc.» ni temporizador). Commit `b690f13`.
+- **Modelo de pasos:** columna `pasos jsonb` en `plantilla_sesiones` y `sesiones_entrenamiento`. `lib/entrenos/pasos.ts` (tipos `Paso`, `validarPasos`, `resumenSesion`), ritmos Daniels desde VDOT en `lib/entrenos/ritmos.ts` (VDOT 45: E 5:54, M 4:49, T 4:38, I 4:15, R 3:52 /km), `proxima-fecha.ts`, `running-plantillas.ts` (4 sesiones sembradas convertidas).
+- **Envío a Garmin:** `lib/integraciones/garmin-workouts-formato.ts` (JSON de workout), `garmin-workouts.ts` (`enviarSesionAGarmin`: crea, programa en calendario, reenvío sin duplicar, guarda tokens renovados), endpoint `POST /api/entrenos/sesiones/[id]/garmin` (auth `autorizarAccesoCliente`). Tarjeta `components/training/PasosSesion.tsx` con botón «Enviar a Garmin» en Hoy, calendario, tablero y pantalla de sesión.
+- **Envío automático:** cron `/api/cron/enviar-garmin` (06:15 UTC, `vercel.json`), `lib/entrenos/garmin-auto.ts` (`decidirEnvio`, `huellaPasos`). Envía la próxima ocurrencia (≤7 días) de cada sesión con pasos del plan activo de clientes con Garmin conectado; no duplica; reenvía si cambian pasos o VDOT (`garmin_pasos_hash`). Pasada real: 1ª envió 2, 2ª envió 0.
+- **Datos de Carlos** (`04cc53b3-…`, plan «Híbrido Hyrox + Running — Deload»): Tempo (viernes, 20' a 5:00/km) y Tirada larga (domingo, 60' a 5:20–5:40/km) con pasos y ritmo manual. Aparecen en el calendario de Garmin Connect.
+- **Migraciones aplicadas:** `20261009120000_sesiones_pasos_garmin.sql`, `20261009150000_garmin_pasos_hash.sql` (aditivas).
+- Spec y plan: `docs/superpowers/{specs,plans}/2026-10-09-running-estructurado-garmin*`. Tests: `npx tsx scripts/{ritmos,pasos,proxima-fecha,garmin-workouts-formato,running-plantillas,garmin-auto}.test.ts`.
+
+**Auditoría de seguridad (09-10-2026):**
+- `POST /api/entrenos/sesiones/[id]/garmin` y `/api/cron/enviar-garmin` devuelven 401 sin credenciales (verificado en producción). El cron exige `CRON_SECRET` definido (falla cerrado si no existe).
+- Fecha validada por regex; errores al cliente genéricos (`ErrorGarmin.mensaje`), sin `err.message` crudo; ni contraseñas ni tokens en logs/respuestas (la conexión solo se lee con `descifrarConexionGarmin`).
+- Aviso heredado, no introducido: `GET /api/cliente/sesion/[id]?codigo=` sigue aceptando el código público sin sesión; ahora además devuelve `pasos`, `ritmos` y el id de workout de Garmin (no sensibles). Valorar exigir sesión como en las otras lecturas por código.
+- Minors diferidos: sin rate limit en el botón manual; cron y botón manual simultáneos podrían duplicar un entreno (muy improbable); el reenvío borra el workout antiguo de la biblioteca de Garmin (el historial de actividades no se toca).
+
+**Pendiente:**
+- 🟠 **Series cortas (jueves) de Carlos**: la sesión generada por IA no tiene series; falta su **VDOT o tiempo de 5K/10K** (`vdot` está null) para montarlas con ritmos y recuperación.
+- Editor de pasos para el coach; opción por cliente para desactivar el envío automático; Hyrox (estaciones) y ciclismo con el mismo modelo; revisar si el temporizador de descanso debe aparecer también en «Híbrida» (hoy depende del `tipo` de cada ejercicio).
+- Comprobar mañana (10-10, tras 08:15) que el cron programado de Vercel crea el entreno del viernes 16-10 sin intervención.
+
+**Lecciones:**
+- La tarjeta no salía porque el portal pinta las sesiones en **tres sitios** (Hoy, calendario, tablero) que solo reciben ejercicios; no basta con la pantalla `/cliente/sesion/[id]`.
+- **No usar `supabase db push`** (aplicaría 5 migraciones antiguas ya en producción): `supabase db query --linked -f archivo.sql`.
+- `CRON_SECRET` de producción es secreto (no sale con `vercel env pull`); para probar un cron, ejecutar su `GET` desde tsx con un secreto local.
+- `sed -i` de macOS no admite `sed -i "135a\…"` sin extensión: usar python para editar.
+
 ## ✅ SESIÓN 08→09-10-2026 (madrugada, Claude) — Flujo Content Radar recuperado y auditoría profunda del motor de recetas
 
 Carlos metió 10 $ en OpenAI y en DeepSeek y pidió recuperar el flujo reel/TikTok → recetario «para ir metiendo recetas poco a poco», que salgan perfectas (foto, macros, ingredientes, raciones, pasos) y que los reels sin receta dejen un **borrador** con lo máximo posible. Todo el código está en `Content-Radar/` (commits `933df14`…`1d82c4d`); informe completo en [`docs/09-10-2026_auditoria-motor-recetas-puente.md`](docs/09-10-2026_auditoria-motor-recetas-puente.md).
