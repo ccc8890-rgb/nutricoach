@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 import Grafica, { type Fila } from './Grafica'
+import AnalisisIA from './AnalisisIA'
 import type { PanelRendimiento as Panel } from '@/lib/rendimiento/panel'
 import type { UmbralesAtleta } from '@/lib/rendimiento/carga'
 
@@ -85,6 +86,8 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
           ))}
         </div>
       </div>
+
+      <AnalisisIA clienteId={clienteId} />
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
         <Tarjeta titulo="Forma (CTL)" valor={String(r.ctl)} pie="Carga media de 6 semanas" color={COLOR.forma} />

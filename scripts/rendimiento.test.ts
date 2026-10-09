@@ -97,3 +97,25 @@ assert.equal(panel.parciales.length, 1)
 assert.equal(panel.eficiencia.length, 1) // la cinta no cuenta
 assert.ok(panel.resumen && panel.resumen.carga7d === 70)
 console.log('panel: OK')
+
+// ── Alertas ──
+import { calcularAlertas } from '../lib/rendimiento/alertas'
+const rs = (p: Partial<NonNullable<ReturnType<typeof resumenCarga>>>) => ({ ctl: 30, atl: 30, tsb: 0, rampa7: 0, carga7d: 200, carga28d: 800, monotonia: 1, tension: 200, estado: 'neutral' as const, textoEstado: '', ...p })
+const sm = (tss: number, sesiones = 3) => ({ semana: '2026-01-01', tss, km: 20, sesiones, minutos: 200 })
+const codigos = (x: ReturnType<typeof calcularAlertas>) => x.map(a => a.codigo)
+assert.deepEqual(calcularAlertas({ resumen: null, semanas: [], diasParaCompeticion: null }), [])
+assert.deepEqual(codigos(calcularAlertas({ resumen: rs({}), semanas: [sm(200), sm(210), sm(100)], diasParaCompeticion: null })), [])
+assert.ok(codigos(calcularAlertas({ resumen: rs({ rampa7: 9 }), semanas: [], diasParaCompeticion: null })).includes('rampa_alta'))
+assert.ok(codigos(calcularAlertas({ resumen: rs({ rampa7: 6 }), semanas: [], diasParaCompeticion: null })).includes('rampa_vigilar'))
+assert.ok(codigos(calcularAlertas({ resumen: rs({ tsb: -35 }), semanas: [], diasParaCompeticion: null })).includes('fatiga_alta'))
+assert.ok(codigos(calcularAlertas({ resumen: rs({ tsb: -15 }), semanas: [], diasParaCompeticion: 9 })).includes('llega_cansado'))
+assert.ok(!codigos(calcularAlertas({ resumen: rs({ tsb: -15 }), semanas: [], diasParaCompeticion: 40 })).includes('llega_cansado'))
+assert.ok(codigos(calcularAlertas({ resumen: rs({ tsb: 30 }), semanas: [], diasParaCompeticion: null })).includes('destrenando'))
+assert.ok(!codigos(calcularAlertas({ resumen: rs({ tsb: 30 }), semanas: [], diasParaCompeticion: 5 })).includes('destrenando')) // el tapering es intencionado
+assert.ok(codigos(calcularAlertas({ resumen: rs({ monotonia: 2.4 }), semanas: [], diasParaCompeticion: null })).includes('monotonia'))
+// la última semana está en curso: el salto se mide entre las dos completas
+assert.ok(codigos(calcularAlertas({ resumen: rs({}), semanas: [sm(100), sm(150), sm(20)], diasParaCompeticion: null })).includes('salto_semanal'))
+assert.ok(codigos(calcularAlertas({ resumen: rs({}), semanas: [sm(0, 0), sm(0, 0), sm(0, 0), sm(0, 0), sm(50)], diasParaCompeticion: null })).includes('inactividad'))
+assert.ok(codigos(calcularAlertas({ resumen: rs({}), semanas: [], diasParaCompeticion: null, rhr: { reciente: 58, base: 51 } })).includes('rhr_alto'))
+assert.ok(codigos(calcularAlertas({ resumen: rs({}), semanas: [], diasParaCompeticion: null, pctIntenso28d: 50 })).includes('demasiada_intensidad'))
+console.log('alertas: OK')
