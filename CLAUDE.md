@@ -1,5 +1,33 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 09-10-2026 (noche, Claude) — Aviso al coach por alertas de rendimiento y RPE en la carga de fuerza
+
+Carlos se fue fuera y pidió adelantar lo que se pudiera. Commits `ef8101a`, aviso de rendimiento y RPE (todos en `main`).
+
+**Hecho**
+- **Aviso al coach (en producción):** cron diario `/api/cron/avisos-rendimiento` (06:45 UTC, tras la sincronización de Garmin). `lib/rendimiento/avisos.ts` reutiliza las alertas deterministas del panel (sin IA, sin coste): si hay alguna de gravedad **alta** (`rampa_alta`, `fatiga_alta`, `llega_cansado`) crea una tarea `alerta_rendimiento` (prioridad 1, pendiente) en `agente_tareas`; sale en la tarjeta «IA» del dashboard y enlaza a la ficha del cliente (`hrefTarea` en `command-center`). No se repite el mismo código en 7 días. Aprobarla solo deja constancia (`aplicar.ts`). Las de nivel «aviso» siguen solo en el panel.
+- **RPE en la carga (solo código):** `calcularTss` admite `rpe` (1-10): TSS = horas × (RPE/10)² × 100 y método `rpe`; gana la mayor lectura (ritmo, pulso, RPE). 60 min a RPE 7 = 49 frente a ~24 por pulso en fuerza. Tests en `scripts/rendimiento.test.ts`.
+- **Migración preparada, NO aplicada:** `supabase/migrations/20261009210000_entrenos_rpe.sql` (columna `rpe` 1-10 en `entrenos_realizados`). Aplicar con `supabase db query --linked -f …` solo con visto bueno de Carlos.
+
+**Verificado:** `tsc` limpio, tests de rendimiento OK, inserción real de una tarea `alerta_rendimiento` en producción aceptada y borrada, ambos endpoints nuevos devuelven 401 sin credenciales y con secreto falso. Carlos solo tiene hoy una alerta de nivel «aviso» (`demasiada_intensidad`), así que no se creó ninguna tarea real: el camino completo cron → tarea → dashboard **no se ha visto con una alerta alta de verdad**.
+
+**Auditoría de esta sesión (fallos y límites)**
+1. **Cambio en sitio equivocado (mío, `ef8101a`):** desmarcar series y guardar el borrador en `SesionCardMobile` solo afecta a `/cliente/sesion/[id]` modo Registrar, que Carlos ya no usa; desde Entreno → Hoy no se llega. Es código inerte, no rompe nada; revertir si estorba. La lista de ejercicios de **Entreno → Hoy** (`ExpandableExercises.tsx`, marcar con el número, guardado por día en localStorage) la gestiona Codex.
+2. **Sin cobertura:** el RPE no se lee ni se pide en ninguna pantalla, la carga existente no se recalcula, no hay modelo Hyrox (solo 7 sesiones de fuerza de feb-mar 2025, ninguna reciente, ningún RPE guardado).
+3. **HRV/sueño bloqueado por datos:** los endpoints de HRV nocturno y sueño de Garmin devuelven vacío para los últimos 6 días (el reloj no se lleva de noche). No se escribió código a ciegas. Al conseguir 3-4 noches: traer HRV nocturno (`/hrv-service/hrv/{fecha}`) y sueño, y pintarlos junto al pulso en reposo. Garmin guarda histórico, no se pierde nada por esperar.
+4. **Límites del aviso:** no hay email ni push, solo tarjeta; si el coach rechaza o aprueba, el mismo código no vuelve en 7 días aunque siga activo; secuencial con tope de 50 atletas y 100 s.
+5. **Seguridad:** cron falla cerrado sin `CRON_SECRET` (probado en producción), sin secretos ni `err.message` en lo nuevo; el borrador de series en localStorage solo guarda kg/reps/RPE por sesión.
+
+**Lecciones:** (1) antes de «avanzar» una interacción, comprobar qué pantalla usa de verdad el usuario: aquí existía ya la lista con marcar/desmarcar en otro componente; (2) un endpoint real contra la cuenta de Garmin (vacío) ahorra construir encima de un formato supuesto; (3) `git push` a `main` imprime «Changes must be made through a pull request» pero llega: comprobar con `git status -sb`.
+
+**Pendiente**
+1. Mañana 10-10: cron de Garmin (08:15 hora local) y primer cron `avisos-rendimiento` (08:45 local); lunes 12-10: análisis semanal.
+2. Ver el panel de rendimiento en navegador (390 px, oscuro).
+3. Decidir si aplicar la migración del RPE y diseñar con Carlos la pregunta «¿cómo de dura fue? 1-10» en Entreno → Hoy; después recalcular las sesiones con RPE.
+4. Decidir si la semana simulada se aplica también al reloj.
+5. HRV y sueño cuando haya noches con el reloj. Modelo Hyrox después de tener sesiones reales.
+6. Opcional: email al coach además de la tarjeta; decidir si se revierte `ef8101a`.
+
 ## ✅ SESIÓN 09-10-2026 (tarde-noche, Claude) — Panel de rendimiento tipo TrainingPeaks y entrenador IA para el coach
 
 **Qué se pidió:** un sistema tipo TrainingPeaks/Runna con la ciencia de un entrenador pro de running/Hyrox, que analice los datos de Garmin, ayude al coach a decidir y aprenda de cada atleta.
