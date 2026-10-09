@@ -220,6 +220,204 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Coach workspace primitives ── */
+.coach-page {
+  width: min(100%, 94rem);
+  margin-inline: auto;
+  padding: clamp(1rem, 2vw, 2rem);
+}
+
+.coach-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: clamp(1.5rem, 2.5vw, 2.5rem);
+}
+
+.coach-page-header h1 {
+  color: var(--text);
+  font-size: clamp(1.75rem, 2.8vw, 2.75rem);
+  font-weight: 720;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.coach-eyebrow {
+  margin-bottom: 0.55rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.coach-page-description {
+  max-width: 62ch;
+  margin-top: 0.7rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.coach-page-actions,
+.coach-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.coach-page-actions {
+  flex-shrink: 0;
+}
+
+.coach-section-header {
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+}
+
+.coach-section-header h2 {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 680;
+  letter-spacing: -0.015em;
+}
+
+.coach-section-header p {
+  margin-top: 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.coach-surface {
+  border: 1px solid var(--border);
+  border-radius: 1.125rem;
+  background: var(--surface);
+}
+
+.coach-surface--raised {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--metal-bright) 4%, transparent), transparent 44%), var(--surface-elevated);
+  border-color: var(--glass-border);
+  box-shadow: var(--shadow-md), inset 0 1px 0 color-mix(in srgb, var(--metal-bright) 9%, transparent);
+}
+
+.coach-surface--quiet {
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  border-color: var(--border-light);
+}
+
+.coach-metric {
+  min-width: 0;
+  padding: 1rem;
+}
+
+.coach-metric__label {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 680;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coach-metric__value {
+  margin-top: 0.45rem;
+  color: var(--text);
+  font-size: clamp(1.45rem, 2vw, 2rem);
+  font-weight: 680;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.coach-metric__value span {
+  margin-left: 0.2rem;
+  color: var(--text-muted);
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 0.68em;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.coach-metric__detail {
+  margin-top: 0.55rem;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+}
+
+.coach-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-size: 0.68rem;
+  font-weight: 680;
+  line-height: 1;
+}
+
+.coach-status--success { background: var(--semantic-active-bg); border-color: var(--semantic-active-border); color: var(--semantic-active); }
+.coach-status--warning { background: var(--semantic-warn-bg); border-color: var(--semantic-warn-border); color: var(--semantic-warn); }
+.coach-status--danger { background: var(--semantic-alert-bg); border-color: var(--semantic-alert-border); color: var(--semantic-alert); }
+.coach-status--info { background: var(--semantic-info-bg); border-color: var(--semantic-info-border); color: var(--semantic-info); }
+
+.coach-icon-button {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  color: var(--text-secondary);
+  transition: transform 160ms var(--ease-out-strong), background-color 160ms var(--ease-out-strong), border-color 160ms var(--ease-out-strong), color 160ms var(--ease-out-strong);
+}
+
+.coach-icon-button:hover {
+  border-color: var(--border);
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.coach-icon-button:active { transform: scale(0.96); }
+
+.coach-icon-button:focus-visible,
+.coach-page a:focus-visible,
+.coach-page button:focus-visible,
+.coach-page input:focus-visible,
+.coach-page select:focus-visible,
+.coach-page textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .coach-page-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .coach-page-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-page *,
+  .coach-page *::before,
+  .coach-page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 ::selection {
   background: var(--accent-bg);
   color: var(--text);
