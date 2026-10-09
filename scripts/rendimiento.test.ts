@@ -70,7 +70,7 @@ assert.equal(resumenCarga([]), null)
 console.log('rendimiento: OK')
 
 // ── Panel ──
-import { construirPanel, agruparSemanas, lunesDe, hrvBase, type EntrenoPanel } from '../lib/rendimiento/panel'
+import { construirPanel, agruparSemanas, lunesDe, type EntrenoPanel } from '../lib/rendimiento/panel'
 const e = (fecha: string, tss: number, extra: Partial<EntrenoPanel> = {}): EntrenoPanel => ({
   fecha, tipo: 'running', nombre: null, duracion_s: 3000, distancia_m: 10000, ritmo_medio_s_km: 300, fc_media: 150,
   tss, tss_metodo: 'pulso', carga_garmin: null, vo2max: null, tiempo_zona_fc: null, mejores_parciales: null, raw: null, ...extra,
@@ -96,5 +96,4 @@ assert.equal(panel.serie[panel.serie.length - 1].fecha, '2026-10-09')
 assert.equal(panel.parciales.length, 1)
 assert.equal(panel.eficiencia.length, 1) // la cinta no cuenta
 assert.ok(panel.resumen && panel.resumen.carga7d === 70)
-assert.equal(hrvBase([]), null)
 console.log('panel: OK')

@@ -22,7 +22,6 @@ export interface EntrenoPanel {
 
 export interface DiaBienestar {
   fecha: string
-  hrv: number | null
   rhr: number | null
   readiness: number | null
   body_battery_max: number | null
@@ -44,8 +43,6 @@ export interface PanelRendimiento {
   resumen: ResumenCarga | null
   semanas: SemanaCarga[]
   bienestar: DiaBienestar[]
-  /** Media de HRV de los últimos 28 días, con su banda de ±1 desviación. */
-  hrvBase: { media: number; min: number; max: number } | null
   /** Mejores parciales (1 km y 5 km) de cada carrera con ese dato, para ver la evolución. */
   parciales: { fecha: string; s1000: number | null; s5000: number | null }[]
   /** Eficiencia aeróbica: m/min por latido en carreras continuas de 25+ min. Sube = más forma. */
@@ -84,15 +81,6 @@ export function agruparSemanas(entrenos: EntrenoPanel[], semanasAtras: number, h
   return salida
 }
 
-export function hrvBase(dias: DiaBienestar[]): PanelRendimiento['hrvBase'] {
-  const v = dias.slice(-28).map(d => d.hrv).filter((x): x is number => typeof x === 'number')
-  if (v.length < 7) return null
-  const media = v.reduce((a, b) => a + b, 0) / v.length
-  const desv = Math.sqrt(v.reduce((a, b) => a + (b - media) ** 2, 0) / v.length)
-  const r = (n: number) => Math.round(n * 10) / 10
-  return { media: r(media), min: r(media - desv), max: r(media + desv) }
-}
-
 export function construirPanel(
   entrenos: EntrenoPanel[],
   bienestar: DiaBienestar[],
@@ -121,7 +109,6 @@ export function construirPanel(
     resumen: resumenCarga(completa),
     semanas: agruparSemanas(ordenados, 12, hoy),
     bienestar,
-    hrvBase: hrvBase(bienestar),
     parciales,
     eficiencia,
     vo2max: ordenados.filter(e => e.vo2max).map(e => ({ fecha: e.fecha, valor: e.vo2max! })),

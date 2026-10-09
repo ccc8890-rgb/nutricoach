@@ -28,7 +28,7 @@ export async function GET(
       .eq('cliente_id', clienteId)
       .order('fecha', { ascending: true }),
     db.from('actividad_externa_cliente')
-      .select('fecha,hrv,rhr,training_readiness,body_battery_max,sueno_h,stress_avg')
+      .select('fecha,rhr,training_readiness,body_battery_max,sueno_h,stress_avg')
       .eq('cliente_id', clienteId)
       .eq('proveedor', 'garmin_connect')
       .gte('fecha', desdeBienestar)
@@ -38,7 +38,6 @@ export async function GET(
 
   const bienestar: DiaBienestar[] = (dBien ?? []).map(d => ({
     fecha: d.fecha as string,
-    hrv: d.hrv ?? null,
     rhr: d.rhr ?? null,
     readiness: d.training_readiness ?? null,
     body_battery_max: d.body_battery_max ?? null,

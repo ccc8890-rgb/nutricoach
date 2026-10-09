@@ -54,7 +54,7 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
 
   const pmc = useMemo<Fila[]>(() => (datos?.serie ?? []).map(p => ({ fecha: p.fecha, ctl: p.ctl, atl: p.atl, tss: p.tss, tsb: p.tsb })), [datos])
   const semanas = useMemo<Fila[]>(() => (datos?.semanas ?? []).map(s => ({ fecha: s.semana, tss: s.tss })), [datos])
-  const bien = useMemo<Fila[]>(() => (datos?.bienestar ?? []).map(b => ({ fecha: b.fecha, hrv: b.hrv, rhr: b.rhr, readiness: b.readiness })), [datos])
+  const bien = useMemo<Fila[]>(() => (datos?.bienestar ?? []).map(b => ({ fecha: b.fecha, rhr: b.rhr, readiness: b.readiness, bb: b.body_battery_max })), [datos])
   const parciales = useMemo<Fila[]>(() => (datos?.parciales ?? []).map(p => ({ fecha: p.fecha, s1000: p.s1000, s5000: p.s5000 })), [datos])
   const ef = useMemo<Fila[]>(() => (datos?.eficiencia ?? []).map(p => ({ fecha: p.fecha, ef: p.valor })), [datos])
   const vo2 = useMemo<Fila[]>(() => (datos?.vo2max ?? []).map(p => ({ fecha: p.fecha, vo2: p.valor })), [datos])
@@ -111,9 +111,8 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
         <Bloque titulo="Carga por semana" nota={semanaActual ? `Esta semana: ${semanaActual.tss} TSS · ${semanaActual.km} km · ${semanaActual.sesiones} sesiones` : undefined}>
           <Grafica datos={semanas} alto={150} series={[{ key: 'tss', label: 'TSS semanal', color: COLOR.forma, tipo: 'barras' }]} formato={v => String(Math.round(v))} />
         </Bloque>
-        <Bloque titulo="Variabilidad cardíaca (HRV)" nota="La banda gris es su rango habitual de las últimas 4 semanas. Por debajo, recuperación pobre.">
-          <Grafica datos={bien} alto={150} banda={datos.hrvBase ? { min: datos.hrvBase.min, max: datos.hrvBase.max } : null}
-            series={[{ key: 'hrv', label: 'HRV (ms)', color: COLOR.fresc }]} />
+        <Bloque titulo="Batería corporal" nota="El máximo que alcanzas cada día: indica cuánto recuperas por la noche. Si baja días seguidos, falta descanso.">
+          <Grafica datos={bien} alto={150} series={[{ key: 'bb', label: 'Máximo del día', color: COLOR.fresc }]} formato={v => String(Math.round(v))} />
         </Bloque>
         <Bloque titulo="Pulso en reposo" nota="Si sube varios días seguidos suele indicar fatiga, enfermedad o estrés.">
           <Grafica datos={bien} alto={150} series={[{ key: 'rhr', label: 'ppm', color: COLOR.fatiga }]} formato={v => String(Math.round(v))} />
