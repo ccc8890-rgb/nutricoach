@@ -29,6 +29,12 @@ const MAPA = {
   'proteina en polvo sabor chocolate':'Proteína en polvo sabor chocolate',
   'proteina de suero sabor chocolate':'Proteína en polvo sabor chocolate',
   'pechuga de pollo':'Pechuga de pollo',
+  // tanda 1 de revisión manual (09-10-2026)
+  'canela en polvo':'canela molida','ajo crudo':'Ajo','yogur griego natural desnatado':'Yogur griego natural (0%)',
+  'tortilla de trigo integral (tamano pequeno)':'Tortillas trigo integrales',
+  'aove (aceite de oliva virgen extra)':'Aceite de oliva virgen extra','obleas de arroz (papel de arroz)':'Hojas de papel de arroz',
+  'limon (ralladura y zumo)':'Limón','sal (para los panes planos)':'Sal','chocolate negro 75% (derretido)':'Chocolate negro 75-80%',
+  'arroz blanco de grano largo':'Arroz blanco',
 }
 const dud = JSON.parse(fs.readFileSync('salidas/matches-dudosos.json','utf8'))
 const ids = new Map()
