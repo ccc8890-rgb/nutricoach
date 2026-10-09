@@ -6,6 +6,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { IOauth1Token, IOauth2Token } from 'garmin-connect/dist/garmin/types'
 import { syncGarminDay, persistirGarminDays, dateRange } from './garmin-connect-sync'
+import { sincronizarEntrenosGarmin } from '@/lib/rendimiento/garmin-entrenos'
 
 export interface ConexionGarminGuardada {
   email: string
@@ -104,6 +105,11 @@ export async function syncGarminClientDays(
   const validos = results.filter(Boolean) as NonNullable<typeof results[0]>[]
   if (validos.length > 0) {
     await persistirGarminDays(db, clienteId, validos)
+  }
+  try {
+    await sincronizarEntrenosGarmin(db, clienteId, gc, 20)
+  } catch (e) {
+    console.error('[garmin] entrenos individuales:', e instanceof Error ? e.message : e) // no debe tumbar el resumen diario
   }
   const { oauth1, oauth2 } = gc.exportToken()
   await db

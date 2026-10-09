@@ -9,7 +9,7 @@ import Link from 'next/link'
 import {
   ArrowLeft, UtensilsCrossed, Dumbbell, Weight,
   Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2,
-  Bot, CopyPlus, X, Activity, PersonStanding,
+  Bot, CopyPlus, X, Activity, PersonStanding, ChartLine,
   ChevronRight, ChevronDown, RefreshCw, Pencil, Flame, Beef, Wheat, Droplets,
   ExternalLink, Send, AlertTriangle, MessageCircle, HeartPulse,
   ShieldCheck, BookOpen, Target, Copy, RotateCcw,
@@ -32,6 +32,7 @@ const PerfilEntrenoForm = dynamic(() => import('@/components/training/PerfilEntr
 const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const SuplementacionPanel = dynamic(() => import('@/components/clientes/SuplementacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const AnaliticasPanel = dynamic(() => import('@/components/clientes/AnaliticasPanel'), { ssr: false, loading: () => <TabSkeleton /> })
+const PanelRendimiento = dynamic(() => import('@/components/rendimiento/PanelRendimiento'), { ssr: false, loading: () => <TabSkeleton /> })
 const HistorialEntreno = dynamic(() => import('@/components/training/HistorialEntreno'), { ssr: false, loading: () => <TabSkeleton /> })
 const CompeticionesManager = dynamic(() => import('@/components/CompeticionesManager'), { ssr: false, loading: () => <TabSkeleton /> })
 const MicronutrientesCoach = dynamic(() => import('@/components/clientes/MicronutrientesCoach'), { ssr: false })
@@ -55,8 +56,8 @@ function TabSkeleton() {
 type NotaCoachRow = { id: string; cliente_id: string; mensaje: string; created_at: string }
 type Tab = 'resumen' | 'nutricion' | 'entrenamiento' | 'seguimiento' | 'comunicacion' | 'perfil'
 const TABS_VALIDAS: readonly Tab[] = ['resumen', 'nutricion', 'entrenamiento', 'seguimiento', 'comunicacion', 'perfil']
-type SubTabEntreno = 'plan' | 'calendario' | 'historial' | 'perfil-atleta' | 'competiciones'
-const SUBTABS_ENTRENO: readonly SubTabEntreno[] = ['plan', 'calendario', 'historial', 'perfil-atleta', 'competiciones']
+type SubTabEntreno = 'plan' | 'calendario' | 'rendimiento' | 'historial' | 'perfil-atleta' | 'competiciones'
+const SUBTABS_ENTRENO: readonly SubTabEntreno[] = ['plan', 'calendario', 'rendimiento', 'historial', 'perfil-atleta', 'competiciones']
 
 interface FlagClinico {
   codigo: string
@@ -933,6 +934,7 @@ export default function ClienteDetallePage() {
               tabs={[
                 { key: 'plan', label: 'Plan activo', icon: Dumbbell },
                 { key: 'calendario', label: 'Calendario', icon: ClipboardCheck },
+                { key: 'rendimiento', label: 'Rendimiento', icon: ChartLine },
                 { key: 'historial', label: 'Historial', icon: Activity },
                 { key: 'perfil-atleta', label: 'Perfil atleta', icon: PersonStanding },
                 { key: 'competiciones', label: 'Competiciones', icon: Target },
@@ -1030,6 +1032,9 @@ export default function ClienteDetallePage() {
                   />
                 )}
               </WorkCard>
+
+            ) : subTabEntreno === 'rendimiento' ? (
+              <ErrorBoundary><PanelRendimiento clienteId={id as string} /></ErrorBoundary>
 
             ) : subTabEntreno === 'historial' ? (
               <div className="space-y-4">
