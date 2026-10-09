@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import { fetchJson } from '@/lib/cliente/cache-swr'
-import { Dumbbell, Footprints, Loader2, CircleDashed } from 'lucide-react'
+import { Dumbbell, Loader2, CircleDashed } from 'lucide-react'
+import { SneakerMove } from '@phosphor-icons/react'
 import CalendarioMesEntreno from './CalendarioMesEntreno'
 import EntrenoKanban from './EntrenoKanban'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
@@ -23,7 +24,7 @@ interface SesionSemana {
 }
 
 function iconoTipo(tipo: SesionSemana['tipo_sesion'], size = 16) {
-  return tipo === 'carrera' ? <Footprints size={size} /> : <Dumbbell size={size} />
+  return tipo === 'carrera' ? <SneakerMove size={size} weight="regular" /> : <Dumbbell size={size} />
 }
 
 export default function EntrenoSubTabs({ planNombre }: { planId: string; planNombre: string }) {
@@ -82,10 +83,7 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
         sesionHoy ? (
           <section className="training-sheet">
             <div className="flex items-center gap-3">
-              <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
-                style={{ background: 'var(--editorial-field)', border: '1px solid var(--editorial-rule)' }}
-              >
+              <div className="training-session-mark">
                 {iconoTipo(sesionHoy.tipo_sesion, 18)}
               </div>
               <div className="min-w-0 flex-1">
