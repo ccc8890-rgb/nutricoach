@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 import { ejecutarAnalisisRendimiento } from '@/lib/agentes/analisis-rendimiento'
+import { vistaPreviaDecision, type DecisionGuardada } from '@/lib/rendimiento/aplicar-decision'
 
 export const maxDuration = 90
 
@@ -27,7 +28,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     .order('created_at', { ascending: false })
     .limit(5)
   if (error) return NextResponse.json({ error: 'No se pudieron leer los análisis' }, { status: 500 })
-  return NextResponse.json({ analisis: data ?? [] })
+  // Vista previa (antes/después) de los cambios de pasos, solo del análisis más reciente.
+  const analisis = await Promise.all((data ?? []).map(async (t, i) => {
+    const p = (t.payload ?? {}) as { decisiones?: DecisionGuardada[] }
+    if (i > 0 || !p.decisiones?.length) return t
+    const decisiones = await Promise.all(p.decisiones.map(async d => ({ ...d, vistaPrevia: await vistaPreviaDecision(r.db, id, d) })))
+    return { ...t, payload: { ...p, decisiones } }
+  }))
+  return NextResponse.json({ analisis })
 }
 
 /** Genera un análisis nuevo ahora (el coach lo pide a mano). */

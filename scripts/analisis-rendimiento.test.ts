@@ -27,4 +27,20 @@ assert.equal(s.alerta, null)
 assert.equal(s.preguntas.length, 4)
 assert.equal(s.prioridad, 10)
 assert.equal(s.confianza, 0)
+// Pasos propuestos: se conservan solo con id UUID y formato válido
+const buenos = [{ tipo: 'trabajo', duracion: { unidad: 'metros', valor: 400 }, objetivo: { tipo: 'ritmo', min_seg_km: 255, max_seg_km: 270 } }]
+const c = sanearSalida({
+  resumen: 'x',
+  decisiones: [
+    { cambio: 'a', sesion_id: '11111111-2222-3333-4444-555555555555', pasos: buenos },
+    { cambio: 'b', sesion_id: 'no-es-uuid', pasos: buenos },
+    { cambio: 'c', sesion_id: '11111111-2222-3333-4444-555555555555', pasos: [{ tipo: 'inventado' }] },
+    { cambio: 'd', pasos: buenos },
+  ],
+})!
+assert.equal(c.decisiones[0].pasos?.length, 1)
+assert.equal(c.decisiones[0].sesion_id, '11111111-2222-3333-4444-555555555555')
+assert.equal(c.decisiones[1].pasos, undefined) // id inválido
+assert.equal(c.decisiones[2].pasos, undefined) // pasos inválidos
+assert.equal(c.decisiones[3].pasos, undefined) // sin id
 console.log('analisis-rendimiento: OK')

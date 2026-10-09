@@ -1,7 +1,8 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
 
-interface Decision { sesion: string; cambio: string; razon: string; evidencia: string; confianza: number }
+interface VistaPrevia { sesionNombre: string; actual: string[]; nuevo: string[]; distanciaActualKm: number | null; distanciaNuevaKm: number | null; valido: boolean; error?: string }
+interface Decision { sesion: string; cambio: string; razon: string; evidencia: string; confianza: number; vistaPrevia?: VistaPrevia | null; aplicada?: { at: string } | null }
 interface Payload {
   resumen?: string
   lecturas?: { titulo: string; detalle: string; dato: string }[]
@@ -23,6 +24,8 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
   const [guardando, setGuardando] = useState(false)
   const [nota, setNota] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [aviso, setAviso] = useState<string | null>(null)
+  const [aplicando, setAplicando] = useState<number | null>(null)
 
   const leer = useCallback(async () => {
     const r = await fetch(`/api/clientes/${clienteId}/rendimiento/analisis`, { cache: 'no-store' })
@@ -55,6 +58,25 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
     } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo guardar') } finally { setGuardando(false) }
   }
 
+  async function aplicar(a: Analisis, indice: number, deshacer = false) {
+    const d = a.payload.decisiones?.[indice]
+    const texto = deshacer
+      ? '¿Deshacer el cambio y volver a los pasos anteriores? Se reenviará al reloj.'
+      : `¿Aplicar este cambio a «${d?.vistaPrevia?.sesionNombre ?? 'la sesión'}» y enviarlo al reloj?`
+    if (!window.confirm(texto)) return
+    setAplicando(indice); setError(null); setAviso(null)
+    try {
+      const r = await fetch(`/api/clientes/${clienteId}/rendimiento/analisis/aplicar`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tareaId: a.id, indice, deshacer }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(j.error ?? 'No se pudo aplicar')
+      setAviso(j.garmin?.enviado ? `${deshacer ? 'Cambio deshecho' : 'Cambio aplicado'} y enviado al reloj${j.garmin.fecha ? ` para el ${fecha(j.garmin.fecha + 'T12:00:00')}` : ''}.` : `${deshacer ? 'Cambio deshecho' : 'Cambio aplicado'} en el plan. ${j.garmin?.aviso ?? ''}`)
+      await leer()
+    } catch (e) { setError(e instanceof Error ? e.message : 'No se pudo aplicar') } finally { setAplicando(null) }
+  }
+
   const ultimo = lista?.[0]
   const p = ultimo?.payload
   const pendiente = ultimo && ['pendiente', 'en_revision'].includes(ultimo.estado)
@@ -75,6 +97,7 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
       </div>
 
       {error && <p className="mt-2 text-xs" style={{ color: '#E0557A' }}>{error}</p>}
+      {aviso && <p className="mt-2 text-xs" style={{ color: 'var(--text-secondary)' }}>{aviso}</p>}
       {lista === null && <div className="mt-3 h-16 animate-pulse rounded-lg" style={{ background: 'var(--bg-subtle)' }} />}
       {lista !== null && !ultimo && <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>Aún no hay ningún análisis para este atleta.</p>}
 
@@ -116,6 +139,35 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
                     <p className="mt-0.5 text-sm" style={{ color: 'var(--text)' }}>{d.cambio}</p>
                     <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{d.razon}</p>
                     <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>{d.evidencia} · confianza {Math.round(d.confianza * 100)}%</p>
+                    {d.vistaPrevia && (
+                      <div className="mt-2 rounded-md p-2.5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                        <div className="grid gap-3 text-xs sm:grid-cols-2">
+                          <div>
+                            <p className="mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Ahora{d.vistaPrevia.distanciaActualKm ? ` · ${d.vistaPrevia.distanciaActualKm} km` : ''}</p>
+                            {d.vistaPrevia.actual.map((l, k) => <p key={k} style={{ color: 'var(--text-secondary)' }}>{l}</p>)}
+                          </div>
+                          <div>
+                            <p className="mb-1 font-medium" style={{ color: 'var(--text)' }}>Propuesto{d.vistaPrevia.distanciaNuevaKm ? ` · ${d.vistaPrevia.distanciaNuevaKm} km` : ''}</p>
+                            {d.vistaPrevia.nuevo.map((l, k) => <p key={k} style={{ color: 'var(--text)' }}>{l}</p>)}
+                          </div>
+                        </div>
+                        {!d.vistaPrevia.valido && <p className="mt-2 text-xs" style={{ color: '#E0557A' }}>No se puede aplicar: {d.vistaPrevia.error}</p>}
+                        {d.vistaPrevia.valido && (
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            {d.aplicada ? (
+                              <>
+                                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Aplicado el {fecha(d.aplicada.at)}</span>
+                                <button disabled={aplicando === i} onClick={() => aplicar(ultimo, i, true)} className="rounded-md px-2.5 py-1 text-xs disabled:opacity-60" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>Deshacer</button>
+                              </>
+                            ) : (
+                              <button disabled={aplicando === i} onClick={() => aplicar(ultimo, i)} className="rounded-md px-2.5 py-1 text-xs font-medium disabled:opacity-60" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border-strong)', color: 'var(--text)' }}>
+                                {aplicando === i ? 'Aplicando…' : 'Aplicar al plan y enviar al reloj'}
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

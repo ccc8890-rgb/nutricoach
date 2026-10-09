@@ -8,6 +8,7 @@
 import { llamarDeepSeek, guardarTareaAgente } from './executor'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
+import { validarPasos, type Paso } from '@/lib/entrenos/pasos'
 
 const SYSTEM = `Eres un entrenador de running y Hyrox de alto nivel que asesora a otro entrenador (el coach). Razonas con ciencia del entrenamiento, no con tópicos.
 
@@ -32,13 +33,14 @@ REGLAS DE TRABAJO:
 9. Las zonas de pulso son las de Garmin (% del pulso máximo): un rodaje suave con calor o poca base puede caer en Z4. Antes de decir que algo fue intenso, contrasta ritmo y pulso.
 10. La sección EJECUCIÓN DE LAS SESIONES dice si lo planificado se cumplió (ritmos por repetición, caída al final, sesiones saltadas). Es lo más importante para juzgar si el plan funciona: si no se cumple, plantea si el objetivo es demasiado exigente o si faltó recuperación antes de tocar la carga.
 11. Ritmos: un número MENOR de min/km es MÁS RÁPIDO (4:38 es más rápido que 4:49). Comprueba la dirección de cada comparación antes de escribirla, y no afirmes que algo es más rápido o lento que un umbral sin hacer esa comprobación. Si los ritmos por tramo empeoran hacia el final, dilo (caída).
-12. Sé coherente con tus propias cifras: si dices que un límite se supera, no propongas algo que lo supera.
+12. PASOS NUEVOS (opcional). Solo si el cambio afecta a una sesión que tenga [sesion_id:...] en el contexto, puedes añadir "sesion_id" (copiado tal cual) y "pasos": la sesión COMPLETA ya modificada, en el mismo formato JSON que "pasos_actuales" (tipos: calentamiento, trabajo, recuperacion, enfriamiento y bloques {"tipo":"repetir","veces":N,"pasos":[...]}; duración {"unidad":"metros"|"segundos","valor":N}; objetivo {"tipo":"ritmo","min_seg_km":N,"max_seg_km":N} con un rango de 10-15 s/km). Parte siempre de pasos_actuales, conserva sus campos "nota" y cambia solo lo que justifica la decisión. Si el cambio es genérico o la sesión no tiene pasos, NO incluyas "pasos". Un coach humano revisará y aplicará el cambio.
+13. Sé coherente con tus propias cifras: si dices que un límite se supera, no propongas algo que lo supera.
 
 Responde SOLO con este JSON:
 {
   "resumen": "2-3 frases: cómo está el atleta ahora y qué se juega esta semana",
   "lecturas": [ { "titulo": "corto", "detalle": "qué dicen los datos y qué significa", "dato": "cifra concreta del contexto" } ],
-  "decisiones": [ { "sesion": "nombre de la sesión del plan o 'general'", "cambio": "qué hacer exactamente", "razon": "por qué, ligado a los datos", "evidencia": "principio o autor", "confianza": 0.0 } ],
+  "decisiones": [ { "sesion": "nombre de la sesión del plan o 'general'", "cambio": "qué hacer exactamente", "razon": "por qué, ligado a los datos", "evidencia": "principio o autor", "confianza": 0.0, "sesion_id": "solo si propones pasos nuevos", "pasos": [ ... solo si propones pasos nuevos ... ] } ],
   "alerta_prioritaria": "texto o null",
   "preguntas_al_coach": ["dudas que solo el coach puede resolver"],
   "prioridad": 5,
@@ -52,7 +54,7 @@ export interface ResultadoAnalisis {
   motivo?: string
 }
 
-interface Decision { sesion?: string; cambio?: string; razon?: string; evidencia?: string; confianza?: number }
+interface Decision { sesion?: string; cambio?: string; razon?: string; evidencia?: string; confianza?: number; sesion_id?: string; pasos?: unknown }
 interface Salida {
   resumen?: string
   lecturas?: { titulo?: string; detalle?: string; dato?: string }[]
@@ -63,6 +65,7 @@ interface Salida {
   score_confianza?: number
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const texto = (v: unknown, max = 600): string => (typeof v === 'string' ? v.trim().slice(0, max) : '')
 const acotar = (n: unknown, min: number, max: number, def: number): number => {
   const x = Number(n)
@@ -70,13 +73,19 @@ const acotar = (n: unknown, min: number, max: number, def: number): number => {
 }
 
 /** Limpia lo que devuelve el modelo: solo campos esperados, con longitud acotada. */
-export function sanearSalida(raw: unknown): { resumen: string; lecturas: { titulo: string; detalle: string; dato: string }[]; decisiones: { sesion: string; cambio: string; razon: string; evidencia: string; confianza: number }[]; alerta: string | null; preguntas: string[]; prioridad: number; confianza: number } | null {
+export function sanearSalida(raw: unknown): { resumen: string; lecturas: { titulo: string; detalle: string; dato: string }[]; decisiones: { sesion: string; cambio: string; razon: string; evidencia: string; confianza: number; sesion_id?: string; pasos?: Paso[] }[]; alerta: string | null; preguntas: string[]; prioridad: number; confianza: number } | null {
   if (!raw || typeof raw !== 'object') return null
   const s = raw as Salida
   const resumen = texto(s.resumen, 700)
   if (!resumen) return null
   const decisiones = (Array.isArray(s.decisiones) ? s.decisiones : [])
-    .map(d => ({ sesion: texto(d.sesion, 120) || 'general', cambio: texto(d.cambio, 500), razon: texto(d.razon, 500), evidencia: texto(d.evidencia, 200), confianza: acotar(d.confianza, 0, 1, 0.5) }))
+    .map(d => {
+      const base = { sesion: texto(d.sesion, 120) || 'general', cambio: texto(d.cambio, 500), razon: texto(d.razon, 500), evidencia: texto(d.evidencia, 200), confianza: acotar(d.confianza, 0, 1, 0.5) }
+      // Los pasos solo se conservan si traen un id de sesión con forma de UUID y el formato es válido.
+      const id = texto(d.sesion_id, 60)
+      const v = d.pasos !== undefined ? validarPasos(d.pasos) : null
+      return UUID_RE.test(id) && v?.ok ? { ...base, sesion_id: id, pasos: v.pasos } : base
+    })
     .filter(d => d.cambio)
     .slice(0, 5)
   return {

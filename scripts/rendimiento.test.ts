@@ -173,3 +173,33 @@ assert.equal(emparejarEntreno('2026-10-16', '2026-10-20', [e1, e2], esCarrera).e
 assert.equal(emparejarEntreno('2026-10-25', '2026-10-20', [e1, e2], esCarrera).estado, 'pendiente')
 assert.equal(emparejarEntreno('2026-10-12', '2026-10-20', [{ ...e1, tipo: 'strength_training' }], esCarrera).estado, 'saltada') // la fuerza no cuenta como carrera
 console.log('cumplimiento: OK')
+
+// ── Barandillas de cambios de la IA ──
+import { validarCambioPasos } from '../lib/rendimiento/cambio-sesion'
+const mk = (veces: number, metros: number, min: number, max: number): Paso[] => [
+  { tipo: 'calentamiento', duracion: { unidad: 'metros', valor: 2000 } },
+  { tipo: 'repetir', veces, pasos: [
+    { tipo: 'trabajo', duracion: { unidad: 'metros', valor: metros }, objetivo: { tipo: 'ritmo', min_seg_km: min, max_seg_km: max } },
+    { tipo: 'recuperacion', duracion: { unidad: 'metros', valor: 200 } },
+  ] },
+  { tipo: 'enfriamiento', duracion: { unidad: 'metros', valor: 2000 } },
+]
+assert.equal(validarCambioPasos(mk(7, 400, 255, 270), mk(5, 400, 262, 275), null).ok, true) // recortar reps y relajar ritmo
+const absurdo = validarCambioPasos(mk(7, 400, 255, 270), mk(7, 400, 100, 110), null)
+assert.equal(absurdo.ok, false) // 1:40/km no es humano
+const ancho = validarCambioPasos(mk(7, 400, 255, 270), mk(7, 400, 250, 300), null)
+assert.equal(ancho.ok, false) // rango de 50 s
+const enorme = validarCambioPasos(mk(7, 400, 255, 270), mk(40, 1000, 255, 270), null)
+assert.equal(enorme.ok, false) // volumen disparado
+const diminuto = validarCambioPasos(mk(7, 400, 255, 270), [{ tipo: 'trabajo', duracion: { unidad: 'metros', valor: 400 } }], null)
+assert.equal(diminuto.ok, false) // la sesión casi desaparece
+assert.equal(validarCambioPasos(mk(7, 400, 255, 270), 'texto', null).ok, false)
+assert.equal(validarCambioPasos(null, mk(7, 400, 255, 270), null).ok, true) // sin pasos previos solo se valida el formato
+import { sinCambios } from '../lib/rendimiento/aplicar-decision'
+assert.equal(sinCambios(mk(7, 400, 255, 270), mk(7, 400, 255, 270)), true)
+const conNota = JSON.parse(JSON.stringify(mk(7, 400, 255, 270))); conNota[0].nota = 'Trote suave'
+assert.equal(sinCambios(conNota, mk(7, 400, 255, 270)), true) // solo cambian las notas
+assert.equal(sinCambios({ b: 1, a: 2 }, { a: 2, b: 1 }), true) // el orden de las claves no importa
+assert.equal(sinCambios(mk(7, 400, 255, 270), mk(6, 400, 255, 270)), false)
+assert.equal(sinCambios(mk(7, 400, 255, 270), mk(7, 400, 255, 272)), false)
+console.log('cambio-sesion: OK')

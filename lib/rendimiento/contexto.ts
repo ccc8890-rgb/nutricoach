@@ -78,8 +78,8 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   // Sesiones del plan activo
   let sesionesPlan: string[] = []
   if (plan) {
-    const { data: s } = await db.from('sesiones_entrenamiento').select('nombre,dia_semana,fase_bloque,contexto_ia').eq('plan_id', plan.id).order('orden')
-    sesionesPlan = (s ?? []).map(x => `${x.dia_semana}: ${x.nombre}${x.fase_bloque ? ` [${x.fase_bloque}]` : ''}${x.contexto_ia ? ` (${x.contexto_ia})` : ''}`)
+    const { data: s } = await db.from('sesiones_entrenamiento').select('id,nombre,dia_semana,fase_bloque,contexto_ia,pasos').eq('plan_id', plan.id).order('orden')
+    sesionesPlan = (s ?? []).map(x => `${x.dia_semana}: ${x.nombre}${x.fase_bloque ? ` [${x.fase_bloque}]` : ''}${x.contexto_ia ? ` (${x.contexto_ia})` : ''}${x.pasos ? ` [sesion_id:${x.id}] pasos_actuales=${JSON.stringify(x.pasos)}` : ' [sin pasos estructurados: no modificable]'}`)
   }
 
   const vdot = perfil?.vdot ? Number(perfil.vdot) : null
