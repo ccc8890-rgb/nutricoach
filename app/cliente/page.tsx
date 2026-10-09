@@ -511,7 +511,6 @@ function PortalClientePageContent() {
             {totalDia ? (
               <HoyEditorial
                 firstName={primerNombre}
-                dateLabel={fechaHoy}
                 calories={totalDia.calorias}
                 meals={comidasDia}
                 weeklySessions={sesionesSemana}

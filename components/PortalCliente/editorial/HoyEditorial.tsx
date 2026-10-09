@@ -2,7 +2,6 @@
 
 import { Barbell, ChartLineUp, ChatCircleDots, ClipboardText, ForkKnife, ShoppingCart } from '@phosphor-icons/react'
 import EditorialMasthead from './EditorialMasthead'
-import MetricRail from './MetricRail'
 import ProgressInstrument from './ProgressInstrument'
 import TechnicalReadout from './TechnicalReadout'
 import TimelineSequence from './TimelineSequence'
@@ -11,7 +10,6 @@ type HoyDestination = 'dieta' | 'entreno' | 'progreso' | 'checkin' | 'compra' | 
 
 export type HoyEditorialProps = {
   firstName: string
-  dateLabel: string
   calories: number
   meals: number
   weeklySessions: number
@@ -33,7 +31,7 @@ function Action({ label, icon: Icon, onClick }: { label: string; icon: typeof Cl
   )
 }
 
-export default function HoyEditorial({ firstName, dateLabel, calories, meals, weeklySessions, weight, weightDelta, macros, trainingName, hasPlan, onNavigate }: HoyEditorialProps) {
+export default function HoyEditorial({ firstName, calories, meals, weeklySessions, weight, weightDelta, macros, trainingName, hasPlan, onNavigate }: HoyEditorialProps) {
   if (!hasPlan) return null
 
   const sequence = [
@@ -64,16 +62,10 @@ export default function HoyEditorial({ firstName, dateLabel, calories, meals, we
     <div className="hoy-editorial">
       <EditorialMasthead
         index="01 / TODAY"
-        eyebrow={`Protocolo diario · ${dateLabel}`}
+        eyebrow="Protocolo diario"
         title={<>{firstName},<br />cumple lo esencial.</>}
-        meta="NUTRICIÓN / MOVIMIENTO / RECUPERACIÓN"
         aside={<TechnicalReadout label="Objetivo energético" value={Math.round(calories)} unit="kcal" detail="Plan activo de hoy" />}
       />
-      <MetricRail>
-        <TechnicalReadout label="Comidas" value={meals} unit="uds" />
-        <TechnicalReadout label="Sesiones" value={weeklySessions} unit="sem" />
-        <TechnicalReadout label="Peso" value={weight ?? '—'} unit={weight ? 'kg' : ''} detail={weightDelta == null ? undefined : `${weightDelta > 0 ? '+' : ''}${weightDelta.toFixed(1)} kg`} />
-      </MetricRail>
       <section className="hoy-editorial__instruments" aria-label="Objetivos de macronutrientes">
         <p className="editorial-kicker">Instrumentación / objetivos</p>
         {macros.map(macro => (
