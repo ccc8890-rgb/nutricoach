@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, Loader2, MessageSquareText } from 'lucide-react'
 import type { ChatMensaje } from '@/types'
+import { scrollChatToBottom } from '@/lib/cliente/chat-scroll'
 
 interface ChatPanelProps {
   codigo?: string       // Portal cliente
@@ -16,7 +17,7 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
   const [texto, setTexto] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [cargando, setCargando] = useState(true)
-  const chatEndRef = useRef<HTMLDivElement>(null)
+  const mensajesRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -52,7 +53,7 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
 
   // Scroll automático al nuevo mensaje
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    scrollChatToBottom(mensajesRef.current)
   }, [mensajes])
 
   // Enviar mensaje
@@ -76,7 +77,7 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
       // Silencioso
     } finally {
       setEnviando(false)
-      inputRef.current?.focus()
+      inputRef.current?.focus({ preventScroll: true })
     }
   }
 
@@ -117,7 +118,7 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
   }
 
   return (
-    <div className="flex flex-col h-[60vh] sm:h-[65vh]">
+    <div className="flex h-[calc(100dvh-12rem)] min-h-[18rem] max-h-[46rem] flex-col overflow-hidden sm:h-[65vh]">
       {/* Cabecera */}
       {mensajes.length > 0 && (
         <div className="flex items-center gap-2 px-4 py-2.5 border-b shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
@@ -129,7 +130,7 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
       )}
 
       {/* Mensajes — scrollable */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 no-scrollbar">
+      <div ref={mensajesRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-3 no-scrollbar">
         {mensajes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ background: 'var(--primary-bg)' }}>
@@ -181,11 +182,14 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
             </div>
           ))
         )}
-        <div ref={chatEndRef} />
       </div>
 
       {/* Input */}
-      <form onSubmit={handleEnviar} className="flex items-center gap-2 p-3 border-t shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <form
+        onSubmit={handleEnviar}
+        className="sticky bottom-0 flex shrink-0 items-center gap-2 border-t p-3"
+        style={{ borderColor: 'var(--border)', background: 'var(--surface)', paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+      >
         <input
           ref={inputRef}
           type="text"
@@ -195,7 +199,6 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
           className="flex-1 input !py-2.5 !text-sm"
           disabled={enviando}
           maxLength={1000}
-          autoFocus
         />
         <button
           type="submit"
