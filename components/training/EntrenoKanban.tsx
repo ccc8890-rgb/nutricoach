@@ -17,6 +17,7 @@ import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
+import { etiquetaTipoSesion } from '@/lib/training/session-type-presentation'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const DIAS_ABREV: Record<string, string> = { Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J', Viernes: 'V', Sábado: 'S', Domingo: 'D' }
@@ -73,7 +74,7 @@ function SesionCard({ sesion, seleccionada, moviendo, onSeleccionar, onAbrirMove
             >
                 <span className="training-week-session__type">
                     {sesion.completada ? <CheckCircle size={14} /> : iconoTipo(sesion.tipo_sesion, 14)}
-                    {sesion.tipo_sesion === 'carrera' ? 'Carrera' : sesion.tipo_sesion === 'mixto' ? 'Mixto' : 'Fuerza'}
+                    {etiquetaTipoSesion(sesion.tipo_sesion)}
                 </span>
                 <strong>{sesion.nombre}</strong>
                 <span className="training-week-session__meta">{sesion.ejercicios_count} ejercicios</span>
