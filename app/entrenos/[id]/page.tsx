@@ -9,6 +9,7 @@ import PlanTimeline, {
   type SesionTimeline,
   type EjercicioTimeline,
 } from '@/components/training/PlanTimeline'
+import { normalizarBloqueSesion, type TipoBloqueSesion } from '@/lib/training/session-blocks'
 
 interface PlanInfo {
   id: string
@@ -30,6 +31,7 @@ interface RawEjercicio {
   notas: string | null
   instruccion_ejercicio: string | null
   contexto_ia: string | null
+  bloque: string | null
   orden: number
   ejercicio: { id: string; nombre: string; grupo_muscular: string; tipo: string; foto_url?: string | null; video_url?: string | null } | null
 }
@@ -83,6 +85,7 @@ function agruparPorSemanas(sesiones: RawSesion[], duracion: number | null): Sema
             notas: ej.notas ?? '',
             instruccion_ejercicio: ej.instruccion_ejercicio ?? '',
             contexto_ia: ej.contexto_ia ?? null,
+            bloque: normalizarBloqueSesion(ej.bloque),
             orden: ej.orden,
             foto_url: ej.ejercicio?.foto_url ?? null,
             video_url: ej.ejercicio?.video_url ?? null,
@@ -106,6 +109,7 @@ export default function PlanEditorPage() {
   const [sesionesFlat, setSesionesFlat] = useState<{ id: string; nombre: string; dia_semana: string; semana: number }[]>([])
   const [selectedSesionId, setSelectedSesionId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [blockError, setBlockError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/entrenos/${id}`)
@@ -190,6 +194,46 @@ export default function PlanEditorPage() {
     })))
   }
 
+  async function handleUpdateBloque(sesionEjercicioId: string, bloque: TipoBloqueSesion) {
+    let anterior: TipoBloqueSesion | null = null
+    setBlockError(null)
+    setSemanas(prev => prev.map(sem => ({
+      ...sem,
+      sesiones: sem.sesiones.map(ses => ({
+        ...ses,
+        ejercicios: ses.ejercicios.map(ej => {
+          if (ej.id !== sesionEjercicioId) return ej
+          anterior = ej.bloque
+          return { ...ej, bloque }
+        }),
+      })),
+    })))
+
+    try {
+      const response = await fetch(`/api/entrenos/sesion-ejercicio/${sesionEjercicioId}/bloque`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bloque }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error ?? 'No se pudo cambiar el bloque')
+    } catch (error) {
+      if (anterior) {
+        const bloqueAnterior = anterior
+        setSemanas(prev => prev.map(sem => ({
+          ...sem,
+          sesiones: sem.sesiones.map(ses => ({
+            ...ses,
+            ejercicios: ses.ejercicios.map(ej => ej.id === sesionEjercicioId
+              ? { ...ej, bloque: bloqueAnterior }
+              : ej),
+          })),
+        })))
+      }
+      setBlockError(error instanceof Error ? error.message : 'No se pudo cambiar el bloque')
+    }
+  }
+
   async function handleMover(ejercicioId: string, destSesionId: string) {
     await supabase.from('sesion_ejercicios').update({ sesion_id: destSesionId }).eq('id', ejercicioId)
     setLoading(true)
@@ -269,6 +313,11 @@ export default function PlanEditorPage() {
         </aside>
 
         <main className="min-w-0 glass-card p-4 sm:p-5">
+          {blockError && (
+            <p className="mb-4 rounded-lg px-3 py-2 text-xs" role="alert" style={{ background: 'var(--semantic-danger-bg)', color: 'var(--semantic-danger)' }}>
+              {blockError}
+            </p>
+          )}
           {semanas.length === 0 ? (
             <div className="text-center py-12">
               <Dumbbell size={32} className="mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
@@ -282,6 +331,7 @@ export default function PlanEditorPage() {
               onMover={handleMover}
               onToggleContextoIA={handleToggleContextoIA}
               onUpdateEjercicio={handleUpdateEjercicio}
+              onUpdateBloque={handleUpdateBloque}
               sesionesDisponibles={sesionesFlat}
             />
           )}

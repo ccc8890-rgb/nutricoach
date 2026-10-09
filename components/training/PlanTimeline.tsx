@@ -17,6 +17,9 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { ArrowUpDown, Brain, ChevronDown, ChevronUp, GripVertical, Video } from 'lucide-react'
 import { descansoVisible } from '@/lib/entrenos/descanso-visible'
+import { combinarOrdenBloque, crearGruposEditorSesion } from '@/lib/training/plan-editor-blocks'
+import type { TipoBloqueSesion } from '@/lib/training/session-blocks'
+import ExerciseBlockSelect from './ExerciseBlockSelect'
 
 export interface EjercicioTimeline {
   id: string
@@ -32,6 +35,7 @@ export interface EjercicioTimeline {
   notas: string
   instruccion_ejercicio: string
   contexto_ia: string | null
+  bloque: TipoBloqueSesion
   orden: number
   foto_url?: string | null
   video_url?: string | null
@@ -63,6 +67,7 @@ interface PlanTimelineProps {
   onMover: (ejercicioId: string, destSesionId: string) => Promise<void>
   onToggleContextoIA: (sesionId: string, ejercicioId: string) => void
   onUpdateEjercicio?: (sesionEjercicioId: string, field: 'instruccion_ejercicio', value: string) => Promise<void>
+  onUpdateBloque: (sesionEjercicioId: string, bloque: TipoBloqueSesion) => Promise<void>
   sesionesDisponibles: { id: string; nombre: string; dia_semana: string; semana: number }[]
 }
 
@@ -72,12 +77,14 @@ function SortableEjercicioCard({
   onMoverClick,
   onToggleIA,
   onUpdateEjercicio,
+  onUpdateBloque,
 }: {
   ej: EjercicioTimeline
   sesionId: string
   onMoverClick: (info: MoverDestino) => void
   onToggleIA: () => void
   onUpdateEjercicio?: (id: string, field: 'instruccion_ejercicio', value: string) => Promise<void>
+  onUpdateBloque: (id: string, bloque: TipoBloqueSesion) => Promise<void>
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ej.id })
   const [expanded, setExpanded] = useState(false)
@@ -140,6 +147,8 @@ function SortableEjercicioCard({
             {ej.grupo_muscular}
           </span>
         )}
+
+        <ExerciseBlockSelect value={ej.bloque} onChange={bloque => onUpdateBloque(ej.id, bloque)} />
 
         {onUpdateEjercicio && (
           <button
@@ -208,17 +217,19 @@ function SortableEjercicioCard({
   )
 }
 
-export default function PlanTimeline({ semanas, selectedSesionId, onReorder, onMover, onToggleContextoIA, onUpdateEjercicio, sesionesDisponibles }: PlanTimelineProps) {
+export default function PlanTimeline({ semanas, selectedSesionId, onReorder, onMover, onToggleContextoIA, onUpdateEjercicio, onUpdateBloque, sesionesDisponibles }: PlanTimelineProps) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
   const [moverInfo, setMoverInfo] = useState<MoverDestino | null>(null)
 
-  function handleDragEnd(event: DragEndEvent, sesion: SesionTimeline) {
+  function handleDragEnd(event: DragEndEvent, sesion: SesionTimeline, bloque: TipoBloqueSesion) {
     const { active, over } = event
     if (!over || active.id === over.id) return
-    const oldIdx = sesion.ejercicios.findIndex(e => e.id === active.id)
-    const newIdx = sesion.ejercicios.findIndex(e => e.id === over.id)
+    const ejerciciosBloque = sesion.ejercicios.filter(e => e.bloque === bloque)
+    const oldIdx = ejerciciosBloque.findIndex(e => e.id === active.id)
+    const newIdx = ejerciciosBloque.findIndex(e => e.id === over.id)
     if (oldIdx === -1 || newIdx === -1) return
-    const reordenados = arrayMove(sesion.ejercicios, oldIdx, newIdx)
+    const idsBloque = arrayMove(ejerciciosBloque, oldIdx, newIdx).map(e => e.id)
+    const reordenados = combinarOrdenBloque(sesion.ejercicios, bloque, idsBloque)
     onReorder(sesion.id, reordenados.map(e => e.id))
   }
 
@@ -253,24 +264,32 @@ export default function PlanTimeline({ semanas, selectedSesionId, onReorder, onM
                 )}
               </div>
 
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={e => handleDragEnd(e, sesion)}
-              >
-                <SortableContext items={sesion.ejercicios.map(e => e.id)} strategy={verticalListSortingStrategy}>
-                  {sesion.ejercicios.map(ej => (
-                    <SortableEjercicioCard
-                      key={ej.id}
-                      ej={ej}
-                      sesionId={sesion.id}
-                      onMoverClick={setMoverInfo}
-                      onToggleIA={() => onToggleContextoIA(sesion.id, ej.id)}
-                      onUpdateEjercicio={onUpdateEjercicio}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
+              {crearGruposEditorSesion(sesion.ejercicios).map(grupo => (
+                <div key={grupo.bloque} className="mb-4">
+                  <p className="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+                    {grupo.label}
+                  </p>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={event => handleDragEnd(event, sesion, grupo.bloque)}
+                  >
+                    <SortableContext items={grupo.items.map(e => e.id)} strategy={verticalListSortingStrategy}>
+                      {grupo.items.map(ej => (
+                        <SortableEjercicioCard
+                          key={ej.id}
+                          ej={ej}
+                          sesionId={sesion.id}
+                          onMoverClick={setMoverInfo}
+                          onToggleIA={() => onToggleContextoIA(sesion.id, ej.id)}
+                          onUpdateEjercicio={onUpdateEjercicio}
+                          onUpdateBloque={onUpdateBloque}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              ))}
             </div>
           ))}
         </div>

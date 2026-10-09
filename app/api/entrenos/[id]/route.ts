@@ -31,6 +31,7 @@ export const PLAN_EDITOR_SESIONES_SELECT = `
     notas,
     instruccion_ejercicio,
     contexto_ia,
+    bloque,
     orden,
     ejercicio:ejercicios(id, nombre, grupo_muscular, tipo, foto_url, video_url)
   )
