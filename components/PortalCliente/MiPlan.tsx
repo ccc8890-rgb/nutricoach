@@ -412,6 +412,14 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                     {mostrarCompra && (
                         <div className="mt-3">
                             <ListaCompraPortal codigo={codigo} diaInicial="Semana" />
+                            <button
+                                type="button"
+                                className="diet-shopping-collapse"
+                                onClick={() => setMostrarCompra(false)}
+                            >
+                                <ChevronUp size={14} />
+                                Compactar lista
+                            </button>
                         </div>
                     )}
                 </div>
@@ -807,6 +815,14 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                 {mostrarCompra && (
                     <div className="diet-document-tool__panel">
                         <ListaCompraPortal codigo={codigo} diaInicial={diaActivo} />
+                        <button
+                            type="button"
+                            className="diet-shopping-collapse"
+                            onClick={() => setMostrarCompra(false)}
+                        >
+                            <ChevronUp size={14} />
+                            Compactar lista
+                        </button>
                     </div>
                 )}
             </div>

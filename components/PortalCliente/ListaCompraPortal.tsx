@@ -107,12 +107,12 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     }, [loading, marcados, storageKey])
 
     const selector = (
-        <div className="flex gap-1.5 overflow-x-auto pb-1">
+        <div className="shopping-list-editorial__days flex gap-1.5 overflow-x-auto pb-1">
             {['Semana', ...DIAS_COMPRA].map(d => (
                 <button
                     key={d}
                     onClick={() => setDia(d)}
-                    className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold"
+                    className="shopping-list-editorial__day shrink-0 px-3 py-1.5 text-xs font-semibold"
                     style={{
                         background: dia === d ? 'var(--primary)' : 'var(--bg)',
                         color: dia === d ? 'var(--bg)' : 'var(--text-muted)',
@@ -188,7 +188,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     }
 
     return (
-        <div className="space-y-2">
+        <div className="shopping-list-editorial space-y-2">
             {selector}
             {optimizacion && (
                 <div className="rounded-xl border p-3 space-y-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
@@ -258,16 +258,16 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
             <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
                 <span>{totalItems} ingredientes · {Object.keys(porCategoria).length} categorías</span>
                 {totalMarcados > 0 && (
-                    <span className="font-medium" style={{ color: '#0D9488' }}>
+                    <span className="shopping-list-editorial__accent font-medium">
                         {totalMarcados}/{totalItems} en el carro
                     </span>
                 )}
             </div>
             {totalMarcados > 0 && (
-                <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                <div className="shopping-list-editorial__progress">
                     <div
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{ background: '#0D9488', width: `${(totalMarcados / totalItems) * 100}%` }}
+                        className="shopping-list-editorial__progress-fill transition-all duration-300"
+                        style={{ width: `${(totalMarcados / totalItems) * 100}%` }}
                     />
                 </div>
             )}
@@ -279,16 +279,16 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                 const todosMarcados = catItems.every(i => marcados.has(i.alimento_id))
 
                 return (
-                    <div key={cat} className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border)' }}>
+                    <div key={cat} className="shopping-list-editorial__category overflow-hidden">
                         {/* Cabecera categoría */}
                         <button
                             onClick={() => toggleCategoria(cat)}
-                            className="w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors"
+                            className="shopping-list-editorial__category-toggle w-full flex items-center justify-between text-left transition-colors"
                             style={{ background: todosMarcados ? 'var(--bg)' : 'var(--surface)' }}
                         >
                             <div className="flex items-center gap-2">
                                 <span
-                                    className="inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold"
+                                    className="shopping-list-editorial__abbr inline-flex h-6 w-6 items-center justify-center text-[10px] font-bold"
                                     style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
                                 >
                                     {abbr}
@@ -299,7 +299,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                 >
                                     {cat}
                                 </span>
-                                <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--border)', color: 'var(--text-muted)' }}>
+                                <span className="shopping-list-editorial__count text-xs px-1.5 py-0.5" style={{ color: 'var(--text-muted)' }}>
                                     {catItems.length}
                                 </span>
                             </div>
@@ -315,12 +315,12 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                         <button
                                             key={item.alimento_id}
                                             onClick={() => toggleMarcado(item.alimento_id)}
-                                            className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
+                                            className="shopping-list-editorial__item w-full flex items-center gap-3 text-left transition-colors"
                                             style={{ background: checked ? 'var(--bg)' : 'var(--surface)' }}
                                         >
                                             {/* Checkbox */}
                                             <div
-                                                className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center border-2 transition-all"
+                                                className="shopping-list-editorial__check w-5 h-5 flex-shrink-0 flex items-center justify-center transition-all"
                                                 style={{
                                                     borderColor: checked ? '#0D9488' : 'var(--border)',
                                                     background: checked ? '#0D9488' : 'transparent',
@@ -350,7 +350,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                             {/* Cantidad */}
                                             <span
                                                 className="text-xs font-semibold flex-shrink-0 inline-flex items-center gap-1"
-                                                style={{ color: checked ? 'var(--text-muted)' : '#0D9488' }}
+                                                style={{ color: checked ? 'var(--text-muted)' : 'var(--diet-warm-muted, var(--text-secondary))' }}
                                             >
                                                 {item.cantidad_compra ?? formatGramos(item.cantidad_gramos)}
                                                 {data?.ofertas?.some(o => o.alimento_id === item.alimento_id) && <Tag size={11} />}
@@ -367,7 +367,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
             {/* Limpiar marcados */}
             {totalMarcados > 0 && (
                 <button
-                    className="w-full text-xs py-2 rounded-xl border transition-colors"
+                    className="shopping-list-editorial__clear w-full text-xs py-2 transition-colors"
                     style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
                     onClick={() => {
                         setMarcados(new Set())
