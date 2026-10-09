@@ -367,6 +367,7 @@
 .cliente-portal-content {
   position: relative;
   z-index: 1;
+  padding-bottom: calc(4.25rem + max(0.15rem, calc(env(safe-area-inset-bottom, 0px) - 0.65rem))) !important;
 }
 
 .cliente-portal-shell::before {
@@ -466,7 +467,7 @@
 }
 
 .cliente-bottom-nav {
-  padding: 0 0.625rem calc(env(safe-area-inset-bottom, 0px) + 0.45rem);
+  padding: 0 0.625rem max(0.15rem, calc(env(safe-area-inset-bottom, 0px) - 0.65rem));
   background: transparent !important;
   border: 0 !important;
   pointer-events: none;
@@ -491,7 +492,7 @@
 .cliente-bottom-item {
   position: relative;
   display: flex;
-  min-height: 3.25rem;
+  min-height: 3.05rem;
   align-items: center;
   justify-content: center;
   overflow: hidden;
