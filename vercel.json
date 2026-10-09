@@ -25,6 +25,10 @@
             "schedule": "15 6 * * *"
         },
         {
+            "path": "/api/cron/avisos-rendimiento",
+            "schedule": "45 6 * * *"
+        },
+        {
             "path": "/api/cron/snapshot-negocio",
             "schedule": "30 21 * * *"
         },

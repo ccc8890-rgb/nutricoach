@@ -118,6 +118,12 @@ function logError(error: unknown) {
   return String(error)
 }
 
+function hrefTarea(tipo: string, clienteId: string | null) {
+  if (tipo.includes('entreno') || tipo === 'training_brain') return '/entrenos/brain-ia'
+  if (tipo === 'alerta_rendimiento' && clienteId) return `/clientes/${clienteId}`
+  return '/clientes'
+}
+
 export async function GET() {
   try {
     const supabase = await createServerSupabase()
@@ -271,7 +277,7 @@ export async function GET() {
         detail: tarea.propuesta ?? 'Tarea pendiente de revisión',
         meta: `prioridad ${tarea.prioridad ?? 3}`,
         severity: (tarea.prioridad ?? 3) <= 1 ? 'alta' as Severity : 'media' as Severity,
-        href: tarea.tipo.includes('entreno') || tarea.tipo === 'training_brain' ? '/entrenos/brain-ia' : '/clientes',
+        href: hrefTarea(tarea.tipo, tarea.cliente_id),
         cta: 'Revisar',
         created_at: tarea.created_at,
       })
@@ -439,7 +445,7 @@ export async function GET() {
         propuesta: t.propuesta,
         cliente_id: t.cliente_id,
         cliente_nombre: profileName(relationProfile(t.clientes)),
-        href: t.tipo.includes('entreno') || t.tipo === 'training_brain' ? '/entrenos/brain-ia' : '/clientes',
+        href: hrefTarea(t.tipo, t.cliente_id),
         created_at: t.created_at,
       })),
       operacion: {

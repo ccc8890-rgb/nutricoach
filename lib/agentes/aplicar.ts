@@ -309,6 +309,7 @@ export async function aplicarTarea(tarea: AgenteTarea): Promise<AplicarTareaResu
       return aplicarMensajeCliente(db, tarea)
 
     case 'analisis_rendimiento':
+    case 'alerta_rendimiento':
       // Análisis para el coach: aprobarlo solo deja constancia (y enseña al sistema); no toca el plan ni escribe al cliente.
       return { ok: true, codigo: 'APPLIED', mensaje: 'Análisis registrado' }
 

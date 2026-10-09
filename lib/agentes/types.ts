@@ -14,6 +14,7 @@ export type TipoTarea =
   | 'alerta_riesgo_entreno'
   | 'revision_semanal_entreno'
   | 'analisis_rendimiento'
+  | 'alerta_rendimiento'
   | 'alerta_readiness'
   | 'ajuste_nutricion_carga'
   | 'alerta_retencion'
