@@ -4,6 +4,7 @@ import { Barbell, CaretLeft, CaretRight, CircleDashed, CircleNotch, Footprints, 
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
+import { tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
 
 export interface DiaMes {
   fecha: string
@@ -224,7 +225,9 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                     : <Barbell size={19} weight="regular" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-bold leading-tight" style={{ color: 'var(--text)' }}>{diaInfo.sesion.nombre}</p>
+                  <p className="font-bold leading-tight" style={{ color: 'var(--text)' }}>
+                    {tituloSesionSinModalidad(diaInfo.sesion.nombre, diaInfo.sesion.tipo_sesion)}
+                  </p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                     {diaInfo.sesion.ejercicios_count} ejercicios{diaInfo.sesion.completada ? ' · registrada' : ''}
                   </p>

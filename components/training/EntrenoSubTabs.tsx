@@ -10,7 +10,7 @@ import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableEx
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { EditorialMasthead, IndustrialTabs } from '@/components/PortalCliente/editorial'
 import { buildExerciseChecklistKey } from '@/lib/training/exercise-checklist'
-import { etiquetaTipoSesion } from '@/lib/training/session-type-presentation'
+import { etiquetaTipoSesion, tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
 
 interface SesionSemana {
   id: string
@@ -95,7 +95,9 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
                 <p className="mt-2 font-mono text-[10px] font-semibold tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
                   {etiquetaTipoSesion(sesionHoy.tipo_sesion)}
                 </p>
-                <p className="mt-1 font-bold leading-tight" style={{ color: 'var(--text)' }}>{sesionHoy.nombre}</p>
+                <p className="mt-1 font-bold leading-tight" style={{ color: 'var(--text)' }}>
+                  {tituloSesionSinModalidad(sesionHoy.nombre, sesionHoy.tipo_sesion)}
+                </p>
               </div>
             </div>
             {sesionHoy.contexto_ia && (

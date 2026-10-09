@@ -36,3 +36,12 @@ export function agruparEjerciciosPorBloque<T extends { orden: number; bloque?: u
     return agrupados.length ? [{ bloque, items: agrupados }] : []
   })
 }
+
+export function crearPresentacionEjercicios<T extends { orden: number; bloque?: unknown }>(items: T[]) {
+  let indiceGlobal = 0
+  return agruparEjerciciosPorBloque(items).map(grupo => ({
+    ...grupo,
+    label: etiquetaBloqueSesion(grupo.bloque),
+    items: grupo.items.map(item => ({ ...item, indiceGlobal: ++indiceGlobal })),
+  }))
+}

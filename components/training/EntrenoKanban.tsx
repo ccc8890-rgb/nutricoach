@@ -17,7 +17,7 @@ import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
-import { etiquetaTipoSesion } from '@/lib/training/session-type-presentation'
+import { etiquetaTipoSesion, tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const DIAS_ABREV: Record<string, string> = { Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J', Viernes: 'V', Sábado: 'S', Domingo: 'D' }
@@ -76,7 +76,7 @@ function SesionCard({ sesion, seleccionada, moviendo, onSeleccionar, onAbrirMove
                     {sesion.completada ? <CheckCircle size={14} /> : iconoTipo(sesion.tipo_sesion, 14)}
                     {etiquetaTipoSesion(sesion.tipo_sesion)}
                 </span>
-                <strong>{sesion.nombre}</strong>
+                <strong>{tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion)}</strong>
                 <span className="training-week-session__meta">{sesion.ejercicios_count} ejercicios</span>
                 <CaretDown size={14} className={seleccionada ? 'rotate-180' : ''} />
             </button>
@@ -132,7 +132,10 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
                 )}
                 {seleccionadaId && sesiones.some(s => s.id === seleccionadaId) && (
                     <div className="training-week-detail">
-                        <p>{sesiones.find(s => s.id === seleccionadaId)?.nombre ?? 'Sesión'}</p>
+                        <p>{(() => {
+                            const sesion = sesiones.find(s => s.id === seleccionadaId)
+                            return sesion ? tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion) : 'Sesión'
+                        })()}</p>
                         {detalles[seleccionadaId] === 'cargando' ? (
                             <div className="flex justify-center py-6"><SpinnerGap size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
                         ) : (
