@@ -181,7 +181,35 @@
 .training-exercise-row .technical-row__heading { padding: 1rem 1rem 0.2rem; }
 .training-exercise-row .technical-row__index { padding-top: 1.2rem; }
 .training-exercise-row button { min-height: 3.55rem; padding: 0.6rem 1rem 0.85rem; }
-.training-week-session, .training-week-day { border-radius: var(--editorial-radius-sm); }
+.training-week-intro { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 0.4rem 0.75rem; padding: 0 0 0.85rem; }
+.training-week-intro > span { color: var(--text); font: 650 0.68rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+.training-week-intro p { color: var(--text-muted); font-size: 0.68rem; line-height: 1.45; }
+.training-week-intro small { display: inline-flex; grid-column: 1 / -1; align-items: center; gap: 0.35rem; color: var(--text-secondary); font-size: 0.62rem; }
+.training-week-agenda { border: 1px solid var(--editorial-rule); background: var(--editorial-rule); }
+.training-week-day { display: grid; min-height: 3.2rem; grid-template-columns: 3.2rem minmax(0, 1fr); background: var(--editorial-panel); transition: background-color 180ms var(--ease-out-strong); }
+.training-week-day + .training-week-day { border-top: 1px solid var(--editorial-rule); }
+.training-week-day.is-over { box-shadow: inset 3px 0 0 var(--metal-bright); }
+.training-week-day__label { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 0.2rem; border-right: 1px solid var(--editorial-rule); color: var(--text-secondary); }
+.training-week-day__label span { font: 650 0.72rem/1 var(--font-geist-mono), ui-monospace, monospace; }
+.training-week-day__label small { color: var(--text-muted); font: 550 0.48rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+.training-week-day__content { min-width: 0; }
+.training-week-rest { display: flex; min-height: 3.2rem; align-items: center; padding: 0 0.9rem; color: var(--text-disabled); font-size: 0.68rem; }
+.training-week-session { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; background: color-mix(in srgb, var(--surface) 74%, transparent); }
+.training-week-session + .training-week-session { border-top: 1px solid var(--editorial-rule); }
+.training-week-session.is-selected { background: color-mix(in srgb, var(--metal-bright) 8%, var(--surface)); box-shadow: inset 2px 0 0 var(--metal-bright); }
+.training-week-session__main { display: grid; min-width: 0; min-height: 4.65rem; grid-template-columns: 1fr auto; align-content: center; gap: 0.3rem 0.65rem; padding: 0.7rem 0.8rem; color: var(--text); text-align: left; }
+.training-week-session__main strong { overflow: hidden; color: var(--text); font-size: 0.78rem; font-weight: 650; letter-spacing: -0.015em; line-height: 1.22; text-overflow: ellipsis; }
+.training-week-session__type { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-muted); font: 600 0.54rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.07em; text-transform: uppercase; }
+.training-week-session__meta { color: var(--text-muted); font-size: 0.62rem; }
+.training-week-session__main > svg { grid-column: 2; grid-row: 1 / 4; align-self: center; color: var(--text-muted); transition: transform 180ms var(--ease-out-strong); }
+.training-week-session__move { min-width: 3.6rem; border-left: 1px solid var(--editorial-rule); color: var(--text-muted); font: 600 0.55rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; }
+.training-week-session__move:hover { background: var(--surface-hover); color: var(--text); }
+.training-week-move-picker { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--editorial-rule); background: var(--editorial-rule); gap: 1px; }
+.training-week-move-picker button { min-height: 2.65rem; background: var(--editorial-field); color: var(--text-secondary); font: 650 0.62rem/1 var(--font-geist-mono), ui-monospace, monospace; }
+.training-week-move-picker button:disabled { color: var(--text-disabled); opacity: 0.4; }
+.training-week-move-picker button:not(:disabled):hover { background: var(--metal-bright); color: var(--atelier-carbon); }
+.training-week-detail { padding: 0.9rem; border-top: 1px solid var(--editorial-rule); background: color-mix(in srgb, var(--editorial-panel) 88%, transparent); }
+.training-week-detail > p { margin-bottom: 0.6rem; color: var(--text); font-size: 0.72rem; font-weight: 650; }
 
 .training-calendar {
   --calendar-rule: color-mix(in srgb, var(--metal-mid) 40%, var(--border));
@@ -223,7 +251,6 @@
   --primary: var(--metal-bright);
   --primary-bg: var(--editorial-field);
 }
-.training-week-session.is-selected p { color: var(--atelier-carbon) !important; }
 .client-session-sheet [style*='var(--semantic-info-bg)'] { background: var(--editorial-field) !important; border-color: var(--editorial-rule) !important; }
 .client-session-sheet [style*='var(--semantic-info)'] { color: var(--text-secondary) !important; }
 .editorial-field { border: 1px solid var(--editorial-rule); border-radius: var(--editorial-radius-sm); background: var(--editorial-field); color: var(--text); }

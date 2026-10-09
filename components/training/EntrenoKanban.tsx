@@ -11,7 +11,7 @@ import {
     type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Dumbbell, Footprints, CheckCircle2, Loader2 } from 'lucide-react'
+import { Barbell, CaretDown, CheckCircle, PersonSimpleRun, SpinnerGap } from '@phosphor-icons/react'
 import { useToast } from '@/components/ui/Toast'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 
@@ -28,76 +28,91 @@ interface SesionKanban {
 }
 
 function iconoTipo(tipo: SesionKanban['tipo_sesion'], size = 14) {
-    return tipo === 'carrera' ? <Footprints size={size} /> : <Dumbbell size={size} />
+    return tipo === 'carrera' ? <PersonSimpleRun size={size} /> : <Barbell size={size} />
 }
 
-function SesionCard({ sesion, seleccionada, onSeleccionar }: { sesion: SesionKanban; seleccionada: boolean; onSeleccionar: () => void }) {
+function SesionCard({ sesion, seleccionada, moviendo, onSeleccionar, onAbrirMover }: {
+    sesion: SesionKanban
+    seleccionada: boolean
+    moviendo: boolean
+    onSeleccionar: () => void
+    onAbrirMover: () => void
+}) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: sesion.id })
     const style = transform ? { transform: CSS.Translate.toString(transform), zIndex: 10 } : undefined
 
     return (
         <div ref={setNodeRef} style={style} {...listeners} {...attributes}
-            className={`training-week-session mb-2 touch-none select-none cursor-grab active:cursor-grabbing overflow-hidden ${seleccionada ? 'is-selected' : ''}`}
+            className={`training-week-session touch-none select-none cursor-grab active:cursor-grabbing ${seleccionada ? 'is-selected' : ''}`}
         >
             <button
                 type="button"
                 onClick={onSeleccionar}
-                className="w-full flex items-start gap-2 p-2 text-left"
-                style={{
-                    background: seleccionada ? 'var(--metal-bright)' : 'var(--surface-elevated,var(--border))',
-                    color: seleccionada ? 'var(--atelier-carbon)' : 'var(--text)',
-                    border: '1px solid var(--editorial-rule)',
-                    boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.4)' : 'none',
-                    opacity: isDragging ? 0.6 : 1,
-                }}
+                className="training-week-session__main"
+                style={{ boxShadow: isDragging ? '0 12px 30px rgba(0,0,0,0.32)' : 'none', opacity: isDragging ? 0.66 : 1 }}
             >
-                <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: sesion.completada ? 'var(--semantic-active-bg)' : 'var(--bg)' }}
-                >
-                    {sesion.completada ? <CheckCircle2 size={13} style={{ color: 'var(--semantic-active)' }} /> : iconoTipo(sesion.tipo_sesion, 13)}
-                </div>
-                <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-medium leading-tight" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
-                    <p className="text-[9px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{sesion.ejercicios_count} ej.</p>
-                </div>
+                <span className="training-week-session__type">
+                    {sesion.completada ? <CheckCircle size={14} /> : iconoTipo(sesion.tipo_sesion, 14)}
+                    {sesion.tipo_sesion === 'carrera' ? 'Carrera' : sesion.tipo_sesion === 'mixto' ? 'Mixto' : 'Fuerza'}
+                </span>
+                <strong>{sesion.nombre}</strong>
+                <span className="training-week-session__meta">{sesion.ejercicios_count} ejercicios</span>
+                <CaretDown size={14} className={seleccionada ? 'rotate-180' : ''} />
+            </button>
+            <button type="button" className="training-week-session__move" onClick={(event) => { event.stopPropagation(); onAbrirMover() }}>
+                {moviendo ? 'Cancelar' : 'Mover'}
             </button>
         </div>
     )
 }
 
-function DiaColumna({ dia, sesiones, seleccionadaId, onSeleccionar }: {
+function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, onSeleccionar, onAbrirMover, onMover }: {
     dia: string
     sesiones: SesionKanban[]
     seleccionadaId: string | null
+    moverId: string | null
+    detalles: Record<string, EjercicioDetalle[] | 'cargando'>
     onSeleccionar: (id: string) => void
+    onAbrirMover: (id: string) => void
+    onMover: (dia: string) => void
 }) {
     const { setNodeRef, isOver } = useDroppable({ id: dia })
     return (
         <div
             ref={setNodeRef}
-            className="training-week-day p-2 min-h-[100px] flex-1 min-w-[120px] transition-colors"
+            className={`training-week-day ${isOver ? 'is-over' : ''}`}
             style={{
-                background: isOver ? 'var(--editorial-field)' : 'var(--bg)',
-                border: `1px ${isOver ? 'solid' : 'dashed'} var(--editorial-rule)`,
+                background: isOver ? 'var(--editorial-field)' : 'transparent',
             }}
         >
-            <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 px-0.5" style={{ color: 'var(--text-muted)' }}>
-                <span className="sm:hidden">{DIAS_ABREV[dia]}</span>
-                <span className="hidden sm:inline">{dia}</span>
-            </p>
-            {sesiones.length === 0 ? (
-                <p className="text-[10px] px-0.5" style={{ color: 'var(--text-disabled)' }}>Descanso</p>
-            ) : (
-                sesiones.map(s => (
+            <div className="training-week-day__label"><span>{DIAS_ABREV[dia]}</span><small>{dia.slice(0, 3)}</small></div>
+            <div className="training-week-day__content">
+                {sesiones.length === 0 ? <p className="training-week-rest">Descanso</p> : sesiones.map(s => (
                     <SesionCard
                         key={s.id}
                         sesion={s}
                         seleccionada={seleccionadaId === s.id}
+                        moviendo={moverId === s.id}
                         onSeleccionar={() => onSeleccionar(s.id)}
+                        onAbrirMover={() => onAbrirMover(s.id)}
                     />
-                ))
-            )}
+                ))}
+                {moverId && sesiones.some(s => s.id === moverId) && (
+                    <div className="training-week-move-picker" aria-label="Mover entrenamiento a otro día">
+                        {DIAS.map(destino => <button key={destino} type="button" disabled={destino === dia} onClick={() => onMover(destino)}>{DIAS_ABREV[destino]}</button>)}
+                    </div>
+                )}
+                {seleccionadaId && sesiones.some(s => s.id === seleccionadaId) && (
+                    <div className="training-week-detail">
+                        <p>{sesiones.find(s => s.id === seleccionadaId)?.nombre ?? 'Sesión'}</p>
+                        {detalles[seleccionadaId] === 'cargando' ? (
+                            <div className="flex justify-center py-6"><SpinnerGap size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
+                        ) : (
+                            <ListaEjerciciosExpandible ejercicios={(detalles[seleccionadaId] as EjercicioDetalle[]) ?? []} />
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
@@ -105,6 +120,7 @@ function DiaColumna({ dia, sesiones, seleccionadaId, onSeleccionar }: {
 export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }) {
     const [sesionesLocal, setSesionesLocal] = useState(sesiones)
     const [moviendo, setMoviendo] = useState(false)
+    const [moverId, setMoverId] = useState<string | null>(null)
     const [seleccionadaId, setSeleccionadaId] = useState<string | null>(null)
     const [detalles, setDetalles] = useState<Record<string, EjercicioDetalle[] | 'cargando'>>({})
     const { addToast } = useToast()
@@ -127,11 +143,8 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
         }
     }
 
-    async function handleDragEnd(event: DragEndEvent) {
-        const { active, over } = event
-        if (!over) return
-        const nuevoDia = String(over.id)
-        const sesion = sesionesLocal.find(s => s.id === active.id)
+    async function moverSesion(sesionId: string, nuevoDia: string) {
+        const sesion = sesionesLocal.find(s => s.id === sesionId)
         if (!sesion || sesion.dia_semana === nuevoDia) return
 
         const anterior = sesion.dia_semana
@@ -146,6 +159,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
             const data = await res.json().catch(() => null)
             if (!res.ok) throw new Error(data?.error || 'No se pudo mover la sesión')
             addToast({ type: 'success', title: `"${sesion.nombre}" movida a ${nuevoDia}` })
+            setMoverId(null)
         } catch (err) {
             setSesionesLocal(prev => prev.map(s => s.id === sesion.id ? { ...s, dia_semana: anterior } : s))
             addToast({ type: 'error', title: (err as Error).message })
@@ -154,38 +168,36 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
         }
     }
 
+    async function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event
+        if (!over) return
+        await moverSesion(String(active.id), String(over.id))
+    }
+
     return (
         <div>
-            <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-                Toca una sesión para ver sus ejercicios, o arrástrala a otro día para moverla.
-                {moviendo && <span className="ml-2 inline-flex items-center gap-1"><Loader2 size={11} className="animate-spin" /> Guardando…</span>}
-            </p>
+            <div className="training-week-intro">
+                <span>Agenda semanal</span>
+                <p>Toca una sesión para desplegarla. Usa <strong>Mover</strong> o arrástrala a otro día.</p>
+                {moviendo && <small><SpinnerGap size={11} className="animate-spin" /> Guardando cambio…</small>}
+            </div>
             <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                <div className="training-week-agenda">
                     {DIAS.map(dia => (
                         <DiaColumna
                             key={dia}
                             dia={dia}
                             sesiones={sesionesLocal.filter(s => s.dia_semana === dia)}
                             seleccionadaId={seleccionadaId}
+                            moverId={moverId}
+                            detalles={detalles}
                             onSeleccionar={toggleSeleccion}
+                            onAbrirMover={(id) => setMoverId(current => current === id ? null : id)}
+                            onMover={(nuevoDia) => moverId && moverSesion(moverId, nuevoDia)}
                         />
                     ))}
                 </div>
             </DndContext>
-
-            {seleccionadaId && (
-                <div className="mt-3 rounded-2xl p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    <p className="text-xs font-bold mb-2" style={{ color: 'var(--text)' }}>
-                        {sesionesLocal.find(s => s.id === seleccionadaId)?.nombre ?? 'Sesión'}
-                    </p>
-                    {detalles[seleccionadaId] === 'cargando' ? (
-                        <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
-                    ) : (
-                        <ListaEjerciciosExpandible ejercicios={(detalles[seleccionadaId] as EjercicioDetalle[]) ?? []} />
-                    )}
-                </div>
-            )}
         </div>
     )
 }
