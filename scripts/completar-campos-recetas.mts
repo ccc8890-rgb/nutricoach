@@ -10,7 +10,7 @@
 import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 import { autoTagReceta } from '../lib/auto-tag'
-import { deducirCoccion, normalizarDificultad, deducirDificultad, MOMENTOS_POR_TIPO, deducirObjetivos } from '../lib/recetas/campos-auto'
+import { deducirCoccion, normalizarDificultad, deducirDificultad, MOMENTOS_POR_TIPO, deducirObjetivos, cumplePreEntreno, cumplePostEntreno } from '../lib/recetas/campos-auto'
 
 const env = Object.fromEntries(fs.readFileSync('.env.local','utf8').split('\n').filter(l=>l.includes('=')&&!l.startsWith('#')).map(l=>{const i=l.indexOf('=');return [l.slice(0,i).trim(),l.slice(i+1).trim().replace(/^["']|["']$/g,'')]}))
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
@@ -21,7 +21,7 @@ const TIPOS=['Desayuno','Comida','Cena','Merienda','Snack','Postre','Salsa','Aco
 const TAG_LEGADO:Record<string,string>={Ensaladas:'Ensalada',Burritos:'Burrito','Fajitas/Tacos':'Tacos',Mealpreps:'Meal prep','Bowls fruta':'Bowl',Tostas:'Tostada',Gofres:'Gofre',Entrante:'Entrante'}
 
 async function todo(t:string,c:string){const o:any[]=[];for(let f=0;;f+=1000){const {data,error}=await sb.from(t).select(c).range(f,f+999);if(error)throw error;o.push(...data!);if(data!.length<1000)break}return o}
-const R=await todo('recetas','id,nombre,descripcion,instrucciones,categoria,tipo_plato,tipo_coccion,dificultad,tiempo_prep_min,tiempo_coccion_min,tags,descripcion_porcion,peso_total_g,porciones,kcal,proteinas,carbohidratos,grasas,url_origen,estado,momentos,objetivos,nivel_fit')
+const R=await todo('recetas','id,nombre,descripcion,instrucciones,categoria,tipo_plato,tipo_coccion,dificultad,tiempo_prep_min,tiempo_coccion_min,tags,descripcion_porcion,peso_total_g,porciones,kcal,proteinas,carbohidratos,grasas,url_origen,estado,momentos,objetivos,nivel_fit,fibra,es_pre_entreno,es_post_entreno')
 const I=await todo('receta_ingredientes','receta_id,nombre_libre,cantidad_gramos,alimentos(nombre)')
 const ings=new Map<string,any[]>(); for(const i of I){(ings.get(i.receta_id)??ings.set(i.receta_id,[]).get(i.receta_id)!).push(i)}
 
@@ -53,6 +53,12 @@ for(const r of R){
   if(!r.descripcion_porcion&&r.peso_total_g>0&&r.porciones>0){const g=Math.round(r.peso_total_g/r.porciones/5)*5; if(g>0) patch.descripcion_porcion=`1 ración (≈ ${g} g)`}
   if(r.estado!=='descartada'){
     if(!(r.momentos||[]).length&&MOMENTOS_POR_TIPO[tipoFinal]) patch.momentos=MOMENTOS_POR_TIPO[tipoFinal]
+    if(r.estado==='aprobada'){ // momentos de entreno: solo si el marcador es_pre/es_post está puesto Y los macros lo respaldan
+      const base:string[]=patch.momentos??r.momentos??[]; const ext=[...base]
+      if(r.es_pre_entreno&&cumplePreEntreno({...r,tipo_plato:tipoFinal})&&!ext.includes('pre_entreno')) ext.push('pre_entreno')
+      if(r.es_post_entreno&&cumplePostEntreno({...r,tipo_plato:tipoFinal})&&!ext.includes('post_entreno')) ext.push('post_entreno')
+      if(ext.length!==base.length) patch.momentos=ext
+    }
     if(!(r.objetivos||[]).length){const o=deducirObjetivos(r); if(o.length) patch.objetivos=o}
   }
   if(Object.keys(patch).length){ cambios.push({id:r.id,nombre:r.nombre,antes:Object.fromEntries(Object.keys(patch).map(k=>[k,(r as any)[k]])),despues:patch}); for(const k of Object.keys(patch)) cnt[k]=(cnt[k]||0)+1 }
@@ -72,6 +78,8 @@ av.push('\n## Menos de 3 ingredientes'); for(const r of R) if((ings.get(r.id)||[
 av.push('\n## Nombres duplicados'); for(const v of nombres.values()) if(v.length>1) av.push(`- ${v.join(' | ')}`)
 av.push('\n## Mismo reel en varias recetas'); for(const [u,v] of urls) if(v.length>1) av.push(`- ${v.join(' | ')}`)
 av.push('\n## Texto con víspera/carrera/recuperación (regla: títulos genéricos)'); for(const r of R) if(/v[ií]spera|carrera|recuperaci/i.test(r.nombre+' '+(r.descripcion||''))) av.push(`- ${r.nombre}`)
+av.push('\n## Marcadas pre-entreno pero sin cumplir el criterio (hidratos ≥35 g, grasa ≤15 g, fibra ≤10 g, 180-600 kcal)'); for(const r of R) if(r.estado==='aprobada'&&r.es_pre_entreno&&!cumplePreEntreno(r)) av.push(`- ${r.nombre}`)
+av.push('\n## Marcadas post-entreno pero sin cumplir el criterio (proteína ≥20 g, hidratos ≥25 g, grasa ≤28 g, 180-750 kcal)'); for(const r of R) if(r.estado==='aprobada'&&r.es_post_entreno&&!cumplePostEntreno(r)) av.push(`- ${r.nombre}`)
 const fecha=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-')
 fs.writeFileSync(`salidas/${fecha}_avisos-recetario.md`,'# Avisos del recetario (requieren criterio humano)\n\n'+av.join('\n'))
 console.log('\nAvisos:',av.filter(l=>l.startsWith('- ')).length,'→ salidas/'+fecha+'_avisos-recetario.md')

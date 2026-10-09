@@ -62,3 +62,16 @@ export function deducirObjetivos(r: { kcal?: number | null; proteinas?: number |
   if (kcal <= 700 && dens >= 0.3 && (r.proteinas || 0) >= 10) out.push('perdida_grasa', 'recomposicion')
   return out
 }
+
+// Criterio de entreno (ISSN / IOC / Jeukendrup): solo se añade el momento a recetas YA marcadas es_pre/es_post
+// que además cumplen los macros. Pre: hidratos altos, grasa y fibra bajas. Post: proteína + hidratos.
+type MacrosReceta = { kcal?: number | null; proteinas?: number | null; carbohidratos?: number | null; grasas?: number | null; fibra?: number | null; tipo_plato?: string | null }
+const noEsPlato = (r: MacrosReceta) => r.tipo_plato === 'Salsa' || r.tipo_plato === 'Acompañamiento'
+export function cumplePreEntreno(r: MacrosReceta): boolean {
+  const k = r.kcal || 0
+  return !noEsPlato(r) && k >= 180 && k <= 600 && (r.carbohidratos || 0) >= 35 && (r.grasas || 0) <= 15 && (r.fibra || 0) <= 10
+}
+export function cumplePostEntreno(r: MacrosReceta): boolean {
+  const k = r.kcal || 0
+  return !noEsPlato(r) && k >= 180 && k <= 750 && (r.proteinas || 0) >= 20 && (r.carbohidratos || 0) >= 25 && (r.grasas || 0) <= 28
+}
