@@ -42,8 +42,8 @@ function SesionCard({ sesion, seleccionada, moviendo, onSeleccionar, onAbrirMove
     const style = transform ? { transform: CSS.Translate.toString(transform), zIndex: 10 } : undefined
 
     return (
-        <div ref={setNodeRef} style={style} {...listeners} {...attributes}
-            className={`training-week-session touch-none select-none cursor-grab active:cursor-grabbing ${seleccionada ? 'is-selected' : ''}`}
+        <div ref={setNodeRef} style={style}
+            className={`training-week-session ${seleccionada ? 'is-selected' : ''}`}
         >
             <button
                 type="button"
@@ -59,7 +59,13 @@ function SesionCard({ sesion, seleccionada, moviendo, onSeleccionar, onAbrirMove
                 <span className="training-week-session__meta">{sesion.ejercicios_count} ejercicios</span>
                 <CaretDown size={14} className={seleccionada ? 'rotate-180' : ''} />
             </button>
-            <button type="button" className="training-week-session__move" onClick={(event) => { event.stopPropagation(); onAbrirMover() }}>
+            <button
+                type="button"
+                className="training-week-session__move"
+                onClick={(event) => { event.stopPropagation(); onAbrirMover() }}
+                {...listeners}
+                {...attributes}
+            >
                 {moviendo ? 'Cancelar' : 'Mover'}
             </button>
         </div>
