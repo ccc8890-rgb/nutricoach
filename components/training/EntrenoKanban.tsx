@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSWRConfig } from 'swr'
 import {
     DndContext,
     PointerSensor,
@@ -18,6 +19,8 @@ import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const DIAS_ABREV: Record<string, string> = { Lunes: 'L', Martes: 'M', Miércoles: 'X', Jueves: 'J', Viernes: 'V', Sábado: 'S', Domingo: 'D' }
+const SEMANA_ENTRENO_KEY = '/api/entrenos/semana-completa'
+const DIA_HOY = DIAS[(new Date().getDay() + 6) % 7]
 
 interface SesionKanban {
     id: string
@@ -26,6 +29,21 @@ interface SesionKanban {
     tipo_sesion: 'hibrido' | 'carrera' | 'mixto'
     ejercicios_count: number
     completada: boolean
+}
+
+interface SemanaEntrenoCache {
+    sesiones?: Array<SesionKanban & { esHoy?: boolean }>
+    [key: string]: unknown
+}
+
+function actualizarDiaEnCache(datos: SemanaEntrenoCache | undefined, sesionId: string, diaSemana: string) {
+    if (!datos?.sesiones) return datos
+    return {
+        ...datos,
+        sesiones: datos.sesiones.map(sesion => sesion.id === sesionId
+            ? { ...sesion, dia_semana: diaSemana, esHoy: diaSemana === DIA_HOY }
+            : sesion),
+    }
 }
 
 function iconoTipo(tipo: SesionKanban['tipo_sesion'], size = 14) {
@@ -136,6 +154,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
     const [detalles, setDetalles] = useState<Record<string, EjercicioDetalle[] | 'cargando'>>({})
     const [extras, setExtras] = useState<Record<string, ExtrasSesion | null>>({})
     const { addToast } = useToast()
+    const { mutate } = useSWRConfig()
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
 
     async function toggleSeleccion(sesionId: string) {
@@ -162,6 +181,11 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
 
         const anterior = sesion.dia_semana
         setSesionesLocal(prev => prev.map(s => s.id === sesion.id ? { ...s, dia_semana: nuevoDia } : s))
+        await mutate<SemanaEntrenoCache>(
+            SEMANA_ENTRENO_KEY,
+            datos => actualizarDiaEnCache(datos, sesion.id, nuevoDia),
+            { revalidate: false },
+        )
         setMoviendo(true)
         try {
             const res = await fetch('/api/cliente/entrenos/mover-dia', {
@@ -173,8 +197,14 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
             if (!res.ok) throw new Error(data?.error || 'No se pudo mover la sesión')
             addToast({ type: 'success', title: `"${sesion.nombre}" movida a ${nuevoDia}` })
             setMoverId(null)
+            void mutate(SEMANA_ENTRENO_KEY)
         } catch (err) {
             setSesionesLocal(prev => prev.map(s => s.id === sesion.id ? { ...s, dia_semana: anterior } : s))
+            await mutate<SemanaEntrenoCache>(
+                SEMANA_ENTRENO_KEY,
+                datos => actualizarDiaEnCache(datos, sesion.id, anterior),
+                { revalidate: false },
+            )
             addToast({ type: 'error', title: (err as Error).message })
         } finally {
             setMoviendo(false)
