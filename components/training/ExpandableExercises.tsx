@@ -19,6 +19,14 @@ export interface EjercicioDetalle {
   ejercicio: { id: string; nombre: string; grupo_muscular: string | null; tipo: string | null } | null
 }
 
+/** Descanso compartido por todos los ejercicios del bloque (2+), para mostrarlo una sola vez. */
+function descansoComun(items: EjercicioDetalle[]): number | null {
+  if (items.length < 2) return null
+  const valores = items.map(ej => (descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? ej.descanso_segundos : null))
+  const primero = valores[0]
+  return primero && valores.every(v => v === primero) ? primero : null
+}
+
 /** Fila de ejercicio: nombre + series/reps/descanso siempre visibles,
  * la explicación (RPE, técnica, contexto) se despliega solo si se toca. */
 export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: { ejercicios: EjercicioDetalle[]; checklistKey?: string }) {
@@ -52,9 +60,10 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
       {grupos.map(grupo => (
         <section key={grupo.bloque} className="training-exercise-group">
           <p className="mb-2 mt-4 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] first:mt-0" style={{ color: 'var(--text-muted)' }}>
-            {grupo.label}
+            {grupo.label}{descansoComun(grupo.items) ? ` · descanso ${descansoComun(grupo.items)}s` : ''}
           </p>
           {grupo.items.map(ej => {
+            const comun = descansoComun(grupo.items)
             const open = abierto === ej.id
             const detalle = ej.notas || ej.contexto_ia
             const completado = completados.has(ej.id)
@@ -85,9 +94,9 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                 >
                   <div className="min-w-0">
                     <p className="sr-only">{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
-                    {(descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) || ej.peso_sugerido) && (
+                    {((!comun && descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos)) || ej.peso_sugerido) && (
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                        {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? (
+                        {!comun && descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? (
                           <span className="inline-flex items-center gap-1"><Clock size={11} /> {ej.descanso_segundos}s</span>
                         ) : null}
                         {ej.peso_sugerido && <span>{ej.peso_sugerido}</span>}
