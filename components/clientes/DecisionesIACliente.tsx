@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { CheckCircle2, ChevronDown, Edit3, Loader2, XCircle } from 'lucide-react'
+import PropuestaPlanEntreno from '@/components/clientes/PropuestaPlanEntreno'
+import type { PayloadPlanEntrenoIA } from '@/lib/entrenos/planificar-con-ia'
 
 // Versión compacta, scopeada a UN cliente, de lo que antes vivía en la
 // página global /entrenos/brain-ia (840 líneas, cola de TODOS los
@@ -19,6 +21,7 @@ const TRAINING_TYPES = new Set([
   'alerta_readiness',
   'ajuste_nutricion_carga',
   'actualizacion_plan',
+  'plan_entreno_ia',
 ])
 
 const TIPO_LABEL: Record<string, string> = {
@@ -28,6 +31,7 @@ const TIPO_LABEL: Record<string, string> = {
   alerta_readiness: 'Readiness',
   ajuste_nutricion_carga: 'Nutrición carga',
   actualizacion_plan: 'Ajuste plan',
+  plan_entreno_ia: 'Plan de entreno',
 }
 
 interface Tarea {
@@ -38,7 +42,7 @@ interface Tarea {
   propuesta: string | null
   razonamiento: string | null
   created_at: string
-  payload?: { accion_aplicable?: string } | null
+  payload?: ({ accion_aplicable?: string } & Partial<PayloadPlanEntrenoIA>) | null
 }
 
 function esTareaEntrenoDelCliente(t: Tarea, clienteId: string): boolean {
@@ -57,7 +61,7 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
 
   useEffect(() => {
     let cancelado = false
-    fetch('/api/agentes/tareas?limite=100')
+    const cargar = () => fetch('/api/agentes/tareas?limite=100')
       .then(r => r.json())
       .then(data => {
         if (cancelado) return
@@ -65,7 +69,10 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
         setTareas(pendientes)
       })
       .catch(() => { if (!cancelado) setTareas([]) })
-    return () => { cancelado = true }
+    cargar()
+    // «Planificar con IA» avisa cuando deja una propuesta nueva.
+    window.addEventListener('decisiones-ia:recargar', cargar)
+    return () => { cancelado = true; window.removeEventListener('decisiones-ia:recargar', cargar) }
   }, [clienteId])
 
   async function decidir(tarea: Tarea, decision: 'aprobado' | 'rechazado' | 'modificado') {
@@ -82,6 +89,7 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
       })
       if (!res.ok) throw new Error()
       setTareas(prev => (prev ?? []).filter(t => t.id !== tarea.id))
+      if (tarea.tipo === 'plan_entreno_ia' && decision === 'aprobado') window.dispatchEvent(new CustomEvent('plan-entreno:actualizado'))
       setEditandoId(null)
       setDraft('')
     } catch {
@@ -126,6 +134,7 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
                 {tarea.razonamiento && (
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{tarea.razonamiento}</p>
                 )}
+                {tarea.tipo === 'plan_entreno_ia' && tarea.payload?.plan && <PropuestaPlanEntreno payload={tarea.payload as PayloadPlanEntrenoIA} />}
 
                 {editando ? (
                   <div>

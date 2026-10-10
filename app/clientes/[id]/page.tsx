@@ -41,7 +41,7 @@ const AdherenciaScoreCard = dynamic(() => import('@/components/clientes/Adherenc
 const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAdherenciaHeatmap'), { ssr: false, loading: () => <div className="h-32 rounded-2xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const ActividadClientePanel = dynamic(() => import('@/components/clientes/ActividadClientePanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const TrainingCoachPanel = dynamic(() => import('@/components/clientes/TrainingCoachPanel'), { ssr: false, loading: () => <TabSkeleton /> })
-const GenerarBloqueHibridoPanel = dynamic(() => import('@/components/clientes/GenerarBloqueHibridoPanel'), { ssr: false, loading: () => <TabSkeleton /> })
+const PlanificarConIA = dynamic(() => import('@/components/clientes/PlanificarConIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const DecisionesIACliente = dynamic(() => import('@/components/clientes/DecisionesIACliente'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioKanban = dynamic(() => import('@/components/clientes/EntrenoCalendarioKanban'), { ssr: false, loading: () => <TabSkeleton /> })
 const RutinaSemanaAccordion = dynamic(() => import('@/components/clientes/RutinaSemanaAccordion'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -602,6 +602,14 @@ export default function ClienteDetallePage() {
     setLoading(false)
   }
 
+  // Al aprobar una propuesta de plan (Decisiones de IA) se vuelve a leer el plan activo.
+  useEffect(() => {
+    const recargar = () => { loadData() }
+    window.addEventListener('plan-entreno:actualizado', recargar)
+    return () => window.removeEventListener('plan-entreno:actualizado', recargar)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
+
   // También refrescar noLeidosChat cuando se carga la página
   useEffect(() => {
     loadData()
@@ -950,15 +958,16 @@ export default function ClienteDetallePage() {
                       <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{entrenoActivo.duracion_semanas} semanas</p>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {entrenoActivo && (
-                      <>
-                        <Link href={`/entrenos/${entrenoActivo.id}?returnTo=${volverAqui}`} className="btn-primary btn-sm">Abrir plan <ExternalLink size={12} /></Link>
-                        <Link href={`/clientes/${id}/revisar-plan`} className="btn-secondary btn-sm"><RefreshCw size={12} /> Regenerar</Link>
-                      </>
-                    )}
-                    <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
-                    <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-secondary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link>
+                  <div className="flex flex-wrap items-start gap-3">
+                    <PlanificarConIA clienteId={id as string} />
+                    <details className="relative">
+                      <summary className="btn-secondary btn-sm cursor-pointer list-none">Más opciones</summary>
+                      <div className="absolute right-0 mt-1 z-10 flex flex-col gap-1 p-2 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)', minWidth: 180 }}>
+                        {entrenoActivo && <Link href={`/entrenos/${entrenoActivo.id}?returnTo=${volverAqui}`} className="btn-secondary btn-sm">Abrir plan <ExternalLink size={12} /></Link>}
+                        <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
+                        <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-secondary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link>
+                      </div>
+                    </details>
                   </div>
                 </section>
 
@@ -986,7 +995,6 @@ export default function ClienteDetallePage() {
                   {mostrarPanelIAEntreno && (
                     <div className="p-1 space-y-4" style={{ background: 'var(--bg)' }}>
                       <ErrorBoundary><TrainingCoachPanel clienteId={id as string} /></ErrorBoundary>
-                      <ErrorBoundary><GenerarBloqueHibridoPanel clienteId={id as string} /></ErrorBoundary>
                     </div>
                   )}
                 </div>
