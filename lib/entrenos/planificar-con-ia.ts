@@ -86,3 +86,11 @@ export async function planificarConIA(sb: SupabaseClient, input: { clienteId: st
     return { ok: false, modo: modoActual.modo, codigo: 'IA_ERROR', motivo: 'No se pudo generar la propuesta.' }
   }
 }
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export function validarCuerpoPlanificar(b: unknown): { ok: true; clienteId: string } | { ok: false; motivo: string } {
+  const id = b && typeof b === 'object' ? (b as { cliente_id?: unknown }).cliente_id : undefined
+  if (typeof id !== 'string' || !UUID.test(id)) return { ok: false, motivo: 'cliente_id no válido' }
+  return { ok: true, clienteId: id }
+}
