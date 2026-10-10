@@ -1,25 +1,62 @@
 'use client'
 
+import { resumirPropuesta, TEXTO_ESTADO, type EstadoPresentacion } from '@/lib/rendimiento/presentacion'
 import type { PayloadPlanEntrenoIA } from '@/lib/entrenos/planificar-con-ia'
 
-const TIPO_FUNDAMENTO: Record<string, string> = { estudio: 'Estudio', libro: 'Libro de entrenador', criterio: 'Criterio' }
+// Estructura y contenido de la propuesta de plan; el acabado visual lo pule Codex (ver docs/10-10-2026_traspaso-codex-presentacion.md).
+const COLOR_ESTADO: Record<EstadoPresentacion, string> = { ok: '#6AAF85', mirar: '#C8A96A', revisar: '#E0557A' }
 
 export default function PropuestaPlanEntreno({ payload }: { payload: PayloadPlanEntrenoIA }) {
-  const sesiones = ((payload.plan?.sesiones as { nombre?: string; dia_semana?: string | null }[]) ?? [])
-  const semana1 = payload.macrociclo?.semanas?.[0]
-  const hallazgos = payload.validacion?.hallazgos ?? []
-  const fundamentos = payload.macrociclo?.fundamentos ?? []
+  const r = resumirPropuesta(payload)
   return (
     <div className="space-y-3 text-sm" style={{ color: 'var(--text)' }}>
-      <p><strong>{payload.nombre_plan}</strong>{payload.duracion_semanas ? ` · ${payload.duracion_semanas} semanas` : ''}</p>
-      {semana1 && <p style={{ color: 'var(--text-muted)' }}>Esqueleto del motor, semana 1 ({semana1.fase}): {semana1.salidas} sesiones de carrera, {semana1.minutos} min, tirada de {semana1.tiradaMin} min.</p>}
-      <ul className="space-y-1">{sesiones.map((s, i) => <li key={i}>{s.dia_semana ? `${s.dia_semana} · ` : ''}{s.nombre}</li>)}</ul>
-      {hallazgos.length > 0 && (
-        <div><p className="font-semibold">Avisos del validador</p><ul className="space-y-1">{hallazgos.map((h, i) => <li key={i}>{h.nivel === 'error' ? '⛔' : '⚠️'} {h.texto}</li>)}</ul></div>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ border: `1px solid ${COLOR_ESTADO[r.estado]}`, color: COLOR_ESTADO[r.estado] }}>{TEXTO_ESTADO[r.estado]}</span>
+        <p className="font-semibold">{r.titular}</p>
+      </div>
+
+      <section>
+        <p className="text-xs font-semibold">Qué cambia</p>
+        <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs" style={{ color: 'var(--text-secondary)' }}>
+          {r.queCambia.map((l, i) => <li key={i}>{l}</li>)}
+        </ul>
+      </section>
+
+      <section>
+        <p className="text-xs font-semibold">La semana</p>
+        <ul className="mt-1 space-y-0.5 text-xs">
+          {r.semana.map((s, i) => (
+            <li key={i}>
+              {s.dia && <span className="font-medium capitalize">{s.dia} · </span>}{s.nombre}
+              {s.detalle && <span style={{ color: 'var(--text-muted)' }}> · {s.detalle}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {r.revisar.length > 0 && (
+        <section>
+          <p className="text-xs font-semibold">Revisar antes de aprobar</p>
+          <ul className="mt-1 space-y-0.5 text-xs">
+            {r.revisar.map((h, i) => <li key={i}>{h.grave ? '⛔' : '⚠️'} {h.texto}</li>)}
+          </ul>
+        </section>
       )}
-      {payload.macrociclo?.datosFaltantes?.length ? <p style={{ color: 'var(--text-muted)' }}>Datos que faltan: {payload.macrociclo.datosFaltantes.join('; ')}.</p> : null}
-      {fundamentos.length > 0 && (
-        <div><p className="font-semibold">De dónde sale cada regla</p><ul className="space-y-1">{fundamentos.map((f, i) => <li key={i}><span className="font-medium">[{TIPO_FUNDAMENTO[f.tipo] ?? f.tipo}]</span> {f.regla} — <span style={{ color: 'var(--text-muted)' }}>{f.fuente}</span></li>)}</ul></div>
+
+      {r.faltan.length > 0 && <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Faltan datos para afinar: {r.faltan.join('; ')}.</p>}
+
+      {r.fundamentos.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-xs" style={{ color: 'var(--text-muted)' }}>Por qué · {r.fundamentos.length} reglas con su origen</summary>
+          <ul className="mt-1 space-y-1 text-xs">
+            {r.fundamentos.map((f, i) => (
+              <li key={i}>
+                <span className="rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ border: '1px solid var(--border-strong)', color: 'var(--text-secondary)' }}>{f.tipo}</span>{' '}
+                {f.regla} — <span style={{ color: 'var(--text-muted)' }}>{f.fuente}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
     </div>
   )

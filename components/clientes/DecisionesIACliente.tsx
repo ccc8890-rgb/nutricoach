@@ -137,7 +137,7 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
 
             {abierta && (
               <div className="px-4 pb-4 space-y-3">
-                {tarea.razonamiento && (
+                {tarea.razonamiento && tarea.tipo !== 'plan_entreno_ia' && (
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{tarea.razonamiento}</p>
                 )}
                 {tarea.tipo === 'plan_entreno_ia' && tarea.payload?.plan && <PropuestaPlanEntreno payload={tarea.payload as PayloadPlanEntrenoIA} />}
@@ -163,9 +163,11 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
                     <button onClick={() => decidir(tarea, 'aprobado')} disabled={guardandoId === tarea.id} className="btn-primary btn-sm">
                       {guardandoId === tarea.id ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />} Aprobar
                     </button>
-                    <button onClick={() => { setEditandoId(tarea.id); setDraft(tarea.propuesta ?? '') }} className="btn-secondary btn-sm">
-                      <Edit3 size={13} /> Editar
-                    </button>
+                    {tarea.tipo !== 'plan_entreno_ia' && (
+                      <button onClick={() => { setEditandoId(tarea.id); setDraft(tarea.propuesta ?? '') }} className="btn-secondary btn-sm">
+                        <Edit3 size={13} /> Editar
+                      </button>
+                    )}
                     <button onClick={() => decidir(tarea, 'rechazado')} disabled={guardandoId === tarea.id} className="btn-secondary btn-sm">
                       <XCircle size={13} /> Ignorar
                     </button>

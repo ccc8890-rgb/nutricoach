@@ -1,5 +1,6 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
+import { estadoAnalisis, etiquetaDecision, glosarSiglas, porQueResumen, titularDe, TEXTO_ESTADO, TEXTO_ETIQUETA } from '@/lib/rendimiento/presentacion'
 
 interface VistaPrevia { sesionNombre: string; actual: string[]; nuevo: string[]; distanciaActualKm: number | null; distanciaNuevaKm: number | null; valido: boolean; error?: string }
 interface EstudioRef { titulo: string; anio: string | null; doi: string | null; nivel: string }
@@ -24,8 +25,8 @@ interface Analisis { id: string; estado: string; payload: Payload; comentario_co
 const ETIQUETA_ESTADO: Record<string, string> = {
   pendiente: 'Pendiente de tu revisión', aprobado: 'Útil', aplicado: 'Útil', rechazado: 'No encajó', modificado: 'Útil con cambios', en_revision: 'En revisión',
 }
-const COLOR_NIVEL = { alta: '#6AAF85', media: '#C8A96A', baja: '#E0557A' } as const
-const COLOR_RIESGO = { bajo: '#6AAF85', medio: '#C8A96A', alto: '#E0557A' } as const
+const COLOR_ESTADO = { ok: '#6AAF85', mirar: '#C8A96A', revisar: '#E0557A' } as const
+const COLOR_ETIQUETA = { seguro: '#6AAF85', mirar: '#C8A96A', revisar: '#E0557A' } as const
 const NIVEL_EVIDENCIA: Record<string, string> = { meta_analisis: 'metaanálisis', revision_sistematica: 'revisión sistemática', rct: 'ensayo aleatorizado', estudio_observacional: 'estudio observacional', opinion_experto: 'consenso o revisión' }
 const fecha = (iso: string) => new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
 
@@ -120,7 +121,16 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
               {ETIQUETA_ESTADO[ultimo.estado] ?? ultimo.estado}
             </span>
           </div>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--text)' }}>{p.resumen}</p>
+          <div className="flex flex-wrap items-start gap-2">
+            <span className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ border: `1px solid ${COLOR_ESTADO[estadoAnalisis(p)]}`, color: COLOR_ESTADO[estadoAnalisis(p)] }}>{TEXTO_ESTADO[estadoAnalisis(p)]}</span>
+            <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--text)' }}>{glosarSiglas(titularDe(p.resumen) || p.resumen || '')}</p>
+          </div>
+          {p.resumen && p.resumen.trim() !== titularDe(p.resumen) && (
+            <details>
+              <summary className="cursor-pointer text-xs" style={{ color: 'var(--text-muted)' }}>Ver el análisis completo</summary>
+              <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{glosarSiglas(p.resumen)}</p>
+            </details>
+          )}
 
           {p.alerta_prioritaria && (
             <p className="rounded-lg px-3 py-2 text-xs leading-relaxed" style={{ background: 'rgba(224,85,122,0.1)', border: '1px solid rgba(224,85,122,0.3)', color: 'var(--text)' }}>
@@ -129,7 +139,9 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
           )}
 
           {!!p.lecturas?.length && (
-            <div className="grid gap-2 sm:grid-cols-2">
+            <details>
+              <summary className="cursor-pointer text-xs" style={{ color: 'var(--text-muted)' }}>Datos que lo explican ({p.lecturas.length})</summary>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {p.lecturas.map((l, i) => (
                 <div key={i} className="rounded-lg p-3" style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-light)' }}>
                   <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>{l.titulo}</p>
@@ -138,6 +150,7 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
                 </div>
               ))}
             </div>
+            </details>
           )}
 
           {!!p.decisiones?.length && (
@@ -146,7 +159,7 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
                 Qué cambiar
                 {p.decisiones.some(d => d.origen) && (
                   <span className="ml-2 font-normal" style={{ color: 'var(--text-muted)' }}>
-                    {p.decisiones.filter(d => d.segura).length} de {p.decisiones.length} seguras (regla del motor, riesgo bajo y fiabilidad suficiente); el resto conviene mirarlas
+                    {p.decisiones.filter(d => etiquetaDecision(d) === 'seguro').length} de {p.decisiones.length} marcadas como seguras
                   </span>
                 )}
               </p>
@@ -155,35 +168,31 @@ export default function AnalisisIA({ clienteId }: { clienteId: string }) {
                   <li key={i} className="rounded-lg p-3" style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-light)' }}>
                     <div className="flex flex-wrap items-center gap-1.5">
                       <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{d.sesion}</p>
-                      {d.origen && (
-                        <>
-                          <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ border: '1px solid var(--border-strong)', color: 'var(--text-secondary)' }}>{d.origen === 'regla' ? 'Motor de reglas' : 'IA'}</span>
-                          {d.segura && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ border: `1px solid ${COLOR_NIVEL.alta}`, color: COLOR_NIVEL.alta }}>Segura</span>}
-                          {d.riesgo && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ border: `1px solid ${COLOR_RIESGO[d.riesgo]}`, color: COLOR_RIESGO[d.riesgo] }}>Riesgo {d.riesgo}</span>}
-                          {d.fiabilidad && <span title={d.fiabilidad.motivos.join(' · ')} className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ border: `1px solid ${COLOR_NIVEL[d.fiabilidad.nivel]}`, color: COLOR_NIVEL[d.fiabilidad.nivel] }}>Fiabilidad {d.fiabilidad.nivel} ({Math.round(d.fiabilidad.valor * 100)} %)</span>}
-                        </>
-                      )}
+                      <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ border: `1px solid ${COLOR_ETIQUETA[etiquetaDecision(d)]}`, color: COLOR_ETIQUETA[etiquetaDecision(d)] }}>{TEXTO_ETIQUETA[etiquetaDecision(d)]}</span>
                     </div>
-                    <p className="mt-0.5 text-sm" style={{ color: 'var(--text)' }}>{d.cambio}</p>
-                    <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{d.razon}</p>
-                    {d.fiabilidad ? (
-                      <div className="mt-1.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                        {d.estudios?.length ? (
-                          <ul className="space-y-0.5">
-                            {d.estudios.map((e, k) => (
-                              <li key={k}>
-                                {e.doi ? <a href={`https://doi.org/${e.doi}`} target="_blank" rel="noreferrer" className="underline">«{e.titulo}»</a> : `«${e.titulo}»`}
-                                {e.anio ? ` (${e.anio})` : ''} · {NIVEL_EVIDENCIA[e.nivel] ?? e.nivel}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : <span>Sin estudios que lo respalden: criterio de entrenador.</span>}
-                        <p className="mt-0.5">Fiabilidad: {d.fiabilidad.motivos.join(' · ')}</p>
-                        {d.avisos?.map((a, k) => <p key={k} style={{ color: '#C8A96A' }}>{a}</p>)}
-                      </div>
-                    ) : (
-                      <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>{d.evidencia} · confianza {Math.round(d.confianza * 100)}%</p>
-                    )}
+                    <p className="mt-0.5 text-sm" style={{ color: 'var(--text)' }}>{glosarSiglas(d.cambio)}</p>
+                    <details className="mt-1.5">
+                      <summary className="cursor-pointer text-[11px]" style={{ color: 'var(--text-muted)' }}>Por qué{porQueResumen(d) ? ` · ${porQueResumen(d)}` : ''}</summary>
+                      <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{glosarSiglas(d.razon)}</p>
+                      {d.fiabilidad ? (
+                        <div className="mt-1.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                          {d.estudios?.length ? (
+                            <ul className="space-y-0.5">
+                              {d.estudios.map((e, k) => (
+                                <li key={k}>
+                                  {e.doi ? <a href={`https://doi.org/${e.doi}`} target="_blank" rel="noreferrer" className="underline">«{e.titulo}»</a> : `«${e.titulo}»`}
+                                  {e.anio ? ` (${e.anio})` : ''} · {NIVEL_EVIDENCIA[e.nivel] ?? e.nivel}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : <span>Sin estudios que lo respalden: criterio de entrenador.</span>}
+                          <p className="mt-0.5">Fiabilidad: {d.fiabilidad.motivos.join(' · ')}</p>
+                          {d.avisos?.map((a, k) => <p key={k} style={{ color: '#C8A96A' }}>{a}</p>)}
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>{d.evidencia} · confianza {Math.round(d.confianza * 100)}%</p>
+                      )}
+                    </details>
                     {d.vistaPrevia && (
                       <div className="mt-2 rounded-md p-2.5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                         <div className="grid gap-3 text-xs sm:grid-cols-2">

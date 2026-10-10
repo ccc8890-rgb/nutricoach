@@ -29,6 +29,8 @@ export interface ResultadoGeneracionPlan {
   modalidad: string
   validacion: ResultadoValidacion | null
   macrociclo: ResultadoMacro | null
+  /** Minutos de carrera por semana que hace de verdad (reloj, últimas 4 semanas completas); null si no hay datos. */
+  minutosRealesSemana: number | null
   metadata: { rpe_promedio: number | null; ajuste_rpe: string; modalidad: string; recomendacion_motor: unknown; papers_usados: number; generado_con: string }
 }
 
@@ -454,6 +456,7 @@ ${instruccionDuracion}
       modalidad: modalidadFoco,
       validacion,
       macrociclo,
+      minutosRealesSemana: contextoValidacion.minutosRealesSemana,
       metadata: { rpe_promedio: rpePromedio, ajuste_rpe: ajusteRpe, modalidad: modalidadFoco, recomendacion_motor: recomendacion, papers_usados: papers.length, generado_con: MODEL },
     }
 }

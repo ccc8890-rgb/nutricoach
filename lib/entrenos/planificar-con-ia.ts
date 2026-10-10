@@ -18,6 +18,8 @@ export interface PayloadPlanEntrenoIA {
   macrociclo: ResultadoMacro | null
   validacion: ResultadoValidacion | null
   generado_en: string
+  /** Para escribir «de X a Y min» al presentar la propuesta. */
+  contexto?: { minutos_reales_semana: number | null }
 }
 
 export type ResultadoPlanificacion =
@@ -46,6 +48,7 @@ export function construirPayloadPropuesta(r: ResultadoGeneracionPlan, modo: Modo
   return {
     modo, fase_bloque: r.faseBloque, nombre_plan: r.nombrePlan, duracion_semanas: normalizarDuracionSemanas(r.duracionSemanas), es_hibrido: r.esHibrido,
     plan: { ...r.planIA, sesiones }, macrociclo: r.macrociclo, validacion: r.validacion, generado_en: new Date().toISOString(),
+    contexto: { minutos_reales_semana: r.minutosRealesSemana ?? null },
   }
 }
 
