@@ -25,6 +25,8 @@ Regla de trabajo: cuando aparezca un error nuevo, primero se escribe el test que
 | 17 | `proponer-plan-ciencia` solo comprobaba que hubiera sesión: cualquier usuario podía generar planes de cualquier cliente | La ruta no comprobaba que el cliente fuera del coach | Comprobación 401/403 con `autorizarCoachCliente` (probada sin sesión: 401) |
 | 18 | El generador desactivaba el plan activo antes de tener el nuevo completo: un fallo a mitad dejaba al cliente sin plan | Se desactivaba primero y se insertaba después | `guardar-plan.test.ts` (el nuevo nace inactivo y solo se activa al final; limpieza si falla) |
 | 19 | Ejercicios propuestos por la IA sin equivalente en la biblioteca se omitían en silencio | `continue` sin aviso | `guardar-plan.test.ts` (`ejerciciosOmitidos`) y mensaje al aprobar |
+| 20 | Se acumulaban tareas pendientes repetidas del mismo tipo para un cliente (dos análisis de rendimiento casi iguales) | Cada ejecución del agente o del botón creaba una nueva sin retirar la anterior | `tareas-unicas.test.ts` (la nueva sustituye a las anteriores del mismo cliente y tipo; no toca otros clientes, tipos ni lo ya decidido) y `limpiar-tareas-duplicadas.ts` |
+| 21 | Nada preparaba el siguiente bloque: había que acordarse de pulsar el botón | No existía ningún automatismo | Cron `proponer-bloques` + `planificar-con-ia.test.ts` (`debeProponerAutomaticamente`: solo si toca, sin otra pendiente y con 7 días de enfriamiento) |
 
 ## Límites que siguen abiertos (no son errores resueltos)
 - Las cifras del macrociclo son criterio de entrenador apoyado en libros y en pocos estudios; cada regla lleva su origen en `fundamentos` (estudio / libro / criterio). Ninguna se ha contrastado con un entrenador humano.

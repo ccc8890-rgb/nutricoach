@@ -29,6 +29,7 @@ export type EstadoTarea =
   | 'rechazado'
   | 'modificado'
   | 'aplicado'
+  | 'reemplazada'
 
 export interface AgenteTarea {
   id: string

@@ -12,6 +12,7 @@
 
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { getSummaryLast7d } from '@/lib/integraciones/normalizer'
+import { reemplazarPendientesAnteriores } from './tareas-unicas'
 import type {
   TipoAgente,
   ContextoCliente,
@@ -289,7 +290,10 @@ export async function guardarTareaAgente(
     return null
   }
 
-  return data as AgenteTarea
+  const tarea = data as AgenteTarea
+  // Una sola pendiente por cliente y tipo: la nueva sustituye a las anteriores sin revisar.
+  await reemplazarPendientesAnteriores(db, { clienteId, tipo: tarea.tipo, nuevaId: tarea.id })
+  return tarea
 }
 
 // ── Registrar señal de aprendizaje tras decisión del coach ───

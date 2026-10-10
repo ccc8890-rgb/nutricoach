@@ -29,6 +29,10 @@
             "schedule": "45 6 * * *"
         },
         {
+            "path": "/api/cron/proponer-bloques",
+            "schedule": "50 6 * * *"
+        },
+        {
             "path": "/api/cron/snapshot-negocio",
             "schedule": "30 21 * * *"
         },

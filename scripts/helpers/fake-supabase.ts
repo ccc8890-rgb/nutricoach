@@ -12,6 +12,7 @@ export function fakeSupabase(tablas: Record<string, Fila[]>, opts: { falla?: (ta
     const filtros: Record<string, unknown> = {}
     const filtrosIs: Record<string, unknown> = {}
     const filtrosIn: Record<string, unknown[]> = {}
+    const filtrosNeq: Record<string, unknown> = {}
     let ilike: { col: string; v: string } | null = null
     let op: 'select' | 'insert' | 'update' | 'delete' = 'select'
     let payload: unknown
@@ -20,6 +21,7 @@ export function fakeSupabase(tablas: Record<string, Fila[]>, opts: { falla?: (ta
     q.select = () => q
     q.eq = (c: string, v: unknown) => { filtros[c] = v; return q }
     q.is = (c: string, v: unknown) => { filtrosIs[c] = v; return q }
+    q.neq = (c: string, v: unknown) => { filtrosNeq[c] = v; return q }
     q.in = (c: string, v: unknown[]) => { filtrosIn[c] = v; return q }
     q.ilike = (c: string, v: string) => { ilike = { col: c, v }; return q }
     q.insert = (p: unknown) => { op = 'insert'; payload = p; return q }
@@ -29,6 +31,7 @@ export function fakeSupabase(tablas: Record<string, Fila[]>, opts: { falla?: (ta
       Object.entries(filtros).every(([c, v]) => !(c in f) || f[c] === v) &&
       Object.entries(filtrosIs).every(([c, v]) => !(c in f) || f[c] === v || (v === null && f[c] == null)) &&
       Object.entries(filtrosIn).every(([c, v]) => !(c in f) || v.includes(f[c])) &&
+      Object.entries(filtrosNeq).every(([c, v]) => !(c in f) || f[c] !== v) &&
       (!ilike || !(ilike.col in f) || String(f[ilike.col]).toLowerCase().includes(ilike.v.replace(/%/g, '').toLowerCase()))
     const resultado = () => {
       const filas = tablas[tabla] ?? (tablas[tabla] = [])

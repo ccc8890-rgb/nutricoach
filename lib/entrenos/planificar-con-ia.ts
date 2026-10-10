@@ -103,3 +103,14 @@ export function validarCuerpoPlanificar(b: unknown): { ok: true; clienteId: stri
   if (typeof id !== 'string' || !UUID.test(id)) return { ok: false, motivo: 'cliente_id no válido' }
   return { ok: true, clienteId: id }
 }
+
+/** Días sin volver a proponer un bloque automáticamente tras una propuesta (aprobada, rechazada o pendiente). */
+export const DIAS_ENFRIAMIENTO_PROPUESTA_AUTO = 7
+
+/** Cuándo el cron diario debe crear solo la propuesta del siguiente bloque. */
+export function debeProponerAutomaticamente(
+  decision: { modo: ModoPlanificacion; hayPropuestaPendiente: boolean },
+  propuestasUltimosDias: number,
+): boolean {
+  return decision.modo === 'siguiente_bloque' && !decision.hayPropuestaPendiente && propuestasUltimosDias === 0
+}

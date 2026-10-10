@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { validarPayloadPlanEntrenoIA } from '../lib/entrenos/aplicar-plan-ia'
-import { construirPayloadPropuesta, construirResumenPropuesta, estadoHttpDe, leerModoPlanificacion, planificarConIA } from '../lib/entrenos/planificar-con-ia'
+import { debeProponerAutomaticamente, construirPayloadPropuesta, construirResumenPropuesta, estadoHttpDe, leerModoPlanificacion, planificarConIA } from '../lib/entrenos/planificar-con-ia'
 import type { ResultadoGeneracionPlan } from '../lib/entrenos/generar-plan-ia'
 import { fakeSupabase } from './helpers/fake-supabase'
 
@@ -77,6 +77,12 @@ async function main() {
   assert.equal(ra.ok, false)
   if (!ra.ok) { assert.equal(ra.codigo, 'YA_HAY_PROPUESTA'); assert.equal(ra.modo, 'ajustar'); assert.match(ra.motivo, /Rendimiento/) }
   assert.equal(ajustando.ops.length, 0, 'no se escribe nada')
+  // Propuesta automática del siguiente bloque: solo si toca, no hay otra pendiente y no hubo ninguna propuesta en los últimos 7 días.
+  assert.equal(debeProponerAutomaticamente({ modo: 'siguiente_bloque', hayPropuestaPendiente: false }, 0), true)
+  assert.equal(debeProponerAutomaticamente({ modo: 'siguiente_bloque', hayPropuestaPendiente: true }, 0), false, 'ya hay una pendiente')
+  assert.equal(debeProponerAutomaticamente({ modo: 'siguiente_bloque', hayPropuestaPendiente: false }, 1), false, 'enfriamiento: si el coach la rechazó no se regenera cada día')
+  assert.equal(debeProponerAutomaticamente({ modo: 'ajustar', hayPropuestaPendiente: false }, 0), false, 'a mitad de bloque no se propone solo')
+  assert.equal(debeProponerAutomaticamente({ modo: 'crear', hayPropuestaPendiente: false }, 0), false, 'un cliente sin plan no recibe plan sin que el coach lo pida')
   console.log('planificar-con-ia.test OK')
 }
 main()
