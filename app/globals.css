@@ -1201,6 +1201,20 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Panel del coach en escritorio: más ancho útil y letra más legible.
+   El tamaño base afecta a todo lo escrito en rem (Tailwind); cambiar solo este número para afinar. */
+@media (min-width: 1024px) {
+  html:has(.coach-atelier-shell) {
+    font-size: 110%;
+  }
+
+  .coach-atelier-main .max-w-5xl,
+  .coach-atelier-main .max-w-6xl,
+  .coach-atelier-main .max-w-7xl {
+    max-width: 120rem;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    SEMANTIC BADGES — solo para estados y datos, nunca UI chrome
    ═══════════════════════════════════════════════════════════════ */

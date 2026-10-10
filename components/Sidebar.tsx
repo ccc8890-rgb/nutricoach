@@ -20,6 +20,8 @@ import {
   LogOut,
   Menu,
   Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings,
   ShoppingCart,
   Store,
@@ -306,6 +308,72 @@ function SidebarSection({
   )
 }
 
+function RailTooltip({ label }: { label: string }) {
+  return (
+    <span
+      role="tooltip"
+      className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md border px-2.5 py-1.5 text-xs font-medium opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+      style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border)', color: 'var(--text)', boxShadow: 'var(--shadow-sm)' }}
+    >
+      {label}
+    </span>
+  )
+}
+
+function RailButton({ label, icon: Icon, href, onClick, active = false, badge = 0 }: {
+  label: string
+  icon: LucideIcon
+  href?: string
+  onClick?: () => void
+  active?: boolean
+  badge?: number
+}) {
+  const clases = `sidebar-link group relative !h-11 !w-11 !justify-center !gap-0 !p-0 ${active ? 'active' : ''}`
+  const contenido = (
+    <>
+      <Icon size={20} strokeWidth={active ? 2.35 : 1.8} />
+      {badge > 0 && (
+        <span className="absolute right-1 top-1 h-2 w-2 rounded-full" style={{ background: 'var(--error)' }} />
+      )}
+      <RailTooltip label={label} />
+    </>
+  )
+  if (href) {
+    return (
+      <Link href={href} prefetch className={clases} aria-label={label} aria-current={active ? 'page' : undefined}>
+        {contenido}
+      </Link>
+    )
+  }
+  return (
+    <button type="button" onClick={onClick} className={clases} aria-label={label}>
+      {contenido}
+    </button>
+  )
+}
+
+function RailSection({ section, pathname }: { section: NavSection; pathname: string }) {
+  const active = isActiveSection(pathname, section)
+  const Icon = section.icon
+
+  return (
+    <div className="group/flyout relative">
+      <RailButton label={section.label} icon={Icon} href={section.href} active={active} badge={section.badge} />
+      <div className="invisible absolute left-full top-0 z-50 pl-3 opacity-0 transition-opacity group-hover/flyout:visible group-hover/flyout:opacity-100 group-focus-within/flyout:visible group-focus-within/flyout:opacity-100">
+        <div
+          className="max-h-[80vh] w-64 overflow-y-auto rounded-xl border p-3"
+          style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border)', boxShadow: 'var(--shadow-sm)' }}
+        >
+          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+            {section.label}
+          </p>
+          <SectionPanelContent section={section} pathname={pathname} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function SecondarySidebar({
   section,
   pathname,
@@ -364,8 +432,24 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [recetasPendientes, setRecetasPendientes] = useState(0)
   const [mounted, setMounted] = useState(false)
+  // Escritorio: barra compacta por defecto; la elección del coach se recuerda en este navegador
+  const [collapsed, setCollapsed] = useState(true)
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => {
+    setMounted(true)
+    try {
+      const guardado = localStorage.getItem('nutricoach:sidebar')
+      if (guardado) setCollapsed(guardado === 'compacta')
+    } catch {}
+  }, [])
+
+  function alternarBarra() {
+    setCollapsed(previo => {
+      const siguiente = !previo
+      try { localStorage.setItem('nutricoach:sidebar', siguiente ? 'compacta' : 'ancha') } catch {}
+      return siguiente
+    })
+  }
   useEffect(() => { setMobileOpen(false) }, [pathname])
 
   useEffect(() => {
@@ -505,6 +589,53 @@ export default function Sidebar() {
           />
         ))}
       </nav>
+
+      <div className="hidden flex-shrink-0 border-t p-3 lg:block" style={{ borderColor: 'var(--glass-border)' }}>
+        <button type="button" onClick={alternarBarra} className="sidebar-link w-full" aria-label="Contraer barra lateral">
+          <PanelLeftClose size={18} strokeWidth={1.8} />
+          <span>Contraer barra</span>
+        </button>
+      </div>
+    </>
+  )
+
+  const railContent = (
+    <>
+      <div className="flex flex-shrink-0 justify-center border-b py-4" style={{ borderColor: 'var(--glass-border)' }}>
+        <Link
+          href="/dashboard"
+          prefetch
+          className="coach-atelier-mark flex h-10 w-10 items-center justify-center rounded-lg text-sm font-black tracking-tight"
+          style={{ background: 'var(--text)', color: 'var(--bg)' }}
+          aria-label="Volver a Inicio"
+        >
+          CN
+        </Link>
+      </div>
+
+      <nav className="flex flex-1 flex-col items-center gap-1 py-3">
+        {primaryItems.map(item => (
+          <RailButton
+            key={item.href}
+            label={item.label}
+            icon={item.icon}
+            href={item.href}
+            active={isActivePath(pathname, item.href, item.exact)}
+            badge={item.badge}
+          />
+        ))}
+        <div className="my-1 h-px w-8" style={{ background: 'var(--glass-border)' }} />
+        {sections.map(section => (
+          <RailSection key={section.key} section={section} pathname={pathname || '/dashboard'} />
+        ))}
+      </nav>
+
+      <div className="flex flex-shrink-0 flex-col items-center gap-1 border-t py-3" style={{ borderColor: 'var(--glass-border)' }}>
+        <RailButton label="Ampliar barra" icon={PanelLeftOpen} onClick={alternarBarra} />
+        <RailButton label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'} icon={theme === 'dark' ? Sun : Moon} onClick={toggleTheme} />
+        <RailButton label="Ajustes" icon={Settings} href="/ajustes" active={ajustesActivo} />
+        <RailButton label="Cerrar sesión" icon={LogOut} onClick={handleLogout} />
+      </div>
     </>
   )
 
@@ -535,7 +666,8 @@ export default function Sidebar() {
 
       <aside
         className={`coach-atelier-sidebar
-          relative w-64 min-h-screen flex flex-col border-r overflow-hidden
+          relative w-64 min-h-screen flex flex-col border-r
+          ${collapsed ? 'lg:w-[4.5rem] lg:overflow-visible max-lg:overflow-hidden' : 'overflow-hidden'}
           transition-transform duration-300 ease-out
           max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-40
           ${mounted && mobileOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'}
@@ -546,10 +678,13 @@ export default function Sidebar() {
           paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
-        {sidebarContent}
+        <div className={collapsed ? 'flex min-h-0 flex-1 flex-col lg:hidden' : 'flex min-h-0 flex-1 flex-col'}>
+          {sidebarContent}
+        </div>
+        {collapsed && <div className="hidden min-h-0 flex-1 flex-col lg:flex">{railContent}</div>}
       </aside>
 
-      <SecondarySidebar section={selectedSection} pathname={pathname || '/dashboard'} />
+      {!collapsed && <SecondarySidebar section={selectedSection} pathname={pathname || '/dashboard'} />}
     </>
   )
 }

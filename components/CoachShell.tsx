@@ -159,7 +159,7 @@ function CoachTopBar({ pathname }: { pathname: string }) {
         background: 'color-mix(in srgb, var(--bg) 96%, transparent)',
       }}
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>
             <Link href="/dashboard" prefetch className="transition-colors hover:text-[var(--text)]">
@@ -249,7 +249,7 @@ export default function CoachShell({ children, padded = false }: { children: Rea
       <CoachFloatingControls />
       <main className="coach-atelier-main flex-1 overflow-auto pb-nav-safe layout-main">
         <CoachTopBar pathname={pathname || '/dashboard'} />
-        {padded ? <div className="p-6 max-w-5xl mx-auto">{children}</div> : children}
+        {padded ? <div className="p-6 max-w-[120rem] mx-auto">{children}</div> : children}
       </main>
     </div>
   )
