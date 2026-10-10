@@ -4,17 +4,18 @@ import Grafica, { type Fila } from './Grafica'
 import AnalisisIA from './AnalisisIA'
 import ZonasVdot from './ZonasVdot'
 import PlanObjetivo from './PlanObjetivo'
+import DerivaCardiaca from './DerivaCardiaca'
+import TecnicaCarrera from './TecnicaCarrera'
+import { Bloque, COLOR, mmss } from './comun'
 import type { PanelRendimiento as Panel } from '@/lib/rendimiento/panel'
 import type { UmbralesAtleta } from '@/lib/rendimiento/carga'
 import type { ResumenEjecucion } from '@/lib/rendimiento/ejecucion'
 
 type Respuesta = Panel & { umbrales: UmbralesAtleta; ejecucion: ResumenEjecucion; hoy: string }
 
-const COLOR = { forma: '#5B8DEF', fatiga: '#E0557A', fresc: '#6AAF85', carga: '#8A9AB8', ambar: '#C8A96A' }
 const ZONAS_FC = ['#7B818A', '#6AAF85', '#C8A96A', '#E08A4E', '#E0557A']
 const RANGOS = [{ d: 42, t: '6 sem' }, { d: 90, t: '3 meses' }, { d: 180, t: '6 meses' }, { d: 365, t: '1 año' }]
 
-const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`
 const fechaCorta = (f: string) => { const d = new Date(`${f}T12:00:00Z`); return `${d.getUTCDate()}/${d.getUTCMonth() + 1}` }
 const tipoLegible: Record<string, string> = {
   running: 'Carrera', track_running: 'Pista', treadmill_running: 'Cinta', trail_running: 'Trail',
@@ -28,16 +29,6 @@ function Tarjeta({ titulo, valor, pie, color }: { titulo: string; valor: string;
       <p className="mt-0.5 text-2xl font-semibold tabular-nums" style={{ color: color ?? 'var(--text)' }}>{valor}</p>
       {pie && <p className="mt-0.5 text-[11px] leading-snug" style={{ color: 'var(--text-secondary)' }}>{pie}</p>}
     </div>
-  )
-}
-
-function Bloque({ titulo, nota, children }: { titulo: string; nota?: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-      <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{titulo}</h3>
-      {nota && <p className="mb-2 mt-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>{nota}</p>}
-      {children}
-    </section>
   )
 }
 
@@ -188,6 +179,10 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
           </dl>
         </Bloque>
       </div>
+
+      <DerivaCardiaca deriva={datos.deriva} />
+
+      <TecnicaCarrera tecnica={datos.tecnica} />
 
       <ZonasVdot clienteId={clienteId} />
 

@@ -153,3 +153,18 @@ export function resumenTecnica(puntos: PuntoTecnica[], hoy: string): ResumenTecn
 }
 
 const redondear = (n: number) => Math.round(n * 10) / 10
+
+export type LecturaCambio = 'mejora' | 'empeora' | 'cambio' | 'estable'
+
+/** Cambio a partir del cual una métrica se considera que se ha movido de verdad (a igual ritmo). */
+const UMBRAL_CAMBIO: Record<MetricaTecnica, number> = { cadencia: 2, zancada_cm: 2, contacto_ms: 5, ratio_vertical: 0.3 }
+
+/**
+ * Lee el cambio de una métrica. Contacto con el suelo y ratio vertical: menos es mejor.
+ * Cadencia y zancada no tienen un sentido universal (depende del atleta y del ritmo), así que solo se dice si «cambian».
+ */
+export function lecturaCambio(metrica: MetricaTecnica, delta: number): LecturaCambio {
+  if (Math.abs(delta) < UMBRAL_CAMBIO[metrica]) return 'estable'
+  if (metrica === 'contacto_ms' || metrica === 'ratio_vertical') return delta < 0 ? 'mejora' : 'empeora'
+  return 'cambio'
+}

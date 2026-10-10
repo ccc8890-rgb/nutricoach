@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { puntosTecnica, resumenTecnica, type EntrenoTecnica } from '../lib/rendimiento/tecnica'
+import { lecturaCambio, puntosTecnica, resumenTecnica, type EntrenoTecnica } from '../lib/rendimiento/tecnica'
 
 const dia = (n: number) => new Date(Date.UTC(2026, 9, 10) - n * 86_400_000).toISOString().slice(0, 10)
 // Contacto y cadencia dependen del ritmo; las carreras recientes tienen 10 ms menos de contacto y 3 ppm más a igual ritmo.
@@ -53,4 +53,11 @@ assert.ok(Math.abs(p.ratio_vertical - (9 / base.raw!.zancada_m!) * 100) < 1e-9)
 // Pocas carreras en una ventana → sin comparación.
 assert.equal(resumenTecnica(pts.slice(0, 6), dia(0)), null)
 assert.equal(resumenTecnica([], dia(0)), null)
+
+assert.equal(lecturaCambio('contacto_ms', -6), 'mejora')
+assert.equal(lecturaCambio('contacto_ms', 6), 'empeora')
+assert.equal(lecturaCambio('contacto_ms', -3.5), 'estable')
+assert.equal(lecturaCambio('ratio_vertical', -0.4), 'mejora')
+assert.equal(lecturaCambio('cadencia', 3), 'cambio')
+assert.equal(lecturaCambio('cadencia', 0.8), 'estable')
 console.log('tecnica.test OK')
