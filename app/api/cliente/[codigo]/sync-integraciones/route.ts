@@ -7,6 +7,7 @@ import { stravaProvider } from '@/lib/integraciones/strava'
 import { googleFitProvider } from '@/lib/integraciones/google-fit'
 import { whoopProvider } from '@/lib/integraciones/whoop'
 import { persistirActividades } from '@/lib/integraciones/normalizer'
+import { sanitizarErrorIntegracion } from '@/lib/integraciones/salud-fuente'
 import type { IntegracionCliente, ProveedorIntegracion } from '@/lib/integraciones/types'
 
 type SyncResult = {
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           .eq('id', integracion.id)
         results.push({ proveedor: 'garmin_connect', ok: true, sincronizados })
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Error sincronizando Garmin Connect'
+        const message = sanitizarErrorIntegracion(error instanceof Error ? error.message : 'Error sincronizando Garmin Connect') ?? 'Error sincronizando Garmin Connect'
         await db
           .from('integraciones_cliente')
           .update({ error_ultimo: message })
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           .eq('id', integracion.id)
         results.push({ proveedor: integracion.proveedor, ok: true, sincronizados })
       } catch (error) {
-        const message = error instanceof Error ? error.message : `Error sincronizando ${integracion.proveedor}`
+        const message = sanitizarErrorIntegracion(error instanceof Error ? error.message : `Error sincronizando ${integracion.proveedor}`) ?? `Error sincronizando ${integracion.proveedor}`
         await db
           .from('integraciones_cliente')
           .update({ error_ultimo: message })
