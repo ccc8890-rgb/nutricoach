@@ -52,8 +52,10 @@ function iconoTipo(tipo: SesionKanban['tipo_sesion'], size = 14) {
     return tipo === 'carrera' ? <PersonSimpleRun size={size} /> : <Barbell size={size} />
 }
 
-function SesionCard({ sesion, seleccionada, moviendo, onSeleccionar, onAbrirMover }: {
+function SesionCard({ sesion, orden, seleccionada, moviendo, onSeleccionar, onAbrirMover }: {
     sesion: SesionKanban
+    /** "1/2" cuando el día tiene más de una sesión */
+    orden?: string
     seleccionada: boolean
     moviendo: boolean
     onSeleccionar: () => void
@@ -74,7 +76,7 @@ function SesionCard({ sesion, seleccionada, moviendo, onSeleccionar, onAbrirMove
             >
                 <span className="training-week-session__type">
                     {sesion.completada ? <CheckCircle size={14} /> : iconoTipo(sesion.tipo_sesion, 14)}
-                    {etiquetaTipoSesion(sesion.tipo_sesion)}
+                    {etiquetaTipoSesion(sesion.tipo_sesion)}{orden ? ` · ${orden}` : ''}
                 </span>
                 <strong>{tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion)}</strong>
                 <span className="training-week-session__meta">{sesion.ejercicios_count} ejercicios</span>
@@ -113,12 +115,13 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
                 background: isOver ? 'var(--editorial-field)' : 'transparent',
             }}
         >
-            <div className="training-week-day__label"><span>{DIAS_ABREV[dia]}</span><small>{dia.slice(0, 3)}</small></div>
+            <div className="training-week-day__label"><span>{DIAS_ABREV[dia]}</span><small>{dia.slice(0, 3)}</small>{sesiones.length > 1 && <em className="training-week-day__count">×{sesiones.length}</em>}</div>
             <div className="training-week-day__content">
-                {sesiones.length === 0 ? <p className="training-week-rest">Descanso</p> : sesiones.map(s => (
+                {sesiones.length === 0 ? <p className="training-week-rest">Descanso</p> : sesiones.map((s, i) => (
                     <SesionCard
                         key={s.id}
                         sesion={s}
+                        orden={sesiones.length > 1 ? `${i + 1}/${sesiones.length}` : undefined}
                         seleccionada={seleccionadaId === s.id}
                         moviendo={moverId === s.id}
                         onSeleccionar={() => onSeleccionar(s.id)}

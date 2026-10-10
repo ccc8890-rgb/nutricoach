@@ -6,12 +6,21 @@ import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableEx
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
 
+interface SesionMes { id: string; nombre: string; tipo_sesion: 'hibrido' | 'carrera' | 'mixto'; ejercicios_count: number; completada: boolean }
+
 export interface DiaMes {
   fecha: string
   dia_semana: string
-  sesion: { id: string; nombre: string; tipo_sesion: 'hibrido' | 'carrera' | 'mixto'; ejercicios_count: number; completada: boolean } | null
+  sesion: SesionMes | null
+  /** Todas las sesiones del día (puede haber más de una). */
+  sesiones?: SesionMes[]
   fase_bloque: string | null
   bloque_pendiente: boolean
+}
+
+function sesionesDe(dia: DiaMes | null): SesionMes[] {
+  if (!dia) return []
+  return dia.sesiones ?? (dia.sesion ? [dia.sesion] : [])
 }
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -84,19 +93,23 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
   const semanasVisibles = modo === 'semana' ? (semanaActual.length ? [semanaActual] : []) : semanas
   const diaInfo = dias.find(d => d.fecha === diaSeleccionado) ?? null
 
+  const sesionesDia = sesionesDe(diaInfo)
+  const idsDia = sesionesDia.map(x => x.id).join(',')
+
   useEffect(() => {
-    const sesionId = diaInfo?.sesion?.id
-    if (!sesionId || detalles[sesionId]) return
-    setDetalles(prev => ({ ...prev, [sesionId]: 'cargando' }))
-    fetch(`/api/cliente/sesion/${sesionId}`)
-      .then(r => r.json())
-      .then(data => {
-        setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] }))
-        setExtras(prev => ({ ...prev, [sesionId]: extrasDeRespuesta(data.sesion) }))
-      })
-      .catch(() => setDetalles(prev => ({ ...prev, [sesionId]: [] })))
+    idsDia.split(',').filter(Boolean).forEach(sesionId => {
+      if (detalles[sesionId]) return
+      setDetalles(prev => ({ ...prev, [sesionId]: 'cargando' }))
+      fetch(`/api/cliente/sesion/${sesionId}`)
+        .then(r => r.json())
+        .then(data => {
+          setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] }))
+          setExtras(prev => ({ ...prev, [sesionId]: extrasDeRespuesta(data.sesion) }))
+        })
+        .catch(() => setDetalles(prev => ({ ...prev, [sesionId]: [] })))
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diaInfo?.sesion?.id])
+  }, [idsDia])
 
   function mesAnterior() {
     if (month === 1) { setMonth(12); setYear(y => y - 1) } else setMonth(m => m - 1)
@@ -108,9 +121,10 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
   function estadoDia(dia: DiaMes) {
     if (!dia.fecha) return 'is-empty'
     if (dia.bloque_pendiente) return 'is-pending'
-    if (!dia.sesion) return 'is-rest'
-    if (dia.sesion.completada) return 'is-complete'
-    return dia.sesion.tipo_sesion === 'carrera' ? 'is-run' : 'is-strength'
+    const lista = sesionesDe(dia)
+    if (lista.length === 0) return 'is-rest'
+    if (lista.every(x => x.completada)) return 'is-complete'
+    return lista.every(x => x.tipo_sesion === 'carrera') ? 'is-run' : 'is-strength'
   }
 
   return (
@@ -192,8 +206,12 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                               className={`training-calendar__day ${estadoDia(dia)} ${esSeleccionado ? 'is-selected' : ''} ${esHoy ? 'is-today' : ''}`}
                             >
                               {Number(dia.fecha.split('-')[2])}
-                              {dia.sesion ? (
-                                dia.sesion.tipo_sesion === 'carrera' ? <Footprints size={12} weight="regular" /> : <Barbell size={12} weight="regular" />
+                              {sesionesDe(dia).length > 0 ? (
+                                <span className="training-calendar__day-icons">
+                                  {sesionesDe(dia).map(x => (
+                                    x.tipo_sesion === 'carrera' ? <Footprints key={x.id} size={12} weight="regular" /> : <Barbell key={x.id} size={12} weight="regular" />
+                                  ))}
+                                </span>
                               ) : modo === 'semana' ? (
                                 <CircleDashed size={11} style={{ opacity: 0.5 }} />
                               ) : null}
@@ -216,33 +234,42 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
           <p className="text-xs font-semibold uppercase tracking-wide first-letter:uppercase" style={{ color: 'var(--text-muted)' }}>
             {formatFechaLarga(diaSeleccionado)}
           </p>
-          {diaInfo?.sesion ? (
+          {sesionesDia.length > 0 ? (
             <>
-              <div className="mt-2 flex items-center gap-3">
-                <div className="training-calendar__session-icon">
-                  {diaInfo.sesion.tipo_sesion === 'carrera'
-                    ? <Footprints size={19} weight="regular" />
-                    : <Barbell size={19} weight="regular" />}
+              {sesionesDia.map((sesion, i) => (
+                <div key={sesion.id} className="training-calendar__session">
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className="training-calendar__session-icon">
+                      {sesion.tipo_sesion === 'carrera'
+                        ? <Footprints size={19} weight="regular" />
+                        : <Barbell size={19} weight="regular" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      {sesionesDia.length > 1 && (
+                        <p className="font-mono text-[10px] font-semibold tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
+                          SESIÓN {i + 1} DE {sesionesDia.length}
+                        </p>
+                      )}
+                      <p className="font-bold leading-tight" style={{ color: 'var(--text)' }}>
+                        {tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion)}
+                      </p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        {sesion.ejercicios_count} ejercicios{sesion.completada ? ' · registrada' : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    {detalles[sesion.id] === 'cargando' ? (
+                      <div className="flex justify-center py-6"><CircleNotch size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
+                    ) : (
+                      <>
+                        {extras[sesion.id] && <PasosSesion sesionId={sesion.id} {...extras[sesion.id]!} />}
+                        <ListaEjerciciosExpandible ejercicios={(detalles[sesion.id] as EjercicioDetalle[]) ?? []} />
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold leading-tight" style={{ color: 'var(--text)' }}>
-                    {tituloSesionSinModalidad(diaInfo.sesion.nombre, diaInfo.sesion.tipo_sesion)}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {diaInfo.sesion.ejercicios_count} ejercicios{diaInfo.sesion.completada ? ' · registrada' : ''}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-3">
-                {detalles[diaInfo.sesion.id] === 'cargando' ? (
-                  <div className="flex justify-center py-6"><CircleNotch size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
-                ) : (
-                  <>
-                    {extras[diaInfo.sesion.id] && <PasosSesion sesionId={diaInfo.sesion.id} {...extras[diaInfo.sesion.id]!} />}
-                    <ListaEjerciciosExpandible ejercicios={(detalles[diaInfo.sesion.id] as EjercicioDetalle[]) ?? []} />
-                  </>
-                )}
-              </div>
+              ))}
             </>
           ) : (
             <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>

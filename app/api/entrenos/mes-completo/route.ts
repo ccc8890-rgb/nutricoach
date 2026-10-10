@@ -84,7 +84,12 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const sesionPorDia = new Map(sesiones.map(s => [s.dia_semana, s]))
+  const sesionesPorDia = new Map<string, typeof sesiones>()
+  for (const s of sesiones) {
+    const lista = sesionesPorDia.get(s.dia_semana ?? '') ?? []
+    lista.push(s)
+    sesionesPorDia.set(s.dia_semana ?? '', lista)
+  }
 
   const allEjIds = ejData.map(e => e.id)
   const primerDiaMes = toISODate(diasDelMes[0])
@@ -115,7 +120,8 @@ export async function GET(request: NextRequest) {
   const dias = diasDelMes.map(d => {
     const fecha = toISODate(d)
     const diaSemana = DIAS_SEMANA_POR_INDICE[d.getDay()]
-    const sesion = sesionPorDia.get(diaSemana)
+    const delDia = sesionesPorDia.get(diaSemana) ?? []
+    const sesion = delDia[0]
 
     // Antes del inicio del plan actual: no tenemos datos de qué se hizo ese día.
     const antesDeInicio = fecha < toISODate(new Date(fechaInicioPlan))
@@ -131,21 +137,25 @@ export async function GET(request: NextRequest) {
         fecha,
         dia_semana: diaSemana,
         sesion: null,
+        sesiones: [],
         fase_bloque: null,
         bloque_pendiente: bloquePendiente,
       }
     }
 
+    const resumen = (x: (typeof sesiones)[number]) => ({
+      id: x.id,
+      nombre: x.nombre,
+      tipo_sesion: clasificarTipoSesion(tiposPorSesion[x.id] ?? []),
+      ejercicios_count: ejCountBySesion[x.id] ?? 0,
+      completada: sesionesCompletadasPorFecha.get(fecha)?.has(x.id) ?? false,
+    })
+
     return {
       fecha,
       dia_semana: diaSemana,
-      sesion: {
-        id: sesion.id,
-        nombre: sesion.nombre,
-        tipo_sesion: clasificarTipoSesion(tiposPorSesion[sesion.id] ?? []),
-        ejercicios_count: ejCountBySesion[sesion.id] ?? 0,
-        completada: sesionesCompletadasPorFecha.get(fecha)?.has(sesion.id) ?? false,
-      },
+      sesion: resumen(sesion),
+      sesiones: delDia.map(resumen),
       fase_bloque: sesion.fase_bloque,
       bloque_pendiente: false,
     }
