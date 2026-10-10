@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
     .select('id, nombre, dia_semana, fase_bloque, duracion_estimada_min')
     .eq('plan_id', plan.id)
     .order('orden')
+    .order('id')
 
   const { data: competiciones } = await admin
     .from('competiciones')
