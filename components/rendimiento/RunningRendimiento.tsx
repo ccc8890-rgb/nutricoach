@@ -4,6 +4,7 @@ import Grafica, { type Fila } from './Grafica'
 import ZonasVdot from './ZonasVdot'
 import PlanObjetivo from './PlanObjetivo'
 import DerivaCardiaca from './DerivaCardiaca'
+import DistribucionIntensidad from './DistribucionIntensidad'
 import TecnicaCarrera from './TecnicaCarrera'
 import EntrenosTabla from './EntrenosTabla'
 import ResumenDeporte from './ResumenDeporte'
@@ -83,6 +84,8 @@ export default function RunningRendimiento({ clienteId, datos }: { clienteId: st
 
       {tab === 'forma' && (
         <div className="space-y-4">
+          <DistribucionIntensidad intensidad={datos.intensidad} />
+
           <div className="grid gap-4 lg:grid-cols-2">
             <Bloque titulo="Eficiencia aeróbica" nota="Metros por minuto por cada latido en carreras continuas de 25+ min. Si sube, corres más rápido con el mismo pulso.">
               <Grafica datos={ef} alto={150} series={[{ key: 'ef', label: 'm/min por ppm', color: COLOR.forma }]} formato={v => v.toFixed(2)} />

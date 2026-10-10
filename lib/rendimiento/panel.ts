@@ -2,6 +2,8 @@
 // Datos del panel de rendimiento del coach: carga, forma, semanas, bienestar y evolución.
 import { serieCarga, resumenCarga, type PuntoPmc, type ResumenCarga } from './pmc'
 import { esCarrera } from './carga'
+import { lunesDe } from './fechas'
+import { distribucionIntensidad, type DistribucionIntensidad } from './intensidad'
 import { DEPORTES_CON_PANEL, deporteDe, type DeporteConPanel } from './deportes'
 import { calcularDeriva, type Deriva } from './deriva'
 import { puntosTecnica, resumenTecnica, type PuntoTecnica, type ResumenTecnica } from './tecnica'
@@ -70,15 +72,12 @@ export interface PanelRendimiento {
   vo2max: { fecha: string; valor: number }[]
   /** Un resumen por deporte con apartado propio (siempre los 4, aunque estén a cero). */
   deportes: ResumenDeporte[]
+  /** Reparto del tiempo de carrera entre suave, medio y duro (zonas de pulso de Garmin). */
+  intensidad: DistribucionIntensidad
   entrenos: EntrenoPanel[]
 }
 
-export function lunesDe(fecha: string): string {
-  const d = new Date(`${fecha}T12:00:00Z`)
-  const dow = (d.getUTCDay() + 6) % 7 // lunes = 0
-  d.setUTCDate(d.getUTCDate() - dow)
-  return d.toISOString().slice(0, 10)
-}
+export { lunesDe }
 
 /** `kmDeTodo`: contar la distancia de cualquier actividad (por defecto solo la de carrera). */
 export function agruparSemanas(entrenos: EntrenoPanel[], semanasAtras: number, hoy: string, kmDeTodo = false): SemanaCarga[] {
@@ -160,6 +159,7 @@ export function construirPanel(
     eficiencia,
     deriva,
     deportes,
+    intensidad: distribucionIntensidad(ordenados, hoy),
     tecnica: { puntos: tecnicaPuntos, resumen: resumenTecnica(tecnicaPuntos, hoy) },
     vo2max: ordenados.filter(e => e.vo2max).map(e => ({ fecha: e.fecha, valor: e.vo2max! })),
     entrenos: ordenados.slice(-25).reverse().map(sinVueltas),
