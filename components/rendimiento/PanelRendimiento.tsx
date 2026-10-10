@@ -7,6 +7,7 @@ import PlanObjetivo from './PlanObjetivo'
 import DerivaCardiaca from './DerivaCardiaca'
 import TecnicaCarrera from './TecnicaCarrera'
 import { Bloque, COLOR, mmss } from './comun'
+import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import type { PanelRendimiento as Panel } from '@/lib/rendimiento/panel'
 import type { UmbralesAtleta } from '@/lib/rendimiento/carga'
 import type { ResumenEjecucion } from '@/lib/rendimiento/ejecucion'
@@ -14,6 +15,16 @@ import type { ResumenEjecucion } from '@/lib/rendimiento/ejecucion'
 type Respuesta = Panel & { umbrales: UmbralesAtleta; ejecucion: ResumenEjecucion; hoy: string }
 
 const ZONAS_FC = ['#7B818A', '#6AAF85', '#C8A96A', '#E08A4E', '#E0557A']
+const SECCIONES = [
+  { key: 'resumen', titulo: 'Resumen' },
+  { key: 'plan', titulo: 'Plan y ejecución' },
+  { key: 'carga', titulo: 'Carga y recuperación' },
+  { key: 'forma', titulo: 'Forma física' },
+  { key: 'tecnica', titulo: 'Técnica' },
+  { key: 'entrenos', titulo: 'Entrenos' },
+] as const
+type Seccion = (typeof SECCIONES)[number]['key']
+const CLAVES_SECCION = SECCIONES.map(x => x.key)
 const RANGOS = [{ d: 42, t: '6 sem' }, { d: 90, t: '3 meses' }, { d: 180, t: '6 meses' }, { d: 365, t: '1 año' }]
 
 const fechaCorta = (f: string) => { const d = new Date(`${f}T12:00:00Z`); return `${d.getUTCDate()}/${d.getUTCMonth() + 1}` }
@@ -34,6 +45,7 @@ function Tarjeta({ titulo, valor, pie, color }: { titulo: string; valor: string;
 
 export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
   const [dias, setDias] = useState(90)
+  const [tab, setTab] = useEstadoUrl<Seccion>('rend', 'resumen', CLAVES_SECCION)
   const [datos, setDatos] = useState<Respuesta | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -81,6 +93,19 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
         </div>
       </div>
 
+      <nav aria-label="Secciones de rendimiento" className="-mx-1 overflow-x-auto px-1">
+        <div className="flex w-max gap-1 rounded-lg p-0.5" style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border)' }}>
+          {SECCIONES.map(x => (
+            <button key={x.key} onClick={() => setTab(x.key)} aria-current={tab === x.key ? 'page' : undefined} className="whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium"
+              style={{ background: tab === x.key ? 'var(--surface-elevated)' : 'transparent', color: tab === x.key ? 'var(--text)' : 'var(--text-muted)' }}>
+              {x.titulo}
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {tab === 'resumen' && (
+        <div className="space-y-4">
       <AnalisisIA clienteId={clienteId} />
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
@@ -92,6 +117,22 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
         <Tarjeta titulo="Monotonía" valor={r.monotonia === null ? '—' : String(r.monotonia)} pie={avisoMonotonia ? 'Poca variación entre días' : 'Variación de carga (Foster)'} color={avisoMonotonia ? COLOR.ambar : undefined} />
       </div>
 
+      <Bloque titulo="Forma, fatiga y frescura" nota="La línea azul es la forma que acumulas; la rosa, el cansancio reciente. Cuando la rosa pasa a la azul vas cargado; con la azul por encima llegas fresco.">
+        <Grafica datos={pmc} alto={190}
+          series={[{ key: 'tss', label: 'Carga del día', color: COLOR.carga, tipo: 'barras' }, { key: 'ctl', label: 'Forma', color: COLOR.forma }, { key: 'atl', label: 'Fatiga', color: COLOR.fatiga }]}
+          formato={v => String(Math.round(v))} />
+        <div className="mt-3">
+          <p className="mb-1 text-xs" style={{ color: 'var(--text-muted)' }}>Frescura (forma − fatiga). Entre −10 y −30 se construye forma; por debajo de −30 hay riesgo.</p>
+          <Grafica datos={pmc} alto={120} referencia={0}
+            zonas={[{ desde: -200, hasta: -30, color: COLOR.fatiga }, { desde: -30, hasta: -10, color: COLOR.ambar }, { desde: 5, hasta: 25, color: COLOR.fresc }]}
+            series={[{ key: 'tsb', label: 'Frescura', color: COLOR.fresc, tipo: 'linea' }]} formato={v => String(Math.round(v))} />
+        </div>
+      </Bloque>
+        </div>
+      )}
+
+      {tab === 'plan' && (
+        <div className="space-y-4">
       <Bloque titulo="Plan vs realizado" nota={datos.ejecucion.planNombre ? `Sesiones de carrera estructuradas de «${datos.ejecucion.planNombre}», semana a semana. El color de cada repetición dice si salió en el ritmo previsto.` : undefined}>
         {datos.ejecucion.sesiones.filter(x => x.estado !== 'pendiente').length === 0 ? (
           <p className="py-3 text-xs" style={{ color: 'var(--text-muted)' }}>Todavía no hay sesiones estructuradas que comparar.</p>
@@ -131,18 +172,12 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
         )}
       </Bloque>
 
-      <Bloque titulo="Forma, fatiga y frescura" nota="La línea azul es la forma que acumulas; la rosa, el cansancio reciente. Cuando la rosa pasa a la azul vas cargado; con la azul por encima llegas fresco.">
-        <Grafica datos={pmc} alto={190}
-          series={[{ key: 'tss', label: 'Carga del día', color: COLOR.carga, tipo: 'barras' }, { key: 'ctl', label: 'Forma', color: COLOR.forma }, { key: 'atl', label: 'Fatiga', color: COLOR.fatiga }]}
-          formato={v => String(Math.round(v))} />
-        <div className="mt-3">
-          <p className="mb-1 text-xs" style={{ color: 'var(--text-muted)' }}>Frescura (forma − fatiga). Entre −10 y −30 se construye forma; por debajo de −30 hay riesgo.</p>
-          <Grafica datos={pmc} alto={120} referencia={0}
-            zonas={[{ desde: -200, hasta: -30, color: COLOR.fatiga }, { desde: -30, hasta: -10, color: COLOR.ambar }, { desde: 5, hasta: 25, color: COLOR.fresc }]}
-            series={[{ key: 'tsb', label: 'Frescura', color: COLOR.fresc, tipo: 'linea' }]} formato={v => String(Math.round(v))} />
+      <PlanObjetivo clienteId={clienteId} />
         </div>
-      </Bloque>
+      )}
 
+      {tab === 'carga' && (
+        <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-2">
         <Bloque titulo="Carga por semana" nota={semanaActual ? `Esta semana: ${semanaActual.tss} TSS · ${semanaActual.km} km · ${semanaActual.sesiones} sesiones` : undefined}>
           <Grafica datos={semanas} alto={150} series={[{ key: 'tss', label: 'TSS semanal', color: COLOR.forma, tipo: 'barras' }]} formato={v => String(Math.round(v))} />
@@ -157,7 +192,11 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
           <Grafica datos={bien} alto={150} series={[{ key: 'readiness', label: 'Preparación', color: COLOR.ambar }]} formato={v => String(Math.round(v))} />
         </Bloque>
       </div>
+        </div>
+      )}
 
+      {tab === 'forma' && (
+        <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-2">
         <Bloque titulo="Eficiencia aeróbica" nota="Metros por minuto por cada latido en carreras continuas de 25+ min. Si sube, corres más rápido con el mismo pulso.">
           <Grafica datos={ef} alto={150} series={[{ key: 'ef', label: 'm/min por ppm', color: COLOR.forma }]} formato={v => v.toFixed(2)} />
@@ -182,12 +221,18 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
 
       <DerivaCardiaca deriva={datos.deriva} />
 
-      <TecnicaCarrera tecnica={datos.tecnica} />
-
       <ZonasVdot clienteId={clienteId} />
+        </div>
+      )}
 
-      <PlanObjetivo clienteId={clienteId} />
+      {tab === 'tecnica' && (
+        <div className="space-y-4">
+      <TecnicaCarrera tecnica={datos.tecnica} />
+        </div>
+      )}
 
+      {tab === 'entrenos' && (
+        <div className="space-y-4">
       <Bloque titulo="Entrenos recientes" nota="La barra de color es el tiempo en cada zona de pulso (de suave a máximo).">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-xs">
@@ -226,6 +271,9 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
           </table>
         </div>
       </Bloque>
+        </div>
+      )}
+
     </div>
   )
 }
