@@ -1,7 +1,7 @@
 // lib/informe-caso/construir.ts
 // Informe del caso para que el COACH explique la situación de un cliente (chat, WhatsApp, llamada). Función pura: plantillas con datos reales.
 // Regla: cada número de los textos viene de los datos; lo que no se sabe va a «loQueNoSe», nunca se rellena.
-import { glosarSiglas, porQueResumen, resumirPropuesta, titularDe } from '@/lib/rendimiento/presentacion'
+import { etiquetaDecision, glosarSiglas, porQueResumen, resumirPropuesta, titularDe } from '@/lib/rendimiento/presentacion'
 import type { PayloadPlanEntrenoIA } from '@/lib/entrenos/planificar-con-ia'
 
 export type Escenario = 'alerta' | 'propuesta_bloque' | 'ajustes' | 'sin_cambios'
@@ -21,7 +21,8 @@ export interface DatosInforme {
     hayDatos: boolean
     minutosCarreraSemana: number | null; salidasSemana: number | null; pctSuave: number | null
     forma: number | null; fatiga: number | null; frescura: number | null
-    sesionesEvaluadas: number | null; sesionesSaltadas: number | null
+    /** Sesiones de calidad previstas en las últimas 4 semanas y cuántas se hicieron (null si no hay datos). */
+    sesionesCalidadPrevistas: number | null; sesionesCalidadHechas: number | null
     retorno: boolean; vdot: number | null; fuerzaRegistrada: number; fuerzaEnPlan: number; alertasAltas: string[]
   }
   plan: { nombre: string; semanaActual: number | null; semanasTotales: number | null; diasRestantes: number | null } | null
@@ -39,12 +40,40 @@ export interface InformeCaso {
   loQueNoSe: string[]
   mensaje: string
   guion: { paso: string; texto: string }[]
+  /** Para hacerle al cliente. */
   preguntas: string[]
+  /** Dudas del análisis que decide el coach antes de hablar (no son para el cliente). */
+  preguntasCoach: string[]
 }
 
 const MAX_MENSAJE = 700
 const fmt = (n: number) => String(Math.round(n * 10) / 10).replace('.', ',')
 const limpiar = (t: string) => t.replace(/\s+/g, ' ').trim()
+
+/** Frases enteras hasta un tope de caracteres (la primera sola puede ser un diagnóstico sin la acción). */
+function primerasFrases(texto: string, max: number): string {
+  const t = limpiar(texto)
+  const frases = t.match(/[^.!?]+[.!?]*(\s|$)/g)?.map(f => f.trim()) ?? [t]
+  let salida = ''
+  for (const f of frases) {
+    const union = salida ? `${salida} ${f}` : f
+    if (union.length > max) {
+      // La frase no cabe entera: se queda la parte antes de «:» o «;» (la acción sin su detalle) si cabe.
+      const parte = f.split(/[:;]/)[0].trim().replace(/[.!?]+$/, '')
+      if (salida && parte && parte !== f.replace(/[.!?]+$/, '') && `${salida} ${parte}`.length <= max) salida = `${salida} ${parte}.`
+      break
+    }
+    salida = union
+  }
+  if (salida) return salida
+  const corte = t.slice(0, max - 1)
+  return `${corte.slice(0, corte.lastIndexOf(' ') > max * 0.5 ? corte.lastIndexOf(' ') : corte.length).trimEnd()}…`
+}
+
+/** Decisiones escritas para el coach («Confirmar si…»): no van en el mensaje al cliente. */
+const minusculaInicial = (t: string) => t.replace(/^([A-ZÁÉÍÓÚÑ])([a-záéíóúñ])/, (_m, a: string, b: string) => `${a.toLowerCase()}${b}`)
+const dirigidaAlCoach = (cambio: string) => /^\s*(confirmar|comprobar|revisar|preguntar|valorar|verificar|decidir)\b/i.test(cambio)
+const ORDEN_ETIQUETA = { seguro: 0, mirar: 1, revisar: 2 } as const
 const pilaDe = (nombre: string) => nombre.trim().split(/\s+/)[0] ?? ''
 
 function escenarioDe(d: DatosInforme): Escenario {
@@ -59,7 +88,7 @@ function datosSituacion(a: DatosInforme['atleta'], plan: DatosInforme['plan']) {
   if (a.minutosCarreraSemana) datos.push({ etiqueta: 'Carrera', valor: `${a.minutosCarreraSemana} min por semana${a.salidasSemana ? ` en ${fmt(a.salidasSemana)} salidas` : ''}` })
   if (a.pctSuave != null) datos.push({ etiqueta: 'Tiempo en suave', valor: `${Math.round(a.pctSuave)} %` })
   if (a.forma != null && a.fatiga != null) datos.push({ etiqueta: 'Forma y fatiga', valor: `forma ${fmt(a.forma)}, fatiga ${fmt(a.fatiga)}${a.frescura != null ? `, frescura ${fmt(a.frescura)}` : ''}` })
-  if (a.sesionesEvaluadas && a.sesionesEvaluadas > 0) datos.push({ etiqueta: 'Sesiones de calidad', valor: `${a.sesionesEvaluadas - (a.sesionesSaltadas ?? 0)} de ${a.sesionesEvaluadas} hechas` })
+  if (a.sesionesCalidadPrevistas && a.sesionesCalidadPrevistas > 0) datos.push({ etiqueta: 'Sesiones de calidad', valor: `${a.sesionesCalidadHechas ?? 0} de ${a.sesionesCalidadPrevistas} hechas` })
   if (plan?.semanaActual && plan.semanasTotales) datos.push({ etiqueta: 'Plan', valor: `semana ${plan.semanaActual} de ${plan.semanasTotales}` })
   return datos
 }
@@ -82,12 +111,13 @@ function lineaDatos(a: DatosInforme['atleta']): string {
 }
 
 function lineaCumplimiento(a: DatosInforme['atleta']): string {
-  return a.sesionesEvaluadas && a.sesionesEvaluadas > 0 ? `De las ${a.sesionesEvaluadas} sesiones de calidad previstas has hecho ${a.sesionesEvaluadas - (a.sesionesSaltadas ?? 0)}.` : ''
+  return a.sesionesCalidadPrevistas && a.sesionesCalidadPrevistas > 0 ? `De las ${a.sesionesCalidadPrevistas} sesiones de calidad previstas has hecho ${a.sesionesCalidadHechas ?? 0}.` : ''
 }
 
 function mensajeDe(d: DatosInforme, escenario: Escenario, cambios: string[]): string {
   const saludo = pilaDe(d.nombre) ? `Hola ${pilaDe(d.nombre)}` : 'Hola,'
   const datos = lineaDatos(d.atleta)
+  const paraCliente = (d.analisis?.decisiones ?? []).filter(x => !dirigidaAlCoach(x.cambio)).sort((a, b) => ORDEN_ETIQUETA[etiquetaDecision(a)] - ORDEN_ETIQUETA[etiquetaDecision(b)])
   let m: string
   if (escenario === 'alerta') {
     const alerta = d.analisis?.alerta_prioritaria || d.atleta.alertasAltas[0] || ''
@@ -96,9 +126,9 @@ function mensajeDe(d: DatosInforme, escenario: Escenario, cambios: string[]): st
     const r = resumirPropuesta(d.propuesta)
     const carrera = r.queCambia.find(c => c.startsWith('Carrera') && !c.includes('sin datos'))
     m = `${saludo}, ya se acerca el final de tu bloque actual y te he preparado el siguiente bloque${d.propuesta.fase_bloque ? ` (${d.propuesta.fase_bloque}` + (d.propuesta.duracion_semanas ? `, ${d.propuesta.duracion_semanas} semanas)` : ')') : ''}. ${datos} ${carrera ? `${carrera.replace('Carrera: ', 'En carrera pasaríamos ')}.` : ''} Es una propuesta: si algo no te encaja, lo ajustamos. ¿Lo hablamos cuando te venga bien?`
-  } else if (escenario === 'ajustes') {
-    const ajustes = cambios.slice(0, 2).map(c => c.replace(/[.]+$/, '')).join('; ')
-    m = `${saludo}, he revisado tus últimos entrenamientos. ${datos} Te propongo ${cambios.length === 1 ? 'un ajuste' : 'estos ajustes'}: ${ajustes}. ¿Te parece bien que lo probemos estas semanas?`
+  } else if (escenario === 'ajustes' && paraCliente.length > 0) {
+    const ajustes = paraCliente.slice(0, 2).map(x => primerasFrases(x.cambio, 170).replace(/[.]+$/, '')).map((t, i) => (i === 0 ? t : minusculaInicial(t))).join('. Además, ')
+    m = `${saludo}, he revisado tus últimos entrenamientos. ${datos} Te propongo ${paraCliente.length === 1 ? 'un ajuste' : 'estos ajustes'}: ${ajustes}. ¿Te parece bien que lo probemos estas semanas?`
   } else {
     m = `${saludo}, te escribo para contarte cómo va tu entrenamiento. ${datos} ${lineaCumplimiento(d.atleta)} Por ahora no cambiamos nada: seguimos con tu plan${d.plan?.semanaActual && d.plan.semanasTotales ? ` (semana ${d.plan.semanaActual} de ${d.plan.semanasTotales})` : ''}. Si notas algo raro o tienes dudas, dímelo.`
   }
@@ -113,7 +143,7 @@ export function construirInformeCaso(d: DatosInforme): InformeCaso {
   let cambios: string[]
   if (escenario === 'alerta') cambios = [`Pendiente de hablarlo: ${titularDe(d.analisis?.alerta_prioritaria || d.atleta.alertasAltas[0] || '', 160)}`]
   else if (escenario === 'propuesta_bloque' && d.propuesta) { const r = resumirPropuesta(d.propuesta); cambios = [r.titular, ...r.queCambia] }
-  else if (escenario === 'ajustes') cambios = decisiones.slice(0, 3).map(x => glosarSiglas(titularDe(x.cambio, 150)))
+  else if (escenario === 'ajustes') cambios = decisiones.slice(0, 3).map(x => glosarSiglas(primerasFrases(x.cambio, 170)))
   else cambios = ['Nada cambia por ahora: sigue con el plan actual.']
 
   const porQue: { texto: string; origen: string }[] = []
@@ -135,14 +165,14 @@ export function construirInformeCaso(d: DatosInforme): InformeCaso {
     '¿Cómo has dormido y cómo notas las piernas?',
     '¿Alguna molestia o dolor?',
     ...(noSe.some(x => x.includes('fuerza')) ? ['¿Estás haciendo las sesiones de fuerza o híbridas? ¿Las registras en el reloj?'] : []),
-    ...(d.analisis?.preguntas_al_coach ?? []),
-  ].filter((p, i, a) => a.indexOf(p) === i)
+  ]
+  const preguntasCoach = (d.analisis?.preguntas_al_coach ?? []).filter((p, i, a) => a.indexOf(p) === i)
 
   const guion = [
     { paso: 'Abrir', texto: 'Pregúntale cómo se ha sentido estos días: energía, sueño y molestias.' },
     { paso: 'Cómo va', texto: datos.length ? datos.map(x => `${x.etiqueta}: ${x.valor}`).join('. ') + '.' : 'No hay datos recientes del reloj: pregúntale directamente cómo van los entrenos.' },
     { paso: 'Qué cambia', texto: cambios.join(' ') },
-    { paso: 'Por qué', texto: porQue.length ? porQue.map(p => `${p.texto} (${p.origen})`).join(' ') : 'Explícale que mantener el plan es lo que dicen sus datos.' },
+    { paso: 'Por qué', texto: porQue.length ? porQue.slice(0, 2).map(p => `${p.texto} (${p.origen})`).join(' ') : 'Explícale que mantener el plan es lo que dicen sus datos.' },
     { paso: 'Qué le pides', texto: pide[escenario] },
     { paso: 'Cerrar', texto: 'Acordad cuándo volvéis a hablar, por ejemplo tras su próxima sesión importante.' },
   ]
@@ -158,5 +188,6 @@ export function construirInformeCaso(d: DatosInforme): InformeCaso {
     mensaje: mensajeDe(d, escenario, cambios),
     guion,
     preguntas,
+    preguntasCoach,
   }
 }

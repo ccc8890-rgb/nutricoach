@@ -5,7 +5,7 @@ const estado = (o: Record<string, unknown> = {}) => ({
   minutosCarreraPorSemana: 89, carrerasPorSemana: 3.5, vdot: 45, retorno: false, fuerza28d: 0, fuerzaEnPlan: 3,
   intensidad: { valoracion: 'mejorable', pctSuave: 36, pctMedia: 52, pctDura: 12, minutos: 340 },
   carga: { ctl: 16.04, atl: 17.3, tsb: -1.3 },
-  ejecucion: { repsEvaluadas: 10, repsLentas: 2, sesionesEvaluadas: 6, sesionesSaltadas: 2 },
+  ejecucion: { repsEvaluadas: 10, repsLentas: 2, sesionesEvaluadas: 4, sesionesSaltadas: 2 },
   ...o,
 }) as never
 
@@ -16,8 +16,8 @@ assert.equal(a.pctSuave, 36)
 assert.equal(a.forma, 16)
 assert.equal(a.fatiga, 17.3)
 assert.equal(a.frescura, -1.3)
-assert.equal(a.sesionesEvaluadas, 6)
-assert.equal(a.sesionesSaltadas, 2)
+assert.equal(a.sesionesCalidadHechas, 4, 'evaluadas = las hechas')
+assert.equal(a.sesionesCalidadPrevistas, 6, 'previstas = hechas + saltadas')
 assert.equal(a.fuerzaRegistrada, 0)
 assert.equal(a.fuerzaEnPlan, 3)
 assert.deepEqual(a.alertasAltas, ['Carga alta'], 'solo las de gravedad alta')
@@ -29,6 +29,11 @@ assert.equal(v.minutosCarreraSemana, null)
 assert.equal(v.salidasSemana, null)
 assert.equal(v.pctSuave, null)
 assert.equal(v.forma, null)
-assert.equal(v.sesionesEvaluadas, null)
+assert.equal(v.sesionesCalidadPrevistas, null)
+assert.equal(v.sesionesCalidadHechas, null)
+// Solo saltadas: ninguna hecha, no un número negativo
+const s = atletaDesdeEstado(estado({ ejecucion: { repsEvaluadas: 0, repsLentas: 0, sesionesEvaluadas: 0, sesionesSaltadas: 2 } }), [], true)
+assert.equal(s.sesionesCalidadPrevistas, 2)
+assert.equal(s.sesionesCalidadHechas, 0)
 assert.equal(v.vdot, null)
 console.log('informe-caso-datos.test OK')

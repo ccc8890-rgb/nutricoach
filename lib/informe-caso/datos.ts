@@ -9,7 +9,9 @@ import type { PayloadPlanEntrenoIA } from '@/lib/entrenos/planificar-con-ia'
 import type { DatosInforme } from './construir'
 
 export function atletaDesdeEstado(e: EstadoAtleta, alertas: AlertaRendimiento[], hayDatos: boolean): DatosInforme['atleta'] {
-  const evaluadas = e.ejecucion?.sesionesEvaluadas ?? 0
+  // «Evaluadas» son las sesiones de calidad hechas con ritmos que se pueden medir; «saltadas», las previstas que no se hicieron.
+  const hechas = e.ejecucion?.sesionesEvaluadas ?? 0
+  const previstas = hechas + (e.ejecucion?.sesionesSaltadas ?? 0)
   return {
     hayDatos,
     minutosCarreraSemana: e.minutosCarreraPorSemana > 0 ? e.minutosCarreraPorSemana : null,
@@ -18,8 +20,8 @@ export function atletaDesdeEstado(e: EstadoAtleta, alertas: AlertaRendimiento[],
     forma: e.carga ? Math.round(e.carga.ctl * 10) / 10 : null,
     fatiga: e.carga ? Math.round(e.carga.atl * 10) / 10 : null,
     frescura: e.carga ? Math.round(e.carga.tsb * 10) / 10 : null,
-    sesionesEvaluadas: evaluadas > 0 ? evaluadas : null,
-    sesionesSaltadas: evaluadas > 0 ? e.ejecucion.sesionesSaltadas : null,
+    sesionesCalidadPrevistas: previstas > 0 ? previstas : null,
+    sesionesCalidadHechas: previstas > 0 ? hechas : null,
     retorno: !!e.retorno,
     vdot: e.vdot ?? null,
     fuerzaRegistrada: e.fuerza28d ?? 0,

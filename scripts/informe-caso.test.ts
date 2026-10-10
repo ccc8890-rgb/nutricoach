@@ -4,7 +4,7 @@ import type { PayloadPlanEntrenoIA } from '../lib/entrenos/planificar-con-ia'
 
 const atleta = (o: Partial<DatosInforme['atleta']> = {}): DatosInforme['atleta'] => ({
   hayDatos: true, minutosCarreraSemana: 89, salidasSemana: 3.5, pctSuave: 36, forma: 16, fatiga: 17.3, frescura: -1.3,
-  sesionesEvaluadas: 6, sesionesSaltadas: 2, retorno: false, vdot: 45, fuerzaRegistrada: 0, fuerzaEnPlan: 3, alertasAltas: [], ...o,
+  sesionesCalidadPrevistas: 8, sesionesCalidadHechas: 6, retorno: false, vdot: 45, fuerzaRegistrada: 0, fuerzaEnPlan: 3, alertasAltas: [], ...o,
 })
 const plan = { nombre: 'Híbrido Hyrox + Running — Deload', semanaActual: 2, semanasTotales: 4, diasRestantes: 18 }
 const analisis = {
@@ -67,6 +67,8 @@ const sc = construirInformeCaso(base())
 assert.match(sc.mensaje, /seguimos con tu plan/)
 assert.match(sc.mensaje, /89 minutos por semana/)
 assert.match(sc.mensaje, /36 % del tiempo/)
+assert.match(sc.mensaje, /De las 8 sesiones de calidad previstas has hecho 6/)
+assert.ok(sc.situacion.datos.some(x => x.etiqueta === 'Sesiones de calidad' && x.valor === '6 de 8 hechas'))
 assert.deepEqual(sc.cambios, ['Nada cambia por ahora: sigue con el plan actual.'])
 const aj = construirInformeCaso(base({ analisis }))
 assert.match(aj.mensaje, /Te propongo/)
@@ -82,6 +84,33 @@ assert.match(al.mensaje, /La fatiga sube más deprisa de lo normal/)
 assert.match(al.mensaje, /llamada/)
 assert.ok(!al.mensaje.includes('Te propongo'), 'en una alerta no se propone nada que el sistema no sepa')
 
+// ── El mensaje al cliente: las acciones completas, solo lo dirigido al cliente, lo más seguro primero ──
+assert.match(aj.mensaje, /No alargarla más/, 'incluye la acción, no solo el diagnóstico')
+const conCoach = construirInformeCaso(base({ analisis: { ...analisis, decisiones: [...analisis.decisiones, { cambio: 'Confirmar si las sesiones de fuerza se hacen y se registran.', razon: 'Sin registro no se mide.', segura: false, riesgo: 'bajo' as const }] } }))
+assert.ok(!conCoach.mensaje.includes('Confirmar'), 'lo dirigido al coach no va en el mensaje al cliente')
+assert.ok(conCoach.cambios.some(c => c.includes('Confirmar')), 'pero sí en el resumen del coach')
+assert.ok(aj.mensaje.indexOf('158 ppm') < aj.mensaje.indexOf('No alargarla'), 'la decisión segura va antes')
+const soloCoach = construirInformeCaso(base({ analisis: { ...analisis, decisiones: [{ cambio: 'Confirmar si hace la fuerza.', razon: 'x', riesgo: 'bajo' as const }] } }))
+assert.match(soloCoach.mensaje, /no cambiamos nada/, 'sin ajustes para el cliente, el mensaje no inventa ninguno')
+assert.ok(!soloCoach.mensaje.includes('Te propongo'))
+limpio(soloCoach)
+
+// ── Acción completa aunque la frase sea larga; sin mayúscula a mitad de frase ──
+const real = 'La tirada larga (69 min) concentra el 78 % del tiempo semanal de carrera. No alargarla más y repartir mejor: añadir una salida suave de 30-40 minutos (sin día libre, 20-30 minutos de rodaje suave a continuación de una sesión de fuerza) o acortar ligeramente la tirada, hasta que pese menos del 50 %.'
+const iLarga = construirInformeCaso(base({ analisis: { ...analisis, decisiones: [analisis.decisiones[0], { ...analisis.decisiones[1], cambio: real }] } }))
+assert.match(iLarga.mensaje, /No alargarla más y repartir mejor[.]/)
+assert.ok(!iLarga.mensaje.includes('añadir una salida'), 'el detalle largo no va en el mensaje')
+assert.ok(!iLarga.mensaje.includes('Además, La'), 'sin mayúscula a mitad de frase')
+assert.match(iLarga.mensaje, /Además, la tirada larga/)
+
+// ── Preguntas: las del cliente y las del coach, separadas y sin repetir ──
+assert.ok(!aj.preguntas.includes('¿Hace las sesiones de fuerza?'), 'las preguntas del análisis son para el coach')
+assert.deepEqual(aj.preguntasCoach, ['¿Hace las sesiones de fuerza?'])
+assert.equal(aj.preguntas.filter(q => /fuerza/i.test(q)).length, 1, 'la de la fuerza no sale dos veces')
+const conPreguntaFuerza = construirInformeCaso(base({ analisis: { ...analisis, preguntas_al_coach: ['¿Las sesiones híbridas y de fuerza se están haciendo?'] } }))
+assert.equal(conPreguntaFuerza.preguntas.filter(q => /fuerza/i.test(q)).length, 1, 'si el análisis ya pregunta por la fuerza, la nuestra para el cliente sigue siendo una sola')
+assert.deepEqual(construirInformeCaso(base()).preguntasCoach, [])
+
 // ── Situación (dónde está) y «lo que no sé» ──
 const etiquetas = sc.situacion.datos.map(x => x.etiqueta)
 assert.ok(etiquetas.includes('Carrera') && etiquetas.includes('Tiempo en suave') && etiquetas.includes('Forma y fatiga'))
@@ -89,7 +118,7 @@ assert.ok(sc.loQueNoSe.some(x => x.includes('fuerza')), 'sin fuerza registrada s
 assert.equal(sc.plan, 'Híbrido Hyrox + Running — Deload · semana 2 de 4')
 
 // ── Sin datos de ningún tipo: no revienta y lo dice ──
-const vacio = base({ atleta: atleta({ hayDatos: false, minutosCarreraSemana: null, salidasSemana: null, pctSuave: null, forma: null, fatiga: null, frescura: null, sesionesEvaluadas: null, sesionesSaltadas: null, vdot: null, fuerzaEnPlan: 0 }), plan: null })
+const vacio = base({ atleta: atleta({ hayDatos: false, minutosCarreraSemana: null, salidasSemana: null, pctSuave: null, forma: null, fatiga: null, frescura: null, sesionesCalidadPrevistas: null, sesionesCalidadHechas: null, vdot: null, fuerzaEnPlan: 0 }), plan: null })
 const iv = construirInformeCaso(vacio)
 limpio(iv)
 assert.equal(iv.escenario, 'sin_cambios')

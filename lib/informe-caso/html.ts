@@ -28,5 +28,6 @@ ${i.situacion.datos.length ? lista(i.situacion.datos.map(d => `${d.etiqueta}: ${
 <h2>Mensaje para el cliente</h2><p class="caja">${e(i.mensaje)}</p>
 <h2>Guion de llamada</h2><ol>${i.guion.map(g => `<li><strong>${e(g.paso)}.</strong> ${e(g.texto)}</li>`).join('')}</ol>
 <h2>Preguntas</h2>${lista(i.preguntas)}
+${i.preguntasCoach.length ? `<h2>Para decidir tú antes de hablar</h2>${lista(i.preguntasCoach)}` : ''}
 </body></html>`
 }
