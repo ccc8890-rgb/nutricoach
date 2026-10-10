@@ -26,7 +26,7 @@ export default function PlanificarConIA({ clienteId }: { clienteId: string }) {
       const res = await fetch('/api/entrenos/planificar-ia', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cliente_id: clienteId }) })
       const d = await res.json().catch(() => null)
       if (!res.ok) { setMensaje({ tipo: 'error', texto: d?.error ?? 'No se pudo planificar.' }); return }
-      setMensaje({ tipo: 'ok', texto: `${d.resumen} — está en «Decisiones de IA pendientes».` })
+      setMensaje({ tipo: 'ok', texto: d.modo === 'ajustar' ? d.resumen : `${d.resumen} — está en «Decisiones de IA pendientes».` })
       window.dispatchEvent(new CustomEvent('decisiones-ia:recargar'))
       leer()
     } catch {

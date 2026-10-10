@@ -31,6 +31,10 @@ export async function aplicarPlanEntrenoIA(db: SupabaseClient, tarea: AgenteTare
   const { data: cliente } = await db.from('clientes').select('coach_id').eq('id', tarea.cliente_id).maybeSingle()
   if (!cliente?.coach_id) return { ok: false, codigo: 'NO_CLIENT', mensaje: 'Cliente no encontrado' }
 
+  // Reserva atómica: solo una aplicación puede pasar `aplicado_at` de null a una fecha (otra pestaña o un reintento no crean un segundo plan).
+  const { data: reservada } = await db.from('agente_tareas').update({ aplicado_at: new Date().toISOString() }).eq('id', tarea.id).is('aplicado_at', null).select('id')
+  if (!reservada?.length) return { ok: true, codigo: 'APPLIED', mensaje: 'La propuesta ya estaba aplicada' }
+
   const p = v.payload
   try {
     const g = await guardarPlanEntreno(db, {
@@ -44,8 +48,13 @@ export async function aplicarPlanEntrenoIA(db: SupabaseClient, tarea: AgenteTare
       respuesta_json: { ...p.plan, ...(p.validacion ? { _validacion: p.validacion } : {}), ...(p.macrociclo ? { _macrociclo: p.macrociclo } : {}) },
     })
     const omitidos = g.ejerciciosOmitidos.length ? ` · sin ejercicio equivalente en la biblioteca, omitidos: ${g.ejerciciosOmitidos.join(', ')}` : ''
-    return { ok: true, codigo: 'APPLIED', mensaje: `Plan creado: ${g.sesiones} sesiones, ${g.ejerciciosVinculados} ejercicios vinculados${omitidos}` }
+    const mensaje = `Plan creado: ${g.sesiones} sesiones, ${g.ejerciciosVinculados} ejercicios vinculados${omitidos}`
+    // El resultado queda en la tarea (los ejercicios omitidos no se pierden) y la tarea pasa a aplicada.
+    await db.from('agente_tareas').update({ estado: 'aplicado', payload: { ...tarea.payload, resultado_aplicacion: mensaje } }).eq('id', tarea.id)
+    return { ok: true, codigo: 'APPLIED', mensaje }
   } catch {
+    // Se libera la reserva para poder reintentar; el plan anterior sigue activo.
+    await db.from('agente_tareas').update({ aplicado_at: null }).eq('id', tarea.id)
     return { ok: false, codigo: 'DB_ERROR', mensaje: 'No se pudo crear el plan; el plan anterior sigue activo.' }
   }
 }

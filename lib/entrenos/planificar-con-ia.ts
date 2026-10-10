@@ -6,6 +6,7 @@ import { ErrorGeneracionPlan, generarPlanEntrenoIA, type ResultadoGeneracionPlan
 import type { ResultadoMacro } from './macrociclo'
 import type { ResultadoValidacion } from './validar-plan-carrera'
 import { ejecutarAnalisisRendimiento } from '@/lib/agentes/analisis-rendimiento'
+import { normalizarDuracionSemanas } from './guardar-plan'
 
 export interface PayloadPlanEntrenoIA {
   modo: ModoPlanificacion
@@ -38,9 +39,13 @@ export function construirResumenPropuesta(r: ResultadoGeneracionPlan, modo: Modo
 }
 
 export function construirPayloadPropuesta(r: ResultadoGeneracionPlan, modo: ModoPlanificacion): PayloadPlanEntrenoIA {
+  // Lo que devuelve la IA puede venir incompleto: una propuesta que luego no se pueda aprobar es peor que una normalizada.
+  const sesiones = ((r.planIA.sesiones as Record<string, unknown>[] | undefined) ?? []).map((s, i) => ({
+    ...s, nombre: typeof s?.nombre === 'string' && s.nombre.trim() ? s.nombre : `Sesión ${i + 1}`,
+  }))
   return {
-    modo, fase_bloque: r.faseBloque, nombre_plan: r.nombrePlan, duracion_semanas: r.duracionSemanas, es_hibrido: r.esHibrido,
-    plan: r.planIA, macrociclo: r.macrociclo, validacion: r.validacion, generado_en: new Date().toISOString(),
+    modo, fase_bloque: r.faseBloque, nombre_plan: r.nombrePlan, duracion_semanas: normalizarDuracionSemanas(r.duracionSemanas), es_hibrido: r.esHibrido,
+    plan: { ...r.planIA, sesiones }, macrociclo: r.macrociclo, validacion: r.validacion, generado_en: new Date().toISOString(),
   }
 }
 
@@ -63,9 +68,13 @@ export async function planificarConIA(sb: SupabaseClient, input: { clienteId: st
 
   // A mitad de bloque no se sustituye nada: se pide el análisis de rendimiento con los datos reales (ya crea su propia tarea).
   if (modoActual.modo === 'ajustar') {
+    // Cada análisis cuesta una llamada a la IA: si ya hay uno reciente sin revisar, se remite a él.
+    const hace24h = new Date(Date.now() - 86_400_000).toISOString()
+    const { data: pendiente } = await sb.from('agente_tareas').select('id').eq('cliente_id', input.clienteId).eq('tipo', 'analisis_rendimiento').eq('estado', 'pendiente').gte('created_at', hace24h).limit(1)
+    if ((pendiente ?? []).length) return { ok: false, modo: 'ajustar', codigo: 'YA_HAY_PROPUESTA', motivo: 'Ya hay un análisis de rendimiento reciente pendiente de revisar: está en Rendimiento → Análisis IA.' }
     const a = await ejecutarAnalisisRendimiento(input.clienteId, { forzar: true })
     if (!a.ok || !a.tareaId) return { ok: false, modo: 'ajustar', codigo: 'SIN_DATOS', motivo: a.motivo ?? 'No hay datos suficientes del reloj para proponer ajustes. Sigue el plan actual unas semanas más.' }
-    return { ok: true, modo: 'ajustar', tareaId: a.tareaId, resumen: 'Análisis de rendimiento generado: revisa los ajustes propuestos.' }
+    return { ok: true, modo: 'ajustar', tareaId: a.tareaId, resumen: 'Análisis de rendimiento generado: revísalo en Rendimiento → Análisis IA.' }
   }
 
   try {

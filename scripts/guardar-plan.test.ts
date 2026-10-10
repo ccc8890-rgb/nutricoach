@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { guardarPlanEntreno, type DatosGuardadoPlan } from '../lib/entrenos/guardar-plan'
+import { guardarPlanEntreno, normalizarDuracionSemanas, type DatosGuardadoPlan } from '../lib/entrenos/guardar-plan'
 
 type Op = { tabla: string; op: string; payload?: unknown; filtros: Record<string, unknown> }
 
 /** Cliente falso: registra cada escritura en orden; `ejercicios` responde al buscador por nombre; `falla` hace fallar un insert concreto. */
-function fakeDb(opts: { ejercicios?: { id: string; nombre: string; tipo: string }[]; planesActivos?: { id: string }[]; falla?: string } = {}) {
+function fakeDb(opts: { ejercicios?: { id: string; nombre: string; tipo: string }[]; planesActivos?: { id: string }[]; falla?: string; fallaUpdate?: 'activar' | 'desactivar' } = {}) {
   const ops: Op[] = []
   let n = 0
   const from = (tabla: string) => {
@@ -24,6 +24,7 @@ function fakeDb(opts: { ejercicios?: { id: string; nombre: string; tipo: string 
     const resultado = () => {
       registrar()
       if (op === 'insert' && opts.falla === tabla) return { data: null, error: { message: 'fallo simulado' } }
+      if (op === 'update' && tabla === 'planes_entrenamiento' && opts.fallaUpdate === ((payload as { activo: boolean }).activo ? 'activar' : 'desactivar')) return { data: null, error: { message: 'fallo simulado' } }
       if (op === 'insert') return { data: { id: `${tabla}-${++n}` }, error: null }
       if (op === 'select' && tabla === 'ejercicios') {
         const patron = String(filtros.nombre ?? '').replace(/%/g, '').toLowerCase()
@@ -88,6 +89,30 @@ async function main() {
   const ses = hib.ops.find(o => o.tabla === 'sesiones_entrenamiento')!.payload as { fase_bloque: string; contexto_ia: string }
   assert.equal(ses.fase_bloque, 'Base')
   assert.equal(ses.contexto_ia, '4:38/km')
+
+  // Fallo al ACTIVAR el plan nuevo: el cliente no se queda sin plan (se reactiva el anterior) y se limpia el nuevo.
+  const falloActivar = fakeDb({ ejercicios, planesActivos: [{ id: 'viejo1' }], fallaUpdate: 'activar' })
+  await assert.rejects(() => guardarPlanEntreno(falloActivar.db, datos([{ nombre: 'Rodaje', ejercicios: [{ nombre: 'Rodaje continuo' }] }])), /No se pudo guardar el plan/)
+  const reactivado = falloActivar.ops.filter(o => o.tabla === 'planes_entrenamiento' && o.op === 'update' && (o.payload as { activo: boolean }).activo === true)
+  assert.ok(reactivado.some(o => JSON.stringify(o.filtros).includes('viejo1')), 'se reactiva el plan anterior')
+  assert.ok(falloActivar.ops.some(o => o.tabla === 'planes_entrenamiento' && o.op === 'delete'), 'se borra el plan a medias')
+  assert.ok(falloActivar.ops.some(o => o.tabla === 'sesiones_entrenamiento' && o.op === 'delete'), 'se borran sus sesiones')
+  assert.ok(falloActivar.ops.some(o => o.tabla === 'sesion_ejercicios' && o.op === 'delete'), 'se borran sus ejercicios')
+
+  // Fallo al DESACTIVAR los anteriores: no puede quedar con dos planes activos; se reactiva lo que se tocó y se limpia.
+  const falloDesactivar = fakeDb({ ejercicios, planesActivos: [{ id: 'viejo1' }], fallaUpdate: 'desactivar' })
+  await assert.rejects(() => guardarPlanEntreno(falloDesactivar.db, datos([{ nombre: 'Rodaje', ejercicios: [{ nombre: 'Rodaje continuo' }] }])), /No se pudo guardar el plan/)
+  assert.ok(falloDesactivar.ops.some(o => o.tabla === 'planes_entrenamiento' && o.op === 'delete'))
+  assert.ok(!falloDesactivar.ops.some(o => o.tabla === 'planes_entrenamiento' && o.op === 'update' && (o.payload as { activo: boolean }).activo === true && JSON.stringify(o.filtros).includes(`planes_entrenamiento-`)), 'el plan nuevo nunca llega a activarse')
+
+  // Duración que devuelve la IA como texto («8-12 semanas»): se normaliza a un entero válido o null.
+  assert.equal(normalizarDuracionSemanas(4), 4)
+  assert.equal(normalizarDuracionSemanas('8-12 semanas'), 8)
+  assert.equal(normalizarDuracionSemanas('6'), 6)
+  assert.equal(normalizarDuracionSemanas('muchas'), null)
+  assert.equal(normalizarDuracionSemanas(500), null)
+  assert.equal(normalizarDuracionSemanas(0), null)
+  assert.equal(normalizarDuracionSemanas(undefined), null)
 
   console.log('guardar-plan.test OK')
 }

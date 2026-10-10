@@ -166,6 +166,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Error al actualizar tarea' }, { status: 500 })
     }
 
+    let mensajeAplicacion: string | undefined
     if (tareaCompleta) {
       const tarea = tareaCompleta as AgenteTarea
 
@@ -202,13 +203,14 @@ export async function PATCH(request: NextRequest) {
             accion: 'Revisa el error de aplicación de la tarea y reintenta.',
           }, { status: statusAplicacion })
         }
+        mensajeAplicacion = resultadoAplicacion.mensaje
       }
 
       // Registrar señal de aprendizaje (fire-and-forget)
       registrarAprendizaje(tarea, decisionValidada, propuesta_final, comentario_coach).catch(() => null)
     }
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, ...(mensajeAplicacion ? { mensaje_aplicacion: mensajeAplicacion } : {}) })
   } catch (error) {
     console.error('Error en PATCH tareas:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })

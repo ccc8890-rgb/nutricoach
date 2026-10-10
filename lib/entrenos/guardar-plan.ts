@@ -63,6 +63,14 @@ export interface DatosGuardadoPlan {
   faseBloque: string | null
   sesiones: SesionIA[]
 }
+/** La IA a veces devuelve la duración como texto («8-12 semanas»): se reduce a un entero de 1 a 52 o a null. */
+export function normalizarDuracionSemanas(v: unknown): number | null {
+  const n = typeof v === 'number' ? v : typeof v === 'string' ? Number((v.match(/\d+/) ?? [])[0]) : NaN
+  if (!Number.isFinite(n)) return null
+  const r = Math.round(n)
+  return r >= 1 && r <= 52 ? r : null
+}
+
 export interface ResultadoGuardadoPlan { planId: string; sesiones: number; ejerciciosVinculados: number; ejerciciosOmitidos: string[] }
 
 /**
@@ -82,6 +90,8 @@ export async function guardarPlanEntreno(sb: SupabaseClient, d: DatosGuardadoPla
 
   const sesionesCreadas: string[] = []
   const omitidos: string[] = []
+  let previos: string[] = []
+  let desactivando = false
   let vinculados = 0
 
   try {
@@ -129,12 +139,18 @@ export async function guardarPlanEntreno(sb: SupabaseClient, d: DatosGuardadoPla
 
     // Solo ahora el plan nuevo sustituye al activo.
     const { data: activos } = await sb.from('planes_entrenamiento').select('id').eq('cliente_id', d.clienteId).eq('activo', true)
-    const previos = (activos ?? []).map(p => p.id as string).filter(id => id !== planId)
-    if (previos.length) await sb.from('planes_entrenamiento').update({ activo: false }).in('id', previos)
+    previos = (activos ?? []).map(p => p.id as string).filter(id => id !== planId)
+    if (previos.length) {
+      desactivando = true
+      const { error: errDes } = await sb.from('planes_entrenamiento').update({ activo: false }).in('id', previos)
+      if (errDes) throw new Error('desactivar')
+    }
     const { error: errAct } = await sb.from('planes_entrenamiento').update({ activo: true }).eq('id', planId)
     if (errAct) throw new Error('activar')
   } catch (e) {
-    // Limpieza: ejercicios → sesiones → plan. El plan anterior no se ha tocado.
+    // Si ya se habían desactivado los planes anteriores, se reactivan: el cliente nunca se queda sin plan.
+    if (desactivando && previos.length) await sb.from('planes_entrenamiento').update({ activo: true }).in('id', previos)
+    // Limpieza: ejercicios → sesiones → plan.
     if (sesionesCreadas.length) {
       await sb.from('sesion_ejercicios').delete().in('sesion_id', sesionesCreadas)
       await sb.from('sesiones_entrenamiento').delete().in('id', sesionesCreadas)

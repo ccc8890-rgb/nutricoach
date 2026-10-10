@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { validarPayloadPlanEntrenoIA } from '../lib/entrenos/aplicar-plan-ia'
 import { construirPayloadPropuesta, construirResumenPropuesta, estadoHttpDe, leerModoPlanificacion, planificarConIA } from '../lib/entrenos/planificar-con-ia'
 import type { ResultadoGeneracionPlan } from '../lib/entrenos/generar-plan-ia'
+import { fakeSupabase } from './helpers/fake-supabase'
 
 const generado = (over: Partial<ResultadoGeneracionPlan> = {}): ResultadoGeneracionPlan => ({
   planIA: { nombre_plan: 'Plan X', fundamentacion: 'porque', sesiones: [
@@ -57,6 +59,24 @@ async function main() {
   assert.equal(r.ok, false)
   if (!r.ok) { assert.equal(r.codigo, 'YA_HAY_PROPUESTA'); assert.equal(estadoHttpDe(r), 409) }
   assert.equal(dup.inserts.length, 0)
+
+  // Lo que devuelve la IA no puede dejar una propuesta imposible de aprobar: sesiones sin nombre y duración en texto se normalizan.
+  const rara = generado({ duracionSemanas: '8-12 semanas' as unknown as number, planIA: { sesiones: [{ nombre: 'Rodaje' }, { ejercicios: [] }, { nombre: '   ' }] } })
+  const pr = construirPayloadPropuesta(rara, 'crear')
+  assert.equal(pr.duracion_semanas, 8)
+  assert.deepEqual((pr.plan as { sesiones: { nombre: string }[] }).sesiones.map(x => x.nombre), ['Rodaje', 'Sesión 2', 'Sesión 3'])
+  assert.equal(validarPayloadPlanEntrenoIA(pr).ok, true, 'el payload normalizado se puede aprobar')
+
+  // A mitad de bloque con un análisis de rendimiento ya pendiente: no se lanza otro (cuesta una llamada a la IA) y se dice dónde está.
+  const hace10 = new Date(Date.now() - 10 * 86_400_000).toISOString()
+  const ajustando = fakeSupabase({
+    planes_entrenamiento: [{ id: 'p1', cliente_id: 'c1', activo: true, created_at: hace10, duracion_semanas: 4 }],
+    agente_tareas: [{ id: 'a1', cliente_id: 'c1', tipo: 'analisis_rendimiento', estado: 'pendiente', created_at: new Date().toISOString() }],
+  })
+  const ra = await planificarConIA(ajustando.db, { clienteId: 'c1' })
+  assert.equal(ra.ok, false)
+  if (!ra.ok) { assert.equal(ra.codigo, 'YA_HAY_PROPUESTA'); assert.equal(ra.modo, 'ajustar'); assert.match(ra.motivo, /Rendimiento/) }
+  assert.equal(ajustando.ops.length, 0, 'no se escribe nada')
   console.log('planificar-con-ia.test OK')
 }
 main()

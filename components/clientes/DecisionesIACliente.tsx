@@ -58,6 +58,7 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const [guardandoId, setGuardandoId] = useState<string | null>(null)
+  const [aviso, setAviso] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelado = false
@@ -88,6 +89,8 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
         }),
       })
       if (!res.ok) throw new Error()
+      const resultado = await res.json().catch(() => null) as { mensaje_aplicacion?: string } | null
+      if (tarea.tipo === 'plan_entreno_ia' && resultado?.mensaje_aplicacion) setAviso(resultado.mensaje_aplicacion)
       setTareas(prev => (prev ?? []).filter(t => t.id !== tarea.id))
       if (tarea.tipo === 'plan_entreno_ia' && decision === 'aprobado') window.dispatchEvent(new CustomEvent('plan-entreno:actualizado'))
       setEditandoId(null)
@@ -99,6 +102,8 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
     }
   }
 
+  const avisoNodo = aviso ? <p className="text-sm px-1 pb-2" role="status" style={{ color: 'var(--text)' }}>{aviso}</p> : null
+
   if (tareas === null) {
     return (
       <div className="flex items-center justify-center py-6">
@@ -108,11 +113,12 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
   }
 
   if (tareas.length === 0) {
-    return <p className="text-sm px-1" style={{ color: 'var(--text-muted)' }}>Sin decisiones de IA pendientes para este cliente.</p>
+    return <>{avisoNodo}<p className="text-sm px-1" style={{ color: 'var(--text-muted)' }}>Sin decisiones de IA pendientes para este cliente.</p></>
   }
 
   return (
     <div className="space-y-2">
+      {avisoNodo}
       {tareas.map(tarea => {
         const abierta = expandidaId === tarea.id
         const editando = editandoId === tarea.id

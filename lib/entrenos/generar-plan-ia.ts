@@ -11,6 +11,7 @@ import { validarSemanaCarrera, type ContextoValidacion, type ResultadoValidacion
 import { planificarMacrociclo, type ResultadoMacro } from '@/lib/entrenos/macrociclo'
 import { construirEntradaMacro } from '@/lib/entrenos/macro-desde-cliente'
 import { formatearRitmo } from '@/lib/entrenos/ritmos'
+import { normalizarDuracionSemanas } from '@/lib/entrenos/guardar-plan'
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com/v1/chat/completions'
 const MODEL = 'deepseek-chat'
@@ -447,7 +448,7 @@ ${instruccionDuracion}
     return {
       planIA,
       nombrePlan: esHibridoHyroxRunning ? `Híbrido Hyrox + Running — ${faseBloqueObjetivo}` : ((planIA.nombre_plan as string) ?? `Plan IA — ${modalidadFoco}`),
-      duracionSemanas: esHibridoHyroxRunning ? 4 : ((planIA.duracion_semanas as number) ?? null),
+      duracionSemanas: esHibridoHyroxRunning ? 4 : normalizarDuracionSemanas(planIA.duracion_semanas),
       esHibrido: esHibridoHyroxRunning,
       faseBloque: esHibridoHyroxRunning ? faseBloqueObjetivo : null,
       modalidad: modalidadFoco,
