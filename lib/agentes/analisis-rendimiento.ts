@@ -10,6 +10,7 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
 import { validarPasos, type Paso } from '@/lib/entrenos/pasos'
 import { CLAVES_METRICA, type ClaveMetrica, type Direccion } from '@/lib/rendimiento/seguimiento'
+import { resolverCitas } from '@/lib/rendimiento/evidencia'
 
 const SYSTEM = `Eres un entrenador de running y Hyrox de alto nivel que asesora a otro entrenador (el coach). Razonas con ciencia del entrenamiento, no con tópicos.
 
@@ -30,7 +31,7 @@ REGLAS DE TRABAJO:
 5. En la carga de fuerza/gimnasio el pulso infravalora el esfuerzo real: no concluyas que "entrena poco" solo por su TSS.
 6. No des consejo médico. Ante dolor, lesión o síntomas, recomienda que lo valore un profesional y márcalo como alerta.
 7. Escribe en español de España, claro y directo, sin relleno y sin reproches. Habla del atleta en tercera persona con su nombre: el lector es el coach, nunca el atleta.
-8. En "evidencia" cita SOLO principios o autores del marco científico de arriba. Si ninguno encaja, escribe "criterio de entrenador (sin cita)". No inventes referencias ni atribuyas una idea a un autor que no la defiende.
+8. En "evidencia" cita SOLO (a) estudios de la lista ESTUDIOS DISPONIBLES, con su clave entre corchetes, p. ej. [K3], o (b) principios o autores del marco científico de arriba. Si ninguno encaja, escribe "criterio de entrenador (sin cita)". No inventes referencias ni atribuyas una idea a un trabajo que no la defiende: de cada estudio solo conoces su título, su nivel de evidencia y la nota «aporta»; no afirmes resultados concretos que no estén ahí.
 9. Las zonas de pulso de Garmin son por % del pulso máximo y pueden quedar por debajo del umbral real: un rodaje suave con calor o poca base puede caer en Z4. Para el reparto de intensidad fíate de la sección REPARTO DE INTENSIDAD (calculada con el pulso de umbral del atleta) y antes de decir que algo fue intenso contrasta ritmo y pulso.
 10. La sección EJECUCIÓN DE LAS SESIONES dice si lo planificado se cumplió (ritmos por repetición, caída al final, sesiones saltadas). Es lo más importante para juzgar si el plan funciona: si no se cumple, plantea si el objetivo es demasiado exigente o si faltó recuperación antes de tocar la carga.
 11. Ritmos: un número MENOR de min/km es MÁS RÁPIDO (4:38 es más rápido que 4:49). Comprueba la dirección de cada comparación antes de escribirla, y no afirmes que algo es más rápido o lento que un umbral sin hacer esa comprobación. Si los ritmos por tramo empeoran hacia el final, dilo (caída).
@@ -85,7 +86,7 @@ export function sanearSalida(raw: unknown): { resumen: string; lecturas: { titul
       const metrica = CLAVES_METRICA.find(c => c === d.metrica_objetivo)
       const direccion: Direccion | undefined = d.direccion === 'sube' || d.direccion === 'baja' ? d.direccion : undefined
       const base = {
-        sesion: texto(d.sesion, 120) || 'general', cambio: texto(d.cambio, 500), razon: texto(d.razon, 500), evidencia: texto(d.evidencia, 200), confianza: acotar(d.confianza, 0, 1, 0.5),
+        sesion: texto(d.sesion, 120) || 'general', cambio: texto(d.cambio, 500), razon: texto(d.razon, 500), evidencia: texto(d.evidencia, 320), confianza: acotar(d.confianza, 0, 1, 0.5),
         ...(metrica ? { metrica_objetivo: metrica, ...(direccion && (metrica === 'carga_semana' || metrica === 'km_semana') ? { direccion } : {}) } : {}),
       }
       // Los pasos solo se conservan si traen un id de sesión con forma de UUID y el formato es válido.
@@ -133,8 +134,18 @@ export async function ejecutarAnalisisRendimiento(clienteId: string, opciones: {
     const m = crudo.match(/\{[\s\S]*\}/)
     try { json = m ? JSON.parse(m[0]) : null } catch { json = null }
   }
+  // Las claves [K#] que cita el modelo se sustituyen por el título real del estudio; una clave inexistente se elimina.
+  const citados = new Set<string>()
+  if (json && typeof json === 'object' && Array.isArray((json as Salida).decisiones)) {
+    for (const d of (json as Salida).decisiones!) {
+      if (typeof d?.evidencia !== 'string') continue
+      for (const m of d.evidencia.matchAll(/\bK(\d{1,2})\b/gi)) citados.add(`K${m[1]}`)
+      d.evidencia = resolverCitas(d.evidencia, ctx.estudios)
+    }
+  }
   const s = sanearSalida(json)
   if (!s) return { ok: false, motivo: 'La IA devolvió una respuesta que no se puede usar' }
+  const estudiosCitados = ctx.estudios.filter(e => citados.has(e.clave)).map(e => ({ titulo: e.titulo, anio: e.anio, doi: e.doi, nivel: e.nivel }))
 
   const tarea = await guardarTareaAgente('director', {
     tipo: 'analisis_rendimiento',
@@ -148,6 +159,7 @@ export async function ejecutarAnalisisRendimiento(clienteId: string, opciones: {
       preguntas_al_coach: s.preguntas,
       alertas_automaticas: ctx.alertas,
       metricas: ctx.metricas,
+      estudios_citados: estudiosCitados,
     },
     fuentes: [],
     prioridad: s.prioridad,

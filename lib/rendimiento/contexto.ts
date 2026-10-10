@@ -7,6 +7,7 @@ import { leerUmbrales } from './garmin-entrenos'
 import { ritmosDesdeVdot, formatearRitmo } from '@/lib/entrenos/ritmos'
 import { construirEjecucion } from './ejecucion'
 import { recalibrar, type EntrenoParaVdot } from './vdot'
+import { estudiosParaAnalisis, textoEstudios, type EstudioCitable } from './evidencia'
 
 export interface ContextoRendimiento {
   texto: string
@@ -14,6 +15,8 @@ export interface ContextoRendimiento {
   metricas: Record<string, number | string | null>
   /** Hay entrenos recientes suficientes para analizar. */
   hayDatos: boolean
+  /** Estudios de la base de conocimiento que el modelo puede citar por clave [K#]. */
+  estudios: EstudioCitable[]
 }
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`
@@ -121,10 +124,15 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     L.push(`DECISIONES ANTERIORES DEL COACH SOBRE ANÁLISIS PREVIOS (aprende de ellas):\n${previas.map(p => `  - ${p.created_at.slice(0, 10)} ${p.decision}${p.comentario_coach ? ` — comentario: "${p.comentario_coach}"` : ''}${p.decision === 'modificado' && p.propuesta_final ? ` — versión final: "${String(p.propuesta_final).slice(0, 240)}"` : ''}`).join('\n')}`)
   }
 
+  const estudios = await estudiosParaAnalisis(db)
+  const bloqueEstudios = textoEstudios(estudios)
+  if (bloqueEstudios) L.push(bloqueEstudios)
+
   return {
     texto: L.join('\n'),
     alertas,
     metricas: { ctl: r?.ctl ?? null, atl: r?.atl ?? null, tsb: r?.tsb ?? null, rampa7: r?.rampa7 ?? null, carga7d: r?.carga7d ?? null, vdot, pctIntenso: pctIntenso !== null ? Math.round(pctIntenso) : null },
     hayDatos: recientes.length > 0,
+    estudios,
   }
 }
