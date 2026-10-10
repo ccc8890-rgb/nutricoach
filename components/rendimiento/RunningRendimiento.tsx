@@ -7,6 +7,7 @@ import DerivaCardiaca from './DerivaCardiaca'
 import DistribucionIntensidad from './DistribucionIntensidad'
 import TecnicaCarrera from './TecnicaCarrera'
 import EntrenosTabla from './EntrenosTabla'
+import SubirActividadFit from './SubirActividadFit'
 import ResumenDeporte from './ResumenDeporte'
 import { Bloque, COLOR, Pestanas, fechaCorta, mmss, type DatosPanel } from './comun'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
@@ -22,7 +23,7 @@ type Tab = (typeof TABS)[number]['key']
 const CLAVES = TABS.map(t => t.key)
 
 /** Todo el análisis de carrera: plan vs realizado, forma física, técnica y entrenos. */
-export default function RunningRendimiento({ clienteId, datos }: { clienteId: string; datos: DatosPanel }) {
+export default function RunningRendimiento({ clienteId, datos, onActualizar }: { clienteId: string; datos: DatosPanel; onActualizar: () => void }) {
   const [tab, setTab] = useEstadoUrl<Tab>('rend', 'resumen', CLAVES)
   const parciales = useMemo<Fila[]>(() => datos.parciales.map(p => ({ fecha: p.fecha, s1000: p.s1000, s5000: p.s5000 })), [datos])
   const ef = useMemo<Fila[]>(() => datos.eficiencia.map(p => ({ fecha: p.fecha, ef: p.valor })), [datos])
@@ -115,7 +116,12 @@ export default function RunningRendimiento({ clienteId, datos }: { clienteId: st
 
       {tab === 'tecnica' && <TecnicaCarrera tecnica={datos.tecnica} />}
 
-      {tab === 'entrenos' && <EntrenosTabla entrenos={running.entrenos} titulo="Entrenos de carrera recientes" />}
+      {tab === 'entrenos' && (
+        <div className="space-y-4">
+          <SubirActividadFit clienteId={clienteId} onSubido={onActualizar} />
+          <EntrenosTabla entrenos={running.entrenos} titulo="Entrenos de carrera recientes" />
+        </div>
+      )}
     </div>
   )
 }

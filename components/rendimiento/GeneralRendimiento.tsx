@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import Grafica, { type Fila } from './Grafica'
 import AnalisisIA from './AnalisisIA'
 import EntrenosTabla from './EntrenosTabla'
+import SubirActividadFit from './SubirActividadFit'
 import { Bloque, COLOR, Pestanas, Tarjeta, type DatosPanel } from './comun'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 
@@ -15,7 +16,7 @@ type Tab = (typeof TABS)[number]['key']
 const CLAVES = TABS.map(t => t.key)
 
 /** Vista global del atleta: carga de todos los deportes sumada y su recuperación. */
-export default function GeneralRendimiento({ clienteId, datos }: { clienteId: string; datos: DatosPanel }) {
+export default function GeneralRendimiento({ clienteId, datos, onActualizar }: { clienteId: string; datos: DatosPanel; onActualizar: () => void }) {
   const [tab, setTab] = useEstadoUrl<Tab>('rend', 'resumen', CLAVES)
   const pmc = useMemo<Fila[]>(() => datos.serie.map(p => ({ fecha: p.fecha, ctl: p.ctl, atl: p.atl, tss: p.tss, tsb: p.tsb })), [datos])
   const semanas = useMemo<Fila[]>(() => datos.semanas.map(s => ({ fecha: s.semana, tss: s.tss })), [datos])
@@ -75,7 +76,12 @@ export default function GeneralRendimiento({ clienteId, datos }: { clienteId: st
         </div>
       )}
 
-      {tab === 'entrenos' && <EntrenosTabla entrenos={datos.entrenos} titulo="Entrenos recientes (todos los deportes)" />}
+      {tab === 'entrenos' && (
+        <div className="space-y-4">
+          <SubirActividadFit clienteId={clienteId} onSubido={onActualizar} />
+          <EntrenosTabla entrenos={datos.entrenos} titulo="Entrenos recientes (todos los deportes)" />
+        </div>
+      )}
     </div>
   )
 }

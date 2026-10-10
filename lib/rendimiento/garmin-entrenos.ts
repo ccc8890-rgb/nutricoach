@@ -123,6 +123,8 @@ export interface VueltaEntreno {
   duracion_s: number
   fc_media: number | null
   velocidad_ms: number | null
+  /** Potencia media de la vuelta (W), solo en actividades con potenciómetro. */
+  potencia_media?: number | null
 }
 
 /** Convierte las vueltas que devuelve Garmin al formato compacto que guardamos. */

@@ -23,7 +23,7 @@ export interface EntrenoPanel {
   vo2max: number | null
   tiempo_zona_fc: number[] | null
   mejores_parciales: { s1000: number | null; s1609: number | null; s5000: number | null } | null
-  raw: { gap_ms?: number | null; cadencia?: number | null; zancada_m?: number | null; contacto_suelo_ms?: number | null; oscilacion_vertical_cm?: number | null } | null
+  raw: { gap_ms?: number | null; cadencia?: number | null; zancada_m?: number | null; contacto_suelo_ms?: number | null; oscilacion_vertical_cm?: number | null; potencia_media?: number | null; potencia_normalizada?: number | null } | null
   /** Solo para calcular la deriva; no se devuelve en `entrenos` del panel. */
   vueltas?: VueltaEntreno[] | null
 }

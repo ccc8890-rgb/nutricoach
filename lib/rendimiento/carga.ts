@@ -23,7 +23,7 @@ export interface EntrenoParaCarga {
   rpe?: number | null
 }
 
-export type MetodoTss = 'ritmo' | 'pulso' | 'rpe' | 'duracion'
+export type MetodoTss = 'ritmo' | 'pulso' | 'rpe' | 'duracion' | 'potencia'
 
 const TIPOS_CARRERA = ['running', 'track_running', 'treadmill_running', 'trail_running', 'virtual_run']
 /** En cinta la velocidad depende de una calibración que suele fallar: solo se fía del pulso. */
@@ -44,7 +44,7 @@ export function esCarrera(tipo: string | null | undefined): boolean {
   return !!tipo && TIPOS_CARRERA.includes(tipo)
 }
 
-function tssDe(horas: number, intensidad: number): number {
+export function tssDe(horas: number, intensidad: number): number {
   const i = Math.min(Math.max(intensidad, 0), IF_MAX)
   return horas * i * i * 100
 }

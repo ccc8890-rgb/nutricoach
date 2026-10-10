@@ -1,6 +1,7 @@
 'use client'
 import EntrenosTabla from './EntrenosTabla'
 import ResumenDeporte from './ResumenDeporte'
+import SubirActividadFit from './SubirActividadFit'
 import { Pestanas, type DatosPanel } from './comun'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { NOMBRE_DEPORTE, type DeporteConPanel } from '@/lib/rendimiento/deportes'
@@ -20,7 +21,7 @@ const PROXIMAMENTE: Record<Exclude<DeporteConPanel, 'running'>, string> = {
 }
 
 /** Apartado de un deporte sin análisis propio todavía: resumen de carga y lista de sesiones. */
-export default function DeporteGenerico({ deporte, datos }: { deporte: Exclude<DeporteConPanel, 'running'>; datos: DatosPanel }) {
+export default function DeporteGenerico({ clienteId, deporte, datos, onActualizar }: { clienteId: string; deporte: Exclude<DeporteConPanel, 'running'>; datos: DatosPanel; onActualizar: () => void }) {
   const [tab, setTab] = useEstadoUrl<Tab>('rend', 'resumen', CLAVES)
   const resumen = datos.deportes.find(d => d.deporte === deporte)!
   const nombre = NOMBRE_DEPORTE[deporte]
@@ -38,7 +39,12 @@ export default function DeporteGenerico({ deporte, datos }: { deporte: Exclude<D
         </div>
       )}
 
-      {tab === 'entrenos' && <EntrenosTabla entrenos={resumen.entrenos} titulo={`Entrenos de ${nombre.toLowerCase()} recientes`} />}
+      {tab === 'entrenos' && (
+        <div className="space-y-4">
+          <SubirActividadFit clienteId={clienteId} onSubido={onActualizar} />
+          <EntrenosTabla entrenos={resumen.entrenos} titulo={`Entrenos de ${nombre.toLowerCase()} recientes`} />
+        </div>
+      )}
     </div>
   )
 }

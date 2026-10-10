@@ -15,7 +15,7 @@ export default function EntrenosTabla({ entrenos, titulo = 'Entrenos recientes' 
             <thead>
               <tr style={{ color: 'var(--text-muted)' }}>
                 <th className="py-1.5 pr-3 font-medium">Fecha</th><th className="pr-3 font-medium">Sesión</th><th className="pr-3 font-medium">Tiempo</th>
-                <th className="pr-3 font-medium">Km</th><th className="pr-3 font-medium">Ritmo</th><th className="pr-3 font-medium">Pulso</th>
+                <th className="pr-3 font-medium">Km</th><th className="pr-3 font-medium">Ritmo / potencia</th><th className="pr-3 font-medium">Pulso</th>
                 <th className="pr-3 font-medium">TSS</th><th className="font-medium">Zonas</th>
               </tr>
             </thead>
@@ -29,7 +29,7 @@ export default function EntrenosTabla({ entrenos, titulo = 'Entrenos recientes' 
                     <td className="pr-3"><span style={{ color: 'var(--text)' }}>{e.nombre ?? '—'}</span> <span style={{ color: 'var(--text-muted)' }}>· {tipoLegible[e.tipo ?? ''] ?? e.tipo}</span></td>
                     <td className="pr-3 tabular-nums">{e.duracion_s ? `${Math.round(e.duracion_s / 60)} min` : '—'}</td>
                     <td className="pr-3 tabular-nums">{e.distancia_m && e.distancia_m > 0 ? (e.distancia_m / 1000).toFixed(1) : '—'}</td>
-                    <td className="pr-3 tabular-nums">{esCarrera(e.tipo) && e.ritmo_medio_s_km ? mmss(e.ritmo_medio_s_km) : '—'}</td>
+                    <td className="pr-3 tabular-nums">{esCarrera(e.tipo) && e.ritmo_medio_s_km ? mmss(e.ritmo_medio_s_km) : e.raw?.potencia_media ? `${e.raw.potencia_media} W` : '—'}</td>
                     <td className="pr-3 tabular-nums">{e.fc_media ?? '—'}</td>
                     <td className="pr-3 font-semibold tabular-nums">{e.tss !== null ? Math.round(e.tss) : '—'}</td>
                     <td className="w-28">

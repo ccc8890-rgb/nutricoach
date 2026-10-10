@@ -18,6 +18,7 @@ type Vista = (typeof CLAVES_VISTA)[number]
  */
 export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
   const [dias, setDias] = useState(90)
+  const [version, setVersion] = useState(0)
   const [vistaUrl, setVista] = useEstadoUrl<Vista>('dep', 'general', CLAVES_VISTA)
   const [datos, setDatos] = useState<DatosPanel | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +31,7 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
       .then(j => { if (vivo) setDatos(j) })
       .catch(e => { if (vivo) setError(e instanceof Error ? e.message : 'Error al cargar') })
     return () => { vivo = false }
-  }, [clienteId, dias])
+  }, [clienteId, dias, version])
 
   const vistas = useMemo(() => {
     const conDatos = (datos?.deportes ?? []).filter(d => d.deporte === 'running' || d.sesiones > 0).map(d => d.deporte)
@@ -62,9 +63,9 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
 
       <Pestanas items={vistas} valor={vista} onChange={setVista} etiqueta="Deporte" grande />
 
-      {vista === 'general' && <GeneralRendimiento clienteId={clienteId} datos={datos} />}
-      {vista === 'running' && <RunningRendimiento clienteId={clienteId} datos={datos} />}
-      {vista !== 'general' && vista !== 'running' && <DeporteGenerico key={vista} deporte={vista as Exclude<DeporteConPanel, 'running'>} datos={datos} />}
+      {vista === 'general' && <GeneralRendimiento clienteId={clienteId} datos={datos} onActualizar={() => setVersion(v => v + 1)} />}
+      {vista === 'running' && <RunningRendimiento clienteId={clienteId} datos={datos} onActualizar={() => setVersion(v => v + 1)} />}
+      {vista !== 'general' && vista !== 'running' && <DeporteGenerico key={vista} clienteId={clienteId} deporte={vista as Exclude<DeporteConPanel, 'running'>} datos={datos} onActualizar={() => setVersion(v => v + 1)} />}
     </div>
   )
 }
