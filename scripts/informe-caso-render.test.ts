@@ -6,7 +6,7 @@ import { construirInformeCaso } from '../lib/informe-caso/construir'
 
 const informe = construirInformeCaso({
   nombre: 'Carlos Casanova', plan: { nombre: 'Plan', semanaActual: 2, semanasTotales: 4, diasRestantes: 18 }, analisis: null, propuesta: null,
-  atleta: { hayDatos: true, minutosCarreraSemana: 89, salidasSemana: 3.5, pctSuave: 36, forma: 16, fatiga: 17.3, frescura: -1.3, sesionesCalidadPrevistas: 8, sesionesCalidadHechas: 6, retorno: false, vdot: 45, fuerzaRegistrada: 0, fuerzaEnPlan: 3, alertasAltas: [] },
+  atleta: { hayDatos: true, minutosCarreraSemana: 89, salidasSemana: 3.5, pctSuave: 36, forma: 16, fatiga: 17.3, frescura: -1.3, sesionesConRitmoPrevistas: 8, sesionesConRitmoHechas: 6, retorno: false, vdot: 45, fuerzaRegistrada: 0, fuerzaEnPlan: 3, alertasAltas: [] },
 })
 const pintar = (pestanaInicial: 'mensaje' | 'guion' | 'resumen' | 'pdf') => renderToStaticMarkup(createElement(PanelInformeCaso, { informe, clienteId: 'abc', pestanaInicial }))
 const mensaje = pintar('mensaje')

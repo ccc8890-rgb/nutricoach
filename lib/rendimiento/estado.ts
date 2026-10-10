@@ -31,7 +31,9 @@ export interface EstadoAtleta {
   /** Minutos de carrera por semana (media de las últimas 4 semanas completas). */
   minutosCarreraPorSemana: number
   /** Repeticiones de series/tempo de las últimas 4 semanas: cuántas salieron más lentas que el rango previsto. */
-  ejecucion: { repsEvaluadas: number; repsLentas: number; sesionesEvaluadas: number; sesionesSaltadas: number }
+  ejecucion: { repsEvaluadas: number; repsLentas: number; sesionesEvaluadas: number; sesionesSaltadas: number
+    /** Sesiones con pasos hechas (en su día o en otro) y previstas (hechas + saltadas), aunque no tengan vueltas medibles. */
+    sesionesHechas?: number; sesionesPrevistas?: number }
   diasCompeticion: number | null
   /** Próxima competición: la disciplina y el tiempo objetivo deciden la duración y la profundidad del tapering. */
   competicion: { dias: number; disciplina: string; tiempoObjetivoMin: number | null } | null
@@ -161,7 +163,9 @@ export function construirEstado(e: EntradaEstado): EstadoAtleta {
     carrerasPorSemana,
     kmPorSemana,
     minutosCarreraPorSemana,
-    ejecucion: { repsEvaluadas, repsLentas, sesionesEvaluadas: ejec.filter(s => s.cumplimiento).length, sesionesSaltadas: ejec.filter(s => s.estado === 'saltada').length },
+    ejecucion: { repsEvaluadas, repsLentas, sesionesEvaluadas: ejec.filter(s => s.cumplimiento).length, sesionesSaltadas: ejec.filter(s => s.estado === 'saltada').length,
+      sesionesHechas: ejec.filter(s => s.estado === 'hecha' || s.estado === 'otro_dia').length,
+      sesionesPrevistas: ejec.filter(s => s.estado === 'hecha' || s.estado === 'otro_dia' || s.estado === 'saltada').length },
     diasCompeticion: e.diasCompeticion,
     competicion: e.competicion ?? null,
     perfil: { nivel: e.perfil?.nivel ?? null, diasDisponibles: e.perfil?.diasDisponibles ?? null, lesiones: e.perfil?.lesiones ?? [], restricciones: e.perfil?.restricciones?.trim() || null, recuperacion: e.perfil?.recuperacion ?? null },

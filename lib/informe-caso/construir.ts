@@ -12,6 +12,8 @@ export const ETIQUETA_ESCENARIO: Record<Escenario, string> = {
 
 export interface DecisionInforme {
   cambio: string; razon: string
+  /** `regla` = motor de reglas (frases en infinitivo, dirigidas al atleta); `ia` = añadida por el modelo (escrita para el coach). */
+  origen?: 'regla' | 'ia'
   segura?: boolean; riesgo?: 'bajo' | 'medio' | 'alto'; fiabilidad?: { nivel: 'alta' | 'media' | 'baja' }; estudios?: unknown[]; confianza?: number
 }
 
@@ -21,8 +23,8 @@ export interface DatosInforme {
     hayDatos: boolean
     minutosCarreraSemana: number | null; salidasSemana: number | null; pctSuave: number | null
     forma: number | null; fatiga: number | null; frescura: number | null
-    /** Sesiones de calidad previstas en las últimas 4 semanas y cuántas se hicieron (null si no hay datos). */
-    sesionesCalidadPrevistas: number | null; sesionesCalidadHechas: number | null
+    /** Sesiones con ritmos previstos en las últimas 4 semanas (calidad, tiradas y rodajes estructurados) y cuántas se hicieron (null si no hay datos). */
+    sesionesConRitmoPrevistas: number | null; sesionesConRitmoHechas: number | null
     retorno: boolean; vdot: number | null; fuerzaRegistrada: number; fuerzaEnPlan: number; alertasAltas: string[]
   }
   plan: { nombre: string; semanaActual: number | null; semanasTotales: number | null; diasRestantes: number | null } | null
@@ -53,7 +55,8 @@ const limpiar = (t: string) => t.replace(/\s+/g, ' ').trim()
 /** Frases enteras hasta un tope de caracteres (la primera sola puede ser un diagnóstico sin la acción). */
 function primerasFrases(texto: string, max: number): string {
   const t = limpiar(texto)
-  const frases = t.match(/[^.!?]+[.!?]*(\s|$)/g)?.map(f => f.trim()) ?? [t]
+  // Se parte en un punto seguido de espacio: «3.5» y «-1.3» no se cortan.
+  const frases = t.split(/(?<=[.!?])\s+/).map(f => f.trim()).filter(Boolean)
   let salida = ''
   for (const f of frases) {
     const union = salida ? `${salida} ${f}` : f
@@ -74,6 +77,20 @@ function primerasFrases(texto: string, max: number): string {
 const minusculaInicial = (t: string) => t.replace(/^([A-ZÁÉÍÓÚÑ])([a-záéíóúñ])/, (_m, a: string, b: string) => `${a.toLowerCase()}${b}`)
 const dirigidaAlCoach = (cambio: string) => /^\s*(confirmar|comprobar|revisar|preguntar|valorar|verificar|decidir)\b/i.test(cambio)
 const ORDEN_ETIQUETA = { seguro: 0, mirar: 1, revisar: 2 } as const
+const SIGLAS_INTERNAS = /\b(CTL|ATL|TSB|ACWR|VDOT|RPE)\b/
+
+/**
+ * Qué decisiones se pueden proponer al cliente: solo las del motor de reglas (frases en infinitivo, para el atleta), sin siglas internas,
+ * sin tercera persona con su nombre y sin nada que pida revisión previa del coach.
+ */
+function paraElCliente(x: DecisionInforme, nombrePila: string): boolean {
+  if (x.origen !== 'regla' || dirigidaAlCoach(x.cambio)) return false
+  // Se mira solo lo que irá en el mensaje, no el texto entero.
+  const fragmento = primerasFrases(x.cambio, 170)
+  if (SIGLAS_INTERNAS.test(fragmento)) return false
+  if (nombrePila && fragmento.toLowerCase().split(/[^a-záéíóúñ]+/i).includes(nombrePila.toLowerCase())) return false
+  return etiquetaDecision(x) !== 'revisar'
+}
 const pilaDe = (nombre: string) => nombre.trim().split(/\s+/)[0] ?? ''
 
 function escenarioDe(d: DatosInforme): Escenario {
@@ -88,7 +105,7 @@ function datosSituacion(a: DatosInforme['atleta'], plan: DatosInforme['plan']) {
   if (a.minutosCarreraSemana) datos.push({ etiqueta: 'Carrera', valor: `${a.minutosCarreraSemana} min por semana${a.salidasSemana ? ` en ${fmt(a.salidasSemana)} salidas` : ''}` })
   if (a.pctSuave != null) datos.push({ etiqueta: 'Tiempo en suave', valor: `${Math.round(a.pctSuave)} %` })
   if (a.forma != null && a.fatiga != null) datos.push({ etiqueta: 'Forma y fatiga', valor: `forma ${fmt(a.forma)}, fatiga ${fmt(a.fatiga)}${a.frescura != null ? `, frescura ${fmt(a.frescura)}` : ''}` })
-  if (a.sesionesCalidadPrevistas && a.sesionesCalidadPrevistas > 0) datos.push({ etiqueta: 'Sesiones de calidad', valor: `${a.sesionesCalidadHechas ?? 0} de ${a.sesionesCalidadPrevistas} hechas` })
+  if (a.sesionesConRitmoPrevistas && a.sesionesConRitmoPrevistas > 0) datos.push({ etiqueta: 'Sesiones con ritmos', valor: `${a.sesionesConRitmoHechas ?? 0} de ${a.sesionesConRitmoPrevistas} hechas` })
   if (plan?.semanaActual && plan.semanasTotales) datos.push({ etiqueta: 'Plan', valor: `semana ${plan.semanaActual} de ${plan.semanasTotales}` })
   return datos
 }
@@ -111,21 +128,23 @@ function lineaDatos(a: DatosInforme['atleta']): string {
 }
 
 function lineaCumplimiento(a: DatosInforme['atleta']): string {
-  return a.sesionesCalidadPrevistas && a.sesionesCalidadPrevistas > 0 ? `De las ${a.sesionesCalidadPrevistas} sesiones de calidad previstas has hecho ${a.sesionesCalidadHechas ?? 0}.` : ''
+  return a.sesionesConRitmoPrevistas && a.sesionesConRitmoPrevistas > 0 ? `De las ${a.sesionesConRitmoPrevistas} sesiones con ritmos previstas has hecho ${a.sesionesConRitmoHechas ?? 0}.` : ''
 }
 
 function mensajeDe(d: DatosInforme, escenario: Escenario): string {
   const saludo = pilaDe(d.nombre) ? `Hola ${pilaDe(d.nombre)}` : 'Hola,'
   const datos = lineaDatos(d.atleta)
-  const paraCliente = (d.analisis?.decisiones ?? []).filter(x => !dirigidaAlCoach(x.cambio)).sort((a, b) => ORDEN_ETIQUETA[etiquetaDecision(a)] - ORDEN_ETIQUETA[etiquetaDecision(b)])
+  const paraCliente = (d.analisis?.decisiones ?? []).filter(x => paraElCliente(x, pilaDe(d.nombre))).sort((a, b) => ORDEN_ETIQUETA[etiquetaDecision(a)] - ORDEN_ETIQUETA[etiquetaDecision(b)])
   let m: string
   if (escenario === 'alerta') {
-    const alerta = d.analisis?.alerta_prioritaria || d.atleta.alertasAltas[0] || ''
-    m = `${saludo}, he visto algo en tus datos que quiero comentarte: ${titularDe(alerta, 200).replace(/[.]+$/, '')}. Prefiero que lo hablemos antes de seguir con el plan tal cual. ¿Te va bien una llamada corta hoy o mañana?`
+    // El texto de la alerta está escrito para el coach (siglas, tercera persona): al cliente solo se le adelanta que quieres hablarlo.
+    m = `${saludo}, he visto algo en tus datos de entrenamiento que prefiero comentarte contigo antes de seguir con el plan tal cual. ¿Te va bien una llamada corta hoy o mañana?`
   } else if (escenario === 'propuesta_bloque' && d.propuesta) {
     const r = resumirPropuesta(d.propuesta)
     const carrera = r.queCambia.find(c => c.startsWith('Carrera') && !c.includes('sin datos'))
-    m = `${saludo}, ya se acerca el final de tu bloque actual y te he preparado el siguiente bloque${d.propuesta.fase_bloque ? ` (${d.propuesta.fase_bloque}` + (d.propuesta.duracion_semanas ? `, ${d.propuesta.duracion_semanas} semanas)` : ')') : ''}. ${datos} ${carrera ? `${carrera.replace('Carrera: ', 'En carrera pasaríamos ')}.` : ''} Es una propuesta: si algo no te encaja, lo ajustamos. ¿Lo hablamos cuando te venga bien?`
+    const detalle = d.propuesta.fase_bloque ? ` (${d.propuesta.fase_bloque}` + (d.propuesta.duracion_semanas ? `, ${d.propuesta.duracion_semanas} semanas)` : ')') : ''
+    const apertura = d.propuesta.modo === 'siguiente_bloque' && d.plan ? `ya se acerca el final de tu bloque actual y te he preparado el siguiente bloque${detalle}` : `te he preparado tu primer bloque de entrenamiento${detalle}`
+    m = `${saludo}, ${apertura}. ${datos} ${carrera ? `${carrera.replace('Carrera: ', 'En carrera pasaríamos ')}.` : ''} Es una propuesta: si algo no te encaja, lo ajustamos. ¿Lo hablamos cuando te venga bien?`
   } else if (escenario === 'ajustes' && paraCliente.length > 0) {
     const ajustes = paraCliente.slice(0, 2).map(x => primerasFrases(x.cambio, 170).replace(/[.]+$/, '')).map((t, i) => (i === 0 ? t : minusculaInicial(t))).join('. Además, ')
     m = `${saludo}, he revisado tus últimos entrenamientos. ${datos} Te propongo ${paraCliente.length === 1 ? 'un ajuste' : 'estos ajustes'}: ${ajustes}. ¿Te parece bien que lo probemos estas semanas?`
@@ -136,9 +155,11 @@ function mensajeDe(d: DatosInforme, escenario: Escenario): string {
   return m.length <= MAX_MENSAJE ? m : `${m.slice(0, MAX_MENSAJE - 1).replace(/\s+\S*$/, '')}…`
 }
 
-export function construirInformeCaso(d: DatosInforme): InformeCaso {
+export function construirInformeCaso(entrada: DatosInforme): InformeCaso {
+  // Una decisión sin texto no se puede presentar: se descarta en lugar de tumbar el informe.
+  const decisiones = (entrada.analisis?.decisiones ?? []).filter(x => x && typeof x.cambio === 'string' && x.cambio.trim()).map(x => ({ ...x, razon: typeof x.razon === 'string' ? x.razon : '' }))
+  const d: DatosInforme = { ...entrada, analisis: entrada.analisis ? { ...entrada.analisis, decisiones } : null }
   const escenario = escenarioDe(d)
-  const decisiones = d.analisis?.decisiones ?? []
 
   let cambios: string[]
   if (escenario === 'alerta') cambios = [`Pendiente de hablarlo: ${titularDe(d.analisis?.alerta_prioritaria || d.atleta.alertasAltas[0] || '', 160)}`]

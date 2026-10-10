@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { atletaDesdeEstado } from '../lib/informe-caso/datos'
+import { atletaDesdeEstado, DIAS_ANALISIS_VIGENTE, desdeAnalisisVigente } from '../lib/informe-caso/datos'
 
 const estado = (o: Record<string, unknown> = {}) => ({
   minutosCarreraPorSemana: 89, carrerasPorSemana: 3.5, vdot: 45, retorno: false, fuerza28d: 0, fuerzaEnPlan: 3,
@@ -16,8 +16,12 @@ assert.equal(a.pctSuave, 36)
 assert.equal(a.forma, 16)
 assert.equal(a.fatiga, 17.3)
 assert.equal(a.frescura, -1.3)
-assert.equal(a.sesionesCalidadHechas, 4, 'evaluadas = las hechas')
-assert.equal(a.sesionesCalidadPrevistas, 6, 'previstas = hechas + saltadas')
+assert.equal(a.sesionesConRitmoHechas, 4, 'sin el dato nuevo: evaluadas = las hechas')
+assert.equal(a.sesionesConRitmoPrevistas, 6, 'previstas = hechas + saltadas')
+// Con el dato nuevo manda: una sesión hecha sin vueltas válidas también cuenta
+const n = atletaDesdeEstado(estado({ ejecucion: { repsEvaluadas: 10, repsLentas: 2, sesionesEvaluadas: 4, sesionesSaltadas: 1, sesionesHechas: 6, sesionesPrevistas: 7 } }), [], true)
+assert.equal(n.sesionesConRitmoHechas, 6)
+assert.equal(n.sesionesConRitmoPrevistas, 7)
 assert.equal(a.fuerzaRegistrada, 0)
 assert.equal(a.fuerzaEnPlan, 3)
 assert.deepEqual(a.alertasAltas, ['Carga alta'], 'solo las de gravedad alta')
@@ -29,11 +33,14 @@ assert.equal(v.minutosCarreraSemana, null)
 assert.equal(v.salidasSemana, null)
 assert.equal(v.pctSuave, null)
 assert.equal(v.forma, null)
-assert.equal(v.sesionesCalidadPrevistas, null)
-assert.equal(v.sesionesCalidadHechas, null)
+assert.equal(v.sesionesConRitmoPrevistas, null)
+assert.equal(v.sesionesConRitmoHechas, null)
 // Solo saltadas: ninguna hecha, no un número negativo
 const s = atletaDesdeEstado(estado({ ejecucion: { repsEvaluadas: 0, repsLentas: 0, sesionesEvaluadas: 0, sesionesSaltadas: 2 } }), [], true)
-assert.equal(s.sesionesCalidadPrevistas, 2)
-assert.equal(s.sesionesCalidadHechas, 0)
+assert.equal(s.sesionesConRitmoPrevistas, 2)
+assert.equal(s.sesionesConRitmoHechas, 0)
 assert.equal(v.vdot, null)
+// Los análisis antiguos no mandan: solo cuenta lo de las últimas 2 semanas
+assert.equal(DIAS_ANALISIS_VIGENTE, 14)
+assert.equal(desdeAnalisisVigente(new Date('2026-10-20T12:00:00Z')), '2026-10-06T12:00:00.000Z')
 console.log('informe-caso-datos.test OK')
