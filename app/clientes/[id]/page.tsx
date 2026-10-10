@@ -42,6 +42,7 @@ const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAd
 const ActividadClientePanel = dynamic(() => import('@/components/clientes/ActividadClientePanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const TrainingCoachPanel = dynamic(() => import('@/components/clientes/TrainingCoachPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const PlanificarConIA = dynamic(() => import('@/components/clientes/PlanificarConIA'), { ssr: false, loading: () => <TabSkeleton /> })
+const InformeCaso = dynamic(() => import('@/components/clientes/InformeCaso'), { ssr: false, loading: () => <TabSkeleton /> })
 const DecisionesIACliente = dynamic(() => import('@/components/clientes/DecisionesIACliente'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioKanban = dynamic(() => import('@/components/clientes/EntrenoCalendarioKanban'), { ssr: false, loading: () => <TabSkeleton /> })
 const RutinaSemanaAccordion = dynamic(() => import('@/components/clientes/RutinaSemanaAccordion'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -960,6 +961,7 @@ export default function ClienteDetallePage() {
                   </div>
                   <div className="flex flex-wrap items-start gap-3">
                     <PlanificarConIA clienteId={id as string} />
+                    <InformeCaso clienteId={id as string} />
                     <details className="relative">
                       <summary className="btn-secondary btn-sm cursor-pointer list-none">Más opciones</summary>
                       <div className="absolute right-0 mt-1 z-10 flex flex-col gap-1 p-2 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)', minWidth: 180 }}>
