@@ -613,6 +613,13 @@ export default function Sidebar() {
         </Link>
       </div>
 
+      <div className="flex flex-shrink-0 flex-col items-center gap-1 border-b py-3" style={{ borderColor: 'var(--glass-border)' }}>
+        <RailButton label="Ampliar barra" icon={PanelLeftOpen} onClick={alternarBarra} />
+        <RailButton label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'} icon={theme === 'dark' ? Sun : Moon} onClick={toggleTheme} />
+        <RailButton label="Ajustes" icon={Settings} href="/ajustes" active={ajustesActivo} />
+        <RailButton label="Cerrar sesión" icon={LogOut} onClick={handleLogout} />
+      </div>
+
       <nav className="flex flex-1 flex-col items-center gap-1 py-3">
         {primaryItems.map(item => (
           <RailButton
@@ -630,12 +637,6 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="flex flex-shrink-0 flex-col items-center gap-1 border-t py-3" style={{ borderColor: 'var(--glass-border)' }}>
-        <RailButton label="Ampliar barra" icon={PanelLeftOpen} onClick={alternarBarra} />
-        <RailButton label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'} icon={theme === 'dark' ? Sun : Moon} onClick={toggleTheme} />
-        <RailButton label="Ajustes" icon={Settings} href="/ajustes" active={ajustesActivo} />
-        <RailButton label="Cerrar sesión" icon={LogOut} onClick={handleLogout} />
-      </div>
     </>
   )
 
