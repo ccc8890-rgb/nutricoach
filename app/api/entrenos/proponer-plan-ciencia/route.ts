@@ -6,7 +6,7 @@ import { obtenerInformeVigente } from '@/lib/inteligencia-clinica'
 import { siguienteFaseBloque, type FaseBloque } from '@/lib/entrenos/bloques'
 import type { PerfilEntrenoCliente } from '@/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { bloqueEjercicioGenerado } from '@/lib/training/generated-session-blocks'
+import { guardarPlanEntreno, type SesionIA } from '@/lib/entrenos/guardar-plan'
 import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
 import { validarSemanaCarrera, type ContextoValidacion } from '@/lib/entrenos/validar-plan-carrera'
 import { planificarMacrociclo, type ResultadoMacro } from '@/lib/entrenos/macrociclo'
@@ -15,55 +15,6 @@ import { formatearRitmo } from '@/lib/entrenos/ritmos'
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com/v1/chat/completions'
 const MODEL = 'deepseek-chat'
-
-// Palabras genéricas que no aportan al matching
-const STOP_WORDS = new Set(['con', 'de', 'en', 'el', 'la', 'los', 'las', 'y', 'a', 'al', 'del'])
-
-// Ejercicios de otra disciplina que NO deben colarse en una sesión de
-// carrera pura solo porque comparten una palabra genérica del nombre IA
-// (ej. "continuo", "series", "intervalos"). Bug real detectado por Carlos:
-// "Tirada Larga Z2" (rodaje de 90min) se vinculó a "SkiErg Continuo" y
-// "Carrera Series Cortas" (8x400m) se vinculó a "Series de crol 50m" —
-// ambos con `tipo` inconsistente o de otra disciplina, y el nivel 3
-// devolvía el primer resultado de Postgres sin ninguna preferencia.
-const OTRA_DISCIPLINA_RE = /crol|natación|natacion|nado\b|ski\s?erg|sled|wall\s?ball|remo\b|rowing|bici|kettlebell|mancuerna|dominada|sentadilla|press\s|peso muerto|farmer|granjero/i
-
-async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPreferido?: 'cardio' | 'fuerza'): Promise<string | null> {
-  const normalizado = nombre.toLowerCase().trim()
-
-  function elegirMejor(candidatos: { id: string; nombre: string; tipo: string | null }[]): string | null {
-    if (candidatos.length === 0) return null
-    if (!tipoPreferido) return candidatos[0].id
-    // Entre varios candidatos para la misma palabra, prioriza: tipo
-    // correcto Y sin pinta de ser de otra disciplina (SkiErg, natación...).
-    const buenos = candidatos.filter(c => c.tipo === tipoPreferido && !OTRA_DISCIPLINA_RE.test(c.nombre))
-    if (buenos.length > 0) return buenos[0].id
-    // Ningún candidato de ESTA palabra es de fiar (todos son de otra
-    // disciplina, ej. la única "series..." de la BD es de natación) — mejor
-    // devolver null y dejar que el nivel de arriba pruebe la siguiente
-    // palabra ("800m" en vez de "series") que si busca directamente sin
-    // ella habría encontrado "Intervalos 800m". Aceptar aquí el primer
-    // candidato malo bloqueaba esa segunda oportunidad.
-    return null
-  }
-
-  // Nivel 1: match exacto (case-insensitive)
-  const { data: exacto } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', normalizado).limit(5)
-  if (exacto?.length) return elegirMejor(exacto)
-
-  // Nivel 2: match parcial — nombre del ejercicio contiene la búsqueda
-  const { data: parcial } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', `%${normalizado}%`).limit(5)
-  if (parcial?.length) return elegirMejor(parcial)
-
-  // Nivel 3: buscar por palabras significativas (>3 chars, sin stop words)
-  const palabras = normalizado.split(/\s+/).filter(p => p.length > 3 && !STOP_WORDS.has(p))
-  for (const palabra of palabras) {
-    const { data: porPalabra } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', `%${palabra}%`).limit(5)
-    if (porPalabra?.length) return elegirMejor(porPalabra)
-  }
-
-  return null
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -495,86 +446,25 @@ ${instruccionDuracion}
     }))
     const validacion = sesionesGeneradas.some(x => x.tipo_sesion === 'carrera' || /carrera|tirada|rodaje|tempo|series/i.test(x.nombre)) ? validarSemanaCarrera(sesionesGeneradas, contextoValidacion) : null
 
-    // Guardar automáticamente en planes_entrenamiento + sesiones_entrenamiento
+    // Guardar: el plan nuevo sustituye al activo solo cuando está completo (ver guardarPlanEntreno).
     let planGuardadoId: string | null = null
     try {
-      // Desactivar cualquier plan de entreno previo del cliente — sin esto
-      // este plan generado por IA convive "activo" con el que ya se le
-      // hubiera asignado desde una plantilla (generar-plan-inicial), y
-      // cualquier consulta que asuma un único plan activo puede devolver
-      // el equivocado.
-      await sb
-        .from('planes_entrenamiento')
-        .update({ activo: false })
-        .eq('cliente_id', cliente_id)
-        .eq('activo', true)
-
-      const { data: planDB } = await sb.from('planes_entrenamiento').insert({
-        coach_id: user.id,
-        cliente_id,
-        nombre: esHibridoHyroxRunning
-          ? `Híbrido Hyrox + Running — ${faseBloqueObjetivo}`
-          : ((planIA.nombre_plan as string) ?? `Plan IA — ${modalidadFoco}`),
+      const guardado = await guardarPlanEntreno(sb, {
+        coachId: user.id,
+        clienteId: cliente_id,
+        nombre: esHibridoHyroxRunning ? `Híbrido Hyrox + Running — ${faseBloqueObjetivo}` : ((planIA.nombre_plan as string) ?? `Plan IA — ${modalidadFoco}`),
         descripcion: (planIA.fundamentacion as string) ?? null,
-        duracion_semanas: esHibridoHyroxRunning ? 4 : ((planIA.duracion_semanas as number) ?? null),
-        activo: true,
-      }).select('id').single()
-
-      if (planDB) {
-        planGuardadoId = planDB.id
-        const sesiones = (planIA.sesiones as Record<string, unknown>[]) ?? []
-        for (let i = 0; i < sesiones.length; i++) {
-          const s = sesiones[i]
-          const ejerciciosIA = (s.ejercicios as Record<string, unknown>[]) ?? []
-
-          const { data: nuevaSesion } = await sb.from('sesiones_entrenamiento').insert({
-            plan_id: planDB.id,
-            nombre: (s.nombre as string) ?? `Sesión ${i + 1}`,
-            dia_semana: (s.dia_semana as string) ?? null,
-            orden: i + 1,
-            notas: null,
-            fase_bloque: esHibridoHyroxRunning ? faseBloqueObjetivo : null,
-            contexto_ia: esHibridoHyroxRunning && s.ritmo_objetivo ? String(s.ritmo_objetivo) : null,
-          }).select('id').single()
-
-          if (!nuevaSesion) continue
-
-          // Sesión de carrera pura (no híbrida): sus ejercicios deben ser
-          // de carrera, nunca un aparato de gimnasio o de otra disciplina
-          // que comparta una palabra suelta con lo que propuso la IA.
-          const nombreSesion = ((s.nombre as string) ?? '').toLowerCase()
-          const esSesionCarrera = /carrera|tirada|rodaje|running|tempo run/i.test(nombreSesion) && !/híbrid|hibrid|hyrox/i.test(nombreSesion)
-          const tipoPreferidoSesion: 'cardio' | 'fuerza' | undefined = esSesionCarrera ? 'cardio' : undefined
-
-          // Vincular cada ejercicio IA a un ejercicio real de la BD por nombre
-          for (let j = 0; j < ejerciciosIA.length; j++) {
-            const ej = ejerciciosIA[j]
-            const nombreEj = (ej.nombre as string ?? '').trim()
-            if (!nombreEj) continue
-
-            const ejercicioId = await matchEjercicio(sb, nombreEj, tipoPreferidoSesion)
-            if (!ejercicioId) continue // no hay match — se omite
-
-            await sb.from('sesion_ejercicios').insert({
-              sesion_id: nuevaSesion.id,
-              ejercicio_id: ejercicioId,
-              bloque: bloqueEjercicioGenerado(ej.bloque),
-              series: typeof ej.series === 'number' ? ej.series : null,
-              repeticiones: ej.repeticiones != null ? String(ej.repeticiones) : null,
-              descanso_segundos: typeof ej.descanso_segundos === 'number' ? ej.descanso_segundos : null,
-              notas: [ej.rpe_objetivo ? `RPE ${ej.rpe_objetivo}` : null, ej.notas].filter(Boolean).join(' — ') || null,
-              orden: j + 1,
-              peso_sugerido: typeof ej.peso_estimado_kg === 'number' ? `${ej.peso_estimado_kg}kg` : null,
-            })
-          }
-        }
-        // Historial para poder regenerar / ver versiones
-        await sb.from('registros_ia').insert({
-          cliente_id,
-          tipo: 'plan_entreno_ia',
-          respuesta_json: validacion || macrociclo ? { ...planIA, ...(validacion ? { _validacion: validacion } : {}), ...(macrociclo ? { _macrociclo: macrociclo } : {}) } : planIA,
-        })
-      }
+        duracionSemanas: esHibridoHyroxRunning ? 4 : ((planIA.duracion_semanas as number) ?? null),
+        faseBloque: esHibridoHyroxRunning ? faseBloqueObjetivo : null,
+        sesiones: (planIA.sesiones as SesionIA[]) ?? [],
+      })
+      planGuardadoId = guardado.planId
+      // Historial para poder regenerar / ver versiones
+      await sb.from('registros_ia').insert({
+        cliente_id,
+        tipo: 'plan_entreno_ia',
+        respuesta_json: validacion || macrociclo ? { ...planIA, ...(validacion ? { _validacion: validacion } : {}), ...(macrociclo ? { _macrociclo: macrociclo } : {}) } : planIA,
+      })
     } catch (saveErr) {
       // No bloqueante: devolvemos el plan aunque falle el guardado
       console.error('proponer-plan-ciencia save error:', saveErr)
