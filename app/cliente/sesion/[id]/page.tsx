@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, Barbell, Brain, CheckCircle, CircleNotch, Clock, Play, Target, Trophy } from '@phosphor-icons/react'
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
 import EjercicioDemoModal from '@/components/training/EjercicioDemoModal'
+import { limpiarPrefijoModalidad } from '@/lib/training/session-type-presentation'
 import { crearSesionGuidance } from '@/lib/training/workspace'
 import PasosSesion from '@/components/training/PasosSesion'
 import type { Ritmos } from '@/lib/entrenos/ritmos'
@@ -198,7 +199,7 @@ export default function EjecucionSesionPage() {
         <Trophy size={36} style={{ color: 'var(--semantic-active)' }} />
       </div>
       <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>Sesión completada</h1>
-      <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>{sesion.nombre}</p>
+      <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>{limpiarPrefijoModalidad(sesion.nombre)}</p>
 
       {prsDetectados.length > 0 && (
         <div className="w-full max-w-sm mb-8">
@@ -292,7 +293,7 @@ export default function EjecucionSesionPage() {
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
                 Portal cliente · Entreno
               </p>
-              <p className="truncate text-sm font-bold" style={{ color: 'var(--text)' }}>{sesion.nombre}</p>
+              <p className="truncate text-sm font-bold" style={{ color: 'var(--text)' }}>{limpiarPrefijoModalidad(sesion.nombre)}</p>
             </div>
           </div>
 
@@ -326,10 +327,7 @@ export default function EjecucionSesionPage() {
                 <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
                   Sesión guiada por tu coach
                 </p>
-                <h1 className="mt-1 text-2xl font-black tracking-tight" style={{ color: 'var(--text)' }}>{sesion.nombre}</h1>
-                {sesion.plan?.nombre && (
-                  <p className="mt-1 truncate text-xs" style={{ color: 'var(--text-muted)' }}>{sesion.plan.nombre}</p>
-                )}
+                <h1 className="mt-1 text-2xl font-black tracking-tight" style={{ color: 'var(--text)' }}>{limpiarPrefijoModalidad(sesion.nombre)}</h1>
               </div>
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl" style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
                 <Barbell size={22} />

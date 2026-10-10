@@ -200,7 +200,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
             })
             const data = await res.json().catch(() => null)
             if (!res.ok) throw new Error(data?.error || 'No se pudo mover la sesión')
-            emitPortalFeedback(addToast, { type: 'success', title: `"${sesion.nombre}" movida a ${nuevoDia}` })
+            emitPortalFeedback(addToast, { type: 'success', title: `"${tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion)}" movida a ${nuevoDia}` })
             setMoverId(null)
             void mutate(SEMANA_ENTRENO_KEY)
         } catch (err) {
