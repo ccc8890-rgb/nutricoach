@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 
-/** Sube o baja una sesión dentro de su día intercambiando su posición con la vecina. */
+/** Coloca una sesión en la posición de otra del mismo día; la que estaba ahí se desplaza. */
 export async function POST(request: NextRequest) {
   const authDb = createApiSupabase(request)
   const { data: { user } } = await authDb.auth.getUser()
@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => ({}))
   const sesionId: string = body.sesion_id
-  const direccion: string = body.direccion
-  if (!sesionId || (direccion !== 'arriba' && direccion !== 'abajo')) {
+  const destinoId: string = body.destino_id
+  if (!sesionId || !destinoId || sesionId === destinoId) {
     return NextResponse.json({ error: 'Parámetros inválidos' }, { status: 400 })
   }
 
@@ -39,12 +39,13 @@ export async function POST(request: NextRequest) {
     .order('id')
 
   const lista = delDia ?? []
-  const pos = lista.findIndex(s => s.id === sesionId)
-  const destino = direccion === 'arriba' ? pos - 1 : pos + 1
-  if (pos < 0 || destino < 0 || destino >= lista.length) return NextResponse.json({ ok: true })
+  const pos = lista.findIndex(x => x.id === sesionId)
+  const destino = lista.findIndex(x => x.id === destinoId)
+  if (pos < 0 || destino < 0) return NextResponse.json({ error: 'La otra sesión no es del mismo día' }, { status: 400 })
 
   const nuevo = [...lista]
-  ;[nuevo[pos], nuevo[destino]] = [nuevo[destino], nuevo[pos]]
+  const [movida] = nuevo.splice(pos, 1)
+  nuevo.splice(destino, 0, movida)
 
   // Reparte las posiciones existentes; si hay empates o nulos, las separa para que el orden sea estable.
   const valores = lista.map(s => s.orden as number | null)

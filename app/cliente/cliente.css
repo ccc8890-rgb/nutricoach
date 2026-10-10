@@ -284,19 +284,15 @@
 .training-week-day__content { min-width: 0; }
 .training-week-rest { display: flex; min-height: 3.2rem; align-items: center; gap: 0.5rem; padding: 0 0.9rem; color: var(--text-secondary); font: 600 0.63rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; }
 .training-week-rest::before { width: 0.8rem; height: 1px; flex: none; background: var(--metal-mid); content: ''; }
-.training-week-session { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; background: color-mix(in srgb, var(--surface) 74%, transparent); touch-action: pan-y; }
+.training-week-session { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; background: color-mix(in srgb, var(--surface) 74%, transparent); touch-action: pan-y; }
 .training-week-session + .training-week-session { border-top: 1px solid var(--editorial-rule); }
+.training-week-session.is-drop-target { background: color-mix(in srgb, var(--metal-bright) 14%, var(--surface)); box-shadow: inset 0 0 0 1.5px var(--metal-bright); }
 .training-week-session.is-selected { background: color-mix(in srgb, var(--metal-bright) 8%, var(--surface)); box-shadow: inset 2px 0 0 var(--metal-bright); }
 .training-week-session__main { display: grid; min-width: 0; min-height: 4.65rem; grid-template-columns: 1fr auto; align-content: center; gap: 0.42rem 0.65rem; padding: 0.7rem 0.8rem; color: var(--text); text-align: left; }
 .training-week-session__main strong { overflow: hidden; color: var(--text); font-size: 0.78rem; font-weight: 650; letter-spacing: -0.015em; line-height: 1.22; text-overflow: ellipsis; }
 .training-week-session__type { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-muted); font: 600 0.54rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.07em; text-transform: uppercase; }
 .training-week-session__meta { color: var(--text-muted); font-size: 0.62rem; }
 .training-week-session__main > svg { grid-column: 2; grid-row: 1 / 4; align-self: center; color: var(--text-muted); transition: transform 180ms var(--ease-out-strong); }
-.training-week-session__order { display: flex; flex-direction: column; border-left: 1px solid var(--editorial-rule); }
-.training-week-session__order button { display: grid; flex: 1; min-width: 2.2rem; place-items: center; color: var(--text-secondary); }
-.training-week-session__order button + button { border-top: 1px solid var(--editorial-rule); }
-.training-week-session__order button:disabled { opacity: 0.3; }
-.training-week-session__order button:not(:disabled):hover { background: var(--surface-hover); color: var(--text); }
 .training-week-session__move { min-width: 3.6rem; border-left: 1px solid var(--editorial-rule); color: var(--text-muted); cursor: grab; font: 600 0.55rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.06em; touch-action: none; user-select: none; text-transform: uppercase; }
 .training-week-session__move:active { cursor: grabbing; }
 .training-week-session__move:hover { background: var(--surface-hover); color: var(--text); }
