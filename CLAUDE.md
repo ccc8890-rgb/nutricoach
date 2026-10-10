@@ -31,7 +31,18 @@ Carlos movió una Híbrida al sábado, que ya tenía una Carrera, y en Hoy solo 
 - **Orden:** soltar una sesión sobre otra **del mismo día** (arrastrando desde el botón Mover) la coloca en esa posición y la otra se desplaza; sobre una sesión de otro día = mover de día. `POST /api/cliente/entrenos/ordenar` `{sesion_id, destino_id}` reescribe `sesiones_entrenamiento.orden` del día (si hay empates/nulos los separa). Detección de colisión propia (`pointerWithin`, prefiere la sesión bajo el puntero a la columna del día). Hoy y Mes siguen ese orden.
 - **Auditoría:** el endpoint exige sesión, comprueba que la sesión y la destino son del plan del cliente y del mismo día, no devuelve `err.message`; sin secretos. Corregido: `semana-completa` y `mes-completo` ordenaban solo por `orden`; con empates el orden mostrado podía no coincidir con el que usa el endpoint → añadido `.order('id')` como desempate. `tsc` y eslint limpios.
 - **Límites:** el reordenado no es transaccional (varios UPDATE en paralelo; si uno falla, el cliente deshace en pantalla pero la BD puede quedar a medias hasta el siguiente cambio). El calendario del lado coach (`EntrenoCalendarioMes`, `mes-coach`) **ya** soportaba varias sesiones por día (muestra 2 y «+N más»); solo se le añadió el desempate por `id`. Posible mejora: hacer atómico el reordenado con una función SQL (requiere migración, no aplicada). **No probado el arrastre en navegador ni en iPhone** (Carlos dijo «perfecto ahora sí» tras probarlo él).
-- **Lección:** un `find` sobre «la sesión de hoy/del día» asume una por día; con `dia_semana` y varias sesiones por día hay que usar listas en cada vista (Hoy, Mes, calendario del coach).
+- **Lección:** un `find` sobre «la sesión de hoy/del día» asume una por día
+
+### Idea para más adelante: nutrición según sesiones (dobles, pre/post) — decidida con Carlos, **no empezada**
+
+Carlos quiere unas **bases lógicas** en el motor (el cliente luego hará lo que quiera): los tipos de plato y las cantidades se ajustan solos según las sesiones que toquen. Lo trataremos en profundidad cuando los planes de entreno con IA estén potentes y eficaces (prioridad actual).
+- **Ya existe:** `objetivosPorDia` (`lib/nutricion/objetivo-dia.ts`) lee `dia_semana` de las sesiones en cada cálculo, ajusta kcal/proteína/hidratos por tipo de día y `momentoDeEntreno` marca la comida pre/post según la hora. Tras mover una sesión hay que pulsar «Ajustar al entreno» (no recalcula solo).
+- **Hueco 1:** con dos sesiones el mismo día solo cuenta la más exigente (`PRIORIDAD`: híbrido > carrera > fuerza); no se suma la carga de la segunda.
+- **Hueco 2:** no se añaden comidas extra en días de carga/doble sesión (comidas al día fijas por cliente).
+- **Hueco 3:** el pre/post solo prefiere recetas `es_pre_entreno`/`es_post_entreno`; falta composición según el momento (p. ej. carrera por la mañana → pre rico en hidratos de absorción rápida, bajo en fibra y grasa).
+- **Propuesta:** (1) sumar carga de dobles sesiones con tope (sesión principal + parte de la segunda), (2) tentempié de hidratos entre sesiones o tras la segunda solo esos días, (3) reglas de composición pre/post por hora y tipo de sesión, (4) aviso al coach cuando mover/duplicar una sesión desajusta la dieta (sin cambiar nada solo: el coach aprueba). Cifras con criterio de dietista y literatura (ISSN/IOC/Jeukendrup, ya en la KB).
+
+; con `dia_semana` y varias sesiones por día hay que usar listas en cada vista (Hoy, Mes, calendario del coach).
 
 - **Lección:** el helper de título ya existía pero con un patrón estrecho; antes de añadir otro, comprobar si el existente cubre los nombres reales del plan.
 
