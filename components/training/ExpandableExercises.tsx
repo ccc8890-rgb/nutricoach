@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { ChevronDown, Clock, Repeat } from 'lucide-react'
+import { ChevronDown, Clock } from 'lucide-react'
 import { TechnicalRow } from '@/components/PortalCliente/editorial'
 import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 import { parseExerciseChecklist, toggleExerciseChecklist } from '@/lib/training/exercise-checklist'
@@ -85,15 +85,17 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                 >
                   <div className="min-w-0">
                     <p className="sr-only">{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                      {ej.series && (
-                        <span className="inline-flex items-center gap-1"><Repeat size={11} /> {ej.series}×{ej.repeticiones ?? '-'}</span>
-                      )}
-                      {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? (
-                        <span className="inline-flex items-center gap-1"><Clock size={11} /> {ej.descanso_segundos}s</span>
-                      ) : null}
-                      {ej.peso_sugerido && <span>{ej.peso_sugerido}</span>}
-                    </div>
+                    {(descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) || ej.peso_sugerido) && (
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                        {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? (
+                          <span className="inline-flex items-center gap-1"><Clock size={11} /> {ej.descanso_segundos}s</span>
+                        ) : null}
+                        {ej.peso_sugerido && <span>{ej.peso_sugerido}</span>}
+                      </div>
+                    )}
+                    {detalle && !open && (
+                      <p className="mt-1 line-clamp-2 text-[11px] leading-snug" style={{ color: 'var(--text-secondary)' }}>{detalle}</p>
+                    )}
                   </div>
                   {detalle && (
                     <ChevronDown

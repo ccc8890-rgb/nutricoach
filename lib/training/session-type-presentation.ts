@@ -12,7 +12,7 @@ export function etiquetaTipoSesion(tipo: TipoSesion) {
 
 export function tituloSesionSinModalidad(nombre: string, tipo: TipoSesion) {
   const prefijo = tipo === 'hibrido'
-    ? 'h(?:í|i)brid[oa]'
+    ? 'h(?:í|i)brid[oa](?:\\s+[a-z0-9])?'
     : tipo === 'carrera'
       ? 'carrera'
       : 'mixt[oa]'
