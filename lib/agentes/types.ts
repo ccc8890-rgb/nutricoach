@@ -2,7 +2,7 @@
 // SISTEMA DE AGENTES IA — Tipos compartidos
 // ================================================================
 
-export type TipoAgente = 'revisor_semanal' | 'riesgo' | 'memoria' | 'director' | 'readiness' | 'supercoach' | 'retencion'
+export type TipoAgente = 'revisor_semanal' | 'riesgo' | 'memoria' | 'director' | 'readiness' | 'supercoach' | 'retencion' | 'planificador'
 
 export type TipoTarea =
   | 'revision_semanal'
@@ -18,6 +18,7 @@ export type TipoTarea =
   | 'alerta_readiness'
   | 'ajuste_nutricion_carga'
   | 'alerta_retencion'
+  | 'plan_entreno_ia'
   | 'training_brain'
   | 'checkin_recordatorio'
 
