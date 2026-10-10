@@ -43,4 +43,21 @@ assert.equal(c.decisiones[0].sesion_id, '11111111-2222-3333-4444-555555555555')
 assert.equal(c.decisiones[1].pasos, undefined) // id inválido
 assert.equal(c.decisiones[2].pasos, undefined) // pasos inválidos
 assert.equal(c.decisiones[3].pasos, undefined) // sin id
+
+// Métrica objetivo: solo valores conocidos; la dirección solo cuenta en carga y km.
+const m = sanearSalida({
+  resumen: 'x',
+  decisiones: [
+    { cambio: 'a', metrica_objetivo: 'pct_suave', direccion: 'sube' },
+    { cambio: 'b', metrica_objetivo: 'km_semana', direccion: 'baja' },
+    { cambio: 'c', metrica_objetivo: 'inventada', direccion: 'sube' },
+    { cambio: 'd', metrica_objetivo: 'deriva' },
+  ],
+})!
+assert.equal(m.decisiones[0].metrica_objetivo, 'pct_suave')
+assert.equal(m.decisiones[0].direccion, undefined) // la dirección no aplica a pct_suave
+assert.equal(m.decisiones[1].metrica_objetivo, 'km_semana')
+assert.equal(m.decisiones[1].direccion, 'baja')
+assert.equal(m.decisiones[2].metrica_objetivo, undefined)
+assert.equal(m.decisiones[3].metrica_objetivo, 'deriva')
 console.log('analisis-rendimiento: OK')

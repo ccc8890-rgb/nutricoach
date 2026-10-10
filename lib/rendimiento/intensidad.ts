@@ -86,6 +86,21 @@ function diasEntre(a: string, b: string): number {
   return Math.round((new Date(`${b}T12:00:00Z`).getTime() - new Date(`${a}T12:00:00Z`).getTime()) / 86_400_000)
 }
 
+/** Reparto de intensidad de las carreras entre dos fechas (ambas incluidas). */
+export function repartoEntreFechas(entrenos: EntrenoIntensidad[], desde: string, hasta: string, fcUmbral: number | null): ResumenIntensidad {
+  const t: TiempoIntensidad = { suave: 0, media: 0, dura: 0 }
+  if (fcUmbral && fcUmbral > 0) {
+    const suaveHasta = Math.round(fcUmbral * FRACCION_SUAVE)
+    const mediaHasta = Math.round(fcUmbral)
+    for (const e of entrenos) {
+      if (!esCarrera(e.tipo) || e.fecha < desde || e.fecha > hasta) continue
+      const x = sumaVueltas(e.vueltas, suaveHasta, mediaHasta)
+      if (x) { t.suave += x.suave; t.media += x.media; t.dura += x.dura }
+    }
+  }
+  return resumir(t)
+}
+
 export function distribucionIntensidad(entrenos: EntrenoIntensidad[], hoy: string, fcUmbral: number | null): DistribucionIntensidad {
   const limites = fcUmbral && fcUmbral > 0 ? { suaveHasta: Math.round(fcUmbral * FRACCION_SUAVE), mediaHasta: Math.round(fcUmbral) } : null
   const vacio = (): TiempoIntensidad => ({ suave: 0, media: 0, dura: 0 })

@@ -9,6 +9,8 @@ import { enviarSesionAGarmin, ErrorGarmin } from '@/lib/integraciones/garmin-wor
 export interface DecisionGuardada {
   sesion?: string
   cambio?: string
+  metrica_objetivo?: string
+  direccion?: string
   sesion_id?: string
   pasos?: unknown
   aplicada?: { at: string; anteriores: unknown } | null

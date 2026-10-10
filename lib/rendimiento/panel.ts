@@ -79,6 +79,13 @@ export interface PanelRendimiento {
 
 export { lunesDe }
 
+/** Eficiencia aeróbica: metros por minuto por cada latido en una carrera continua de 25+ min (al aire libre). Null si no aplica. */
+export function eficienciaDe(e: EntrenoPanel): number | null {
+  if (!esCarrera(e.tipo) || e.tipo === 'treadmill_running' || (e.duracion_s ?? 0) < 25 * 60 || !e.fc_media || !e.distancia_m) return null
+  const ms = e.raw?.gap_ms ?? (e.distancia_m / e.duracion_s!)
+  return Math.round(((ms * 60) / e.fc_media) * 1000) / 1000
+}
+
 /** `kmDeTodo`: contar la distancia de cualquier actividad (por defecto solo la de carrera). */
 export function agruparSemanas(entrenos: EntrenoPanel[], semanasAtras: number, hoy: string, kmDeTodo = false): SemanaCarga[] {
   const porSemana = new Map<string, SemanaCarga>()
@@ -120,12 +127,10 @@ export function construirPanel(
     .filter(e => esCarrera(e.tipo) && (e.mejores_parciales?.s1000 || e.mejores_parciales?.s5000))
     .map(e => ({ fecha: e.fecha, s1000: e.mejores_parciales?.s1000 ?? null, s5000: e.mejores_parciales?.s5000 ?? null }))
 
-  const eficiencia = ordenados
-    .filter(e => esCarrera(e.tipo) && e.tipo !== 'treadmill_running' && (e.duracion_s ?? 0) >= 25 * 60 && e.fc_media && e.distancia_m)
-    .map(e => {
-      const ms = e.raw?.gap_ms ?? (e.distancia_m! / e.duracion_s!)
-      return { fecha: e.fecha, valor: Math.round(((ms * 60) / e.fc_media!) * 1000) / 1000 }
-    })
+  const eficiencia = ordenados.flatMap(e => {
+    const valor = eficienciaDe(e)
+    return valor === null ? [] : [{ fecha: e.fecha, valor }]
+  })
 
   const deriva = ordenados.flatMap(e => {
     if (!esCarrera(e.tipo) || e.tipo === 'treadmill_running') return []

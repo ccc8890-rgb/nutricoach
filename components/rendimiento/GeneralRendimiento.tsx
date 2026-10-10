@@ -4,12 +4,14 @@ import Grafica, { type Fila } from './Grafica'
 import AnalisisIA from './AnalisisIA'
 import EntrenosTabla from './EntrenosTabla'
 import SubirActividadFit from './SubirActividadFit'
+import SeguimientoResultados from './SeguimientoResultados'
 import { Bloque, COLOR, Pestanas, Tarjeta, type DatosPanel } from './comun'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
 
 const TABS = [
   { key: 'resumen', titulo: 'Resumen' },
   { key: 'carga', titulo: 'Carga y recuperación' },
+  { key: 'seguimiento', titulo: 'Seguimiento' },
   { key: 'entrenos', titulo: 'Entrenos' },
 ] as const
 type Tab = (typeof TABS)[number]['key']
@@ -75,6 +77,8 @@ export default function GeneralRendimiento({ clienteId, datos, onActualizar }: {
           </Bloque>
         </div>
       )}
+
+      {tab === 'seguimiento' && <SeguimientoResultados clienteId={clienteId} />}
 
       {tab === 'entrenos' && (
         <div className="space-y-4">
