@@ -61,7 +61,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     fecha: d.fecha as string, rhr: d.rhr ?? null, readiness: d.training_readiness ?? null,
     body_battery_max: d.body_battery_max ?? null, sueno_h: d.sueno_h ?? null, stress_avg: d.stress_avg ?? null,
   }))
-  const panel = construirPanel(todos, bienestar, hoy, 180)
+  const panel = construirPanel(todos, bienestar, hoy, 180, umbrales.fcUmbral)
   const recientes = todos.filter(e => e.fecha >= desde28)
 
   const proxima = comps?.[0]
@@ -105,6 +105,8 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   L.push(`PLAN ACTIVO: ${plan?.nombre ?? 'ninguno'}\n${sesionesPlan.map(s => '  - ' + s).join('\n')}`)
   if (r) L.push(`CARGA (TrainingPeaks-like): forma CTL ${r.ctl}, fatiga ATL ${r.atl}, frescura TSB ${r.tsb} (${r.textoEstado}); subida de forma 7d ${r.rampa7}; carga 7d ${Math.round(r.carga7d)}, 28d ${Math.round(r.carga28d)}; monotonía ${r.monotonia ?? 'n/d'}`)
   L.push(`SEMANAS (TSS/km/sesiones, antigua→reciente; la última puede estar en curso): ${panel.semanas.slice(-8).map(s => `${s.semana.slice(5)}:${s.tss}/${s.km}/${s.sesiones}`).join(' | ')}`)
+  const ir = panel.intensidad.reciente
+  if (ir.valoracion !== 'sin_datos' && panel.intensidad.limites) L.push(`REPARTO DE INTENSIDAD (últimas 4 sem, por pulso de cada vuelta frente al umbral de ${panel.intensidad.limites.mediaHasta} ppm; suave <${panel.intensidad.limites.suaveHasta}, media hasta ${panel.intensidad.limites.mediaHasta}, dura por encima): ${ir.pctSuave}% suave, ${ir.pctMedia}% medio, ${ir.pctDura}% duro. Referencia en corredores de resistencia: ~80% suave`)
   L.push(`EVOLUCIÓN: eficiencia aeróbica ${efTexto}; mejor 5K parcial ${mejor5k ? `${mmss(mejor5k.s5000!)} (${mejor5k.fecha})` : 'n/d'}; VO2max Garmin ${panel.vo2max.at(-1)?.valor ?? 'n/d'}; % tiempo en zonas 4-5 de pulso de Garmin (Z4 = 80-90% del pulso máx, Z5 = >90%) últimas 4 sem: ${pctIntenso !== null ? Math.round(pctIntenso) : 'n/d'}. OJO: con pulso máx ${umbrales.fcMax ?? 'n/d'}, un rodaje suave puede caer en Z4 si hay calor, deriva cardíaca o poca base; contrasta SIEMPRE ritmo y pulso antes de concluir que fue intenso`)
   const lineasEjec = ejecucion.sesiones.filter(x => x.estado !== 'pendiente').map(x => {
     const c = x.cumplimiento

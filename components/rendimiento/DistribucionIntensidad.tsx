@@ -9,8 +9,8 @@ const COLOR_DURA = COLOR.fatiga
 const LECTURA: Record<ValoracionIntensidad, { titulo: string; texto: string; color: string }> = {
   sin_datos: { titulo: 'Sin datos suficientes', texto: 'Hace falta al menos 1 hora de carrera con pulso en la ventana para calcular el reparto.', color: COLOR.carga },
   bien: { titulo: 'Base sólida', texto: 'La mayor parte del tiempo es fácil: ese es el reparto que usan los corredores de resistencia (alrededor del 80 % suave).', color: COLOR.fresc },
-  zona_gris: { titulo: 'Demasiado en zona media', texto: 'Mucho tiempo en la zona 3: ni suficientemente fácil para recuperar ni suficientemente duro para estimular. Conviene pasar parte a suave y parte a series.', color: COLOR.ambar },
-  muy_duro: { titulo: 'Demasiado intenso', texto: 'Casi todo el tiempo está en zonas 4-5. Sin una base fácil, el cuerpo acumula fatiga y la mejora se estanca.', color: COLOR.fatiga },
+  zona_gris: { titulo: 'Demasiado en zona media', texto: 'Mucho tiempo en esfuerzo medio: ni suficientemente fácil para recuperar ni suficientemente duro para estimular. Conviene bajar el ritmo de los rodajes a suave y concentrar lo duro en las series.', color: COLOR.ambar },
+  muy_duro: { titulo: 'Demasiado intenso', texto: 'Mucho tiempo por encima del umbral. Sin una base fácil, el cuerpo acumula fatiga y la mejora se estanca.', color: COLOR.fatiga },
   mejorable: { titulo: 'Mejorable', texto: 'Hay algo de base fácil, pero por debajo del 75 % recomendado.', color: COLOR.ambar },
 }
 
@@ -53,7 +53,9 @@ export default function DistribucionIntensidad({ intensidad }: { intensidad: Dis
   const lectura = LECTURA[reciente.valoracion]
 
   return (
-    <Bloque titulo="Distribución de intensidad" nota="Suave = zonas 1-2 de Garmin, media = zona 3, dura = zonas 4-5. En corredores de resistencia suele funcionar alrededor de un 80 % suave y un 20 % duro, con poco en medio.">
+    <Bloque titulo="Distribución de intensidad" nota={intensidad.limites
+      ? `Según el pulso medio de cada vuelta frente al umbral del atleta (${intensidad.limites.mediaHasta} ppm): suave por debajo de ${intensidad.limites.suaveHasta}, media hasta ${intensidad.limites.mediaHasta}, dura por encima. En corredores de resistencia suele funcionar alrededor de un 80 % suave y un 20 % duro, con poco en medio.`
+      : 'Hace falta el pulso de umbral del atleta (lo mide Garmin) para repartir el tiempo entre suave, medio y duro.'}>
       <div className="grid gap-3 sm:grid-cols-2">
         <Ventana titulo="Últimas 4 semanas" r={reciente} />
         <Ventana titulo="Las 8 semanas anteriores" r={previo} />
@@ -62,11 +64,6 @@ export default function DistribucionIntensidad({ intensidad }: { intensidad: Dis
       <div className="mt-3 rounded-xl p-3" style={{ border: `1px solid ${lectura.color}` }}>
         <p className="text-sm font-semibold" style={{ color: lectura.color }}>{lectura.titulo}</p>
         <p className="mt-0.5 text-xs" style={{ color: 'var(--text-secondary)' }}>{lectura.texto}</p>
-        {reciente.valoracion !== 'sin_datos' && reciente.valoracion !== 'bien' && (
-          <p className="mt-1.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-            Ojo: las zonas dependen de cómo tenga Garmin configurado el pulso máximo. Si los rodajes tranquilos caen en zona 4, comprueba los límites de zona del reloj antes de concluir que el atleta corre demasiado fuerte.
-          </p>
-        )}
       </div>
 
       <p className="mb-1.5 mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>Por semana (últimas 12). La línea vertical marca el 75 % suave.</p>

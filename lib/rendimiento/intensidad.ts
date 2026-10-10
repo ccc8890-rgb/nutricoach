@@ -1,9 +1,15 @@
 // lib/rendimiento/intensidad.ts
-// Distribución de intensidad (modelo de 3 zonas de Seiler) a partir del tiempo en cada zona de pulso de Garmin.
+// Distribución de intensidad (modelo de 3 zonas de Seiler) a partir del pulso medio de cada vuelta y del umbral de lactato del atleta.
+// No se usan las zonas del reloj: dependen de cómo estén configuradas (p. ej. por % del pulso máximo) y pueden quedar
+// por debajo del umbral real, lo que haría pasar por «duro» lo que en realidad es esfuerzo moderado.
 import { esCarrera } from './carga'
 import { lunesDe } from './fechas'
+import type { VueltaEntreno } from './garmin-entrenos'
 
-/** Tiempo en segundos por intensidad: suave = zonas 1-2, media = zona 3, dura = zonas 4-5 de Garmin. */
+/** Por debajo de este % del pulso de umbral el esfuerzo es suave (aeróbico, conversacional). */
+const FRACCION_SUAVE = 0.9
+
+/** Tiempo en segundos por intensidad: suave < 90 % del umbral, media hasta el umbral, dura por encima. */
 export interface TiempoIntensidad { suave: number; media: number; dura: number }
 
 export interface SemanaIntensidad extends TiempoIntensidad {
@@ -23,6 +29,8 @@ export interface ResumenIntensidad {
 }
 
 export interface DistribucionIntensidad {
+  /** Pulsos (ppm) que separan las tres intensidades; null si no se conoce el umbral del atleta. */
+  limites: { suaveHasta: number; mediaHasta: number } | null
   /** Últimas 12 semanas, de la más antigua a la actual. */
   semanas: SemanaIntensidad[]
   /** Últimos 28 días. */
@@ -34,18 +42,26 @@ export interface DistribucionIntensidad {
 export interface EntrenoIntensidad {
   fecha: string
   tipo: string | null
-  tiempo_zona_fc: number[] | null
+  vueltas?: VueltaEntreno[] | null
 }
 
 /** Con menos tiempo que esto con pulso, la distribución no es representativa. */
 const MINUTOS_MINIMOS = 60
 const SEMANAS = 12
 
-function sumaZonas(z: number[] | null): TiempoIntensidad | null {
-  if (!Array.isArray(z) || z.length < 5) return null
-  const [z1, z2, z3, z4, z5] = z.map(v => (typeof v === 'number' && v > 0 ? v : 0))
-  if (z1 + z2 + z3 + z4 + z5 <= 0) return null
-  return { suave: z1 + z2, media: z3, dura: z4 + z5 }
+/** Reparte el tiempo de las vueltas según su pulso medio. Devuelve null si no hay vueltas con pulso. */
+function sumaVueltas(vueltas: VueltaEntreno[] | null | undefined, suaveHasta: number, mediaHasta: number): TiempoIntensidad | null {
+  if (!Array.isArray(vueltas)) return null
+  const t: TiempoIntensidad = { suave: 0, media: 0, dura: 0 }
+  let hay = false
+  for (const l of vueltas) {
+    if (!l.fc_media || !(l.duracion_s > 0)) continue
+    hay = true
+    if (l.fc_media < suaveHasta) t.suave += l.duracion_s
+    else if (l.fc_media < mediaHasta) t.media += l.duracion_s
+    else t.dura += l.duracion_s
+  }
+  return hay ? t : null
 }
 
 export function valorarIntensidad(pctSuave: number, pctMedia: number, pctDura: number): ValoracionIntensidad {
@@ -70,7 +86,8 @@ function diasEntre(a: string, b: string): number {
   return Math.round((new Date(`${b}T12:00:00Z`).getTime() - new Date(`${a}T12:00:00Z`).getTime()) / 86_400_000)
 }
 
-export function distribucionIntensidad(entrenos: EntrenoIntensidad[], hoy: string): DistribucionIntensidad {
+export function distribucionIntensidad(entrenos: EntrenoIntensidad[], hoy: string, fcUmbral: number | null): DistribucionIntensidad {
+  const limites = fcUmbral && fcUmbral > 0 ? { suaveHasta: Math.round(fcUmbral * FRACCION_SUAVE), mediaHasta: Math.round(fcUmbral) } : null
   const vacio = (): TiempoIntensidad => ({ suave: 0, media: 0, dura: 0 })
   const reciente = vacio()
   const previo = vacio()
@@ -78,7 +95,7 @@ export function distribucionIntensidad(entrenos: EntrenoIntensidad[], hoy: strin
 
   for (const e of entrenos) {
     if (!esCarrera(e.tipo)) continue
-    const t = sumaZonas(e.tiempo_zona_fc)
+    const t = limites ? sumaVueltas(e.vueltas, limites.suaveHasta, limites.mediaHasta) : null
     const d = diasEntre(e.fecha, hoy)
     if (!t || d < 0) continue
     const destino = d < 28 ? reciente : d < 84 ? previo : null
@@ -99,5 +116,5 @@ export function distribucionIntensidad(entrenos: EntrenoIntensidad[], hoy: strin
     cursor = f.toISOString().slice(0, 10)
   }
 
-  return { semanas, reciente: resumir(reciente), previo: resumir(previo) }
+  return { limites, semanas, reciente: resumir(reciente), previo: resumir(previo) }
 }
