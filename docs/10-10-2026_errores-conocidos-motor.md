@@ -22,6 +22,9 @@ Regla de trabajo: cuando aparezca un error nuevo, primero se escribe el test que
 | 14 | A un principiante sin datos se le suponían 90 min/semana | Suposición alta por nivel | `macrociclo.test.ts` (45 min y 2 semanas de calibración sin subir) |
 | 15 | Con las sesiones limitadas por la regla de la sesión más larga, el planificador añadía una 4.ª salida aunque se hubieran pedido 3 (el protocolo híbrido fija 3) | El número de salidas pedido se trataba como una preferencia | `macrociclo.test.ts` (nunca más salidas de las pedidas) |
 | 16 | Una búsqueda en PubMed por palabra sola («tapering») devolvió otro estudio (deportes de equipo, 2021) | La comprobación de título era demasiado laxa | `scripts/cargar-papers-entrenamiento.ts`: exigir el título exacto y **revisar la simulación antes de `--apply`** |
+| 17 | `proponer-plan-ciencia` solo comprobaba que hubiera sesión: cualquier usuario podía generar planes de cualquier cliente | La ruta no comprobaba que el cliente fuera del coach | Comprobación 401/403 con `autorizarCoachCliente` (probada sin sesión: 401) |
+| 18 | El generador desactivaba el plan activo antes de tener el nuevo completo: un fallo a mitad dejaba al cliente sin plan | Se desactivaba primero y se insertaba después | `guardar-plan.test.ts` (el nuevo nace inactivo y solo se activa al final; limpieza si falla) |
+| 19 | Ejercicios propuestos por la IA sin equivalente en la biblioteca se omitían en silencio | `continue` sin aviso | `guardar-plan.test.ts` (`ejerciciosOmitidos`) y mensaje al aprobar |
 
 ## Límites que siguen abiertos (no son errores resueltos)
 - Las cifras del macrociclo son criterio de entrenador apoyado en libros y en pocos estudios; cada regla lleva su origen en `fundamentos` (estudio / libro / criterio). Ninguna se ha contrastado con un entrenador humano.

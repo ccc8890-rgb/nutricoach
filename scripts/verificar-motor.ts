@@ -7,7 +7,7 @@ const TESTS = [
   // análisis de lo entrenado
   'reglas', 'estado', 'guardas', 'motor', 'evidencia', 'seguimiento', 'hitos', 'intensidad', 'deportes', 'deriva', 'tecnica', 'fit-actividad', 'analisis-rendimiento', 'rendimiento',
   // planes de carrera
-  'ritmos', 'pasos', 'running-plantillas', 'validar-plan-carrera', 'macrociclo', 'macro-desde-cliente', 'macro-a-sesiones', 'competicion', 'suplementos', 'proxima-fecha', 'garmin-auto', 'garmin-workouts-formato',
+  'ritmos', 'pasos', 'running-plantillas', 'validar-plan-carrera', 'macrociclo', 'macro-desde-cliente', 'macro-a-sesiones', 'planificar-modo', 'guardar-plan', 'planificar-con-ia', 'aplicar-plan-ia', 'planificar-ia-ruta', 'competicion', 'suplementos', 'proxima-fecha', 'garmin-auto', 'garmin-workouts-formato',
 ]
 
 interface Resultado { nombre: string; ok: boolean; detalle: string }
