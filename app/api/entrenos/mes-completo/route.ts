@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
     .select('id, nombre, dia_semana, fase_bloque')
     .eq('plan_id', planEntreno.id)
     .order('orden')
+    .order('id')
 
   const sesiones = sesData ?? []
   const sesIds = sesiones.map(s => s.id)

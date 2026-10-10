@@ -16,6 +16,19 @@ Carlos: en Entreno (Hoy y Semana) el título repetía «Híbrida C:» y cada eje
 - **Ejercicios (`components/training/ExpandableExercises.tsx`):** `series×reps` solo en la cabecera de la fila (se quitó el duplicado inline); en su hueco ahora hay un adelanto de 2 líneas de la explicación (`notas` / `contexto_ia`), que se abre al tocar. El descanso se muestra **una vez por bloque** (`descansoComun`) si todos los ejercicios (≥2) lo comparten; si difieren, cada uno el suyo. Solo afecta a cardio/funcional (`descansoVisible`).
 - **Decisión:** la etiqueta HÍBRIDA junto al título se queda (con el título limpio ya no repite).
 - **Pendiente:** verlo en el navegador (390 px, oscuro). Si un ejercicio no tiene notas, el hueco queda vacío.
+
+### Varias sesiones el mismo día + orden por arrastre (misma tarde)
+
+Carlos movió una Híbrida al sábado, que ya tenía una Carrera, y en Hoy solo veía una. Commits `d21d0d4`, `45b2d4f` y los de orden, todos en `main`, sin migraciones.
+
+- **Hoy** (`EntrenoSubTabs.tsx`): `sesiones.find(esHoy)` → `filter`; una tarjeta por sesión, «Hoy · Sábado · sesión 1 de 2».
+- **Mes:** `GET /api/entrenos/mes-completo` devuelve `sesiones[]` por día (y mantiene `sesion` = primera, por compatibilidad). `CalendarioMesEntreno` pinta un icono por sesión en la celda, el detalle apila las sesiones con «SESIÓN 1 DE 2», y el día es «completo» solo si todas lo están.
+- **Semana:** marca «×2» bajo la letra del día y «· 1/2» en cada tarjeta.
+- **Orden:** soltar una sesión sobre otra **del mismo día** (arrastrando desde el botón Mover) la coloca en esa posición y la otra se desplaza; sobre una sesión de otro día = mover de día. `POST /api/cliente/entrenos/ordenar` `{sesion_id, destino_id}` reescribe `sesiones_entrenamiento.orden` del día (si hay empates/nulos los separa). Detección de colisión propia (`pointerWithin`, prefiere la sesión bajo el puntero a la columna del día). Hoy y Mes siguen ese orden.
+- **Auditoría:** el endpoint exige sesión, comprueba que la sesión y la destino son del plan del cliente y del mismo día, no devuelve `err.message`; sin secretos. Corregido: `semana-completa` y `mes-completo` ordenaban solo por `orden`; con empates el orden mostrado podía no coincidir con el que usa el endpoint → añadido `.order('id')` como desempate. `tsc` y eslint limpios.
+- **Límites:** el reordenado no es transaccional (varios UPDATE en paralelo; si uno falla, el cliente deshace en pantalla pero la BD puede quedar a medias hasta el siguiente cambio). El calendario del lado coach (`EntrenoCalendarioMes`, `mes-coach`) sigue mostrando una sola sesión por día. **No probado el arrastre en navegador ni en iPhone** (Carlos dijo «perfecto ahora sí» tras probarlo él).
+- **Lección:** un `find` sobre «la sesión de hoy/del día» asume una por día; con `dia_semana` y varias sesiones por día hay que usar listas en cada vista (Hoy, Mes, calendario del coach).
+
 - **Lección:** el helper de título ya existía pero con un patrón estrecho; antes de añadir otro, comprobar si el existente cubre los nombres reales del plan.
 
 ## ✅ SESIÓN 10-10-2026 (noche, Claude) — Macrociclo determinista por cliente y planes de los clientes de prueba

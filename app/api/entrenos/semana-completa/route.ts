@@ -51,7 +51,8 @@ export async function GET(request: NextRequest) {
       .from('sesiones_entrenamiento')
       .select('id, nombre, dia_semana, duracion_estimada_min, contexto_ia, fase_bloque, sesion_ejercicios(id, ejercicio:ejercicios(tipo))')
       .eq('plan_id', planEntreno.id)
-      .order('orden'),
+      .order('orden')
+      .order('id'),
     admin
       .from('registros_sets')
       .select('sesion_ejercicio_id, fecha')
