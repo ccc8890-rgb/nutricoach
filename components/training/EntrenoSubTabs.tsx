@@ -56,12 +56,13 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
     }
   }
 
-  const sesionHoy = sesiones.find(s => s.esHoy)
+  const sesionesHoy = sesiones.filter(s => s.esHoy)
+  const idsHoy = sesionesHoy.map(s => s.id).join(',')
 
   useEffect(() => {
-    if (subTab === 'hoy' && sesionHoy) cargarDetalle(sesionHoy.id)
+    if (subTab === 'hoy') idsHoy.split(',').filter(Boolean).forEach(id => cargarDetalle(id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subTab, sesionHoy?.id])
+  }, [subTab, idsHoy])
 
   return (
     <div className="flex flex-col gap-4">
@@ -84,39 +85,43 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
           <Loader2 size={28} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
         </div>
       ) : subTab === 'hoy' ? (
-        sesionHoy ? (
-          <section className="training-sheet">
+        sesionesHoy.length > 0 ? (
+          <div className="flex flex-col gap-4">
+            {sesionesHoy.map((sesionDia, i) => (
+          <section key={sesionDia.id} className="training-sheet">
             <div className="flex items-center gap-3">
               <div className="training-session-mark">
-                {iconoTipo(sesionHoy.tipo_sesion, 18)}
+                {iconoTipo(sesionDia.tipo_sesion, 18)}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Hoy · {sesionHoy.dia_semana}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Hoy · {sesionDia.dia_semana}{sesionesHoy.length > 1 ? ` · sesión ${i + 1} de ${sesionesHoy.length}` : ''}</p>
                 <p className="mt-2 font-mono text-[10px] font-semibold tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
-                  {etiquetaTipoSesion(sesionHoy.tipo_sesion)}
+                  {etiquetaTipoSesion(sesionDia.tipo_sesion)}
                 </p>
                 <p className="mt-1 font-bold leading-tight" style={{ color: 'var(--text)' }}>
-                  {tituloSesionSinModalidad(sesionHoy.nombre, sesionHoy.tipo_sesion)}
+                  {tituloSesionSinModalidad(sesionDia.nombre, sesionDia.tipo_sesion)}
                 </p>
               </div>
             </div>
-            {sesionHoy.contexto_ia && (
-              <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>{sesionHoy.contexto_ia}</p>
+            {sesionDia.contexto_ia && (
+              <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>{sesionDia.contexto_ia}</p>
             )}
             <div className="mt-3">
-              {detalles[sesionHoy.id] === 'cargando' ? (
+              {detalles[sesionDia.id] === 'cargando' ? (
                 <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
               ) : (
                 <>
-                  {extras[sesionHoy.id] && <PasosSesion sesionId={sesionHoy.id} {...extras[sesionHoy.id]!} />}
+                  {extras[sesionDia.id] && <PasosSesion sesionId={sesionDia.id} {...extras[sesionDia.id]!} />}
                   <ListaEjerciciosExpandible
-                    ejercicios={(detalles[sesionHoy.id] as EjercicioDetalle[]) ?? []}
-                    checklistKey={buildExerciseChecklistKey(sesionHoy.id)}
+                    ejercicios={(detalles[sesionDia.id] as EjercicioDetalle[]) ?? []}
+                    checklistKey={buildExerciseChecklistKey(sesionDia.id)}
                   />
                 </>
               )}
             </div>
           </section>
+            ))}
+          </div>
         ) : (
           <div className="rounded-3xl p-8 flex flex-col items-center gap-2 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             <CircleDashed size={22} style={{ color: 'var(--text-muted)' }} />
