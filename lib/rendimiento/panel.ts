@@ -2,6 +2,8 @@
 // Datos del panel de rendimiento del coach: carga, forma, semanas, bienestar y evolución.
 import { serieCarga, resumenCarga, type PuntoPmc, type ResumenCarga } from './pmc'
 import { esCarrera } from './carga'
+import { calcularDeriva, type Deriva } from './deriva'
+import type { VueltaEntreno } from './garmin-entrenos'
 
 export interface EntrenoPanel {
   fecha: string
@@ -18,6 +20,8 @@ export interface EntrenoPanel {
   tiempo_zona_fc: number[] | null
   mejores_parciales: { s1000: number | null; s1609: number | null; s5000: number | null } | null
   raw: { gap_ms?: number | null } | null
+  /** Solo para calcular la deriva; no se devuelve en `entrenos` del panel. */
+  vueltas?: VueltaEntreno[] | null
 }
 
 export interface DiaBienestar {
@@ -47,6 +51,8 @@ export interface PanelRendimiento {
   parciales: { fecha: string; s1000: number | null; s5000: number | null }[]
   /** Eficiencia aeróbica: m/min por latido en carreras continuas de 25+ min. Sube = más forma. */
   eficiencia: { fecha: string; valor: number }[]
+  /** Deriva cardiaca de cada carrera continua de 30+ min (positivo = el pulso se disparó). */
+  deriva: ({ fecha: string } & Deriva)[]
   vo2max: { fecha: string; valor: number }[]
   entrenos: EntrenoPanel[]
 }
@@ -104,6 +110,12 @@ export function construirPanel(
       return { fecha: e.fecha, valor: Math.round(((ms * 60) / e.fc_media!) * 1000) / 1000 }
     })
 
+  const deriva = ordenados.flatMap(e => {
+    if (!esCarrera(e.tipo) || e.tipo === 'treadmill_running') return []
+    const d = calcularDeriva(e.vueltas)
+    return d ? [{ fecha: e.fecha, ...d }] : []
+  })
+
   return {
     serie,
     resumen: resumenCarga(completa),
@@ -111,7 +123,8 @@ export function construirPanel(
     bienestar,
     parciales,
     eficiencia,
+    deriva,
     vo2max: ordenados.filter(e => e.vo2max).map(e => ({ fecha: e.fecha, valor: e.vo2max! })),
-    entrenos: ordenados.slice(-25).reverse(),
+    entrenos: ordenados.slice(-25).reverse().map(({ vueltas: _vueltas, ...e }) => e),
   }
 }

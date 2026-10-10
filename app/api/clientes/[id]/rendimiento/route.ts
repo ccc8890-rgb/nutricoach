@@ -25,7 +25,7 @@ export async function GET(
 
   const [{ data: entrenos }, { data: dBien }, umbrales, ejecucion] = await Promise.all([
     db.from('entrenos_realizados')
-      .select('fecha,tipo,nombre,duracion_s,distancia_m,ritmo_medio_s_km,fc_media,tss,tss_metodo,carga_garmin,vo2max,tiempo_zona_fc,mejores_parciales,raw')
+      .select('fecha,tipo,nombre,duracion_s,distancia_m,ritmo_medio_s_km,fc_media,tss,tss_metodo,carga_garmin,vo2max,tiempo_zona_fc,mejores_parciales,vueltas,raw')
       .eq('cliente_id', clienteId)
       .order('fecha', { ascending: true }),
     db.from('actividad_externa_cliente')
