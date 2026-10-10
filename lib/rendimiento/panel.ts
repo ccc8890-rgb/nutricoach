@@ -2,6 +2,7 @@
 // Datos del panel de rendimiento del coach: carga, forma, semanas, bienestar y evolución.
 import { serieCarga, resumenCarga, type PuntoPmc, type ResumenCarga } from './pmc'
 import { esCarrera } from './carga'
+import { DEPORTES_CON_PANEL, deporteDe, type DeporteConPanel } from './deportes'
 import { calcularDeriva, type Deriva } from './deriva'
 import { puntosTecnica, resumenTecnica, type PuntoTecnica, type ResumenTecnica } from './tecnica'
 import type { VueltaEntreno } from './garmin-entrenos'
@@ -43,6 +44,16 @@ export interface SemanaCarga {
   minutos: number
 }
 
+export interface ResumenDeporte {
+  deporte: DeporteConPanel
+  sesiones: number
+  ultimaFecha: string | null
+  /** Últimas 12 semanas de ese deporte (km de cualquier actividad con distancia). */
+  semanas: SemanaCarga[]
+  /** Últimos 20 entrenos de ese deporte, del más reciente al más antiguo. */
+  entrenos: EntrenoPanel[]
+}
+
 export interface PanelRendimiento {
   serie: PuntoPmc[]
   resumen: ResumenCarga | null
@@ -57,6 +68,8 @@ export interface PanelRendimiento {
   /** Técnica de carrera por salida (cadencia, zancada, contacto, oscilación) y su comparación a igual ritmo. */
   tecnica: { puntos: PuntoTecnica[]; resumen: ResumenTecnica | null }
   vo2max: { fecha: string; valor: number }[]
+  /** Un resumen por deporte con apartado propio (siempre los 4, aunque estén a cero). */
+  deportes: ResumenDeporte[]
   entrenos: EntrenoPanel[]
 }
 
@@ -67,13 +80,14 @@ export function lunesDe(fecha: string): string {
   return d.toISOString().slice(0, 10)
 }
 
-export function agruparSemanas(entrenos: EntrenoPanel[], semanasAtras: number, hoy: string): SemanaCarga[] {
+/** `kmDeTodo`: contar la distancia de cualquier actividad (por defecto solo la de carrera). */
+export function agruparSemanas(entrenos: EntrenoPanel[], semanasAtras: number, hoy: string, kmDeTodo = false): SemanaCarga[] {
   const porSemana = new Map<string, SemanaCarga>()
   for (const e of entrenos) {
     const s = lunesDe(e.fecha)
     const acc = porSemana.get(s) ?? { semana: s, tss: 0, km: 0, sesiones: 0, minutos: 0 }
     acc.tss += e.tss ?? 0
-    acc.km += esCarrera(e.tipo) ? (e.distancia_m ?? 0) / 1000 : 0
+    acc.km += kmDeTodo || esCarrera(e.tipo) ? (e.distancia_m ?? 0) / 1000 : 0
     acc.sesiones += 1
     acc.minutos += (e.duracion_s ?? 0) / 60
     porSemana.set(s, acc)
@@ -121,6 +135,22 @@ export function construirPanel(
 
   const tecnicaPuntos = puntosTecnica(ordenados)
 
+  const sinVueltas = (e: EntrenoPanel): EntrenoPanel => {
+    const copia = { ...e }
+    delete copia.vueltas
+    return copia
+  }
+  const deportes: ResumenDeporte[] = DEPORTES_CON_PANEL.map(d => {
+    const suyos = ordenados.filter(e => deporteDe(e.tipo) === d)
+    return {
+      deporte: d,
+      sesiones: suyos.length,
+      ultimaFecha: suyos[suyos.length - 1]?.fecha ?? null,
+      semanas: agruparSemanas(suyos, 12, hoy, true),
+      entrenos: suyos.slice(-20).reverse().map(sinVueltas),
+    }
+  })
+
   return {
     serie,
     resumen: resumenCarga(completa),
@@ -129,8 +159,9 @@ export function construirPanel(
     parciales,
     eficiencia,
     deriva,
+    deportes,
     tecnica: { puntos: tecnicaPuntos, resumen: resumenTecnica(tecnicaPuntos, hoy) },
     vo2max: ordenados.filter(e => e.vo2max).map(e => ({ fecha: e.fecha, valor: e.vo2max! })),
-    entrenos: ordenados.slice(-25).reverse().map(({ vueltas: _vueltas, ...e }) => e),
+    entrenos: ordenados.slice(-25).reverse().map(sinVueltas),
   }
 }
