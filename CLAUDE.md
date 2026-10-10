@@ -8,6 +8,16 @@ Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/en
 
 Detalle y veredicto por regla en `docs/10-10-2026_contraste-reglas-fuentes.md`. Hallazgo principal: la «regla del 10 % semanal» no está validada (Buist 2008; Frandsen 2025 no halla asociación con los cambios semanales); lo que sí se asocia a lesiones es **superar en >10 % la sesión más larga de los 30 días previos** (Frandsen 2025, 5.205 corredores). Implementado en el macrociclo (`topeSesion`), con la referencia real del reloj o una supuesta y declarada. Tres estudios nuevos preparados en `scripts/cargar-papers-entrenamiento.ts` (**sin `--apply`**: falta el visto bueno de Carlos para escribir en la base de estudios).
 
+## ✅ SESIÓN 10-10-2026 (tarde-noche, Claude) — Entreno del portal: quitar redundancias
+
+Carlos: en Entreno (Hoy y Semana) el título repetía «Híbrida C:» y cada ejercicio mostraba `4×15` dos veces. Cuatro commits en `main`, sin migraciones. `tsc`, eslint y `scripts/session-type-presentation.test.ts` OK; **no visto en pantalla**.
+
+- **Título:** `tituloSesionSinModalidad` no quitaba «Híbrida C:» (la letra de variante). Regex ahora admite una letra/dígito tras el tipo. Nuevo `limpiarPrefijoModalidad(nombre)` (sin conocer el tipo) para la pantalla de sesión, que no recibe `tipo_sesion`. Aplicado en `/cliente/sesion/[id]` (cabecera, título y pantalla de fin) y en el aviso al mover una sesión en `EntrenoKanban`. Quitada la línea con el nombre del plan bajo el título de la sesión.
+- **Ejercicios (`components/training/ExpandableExercises.tsx`):** `series×reps` solo en la cabecera de la fila (se quitó el duplicado inline); en su hueco ahora hay un adelanto de 2 líneas de la explicación (`notas` / `contexto_ia`), que se abre al tocar. El descanso se muestra **una vez por bloque** (`descansoComun`) si todos los ejercicios (≥2) lo comparten; si difieren, cada uno el suyo. Solo afecta a cardio/funcional (`descansoVisible`).
+- **Decisión:** la etiqueta HÍBRIDA junto al título se queda (con el título limpio ya no repite).
+- **Pendiente:** verlo en el navegador (390 px, oscuro). Si un ejercicio no tiene notas, el hueco queda vacío.
+- **Lección:** el helper de título ya existía pero con un patrón estrecho; antes de añadir otro, comprobar si el existente cubre los nombres reales del plan.
+
 ## ✅ SESIÓN 10-10-2026 (noche, Claude) — Macrociclo determinista por cliente y planes de los clientes de prueba
 
 Carlos pidió pulir y auditar hasta la máxima fiabilidad y reescribir lo necesario con su caso y los clientes de prueba (todos los parámetros de cada uno).
