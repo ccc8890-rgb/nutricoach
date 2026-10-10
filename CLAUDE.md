@@ -39,6 +39,18 @@ Carlos movió una Híbrida al sábado, que ya tenía una Carrera, y en Hoy solo 
 - **Límites:** el reordenado no es transaccional (varios UPDATE en paralelo; si uno falla, el cliente deshace en pantalla pero la BD puede quedar a medias hasta el siguiente cambio). El calendario del lado coach (`EntrenoCalendarioMes`, `mes-coach`) **ya** soportaba varias sesiones por día (muestra 2 y «+N más»); solo se le añadió el desempate por `id`. Posible mejora: hacer atómico el reordenado con una función SQL (requiere migración, no aplicada). **No probado el arrastre en navegador ni en iPhone** (Carlos dijo «perfecto ahora sí» tras probarlo él).
 - **Lección:** un `find` sobre «la sesión de hoy/del día» asume una por día
 
+### ⛔ Pendientes ya cerrados — NO reabrir (verificado 10-10-2026 noche)
+
+Estos puntos aparecían como pendientes en notas intermedias de la tarde y **están resueltos**. Antes de «investigarlos» otra vez, leer esto.
+
+| Pendiente antiguo | Estado real | Dónde |
+|---|---|---|
+| «Vista Mes solo muestra 1 sesión» / «mover una sesión oculta la original» | **Resuelto.** Era el mismo fallo: la UI asumía una sesión por día. Hoy, Semana, Mes y calendario del coach admiten varias. Carlos lo probó: «perfecto ahora sí». Mover una sesión cambia su `dia_semana` en el plan (cada semana cae en el día nuevo): que el día de origen quede vacío es lo esperado. | `d21d0d4`, `45b2d4f`, `c173a63`, `b0bc7ed`; `mes-completo` devuelve `sesiones[]`; `scripts/test-entreno-mover-dia-cache.ts` |
+| «Series cortas de Carlos: falta VDOT» | **Resuelto.** VDOT 45 en `perfil_entreno_cliente`; sesión «Carrera: Series Cortas en Descarga» (plan Deload, **lunes**, no jueves) con pasos 2 km + 7×(400 m 4:15-4:30 + 200 m trote) + 2 km y workout Garmin `1724602354`. | BD (sesión `150a1d64…`) |
+
+**Si Carlos dice «se oculta/desaparece una sesión»:** primero pedir en qué vista y qué día, y comprobar con `sesiones_entrenamiento` (consulta por `plan_id` activo) si la sesión sigue en BD con el `dia_semana` esperado antes de tocar código. Regla de código: nunca `find`/`[0]` sobre «la sesión del día»; usar `filter` y recorrer la lista.
+
+
 ### Idea para más adelante: nutrición según sesiones (dobles, pre/post) — decidida con Carlos, **no empezada**
 
 Carlos quiere unas **bases lógicas** en el motor (el cliente luego hará lo que quiera): los tipos de plato y las cantidades se ajustan solos según las sesiones que toquen. Lo trataremos en profundidad cuando los planes de entreno con IA estén potentes y eficaces (prioridad actual).
