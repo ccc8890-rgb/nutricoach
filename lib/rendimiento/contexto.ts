@@ -8,6 +8,7 @@ import { ritmosDesdeVdot, formatearRitmo } from '@/lib/entrenos/ritmos'
 import { construirEjecucion } from './ejecucion'
 import { recalibrar, type EntrenoParaVdot } from './vdot'
 import { estudiosParaAnalisis, textoEstudios, type EstudioCitable } from './evidencia'
+import { construirEstado, type EstadoAtleta } from './estado'
 
 export interface ContextoRendimiento {
   texto: string
@@ -17,6 +18,8 @@ export interface ContextoRendimiento {
   hayDatos: boolean
   /** Estudios de la base de conocimiento que el modelo puede citar por clave [K#]. */
   estudios: EstudioCitable[]
+  /** Foto numérica del atleta que consume el motor de reglas. */
+  estado: EstadoAtleta
 }
 
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`
@@ -73,16 +76,14 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   const media = (v: (number | null)[]) => { const x = v.filter((n): n is number => typeof n === 'number'); return x.length ? x.reduce((a, b) => a + b, 0) / x.length : null }
   const rhrReciente = media(bienestar.slice(-7).map(b => b.rhr))
   const rhrBase = media(bienestar.slice(0, -7).map(b => b.rhr))
-  let intenso = 0, total = 0
-  for (const e of recientes) if (e.tiempo_zona_fc) { e.tiempo_zona_fc.forEach((s, i) => { total += s; if (i >= 3) intenso += s }) }
-  const pctIntenso = total > 0 ? (intenso / total) * 100 : null
-
-  const alertas = calcularAlertas({ resumen: panel.resumen, semanas: panel.semanas, diasParaCompeticion: diasComp, rhr: { reciente: rhrReciente, base: rhrBase }, pctIntenso28d: pctIntenso })
+  const alertas = calcularAlertas({ resumen: panel.resumen, semanas: panel.semanas, diasParaCompeticion: diasComp, rhr: { reciente: rhrReciente, base: rhrBase } })
 
   // Sesiones del plan activo
   let sesionesPlan: string[] = []
+  let nombresSesionesPlan: string[] = []
   if (plan) {
     const { data: s } = await db.from('sesiones_entrenamiento').select('id,nombre,dia_semana,fase_bloque,contexto_ia,pasos').eq('plan_id', plan.id).order('orden')
+    nombresSesionesPlan = (s ?? []).map(x => String(x.nombre ?? ''))
     sesionesPlan = (s ?? []).map(x => `${x.dia_semana}: ${x.nombre}${x.fase_bloque ? ` [${x.fase_bloque}]` : ''}${x.contexto_ia ? ` (${x.contexto_ia})` : ''}${x.pasos ? ` [sesion_id:${x.id}] pasos_actuales=${JSON.stringify(x.pasos)}` : ' [sin pasos estructurados: no modificable]'}`)
   }
 
@@ -110,7 +111,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   L.push(`SEMANAS (TSS/km/sesiones, antigua→reciente; la última puede estar en curso): ${panel.semanas.slice(-8).map(s => `${s.semana.slice(5)}:${s.tss}/${s.km}/${s.sesiones}`).join(' | ')}`)
   const ir = panel.intensidad.reciente
   if (ir.valoracion !== 'sin_datos' && panel.intensidad.limites) L.push(`REPARTO DE INTENSIDAD (últimas 4 sem, por pulso de cada vuelta frente al umbral de ${panel.intensidad.limites.mediaHasta} ppm; suave <${panel.intensidad.limites.suaveHasta}, media hasta ${panel.intensidad.limites.mediaHasta}, dura por encima): ${ir.pctSuave}% suave, ${ir.pctMedia}% medio, ${ir.pctDura}% duro. Referencia en corredores de resistencia: ~80% suave`)
-  L.push(`EVOLUCIÓN: eficiencia aeróbica ${efTexto}; mejor 5K parcial ${mejor5k ? `${mmss(mejor5k.s5000!)} (${mejor5k.fecha})` : 'n/d'}; VO2max Garmin ${panel.vo2max.at(-1)?.valor ?? 'n/d'}; % tiempo en zonas 4-5 de pulso de Garmin (Z4 = 80-90% del pulso máx, Z5 = >90%) últimas 4 sem: ${pctIntenso !== null ? Math.round(pctIntenso) : 'n/d'}. OJO: con pulso máx ${umbrales.fcMax ?? 'n/d'}, un rodaje suave puede caer en Z4 si hay calor, deriva cardíaca o poca base; contrasta SIEMPRE ritmo y pulso antes de concluir que fue intenso`)
+  L.push(`EVOLUCIÓN: eficiencia aeróbica ${efTexto}; mejor 5K parcial ${mejor5k ? `${mmss(mejor5k.s5000!)} (${mejor5k.fecha})` : 'n/d'}; VO2max Garmin ${panel.vo2max.at(-1)?.valor ?? 'n/d'}`)
   const lineasEjec = ejecucion.sesiones.filter(x => x.estado !== 'pendiente').map(x => {
     const c = x.cumplimiento
     const base = `${x.fechaPrevista} ${x.nombre}: ${x.estado === 'hecha' ? 'hecha' : x.estado === 'otro_dia' ? `hecha otro día (${x.fechaReal})` : 'NO realizada'}`
@@ -124,6 +125,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     L.push(`DECISIONES ANTERIORES DEL COACH SOBRE ANÁLISIS PREVIOS (aprende de ellas):\n${previas.map(p => `  - ${p.created_at.slice(0, 10)} ${p.decision}${p.comentario_coach ? ` — comentario: "${p.comentario_coach}"` : ''}${p.decision === 'modificado' && p.propuesta_final ? ` — versión final: "${String(p.propuesta_final).slice(0, 240)}"` : ''}`).join('\n')}`)
   }
 
+  const estado = construirEstado({ hoy, panel, fcUmbral: umbrales.fcUmbral, vdot, diasCompeticion: diasComp, ejecucion: ejecucion.sesiones, nombresSesionesPlan, alertas })
   const estudios = await estudiosParaAnalisis(db)
   const bloqueEstudios = textoEstudios(estudios)
   if (bloqueEstudios) L.push(bloqueEstudios)
@@ -131,8 +133,9 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   return {
     texto: L.join('\n'),
     alertas,
-    metricas: { ctl: r?.ctl ?? null, atl: r?.atl ?? null, tsb: r?.tsb ?? null, rampa7: r?.rampa7 ?? null, carga7d: r?.carga7d ?? null, vdot, pctIntenso: pctIntenso !== null ? Math.round(pctIntenso) : null },
+    metricas: { ctl: r?.ctl ?? null, atl: r?.atl ?? null, tsb: r?.tsb ?? null, rampa7: r?.rampa7 ?? null, carga7d: r?.carga7d ?? null, vdot, pctSuave: panel.intensidad.reciente.valoracion === 'sin_datos' ? null : panel.intensidad.reciente.pctSuave },
     hayDatos: recientes.length > 0,
     estudios,
+    estado,
   }
 }

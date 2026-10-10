@@ -15,12 +15,23 @@ export interface FilaEstudio {
   verificado?: boolean | null
 }
 
+/** Referencia mínima a un estudio, lo que se guarda con cada decisión. */
+export interface EstudioRef {
+  titulo: string
+  anio: string | null
+  doi: string | null
+  /** Diseño del estudio tal como está en la base (meta_analisis, revision_sistematica, rct…). */
+  nivel: string
+}
+
 export interface EstudioCitable {
   clave: string
   titulo: string
   fuente: string
   anio: string | null
   nivel: string
+  /** Nivel de evidencia crudo de la base, para calcular la fiabilidad. */
+  nivelCrudo?: string
   doi: string | null
   aporta: string
 }
@@ -80,6 +91,7 @@ export function elegirEstudios(filas: FilaEstudio[], limite = 14): EstudioCitabl
       fuente: (f.fuente ?? '').trim(),
       anio: anioDe(f.fuente),
       nivel: NOMBRE_NIVEL[f.nivel_evidencia ?? ''] ?? 'sin clasificar',
+      nivelCrudo: f.nivel_evidencia ?? undefined,
       doi: f.doi,
       // Solo se muestra lo que aporta un estudio curado: en los antiguos es una afirmación escrita a mano sin verificar.
       aporta: recortar(usoDe(f) ?? '', 170),
@@ -115,4 +127,25 @@ export async function estudiosParaAnalisis(db: SupabaseClient, limite = 14): Pro
   ])
   if (porTags.error && porCategoria.error) return []
   return elegirEstudios([...(porTags.data ?? []), ...(porCategoria.data ?? [])] as FilaEstudio[], limite)
+}
+
+/** Estudios citados con [K#] en un texto, en el orden en que aparecen y sin repetir. */
+export function citasDe(texto: string, estudios: EstudioCitable[]): EstudioRef[] {
+  const salida: EstudioRef[] = []
+  for (const m of texto.matchAll(/\bK(\d{1,2})\b/gi)) {
+    const e = estudios.find(x => x.clave.toUpperCase() === `K${m[1]}`)
+    if (e && !salida.some(x => x.doi === e.doi)) salida.push({ titulo: e.titulo, anio: e.anio, doi: e.doi, nivel: e.nivelCrudo ?? 'opinion_experto' })
+  }
+  return salida
+}
+
+/** Datos de los estudios (por DOI) que respaldan las reglas del motor. Un DOI que no esté activo en la base se ignora. */
+export async function estudiosPorDoi(db: SupabaseClient, dois: string[]): Promise<Map<string, EstudioRef>> {
+  const mapa = new Map<string, EstudioRef>()
+  if (!dois.length) return mapa
+  const { data } = await db.from('knowledge_base').select('titulo,fuente,doi,nivel_evidencia').eq('activo', true).in('doi', dois)
+  for (const r of (data ?? []) as { titulo: string; fuente: string | null; doi: string | null; nivel_evidencia: string | null }[]) {
+    if (r.doi && !mapa.has(r.doi)) mapa.set(r.doi, { titulo: r.titulo.trim(), anio: anioDe(r.fuente), doi: r.doi, nivel: r.nivel_evidencia ?? 'opinion_experto' })
+  }
+  return mapa
 }

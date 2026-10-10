@@ -10,7 +10,10 @@ import { createServiceSupabase } from '@/lib/supabase-server'
 import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
 import { validarPasos, type Paso } from '@/lib/entrenos/pasos'
 import { CLAVES_METRICA, type ClaveMetrica, type Direccion } from '@/lib/rendimiento/seguimiento'
-import { resolverCitas } from '@/lib/rendimiento/evidencia'
+import { citasDe, estudiosPorDoi } from '@/lib/rendimiento/evidencia'
+import { evaluarReglas, type ResultadoReglas } from '@/lib/rendimiento/reglas'
+import { validarDecisionesIA } from '@/lib/rendimiento/guardas'
+import { componerDecisiones, resumenDelMotor } from '@/lib/rendimiento/motor'
 
 const SYSTEM = `Eres un entrenador de running y Hyrox de alto nivel que asesora a otro entrenador (el coach). Razonas con ciencia del entrenamiento, no con tópicos.
 
@@ -26,7 +29,7 @@ MARCO CIENTÍFICO (úsalo y cítalo por su nombre cuando lo apliques):
 REGLAS DE TRABAJO:
 1. Usa SOLO los datos del contexto. Si un dato falta o es escaso, dilo y baja la confianza; no inventes cifras.
 2. Las ALERTAS AUTOMÁTICAS son hechos calculados: tenlas en cuenta y no las contradigas.
-3. Propón cambios concretos y pocos (máximo 5): qué sesión, qué cambiar (ritmo, volumen, orden, descanso) y por qué. No cambies volumen e intensidad a la vez en una misma sesión.
+3. Los cambios concretos los calcula el motor de reglas (sección PROPUESTAS DEL MOTOR). Tú solo añades, como máximo, 2 decisiones NUEVAS que el motor no cubra: qué sesión, qué cambiar (ritmo, volumen, orden, descanso) y por qué. No cambies volumen e intensidad a la vez en una misma sesión.
 4. Respeta las DECISIONES ANTERIORES DEL COACH: si rechazó o corrigió algo, no repitas el mismo planteamiento sin una razón nueva; adáptate a sus comentarios.
 5. En la carga de fuerza/gimnasio el pulso infravalora el esfuerzo real: no concluyas que "entrena poco" solo por su TSS.
 6. No des consejo médico. Ante dolor, lesión o síntomas, recomienda que lo valore un profesional y márcalo como alerta.
@@ -37,19 +40,20 @@ REGLAS DE TRABAJO:
 11. Ritmos: un número MENOR de min/km es MÁS RÁPIDO (4:38 es más rápido que 4:49). Comprueba la dirección de cada comparación antes de escribirla, y no afirmes que algo es más rápido o lento que un umbral sin hacer esa comprobación. Si los ritmos por tramo empeoran hacia el final, dilo (caída).
 12. PASOS NUEVOS (opcional). Solo si el cambio afecta a una sesión que tenga [sesion_id:...] en el contexto, puedes añadir "sesion_id" (copiado tal cual) y "pasos": la sesión COMPLETA ya modificada, en el mismo formato JSON que "pasos_actuales" (tipos: calentamiento, trabajo, recuperacion, enfriamiento y bloques {"tipo":"repetir","veces":N,"pasos":[...]}; duración {"unidad":"metros"|"segundos","valor":N}; objetivo {"tipo":"ritmo","min_seg_km":N,"max_seg_km":N} con un rango de 10-15 s/km). Parte siempre de pasos_actuales, conserva sus campos "nota" y cambia solo lo que justifica la decisión. Si el cambio es genérico o la sesión no tiene pasos, NO incluyas "pasos". Un coach humano revisará y aplicará el cambio.
 13. Sé coherente con tus propias cifras: si dices que un límite se supera, no propongas algo que lo supera.
+15. PROPUESTAS DEL MOTOR: al final del contexto están las propuestas que ya calculó el motor de reglas, con sus cifras y estudios. Son definitivas: no las repitas, no las contradigas ni cambies sus números. Tu trabajo es (a) escribir "resumen" y "lecturas" que expliquen la situación del atleta y por qué importan esas propuestas, y (b) añadir como máximo 2 decisiones NUEVAS que el motor no cubra y que se apoyen en datos del contexto. Si el motor ya cubre lo importante, devuelve "decisiones": []. No inventes cifras, estudios ni sesiones.
 14. MÉTRICA OBJETIVO (opcional pero recomendable): si una decisión busca mover un indicador medible con el reloj, añade "metrica_objetivo" con UNO de: "pct_suave" (% del tiempo corriendo en suave), "deriva" (deriva cardiaca), "eficiencia" (eficiencia aeróbica), "carga_semana" (TSS semanal), "km_semana" (km de carrera por semana). Para "carga_semana" y "km_semana" añade también "direccion": "sube" o "baja". Así el coach podrá ver 4 semanas después si el cambio funcionó. No la pongas si ningún indicador la refleja.
 
 Responde SOLO con este JSON:
 {
   "resumen": "2-3 frases: cómo está el atleta ahora y qué se juega esta semana",
   "lecturas": [ { "titulo": "corto", "detalle": "qué dicen los datos y qué significa", "dato": "cifra concreta del contexto" } ],
-  "decisiones": [ { "sesion": "nombre de la sesión del plan o 'general'", "cambio": "qué hacer exactamente", "razon": "por qué, ligado a los datos", "evidencia": "principio o autor", "confianza": 0.0, "metrica_objetivo": "pct_suave|deriva|eficiencia|carga_semana|km_semana (opcional)", "direccion": "sube|baja (solo con carga_semana o km_semana)", "sesion_id": "solo si propones pasos nuevos", "pasos": [ ... solo si propones pasos nuevos ... ] } ],
+  "decisiones": [ /* SOLO decisiones nuevas, máximo 2 */ { "sesion": "nombre de la sesión del plan o 'general'", "cambio": "qué hacer exactamente", "razon": "por qué, ligado a los datos", "evidencia": "principio o autor", "confianza": 0.0, "metrica_objetivo": "pct_suave|deriva|eficiencia|carga_semana|km_semana (opcional)", "direccion": "sube|baja (solo con carga_semana o km_semana)", "sesion_id": "solo si propones pasos nuevos", "pasos": [ ... solo si propones pasos nuevos ... ] } ],
   "alerta_prioritaria": "texto o null",
   "preguntas_al_coach": ["dudas que solo el coach puede resolver"],
   "prioridad": 5,
   "score_confianza": 0.0
 }
-"prioridad": 1 (urgente) a 10 (rutinaria). "lecturas": máximo 4. "decisiones": máximo 5.`
+"prioridad": 1 (urgente) a 10 (rutinaria). "lecturas": máximo 4. "decisiones": máximo 2 y solo nuevas.`
 
 export interface ResultadoAnalisis {
   ok: boolean
@@ -107,6 +111,13 @@ export function sanearSalida(raw: unknown): { resumen: string; lecturas: { titul
   }
 }
 
+/** Propuestas del motor en el formato que lee el modelo: ya definitivas, con sus cifras. */
+export function textoMotor(m: ResultadoReglas): string {
+  const lineas = m.propuestas.map((p, i) => `${i + 1}. [${p.regla} · riesgo ${p.riesgo} · prioridad ${p.prioridad}] ${p.cambio} — ${p.razon}`)
+  const notas = m.notas.map(n => `  - ${n}`)
+  return `PROPUESTAS DEL MOTOR (ya calculadas, definitivas; no las repitas ni las contradigas):\n${lineas.join('\n') || '  (ninguna: el motor no encuentra motivos para cambiar el plan)'}${notas.length ? `\nNOTAS DEL MOTOR:\n${notas.join('\n')}` : ''}`
+}
+
 export async function ejecutarAnalisisRendimiento(clienteId: string, opciones: { forzar?: boolean } = {}): Promise<ResultadoAnalisis> {
   const db = createServiceSupabase()
   const hoy = new Date().toISOString().slice(0, 10)
@@ -121,49 +132,52 @@ export async function ejecutarAnalisisRendimiento(clienteId: string, opciones: {
   const ctx = await construirContextoRendimiento(db, clienteId, hoy)
   if (!ctx.hayDatos) return { ok: false, motivo: 'Sin entrenos en las últimas 4 semanas: no hay base para analizar' }
 
-  let crudo: string
+  // 1) El motor de reglas decide qué proponer; 2) la IA lo explica y puede añadir hasta 2 decisiones nuevas; 3) las vallas revisan lo de la IA.
+  const motor = evaluarReglas(ctx.estado)
+  const porDoi = await estudiosPorDoi(db, [...new Set(motor.propuestas.flatMap(p => p.dois))])
+
+  let json: unknown = null
   try {
-    crudo = await llamarDeepSeek(SYSTEM, `DATOS DEL ATLETA\n\n${ctx.texto}`, 0.25)
+    const crudo = await llamarDeepSeek(SYSTEM, `DATOS DEL ATLETA\n\n${ctx.texto}\n\n${textoMotor(motor)}`, 0.25)
+    try { json = JSON.parse(crudo) } catch {
+      const m = crudo.match(/\{[\s\S]*\}/)
+      try { json = m ? JSON.parse(m[0]) : null } catch { json = null }
+    }
   } catch (e) {
     console.error('[analisis-rendimiento] IA:', e instanceof Error ? e.message : e) // el detalle del proveedor no sale al navegador
-    return { ok: false, motivo: 'La IA no ha respondido ahora; inténtalo de nuevo en unos minutos' }
-  }
-
-  let json: unknown
-  try { json = JSON.parse(crudo) } catch {
-    const m = crudo.match(/\{[\s\S]*\}/)
-    try { json = m ? JSON.parse(m[0]) : null } catch { json = null }
-  }
-  // Las claves [K#] que cita el modelo se sustituyen por el título real del estudio; una clave inexistente se elimina.
-  const citados = new Set<string>()
-  if (json && typeof json === 'object' && Array.isArray((json as Salida).decisiones)) {
-    for (const d of (json as Salida).decisiones!) {
-      if (typeof d?.evidencia !== 'string') continue
-      for (const m of d.evidencia.matchAll(/\bK(\d{1,2})\b/gi)) citados.add(`K${m[1]}`)
-      d.evidencia = resolverCitas(d.evidencia, ctx.estudios)
-    }
   }
   const s = sanearSalida(json)
-  if (!s) return { ok: false, motivo: 'La IA devolvió una respuesta que no se puede usar' }
-  const estudiosCitados = ctx.estudios.filter(e => citados.has(e.clave)).map(e => ({ titulo: e.titulo, anio: e.anio, doi: e.doi, nivel: e.nivel }))
+  // Sin IA el análisis sale igualmente con lo que dice el motor; sin IA y sin propuestas no hay nada que enseñar.
+  if (!s && motor.propuestas.length === 0) return { ok: false, motivo: 'La IA no ha respondido ahora y el motor no tiene propuestas; inténtalo de nuevo en unos minutos' }
+
+  const { aceptadas, descartadas } = validarDecisionesIA(s?.decisiones ?? [], ctx.estado, motor.propuestas)
+  const decisiones = componerDecisiones({
+    reglas: motor.propuestas,
+    estudiosPorDoi: porDoi,
+    ia: aceptadas.map(d => ({ ...d, estudios: citasDe(d.evidencia, ctx.estudios) })),
+    estado: ctx.estado,
+  })
+  const resumen = s?.resumen ?? resumenDelMotor(ctx.estado, motor.propuestas)
+  const prioridad = Math.min(s?.prioridad ?? 6, ...motor.propuestas.map(p => p.prioridad))
+  const confianza = decisiones.length ? Math.round((decisiones.reduce((a, d) => a + d.fiabilidad.valor, 0) / decisiones.length) * 100) / 100 : s?.confianza ?? 0.6
 
   const tarea = await guardarTareaAgente('director', {
     tipo: 'analisis_rendimiento',
-    propuesta: s.resumen,
-    razonamiento: s.lecturas.map(l => `${l.titulo}: ${l.detalle}`).join('\n'),
+    propuesta: resumen,
+    razonamiento: (s?.lecturas ?? []).map(l => `${l.titulo}: ${l.detalle}`).join('\n') || 'Análisis automático del motor de reglas (la IA no respondió).',
     payload: {
-      resumen: s.resumen,
-      lecturas: s.lecturas,
-      decisiones: s.decisiones,
-      alerta_prioritaria: s.alerta,
-      preguntas_al_coach: s.preguntas,
+      resumen,
+      lecturas: s?.lecturas ?? [],
+      decisiones,
+      alerta_prioritaria: s?.alerta ?? null,
+      preguntas_al_coach: s?.preguntas ?? [],
       alertas_automaticas: ctx.alertas,
       metricas: ctx.metricas,
-      estudios_citados: estudiosCitados,
+      motor: { notas: motor.notas, ia_disponible: !!s, descartadas: descartadas.map(d => ({ cambio: d.decision.cambio.slice(0, 200), motivo: d.motivo })) },
     },
     fuentes: [],
-    prioridad: s.prioridad,
-    score_confianza: s.confianza,
+    prioridad,
+    score_confianza: confianza,
     requiere_aprobacion: true,
   }, clienteId)
 
