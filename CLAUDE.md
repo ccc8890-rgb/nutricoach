@@ -144,7 +144,7 @@ Carlos se fue fuera y pidió adelantar lo que se pudiera. Commits `ef8101a`, avi
 - Minors diferidos: sin rate limit en el botón manual; cron y botón manual simultáneos podrían duplicar un entreno (muy improbable); el reenvío borra el workout antiguo de la biblioteca de Garmin (el historial de actividades no se toca).
 
 **Pendiente:**
-- 🟠 **Series cortas (jueves) de Carlos**: la sesión generada por IA no tiene series; falta su **VDOT o tiempo de 5K/10K** (`vdot` está null) para montarlas con ritmos y recuperación.
+- ✅ **Series cortas de Carlos (verificado 10-10-2026 noche)**: VDOT 45 en el perfil y la sesión «Carrera: Series Cortas en Descarga» (plan Deload, lunes) ya tiene pasos 2 km + 7×(400 m a 4:15-4:30 + 200 m trote) + 2 km, con workout de Garmin enviado.
 - Editor de pasos para el coach; opción por cliente para desactivar el envío automático; Hyrox (estaciones) y ciclismo con el mismo modelo; revisar si el temporizador de descanso debe aparecer también en «Híbrida» (hoy depende del `tipo` de cada ejercicio).
 - Comprobar mañana (10-10, tras 08:15) que el cron programado de Vercel crea el entreno del viernes 16-10 sin intervención.
 
