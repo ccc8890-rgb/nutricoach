@@ -4,6 +4,18 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ SESIÓN 11-10-2026 (madrugada, Claude) — Barra lateral compacta y más ancho útil en el panel del coach (escritorio)
+
+Carlos: en Mac la barra lateral siempre abierta (256 px + 256 px de la secundaria) comía pantalla y la letra era pequeña para leer análisis. Solo panel del coach en escritorio (≥1024 px); móvil y portal del cliente no cambian. Commits en `main`, sin migraciones. `tsc` y eslint limpios; **Carlos lo vio y aprobó** («mejor así»).
+
+- **`components/Sidebar.tsx`:** barra **compacta por defecto** en escritorio (`collapsed`, recordado en `localStorage` `nutricoach:sidebar`). Arriba, bajo el logo: ampliar, tema, Ajustes, cerrar sesión (primera versión los tenía abajo; Carlos los quiso arriba). Debajo: Inicio, Clientes, Contenido y las secciones Nutrición/Entrenamiento con **panel flotante** al pasar el ratón (`RailSection`; el `aside` pasa a `overflow-visible` al estar compacto). Barra ancha antigua con botón «Contraer barra»; la barra secundaria solo se muestra con la ancha. El menú móvil no cambia.
+- **`components/CoachShell.tsx`:** cabecera sin `max-w-7xl`; `padded` con tope 120 rem.
+- **`app/globals.css`:** `html:has(.coach-atelier-shell)` a 110 % de letra y `.max-w-5xl/6xl/7xl` dentro de `.coach-atelier-main` a 120 rem (≥1024 px). Un solo número para afinar la letra.
+- **Límites:** los textos con píxeles fijos (`text-[11px]`) no crecen; en pantallas muy anchas alguna lista puede quedar estirada. No se probó en iPhone ni en monitor de más de 1920 px.
+- **Pendiente (Codex):** pulido estético de la barra (iconos superiores sueltos, separar el bloque de la navegación, acabado del panel flotante). Anotado en la tabla de pendientes de `NUTRICION/CLAUDE.md`.
+- **Seguridad:** solo UI; sin rutas, secretos ni datos nuevos.
+- **Lección:** al tocar la barra, recordar que el mismo `aside` hace de menú móvil: las clases de escritorio van con prefijo `lg:` y el contenido ancho se oculta con `lg:hidden` solo cuando está compacta.
+
 ## ✅ SESIÓN 10→11-10-2026 (Claude) — «Informe del caso» (prueba) y presentación para el coach
 
 - **Presentación del coach** (`lib/rendimiento/presentacion.ts`): titular y estado, **una etiqueta por decisión** (Seguro / Mirar / Revisar), «Por qué» plegado, siglas explicadas; aplicado a `AnalisisIA`, `PropuestaPlanEntreno` y `DecisionesIACliente`. Traspaso a Codex en `docs/10-10-2026_traspaso-codex-presentacion.md`.
