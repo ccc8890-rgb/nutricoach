@@ -40,6 +40,7 @@ export interface EstudioCitable {
 export const TAGS_ENTRENAMIENTO = [
   'distribucion_intensidad', 'polarizado', 'economia_carrera', 'tecnica_carrera', 'durabilidad', 'carga_entrenamiento', 'acwr',
   'tapering', 'progresion_volumen', 'tirada_larga', 'fuerza_resistencia', 'monitorizacion', 'hrv', 'maraton', 'corredor_popular', 'intervalos',
+  'lesiones', 'prediccion', 'ultra', 'veteranos', 'sueno', 'principiantes', 'piramidal',
 ] as const
 
 /** Categorías que no son de entrenamiento (nutrición, patologías…): no se ofrecen al entrenador de rendimiento. */

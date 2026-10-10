@@ -21,6 +21,8 @@ const PERFIL_PRUEBA: Record<string, PerfilPrueba> = {
   running_hm: 'larga', trail_corto: 'larga', triatlon_olimpico: 'larga',
   running_maraton: 'muy_larga', trail_largo: 'muy_larga', triatlon_70_3: 'muy_larga', ciclismo_fondo: 'muy_larga', ironman: 'muy_larga', ultra: 'muy_larga',
 }
+/** Indica si la disciplina es una de las que el motor conoce (si no, se trata como prueba corta, que es la opción más conservadora para la carga de hidratos pero no para el volumen). */
+export const disciplinaConocida = (disciplina?: string) => (disciplina ?? '') in PERFIL_PRUEBA
 export function perfilPorDuracion(minutos: number): PerfilPrueba {
   return minutos <= 60 ? 'corta' : minutos <= 90 ? 'media' : minutos <= 150 ? 'larga' : 'muy_larga'
 }
