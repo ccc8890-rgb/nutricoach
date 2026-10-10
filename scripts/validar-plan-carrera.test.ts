@@ -61,4 +61,13 @@ assert.equal(mixta.resumen.minutosCarrera, 60)
 const niveles = Object.fromEntries(validarSemanaCarrera([s('Tirada larga', 'Domingo', 170, '6:00/km')], { ritmos: r45, minutosRealesSemana: 100 }).hallazgos.map(h => [h.codigo, h.nivel]))
 assert.equal(niveles.tirada_excesiva, 'error')
 assert.equal(niveles.salto_volumen, 'error')
+// Contraste con el esqueleto calculado: salidas, volumen, tirada y calidad.
+const esq = { minutos: 120, salidas: 3, tiradaMin: 50, sesionesCalidad: 1 }
+const ok = validarSemanaCarrera([s('Rodaje fácil', 'Martes', 30), s('Tempo', 'Jueves', 35), s('Tirada larga', 'Sábado', 50)], { ritmos: null, minutosRealesSemana: null, esqueleto: esq })
+assert.deepEqual(ok.hallazgos.filter(h => h.codigo.startsWith('fuera_de_esqueleto')), [])
+const fuera = validarSemanaCarrera([s('Rodaje fácil', 'Lunes', 40), s('Series', 'Martes', 50), s('Tempo', 'Jueves', 50), s('Rodaje', 'Viernes', 40), s('Tirada larga', 'Sábado', 90)], { ritmos: null, minutosRealesSemana: null, esqueleto: esq })
+const codigosEsq = fuera.hallazgos.map(h => h.codigo)
+for (const c of ['fuera_de_esqueleto_salidas', 'fuera_de_esqueleto_volumen', 'fuera_de_esqueleto_tirada', 'fuera_de_esqueleto_calidad']) assert.ok(codigosEsq.includes(c), c)
+// Sin esqueleto no se comprueba nada de eso.
+assert.ok(!validarSemanaCarrera([s('Tirada larga', 'Sábado', 90)], { ritmos: null, minutosRealesSemana: null }).hallazgos.some(h => h.codigo.startsWith('fuera_de_esqueleto')))
 console.log('validar-plan-carrera.test OK')

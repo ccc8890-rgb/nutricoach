@@ -34,7 +34,7 @@
 | Reducción previa a la carrera | Pfitzinger 3 semanas (maratón); Bosquet 2007: óptimo ~2 semanas y −41-60 % de volumen | Ventana por disciplina (7/10/14 días) | – | ◐ la literatura da 2 semanas como óptimo, la práctica de Pfitzinger llega a 3 |
 | Ajustar al estado actual (adaptativo) | Hudson | Regla de ejecución lenta + recalibración + el coach decide | El plan se genera sobre el volumen real del reloj | ✓ |
 | Topes de Daniels por intensidad (T 10 %, I 8 %, R 5 %) | Daniels | – | – | – pensado para 40+ km/semana; con poco volumen manda el reparto por tiempo |
-| Periodización hacia una carrera objetivo con fases (Daniels 4 fases, Canova) | Daniels, Canova | Simulador del plan hacia carrera (existente, sin auditar aquí) | El generador crea una semana tipo y una progresión en texto, no un macrociclo por fases | – |
+| Periodización hacia una carrera objetivo con fases (Daniels 4 fases, Canova) | Daniels, Canova | Simulador del plan hacia carrera (existente, sin auditar aquí) | **Planificador determinista `lib/entrenos/macrociclo.ts`**: fases base / construcción / específica / reducción / semana de carrera, descarga cada 3-4 semanas, tirada con tope por prueba, calidad ≤ 2 y nunca seguida; su semana 1 se inyecta al generador como estructura obligatoria y el validador avisa si la IA se aparta | ◐ (implementado y probado con 400 perfiles aleatorios; no contrastado por un entrenador humano) |
 | Trabajo de técnica, cuestas y progresivos | Daniels, Pfitzinger, Hudson | – | – | – |
 
 ## 3. Qué dicen tus datos frente a ese marco
@@ -51,7 +51,7 @@
 - Cargado el estudio real de Casado 2022 (la entrada antigua con ese nombre tenía un DOI inexistente).
 
 ## 5. Lo que sigue sin cubrirse
-1. **No hay macrociclo por fases hacia una carrera** en el generador (Daniels, Canova): genera una semana tipo y la progresión en texto.
+1. **Macrociclo por fases (hecho el 10-10 por la noche, con límites):** `lib/entrenos/macrociclo.ts` calcula todas las semanas hasta la prueba con los datos reales del cliente (nivel, edad, VDOT, volumen del reloj, días, lesiones, salud, parón, fuerza fija, prueba). Es un modelo de reglas de criterio (crecimiento 5-10 %/semana según prudencia, descarga −30 %, reducción de 2 semanas en pruebas largas con la semana de la carrera como última, tirada tope 75-210 min según prueba, calidad con trabajo ≤ ~12 % del volumen) inspirado en Daniels, Pfitzinger y Fitzgerald; **las cifras concretas no son de un libro concreto** y no se han contrastado con un entrenador humano. No cubre aún: Hansons (fatiga acumulada), Magness, Canova (bloques específicos), periodización por ultra (Koop) ni la progresión de la calidad semana a semana (tipo de sesión sí, volumen de trabajo no).
 2. **Los topes de Daniels por intensidad y la calidad en días consecutivos no se comprueban sobre lo entrenado**, solo en los planes generados.
 3. **Técnica, cuestas y progresivos** no se prescriben ni se evalúan.
 4. **Reducción previa a la carrera**: la ventana de 14 días para el maratón es el óptimo de la literatura, pero el entrenador de referencia (Pfitzinger) usa 3 semanas.

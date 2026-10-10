@@ -1,5 +1,31 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ✅ SESIÓN 10-10-2026 (noche, Claude) — Macrociclo determinista por cliente y planes de los clientes de prueba
+
+Carlos pidió pulir y auditar hasta la máxima fiabilidad y reescribir lo necesario con su caso y los clientes de prueba (todos los parámetros de cada uno).
+
+**Hecho**
+- **`lib/entrenos/macrociclo.ts`** (`planificarMacrociclo`): plan por semanas hasta la prueba (o 8 semanas sin ella) con fases, descargas, tirada larga con tope por prueba, calidad ≤ 2 y nunca seguida ni el día antes de la tirada, reducción previa con la semana de la carrera al final (sin sesión el día antes), parón con la fórmula de Daniels, y recortes por lesiones, edad, recuperación y salud (anemia: +3 %/semana y 1 calidad; hipertensión ≥140/90, cardiaco y lesiones: sin series; normal-alta: solo aviso). Lo que falta se devuelve en `datosFaltantes` y `supuestos`, nunca se inventa. `scripts/macrociclo.test.ts` (casos + 400 perfiles aleatorios con propiedades).
+- **`lib/entrenos/macro-desde-cliente.ts`**: traduce los datos reales (ficha, perfil de atleta, competición o la del onboarding, entrenos del reloj) a la entrada del planificador; normaliza el texto libre de la prueba («Maratón Valencia» → `running_maraton`) y avisa si no se reconoce (antes caía en silencio a «prueba corta»).
+- **Generador `proponer-plan-ciencia`**: calcula el macrociclo, inyecta su semana 1 como «ESQUELETO CALCULADO (no lo cambies)», devuelve `macrociclo` y lo guarda en `registros_ia._macrociclo`; el validador (`fuera_de_esqueleto_*`) avisa si la IA cambia salidas, volumen, tirada o calidad. **No ejecutado en vivo** (desactivaría el plan activo): probar con «Regenerar» en un cliente de prueba.
+- **`docs/10-10-2026_planes-clientes-de-prueba.md`** (script `scripts/planes-clientes-de-prueba.ts`, solo lectura): propuesta semana a semana para Carlos, Marcos, Andrés, Natalia y Laura con datos usados, datos que faltan, supuestos y avisos.
+
+**Errores del propio motor encontrados al validar con los casos reales (corregidos)**
+1. El detector de salud no entendía negaciones: a Andrés («Sin diabetes», «TA 130/85 normal-alta») le salían avisos de diabetes e hipertensión. Ahora hay negación y la tensión se decide por cifras (≥140/90).
+2. La cuadrícula de semanas empezaba el lunes de la semana en curso (un sábado, ya pasada) y no incluía la semana de la prueba.
+3. Con anemia el aviso decía «la carga no debe subir» y el plan subía un 40 %.
+4. Tempo de 105 min con 3 salidas (ahora el trabajo intenso se limita a ~12 % del volumen y 40 min; sesión ≤ 90 min).
+5. «Maratón Valencia» como texto libre se trataba como prueba corta (sin reducción larga, pico típico de «general»).
+
+**Hallazgos sobre los clientes de prueba (por decidir)**
+- Natalia no tiene la prueba en Competiciones (solo en el onboarding); Laura no tiene perfil de atleta (días, VDOT, lesiones); Marcos, Andrés y Natalia no tienen VDOT ni datos de reloj (volumen de partida supuesto por nivel); Carlos no tiene nivel en su perfil (se toma el de la ficha) ni competición.
+- Andrés es de fuerza (`gym_fuerza`): su plan de carrera es solo orientativo.
+
+**Límites honestos**
+- Las cifras del macrociclo son criterio de entrenador apoyado en Daniels/Pfitzinger/Fitzgerald/Casado y en la literatura de carga (Nielsen 2014, Buist 2008), no un modelo validado con resultados; lo contrasta el coach. Sin revisión a ciegas de un entrenador humano.
+- La UI del coach todavía no muestra la tabla del macrociclo (el dato llega en la respuesta y en `_macrociclo`): estructura hecha, falta el acople visual (Codex).
+- Sin estimación de umbral cuando Garmin no lo mide (decisión pendiente) y sin reglas de HRV/sueño/calor.
+
 ## ✅ SESIÓN 09-10-2026 (noche, Claude) — Aviso al coach por alertas de rendimiento y RPE en la carga de fuerza
 
 Carlos se fue fuera y pidió adelantar lo que se pudiera. Commits `ef8101a`, aviso de rendimiento y RPE (todos en `main`).

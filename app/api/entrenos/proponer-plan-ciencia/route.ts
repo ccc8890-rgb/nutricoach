@@ -9,6 +9,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { bloqueEjercicioGenerado } from '@/lib/training/generated-session-blocks'
 import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
 import { validarSemanaCarrera, type ContextoValidacion } from '@/lib/entrenos/validar-plan-carrera'
+import { planificarMacrociclo, type ResultadoMacro } from '@/lib/entrenos/macrociclo'
+import { construirEntradaMacro } from '@/lib/entrenos/macro-desde-cliente'
 import { formatearRitmo } from '@/lib/entrenos/ritmos'
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com/v1/chat/completions'
@@ -286,6 +288,8 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
 
     // Datos REALES del reloj y ritmos calculados con el VDOT: el plan se diseña sobre lo que el atleta hace de verdad, y los ritmos no los inventa la IA.
     let bloqueReloj = ''
+    let macrociclo: ResultadoMacro | null = null
+    let macroFaltan: string[] = []
     const contextoValidacion: ContextoValidacion = { ritmos: null, minutosRealesSemana: null }
     try {
       const { estado: e } = await construirContextoRendimiento(sb, cliente_id, new Date().toISOString().slice(0, 10))
@@ -307,6 +311,38 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
         lineas.push('- Sin VDOT: indica ritmos orientativos con margen amplio y avisa en las notas de que el coach debe fijarlos con un test o una carrera reciente.')
       }
       bloqueReloj = `\n## DATOS REALES DEL RELOJ Y RITMOS\n${lineas.join('\n')}\n`
+
+      // Esqueleto del macrociclo calculado con reglas (Daniels, Pfitzinger, Fitzgerald…): la IA lo detalla pero no lo cambia.
+      if (/running|carrera|hibrido|hyrox|trail|maraton/i.test(modalidadFoco) || e.carreras6sem > 0) {
+        const hoyIso = new Date().toISOString().slice(0, 10)
+        const [{ data: comp }, { data: onbPro }, { data: entrenosMacro }, { data: planFijo }] = await Promise.all([
+          sb.from('competiciones').select('fecha_competicion,disciplina,tiempo_objetivo_min,objetivo').eq('cliente_id', cliente_id).eq('activo', true).gte('fecha_competicion', hoyIso).order('fecha_competicion').limit(1),
+          sb.from('onboarding_perfil_profundo').select('condiciones_salud,fecha_competicion,tipo_competicion').eq('cliente_id', cliente_id).maybeSingle(),
+          sb.from('entrenos_realizados').select('fecha,tipo,duracion_s').eq('cliente_id', cliente_id).gte('fecha', new Date(Date.now() - 120 * 86_400_000).toISOString().slice(0, 10)),
+          sb.from('planes_entrenamiento').select('sesiones:sesiones_entrenamiento(nombre)').eq('cliente_id', cliente_id).eq('activo', true).maybeSingle(),
+        ])
+        const fuerzaFija = esHibridoHyroxRunning ? 3 : ((planFijo?.sesiones as { nombre: string }[] | undefined) ?? []).filter(x => /fuerza|h[ií]brid|gym|hyrox|upper|lower|torso|pierna/i.test(x.nombre ?? '')).length
+        const { entrada, faltan } = construirEntradaMacro({
+          hoy: hoyIso,
+          cliente: { nivel: cliente.nivel ?? null, edad: cliente.edad ?? null, sexo: cliente.sexo ?? null },
+          perfil: perfilEntreno as never,
+          competicion: (comp?.[0] as never) ?? null,
+          onboarding: onbPro as never,
+          entrenos: (entrenosMacro ?? []) as never,
+          sesionesFuerzaFijas: fuerzaFija,
+        })
+        // El protocolo híbrido fija 3 sesiones de carrera por semana.
+        if (esHibridoHyroxRunning) entrada.diasCorrer = 3
+        macrociclo = planificarMacrociclo(entrada)
+        macroFaltan = faltan
+        const w = macrociclo.semanas[0]
+        if (w) {
+          contextoValidacion.esqueleto = { minutos: w.minutos, salidas: w.salidas, tiradaMin: w.tiradaMin, sesionesCalidad: w.sesiones.filter(x => ['tempo', 'series', 'ritmo_carrera'].includes(x.tipo)).length }
+          const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo']
+          const resumen = macrociclo.semanas.slice(0, 8).map(x => `S${x.n}${x.descarga ? '(descarga)' : ''} ${x.fase} ${x.minutos} min`).join(' · ')
+          bloqueReloj += `\n## ESQUELETO CALCULADO DEL MACROCICLO (NO LO CAMBIES)\nLo ha calculado el motor de reglas con los datos reales del atleta. Tu trabajo es detallar la semana tipo (nombres, ritmos, ejercicios, notas), NO modificar su estructura.\n- Fase de esta primera semana: ${w.fase}${w.descarga ? ' (descarga)' : ''}. ${w.salidas} sesiones de carrera, ${w.minutos} min de carrera en total, tirada larga de ${w.tiradaMin} min, ~${w.pctSuave} % del tiempo en intensidad suave.\n- Sesiones de carrera: ${w.sesiones.map(x => `${DIAS[x.dia]}: ${x.tipo.replace('_', ' ')} ${x.minutos} min`).join('; ')}.\n- Progresión prevista: ${resumen}.\n${macrociclo.avisos.length ? `- Avisos del planificador: ${macrociclo.avisos.join(' ')}\n` : ''}${macroFaltan.length ? `- Datos que faltan (dilo en las notas del plan): ${macroFaltan.join('; ')}.\n` : ''}`
+        }
+      }
     } catch (err) {
       console.error('proponer-plan-ciencia: datos del reloj no disponibles', err instanceof Error ? err.message : err)
     }
@@ -536,7 +572,7 @@ ${instruccionDuracion}
         await sb.from('registros_ia').insert({
           cliente_id,
           tipo: 'plan_entreno_ia',
-          respuesta_json: validacion ? { ...planIA, _validacion: validacion } : planIA,
+          respuesta_json: validacion || macrociclo ? { ...planIA, ...(validacion ? { _validacion: validacion } : {}), ...(macrociclo ? { _macrociclo: macrociclo } : {}) } : planIA,
         })
       }
     } catch (saveErr) {
@@ -548,6 +584,7 @@ ${instruccionDuracion}
       plan: planIA,
       plan_id: planGuardadoId,
       validacion,
+      macrociclo,
       metadata: {
         rpe_promedio: rpePromedio,
         ajuste_rpe: ajusteRpe,

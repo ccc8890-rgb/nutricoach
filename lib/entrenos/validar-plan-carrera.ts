@@ -24,6 +24,8 @@ export interface ContextoValidacion {
   ritmos: Ritmos | null
   /** Media de minutos de carrera por semana en las últimas 4 semanas completas (reloj). */
   minutosRealesSemana: number | null
+  /** Semana 1 del macrociclo calculado con reglas: lo que el plan generado debería respetar. */
+  esqueleto?: { minutos: number; salidas: number; tiradaMin: number; sesionesCalidad: number } | null
 }
 
 export interface Hallazgo { nivel: 'error' | 'aviso'; codigo: string; texto: string }
@@ -104,6 +106,15 @@ export function validarSemanaCarrera(sesiones: SesionPlan[], ctx: ContextoValida
         if (p < r.R * 0.95 || p > r.T) hallazgos.push({ nivel: 'aviso', codigo: 'series_fuera_de_zona', texto: `«${t.s.nombre}»: ${fmt(p)}/km queda fuera del rango de series de su VDOT (de ${fmt(r.R * 0.95)} a ${fmt(r.T)}/km).` })
       }
     }
+  }
+
+  // Contraste con el esqueleto calculado (macrociclo): la IA redacta y detalla, pero no debe cambiar la estructura.
+  const esq = ctx.esqueleto
+  if (esq && carrera.length > 0) {
+    if (carrera.length !== esq.salidas) hallazgos.push({ nivel: 'aviso', codigo: 'fuera_de_esqueleto_salidas', texto: `El plan tiene ${carrera.length} sesiones de carrera por semana y el esqueleto calculado para este atleta prevé ${esq.salidas}.` })
+    if (minutosCarrera > 0 && (minutosCarrera > esq.minutos * 1.2 || minutosCarrera < esq.minutos * 0.8)) hallazgos.push({ nivel: 'aviso', codigo: 'fuera_de_esqueleto_volumen', texto: `El plan suma ${minutosCarrera} min de carrera por semana y el esqueleto calculado prevé ~${esq.minutos} min (±20 %).` })
+    if (tirada?.min && tirada.min > esq.tiradaMin * 1.25) hallazgos.push({ nivel: 'aviso', codigo: 'fuera_de_esqueleto_tirada', texto: `La tirada larga dura ${tirada.min} min y el esqueleto calculado la limita a ~${esq.tiradaMin} min.` })
+    if (calidad.length > esq.sesionesCalidad) hallazgos.push({ nivel: 'aviso', codigo: 'fuera_de_esqueleto_calidad', texto: `El plan tiene ${calidad.length} sesiones de calidad y el esqueleto calculado prevé ${esq.sesionesCalidad}.` })
   }
 
   return { hallazgos, resumen: { carrerasSemana: carrera.length, minutosCarrera, sesionesCalidad: calidad.length, tiradaLargaMin: tirada?.min ?? null, tiradaLargaPct: tiradaPct } }
