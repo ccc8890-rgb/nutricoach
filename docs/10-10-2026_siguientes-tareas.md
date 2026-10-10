@@ -46,7 +46,7 @@ Superficies: **Decisiones de IA pendientes** (`DecisionesIACliente`), **Panel IA
 | 6 | Que `fuerza_sin_registro` cuente también lo registrado en la app (opcional) | Alternativa a registrar todo en el reloj |
 | 7 | Enviar las híbridas al reloj como entrenos de Conditioning con sus estaciones | Idea futura; Garmin no tiene SkiErg ni perfil Hyrox |
 | 8 | **Limpiar y dejar definitivos los clientes de prueba** | Marcos, Andrés, Natalia, Laura: completar datos (Natalia sin competición registrada, Laura sin perfil, VDOT) o retirarlos |
-| 8b | **Informe del caso para que el coach lo explique al cliente** (resumen detallado, puntos para hablar, mensaje listo para chat/WhatsApp) | Reaprovecha `lib/rendimiento/presentacion.ts`. Por diseñar con Carlos |
+| 8b | ✅ **Informe del caso** (botón «Preparar conversación»: mensaje, guion, resumen y página para PDF) — **hecho como prueba** el 11-10-2026 | Carlos decide qué se queda y qué se quita tras probarlo. Ver `docs/10-10-2026_traspaso-codex-informe-caso.md`. Pendiente: nutrición y check-ins en el informe, adaptar el tono al coach |
 | 9 | Acabado visual de «Planificar con IA», la tarjeta de propuesta y la etiqueta «Reemplazada» | De Codex |
 | 10 | Modo «hábito» para clientes que empiezan o son irregulares; alerta de volumen en descenso sostenido | Pendientes del motor (ver `errores-conocidos-motor.md`) |
 | 11 | Revisión del motor por un entrenador humano en activo | Ninguna regla está contrastada así todavía |

@@ -4,6 +4,13 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ SESIÓN 10→11-10-2026 (Claude) — «Informe del caso» (prueba) y presentación para el coach
+
+- **Presentación del coach** (`lib/rendimiento/presentacion.ts`): titular y estado, **una etiqueta por decisión** (Seguro / Mirar / Revisar), «Por qué» plegado, siglas explicadas; aplicado a `AnalisisIA`, `PropuestaPlanEntreno` y `DecisionesIACliente`. Traspaso a Codex en `docs/10-10-2026_traspaso-codex-presentacion.md`.
+- **Informe del caso** (solo coach, versión de prueba, fácil de quitar): botón «Preparar conversación» en la ficha → mensaje para chat/WhatsApp, guion de llamada, resumen detallado y página imprimible (PDF). Sale de plantillas con datos reales (nada inventado: un test comprueba que cada número del texto viene de los datos) y declara «lo que no sé». `lib/informe-caso/`, `app/api/clientes/[id]/informe-caso/`, `components/clientes/InformeCaso.tsx`. Cómo quitarlo: `docs/10-10-2026_traspaso-codex-informe-caso.md`.
+- **Hallazgo al probar con datos reales de Carlos:** `sesionesEvaluadas` son las sesiones HECHAS (y `sesionesSaltadas` las no hechas): las previstas son la suma. El primer informe decía «-1 de 1 hechas».
+- Aclaración de Carlos: la «versión para el cliente» es material para el coach, no una pantalla del portal; la pestaña Entrenamiento del cliente se queda simple (posible pestaña futura de métricas tipo Bevel/Garmin/Whoop).
+
 ## ✅ SESIÓN 10-10-2026 (noche, Claude) — Una sola tarea pendiente + propuesta automática del siguiente bloque
 
 - **Una sola pendiente por cliente y tipo** (`lib/agentes/tareas-unicas.ts`, aplicada en `guardarTareaAgente`, el único punto por el que los agentes crean tareas): la nueva deja las anteriores en estado `reemplazada` (no es una decisión del coach, no entra en el aprendizaje). Tipos con una sola pendiente: análisis y alertas de rendimiento/riesgo/retención/readiness, revisiones semanales, mensajes de motivación, ajustes de macros/nutrición-carga, training_brain y plan_entreno_ia. Quedan fuera `actualizacion_plan` (nutrición y entreno a la vez) y `propuesta_receta`. Limpieza de lo existente: `npx tsx scripts/limpiar-tareas-duplicadas.ts [--apply]` (aplicado el 10-10: 1 análisis de Carlos).

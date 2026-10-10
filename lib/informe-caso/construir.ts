@@ -114,7 +114,7 @@ function lineaCumplimiento(a: DatosInforme['atleta']): string {
   return a.sesionesCalidadPrevistas && a.sesionesCalidadPrevistas > 0 ? `De las ${a.sesionesCalidadPrevistas} sesiones de calidad previstas has hecho ${a.sesionesCalidadHechas ?? 0}.` : ''
 }
 
-function mensajeDe(d: DatosInforme, escenario: Escenario, cambios: string[]): string {
+function mensajeDe(d: DatosInforme, escenario: Escenario): string {
   const saludo = pilaDe(d.nombre) ? `Hola ${pilaDe(d.nombre)}` : 'Hola,'
   const datos = lineaDatos(d.atleta)
   const paraCliente = (d.analisis?.decisiones ?? []).filter(x => !dirigidaAlCoach(x.cambio)).sort((a, b) => ORDEN_ETIQUETA[etiquetaDecision(a)] - ORDEN_ETIQUETA[etiquetaDecision(b)])
@@ -185,7 +185,7 @@ export function construirInformeCaso(d: DatosInforme): InformeCaso {
     cambios,
     porQue,
     loQueNoSe: noSe,
-    mensaje: mensajeDe(d, escenario, cambios),
+    mensaje: mensajeDe(d, escenario),
     guion,
     preguntas,
     preguntasCoach,
