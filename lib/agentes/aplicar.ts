@@ -7,6 +7,7 @@
 
 import { createServiceSupabase } from '@/lib/supabase-server'
 import type { AgenteTarea } from './types'
+import { aplicarPlanEntrenoIA } from '@/lib/entrenos/aplicar-plan-ia'
 
 export interface PlanEntrenoUpdateInput {
   planUpdate?: {
@@ -315,6 +316,9 @@ export async function aplicarTarea(tarea: AgenteTarea): Promise<AplicarTareaResu
 
     case 'actualizacion_plan':
       return aplicarActualizacionPlan(db, tarea)
+
+    case 'plan_entreno_ia':
+      return aplicarPlanEntrenoIA(db, tarea)
 
     default:
       return {
