@@ -3,6 +3,7 @@
 import { serieCarga, resumenCarga, type PuntoPmc, type ResumenCarga } from './pmc'
 import { esCarrera } from './carga'
 import { calcularDeriva, type Deriva } from './deriva'
+import { puntosTecnica, resumenTecnica, type PuntoTecnica, type ResumenTecnica } from './tecnica'
 import type { VueltaEntreno } from './garmin-entrenos'
 
 export interface EntrenoPanel {
@@ -19,7 +20,7 @@ export interface EntrenoPanel {
   vo2max: number | null
   tiempo_zona_fc: number[] | null
   mejores_parciales: { s1000: number | null; s1609: number | null; s5000: number | null } | null
-  raw: { gap_ms?: number | null } | null
+  raw: { gap_ms?: number | null; cadencia?: number | null; zancada_m?: number | null; contacto_suelo_ms?: number | null; oscilacion_vertical_cm?: number | null } | null
   /** Solo para calcular la deriva; no se devuelve en `entrenos` del panel. */
   vueltas?: VueltaEntreno[] | null
 }
@@ -53,6 +54,8 @@ export interface PanelRendimiento {
   eficiencia: { fecha: string; valor: number }[]
   /** Deriva cardiaca de cada carrera continua de 30+ min (positivo = el pulso se disparó). */
   deriva: ({ fecha: string } & Deriva)[]
+  /** Técnica de carrera por salida (cadencia, zancada, contacto, oscilación) y su comparación a igual ritmo. */
+  tecnica: { puntos: PuntoTecnica[]; resumen: ResumenTecnica | null }
   vo2max: { fecha: string; valor: number }[]
   entrenos: EntrenoPanel[]
 }
@@ -116,6 +119,8 @@ export function construirPanel(
     return d ? [{ fecha: e.fecha, ...d }] : []
   })
 
+  const tecnicaPuntos = puntosTecnica(ordenados)
+
   return {
     serie,
     resumen: resumenCarga(completa),
@@ -124,6 +129,7 @@ export function construirPanel(
     parciales,
     eficiencia,
     deriva,
+    tecnica: { puntos: tecnicaPuntos, resumen: resumenTecnica(tecnicaPuntos, hoy) },
     vo2max: ordenados.filter(e => e.vo2max).map(e => ({ fecha: e.fecha, valor: e.vo2max! })),
     entrenos: ordenados.slice(-25).reverse().map(({ vueltas: _vueltas, ...e }) => e),
   }
