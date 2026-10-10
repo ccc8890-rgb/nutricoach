@@ -31,6 +31,7 @@ export const DOI = {
   MEEUSEN_2013: '10.1249/MSS.0b013e318279a10a',
   SOLIGARD_2016: '10.1136/bjsports-2016-096581',
   MUJIKA_DESENTRENO_2000: '10.2165/00007256-200030030-00001',
+  CASADO_2022: '10.1123/ijspp.2021-0435',
 } as const
 
 export interface PropuestaRegla {
@@ -93,11 +94,15 @@ export function evaluarReglas(e: EstadoAtleta): ResultadoReglas {
 
   // Vuelta tras un parón: manda sobre todo lo que añada carga.
   if (e.retorno && !sobrecarga) {
+    const dias = e.semanasParon * 7
+    const corto = dias <= 28
     propuestas.push({
       regla: 'retorno',
       sesion: 'general',
-      cambio: 'Vuelta gradual: durante 2-3 semanas, el 50-70 % del volumen que hacía antes, solo carrera suave (sin series ni tempo) y con un día libre entre salidas. Después, subir como máximo un 10 % por semana y reintroducir la calidad de forma progresiva.',
-      razon: 'Ha estado al menos 2 semanas seguidas sin correr y lleva menos de 4 semanas de vuelta. Tras una pausa el sistema cardiovascular se readapta antes que tendones y huesos; los saltos grandes de volumen se asocian a más lesiones, sobre todo en corredores noveles.',
+      cambio: corto
+        ? `Vuelta gradual tras ~${dias} días sin correr (fórmula de Daniels): ${Math.round(dias / 2)} días al 50 % del volumen habitual y otros ${Math.round(dias / 2)} al 75 %, siempre a ritmo fácil y sin series ni tempo. Después, retomar el plan y subir como máximo un 10 % por semana.`
+        : `Parón largo (~${dias} días): reconstruir la base en 4-6 semanas solo con carrera suave, empezando en ~50 % del volumen previo y subiendo como máximo un 10 % por semana. La calidad vuelve cuando la base esté recuperada.`,
+      razon: `Ha estado ${e.semanasParon} semanas seguidas sin correr y lleva menos de 4 semanas de vuelta. Tras una pausa el sistema cardiovascular se readapta antes que tendones y huesos; los saltos grandes de volumen se asocian a más lesiones, sobre todo en corredores noveles.`,
       riesgo: 'bajo',
       metrica_objetivo: 'km_semana',
       direccion: 'sube',
@@ -105,7 +110,9 @@ export function evaluarReglas(e: EstadoAtleta): ResultadoReglas {
       datos: 0.8,
       persistencia: 1,
       prioridad: 3,
-      avisos: ['Los porcentajes (50-70 %, +10 %/semana) son criterio de entrenador: los estudios respaldan la prudencia, no esas cifras exactas.'],
+      avisos: [corto
+        ? 'La fórmula (mitad de los días al 50 % y mitad al 75 %) es de «Daniels\' Running Formula», citada de segunda mano: los estudios cargados respaldan la prudencia, no esos porcentajes exactos.'
+        : 'Para parones de más de 4 semanas las cifras (50 %, +10 %/semana) son criterio de entrenador.'],
     })
   }
 
@@ -162,14 +169,17 @@ export function evaluarReglas(e: EstadoAtleta): ResultadoReglas {
       regla: 'reparto_suave',
       sesion: 'general',
       cambio: `En los rodajes y la tirada larga, llevar el pulso por debajo de ${e.limitesFc.suaveHasta} ppm y, en la mayoría, por debajo de ${ideal} ppm. Control práctico: poder hablar en frases completas. Manda el pulso, no el ritmo.${ritmoE}${principiante ? ' Si hace falta, alternar caminar y correr para no pasar de ese pulso.' : ''} Las sesiones de calidad se mantienen. Objetivo: llegar al 75 % del tiempo en suave en 6-8 semanas.`,
-      razon: `Últimas 4 semanas: ${ir.pctSuave} % suave, ${ir.pctMedia} % medio y ${ir.pctDura} % duro (${r0(ir.minutos / 60 * 10) / 10} h con pulso)${previo !== null ? `; las 8 anteriores, ${previo} % suave` : ''}. En corredores de resistencia suele funcionar alrededor del 75-80 % suave, aunque la ventaja sobre otros repartos es moderada y varía entre personas.${derivaBaja ? ` Su deriva cardiaca es baja (${e.deriva.media!.toFixed(1)} %): tolera bien esos ritmos, así que es una oportunidad de optimizar el reparto y no un problema de fatiga.` : ''}${derivaAlta ? ` La deriva cardiaca media es ${e.deriva.media!.toFixed(1)} % (referencia orientativa <5 %), coherente con rodajes demasiado fuertes.` : ''}`,
+      razon: `Últimas 4 semanas: ${ir.pctSuave} % suave, ${ir.pctMedia} % medio y ${ir.pctDura} % duro (${r0(ir.minutos / 60 * 10) / 10} h con pulso)${previo !== null ? `; las 8 anteriores, ${previo} % suave` : ''}. En corredores de resistencia suele funcionar alrededor del 75-80 % suave (los corredores de élite de fondo siguen sobre todo un reparto piramidal y los de 1.500 m uno polarizado, Casado 2022), aunque la ventaja sobre otros repartos es moderada y varía entre personas.${derivaBaja ? ` Su deriva cardiaca es baja (${e.deriva.media!.toFixed(1)} %): tolera bien esos ritmos, así que es una oportunidad de optimizar el reparto y no un problema de fatiga.` : ''}${derivaAlta ? ` La deriva cardiaca media es ${e.deriva.media!.toFixed(1)} % (referencia orientativa <5 %), coherente con rodajes demasiado fuertes.` : ''}`,
       riesgo: 'bajo',
       metrica_objetivo: 'pct_suave',
-      dois: [DOI.SEILER_2010, DOI.STOGGL_2014, DOI.JAMNICK_2020],
+      dois: [DOI.SEILER_2010, DOI.STOGGL_2014, DOI.CASADO_2022, DOI.JAMNICK_2020],
       datos: acota(ir.minutos / 600),
       persistencia: previo !== null && previo < 65 ? 1 : 0.6,
       prioridad: derivaBaja ? 5 : ir.pctSuave < 40 ? 3 : 4,
-      avisos: [`El pulso de umbral (${e.limitesFc.mediaHasta} ppm) es el que mide el reloj; los límites del 90 % y el 85 % del umbral son aproximaciones de zona (Friel) y varían entre personas. Conviene confirmarlos con la prueba del habla.`],
+      avisos: [
+        `El pulso de umbral (${e.limitesFc.mediaHasta} ppm) es el que mide el reloj; los límites del 90 % y el 85 % del umbral son aproximaciones de zona (Friel) y varían entre personas. Conviene confirmarlos con la prueba del habla.`,
+        ...(e.suaveDaniels ? [`Contraste con los entrenadores: Daniels fija el esfuerzo fácil en ≤79 % del pulso máximo (${e.suaveDaniels.techo} ppm) y Pfitzinger lo sitúa entre el 70 y el 81 %; con el techo de Daniels, el tiempo realmente fácil sería del ${e.suaveDaniels.pct} %. Es decir, nuestra definición es la más generosa y la conclusión se mantiene.`] : []),
+      ],
     })
   }
 
@@ -237,6 +247,51 @@ export function evaluarReglas(e: EstadoAtleta): ResultadoReglas {
       datos: 0.6,
       persistencia: 0.8,
       prioridad: 8,
+    })
+  }
+
+  // Tirada larga: tope de duración y peso sobre el volumen semanal (Daniels: ≤ 2 h 30 min y ~25 % del kilometraje).
+  const tl = e.tiradaLarga
+  if (hayDatos && !sobrecarga && !e.retorno && tl && e.carrerasPorSemana >= 2.5) {
+    const limitePct = e.carrerasPorSemana >= 5 ? 30 : 50
+    if (tl.minutos > 150) {
+      propuestas.push({
+        regla: 'tirada_excesiva',
+        sesion: 'general',
+        cambio: 'Limitar la tirada larga a 2 h 30 min como máximo y repartir el resto del volumen en rodajes suaves.',
+        razon: `Su salida más larga de las últimas 4 semanas dura ${tl.minutos} min. Más de 2 h 30 min no aporta un beneficio proporcional y aumenta el riesgo de lesión y la fatiga posterior.`,
+        riesgo: 'bajo', dois: [], datos: 0.8, persistencia: 0.7, prioridad: 5,
+        avisos: ['El tope de 2 h 30 min es de Daniels (criterio de entrenador, no de un estudio cargado).'],
+      })
+    } else if (tl.pctSemana > limitePct) {
+      const sinDia = p.diasDisponibles !== null && e.carrerasPorSemana + e.fuerzaEnPlan >= p.diasDisponibles
+      propuestas.push({
+        regla: 'tirada_pesada',
+        sesion: 'general',
+        cambio: `La tirada larga (${tl.minutos} min) concentra el ${tl.pctSemana} % del tiempo semanal de carrera. No alargarla más y repartir mejor: añadir una salida suave de 30-40 minutos${sinDia ? ' (sin día libre, 20-30 minutos de rodaje suave a continuación de una sesión de fuerza)' : ''} o acortar ligeramente la tirada, hasta que pese menos del ${limitePct} %.`,
+        razon: `Con ${e.carrerasPorSemana} salidas por semana y ${e.minutosCarreraPorSemana} min de media, una sola sesión carga con casi todo el volumen. Daniels limita la tirada larga a ~25 % del kilometraje semanal; con pocas salidas por semana se tolera más, pero repartir el volumen en más sesiones fáciles reduce el riesgo y mejora la recuperación.`,
+        riesgo: 'medio', dois: [], datos: 0.8, persistencia: 0.7, prioridad: 6,
+        avisos: ['El límite (25-30 % del volumen, hasta 50 % con 3-4 salidas) es de Daniels y de la práctica habitual de los planes para corredores populares: criterio de entrenador.'],
+      })
+    }
+  }
+
+  // Descarga programada: los planes de los entrenadores de referencia intercalan una semana de descarga cada 3-4 semanas.
+  if (hayDatos && !sobrecarga && !e.retorno && !e.enDescarga && e.semanasSinDescarga !== null && e.semanasSinDescarga >= 4 &&
+      (comp === null || comp.dias > 14) && !propuestas.some(x => x.regla === 'tapering')) {
+    propuestas.push({
+      regla: 'descarga_programada',
+      sesion: 'general',
+      cambio: 'Programar una semana de descarga: bajar el volumen un 30-40 % manteniendo la frecuencia y una sesión de calidad corta.',
+      razon: `Lleva ${e.semanasSinDescarga} semanas seguidas sin una semana de menor carga. Pfitzinger intercala semanas de descarga, Fitzgerald una cada 3 semanas y Daniels ajusta la carga por bloques: la descarga permite absorber la carga acumulada antes de seguir subiendo.`,
+      riesgo: 'bajo',
+      metrica_objetivo: 'carga_semana',
+      direccion: 'baja',
+      dois: [],
+      datos: 0.7,
+      persistencia: 1,
+      prioridad: 6,
+      avisos: ['La frecuencia (cada 3-4 semanas) y el recorte (30-40 %) son práctica habitual de los planes de referencia, no una cifra de un estudio cargado.'],
     })
   }
 

@@ -1040,6 +1040,17 @@ export default function RevisarPlanPage() {
                           </div>
                         ))}
                         {typeof p?.progresion_semanal === 'string' && <p className="border-t border-[var(--border)] pt-2">{p.progresion_semanal}</p>}
+                        {(() => {
+                          const v = propuestaIA.validacion as { hallazgos?: { nivel: string; texto: string }[] } | null | undefined
+                          if (!v) return null
+                          if (!v.hallazgos?.length) return <p className="border-t border-[var(--border)] pt-2">Revisión automática de la parte de carrera: sin avisos (calidad, tirada larga, ritmos y volumen cuadran).</p>
+                          return (
+                            <div className="border-t border-[var(--border)] pt-2 space-y-1">
+                              <p className="font-medium text-[var(--text)]">Revisión automática de la parte de carrera</p>
+                              {v.hallazgos.map((h, i) => <p key={i} style={{ color: h.nivel === 'error' ? 'rgb(248,113,113)' : undefined }}>{h.nivel === 'error' ? 'Error: ' : 'Aviso: '}{h.texto}</p>)}
+                            </div>
+                          )
+                        })()}
                       </div>
                     )
                   })()}

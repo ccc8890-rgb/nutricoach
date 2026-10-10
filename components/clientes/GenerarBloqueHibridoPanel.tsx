@@ -17,6 +17,7 @@ export default function GenerarBloqueHibridoPanel({ clienteId }: { clienteId: st
   const [esHibrido, setEsHibrido] = useState(false)
   const [generando, setGenerando] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [avisosPlan, setAvisosPlan] = useState<{ nivel: string; texto: string }[] | null>(null)
 
   async function cargar() {
     const { data: perfil } = await supabase
@@ -68,6 +69,7 @@ export default function GenerarBloqueHibridoPanel({ clienteId }: { clienteId: st
         setError(data?.error ?? 'No se pudo generar el bloque.')
         return
       }
+      setAvisosPlan(Array.isArray(data?.validacion?.hallazgos) ? data.validacion.hallazgos : [])
       await cargar()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error inesperado.')
@@ -101,6 +103,12 @@ export default function GenerarBloqueHibridoPanel({ clienteId }: { clienteId: st
       {error && (
         <div className="mb-3 rounded-xl px-3 py-2 text-xs" style={{ background: 'rgba(239,68,68,0.08)', color: 'rgb(248,113,113)', border: '1px solid rgba(239,68,68,0.25)' }}>
           {error}
+        </div>
+      )}
+      {avisosPlan !== null && (
+        <div className="mb-3 rounded-xl px-3 py-2 text-xs space-y-1" style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+          <p className="font-medium" style={{ color: 'var(--text)' }}>Revisión automática de la parte de carrera</p>
+          {avisosPlan.length === 0 ? <p>Sin avisos: calidad, tirada larga, ritmos y volumen cuadran.</p> : avisosPlan.map((h, i) => <p key={i} style={{ color: h.nivel === 'error' ? 'rgb(248,113,113)' : undefined }}>{h.nivel === 'error' ? 'Error: ' : 'Aviso: '}{h.texto}</p>)}
         </div>
       )}
 

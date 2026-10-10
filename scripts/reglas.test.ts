@@ -19,9 +19,9 @@ function atleta(o: Partial<EstadoAtleta> = {}): EstadoAtleta {
     carga: carga(), intensidad: inten(80, 12, 8), intensidadPrevia: inten(78, 14, 8),
     limitesFc: { suaveHasta: 159, mediaHasta: 177 },
     deriva: { media: 4, n: 5 }, eficiencia: { ultimas3: 1.2, previas3: 1.15 },
-    fuerza28d: 8, fuerzaEnPlan: 2, carrerasPorSemana: 4, kmPorSemana: 40,
+    fuerza28d: 8, fuerzaEnPlan: 2, carrerasPorSemana: 4, kmPorSemana: 40, minutosCarreraPorSemana: 240,
     ejecucion: { repsEvaluadas: 12, repsLentas: 2, sesionesEvaluadas: 4, sesionesSaltadas: 0 },
-    diasCompeticion: null, competicion: null, retorno: false,
+    diasCompeticion: null, competicion: null, retorno: false, semanasParon: 0, tiradaLarga: { minutos: 60, pctSemana: 25 }, semanasSinDescarga: 2, enDescarga: false, suaveDaniels: null,
     perfil: { nivel: 'intermedio', diasDisponibles: 6, lesiones: [], restricciones: null, recuperacion: 'media' },
     alertas: [], ...o,
   }
@@ -138,12 +138,45 @@ assert.ok(evaluarReglas(sinCarga({ perfil: { ...base0, recuperacion: 'baja' } })
 const parón = evaluarReglas(sinCarga({ retorno: true, intensidad: inten(30, 50, 20) }))
 assert.deepEqual(parón.propuestas.map(p => p.regla), ['retorno'])
 assert.ok(parón.notas.some(n => n.includes('parón')))
-assert.ok(parón.propuestas[0].avisos![0].includes('criterio de entrenador'))
+assert.ok(parón.propuestas[0].avisos![0].includes('Daniels'))
 // Señales de fatiga bloquean la progresión.
 for (const alerta of ['salto_semanal', 'rhr_alto', 'monotonia']) assert.ok(!ids(atleta({ alertas: [alerta], carga: carga({ monotonia: 2.4 }) })).includes('progresion'), `${alerta} bloquea la progresión`)
 
+// 10c. Pautas de los entrenadores de referencia (Daniels, Pfitzinger, Fitzgerald).
+// Retorno: fórmula de Daniels para parones de hasta 4 semanas; más largos, reconstrucción.
+const ret = (semanas: number) => evaluarReglas(atleta({ retorno: true, semanasParon: semanas })).propuestas.find(p => p.regla === 'retorno')!
+assert.ok(ret(2).cambio.includes('7 días al 50 %') && ret(2).cambio.includes('otros 7 al 75 %'), ret(2).cambio) // 14 días → 7 + 7
+assert.ok(ret(1).cambio.includes('3.5') === false && ret(3).cambio.includes('~21 días'))
+assert.ok(ret(2).avisos![0].includes('segunda mano'))
+assert.ok(ret(6).cambio.includes('Parón largo') && ret(6).cambio.includes('4-6 semanas'))
+assert.ok(ret(6).avisos![0].includes('criterio de entrenador'))
+// Tirada larga: tope de 2 h 30 y peso relativo según las salidas por semana.
+assert.ok(!ids(atleta({ tiradaLarga: { minutos: 70, pctSemana: 28 } })).some(r => r.startsWith('tirada')))
+assert.ok(ids(atleta({ tiradaLarga: { minutos: 165, pctSemana: 40 } })).includes('tirada_excesiva'))
+const pesada = evaluarReglas(atleta({ carrerasPorSemana: 3, tiradaLarga: { minutos: 70, pctSemana: 82 } })).propuestas.find(p => p.regla === 'tirada_pesada')!
+assert.ok(pesada && pesada.riesgo === 'medio' && pesada.cambio.includes('82 %') && pesada.cambio.includes('menos del 50 %'))
+assert.ok(ids(atleta({ carrerasPorSemana: 5, tiradaLarga: { minutos: 90, pctSemana: 40 } })).includes('tirada_pesada'), '40 % con 5 salidas supera el 30 %')
+assert.ok(!ids(atleta({ carrerasPorSemana: 3, tiradaLarga: { minutos: 70, pctSemana: 48 } })).includes('tirada_pesada'), '48 % con 3 salidas se tolera')
+assert.ok(!ids(atleta({ carrerasPorSemana: 2, tiradaLarga: { minutos: 70, pctSemana: 90 } })).some(r => r.startsWith('tirada')), 'con 2 salidas no se evalúa')
+// Sin día libre se ofrece la alternativa de rodaje tras fuerza.
+const sinDia2 = evaluarReglas(atleta({ carrerasPorSemana: 3, fuerzaEnPlan: 3, perfil: { nivel: 'intermedio', diasDisponibles: 6, lesiones: [], restricciones: null, recuperacion: 'media' }, tiradaLarga: { minutos: 70, pctSemana: 82 } })).propuestas.find(p => p.regla === 'tirada_pesada')!
+assert.ok(sinDia2.cambio.includes('sin día libre'))
+// Descarga programada: tras 4+ semanas sin descargar, salvo que ya esté en descarga, vuelva de parón, haya sobrecarga o carrera cerca.
+assert.ok(ids(atleta({ semanasSinDescarga: 4 })).includes('descarga_programada'))
+assert.ok(!ids(atleta({ semanasSinDescarga: 3 })).includes('descarga_programada'))
+assert.ok(!ids(atleta({ semanasSinDescarga: null })).includes('descarga_programada'))
+assert.ok(!ids(atleta({ semanasSinDescarga: 5, enDescarga: true })).includes('descarga_programada'), 'su plan ya está en descarga')
+assert.ok(!ids(atleta({ semanasSinDescarga: 5, retorno: true, semanasParon: 2 })).includes('descarga_programada'))
+assert.ok(!ids(atleta({ semanasSinDescarga: 5, competicion: comp(10, 'running_hm'), diasCompeticion: 10 })).includes('descarga_programada'), 'a 10 días de una media ya hace tapering')
+assert.ok(ids(atleta({ semanasSinDescarga: 5, competicion: comp(40, 'running_hm'), diasCompeticion: 40 })).includes('descarga_programada'))
+// Contraste con Daniels cuando se conoce el pulso máximo.
+const conDaniels = evaluarReglas(atleta({ ...carlos, suaveDaniels: { techo: 152, pct: 18 } })).propuestas.find(p => p.regla === 'reparto_suave')!
+assert.ok(conDaniels.avisos!.some(a => a.includes('Daniels') && a.includes('152 ppm') && a.includes('18 %')))
+assert.ok(conDaniels.razon.includes('Casado 2022') && conDaniels.dois.includes(DOI.CASADO_2022))
+assert.ok(!evaluarReglas(carlos).propuestas.find(p => p.regla === 'reparto_suave')!.avisos!.some(a => a.includes('Daniels')), 'sin pulso máximo no hay contraste')
+
 // 11. Integridad de todas las propuestas posibles: DOI conocidos, métrica válida y dirección solo donde aplica.
-const todas = [sobre, carlos, atleta({ retorno: true }), atleta({ competicion: comp(6, 'running_5k'), diasCompeticion: 6 }), atleta({ fuerzaEnPlan: 0, fuerza28d: 0, perfil: conLesion }), atleta({ competicion: comp(5, 'running_maraton'), diasCompeticion: 5, alertas: ['rhr_alto', 'monotonia'], carga: carga({ monotonia: 2.5 }), fuerzaEnPlan: 0, fuerza28d: 0, deriva: { media: 12, n: 5 }, ejecucion: { repsEvaluadas: 10, repsLentas: 9, sesionesEvaluadas: 3, sesionesSaltadas: 0 } }), atleta(), atleta({ fuerzaEnPlan: 2, fuerza28d: 1 })]
+const todas = [atleta({ tiradaLarga: { minutos: 165, pctSemana: 40 } }), atleta({ carrerasPorSemana: 3, tiradaLarga: { minutos: 70, pctSemana: 82 } }), atleta({ semanasSinDescarga: 5 }), atleta({ retorno: true, semanasParon: 3 }), sobre, carlos, atleta({ retorno: true }), atleta({ competicion: comp(6, 'running_5k'), diasCompeticion: 6 }), atleta({ fuerzaEnPlan: 0, fuerza28d: 0, perfil: conLesion }), atleta({ competicion: comp(5, 'running_maraton'), diasCompeticion: 5, alertas: ['rhr_alto', 'monotonia'], carga: carga({ monotonia: 2.5 }), fuerzaEnPlan: 0, fuerza28d: 0, deriva: { media: 12, n: 5 }, ejecucion: { repsEvaluadas: 10, repsLentas: 9, sesionesEvaluadas: 3, sesionesSaltadas: 0 } }), atleta(), atleta({ fuerzaEnPlan: 2, fuerza28d: 1 })]
 const validos = new Set<string>(Object.values(DOI))
 const vistas = new Set<string>()
 for (const est of todas) for (const p of evaluarReglas(est).propuestas) {
@@ -156,7 +189,7 @@ for (const est of todas) for (const p of evaluarReglas(est).propuestas) {
   assert.ok(p.datos >= 0 && p.datos <= 1 && p.persistencia >= 0 && p.persistencia <= 1)
   assert.ok(!/NaN|undefined|null/.test(p.cambio + p.razon), `${p.regla}: texto con valores vacíos → ${p.cambio} ${p.razon}`)
 }
-for (const regla of ['retorno', 'sobrecarga', 'tapering', 'reparto_suave', 'deriva_alta', 'ejecucion_lenta', 'fuerza', 'fuerza_sin_registro', 'monotonia', 'pulso_reposo', 'progresion']) assert.ok(vistas.has(regla), `la regla ${regla} no se ha ejercitado`)
+for (const regla of ['tirada_excesiva', 'tirada_pesada', 'descarga_programada', 'retorno', 'sobrecarga', 'tapering', 'reparto_suave', 'deriva_alta', 'ejecucion_lenta', 'fuerza', 'fuerza_sin_registro', 'monotonia', 'pulso_reposo', 'progresion']) assert.ok(vistas.has(regla), `la regla ${regla} no se ha ejercitado`)
 
 // 12. Fiabilidad: más datos y mejor evidencia suben; la IA queda por debajo y nunca pasa de 0,8.
 const fuerte = calcularFiabilidad({ datos: 1, persistencia: 1, nivelesEvidencia: ['meta_analisis', 'rct'], origen: 'regla' })

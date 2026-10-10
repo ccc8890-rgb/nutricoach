@@ -36,7 +36,7 @@ const sumar = (f: string, n: number) => { const d = new Date(`${f}T12:00:00Z`); 
   for (let f = desde; f <= hoy; f = sumar(f, CADA)) {
     const hasta = todos.filter(e => e.fecha <= f)
     if (!hasta.length) continue
-    const panel = construirPanel(hasta, [], f, 180, umbrales.fcUmbral)
+    const panel = construirPanel(hasta, [], f, 180, umbrales.fcUmbral, umbrales.fcMax)
     const alertas = calcularAlertas({ resumen: panel.resumen, semanas: panel.semanas, diasParaCompeticion: null })
     const estado = construirEstado({ hoy: f, panel, fcUmbral: umbrales.fcUmbral, vdot, diasCompeticion: null, ejecucion: [], nombresSesionesPlan: [], alertas })
     const r = evaluarReglas(estado)

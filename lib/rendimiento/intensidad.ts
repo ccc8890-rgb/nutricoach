@@ -28,7 +28,12 @@ export interface ResumenIntensidad {
   valoracion: ValoracionIntensidad
 }
 
+/** Daniels fija el esfuerzo fácil (E) en ≤79 % del pulso máximo; Pfitzinger llega al 81 % en su carrera aeróbica general. */
+export const FRACCION_FACIL_DANIELS = 0.79
+
 export interface DistribucionIntensidad {
+  /** Para contrastar con los entrenadores: % del tiempo (últimas 4 semanas) por debajo del techo de Daniels, o null si no se conoce el pulso máximo. */
+  suaveDaniels: { techo: number; pct: number } | null
   /** Pulsos (ppm) que separan las tres intensidades; null si no se conoce el umbral del atleta. */
   limites: { suaveHasta: number; mediaHasta: number } | null
   /** Últimas 12 semanas, de la más antigua a la actual. */
@@ -101,12 +106,15 @@ export function repartoEntreFechas(entrenos: EntrenoIntensidad[], desde: string,
   return resumir(t)
 }
 
-export function distribucionIntensidad(entrenos: EntrenoIntensidad[], hoy: string, fcUmbral: number | null): DistribucionIntensidad {
+export function distribucionIntensidad(entrenos: EntrenoIntensidad[], hoy: string, fcUmbral: number | null, fcMax: number | null = null): DistribucionIntensidad {
   const limites = fcUmbral && fcUmbral > 0 ? { suaveHasta: Math.round(fcUmbral * FRACCION_SUAVE), mediaHasta: Math.round(fcUmbral) } : null
   const vacio = (): TiempoIntensidad => ({ suave: 0, media: 0, dura: 0 })
   const reciente = vacio()
   const previo = vacio()
   const porSemana = new Map<string, TiempoIntensidad>()
+  const techoDaniels = fcMax && fcMax > 0 ? Math.round(fcMax * FRACCION_FACIL_DANIELS) : null
+  let bajoDaniels = 0
+  let totalDaniels = 0
 
   for (const e of entrenos) {
     if (!esCarrera(e.tipo)) continue
@@ -114,6 +122,7 @@ export function distribucionIntensidad(entrenos: EntrenoIntensidad[], hoy: strin
     const d = diasEntre(e.fecha, hoy)
     if (!t || d < 0) continue
     const destino = d < 28 ? reciente : d < 84 ? previo : null
+    if (d < 28 && techoDaniels) for (const l of e.vueltas ?? []) if (l.fc_media && l.duracion_s > 0) { totalDaniels += l.duracion_s; if (l.fc_media < techoDaniels) bajoDaniels += l.duracion_s }
     if (destino) { destino.suave += t.suave; destino.media += t.media; destino.dura += t.dura }
     const s = lunesDe(e.fecha)
     const acc = porSemana.get(s) ?? vacio()
@@ -131,5 +140,9 @@ export function distribucionIntensidad(entrenos: EntrenoIntensidad[], hoy: strin
     cursor = f.toISOString().slice(0, 10)
   }
 
-  return { limites, semanas, reciente: resumir(reciente), previo: resumir(previo) }
+  const resumenReciente = resumir(reciente)
+  return {
+    suaveDaniels: techoDaniels && resumenReciente.valoracion !== 'sin_datos' && totalDaniels > 0 ? { techo: techoDaniels, pct: Math.round((bajoDaniels / totalDaniels) * 100) } : null,
+    limites, semanas, reciente: resumenReciente, previo: resumir(previo),
+  }
 }

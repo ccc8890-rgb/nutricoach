@@ -73,7 +73,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     fecha: d.fecha as string, rhr: d.rhr ?? null, readiness: d.training_readiness ?? null,
     body_battery_max: d.body_battery_max ?? null, sueno_h: d.sueno_h ?? null, stress_avg: d.stress_avg ?? null,
   }))
-  const panel = construirPanel(todos, bienestar, hoy, 180, umbrales.fcUmbral)
+  const panel = construirPanel(todos, bienestar, hoy, 180, umbrales.fcUmbral, umbrales.fcMax)
   const recientes = todos.filter(e => e.fecha >= desde28)
 
   const proxima = comps?.[0]

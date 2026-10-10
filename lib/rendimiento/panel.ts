@@ -116,6 +116,7 @@ export function construirPanel(
   hoy: string,
   diasVista = 180,
   fcUmbral: number | null = null,
+  fcMax: number | null = null,
 ): PanelRendimiento {
   const ordenados = [...entrenos].sort((a, b) => a.fecha.localeCompare(b.fecha))
   const primera = ordenados[0]?.fecha ?? hoy
@@ -165,7 +166,7 @@ export function construirPanel(
     eficiencia,
     deriva,
     deportes,
-    intensidad: distribucionIntensidad(ordenados, hoy, fcUmbral),
+    intensidad: distribucionIntensidad(ordenados, hoy, fcUmbral, fcMax),
     tecnica: { puntos: tecnicaPuntos, resumen: resumenTecnica(tecnicaPuntos, hoy) },
     vo2max: ordenados.filter(e => e.vo2max).map(e => ({ fecha: e.fecha, valor: e.vo2max! })),
     entrenos: ordenados.slice(-25).reverse().map(sinVueltas),

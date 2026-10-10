@@ -47,6 +47,6 @@ export async function GET(
     stress_avg: d.stress_avg ?? null,
   }))
 
-  const panel = construirPanel((entrenos ?? []) as EntrenoPanel[], bienestar, hoy, dias, umbrales.fcUmbral)
+  const panel = construirPanel((entrenos ?? []) as EntrenoPanel[], bienestar, hoy, dias, umbrales.fcUmbral, umbrales.fcMax)
   return NextResponse.json({ ...panel, umbrales, ejecucion, hoy })
 }

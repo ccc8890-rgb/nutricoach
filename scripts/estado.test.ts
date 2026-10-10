@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { construirEstado, vuelveDeParon } from '../lib/rendimiento/estado'
+import { construirEstado, semanasDeParon, semanasSeguidasSinDescarga, vuelveDeParon } from '../lib/rendimiento/estado'
 import type { PanelRendimiento } from '../lib/rendimiento/panel'
 
 const dia = (n: number) => new Date(Date.UTC(2026, 9, 10) - n * 86_400_000).toISOString().slice(0, 10)
@@ -48,4 +48,20 @@ const conPerfil = construirEstado({ ...base, panel: panel([]), perfil: { nivel: 
 assert.equal(conPerfil.perfil.restricciones, null)
 assert.deepEqual(conPerfil.perfil.lesiones, ['rodilla'])
 assert.equal(conPerfil.competicion?.disciplina, 'running_hm')
+// Duración del parón y semanas sin descarga.
+assert.equal(semanasDeParon([3, 3, 0, 0, 2, 3]), 2)
+assert.equal(semanasDeParon([3, 0, 0, 0, 1, 2, 3]), 3)
+assert.equal(semanasDeParon([3, 0, 0, 0, 1, 2, 3, 3]), 0, 'con 4 semanas de vuelta ya no es retorno')
+assert.equal(semanasDeParon([3, 3, 3, 3]), 0)
+assert.equal(semanasDeParon([3, 3, 0, 0, 2, 3, 3, 3]), 0, 'ya lleva 4 semanas de vuelta')
+// Carga semanal (TSS): una descarga es una semana ≤75 % de la media de las 3 anteriores.
+const s3 = [3, 3, 3, 3, 3, 3, 3, 3]
+assert.equal(semanasSeguidasSinDescarga([100, 110, 105, 120, 125, 130, 128, 135], s3), 8, 'sin ninguna descarga')
+assert.equal(semanasSeguidasSinDescarga([100, 110, 105, 120, 125, 130, 90, 135], s3), 1, 'descargó hace 2 semanas (90 ≤ 75 % de la media de las 3 previas, 125)')
+assert.equal(semanasSeguidasSinDescarga([100, 110, 105, 120, 125, 130, 80, 135], s3), 1, 'descarga clara hace 2 semanas')
+assert.equal(semanasSeguidasSinDescarga([100, 110, 105, 120, 125, 130, 135, 60], s3), 0, 'la semana más reciente fue de descarga')
+assert.equal(semanasSeguidasSinDescarga([100, 110], [3, 3]), null, 'pocas semanas')
+assert.equal(semanasSeguidasSinDescarga([0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]), null, 'sin actividad no hay racha')
+// Una semana vacía corta la racha (cuenta como parada).
+assert.equal(semanasSeguidasSinDescarga([100, 110, 105, 120, 0, 130, 128, 135], [3, 3, 3, 3, 0, 3, 3, 3]), 3)
 console.log('estado.test OK')

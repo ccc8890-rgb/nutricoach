@@ -7,7 +7,7 @@ import type { PropuestaRegla } from '../lib/rendimiento/reglas'
 const estado = (o: Partial<EstadoAtleta> = {}): EstadoAtleta => ({
   hoy: '2026-10-10', carreras6sem: 12, fcUmbral: 177, vdot: 45, ritmos: null, carga: null,
   intensidad: { minutos: 300, pctSuave: 70, pctMedia: 20, pctDura: 10, valoracion: 'mejorable' }, intensidadPrevia: { minutos: 0, pctSuave: 0, pctMedia: 0, pctDura: 0, valoracion: 'sin_datos' },
-  limitesFc: null, deriva: { media: null, n: 0 }, eficiencia: { ultimas3: null, previas3: null }, fuerza28d: 0, fuerzaEnPlan: 0, carrerasPorSemana: 3, kmPorSemana: 30,
+  limitesFc: null, deriva: { media: null, n: 0 }, eficiencia: { ultimas3: null, previas3: null }, fuerza28d: 0, fuerzaEnPlan: 0, carrerasPorSemana: 3, kmPorSemana: 30, minutosCarreraPorSemana: 180,
   ejecucion: { repsEvaluadas: 0, repsLentas: 0, sesionesEvaluadas: 0, sesionesSaltadas: 0 }, diasCompeticion: null, alertas: [], ...o,
 })
 const dec = (o: Partial<DecisionIA> = {}): DecisionIA => ({ sesion: 'general', cambio: 'Mantener la estructura de la semana y revisar el sábado', razon: 'Los datos son estables y no hay motivo para tocar el plan.', evidencia: 'criterio de entrenador (sin cita)', confianza: 0.6, ...o })

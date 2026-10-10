@@ -7,6 +7,9 @@ import { siguienteFaseBloque, type FaseBloque } from '@/lib/entrenos/bloques'
 import type { PerfilEntrenoCliente } from '@/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { bloqueEjercicioGenerado } from '@/lib/training/generated-session-blocks'
+import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
+import { validarSemanaCarrera, type ContextoValidacion } from '@/lib/entrenos/validar-plan-carrera'
+import { formatearRitmo } from '@/lib/entrenos/ritmos'
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com/v1/chat/completions'
 const MODEL = 'deepseek-chat'
@@ -158,12 +161,12 @@ export async function POST(req: NextRequest) {
 
     // Protocolos específicos por modalidad deportiva
     const SPORT_PROTOCOLS: Record<string, string> = {
-      running: `RUNNING — Metodología Daniels (VDOT):
-• Zonas: Easy Z2 (60-70% HRmax), Tempo Z3-4 (88-92%), Intervals Z5 (95-100%)
-• Regla 80/20: 80% volumen en Z1-Z2, 20% calidad (tempo/intervals)
-• Progresión: +10% volumen semanal máximo, semana de descarga cada 4ª semana
-• Si VDOT disponible: calcular ritmos de entrenamiento precisos por zona
-• Prioridad: construir base aeróbica antes de añadir velocidad`,
+      running: `RUNNING — pautas en las que coinciden Daniels (VDOT), Pfitzinger, Fitzgerald (80/20) y Hudson (adaptativo):
+• Intensidad: la mayor parte del tiempo es suave (modelo piramidal o polarizado según la fase; Casado 2022); un 15-25 % como máximo de calidad. Daniels: cada intensidad de calidad tiene tope semanal (T ≤10 % del kilometraje, I ≤8 %, R ≤5 %) pensado para 40+ km/semana; con menos volumen manda el reparto por tiempo (~80/20).
+• Zonas de pulso orientativas de Daniels: E 65-79 % del pulso máximo, M 80-90 %, T 88-92 %, I 98-100 %. Si se te dan RITMOS CALCULADOS, usa solo esos; no calcules otros.
+• Estructura semanal: sesiones de calidad nunca en días consecutivos (alternar duro-fácil), con 4 salidas o menos como máximo 2 de calidad; tirada larga como máximo 2 h 30 min y sin sesión de calidad el día anterior.
+• Progresión: sube el volumen de forma gradual desde lo que el atleta corre de verdad (los saltos de más del 30 % semanal se asocian a más lesiones; el «10 %» es solo una heurística), con semana de descarga cada 3-4 semanas.
+• Primero base aeróbica, luego calidad; adapta cada sesión al estado actual del atleta (Hudson), sin seguir el plan a ciegas.`,
 
       gym: `GYM / FUERZA — Metodología Schoenfeld (2010, 2017):
 • Hipertrofia: 6-12 reps, 60-75% 1RM, 3-4 sets, 60-90s descanso
@@ -281,6 +284,33 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
       ? `\n6. Sin datos de RM/VDOT reales del cliente: ESTIMA pesos de partida conservadores para un atleta de nivel ${nivel} de ~65kg (ej. sentadilla goblet, press banca, remo, dominadas asistidas si hace falta) y ritmos de partida conservadores en min/km para Z2/umbral/series según nivel ${nivel}. Estos valores son un punto de partida — el sistema los ajustará solo según el RPE que registre el cliente en el próximo bloque. NUNCA dejes "peso_estimado_kg" o "ritmo_objetivo" vacíos en ejercicios de fuerza o sesiones de carrera respectivamente.`
       : ''
 
+    // Datos REALES del reloj y ritmos calculados con el VDOT: el plan se diseña sobre lo que el atleta hace de verdad, y los ritmos no los inventa la IA.
+    let bloqueReloj = ''
+    const contextoValidacion: ContextoValidacion = { ritmos: null, minutosRealesSemana: null }
+    try {
+      const { estado: e } = await construirContextoRendimiento(sb, cliente_id, new Date().toISOString().slice(0, 10))
+      contextoValidacion.ritmos = e.ritmos
+      contextoValidacion.minutosRealesSemana = e.minutosCarreraPorSemana > 0 ? e.minutosCarreraPorSemana : null
+      const lineas: string[] = []
+      if (e.carreras6sem > 0) {
+        lineas.push(`- Corre de media ${e.carrerasPorSemana} veces por semana, ${e.kmPorSemana} km y ${e.minutosCarreraPorSemana} minutos por semana (últimas 4 semanas completas, según su reloj).`)
+        if (e.intensidad.valoracion !== 'sin_datos') lineas.push(`- Reparto de intensidad actual: ${e.intensidad.pctSuave} % suave, ${e.intensidad.pctMedia} % medio, ${e.intensidad.pctDura} % duro.`)
+        if (e.carga) lineas.push(`- Forma (CTL) ${e.carga.ctl}, fatiga (ATL) ${e.carga.atl}, frescura ${e.carga.tsb}.`)
+        if (e.retorno) lineas.push('- ⚠️ Vuelve de un parón reciente: volumen y calidad deben empezar bajos y progresar despacio.')
+        lineas.push(`- REGLA DURA: el volumen semanal de carrera del plan no puede superar en más de un 20 % lo que ya corre (${e.minutosCarreraPorSemana} min/semana); si hay que subir, hazlo en bloques progresivos.`)
+      } else {
+        lineas.push('- Sin entrenos de carrera registrados en el reloj: empieza conservador y deja claro que el volumen inicial es una estimación.')
+      }
+      if (e.ritmos) {
+        lineas.push(`- RITMOS DE ENTRENAMIENTO CALCULADOS (Daniels, VDOT ${e.vdot}): fácil/larga ${formatearRitmo(e.ritmos.E)}/km · maratón ${formatearRitmo(e.ritmos.M)}/km · umbral ${formatearRitmo(e.ritmos.T)}/km · intervalos ${formatearRitmo(e.ritmos.I)}/km · repeticiones ${formatearRitmo(e.ritmos.R)}/km. USA ESTOS valores en "ritmo_objetivo"; no calcules otros.`)
+      } else {
+        lineas.push('- Sin VDOT: indica ritmos orientativos con margen amplio y avisa en las notas de que el coach debe fijarlos con un test o una carrera reciente.')
+      }
+      bloqueReloj = `\n## DATOS REALES DEL RELOJ Y RITMOS\n${lineas.join('\n')}\n`
+    } catch (err) {
+      console.error('proponer-plan-ciencia: datos del reloj no disponibles', err instanceof Error ? err.message : err)
+    }
+
     const promptSistema = `Eres un preparador físico y entrenador personal de élite con 20 años de experiencia en España. Tienes certificación NSCA-CSCS (Certified Strength and Conditioning Specialist) y ACSM. Has preparado atletas recreacionales y semi-profesionales en running, CrossFit, Hyrox y triatlón.
 
 TU MISIÓN:
@@ -339,7 +369,7 @@ ${ajusteRpe || '→ Sin sesiones previas registradas. Empezar conservador (RPE 6
 
 ## ANÁLISIS CLÍNICO DEL CLIENTE
 ${informeClinicoBlock || '→ Sin informe clínico previo. Aplicar protocolos estándar.'}
-
+${bloqueReloj}
 ## EVIDENCIA CIENTÍFICA BASE
 ${evidenciasTexto}
 
@@ -422,6 +452,13 @@ ${instruccionDuracion}
       return NextResponse.json({ error: 'Respuesta IA no válida', raw: planTexto }, { status: 502 })
     }
 
+    // Revisión determinista del plan de carrera generado (no lo corrige: dice qué no cuadra para que el coach lo vea).
+    const sesionesGeneradas = ((planIA.sesiones as Record<string, unknown>[]) ?? []).map(x => ({
+      nombre: String(x.nombre ?? ''), dia_semana: (x.dia_semana as string) ?? null, tipo_sesion: (x.tipo_sesion as string) ?? null,
+      ritmo_objetivo: (x.ritmo_objetivo as string) ?? null, duracion_min: typeof x.duracion_min === 'number' ? x.duracion_min : null,
+    }))
+    const validacion = sesionesGeneradas.some(x => x.tipo_sesion === 'carrera' || /carrera|tirada|rodaje|tempo|series/i.test(x.nombre)) ? validarSemanaCarrera(sesionesGeneradas, contextoValidacion) : null
+
     // Guardar automáticamente en planes_entrenamiento + sesiones_entrenamiento
     let planGuardadoId: string | null = null
     try {
@@ -499,7 +536,7 @@ ${instruccionDuracion}
         await sb.from('registros_ia').insert({
           cliente_id,
           tipo: 'plan_entreno_ia',
-          respuesta_json: planIA,
+          respuesta_json: validacion ? { ...planIA, _validacion: validacion } : planIA,
         })
       }
     } catch (saveErr) {
@@ -510,6 +547,7 @@ ${instruccionDuracion}
     return NextResponse.json({
       plan: planIA,
       plan_id: planGuardadoId,
+      validacion,
       metadata: {
         rpe_promedio: rpePromedio,
         ajuste_rpe: ajusteRpe,
