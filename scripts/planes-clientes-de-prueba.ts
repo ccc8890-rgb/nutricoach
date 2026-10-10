@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
 import { construirEntradaMacro, type DatosClienteMacro } from '../lib/entrenos/macro-desde-cliente'
 import { planificarMacrociclo } from '../lib/entrenos/macrociclo'
+import { concretarSemana } from '../lib/entrenos/macro-a-sesiones'
 
 for (const l of readFileSync('.env.local', 'utf8').split('\n')) { const m = l.match(/^([A-Z_]+)=(.*)$/); if (m) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '') }
 const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
@@ -59,6 +60,14 @@ async function main() {
     salida.push('| Sem | Fase | Min | Salidas | Tirada | % suave | Fuerza | Sesiones (día:tipo min) |', '|---|---|---|---|---|---|---|---|')
     for (const s of r.semanas) salida.push(`| ${s.n}${s.descarga ? ' ↓' : ''} | ${s.fase} | ${s.minutos} | ${s.salidas} | ${s.tiradaMin} | ${s.pctSuave} | ${s.fuerza} | ${s.sesiones.map(x => `${DIAS[x.dia]}:${x.tipo} ${x.minutos}`).join(', ')} |`)
     salida.push('')
+    // Las dos primeras semanas ya concretas (sin IA): ritmos del VDOT, tiempos que suman la sesión.
+    for (const sem of r.semanas.slice(0, 2)) {
+      salida.push(`**Semana ${sem.n} (${sem.lunes}, ${sem.fase}${sem.descarga ? ', descarga' : ''}) en concreto:**`)
+      for (const x of concretarSemana(sem, r.ritmos, entrada.competicion?.disciplina)) salida.push(`- ${x.dia} · ${x.titulo} (${x.minutos} min): ${x.detalle}`)
+      if (sem.fuerza > 0) salida.push(`- Fuerza: ${sem.fuerza} sesión(es) (las que ya tiene en su plan).`)
+      salida.push('')
+    }
+    salida.push('**De dónde sale cada regla:**', ...r.fundamentos.map(f => `- [${f.tipo}] ${f.regla} — ${f.fuente}`), '')
   }
   const ruta = `docs/${hoy.split('-').reverse().join('-')}_planes-clientes-de-prueba.md`
   writeFileSync(ruta, salida.join('\n'))

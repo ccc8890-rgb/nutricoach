@@ -1,16 +1,38 @@
 import assert from 'node:assert/strict'
-import { construirEntradaMacro, disciplinaCanonica, minutosCarreraMedios, type DatosClienteMacro } from '../lib/entrenos/macro-desde-cliente'
+import { analizarVolumen, construirEntradaMacro, disciplinaCanonica, minutosPorSemana, type DatosClienteMacro } from '../lib/entrenos/macro-desde-cliente'
 
 const hoy = '2026-10-10' // sábado; semana en curso desde el lunes 05-10
 const run = (fecha: string, min: number) => ({ fecha, tipo: 'running', duracion_s: min * 60 })
 
-// Media de las 4 semanas completas (28-09 → 04-10 es la última) sin contar la semana en curso.
+// Minutos por semana completa (la semana en curso no cuenta): [0] = 28-09→04-10 … 
 const entrenos = [run('2026-10-07', 90), run('2026-10-03', 30), run('2026-09-29', 30), run('2026-09-22', 60), run('2026-09-15', 40), run('2026-09-10', 40)]
-const m = minutosCarreraMedios(entrenos, hoy)
-assert.equal(m.minutos, Math.round((60 + 60 + 40 + 40) / 4)) // la del 07-10 es de la semana en curso y no cuenta
-assert.equal(m.semanasConDatos, 4)
-assert.equal(minutosCarreraMedios([], hoy).minutos, null)
-assert.equal(minutosCarreraMedios([{ fecha: '2026-10-01', tipo: 'strength_training', duracion_s: 3600 }], hoy).minutos, null)
+const sem = minutosPorSemana(entrenos, hoy, 6)
+assert.deepEqual(sem, [60, 60, 40, 40, 0, 0]) // el del 07-10 es de la semana en curso y no cuenta; 03-10 y 29-09 caen en la misma semana
+assert.deepEqual(minutosPorSemana([], hoy, 3), [0, 0, 0])
+assert.deepEqual(minutosPorSemana([{ fecha: '2026-10-01', tipo: 'strength_training', duracion_s: 3600 }], hoy, 3), [0, 0, 0])
+
+// Volumen habitual: media de las semanas con carrera; una semana suelta en cero no lo rebaja.
+assert.equal(analizarVolumen([60, 60, 40, 40], 5).minutos, 50)
+const suelta = analizarVolumen([150, 0, 150, 150], 3)
+assert.equal(suelta.minutos, 150)
+assert.equal(suelta.semanasParon, 0)
+assert.ok(suelta.nota?.includes('enfermedad'))
+assert.equal(analizarVolumen([100, 0, 100, 0], 3).minutos, 50, 'irregular: se promedian todas')
+// Parón en curso: el volumen de partida es el de antes de parar.
+const paron = analizarVolumen([0, 0, 0, 120, 120, 120, 120], 25)
+assert.equal(paron.semanasParon, 3)
+assert.equal(paron.minutos, 120)
+// Acaba de volver (≤ 2 semanas): el retorno sigue vigente y el volumen de referencia es el previo, no la media con los ceros.
+const vuelta = analizarVolumen([40, 30, 0, 0, 0, 150, 150, 150], 2)
+assert.equal(vuelta.semanasParon, 3)
+assert.equal(vuelta.minutos, 150)
+// Ya lleva varias semanas de vuelta: retorno terminado, manda la media reciente.
+const yaVuelta = analizarVolumen([100, 90, 80, 70, 0, 0, 150, 150], 2)
+assert.equal(yaVuelta.semanasParon, 0)
+assert.equal(yaVuelta.minutos, 85)
+// Sin datos recientes: no se inventa nada.
+assert.equal(analizarVolumen([0, 0, 0, 0], null).minutos, null)
+assert.equal(analizarVolumen([0, 0, 0, 0], 40).semanasParon, 5)
 
 const base: DatosClienteMacro = {
   hoy,

@@ -72,6 +72,15 @@ export interface ResultadoMacro {
   avisos: string[]
   datosFaltantes: string[]
   supuestos: string[]
+  /** Cada regla aplicada a este plan con su origen, para que el coach sepa qué es estudio, qué es libro de entrenador y qué es criterio. */
+  fundamentos: Fundamento[]
+}
+
+export interface Fundamento {
+  regla: string
+  /** estudio = trabajo publicado verificable; libro = método de un entrenador (cifras de segunda mano); criterio = decisión de prudencia sin cifra publicada. */
+  tipo: 'estudio' | 'libro' | 'criterio'
+  fuente: string
 }
 
 // ───────────────────────── constantes (criterio de entrenador salvo indicación) ─────────────────────────
@@ -86,7 +95,8 @@ const PICO_MIN: Record<PerfilPrueba | 'ultra' | 'general', Record<Nivel, number>
   general: { principiante: 150, intermedio: 240, avanzado: 330 },
 }
 /** Volumen semanal de partida cuando no hay datos del reloj. */
-const BASE_SUPUESTA: Record<Nivel, number> = { principiante: 90, intermedio: 150, avanzado: 240 }
+// Sin datos del reloj se parte de poco: a quien empieza o corre de forma irregular es peor pasarse que quedarse corto (las dos primeras semanas son de calibración).
+const BASE_SUPUESTA: Record<Nivel, number> = { principiante: 45, intermedio: 120, avanzado: 200 }
 /** Tope de la tirada larga por prueba (min). Daniels: 2 h 30 min; ultras: más tiempo de pie (criterio). */
 const TIRADA_MAX: Record<PerfilPrueba | 'ultra' | 'general', number> = { corta: 75, media: 100, larga: 120, muy_larga: 150, ultra: 210, general: 90 }
 /** Salidas por semana por defecto. */
@@ -205,7 +215,11 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
 
   // Volumen de partida.
   let base: number
-  if (e.minutosSemanaActuales !== null && e.minutosSemanaActuales >= MIN_VOLUMEN) base = e.minutosSemanaActuales
+  // El dato real del reloj manda aunque sea bajo (con un mínimo para poder armar una semana); solo se supone si no hay dato.
+  if (e.minutosSemanaActuales !== null) {
+    base = Math.max(MIN_VOLUMEN, e.minutosSemanaActuales)
+    if (e.minutosSemanaActuales < MIN_VOLUMEN) supuestos.push(`Corre solo ${e.minutosSemanaActuales} min por semana: por debajo del mínimo para armar un plan, se parte de ${MIN_VOLUMEN} min.`)
+  }
   else {
     base = BASE_SUPUESTA[nivel]
     supuestos.push(`Sin volumen real en el reloj: se parte de ${base} min/semana (supuesto para nivel ${nivel}).`)
@@ -278,6 +292,7 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
   const semanas: SemanaMacro[] = []
   /** Nivel de carga en el que está el atleta (el que se retoma tras una descarga). */
   let volumen = base
+  const baseSupuesta = e.minutosSemanaActuales === null
   let cargaSeguidas = 0
   let previaFueDescarga = false
 
@@ -307,7 +322,10 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
         // Tras una descarga se retoma el nivel anterior sin subir; después se sube. Tras un parón se reincorpora más deprisa hasta el volumen habitual.
         const reincorporando = volumen < base * 0.99 && retorno
         const paso = reincorporando ? Math.max(crecimiento, 0.15) : crecimiento
-        const siguiente = previaFueDescarga ? volumen : Math.min(pico, volumen * (1 + paso))
+        // Sin datos reales, las 2 primeras semanas no suben: primero se comprueba qué hace de verdad el atleta.
+        const calibrando = baseSupuesta && i < 2
+        if (calibrando) notas.push('Semana de calibración: no hay datos reales de carrera, se parte de una estimación y no se sube hasta ver qué hace de verdad.')
+        const siguiente = previaFueDescarga || calibrando ? volumen : Math.min(pico, volumen * (1 + paso))
         v = reincorporando ? Math.min(siguiente, base) : siguiente
         volumen = v
         cargaSeguidas++
@@ -323,7 +341,9 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
 
   // Semana de la carrera, siempre al final del plan: rodajes muy suaves y cortos con unas pocas progresiones.
   if (haySemanaCarrera) {
-    const vCarrera = Math.max(MIN_VOLUMEN, redondea5(volumen * taperFactor(clase, true) * 0.75))
+    // La semana de la carrera lleva solo rodajes cortos con progresiones: una fracción del volumen máximo, sin contar la prueba (que ya es mucho esfuerzo).
+    const fraccionCarrera: Record<string, number> = { corta: 0.45, media: 0.4, larga: 0.35, muy_larga: 0.3, ultra: 0.25, general: 0.45 }
+    const vCarrera = Math.max(MIN_VOLUMEN, redondea5(volumen * (fraccionCarrera[clase] ?? 0.4)))
     semanas.push(construirSemana({ maxSalidas: salidasTope, n: semanas.length + 1, lunes: sumarDias(inicioPlan, semanas.length * 7), fase: 'carrera', descarga: false, minutos: vCarrera, salidas: Math.min(3, salidas, Math.max(2, diaPrueba! - 1)), diaCarrera: diaPrueba!, clase, nivel, prudente, salud, lesionado, veterano, sesionesFuerzaFijas: 0, notas: ['Semana de la carrera: rodajes muy suaves y cortos con unas pocas progresiones; descanso el día antes.'] }))
   }
   // Si la prueba cae esta misma semana (o antes de que empiece la cuadrícula) solo se prepara la competición.
@@ -342,6 +362,7 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
     avisos,
     datosFaltantes: [...new Set(datosFaltantes)],
     supuestos,
+    fundamentos: fundamentosDe({ nivel, comp: comp ? { disciplina: comp.disciplina } : null, salud, lesionado, veterano, retorno, baseSupuesta, descargaCada, semanas, crecimiento, fuerza: semanas.some(x => x.fuerza > 0) }),
   }
 }
 
@@ -473,4 +494,23 @@ function construirSemana(a: ArgSemana): SemanaMacro {
   if (a.sesionesFuerzaFijas === 0 && (a.lesionado)) fuerza = Math.min(fuerza, 1)
 
   return { n: a.n, lunes: a.lunes, fase, descarga: a.descarga, minutos: total, salidas: sesiones.length, tiradaMin: tirada, pctSuave, fuerza, sesiones, notas: a.notas }
+}
+
+/** Reglas realmente aplicadas a este plan y su origen. Los DOI de los estudios están verificados en la base de conocimiento (scripts/verificar-doi-reglas.ts). */
+function fundamentosDe(a: { nivel: Nivel; comp: { disciplina: string } | null; salud: ReturnType<typeof banderasSalud>; lesionado: boolean; veterano: boolean; retorno: boolean; baseSupuesta: boolean; descargaCada: number; semanas: SemanaMacro[]; crecimiento: number; fuerza: boolean }): Fundamento[] {
+  const f: Fundamento[] = []
+  f.push({ regla: `Volumen: sube como máximo ~${Math.round(a.crecimiento * 100)} % por semana, nunca más de un 30 % de golpe`, tipo: 'estudio', fuente: 'Nielsen 2014 (saltos de más del 30 % se asocian a más lesiones). La cifra del 5-10 % es criterio de prudencia, no del estudio.' })
+  f.push({ regla: `Semana de descarga cada ${a.descargaCada} semanas (−30 %)`, tipo: 'libro', fuente: 'Fitzgerald (80/20: cada 3 semanas), Pfitzinger, Daniels. La cifra exacta del −30 % es práctica habitual, no de un estudio.' })
+  f.push({ regla: 'La mayor parte del tiempo en intensidad suave; la calidad se limita (≤ 2 sesiones, nunca seguidas ni el día antes de la tirada)', tipo: 'estudio', fuente: 'Casado et al. 2022 (revisión sistemática, corredores de élite: reparto piramidal/polarizado). Los límites por sesión son criterio de entrenador.' })
+  f.push({ regla: 'Tirada larga con tope por prueba y por peso sobre la semana (≤ 150 min en general)', tipo: 'libro', fuente: 'Daniels (≤ 25 % del kilometraje y ≤ 2 h 30 min; cifras de segunda mano †). Con pocas salidas se tolera más peso.' })
+  if (a.semanas.some(x => x.sesiones.some(y => ['tempo', 'series', 'ritmo_carrera'].includes(y.tipo)))) f.push({ regla: 'Trabajo intenso por sesión ≤ ~12 % del volumen semanal y ≤ 40 min', tipo: 'libro', fuente: 'Daniels (tempo ≤ 10 %, intervalos ≤ 8 % del kilometraje semanal; †).' })
+  if (a.comp) f.push({ regla: 'Reducción previa a la prueba (2 semanas en pruebas largas, 1 en cortas; semana de la carrera lo más ligera)', tipo: 'estudio', fuente: 'Mujika & Padilla 2003 y Bosquet 2007 (reducir volumen ~40-60 % manteniendo la intensidad). Pfitzinger usa 3 semanas en maratón.' })
+  if (a.retorno) f.push({ regla: 'Vuelta tras un parón: la mitad de los días perdidos al 50 % y la otra mitad al 75 %, solo carrera suave', tipo: 'libro', fuente: 'Daniels (†); con parones largos se reconstruye por completo.' })
+  if (a.fuerza) f.push({ regla: 'Fuerza: 2 sesiones por semana (1 en la reducción, ninguna la semana de la carrera)', tipo: 'estudio', fuente: 'Blagrove 2018 y Balsalobre 2016 (fuerza y economía de carrera).' })
+  if (a.salud.anemia) f.push({ regla: 'Anemia / déficit de hierro: volumen +3 %/semana y 1 sesión de calidad', tipo: 'criterio', fuente: 'Prudencia: no hay una cifra publicada para esto; el médico decide cuándo subir.' })
+  if (a.salud.hipertension || a.salud.cardiaco) f.push({ regla: 'Sin series ni esfuerzos máximos hasta valoración médica', tipo: 'criterio', fuente: 'Prudencia ante condición cardiovascular declarada.' })
+  if (a.lesionado) f.push({ regla: 'Lesión o restricción: crecimiento 5 %, sin series ni pliometría', tipo: 'criterio', fuente: 'Prudencia; lo revisa el fisioterapeuta o el coach.' })
+  if (a.veterano) f.push({ regla: 'Mayor de 50: descarga cada 3 semanas y crecimiento más lento', tipo: 'criterio', fuente: 'Prudencia (más recuperación); sin cifra publicada.' })
+  if (a.baseSupuesta) f.push({ regla: 'Sin datos del reloj: volumen de partida estimado por nivel y 2 semanas sin subir', tipo: 'criterio', fuente: 'Supuesto declarado: se corrige con lo que haga de verdad en las primeras semanas.' })
+  return f
 }

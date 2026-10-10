@@ -68,22 +68,69 @@ function lesionesDe(v: unknown): string[] {
     .filter(Boolean)
 }
 
-/** Media de minutos de carrera de las últimas 4 semanas completas (lunes a domingo, sin la semana en curso). */
-export function minutosCarreraMedios(entrenos: DatosClienteMacro['entrenos'], hoy: string): { minutos: number | null; semanasConDatos: number } {
+/** Minutos de carrera de las últimas `n` semanas completas (lunes a domingo, sin la semana en curso). [0] = la más reciente. */
+export function minutosPorSemana(entrenos: DatosClienteMacro['entrenos'], hoy: string, n = 12): number[] {
   const lunesActual = lunesDe(hoy)
-  const semanas = [0, 0, 0, 0]
-  const con = [false, false, false, false]
+  const semanas = Array<number>(n).fill(0)
   for (const e of entrenos) {
-    if (!esCarrera(e.tipo) || !e.duracion_s) continue
-    const k = Math.floor(dias(e.fecha, lunesActual) / 7)
-    if (e.fecha >= lunesActual || k < 0 || k > 3) continue
-    semanas[k] += e.duracion_s / 60
-    con[k] = true
+    if (!esCarrera(e.tipo) || !e.duracion_s || e.fecha >= lunesActual) continue
+    const k = Math.floor((dias(e.fecha, lunesActual) - 1) / 7)
+    if (k >= 0 && k < n) semanas[k] += e.duracion_s / 60
   }
-  const n = con.filter(Boolean).length
-  if (n === 0) return { minutos: null, semanasConDatos: 0 }
-  // Una semana sin carrera cuenta como 0 solo si hay actividad en otras semanas: es información real (parón o descarga).
-  return { minutos: Math.round(semanas.reduce((a, b) => a + b, 0) / 4), semanasConDatos: n }
+  return semanas.map(x => Math.round(x))
+}
+
+export interface AnalisisVolumen {
+  /** Volumen habitual del que parte el plan: media de las semanas con carrera, ignorando una semana suelta en cero (enfermedad, viaje). null si no hay datos. */
+  minutos: number | null
+  semanasConDatos: number
+  /** Semanas de parón de las que vuelve (0 si no hay parón reciente). Incluye las primeras semanas ya de vuelta: el retorno aún no ha acabado. */
+  semanasParon: number
+  nota: string | null
+}
+
+/**
+ * Interpreta el historial semanal (semanas[0] = la más reciente):
+ *  - Una semana suelta en cero no cambia el volumen habitual (enfermedad o viaje).
+ *  - Dos o más semanas seguidas en cero con carrera antes son un parón (Daniels: el retorno se reconstruye); el volumen de partida es el de antes del parón.
+ *  - Si lleva 2 semanas o menos de vuelta tras un parón, el retorno sigue vigente.
+ */
+export function analizarVolumen(semanas: number[], diasDesdeUltimaCarrera: number | null): AnalisisVolumen {
+  const hayAlgo = semanas.some(x => x > 0)
+  if (!hayAlgo) return { minutos: null, semanasConDatos: 0, semanasParon: diasDesdeUltimaCarrera !== null && diasDesdeUltimaCarrera >= 14 ? Math.floor(diasDesdeUltimaCarrera / 7) : 0, nota: null }
+  // Bloque de ≥ 2 semanas en cero reciente (dentro de las últimas 8) con carrera antes.
+  let inicio = 0
+  while (inicio < semanas.length && semanas[inicio] === 0) inicio++
+  // `inicio` = semanas en cero al final (parón en curso). Si no hay, buscamos un bloque ya terminado.
+  const bloqueEnCurso = inicio >= 2
+  let bloque = 0, vueltaHace = 0
+  if (!bloqueEnCurso) {
+    for (let k = 0; k < Math.min(8, semanas.length); k++) {
+      if (semanas[k] === 0) {
+        let l = 0
+        while (k + l < semanas.length && semanas[k + l] === 0) l++
+        if (l >= 2 && semanas.slice(k + l).some(x => x > 0)) { bloque = l; vueltaHace = k; break }
+        k += l - 1
+      }
+    }
+  }
+  const previas = (desde: number) => semanas.slice(desde, desde + 4).filter(x => x > 0)
+  const media = (v: number[]) => (v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null)
+  if (bloqueEnCurso) {
+    const previo = media(previas(inicio))
+    const semanasParon = Math.max(inicio, diasDesdeUltimaCarrera !== null ? Math.floor(diasDesdeUltimaCarrera / 7) : 0)
+    return { minutos: previo, semanasConDatos: previas(inicio).length, semanasParon, nota: `Lleva ${semanasParon} semanas sin correr${previo ? `; antes corría ~${previo} min/semana` : ''}.` }
+  }
+  if (bloque > 0 && vueltaHace <= 2) {
+    const previo = media(previas(vueltaHace + bloque))
+    return { minutos: previo, semanasConDatos: previas(vueltaHace + bloque).length, semanasParon: bloque, nota: `Volvió hace ${vueltaHace} semanas tras ${bloque} sin correr${previo ? ` (antes ~${previo} min/semana)` : ''}: el retorno sigue vigente.` }
+  }
+  const ult4 = semanas.slice(0, 4)
+  const con = ult4.filter(x => x > 0)
+  const ceros = ult4.length - con.length
+  // Una semana suelta en cero no cuenta; con más ceros se promedian todas (el atleta corre de forma irregular).
+  const m = ceros <= 1 ? media(con) : media(ult4)
+  return { minutos: m, semanasConDatos: con.length, semanasParon: 0, nota: ceros === 1 ? 'Una semana sin correr en las últimas 4 (enfermedad o viaje): no se rebaja el volumen habitual por ella.' : null }
 }
 
 export function construirEntradaMacro(d: DatosClienteMacro): ResultadoEntradaMacro {
@@ -116,13 +163,12 @@ export function construirEntradaMacro(d: DatosClienteMacro): ResultadoEntradaMac
     faltan.push('Competición objetivo (fecha y distancia): sin ella el plan es de mejora general de 8 semanas')
   }
 
-  const { minutos, semanasConDatos } = minutosCarreraMedios(d.entrenos, d.hoy)
-  if (minutos === null) faltan.push('Datos de carrera del reloj (últimas 4 semanas): el volumen de partida es una suposición por nivel')
-  else if (semanasConDatos < 3) supuestos.push(`Volumen actual calculado con solo ${semanasConDatos} de las 4 últimas semanas con carrera.`)
-
-  // Parón: semanas desde la última carrera si hay historial y son ≥ 2 (los parones cortos no cambian el plan).
   const ultima = d.entrenos.filter(e => esCarrera(e.tipo)).map(e => e.fecha).sort().pop()
-  const semanasParon = ultima && dias(ultima, d.hoy) >= 14 ? Math.floor(dias(ultima, d.hoy) / 7) : 0
+  const analisis = analizarVolumen(minutosPorSemana(d.entrenos, d.hoy), ultima ? dias(ultima, d.hoy) : null)
+  const { minutos, semanasConDatos, semanasParon } = analisis
+  if (minutos === null) faltan.push('Datos de carrera del reloj (últimas semanas): el volumen de partida es una suposición por nivel')
+  else if (semanasConDatos < 3 && semanasParon === 0) supuestos.push(`Volumen actual calculado con solo ${semanasConDatos} de las 4 últimas semanas con carrera.`)
+  if (analisis.nota) supuestos.push(analisis.nota)
 
   return {
     entrada: {

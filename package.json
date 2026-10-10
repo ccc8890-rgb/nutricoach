@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "verificar:motor": "tsx scripts/verificar-motor.ts",
     "recetas:validar": "tsx scripts/validar-lote-deepseek.ts",
     "recetas:importar": "tsx scripts/importar-lote-deepseek.ts",
     "recetas:reparar": "tsx scripts/reparar-lote-deepseek-recetas.ts",

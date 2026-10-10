@@ -78,7 +78,19 @@ assert.ok(vacio.datosFaltantes.length >= 4)
 assert.ok(vacio.supuestos.some(x => x.includes('Nivel')) && vacio.supuestos.some(x => x.includes('Sin volumen real')))
 assert.equal(vacio.ritmos, null)
 assert.equal(vacio.parametros.nivel, 'intermedio')
-assert.equal(vacio.parametros.volumenBase, 150)
+assert.equal(vacio.parametros.volumenBase, 120)
+// Sin datos reales: las 2 primeras semanas no suben y se dice; un principiante parte de poco.
+assert.equal(vacio.semanas[0].minutos, vacio.semanas[1].minutos)
+assert.ok(vacio.semanas[0].notas.some(n => n.includes('calibración')))
+assert.ok(vacio.fundamentos.some(f => f.regla.includes('Sin datos del reloj')))
+const nuevo = planificarMacrociclo(base({ nivel: 'principiante', minutosSemanaActuales: null }))
+assert.equal(nuevo.parametros.volumenBase, 45)
+assert.ok(nuevo.semanas.every(s => s.minutos <= 45 * 1.07 ** (s.n - 1) + 15), 'un principiante sin datos no se dispara')
+// Cada plan trae sus fundamentos con el tipo de fuente (estudio / libro / criterio).
+const fund = planificarMacrociclo(base({ condicionesSalud: 'anemia', competicion: carrera(12, 'running_hm', 110) })).fundamentos
+assert.ok(fund.every(f => ['estudio', 'libro', 'criterio'].includes(f.tipo) && f.regla && f.fuente))
+assert.ok(fund.some(f => f.regla.includes('Anemia') && f.tipo === 'criterio'), 'lo que es criterio de prudencia se dice como tal')
+assert.ok(fund.some(f => f.fuente.includes('Mujika')))
 
 // ── Salud, lesiones y edad recortan, nunca amplían ──
 const sano = planificarMacrociclo(base({ competicion: carrera(14, 'running_hm', 110), diasCorrer: 4 }))

@@ -1,5 +1,9 @@
 # CLAUDE.md — NutriCoach (Human Lab)
 
+## ⚠️ REGLA — Motor de rendimiento y planes de carrera (10-10-2026)
+
+Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
+
 ## ✅ SESIÓN 10-10-2026 (noche, Claude) — Macrociclo determinista por cliente y planes de los clientes de prueba
 
 Carlos pidió pulir y auditar hasta la máxima fiabilidad y reescribir lo necesario con su caso y los clientes de prueba (todos los parámetros de cada uno).
