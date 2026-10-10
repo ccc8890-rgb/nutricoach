@@ -31,6 +31,10 @@ Superficies: **Decisiones de IA pendientes** (`DecisionesIACliente`), **Panel IA
 
 **Cuidado:** la regla de seguridad del proyecto es que la IA no cambia planes de clientes sin supervisión. «Aplicar solo lo seguro» exige decidir con Carlos qué se puede aplicar sin su visto bueno y con qué garantías de deshacer.
 
+## Decisiones de Carlos (10-10-2026, noche)
+- **«Versión para el cliente» = material para el coach, no una pantalla del cliente.** El coach necesita tener todos los datos y el resumen detallado del caso para explicárselo al cliente por chat, WhatsApp o llamada («cómo se lo explico»). No hace falta que el cliente lo vea en su app; se valorará más adelante.
+- **La pestaña Entrenamiento del cliente se queda simple** tal como está, a falta de añadirle cosas. Como mucho, más adelante, una pestaña aparte de **métricas y evolución** al estilo Bevel, Garmin o Whoop. Sin fecha.
+
 ## Otras tareas, por orden
 
 | # | Tarea | Contexto |
@@ -42,6 +46,7 @@ Superficies: **Decisiones de IA pendientes** (`DecisionesIACliente`), **Panel IA
 | 6 | Que `fuerza_sin_registro` cuente también lo registrado en la app (opcional) | Alternativa a registrar todo en el reloj |
 | 7 | Enviar las híbridas al reloj como entrenos de Conditioning con sus estaciones | Idea futura; Garmin no tiene SkiErg ni perfil Hyrox |
 | 8 | **Limpiar y dejar definitivos los clientes de prueba** | Marcos, Andrés, Natalia, Laura: completar datos (Natalia sin competición registrada, Laura sin perfil, VDOT) o retirarlos |
+| 8b | **Informe del caso para que el coach lo explique al cliente** (resumen detallado, puntos para hablar, mensaje listo para chat/WhatsApp) | Reaprovecha `lib/rendimiento/presentacion.ts`. Por diseñar con Carlos |
 | 9 | Acabado visual de «Planificar con IA», la tarjeta de propuesta y la etiqueta «Reemplazada» | De Codex |
 | 10 | Modo «hábito» para clientes que empiezan o son irregulares; alerta de volumen en descenso sostenido | Pendientes del motor (ver `errores-conocidos-motor.md`) |
 | 11 | Revisión del motor por un entrenador humano en activo | Ninguna regla está contrastada así todavía |
