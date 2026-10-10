@@ -38,7 +38,8 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 - Fuerza: 3 sesión(es) (las que ya tiene en su plan).
 
 **De dónde sale cada regla:**
-- [estudio] Volumen: sube como máximo ~10 % por semana, nunca más de un 30 % de golpe — Nielsen 2014 (saltos de más del 30 % se asocian a más lesiones). La cifra del 5-10 % es criterio de prudencia, no del estudio.
+- [estudio] Ninguna sesión supera en más de un 10 % la más larga de los últimos 30 días — Frandsen et al. 2025, Br J Sports Med (5.205 corredores, 18 meses): superar ese 10 % se asocia a más lesiones (HR 1,64-2,28). Estudio observacional y medido en distancia, no en tiempo.
+- [criterio] Volumen semanal: sube como máximo ~10 % por semana — Evidencia mixta: Buist 2008 (ensayo: un programa graduado no redujo lesiones en principiantes) y Frandsen 2025 (los cambios semanales no se asociaron a lesiones). Se mantiene por prudencia y porque el volumen semanal limita lo que cabe en cada sesión.
 - [libro] Semana de descarga cada 4 semanas (−30 %) — Fitzgerald (80/20: cada 3 semanas), Pfitzinger, Daniels. La cifra exacta del −30 % es práctica habitual, no de un estudio.
 - [estudio] La mayor parte del tiempo en intensidad suave; la calidad se limita (≤ 2 sesiones, nunca seguidas ni el día antes de la tirada) — Casado et al. 2022 (revisión sistemática, corredores de élite: reparto piramidal/polarizado). Los límites por sesión son criterio de entrenador.
 - [libro] Tirada larga con tope por prueba y por peso sobre la semana (≤ 150 min en general) — Daniels (≤ 25 % del kilometraje y ≤ 2 h 30 min; cifras de segunda mano †). Con pocas salidas se tolera más peso.
@@ -56,6 +57,7 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 
 **Supuestos:**
 - Sin volumen real en el reloj: se parte de 120 min/semana (supuesto para nivel intermedio).
+- Sin dato de su sesión más larga de los últimos 30 días: se supone ~40 min (35 % del volumen semanal) para limitar cuánto puede crecer la sesión más larga.
 
 **Parámetros:** 4 salidas/sem · volumen 120 → pico 190 min · crecimiento 8 %/sem · descarga cada 4 semanas
 
@@ -63,12 +65,12 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 |---|---|---|---|---|---|---|---|
 | 1 | base | 120 | 4 | 40 | 95 | 3 | M:rodaje 30, J:rodaje 30, V:rodaje 25, S:tirada 35 |
 | 2 | base | 120 | 4 | 40 | 95 | 3 | M:rodaje 30, J:rodaje 30, V:rodaje 25, S:tirada 35 |
-| 3 | base | 130 | 4 | 45 | 95 | 3 | M:rodaje 30, J:rodaje 30, V:rodaje 25, S:tirada 45 |
+| 3 | base | 130 | 4 | 44 | 95 | 3 | M:rodaje 30, J:rodaje 30, V:rodaje 30, S:tirada 40 |
 | 4 ↓ | base | 90 | 4 | 25 | 95 | 3 | M:rodaje 25, J:rodaje 20, V:rodaje 20, S:tirada 25 |
-| 5 | construccion | 130 | 4 | 45 | 80 | 3 | M:tempo 35, J:series 35, V:rodaje 20, S:tirada 40 |
-| 6 | construccion | 140 | 4 | 50 | 80 | 3 | M:tempo 35, J:series 35, V:rodaje 20, S:tirada 50 |
-| 7 | construccion | 150 | 4 | 50 | 80 | 3 | M:tempo 35, J:series 35, V:rodaje 30, S:tirada 50 |
-| 8 | construccion | 165 | 4 | 55 | 80 | 3 | M:tempo 40, J:series 35, V:rodaje 35, S:tirada 55 |
+| 5 | construccion | 130 | 4 | 44 | 80 | 3 | M:tempo 35, J:series 35, V:rodaje 20, S:tirada 40 |
+| 6 | construccion | 140 | 4 | 44 | 80 | 3 | M:tempo 35, J:series 35, V:rodaje 30, S:tirada 40 |
+| 7 | construccion | 150 | 4 | 44 | 80 | 3 | M:tempo 40, J:series 35, V:rodaje 35, S:tirada 40 |
+| 8 | construccion | 164 | 4 | 44 | 80 | 3 | M:tempo 40, J:series 40, V:rodaje 44, S:tirada 40 |
 
 **Semana 1 (2026-10-12, base) en concreto:**
 - Martes · Rodaje fácil (30 min): 30 min continuos a ritmo a fijar con un test o una carrera reciente (sin VDOT). Debes poder hablar frases completas.
@@ -85,7 +87,8 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 - Fuerza: 3 sesión(es) (las que ya tiene en su plan).
 
 **De dónde sale cada regla:**
-- [estudio] Volumen: sube como máximo ~8 % por semana, nunca más de un 30 % de golpe — Nielsen 2014 (saltos de más del 30 % se asocian a más lesiones). La cifra del 5-10 % es criterio de prudencia, no del estudio.
+- [estudio] Ninguna sesión supera en más de un 10 % la más larga de los últimos 30 días — Frandsen et al. 2025, Br J Sports Med (5.205 corredores, 18 meses): superar ese 10 % se asocia a más lesiones (HR 1,64-2,28). Estudio observacional y medido en distancia, no en tiempo.
+- [criterio] Volumen semanal: sube como máximo ~8 % por semana — Evidencia mixta: Buist 2008 (ensayo: un programa graduado no redujo lesiones en principiantes) y Frandsen 2025 (los cambios semanales no se asociaron a lesiones). Se mantiene por prudencia y porque el volumen semanal limita lo que cabe en cada sesión.
 - [libro] Semana de descarga cada 4 semanas (−30 %) — Fitzgerald (80/20: cada 3 semanas), Pfitzinger, Daniels. La cifra exacta del −30 % es práctica habitual, no de un estudio.
 - [estudio] La mayor parte del tiempo en intensidad suave; la calidad se limita (≤ 2 sesiones, nunca seguidas ni el día antes de la tirada) — Casado et al. 2022 (revisión sistemática, corredores de élite: reparto piramidal/polarizado). Los límites por sesión son criterio de entrenador.
 - [libro] Tirada larga con tope por prueba y por peso sobre la semana (≤ 150 min en general) — Daniels (≤ 25 % del kilometraje y ≤ 2 h 30 min; cifras de segunda mano †). Con pocas salidas se tolera más peso.
@@ -106,6 +109,7 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 
 **Supuestos:**
 - Sin volumen real en el reloj: se parte de 120 min/semana (supuesto para nivel intermedio).
+- Sin dato de su sesión más larga de los últimos 30 días: se supone ~40 min (35 % del volumen semanal) para limitar cuánto puede crecer la sesión más larga.
 
 **Avisos del planificador:**
 - Tensión arterial en el límite alto (normal-alta): no limita el plan, pero conviene controlarla con su médico; ante mareo, dolor de cabeza fuerte o palpitaciones se para.
@@ -114,29 +118,30 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 
 | Sem | Fase | Min | Salidas | Tirada | % suave | Fuerza | Sesiones (día:tipo min) |
 |---|---|---|---|---|---|---|---|
-| 1 | base | 120 | 3 | 50 | 95 | 2 | M:rodaje 35, J:rodaje 35, S:tirada 50 |
-| 2 | base | 120 | 3 | 50 | 95 | 2 | M:rodaje 35, J:rodaje 35, S:tirada 50 |
-| 3 | base | 130 | 3 | 55 | 95 | 2 | M:rodaje 40, J:rodaje 35, S:tirada 55 |
+| 1 | base | 120 | 3 | 44 | 95 | 2 | M:rodaje 40, J:rodaje 40, S:tirada 40 |
+| 2 | base | 120 | 3 | 44 | 95 | 2 | M:rodaje 40, J:rodaje 40, S:tirada 40 |
+| 3 | base | 120 | 3 | 44 | 95 | 2 | M:rodaje 40, J:rodaje 40, S:tirada 40 |
 | 4 ↓ | base | 90 | 3 | 25 | 95 | 2 | M:rodaje 30, J:rodaje 30, S:tirada 30 |
-| 5 | construccion | 130 | 3 | 55 | 80 | 2 | M:tempo 35, J:rodaje 40, S:tirada 55 |
-| 6 | construccion | 140 | 3 | 60 | 80 | 2 | M:tempo 40, J:rodaje 40, S:tirada 60 |
-| 7 | construccion | 150 | 3 | 65 | 80 | 2 | M:tempo 40, J:rodaje 45, S:tirada 65 |
-| 8 | construccion | 165 | 3 | 70 | 80 | 2 | M:tempo 45, J:rodaje 50, S:tirada 70 |
+| 5 | construccion | 124 | 3 | 44 | 80 | 2 | M:tempo 40, J:rodaje 44, S:tirada 40 |
+| 6 | construccion | 138 | 3 | 48 | 80 | 2 | M:tempo 45, J:rodaje 48, S:tirada 45 |
+| 7 | construccion | 147 | 3 | 50 | 80 | 2 | M:tempo 45, J:rodaje 52, S:tirada 50 |
+| 8 | construccion | 162 | 3 | 55 | 80 | 2 | M:tempo 50, J:rodaje 57, S:tirada 55 |
 
 **Semana 1 (2026-10-12, base) en concreto:**
-- Martes · Rodaje fácil (35 min): 35 min continuos a ritmo a fijar con un test o una carrera reciente (sin VDOT). Debes poder hablar frases completas.
-- Jueves · Rodaje fácil (35 min): 35 min continuos a ritmo a fijar con un test o una carrera reciente (sin VDOT). Debes poder hablar frases completas.
-- Sábado · Tirada larga (50 min): 50 min a ritmo a fijar con un test o una carrera reciente (sin VDOT), sin acelerar; es la sesión más larga de la semana.
+- Martes · Rodaje fácil (40 min): 40 min continuos a ritmo a fijar con un test o una carrera reciente (sin VDOT). Debes poder hablar frases completas.
+- Jueves · Rodaje fácil (40 min): 40 min continuos a ritmo a fijar con un test o una carrera reciente (sin VDOT). Debes poder hablar frases completas.
+- Sábado · Tirada larga (40 min): 40 min a ritmo a fijar con un test o una carrera reciente (sin VDOT), sin acelerar; es la sesión más larga de la semana.
 - Fuerza: 2 sesión(es) (las que ya tiene en su plan).
 
 **Semana 2 (2026-10-19, base) en concreto:**
-- Martes · Rodaje fácil (35 min): 35 min continuos a ritmo a fijar con un test o una carrera reciente (sin VDOT). Debes poder hablar frases completas.
-- Jueves · Rodaje fácil (35 min): 35 min continuos a ritmo a fijar con un test o una carrera reciente (sin VDOT). Debes poder hablar frases completas.
-- Sábado · Tirada larga (50 min): 50 min a ritmo a fijar con un test o una carrera reciente (sin VDOT), sin acelerar; es la sesión más larga de la semana.
+- Martes · Rodaje fácil (40 min): 40 min continuos a ritmo a fijar con un test o una carrera reciente (sin VDOT). Debes poder hablar frases completas.
+- Jueves · Rodaje fácil (40 min): 40 min continuos a ritmo a fijar con un test o una carrera reciente (sin VDOT). Debes poder hablar frases completas.
+- Sábado · Tirada larga (40 min): 40 min a ritmo a fijar con un test o una carrera reciente (sin VDOT), sin acelerar; es la sesión más larga de la semana.
 - Fuerza: 2 sesión(es) (las que ya tiene en su plan).
 
 **De dónde sale cada regla:**
-- [estudio] Volumen: sube como máximo ~8 % por semana, nunca más de un 30 % de golpe — Nielsen 2014 (saltos de más del 30 % se asocian a más lesiones). La cifra del 5-10 % es criterio de prudencia, no del estudio.
+- [estudio] Ninguna sesión supera en más de un 10 % la más larga de los últimos 30 días — Frandsen et al. 2025, Br J Sports Med (5.205 corredores, 18 meses): superar ese 10 % se asocia a más lesiones (HR 1,64-2,28). Estudio observacional y medido en distancia, no en tiempo.
+- [criterio] Volumen semanal: sube como máximo ~8 % por semana — Evidencia mixta: Buist 2008 (ensayo: un programa graduado no redujo lesiones en principiantes) y Frandsen 2025 (los cambios semanales no se asociaron a lesiones). Se mantiene por prudencia y porque el volumen semanal limita lo que cabe en cada sesión.
 - [libro] Semana de descarga cada 4 semanas (−30 %) — Fitzgerald (80/20: cada 3 semanas), Pfitzinger, Daniels. La cifra exacta del −30 % es práctica habitual, no de un estudio.
 - [estudio] La mayor parte del tiempo en intensidad suave; la calidad se limita (≤ 2 sesiones, nunca seguidas ni el día antes de la tirada) — Casado et al. 2022 (revisión sistemática, corredores de élite: reparto piramidal/polarizado). Los límites por sesión son criterio de entrenador.
 - [libro] Tirada larga con tope por prueba y por peso sobre la semana (≤ 150 min en general) — Daniels (≤ 25 % del kilometraje y ≤ 2 h 30 min; cifras de segunda mano †). Con pocas salidas se tolera más peso.
@@ -155,6 +160,7 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 **Supuestos:**
 - La prueba (Maratón Valencia, 2026-12-06) viene del onboarding: no está registrada en Competiciones.
 - Sin volumen real en el reloj: se parte de 120 min/semana (supuesto para nivel intermedio).
+- Sin dato de su sesión más larga de los últimos 30 días: se supone ~40 min (35 % del volumen semanal) para limitar cuánto puede crecer la sesión más larga.
 
 **Avisos del planificador:**
 - Anemia o déficit de hierro: se limita la calidad (sin series, solo tempo suave y progresivos), se sube el reparto suave y se pide que el médico confirme cuándo puede aumentar la intensidad. El volumen solo puede subir un 3 % por semana hasta normalizar la ferritina.
@@ -166,10 +172,10 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 |---|---|---|---|---|---|---|---|
 | 1 | base | 120 | 4 | 40 | 95 | 2 | M:rodaje 30, J:rodaje 30, V:rodaje 25, S:tirada 35 |
 | 2 | base | 120 | 4 | 40 | 95 | 2 | M:rodaje 30, J:rodaje 30, V:rodaje 25, S:tirada 35 |
-| 3 | construccion | 125 | 4 | 45 | 85 | 2 | M:tempo 35, J:rodaje 25, V:rodaje 20, S:tirada 45 |
+| 3 | construccion | 125 | 4 | 44 | 85 | 2 | M:tempo 35, J:rodaje 25, V:rodaje 25, S:tirada 40 |
 | 4 ↓ | construccion | 85 | 4 | 25 | 95 | 2 | M:rodaje 20, J:rodaje 20, V:rodaje 20, S:tirada 25 |
-| 5 | construccion | 125 | 4 | 45 | 85 | 2 | M:tempo 35, J:rodaje 25, V:rodaje 20, S:tirada 45 |
-| 6 | especifica | 125 | 4 | 45 | 83 | 2 | M:ritmo_carrera 35, J:rodaje 25, V:rodaje 20, S:tirada 45 |
+| 5 | construccion | 125 | 4 | 44 | 85 | 2 | M:tempo 35, J:rodaje 25, V:rodaje 25, S:tirada 40 |
+| 6 | especifica | 125 | 4 | 44 | 83 | 2 | M:ritmo_carrera 35, J:rodaje 25, V:rodaje 25, S:tirada 40 |
 | 7 | tapering | 70 | 3 | 25 | 95 | 2 | M:rodaje 25, J:rodaje 20, S:tirada 25 |
 | 8 | carrera | 45 | 2 | 25 | 95 | 0 | L:tirada 25, V:rodaje 20 |
 
@@ -188,7 +194,8 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 - Fuerza: 2 sesión(es) (las que ya tiene en su plan).
 
 **De dónde sale cada regla:**
-- [estudio] Volumen: sube como máximo ~3 % por semana, nunca más de un 30 % de golpe — Nielsen 2014 (saltos de más del 30 % se asocian a más lesiones). La cifra del 5-10 % es criterio de prudencia, no del estudio.
+- [estudio] Ninguna sesión supera en más de un 10 % la más larga de los últimos 30 días — Frandsen et al. 2025, Br J Sports Med (5.205 corredores, 18 meses): superar ese 10 % se asocia a más lesiones (HR 1,64-2,28). Estudio observacional y medido en distancia, no en tiempo.
+- [criterio] Volumen semanal: sube como máximo ~3 % por semana — Evidencia mixta: Buist 2008 (ensayo: un programa graduado no redujo lesiones en principiantes) y Frandsen 2025 (los cambios semanales no se asociaron a lesiones). Se mantiene por prudencia y porque el volumen semanal limita lo que cabe en cada sesión.
 - [libro] Semana de descarga cada 4 semanas (−30 %) — Fitzgerald (80/20: cada 3 semanas), Pfitzinger, Daniels. La cifra exacta del −30 % es práctica habitual, no de un estudio.
 - [estudio] La mayor parte del tiempo en intensidad suave; la calidad se limita (≤ 2 sesiones, nunca seguidas ni el día antes de la tirada) — Casado et al. 2022 (revisión sistemática, corredores de élite: reparto piramidal/polarizado). Los límites por sesión son criterio de entrenador.
 - [libro] Tirada larga con tope por prueba y por peso sobre la semana (≤ 150 min en general) — Daniels (≤ 25 % del kilometraje y ≤ 2 h 30 min; cifras de segunda mano †). Con pocas salidas se tolera más peso.
@@ -210,6 +217,7 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 **Supuestos:**
 - Nivel «avanzado» tomado de la ficha del cliente (el perfil de atleta no lo tiene).
 - Sin volumen real en el reloj: se parte de 200 min/semana (supuesto para nivel avanzado).
+- Sin dato de su sesión más larga de los últimos 30 días: se supone ~70 min (35 % del volumen semanal) para limitar cuánto puede crecer la sesión más larga.
 
 **Avisos del planificador:**
 - En el tiempo disponible el volumen solo puede llegar a ~266 min/semana (lo habitual para esta prueba y nivel es ~600): el objetivo realista es llegar bien, no el volumen típico de un plan completo.
@@ -241,7 +249,8 @@ Generado con `scripts/planes-clientes-de-prueba.ts` a partir de los datos reales
 - Fuerza: 2 sesión(es) (las que ya tiene en su plan).
 
 **De dónde sale cada regla:**
-- [estudio] Volumen: sube como máximo ~10 % por semana, nunca más de un 30 % de golpe — Nielsen 2014 (saltos de más del 30 % se asocian a más lesiones). La cifra del 5-10 % es criterio de prudencia, no del estudio.
+- [estudio] Ninguna sesión supera en más de un 10 % la más larga de los últimos 30 días — Frandsen et al. 2025, Br J Sports Med (5.205 corredores, 18 meses): superar ese 10 % se asocia a más lesiones (HR 1,64-2,28). Estudio observacional y medido en distancia, no en tiempo.
+- [criterio] Volumen semanal: sube como máximo ~10 % por semana — Evidencia mixta: Buist 2008 (ensayo: un programa graduado no redujo lesiones en principiantes) y Frandsen 2025 (los cambios semanales no se asociaron a lesiones). Se mantiene por prudencia y porque el volumen semanal limita lo que cabe en cada sesión.
 - [libro] Semana de descarga cada 4 semanas (−30 %) — Fitzgerald (80/20: cada 3 semanas), Pfitzinger, Daniels. La cifra exacta del −30 % es práctica habitual, no de un estudio.
 - [estudio] La mayor parte del tiempo en intensidad suave; la calidad se limita (≤ 2 sesiones, nunca seguidas ni el día antes de la tirada) — Casado et al. 2022 (revisión sistemática, corredores de élite: reparto piramidal/polarizado). Los límites por sesión son criterio de entrenador.
 - [libro] Tirada larga con tope por prueba y por peso sobre la semana (≤ 150 min en general) — Daniels (≤ 25 % del kilometraje y ≤ 2 h 30 min; cifras de segunda mano †). Con pocas salidas se tolera más peso.

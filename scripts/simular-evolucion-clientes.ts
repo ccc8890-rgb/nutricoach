@@ -48,6 +48,8 @@ function simular(a: Atleta) {
   const historia: number[] = a.inicial !== null ? [a.inicial, a.inicial, a.inicial, a.inicial] : []
   const filas: Fila[] = []
   const incidencias: string[] = []
+  // Sesión más larga ejecutada cada semana (proporcional a lo que corrió de lo planificado).
+  const tiradasReales: number[] = a.inicial !== null ? [Math.round(a.inicial * 0.4), Math.round(a.inicial * 0.4), Math.round(a.inicial * 0.4), Math.round(a.inicial * 0.4)] : []
   const semanasTotales = Math.ceil((new Date(a.entrada.competicion!.fecha).getTime() - new Date(HOY0).getTime()) / (7 * 86_400_000)) + 1
   for (let w = 0; w < semanasTotales; w++) {
     const hoy = sumar(HOY0, w * 7)
@@ -57,7 +59,7 @@ function simular(a: Atleta) {
     const an = analizarVolumen(semanasRev, a.inicial === null && historia.length === 0 ? 70 : ultimaCarrera === -1 ? null : ultimaCarrera * 7 + 3)
     const media4 = an.minutos
     const sinCorrer = an.semanasParon
-    const entradaSem: EntradaMacro = { ...a.entrada, hoy, minutosSemanaActuales: media4, semanasParon: sinCorrer }
+    const entradaSem: EntradaMacro = { ...a.entrada, hoy, minutosSemanaActuales: media4, semanasParon: sinCorrer, tiradaMasLargaMin: tiradasReales.slice(-4).length ? Math.max(...tiradasReales.slice(-4)) || null : null }
     let r: ReturnType<typeof planificarMacrociclo>
     try { r = planificarMacrociclo(entradaSem) } catch (err) { throw new Error(`${a.nombre} semana ${w + 1}: ${(err as Error).message}`) }
     const s = r.semanas[0]
@@ -72,6 +74,7 @@ function simular(a: Atleta) {
     if (sinCorrer >= 2 && s.fase !== 'retorno' && s.fase !== 'carrera') incidencias.push(`Semana ${w + 1}: viene de ${sinCorrer} semanas sin correr y el plan no está en fase de retorno (${s.fase}).`)
     if (s.sesiones.some(x => ['series', 'ritmo_carrera'].includes(x.tipo)) && sinCorrer >= 1) incidencias.push(`Semana ${w + 1}: pide calidad intensa justo después de una semana sin correr.`)
     historia.push(ejecutado)
+    tiradasReales.push(s.minutos > 0 ? Math.round(Math.max(...s.sesiones.map(x => x.minutos)) * ejecutado / s.minutos) : 0)
     if (s.fase === 'carrera') break
   }
   return { filas, incidencias }

@@ -4,6 +4,10 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ SESIÓN 10-10-2026 (noche, Claude) — Contraste con estudios y entrenadores
+
+Detalle y veredicto por regla en `docs/10-10-2026_contraste-reglas-fuentes.md`. Hallazgo principal: la «regla del 10 % semanal» no está validada (Buist 2008; Frandsen 2025 no halla asociación con los cambios semanales); lo que sí se asocia a lesiones es **superar en >10 % la sesión más larga de los 30 días previos** (Frandsen 2025, 5.205 corredores). Implementado en el macrociclo (`topeSesion`), con la referencia real del reloj o una supuesta y declarada. Tres estudios nuevos preparados en `scripts/cargar-papers-entrenamiento.ts` (**sin `--apply`**: falta el visto bueno de Carlos para escribir en la base de estudios).
+
 ## ✅ SESIÓN 10-10-2026 (noche, Claude) — Macrociclo determinista por cliente y planes de los clientes de prueba
 
 Carlos pidió pulir y auditar hasta la máxima fiabilidad y reescribir lo necesario con su caso y los clientes de prueba (todos los parámetros de cada uno).

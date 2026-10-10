@@ -37,6 +37,8 @@ export interface EntradaMacro {
   semanasParon: number
   /** Sesiones de fuerza o híbridas que ya tiene en su semana (no se suman más). */
   sesionesFuerzaFijas: number
+  /** Duración de la sesión de carrera más larga de los últimos 30 días (reloj); sin dato se supone a partir del volumen. */
+  tiradaMasLargaMin?: number | null
 }
 
 export interface SesionMacro {
@@ -233,7 +235,8 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
   let salidas = e.diasCorrer ?? SALIDAS_DEFECTO[nivel]
   salidas = Math.min(salidas, SALIDAS_MAX[nivel], diasLibres ?? 6)
   salidas = Math.max(2, Math.min(6, salidas))
-  const salidasTope = Math.max(salidas, Math.min(SALIDAS_MAX[nivel], diasLibres ?? 6, 6))
+  // Si el atleta (o su protocolo) fija cuántas veces corre, es un límite firme: el volumen se limita y se avisa en vez de añadir salidas.
+  const salidasTope = e.diasCorrer ? salidas : Math.max(salidas, Math.min(SALIDAS_MAX[nivel], diasLibres ?? 6, 6))
   if (e.diasDisponibles === null) datosFaltantes.push('Días disponibles por semana')
   if (!e.vdot) datosFaltantes.push('VDOT o una marca reciente (5K/10K) para fijar los ritmos')
 
@@ -292,6 +295,9 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
   const semanas: SemanaMacro[] = []
   /** Nivel de carga en el que está el atleta (el que se retoma tras una descarga). */
   let volumen = base
+  // Sesión más larga de los últimos 30 días: la del reloj o, si no hay dato, una estimación a partir del volumen (se declara).
+  const tiradaRefInicial = e.tiradaMasLargaMin && e.tiradaMasLargaMin > 0 ? e.tiradaMasLargaMin : Math.max(MIN_TIRADA, redondea5(base * 0.35))
+  if (!(e.tiradaMasLargaMin && e.tiradaMasLargaMin > 0)) supuestos.push(`Sin dato de su sesión más larga de los últimos 30 días: se supone ~${tiradaRefInicial} min (35 % del volumen semanal) para limitar cuánto puede crecer la sesión más larga.`)
   const baseSupuesta = e.minutosSemanaActuales === null
   let cargaSeguidas = 0
   let previaFueDescarga = false
@@ -333,7 +339,9 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
     }
     previaFueDescarga = descarga
     const minutos = redondea5(v)
-    const semana = construirSemana({ maxSalidas: salidasTope, n: i + 1, lunes: sumarDias(inicioPlan, i * 7), fase, descarga, minutos, salidas, clase, nivel, prudente, salud, lesionado, veterano, sesionesFuerzaFijas: e.sesionesFuerzaFijas, notas })
+    // Frandsen 2025: el riesgo sube cuando una sesión supera en > 10 % la más larga de los últimos 30 días (≈ 4 semanas).
+    const refLarga = Math.max(i < 4 ? tiradaRefInicial : 0, ...semanas.slice(Math.max(0, i - 4)).map(x => Math.max(...x.sesiones.map(y => y.minutos))))
+    const semana = construirSemana({ topeSesion: refLarga * 1.1, maxSalidas: salidasTope, n: i + 1, lunes: sumarDias(inicioPlan, i * 7), fase, descarga, minutos, salidas, clase, nivel, prudente, salud, lesionado, veterano, sesionesFuerzaFijas: e.sesionesFuerzaFijas, notas })
     // Si el volumen quedó limitado por las salidas, la carga de referencia pasa a ser la real (la descarga y el tapering se calculan sobre ella).
     if (!descarga && fase !== 'tapering' && semana.notas.some(n => n.startsWith('Volumen limitado'))) volumen = Math.min(volumen, semana.minutos)
     semanas.push(semana)
@@ -389,12 +397,19 @@ interface ArgSemana {
   clase: PerfilPrueba | 'ultra' | 'general'; nivel: Nivel; prudente: boolean
   /** Solo en la semana de la carrera: día de la prueba (0 = lunes … 6 = domingo). */
   diaCarrera?: number
+  /** Duración máxima de cualquier sesión: la más larga de los últimos 30 días + 10 % (Frandsen 2025). */
+  topeSesion?: number
   salud: ReturnType<typeof banderasSalud>; lesionado: boolean; veterano: boolean; sesionesFuerzaFijas: number; notas: string[]
 }
 
 function construirSemana(a: ArgSemana): SemanaMacro {
   const { fase, minutos, clase, nivel } = a
   let salidas = a.salidas
+  // Ninguna sesión supera en más de un 10 % la más larga de los últimos 30 días (con un mínimo para poder armar la semana).
+  const topeS = a.topeSesion !== undefined ? Math.max(MIN_TIRADA, Math.floor(a.topeSesion)) : Infinity
+  const maxTirada = Math.min(TIRADA_MAX[clase], topeS)
+  const maxRodaje = Math.min(MAX_RODAJE, topeS)
+  const maxCalidad = Math.min(MAX_CALIDAD, topeS)
 
   // Calidad: cuántas sesiones y de qué tipo. Los factores de salud y las lesiones la recortan siempre.
   const sinIntensidad = a.lesionado || a.salud.cardiaco || a.salud.hipertension
@@ -407,6 +422,7 @@ function construirSemana(a: ArgSemana): SemanaMacro {
   if (a.descarga || a.salud.anemia) nCalidad = Math.min(nCalidad, 1)
   if (fase === 'retorno' || fase === 'carrera') nCalidad = 0
   if (sinIntensidad) nCalidad = Math.min(nCalidad, fase === 'base' ? 0 : 1)
+  if (topeS < MIN_CALIDAD) nCalidad = 0
   nCalidad = Math.min(nCalidad, Math.max(0, salidas - 2), PATRON_DIAS[Math.min(6, Math.max(2, salidas))].calidad.length)
   // Si el volumen no da para todas las sesiones con su duración mínima, primero se quita calidad y luego salidas.
   while (nCalidad > 0 && minimoNecesario(salidas, nCalidad) > minutos * 1.05) nCalidad--
@@ -420,10 +436,10 @@ function construirSemana(a: ArgSemana): SemanaMacro {
 
   // Tirada larga: tope por prueba, por duración absoluta y por peso sobre el volumen semanal.
   const pesoTirada = salidas >= 5 ? 0.28 : salidas === 4 ? 0.34 : salidas === 3 ? 0.42 : 0.55
-  let tirada = Math.min(TIRADA_MAX[clase], minutos * pesoTirada, 150 * (clase === 'ultra' ? 1.4 : 1))
+  let tirada = Math.min(maxTirada, minutos * pesoTirada, 150 * (clase === 'ultra' ? 1.4 : 1))
   if (a.descarga) tirada = Math.min(tirada, minutos * 0.3)
   if (fase === 'tapering') tirada = Math.min(tirada, minutos * 0.35)
-  tirada = Math.max(MIN_TIRADA, redondea5(tirada))
+  tirada = Math.min(maxTirada, Math.max(MIN_TIRADA, redondea5(tirada)))
 
   // Calidad: minutos de trabajo = lo que queda fuera del reparto suave; tipos según fase.
   const minutosCalidad = nCalidad > 0 ? Math.max(8, Math.round(minutos * (100 - pctSuave) / 100)) : 0
@@ -439,15 +455,15 @@ function construirSemana(a: ArgSemana): SemanaMacro {
   }
 
   // Capacidad: si el volumen no cabe en las salidas con sus duraciones máximas, primero se suben las salidas y, si no basta, se limita el volumen.
-  const capacidad = (sal: number, q: number) => TIRADA_MAX[clase] + q * MAX_CALIDAD + Math.max(0, sal - 1 - q) * MAX_RODAJE
+  const capacidad = (sal: number, q: number) => maxTirada + q * maxCalidad + Math.max(0, sal - 1 - q) * maxRodaje
   const capacidadReal = (sal: number) => {
     const q = Math.min(nCalidad, Math.max(0, sal - 2))
     const st = tiposCalidad.slice(0, q).filter(t => t === 'strides').length
-    return capacidad(sal, q) - st * (MAX_CALIDAD - MAX_RODAJE)
+    return capacidad(sal, q) - st * (maxCalidad - maxRodaje)
   }
   while (capacidadReal(salidas) < minutos && salidas < a.maxSalidas && minimoNecesario(salidas + 1, nCalidad) <= minutos * 1.05) salidas++
   let minutosEfectivos = minutos
-  if (capacidadReal(salidas) < minutos) { minutosEfectivos = Math.floor(capacidadReal(salidas) / 5) * 5; a.notas.push(`Volumen limitado por el número de salidas: con ${salidas} salidas no caben más de ~${minutosEfectivos} min por semana; para subir más hay que añadir salidas.`) }
+  if (capacidadReal(salidas) < minutos) { minutosEfectivos = Math.floor(capacidadReal(salidas) / 5) * 5; a.notas.push(`Volumen limitado por el número de salidas y la progresión de la sesión más larga: con ${salidas} salidas de como mucho ${Math.round(Math.min(maxTirada, topeS))} min no caben más de ~${minutosEfectivos} min por semana; para subir más hay que añadir salidas o alargar la sesión más larga poco a poco (~10 % sobre la de los últimos 30 días).`) }
 
   // Reparto de minutos: cada sesión tiene un valor ideal y un mínimo; se ajustan para que la semana sume el objetivo (nunca más).
   // La calidad incluye calentamiento y vuelta a la calma (≈ 2,2× el trabajo).
@@ -469,11 +485,11 @@ function construirSemana(a: ArgSemana): SemanaMacro {
   const sumaMin = partes.reduce((a, x) => a + x.min, 0)
   const f = sumaIdeal > minutosEfectivos ? Math.max(0, Math.min(1, (minutosEfectivos - sumaMin) / Math.max(1, sumaIdeal - sumaMin))) : 1
   const sesiones: SesionMacro[] = partes
-    .map(x => ({ tipo: x.tipo, minutos: Math.min(x.tipo === 'tirada' ? TIRADA_MAX[clase] : x.tipo === 'rodaje' || x.tipo === 'strides' ? MAX_RODAJE : MAX_CALIDAD, Math.max(x.min, Math.floor((x.min + (Math.max(x.ideal, x.min) - x.min) * f) / 5) * 5)), dia: x.dia }))
+    .map(x => ({ tipo: x.tipo, minutos: Math.min(x.tipo === 'tirada' ? maxTirada : x.tipo === 'rodaje' || x.tipo === 'strides' ? maxRodaje : maxCalidad, Math.max(x.min, Math.floor((x.min + (Math.max(x.ideal, x.min) - x.min) * f) / 5) * 5)), dia: x.dia }))
     .sort((x, y) => x.dia - y.dia)
 
   // El redondeo a 5 y los topes pueden dejar la semana por debajo del objetivo: el sobrante se reparte de 5 en 5 entre las sesiones que admiten más.
-  const tope = (t: TipoSesionMacro) => (t === 'tirada' ? TIRADA_MAX[clase] : t === 'rodaje' || t === 'strides' ? MAX_RODAJE : MAX_CALIDAD)
+  const tope = (t: TipoSesionMacro) => (t === 'tirada' ? maxTirada : t === 'rodaje' || t === 'strides' ? maxRodaje : maxCalidad)
   let sobrante = minutosEfectivos - sesiones.reduce((s, x) => s + x.minutos, 0)
   while (sobrante >= 5) {
     const candidata = sesiones.filter(x => x.minutos + 5 <= tope(x.tipo)).sort((x, y) => x.minutos - y.minutos)[0]
@@ -499,7 +515,8 @@ function construirSemana(a: ArgSemana): SemanaMacro {
 /** Reglas realmente aplicadas a este plan y su origen. Los DOI de los estudios están verificados en la base de conocimiento (scripts/verificar-doi-reglas.ts). */
 function fundamentosDe(a: { nivel: Nivel; comp: { disciplina: string } | null; salud: ReturnType<typeof banderasSalud>; lesionado: boolean; veterano: boolean; retorno: boolean; baseSupuesta: boolean; descargaCada: number; semanas: SemanaMacro[]; crecimiento: number; fuerza: boolean }): Fundamento[] {
   const f: Fundamento[] = []
-  f.push({ regla: `Volumen: sube como máximo ~${Math.round(a.crecimiento * 100)} % por semana, nunca más de un 30 % de golpe`, tipo: 'estudio', fuente: 'Nielsen 2014 (saltos de más del 30 % se asocian a más lesiones). La cifra del 5-10 % es criterio de prudencia, no del estudio.' })
+  f.push({ regla: 'Ninguna sesión supera en más de un 10 % la más larga de los últimos 30 días', tipo: 'estudio', fuente: 'Frandsen et al. 2025, Br J Sports Med (5.205 corredores, 18 meses): superar ese 10 % se asocia a más lesiones (HR 1,64-2,28). Estudio observacional y medido en distancia, no en tiempo.' })
+  f.push({ regla: `Volumen semanal: sube como máximo ~${Math.round(a.crecimiento * 100)} % por semana`, tipo: 'criterio', fuente: 'Evidencia mixta: Buist 2008 (ensayo: un programa graduado no redujo lesiones en principiantes) y Frandsen 2025 (los cambios semanales no se asociaron a lesiones). Se mantiene por prudencia y porque el volumen semanal limita lo que cabe en cada sesión.' })
   f.push({ regla: `Semana de descarga cada ${a.descargaCada} semanas (−30 %)`, tipo: 'libro', fuente: 'Fitzgerald (80/20: cada 3 semanas), Pfitzinger, Daniels. La cifra exacta del −30 % es práctica habitual, no de un estudio.' })
   f.push({ regla: 'La mayor parte del tiempo en intensidad suave; la calidad se limita (≤ 2 sesiones, nunca seguidas ni el día antes de la tirada)', tipo: 'estudio', fuente: 'Casado et al. 2022 (revisión sistemática, corredores de élite: reparto piramidal/polarizado). Los límites por sesión son criterio de entrenador.' })
   f.push({ regla: 'Tirada larga con tope por prueba y por peso sobre la semana (≤ 150 min en general)', tipo: 'libro', fuente: 'Daniels (≤ 25 % del kilometraje y ≤ 2 h 30 min; cifras de segunda mano †). Con pocas salidas se tolera más peso.' })

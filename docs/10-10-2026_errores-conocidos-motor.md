@@ -20,6 +20,8 @@ Regla de trabajo: cuando aparezca un error nuevo, primero se escribe el test que
 | 12 | Tras una enfermedad o parón el plan saltaba (+144 %, +281 %) o perdía el protocolo de retorno | La media de 4 semanas incluía los ceros y el parón no se detectaba tras volver | `macro-desde-cliente.test.ts` (analizarVolumen) y simulación |
 | 13 | La semana de la carrera llevaba tanto volumen como la anterior (175 min más la prueba) | Se calculaba como un porcentaje del volumen de reducción | `macrociclo.test.ts` |
 | 14 | A un principiante sin datos se le suponían 90 min/semana | Suposición alta por nivel | `macrociclo.test.ts` (45 min y 2 semanas de calibración sin subir) |
+| 15 | Con las sesiones limitadas por la regla de la sesión más larga, el planificador añadía una 4.ª salida aunque se hubieran pedido 3 (el protocolo híbrido fija 3) | El número de salidas pedido se trataba como una preferencia | `macrociclo.test.ts` (nunca más salidas de las pedidas) |
+| 16 | Una búsqueda en PubMed por palabra sola («tapering») devolvió otro estudio (deportes de equipo, 2021) | La comprobación de título era demasiado laxa | `scripts/cargar-papers-entrenamiento.ts`: exigir el título exacto y **revisar la simulación antes de `--apply`** |
 
 ## Límites que siguen abiertos (no son errores resueltos)
 - Las cifras del macrociclo son criterio de entrenador apoyado en libros y en pocos estudios; cada regla lleva su origen en `fundamentos` (estudio / libro / criterio). Ninguna se ha contrastado con un entrenador humano.

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { analizarVolumen, construirEntradaMacro, disciplinaCanonica, minutosPorSemana, type DatosClienteMacro } from '../lib/entrenos/macro-desde-cliente'
+import { analizarVolumen, construirEntradaMacro, disciplinaCanonica, minutosPorSemana, sesionMasLarga30d, type DatosClienteMacro } from '../lib/entrenos/macro-desde-cliente'
 
 const hoy = '2026-10-10' // sábado; semana en curso desde el lunes 05-10
 const run = (fecha: string, min: number) => ({ fecha, tipo: 'running', duracion_s: min * 60 })
@@ -93,5 +93,10 @@ const natalia = construirEntradaMacro({ ...base, onboarding: { condiciones_salud
 assert.equal(natalia.entrada.competicion?.disciplina, 'running_maraton')
 const rara = construirEntradaMacro({ ...base, onboarding: { condiciones_salud: null, fecha_competicion: '2026-12-06', tipo_competicion: 'carrera popular' } })
 assert.ok(rara.faltan.some(f => f.startsWith('Tipo de prueba exacto')))
+
+// Sesión más larga de los últimos 30 días.
+assert.equal(sesionMasLarga30d([run('2026-10-07', 90), run('2026-09-25', 70), run('2026-08-01', 150)], hoy), 90)
+assert.equal(sesionMasLarga30d([run('2026-08-01', 150)], hoy), null)
+assert.equal(construirEntradaMacro(base).entrada.tiradaMasLargaMin, 90)
 
 console.log('macro-desde-cliente.test OK')

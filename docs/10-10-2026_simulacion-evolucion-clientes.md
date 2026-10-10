@@ -10,15 +10,15 @@ Corre poco, sin VDOT, 10K en 12 semanas, adherencia normal.
 |---|---|---|---|---|
 | 1 | base | 65 | 54 | 60 |
 | 2 | base | 65 | 51 | 59 |
-| 3 | base | 60 | 55 | 56 |
-| 4 | base | 60 | 50 | 55 |
-| 5 | base | 55 | 0 | 53 |
-| 6 | base | 55 | 48 | 52 |
-| 7 | base | 55 | 42 | 51 |
-| 8 | construccion | 50 | 44 | 47 |
-| 9 | construccion | 50 | 40 | 45 |
-| 10 | construccion | 50 | 50 | 44 |
-| 11 | construccion | 50 | 50 | 44 |
+| 3 | base | 50 | 46 | 56 |
+| 4 | base | 50 | 41 | 53 |
+| 5 | base | 50 | 0 | 48 |
+| 6 | base | 50 | 43 | 46 |
+| 7 | base | 50 | 39 | 43 |
+| 8 | construccion | 50 | 44 | 41 |
+| 9 | construccion | 50 | 40 | 42 |
+| 10 | construccion | 50 | 50 | 42 |
+| 11 | construccion | 50 | 50 | 43 |
 | 12 | carrera | 45 | 45 | 46 |
 
 **Sin incidencias.**

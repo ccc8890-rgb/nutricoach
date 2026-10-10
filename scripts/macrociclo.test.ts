@@ -134,6 +134,18 @@ const principiante = planificarMacrociclo(base({ nivel: 'principiante', minutosS
 assert.ok(principiante.parametros.salidasSemana <= 4, 'un principiante no pasa de 4 salidas')
 assert.equal(principiante.parametros.descargaCada, 3)
 
+// ── Sesión más larga: con la referencia real, la tirada crece como mucho un 10 % sobre la de los últimos 30 días ──
+const nuevaLarga = planificarMacrociclo(base({ nivel: 'principiante', minutosSemanaActuales: 90, tiradaMasLargaMin: 30, competicion: carrera(12, 'running_10k', 60) }))
+assert.ok(nuevaLarga.semanas[0].sesiones.every(x => x.minutos <= 33), `primera semana ${JSON.stringify(nuevaLarga.semanas[0].sesiones)}`)
+assert.ok(nuevaLarga.semanas.every(s => s.fase === 'carrera' || Math.max(...s.sesiones.map(x => x.minutos)) <= 30 * 1.1 ** 4 + 1), 'crece de forma gradual')
+assert.ok(nuevaLarga.fundamentos.some(f => f.regla.includes('10 % la más larga') && f.tipo === 'estudio'))
+assert.ok(nuevaLarga.fundamentos.some(f => f.tipo === 'criterio' && f.regla.includes('Volumen semanal')), 'el crecimiento semanal se declara como criterio')
+// Sin dato de la sesión más larga se supone y se dice.
+assert.ok(planificarMacrociclo(base({ minutosSemanaActuales: 120 })).supuestos.some(x => x.includes('sesión más larga')))
+// Un número de salidas fijado es un límite firme: nunca se añaden más.
+const fijo = planificarMacrociclo(base({ diasCorrer: 3, minutosSemanaActuales: 150, competicion: carrera(12, 'running_hm', 110) }))
+assert.ok(fijo.semanas.every(s => s.salidas <= 3))
+
 // ── Parón: fórmula de Daniels y reincorporación gradual ──
 const par = planificarMacrociclo(base({ semanasParon: 2, minutosSemanaActuales: 200 }))
 assert.equal(par.semanas[0].fase, 'retorno')
@@ -184,16 +196,24 @@ for (let k = 0; k < 400; k++) {
     diasDisponibles: elige([null, 2, 3, 4, 5, 6, 7]), diasCorrer: elige([null, 2, 3, 4, 5, 6]), vdot: elige([null, 35, 45, 55]),
     minutosSemanaActuales: elige([null, 30, 60, 120, 200, 320, 500]), recuperacion: elige([null, 'baja', 'media', 'alta']),
     lesiones: elige([[], [], [], ['rodilla']]), condicionesSalud: elige([null, null, 'anemia', 'hipertensión', 'diabetes', 'cardiaca']),
-    semanasParon: elige([0, 0, 0, 2, 5]), sesionesFuerzaFijas: elige([0, 0, 2, 3]),
+    semanasParon: elige([0, 0, 0, 2, 5]), sesionesFuerzaFijas: elige([0, 0, 2, 3]), tiradaMasLargaMin: elige([undefined, null, 30, 60, 120]),
     competicion: elige([null, null, carrera(Math.floor(rnd() * 30), elige(DISC), elige([null, 50, 110, 240, 600]))]),
   })
   const r = planificarMacrociclo(e)
   const id = JSON.stringify(e)
   assert.ok(r.semanas.length >= 1 && r.semanas.length <= 21, `semanas ${r.semanas.length} ${id}`)
   const tope = r.parametros.volumenPico * 1.0001 + 5
+  // Regla de la sesión más larga (Frandsen 2025): ninguna sesión supera en más de un 10 % la más larga de los 30 días previos.
+  const refInicial = e.tiradaMasLargaMin && e.tiradaMasLargaMin > 0 ? e.tiradaMasLargaMin : Math.max(25, Math.round(r.parametros.volumenBase * 0.35 / 5) * 5)
   r.semanas.forEach((s, i) => {
     assert.ok(Number.isFinite(s.minutos) && s.minutos > 0, `minutos ${id}`)
     assert.ok(s.salidas >= 2 && s.salidas <= 6, `salidas ${s.salidas} ${id}`)
+    if (s.fase !== 'carrera') {
+      const ref = Math.max(i < 4 ? refInicial : 0, ...r.semanas.slice(Math.max(0, i - 4), i).map(w => Math.max(...w.sesiones.map(y => y.minutos))))
+      const maxSesion = Math.max(...s.sesiones.map(y => y.minutos))
+      assert.ok(maxSesion <= Math.max(25, Math.floor(ref * 1.1)) + 0.001, `sesión de ${maxSesion} min sobre una referencia de ${ref} (semana ${s.n}) ${id}`)
+    }
+    if (e.diasCorrer && s.fase !== 'carrera' && !r.avisos.some(a => a.includes('ya pasó'))) assert.ok(s.salidas <= e.diasCorrer, `añade salidas pedidas ${id}`)
     assert.ok(s.sesiones.length === s.salidas, `sesiones/salidas ${id}`)
     assert.ok(Math.abs(s.sesiones.reduce((a, x) => a + x.minutos, 0) - s.minutos) <= 1, `suma ${id}`)
     assert.ok(s.tiradaMin <= 210 && s.tiradaMin >= 20, `tirada ${s.tiradaMin} ${id}`)

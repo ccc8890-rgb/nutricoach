@@ -133,6 +133,12 @@ export function analizarVolumen(semanas: number[], diasDesdeUltimaCarrera: numbe
   return { minutos: m, semanasConDatos: con.length, semanasParon: 0, nota: ceros === 1 ? 'Una semana sin correr en las últimas 4 (enfermedad o viaje): no se rebaja el volumen habitual por ella.' : null }
 }
 
+/** Duración de la sesión de carrera más larga de los últimos 30 días (null si no corrió). */
+export function sesionMasLarga30d(entrenos: DatosClienteMacro['entrenos'], hoy: string): number | null {
+  const largas = entrenos.filter(e => esCarrera(e.tipo) && e.duracion_s && dias(e.fecha, hoy) >= 0 && dias(e.fecha, hoy) <= 30).map(e => Math.round(e.duracion_s! / 60))
+  return largas.length ? Math.max(...largas) : null
+}
+
 export function construirEntradaMacro(d: DatosClienteMacro): ResultadoEntradaMacro {
   const faltan: string[] = []
   const supuestos: string[] = []
@@ -187,6 +193,7 @@ export function construirEntradaMacro(d: DatosClienteMacro): ResultadoEntradaMac
       condicionesSalud: d.onboarding?.condiciones_salud ?? null,
       semanasParon,
       sesionesFuerzaFijas: d.sesionesFuerzaFijas,
+      tiradaMasLargaMin: sesionMasLarga30d(d.entrenos, d.hoy),
     },
     faltan,
     supuestos,
