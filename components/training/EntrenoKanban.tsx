@@ -12,7 +12,7 @@ import {
     type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Barbell, CaretDown, CheckCircle, PersonSimpleRun, SpinnerGap } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, Barbell, CaretDown, CheckCircle, PersonSimpleRun, SpinnerGap } from '@phosphor-icons/react'
 import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
@@ -52,10 +52,13 @@ function iconoTipo(tipo: SesionKanban['tipo_sesion'], size = 14) {
     return tipo === 'carrera' ? <PersonSimpleRun size={size} /> : <Barbell size={size} />
 }
 
-function SesionCard({ sesion, orden, seleccionada, moviendo, onSeleccionar, onAbrirMover }: {
+function SesionCard({ sesion, orden, puedeSubir, puedeBajar, onOrdenar, seleccionada, moviendo, onSeleccionar, onAbrirMover }: {
     sesion: SesionKanban
     /** "1/2" cuando el día tiene más de una sesión */
     orden?: string
+    puedeSubir?: boolean
+    puedeBajar?: boolean
+    onOrdenar?: (direccion: 'arriba' | 'abajo') => void
     seleccionada: boolean
     moviendo: boolean
     onSeleccionar: () => void
@@ -82,6 +85,12 @@ function SesionCard({ sesion, orden, seleccionada, moviendo, onSeleccionar, onAb
                 <span className="training-week-session__meta">{sesion.ejercicios_count} ejercicios</span>
                 <CaretDown size={14} className={seleccionada ? 'rotate-180' : ''} />
             </button>
+            {onOrdenar && (
+                <div className="training-week-session__order">
+                    <button type="button" aria-label="Subir sesión" disabled={!puedeSubir} onClick={() => onOrdenar('arriba')}><ArrowUp size={13} /></button>
+                    <button type="button" aria-label="Bajar sesión" disabled={!puedeBajar} onClick={() => onOrdenar('abajo')}><ArrowDown size={13} /></button>
+                </div>
+            )}
             <button
                 type="button"
                 className="training-week-session__move"
@@ -95,7 +104,7 @@ function SesionCard({ sesion, orden, seleccionada, moviendo, onSeleccionar, onAb
     )
 }
 
-function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, onSeleccionar, onAbrirMover, onMover }: {
+function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, onSeleccionar, onAbrirMover, onMover, onOrdenar }: {
     dia: string
     sesiones: SesionKanban[]
     seleccionadaId: string | null
@@ -105,6 +114,7 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
     onSeleccionar: (id: string) => void
     onAbrirMover: (id: string) => void
     onMover: (dia: string) => void
+    onOrdenar: (id: string, direccion: 'arriba' | 'abajo') => void
 }) {
     const { setNodeRef, isOver } = useDroppable({ id: dia })
     return (
@@ -122,6 +132,9 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
                         key={s.id}
                         sesion={s}
                         orden={sesiones.length > 1 ? `${i + 1}/${sesiones.length}` : undefined}
+                        puedeSubir={i > 0}
+                        puedeBajar={i < sesiones.length - 1}
+                        onOrdenar={sesiones.length > 1 ? (d) => onOrdenar(s.id, d) : undefined}
                         seleccionada={seleccionadaId === s.id}
                         moviendo={moverId === s.id}
                         onSeleccionar={() => onSeleccionar(s.id)}
@@ -219,6 +232,39 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
         }
     }
 
+    async function ordenarSesion(sesionId: string, direccion: 'arriba' | 'abajo') {
+        const sesion = sesionesLocal.find(s => s.id === sesionId)
+        if (!sesion) return
+        const delDia = sesionesLocal.filter(s => s.dia_semana === sesion.dia_semana)
+        const pos = delDia.findIndex(s => s.id === sesionId)
+        const vecina = delDia[direccion === 'arriba' ? pos - 1 : pos + 1]
+        if (!vecina) return
+
+        const intercambiar = (lista: SesionKanban[]) => {
+            const i = lista.findIndex(s => s.id === sesionId)
+            const j = lista.findIndex(s => s.id === vecina.id)
+            const copia = [...lista]
+            ;[copia[i], copia[j]] = [copia[j], copia[i]]
+            return copia
+        }
+        setSesionesLocal(intercambiar)
+        setMoviendo(true)
+        try {
+            const res = await fetch('/api/cliente/entrenos/ordenar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sesion_id: sesionId, direccion }),
+            })
+            if (!res.ok) throw new Error('No se pudo cambiar el orden')
+            void mutate(SEMANA_ENTRENO_KEY)
+        } catch (err) {
+            setSesionesLocal(intercambiar)
+            emitPortalFeedback(addToast, { type: 'error', title: (err as Error).message })
+        } finally {
+            setMoviendo(false)
+        }
+    }
+
     async function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event
         if (!over) return
@@ -229,7 +275,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
         <div>
             <div className="training-week-intro">
                 <span>Agenda semanal</span>
-                <p>Toca una sesión para desplegarla. Usa <strong>Mover</strong> o arrástrala a otro día.</p>
+                <p>Toca una sesión para desplegarla. Usa <strong>Mover</strong> o arrástrala a otro día; con dos sesiones el mismo día, las flechas cambian el orden.</p>
                 {moviendo && <small><SpinnerGap size={11} className="animate-spin" /> Guardando cambio…</small>}
             </div>
             <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
@@ -246,6 +292,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
                             onSeleccionar={toggleSeleccion}
                             onAbrirMover={(id) => setMoverId(current => current === id ? null : id)}
                             onMover={(nuevoDia) => moverId && moverSesion(moverId, nuevoDia)}
+                            onOrdenar={ordenarSesion}
                         />
                     ))}
                 </div>
