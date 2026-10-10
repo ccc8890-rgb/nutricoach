@@ -54,6 +54,11 @@ export function proponeSubirCarga(texto: string): boolean {
   return SUBE_CARGA.test(texto) && OBJETO_CARGA.test(texto) && !NEGADO.test(texto)
 }
 
+/** Ritmos escritos en el texto (m:ss con minutos de 2 a 9, como 4:50 o 5:05), en segundos por km. */
+export function ritmosEnTexto(texto: string): number[] {
+  return [...texto.matchAll(/\b([2-9]):([0-5]\d)\b/g)].map(m => Number(m[1]) * 60 + Number(m[2]))
+}
+
 export function validarDecisionesIA(decisiones: DecisionIA[], estado: EstadoAtleta, motor: PropuestaRegla[]): { aceptadas: DecisionRevisada[]; descartadas: Descartada[] } {
   const aceptadas: DecisionRevisada[] = []
   const descartadas: Descartada[] = []
@@ -66,6 +71,12 @@ export function validarDecisionesIA(decisiones: DecisionIA[], estado: EstadoAtle
     const avisos: string[] = []
 
     if (d.cambio.trim().length < 20 || /\b(NaN|undefined|null)\b/.test(texto)) { descartadas.push({ decision: d, motivo: 'Texto vacío o con valores sin calcular' }); continue }
+
+    // Los ritmos que escribe la IA tienen que ser posibles para el VDOT del atleta (entre el de repeticiones y el fácil con margen).
+    if (estado.ritmos) {
+      const fuera = ritmosEnTexto(d.cambio).find(r => r < estado.ritmos!.R * 0.95 || r > estado.ritmos!.E * 1.3)
+      if (fuera !== undefined) { descartadas.push({ decision: d, motivo: `Cita un ritmo (${Math.floor(fuera / 60)}:${String(fuera % 60).padStart(2, '0')}/km) imposible para su VDOT` }); continue }
+    }
 
     const sube = proponeSubirCarga(d.cambio) || (d.direccion === 'sube' && (d.metrica_objetivo === 'carga_semana' || d.metrica_objetivo === 'km_semana'))
     if (sobrecarga && sube) { descartadas.push({ decision: d, motivo: 'Propone subir carga con una alerta de sobrecarga activa' }); continue }

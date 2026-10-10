@@ -4,7 +4,9 @@ import type { VueltaEntreno } from './garmin-entrenos'
 
 /** Tipos de vuelta que no cuentan: calentar, enfriar y recuperaciones entre series. */
 const TIPOS_EXCLUIDOS = new Set(['WARMUP', 'COOLDOWN', 'RECOVERY', 'REST', 'REPEAT'])
-/** Menos tiempo de trabajo continuo que esto y la deriva no es fiable. */
+/** Los primeros minutos no cuentan: el pulso sube solo al entrar en calor y eso no es fatiga (infla la deriva en carreras cortas). */
+const CALENTAMIENTO_S = 10 * 60
+/** Menos tiempo de trabajo continuo que esto (ya sin el calentamiento) y la deriva no es fiable. */
 const SEGUNDOS_MINIMOS = 30 * 60
 /** Vueltas más cortas que esto se ignoran (ruido de GPS/pulso). */
 const METROS_MINIMOS = 300
@@ -44,10 +46,17 @@ export function calcularDeriva(vueltas: VueltaEntreno[] | null | undefined): Der
   const activas = vueltas.filter(l => l.tipo === 'ACTIVE' || l.tipo === 'INTERVAL').length
   if (activas >= 3 && vueltas.some(l => l.tipo === 'RECOVERY')) return null
 
-  const tramos: Tramo[] = vueltas
-    .filter(l => !(l.tipo && TIPOS_EXCLUIDOS.has(l.tipo)) && l.distancia_m >= METROS_MINIMOS)
-    .filter(l => l.fc_media && l.velocidad_ms && l.duracion_s > 0)
-    .map(l => ({ dur: l.duracion_s, v: l.velocidad_ms!, fc: l.fc_media! }))
+  // Se descartan las vueltas que caen dentro de los primeros 10 minutos de la carrera (por el punto medio de cada vuelta).
+  let transcurrido = 0
+  const tramos: Tramo[] = []
+  for (const l of vueltas) {
+    const punto = transcurrido + (l.duracion_s > 0 ? l.duracion_s / 2 : 0)
+    transcurrido += l.duracion_s > 0 ? l.duracion_s : 0
+    if (punto < CALENTAMIENTO_S) continue
+    if ((l.tipo && TIPOS_EXCLUIDOS.has(l.tipo)) || l.distancia_m < METROS_MINIMOS) continue
+    if (!l.fc_media || !l.velocidad_ms || !(l.duracion_s > 0)) continue
+    tramos.push({ dur: l.duracion_s, v: l.velocidad_ms, fc: l.fc_media })
+  }
 
   const total = tramos.reduce((a, t) => a + t.dur, 0)
   if (tramos.length < 4 || total < SEGUNDOS_MINIMOS) return null

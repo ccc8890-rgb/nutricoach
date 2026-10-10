@@ -5,13 +5,13 @@ import type { EntrenoPanel } from '../lib/rendimiento/panel'
 const base = '2026-09-01' // fecha del cambio
 const dia = (n: number) => new Date(Date.UTC(2026, 8, 1) + n * 86_400_000).toISOString().slice(0, 10)
 
-/** Carrera continua de 40 min (8 vueltas de 5 min) con un pulso medio dado y una pequeña subida en la segunda mitad. */
+/** Carrera continua de 50 min (10 vueltas de 5 min; las 2 primeras son calentamiento y no cuentan) con una subida de pulso en la segunda parte. */
 function carrera(fecha: string, fc: number, deriva = 0): EntrenoPanel {
-  const vueltas = Array.from({ length: 8 }, (_, i) => ({
-    tipo: 'ACTIVE', paso: null, distancia_m: 900, duracion_s: 300, velocidad_ms: 3, fc_media: i < 4 ? fc : Math.round(fc * (1 + deriva)),
+  const vueltas = Array.from({ length: 10 }, (_, i) => ({
+    tipo: 'ACTIVE', paso: null, distancia_m: 900, duracion_s: 300, velocidad_ms: 3, fc_media: i < 6 ? fc : Math.round(fc * (1 + deriva)),
   }))
   return {
-    fecha, tipo: 'running', nombre: null, duracion_s: 2400, distancia_m: 7200, ritmo_medio_s_km: 333, fc_media: fc,
+    fecha, tipo: 'running', nombre: null, duracion_s: 3000, distancia_m: 9000, ritmo_medio_s_km: 333, fc_media: fc,
     tss: 40, tss_metodo: 'pulso', carga_garmin: null, vo2max: null, tiempo_zona_fc: null, mejores_parciales: null, raw: null, vueltas,
   }
 }
@@ -25,7 +25,7 @@ const todos = [...antes, ...despues]
 const ind = indicadoresVentana(todos, dia(-28), dia(-1), UMBRAL)
 assert.equal(ind.pct_suave, 0)
 assert.ok(ind.deriva! > 8 && ind.deriva! < 11, `deriva antes ${ind.deriva}`)
-assert.ok(Math.abs(ind.km_semana! - (7 * 7.2) / 4) < 0.01)
+assert.ok(Math.abs(ind.km_semana! - (7 * 9) / 4) < 0.01)
 assert.equal(Math.round(ind.carga_semana!), 70)
 
 // 40 días después del cambio: evaluable, y funciona (más suave, menos deriva).

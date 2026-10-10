@@ -47,7 +47,7 @@ export function componerDecisiones(args: {
     return {
       sesion: r.sesion, cambio: r.cambio, razon: r.razon, evidencia: textoEvidencia(estudios), confianza: fiabilidad.valor,
       metrica_objetivo: r.metrica_objetivo, direccion: r.direccion,
-      origen: 'regla', regla: r.regla, riesgo: r.riesgo, segura: esSegura({ riesgo: r.riesgo, fiabilidad, origen: 'regla' }), fiabilidad, estudios, avisos: [],
+      origen: 'regla', regla: r.regla, riesgo: r.riesgo, segura: esSegura({ riesgo: r.riesgo, fiabilidad, origen: 'regla' }), fiabilidad, estudios, avisos: r.avisos ?? [],
     }
   })
 

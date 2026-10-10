@@ -143,9 +143,12 @@ export function citasDe(texto: string, estudios: EstudioCitable[]): EstudioRef[]
 export async function estudiosPorDoi(db: SupabaseClient, dois: string[]): Promise<Map<string, EstudioRef>> {
   const mapa = new Map<string, EstudioRef>()
   if (!dois.length) return mapa
-  const { data } = await db.from('knowledge_base').select('titulo,fuente,doi,nivel_evidencia').eq('activo', true).in('doi', dois)
+  // La base guarda cada DOI con las mayúsculas que dio PubMed: se compara sin distinguirlas y se devuelve con la clave pedida.
+  const pedidos = new Map(dois.map(d => [d.toLowerCase(), d]))
+  const { data } = await db.from('knowledge_base').select('titulo,fuente,doi,nivel_evidencia').eq('activo', true).not('doi', 'is', null).limit(2000)
   for (const r of (data ?? []) as { titulo: string; fuente: string | null; doi: string | null; nivel_evidencia: string | null }[]) {
-    if (r.doi && !mapa.has(r.doi)) mapa.set(r.doi, { titulo: r.titulo.trim(), anio: anioDe(r.fuente), doi: r.doi, nivel: r.nivel_evidencia ?? 'opinion_experto' })
+    const clave = r.doi ? pedidos.get(r.doi.toLowerCase()) : undefined
+    if (clave && !mapa.has(clave)) mapa.set(clave, { titulo: r.titulo.trim(), anio: anioDe(r.fuente), doi: r.doi, nivel: r.nivel_evidencia ?? 'opinion_experto' })
   }
   return mapa
 }

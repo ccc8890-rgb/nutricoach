@@ -46,6 +46,12 @@ function lineaEntreno(e: EntrenoPanel): string {
   return partes.filter(Boolean).join(' ')
 }
 
+/** El perfil guarda las lesiones como lista de textos u objetos; aquí se reduce a una lista de textos. */
+function lesionesDe(v: unknown): string[] {
+  if (!Array.isArray(v)) return []
+  return v.map(x => (typeof x === 'string' ? x : typeof x === 'object' && x ? String((x as Record<string, unknown>).zona ?? (x as Record<string, unknown>).descripcion ?? (x as Record<string, unknown>).nombre ?? '') : '')).map(t => t.trim()).filter(Boolean)
+}
+
 export async function construirContextoRendimiento(db: SupabaseClient, clienteId: string, hoy: string): Promise<ContextoRendimiento> {
   const desde28 = new Date(Date.now() - 28 * 86_400_000).toISOString().slice(0, 10)
   const desde60 = new Date(Date.now() - 60 * 86_400_000).toISOString().slice(0, 10)
@@ -56,7 +62,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     db.from('entrenos_realizados').select('fecha,tipo,nombre,duracion_s,distancia_m,ritmo_medio_s_km,fc_media,tss,tss_metodo,carga_garmin,vo2max,tiempo_zona_fc,mejores_parciales,vueltas,raw').eq('cliente_id', clienteId).order('fecha'),
     db.from('actividad_externa_cliente').select('fecha,rhr,training_readiness,body_battery_max,sueno_h,stress_avg').eq('cliente_id', clienteId).eq('proveedor', 'garmin_connect').gte('fecha', desde60).order('fecha'),
     leerUmbrales(db, clienteId),
-    db.from('perfil_entreno_cliente').select('vdot,sport_modality,objetivo_especifico,dias_disponibles,capacidad_recuperacion,patron_lesiones,restricciones_temporales').eq('cliente_id', clienteId).maybeSingle(),
+    db.from('perfil_entreno_cliente').select('vdot,nivel,sport_modality,objetivo_especifico,dias_disponibles,capacidad_recuperacion,patron_lesiones,restricciones_temporales').eq('cliente_id', clienteId).maybeSingle(),
     db.from('competiciones').select('nombre,disciplina,fecha_competicion,objetivo,tiempo_objetivo_min').eq('cliente_id', clienteId).eq('activo', true).gte('fecha_competicion', hoy).order('fecha_competicion').limit(3),
     db.from('planes_entrenamiento').select('id,nombre').eq('cliente_id', clienteId).eq('activo', true).maybeSingle(),
     db.from('agente_aprendizaje').select('decision,propuesta_original,propuesta_final,comentario_coach,created_at').eq('cliente_id', clienteId).eq('tipo_tarea', 'analisis_rendimiento').order('created_at', { ascending: false }).limit(5),
@@ -102,7 +108,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   const L: string[] = []
   L.push(`ATLETA: ${nombre} (habla de ${nombre} en tercera persona; el lector es el coach)`)
   L.push(`FECHA DE HOY: ${hoy}`)
-  L.push(`PERFIL: modalidad ${perfil?.sport_modality ?? 'n/d'}; objetivo: ${perfil?.objetivo_especifico ?? 'n/d'}; días disponibles/sem: ${perfil?.dias_disponibles ?? 'n/d'}; recuperación: ${perfil?.capacidad_recuperacion ?? 'n/d'}; lesiones: ${JSON.stringify(perfil?.patron_lesiones ?? [])}; restricciones: ${perfil?.restricciones_temporales ?? 'ninguna'}`)
+  L.push(`PERFIL: nivel ${perfil?.nivel ?? 'n/d'}; modalidad ${perfil?.sport_modality ?? 'n/d'}; objetivo: ${perfil?.objetivo_especifico ?? 'n/d'}; días disponibles/sem: ${perfil?.dias_disponibles ?? 'n/d'}; recuperación: ${perfil?.capacidad_recuperacion ?? 'n/d'}; lesiones: ${JSON.stringify(perfil?.patron_lesiones ?? [])}; restricciones: ${perfil?.restricciones_temporales ?? 'ninguna'}`)
   L.push(`UMBRALES: VDOT ${vdot ?? 'n/d'}${ritmos ? ` (E ${formatearRitmo(ritmos.E)}, T ${formatearRitmo(ritmos.T)}, I ${formatearRitmo(ritmos.I)}, R ${formatearRitmo(ritmos.R)} /km)` : ''}; Garmin: pulso umbral ${umbrales.fcUmbral ?? 'n/d'}, ritmo umbral ${umbrales.velUmbralMs ? mmss(1000 / umbrales.velUmbralMs) + '/km' : 'n/d'}, FC máx ${umbrales.fcMax ?? 'n/d'}`)
   L.push(`RECALIBRACIÓN DEL VDOT: ${recal.motivo}${recal.contraste.vdotUmbralGarmin ? ` (el umbral de Garmin equivale a VDOT ${recal.contraste.vdotUmbralGarmin})` : ''}${recal.confianza ? `; confianza ${recal.confianza}` : ''}`)
   L.push(proxima ? `COMPETICIÓN PRÓXIMA: ${proxima.nombre} (${proxima.disciplina}) el ${proxima.fecha_competicion}, en ${diasComp} días; objetivo: ${proxima.objetivo ?? 'n/d'}` : 'COMPETICIÓN PRÓXIMA: ninguna registrada')
@@ -125,7 +131,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     L.push(`DECISIONES ANTERIORES DEL COACH SOBRE ANÁLISIS PREVIOS (aprende de ellas):\n${previas.map(p => `  - ${p.created_at.slice(0, 10)} ${p.decision}${p.comentario_coach ? ` — comentario: "${p.comentario_coach}"` : ''}${p.decision === 'modificado' && p.propuesta_final ? ` — versión final: "${String(p.propuesta_final).slice(0, 240)}"` : ''}`).join('\n')}`)
   }
 
-  const estado = construirEstado({ hoy, panel, fcUmbral: umbrales.fcUmbral, vdot, diasCompeticion: diasComp, ejecucion: ejecucion.sesiones, nombresSesionesPlan, alertas })
+  const estado = construirEstado({ hoy, panel, fcUmbral: umbrales.fcUmbral, vdot, diasCompeticion: diasComp, competicion: proxima && diasComp !== null ? { dias: diasComp, disciplina: String(proxima.disciplina ?? ''), tiempoObjetivoMin: proxima.tiempo_objetivo_min ?? null } : null, perfil: { nivel: perfil?.nivel ?? null, diasDisponibles: perfil?.dias_disponibles != null ? Number(perfil.dias_disponibles) : null, lesiones: lesionesDe(perfil?.patron_lesiones), restricciones: perfil?.restricciones_temporales ?? null, recuperacion: perfil?.capacidad_recuperacion ?? null }, ejecucion: ejecucion.sesiones, nombresSesionesPlan, alertas })
   const estudios = await estudiosParaAnalisis(db)
   const bloqueEstudios = textoEstudios(estudios)
   if (bloqueEstudios) L.push(bloqueEstudios)

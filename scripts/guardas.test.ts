@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { MAX_DECISIONES_IA, proponeSubirCarga, tipoDeSesion, validarDecisionesIA, type DecisionIA } from '../lib/rendimiento/guardas'
+import { ritmosDesdeVdot } from '../lib/entrenos/ritmos'
+import { MAX_DECISIONES_IA, proponeSubirCarga, ritmosEnTexto, tipoDeSesion, validarDecisionesIA, type DecisionIA } from '../lib/rendimiento/guardas'
 import type { EstadoAtleta } from '../lib/rendimiento/estado'
 import type { PropuestaRegla } from '../lib/rendimiento/reglas'
 
@@ -62,4 +63,15 @@ assert.equal(muchas.descartadas.length, 1)
 // Riesgo: con pasos nuevos es medio; sin pasos ni subida, bajo.
 assert.equal(validarDecisionesIA([dec({ pasos: [{ tipo: 'trabajo' }], sesion_id: 'x' })], estado(), []).aceptadas[0].riesgo, 'medio')
 assert.equal(validarDecisionesIA([dec()], estado(), []).aceptadas[0].riesgo, 'bajo')
+// Ritmos escritos: se extraen y se validan contra el VDOT (R ≈ 3:52/km, E ≈ 5:54/km con VDOT 45).
+assert.deepEqual(ritmosEnTexto('Rango 4:55-5:05/km y 20 min a las 10:30'), [295, 305])
+assert.deepEqual(ritmosEnTexto('sin ritmos'), [])
+const v45 = estado({ ritmos: ritmosDesdeVdot(45) })
+assert.equal(validarDecisionesIA([dec({ cambio: 'Mantener el tempo en el rango 4:55-5:05/km los 20 minutos' })], v45, []).aceptadas.length, 1)
+const imposible = validarDecisionesIA([dec({ cambio: 'Hacer las series a 3:10/km con recuperación corta entre repeticiones' })], v45, [])
+assert.equal(imposible.aceptadas.length, 0)
+assert.ok(imposible.descartadas[0].motivo.includes('imposible para su VDOT'))
+assert.equal(validarDecisionesIA([dec({ cambio: 'Hacer el rodaje a 9:00/km caminando cuando haga falta' })], v45, []).aceptadas.length, 0, 'demasiado lento incluso para un rodaje')
+// Sin VDOT no se puede comprobar: no se descarta por ritmo.
+assert.equal(validarDecisionesIA([dec({ cambio: 'Hacer las series a 3:10/km con recuperación corta entre repeticiones' })], estado(), []).aceptadas.length, 1)
 console.log('guardas.test OK')

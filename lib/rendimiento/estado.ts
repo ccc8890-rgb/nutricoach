@@ -31,7 +31,22 @@ export interface EstadoAtleta {
   /** Repeticiones de series/tempo de las últimas 4 semanas: cuántas salieron más lentas que el rango previsto. */
   ejecucion: { repsEvaluadas: number; repsLentas: number; sesionesEvaluadas: number; sesionesSaltadas: number }
   diasCompeticion: number | null
+  /** Próxima competición: la disciplina y el tiempo objetivo deciden la duración y la profundidad del tapering. */
+  competicion: { dias: number; disciplina: string; tiempoObjetivoMin: number | null } | null
+  /** Requisitos del atleta: lo que el motor debe respetar antes de proponer. */
+  perfil: PerfilAtleta
+  /** Vuelve de un parón: 2+ semanas seguidas sin correr y menos de 4 semanas de actividad desde entonces. */
+  retorno: boolean
   alertas: string[]
+}
+
+export interface PerfilAtleta {
+  nivel: string | null
+  diasDisponibles: number | null
+  /** Lesiones previas o activas declaradas en el perfil. */
+  lesiones: string[]
+  restricciones: string | null
+  recuperacion: string | null
 }
 
 export interface EntradaEstado {
@@ -40,6 +55,8 @@ export interface EntradaEstado {
   fcUmbral: number | null
   vdot: number | null
   diasCompeticion: number | null
+  competicion?: { dias: number; disciplina: string; tiempoObjetivoMin: number | null } | null
+  perfil?: Partial<PerfilAtleta>
   ejecucion: EjecucionSesion[]
   nombresSesionesPlan: string[]
   alertas: AlertaRendimiento[]
@@ -52,6 +69,17 @@ export const VENTANA_EFICIENCIA_DIAS = 56
 const media = (v: number[]) => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : null)
 const diasEntre = (a: string, b: string) => Math.round((new Date(`${b}T12:00:00Z`).getTime() - new Date(`${a}T12:00:00Z`).getTime()) / 86_400_000)
 
+/** Semanas completas: 2 o más seguidas sin correr y menos de 4 con actividad desde entonces. */
+export function vuelveDeParon(semanasConSesiones: number[]): boolean {
+  const s = semanasConSesiones
+  let fin = -1
+  for (let i = 0; i < s.length - 1; i++) if (s[i] === 0 && s[i + 1] === 0) fin = i + 1
+  if (fin < 0) return false
+  while (fin + 1 < s.length && s[fin + 1] === 0) fin++
+  const desde = s.slice(fin + 1)
+  return desde.some(n => n > 0) && desde.length < 4
+}
+
 export function construirEstado(e: EntradaEstado): EstadoAtleta {
   const { panel, hoy } = e
   const running = panel.deportes.find(d => d.deporte === 'running')
@@ -62,6 +90,8 @@ export function construirEstado(e: EntradaEstado): EstadoAtleta {
 
   // Últimas 4 semanas completas (la última de panel.semanas puede estar en curso).
   const completas = panel.semanas.length > 1 ? panel.semanas.slice(0, -1) : panel.semanas
+  // Últimas 8 semanas completas de carrera (la semana en curso no cuenta).
+  const ult8 = running?.semanas.length ? running.semanas.slice(-9, -1) : []
   const ult4 = running?.semanas.length ? running.semanas.slice(-5, -1) : completas.slice(-4)
   const carrerasPorSemana = ult4.length ? Math.round((ult4.reduce((a, s) => a + s.sesiones, 0) / ult4.length) * 10) / 10 : 0
   const kmPorSemana = ult4.length ? Math.round((ult4.reduce((a, s) => a + s.km, 0) / ult4.length) * 10) / 10 : 0
@@ -93,6 +123,9 @@ export function construirEstado(e: EntradaEstado): EstadoAtleta {
     kmPorSemana,
     ejecucion: { repsEvaluadas, repsLentas, sesionesEvaluadas: ejec.filter(s => s.cumplimiento).length, sesionesSaltadas: ejec.filter(s => s.estado === 'saltada').length },
     diasCompeticion: e.diasCompeticion,
+    competicion: e.competicion ?? null,
+    perfil: { nivel: e.perfil?.nivel ?? null, diasDisponibles: e.perfil?.diasDisponibles ?? null, lesiones: e.perfil?.lesiones ?? [], restricciones: e.perfil?.restricciones?.trim() || null, recuperacion: e.perfil?.recuperacion ?? null },
+    retorno: vuelveDeParon(ult8.map(s => s.sesiones)),
     alertas: e.alertas.map(a => a.codigo),
   }
 }

@@ -185,6 +185,7 @@ assert.equal(emparejarEntreno('2026-10-12', '2026-10-20', [{ ...e1, tipo: 'stren
 console.log('cumplimiento: OK')
 
 // ── Barandillas de cambios de la IA ──
+import { ritmosDesdeVdot } from '../lib/entrenos/ritmos'
 import { validarCambioPasos } from '../lib/rendimiento/cambio-sesion'
 const mk = (veces: number, metros: number, min: number, max: number): Paso[] => [
   { tipo: 'calentamiento', duracion: { unidad: 'metros', valor: 2000 } },
@@ -205,6 +206,20 @@ const diminuto = validarCambioPasos(mk(7, 400, 255, 270), [{ tipo: 'trabajo', du
 assert.equal(diminuto.ok, false) // la sesión casi desaparece
 assert.equal(validarCambioPasos(mk(7, 400, 255, 270), 'texto', null).ok, false)
 assert.equal(validarCambioPasos(null, mk(7, 400, 255, 270), null).ok, true) // sin pasos previos solo se valida el formato
+// Auditoría 10-10-2026: tope de volumen +25 %, tope de aceleración y coherencia con el VDOT.
+assert.equal(validarCambioPasos(mk(8, 400, 255, 270), mk(10, 400, 255, 270), null).ok, true) // +25 % de trabajo: aún dentro
+assert.equal(validarCambioPasos(mk(4, 800, 255, 270), mk(7, 800, 255, 270), null).ok, false) // +75 % de trabajo: no
+assert.equal(validarCambioPasos(mk(7, 400, 255, 270), mk(7, 400, 248, 262), null).ok, true) // 7 s/km más rápido: permitido
+const aprieta = validarCambioPasos(mk(7, 400, 255, 270), mk(7, 400, 240, 255), null)
+assert.equal(aprieta.ok, false) // 15 s/km más rápido de golpe
+assert.ok(!aprieta.ok && aprieta.error.includes('aprieta'))
+assert.equal(validarCambioPasos(mk(7, 400, 255, 270), mk(7, 400, 262, 275), null).ok, true) // aflojar siempre se admite
+const r45 = ritmosDesdeVdot(45)! // VDOT 45: R ≈ 232 s/km, E ≈ 354 s/km
+assert.equal(validarCambioPasos(null, mk(7, 400, 255, 270), r45).ok, true)
+const masRapidoQueR = validarCambioPasos(null, mk(7, 400, 200, 215), r45)
+assert.equal(masRapidoQueR.ok, false) // 3:20/km con VDOT 45 no tiene sentido en series
+assert.ok(!masRapidoQueR.ok && masRapidoQueR.error.includes('repeticiones'))
+assert.equal(validarCambioPasos(null, mk(7, 400, 480, 495), r45).ok, false) // 8:00/km: más lento que un rodaje fácil + 25 %
 import { sinCambios } from '../lib/rendimiento/aplicar-decision'
 assert.equal(sinCambios(mk(7, 400, 255, 270), mk(7, 400, 255, 270)), true)
 const conNota = JSON.parse(JSON.stringify(mk(7, 400, 255, 270))); conNota[0].nota = 'Trote suave'

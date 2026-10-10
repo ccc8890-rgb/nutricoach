@@ -21,35 +21,62 @@ function atleta(o: Partial<EstadoAtleta> = {}): EstadoAtleta {
     deriva: { media: 4, n: 5 }, eficiencia: { ultimas3: 1.2, previas3: 1.15 },
     fuerza28d: 8, fuerzaEnPlan: 2, carrerasPorSemana: 4, kmPorSemana: 40,
     ejecucion: { repsEvaluadas: 12, repsLentas: 2, sesionesEvaluadas: 4, sesionesSaltadas: 0 },
-    diasCompeticion: null, alertas: [], ...o,
+    diasCompeticion: null, competicion: null, retorno: false,
+    perfil: { nivel: 'intermedio', diasDisponibles: 6, lesiones: [], restricciones: null, recuperacion: 'media' },
+    alertas: [], ...o,
   }
 }
+const comp = (dias: number, disciplina: string, tiempoObjetivoMin: number | null = null) => ({ dias, disciplina, tiempoObjetivoMin })
 const ids = (e: EstadoAtleta) => evaluarReglas(e).propuestas.map(p => p.regla)
 
 // 1. Atleta sano y estable: solo cabe progresar.
 assert.deepEqual(ids(atleta()), ['progresion'])
 
-// 2. Caso real de Carlos (36/52/12, deriva 10, VDOT 45): reparto suave; la deriva queda dentro de esa propuesta.
-const carlos = atleta({ intensidad: inten(36, 52, 12, 339), intensidadPrevia: inten(40, 58, 2, 279), deriva: { media: 10.1, n: 5 }, kmPorSemana: 19, carrerasPorSemana: 3 })
+// 2. Caso real de Carlos (36/52/12, deriva baja sin contar el calentamiento, VDOT 45): reparto suave; la deriva queda dentro de esa propuesta.
+const carlos = atleta({ intensidad: inten(36, 52, 12, 339), intensidadPrevia: inten(40, 58, 2, 279), deriva: { media: 3, n: 3 }, kmPorSemana: 19, carrerasPorSemana: 3 })
 const rc = evaluarReglas(carlos).propuestas
 assert.ok(rc.some(p => p.regla === 'reparto_suave'))
-assert.ok(!rc.some(p => p.regla === 'deriva_alta'), 'la deriva no se duplica cuando ya manda el reparto')
+assert.ok(!rc.some(p => p.regla === 'deriva_alta'), 'la deriva no se propone cuando es baja o ya manda el reparto')
 const reparto = rc.find(p => p.regla === 'reparto_suave')!
 assert.ok(reparto.cambio.includes('159 ppm') && reparto.cambio.includes('5:54/km'), reparto.cambio)
 assert.ok(reparto.razon.includes('36 %') && reparto.razon.includes('52 %') && reparto.razon.includes('40 %'), reparto.razon)
 assert.equal(reparto.metrica_objetivo, 'pct_suave')
 assert.equal(reparto.riesgo, 'bajo')
+assert.ok(reparto.cambio.includes('por debajo de 150 ppm') && reparto.cambio.includes('hablar en frases completas'), reparto.cambio)
+assert.ok(!reparto.razon.includes('rodajes demasiado fuertes'))
+
+// Con deriva baja el motor lo dice y baja la urgencia: es optimizar, no corregir un problema.
+assert.ok(reparto.razon.includes('tolera bien esos ritmos'))
+assert.equal(reparto.prioridad, 5)
+// Sin dato de deriva (pocas carreras continuas) no afirma nada sobre ella y mantiene la prioridad.
+const sinDeriva = evaluarReglas(atleta({ ...carlos, deriva: { media: null, n: 0 } })).propuestas.find(p => p.regla === 'reparto_suave')!
+assert.ok(!sinDeriva.razon.includes('deriva'))
+assert.equal(sinDeriva.prioridad, 3) // 36 % suave (<40 %): prioridad alta sin el contrapeso de la deriva baja
+// Con deriva alta y repetida sí lo une.
+assert.ok(evaluarReglas(atleta({ ...carlos, deriva: { media: 12, n: 5 } })).propuestas.find(p => p.regla === 'reparto_suave')!.razon.includes('rodajes demasiado fuertes'))
 
 // 3. Sobrecarga: manda y silencia las propuestas de reparto y progresión.
 const sobre = atleta({ carga: carga({ tsb: -35, rampa7: 9 }), alertas: ['fatiga_alta', 'rampa_alta'], intensidad: inten(30, 50, 20) })
 assert.deepEqual(ids(sobre), ['sobrecarga'])
 assert.equal(evaluarReglas(sobre).propuestas[0].prioridad, 1)
 
-// 4. Tapering a 10 días; a 20 días no.
-assert.ok(ids(atleta({ diasCompeticion: 10 })).includes('tapering'))
-assert.ok(!ids(atleta({ diasCompeticion: 20 })).includes('tapering'))
-assert.ok(!ids(atleta({ diasCompeticion: 10 })).includes('progresion'), 'no se sube volumen con una carrera a 10 días')
-assert.ok(evaluarReglas(atleta({ diasCompeticion: 5 })).propuestas.find(p => p.regla === 'tapering')!.cambio.includes('50-60 %'))
+// 4. Tapering: ventana y profundidad según la prueba.
+assert.ok(!ids(atleta({ competicion: comp(5, 'running_5k'), diasCompeticion: 5 })).includes('progresion'), 'no se sube volumen con una carrera cerca')
+const taper = (dias: number, disc: string, t: number | null = null) => evaluarReglas(atleta({ competicion: comp(dias, disc, t), diasCompeticion: dias })).propuestas.find(p => p.regla === 'tapering')
+assert.ok(taper(6, 'running_5k'), 'un 5K a 6 días está en su ventana (7)')
+assert.equal(taper(9, 'running_5k'), undefined, 'un 5K a 9 días aún no hace tapering')
+assert.ok(taper(9, 'running_hm'), 'una media a 9 días está en su ventana (10)')
+assert.equal(taper(12, 'running_hm'), undefined)
+assert.ok(taper(13, 'running_maraton'), 'un maratón a 13 días está en su ventana (14)')
+assert.equal(taper(15, 'running_maraton'), undefined)
+assert.ok(taper(6, 'running_5k')!.cambio.includes('30-40 %'), 'última semana de un 5K: 30-40 %')
+assert.ok(taper(13, 'running_maraton')!.cambio.includes('40-55 %'))
+assert.ok(taper(5, 'running_maraton')!.cambio.includes('50-60 %'))
+assert.ok(taper(6, 'running_5k')!.avisos!.some(a => a.includes('orientativas')), 'en pruebas cortas se avisa de que las cifras son orientativas')
+// Un tiempo objetivo largo cambia el perfil: una «10K» con objetivo de 100 min se trata como prueba larga.
+assert.ok(taper(8, 'running_10k', 100) === undefined, 'la ventana la fija la disciplina (7 días)')
+assert.ok(taper(6, 'running_10k', 100)!.cambio.includes('50-60 %'))
+assert.equal(taper(-1, 'running_5k'), undefined)
 
 // 5. Pocos datos: no propone nada de entrenamiento y lo explica.
 const pocos = evaluarReglas(atleta({ carreras6sem: MIN_CARRERAS - 1, intensidad: inten(30, 50, 20) }))
@@ -77,15 +104,46 @@ assert.ok(ids(atleta({ alertas: ['rhr_alto'] })).includes('pulso_reposo'))
 assert.ok(ids(atleta({ alertas: ['monotonia'], carga: carga({ monotonia: 2.4 }) })).includes('monotonia'))
 
 // 10. Orden por prioridad y determinismo (misma entrada, misma salida, sin tocar la entrada).
-const entrada = atleta({ diasCompeticion: 9, alertas: ['rhr_alto'], intensidad: inten(40, 40, 20) })
+const entrada = atleta({ competicion: comp(9, 'running_hm'), diasCompeticion: 9, alertas: ['rhr_alto'], intensidad: inten(40, 40, 20) })
 const copia = JSON.stringify(entrada)
 const a = evaluarReglas(entrada)
 assert.deepEqual(a, evaluarReglas(entrada))
 assert.equal(JSON.stringify(entrada), copia)
 assert.deepEqual(a.propuestas.map(p => p.prioridad), [...a.propuestas.map(p => p.prioridad)].sort((x, y) => x - y))
 
+// 10b. Requisitos del atleta: lesiones, días, nivel, recuperación, parón.
+const sinCarga = (o: Partial<EstadoAtleta>) => atleta({ fuerzaEnPlan: 0, fuerza28d: 0, deriva: { media: 5, n: 5 }, ...o })
+const conLesion = { nivel: 'intermedio', diasDisponibles: 6, lesiones: ['fascitis plantar'], restricciones: null, recuperacion: 'media' }
+const fuerzaL = evaluarReglas(sinCarga({ perfil: conLesion })).propuestas.find(p => p.regla === 'fuerza')!
+assert.equal(fuerzaL.riesgo, 'alto', 'con lesión declarada, añadir fuerza es riesgo alto')
+assert.ok(fuerzaL.cambio.includes('fascitis plantar') && fuerzaL.avisos!.length > 0)
+assert.equal(esSegura({ riesgo: fuerzaL.riesgo, fiabilidad: calcularFiabilidad({ datos: 1, persistencia: 1, nivelesEvidencia: ['meta_analisis'], origen: 'regla' }), origen: 'regla' }), false)
+assert.ok(evaluarReglas(sinCarga({ perfil: conLesion })).notas.some(n => n.includes('fascitis plantar')))
+assert.ok(!ids(atleta({ perfil: conLesion })).includes('progresion'), 'con lesiones no se propone subir volumen')
+assert.ok(!ids(atleta({ perfil: { ...conLesion, lesiones: [], restricciones: 'molestia en la rodilla izquierda' } })).includes('progresion'), 'ni con restricciones temporales')
+// Días disponibles: no se propone fuerza si no caben.
+const sinDias = evaluarReglas(sinCarga({ carrerasPorSemana: 4, perfil: { ...conLesion, lesiones: [], diasDisponibles: 4 } }))
+assert.ok(!sinDias.propuestas.some(p => p.regla === 'fuerza'))
+assert.ok(sinDias.notas.some(n => n.includes('4 días disponibles')))
+assert.ok(ids(sinCarga({ carrerasPorSemana: 4, perfil: { ...conLesion, lesiones: [], diasDisponibles: 6 } })).includes('fuerza'))
+assert.ok(ids(sinCarga({ perfil: { ...conLesion, lesiones: [], diasDisponibles: null } })).includes('fuerza'), 'sin dato de días se propone')
+// Recuperación baja y principiantes: sin progresión; el principiante recibe la pauta de caminar-correr.
+const base0 = { nivel: 'intermedio', diasDisponibles: 6, lesiones: [], restricciones: null, recuperacion: 'media' }
+assert.ok(!ids(atleta({ perfil: { ...base0, recuperacion: 'baja' } })).includes('progresion'))
+assert.ok(!ids(atleta({ perfil: { ...base0, nivel: 'principiante' } })).includes('progresion'))
+assert.ok(evaluarReglas(atleta({ ...carlos, perfil: { ...base0, nivel: 'principiante' } })).propuestas.find(p => p.regla === 'reparto_suave')!.cambio.includes('alternar caminar y correr'))
+assert.ok(!evaluarReglas(carlos).propuestas.find(p => p.regla === 'reparto_suave')!.cambio.includes('caminar'))
+assert.ok(evaluarReglas(sinCarga({ perfil: { ...base0, recuperacion: 'baja' } })).propuestas.find(p => p.regla === 'fuerza')!.razon.includes('empezar con 1 sesión'))
+// Parón: solo la vuelta gradual; nada de subir carga, reparto ni fuerza.
+const parón = evaluarReglas(sinCarga({ retorno: true, intensidad: inten(30, 50, 20) }))
+assert.deepEqual(parón.propuestas.map(p => p.regla), ['retorno'])
+assert.ok(parón.notas.some(n => n.includes('parón')))
+assert.ok(parón.propuestas[0].avisos![0].includes('criterio de entrenador'))
+// Señales de fatiga bloquean la progresión.
+for (const alerta of ['salto_semanal', 'rhr_alto', 'monotonia']) assert.ok(!ids(atleta({ alertas: [alerta], carga: carga({ monotonia: 2.4 }) })).includes('progresion'), `${alerta} bloquea la progresión`)
+
 // 11. Integridad de todas las propuestas posibles: DOI conocidos, métrica válida y dirección solo donde aplica.
-const todas = [sobre, carlos, atleta({ diasCompeticion: 5, alertas: ['rhr_alto', 'monotonia'], carga: carga({ monotonia: 2.5 }), fuerzaEnPlan: 0, fuerza28d: 0, deriva: { media: 12, n: 5 }, ejecucion: { repsEvaluadas: 10, repsLentas: 9, sesionesEvaluadas: 3, sesionesSaltadas: 0 } }), atleta(), atleta({ fuerzaEnPlan: 2, fuerza28d: 1 })]
+const todas = [sobre, carlos, atleta({ retorno: true }), atleta({ competicion: comp(6, 'running_5k'), diasCompeticion: 6 }), atleta({ fuerzaEnPlan: 0, fuerza28d: 0, perfil: conLesion }), atleta({ competicion: comp(5, 'running_maraton'), diasCompeticion: 5, alertas: ['rhr_alto', 'monotonia'], carga: carga({ monotonia: 2.5 }), fuerzaEnPlan: 0, fuerza28d: 0, deriva: { media: 12, n: 5 }, ejecucion: { repsEvaluadas: 10, repsLentas: 9, sesionesEvaluadas: 3, sesionesSaltadas: 0 } }), atleta(), atleta({ fuerzaEnPlan: 2, fuerza28d: 1 })]
 const validos = new Set<string>(Object.values(DOI))
 const vistas = new Set<string>()
 for (const est of todas) for (const p of evaluarReglas(est).propuestas) {
@@ -98,7 +156,7 @@ for (const est of todas) for (const p of evaluarReglas(est).propuestas) {
   assert.ok(p.datos >= 0 && p.datos <= 1 && p.persistencia >= 0 && p.persistencia <= 1)
   assert.ok(!/NaN|undefined|null/.test(p.cambio + p.razon), `${p.regla}: texto con valores vacíos → ${p.cambio} ${p.razon}`)
 }
-for (const regla of ['sobrecarga', 'tapering', 'reparto_suave', 'deriva_alta', 'ejecucion_lenta', 'fuerza', 'fuerza_sin_registro', 'monotonia', 'pulso_reposo', 'progresion']) assert.ok(vistas.has(regla), `la regla ${regla} no se ha ejercitado`)
+for (const regla of ['retorno', 'sobrecarga', 'tapering', 'reparto_suave', 'deriva_alta', 'ejecucion_lenta', 'fuerza', 'fuerza_sin_registro', 'monotonia', 'pulso_reposo', 'progresion']) assert.ok(vistas.has(regla), `la regla ${regla} no se ha ejercitado`)
 
 // 12. Fiabilidad: más datos y mejor evidencia suben; la IA queda por debajo y nunca pasa de 0,8.
 const fuerte = calcularFiabilidad({ datos: 1, persistencia: 1, nivelesEvidencia: ['meta_analisis', 'rct'], origen: 'regla' })
@@ -108,6 +166,12 @@ assert.ok(fuerte.valor > debil.valor && fuerte.nivel === 'alta' && debil.nivel =
 assert.ok(ia.valor < fuerte.valor && ia.valor <= 0.8)
 assert.ok(debil.motivos.includes('sin estudios que lo respalden (criterio de entrenador)'))
 assert.ok(ia.motivos.some(m => m.includes('IA')))
+
+// 12b. La evidencia pondera los dos mejores estudios: uno fuerte no tapa a otros débiles.
+const unoFuerte = calcularFiabilidad({ datos: 1, persistencia: 1, nivelesEvidencia: ['meta_analisis'], origen: 'regla' })
+const fuerteYDebil = calcularFiabilidad({ datos: 1, persistencia: 1, nivelesEvidencia: ['meta_analisis', 'opinion_experto', 'opinion_experto'], origen: 'regla' })
+assert.ok(fuerteYDebil.valor < unoFuerte.valor)
+assert.equal(fuerteYDebil.valor, Math.round((0.35 + 0.35 * ((1 + 0.35) / 2) + 0.3) * 100) / 100)
 
 // 13. «Segura» solo si es de una regla, de riesgo bajo y con fiabilidad suficiente.
 assert.equal(esSegura({ riesgo: 'bajo', fiabilidad: fuerte, origen: 'regla' }), true)
