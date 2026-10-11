@@ -248,8 +248,17 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
   // En 2 semanas / mes el detalle del día va plegado para ver varias semanas a la vez; se despliega a petición
   const [ajustesGen, setAjustesGen] = useState(false)
-  const [detalleAbierto, setDetalleAbierto] = useState(false)
-  const seleccionarDia = (dia: string, semana: number | null) => { setDiaSel({ dia, semana }); setDetalleAbierto(false) }
+  // Cada semana recuerda su propio día elegido y si su detalle está desplegado, así se pueden comparar varias a la vez
+  const [detalles, setDetalles] = useState<Record<string, { dia: string; abierto: boolean }>>({})
+  const seleccionarDia = (dia: string, semana: number | null) => {
+    setDiaSel({ dia, semana })
+    setDetalles(p => ({ ...p, [String(semana ?? 0)]: { dia, abierto: p[String(semana ?? 0)]?.dia === dia && p[String(semana ?? 0)]?.abierto } }))
+  }
+  const alternarDetalle = (semana: number | null, abierto: boolean) => setDetalles(p => {
+    const k = String(semana ?? 0)
+    const dia = p[k]?.dia ?? (diaSel && diaSel.semana === semana ? diaSel.dia : null)
+    return dia ? { ...p, [k]: { dia, abierto } } : p
+  })
   const [version, setVersion] = useState(0)
   const [portapapeles, setPortapapeles] = useState<Portapapeles | null>(null)
   const [modalPlantilla, setModalPlantilla] = useState<'guardar' | 'lista' | null>(null)
@@ -425,19 +434,31 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     ? { col: 'p-3', dia: 'text-lg', diaKcal: 'text-sm', card: 'p-3', label: 'text-xs', nombre: 'text-base leading-snug line-clamp-4', macros: 'text-xs', hueco: 'p-3 text-sm', grid: 'lg:gap-3' }
     : { col: 'lg:p-2', dia: 'text-sm', diaKcal: 'text-xs', card: 'p-2', label: 'text-[12px]', nombre: 'text-xs lg:text-[13px] leading-snug line-clamp-3', macros: 'text-[12px]', hueco: 'p-1.5 text-[13px]', grid: 'lg:gap-1.5' }
   // El detalle del día aparece justo debajo de la semana a la que pertenece el día seleccionado
-  const detalle = (semana: number | null) => diaSel && diaSel.semana === semana ? (vista > 1 && !detalleAbierto) ? (
-    <div className="mt-2 rounded-xl px-3 py-2 flex items-center justify-between gap-2 text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}>
-      <span><b>{diaSel.dia}</b>{semana ? ` · semana +${semana}` : ' · semana en curso'}</span>
-      <button className="rounded-lg px-2.5 py-1 text-xs font-medium" style={{ background: 'var(--primary)', color: 'var(--bg)' }} onClick={() => setDetalleAbierto(true)}>Desplegar detalle</button>
-    </div>
-  ) : (
-    <DetalleDiaDieta clienteId={clienteId} dia={diaSel.dia} semana={semana} version={version}
-      objetivo={objetivosDia[diaSel.dia]?.kcal ? { kcal: objetivosDia[diaSel.dia].kcal, p: objetivosDia[diaSel.dia].p, c: objetivosDia[diaSel.dia].c, g: objetivosDia[diaSel.dia].g } : { kcal: plan.kcal_objetivo, p: plan.proteinas_objetivo, c: plan.carbohidratos_objetivo, g: plan.grasas_objetivo }}
-      momento={objetivosDia[diaSel.dia]?.momento ?? null}
-      onCambiar={franja => setHueco({ dia: diaSel.dia, franja, semana })}
-      onQuitar={(id) => quitar({ id } as Comida, semana)}
-      franjas={franjas} onCambioDatos={() => { void Promise.all([cargar(), cargarFuturas(vista)]) }} />
-  ) : null
+  const detalle = (semana: number | null) => {
+    const sel = detalles[String(semana ?? 0)] ?? (diaSel && diaSel.semana === semana ? { dia: diaSel.dia, abierto: false } : null)
+    if (!sel) return null
+    const abierto = vista === 1 || sel.abierto
+    return (
+      <>
+        {vista > 1 && (
+          <div className="mt-2 rounded-xl px-3 py-2 flex items-center justify-between gap-2 text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+            <span><b>{sel.dia}</b>{semana ? ` · semana +${semana}` : ' · semana en curso'}</span>
+            <button className="rounded-lg px-2.5 py-1 text-xs font-medium" style={abierto ? { border: '1px solid var(--border)', color: 'var(--text)' } : { background: 'var(--primary)', color: 'var(--bg)' }} onClick={() => alternarDetalle(semana, !abierto)}>
+              {abierto ? 'Plegar detalle' : 'Desplegar detalle'}
+            </button>
+          </div>
+        )}
+        {abierto && (
+          <DetalleDiaDieta clienteId={clienteId} dia={sel.dia} semana={semana} version={version}
+            objetivo={objetivosDia[sel.dia]?.kcal ? { kcal: objetivosDia[sel.dia].kcal, p: objetivosDia[sel.dia].p, c: objetivosDia[sel.dia].c, g: objetivosDia[sel.dia].g } : { kcal: plan.kcal_objetivo, p: plan.proteinas_objetivo, c: plan.carbohidratos_objetivo, g: plan.grasas_objetivo }}
+            momento={objetivosDia[sel.dia]?.momento ?? null}
+            onCambiar={franja => setHueco({ dia: sel.dia, franja, semana })}
+            onQuitar={(id) => quitar({ id } as Comida, semana)}
+            franjas={franjas} onCambioDatos={() => { void Promise.all([cargar(), cargarFuturas(vista)]) }} />
+        )}
+      </>
+    )
+  }
   const diaDe = (semana: number | null, dia: string) => (semana == null ? dias : futuras.find(f => f.semana === semana)?.dias)?.find(d => d.dia === dia)
   const recargar = () => Promise.all([cargar(), cargarFuturas(vista)])
 
