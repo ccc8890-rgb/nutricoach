@@ -38,3 +38,9 @@ Total: ~9.200 líneas menos.
 - `motor-http` y `motor-playwright` se borraron (historial git los conserva).
 - `puppeteer`, `apify-client`, `pg` solo los usan scripts: candidatos a `devDependencies`.
 - `components/clientes/SemanaDietaPlanner.tsx` tiene cambios de otra sesión sin commitear; no se tocó.
+
+## Añadido (mediodía): planes de dieta antiguos y «Planes activos»
+- `/dietas` listaba los 24 `planes_nutricion` del coach, incluidos 17 inactivos (versiones antiguas al regenerar planes de clientes de prueba) y 2 sin cliente (abril). Solo 5 eran reales (1 activo por cliente).
+- **Borrados 19 planes** (con sus 94 comidas y 741 alimentos, en cascada; sin dependientes en `comidas_planificadas`, `registro_comidas_dia` ni `piezas_contenido`). **Copia completa** en `salidas/11-10-2026_backup-planes-nutricion-borrados.json` (`salidas/` está en .gitignore, solo local).
+- **«Planes activos» quitada del menú** (`components/Sidebar.tsx`) y de las tarjetas de `/nutricion`: cada cliente ya tiene su plan en la ficha → Nutrición. La ruta `/dietas` y `/dietas/[id]` siguen existiendo (los enlaces desde la ficha usan `/dietas/[id]`).
+- Restaurar: reinsertar desde el JSON de copia (planes → comidas → comida_alimentos).

@@ -71,7 +71,6 @@ const PRIMARY_ITEMS: NavItem[] = [
 
 const NUTRICION_ITEMS: NavItem[] = [
   { href: '/nutricion', label: 'Resumen', icon: House, exact: true },
-  { href: '/dietas', label: 'Planes activos', icon: Utensils, exact: true },
   { href: '/dietas/plantillas', label: 'Plantillas', icon: ListChecks },
 ]
 

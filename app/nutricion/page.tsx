@@ -1,13 +1,7 @@
 import Link from 'next/link'
-import { Activity, ChefHat, ClipboardList, ShoppingCart, Store, Utensils } from 'lucide-react'
+import { Activity, ChefHat, ClipboardList, ShoppingCart, Store } from 'lucide-react'
 
 const accesos = [
-  {
-    href: '/dietas',
-    label: 'Planes activos',
-    detail: 'Dietas en curso, ajustes y revisión por cliente.',
-    icon: Utensils,
-  },
   {
     href: '/dietas/plantillas',
     label: 'Plantillas',
