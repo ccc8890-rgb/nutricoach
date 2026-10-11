@@ -22,6 +22,8 @@ export interface DatosClienteMacro {
   onboarding: { condiciones_salud: string | null; fecha_competicion: string | null; tipo_competicion: string | null } | null
   entrenos: { fecha: string; tipo: string | null; duracion_s: number | null }[]
   sesionesFuerzaFijas: number
+  /** Sesiones de calidad por semana que ya hace según el reloj (opcional). */
+  calidadHabitual?: number | null
 }
 
 export interface ResultadoEntradaMacro {
@@ -194,6 +196,7 @@ export function construirEntradaMacro(d: DatosClienteMacro): ResultadoEntradaMac
       semanasParon,
       sesionesFuerzaFijas: d.sesionesFuerzaFijas,
       tiradaMasLargaMin: sesionMasLarga30d(d.entrenos, d.hoy),
+      calidadHabitual: d.calidadHabitual ?? null,
     },
     faltan,
     supuestos,

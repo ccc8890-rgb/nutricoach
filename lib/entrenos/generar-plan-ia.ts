@@ -7,7 +7,8 @@ import { obtenerInformeVigente } from '@/lib/inteligencia-clinica'
 import { siguienteFaseBloque, type FaseBloque } from '@/lib/entrenos/bloques'
 import type { PerfilEntrenoCliente } from '@/types'
 import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
-import { validarSemanaCarrera, type ContextoValidacion, type ResultadoValidacion } from '@/lib/entrenos/validar-plan-carrera'
+import { validarSemanaCarrera, tipoDeSesionCarrera, type ContextoValidacion, type ResultadoValidacion } from '@/lib/entrenos/validar-plan-carrera'
+import { DIAS_NOMBRE, diaNumero, repartirHibridas, tieneTrabajoDePierna, validarRepartoSemana } from '@/lib/entrenos/reparto-semana'
 import { planificarMacrociclo, type ResultadoMacro } from '@/lib/entrenos/macrociclo'
 import { construirEntradaMacro } from '@/lib/entrenos/macro-desde-cliente'
 import { formatearRitmo } from '@/lib/entrenos/ritmos'
@@ -179,15 +180,19 @@ export async function generarPlanEntrenoIA(sb: SupabaseClient, opts: { clienteId
      * pidió más peso al running sin recortar las híbridas, así que ahora se
      * incluyen las dos variantes entre semana en vez de elegir una.
      */
-    function construirProtocoloHibridoHyroxRunning(fase: FaseBloque): string {
+    function construirProtocoloHibridoHyroxRunning(fase: FaseBloque, carreraDelEsqueleto?: string): string {
+      const lineasCarrera = carreraDelEsqueleto
+        ? `• 3 sesiones de CARRERA, EXACTAMENTE las del esqueleto calculado (tipo y duración): ${carreraDelEsqueleto}. No añadas ni cambies tipos: si el esqueleto no incluye series o tempo, NO los incluyas (la calidad está limitada a propósito por el motor). Pon en "tipo_sesion": "carrera" y en el nombre el tipo (Tirada larga, Rodaje, Series, Tempo). El DÍA de cada sesión lo fija el sistema: pon cualquiera.`
+        : `• 1 sesión de CARRERA — tirada larga, en fin de semana (Sábado o Domingo): rodaje continuo a ritmo aeróbico Z2, duración progresiva.
+• 1 sesión de CARRERA — series (intervalos) entre semana, según la fase de bloque indicada arriba.
+• 1 sesión de CARRERA — tempo run entre semana (día distinto al de series), según la fase de bloque indicada arriba. Total de sesiones de carrera en la semana: exactamente 3.`
       return `HÍBRIDO HYROX + RUNNING — Bloque actual: ${fase}
 ${MODULACION_POR_FASE[fase]}
 
 REPARTO SEMANAL OBLIGATORIO — EXACTAMENTE 6 SESIONES EN TOTAL, NI UNA MÁS:
 • 3 sesiones HÍBRIDAS (y solo 3): cada una incluye 1-2 estaciones reales de Hyrox (SkiErg, Sled Push, Sled Pull, Burpee Broad Jumps, Farmers Carry, Wall Balls, Row) MÁS un bloque de fuerza/hipertrofia accesoria. La hipertrofia accesoria debe ROTAR entre las 3 sesiones para cubrir espalda, pecho, bíceps y hombro a lo largo de la semana — no repitas el mismo grupo muscular en las 3 sesiones híbridas.
-• 1 sesión de CARRERA — tirada larga, en fin de semana (Sábado o Domingo): rodaje continuo a ritmo aeróbico Z2, duración progresiva.
-• 1 sesión de CARRERA — series (intervalos) entre semana, según la fase de bloque indicada arriba.
-• 1 sesión de CARRERA — tempo run entre semana (día distinto al de series), según la fase de bloque indicada arriba. Total de sesiones de carrera en la semana: exactamente 3.
+• SOLO UNA de las 3 sesiones híbridas lleva trabajo pesado de PIERNA (sentadilla, peso muerto, zancadas/búlgara, Sled Push, Wall Balls, Burpee Broad Jumps): ponle «Pierna» en el nombre. Las otras dos usan estaciones de tren superior (SkiErg, Row, Sled Pull, Farmers Carry) e hipertrofia de tren superior o core, SIN ejercicios de pierna: la carrera ya carga las piernas tres veces por semana y el motor necesita piernas frescas para la tirada y la calidad.
+${lineasCarrera}
 
 FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 2010/2017 (hipertrofia accesoria).`
     }
@@ -225,7 +230,7 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
       }
     }
 
-    const protocoloDeporte = esHibridoHyroxRunning
+    let protocoloDeporte = esHibridoHyroxRunning
       ? construirProtocoloHibridoHyroxRunning(faseBloqueObjetivo)
       : (SPORT_PROTOCOLS[modalidadFoco] ?? SPORT_PROTOCOLS.funcional)
 
@@ -281,6 +286,7 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
           onboarding: onbPro as never,
           entrenos: (entrenosMacro ?? []) as never,
           sesionesFuerzaFijas: fuerzaFija,
+          calidadHabitual: e.intensidad.valoracion !== 'sin_datos' && e.intensidad.pctDura >= 5 ? 1 : 0,
         })
         // El protocolo híbrido fija 3 sesiones de carrera por semana.
         if (esHibridoHyroxRunning) entrada.diasCorrer = 3
@@ -288,6 +294,10 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
         macroFaltan = faltan
         const w = macrociclo.semanas[0]
         if (w) {
+          if (esHibridoHyroxRunning) {
+            const NOMBRE_TIPO: Record<string, string> = { rodaje: 'rodaje fácil', tirada: 'tirada larga', tempo: 'tempo', series: 'series', ritmo_carrera: 'ritmo de carrera', strides: 'rodaje con progresiones' }
+            protocoloDeporte = construirProtocoloHibridoHyroxRunning(faseBloqueObjetivo, w.sesiones.map(x => `${NOMBRE_TIPO[x.tipo] ?? x.tipo} ${x.minutos} min`).join(' + '))
+          }
           contextoValidacion.esqueleto = { minutos: w.minutos, salidas: w.salidas, tiradaMin: w.tiradaMin, sesionesCalidad: w.sesiones.filter(x => ['tempo', 'series', 'ritmo_carrera'].includes(x.tipo)).length }
           const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo']
           const resumen = macrociclo.semanas.slice(0, 8).map(x => `S${x.n}${x.descarga ? '(descarga)' : ''} ${x.fase} ${x.minutos} min`).join(' · ')
@@ -439,12 +449,56 @@ ${instruccionDuracion}
       throw new ErrorGeneracionPlan('IA_RESPUESTA_INVALIDA', 502, 'Respuesta IA no válida')
     }
 
+    // Reparto de días determinista (plan híbrido): la IA redacta las sesiones pero no decide el día de cada una. Las de carrera toman los días del
+    // esqueleto del macrociclo y las híbridas se colocan alrededor con reglas fijas (pierna lejos de tirada/calidad, días disponibles, descanso).
+    const diasDisponiblesPerfil = perfilEntreno?.dias_disponibles != null && String(perfilEntreno.dias_disponibles) !== '' ? Number(perfilEntreno.dias_disponibles) : null
+    type SesionBruta = Record<string, unknown> & { nombre?: string; dia_semana?: string; tipo_sesion?: string; ejercicios?: { nombre?: string; bloque?: string }[] }
+    const sesionesBrutas = (planIA.sesiones as SesionBruta[] | undefined) ?? []
+    const esCarreraBruta = (x: SesionBruta) => x.tipo_sesion === 'carrera' || (x.tipo_sesion == null && /carrera|tirada|rodaje|tempo|series/i.test(String(x.nombre ?? '')) && !/h[ií]brid|hyrox/i.test(String(x.nombre ?? '')))
+    const esqueletoSemana = macrociclo?.semanas[0] ?? null
+    if (esHibridoHyroxRunning && esqueletoSemana && sesionesBrutas.length > 0) {
+      const cambios: { nombre: string; de: string | null; a: string }[] = []
+      const avisosReparto: string[] = []
+      const carreras = sesionesBrutas.filter(esCarreraBruta)
+      const hibridas = sesionesBrutas.filter(x => !esCarreraBruta(x))
+      const tipoMacro = (t: string) => (t === 'strides' ? 'rodaje' : t === 'ritmo_carrera' ? 'tempo' : t)
+      let runsFijos: { tipo: string; dia: number }[]
+      if (carreras.length === esqueletoSemana.sesiones.length) {
+        // Cada sesión de carrera de la IA toma el día de la del esqueleto de su mismo tipo (la más larga con la tirada).
+        const libres = [...carreras]
+        runsFijos = esqueletoSemana.sesiones.map(sk => {
+          let i = libres.findIndex(c => tipoDeSesionCarrera({ nombre: String(c.nombre ?? '') }) === tipoMacro(sk.tipo))
+          if (i < 0) i = libres.findIndex(c => tipoDeSesionCarrera({ nombre: String(c.nombre ?? '') }) === 'otra')
+          if (i < 0) i = 0
+          const c = libres.splice(i, 1)[0]
+          const nuevo = DIAS_NOMBRE[sk.dia]
+          if (c.dia_semana !== nuevo) cambios.push({ nombre: String(c.nombre ?? ''), de: c.dia_semana ?? null, a: nuevo })
+          c.dia_semana = nuevo
+          return { tipo: sk.tipo, dia: sk.dia }
+        })
+      } else {
+        avisosReparto.push(`La IA devolvió ${carreras.length} sesiones de carrera y el esqueleto prevé ${esqueletoSemana.sesiones.length}: se respetan los días que puso la IA para la carrera.`)
+        runsFijos = carreras.map(c => ({ tipo: tipoMacro(tipoDeSesionCarrera({ nombre: String(c.nombre ?? '') })), dia: diaNumero(c.dia_semana) })).filter(r => r.dia >= 0)
+      }
+      const rep = repartirHibridas(runsFijos, hibridas.map(h => ({ pierna: tieneTrabajoDePierna({ nombre: String(h.nombre ?? ''), ejercicios: h.ejercicios }) })), diasDisponiblesPerfil)
+      hibridas.forEach((h, i) => {
+        const nuevo = DIAS_NOMBRE[rep.dias[i]]
+        if (h.dia_semana !== nuevo) cambios.push({ nombre: String(h.nombre ?? ''), de: h.dia_semana ?? null, a: nuevo })
+        h.dia_semana = nuevo
+      })
+      avisosReparto.push(...rep.avisos)
+      ;(planIA as Record<string, unknown>)._reparto = { cambios, avisos: avisosReparto }
+    }
+
     // Revisión determinista del plan de carrera generado (no lo corrige: dice qué no cuadra para que el coach lo vea).
     const sesionesGeneradas = ((planIA.sesiones as Record<string, unknown>[]) ?? []).map(x => ({
       nombre: String(x.nombre ?? ''), dia_semana: (x.dia_semana as string) ?? null, tipo_sesion: (x.tipo_sesion as string) ?? null,
       ritmo_objetivo: (x.ritmo_objetivo as string) ?? null, duracion_min: typeof x.duracion_min === 'number' ? x.duracion_min : null,
     }))
     const validacion = sesionesGeneradas.some(x => x.tipo_sesion === 'carrera' || /carrera|tirada|rodaje|tempo|series/i.test(x.nombre)) ? validarSemanaCarrera(sesionesGeneradas, contextoValidacion) : null
+    if (validacion && esHibridoHyroxRunning) {
+      validacion.hallazgos.push(...validarRepartoSemana(sesionesBrutas.map(x => ({ nombre: String(x.nombre ?? ''), dia_semana: x.dia_semana ?? null, ejercicios: x.ejercicios, esCarrera: esCarreraBruta(x), tipoCarrera: esCarreraBruta(x) ? tipoDeSesionCarrera({ nombre: String(x.nombre ?? '') }) : undefined })), diasDisponiblesPerfil))
+    }
 
 
     return {

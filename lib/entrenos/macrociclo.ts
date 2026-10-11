@@ -39,6 +39,8 @@ export interface EntradaMacro {
   sesionesFuerzaFijas: number
   /** Duración de la sesión de carrera más larga de los últimos 30 días (reloj); sin dato se supone a partir del volumen. */
   tiradaMasLargaMin?: number | null
+  /** Sesiones de calidad por semana que el atleta ya hace de verdad (reloj, últimas semanas). Si ya entrena con calidad, la fase base no se la quita. */
+  calidadHabitual?: number | null
 }
 
 export interface SesionMacro {
@@ -341,7 +343,7 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
     const minutos = redondea5(v)
     // Frandsen 2025: el riesgo sube cuando una sesión supera en > 10 % la más larga de los últimos 30 días (≈ 4 semanas).
     const refLarga = Math.max(i < 4 ? tiradaRefInicial : 0, ...semanas.slice(Math.max(0, i - 4)).map(x => Math.max(...x.sesiones.map(y => y.minutos))))
-    const semana = construirSemana({ topeSesion: refLarga * 1.1, maxSalidas: salidasTope, n: i + 1, lunes: sumarDias(inicioPlan, i * 7), fase, descarga, minutos, salidas, clase, nivel, prudente, salud, lesionado, veterano, sesionesFuerzaFijas: e.sesionesFuerzaFijas, notas })
+    const semana = construirSemana({ topeSesion: refLarga * 1.1, maxSalidas: salidasTope, n: i + 1, lunes: sumarDias(inicioPlan, i * 7), fase, descarga, minutos, salidas, clase, nivel, prudente, salud, lesionado, veterano, sesionesFuerzaFijas: e.sesionesFuerzaFijas, calidadHabitual: (e.calidadHabitual ?? 0) >= 1, notas })
     // Si el volumen quedó limitado por las salidas, la carga de referencia pasa a ser la real (la descarga y el tapering se calculan sobre ella).
     if (!descarga && fase !== 'tapering' && semana.notas.some(n => n.startsWith('Volumen limitado'))) volumen = Math.min(volumen, semana.minutos)
     semanas.push(semana)
@@ -399,6 +401,8 @@ interface ArgSemana {
   diaCarrera?: number
   /** Duración máxima de cualquier sesión: la más larga de los últimos 30 días + 10 % (Frandsen 2025). */
   topeSesion?: number
+  /** El atleta ya hace calidad de forma habitual: la fase base conserva 1 sesión. */
+  calidadHabitual?: boolean
   salud: ReturnType<typeof banderasSalud>; lesionado: boolean; veterano: boolean; sesionesFuerzaFijas: number; notas: string[]
 }
 
@@ -415,7 +419,9 @@ function construirSemana(a: ArgSemana): SemanaMacro {
   const sinIntensidad = a.lesionado || a.salud.cardiaco || a.salud.hipertension
   const sinSeries = sinIntensidad || a.salud.anemia
   let nCalidad = 0
-  if (fase === 'base') nCalidad = nivel === 'avanzado' && salidas >= 4 ? 1 : 0
+  // Base: 1 sesión de calidad si es avanzado con 4+ salidas, o si ya entrena con calidad de forma habitual (no se le quita lo que ya hace; criterio de entrenador: mejor controlarla que prohibirla).
+  const calidadEnBase = nivel === 'avanzado' && salidas >= 4 ? true : a.calidadHabitual === true && nivel !== 'principiante' && !a.prudente && salidas >= 3
+  if (fase === 'base') nCalidad = calidadEnBase ? 1 : 0
   else if (fase === 'construccion') nCalidad = nivel === 'principiante' ? 1 : salidas >= 4 ? 2 : 1
   else if (fase === 'especifica') nCalidad = nivel === 'principiante' ? 1 : salidas >= 4 ? 2 : 1
   else if (fase === 'tapering') nCalidad = salidas >= 3 ? 1 : 0
@@ -445,7 +451,7 @@ function construirSemana(a: ArgSemana): SemanaMacro {
   const minutosCalidad = nCalidad > 0 ? Math.max(8, Math.round(minutos * (100 - pctSuave) / 100)) : 0
   const tiposCalidad: TipoSesionMacro[] = []
   if (nCalidad > 0) {
-    if (fase === 'base') tiposCalidad.push('strides')
+    if (fase === 'base') tiposCalidad.push(a.calidadHabitual && !sinSeries ? 'series' : 'strides')
     else if (fase === 'construccion') tiposCalidad.push('tempo', ...(sinSeries ? [] : ['series' as const]))
     else if (fase === 'especifica') tiposCalidad.push(clase === 'corta' || clase === 'media' ? 'series' : 'ritmo_carrera', 'tempo')
     else if (fase === 'tapering') tiposCalidad.push(sinSeries ? 'tempo' : 'series')
