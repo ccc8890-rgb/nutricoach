@@ -40,7 +40,6 @@ const CosteSemanalCard = dynamic(() => import('@/components/clientes/CosteSemana
 const AdherenciaScoreCard = dynamic(() => import('@/components/clientes/AdherenciaScore'), { ssr: false, loading: () => <div className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAdherenciaHeatmap'), { ssr: false, loading: () => <div className="h-32 rounded-2xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const ActividadClientePanel = dynamic(() => import('@/components/clientes/ActividadClientePanel'), { ssr: false, loading: () => <TabSkeleton /> })
-const TrainingCoachPanel = dynamic(() => import('@/components/clientes/TrainingCoachPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const PlanificarConIA = dynamic(() => import('@/components/clientes/PlanificarConIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const InformeCaso = dynamic(() => import('@/components/clientes/InformeCaso'), { ssr: false, loading: () => <TabSkeleton /> })
 const DecisionesIACliente = dynamic(() => import('@/components/clientes/DecisionesIACliente'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -520,7 +519,6 @@ export default function ClienteDetallePage() {
   // Pestaña, subpestaña y vista en la URL: al volver de un plan o una receta se recupera el mismo sitio
   const [tabActiva, setTabActiva] = useEstadoUrl<Tab>('tab', 'nutricion', TABS_VALIDAS)
   const [subTabEntreno, setSubTabEntreno] = useEstadoUrl<SubTabEntreno>('sub', 'plan', SUBTABS_ENTRENO)
-  const [mostrarPanelIAEntreno, setMostrarPanelIAEntreno] = useState(false)
   const [vistaCalendarioEntreno, setVistaCalendarioEntreno] = useEstadoUrl<'semana' | 'mes'>('vista', 'semana', ['semana', 'mes'])
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false)
   const [eliminando, setEliminando] = useState(false)
@@ -973,25 +971,14 @@ export default function ClienteDetallePage() {
                 )}
 
                 <div id="decisiones-ia">
-                  <WorkCard title="Decisiones de IA pendientes" kicker="Aprobar, editar o ignorar aquí mismo" icon={Brain}>
-                    <ErrorBoundary><DecisionesIACliente clienteId={id as string} /></ErrorBoundary>
-                  </WorkCard>
-                </div>
-
-                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-                  <button
-                    onClick={() => setMostrarPanelIAEntreno(v => !v)}
-                    className="w-full flex items-center justify-between gap-3 px-4 py-3"
-                    style={{ background: 'var(--surface)' }}
-                  >
-                    <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Panel IA — decisiones, carga y recuperación</span>
-                    <ChevronRight size={14} className="transition-transform" style={{ color: 'var(--text-muted)', transform: mostrarPanelIAEntreno ? 'rotate(90deg)' : 'rotate(0deg)' }} />
-                  </button>
-                  {mostrarPanelIAEntreno && (
-                    <div className="p-1 space-y-4" style={{ background: 'var(--bg)' }}>
-                      <ErrorBoundary><TrainingCoachPanel clienteId={id as string} /></ErrorBoundary>
-                    </div>
-                  )}
+                  <ErrorBoundary>
+                    <DecisionesIACliente
+                      clienteId={id as string}
+                      envolver={contenido => (
+                        <WorkCard title="Decisiones de IA pendientes" kicker="Aprobar, editar o ignorar aquí mismo" icon={Brain}>{contenido}</WorkCard>
+                      )}
+                    />
+                  </ErrorBoundary>
                 </div>
               </div>
 

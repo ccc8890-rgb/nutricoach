@@ -48,11 +48,24 @@ interface Tarea {
 function esTareaEntrenoDelCliente(t: Tarea, clienteId: string): boolean {
   if (t.cliente_id !== clienteId) return false
   if (!TRAINING_TYPES.has(t.tipo)) return false
-  if (t.tipo === 'actualizacion_plan') return t.payload?.accion_aplicable === 'actualizar_plan_entreno'
+  if (t.tipo === 'actualizacion_plan' && t.payload?.accion_aplicable !== 'actualizar_plan_entreno') return false
   return t.estado === 'pendiente' || t.estado === 'en_revision'
 }
 
-export default function DecisionesIACliente({ clienteId }: { clienteId: string }) {
+// Misma propuesta repetida (mismo tipo y texto): se queda la más reciente.
+function sinDuplicados(tareas: Tarea[]): Tarea[] {
+  const vistas = new Set<string>()
+  return [...tareas]
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .filter(t => {
+      const clave = `${t.tipo}|${t.propuesta ?? ''}`
+      if (vistas.has(clave)) return false
+      vistas.add(clave)
+      return true
+    })
+}
+
+export default function DecisionesIACliente({ clienteId, envolver }: { clienteId: string; envolver?: (contenido: React.ReactNode) => React.ReactNode }) {
   const [tareas, setTareas] = useState<Tarea[] | null>(null)
   const [expandidaId, setExpandidaId] = useState<string | null>(null)
   const [editandoId, setEditandoId] = useState<string | null>(null)
@@ -66,7 +79,7 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
       .then(r => r.json())
       .then(data => {
         if (cancelado) return
-        const pendientes = ((data.tareas ?? []) as Tarea[]).filter(t => esTareaEntrenoDelCliente(t, clienteId))
+        const pendientes = sinDuplicados(((data.tareas ?? []) as Tarea[]).filter(t => esTareaEntrenoDelCliente(t, clienteId)))
         setTareas(pendientes)
       })
       .catch(() => { if (!cancelado) setTareas([]) })
@@ -112,11 +125,12 @@ export default function DecisionesIACliente({ clienteId }: { clienteId: string }
     )
   }
 
-  if (tareas.length === 0) {
-    return <>{avisoNodo}<p className="text-sm px-1" style={{ color: 'var(--text-muted)' }}>Sin decisiones de IA pendientes para este cliente.</p></>
-  }
+  const envuelto = (contenido: React.ReactNode) => (envolver ? envolver(contenido) : contenido)
 
-  return (
+  // Sin nada pendiente (y sin aviso de una aprobación reciente) no ocupa sitio.
+  if (tareas.length === 0) return avisoNodo ? <>{envuelto(avisoNodo)}</> : null
+
+  return envuelto(
     <div className="space-y-2">
       {avisoNodo}
       {tareas.map(tarea => {
