@@ -5,9 +5,8 @@ import { Activity, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
 import type { NutrienteGap, TotalesMicronutrientes } from '@/lib/micronutrientes/gap-report'
 
 interface MicronutrientesPortalProps {
-    codigo?: string
-    /** Vista del coach: informe del plan activo de este cliente */
-    clienteId?: string
+    /** Informe del plan activo de este cliente (vista del coach) */
+    clienteId: string
 }
 
 interface MicronutrientesResponse {
@@ -26,19 +25,18 @@ function formatValor(valor: number, unidad: string): string {
     return `${redondeado}${unidad}`
 }
 
-export default function MicronutrientesPortal({ codigo, clienteId }: MicronutrientesPortalProps) {
+export default function MicronutrientesPortal({ clienteId }: MicronutrientesPortalProps) {
     const [data, setData] = useState<MicronutrientesResponse | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(false)
 
     useEffect(() => {
-        const url = clienteId ? `/api/clientes/${clienteId}/micronutrientes` : `/api/cliente/${codigo}/micronutrientes`
-        fetch(url)
+        fetch(`/api/clientes/${clienteId}/micronutrientes`)
             .then(r => r.json())
             .then((res: MicronutrientesResponse & { error?: string }) => { if (res.error) setError(true); else setData(res) })
             .catch(() => setError(true))
             .finally(() => setLoading(false))
-    }, [codigo, clienteId])
+    }, [clienteId])
 
     if (loading) return (
         <div className="flex items-center justify-center py-6">

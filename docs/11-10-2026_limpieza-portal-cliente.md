@@ -60,6 +60,6 @@ Verificado: `tsc` limpio, `npm run build` OK, auditoría de patrones sin problem
 ## Rutas API huérfanas borradas (11-10-2026)
 Se cruzó cada `app/api/cliente/**/route.ts` con sus llamadores (componentes, páginas, otras rutas, scripts). Sin ningún llamador y borradas (≈ 700 líneas):
 `[codigo]/chat/leer` (lo usaba el `MensajeCoach` ya eliminado), `[codigo]/completar-sesion`, `[codigo]/dashboard` (lo usaba el portal antiguo), `[codigo]/entreno-estado`, `[codigo]/comidas/[comidaId]/alimentos` (+ `[itemId]`; editar alimentos de una comida desde el portal, ya sin pantalla) y `feedback-comida` (stub marcado «obsoleto»).
-No se tocó ninguna ruta con llamador. Revisión extra pendiente: `micronutrientes` y `mis-platos` solo las usan `MicronutrientesPortal` y `MisPlatos`, que el portal activo ya no monta (candidatas a la siguiente pasada, junto con sus componentes).
+Después se revisaron `micronutrientes` y `mis-platos`: `MisPlatos` está montado en la pestaña Recetas del portal activo (se queda) y `MicronutrientesPortal` lo usa el panel del coach (se queda). Solo era huérfana la ruta `[codigo]/micronutrientes` (borrada, y el componente ahora exige `clienteId`).
 Verificación: `tsc` limpio, `npm run build` OK, auditoría de patrones sin problemas. Tests: `test-portal-write-auth` (2 fallos) y `test-comidas-authorization` (34 fallos) **fallaban igual antes** de estos borrados (comprobado con `git stash`); no son consecuencia de esta limpieza y siguen pendientes de revisar aparte.
 **Volver atrás:** `git revert <sha del commit «chore: borra rutas API huérfanas…»>`.
