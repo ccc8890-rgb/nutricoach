@@ -65,3 +65,12 @@ Commits (main): `7145ba6`, `78c8864`, `94c6eec`, `683508a`, `f3ef116`, `864cda4`
 2. Mostrar la brecha «plan vs carga real» en el panel del coach (hoy sale en las propuestas del motor, en el análisis IA y en el validador).
 3. Revisar el tope de series (8 %) para avanzados.
 4. Fuerza/híbridas: no existe aún el equivalente de «capacidad» para fuerza (0 sesiones registradas en Garmin).
+
+## Adenda 2 (11-10-2026, noche) — Los dos lados, Hyrox con carrera y cruces entre sesiones
+
+- **Plan por encima:** `brechaPlanCapacidad` devuelve también `planExcesivo` (>125 % de la capacidad) y la regla `plan_excesivo` propone bajar (riesgo bajo, DOI Nielsen 2014). El test cazó un fallo: `plan_corto` saltaba también con un plan excesivo; ahora solo con `planCorto` o `tiradaCorta`.
+- **Validador:** `salto_volumen` y `subida_volumen` se miden contra la capacidad (si se conoce) y no contra la media de 4 semanas; si no, un plan correcto (150 min) habría salido como «+78 %».
+- **Hyrox con carrera dentro:** las 3 híbridas de Carlos llevan ahora «Carrera continua» tras la estación (Pierna: 4×500 m tras el sled push; SkiErg: 5×400 m; Sled pull/farmer: 3×500 m), a ritmo de maratón, como ejercicios con distancia (no van al Garmin; si luego se puede, se estudia). Copia anterior en `salidas/11-10-2026_backup-sesiones-hibridas-carlos.json`. El prompt del protocolo híbrido pide ese bloque en cada híbrida y aclara que no cuenta como sesión de carrera ni cambia el esqueleto.
+- **Cruces entre sesiones (revisión de semana, `validarRepartoSemana`):** ya existían pierna antes de tirada/calidad, mismo día y 48 h entre piernas; añadidos `carrera_comprometida_antes_tirada` y `sin_dia_de_descanso`. La semana de Carlos (Mar series · Mié pierna · Jue superior + rodaje · Sáb tirada · Dom superior; descanso lunes y viernes) pasa la auditoría sin hallazgos.
+- Series: el tope del tiempo a ritmo I sube del 8 % al 12 % del volumen en avanzados (`TOPE_INTERVALOS`, criterio de entrenador).
+- Pendiente: poder llevar las híbridas de Hyrox al Garmin (probar HIIT / Cardio-Conditioning o app de Connect IQ); si no, queda como sesión registrada a mano.

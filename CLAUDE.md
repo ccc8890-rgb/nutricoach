@@ -19,7 +19,7 @@ Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/inter
 - Hallazgo: las guardas solo vigilaban pasarse; el plan Base de Carlos (97 min/17 km por semana) quedaba un 35-40 % por debajo de lo que corre (150-165 min/28-30 km). El motor partía de la media de 4 semanas (89 min), hundida por viajes.
 - Nueva capacidad demostrada (`lib/entrenos/capacidad.ts`: 80 % de la mejor semana reciente), regla `plan_corto`, validador y «REGLA DURA» de dos lados (90-120 %) para la IA, línea «PLAN FRENTE A SU CARGA REAL» en el análisis. `npm run verificar:motor` 44/44. Commit `af65df8`.
 - Plan de Carlos reescrito: series 45 + rodaje 40 + tirada 65 = 150 min/26,6 km por semana (copia anterior en `salidas/`). Progresión entre bloques (≈ +10 %/semana, descarga cada 4).
-- Pendiente: Hyrox con carrera dentro de las sesiones híbridas; mostrar la brecha en el panel; revisar el tope de series (8 %). Detalle: adenda de `docs/11-10-2026_zonas-fc-base-aerobica-datos-cliente.md`.
+- Hecho después: lado «plan excesivo», validador contra capacidad, Hyrox con carrera dentro de las 3 híbridas de Carlos, cruces de semana (carrera tras estación antes de tirada, día de descanso) y tope de series 12 % en avanzados. Pendiente: llevar las híbridas al Garmin y mostrar la brecha en el panel. Detalle: adenda de `docs/11-10-2026_zonas-fc-base-aerobica-datos-cliente.md`.
 
 ## ✅ SESIÓN 11-10-2026 (noche tardía, Claude) — Zonas de pulso, base aeróbica, leyendas y pestaña «Datos» del cliente
 

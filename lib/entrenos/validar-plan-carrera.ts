@@ -91,10 +91,12 @@ export function validarSemanaCarrera(sesiones: SesionPlan[], ctx: ContextoValida
   if (tiradaPct !== null && tiradaPct > limitePct && carrera.length >= 3) hallazgos.push({ nivel: 'aviso', codigo: 'tirada_pesada', texto: `La tirada larga es el ${tiradaPct} % del tiempo semanal de carrera (referencia: hasta ~${limitePct} % con ${carrera.length} salidas por semana).` })
 
   // Progresión respecto al volumen real.
-  if (ctx.minutosRealesSemana && ctx.minutosRealesSemana > 0 && minutosCarrera > 0) {
-    const salto = (minutosCarrera - ctx.minutosRealesSemana) / ctx.minutosRealesSemana
-    if (salto > 0.3) hallazgos.push({ nivel: 'error', codigo: 'salto_volumen', texto: `El plan sube el volumen de carrera un ${Math.round(salto * 100)} % sobre lo que corre de media (${Math.round(ctx.minutosRealesSemana)} → ${minutosCarrera} min/semana): los saltos de más del 30 % se asocian a más lesiones.` })
-    else if (salto > 0.2) hallazgos.push({ nivel: 'aviso', codigo: 'subida_volumen', texto: `El plan sube el volumen de carrera un ${Math.round(salto * 100)} % sobre su media real (${Math.round(ctx.minutosRealesSemana)} → ${minutosCarrera} min/semana).` })
+  // La referencia es la capacidad demostrada (si se conoce), no la media de 4 semanas: esa se hunde con viajes y haría ver un salto donde no lo hay.
+  const referenciaReal = ctx.capacidadSemana && ctx.capacidadSemana > 0 ? ctx.capacidadSemana : ctx.minutosRealesSemana
+  if (referenciaReal && referenciaReal > 0 && minutosCarrera > 0) {
+    const salto = (minutosCarrera - referenciaReal) / referenciaReal
+    if (salto > 0.3) hallazgos.push({ nivel: 'error', codigo: 'salto_volumen', texto: `El plan sube el volumen de carrera un ${Math.round(salto * 100)} % sobre lo que ya sostiene (${Math.round(referenciaReal)} → ${minutosCarrera} min/semana): los saltos de más del 30 % se asocian a más lesiones.` })
+    else if (salto > 0.2) hallazgos.push({ nivel: 'aviso', codigo: 'subida_volumen', texto: `El plan sube el volumen de carrera un ${Math.round(salto * 100)} % sobre lo que ya sostiene (${Math.round(referenciaReal)} → ${minutosCarrera} min/semana).` })
   }
 
   // Por debajo de la realidad: también es un fallo que el plan no llegue a lo que ya tolera (desentrenamiento, estímulo insuficiente).

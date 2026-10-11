@@ -26,11 +26,16 @@ export function resumenPlanCarrera(sesiones: { nombre?: string | null; pasos: un
   return { minutos: duraciones.reduce((a, d) => a + d.min, 0), tiradaMin: larga.min, salidas: duraciones.length }
 }
 
+/** Un plan por encima de este % de la capacidad es una subida brusca. */
+export const PLAN_MAX_FRACCION = 1.25
+
 export interface BrechaPlan {
   /** Minutos por semana del plan frente a la capacidad del atleta. */
   planCorto: { plan: number; capacidad: number; pct: number } | null
   /** Tirada larga del plan frente a la más larga que ha hecho en las últimas 4 semanas. */
   tiradaCorta: { plan: number; real: number } | null
+  /** Plan muy por encima de lo que el atleta ya sostiene. */
+  planExcesivo?: { plan: number; capacidad: number; pct: number } | null
 }
 
 /** Null si el plan está a la altura (o faltan datos). `capacidad` y `tiradaReal` en minutos. */
@@ -39,5 +44,6 @@ export function brechaPlanCapacidad(plan: PlanCarrera | null | undefined, capaci
   const pct = Math.round((plan.minutos / capacidad) * 100)
   const planCorto = plan.minutos < capacidad * PLAN_MIN_FRACCION ? { plan: plan.minutos, capacidad, pct } : null
   const tiradaCorta = tiradaReal && plan.tiradaMin && plan.tiradaMin < tiradaReal * TIRADA_MIN_FRACCION ? { plan: plan.tiradaMin, real: tiradaReal } : null
-  return planCorto || tiradaCorta ? { planCorto, tiradaCorta } : null
+  const planExcesivo = plan.minutos > capacidad * PLAN_MAX_FRACCION ? { plan: plan.minutos, capacidad, pct } : null
+  return planCorto || tiradaCorta || planExcesivo ? { planCorto, tiradaCorta, planExcesivo } : null
 }

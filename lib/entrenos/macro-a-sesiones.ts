@@ -21,7 +21,10 @@ export function minutosDeTrabajo(minutosSesion: number, minutosSemana: number): 
   return Math.max(8, Math.min(objetivo, minutosSesion - 15))
 }
 
-export function concretarSemana(semana: SemanaMacro, ritmos: Ritmos | null, disciplina?: string): SesionConcreta[] {
+/** Tope del tiempo a ritmo I sobre el volumen semanal: 8 % (Daniels) por defecto; 12 % en avanzados (criterio de entrenador: con poco kilometraje el 8 % deja series irrisorias). */
+export const TOPE_INTERVALOS: Record<string, number> = { avanzado: 0.12 }
+
+export function concretarSemana(semana: SemanaMacro, ritmos: Ritmos | null, disciplina?: string, nivel?: string | null): SesionConcreta[] {
   const sinRitmos = 'ritmo a fijar con un test o una carrera reciente (sin VDOT)'
   return semana.sesiones.map(s => {
     const base = { dia: DIAS[s.dia], tipo: s.tipo, minutos: s.minutos }
@@ -39,7 +42,7 @@ export function concretarSemana(semana: SemanaMacro, ritmos: Ritmos | null, disc
     }
     if (s.tipo === 'series') {
       // Intervalos de 3 min a ritmo I con trote de igual duración (Daniels: intervalos de 3-5 min; ≤ 8 % del volumen semanal).
-      const reps = Math.max(3, Math.min(Math.floor(trabajo / 3), Math.floor((semana.minutos * 0.08) / 3)))
+      const reps = Math.max(3, Math.min(Math.floor(trabajo / 3), Math.floor((semana.minutos * (TOPE_INTERVALOS[nivel ?? ''] ?? 0.08)) / 3)))
       const txt = `${reps} × 3' a ${ritmos ? rango(ritmos.I, 0.02) : 'ritmo de 5 km (sin VDOT: 8-9/10)'} con 3' de trote suave entre repeticiones`
       return { ...base, titulo: 'Series', detalle: `${marco.replace('{TRABAJO}', txt)} (el tiempo exacto depende de las pausas).` }
     }

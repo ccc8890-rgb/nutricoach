@@ -133,6 +133,12 @@ export function validarRepartoSemana(
     if (calidad.includes(d + 1)) h.push({ nivel: 'aviso', codigo: 'pierna_antes_calidad', texto: `«${s.nombre}» tiene trabajo de pierna el día anterior a una sesión de calidad.` })
     if (tirada.includes(d) || calidad.includes(d)) h.push({ nivel: 'aviso', codigo: 'pierna_con_carrera_clave', texto: `«${s.nombre}» (con pierna) cae el mismo día que la tirada o una sesión de calidad.` })
   }
+  // Carrera comprometida (estación + 400-500 m corriendo) en una híbrida: carga las piernas menos que una sesión de pierna, pero no el día antes de la tirada.
+  for (const s of sesiones.filter(x => !x.esCarrera && (x.ejercicios ?? []).some(e => /carrera continua|carrera comprometida/i.test(e.nombre ?? '')))) {
+    const d = diaNumero(s.dia_semana)
+    if (d >= 0 && tirada.includes(d + 1)) h.push({ nivel: 'aviso', codigo: 'carrera_comprometida_antes_tirada', texto: `«${s.nombre}» incluye carrera tras la estación el día anterior a la tirada larga: mejor moverla o quitar esa carrera.` })
+  }
+  if (dias.size >= 7) h.push({ nivel: 'aviso', codigo: 'sin_dia_de_descanso', texto: 'El plan entrena los 7 días de la semana: falta al menos un día completo de descanso.' })
   const diasPierna = piernas.map(s => diaNumero(s.dia_semana)).filter(d => d >= 0).sort((a, b) => a - b)
   for (let i = 1; i < diasPierna.length; i++) if (diasPierna[i] - diasPierna[i - 1] < 2) h.push({ nivel: 'aviso', codigo: 'pierna_seguida', texto: 'Hay dos sesiones con trabajo de pierna con menos de 48 h entre ellas.' })
   return h

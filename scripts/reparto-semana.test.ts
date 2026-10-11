@@ -65,4 +65,12 @@ const dq = s1.sesiones.find(x => x.tipo === 'series')!
 const dt = s1.sesiones.find(x => x.tipo === 'tirada')!
 assert.notEqual(dq.dia + 1, dt.dia, 'calidad nunca el día antes de la tirada')
 
+// Carrera tras la estación el día antes de la tirada → aviso; 7 días seguidos entrenando → aviso de descanso
+const hibCarrera = (dia: string) => ({ nombre: 'Híbrida Tren Superior – SkiErg', dia_semana: dia, esCarrera: false, ejercicios: [{ nombre: 'SkiErg', bloque: 'principal' }, { nombre: 'Carrera continua', bloque: 'principal' }] })
+const tiradaSab = { nombre: 'Tirada larga', dia_semana: 'Sábado', esCarrera: true, tipoCarrera: 'tirada' }
+assert.ok(validarRepartoSemana([hibCarrera('Viernes'), tiradaSab], null).some(h => h.codigo === 'carrera_comprometida_antes_tirada'))
+assert.ok(!validarRepartoSemana([hibCarrera('Jueves'), tiradaSab], null).some(h => h.codigo === 'carrera_comprometida_antes_tirada'))
+const sieteDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(d => ({ nombre: 'x', dia_semana: d, esCarrera: true, tipoCarrera: 'rodaje' }))
+assert.ok(validarRepartoSemana(sieteDias, null).some(h => h.codigo === 'sin_dia_de_descanso'))
+
 console.log('reparto-semana: OK')

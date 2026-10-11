@@ -86,4 +86,17 @@ assert.ok(planificarMacrociclo(avanzado.entrada).semanas[0].minutos >= 120, 'la 
 assert.equal(construirEntradaMacro(datos('principiante')).entrada.minutosSemanaActuales, 84)
 assert.equal(construirEntradaMacro(datos('avanzado', { perfil: { nivel: 'avanzado', vdot: 45, dias_disponibles: 5, patron_lesiones: ['rodilla'], restricciones_temporales: null, capacidad_recuperacion: 'alta' } })).entrada.minutosSemanaActuales, 84)
 
+// El otro lado: plan muy por encima de lo que sostiene → regla plan_excesivo (y la corta no salta a la vez)
+const exceso = ids(sano({ planCarrera: { minutos: 200, tiradaMin: 80, salidas: 3 } }))
+assert.ok(exceso.includes('plan_excesivo') && !exceso.includes('plan_corto'))
+assert.ok(!ids(sano({ planCarrera: { minutos: 150, tiradaMin: 65, salidas: 3 } })).some(r => r === 'plan_excesivo' || r === 'plan_corto'), '150 sobre capacidad 133 es razonable')
+assert.ok(!ids(sano({ planCarrera: { minutos: 200, tiradaMin: 80, salidas: 3 }, retorno: true })).includes('plan_excesivo'))
+
+// Validador: el salto se mide contra la capacidad, no contra la media hundida (150 sobre media 84 sería +78 %: error falso)
+const sesion150 = [sesion('Series', 45, 'martes'), sesion('Rodaje fácil', 40, 'jueves'), sesion('Tirada larga', 65, 'sábado')]
+const conMedia = validarSemanaCarrera(sesion150, { ritmos, minutosRealesSemana: 84 })
+assert.ok(conMedia.hallazgos.some(h => h.codigo === 'salto_volumen'), 'sin capacidad se compara con la media')
+const conCap = validarSemanaCarrera(sesion150, { ritmos, minutosRealesSemana: 84, capacidadSemana: 133, tiradaRealMin: 77 })
+assert.ok(!conCap.hallazgos.some(h => h.codigo === 'salto_volumen' || h.codigo === 'subida_volumen' || h.codigo.endsWith('por_debajo_realidad')))
+
 console.log('plan-vs-realidad.test.ts OK')
