@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DetalleDiaDieta from './DetalleDiaDieta'
 import ListaCompra from '@/components/ListaCompra'
 import { Activity, BadgeCheck, CalendarDays, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
@@ -126,6 +126,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [franjasGen, setFranjasGen] = useState<string[] | null>(null)
   const [ampliado, setAmpliado] = useState(false)
   const [vista, setVista] = useState(1)
+  const irAFuturas = useRef(false)
+  const zonaFuturas = useRef<HTMLDivElement>(null)
   const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
   const [version, setVersion] = useState(0)
   const [objetivosDia, setObjetivosDia] = useState<Record<string, ObjetivoDia>>({})
@@ -175,6 +177,10 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
 
   useEffect(() => { cargar() }, [cargar])
   useEffect(() => { cargarFuturas(vista) }, [vista, cargarFuturas])
+  // Al ampliar la vista, las semanas planificadas quedan por debajo de la semana en curso y su detalle: llevar la vista hasta ellas
+  useEffect(() => {
+    if (irAFuturas.current && futuras.length > 0) { irAFuturas.current = false; zonaFuturas.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
+  }, [futuras])
 
   useEffect(() => {
     if (!hueco) return
@@ -311,7 +317,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             {VISTAS.map(v => (
-              <button key={v.semanas} onClick={() => setVista(v.semanas)} className="px-2.5 py-2 text-xs font-medium"
+              <button key={v.semanas} onClick={() => { irAFuturas.current = v.semanas > vista; setVista(v.semanas) }} className="px-2.5 py-2 text-xs font-medium"
                 style={{ background: vista === v.semanas ? 'var(--primary)' : 'transparent', color: vista === v.semanas ? 'var(--bg)' : 'var(--text-muted)' }}>
                 {v.texto}
               </button>
@@ -405,6 +411,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           Semana en curso <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· lo que ve el cliente{mediaActual ? ` · media ${mediaActual.kcal} kcal · P${mediaActual.p} C${mediaActual.c} G${mediaActual.g}` : ''}</span>
         </p>
       )}
+      <div ref={zonaFuturas} className="scroll-mt-4" />
       <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
       {detalle(null)}
 
