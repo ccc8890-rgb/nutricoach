@@ -11,9 +11,9 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Check, ChevronLeft, ChevronRight, ClipboardPaste, Copy, Flag, Loader2, Trash2, Watch, X } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, ClipboardPaste, Copy, ExternalLink, Flag, Loader2, Plus, Trash2, Watch, X } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
-import { diferenciaDias, lunesDe, sumarDias, esFechaISO, type Operacion } from '@/lib/entrenos/calendario-ajustes'
+import { diaSemanaDe, diferenciaDias, lunesDe, sumarDias, esFechaISO, type Operacion } from '@/lib/entrenos/calendario-ajustes'
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 const DIAS_ABREV = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
@@ -63,7 +63,7 @@ interface DetalleSesion {
   duracion_s: number | null
 }
 
-type Seleccion = { tipo: 'sesion'; sesion_id: string; fecha: string } | { tipo: 'dia'; fecha: string } | null
+type Seleccion = { tipo: 'sesion'; sesion_id: string; fecha: string } | { tipo: 'dia'; fecha: string } | { tipo: 'nueva'; fecha: string } | null
 
 type Portapapeles =
   | { tipo: 'sesion'; etiqueta: string; items: { sesion_id: string; fecha: string }[] }
@@ -128,7 +128,7 @@ function ChipSesion({ sesion, fecha, seleccionada, esPasado, onSeleccionar }: {
   )
 }
 
-function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSeleccionarDia, onPegar }: {
+function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSeleccionarDia, onPegar, onNueva }: {
   dia: DiaMes
   hoy: string
   seleccion: Seleccion
@@ -136,6 +136,7 @@ function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSe
   onSeleccionarSesion: (sesionId: string, fecha: string) => void
   onSeleccionarDia: (fecha: string) => void
   onPegar: (fecha: string) => void
+  onNueva: (fecha: string) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: dia.fecha })
   const esHoy = dia.fecha === hoy
@@ -162,6 +163,17 @@ function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSe
         >
           {numeroDia}
         </button>
+        {!hayPortapapeles && (
+          <button
+            onClick={() => onNueva(dia.fecha)}
+            className="p-0.5 rounded opacity-40 hover:opacity-100"
+            style={{ color: 'var(--text-muted)' }}
+            title="Añadir una sesión nueva este día"
+            aria-label="Añadir sesión"
+          >
+            <Plus size={12} />
+          </button>
+        )}
         {hayPortapapeles && (
           <button
             onClick={() => onPegar(dia.fecha)}
@@ -213,6 +225,8 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
   const [portapapeles, setPortapapeles] = useState<Portapapeles>(null)
   const [guardando, setGuardando] = useState(false)
   const [fechaMover, setFechaMover] = useState('')
+  const [nuevoNombre, setNuevoNombre] = useState('')
+  const [nuevoAlcance, setNuevoAlcance] = useState<'dia' | 'semanal'>('dia')
   const { addToast } = useToast()
   const hoy = hoyISO()
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
@@ -329,6 +343,28 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
     if (ok) { setSeleccion(null); setFechaMover('') }
   }
 
+  async function crearSesion(fecha: string) {
+    const nombre = nuevoNombre.trim()
+    if (!nombre) return
+    setGuardando(true)
+    try {
+      const res = await fetch('/api/entrenos/calendario-sesion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan_id: planId, fecha, nombre, alcance: nuevoAlcance }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json.error ?? 'error')
+      await cargar()
+      setNuevoNombre('')
+      setSeleccion({ tipo: 'sesion', sesion_id: json.sesion_id, fecha })
+    } catch {
+      addToast({ type: 'error', title: 'No se pudo crear la sesión' })
+    } finally {
+      setGuardando(false)
+    }
+  }
+
   if (dias === null) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -392,12 +428,50 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
               onSeleccionarSesion={(id, fecha) => setSeleccion({ tipo: 'sesion', sesion_id: id, fecha })}
               onSeleccionarDia={fecha => setSeleccion({ tipo: 'dia', fecha })}
               onPegar={pegar}
+              onNueva={fecha => { setNuevoNombre(''); setNuevoAlcance('dia'); setSeleccion({ tipo: 'nueva', fecha }) }}
             />
           ))}
         </div>
       </DndContext>
 
-      {seleccion && diaSel && (
+      {seleccion?.tipo === 'nueva' && (
+        <div className="rounded-xl p-4 mt-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>{fechaLarga(seleccion.fecha)}</p>
+              <h3 className="font-bold leading-tight" style={{ color: 'var(--text)' }}>Nueva sesión</h3>
+            </div>
+            <button onClick={() => setSeleccion(null)} className="p-1.5 rounded-lg flex-shrink-0" style={{ color: 'var(--text-muted)' }} aria-label="Cerrar"><X size={15} /></button>
+          </div>
+          <input
+            autoFocus
+            value={nuevoNombre}
+            onChange={e => setNuevoNombre(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') crearSesion(seleccion.fecha) }}
+            maxLength={80}
+            placeholder="Nombre de la sesión (p. ej. Rodaje fácil 30 min)"
+            className="w-full text-sm px-3 py-2 rounded-lg mb-3"
+            style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
+          />
+          <div className="flex flex-wrap gap-4 mb-3 text-sm" style={{ color: 'var(--text)' }}>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" checked={nuevoAlcance === 'dia'} onChange={() => setNuevoAlcance('dia')} /> Solo este día
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" checked={nuevoAlcance === 'semanal'} onChange={() => setNuevoAlcance('semanal')} /> Todos los {diaSemanaDe(seleccion.fecha).toLowerCase()} del bloque
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => crearSesion(seleccion.fecha)} disabled={guardando || !nuevoNombre.trim()} className="btn-primary btn-sm">
+              {guardando ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />} Añadir sesión
+            </button>
+            <button onClick={() => setSeleccion(null)} className="btn-secondary btn-sm">Cancelar</button>
+          </div>
+          <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Se crea vacía: después puedes añadirle ejercicios desde «Abrir plan».</p>
+        </div>
+      )}
+
+      {seleccion && seleccion.tipo !== 'nueva' && diaSel && (
         <div className="rounded-xl p-4 mt-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="min-w-0">
@@ -448,6 +522,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
               <div className="flex flex-wrap items-center gap-2">
                 <button onClick={() => copiarSesion(selSesion.sesion_id, selSesion.fecha)} className="btn-secondary btn-sm"><Copy size={13} /> Copiar</button>
                 <button onClick={() => quitar(selSesion.sesion_id, selSesion.fecha)} disabled={guardando} className="btn-secondary btn-sm"><Trash2 size={13} /> Quitar de este día</button>
+                <a href={`/entrenos/${planId}`} className="btn-secondary btn-sm"><ExternalLink size={13} /> Editar en el plan</a>
                 <span className="flex items-center gap-1.5 ml-auto">
                   <input
                     type="date"
@@ -480,6 +555,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => copiarDia(seleccion.fecha)} className="btn-secondary btn-sm"><Copy size={13} /> Copiar día</button>
                 <button onClick={() => copiarSemana(seleccion.fecha)} className="btn-secondary btn-sm"><Copy size={13} /> Copiar semana</button>
+                <button onClick={() => { setNuevoNombre(''); setNuevoAlcance('dia'); setSeleccion({ tipo: 'nueva', fecha: seleccion.fecha }) }} className="btn-secondary btn-sm"><Plus size={13} /> Nueva sesión</button>
                 {portapapeles && <button onClick={() => pegar(seleccion.fecha)} disabled={guardando} className="btn-primary btn-sm"><ClipboardPaste size={13} /> Pegar aquí</button>}
               </div>
             </>
