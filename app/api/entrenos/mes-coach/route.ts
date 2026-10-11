@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { fechaFinBloque } from '@/lib/entrenos/bloques'
+import { diferenciaDias, lunesDe, ocurrenciasDelDia, sumarDias, type Ajuste } from '@/lib/entrenos/calendario-ajustes'
+import { estadoVentanaPlan } from '@/lib/entrenos/ventana-plan'
+import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
+import { resumenSesion, validarPasos } from '@/lib/entrenos/pasos'
 
 // Variante coach de /api/entrenos/mes-completo: aquella resuelve el cliente
 // por sesión autenticada (portal cliente); esta la usa el coach para ver el
 // mes de UN cliente concreto desde su ficha, y a diferencia de la del
 // cliente soporta varias sesiones el mismo día de la semana (doble sesión) y
 // marca las competiciones activas del cliente en el día correspondiente.
+// Además aplica los ajustes por fecha (mover/copiar/quitar una sesión en un día concreto),
+// añade lo realmente hecho (Garmin/Strava) y el estado de envío al reloj de cada sesión.
 
 function toISODate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -38,17 +43,26 @@ export async function GET(request: NextRequest) {
   if (!plan) return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 })
   if (plan.coach_id !== user.id) return NextResponse.json({ error: 'Sin acceso' }, { status: 403 })
 
-  const diasEnMes = new Date(year, month, 0).getDate()
-  const diasDelMes = Array.from({ length: diasEnMes }, (_, i) => new Date(year, month - 1, i + 1))
-  const primerDiaMes = toISODate(diasDelMes[0])
-  const ultimoDiaMes = toISODate(diasDelMes[diasDelMes.length - 1])
+  // Semanas completas (de lunes a domingo) que tocan el mes: así se pueden copiar semanas que cruzan de mes.
+  const primerDiaMes = lunesDe(toISODate(new Date(year, month - 1, 1)))
+  const ultimoDiaMes = sumarDias(lunesDe(toISODate(new Date(year, month, 0))), 6)
+  const diasDelMes = Array.from({ length: diferenciaDias(primerDiaMes, ultimoDiaMes) + 1 }, (_, i) => {
+    const [y, m, d] = sumarDias(primerDiaMes, i).split('-').map(Number)
+    return new Date(y, m - 1, d)
+  })
 
   const { data: sesiones } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, fase_bloque, duracion_estimada_min')
+    .select('id, nombre, dia_semana, fase_bloque, hora_inicio, duracion_estimada_min, contexto_ia, pasos, garmin_workout_id, garmin_programado_fecha, ejercicios:sesion_ejercicios(id, series, repeticiones, peso_sugerido, rpe, orden, ejercicio:ejercicios(nombre))')
     .eq('plan_id', plan.id)
     .order('orden')
     .order('id')
+
+  const { data: ajustesBD } = await admin
+    .from('calendario_entreno_ajustes')
+    .select('id, sesion_id, tipo, fecha_origen, fecha')
+    .eq('plan_id', plan.id)
+  const ajustes = (ajustesBD ?? []) as Ajuste[]
 
   const { data: competiciones } = await admin
     .from('competiciones')
@@ -58,10 +72,21 @@ export async function GET(request: NextRequest) {
     .gte('fecha_competicion', primerDiaMes)
     .lte('fecha_competicion', ultimoDiaMes)
 
-  const sesionesPorDia = new Map<string, typeof sesiones>()
-  for (const s of sesiones ?? []) {
-    if (!sesionesPorDia.has(s.dia_semana)) sesionesPorDia.set(s.dia_semana, [])
-    sesionesPorDia.get(s.dia_semana)!.push(s)
+  const { data: hechos } = await admin
+    .from('entrenos_realizados')
+    .select('id, fecha, tipo, nombre, distancia_m, duracion_s')
+    .eq('cliente_id', plan.cliente_id)
+    .gte('fecha', primerDiaMes)
+    .lte('fecha', ultimoDiaMes)
+    .order('fecha')
+
+  const { data: perfil } = await admin.from('perfil_entreno_cliente').select('vdot').eq('cliente_id', plan.cliente_id).maybeSingle()
+  const ritmos = perfil?.vdot ? ritmosDesdeVdot(Number(perfil.vdot)) : null
+
+  const hechosPorFecha = new Map<string, NonNullable<typeof hechos>>()
+  for (const h of hechos ?? []) {
+    if (!hechosPorFecha.has(h.fecha)) hechosPorFecha.set(h.fecha, [])
+    hechosPorFecha.get(h.fecha)!.push(h)
   }
 
   const competicionesPorFecha = new Map<string, typeof competiciones>()
@@ -70,25 +95,48 @@ export async function GET(request: NextRequest) {
     competicionesPorFecha.get(c.fecha_competicion)!.push(c)
   }
 
-  const fechaInicioPlan = plan.created_at
-  const duracionSemanas = plan.duracion_semanas as number | null
+  // Detalle de cada sesión (ejercicios y pasos de Garmin con sus ritmos) para abrirla sin salir del calendario.
+  const catalogo: Record<string, unknown> = {}
+  for (const s of sesiones ?? []) {
+    const v = s.pasos ? validarPasos(s.pasos) : null
+    const resumen = v?.ok ? resumenSesion(v.pasos, ritmos) : null
+    catalogo[s.id] = {
+      hora_inicio: s.hora_inicio,
+      duracion_estimada_min: s.duracion_estimada_min,
+      contexto_ia: s.contexto_ia,
+      ejercicios: [...(s.ejercicios ?? [])]
+        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+        .map(e => ({ id: e.id, nombre: (e.ejercicio as { nombre?: string } | null)?.nombre ?? 'Ejercicio', series: e.series, repeticiones: e.repeticiones, peso_sugerido: e.peso_sugerido, rpe: e.rpe })),
+      pasos: resumen ? resumen.lineas : null,
+      distancia_m: resumen?.distancia_m ?? null,
+      duracion_s: resumen?.duracion_s ?? null,
+    }
+  }
+
+  const estado = estadoVentanaPlan(plan.created_at, plan.duracion_semanas as number | null)
 
   const dias = diasDelMes.map(d => {
     const fecha = toISODate(d)
-    const diaSemana = DIAS_SEMANA_POR_INDICE[d.getDay()]
-    const antesDeInicio = fecha < toISODate(new Date(fechaInicioPlan))
-    const bloquePendiente = duracionSemanas
-      ? d.getTime() >= fechaFinBloque(fechaInicioPlan, duracionSemanas).getTime()
-      : false
+    const { antesDeInicio, bloquePendiente } = estado(fecha)
+    const ocurrencias = ocurrenciasDelDia(fecha, sesiones ?? [], ajustes, !antesDeInicio && !bloquePendiente)
 
     return {
       fecha,
-      dia_semana: diaSemana,
-      sesiones: (antesDeInicio || bloquePendiente) ? [] : (sesionesPorDia.get(diaSemana) ?? []),
-      bloque_pendiente: bloquePendiente,
+      fuera_de_mes: d.getMonth() !== month - 1,
+      dia_semana: DIAS_SEMANA_POR_INDICE[d.getDay()],
+      sesiones: ocurrencias.map(({ sesion, ajuste }) => ({
+        id: sesion.id,
+        nombre: sesion.nombre,
+        fase_bloque: sesion.fase_bloque,
+        ajuste: ajuste ? { id: ajuste.id, tipo: ajuste.tipo, fecha_origen: ajuste.fecha_origen } : null,
+        // Solo las sesiones con pasos viajan al reloj: enviada (a esta fecha) o pendiente del próximo envío.
+        garmin: !sesion.pasos ? null : (sesion.garmin_workout_id && sesion.garmin_programado_fecha === fecha ? 'enviada' : 'pendiente'),
+      })),
+      bloque_pendiente: bloquePendiente && ocurrencias.length === 0,
       competiciones: competicionesPorFecha.get(fecha) ?? [],
+      realizados: (hechosPorFecha.get(fecha) ?? []).map(h => ({ id: h.id, tipo: h.tipo, nombre: h.nombre, distancia_m: h.distancia_m, duracion_s: h.duracion_s })),
     }
   })
 
-  return NextResponse.json({ plan_nombre: plan.nombre, dias })
+  return NextResponse.json({ plan_nombre: plan.nombre, dias, catalogo })
 }

@@ -985,7 +985,7 @@ export default function ClienteDetallePage() {
             ) : subTabEntreno === 'calendario' ? (
               <WorkCard
                 title={vistaCalendarioEntreno === 'semana' ? 'Calendario semanal' : 'Calendario mensual'}
-                kicker={vistaCalendarioEntreno === 'semana' ? 'Arrastra para reorganizar' : 'Vista de pájaro — sesiones y competiciones'}
+                kicker={vistaCalendarioEntreno === 'semana' ? 'Arrastra para reorganizar' : 'Mueve, copia y pega por fechas — sesiones, hechos y competiciones'}
                 icon={ClipboardCheck}
                 action={
                   <div className="flex gap-1 rounded-lg p-0.5" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>

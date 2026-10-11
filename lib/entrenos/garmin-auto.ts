@@ -21,8 +21,10 @@ export function decidirEnvio(
   s: EstadoGarminSesion,
   huellaActual: string,
   ahora: Date = new Date(),
+  /** Próxima fecha real de la sesión si el coach la movió en el calendario; por defecto, la de su día de la semana. */
+  fechaReal?: string | null,
 ): { enviar: boolean; fecha: string | null } {
-  const fecha = proximaFechaDia(s.dia_semana, ahora)
+  const fecha = fechaReal !== undefined ? fechaReal : proximaFechaDia(s.dia_semana, ahora)
   if (!fecha) return { enviar: false, fecha: null }
   const alDia = !!s.garmin_workout_id && s.garmin_programado_fecha === fecha && s.garmin_pasos_hash === huellaActual
   return { enviar: !alDia, fecha }
