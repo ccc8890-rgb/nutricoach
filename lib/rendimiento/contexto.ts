@@ -5,6 +5,7 @@ import { construirPanel, type DiaBienestar, type EntrenoPanel } from './panel'
 import { calcularAlertas, type AlertaRendimiento } from './alertas'
 import { leerUmbrales } from './garmin-entrenos'
 import { ritmosDesdeVdot, formatearRitmo } from '@/lib/entrenos/ritmos'
+import { resumenPlanCarrera, brechaPlanCapacidad } from '@/lib/entrenos/plan-vs-realidad'
 import { construirEjecucion } from './ejecucion'
 import { recalibrar, type EntrenoParaVdot } from './vdot'
 import { estudiosParaAnalisis, textoEstudios, type EstudioCitable } from './evidencia'
@@ -87,9 +88,11 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
   // Sesiones del plan activo
   let sesionesPlan: string[] = []
   let nombresSesionesPlan: string[] = []
+  let sesionesConPasos: { nombre: string | null; pasos: unknown }[] = []
   if (plan) {
     const { data: s } = await db.from('sesiones_entrenamiento').select('id,nombre,dia_semana,fase_bloque,contexto_ia,pasos').eq('plan_id', plan.id).order('orden')
     nombresSesionesPlan = (s ?? []).map(x => String(x.nombre ?? ''))
+    sesionesConPasos = (s ?? []).map(x => ({ nombre: x.nombre ?? null, pasos: x.pasos }))
     sesionesPlan = (s ?? []).map(x => `${x.dia_semana}: ${x.nombre}${x.fase_bloque ? ` [${x.fase_bloque}]` : ''}${x.contexto_ia ? ` (${x.contexto_ia})` : ''}${x.pasos ? ` [sesion_id:${x.id}] pasos_actuales=${JSON.stringify(x.pasos)}` : ' [sin pasos estructurados: no modificable]'}`)
   }
 
@@ -131,7 +134,11 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     L.push(`DECISIONES ANTERIORES DEL COACH SOBRE ANÁLISIS PREVIOS (aprende de ellas):\n${previas.map(p => `  - ${p.created_at.slice(0, 10)} ${p.decision}${p.comentario_coach ? ` — comentario: "${p.comentario_coach}"` : ''}${p.decision === 'modificado' && p.propuesta_final ? ` — versión final: "${String(p.propuesta_final).slice(0, 240)}"` : ''}`).join('\n')}`)
   }
 
-  const estado = construirEstado({ hoy, panel, fcUmbral: umbrales.fcUmbral, vdot, diasCompeticion: diasComp, competicion: proxima && diasComp !== null ? { dias: diasComp, disciplina: String(proxima.disciplina ?? ''), tiempoObjetivoMin: proxima.tiempo_objetivo_min ?? null } : null, perfil: { nivel: perfil?.nivel ?? null, diasDisponibles: perfil?.dias_disponibles != null ? Number(perfil.dias_disponibles) : null, lesiones: lesionesDe(perfil?.patron_lesiones), restricciones: perfil?.restricciones_temporales ?? null, recuperacion: perfil?.capacidad_recuperacion ?? null }, ejecucion: ejecucion.sesiones, nombresSesionesPlan, alertas })
+  const estado = construirEstado({ hoy, panel, fcUmbral: umbrales.fcUmbral, vdot, diasCompeticion: diasComp, competicion: proxima && diasComp !== null ? { dias: diasComp, disciplina: String(proxima.disciplina ?? ''), tiempoObjetivoMin: proxima.tiempo_objetivo_min ?? null } : null, perfil: { nivel: perfil?.nivel ?? null, diasDisponibles: perfil?.dias_disponibles != null ? Number(perfil.dias_disponibles) : null, lesiones: lesionesDe(perfil?.patron_lesiones), restricciones: perfil?.restricciones_temporales ?? null, recuperacion: perfil?.capacidad_recuperacion ?? null }, ejecucion: ejecucion.sesiones, nombresSesionesPlan, planCarrera: resumenPlanCarrera(sesionesConPasos, ritmos), alertas })
+  const brecha = brechaPlanCapacidad(estado.planCarrera, estado.capacidadCarreraSemana, estado.tiradaLarga?.minutos)
+  if (estado.planCarrera) {
+    L.push(`PLAN FRENTE A SU CARGA REAL: el plan prescribe ${estado.planCarrera.minutos} min de carrera/semana (${estado.planCarrera.salidas} sesiones, tirada ${estado.planCarrera.tiradaMin ?? 'n/d'} min); corre de media ${estado.minutosCarreraPorSemana} min/semana y su capacidad demostrada es ~${estado.capacidadCarreraSemana} min/semana (80 % de su mejor semana reciente), con una salida más larga de ${estado.tiradaLarga?.minutos ?? 'n/d'} min en las últimas 4 semanas.${brecha ? ' ⚠️ EL PLAN SE QUEDA CORTO: no propongas bajar el volumen; propón subir hacia su capacidad con progresión (≤10 %/semana) o explica por qué conviene mantenerlo.' : ''}`)
+  }
   const estudios = await estudiosParaAnalisis(db)
   const bloqueEstudios = textoEstudios(estudios)
   if (bloqueEstudios) L.push(bloqueEstudios)

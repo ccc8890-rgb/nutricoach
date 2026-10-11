@@ -11,6 +11,7 @@ import { formatearRitmo } from '@/lib/entrenos/ritmos'
 import { diasTaper, perfilPrueba, type PerfilPrueba } from '@/lib/nutricion/competicion'
 import type { ClaveMetrica, Direccion } from './seguimiento'
 import type { EstadoAtleta } from './estado'
+import { brechaPlanCapacidad } from '@/lib/entrenos/plan-vs-realidad'
 
 export type Riesgo = 'bajo' | 'medio' | 'alto'
 
@@ -322,6 +323,31 @@ export function evaluarReglas(e: EstadoAtleta): ResultadoReglas {
       datos: 0.7,
       persistencia: 0.6,
       prioridad: 3,
+    })
+  }
+
+  // Plan por debajo de la realidad: el sistema solo vigilaba pasarse; un plan que no llega a lo que el atleta ya tolera es desentrenamiento.
+  // Solo con datos, sin parón ni descarga, sin lesiones ni fatiga y sin principiantes (ahí la prudencia manda).
+  const brecha = brechaPlanCapacidad(e.planCarrera, e.capacidadCarreraSemana, e.tiradaLarga?.minutos)
+  if (brecha && e.planCarrera && hayDatos && !e.retorno && !e.enDescarga && !limitado && !sobrecarga && !recuperacionBaja && !principiante &&
+      !tiene(e, 'rhr_alto') && !tiene(e, 'salto_semanal') && (e.competicion === null || e.competicion.dias > 21)) {
+    const cap = e.capacidadCarreraSemana ?? 0
+    const partes: string[] = []
+    if (brecha.planCorto) partes.push(`el plan suma ${brecha.planCorto.plan} min de carrera por semana y ya sostiene ~${cap} (${brecha.planCorto.pct} %)`)
+    if (brecha.tiradaCorta) partes.push(`la tirada larga del plan dura ${brecha.tiradaCorta.plan} min y ya ha hecho ${brecha.tiradaCorta.real} min`)
+    propuestas.push({
+      regla: 'plan_corto',
+      sesion: 'general',
+      cambio: `Subir el plan hacia su carga real: ${brecha.planCorto ? `~${cap} min de carrera por semana` : 'más volumen'}${brecha.tiradaCorta ? `, con una tirada larga de ~${Math.min(brecha.tiradaCorta.real, Math.round(brecha.tiradaCorta.real * 0.9 / 5) * 5)} min` : ''}, y después progresar como máximo un 10 % por semana con descarga cada 3-4.`,
+      razon: `${partes.join('; ')}. Un plan por debajo de lo que el atleta ya tolera no da estímulo para mejorar y, mantenido semanas, empieza a perder capacidad (el desentrenamiento aparece en pocas semanas sin carga suficiente).`,
+      riesgo: 'medio',
+      metrica_objetivo: 'km_semana',
+      direccion: 'sube',
+      dois: [DOI.MUJIKA_DESENTRENO_2000],
+      datos: 0.8,
+      persistencia: 0.7,
+      prioridad: 4,
+      avisos: ['La capacidad se calcula como el 80 % de su mejor semana de las últimas 4 (criterio de entrenador: evita que viajes o semanas bajas rebajen el plan). Confirma que no hay motivo para el volumen bajo (lesión, parón, bloque de descarga) antes de aplicar.'],
     })
   }
 

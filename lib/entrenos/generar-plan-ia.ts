@@ -251,13 +251,17 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
       const { estado: e } = await construirContextoRendimiento(sb, cliente_id, new Date().toISOString().slice(0, 10))
       contextoValidacion.ritmos = e.ritmos
       contextoValidacion.minutosRealesSemana = e.minutosCarreraPorSemana > 0 ? e.minutosCarreraPorSemana : null
+      contextoValidacion.capacidadSemana = e.capacidadCarreraSemana && e.capacidadCarreraSemana > 0 ? e.capacidadCarreraSemana : null
+      contextoValidacion.tiradaRealMin = e.tiradaLarga?.minutos ?? null
+      contextoValidacion.planConservador = e.retorno || e.enDescarga || e.perfil.lesiones.length > 0 || !!e.perfil.restricciones || /princip|novel|inicia|beginner/i.test(e.perfil.nivel ?? '')
       const lineas: string[] = []
       if (e.carreras6sem > 0) {
         lineas.push(`- Corre de media ${e.carrerasPorSemana} veces por semana, ${e.kmPorSemana} km y ${e.minutosCarreraPorSemana} minutos por semana (últimas 4 semanas completas, según su reloj).`)
         if (e.intensidad.valoracion !== 'sin_datos') lineas.push(`- Reparto de intensidad actual: ${e.intensidad.pctSuave} % suave, ${e.intensidad.pctMedia} % medio, ${e.intensidad.pctDura} % duro.`)
         if (e.carga) lineas.push(`- Forma (CTL) ${e.carga.ctl}, fatiga (ATL) ${e.carga.atl}, frescura ${e.carga.tsb}.`)
         if (e.retorno) lineas.push('- ⚠️ Vuelve de un parón reciente: volumen y calidad deben empezar bajos y progresar despacio.')
-        lineas.push(`- REGLA DURA: el volumen semanal de carrera del plan no puede superar en más de un 20 % lo que ya corre (${e.minutosCarreraPorSemana} min/semana); si hay que subir, hazlo en bloques progresivos.`)
+        const cap = e.capacidadCarreraSemana && e.capacidadCarreraSemana > 0 ? e.capacidadCarreraSemana : e.minutosCarreraPorSemana
+        lineas.push(`- REGLA DURA (dos lados): el volumen semanal de carrera del plan debe estar ENTRE el 90 % y el 120 % de su capacidad demostrada (~${cap} min/semana: es el 80 % de su mejor semana reciente; su media de 4 semanas, ${e.minutosCarreraPorSemana} min, incluye semanas bajas por viajes o descansos). Quedarse por debajo es tan mal fallo como pasarse: un plan que no llega a lo que ya tolera no produce mejora. Si hay que subir, hazlo en bloques progresivos (≤10 %/semana) y nunca bajes por debajo de su carga real salvo parón, lesión o descarga declarada.${e.tiradaLarga ? ` Su salida más larga reciente fue de ${e.tiradaLarga.minutos} min: la tirada del plan no debe quedar muy por debajo.` : ''}`)
       } else {
         lineas.push('- Sin entrenos de carrera registrados en el reloj: empieza conservador y deja claro que el volumen inicial es una estimación.')
       }

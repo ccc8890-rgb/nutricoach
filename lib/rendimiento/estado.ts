@@ -7,6 +7,7 @@ import type { AlertaRendimiento } from './alertas'
 import type { EjecucionSesion } from './ejecucion'
 import { deporteDe } from './deportes'
 import { ritmosDesdeVdot, type Ritmos } from '@/lib/entrenos/ritmos'
+import { capacidadSemanal } from '@/lib/entrenos/capacidad'
 
 export interface EstadoAtleta {
   hoy: string
@@ -30,6 +31,10 @@ export interface EstadoAtleta {
   kmPorSemana: number
   /** Minutos de carrera por semana (media de las últimas 4 semanas completas). */
   minutosCarreraPorSemana: number
+  /** Volumen que ya ha demostrado soportar: el mayor entre la media y el 80 % de su mejor semana reciente (semanas bajas por viajes no cuentan). */
+  capacidadCarreraSemana?: number
+  /** Lo que prescribe el plan activo (suma de las sesiones de carrera con pasos); null si no hay plan o no tiene pasos. */
+  planCarrera?: { minutos: number; tiradaMin: number | null; salidas: number } | null
   /** Repeticiones de series/tempo de las últimas 4 semanas: cuántas salieron más lentas que el rango previsto. */
   ejecucion: { repsEvaluadas: number; repsLentas: number; sesionesEvaluadas: number; sesionesSaltadas: number
     /** Sesiones con pasos hechas (en su día o en otro) y previstas (hechas + saltadas), aunque no tengan vueltas medibles. */
@@ -73,6 +78,7 @@ export interface EntradaEstado {
   perfil?: Partial<PerfilAtleta>
   ejecucion: EjecucionSesion[]
   nombresSesionesPlan: string[]
+  planCarrera?: { minutos: number; tiradaMin: number | null; salidas: number } | null
   alertas: AlertaRendimiento[]
 }
 
@@ -163,6 +169,8 @@ export function construirEstado(e: EntradaEstado): EstadoAtleta {
     carrerasPorSemana,
     kmPorSemana,
     minutosCarreraPorSemana,
+    capacidadCarreraSemana: capacidadSemanal([...ult4].reverse().map(x => x.minutos))?.capacidad ?? minutosCarreraPorSemana,
+    planCarrera: e.planCarrera ?? null,
     ejecucion: { repsEvaluadas, repsLentas, sesionesEvaluadas: ejec.filter(s => s.cumplimiento).length, sesionesSaltadas: ejec.filter(s => s.estado === 'saltada').length,
       sesionesHechas: ejec.filter(s => s.estado === 'hecha' || s.estado === 'otro_dia').length,
       sesionesPrevistas: ejec.filter(s => s.estado === 'hecha' || s.estado === 'otro_dia' || s.estado === 'saltada').length },

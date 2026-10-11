@@ -24,6 +24,12 @@ export interface ContextoValidacion {
   ritmos: Ritmos | null
   /** Media de minutos de carrera por semana en las últimas 4 semanas completas (reloj). */
   minutosRealesSemana: number | null
+  /** Volumen que ya ha demostrado soportar (80 % de su mejor semana reciente): el plan no debe quedar muy por debajo. */
+  capacidadSemana?: number | null
+  /** Sesión de carrera más larga de las últimas 4 semanas (min). */
+  tiradaRealMin?: number | null
+  /** Retorno de un parón, descarga o lesión: ahí un plan bajo es lo correcto y no se avisa. */
+  planConservador?: boolean
   /** Semana 1 del macrociclo calculado con reglas: lo que el plan generado debería respetar. */
   esqueleto?: { minutos: number; salidas: number; tiradaMin: number; sesionesCalidad: number } | null
 }
@@ -89,6 +95,14 @@ export function validarSemanaCarrera(sesiones: SesionPlan[], ctx: ContextoValida
     const salto = (minutosCarrera - ctx.minutosRealesSemana) / ctx.minutosRealesSemana
     if (salto > 0.3) hallazgos.push({ nivel: 'error', codigo: 'salto_volumen', texto: `El plan sube el volumen de carrera un ${Math.round(salto * 100)} % sobre lo que corre de media (${Math.round(ctx.minutosRealesSemana)} → ${minutosCarrera} min/semana): los saltos de más del 30 % se asocian a más lesiones.` })
     else if (salto > 0.2) hallazgos.push({ nivel: 'aviso', codigo: 'subida_volumen', texto: `El plan sube el volumen de carrera un ${Math.round(salto * 100)} % sobre su media real (${Math.round(ctx.minutosRealesSemana)} → ${minutosCarrera} min/semana).` })
+  }
+
+  // Por debajo de la realidad: también es un fallo que el plan no llegue a lo que ya tolera (desentrenamiento, estímulo insuficiente).
+  if (!ctx.planConservador && ctx.capacidadSemana && ctx.capacidadSemana > 0 && minutosCarrera > 0 && minutosCarrera < ctx.capacidadSemana * 0.85) {
+    hallazgos.push({ nivel: 'aviso', codigo: 'plan_por_debajo_realidad', texto: `El plan suma ${minutosCarrera} min de carrera por semana y el atleta ya sostiene ~${Math.round(ctx.capacidadSemana)} (el ${Math.round((minutosCarrera / ctx.capacidadSemana) * 100)} %): se quedaría corto de estímulo. Subir hacia esa cifra y progresar un máximo de ~10 % por semana.` })
+  }
+  if (!ctx.planConservador && ctx.tiradaRealMin && tirada?.min && tirada.min < ctx.tiradaRealMin * 0.75) {
+    hallazgos.push({ nivel: 'aviso', codigo: 'tirada_por_debajo_realidad', texto: `La tirada larga del plan dura ${tirada.min} min y el atleta ya ha hecho ${ctx.tiradaRealMin} min en las últimas semanas: quedaría muy por debajo de lo que tolera.` })
   }
 
   // Ritmos objetivo coherentes con el VDOT.

@@ -4,6 +4,7 @@
 import { esCarrera } from '../rendimiento/carga'
 import { disciplinaConocida } from '../nutricion/competicion'
 import type { EntradaMacro } from './macrociclo'
+import { capacidadSemanal } from './capacidad'
 
 export interface DatosClienteMacro {
   hoy: string
@@ -173,7 +174,18 @@ export function construirEntradaMacro(d: DatosClienteMacro): ResultadoEntradaMac
 
   const ultima = d.entrenos.filter(e => esCarrera(e.tipo)).map(e => e.fecha).sort().pop()
   const analisis = analizarVolumen(minutosPorSemana(d.entrenos, d.hoy), ultima ? dias(ultima, d.hoy) : null)
-  const { minutos, semanasConDatos, semanasParon } = analisis
+  const { semanasConDatos, semanasParon } = analisis
+  let minutos = analisis.minutos
+  // Semanas bajas (viajes, vacaciones) no deben fijar el nivel: el plan parte de lo que ya ha demostrado soportar. Con parón, lesión o nivel principiante se mantiene la prudencia.
+  const principiante = /princip|novel|inicia|beginner/i.test(nivel ?? '')
+  const conLesion = lesionesDe(d.perfil?.patron_lesiones).length > 0 || !!d.perfil?.restricciones_temporales?.trim()
+  if (minutos !== null && semanasParon === 0 && !principiante && !conLesion) {
+    const cap = capacidadSemanal(minutosPorSemana(d.entrenos, d.hoy))
+    if (cap?.hayDiferencia && cap.capacidad > minutos) {
+      supuestos.push(`El volumen de partida sube de ${minutos} a ${cap.capacidad} min/semana: es el 80 % de su mejor semana reciente (${cap.mejor4} min). La media de 4 semanas (${cap.media4} min) incluye semanas bajas y dejaría el plan por debajo de lo que ya tolera.`)
+      minutos = cap.capacidad
+    }
+  }
   if (minutos === null) faltan.push('Datos de carrera del reloj (últimas semanas): el volumen de partida es una suposición por nivel')
   else if (semanasConDatos < 3 && semanasParon === 0) supuestos.push(`Volumen actual calculado con solo ${semanasConDatos} de las 4 últimas semanas con carrera.`)
   if (analisis.nota) supuestos.push(analisis.nota)
