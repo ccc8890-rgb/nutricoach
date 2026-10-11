@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Brain, ClipboardList, LogOut, Moon, ShieldAlert, SlidersHorizontal, Sun } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/components/ThemeProvider'
+import EstadoSistema from '@/components/ajustes/EstadoSistema'
 import './ajustes.css'
 
 type Perfil = { nombre: string; apellidos: string | null; email: string; telefono: string | null }
@@ -212,6 +213,10 @@ export default function AjustesPanel() {
               </button>
             ))}
           </div>
+        </Seccion>
+
+        <Seccion titulo="Estado del sistema">
+          <EstadoSistema />
         </Seccion>
 
         <Seccion titulo="Método y conocimiento">
