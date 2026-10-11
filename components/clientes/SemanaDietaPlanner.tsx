@@ -216,6 +216,9 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const irAFuturas = useRef(false)
   const zonaFuturas = useRef<HTMLDivElement>(null)
   const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
+  // En 2 semanas / mes el detalle del día va plegado para ver varias semanas a la vez; se despliega a petición
+  const [detalleAbierto, setDetalleAbierto] = useState(false)
+  const seleccionarDia = (dia: string, semana: number | null) => { setDiaSel({ dia, semana }); setDetalleAbierto(false) }
   const [version, setVersion] = useState(0)
   const [portapapeles, setPortapapeles] = useState<Portapapeles | null>(null)
   const [modalPlantilla, setModalPlantilla] = useState<'guardar' | 'lista' | null>(null)
@@ -392,7 +395,12 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     ? { col: 'p-3', dia: 'text-lg', diaKcal: 'text-sm', card: 'p-3', label: 'text-xs', nombre: 'text-base leading-snug line-clamp-4', macros: 'text-xs', hueco: 'p-3 text-sm', grid: 'lg:gap-3' }
     : { col: 'lg:p-2', dia: 'text-sm', diaKcal: 'text-xs', card: 'p-2', label: 'text-[12px]', nombre: 'text-xs lg:text-[13px] leading-snug line-clamp-3', macros: 'text-[12px]', hueco: 'p-1.5 text-[13px]', grid: 'lg:gap-1.5' }
   // El detalle del día aparece justo debajo de la semana a la que pertenece el día seleccionado
-  const detalle = (semana: number | null) => diaSel && diaSel.semana === semana ? (
+  const detalle = (semana: number | null) => diaSel && diaSel.semana === semana ? (vista > 1 && !detalleAbierto) ? (
+    <div className="mt-2 rounded-xl px-3 py-2 flex items-center justify-between gap-2 text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+      <span><b>{diaSel.dia}</b>{semana ? ` · semana +${semana}` : ' · semana en curso'}</span>
+      <button className="rounded-lg px-2.5 py-1 text-xs font-medium" style={{ background: 'var(--primary)', color: 'var(--bg)' }} onClick={() => setDetalleAbierto(true)}>Desplegar detalle</button>
+    </div>
+  ) : (
     <DetalleDiaDieta clienteId={clienteId} dia={diaSel.dia} semana={semana} version={version}
       objetivo={objetivosDia[diaSel.dia]?.kcal ? { kcal: objetivosDia[diaSel.dia].kcal, p: objetivosDia[diaSel.dia].p, c: objetivosDia[diaSel.dia].c, g: objetivosDia[diaSel.dia].g } : { kcal: plan.kcal_objetivo, p: plan.proteinas_objetivo, c: plan.carbohidratos_objetivo, g: plan.grasas_objetivo }}
       momento={objetivosDia[diaSel.dia]?.momento ?? null}
@@ -612,8 +620,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
         </p>
       )}
       {vista > 1 && modo === 'resumen'
-        ? <SemanaResumen dias={dias} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} repeticiones={repeticiones} />
-        : <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} portapapeles={portapapeles} onCopiar={copiar} onCopiarDia={copiarDia} onPegar={pegar} />}
+        ? <SemanaResumen dias={dias} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={seleccionarDia} repeticiones={repeticiones} />
+        : <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={seleccionarDia} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} portapapeles={portapapeles} onCopiar={copiar} onCopiarDia={copiarDia} onPegar={pegar} />}
       {detalle(null)}
 
       <div ref={zonaFuturas} className="scroll-mt-4" />
@@ -646,8 +654,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
               </div>
             </div>
             {modo === 'resumen'
-              ? <SemanaResumen dias={s.dias} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} repeticiones={repeticiones} />
-              : <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} portapapeles={portapapeles} onCopiar={copiar} onCopiarDia={copiarDia} onPegar={pegar} />}
+              ? <SemanaResumen dias={s.dias} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={seleccionarDia} repeticiones={repeticiones} />
+              : <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={seleccionarDia} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} portapapeles={portapapeles} onCopiar={copiar} onCopiarDia={copiarDia} onPegar={pegar} />}
             {detalle(s.semana)}
           </div>
         )
