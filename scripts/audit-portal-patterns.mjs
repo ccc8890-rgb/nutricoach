@@ -56,9 +56,7 @@ for (const file of PORTAL_FILES) {
 // Los componentes PortalCliente NO deben hacer queries directas a Supabase.
 // Deben usar fetch a /api/ con service role para evitar que RLS silencia resultados.
 const PORTAL_COMPONENTS_DIR = join(ROOT, 'components/PortalCliente')
-const TRAINING_COMPONENTS = [
-  join(ROOT, 'components/training/SemanaEntrenoCard.tsx'),
-]
+const TRAINING_COMPONENTS = []
 const PORTAL_COMPONENTS = [
   ...walkFiles(PORTAL_COMPONENTS_DIR),
   ...TRAINING_COMPONENTS,
