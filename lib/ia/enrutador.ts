@@ -8,11 +8,12 @@ import { extraerJsonPlan } from '@/lib/entrenos/evidencia-plan'
 export type Proveedor = 'anthropic' | 'openai' | 'deepseek'
 export type TareaIA = 'plan_entreno' | 'plan_dieta' | 'auditoria' | 'analisis_rendimiento' | 'texto_barato'
 
-export interface RutaModelo { proveedor: Proveedor; modelo: string }
+/** `minMs`: tiempo que suele necesitar este modelo para una tarea larga; si queda menos, se salta (no tiene sentido empezar algo que no termina). */
+export interface RutaModelo { proveedor: Proveedor; modelo: string; minMs?: number }
 
-const CLAUDE_OPUS: RutaModelo = { proveedor: 'anthropic', modelo: 'claude-opus-5-5' }
-const CLAUDE_SONNET: RutaModelo = { proveedor: 'anthropic', modelo: 'claude-sonnet-5-5' }
-const GPT: RutaModelo = { proveedor: 'openai', modelo: 'gpt-5.5-2026-04-23' }
+const CLAUDE_OPUS: RutaModelo = { proveedor: 'anthropic', modelo: 'claude-opus-5-5', minMs: 150_000 }
+const CLAUDE_SONNET: RutaModelo = { proveedor: 'anthropic', modelo: 'claude-sonnet-5-5', minMs: 90_000 }
+const GPT: RutaModelo = { proveedor: 'openai', modelo: 'gpt-5.5-2026-04-23', minMs: 100_000 }
 const DEEPSEEK_PRO: RutaModelo = { proveedor: 'deepseek', modelo: 'deepseek-v4-pro' }
 const DEEPSEEK: RutaModelo = { proveedor: 'deepseek', modelo: 'deepseek-chat' }
 
@@ -61,13 +62,15 @@ export interface ParamsIA {
   /** Tiempo máximo de TODA la tarea (ms). Cada intento recibe lo que quede. */
   presupuestoMs?: number
   maxTokens?: number
+  /** Esfuerzo de razonamiento de Claude: más alto = mejor y más lento y caro. */
+  esfuerzo?: 'low' | 'medium' | 'high' | 'xhigh' | 'max'
 }
 export type Adaptador = (ruta: RutaModelo, p: ParamsIA, signal: AbortSignal) => Promise<{ texto: string; uso: { entrada: number | null; salida: number | null } }>
 
 /** Adaptador real: Claude por el SDK; OpenAI y DeepSeek por su API compatible con chat/completions. */
 export const adaptadorReal: Adaptador = async (ruta, p, signal) => {
   if (ruta.proveedor === 'anthropic') {
-    const r = await llamarClaude({ modelo: ruta.modelo, sistema: p.sistema, usuario: p.usuario, maxTokens: p.maxTokens, signal })
+    const r = await llamarClaude({ modelo: ruta.modelo, sistema: p.sistema, usuario: p.usuario, maxTokens: p.maxTokens, esfuerzo: p.esfuerzo, signal })
     return { texto: r.texto, uso: r.uso }
   }
   const razonamiento = ruta.proveedor === 'openai'
@@ -101,16 +104,21 @@ export async function llamarIA(tarea: TareaIA, p: ParamsIA, opciones: { adaptado
   const env = opciones.env ?? process.env
   const ahora = opciones.ahora ?? Date.now
   const inicio = ahora()
-  const presupuesto = p.presupuestoMs ?? 240_000
+  const presupuesto = p.presupuestoMs ?? 280_000
   const intentos: IntentoIA[] = []
 
-  for (const ruta of rutasDe(tarea, env)) {
+  const rutas = rutasDe(tarea, env)
+  const conClave = rutas.filter(r => env[CLAVE_ENV[r.proveedor]])
+  for (const ruta of rutas) {
     if (!env[CLAVE_ENV[ruta.proveedor]]) { intentos.push({ ...ruta, ok: false, ms: 0, error: 'sin clave' }); continue }
     const quedan = presupuesto - (ahora() - inicio)
-    if (quedan < 15_000) { intentos.push({ ...ruta, ok: false, ms: 0, error: 'sin tiempo' }); continue }
+    if (quedan < Math.max(15_000, ruta.minMs ?? 0)) { intentos.push({ ...ruta, ok: false, ms: 0, error: 'sin tiempo' }); continue }
+    // Un modelo lento no puede gastar todo el tiempo: si falla, el siguiente necesita margen. El último con clave usa lo que quede.
+    const esUltimo = ruta === conClave[conClave.length - 1]
+    const limite = esUltimo ? quedan : Math.floor(quedan * 0.8)
     const t0 = ahora()
     try {
-      const r = await adaptador(ruta, p, AbortSignal.timeout(quedan))
+      const r = await adaptador(ruta, p, AbortSignal.timeout(limite))
       if (p.json) extraerJsonPlan(r.texto) // lanza si no es un objeto JSON
       intentos.push({ ...ruta, ok: true, ms: ahora() - t0 })
       return { texto: r.texto, proveedor: ruta.proveedor, modelo: ruta.modelo, intentos, uso: r.uso }

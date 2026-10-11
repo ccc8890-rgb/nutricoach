@@ -65,3 +65,17 @@ Decisión de Carlos: quiere los mejores modelos, está dispuesto a meter saldo e
 3. Auditoría de relevancia de citas con un segundo modelo (ruta `auditoria`).
 4. Generación en segundo plano (una petición de 90-200 s es mala experiencia): cola + aviso al terminar.
 5. Coste: Opus 5.5 ≈ 4/20 USD por millón de tokens de entrada/salida (≈0,2 USD por plan medido por la CLI); medir el real con `uso` cuando haya clave.
+
+## Ronda 3b (12-10-2026, madrugada) — Primera prueba real con Claude por API
+
+Clave de Anthropic en `.env.local` (había quedado entre corchetes: los corchetes del ejemplo no se escriben). Plan real de Carlos con el enrutador, mismo prompt:
+
+| Modelo | Segundos | Tokens entrada / salida | Coste aprox. | Puntuación | Decisiones con estudio | Estudios distintos | Nota media |
+|---|---|---|---|---|---|---|---|
+| GPT-5.5 | 83 | 4.082 / 8.241 | no medido | 100 | 6 de 9 | 14 | 148 caracteres |
+| Claude Opus 5.5, esfuerzo alto | **252** | 7.009 / 26.393 | ≈ 0,56 $ | 100 | 6 de 10 | 13 | 322 |
+| Claude Opus 5.5, esfuerzo medio | 185 | 7.009 / 19.866 | ≈ 0,43 $ | 100 | 6 de 10 | 14 | 239 |
+
+Lectura: Opus escribe notas bastante más ricas pero tarda 3-4 minutos (casi todo es razonamiento, 20-26 mil tokens de salida) y encaja justo en los 300 s de Vercel. Por defecto el plan usa esfuerzo medio (`IA_ESFUERZO_PLAN=high` lo sube). El enrutador reserva el 80 % del tiempo restante como máximo a cada modelo y salta a los que no caben (`minMs`: Opus 150 s, GPT 100 s): si Opus se pasa de tiempo, DeepSeek responde en ~20 s con el margen que queda. **Con Opus el bucle de corrección no tiene tiempo** (solo se intenta si la primera respuesta tardó <130 s).
+
+Mejora estructural pendiente para ir más rápido y más barato: generar las 6 sesiones **en paralelo** (una llamada por sesión sobre un esqueleto común) y/o ejecutar en segundo plano con cola; así se puede usar esfuerzo alto sin chocar con el límite de tiempo.

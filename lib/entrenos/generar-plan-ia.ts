@@ -35,13 +35,13 @@ export interface ProveedorIA {
 export const PROVEEDOR_POR_DEFECTO: ProveedorIA = {
   nombre: 'enrutado', url: '', claveEnv: '', modelo: 'enrutado',
   llamar: async (sistema, usuario) => {
-    const r = await llamarIA('plan_entreno', { sistema, usuario, json: true, presupuestoMs: PRESUPUESTO_PLAN_MS })
+    const r = await llamarIA('plan_entreno', { sistema, usuario, json: true, presupuestoMs: PRESUPUESTO_PLAN_MS, esfuerzo: process.env.IA_ESFUERZO_PLAN === 'high' ? 'high' : 'medium' })
     return { texto: r.texto, uso: r.uso, modelo: `${r.proveedor}:${r.modelo}`, intentos: r.intentos }
   },
 }
 
 /** Tiempo máximo de toda la generación (las rutas dejan 300 s). La corrección solo se intenta si queda margen. */
-const PRESUPUESTO_PLAN_MS = 270_000
+const PRESUPUESTO_PLAN_MS = 280_000
 const MARGEN_PARA_CORREGIR_MS = 130_000
 
 export class ErrorGeneracionPlan extends Error {

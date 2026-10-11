@@ -56,5 +56,12 @@ const adaptadorCon = (resp: Record<string, string | Error>): Adaptador => async 
     (e: unknown) => e instanceof ErrorIA && e.intentos.every(i => i.error === 'sin tiempo'),
   )
 
+  // Un modelo que necesita 150 s no se intenta si solo quedan 60 s: se pasa al que cabe (DeepSeek, sin mínimo)
+  llamadas.length = 0
+  r = await llamarIA('plan_entreno', { sistema: 's', usuario: 'u', json: true, presupuestoMs: 60_000 }, { adaptador: adaptadorCon({ deepseek: '{"d":1}' }), env: todas })
+  assert.equal(r.proveedor, 'deepseek')
+  assert.deepEqual(llamadas, ['deepseek'])
+  assert.equal(r.intentos[0].error, 'sin tiempo')
+
   console.log('enrutador-ia.test.ts OK')
 })().catch(e => { console.error(e); process.exit(1) })
