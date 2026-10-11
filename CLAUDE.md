@@ -14,6 +14,14 @@ Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/inter
 - **Recuperar un archivo:** `git checkout bd7d691~1 -- <ruta>` (p. ej. `lib/recetas/auto-match-ingrediente.ts`). Todo el conjunto: `git checkout bd7d691~1 -- app/api lib/recetas lib/scraping/motores` (cuidado: también restauraría otros borrados de esas carpetas).
 - La limpieza anterior (52 archivos) está en `873c556`; se recupera igual con `git checkout 873c556~1 -- <ruta>`.
 
+## ✅ SESIÓN 11-10-2026 (noche tardía, Claude) — Zonas de pulso, base aeróbica, leyendas y pestaña «Datos» del cliente
+
+- Pasos de carrera con nombre de zona y leyenda solo de las zonas usadas (pulso, RPE, uso). Zonas de pulso por umbral de lactato y pulso máximo (`lib/entrenos/zonas-fc.ts`); **los rodajes (E) van a Garmin con techo de pulso**, el resto por ritmo. La huella de envío incluye el techo E (reenvío automático por el cron).
+- Panel de **Base aeróbica** (solo rodajes suaves, ritmo a pulso fijo, 28 d vs 28 d) y leyendas «Cómo leerlo» en 15 análisis del panel del coach (`components/rendimiento/ayudas.ts`).
+- App cliente: nueva pestaña **Datos** (recuperación, sueño, entrenamiento, base aeróbica, peso) y **Ajustes desde el avatar** de la cabecera. API `/api/cliente/[codigo]/datos`.
+- Límites reales de datos: HRV = media semanal constante, sueño 2/30 noches, recovery time incoherente. No inventar; ver el doc.
+- Commits `7145ba6`→`864cda4`. Auditado (tsc, build, 11 tests). **No visto en navegador ni en el reloj.** Detalle: `docs/11-10-2026_zonas-fc-base-aerobica-datos-cliente.md`.
+
 ## ✅ SESIÓN 11-10-2026 (noche, Claude, 2.ª parte) — Selector de ejercicios plegable por disciplina y músculo
 
 Carlos: el selector de «Añadir ejercicio» del editor de sesión (≈60 botones a la vez) abrumaba. Probado por él en producción: «mucho mejor así». Commits `8c60a0d`→`a58a43f` en `main`, sin migraciones.
