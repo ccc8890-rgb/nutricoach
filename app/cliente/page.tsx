@@ -12,7 +12,7 @@ import {
   ForkKnife, Barbell, Sun, Moon,
   CaretRight, CaretLeft, X,
   ShoppingCart, ChatCircleDots, DeviceMobile,
-  Pulse, BowlFood, PersonSimpleRun, SlidersHorizontal,
+  Pulse, BowlFood, PersonSimpleRun, ChartLineUp,
 } from '@phosphor-icons/react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
@@ -53,11 +53,12 @@ const MisPlatos = aislar(dynamic(() => import('@/components/PortalCliente/MisPla
 const RecetarioExplorador = aislar(RecetarioExploradorEstatico)
 const ChatPanel = aislar(dynamic(() => import('@/components/PortalCliente/ChatPanel')))
 const AjustesTabs = aislar(AjustesTabsEstatico)
+const DatosCliente = aislar(dynamic(() => import('@/components/PortalCliente/DatosCliente')))
 const SuplementacionPortal = aislar(SuplementacionPortalEstatico)
 const IndustrialAtmosphere = dynamic(() => import('@/components/PortalCliente/IndustrialAtmosphere'), { ssr: false })
 
-type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'perfil'
-const TABS_VALIDOS: Tab[] = ['hoy', 'dieta', 'entreno', 'checkin', 'progreso', 'compra', 'recetas', 'chat', 'perfil']
+type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'perfil' | 'datos'
+const TABS_VALIDOS: Tab[] = ['hoy', 'dieta', 'entreno', 'checkin', 'progreso', 'compra', 'recetas', 'chat', 'perfil', 'datos']
 
 function VolverAHoy({ setTab }: { setTab: (t: Tab) => void }) {
   return (
@@ -390,7 +391,7 @@ function PortalClientePageContent() {
     { key: 'dieta',   label: 'Dieta',    icon: BowlFood },
     { key: 'entreno', label: 'Entreno',  icon: PersonSimpleRun },
     { key: 'recetas', label: 'Recetas',  icon: BookOpenText },
-    { key: 'perfil',  label: 'Ajustes',  icon: SlidersHorizontal },
+    { key: 'datos',   label: 'Datos',    icon: ChartLineUp },
   ]
 
   return (
@@ -403,10 +404,15 @@ function PortalClientePageContent() {
         <div className="max-w-2xl mx-auto flex items-center justify-between h-16">
           {/* Avatar + name */}
           <div className="flex items-center gap-3">
-            <div className="cliente-avatar w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-              style={{ background: 'var(--surface-elevated)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+            <button
+              type="button"
+              onClick={() => setTab('perfil')}
+              className="cliente-avatar w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 cursor-pointer"
+              style={{ background: 'var(--surface-elevated)', color: 'var(--text)', border: tab === 'perfil' ? '1px solid var(--text-muted)' : '1px solid var(--border)' }}
+              aria-label="Ajustes"
+            >
               {iniciales}
-            </div>
+            </button>
             <div>
               <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--text)' }}>
                 {profile?.nombre}
@@ -684,8 +690,25 @@ function PortalClientePageContent() {
           </div>
         )}
 
+        {visitadas.has('datos') && (
+          <div className="flex flex-col gap-4" style={tab !== 'datos' ? { display: 'none' } : undefined}>
+            {codigo ? (
+              <DatosCliente
+                codigo={codigo}
+                ultimoPeso={ultimoPeso ?? null}
+                cambioPeso={cambioPesoTotal}
+                onVerProgreso={() => setTab('progreso')}
+                onAjustes={() => setTab('perfil')}
+              />
+            ) : (
+              <EmptyState icon={DeviceMobile} text="Activa un plan para ver tus datos" />
+            )}
+          </div>
+        )}
+
         {visitadas.has('perfil') && (
           <div className="flex flex-col gap-4" style={tab !== 'perfil' ? { display: 'none' } : undefined}>
+            <VolverAHoy setTab={setTab} />
             {cliente ? (
               <AjustesTabs codigo={codigo} clienteId={cliente.id} profile={profile} cliente={cliente} />
             ) : (
