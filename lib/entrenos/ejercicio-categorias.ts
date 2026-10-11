@@ -8,6 +8,29 @@ export type PestanaEjercicio = (typeof PESTANAS_EJERCICIO)[number]
 export const MUSCULOS = ['Pecho', 'Espalda', 'Piernas y glúteos', 'Hombros', 'Brazos', 'Cuerpo completo'] as const
 export type Musculo = (typeof MUSCULOS)[number]
 
+/** Subgrupos de las disciplinas largas (Calentamiento y Cardio), por nombre. */
+const SUBGRUPOS: Partial<Record<PestanaEjercicio, [string, RegExp][]>> = {
+  Calentamiento: [
+    ['Movilidad', /movilidad|mobility|apertura|yoga|activacion/],
+    ['Estiramientos', /estiramiento/],
+    ['Foam y rodillo', /foam|rodillo/],
+    ['Pedaleo', /pedaleo/],
+    ['Trote y calma', /trote|calent|vuelta a la calma/],
+  ],
+  Cardio: [
+    ['Carrera', /carrera|trote|correr|cinta|cuestas|intervalos/],
+    ['Bici', /pedaleo|bicicleta|ciclismo|sweet spot|over-under/],
+    ['Remo y SkiErg', /skierg|remo|ergometro|assault/],
+  ],
+}
+
+export function subgrupoDe(e: EjercicioBiblioteca, pestana: PestanaEjercicio): string | null {
+  const reglas = SUBGRUPOS[pestana]
+  if (!reglas) return null
+  const n = norm(e.nombre)
+  return reglas.find(([, re]) => re.test(n))?.[0] ?? 'Otros'
+}
+
 export interface EjercicioBiblioteca {
   id: string
   nombre: string

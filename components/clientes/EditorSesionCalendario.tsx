@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BookmarkPlus, ChevronDown, ChevronRight, Loader2, Plus, Search, Trash2 } from 'lucide-react'
 import { CATEGORIAS_SESION, type CategoriaSesion } from '@/lib/entrenos/biblioteca-categorias'
-import { MUSCULOS, PESTANAS_EJERCICIO, musculoDe, pestanaDe, porDefecto, sinDuplicados, type EjercicioBiblioteca, type Musculo, type PestanaEjercicio } from '@/lib/entrenos/ejercicio-categorias'
+import { MUSCULOS, PESTANAS_EJERCICIO, musculoDe, pestanaDe, subgrupoDe, porDefecto, sinDuplicados, type EjercicioBiblioteca, type Musculo, type PestanaEjercicio } from '@/lib/entrenos/ejercicio-categorias'
 
 export interface EjercicioEditable {
   id: string
@@ -29,7 +29,7 @@ function SelectorEjercicio({ onElegir, ocupado }: { onElegir: (e: EjercicioBibli
   const [catalogo, setCatalogo] = useState<CatalogoEjercicios | null>(cacheCatalogo)
   const [fallo, setFallo] = useState(false)
   const [abierta, setAbierta] = useState<PestanaEjercicio | 'Habituales' | null>(null)
-  const [musculoAbierto, setMusculoAbierto] = useState<Musculo | null>(null)
+  const [musculoAbierto, setMusculoAbierto] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
 
   useEffect(() => {
@@ -100,16 +100,23 @@ function SelectorEjercicio({ onElegir, ocupado }: { onElegir: (e: EjercicioBibli
           {PESTANAS_EJERCICIO.map(p => (
             <div key={p}>
               {cabecera(abierta === p, p, porPestana[p].length, () => { setAbierta(abierta === p ? null : p); setMusculoAbierto(null) })}
-              {abierta === p && (p !== 'Fuerza' ? rejilla(porPestana[p]) : (
-                <div style={{ borderTop: '1px solid var(--border)' }}>
-                  {MUSCULOS.filter(m => porMusculo[m].length > 0).map(m => (
-                    <div key={m}>
-                      {cabecera(musculoAbierto === m, m, porMusculo[m].length, () => setMusculoAbierto(musculoAbierto === m ? null : m), 1)}
-                      {musculoAbierto === m && rejilla(porMusculo[m])}
-                    </div>
-                  ))}
-                </div>
-              ))}
+              {abierta === p && (() => {
+                const grupos: [string, EjercicioBiblioteca[]][] = p === 'Fuerza'
+                  ? MUSCULOS.map(m => [m, porMusculo[m]] as [string, EjercicioBiblioteca[]])
+                  : Object.entries(porPestana[p].reduce<Record<string, EjercicioBiblioteca[]>>((acc, e) => { const g = subgrupoDe(e, p); if (g) (acc[g] ??= []).push(e); return acc }, {}))
+                const con = grupos.filter(([, l]) => l.length > 0)
+                if (con.length <= 1) return rejilla(porPestana[p])
+                return (
+                  <div style={{ borderTop: '1px solid var(--border)' }}>
+                    {con.map(([g, lista]) => (
+                      <div key={g}>
+                        {cabecera(musculoAbierto === g, g, lista.length, () => setMusculoAbierto(musculoAbierto === g ? null : g), 1)}
+                        {musculoAbierto === g && rejilla(lista)}
+                      </div>
+                    ))}
+                  </div>
+                )
+              })()}
             </div>
           ))}
         </div>
