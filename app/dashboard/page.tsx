@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Accesos from '@/components/dashboard/Accesos'
+import EstadoSistemaBarra from '@/components/dashboard/EstadoSistemaBarra'
 import DetalleColapsable from '@/components/dashboard/DetalleColapsable'
 import HoyCards from '@/components/dashboard/HoyCards'
 import NumerosClave from '@/components/dashboard/NumerosClave'
@@ -72,7 +73,11 @@ export default function DashboardPage() {
           </p>
         </header>
 
+        <EstadoSistemaBarra />
+
         {commandError ? <ErrorState message={commandError} onRetry={loadCommand} /> : <HoyCards resumen={resumen} loading={commandLoading} />}
+
+        <Accesos />
 
         <NumerosClave
           operacion={command?.operacion ?? null}
@@ -82,12 +87,10 @@ export default function DashboardPage() {
           onRetry={loadNegocio}
         />
 
-        <Accesos />
-
         <DetalleColapsable command={command} costes={costes} negocio={negocio} loading={commandLoading} />
 
         {command?.timestamp && (
-          <p className="pb-4 text-center text-[10px]" style={{ color: DASHBOARD_MUTED }}>
+          <p className="pb-4 text-center text-[12px]" style={{ color: DASHBOARD_MUTED }}>
             Actualizado {new Date(command.timestamp).toLocaleString('es-ES')}
           </p>
         )}
