@@ -551,11 +551,11 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             ]}
             extra={accionExtra ? <div className="mt-1 pt-1 px-1" style={{ borderTop: '1px solid var(--border)' }}>{accionExtra}</div> : undefined}
           />
-          <button onClick={generarSemana} disabled={ocupado !== null}
+          <button onClick={generarSemana} disabled={ocupado !== null} title={`Genera la semana en curso con: ${seleccion.join(', ')}`}
             className="rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-60"
             style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
             {ocupado === 'actual' ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
-            {ocupado === 'actual' ? 'Generando…' : 'Generar semana'}
+            {ocupado === 'actual' ? 'Generando…' : vista > 1 ? 'Generar semana en curso' : 'Generar semana'}
           </button>
         </div>
       </div>
@@ -665,7 +665,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
                 )}
                 <MenuMas titulo={`Opciones de la semana +${s.semana}`} items={[
                   { texto: ocupado === `generar-${s.semana}` ? 'Generando…' : 'Generar con IA', icono: <Sparkles size={13} />, onClick: () => accionFutura(s.semana, 'generar'), disabled: ocupado !== null },
-                  { texto: 'Copiar semana en curso', icono: <Copy size={13} />, onClick: () => accionFutura(s.semana, 'copiar'), disabled: ocupado !== null },
+                  { texto: 'Copiar semana en curso', icono: <Copy size={13} />, onClick: () => accionFutura(s.semana, 'copiar'), disabled: ocupado !== null || !dias.some(d => d.comidas.some(c => c.receta)) },
                   ...(!vacia ? [{ texto: 'Vaciar semana', icono: <Trash2 size={13} />, onClick: () => accionFutura(s.semana, 'vaciar'), disabled: ocupado !== null }] : []),
                 ]} />
               </div>
