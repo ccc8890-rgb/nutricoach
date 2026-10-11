@@ -42,3 +42,22 @@ assert.deepEqual(decidirEnvio({ ...base, dia_semana: null }, h, viernes), { envi
 assert.equal(decidirEnvio({ ...base, garmin_workout_id: '9' }, h, viernes).enviar, true)
 
 console.log('garmin-auto.test.ts OK')
+
+// --- Programación multi-fecha (horizonte de 3 semanas) ---
+import { finHorizonteEnvio, planearEnvioGarmin } from '../lib/entrenos/garmin-auto'
+import assert2 from 'node:assert/strict'
+assert2.equal(finHorizonteEnvio('2026-10-11'), '2026-10-25') // domingo 11 → domingo de dentro de dos semanas
+assert2.equal(finHorizonteEnvio('2026-10-12'), '2026-11-01')
+const vacio = { garmin_workout_id: null, garmin_programado_fecha: null, garmin_fechas: [], garmin_pasos_hash: null }
+const ok = { garmin_workout_id: 'w1', garmin_programado_fecha: '2026-10-13', garmin_fechas: ['2026-10-13', '2026-10-20'], garmin_pasos_hash: 'h' }
+assert2.deepEqual(planearEnvioGarmin(vacio, 'h', ['2026-10-20', '2026-10-13'], '2026-10-11'), { accion: 'recrear', fechas: ['2026-10-13', '2026-10-20'] })
+assert2.deepEqual(planearEnvioGarmin(ok, 'h', ['2026-10-13', '2026-10-20'], '2026-10-11'), { accion: 'nada' })
+assert2.deepEqual(planearEnvioGarmin(ok, 'h', ['2026-10-13', '2026-10-20', '2026-10-27'], '2026-10-11'), { accion: 'anadir', fechas: ['2026-10-27'] })
+assert2.deepEqual(planearEnvioGarmin(ok, 'otra', ['2026-10-13', '2026-10-20'], '2026-10-11'), { accion: 'recrear', fechas: ['2026-10-13', '2026-10-20'] })
+// una fecha programada que ya no toca (la movieron) obliga a recrear
+assert2.deepEqual(planearEnvioGarmin(ok, 'h', ['2026-10-14', '2026-10-20'], '2026-10-11'), { accion: 'recrear', fechas: ['2026-10-14', '2026-10-20'] })
+// las fechas pasadas no cuentan; si ya no toca ninguna se borra
+assert2.deepEqual(planearEnvioGarmin(ok, 'h', ['2026-10-20'], '2026-10-14'), { accion: 'nada' })
+assert2.deepEqual(planearEnvioGarmin(ok, 'h', [], '2026-10-11'), { accion: 'borrar' })
+assert2.deepEqual(planearEnvioGarmin(vacio, 'h', [], '2026-10-11'), { accion: 'nada' })
+console.log('garmin-auto multi OK')

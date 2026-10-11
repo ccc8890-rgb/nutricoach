@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
   const { data: sesiones } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, fase_bloque, hora_inicio, duracion_estimada_min, contexto_ia, pasos, garmin_workout_id, garmin_programado_fecha, ejercicios:sesion_ejercicios(id, series, repeticiones, peso_sugerido, rpe, orden, ejercicio:ejercicios(nombre))')
+    .select('id, nombre, dia_semana, fase_bloque, hora_inicio, duracion_estimada_min, contexto_ia, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, ejercicios:sesion_ejercicios(id, series, repeticiones, peso_sugerido, rpe, orden, ejercicio:ejercicios(nombre))')
     .eq('plan_id', plan.id)
     .order('orden')
     .order('id')
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
         fase_bloque: sesion.fase_bloque,
         ajuste: ajuste ? { id: ajuste.id, tipo: ajuste.tipo, fecha_origen: ajuste.fecha_origen } : null,
         // Solo las sesiones con pasos viajan al reloj: enviada (a esta fecha) o pendiente del próximo envío.
-        garmin: !sesion.pasos ? null : (sesion.garmin_workout_id && sesion.garmin_programado_fecha === fecha ? 'enviada' : 'pendiente'),
+        garmin: !sesion.pasos ? null : (sesion.garmin_workout_id && (sesion.garmin_programado_fecha === fecha || (Array.isArray(sesion.garmin_fechas) && sesion.garmin_fechas.includes(fecha))) ? 'enviada' : 'pendiente'),
       })),
       bloque_pendiente: bloquePendiente && ocurrencias.length === 0,
       competiciones: competicionesPorFecha.get(fecha) ?? [],

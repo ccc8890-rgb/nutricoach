@@ -346,7 +346,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
     if (!detalle?.pasos) return 'Sin pasos de Garmin: esta sesión no se envía al reloj.'
     if (s.garmin === 'enviada') return 'Programada en el reloj (Garmin) para este día.'
     if (fecha < hoy) return 'Con pasos de Garmin, pero este día ya pasó sin enviarse.'
-    return 'Con pasos de Garmin: se enviará al reloj cuando falten 7 días o menos.'
+    return 'Con pasos de Garmin: se enviará al reloj automáticamente (se deja programado hasta dentro de 3 semanas).'
   }
 
   return (
