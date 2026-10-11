@@ -1,18 +1,25 @@
 import { randomUUID } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { aplicarCambios, esFechaISO, planificarOperacion, type Ajuste, type Operacion } from '@/lib/entrenos/calendario-ajustes'
+import { aplicarCambios, diferenciaDias, esFechaISO, planificarOperacion, type Ajuste, type Operacion } from '@/lib/entrenos/calendario-ajustes'
 import { plantillaActivaEn } from '@/lib/entrenos/ventana-plan'
 
 const MAX_OPERACIONES = 60
+
+/** Fechas razonables (±3 años desde hoy): evita basura en la tabla por una petición manipulada. */
+function fechaEnRango(f: unknown): boolean {
+  if (!esFechaISO(f)) return false
+  const dias = Math.abs(diferenciaDias(new Date().toISOString().slice(0, 10), f))
+  return dias <= 1100
+}
 
 function operacionValida(o: unknown): o is Operacion {
   if (typeof o !== 'object' || o === null) return false
   const x = o as Record<string, unknown>
   if (typeof x.sesion_id !== 'string') return false
-  if (x.op === 'mover') return esFechaISO(x.desde) && esFechaISO(x.hasta)
-  if (x.op === 'copiar') return esFechaISO(x.hasta)
-  if (x.op === 'omitir') return esFechaISO(x.desde)
+  if (x.op === 'mover') return fechaEnRango(x.desde) && fechaEnRango(x.hasta)
+  if (x.op === 'copiar') return fechaEnRango(x.hasta)
+  if (x.op === 'omitir') return fechaEnRango(x.desde)
   return false
 }
 
