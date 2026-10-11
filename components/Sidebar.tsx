@@ -13,9 +13,7 @@ import {
   ChevronDown,
   ChevronRight,
   Database,
-  Dumbbell,
-  FilePlus2,
-  House,
+  Dumbbell, House,
   ListChecks,
   LogOut,
   Menu,
@@ -29,7 +27,7 @@ import {
   TrendingUp,
   Utensils,
   UsersRound,
-  X,
+  X
 } from 'lucide-react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
@@ -69,27 +67,26 @@ const PRIMARY_ITEMS: NavItem[] = [
   { href: '/contenido', label: 'Contenido', icon: Clapperboard },
 ]
 
-const NUTRICION_ITEMS: NavItem[] = [
-  { href: '/dietas/plantillas', label: 'Plantillas', icon: ListChecks },
-]
-
-const ENTRENAMIENTO_ITEMS: NavItem[] = [
-  { href: '/entrenos/nueva', label: 'Crear plan', icon: FilePlus2 },
-  { href: '/entrenos/plantillas', label: 'Plantillas', icon: ListChecks },
+const PLANES_ITEMS: NavItem[] = [
+  { href: '/dietas/plantillas', label: 'Plantillas de dieta', icon: Utensils },
+  { href: '/entrenos/plantillas', label: 'Plantillas de entreno', icon: Dumbbell },
   { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Database },
 ]
 
-
 const RECETARIO_ITEMS: NavItem[] = [
-  { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
   { href: '/recetas', label: 'Recetas', icon: ChefHat, exact: true },
-  { href: '/recetas/cobertura', label: 'Cobertura', icon: ChartPie },
+  { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
   { href: '/recetas/revisar', label: 'Revisión', icon: ListChecks },
 ]
 
-const COSTES_COMPRA_ITEMS: NavItem[] = [
+const COMPRA_ITEMS: NavItem[] = [
   { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
-  { href: '/precios', label: 'Catálogo de precios', icon: Store },
+  { href: '/precios', label: 'Precios', icon: Store, exact: true },
+]
+
+// Pantallas de control, que se miran de vez en cuando
+const CONTROL_ITEMS: NavItem[] = [
+  { href: '/recetas/cobertura', label: 'Cobertura de recetas', icon: ChartPie },
   { href: '/precios/escandallo', label: 'Coste de recetas', icon: TrendingUp },
   { href: '/precios/rentabilidad', label: 'Rentabilidad por cliente', icon: Activity },
 ]
@@ -463,28 +460,14 @@ export default function Sidebar() {
     return item
   })
 
-  const nutricionItems: NavEntry[] = [
-    ...NUTRICION_ITEMS,
+  const sections: NavSection[] = [
+    { key: 'planes', label: 'Planes', href: '/dietas/plantillas', icon: ListChecks, items: PLANES_ITEMS },
     {
-      type: 'group',
-      key: 'recetario',
-      label: 'Recetario',
-      icon: ChefHat,
-      badge: recetasPendientes,
+      key: 'recetario', label: 'Recetario', href: '/recetas', icon: ChefHat, badge: recetasPendientes,
       items: RECETARIO_ITEMS.map(item => item.href === '/recetas/revisar' ? { ...item, badge: recetasPendientes } : item),
     },
-    {
-      type: 'group',
-      key: 'costes-compra',
-      label: 'Costes y compra',
-      icon: Store,
-      items: COSTES_COMPRA_ITEMS,
-    },
-  ]
-
-  const sections: NavSection[] = [
-    { key: 'nutricion', label: 'Nutrición', href: '/dietas/plantillas', icon: Utensils, badge: recetasPendientes, items: nutricionItems },
-    { key: 'entrenamiento', label: 'Entrenamiento', href: '/entrenos/plantillas', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
+    { key: 'compra', label: 'Compra y costes', href: '/compra', icon: ShoppingCart, items: COMPRA_ITEMS },
+    { key: 'control', label: 'Control', href: '/recetas/cobertura', icon: Activity, items: CONTROL_ITEMS },
   ]
 
   useEffect(() => {
