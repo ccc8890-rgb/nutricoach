@@ -1,5 +1,6 @@
 // lib/plan-recetas.ts
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { RESTRICCION_A_ALERGENO, RESTRICCION_A_TAG_POSITIVO, expandirEvitar } from '@/lib/nutricion/compatibilidad-receta'
 import type { RecetaCandidata, TipoReceta } from '@/types'
 import { obtenerPerfilCliente } from '@/lib/agentes/perfil-gusto'
 import { ajusteClinico, reglasClinicas } from '@/lib/nutricion/reglas-clinicas'
@@ -168,32 +169,11 @@ export async function filtrarRecetasPorSlot(
   const { data: recetas } = await query.limit(poolMax)
   if (!recetas || recetas.length === 0) return []
 
-  // Mapeo restricciones cliente → alérgenos EU presentes en recetas
-  // 'Sin Gluten' → 'Gluten', 'Sin Lactosa' → 'Lácteos', etc.
-  const RESTRICCION_A_ALERGENO: Record<string, string[]> = {
-    'sin gluten':       ['Gluten'],
-    'sin lactosa':      ['Lácteos'],
-    'sin huevo':        ['Huevos'],
-    'sin frutos secos': ['Frutos Secos', 'Cacahuetes'],
-    'sin soja':         ['Soja'],
-    'sin mariscos':     ['Crustáceos', 'Moluscos'],
-    'vegetariano':      ['Pescado', 'Crustáceos', 'Moluscos'],
-    'vegano':           ['Lácteos', 'Huevos', 'Pescado', 'Crustáceos', 'Moluscos'],
-  }
   const alergenosExcluir = [...new Set(
     restricciones.flatMap(r => RESTRICCION_A_ALERGENO[r.toLowerCase()] ?? [r])
   )]
 
-  // La carne (roja, ave) no es un alérgeno EU, así que no existe ningún tag
-  // "contiene carne" en `intolerancias` — solo tags positivos "Vegano"/
-  // "Vegetariano". El filtro de arriba (por alérgeno) nunca puede excluir un
-  // plato con carne para un cliente vegano/vegetariano: sin esto, una receta
-  // de carne pasa el filtro con normalidad porque no tiene ningún alérgeno
-  // marcado. Aquí exigimos el tag positivo como requisito, no como exclusión.
-  const RESTRICCION_A_TAG_POSITIVO: Record<string, string> = {
-    'vegano': 'Vegano',
-    'vegetariano': 'Vegetariano',
-  }
+  // La carne no es alérgeno EU: vegano/vegetariano se exigen con el tag positivo (ver compatibilidad-receta.ts)
   const tagsPositivosRequeridos = [...new Set(
     restricciones
       .map(r => RESTRICCION_A_TAG_POSITIVO[r.toLowerCase()])
@@ -222,16 +202,6 @@ export async function filtrarRecetasPorSlot(
     : typeof evitarRaw === 'string' && evitarRaw.trim()
       ? evitarRaw.split(',').map(s => s.trim()).filter(Boolean)
       : []
-
-  // «Pescado azul», «marisco»… son grupos: se excluye cualquiera de sus alimentos, no solo recetas que lleven esa frase
-  const GRUPOS_EVITAR: [RegExp, string[]][] = [
-    [/pescado azul|pescados azules/, ['salmón', 'salmon', 'atún', 'atun', 'caballa', 'sardina', 'anchoa', 'boquerón', 'boqueron', 'bonito', 'arenque', 'jurel']],
-    [/marisco/, ['gamba', 'langostino', 'mejillón', 'mejillon', 'almeja', 'calamar', 'sepia', 'pulpo', 'zamburiña', 'cangrejo', 'berberecho']],
-    [/carne roja/, ['ternera', 'cerdo', 'cordero', 'buey', 'solomillo', 'chorizo']],
-    [/lácteo|lacteo/, ['leche', 'yogur', 'queso', 'skyr', 'requesón', 'requeson', 'nata', 'mantequilla']],
-    [/frutos secos/, ['almendra', 'nuez', 'nueces', 'avellana', 'pistacho', 'anacardo', 'cacahuete']],
-  ]
-  const expandirEvitar = (a: string) => [a, ...GRUPOS_EVITAR.filter(([re]) => re.test(a)).flatMap(([, l]) => l)]
 
   if (evitarArr.length > 0) {
     const evitarLower = evitarArr.map(a => a.toLowerCase()).flatMap(expandirEvitar)

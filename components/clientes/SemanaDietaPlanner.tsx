@@ -115,7 +115,6 @@ function SemanaResumen({ dias, kcalObjetivo, objetivos, semana, diaSel, onDia, r
   )
 }
 
-const MAX_SEMANAS = 8 // igual que MAX_SEMANAS de lib/nutricion/semanas-futuras (ese módulo es de servidor)
 const contarPlatosPl = (semanas: SemanaPlantilla[]) => semanas.reduce((n, s) => n + s.dias.reduce((m, d) => m + d.comidas.length, 0), 0)
 type Origen = { comida: Comida; dia: string; semana: number | null }
 type Portapapeles = { nombre: string; items: { franja: string; receta_id: string }[] }
@@ -254,7 +253,6 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [version, setVersion] = useState(0)
   const [portapapeles, setPortapapeles] = useState<Portapapeles | null>(null)
   const [modalPlantilla, setModalPlantilla] = useState<'guardar' | 'lista' | null>(null)
-  const [progreso, setProgreso] = useState<string | null>(null)
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const altRef = useRef(false)
   const sensores = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
@@ -461,24 +459,24 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   }))
 
   async function aplicarPlantilla(pl: PlantillaSemana, desde: 0 | 1) {
-    const aplicables = pl.semanas.slice(0, MAX_SEMANAS + 1 - desde)
-    const total = contarPlatosPl(aplicables)
-    const hasta = desde + aplicables.length - 1
-    if (!confirm(`Aplicar «${pl.nombre}» (${total} platos) a ${desde === 0 ? 'la semana en curso' : `la semana +${desde}`}${hasta > desde ? ` y siguientes hasta la +${hasta}` : ''}?\nSustituye los platos de las franjas que trae la plantilla; las cantidades se ajustan al objetivo de este cliente.${desde === 0 ? '\nLa semana en curso es la que ve el cliente.' : ''}`)) return
     setModalPlantilla(null); setOcupado('mover'); setError(null)
-    let hecho = 0; let fallos = 0
-    for (let i = 0; i < aplicables.length; i++) {
-      const semana = desde + i === 0 ? null : desde + i
-      for (const d of aplicables[i].dias) {
-        for (const c of d.comidas) {
-          setProgreso(`${hecho + fallos}/${total}`)
-          if (await colocar([{ franja: c.franja, receta_id: c.receta_id }], d.dia, semana)) hecho++; else fallos++
-        }
-      }
+    const url = `/api/clientes/${clienteId}/semana-dieta/plantilla`
+    // 1) qué platos no valen para este cliente (restricciones, recetas descartadas); 2) aplicar el resto
+    const c = await llamar(url, 'POST', { plantilla_id: pl.id, desde, comprobar: true })
+    if (!c) { setOcupado(null); return }
+    const malos = [...c.incompatibles, ...c.noDisponibles] as { dia: string; franja: string; nombre: string; motivo: string }[]
+    const aviso = malos.length > 0
+      ? `\n\n${malos.length} plato${malos.length > 1 ? 's no se colocarán' : ' no se colocará'}:\n${malos.slice(0, 6).map(m => `· ${m.dia} ${m.franja}: ${m.nombre} (${m.motivo})`).join('\n')}${malos.length > 6 ? `\n· y ${malos.length - 6} más` : ''}`
+      : ''
+    const hasta = desde + pl.semanas.length - 1
+    if (!confirm(`Aplicar «${pl.nombre}» (${c.validos} platos) a ${desde === 0 ? 'la semana en curso' : `la semana +${desde}`}${hasta > desde ? ` y siguientes hasta la +${hasta}` : ''}?\nSustituye los platos de las franjas que trae la plantilla; las cantidades se ajustan al objetivo de este cliente.${desde === 0 ? '\nLa semana en curso es la que ve el cliente.' : ''}${aviso}`)) { setOcupado(null); return }
+    const r = await llamar(url, 'POST', { plantilla_id: pl.id, desde })
+    setOcupado(null)
+    if (r) {
+      const saltados = r.incompatibles.length + r.noDisponibles.length
+      if (r.fallos.length) setError(`Se aplicaron ${r.aplicados} de ${r.total} platos; ${r.fallos.length} fallaron (${r.fallos[0].motivo}).`)
+      else setResultado({ ok: true, asignadas: r.aplicados, repetidas: 0, sinCubrir: [], errores: [], mensaje: `Plantilla aplicada: ${r.aplicados} platos${saltados ? `; ${saltados} omitidos por no ser compatibles o no estar disponibles` : ''}.${desde === 0 ? ' Pulsa «Ajustar al entreno» para adaptar las cantidades a sus días de entreno.' : ''}` })
     }
-    setProgreso(null); setOcupado(null)
-    if (fallos) setError(`Se aplicaron ${hecho} de ${total} platos; ${fallos} no se pudieron colocar (¿receta borrada?).`)
-    else setResultado({ ok: true, asignadas: hecho, repetidas: 0, sinCubrir: [], errores: [], mensaje: `Plantilla aplicada: ${hecho} platos.` })
     await recargar()
   }
 
@@ -634,7 +632,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             <button onClick={() => setPortapapeles(null)}><X size={13} /></button>
           </div>
         ) : (
-          <p className="text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>Arrastra un plato a otro hueco, día o semana para moverlo (con Alt, para copiarlo), o usa el icono de copiar y «pegar».{ocupado === 'mover' ? ` Trabajando…${progreso ? ` ${progreso}` : ''}` : ''}</p>
+          <p className="text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>Arrastra un plato a otro hueco, día o semana para moverlo (con Alt, para copiarlo), o usa el icono de copiar y «pegar».{ocupado === 'mover' ? ` Trabajando…` : ''}</p>
         )
       )}
       {vista > 1 && (

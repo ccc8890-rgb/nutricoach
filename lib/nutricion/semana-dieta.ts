@@ -81,5 +81,5 @@ export async function autorizarSemanaDieta(request: NextRequest, clienteId: stri
   const { data: plan } = await admin.from('planes_nutricion')
     .select('id, nombre, kcal_objetivo, proteinas_objetivo, carbohidratos_objetivo, grasas_objetivo')
     .eq('cliente_id', clienteId).eq('activo', true).maybeSingle()
-  return { admin, plan }
+  return { admin, plan, userId: user.id }
 }
