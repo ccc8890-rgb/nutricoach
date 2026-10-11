@@ -4,6 +4,7 @@ import Grafica, { type Fila } from './Grafica'
 import ZonasVdot from './ZonasVdot'
 import PlanObjetivo from './PlanObjetivo'
 import DerivaCardiaca from './DerivaCardiaca'
+import BaseAerobica from './BaseAerobica'
 import DistribucionIntensidad from './DistribucionIntensidad'
 import TecnicaCarrera from './TecnicaCarrera'
 import EntrenosTabla from './EntrenosTabla'
@@ -85,6 +86,8 @@ export default function RunningRendimiento({ clienteId, datos, onActualizar }: {
 
       {tab === 'forma' && (
         <div className="space-y-4">
+          <BaseAerobica base={datos.baseAerobica} />
+
           <DistribucionIntensidad intensidad={datos.intensidad} />
 
           <div className="grid gap-4 lg:grid-cols-2">

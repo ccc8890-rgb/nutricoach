@@ -7,6 +7,8 @@ import { distribucionIntensidad, type DistribucionIntensidad } from './intensida
 import { DEPORTES_CON_PANEL, deporteDe, type DeporteConPanel } from './deportes'
 import { calcularDeriva, type Deriva } from './deriva'
 import { puntosTecnica, resumenTecnica, type PuntoTecnica, type ResumenTecnica } from './tecnica'
+import { calcularBaseAerobica, type BaseAerobica, type RodajeSuave } from './base-aerobica'
+import { zonasFcDesde } from '@/lib/entrenos/zonas-fc'
 import type { VueltaEntreno } from './garmin-entrenos'
 
 export interface EntrenoPanel {
@@ -65,6 +67,8 @@ export interface PanelRendimiento {
   parciales: { fecha: string; s1000: number | null; s5000: number | null }[]
   /** Eficiencia aeróbica: m/min por latido en carreras continuas de 25+ min. Sube = más forma. */
   eficiencia: { fecha: string; valor: number }[]
+  /** Progreso de la base aeróbica solo con rodajes suaves: ritmo al pulso de referencia y pulso medio, reciente frente a previo. */
+  baseAerobica: BaseAerobica
   /** Deriva cardiaca de cada carrera continua de 30+ min (positivo = el pulso se disparó). */
   deriva: ({ fecha: string } & Deriva)[]
   /** Técnica de carrera por salida (cadencia, zancada, contacto, oscilación) y su comparación a igual ritmo. */
@@ -133,6 +137,18 @@ export function construirPanel(
     return valor === null ? [] : [{ fecha: e.fecha, valor }]
   })
 
+  // Solo rodajes suaves: continuos, al aire libre y con el pulso medio bajo el techo de la zona suave.
+  const fcRef = zonasFcDesde({ fcUmbral, fcMax })?.E?.max ?? null
+  const rodajes: RodajeSuave[] = fcRef
+    ? ordenados.flatMap(e => {
+        const ef = eficienciaDe(e)
+        if (ef === null || !e.fc_media || e.fc_media > fcRef) return []
+        const activas = (e.vueltas ?? []).filter(l => l.tipo === 'ACTIVE' || l.tipo === 'INTERVAL').length
+        if (activas >= 3 && (e.vueltas ?? []).some(l => l.tipo === 'RECOVERY')) return []
+        return [{ fecha: e.fecha, ef, fc_media: e.fc_media, ritmo_s_km: e.ritmo_medio_s_km }]
+      })
+    : []
+
   const deriva = ordenados.flatMap(e => {
     if (!esCarrera(e.tipo) || e.tipo === 'treadmill_running') return []
     const d = calcularDeriva(e.vueltas)
@@ -164,6 +180,7 @@ export function construirPanel(
     bienestar,
     parciales,
     eficiencia,
+    baseAerobica: calcularBaseAerobica(rodajes, fcRef, hoy),
     deriva,
     deportes,
     intensidad: distribucionIntensidad(ordenados, hoy, fcUmbral, fcMax),
