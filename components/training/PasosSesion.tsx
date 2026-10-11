@@ -2,7 +2,7 @@
 'use client'
 import { useMemo, useState } from 'react'
 import { Watch } from '@phosphor-icons/react'
-import { validarPasos, resumenSesion, lineaPaso, type PasoSimple } from '@/lib/entrenos/pasos'
+import { validarPasos, resumenSesion, lineaPaso, zonasUsadas, ZONAS_RITMO, type PasoSimple } from '@/lib/entrenos/pasos'
 import { formatearRitmo, type Ritmos } from '@/lib/entrenos/ritmos'
 
 export interface ExtrasSesion {
@@ -36,6 +36,7 @@ export default function PasosSesion({ sesionId, pasos, ritmos, garmin }: Props) 
 
   if (!valido.ok) return null // JSON corrupto: no se muestra, la sesión sigue funcionando
   const resumen = resumenSesion(valido.pasos, ritmos)
+  const zonas = zonasUsadas(valido.pasos)
 
   async function enviar() {
     setEnviando(true)
@@ -102,17 +103,12 @@ export default function PasosSesion({ sesionId, pasos, ritmos, garmin }: Props) 
         )}
       </div>
       {error && <p className="text-xs mt-2" style={{ color: 'var(--semantic-danger, #c0392b)' }}>{error}</p>}
-      {ritmos && (
-        <div className="mt-4 pt-3 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-          <p className="font-semibold mb-1">Tus ritmos de referencia (/km)</p>
-          <ul className="space-y-0.5 font-data">
-            <li>Suave (E) {formatearRitmo(ritmos.E)} · rodajes y tirada larga, puedes hablar</li>
-            <li>Maratón (M) {formatearRitmo(ritmos.M)} · ritmo de carrera en maratón</li>
-            <li>Umbral (T) {formatearRitmo(ritmos.T)} · tempo, cómodamente duro</li>
-            <li>Intervalos (I) {formatearRitmo(ritmos.I)} · series de 3-5 min</li>
-            <li>Repeticiones (R) {formatearRitmo(ritmos.R)} · series cortas y rápidas</li>
-          </ul>
-        </div>
+      {zonas.length > 0 && (
+        <ul className="mt-4 pt-3 space-y-0.5 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+          {zonas.map(z => (
+            <li key={z}><span className="font-semibold">{ZONAS_RITMO[z].nombre}</span>: {ZONAS_RITMO[z].uso}</li>
+          ))}
+        </ul>
       )}
     </section>
   )

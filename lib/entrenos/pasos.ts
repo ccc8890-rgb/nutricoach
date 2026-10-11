@@ -105,10 +105,26 @@ function textoDuracion(d: Duracion): string {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
+export const ZONAS_RITMO: Record<ZonaRitmo, { nombre: string; uso: string }> = {
+  E: { nombre: 'suave', uso: 'rodajes y tirada larga; puedes hablar sin problema' },
+  M: { nombre: 'maratón', uso: 'ritmo de carrera de maratón' },
+  T: { nombre: 'umbral', uso: 'tempo: cómodamente duro, sin llegar a ahogarte' },
+  I: { nombre: 'intervalos', uso: 'series de 3-5 min, esfuerzo muy fuerte' },
+  R: { nombre: 'repeticiones', uso: 'series cortas y rápidas, con recuperación larga' },
+}
+
+/** Zonas de ritmo que usa la sesión, en orden de intensidad. */
+export function zonasUsadas(pasos: Paso[]): ZonaRitmo[] {
+  const usadas = new Set<ZonaRitmo>()
+  const ver = (q: PasoSimple) => { if (q.objetivo?.tipo === 'zona') usadas.add(q.objetivo.zona) }
+  for (const p of pasos) (p.tipo === 'repetir' ? p.pasos : [p]).forEach(ver)
+  return ZONAS.filter(z => usadas.has(z))
+}
+
 function textoObjetivo(p: PasoSimple, ritmos: Ritmos | null): string {
   const o = p.objetivo
   if (!o) return ''
-  if (o.tipo === 'zona') return ritmos ? ` @ ${formatearRitmo(ritmos[o.zona])}/km` : ` @ zona ${o.zona}`
+  if (o.tipo === 'zona') return ritmos ? ` @ ${formatearRitmo(ritmos[o.zona])}/km (${ZONAS_RITMO[o.zona].nombre})` : ` @ zona ${o.zona}`
   if (o.tipo === 'ritmo') return ` @ ${formatearRitmo(o.min_seg_km)}–${formatearRitmo(o.max_seg_km)}/km`
   if (o.tipo === 'fc') return ` @ ${o.min}–${o.max} ppm`
   return ` @ RPE ${o.valor}`
