@@ -44,3 +44,4 @@ Total: ~9.200 líneas menos.
 - **Borrados 19 planes** (con sus 94 comidas y 741 alimentos, en cascada; sin dependientes en `comidas_planificadas`, `registro_comidas_dia` ni `piezas_contenido`). **Copia completa** en `salidas/11-10-2026_backup-planes-nutricion-borrados.json` (`salidas/` está en .gitignore, solo local).
 - **«Planes activos» quitada del menú** (`components/Sidebar.tsx`) y de las tarjetas de `/nutricion`: cada cliente ya tiene su plan en la ficha → Nutrición. La ruta `/dietas` y `/dietas/[id]` siguen existiendo (los enlaces desde la ficha usan `/dietas/[id]`).
 - Restaurar: reinsertar desde el JSON de copia (planes → comidas → comida_alimentos).
+- **«Resumen» de Nutrición quitado del menú** (era una página de tarjetas que repetía el propio menú). El botón de la sección Nutrición lleva ahora a Plantillas y `/nutricion` redirige a `/dietas/plantillas`.

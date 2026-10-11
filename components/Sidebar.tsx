@@ -70,7 +70,6 @@ const PRIMARY_ITEMS: NavItem[] = [
 ]
 
 const NUTRICION_ITEMS: NavItem[] = [
-  { href: '/nutricion', label: 'Resumen', icon: House, exact: true },
   { href: '/dietas/plantillas', label: 'Plantillas', icon: ListChecks },
 ]
 
@@ -485,7 +484,7 @@ export default function Sidebar() {
   ]
 
   const sections: NavSection[] = [
-    { key: 'nutricion', label: 'Nutrición', href: '/nutricion', icon: Utensils, badge: recetasPendientes, items: nutricionItems },
+    { key: 'nutricion', label: 'Nutrición', href: '/dietas/plantillas', icon: Utensils, badge: recetasPendientes, items: nutricionItems },
     { key: 'entrenamiento', label: 'Entrenamiento', href: '/entrenos', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
   ]
 
