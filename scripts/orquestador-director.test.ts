@@ -14,8 +14,9 @@ const base = {
 const diarioActivo = crearPlanDirectorCliente(base, 'diario')
 assert.equal(diarioActivo.ejecutar.perfil_aprendizaje, true)
 assert.equal(diarioActivo.ejecutar.perfil_gusto, true)
-assert.equal(diarioActivo.ejecutar.readiness, true)
-assert.equal(diarioActivo.ejecutar.supercoach, true)
+// Agentes de entreno antiguos apagados (11-10-2026): ver orquestador.ts
+assert.equal(diarioActivo.ejecutar.readiness, false)
+assert.equal(diarioActivo.ejecutar.supercoach, false)
 assert.equal(diarioActivo.ejecutar.riesgo_nutricion, false)
 assert.equal(diarioActivo.ejecutar.riesgo_entreno, false)
 assert.equal(diarioActivo.ejecutar.revisor_semanal, false)
@@ -27,13 +28,13 @@ const riesgo = crearPlanDirectorCliente({
   sesiones7d: 0,
 }, 'diario')
 assert.equal(riesgo.ejecutar.riesgo_nutricion, true)
-assert.equal(riesgo.ejecutar.riesgo_entreno, true)
+assert.equal(riesgo.ejecutar.riesgo_entreno, false)
 assert.ok(riesgo.motivos.some(m => m.startsWith('riesgo_nutricion')))
-assert.ok(riesgo.motivos.some(m => m.startsWith('riesgo_entreno')))
+assert.ok(!riesgo.motivos.some(m => m.startsWith('riesgo_entreno')))
 
 const semanal = crearPlanDirectorCliente(base, 'semanal')
 assert.equal(semanal.ejecutar.revisor_semanal, true)
-assert.equal(semanal.ejecutar.revisor_semanal_entreno, true)
+assert.equal(semanal.ejecutar.revisor_semanal_entreno, false)
 assert.equal(semanal.ejecutar.motivacion, true)
 
 const inboxSaturado = crearPlanDirectorCliente({
@@ -65,12 +66,8 @@ assert.deepEqual(pasosSemanales, [
   'perfil_aprendizaje',
   'perfil_gusto',
   'retencion',
-  'readiness',
-  'supercoach',
   'revisor_semanal',
   'motivacion',
-  'revisor_semanal_entreno',
-  'training_brain',
 ])
 
 const pasosDryRun = resolverPasosDirector(semanal, true)

@@ -66,6 +66,13 @@ function inboxPressure(s: SenalesDirectorCliente): 'normal' | 'alta' {
   return s.pendientes.length >= 12 ? 'alta' : 'normal'
 }
 
+// Agentes de entreno del sistema antiguo, apagados el 11-10-2026: leían tablas
+// que nadie rellena (registros_sets, actividad_externa_cliente) y daban avisos
+// falsos («99 días sin sesiones»); lo cubren el panel de Rendimiento
+// (avisos-rendimiento, analisis-rendimiento) y «Planificar con IA».
+// Para reactivarlos basta poner esto a true.
+const AGENTES_ENTRENO_ANTIGUOS_ACTIVOS = false
+
 export function crearPlanDirectorCliente(
   senales: SenalesDirectorCliente,
   modo: ModoDirector
@@ -115,12 +122,12 @@ export function crearPlanDirectorCliente(
     perfil_aprendizaje: true,
     perfil_gusto: true,
     riesgo_nutricion: riesgoNutricion,
-    riesgo_entreno: riesgoEntreno,
-    readiness,
-    supercoach,
+    riesgo_entreno: AGENTES_ENTRENO_ANTIGUOS_ACTIVOS && riesgoEntreno,
+    readiness: AGENTES_ENTRENO_ANTIGUOS_ACTIVOS && readiness,
+    supercoach: AGENTES_ENTRENO_ANTIGUOS_ACTIVOS && supercoach,
     revisor_semanal: revisorSemanal,
-    revisor_semanal_entreno: revisorSemanalEntreno,
-    training_brain: trainingBrain,
+    revisor_semanal_entreno: AGENTES_ENTRENO_ANTIGUOS_ACTIVOS && revisorSemanalEntreno,
+    training_brain: AGENTES_ENTRENO_ANTIGUOS_ACTIVOS && trainingBrain,
     motivacion,
     retencion: true,
   }
@@ -128,10 +135,10 @@ export function crearPlanDirectorCliente(
   const motivos: string[] = []
   if (presionInbox === 'alta') motivos.push('inbox_con_muchas_tareas_pendientes')
   if (riesgoNutricion) motivos.push(`riesgo_nutricion_${senales.diasSinCheckin ?? 'sin'}d_sin_checkin`)
-  if (riesgoEntreno) motivos.push(`riesgo_entreno_${senales.diasSinSesion ?? 'sin'}d_sin_sesion`)
-  if (readiness) motivos.push('readiness_por_carga_o_revision')
-  if (supercoach) motivos.push('supercoach_con_contexto_suficiente')
-  if (revisorSemanal || revisorSemanalEntreno) motivos.push('revision_semanal_programada')
+  if (ejecutar.riesgo_entreno) motivos.push(`riesgo_entreno_${senales.diasSinSesion ?? 'sin'}d_sin_sesion`)
+  if (ejecutar.readiness) motivos.push('readiness_por_carga_o_revision')
+  if (ejecutar.supercoach) motivos.push('supercoach_con_contexto_suficiente')
+  if (ejecutar.revisor_semanal || ejecutar.revisor_semanal_entreno) motivos.push('revision_semanal_programada')
   if (motivacion) motivos.push('motivacion_semanal_con_checkin_reciente')
 
   return {
