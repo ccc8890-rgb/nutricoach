@@ -10,9 +10,19 @@ Se borraron como «sin uso» (nadie los importa ni los llama por `fetch`; `tsc` 
 
 Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/intercambios` (+ `/elegir`), `intercambios` (+ `/elegir`), `clientes/[id]/informe-semanal`, `personalizacion/feedback`, `personalizacion/generar`, `precios/scrapear`. Libs: `lib/recetas/auto-match-ingrediente.ts`, `lib/scraping/motores/motor-http.ts`, `lib/scraping/motores/motor-playwright.ts`.
 
-- **Único uso vivo encontrado:** el script manual `scripts/rematch-ingredientes-auto.ts` importa `auto-match-ingrediente.ts` y fallaría sin él.
+- **Único uso vivo encontrado:** el script manual `scripts/rematch-ingredientes-auto.ts` importa `auto-match-ingrediente.ts` y fallaba sin él → **restaurado en la auditoría de cierre del 11-10-2026** (ver `docs/11-10-2026_limpieza-app-coach.md`). Lección: antes de borrar un archivo de `lib/`, buscar también `import('…/nombre.ts')` dinámicos en `scripts/` y `Content-Radar/scripts`.
 - **Recuperar un archivo:** `git checkout bd7d691~1 -- <ruta>` (p. ej. `lib/recetas/auto-match-ingrediente.ts`). Todo el conjunto: `git checkout bd7d691~1 -- app/api lib/recetas lib/scraping/motores` (cuidado: también restauraría otros borrados de esas carpetas).
 - La limpieza anterior (52 archivos) está en `873c556`; se recupera igual con `git checkout 873c556~1 -- <ruta>`.
+
+## ✅ SESIÓN 11-10-2026 (mediodía, Claude) — Limpieza y optimización de la app coach
+
+Carlos pidió quitar paja, rutas vacías y código sin uso del panel del coach y dejarlo «listo para futuro» sin romper nada. Registro completo: [`docs/11-10-2026_limpieza-app-coach.md`](docs/11-10-2026_limpieza-app-coach.md). Commits `873c556`, `5625581`, el de optimización y el de cierre; todo en `main`, sin migraciones.
+
+- **Borrado (~9.200 líneas):** 4 páginas sueltas (`/precios/scraping`, `/precios/browser-agent`, `/precios/enriquecer`, `/ia-test`), 21 componentes y libs huérfanos, ~30 rutas API sin llamador, basura de raíz (`tmp/`, dos archivos con nombre de frase), imports sin usar en 25 archivos.
+- **Optimización:** `dietas/[id]` 2.109 → 1.741 líneas (helpers a `components/diet/dieta-editor-utils.tsx`; la «Lista de la compra» solo se monta al abrirla, prop `lazy` de `CollapsibleModule`); `clientes/[id]` y `revisar-plan` cargan `PlantillaEntrenoSelector`, `ChatPanel` y `ClienteEditar` con `dynamic()`.
+- **Verificado:** `tsc` limpio, `npm run build` OK, `verificar:motor` 42/42, ESLint 0 errores, 10 crons con ruta existente, sin secretos. **No probado en navegador.**
+- **Fallo propio corregido en la auditoría:** se había borrado `lib/recetas/auto-match-ingrediente.ts` aunque `scripts/rematch-ingredientes-auto.ts` lo importa con `import('…ts')` dinámico (mi rastreo no lo veía). Restaurado.
+- **Pendiente:** probar en Vercel la lista de la compra en `dietas/[id]` y chat/Editar/selector de plantillas en `clientes/[id]`; decidir sobre `/agentes` (sin enlace en el menú); tarjeta de comida de `dietas/[id]` (~540 líneas) sin separar (30 props, riesgo alto sin pruebas); `puppeteer`/`apify-client`/`pg` solo los usan scripts.
 
 ## ✅ SESIÓN 11-10-2026 (mañana, Claude) — Limpieza del portal cliente: Progreso mínimo y fuera la app antigua
 
