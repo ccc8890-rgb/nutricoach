@@ -14,10 +14,9 @@ import { construirEntradaMacro } from '@/lib/entrenos/macro-desde-cliente'
 import { formatearRitmo } from '@/lib/entrenos/ritmos'
 import { normalizarDuracionSemanas } from '@/lib/entrenos/guardar-plan'
 import { estudiosParaPlan } from '@/lib/rendimiento/evidencia'
+import { llamarIA } from '@/lib/ia/enrutador'
+import { problemasDelPlan, promptDeReparacion } from '@/lib/entrenos/reparar-plan'
 import { extraerJsonPlan, resolverEvidenciaPlan } from '@/lib/entrenos/evidencia-plan'
-
-const DEEPSEEK_BASE = 'https://api.deepseek.com/v1/chat/completions'
-const MODEL = 'deepseek-chat'
 
 /** Proveedor y modelo con los que se genera el plan (API compatible con «chat/completions»). Por defecto, DeepSeek; el banco de pruebas de modelos pasa otros. */
 export interface ProveedorIA {
@@ -30,9 +29,20 @@ export interface ProveedorIA {
   /** Los modelos de razonamiento de OpenAI exigen `max_completion_tokens` y no admiten otra temperatura. */
   razonamientoOpenAI?: boolean
   /** Llamada propia (p. ej. la CLI de Claude): sustituye al `fetch` estándar. Devuelve el texto de la respuesta. */
-  llamar?: (sistema: string, usuario: string) => Promise<{ texto: string; uso?: unknown }>
+  llamar?: (sistema: string, usuario: string) => Promise<{ texto: string; uso?: unknown; modelo?: string; intentos?: unknown }>
 }
-export const PROVEEDOR_POR_DEFECTO: ProveedorIA = { nombre: 'deepseek-chat', url: DEEPSEEK_BASE, claveEnv: 'DEEPSEEK_API_KEY', modelo: MODEL, maxTokens: 6000 }
+/** Genera con el modelo que toque según `lib/ia/enrutador.ts` (Claude → GPT → DeepSeek, saltando los que no tengan clave o fallen). */
+export const PROVEEDOR_POR_DEFECTO: ProveedorIA = {
+  nombre: 'enrutado', url: '', claveEnv: '', modelo: 'enrutado',
+  llamar: async (sistema, usuario) => {
+    const r = await llamarIA('plan_entreno', { sistema, usuario, json: true, presupuestoMs: PRESUPUESTO_PLAN_MS })
+    return { texto: r.texto, uso: r.uso, modelo: `${r.proveedor}:${r.modelo}`, intentos: r.intentos }
+  },
+}
+
+/** Tiempo máximo de toda la generación (las rutas dejan 300 s). La corrección solo se intenta si queda margen. */
+const PRESUPUESTO_PLAN_MS = 270_000
+const MARGEN_PARA_CORREGIR_MS = 130_000
 
 export class ErrorGeneracionPlan extends Error {
   constructor(public codigo: 'CLIENTE_NO_ENCONTRADO' | 'IA_ERROR' | 'IA_RESPUESTA_INVALIDA', public estado: number, mensaje: string) { super(mensaje) }
@@ -443,11 +453,15 @@ ${instruccionDuracion}
 
     let planTexto = ''
     let usoIA: unknown = null
+    let modeloUsado = proveedor.modelo
+    let reparaciones: { antes: string[]; despues: string[] } | null = null
+    const t0Generacion = Date.now()
     if (proveedor.llamar) {
       try {
         const r = await proveedor.llamar(promptSistema, promptUsuario)
         planTexto = r.texto
         usoIA = r.uso ?? null
+        modeloUsado = r.modelo ?? proveedor.modelo
       } catch (e) {
         console.error(`Error de ${proveedor.nombre}:`, e instanceof Error ? e.message.slice(0, 300) : e)
         throw new ErrorGeneracionPlan('IA_ERROR', 502, 'Error al generar el plan con IA')
@@ -486,6 +500,43 @@ ${instruccionDuracion}
     }
     // Las claves K# del plan se resuelven a los estudios reales; una clave inventada se elimina y se cuenta (el modelo no puede atribuir ideas a estudios que no están).
     ;(planIA as Record<string, unknown>)._evidencia = resolverEvidenciaPlan(planIA, estudios)
+
+    // Bucle de corrección: si el plan incumple las reglas del motor, se le devuelve a la IA con la lista de problemas (una vez, si queda tiempo).
+    const evaluar = (plan: Record<string, unknown>) => {
+      const ses = ((plan.sesiones as Record<string, unknown>[]) ?? []).map(x => ({
+        nombre: String(x.nombre ?? ''), dia_semana: (x.dia_semana as string) ?? null, tipo_sesion: (x.tipo_sesion as string) ?? null,
+        ritmo_objetivo: (x.ritmo_objetivo as string) ?? null, duracion_min: typeof x.duracion_min === 'number' ? x.duracion_min : null,
+      }))
+      const hay = ses.some(x => x.tipo_sesion === 'carrera' || /carrera|tirada|rodaje|tempo|series/i.test(x.nombre))
+      return problemasDelPlan({
+        hallazgos: hay ? validarSemanaCarrera(ses, contextoValidacion).hallazgos : [],
+        sesiones: ses.length,
+        sesionesEsperadas: esHibridoHyroxRunning ? 6 : null,
+        evidencia: resolverEvidenciaPlan(plan, estudios),
+      })
+    }
+    if (proveedor.llamar) {
+      const antes = evaluar(planIA)
+      if (antes.length > 0 && Date.now() - t0Generacion < MARGEN_PARA_CORREGIR_MS) {
+        try {
+          const r2 = await proveedor.llamar(promptSistema, promptDeReparacion(JSON.stringify(planIA), antes))
+          const corregido = extraerJsonPlan(r2.texto)
+          const despues = evaluar(corregido)
+          // Solo se acepta la versión corregida si de verdad tiene menos problemas que la original.
+          if (despues.length < antes.length) {
+            planIA = corregido
+            modeloUsado = r2.modelo ?? modeloUsado
+            usoIA = { primera: usoIA, correccion: r2.uso ?? null }
+          }
+          reparaciones = { antes, despues }
+        } catch (e) {
+          console.error('Corrección del plan fallida:', e instanceof Error ? e.message.slice(0, 200) : e)
+          reparaciones = { antes, despues: antes }
+        }
+      }
+    }
+    ;(planIA as Record<string, unknown>)._evidencia = resolverEvidenciaPlan(planIA, estudios)
+    if (reparaciones) (planIA as Record<string, unknown>)._correccion = reparaciones
 
     // Reparto de días determinista (plan híbrido): la IA redacta las sesiones pero no decide el día de cada una. Las de carrera toman los días del
     // esqueleto del macrociclo y las híbridas se colocan alrededor con reglas fijas (pierna lejos de tirada/calidad, días disponibles, descanso).
@@ -549,6 +600,6 @@ ${instruccionDuracion}
       validacion,
       macrociclo,
       minutosRealesSemana: contextoValidacion.minutosRealesSemana,
-      metadata: { rpe_promedio: rpePromedio, ajuste_rpe: ajusteRpe, modalidad: modalidadFoco, recomendacion_motor: recomendacion, papers_usados: estudios.length, generado_con: proveedor.modelo, uso: usoIA },
+      metadata: { rpe_promedio: rpePromedio, ajuste_rpe: ajusteRpe, modalidad: modalidadFoco, recomendacion_motor: recomendacion, papers_usados: estudios.length, generado_con: modeloUsado, uso: usoIA },
     }
 }

@@ -4,7 +4,7 @@ import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 import { rateLimit } from '@/lib/rate-limit'
 import { estadoHttpDe, leerModoPlanificacion, planificarConIA, validarCuerpoPlanificar } from '@/lib/entrenos/planificar-con-ia'
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 async function autorizar(req: NextRequest, clienteId: string) {
   const { data: { user } } = await createApiSupabase(req).auth.getUser()

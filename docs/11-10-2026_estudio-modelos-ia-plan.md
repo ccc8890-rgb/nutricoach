@@ -46,3 +46,22 @@ Claude no se pudo probar: no hay clave de API de Anthropic en el proyecto.
 | claude-sonnet (CLI) | 0/1 | — | — | — | — | Se colgó 16 min (CLI); sin resultado |
 
 **Lectura:** con la evidencia dirigida los tres modelos que responden citan estudios reales y relevantes (concurrent training, distribución de intensidad, prevención de lesiones) y ninguno inventa. Antes citaban 0-3. La decisión de «carrera tras la estación» (Hyrox) queda sin estudio porque la base apenas tiene papers de Hyrox: se marca como criterio de entrenador, sin inventar. **Límite:** el sistema verifica que el estudio existe y es de la lista, no que respalde esa decisión concreta (relevancia): hace falta un paso de auditoría (otro modelo o el coach).
+
+---
+
+# Ronda 3 (11-10-2026, noche) — Enrutador de modelos por tarea, Claude por API y bucle de corrección
+
+Decisión de Carlos: quiere los mejores modelos, está dispuesto a meter saldo en la API de Claude y combinar con GPT según la tarea; plan y dieta potentes, con regeneración y bloques nuevos con el tiempo.
+
+**Hecho**
+- `lib/ia/anthropic.ts`: Claude con el SDK oficial (`@anthropic-ai/sdk`), `claude-opus-5-5`, razonamiento adaptativo, esfuerzo alto, streaming y respaldo automático ante rechazos de seguridad (`fallbacks: 'default'`, beta `server-side-fallback-2026-07-01`). Lee `ANTHROPIC_API_KEY`.
+- `lib/ia/enrutador.ts` (`llamarIA(tarea, …)`): rutas por tarea con respaldos, saltando proveedores sin clave, con error, sin tiempo o con JSON inválido. Por defecto: plan_entreno y plan_dieta = Opus 5.5 → GPT-5.5 → DeepSeek; auditoria = GPT-5.5 → Sonnet 5.5 → DeepSeek (otra familia que la que genera); analisis_rendimiento = Sonnet 5.5 → GPT-5.5 → DeepSeek; texto_barato = DeepSeek. Cambiable con `IA_RUTA_<TAREA>=proveedor:modelo,…` sin tocar código. Test: `scripts/enrutador-ia.test.ts`.
+- `generarPlanEntrenoIA` usa el enrutador por defecto y tiene **bucle de corrección** (`lib/entrenos/reparar-plan.ts`): si el plan incumple reglas del motor (volumen, esqueleto, nº de sesiones, citas inventadas, <5 decisiones), se le devuelve a la IA con los problemas, una vez y solo si queda tiempo; se acepta la versión corregida solo si tiene menos problemas. Queda anotado en `plan._correccion`. Rutas interactivas a `maxDuration = 300`.
+- Prueba real (sin clave de Anthropic todavía): Carlos, 83 s, **GPT-5.5**, 100 pts, 9 decisiones (6 con estudio, 14 estudios distintos), 0 correcciones necesarias. El camino de corrección no se ha ejercitado en una ejecución real (el plan salió limpio): solo está probado en sus piezas puras.
+
+**Pendiente**
+1. Poner `ANTHROPIC_API_KEY` en `.env.local` y en Vercel (Production) y probar con `npx tsx scripts/probar-plan-enrutado.ts`.
+2. Dietas (`generar-plan-inicial`, `lib/deepseek.ts`) siguen con DeepSeek: pasarlas al enrutador con el mismo método (estudios dirigidos + bucle de corrección con sus validadores) y estudiarlas con un banco de pruebas propio.
+3. Auditoría de relevancia de citas con un segundo modelo (ruta `auditoria`).
+4. Generación en segundo plano (una petición de 90-200 s es mala experiencia): cola + aviso al terminar.
+5. Coste: Opus 5.5 ≈ 4/20 USD por millón de tokens de entrada/salida (≈0,2 USD por plan medido por la CLI); medir el real con `uso` cuando haya clave.

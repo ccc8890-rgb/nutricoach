@@ -6,7 +6,7 @@ import type { FaseBloque } from '@/lib/entrenos/bloques'
 import { ErrorGeneracionPlan, generarPlanEntrenoIA } from '@/lib/entrenos/generar-plan-ia'
 import { guardarPlanEntreno, type SesionIA } from '@/lib/entrenos/guardar-plan'
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 /**
  * Generador que guarda el plan al instante. Solo lo usa «revisar plan» (cliente nuevo, sin plan que proteger).
