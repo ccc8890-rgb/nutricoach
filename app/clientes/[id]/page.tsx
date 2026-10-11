@@ -108,7 +108,7 @@ function MacroBar({ label, value, max, color, icon: Icon, dia, media }: {
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-1 mb-1">
         <Icon size={11} style={{ color }} />
-        <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
+        <span className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
       </div>
       {conDia ? (
         <div className="text-base font-bold font-data" style={{ color: 'var(--text)' }}>
@@ -121,7 +121,7 @@ function MacroBar({ label, value, max, color, icon: Icon, dia, media }: {
         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
       </div>
       {conDia && (
-        <p className="text-[11px] mt-1 font-data" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-[13px] mt-1 font-data" style={{ color: 'var(--text-muted)' }}>
           <span className="font-semibold" style={{ color: estado }}>{resta > 0 ? `faltan ${resta}${unidad}` : resta < 0 ? `+${-resta}${unidad} de más` : 'completo'}</span>
           {media != null && <span> · media semana {Math.round(media)}</span>}
         </p>
@@ -134,7 +134,7 @@ function MacroBar({ label, value, max, color, icon: Icon, dia, media }: {
 function StatPill({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--surface-elevated, var(--border))' }}>
-      <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      <span className="text-[12px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
       <span className="text-sm font-bold mt-0.5" style={{ color: 'var(--text)' }}>{value}</span>
     </div>
   )
@@ -155,7 +155,7 @@ function WorkCard({ title, kicker, icon: Icon, children, action }: {
             <Icon size={17} />
           </div>
           <div className="min-w-0">
-            {kicker && <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>{kicker}</p>}
+            {kicker && <p className="text-[12px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>{kicker}</p>}
             <h2 className="font-bold leading-tight" style={{ color: 'var(--text)' }}>{title}</h2>
           </div>
         </div>
@@ -258,23 +258,23 @@ function FlagCard({ flag }: { flag: FlagClinico }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{flag.titulo}</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}` }}>{cfg.label}</span>
+            <span className="text-[12px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}` }}>{cfg.label}</span>
           </div>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{flag.descripcion}</p>
           {expandido && (
             <div className="mt-3 space-y-2">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Acción recomendada</p>
+                <p className="text-[12px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Acción recomendada</p>
                 <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{flag.accion_recomendada}</p>
               </div>
               {flag.evidencia && (
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Evidencia</p>
+                  <p className="text-[12px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Evidencia</p>
                   <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>{flag.evidencia}</p>
                 </div>
               )}
               {flag.fuente && (
-                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Fuente: {flag.fuente}</p>
+                <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Fuente: {flag.fuente}</p>
               )}
             </div>
           )}
@@ -346,7 +346,7 @@ function InformeClinicoPanel({ informe, cargando, regenerando, onRegenerar }: {
             <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text)' }}>
               <AlertTriangle size={14} style={{ color: '#FF9F0A' }} /> Alertas clínicas detectadas
             </h3>
-            <div className="flex gap-2 text-[10px]">
+            <div className="flex gap-2 text-[12px]">
               {flagsBySeveridad.critico.length > 0 && <span className="px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,69,58,0.12)', color: '#FF453A' }}>{flagsBySeveridad.critico.length} crítico{flagsBySeveridad.critico.length > 1 ? 's' : ''}</span>}
               {flagsBySeveridad.alto.length > 0 && <span className="px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>{flagsBySeveridad.alto.length} alto{flagsBySeveridad.alto.length > 1 ? 's' : ''}</span>}
               {flagsBySeveridad.medio.length > 0 && <span className="px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,214,10,0.1)', color: '#B59300' }}>{flagsBySeveridad.medio.length} medio{flagsBySeveridad.medio.length > 1 ? 's' : ''}</span>}
@@ -375,26 +375,26 @@ function InformeClinicoPanel({ informe, cargando, regenerando, onRegenerar }: {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {params.proteina_g_kg && (
               <div className="p-3 rounded-xl" style={{ background: 'var(--surface-elevated, var(--border))' }}>
-                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Proteína</p>
+                <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Proteína</p>
                 <p className="text-base font-bold mt-0.5" style={{ color: 'var(--text)' }}>{params.proteina_g_kg} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>g/kg</span></p>
               </div>
             )}
             {params.kcal_floor && (
               <div className="p-3 rounded-xl" style={{ background: 'var(--surface-elevated, var(--border))' }}>
-                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Mínimo kcal</p>
+                <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Mínimo kcal</p>
                 <p className="text-base font-bold mt-0.5" style={{ color: 'var(--text)' }}>{params.kcal_floor} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>kcal/día</span></p>
               </div>
             )}
             {params.cho_g_kg && (
               <div className="p-3 rounded-xl" style={{ background: 'var(--surface-elevated, var(--border))' }}>
-                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Carbohidratos</p>
+                <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Carbohidratos</p>
                 <p className="text-base font-bold mt-0.5" style={{ color: 'var(--text)' }}>{params.cho_g_kg} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>g/kg</span></p>
               </div>
             )}
           </div>
           {params.suplementos_prioritarios && params.suplementos_prioritarios.length > 0 && (
             <div className="mt-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Suplementos prioritarios</p>
+              <p className="text-[12px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Suplementos prioritarios</p>
               <div className="flex flex-wrap gap-1.5">
                 {params.suplementos_prioritarios.map((s: string) => (
                   <span key={s} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(100,210,255,0.1)', color: '#64D2FF', border: '1px solid rgba(100,210,255,0.2)' }}>{s}</span>
@@ -404,7 +404,7 @@ function InformeClinicoPanel({ informe, cargando, regenerando, onRegenerar }: {
           )}
           {params.restricciones_absolutas && params.restricciones_absolutas.length > 0 && (
             <div className="mt-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Restricciones absolutas</p>
+              <p className="text-[12px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Restricciones absolutas</p>
               <div className="flex flex-wrap gap-1.5">
                 {params.restricciones_absolutas.map((r: string) => (
                   <span key={r} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: 'rgba(255,69,58,0.08)', color: '#FF453A', border: '1px solid rgba(255,69,58,0.2)' }}>{r}</span>
@@ -720,15 +720,15 @@ export default function ClienteDetallePage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-lg sm:text-xl font-bold truncate" style={{ color: 'var(--text)' }}>{nombre}</h1>
                 {cliente.activo ? (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,199,89,0.12)', color: '#34C759' }}>Activo</span>
+                  <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,199,89,0.12)', color: '#34C759' }}>Activo</span>
                 ) : (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text-muted)' }}>Inactivo</span>
+                  <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text-muted)' }}>Inactivo</span>
                 )}
                 {cliente.onboarding_completado === false && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>Sin onboarding</span>
+                  <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>Sin onboarding</span>
                 )}
                 {cliente.revisado_por_coach === false && (
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>Pendiente de revisión</span>
+                  <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>Pendiente de revisión</span>
                 )}
               </div>
               <p className="hidden sm:block text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.email}</p>
@@ -781,10 +781,10 @@ export default function ClienteDetallePage() {
               </div>
               <div className="flex items-center justify-between gap-2 sm:hidden">
                 <div className="flex flex-wrap gap-1.5 min-w-0">
-                  {dietaActiva.kcal_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: 'var(--text)' }}>{dietaActiva.kcal_objetivo} kcal</span> : null}
-                  {dietaActiva.proteinas_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#30D158' }}>P {dietaActiva.proteinas_objetivo}g</span> : null}
-                  {dietaActiva.carbohidratos_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#FF9F0A' }}>C {dietaActiva.carbohidratos_objetivo}g</span> : null}
-                  {dietaActiva.grasas_objetivo ? <span className="text-[11px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#64D2FF' }}>G {dietaActiva.grasas_objetivo}g</span> : null}
+                  {dietaActiva.kcal_objetivo ? <span className="text-[13px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: 'var(--text)' }}>{dietaActiva.kcal_objetivo} kcal</span> : null}
+                  {dietaActiva.proteinas_objetivo ? <span className="text-[13px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#30D158' }}>P {dietaActiva.proteinas_objetivo}g</span> : null}
+                  {dietaActiva.carbohidratos_objetivo ? <span className="text-[13px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#FF9F0A' }}>C {dietaActiva.carbohidratos_objetivo}g</span> : null}
+                  {dietaActiva.grasas_objetivo ? <span className="text-[13px] font-semibold px-2 py-1 rounded-lg" style={{ background: 'var(--bg)', color: '#64D2FF' }}>G {dietaActiva.grasas_objetivo}g</span> : null}
                 </div>
                 <Link href={`/dietas/${dietaActiva.id}?returnTo=${volverAqui}`} className="btn-secondary btn-sm flex-shrink-0">
                   Abrir
@@ -825,7 +825,7 @@ export default function ClienteDetallePage() {
               <Icon size={13} />
               {label}
               {badge !== undefined && badge > 0 && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center"
+                <span className="text-[12px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center"
                   style={tabActiva === key
                     ? { background: 'rgba(255,255,255,0.2)', color: 'inherit' }
                     : { background: 'var(--border)', color: 'var(--text-secondary)' }
@@ -857,13 +857,13 @@ export default function ClienteDetallePage() {
               <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 {cliente.restricciones_alimentarias && (
                   <div className="mb-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Restricciones</p>
+                    <p className="text-[12px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Restricciones</p>
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{cliente.restricciones_alimentarias}</p>
                   </div>
                 )}
                 {cliente.notas && (
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Notas privadas</p>
+                    <p className="text-[12px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Notas privadas</p>
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{cliente.notas}</p>
                   </div>
                 )}
@@ -1235,13 +1235,13 @@ export default function ClienteDetallePage() {
                   <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                     {cliente.restricciones_alimentarias && (
                       <div className="mb-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Restricciones</p>
+                        <p className="text-[12px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Restricciones</p>
                         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{cliente.restricciones_alimentarias}</p>
                       </div>
                     )}
                     {cliente.notas && (
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Notas privadas</p>
+                        <p className="text-[12px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Notas privadas</p>
                         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{cliente.notas}</p>
                       </div>
                     )}

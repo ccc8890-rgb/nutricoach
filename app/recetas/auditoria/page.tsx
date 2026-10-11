@@ -180,8 +180,8 @@ export default function AuditoriaIngredientesPage() {
           </p>
         </div>
       ) : (
-        <div className="card !p-0 overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="card !p-0 overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
                 <th className="text-left px-4 py-3 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Ingrediente</th>

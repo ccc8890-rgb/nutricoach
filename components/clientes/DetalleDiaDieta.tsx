@@ -12,8 +12,8 @@ function Barra({ etiqueta, valor, objetivo, color, unidad }: { etiqueta: string;
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{etiqueta}</span>
-        {pct != null && <span className="text-[11px] font-data" style={{ color: fuera ? 'var(--warning)' : 'var(--text-muted)' }}>{pct}%</span>}
+        <span className="text-[13px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{etiqueta}</span>
+        {pct != null && <span className="text-[13px] font-data" style={{ color: fuera ? 'var(--warning)' : 'var(--text-muted)' }}>{pct}%</span>}
       </div>
       <p className="text-lg font-semibold font-data leading-tight" style={{ color: 'var(--text)' }}>
         {valor}<span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>{unidad}{objetivo ? ` / ${Math.round(objetivo)}` : ''}</span>
@@ -88,7 +88,7 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
           <input autoFocus autoComplete="off" value={q} onChange={e => { setQ(e.target.value); setElegido(null) }} placeholder={modo === 'alimento' ? 'Plátano, yogur, chocolate negro…' : modo === 'plato' ? 'Tostada, arroz, patatas, yogur con granola…' : 'Buscar postre…'} className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
         </div>
-        <label className="flex items-center gap-2 text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>
+        <label className="flex items-center gap-2 text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>
           <input type="checkbox" checked={ajustar} onChange={e => setAjustar(e.target.checked)} />
           Reajustar el plato principal para que la comida siga en su objetivo
         </label>
@@ -103,7 +103,7 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
                   <span className="text-xs" style={{ color: 'var(--text-muted)' }}>g · {kcalPreview} kcal · P {Math.round((elegido.proteinas * gramos) / 100)} · C {Math.round((elegido.carbohidratos * gramos) / 100)} · G {Math.round((elegido.grasas * gramos) / 100)}</span>
                 </div>
                 <div className="flex gap-1.5 mt-2">
-                  {[50, 100, 150, 200].map(g => <button key={g} onClick={() => setGramos(g)} className="rounded-lg px-2 py-1 text-[11px]" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>{g} g</button>)}
+                  {[50, 100, 150, 200].map(g => <button key={g} onClick={() => setGramos(g)} className="rounded-lg px-2 py-1 text-[13px]" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>{g} g</button>)}
                 </div>
                 <button disabled={guardando || gramos <= 0} onClick={() => anadir({ alimento_id: elegido.id, gramos })} className="mt-3 w-full rounded-xl px-3 py-2 text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-60" style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
                   {guardando ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />} Añadir a {franja}
@@ -114,7 +114,7 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
             ) : alimentos.map(a => (
               <button key={a.id} onClick={() => setElegido(a)} className="w-full text-left rounded-xl p-2.5 flex items-center justify-between gap-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                 <span className="text-sm truncate" style={{ color: 'var(--text)' }}>{a.nombre}</span>
-                <span className="text-[11px] font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{Math.round(a.calorias)} kcal/100 g</span>
+                <span className="text-[13px] font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{Math.round(a.calorias)} kcal/100 g</span>
               </button>
             ))
           ) : postres.length === 0 ? (
@@ -122,7 +122,7 @@ function ModalComplemento({ clienteId, dia, franja, onCerrar, onHecho }: { clien
           ) : postres.map(r => (
             <button key={r.id} disabled={guardando} onClick={() => anadir({ receta_id: r.id })} className="w-full text-left rounded-xl p-2.5 flex items-center justify-between gap-2 disabled:opacity-50" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
               <span className="text-sm truncate" style={{ color: 'var(--text)' }}>{r.tipo_receta === 'guarnicion' ? '◦ ' : ''}{r.nombre}</span>
-              <span className="text-[11px] font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)} (1 ración)</span>
+              <span className="text-[13px] font-data whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)} (1 ración)</span>
             </button>
           ))}
         </div>
@@ -224,7 +224,7 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                   <div className="p-3 flex-1 flex flex-col gap-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{c.franja}{c.recurrente ? ' · diario' : ''}{momento?.pre === c.franja ? ' · pre-entreno' : momento?.post === c.franja ? ' · post-entreno' : ''}</p>
+                        <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{c.franja}{c.recurrente ? ' · diario' : ''}{momento?.pre === c.franja ? ' · pre-entreno' : momento?.post === c.franja ? ' · post-entreno' : ''}</p>
                         <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text)' }}>{c.receta?.nombre ?? 'Sin receta'}</p>
                       </div>
                       {c.receta?.contenido_estado && <Video size={14} style={{ color: c.receta.contenido_estado === 'grabada' ? 'var(--success)' : 'var(--warning)' }} />}
@@ -236,7 +236,8 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                       <span style={{ color: '#64D2FF' }}>G {c.g}</span>
                       {c.receta?.tiempo_prep_min ? <span className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}><Clock size={11} />{c.receta.tiempo_prep_min} min</span> : null}
                     </div>
-                    {c.complementos.length > 0 && <p className="text-[10px] font-semibold uppercase tracking-wide -mb-1" style={{ color: 'var(--text-muted)' }}><span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style={{ background: '#FF9F0A' }} />Plato principal</p>}
+                    {c.complementos.length > 0 && <p className="text-[12px] font-semibold uppercase tracking-wide -mb-1" style={{ color: 'var(--text-muted)' }}><span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle" style={{ background: '#FF9F0A' }} />Plato principal</p>}
+                    <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <tbody>
                         {c.ingredientes.map((i, k) => (
@@ -248,6 +249,7 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                         ))}
                       </tbody>
                     </table>
+                    </div>
                     {(c.complementos.length > 0 || !semana) && (
                       <div className="rounded-lg p-2.5 space-y-2" style={{ background: 'var(--bg)' }}>
                         {ROLES.map(({ rol, etiqueta, color }) => {
@@ -255,7 +257,7 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                           if (items.length === 0) return null
                           return (
                             <div key={rol}>
-                              <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                              <p className="text-[12px] font-semibold uppercase tracking-wide mb-0.5 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                                 <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: color }} />{etiqueta}
                               </p>
                               {items.map((x, k) => (
@@ -265,7 +267,7 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                                     {x.kcal} kcal
                                     {!semana && (
                                       <select aria-label="Mover a otra comida" value="" onChange={e => e.target.value && moverComplemento(c.id, x, e.target.value)}
-                                        className="rounded-md text-[11px] py-0.5 px-1 bg-transparent" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                                        className="rounded-md text-[13px] py-0.5 px-1 bg-transparent" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                                         <option value="">Mover a…</option>
                                         {franjas.filter(f => f !== c.franja).map(f => <option key={f} value={f}>{f}</option>)}
                                       </select>
@@ -278,26 +280,26 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
                           )
                         })}
                         {!semana && (
-                          <button onClick={() => setComplementoEn(c.franja)} className="text-[11px] font-medium flex items-center gap-1" style={{ color: 'var(--text)' }}><Plus size={11} /> Añadir plato, guarnición, fruta o postre</button>
+                          <button onClick={() => setComplementoEn(c.franja)} className="text-[13px] font-medium flex items-center gap-1" style={{ color: 'var(--text)' }}><Plus size={11} /> Añadir plato, guarnición, fruta o postre</button>
                         )}
                       </div>
                     )}
                     <div className="flex flex-wrap gap-1.5 mt-auto pt-1">
-                      <button onClick={() => onCambiar(c.franja)} className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
+                      <button onClick={() => onCambiar(c.franja)} className="rounded-lg px-2.5 py-1.5 text-[13px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
                         <RefreshCw size={11} /> Cambiar receta
                       </button>
                       {c.receta && (
-                        <a href={`/recetas/${c.receta.id}`} target="_blank" rel="noreferrer" className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
+                        <a href={`/recetas/${c.receta.id}`} target="_blank" rel="noreferrer" className="rounded-lg px-2.5 py-1.5 text-[13px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
                           <ExternalLink size={11} /> Ver receta
                         </a>
                       )}
                       {c.receta?.url_origen && /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(c.receta.url_origen) && (
-                        <a href={c.receta.url_origen} target="_blank" rel="noreferrer" className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
+                        <a href={c.receta.url_origen} target="_blank" rel="noreferrer" className="rounded-lg px-2.5 py-1.5 text-[13px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
                           <PlayCircle size={11} /> Ver vídeo
                         </a>
                       )}
                       {!c.recurrente && (
-                        <button onClick={() => onQuitar(c.id, c.recurrente)} className="rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                        <button onClick={() => onQuitar(c.id, c.recurrente)} className="rounded-lg px-2.5 py-1.5 text-[13px] font-medium flex items-center gap-1" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                           <X size={11} /> Quitar
                         </button>
                       )}
@@ -312,9 +314,9 @@ export default function DetalleDiaDieta({ clienteId, dia, semana, objetivo, vers
             const libres = franjas.filter(f => !detalle.comidas.some(c => c.franja === f))
             return libres.length > 0 ? (
               <div className="flex flex-wrap items-center gap-1.5 mt-3">
-                <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Añadir solo un plato, fruta o postre en:</span>
+                <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Añadir solo un plato, fruta o postre en:</span>
                 {libres.map(f => (
-                  <button key={f} onClick={() => setComplementoEn(f)} className="rounded-full px-2.5 py-1 text-[11px] font-medium flex items-center gap-1" style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
+                  <button key={f} onClick={() => setComplementoEn(f)} className="rounded-full px-2.5 py-1 text-[13px] font-medium flex items-center gap-1" style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
                     <Plus size={11} /> {f}
                   </button>
                 ))}

@@ -61,15 +61,15 @@ function SemanaResumen({ dias, kcalObjetivo, objetivos, semana, diaSel, onDia, r
             title={objetivos[d.dia]?.label ?? 'Ver el detalle del día'}
             className="rounded-lg p-1.5 sm:p-2 text-left min-w-0"
             style={{ background: sel ? 'var(--surface)' : 'var(--bg)', border: `1px solid ${sel ? 'var(--primary)' : 'var(--border)'}` }}>
-            <span className="block text-[10px] uppercase tracking-wide truncate" style={{ color: 'var(--text-muted)' }}>{d.dia.slice(0, 3)} {fecha.getDate()}</span>
+            <span className="block text-[12px] uppercase tracking-wide truncate" style={{ color: 'var(--text-muted)' }}>{d.dia.slice(0, 3)} {fecha.getDate()}</span>
             <span className="block text-sm font-data font-bold" style={{ color }}>{vacio ? '—' : `${semana != null ? '≈ ' : ''}${d.total.kcal}`}</span>
-            {!vacio && <span className="block text-[10px] font-data truncate" style={{ color: 'var(--text-muted)' }}>P{d.total.p} C{d.total.c} G{d.total.g}</span>}
-            {vacio ? <span className="block text-[10px]" style={{ color: 'var(--text-muted)' }}>sin platos</span> : (
+            {!vacio && <span className="block text-[12px] font-data truncate" style={{ color: 'var(--text-muted)' }}>P{d.total.p} C{d.total.c} G{d.total.g}</span>}
+            {vacio ? <span className="block text-[12px]" style={{ color: 'var(--text-muted)' }}>sin platos</span> : (
               <span className="block mt-1 space-y-0.5">
                 {d.comidas.map(c => {
                   const veces = c.receta ? repeticiones.get(c.receta.id) ?? 1 : 1
                   return (
-                    <span key={c.id} className="block text-[11px] leading-snug line-clamp-2 break-words" title={`${c.nombre}: ${c.receta?.nombre ?? 'Sin receta'}${veces > 1 ? ` · se repite ${veces} veces` : ''}`}
+                    <span key={c.id} className="block text-[13px] leading-snug line-clamp-2 break-words" title={`${c.nombre}: ${c.receta?.nombre ?? 'Sin receta'}${veces > 1 ? ` · se repite ${veces} veces` : ''}`}
                       style={{ color: veces > 1 ? 'var(--warning)' : 'var(--text)' }}>
                       {veces > 1 ? '↻ ' : ''}{c.receta?.nombre ?? 'Sin receta'}
                     </span>
@@ -136,14 +136,14 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
                   style={{ color: semana != null ? ((objetivos[d.dia]?.kcal || kcalObjetivo) && d.total.kcal > (objetivos[d.dia]?.kcal || kcalObjetivo || 0) * 1.1 ? 'var(--error)' : 'var(--text-muted)') : colorDesvio(d.total.kcal, objetivos[d.dia]?.kcal || kcalObjetivo) }}>{semana != null && d.total.kcal > 0 ? '≈ ' : ''}{d.total.kcal} kcal</span>
               </span>
               {objetivos[d.dia]?.label && (
-                <span className="block text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                <span className="block text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                   {objetivos[d.dia].label!.replace('Día de ', '').replace('Día híbrido / HYROX', 'Híbrido')} · objetivo {objetivos[d.dia].kcal}
                 </span>
               )}
             </button>
             <div className="flex items-center justify-end gap-2 mb-1.5 -mt-1" style={{ color: 'var(--text-muted)' }}>
-              {d.comidas.some(c => c.receta) && <button title="Copiar todos los platos del día" onClick={() => onCopiarDia(d)} className="flex items-center gap-0.5 text-[10px]"><Copy size={11} /> día</button>}
-              {portapapeles && <button title="Pegar en este día (sustituye las franjas copiadas)" onClick={() => onPegar(d.dia, semana)} className="flex items-center gap-0.5 text-[10px]" style={{ color: 'var(--primary)' }}><ClipboardPaste size={11} /> pegar</button>}
+              {d.comidas.some(c => c.receta) && <button title="Copiar todos los platos del día" onClick={() => onCopiarDia(d)} className="flex items-center gap-0.5 text-[12px]"><Copy size={11} /> día</button>}
+              {portapapeles && <button title="Pegar en este día (sustituye las franjas copiadas)" onClick={() => onPegar(d.dia, semana)} className="flex items-center gap-0.5 text-[12px]" style={{ color: 'var(--primary)' }}><ClipboardPaste size={11} /> pegar</button>}
             </div>
             <div className="space-y-1.5">
               {items.map(it => {
@@ -390,7 +390,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   // Tamaños: normal (cabe la semana en un portátil) o ampliado (pantalla completa, letra y casillas grandes)
   const T: Tamano = ampliado
     ? { col: 'p-3', dia: 'text-lg', diaKcal: 'text-sm', card: 'p-3', label: 'text-xs', nombre: 'text-base leading-snug line-clamp-4', macros: 'text-xs', hueco: 'p-3 text-sm', grid: 'lg:gap-3' }
-    : { col: 'lg:p-2', dia: 'text-sm', diaKcal: 'text-xs', card: 'p-2', label: 'text-[10px]', nombre: 'text-xs lg:text-[13px] leading-snug line-clamp-3', macros: 'text-[10px]', hueco: 'p-1.5 text-[11px]', grid: 'lg:gap-1.5' }
+    : { col: 'lg:p-2', dia: 'text-sm', diaKcal: 'text-xs', card: 'p-2', label: 'text-[12px]', nombre: 'text-xs lg:text-[13px] leading-snug line-clamp-3', macros: 'text-[12px]', hueco: 'p-1.5 text-[13px]', grid: 'lg:gap-1.5' }
   // El detalle del día aparece justo debajo de la semana a la que pertenece el día seleccionado
   const detalle = (semana: number | null) => diaSel && diaSel.semana === semana ? (
     <DetalleDiaDieta clienteId={clienteId} dia={diaSel.dia} semana={semana} version={version}
@@ -474,7 +474,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     if (ok && !copia) await quitar(o.comida, o.semana, true)
     setOcupado(null); await recargar()
   }
-  const btnSec = 'rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1 disabled:opacity-50'
+  const btnSec = 'rounded-lg px-2.5 py-1.5 text-[13px] font-medium flex items-center gap-1 disabled:opacity-50'
   const mediaActual = media(dias)
   // Cuántas veces aparece cada receta en las semanas visibles (para marcar repeticiones en el Resumen)
   const repeticiones = new Map<string, number>()
@@ -486,7 +486,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     <section className={ampliado ? 'fixed inset-0 z-[60] overflow-auto p-6' : 'rounded-2xl p-4'} style={{ background: ampliado ? 'var(--bg)' : 'var(--surface)', border: ampliado ? 'none' : '1px solid var(--border)' }}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Planificador</p>
+          <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Planificador</p>
           <h3 className="font-bold flex items-center gap-2" style={{ color: 'var(--text)' }}><CalendarDays size={16} /> {plan.nombre}</h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -530,18 +530,18 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5 mb-3">
-        <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Generar:</span>
+        <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Generar:</span>
         {franjas.map(f => {
           const activa = seleccion.includes(f)
           return (
             <button key={f} onClick={() => alternarFranja(f)} disabled={ocupado !== null}
-              className="rounded-full px-2.5 py-1 text-[11px] font-medium"
+              className="rounded-full px-2.5 py-1 text-[13px] font-medium"
               style={{ background: activa ? 'var(--primary)' : 'transparent', color: activa ? 'var(--bg)' : 'var(--text-muted)', border: `1px solid ${activa ? 'var(--primary)' : 'var(--border)'}` }}>
               {f}
             </button>
           )
         })}
-        <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>· media mañana, merienda o peri-entreno solo si los marcas</span>
+        <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>· media mañana, merienda o peri-entreno solo si los marcas</span>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-xl p-3 mb-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
@@ -562,7 +562,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           </select>
           {guardandoComidasDia && <Loader2 size={13} className="animate-spin" style={{ color: 'var(--text-muted)' }} />}
         </label>
-        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           Si lo fijas, Generar semana usa estas franjas aunque el plan tenga comidas sueltas. 2 = Comida + Cena; 3 = Desayuno + Comida + Cena; 4 = añade Merienda; 5 = las cinco.
         </p>
       </div>
@@ -592,7 +592,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
       )}
 
       {vista > 1 && modo === 'resumen' && (
-        <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>
           {platosRepetidos > 0 ? <><span style={{ color: 'var(--warning)' }}>↻</span> {platosRepetidos} {platosRepetidos === 1 ? 'receta se repite' : 'recetas se repiten'} en estas semanas (en ámbar). </> : 'Sin recetas repetidas en estas semanas. '}Pasa el ratón sobre un plato para ver la comida y las veces.
         </p>
       )}
@@ -603,7 +603,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             <button onClick={() => setPortapapeles(null)}><X size={13} /></button>
           </div>
         ) : (
-          <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Arrastra un plato a otro hueco, día o semana para moverlo (con Alt, para copiarlo), o usa el icono de copiar y «pegar».{ocupado === 'mover' ? ` Trabajando…${progreso ? ` ${progreso}` : ''}` : ''}</p>
+          <p className="text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>Arrastra un plato a otro hueco, día o semana para moverlo (con Alt, para copiarlo), o usa el icono de copiar y «pegar».{ocupado === 'mover' ? ` Trabajando…${progreso ? ` ${progreso}` : ''}` : ''}</p>
         )
       )}
       {vista > 1 && (
@@ -664,7 +664,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
               <input autoFocus autoComplete="off" value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar receta…" className="input search-input w-full text-sm" style={{ paddingLeft: '2.25rem' }} />
             </div>
-            <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Ordenadas por cómo encajan con tus macros. Las cantidades se ajustan solas al elegir.</p>
+            <p className="text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>Ordenadas por cómo encajan con tus macros. Las cantidades se ajustan solas al elegir.</p>
             <div className="overflow-y-auto space-y-1.5 flex-1">
               {buscando ? <div className="py-6 flex justify-center"><Loader2 size={18} className="animate-spin" /></div> :
                 opciones.length === 0 ? <p className="text-sm py-6 text-center" style={{ color: 'var(--text-muted)' }}>Sin recetas para esta franja</p> :
@@ -678,7 +678,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
                         {o.contenido_estado && <Video size={12} style={{ color: o.contenido_estado === 'grabada' ? 'var(--success)' : 'var(--warning)' }} />}
                         {o.nombre}
                       </p>
-                      <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
                         {Math.round(o.kcal)} kcal · P {Math.round(o.proteinas)} g{o.tiempo_prep_min ? ` · ${o.tiempo_prep_min} min` : ''} (ración base)
                       </p>
                     </div>

@@ -902,7 +902,7 @@ export default function EditarDietaPage() {
               kcal={Number(plan?.kcal_objetivo ?? 0)}
               disabled={!plan?.kcal_objetivo || guardandoMacros}
             />
-            <div className="mt-2 flex flex-wrap gap-3 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+            <div className="mt-2 flex flex-wrap gap-3 text-[13px]" style={{ color: 'var(--text-muted)' }}>
               <span>
                 Aplicado hoy P {Math.round((totalDia.proteinas * 4 / Math.max(totalDia.calorias, 1)) * 100)}%
                 · C {Math.round((totalDia.carbohidratos * 4 / Math.max(totalDia.calorias, 1)) * 100)}%
@@ -951,7 +951,7 @@ export default function EditarDietaPage() {
                 )
               })}
             </div>
-            <p className="text-[10px] mt-3" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-[12px] mt-3" style={{ color: 'var(--text-muted)' }}>
               IDR adulto general (EFSA) · Solo alimentos con datos nutricionales completos
             </p>
           </CollapsibleModule>
@@ -980,15 +980,15 @@ export default function EditarDietaPage() {
           <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-5">
             <div className="grid grid-cols-3 gap-2 w-full xl:w-auto">
               <div className="rounded-2xl px-3 py-2" style={{ background: auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').bg, border: `1px solid ${auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').border}` }}>
-                <p className="text-[10px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Score</p>
+                <p className="text-[12px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Score</p>
                 <p className="text-2xl font-bold tabular-nums" style={{ color: auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').text }}>{scoreSemana}</p>
               </div>
               <div className="rounded-2xl px-3 py-2" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
-                <p className="text-[10px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Críticos</p>
+                <p className="text-[12px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Críticos</p>
                 <p className="text-2xl font-bold tabular-nums" style={{ color: '#EF4444' }}>{criticosSemana}</p>
               </div>
               <div className="rounded-2xl px-3 py-2" style={{ background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.20)' }}>
-                <p className="text-[10px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Avisos</p>
+                <p className="text-[12px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Avisos</p>
                 <p className="text-2xl font-bold tabular-nums" style={{ color: '#D97706' }}>{avisosSemana}</p>
               </div>
             </div>
@@ -1011,19 +1011,19 @@ export default function EditarDietaPage() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-xl p-2" style={{ background: 'var(--surface)' }}>
-                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Kcal</p>
+                  <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Kcal</p>
                   <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(totalDia.calorias)}</p>
                 </div>
                 <div className="rounded-xl p-2" style={{ background: 'var(--surface)' }}>
-                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Proteína</p>
+                  <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Proteína</p>
                   <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(totalDia.proteinas)}g</p>
                 </div>
                 <div className="rounded-xl p-2" style={{ background: 'var(--surface)' }}>
-                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Carbos</p>
+                  <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Carbos</p>
                   <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(totalDia.carbohidratos)}g</p>
                 </div>
                 <div className="rounded-xl p-2" style={{ background: 'var(--surface)' }}>
-                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Grasas</p>
+                  <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Grasas</p>
                   <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(totalDia.grasas)}g</p>
                 </div>
               </div>
@@ -1045,7 +1045,7 @@ export default function EditarDietaPage() {
                           <Icon size={15} className="mt-0.5 shrink-0" style={{ color: tone.text }} />
                           <div className="min-w-0">
                             <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>{issue.title}</p>
-                            <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{issue.scope} · {issue.detail}</p>
+                            <p className="text-[13px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{issue.scope} · {issue.detail}</p>
                           </div>
                         </div>
                       </div>
@@ -1091,9 +1091,9 @@ export default function EditarDietaPage() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold" style={{ color: activo ? 'var(--primary)' : 'var(--text)' }}>{DIA_ABR[dia]}</span>
-                    <span className="text-[10px] tabular-nums rounded-full px-1.5 py-0.5" style={{ color: tone.text, background: tone.bg }}>{score}</span>
+                    <span className="text-[12px] tabular-nums rounded-full px-1.5 py-0.5" style={{ color: tone.text, background: tone.bg }}>{score}</span>
                   </div>
-                  <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  <p className="mt-1 text-[13px]" style={{ color: 'var(--text-muted)' }}>
                     {comidasDelDia.length ? `${Math.round(macros.calorias)} kcal` : 'vacío'}
                   </p>
                 </button>
@@ -1111,7 +1111,7 @@ export default function EditarDietaPage() {
                   type="button"
                   onClick={() => copiarDiaADestino(dia)}
                   disabled={copiandoDia !== null || comidasDia.length === 0}
-                  className="text-[11px] font-semibold rounded-full px-2.5 py-1 border whitespace-nowrap disabled:opacity-50"
+                  className="text-[13px] font-semibold rounded-full px-2.5 py-1 border whitespace-nowrap disabled:opacity-50"
                   style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}
                   title={`Copiar ${diaActivo} a ${dia}`}
                 >
@@ -1166,7 +1166,7 @@ export default function EditarDietaPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <select
-                          className="text-[11px] font-semibold uppercase tracking-wide bg-transparent border-none outline-none cursor-pointer"
+                          className="text-[13px] font-semibold uppercase tracking-wide bg-transparent border-none outline-none cursor-pointer"
                           style={{ color: 'var(--text-muted)' }}
                           value={comida.nombre}
                           onChange={e => actualizarNombreComida(comida.id, e.target.value)}
@@ -1205,16 +1205,16 @@ export default function EditarDietaPage() {
                         return (
                           <div key={m.label} className="rounded-xl px-2.5 py-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-[10px] font-semibold" style={{ color: m.color }}>{m.label}</span>
-                              <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{st.pct || '—'}%</span>
+                              <span className="text-[12px] font-semibold" style={{ color: m.color }}>{m.label}</span>
+                              <span className="text-[12px] tabular-nums" style={{ color: 'var(--text-muted)' }}>{st.pct || '—'}%</span>
                             </div>
                             <p className="text-sm font-bold tabular-nums" style={{ color: 'var(--text)' }}>{Math.round(m.value)}{m.unit}</p>
-                            <p className="text-[9px] truncate" style={{ color: st.tone === 'ok' ? '#10B981' : st.tone === 'over' ? '#F59E0B' : 'var(--text-muted)' }}>{st.label}</p>
+                            <p className="text-[12px] truncate" style={{ color: st.tone === 'ok' ? '#10B981' : st.tone === 'over' ? '#F59E0B' : 'var(--text-muted)' }}>{st.label}</p>
                           </div>
                         )
                       })}
                     </div>
-                    <p className="text-[11px] mt-2" style={{ color: kcalDelta.tone === 'ok' ? '#10B981' : kcalDelta.tone === 'over' ? '#F59E0B' : 'var(--text-muted)' }}>
+                    <p className="text-[13px] mt-2" style={{ color: kcalDelta.tone === 'ok' ? '#10B981' : kcalDelta.tone === 'over' ? '#F59E0B' : 'var(--text-muted)' }}>
                       {comida.kcal_target ? `Objetivo comida: ${Math.round(comida.kcal_target)} kcal, ${kcalDelta.label}` : 'Sin objetivo específico por comida'}
                     </p>
                   </div>
@@ -1226,7 +1226,7 @@ export default function EditarDietaPage() {
                       <div className="flex items-center justify-between gap-3 mb-2">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Opciones del cliente</p>
-                          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{opcionesCliente.length}/3 visibles como equivalentes en el portal</p>
+                          <p className="text-[13px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{opcionesCliente.length}/3 visibles como equivalentes en el portal</p>
                         </div>
                         <div className="flex items-center gap-3">
                           <button
@@ -1256,7 +1256,7 @@ export default function EditarDietaPage() {
                         </div>
                       </div>
                       {alternativasStatus[comida.id] && (
-                        <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>
+                        <p className="text-[13px] mb-2" style={{ color: 'var(--text-muted)' }}>
                           {alternativasStatus[comida.id]}
                         </p>
                       )}
@@ -1279,7 +1279,7 @@ export default function EditarDietaPage() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="text-xs font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
-                                  <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)}g</p>
+                                  <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)}g</p>
                                 </div>
                               </div>
                               <div className="flex items-center justify-between gap-2 mt-2">
@@ -1291,7 +1291,7 @@ export default function EditarDietaPage() {
                                       : [...opcionesCliente, r.id]
                                     guardarAlternativasCliente(comida, next)
                                   }}
-                                  className="text-[10px] font-semibold"
+                                  className="text-[12px] font-semibold"
                                   style={{ color: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--text-muted)' }}
                                 >
                                   {opcionesCliente.includes(r.id) ? 'Asignada' : 'Asignar opción'}
@@ -1299,7 +1299,7 @@ export default function EditarDietaPage() {
                                 <div className="flex items-center gap-2">
                                   <Link
                                     href={`/recetas/${r.id}?returnTo=/dietas/${id}`}
-                                    className="text-[10px] font-semibold underline"
+                                    className="text-[12px] font-semibold underline"
                                     style={{ color: 'var(--text-secondary)' }}
                                   >
                                     ver
@@ -1319,7 +1319,7 @@ export default function EditarDietaPage() {
                                         aplicarRecetaAComida(comida.id, r.id, r.nombre)
                                       }
                                     }}
-                                    className="text-[10px] font-semibold underline"
+                                    className="text-[12px] font-semibold underline"
                                     style={{ color: aplicandoEstaReceta ? 'var(--text-muted)' : 'var(--text-secondary)', pointerEvents: aplicandoEstaReceta ? 'none' : 'auto' }}
                                   >
                                     {aplicandoEstaReceta ? 'aplicando' : 'principal'}
@@ -1372,7 +1372,7 @@ export default function EditarDietaPage() {
                                 }}
                               >
                                 <p className="text-xs font-semibold line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
-                                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                                   {Math.round(r.kcal)} kcal · P {Math.round(r.proteinas)}g · C {Math.round(r.carbohidratos)}g · G {Math.round(r.grasas)}g
                                 </p>
                                 <div className="mt-1 flex items-center gap-3">
@@ -1384,14 +1384,14 @@ export default function EditarDietaPage() {
                                         : [...opcionesCliente, r.id]
                                       guardarAlternativasCliente(comida, next)
                                     }}
-                                    className="text-[10px] font-semibold underline"
+                                    className="text-[12px] font-semibold underline"
                                     style={{ color: opcionesCliente.includes(r.id) ? 'var(--primary)' : 'var(--text-secondary)' }}
                                   >
                                     {opcionesCliente.includes(r.id) ? 'Quitar opción' : 'Asignar opción'}
                                   </button>
                                   <Link
                                     href={`/recetas/${r.id}?returnTo=/dietas/${id}`}
-                                    className="inline-flex text-[10px] font-semibold underline"
+                                    className="inline-flex text-[12px] font-semibold underline"
                                     style={{ color: 'var(--text-secondary)' }}
                                   >
                                     Revisar receta
