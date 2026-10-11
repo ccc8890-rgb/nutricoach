@@ -61,5 +61,11 @@ Verificado: `tsc` limpio, `npm run build` OK, auditoría de patrones sin problem
 Se cruzó cada `app/api/cliente/**/route.ts` con sus llamadores (componentes, páginas, otras rutas, scripts). Sin ningún llamador y borradas (≈ 700 líneas):
 `[codigo]/chat/leer` (lo usaba el `MensajeCoach` ya eliminado), `[codigo]/completar-sesion`, `[codigo]/dashboard` (lo usaba el portal antiguo), `[codigo]/entreno-estado`, `[codigo]/comidas/[comidaId]/alimentos` (+ `[itemId]`; editar alimentos de una comida desde el portal, ya sin pantalla) y `feedback-comida` (stub marcado «obsoleto»).
 Después se revisaron `micronutrientes` y `mis-platos`: `MisPlatos` está montado en la pestaña Recetas del portal activo (se queda) y `MicronutrientesPortal` lo usa el panel del coach (se queda). Solo era huérfana la ruta `[codigo]/micronutrientes` (borrada, y el componente ahora exige `clienteId`).
-Verificación: `tsc` limpio, `npm run build` OK, auditoría de patrones sin problemas. Tests: `test-portal-write-auth` (2 fallos) y `test-comidas-authorization` (34 fallos) **fallaban igual antes** de estos borrados (comprobado con `git stash`); no son consecuencia de esta limpieza y siguen pendientes de revisar aparte.
+Verificación: `tsc` limpio, `npm run build` OK, auditoría de patrones sin problemas. Tests: `test-portal-write-auth` (2 fallos) y `test-comidas-authorization` (34) fallaban ya antes de estos borrados; se revisaron después (ver «Tests de autorización arreglados»).
 **Volver atrás:** `git revert <sha del commit «chore: borra rutas API huérfanas…»>`.
+
+## Tests de autorización arreglados (11-10-2026)
+No eran fallos de seguridad: los simuladores de los tests se habían quedado atrás respecto al código real.
+1. **Guard con una sola consulta** (`lib/cliente/autorizar-escritura-plan.ts`, optimización de rendimiento anterior): ahora lee el cliente incrustado en el plan (`plan.cliente`). Los simuladores de `scripts/test-portal-write-auth.ts` y `scripts/test-comidas-authorization.ts` devolvían el plan sin ese campo, así que el guard denegaba siempre y fallaban todos los casos «propietario autorizado» y los que dependían de ellos (36 fallos).
+2. **Estados de adherencia** (Fase C): `registrar-comida` solo acepta `hecha`/`saltada`/`cambiada`; el test enviaba `completada` y recibía 400 en vez de llegar a la comprobación de comida ajena (2 fallos).
+Resultado: `test-portal-write-auth` 167/0 y `test-comidas-authorization` 110/0. Solo se tocaron los tests, ningún código de la app. Lección: al optimizar un guard, actualizar a la vez el simulador de sus tests.

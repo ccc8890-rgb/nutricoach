@@ -157,8 +157,10 @@ function makeQueryBuilder(state: MockState, table: string) {
   builder.single = async () => {
     if (table === 'planes_nutricion') {
       if (state.planError) return { data: null, error: state.planError }
+      // El guard real trae el cliente incrustado en la misma consulta del plan.
+      const cliente = state.clienteError ? null : state.cliente
       const data = state.plan && coincideFila(state.plan as unknown as Record<string, unknown>, filtros)
-        ? state.plan
+        ? { ...state.plan, cliente }
         : null
       return { data, error: null }
     }
@@ -707,7 +709,7 @@ async function run() {
     state.comida = { id: COMIDA_AJENA, plan_id: PLAN_AJENO_ID, dia_semana: 'Lunes' }
     const h = loadHandlers(state)
     const r = await h.registrarComidaPost(
-      makeRequest(state, { comida_id: COMIDA_AJENA, estado: 'completada' }),
+      makeRequest(state, { comida_id: COMIDA_AJENA, estado: 'hecha' }),
       ctx
     )
     check('registrar-comida comida ajena → 404', r.status === 404)
@@ -735,7 +737,7 @@ async function run() {
     state.comidaError = new Error('db down')
     const h = loadHandlers(state)
     const r = await h.registrarComidaPost(
-      makeRequest(state, { comida_id: COMIDA_PROPIA, estado: 'completada' }),
+      makeRequest(state, { comida_id: COMIDA_PROPIA, estado: 'hecha' }),
       ctx
     )
     check('registrar-comida error consulta comida → 404', r.status === 404)

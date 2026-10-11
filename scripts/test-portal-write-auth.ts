@@ -165,7 +165,10 @@ function makeQueryBuilder(state: MockState, table: string) {
     if (table === 'planes_nutricion') {
       if (state.planThrow) throw state.planThrow
       if (state.planError) return { data: null, error: state.planError }
-      const data = state.plan && coincideFila(state.plan, filtros) ? state.plan : null
+      if (state.clienteThrow) throw state.clienteThrow
+      // El guard real trae el cliente incrustado en la misma consulta del plan.
+      const cliente = state.clienteError ? null : state.cliente
+      const data = state.plan && coincideFila(state.plan, filtros) ? { ...state.plan, cliente } : null
       return { data, error: null }
     }
     if (table === 'clientes') {
