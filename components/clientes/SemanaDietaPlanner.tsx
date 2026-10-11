@@ -5,6 +5,7 @@ import DetalleDiaDieta from './DetalleDiaDieta'
 import { DndContext, DragOverlay, PointerSensor, pointerWithin, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
 import { Activity, BadgeCheck, CalendarDays, ClipboardPaste, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
+import { GuardarPlantillaModal, ListaPlantillasModal, type PlantillaSemana, type SemanaPlantilla } from './PlantillasSemanaDieta'
 
 type Receta = { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null }
 type Comida = { id: string; nombre: string; recurrente: boolean; receta: Receta | null; kcal: number; p: number; c: number; g: number }
@@ -83,6 +84,8 @@ function SemanaResumen({ dias, kcalObjetivo, objetivos, semana, diaSel, onDia, r
   )
 }
 
+const MAX_SEMANAS = 8 // igual que MAX_SEMANAS de lib/nutricion/semanas-futuras (ese módulo es de servidor)
+const contarPlatosPl = (semanas: SemanaPlantilla[]) => semanas.reduce((n, s) => n + s.dias.reduce((m, d) => m + d.comidas.length, 0), 0)
 type Origen = { comida: Comida; dia: string; semana: number | null }
 type Portapapeles = { nombre: string; items: { franja: string; receta_id: string }[] }
 const idHueco = (semana: number | null, dia: string, franja: string) => `${semana ?? 0}|${dia}|${franja}`
@@ -215,6 +218,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
   const [version, setVersion] = useState(0)
   const [portapapeles, setPortapapeles] = useState<Portapapeles | null>(null)
+  const [modalPlantilla, setModalPlantilla] = useState<'guardar' | 'lista' | null>(null)
+  const [progreso, setProgreso] = useState<string | null>(null)
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const altRef = useRef(false)
   const sensores = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
@@ -410,6 +415,33 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     return true
   }
 
+  // Lo que se ve ahora (1, 2 o 4 semanas) convertido en plantilla: solo receta, día y franja
+  const semanasVisibles: SemanaPlantilla[] = [dias, ...futuras.slice(0, Math.max(vista - 1, 0)).map(f => f.dias)].map(sem => ({
+    dias: sem.map(d => ({ dia: d.dia, comidas: d.comidas.filter(c => c.receta).map(c => ({ franja: c.nombre, receta_id: c.receta!.id, nombre: c.receta!.nombre })) })),
+  }))
+
+  async function aplicarPlantilla(pl: PlantillaSemana, desde: 0 | 1) {
+    const aplicables = pl.semanas.slice(0, MAX_SEMANAS + 1 - desde)
+    const total = contarPlatosPl(aplicables)
+    const hasta = desde + aplicables.length - 1
+    if (!confirm(`Aplicar «${pl.nombre}» (${total} platos) a ${desde === 0 ? 'la semana en curso' : `la semana +${desde}`}${hasta > desde ? ` y siguientes hasta la +${hasta}` : ''}?\nSustituye los platos de las franjas que trae la plantilla; las cantidades se ajustan al objetivo de este cliente.${desde === 0 ? '\nLa semana en curso es la que ve el cliente.' : ''}`)) return
+    setModalPlantilla(null); setOcupado('mover'); setError(null)
+    let hecho = 0; let fallos = 0
+    for (let i = 0; i < aplicables.length; i++) {
+      const semana = desde + i === 0 ? null : desde + i
+      for (const d of aplicables[i].dias) {
+        for (const c of d.comidas) {
+          setProgreso(`${hecho + fallos}/${total}`)
+          if (await colocar([{ franja: c.franja, receta_id: c.receta_id }], d.dia, semana)) hecho++; else fallos++
+        }
+      }
+    }
+    setProgreso(null); setOcupado(null)
+    if (fallos) setError(`Se aplicaron ${hecho} de ${total} platos; ${fallos} no se pudieron colocar (¿receta borrada?).`)
+    else setResultado({ ok: true, asignadas: hecho, repetidas: 0, sinCubrir: [], errores: [], mensaje: `Plantilla aplicada: ${hecho} platos.` })
+    await recargar()
+  }
+
   function copiar(c: Comida) {
     if (c.receta) setPortapapeles({ nombre: c.receta.nombre, items: [{ franja: c.nombre, receta_id: c.receta.id }] })
   }
@@ -474,6 +506,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
               ))}
             </div>
           )}
+          <button onClick={() => setModalPlantilla('lista')} title="Aplicar una plantilla guardada" className="rounded-xl px-3 py-2 text-xs font-medium" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>Plantillas</button>
+          <button onClick={() => setModalPlantilla('guardar')} disabled={contarPlatosPl(semanasVisibles) === 0} title={`Guardar ${vista === 1 ? 'esta semana' : vista === 2 ? 'estas 2 semanas' : 'estas 4 semanas'} como plantilla`} className="rounded-xl px-3 py-2 text-xs font-medium disabled:opacity-50" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>Guardar plantilla</button>
           {accionExtra}
           <button onClick={() => setAmpliado(a => !a)} title={ampliado ? 'Volver al tamaño normal' : 'Ver en pantalla completa'}
             className="rounded-xl p-2" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
@@ -569,7 +603,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             <button onClick={() => setPortapapeles(null)}><X size={13} /></button>
           </div>
         ) : (
-          <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Arrastra un plato a otro hueco, día o semana para moverlo (con Alt, para copiarlo), o usa el icono de copiar y «pegar».{ocupado === 'mover' ? ' Moviendo…' : ''}</p>
+          <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Arrastra un plato a otro hueco, día o semana para moverlo (con Alt, para copiarlo), o usa el icono de copiar y «pegar».{ocupado === 'mover' ? ` Trabajando…${progreso ? ` ${progreso}` : ''}` : ''}</p>
         )
       )}
       {vista > 1 && (
@@ -655,6 +689,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           </div>
         </div>
       )}
+      {modalPlantilla === 'guardar' && <GuardarPlantillaModal semanas={semanasVisibles} onClose={() => setModalPlantilla(null)} onGuardada={() => { setModalPlantilla(null); setResultado({ ok: true, asignadas: 0, repetidas: 0, sinCubrir: [], errores: [], mensaje: 'Plantilla guardada.' }) }} />}
+      {modalPlantilla === 'lista' && <ListaPlantillasModal onClose={() => setModalPlantilla(null)} onAplicar={aplicarPlantilla} />}
       <DragOverlay dropAnimation={null}>
         {arrastrando && <div className="rounded-lg px-2.5 py-1.5 text-xs font-medium shadow-lg max-w-[220px]" style={{ background: 'var(--surface)', border: '1px solid var(--primary)', color: 'var(--text)' }}>{arrastrando}</div>}
       </DragOverlay>
