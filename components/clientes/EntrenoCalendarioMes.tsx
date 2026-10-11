@@ -291,9 +291,12 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
 
   function cambiarSemana(delta: number) {
     const nuevo = sumarDias(semanaLunes, delta * 7)
-    setDias(null)
+    const y = Number(nuevo.slice(0, 4))
+    const m = Number(nuevo.slice(5, 7))
+    // Los datos cubren las semanas completas del mes: solo se recargan si la semana cae en otro mes
+    // (si no, no cambia year/month, nada dispara la carga y la pantalla se quedaría esperando).
+    if (y !== year || m !== month) { setDias(null); setYear(y); setMonth(m) }
     setSemanaLunes(nuevo)
-    setYear(Number(nuevo.slice(0, 4))); setMonth(Number(nuevo.slice(5, 7)))
   }
 
   function resumenDe(sesionId: string): string[] {
