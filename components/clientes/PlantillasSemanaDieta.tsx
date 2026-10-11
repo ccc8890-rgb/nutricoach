@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Loader2, Trash2, X } from 'lucide-react'
 
 export type SemanaPlantilla = { dias: { dia: string; comidas: { franja: string; receta_id: string; nombre: string }[] }[] }
-export type PlantillaSemana = { id: string; nombre: string; descripcion: string | null; etiquetas: string[]; semanas: SemanaPlantilla[]; created_at: string }
+export type PlantillaSemana = { id: string; nombre: string; descripcion: string | null; etiquetas: string[]; semanas: SemanaPlantilla[]; created_at: string; origen?: 'coach' | 'base' }
 
 export const contarPlatos = (semanas: SemanaPlantilla[]) => semanas.reduce((n, s) => n + s.dias.reduce((m, d) => m + d.comidas.length, 0), 0)
 const textoSemanas = (n: number) => (n === 1 ? '1 semana' : `${n} semanas`)
@@ -93,7 +93,7 @@ export function ListaPlantillasModal({ onClose, onAplicar }: { onClose: () => vo
             <div key={p.id} className="rounded-xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{p.nombre}</p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{p.nombre}{p.origen === 'base' && <span className="ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium align-middle" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>base</span>}</p>
                   <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{textoSemanas(p.semanas.length)} · {contarPlatos(p.semanas)} platos · {new Date(p.created_at).toLocaleDateString('es-ES')}</p>
                   {p.etiquetas.length > 0 && <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.etiquetas.map(e => `#${e}`).join(' ')}</p>}
                   {p.descripcion && <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.descripcion}</p>}

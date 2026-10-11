@@ -110,10 +110,11 @@ export default function ClientesPage() {
       return { clientes: [], respuestasNoLeidas: 0 }
     }
 
+    // «Plantillas base» es un cliente interno (lienzo del generador de plantillas): no se lista
     const mapped: ClienteRow[] = (data ?? []).map(c => ({
       ...c,
       profile: Array.isArray(c.profile) ? c.profile[0] : c.profile,
-    }))
+    })).filter(c => c.profile?.email !== 'plantillas-base@nutricoach-test.dev')
 
     if (mapped.length > 0) {
       const ids = mapped.map(c => c.id)

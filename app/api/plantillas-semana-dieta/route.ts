@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   const r = await autorizarCoach(request)
   if ('error' in r) return r.error
   const { data, error } = await r.admin.from('plantillas_semana_dieta')
-    .select('id, nombre, descripcion, etiquetas, semanas, created_at').eq('coach_id', r.userId).order('created_at', { ascending: false })
+    .select('id, nombre, descripcion, etiquetas, semanas, created_at, origen, generada_at').eq('coach_id', r.userId).order('created_at', { ascending: false })
   if (error) return NextResponse.json({ error: 'No se pudieron cargar las plantillas' }, { status: 500 })
   return NextResponse.json({ plantillas: data ?? [] })
 }
