@@ -248,21 +248,19 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
   // En 2 semanas / mes el detalle del día va plegado para ver varias semanas a la vez; se despliega a petición
   const [ajustesGen, setAjustesGen] = useState(false)
-  // En 2 semanas / mes cada semana arranca plegada y se abre o cierra a voluntad; en 1 semana siempre está abierta
-  const [semanasAbiertas, setSemanasAbiertas] = useState<Record<string, boolean>>({})
-  const semanaAbierta = (semana: number | null) => vista === 1 || !!semanasAbiertas[String(semana ?? 0)]
-  const alternarSemana = (semana: number | null) => setSemanasAbiertas(p => ({ ...p, [String(semana ?? 0)]: !p[String(semana ?? 0)] }))
+  // Las semanas arrancan desplegadas; en 2 semanas / mes se pueden plegar una a una (solo queda su título)
+  const [semanasPlegadas, setSemanasPlegadas] = useState<Record<string, boolean>>({})
+  const semanaAbierta = (semana: number | null) => vista === 1 || !semanasPlegadas[String(semana ?? 0)]
+  const alternarSemana = (semana: number | null) => setSemanasPlegadas(p => ({ ...p, [String(semana ?? 0)]: !p[String(semana ?? 0)] }))
   // Cada semana recuerda su propio día elegido y si su detalle está desplegado, así se pueden comparar varias a la vez
   const [detalles, setDetalles] = useState<Record<string, { dia: string; abierto: boolean }>>({})
   const seleccionarDia = (dia: string, semana: number | null) => {
     setDiaSel({ dia, semana })
     setDetalles(p => ({ ...p, [String(semana ?? 0)]: { dia, abierto: p[String(semana ?? 0)]?.dia === dia && p[String(semana ?? 0)]?.abierto } }))
   }
-  const alternarDetalle = (semana: number | null, abierto: boolean) => setDetalles(p => {
-    const k = String(semana ?? 0)
-    const dia = p[k]?.dia ?? (diaSel && diaSel.semana === semana ? diaSel.dia : null)
-    return dia ? { ...p, [k]: { dia, abierto } } : p
-  })
+  // Día que muestra el detalle de una semana si aún no se ha elegido ninguno: hoy en la semana en curso, el lunes en las planificadas
+  const diaDetalle = (semana: number | null) => detalles[String(semana ?? 0)]?.dia ?? (diaSel && diaSel.semana === semana ? diaSel.dia : semana == null ? DIAS_ORDEN[(new Date().getDay() + 6) % 7] : DIAS_ORDEN[0])
+  const alternarDetalle = (semana: number | null, abierto: boolean) => setDetalles(p => ({ ...p, [String(semana ?? 0)]: { dia: diaDetalle(semana), abierto } }))
   const [version, setVersion] = useState(0)
   const [portapapeles, setPortapapeles] = useState<Portapapeles | null>(null)
   const [modalPlantilla, setModalPlantilla] = useState<'guardar' | 'lista' | null>(null)
@@ -440,8 +438,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   // El detalle del día aparece justo debajo de la semana a la que pertenece el día seleccionado
   const detalle = (semana: number | null) => {
     if (!semanaAbierta(semana)) return null
-    const sel = detalles[String(semana ?? 0)] ?? (diaSel && diaSel.semana === semana ? { dia: diaSel.dia, abierto: false } : null)
-    if (!sel) return null
+    const sel = { dia: diaDetalle(semana), abierto: !!detalles[String(semana ?? 0)]?.abierto }
     const abierto = vista === 1 || sel.abierto
     return (
       <>
@@ -556,7 +553,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             {VISTAS.map(v => (
-              <button key={v.semanas} onClick={() => { irAFuturas.current = v.semanas > vista; setVista(v.semanas); setModo('platos'); setSemanasAbiertas({}) }} className="px-2.5 py-2 text-xs font-medium"
+              <button key={v.semanas} onClick={() => { irAFuturas.current = v.semanas > vista; setVista(v.semanas); setModo('platos'); setSemanasPlegadas({}) }} className="px-2.5 py-2 text-xs font-medium"
                 style={{ background: vista === v.semanas ? 'var(--primary)' : 'transparent', color: vista === v.semanas ? 'var(--bg)' : 'var(--text-muted)' }}>
                 {v.texto}
               </button>
