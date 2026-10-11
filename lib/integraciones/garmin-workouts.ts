@@ -6,6 +6,8 @@ import { validarPasos } from '@/lib/entrenos/pasos'
 import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
 import { proximaFechaDia } from '@/lib/entrenos/proxima-fecha'
 import { huellaPasos } from '@/lib/entrenos/garmin-auto'
+import { zonasFcDesde } from '@/lib/entrenos/zonas-fc'
+import { leerUmbrales } from '@/lib/rendimiento/garmin-entrenos'
 
 export class ErrorGarmin extends Error {
   constructor(public mensaje: string, public status = 400) {
@@ -46,6 +48,7 @@ export async function enviarSesionAGarmin(
 
   const { data: perfil } = await db.from('perfil_entreno_cliente').select('vdot').eq('cliente_id', clienteId).maybeSingle()
   const ritmos = perfil?.vdot ? ritmosDesdeVdot(Number(perfil.vdot)) : null
+  const fc = zonasFcDesde(await leerUmbrales(db, clienteId))
 
   const { data: integ } = await db
     .from('integraciones_cliente')
@@ -81,7 +84,7 @@ export async function enviarSesionAGarmin(
   }
 
   const api = () => (gc as unknown as { url: { GC_API: string } }).url.GC_API // `url` es privado en los tipos de la librería, pero existe en runtime.
-  const huella = huellaPasos(sesion.pasos, perfil?.vdot ? Number(perfil.vdot) : null)
+  const huella = huellaPasos(sesion.pasos, perfil?.vdot ? Number(perfil.vdot) : null, fc?.E?.max ?? null)
   const programar = (workoutId: string, fecha: string) => gc.client.post(`${api()}/workout-service/schedule/${workoutId}`, { date: fecha })
   const borrarAnterior = async () => {
     if (!sesion.garmin_workout_id) return
@@ -97,7 +100,7 @@ export async function enviarSesionAGarmin(
     } catch { /* no crítico */ }
   }
   const crear = async (): Promise<string> => {
-    const payload = pasosAGarmin(sesion.nombre, validacion.pasos, ritmos, sesion.notas ?? undefined)
+    const payload = pasosAGarmin(sesion.nombre, validacion.pasos, ritmos, sesion.notas ?? undefined, fc)
     try {
       const creado = await gc.addWorkout(payload as never)
       return String((creado as unknown as { workoutId: number | string }).workoutId)

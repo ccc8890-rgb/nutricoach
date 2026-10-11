@@ -71,3 +71,16 @@ assert.equal(manual[1].targetValueOne, 150)
 assert.equal(manual[1].targetValueTwo, 160)
 
 console.log('garmin-workouts-formato.test.ts OK')
+
+// Con pulso conocido, la zona suave (E) va por techo de pulso y el resto sigue por ritmo
+import { zonasFcDesde } from '../lib/entrenos/zonas-fc'
+const fc = zonasFcDesde({ fcUmbral: 177, fcMax: 195 })!
+assert.equal(fc.E!.max, Math.round(Math.min(177 * 0.9, 195 * 0.79))) // 154 (Daniels, más estricto que 159)
+assert.ok(fc.E!.min < fc.E!.max && fc.T!.min < fc.T!.max)
+assert.equal(fc.R, undefined)
+const conFc = pasosAGarmin('x', pasos, ritmos, undefined, fc).workoutSegments[0].workoutSteps as any[]
+assert.equal(conFc[0].targetType.workoutTargetTypeKey, 'heart.rate.zone')
+assert.equal(conFc[0].targetValueTwo, fc.E!.max)
+assert.equal(conFc[1].workoutSteps[0].targetType.workoutTargetTypeKey, 'pace.zone') // I sigue por ritmo
+assert.equal(zonasFcDesde({ fcUmbral: null, fcMax: null }), null)
+console.log('garmin-workouts-formato fc OK')

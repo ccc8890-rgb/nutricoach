@@ -1,6 +1,7 @@
 // lib/integraciones/garmin-workouts-formato.ts
 import { ritmoDelPaso, type Paso, type PasoSimple } from '@/lib/entrenos/pasos'
 import type { Ritmos } from '@/lib/entrenos/ritmos'
+import type { ZonasFc } from '@/lib/entrenos/zonas-fc'
 
 const SPORT_RUNNING = { sportTypeId: 1, sportTypeKey: 'running' }
 
@@ -59,7 +60,7 @@ export interface GarminWorkoutPayload {
   }>
 }
 
-function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null): GarminStep {
+function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: ZonasFc | null): GarminStep {
   const d = p.duracion
   const paso: GarminStep = {
     type: 'ExecutableStepDTO',
@@ -80,6 +81,11 @@ function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null): Gar
     paso.targetType = { ...TARGET.ritmo }
     paso.targetValueOne = 1000 / o.max_seg_km // más lento = menor velocidad
     paso.targetValueTwo = 1000 / o.min_seg_km
+  } else if (o?.tipo === 'zona' && o.zona === 'E' && fc?.E) {
+    // Suave: manda el pulso (techo), no el ritmo; con calor, fatiga o cuestas el ritmo engaña.
+    paso.targetType = { ...TARGET.fc }
+    paso.targetValueOne = fc.E.min
+    paso.targetValueTwo = fc.E.max
   } else if (o?.tipo === 'zona') {
     const ritmo = ritmoDelPaso(p, ritmos)
     if (ritmo !== null) {
@@ -96,12 +102,13 @@ export function pasosAGarmin(
   pasos: Paso[],
   ritmos: Ritmos | null,
   descripcion?: string,
+  fc: ZonasFc | null = null,
 ): GarminWorkoutPayload {
   let orden = 0
   const workoutSteps: Array<GarminStep | GarminRepeat> = pasos.map(p => {
     if (p.tipo === 'repetir') {
       const grupoOrden = ++orden
-      const hijos = p.pasos.map(q => convertirPaso(q, ++orden, ritmos))
+      const hijos = p.pasos.map(q => convertirPaso(q, ++orden, ritmos, fc))
       return {
         type: 'RepeatGroupDTO',
         stepOrder: grupoOrden,
@@ -113,7 +120,7 @@ export function pasosAGarmin(
         workoutSteps: hijos,
       } satisfies GarminRepeat
     }
-    return convertirPaso(p, ++orden, ritmos)
+    return convertirPaso(p, ++orden, ritmos, fc)
   })
 
   return {

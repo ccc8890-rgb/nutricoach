@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
+import { zonasFcDesde } from '@/lib/entrenos/zonas-fc'
+import { leerUmbrales } from '@/lib/rendimiento/garmin-entrenos'
 
 export async function GET(
   request: NextRequest,
@@ -59,6 +61,7 @@ export async function GET(
   const { data: perfilEntreno } = await admin
     .from('perfil_entreno_cliente').select('vdot').eq('cliente_id', clienteId).maybeSingle()
   const ritmos = perfilEntreno?.vdot ? ritmosDesdeVdot(Number(perfilEntreno.vdot)) : null
+  const fc = zonasFcDesde(await leerUmbrales(admin, clienteId))
 
   // Get exercises with full join
   const { data: ejercicios } = await admin
@@ -82,6 +85,7 @@ export async function GET(
       ejercicios: ejercicios ?? [],
       pasos: sesion.pasos ?? null,
       ritmos,
+      fc,
       garmin: { workoutId: sesion.garmin_workout_id ?? null, fecha: sesion.garmin_programado_fecha ?? null },
     },
   })

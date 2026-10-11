@@ -4,22 +4,25 @@ import { useMemo, useState } from 'react'
 import { Watch } from '@phosphor-icons/react'
 import { validarPasos, resumenSesion, lineaPaso, zonasUsadas, ZONAS_RITMO, type PasoSimple } from '@/lib/entrenos/pasos'
 import { formatearRitmo, type Ritmos } from '@/lib/entrenos/ritmos'
+import type { ZonasFc } from '@/lib/entrenos/zonas-fc'
 
 export interface ExtrasSesion {
   pasos: unknown
   ritmos: Ritmos | null
+  fc?: ZonasFc | null
   garmin: { workoutId: string | null; fecha: string | null }
 }
 
-export function extrasDeRespuesta(sesion: { pasos?: unknown; ritmos?: Ritmos | null; garmin?: ExtrasSesion['garmin'] } | undefined): ExtrasSesion | null {
+export function extrasDeRespuesta(sesion: { pasos?: unknown; ritmos?: Ritmos | null; fc?: ZonasFc | null; garmin?: ExtrasSesion['garmin'] } | undefined): ExtrasSesion | null {
   if (!sesion?.pasos) return null
-  return { pasos: sesion.pasos, ritmos: sesion.ritmos ?? null, garmin: sesion.garmin ?? { workoutId: null, fecha: null } }
+  return { pasos: sesion.pasos, ritmos: sesion.ritmos ?? null, fc: sesion.fc ?? null, garmin: sesion.garmin ?? { workoutId: null, fecha: null } }
 }
 
 interface Props {
   sesionId: string
   pasos: unknown
   ritmos: Ritmos | null
+  fc?: ZonasFc | null
   garmin: { workoutId: string | null; fecha: string | null }
 }
 
@@ -28,7 +31,7 @@ function fechaLegible(iso: string): string {
   return `${d}-${m}-${y}`
 }
 
-export default function PasosSesion({ sesionId, pasos, ritmos, garmin }: Props) {
+export default function PasosSesion({ sesionId, pasos, ritmos, fc, garmin }: Props) {
   const valido = useMemo(() => validarPasos(pasos), [pasos])
   const [enviando, setEnviando] = useState(false)
   const [estado, setEstado] = useState(garmin)
@@ -106,7 +109,11 @@ export default function PasosSesion({ sesionId, pasos, ritmos, garmin }: Props) 
       {zonas.length > 0 && (
         <ul className="mt-4 pt-3 space-y-0.5 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>
           {zonas.map(z => (
-            <li key={z}><span className="font-semibold">{ZONAS_RITMO[z].nombre}</span>: {ZONAS_RITMO[z].uso}</li>
+            <li key={z}>
+              <span className="font-semibold">{ZONAS_RITMO[z].nombre}</span>
+              {fc?.[z] ? ` · ${z === 'E' ? 'techo ' + fc[z]!.max : `${fc[z]!.min}–${fc[z]!.max}`} ppm` : ''}
+              {` · RPE ${ZONAS_RITMO[z].rpe}`}: {ZONAS_RITMO[z].uso}
+            </li>
           ))}
         </ul>
       )}

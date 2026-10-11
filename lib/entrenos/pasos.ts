@@ -105,12 +105,12 @@ function textoDuracion(d: Duracion): string {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
-export const ZONAS_RITMO: Record<ZonaRitmo, { nombre: string; uso: string }> = {
-  E: { nombre: 'suave', uso: 'rodajes y tirada larga; puedes hablar sin problema' },
-  M: { nombre: 'maratón', uso: 'ritmo de carrera de maratón' },
-  T: { nombre: 'umbral', uso: 'tempo: cómodamente duro, sin llegar a ahogarte' },
-  I: { nombre: 'intervalos', uso: 'series de 3-5 min, esfuerzo muy fuerte' },
-  R: { nombre: 'repeticiones', uso: 'series cortas y rápidas, con recuperación larga' },
+export const ZONAS_RITMO: Record<ZonaRitmo, { nombre: string; rpe: string; uso: string }> = {
+  E: { rpe: '2-3', nombre: 'suave', uso: 'rodajes y tirada larga; manda el pulso, el ritmo es orientativo' },
+  M: { rpe: '5-6', nombre: 'maratón', uso: 'ritmo de carrera de maratón' },
+  T: { rpe: '7', nombre: 'umbral', uso: 'tempo: cómodamente duro, sin llegar a ahogarte' },
+  I: { rpe: '8-9', nombre: 'intervalos', uso: 'series de 3-5 min, esfuerzo muy fuerte' },
+  R: { rpe: '9', nombre: 'repeticiones', uso: 'series cortas y rápidas, con recuperación larga' },
 }
 
 /** Zonas de ritmo que usa la sesión, en orden de intensidad. */

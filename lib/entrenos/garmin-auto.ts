@@ -2,9 +2,11 @@ import { createHash } from 'node:crypto'
 import { proximaFechaDia } from './proxima-fecha'
 import { lunesDe, sumarDias } from './calendario-ajustes'
 
-/** Huella de lo que se envía a Garmin: los pasos y el VDOT (cambian los ritmos). */
-export function huellaPasos(pasos: unknown, vdot: number | null): string {
-  return createHash('sha256').update(JSON.stringify({ pasos, vdot })).digest('hex').slice(0, 16)
+/** Huella de lo que se envía a Garmin: los pasos, el VDOT (cambian los ritmos) y el techo de pulso suave. */
+export function huellaPasos(pasos: unknown, vdot: number | null, techoFcE: number | null = null): string {
+  const base = { pasos, vdot }
+  // Sin pulso conocido la huella es la de siempre: no reenvía lo ya programado.
+  return createHash('sha256').update(JSON.stringify(techoFcE ? { ...base, techoFcE } : base)).digest('hex').slice(0, 16)
 }
 
 export interface EstadoGarminSesion {

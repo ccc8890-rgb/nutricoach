@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { registrarCron } from '@/lib/sistema/registrar-cron'
 import { enviarSesionAGarmin, ErrorGarmin } from '@/lib/integraciones/garmin-workouts'
+import { zonasFcDesde } from '@/lib/entrenos/zonas-fc'
+import { leerUmbrales } from '@/lib/rendimiento/garmin-entrenos'
 import { finHorizonteEnvio, huellaPasos, planearEnvioGarmin } from '@/lib/entrenos/garmin-auto'
 import { ocurrenciasDelDia, sumarDias, type Ajuste } from '@/lib/entrenos/calendario-ajustes'
 import { plantillaActivaEn } from '@/lib/entrenos/ventana-plan'
@@ -45,6 +47,7 @@ export async function GET(req: NextRequest) {
 
     const { data: perfil } = await db.from('perfil_entreno_cliente').select('vdot').eq('cliente_id', clienteId).maybeSingle()
     const vdot = perfil?.vdot ? Number(perfil.vdot) : null
+    const techoFcE = zonasFcDesde(await leerUmbrales(db, clienteId))?.E?.max ?? null
 
     const { data: sesiones } = await db
       .from('sesiones_entrenamiento')
@@ -71,7 +74,7 @@ export async function GET(req: NextRequest) {
       const activa = plan ? plantillaActivaEn(plan.created_at, plan.duracion_semanas as number | null) : () => true
       const delPlan = (sesiones ?? []).filter(x => x.plan_id === s.plan_id)
       const deseadas = dias.filter(f => ocurrenciasDelDia(f, delPlan, ajustes, activa(f)).some(o => o.sesion.id === s.id))
-      const decision = planearEnvioGarmin({ ...s, garmin_fechas: Array.isArray(s.garmin_fechas) ? s.garmin_fechas : [] }, huellaPasos(s.pasos, vdot), deseadas, hoy)
+      const decision = planearEnvioGarmin({ ...s, garmin_fechas: Array.isArray(s.garmin_fechas) ? s.garmin_fechas : [] }, huellaPasos(s.pasos, vdot, techoFcE), deseadas, hoy)
       if (decision.accion === 'nada') { resumen.al_dia++; continue }
       try {
         await enviarSesionAGarmin(db, s.id, undefined, { modo: decision.accion, fechas: decision.accion === 'borrar' ? [] : decision.fechas })
