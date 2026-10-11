@@ -53,7 +53,6 @@ function TabSkeleton() {
   return <div className="animate-pulse rounded-2xl h-48 w-full" style={{ background: 'var(--surface)' }} />
 }
 
-type NotaCoachRow = { id: string; cliente_id: string; mensaje: string; created_at: string }
 type Tab = 'resumen' | 'nutricion' | 'entrenamiento' | 'seguimiento' | 'comunicacion' | 'perfil'
 const TABS_VALIDAS: readonly Tab[] = ['resumen', 'nutricion', 'entrenamiento', 'seguimiento', 'comunicacion', 'perfil']
 type SubTabEntreno = 'plan' | 'calendario' | 'rendimiento' | 'historial' | 'perfil-atleta' | 'competiciones'
@@ -513,9 +512,6 @@ export default function ClienteDetallePage() {
   const [entrenos, setEntrenos] = useState<PlanEntrenamiento[]>([])
   const [seguimiento, setSeguimiento] = useState<SeguimientoPeso[]>([])
   const [checkins, setCheckins] = useState<CheckIn[]>([])
-  const [notasCoach, setNotasCoach] = useState<NotaCoachRow[]>([])
-  const [nuevaNota, setNuevaNota] = useState('')
-  const [guardandoNota, setGuardandoNota] = useState(false)
   const [respuestaCheckin, setRespuestaCheckin] = useState<Record<string, string>>({})
   const [guardandoRespuesta, setGuardandoRespuesta] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -577,13 +573,12 @@ export default function ClienteDetallePage() {
   }, [id])
 
   async function loadData() {
-    const [clienteRes, dietasRes, entrenosRes, seguRes, checkinsRes, notasRes] = await Promise.all([
+    const [clienteRes, dietasRes, entrenosRes, seguRes, checkinsRes] = await Promise.all([
       supabase.from('clientes').select('*, profile:profiles!profile_id(nombre, apellidos, email, telefono)').eq('id', id).single(),
       supabase.from('planes_nutricion').select('*').eq('cliente_id', id).order('created_at', { ascending: false }),
       supabase.from('planes_entrenamiento').select('*').eq('cliente_id', id).order('created_at', { ascending: false }),
       supabase.from('seguimiento_peso').select('*').eq('cliente_id', id).order('fecha', { ascending: false }).limit(10),
       supabase.from('checkins').select('*').eq('cliente_id', id).order('fecha', { ascending: false }).limit(10),
-      supabase.from('notas_coach').select('*').eq('cliente_id', id).order('created_at', { ascending: false }).limit(20),
     ])
     setCliente(clienteRes.data)
     setVerVideoRecetas(!!(clienteRes.data as Record<string, unknown> | null)?.ver_video_recetas)
@@ -598,7 +593,6 @@ export default function ClienteDetallePage() {
     setEntrenos(entrenosRes.data ?? [])
     setSeguimiento(seguRes.data ?? [])
     setCheckins(checkinsRes.data ?? [])
-    setNotasCoach(notasRes.data ?? [])
     setLoading(false)
   }
 
@@ -692,7 +686,7 @@ export default function ClienteDetallePage() {
     { key: 'nutricion', label: 'Nutrición', icon: UtensilsCrossed, badge: dietas.length },
     { key: 'entrenamiento', label: 'Entrenamiento', icon: Dumbbell, badge: entrenos.length },
     { key: 'seguimiento', label: 'Seguimiento', icon: ClipboardCheck, badge: checkins.length },
-    { key: 'comunicacion', label: 'Comunicación', icon: MessageCircle, badge: noLeidosChat || notasCoach.length },
+    { key: 'comunicacion', label: 'Comunicación', icon: MessageCircle, badge: noLeidosChat },
     { key: 'perfil', label: 'Perfil', icon: PersonStanding, badge: alertasClinicas },
     { key: 'resumen', label: 'Resumen', icon: Info },
   ]
@@ -1172,43 +1166,10 @@ export default function ClienteDetallePage() {
           </div>
 
         ) : tabActiva === 'comunicacion' ? (
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <WorkCard title="Chat con cliente" kicker="Conversación directa" icon={MessageCircle}>
               <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <ChatPanel clienteId={id as string} pollingInterval={30000} esCoach={true} />
-              </div>
-            </WorkCard>
-
-            <WorkCard title="Notas internas" kicker="Memoria del coach" icon={MessageSquareText}>
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <input className="input flex-1 min-w-0" placeholder="Escribe una nota privada…" value={nuevaNota} onChange={e => setNuevaNota(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter' && nuevaNota.trim()) document.getElementById('btn-nota')?.click() }} />
-                  <button id="btn-nota" className="btn-primary btn-sm flex-shrink-0" disabled={!nuevaNota.trim() || guardandoNota}
-                    onClick={async () => {
-                      if (!nuevaNota.trim()) return
-                      setGuardandoNota(true)
-                      const { data } = await supabase.from('notas_coach').insert({ cliente_id: id, mensaje: nuevaNota.trim() }).select().single()
-                      if (data) { setNotasCoach(prev => [data, ...prev]); setNuevaNota('') }
-                      setGuardandoNota(false)
-                    }}>
-                    {guardandoNota ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                  </button>
-                </div>
-                {notasCoach.length === 0 ? (
-                  <EmptyModule icon={MessageSquareText} title="Sin notas internas" text="Añade contexto privado para futuras revisiones del cliente." />
-                ) : (
-                  <div className="space-y-2">
-                    {notasCoach.map(n => (
-                      <div key={n.id} className="p-3.5 rounded-2xl" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                        <p className="text-sm" style={{ color: 'var(--text)' }}>{n.mensaje}</p>
-                        <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
-                          {new Date(n.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </WorkCard>
           </div>
