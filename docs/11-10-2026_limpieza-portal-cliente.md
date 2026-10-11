@@ -57,5 +57,9 @@ Verificado: `tsc` limpio, `npm run build` OK, auditoría de patrones sin problem
 **Volver atrás:** `git revert <sha del commit chore del portal antiguo>` restaura archivos y rutas.
 **Futuro (no construido):** si se quiere «ver como cliente» desde la cuenta de coach, hacerlo sobre el portal activo (`/cliente` con el cliente elegido), no resucitando este.
 
-## Siguiente pasada (pendiente)
-Auditar las rutas `/api/cliente/[codigo]/*` que ya nadie llama (p. ej. `garmin-resumen`, `micronutrientes`, `mis-platos`) comprobando cada una contra el portal activo y los tests.
+## Rutas API huérfanas borradas (11-10-2026)
+Se cruzó cada `app/api/cliente/**/route.ts` con sus llamadores (componentes, páginas, otras rutas, scripts). Sin ningún llamador y borradas (≈ 700 líneas):
+`[codigo]/chat/leer` (lo usaba el `MensajeCoach` ya eliminado), `[codigo]/completar-sesion`, `[codigo]/dashboard` (lo usaba el portal antiguo), `[codigo]/entreno-estado`, `[codigo]/comidas/[comidaId]/alimentos` (+ `[itemId]`; editar alimentos de una comida desde el portal, ya sin pantalla) y `feedback-comida` (stub marcado «obsoleto»).
+No se tocó ninguna ruta con llamador. Revisión extra pendiente: `micronutrientes` y `mis-platos` solo las usan `MicronutrientesPortal` y `MisPlatos`, que el portal activo ya no monta (candidatas a la siguiente pasada, junto con sus componentes).
+Verificación: `tsc` limpio, `npm run build` OK, auditoría de patrones sin problemas. Tests: `test-portal-write-auth` (2 fallos) y `test-comidas-authorization` (34 fallos) **fallaban igual antes** de estos borrados (comprobado con `git stash`); no son consecuencia de esta limpieza y siguen pendientes de revisar aparte.
+**Volver atrás:** `git revert <sha del commit «chore: borra rutas API huérfanas…»>`.
