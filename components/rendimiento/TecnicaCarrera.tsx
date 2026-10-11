@@ -28,7 +28,7 @@ export default function TecnicaCarrera({ tecnica }: { tecnica: PanelRendimiento[
 
   if (puntos.length === 0) {
     return (
-      <Bloque titulo="Técnica de carrera" nota="Cadencia, zancada, contacto con el suelo y oscilación vertical medidos por el reloj.">
+      <Bloque titulo="Técnica de carrera" ayuda="tecnica" nota="Cadencia, zancada, contacto con el suelo y oscilación vertical medidos por el reloj.">
         <p className="py-3 text-xs" style={{ color: 'var(--text-muted)' }}>Aún no hay carreras al aire libre de 20+ min con estos datos (el reloj necesita pulsera o pod de dinámica de carrera).</p>
       </Bloque>
     )
@@ -42,7 +42,7 @@ export default function TecnicaCarrera({ tecnica }: { tecnica: PanelRendimiento[
   ]
 
   return (
-    <Bloque titulo="Técnica de carrera" nota="Estas métricas cambian con el ritmo, así que la comparación se hace a igual ritmo: se ajusta cada una contra el ritmo de todas sus carreras y se mira cuánto se desvían las recientes.">
+    <Bloque titulo="Técnica de carrera" ayuda="tecnica" nota="Estas métricas cambian con el ritmo, así que la comparación se hace a igual ritmo: se ajusta cada una contra el ritmo de todas sus carreras y se mira cuánto se desvían las recientes.">
       {resumen ? (
         <>
           <p className="mb-2 text-xs" style={{ color: 'var(--text-secondary)' }}>

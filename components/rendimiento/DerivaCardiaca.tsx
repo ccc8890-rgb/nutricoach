@@ -16,7 +16,7 @@ export default function DerivaCardiaca({ deriva }: { deriva: PanelRendimiento['d
 
   if (deriva.length === 0) {
     return (
-      <Bloque titulo="Deriva cardiaca" nota="Cuánto sube el pulso, a igual ritmo, entre la primera y la segunda mitad de una carrera continua.">
+      <Bloque titulo="Deriva cardiaca" ayuda="deriva" nota="Cuánto sube el pulso, a igual ritmo, entre la primera y la segunda mitad de una carrera continua.">
         <p className="py-3 text-xs" style={{ color: 'var(--text-muted)' }}>Aún no hay carreras continuas de 30+ min con pulso y vueltas para calcularla.</p>
       </Bloque>
     )
@@ -29,7 +29,7 @@ export default function DerivaCardiaca({ deriva }: { deriva: PanelRendimiento['d
   const recientes = deriva.slice(-6).reverse()
 
   return (
-    <Bloque titulo="Deriva cardiaca" nota="Cuánto sube el pulso, a igual ritmo, entre la 1ª y la 2ª mitad de una carrera continua. Menos de 5 % es base aeróbica sólida; más de 10 % indica que ese ritmo le exige demasiado al atleta.">
+    <Bloque titulo="Deriva cardiaca" ayuda="deriva" nota="Cuánto sube el pulso, a igual ritmo, entre la 1ª y la 2ª mitad de una carrera continua. Menos de 5 % es base aeróbica sólida; más de 10 % indica que ese ritmo le exige demasiado al atleta.">
       <div className="mb-3 flex flex-wrap items-baseline gap-x-6 gap-y-1">
         <p><span className="text-2xl font-semibold tabular-nums" style={{ color: 'var(--text)' }}>{mediaUltimas.toFixed(1)} %</span> <span className="text-xs" style={{ color: 'var(--text-muted)' }}>media de las últimas {ultimas.length} carreras continuas</span></p>
         {mediaPrevias !== null && (

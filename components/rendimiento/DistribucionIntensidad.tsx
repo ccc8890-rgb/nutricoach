@@ -53,7 +53,7 @@ export default function DistribucionIntensidad({ intensidad }: { intensidad: Dis
   const lectura = LECTURA[reciente.valoracion]
 
   return (
-    <Bloque titulo="Distribución de intensidad" nota={intensidad.limites
+    <Bloque titulo="Distribución de intensidad" ayuda="intensidad" nota={intensidad.limites
       ? `Según el pulso medio de cada vuelta frente al umbral del atleta (${intensidad.limites.mediaHasta} ppm): suave por debajo de ${intensidad.limites.suaveHasta}, media hasta ${intensidad.limites.mediaHasta}, dura por encima. En corredores de resistencia suele funcionar alrededor de un 80 % suave y un 20 % duro, con poco en medio.`
       : 'Hace falta el pulso de umbral del atleta (lo mide Garmin) para repartir el tiempo entre suave, medio y duro.'}>
       <div className="grid gap-3 sm:grid-cols-2">

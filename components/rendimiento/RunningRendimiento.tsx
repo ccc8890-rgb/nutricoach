@@ -41,7 +41,7 @@ export default function RunningRendimiento({ clienteId, datos, onActualizar }: {
 
       {tab === 'plan' && (
         <div className="space-y-4">
-          <Bloque titulo="Plan vs realizado" nota={datos.ejecucion.planNombre ? `Sesiones de carrera estructuradas de «${datos.ejecucion.planNombre}», semana a semana. El color de cada repetición dice si salió en el ritmo previsto.` : undefined}>
+          <Bloque titulo="Plan vs realizado" ayuda="planVsRealizado" nota={datos.ejecucion.planNombre ? `Sesiones de carrera estructuradas de «${datos.ejecucion.planNombre}», semana a semana. El color de cada repetición dice si salió en el ritmo previsto.` : undefined}>
             {sesiones.length === 0 ? (
               <p className="py-3 text-xs" style={{ color: 'var(--text-muted)' }}>Todavía no hay sesiones estructuradas que comparar.</p>
             ) : (
@@ -91,18 +91,18 @@ export default function RunningRendimiento({ clienteId, datos, onActualizar }: {
           <DistribucionIntensidad intensidad={datos.intensidad} />
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <Bloque titulo="Eficiencia aeróbica" nota="Metros por minuto por cada latido en carreras continuas de 25+ min. Si sube, corres más rápido con el mismo pulso.">
+            <Bloque titulo="Eficiencia aeróbica" ayuda="eficiencia" nota="Metros por minuto por cada latido en carreras continuas de 25+ min. Si sube, corres más rápido con el mismo pulso.">
               <Grafica datos={ef} alto={150} series={[{ key: 'ef', label: 'm/min por ppm', color: COLOR.forma }]} formato={v => v.toFixed(2)} />
             </Bloque>
-            <Bloque titulo="Mejores parciales" nota="El kilómetro y los 5 km más rápidos de cada salida. Más bajo = más rápido.">
+            <Bloque titulo="Mejores parciales" ayuda="parciales" nota="El kilómetro y los 5 km más rápidos de cada salida. Más bajo = más rápido.">
               <Grafica datos={parciales} alto={150} series={[{ key: 's1000', label: '1 km', color: COLOR.fatiga }]} formato={v => mmss(v)} />
               <div className="mt-2" />
               <Grafica datos={parciales} alto={120} series={[{ key: 's5000', label: '5 km', color: COLOR.ambar }]} formato={v => mmss(v)} />
             </Bloque>
-            <Bloque titulo="VO₂max según Garmin" nota="Estimación del reloj tras cada carrera. Tiende a sobrestimar unos puntos frente a una prueba de laboratorio.">
+            <Bloque titulo="VO₂max según Garmin" ayuda="vo2max" nota="Estimación del reloj tras cada carrera. Tiende a sobrestimar unos puntos frente a una prueba de laboratorio.">
               <Grafica datos={vo2} alto={150} series={[{ key: 'vo2', label: 'VO₂max', color: COLOR.fresc }]} formato={v => String(Math.round(v))} />
             </Bloque>
-            <Bloque titulo="Umbrales del atleta" nota="Lo que mide Garmin y usa el cálculo de carga. Cambian con el tiempo.">
+            <Bloque titulo="Umbrales del atleta" ayuda="umbrales" nota="Lo que mide Garmin y usa el cálculo de carga. Cambian con el tiempo.">
               <dl className="grid grid-cols-2 gap-3 text-sm">
                 <div><dt className="text-xs" style={{ color: 'var(--text-muted)' }}>Pulso en el umbral</dt><dd className="font-semibold tabular-nums">{u.fcUmbral ? `${u.fcUmbral} ppm` : '—'}</dd></div>
                 <div><dt className="text-xs" style={{ color: 'var(--text-muted)' }}>Ritmo en el umbral</dt><dd className="font-semibold tabular-nums">{u.velUmbralMs ? `${mmss(1000 / u.velUmbralMs)}/km` : '—'}</dd></div>

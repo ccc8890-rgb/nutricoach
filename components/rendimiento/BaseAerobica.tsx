@@ -16,7 +16,7 @@ export default function BaseAerobica({ base }: { base: PanelRendimiento['baseAer
 
   if (!base.fcRef) {
     return (
-      <Bloque titulo="Base aeróbica" nota={nota}>
+      <Bloque titulo="Base aeróbica" ayuda="baseAerobica" nota={nota}>
         <p className="py-3 text-xs" style={{ color: 'var(--text-muted)' }}>Sin pulso de umbral ni pulso máximo del reloj no se puede fijar el pulso de referencia.</p>
       </Bloque>
     )
@@ -24,7 +24,7 @@ export default function BaseAerobica({ base }: { base: PanelRendimiento['baseAer
 
   const { reciente, previa } = base
   return (
-    <Bloque titulo="Base aeróbica" nota={nota}>
+    <Bloque titulo="Base aeróbica" ayuda="baseAerobica" nota={nota}>
       {reciente && previa && base.cambioPct !== null && base.cambioSeg !== null ? (
         <>
           <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1">

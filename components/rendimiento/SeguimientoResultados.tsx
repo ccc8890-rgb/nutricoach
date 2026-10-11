@@ -142,7 +142,7 @@ export default function SeguimientoResultados({ clienteId }: { clienteId: string
         )}
       </Bloque>
 
-      <Bloque titulo="Cambios aplicados y su resultado" nota={`Cada cambio que se aplica al plan (una decisión del entrenador IA o una semana del plan hacia la carrera) se compara ${VENTANA_DIAS} días antes frente a ${VENTANA_DIAS} días después con los datos del reloj.`}>
+      <Bloque titulo="Cambios aplicados y su resultado" ayuda="seguimiento" nota={`Cada cambio que se aplica al plan (una decisión del entrenador IA o una semana del plan hacia la carrera) se compara ${VENTANA_DIAS} días antes frente a ${VENTANA_DIAS} días después con los datos del reloj.`}>
         <div className="mb-3"><AnotarCambio clienteId={clienteId} hoy={datos.hoy} onGuardado={cargar} /></div>
         {datos.intervenciones.length === 0 ? (
           <p className="py-3 text-xs" style={{ color: 'var(--text-secondary)' }}>

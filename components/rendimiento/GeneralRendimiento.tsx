@@ -47,7 +47,7 @@ export default function GeneralRendimiento({ clienteId, datos, onActualizar }: {
             <Tarjeta titulo="Monotonía" valor={r.monotonia === null ? '—' : String(r.monotonia)} pie={avisoMonotonia ? 'Poca variación entre días' : 'Variación de carga (Foster)'} color={avisoMonotonia ? COLOR.ambar : undefined} />
           </div>
 
-          <Bloque titulo="Forma, fatiga y frescura" nota="Suma todos los deportes. La línea azul es la forma que acumulas; la rosa, el cansancio reciente. Cuando la rosa pasa a la azul vas cargado; con la azul por encima llegas fresco.">
+          <Bloque titulo="Forma, fatiga y frescura" ayuda="carga" nota="Suma todos los deportes. La línea azul es la forma que acumulas; la rosa, el cansancio reciente. Cuando la rosa pasa a la azul vas cargado; con la azul por encima llegas fresco.">
             <Grafica datos={pmc} alto={190}
               series={[{ key: 'tss', label: 'Carga del día', color: COLOR.carga, tipo: 'barras' }, { key: 'ctl', label: 'Forma', color: COLOR.forma }, { key: 'atl', label: 'Fatiga', color: COLOR.fatiga }]}
               formato={v => String(Math.round(v))} />
@@ -63,16 +63,16 @@ export default function GeneralRendimiento({ clienteId, datos, onActualizar }: {
 
       {tab === 'carga' && (
         <div className="grid gap-4 lg:grid-cols-2">
-          <Bloque titulo="Carga por semana" nota={semanaActual ? `Todos los deportes. Esta semana: ${semanaActual.tss} TSS · ${semanaActual.km} km de carrera · ${semanaActual.sesiones} sesiones` : undefined}>
+          <Bloque titulo="Carga por semana" ayuda="cargaSemana" nota={semanaActual ? `Todos los deportes. Esta semana: ${semanaActual.tss} TSS · ${semanaActual.km} km de carrera · ${semanaActual.sesiones} sesiones` : undefined}>
             <Grafica datos={semanas} alto={150} series={[{ key: 'tss', label: 'TSS semanal', color: COLOR.forma, tipo: 'barras' }]} formato={v => String(Math.round(v))} />
           </Bloque>
-          <Bloque titulo="Batería corporal" nota="El máximo que alcanzas cada día: indica cuánto recuperas por la noche. Si baja días seguidos, falta descanso.">
+          <Bloque titulo="Batería corporal" ayuda="bateria" nota="El máximo que alcanzas cada día: indica cuánto recuperas por la noche. Si baja días seguidos, falta descanso.">
             <Grafica datos={bien} alto={150} series={[{ key: 'bb', label: 'Máximo del día', color: COLOR.fresc }]} formato={v => String(Math.round(v))} />
           </Bloque>
-          <Bloque titulo="Pulso en reposo" nota="Si sube varios días seguidos suele indicar fatiga, enfermedad o estrés.">
+          <Bloque titulo="Pulso en reposo" ayuda="rhr" nota="Si sube varios días seguidos suele indicar fatiga, enfermedad o estrés.">
             <Grafica datos={bien} alto={150} series={[{ key: 'rhr', label: 'ppm', color: COLOR.fatiga }]} formato={v => String(Math.round(v))} />
           </Bloque>
-          <Bloque titulo="Preparación de Garmin" nota="Puntuación de 0 a 100 que estima lo preparado que estás para entrenar duro.">
+          <Bloque titulo="Preparación de Garmin" ayuda="preparacion" nota="Puntuación de 0 a 100 que estima lo preparado que estás para entrenar duro.">
             <Grafica datos={bien} alto={150} series={[{ key: 'readiness', label: 'Preparación', color: COLOR.ambar }]} formato={v => String(Math.round(v))} />
           </Bloque>
         </div>

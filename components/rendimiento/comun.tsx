@@ -1,5 +1,6 @@
 // Piezas compartidas por los módulos del panel de rendimiento.
 import type { ReactNode } from 'react'
+import { AYUDAS, type AyudaId } from './ayudas'
 import type { PanelRendimiento } from '@/lib/rendimiento/panel'
 import type { UmbralesAtleta } from '@/lib/rendimiento/carga'
 import type { ResumenEjecucion } from '@/lib/rendimiento/ejecucion'
@@ -19,12 +20,28 @@ export const tipoLegible: Record<string, string> = {
   open_water_swimming: 'Natación (aguas abiertas)', indoor_rowing: 'Remo', hiking: 'Senderismo', walking: 'Caminar',
 }
 
-export function Bloque({ titulo, nota, children }: { titulo: string; nota?: string; children: ReactNode }) {
+/** Explicación plegable de un análisis: qué mide, cómo leerlo y qué cuidado tener. */
+export function AyudaPlegable({ id }: { id: AyudaId }) {
+  const a: { que: string; como: string[]; ojo?: string } = AYUDAS[id]
+  return (
+    <details className="mt-3 rounded-lg text-xs" style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-light)' }}>
+      <summary className="cursor-pointer select-none px-3 py-2 font-medium" style={{ color: 'var(--text-secondary)' }}>Cómo leerlo</summary>
+      <div className="space-y-2 px-3 pb-3" style={{ color: 'var(--text-secondary)' }}>
+        <p>{a.que}</p>
+        <ul className="list-disc space-y-1 pl-4">{a.como.map((c, i) => <li key={i}>{c}</li>)}</ul>
+        {a.ojo && <p style={{ color: 'var(--text-muted)' }}><span className="font-semibold">Ojo: </span>{a.ojo}</p>}
+      </div>
+    </details>
+  )
+}
+
+export function Bloque({ titulo, nota, ayuda, children }: { titulo: string; nota?: string; ayuda?: AyudaId; children: ReactNode }) {
   return (
     <section className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{titulo}</h3>
       {nota && <p className="mb-2 mt-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>{nota}</p>}
       {children}
+      {ayuda && <AyudaPlegable id={ayuda} />}
     </section>
   )
 }
