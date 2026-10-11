@@ -49,7 +49,7 @@ export function resumirHoy(c: CommandData): ResumenHoy {
     titulo: 'Listo para aprobar (IA)',
     total: c.inbox_ia.length,
     tono: tonoDe(c.inbox_ia.length, false),
-    href: '/entrenos/brain-ia',
+    href: '/clientes',
     casos: c.inbox_ia.slice(0, MAX_CASOS).map(t => ({ id: t.id, titulo: t.cliente_nombre, detalle: t.tipo.replaceAll('_', ' '), href: t.href })),
   }
 

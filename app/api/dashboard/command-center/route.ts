@@ -119,7 +119,7 @@ function logError(error: unknown) {
 }
 
 function hrefTarea(tipo: string, clienteId: string | null) {
-  if (tipo.includes('entreno') || tipo === 'training_brain') return '/entrenos/brain-ia'
+  if ((tipo.includes('entreno') || tipo === 'training_brain') && clienteId) return `/clientes/${clienteId}?tab=entrenamiento&sub=plan`
   if (tipo === 'alerta_rendimiento' && clienteId) return `/clientes/${clienteId}`
   return '/clientes'
 }

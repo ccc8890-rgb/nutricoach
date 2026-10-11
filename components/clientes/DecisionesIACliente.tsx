@@ -6,7 +6,7 @@ import PropuestaPlanEntreno from '@/components/clientes/PropuestaPlanEntreno'
 import type { PayloadPlanEntrenoIA } from '@/lib/entrenos/planificar-con-ia'
 
 // Versión compacta, scopeada a UN cliente, de lo que antes vivía en la
-// página global /entrenos/brain-ia (840 líneas, cola de TODOS los
+// página global /entrenos/brain-ia (840 líneas, eliminada el 11-10-2026, cola de TODOS los
 // clientes). Carlos pidió que aprobar/editar la IA se haga desde la
 // ficha del cliente en la que ya está trabajando, no en una pantalla
 // aparte — así que esto reusa la misma API (PATCH /api/agentes/tareas)

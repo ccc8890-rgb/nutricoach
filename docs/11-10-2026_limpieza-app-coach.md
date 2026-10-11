@@ -46,3 +46,5 @@ Total: ~9.200 líneas menos.
 - Restaurar: reinsertar desde el JSON de copia (planes → comidas → comida_alimentos).
 - **«Resumen» de Nutrición quitado del menú** (era una página de tarjetas que repetía el propio menú). El botón de la sección Nutrición lleva ahora a Plantillas y `/nutricion` redirige a `/dietas/plantillas`.
 - **«Resumen» de Entrenamiento quitado del menú** (lista de clientes repetida con Clientes). La página `/entrenos` se mantiene porque la usan enlaces internos (volver, cancelar, acceso del dashboard). El botón de la sección lleva a Plantillas.
+
+- **Bandeja global «Brain IA» (`/entrenos/brain-ia`, 840 líneas) eliminada.** Las decisiones de IA se revisan en la ficha de cada cliente (Entrenamiento → «Decisiones de IA pendientes»). Los avisos del dashboard enlazan ahora a esa ficha y la tarjeta «Listo para aprobar (IA)» a Clientes. El agente `training-brain` sigue corriendo en el director y creando las tareas. Cuando todo sea automático y solo haya que revisar a gran escala, habría que rehacer una bandeja única con la presentación nueva (`lib/rendimiento/presentacion.ts`).

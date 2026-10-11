@@ -59,7 +59,7 @@ const ti = ia.tarjetas.find(t => t.id === 'ia')!
 assert.equal(ti.total, 1)
 assert.equal(ti.tono, 'pendiente')
 assert.deepEqual(ti.casos[0], { id: 'x', titulo: 'Ana', detalle: 'actualizacion plan', href: '/clientes' })
-assert.equal(ti.href, '/entrenos/brain-ia')
+assert.equal(ti.href, '/clientes')
 
 // Planes y altas: acciones plan/onboarding/competicion; total = nº de acciones, máx 3 casos, crítico si alguna lo es
 const altas = resumirHoy({
