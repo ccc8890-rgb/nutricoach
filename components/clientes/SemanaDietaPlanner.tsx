@@ -32,6 +32,44 @@ function media(dias: Dia[]): Total | null {
   return { kcal: Math.round(s.kcal / con.length), p: Math.round(s.p / con.length), c: Math.round(s.c / con.length), g: Math.round(s.g / con.length) }
 }
 
+// Fecha de cada día de la semana en curso (semana 0) o de una planificada (+N)
+function fechaDia(semana: number | null, i: number) {
+  const hoy = new Date()
+  const d = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - ((hoy.getDay() + 6) % 7) + (semana ?? 0) * 7 + i)
+  return d
+}
+const fmtCorta = (d: Date) => d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }).replace('.', '')
+function rangoSemana(semana: number | null) { return `${fmtCorta(fechaDia(semana, 0))} – ${fmtCorta(fechaDia(semana, 6))}` }
+
+// Vista de pájaro: una tarjeta por día con kcal y macros, sin desplegar los platos, para comparar semanas
+function SemanaResumen({ dias, kcalObjetivo, objetivos, semana, diaSel, onDia }: {
+  dias: Dia[]; kcalObjetivo: number | null; objetivos: Record<string, ObjetivoDia>; semana: number | null
+  diaSel: { dia: string; semana: number | null } | null; onDia: (dia: string, semana: number | null) => void
+}) {
+  return (
+    <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+      {dias.map((d, i) => {
+        const sel = diaSel?.dia === d.dia && diaSel.semana === semana
+        const obj = objetivos[d.dia]?.kcal || kcalObjetivo
+        const vacio = d.comidas.length === 0
+        const color = vacio ? 'var(--text-muted)' : semana != null ? (obj && d.total.kcal > obj * 1.1 ? 'var(--error)' : 'var(--text-muted)') : colorDesvio(d.total.kcal, obj)
+        const fecha = fechaDia(semana, i)
+        return (
+          <button key={d.dia} onClick={() => onDia(d.dia, semana)} aria-pressed={sel}
+            title={objetivos[d.dia]?.label ?? 'Ver el detalle del día'}
+            className="rounded-lg p-1.5 sm:p-2 text-left min-w-0"
+            style={{ background: sel ? 'var(--surface)' : 'var(--bg)', border: `1px solid ${sel ? 'var(--primary)' : 'var(--border)'}` }}>
+            <span className="block text-[10px] uppercase tracking-wide truncate" style={{ color: 'var(--text-muted)' }}>{d.dia.slice(0, 3)} {fecha.getDate()}</span>
+            <span className="block text-sm font-data font-bold" style={{ color }}>{vacio ? '—' : `${semana != null ? '≈ ' : ''}${d.total.kcal}`}</span>
+            {!vacio && <span className="block text-[10px] font-data truncate" style={{ color: 'var(--text-muted)' }}>P{d.total.p} C{d.total.c} G{d.total.g}</span>}
+            <span className="block text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{vacio ? 'sin platos' : `${d.comidas.length} comidas`}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // Rejilla de 7 días: las franjas en su orden, con los huecos vacíos en su sitio
 function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel, onDia, onHueco, onQuitar, onGrabar }: {
   dias: Dia[]; franjas: string[]; T: Tamano; kcalObjetivo: number | null; objetivos: Record<string, ObjetivoDia>; semana: number | null
@@ -126,6 +164,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const [franjasGen, setFranjasGen] = useState<string[] | null>(null)
   const [ampliado, setAmpliado] = useState(false)
   const [vista, setVista] = useState(1)
+  const [modo, setModo] = useState<'platos' | 'resumen'>('platos')
   const irAFuturas = useRef(false)
   const zonaFuturas = useRef<HTMLDivElement>(null)
   const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
@@ -317,9 +356,17 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             {VISTAS.map(v => (
-              <button key={v.semanas} onClick={() => { irAFuturas.current = v.semanas > vista; setVista(v.semanas) }} className="px-2.5 py-2 text-xs font-medium"
+              <button key={v.semanas} onClick={() => { irAFuturas.current = v.semanas > vista; setVista(v.semanas); setModo(v.semanas >= 4 ? 'resumen' : 'platos') }} className="px-2.5 py-2 text-xs font-medium"
                 style={{ background: vista === v.semanas ? 'var(--primary)' : 'transparent', color: vista === v.semanas ? 'var(--bg)' : 'var(--text-muted)' }}>
                 {v.texto}
+          {vista > 1 && (
+            <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }} title="Platos: cada día con sus comidas. Resumen: kcal y macros por día para comparar semanas de un vistazo">
+              {([['resumen', 'Resumen'], ['platos', 'Platos']] as const).map(([m, t]) => (
+                <button key={m} onClick={() => setModo(m)} className="px-2.5 py-2 text-xs font-medium"
+                  style={{ background: modo === m ? 'var(--primary)' : 'transparent', color: modo === m ? 'var(--bg)' : 'var(--text-muted)' }}>{t}</button>
+              ))}
+            </div>
+          )}
               </button>
             ))}
           </div>
@@ -408,12 +455,14 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
 
       {vista > 1 && (
         <p className="text-sm font-semibold mb-1.5" style={{ color: 'var(--text)' }}>
-          Semana en curso <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· lo que ve el cliente{mediaActual ? ` · media ${mediaActual.kcal} kcal · P${mediaActual.p} C${mediaActual.c} G${mediaActual.g}` : ''}</span>
+          Semana en curso · {rangoSemana(null)} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· lo que ve el cliente{mediaActual ? ` · media ${mediaActual.kcal} kcal · P${mediaActual.p} C${mediaActual.c} G${mediaActual.g}` : ''}</span>
         </p>
       )}
+      {vista > 1 && modo === 'resumen'
+        ? <SemanaResumen dias={dias} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} />
       <div ref={zonaFuturas} className="scroll-mt-4" />
-      <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
-      {detalle(null)}
+        : <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />}
+      {!(vista > 1 && modo === 'resumen') && detalle(null)}
 
       {futuras.map(s => {
         const m = media(s.dias)
@@ -422,7 +471,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           <div key={s.semana} className="mt-5">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
               <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                Semana +{s.semana} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· planificada, el cliente no la ve{m ? ` · media estimada sin complementos ${m.kcal} kcal · P${m.p} C${m.c} G${m.g}` : ' · vacía'}</span>
+                Semana +{s.semana} · {rangoSemana(s.semana)} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· planificada, el cliente no la ve{m ? ` · media estimada sin complementos ${m.kcal} kcal · P${m.p} C${m.c} G${m.g}` : ' · vacía'}</span>
               </p>
               <div className="flex flex-wrap items-center gap-1.5">
                 <button className={btnSec} style={{ border: '1px solid var(--border)', color: 'var(--text)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'generar')}>
@@ -443,10 +492,15 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
                 )}
               </div>
             </div>
-            <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />
-            {detalle(s.semana)}
-            {!vacia && <div className="mt-2"><ListaCompra planId={plan.id} clienteId={clienteId} semanaFutura={s.semana} nombrePlan={`${plan.nombre} · semana +${s.semana}`} rol="coach" /></div>}
+            {modo === 'resumen'
+              ? <SemanaResumen dias={s.dias} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} />
+              : <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />}
+            {modo !== 'resumen' && detalle(s.semana)}
+            {!vacia && modo !== 'resumen' && <div className="mt-2"><ListaCompra planId={plan.id} clienteId={clienteId} semanaFutura={s.semana} nombrePlan={`${plan.nombre} · semana +${s.semana}`} rol="coach" /></div>}
           </div>
+      {/* En modo Resumen el detalle del día elegido va una sola vez, bajo todas las semanas */}
+      {vista > 1 && modo === 'resumen' && <div className="mt-5">{detalle(diaSel?.semana ?? null)}</div>}
+
         )
       })}
 
