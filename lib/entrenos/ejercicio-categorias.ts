@@ -11,14 +11,14 @@ export type Musculo = (typeof MUSCULOS)[number]
 /** Subgrupos de las disciplinas largas (Calentamiento y Cardio), por nombre. */
 const SUBGRUPOS: Partial<Record<PestanaEjercicio, [string, RegExp][]>> = {
   Calentamiento: [
-    ['Movilidad', /movilidad|mobility|apertura|yoga|activacion/],
+    ['Movilidad', /movilidad|mobility|apertura|yoga|pilates|tai chi|activacion/],
     ['Estiramientos', /estiramiento/],
     ['Foam y rodillo', /foam|rodillo/],
     ['Pedaleo', /pedaleo/],
     ['Trote y calma', /trote|calent|vuelta a la calma/],
   ],
   Cardio: [
-    ['Suave y bajo impacto', /camin|paseo|senderismo|eliptica|escalera|stepper|estatica/],
+    ['Suave y bajo impacto', /camin|paseo|senderismo|eliptica|escalera|stepper|estatica|natacion suave|aquagym|marcha nordica/],
     ['Carrera', /carrera|trote|correr|cinta|cuestas|intervalos/],
     ['Bici', /pedaleo|bicicleta|ciclismo|sweet spot|over-under/],
     ['Remo y SkiErg', /skierg|remo|ergometro|assault/],
@@ -41,9 +41,9 @@ export interface EjercicioBiblioteca {
 
 const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
 
-const RE_CALENTAMIENTO = /calent|vuelta a la calma|movilidad|estiramiento|activacion|pedaleo z1|foam|rodillo/
+const RE_CALENTAMIENTO = /pilates|tai chi|calent|vuelta a la calma|movilidad|estiramiento|activacion|pedaleo z1|foam|rodillo/
 const RE_CORE = /plancha|abdominal|crunch|core|elevacion de piernas|russian twist|dead bug|bird dog|hollow|pallof|rueda|l-sit/
-const RE_CARDIO = /skierg|pedaleo|bicicleta|ciclismo|ergometro|eliptica|carrera|trote|cinta|correr|assault|natacion|paseo|senderismo|escalera|stepper|intervalos|over-under|sweet spot|cuestas/
+const RE_CARDIO = /skierg|pedaleo|bicicleta|ciclismo|ergometro|eliptica|carrera|trote|cinta|correr|assault|natacion|aquagym|marcha nordica|paseo|senderismo|escalera|stepper|intervalos|over-under|sweet spot|cuestas/
 
 export function pestanaDe(e: EjercicioBiblioteca): PestanaEjercicio {
   const n = norm(e.nombre)
@@ -89,6 +89,7 @@ export function sinDuplicados(lista: EjercicioBiblioteca[], uso: Map<string, num
 /** Valores por defecto al añadir: el cardio y la movilidad se miden en tiempo; el resto, series × repeticiones. */
 export function porDefecto(e: EjercicioBiblioteca): { series: number; repeticiones: string } {
   const p = pestanaDe(e)
+  if (/camin|paseo|senderismo|eliptica|natacion suave|aquagym|marcha nordica|estatica/.test(norm(e.nombre))) return { series: 1, repeticiones: '30 min' }
   if (p === 'Cardio' || (p === 'Calentamiento' && /trote|pedaleo|carrera|calent|vuelta/.test(norm(e.nombre)))) return { series: 1, repeticiones: '10 min' }
   if (p === 'Calentamiento') return { series: 2, repeticiones: '10' }
   if (/plancha/.test(norm(e.nombre))) return { series: 3, repeticiones: '30 s' }
