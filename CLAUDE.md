@@ -4,6 +4,16 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## 🗑️ Archivos borrados en la limpieza del 11-10-2026 — cómo recuperarlos
+
+Se borraron como «sin uso» (nadie los importa ni los llama por `fetch`; `tsc` limpio). Carlos no recuerda si eran antiguos o previstos para más adelante: **no se sabe**, por eso queda aquí el modo de recuperarlos. Los 14 salieron juntos en el commit `bd7d691` (se coló en un arreglo del planificador; era la «segunda limpieza» de otra sesión, luego formalizada en `5625581`).
+
+Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/intercambios` (+ `/elegir`), `intercambios` (+ `/elegir`), `clientes/[id]/informe-semanal`, `personalizacion/feedback`, `personalizacion/generar`, `precios/scrapear`. Libs: `lib/recetas/auto-match-ingrediente.ts`, `lib/scraping/motores/motor-http.ts`, `lib/scraping/motores/motor-playwright.ts`.
+
+- **Único uso vivo encontrado:** el script manual `scripts/rematch-ingredientes-auto.ts` importa `auto-match-ingrediente.ts` y fallaría sin él.
+- **Recuperar un archivo:** `git checkout bd7d691~1 -- <ruta>` (p. ej. `lib/recetas/auto-match-ingrediente.ts`). Todo el conjunto: `git checkout bd7d691~1 -- app/api lib/recetas lib/scraping/motores` (cuidado: también restauraría otros borrados de esas carpetas).
+- La limpieza anterior (52 archivos) está en `873c556`; se recupera igual con `git checkout 873c556~1 -- <ruta>`.
+
 ## ✅ SESIÓN 11-10-2026 (mañana, Claude) — Limpieza del portal cliente: Progreso mínimo y fuera la app antigua
 
 Carlos: el apartado Seguimiento/Progreso tenía estética antigua y muchas cosas inservibles; quiere el portal cliente mínimo, fluido y sin paja («logros y tal son feos y ensucian el minimalismo»). Todo en `main`, sin migraciones; `tsc` y `npm run build` limpios. Registro completo, con qué commit revertir cada paso: [`docs/11-10-2026_limpieza-portal-cliente.md`](docs/11-10-2026_limpieza-portal-cliente.md).
