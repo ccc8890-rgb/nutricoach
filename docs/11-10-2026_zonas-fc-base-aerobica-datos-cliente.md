@@ -40,3 +40,28 @@ Commits (main): `7145ba6`, `78c8864`, `94c6eec`, `683508a`, `f3ef116`, `864cda4`
 3. Adherencia a la dieta en «Datos»; HRV nocturno y sueño cuando haya noches; puntuación propia de recuperación solo con datos validados.
 4. Acabado visual de Datos, avatar y menú: Codex.
 5. Pendiente de decidir: mostrar las leyendas del coach también en la ficha del cliente si Carlos lo quiere.
+
+---
+
+# Adenda (11-10-2026, noche) — El motor detecta planes por debajo de la carga real
+
+**Problema:** todas las guardas solo vigilaban pasarse (salto >20-30 %, «REGLA DURA ≤ +20 %»). Nada detectaba un plan que se queda corto. El plan Base de Carlos sumaba 97 min/17 km de carrera por semana frente a 150-165 min/28-30 km reales, con una tirada de 40 min frente a 77. Causa de fondo: el motor partía de la **media de 4 semanas (89 min)**, hundida por viajes y vacaciones, y solo ignoraba semanas en cero.
+
+**Qué se hizo (commit `af65df8`)**
+- `lib/entrenos/capacidad.ts`: capacidad demostrada = mayor entre la media de 4 semanas y el **80 % de la mejor semana reciente** (Carlos: 133 min). Criterio de entrenador, no de un estudio.
+- `macro-desde-cliente.ts`: el volumen de partida del macrociclo usa esa capacidad (no en principiantes, con lesión/restricción ni con parón). Se declara en `supuestos`.
+- `lib/entrenos/plan-vs-realidad.ts`: `resumenPlanCarrera` (suma de las sesiones con pasos) y `brechaPlanCapacidad` (plan <85 % de la capacidad o tirada <75 % de la más larga reciente).
+- `estado.ts`: `capacidadCarreraSemana` y `planCarrera`. `reglas.ts`: regla **`plan_corto`** (propuesta de riesgo medio, DOI Mujika 2000 sobre desentrenamiento; solo con datos, sin parón, descarga, lesiones, fatiga ni principiante, y con competición a >21 días).
+- `validar-plan-carrera.ts`: hallazgos `plan_por_debajo_realidad` y `tirada_por_debajo_realidad` (no se avisa con `planConservador`: retorno, descarga, lesión o principiante).
+- `generar-plan-ia.ts`: la «REGLA DURA» ahora es de **dos lados** (90-120 % de la capacidad) y le dice a la IA que no baje de su carga real; `contexto.ts` añade la línea «PLAN FRENTE A SU CARGA REAL» al análisis.
+- Test `scripts/plan-vs-realidad.test.ts` (incluido en `npm run verificar:motor`, 44/44).
+
+**Plan de Carlos aplicado (datos en BD, sin migración):** Series 45 min (4×1000 m I, 8,8 km) · Rodaje 40 min (6,8 km, con techo de pulso) · Tirada 65 min (11 km) = **150 min/26,6 km por semana** (antes 97/17). Copia de lo anterior en `salidas/11-10-2026_backup-sesiones-running-carlos.json` (carpeta ignorada por git). Garmin las reenvía solo (cambia la huella).
+- **Progresión:** dentro de un bloque la plantilla semanal es fija; la progresión va **entre bloques**. El motor calcula S1 145 → S2 160 → S3 175 → S4 descarga 125 min (≈ +10 %/semana). El siguiente bloque partirá de lo que corra de verdad.
+- Series: el motor limita el trabajo intenso a ~8 % del volumen (Daniels), lo que da series muy cortas (3×3'); en Carlos se dejó 4×1000 m porque ya hizo 48 min / 9 km de series tempo el 08-10. Decidir si ese tope se relaja para atletas avanzados con poco kilometraje.
+
+**Pendiente**
+1. **Hyrox con carrera dentro** (bloques estación + 500 m de cinta) en las sesiones híbridas: hoy son solo gimnasio. Cabe como ejercicios con distancia; el reloj no los guiará.
+2. Mostrar la brecha «plan vs carga real» en el panel del coach (hoy sale en las propuestas del motor, en el análisis IA y en el validador).
+3. Revisar el tope de series (8 %) para avanzados.
+4. Fuerza/híbridas: no existe aún el equivalente de «capacidad» para fuerza (0 sesiones registradas en Garmin).

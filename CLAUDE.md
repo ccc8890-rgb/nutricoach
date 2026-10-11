@@ -14,6 +14,13 @@ Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/inter
 - **Recuperar un archivo:** `git checkout bd7d691~1 -- <ruta>` (p. ej. `lib/recetas/auto-match-ingrediente.ts`). Todo el conjunto: `git checkout bd7d691~1 -- app/api lib/recetas lib/scraping/motores` (cuidado: también restauraría otros borrados de esas carpetas).
 - La limpieza anterior (52 archivos) está en `873c556`; se recupera igual con `git checkout 873c556~1 -- <ruta>`.
 
+## ✅ SESIÓN 11-10-2026 (noche tardía, 2.ª parte, Claude) — El motor detecta planes por debajo de la carga real
+
+- Hallazgo: las guardas solo vigilaban pasarse; el plan Base de Carlos (97 min/17 km por semana) quedaba un 35-40 % por debajo de lo que corre (150-165 min/28-30 km). El motor partía de la media de 4 semanas (89 min), hundida por viajes.
+- Nueva capacidad demostrada (`lib/entrenos/capacidad.ts`: 80 % de la mejor semana reciente), regla `plan_corto`, validador y «REGLA DURA» de dos lados (90-120 %) para la IA, línea «PLAN FRENTE A SU CARGA REAL» en el análisis. `npm run verificar:motor` 44/44. Commit `af65df8`.
+- Plan de Carlos reescrito: series 45 + rodaje 40 + tirada 65 = 150 min/26,6 km por semana (copia anterior en `salidas/`). Progresión entre bloques (≈ +10 %/semana, descarga cada 4).
+- Pendiente: Hyrox con carrera dentro de las sesiones híbridas; mostrar la brecha en el panel; revisar el tope de series (8 %). Detalle: adenda de `docs/11-10-2026_zonas-fc-base-aerobica-datos-cliente.md`.
+
 ## ✅ SESIÓN 11-10-2026 (noche tardía, Claude) — Zonas de pulso, base aeróbica, leyendas y pestaña «Datos» del cliente
 
 - Pasos de carrera con nombre de zona y leyenda solo de las zonas usadas (pulso, RPE, uso). Zonas de pulso por umbral de lactato y pulso máximo (`lib/entrenos/zonas-fc.ts`); **los rodajes (E) van a Garmin con techo de pulso**, el resto por ritmo. La huella de envío incluye el techo E (reenvío automático por el cron).
