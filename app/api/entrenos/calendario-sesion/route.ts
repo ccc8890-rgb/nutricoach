@@ -49,31 +49,36 @@ export async function POST(request: NextRequest) {
     ejerciciosBase = (ps.ejercicios ?? []) as Record<string, unknown>[]
   }
 
+  // «Solo esos días»: cada fecha recibe su PROPIA sesión (copia independiente), para poder editar cada día por separado.
+  // «Semanal»: una sola sesión en la plantilla del bloque.
+  const fechasSesion: string[] = alcance === 'dia' ? (fechas as string[]) : [fecha]
   const { data: ultima } = await admin.from('sesiones_entrenamiento').select('orden').eq('plan_id', plan.id).order('orden', { ascending: false }).limit(1).maybeSingle()
-  const { data: sesion, error } = await admin
+  const ordenBase = (ultima?.orden as number | null) ?? 0
+  const datosBase = base ? {
+    notas: base.notas ?? null,
+    instruccion_coach: base.instruccion_coach ?? null,
+    fase_bloque: base.fase_bloque ?? null,
+    duracion_estimada_min: base.duracion_estimada_min ?? null,
+    pasos: base.pasos ?? null,
+  } : {}
+  const { data: creadas, error } = await admin
     .from('sesiones_entrenamiento')
-    .insert({
+    .insert(fechasSesion.map((f, i) => ({
       plan_id: plan.id,
       nombre,
-      dia_semana: alcance === 'semanal' ? diaSemanaDe(fecha) : null,
-      orden: ((ultima?.orden as number | null) ?? 0) + 1,
-      ...(base ? {
-        notas: base.notas ?? null,
-        instruccion_coach: base.instruccion_coach ?? null,
-        fase_bloque: base.fase_bloque ?? null,
-        duracion_estimada_min: base.duracion_estimada_min ?? null,
-        pasos: base.pasos ?? null,
-      } : {}),
-    })
-    .select('id')
-    .single()
-  if (error || !sesion) return NextResponse.json({ error: 'No se pudo crear la sesión' }, { status: 500 })
+      dia_semana: alcance === 'semanal' ? diaSemanaDe(f) : null,
+      orden: ordenBase + i + 1,
+      ...datosBase,
+    })))
+    .select('id, orden')
+  if (error || !creadas || creadas.length !== fechasSesion.length) return NextResponse.json({ error: 'No se pudo crear la sesión' }, { status: 500 })
+  const ids = [...creadas].sort((x, y) => (x.orden as number) - (y.orden as number)).map(c => c.id as string)
 
-  const deshacer = async () => { await admin.from('sesiones_entrenamiento').delete().eq('id', sesion.id) }
+  const deshacer = async () => { await admin.from('sesiones_entrenamiento').delete().in('id', ids) }
 
   if (ejerciciosBase.length > 0) {
-    const { error: eEj } = await admin.from('sesion_ejercicios').insert(ejerciciosBase.map(e => ({
-      sesion_id: sesion.id,
+    const { error: eEj } = await admin.from('sesion_ejercicios').insert(ids.flatMap(sid => ejerciciosBase.map(e => ({
+      sesion_id: sid,
       ejercicio_id: e.ejercicio_id,
       series: e.series ?? null,
       repeticiones: e.repeticiones ?? null,
@@ -85,15 +90,15 @@ export async function POST(request: NextRequest) {
       instruccion_ejercicio: e.instruccion_ejercicio ?? null,
       tempo: e.tempo ?? null,
       rpe: e.rpe ?? null,
-    })))
+    }))))
     if (eEj) { await deshacer(); return NextResponse.json({ error: 'No se pudo crear la sesión' }, { status: 500 }) }
   }
 
   if (alcance === 'dia') {
     const { error: e2 } = await admin.from('calendario_entreno_ajustes').insert(
-      (fechas as string[]).map(f => ({ plan_id: plan.id, sesion_id: sesion.id, tipo: 'copiar', fecha_origen: null, fecha: f })),
+      ids.map((sid, i) => ({ plan_id: plan.id, sesion_id: sid, tipo: 'copiar', fecha_origen: null, fecha: fechasSesion[i] })),
     )
     if (e2) { await deshacer(); return NextResponse.json({ error: 'No se pudo crear la sesión' }, { status: 500 }) }
   }
-  return NextResponse.json({ ok: true, sesion_id: sesion.id })
+  return NextResponse.json({ ok: true, sesion_id: ids[0], creadas: ids.length })
 }

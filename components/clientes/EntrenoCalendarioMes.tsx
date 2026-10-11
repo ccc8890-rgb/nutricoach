@@ -11,10 +11,11 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { Check, ChevronLeft, ChevronRight, ClipboardPaste, Copy, ExternalLink, Flag, Loader2, Plus, Trash2, Watch, X } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, ClipboardPaste, Copy, Flag, Loader2, Pencil, Plus, Trash2, Watch, X } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { diaSemanaDe, diferenciaDias, lunesDe, sumarDias, esFechaISO, type Operacion } from '@/lib/entrenos/calendario-ajustes'
 import { CATEGORIAS_SESION, type CategoriaSesion } from '@/lib/entrenos/biblioteca-categorias'
+import EditorSesionCalendario, { type EjercicioEditable } from '@/components/clientes/EditorSesionCalendario'
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 const DIAS_ABREV = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
@@ -46,6 +47,7 @@ interface SesionDia {
   nombre: string
   fase_bloque: string | null
   ajuste: { id: string; tipo: 'mover' | 'copiar' | 'omitir'; fecha_origen: string | null } | null
+  compartida: boolean
   garmin: EstadoGarmin
 }
 
@@ -68,10 +70,11 @@ interface DiaMes {
 }
 
 interface DetalleSesion {
+  nombre: string
   hora_inicio: string | null
   duracion_estimada_min: number | null
   contexto_ia: string | null
-  ejercicios: { id: string; nombre: string; series: number | null; repeticiones: string | null; peso_sugerido: string | null; rpe: string | null }[]
+  ejercicios: EjercicioEditable[]
   pasos: string[] | null
   distancia_m: number | null
   duracion_s: number | null
@@ -248,6 +251,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
   const [baseSel, setBaseSel] = useState<SesionBase | null>(null)
   const [diasRep, setDiasRep] = useState<number[]>([])
   const [hastaRep, setHastaRep] = useState('')
+  const [editando, setEditando] = useState<string | null>(null)
   const { addToast } = useToast()
   const hoy = hoyISO()
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
@@ -605,7 +609,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
             </button>
             <button onClick={() => setSeleccion(null)} className="btn-secondary btn-sm">Cancelar</button>
           </div>
-          {!baseSel && <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Sin sesión base se crea vacía: después puedes añadirle ejercicios desde «Editar en el plan».</p>}
+          {!baseSel && <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Sin sesión base se crea vacía: después puedes añadirle ejercicios con el botón «Editar» de la sesión.</p>}
         </div>
       )}
 
@@ -643,8 +647,23 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
                 </ul>
               )}
 
+              {editando === selSesion.sesion_id && detalle && (
+                <EditorSesionCalendario
+                  key={selSesion.sesion_id}
+                  sesionId={selSesion.sesion_id}
+                  fecha={selSesion.fecha}
+                  nombre={detalle.nombre}
+                  duracionMin={detalle.duracion_estimada_min}
+                  ejercicios={detalle.ejercicios}
+                  compartida={sesionSel.compartida}
+                  conPasos={!!detalle.pasos}
+                  onCambio={cargar}
+                  onIndependizada={nuevoId => { setSeleccion({ tipo: 'sesion', sesion_id: nuevoId, fecha: selSesion.fecha }); setEditando(nuevoId) }}
+                />
+              )}
+
               {/* Si la sesión tiene pasos de Garmin, ya están todos arriba: la lista de ejercicios sería redundante. */}
-              {detalle && !detalle.pasos && detalle.ejercicios.length > 0 && (
+              {detalle && !detalle.pasos && editando !== selSesion.sesion_id && detalle.ejercicios.length > 0 && (
                 <ul className="space-y-1.5 mb-4">
                   {detalle.ejercicios.map(e => {
                     const stats = [e.series && `${e.series}x${e.repeticiones ?? '?'}`, e.peso_sugerido, e.rpe && `RPE ${e.rpe}`].filter(Boolean)
@@ -660,7 +679,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
               <div className="flex flex-wrap items-center gap-2">
                 <button onClick={() => copiarSesion(selSesion.sesion_id, selSesion.fecha)} className="btn-secondary btn-sm"><Copy size={13} /> Copiar</button>
                 <button onClick={() => quitar(selSesion.sesion_id, selSesion.fecha)} disabled={guardando} className="btn-secondary btn-sm"><Trash2 size={13} /> Quitar de este día</button>
-                <a href={`/entrenos/${planId}`} className="btn-secondary btn-sm"><ExternalLink size={13} /> Editar en el plan</a>
+                <button onClick={() => setEditando(editando === selSesion.sesion_id ? null : selSesion.sesion_id)} className="btn-secondary btn-sm"><Pencil size={13} /> {editando === selSesion.sesion_id ? 'Cerrar edición' : 'Editar'}</button>
                 <span className="flex items-center gap-1.5 ml-auto">
                   <input
                     type="date"
