@@ -261,7 +261,20 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
     setMonth(m); setYear(y)
   }
 
-  async function aplicar(operaciones: Operacion[], mensajeOk: string): Promise<boolean> {
+  // Mueve la sesión en pantalla al instante (antes de que responda el servidor) para que el arrastre no «rebote».
+  function moverLocal(sesionId: string, desde: string, hasta: string) {
+    setDias(prev => {
+      if (!prev) return prev
+      const origen = prev.find(d => d.fecha === desde)?.sesiones.find(x => x.id === sesionId)
+      if (!origen || !prev.some(d => d.fecha === hasta)) return prev
+      const movida: SesionDia = { ...origen, ajuste: origen.ajuste ?? { id: `local-${sesionId}`, tipo: 'mover', fecha_origen: desde } }
+      return prev.map(d => d.fecha === desde
+        ? { ...d, sesiones: d.sesiones.filter(x => x.id !== sesionId) }
+        : d.fecha === hasta ? { ...d, sesiones: [...d.sesiones, movida] } : d)
+    })
+  }
+
+  async function aplicar(operaciones: Operacion[]): Promise<boolean> {
     setGuardando(true)
     try {
       const res = await fetch('/api/entrenos/calendario-ajustes', {
@@ -272,9 +285,9 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
       const json = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(json.error ?? 'error')
       await cargar()
-      addToast({ type: json.aplicados > 0 ? 'success' : 'info', title: json.aplicados > 0 ? mensajeOk : 'Sin cambios: la sesión ya estaba ahí' })
       return true
     } catch {
+      await cargar() // deshace el cambio hecho en pantalla
       addToast({ type: 'error', title: 'No se pudo guardar el cambio' })
       return false
     } finally {
@@ -290,8 +303,8 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
     const [sesionId, desde] = String(active.id).split('|')
     const hasta = String(over.id)
     if (!esFechaISO(hasta) || hasta === desde) return
-    const nombre = diaDe(desde)?.sesiones.find(s => s.id === sesionId)?.nombre ?? 'Sesión'
-    const ok = await aplicar([{ op: 'mover', sesion_id: sesionId, desde, hasta }], `«${nombre}» movida al ${fechaLarga(hasta)}`)
+    moverLocal(sesionId, desde, hasta)
+    const ok = await aplicar([{ op: 'mover', sesion_id: sesionId, desde, hasta }])
     if (ok) setSeleccion(null)
   }
 
@@ -327,19 +340,18 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
     } else {
       ops = portapapeles.items.map(i => ({ op: 'copiar', sesion_id: i.sesion_id, hasta: fechaDestino }))
     }
-    const donde = portapapeles.tipo === 'semana' ? `la semana del ${fechaLarga(lunesDe(fechaDestino))}` : fechaLarga(fechaDestino)
-    await aplicar(ops, `Pegado en ${donde}`)
+    await aplicar(ops)
   }
 
   async function quitar(sesionId: string, fecha: string) {
-    const nombre = diaDe(fecha)?.sesiones.find(s => s.id === sesionId)?.nombre ?? 'Sesión'
-    const ok = await aplicar([{ op: 'omitir', sesion_id: sesionId, desde: fecha }], `«${nombre}» quitada de ese día`)
+    const ok = await aplicar([{ op: 'omitir', sesion_id: sesionId, desde: fecha }])
     if (ok) setSeleccion(null)
   }
 
   async function moverAFecha(sesionId: string, desde: string) {
     if (!esFechaISO(fechaMover)) return
-    const ok = await aplicar([{ op: 'mover', sesion_id: sesionId, desde, hasta: fechaMover }], `Sesión movida al ${fechaLarga(fechaMover)}`)
+    moverLocal(sesionId, desde, fechaMover)
+    const ok = await aplicar([{ op: 'mover', sesion_id: sesionId, desde, hasta: fechaMover }])
     if (ok) { setSeleccion(null); setFechaMover('') }
   }
 

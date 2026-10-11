@@ -213,8 +213,6 @@ export default function EntrenoCalendarioKanban({ planId }: { planId: string }) 
     if (error) {
       setSesiones(prev => prev!.map(s => s.id === sesion.id ? { ...s, dia_semana: anterior } : s))
       addToast({ type: 'error', title: 'No se pudo mover la sesión' })
-    } else {
-      addToast({ type: 'success', title: `"${sesion.nombre}" movida a ${nuevoDia}` })
     }
   }
 
@@ -230,7 +228,6 @@ export default function EntrenoCalendarioKanban({ planId }: { planId: string }) 
       return
     }
     setSesiones(prev => [...(prev ?? []), { ...data, ejercicios: [] }])
-    addToast({ type: 'success', title: `"${nombre}" añadida a ${dia}` })
   }
 
   if (sesiones === null) {
