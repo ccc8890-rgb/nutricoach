@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { BookmarkPlus, Loader2, Plus, Search, Trash2 } from 'lucide-react'
+import { BookmarkPlus, ChevronDown, ChevronRight, Loader2, Plus, Search, Trash2 } from 'lucide-react'
 import { CATEGORIAS_SESION, type CategoriaSesion } from '@/lib/entrenos/biblioteca-categorias'
 import { MUSCULOS, PESTANAS_EJERCICIO, musculoDe, pestanaDe, porDefecto, sinDuplicados, type EjercicioBiblioteca, type Musculo, type PestanaEjercicio } from '@/lib/entrenos/ejercicio-categorias'
 
@@ -24,12 +24,12 @@ const estiloCampo = { background: 'var(--bg)', color: 'var(--text)', border: '1p
 interface CatalogoEjercicios { ejercicios: EjercicioBiblioteca[]; uso: Record<string, number> }
 let cacheCatalogo: CatalogoEjercicios | null = null
 
-/** Elegir un ejercicio con un clic: habituales, pestañas por tipo de trabajo y, en fuerza, por músculo. El buscador es solo un apoyo. */
+/** Elegir un ejercicio: disciplinas plegables y, en fuerza, grupos musculares plegables. Todo cerrado al abrir; el buscador es solo un apoyo. */
 function SelectorEjercicio({ onElegir, ocupado }: { onElegir: (e: EjercicioBiblioteca) => void; ocupado: boolean }) {
   const [catalogo, setCatalogo] = useState<CatalogoEjercicios | null>(cacheCatalogo)
   const [fallo, setFallo] = useState(false)
-  const [pestana, setPestana] = useState<PestanaEjercicio>('Calentamiento')
-  const [musculo, setMusculo] = useState<Musculo | 'Todos'>('Todos')
+  const [abierta, setAbierta] = useState<PestanaEjercicio | 'Habituales' | null>(null)
+  const [musculoAbierto, setMusculoAbierto] = useState<Musculo | null>(null)
   const [busqueda, setBusqueda] = useState('')
 
   useEffect(() => {
@@ -40,22 +40,41 @@ function SelectorEjercicio({ onElegir, ocupado }: { onElegir: (e: EjercicioBibli
       .catch(() => setFallo(true))
   }, [])
 
-  const { lista, habituales } = useMemo(() => {
-    if (!catalogo) return { lista: [] as EjercicioBiblioteca[], habituales: [] as EjercicioBiblioteca[] }
+  const { porPestana, porMusculo, habituales, resultados } = useMemo(() => {
+    const vacio = { porPestana: {} as Record<PestanaEjercicio, EjercicioBiblioteca[]>, porMusculo: {} as Record<Musculo, EjercicioBiblioteca[]>, habituales: [] as EjercicioBiblioteca[], resultados: [] as EjercicioBiblioteca[] }
+    if (!catalogo) return vacio
     const uso = new Map(Object.entries(catalogo.uso))
-    const unicos = sinDuplicados(catalogo.ejercicios, uso)
-    const habituales = [...unicos].filter(e => (uso.get(e.id) ?? 0) > 0).sort((a, b) => (uso.get(b.id) ?? 0) - (uso.get(a.id) ?? 0)).slice(0, 12)
+    const orden = (a: EjercicioBiblioteca, b: EjercicioBiblioteca) => (uso.get(b.id) ?? 0) - (uso.get(a.id) ?? 0) || a.nombre.localeCompare(b.nombre, 'es')
+    const unicos = sinDuplicados(catalogo.ejercicios, uso).sort(orden)
+    const porPestana = Object.fromEntries(PESTANAS_EJERCICIO.map(p => [p, [] as EjercicioBiblioteca[]])) as Record<PestanaEjercicio, EjercicioBiblioteca[]>
+    const porMusculo = Object.fromEntries(MUSCULOS.map(m => [m, [] as EjercicioBiblioteca[]])) as Record<Musculo, EjercicioBiblioteca[]>
+    for (const e of unicos) {
+      const p = pestanaDe(e)
+      porPestana[p].push(e)
+      if (p === 'Fuerza') porMusculo[musculoDe(e)].push(e)
+    }
+    const habituales = unicos.filter(e => (uso.get(e.id) ?? 0) > 0).slice(0, 8)
     const q = busqueda.trim().toLowerCase()
-    const lista = unicos
-      .filter(e => (q ? e.nombre.toLowerCase().includes(q) : pestanaDe(e) === pestana && (pestana !== 'Fuerza' || musculo === 'Todos' || musculoDe(e) === musculo)))
-      .sort((a, b) => (uso.get(b.id) ?? 0) - (uso.get(a.id) ?? 0) || a.nombre.localeCompare(b.nombre, 'es'))
-    return { lista, habituales }
-  }, [catalogo, pestana, musculo, busqueda])
-
-  const chip = (activo: boolean) => ({ background: activo ? 'var(--primary)' : 'transparent', color: activo ? 'var(--bg)' : 'var(--text-muted)', border: '1px solid var(--border)' }) as const
+    const resultados = q ? unicos.filter(e => e.nombre.toLowerCase().includes(q)) : []
+    return { porPestana, porMusculo, habituales, resultados }
+  }, [catalogo, busqueda])
 
   if (fallo) return <p className="text-xs mb-3" style={{ color: 'var(--semantic-alert-text)' }}>No se pudo cargar la biblioteca de ejercicios.</p>
   if (!catalogo) return <div className="flex items-center gap-2 mb-3 text-xs" style={{ color: 'var(--text-muted)' }}><Loader2 size={13} className="animate-spin" /> Cargando ejercicios…</div>
+
+  const boton = (e: EjercicioBiblioteca) => (
+    <button key={e.id} onClick={() => onElegir(e)} disabled={ocupado} className="text-sm text-left px-2.5 py-1.5 rounded-lg" style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}>{e.nombre}</button>
+  )
+  const rejilla = (lista: EjercicioBiblioteca[]) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 p-2 max-h-56 overflow-y-auto">{lista.length === 0 ? <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No hay ejercicios aquí.</p> : lista.map(boton)}</div>
+  )
+  const cabecera = (activa: boolean, titulo: string, total: number, onClick: () => void, nivel = 0) => (
+    <button onClick={onClick} className="w-full flex items-center gap-2 px-3 py-2 text-left" style={{ color: 'var(--text)', paddingLeft: nivel ? '1.5rem' : undefined }}>
+      {activa ? <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} /> : <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />}
+      <span className={nivel ? 'text-sm' : 'text-sm font-semibold'}>{titulo}</span>
+      <span className="ml-auto text-xs" style={{ color: 'var(--text-muted)' }}>{total}</span>
+    </button>
+  )
 
   return (
     <div className="mb-3 rounded-lg p-2.5" style={{ border: '1px solid var(--border)' }}>
@@ -64,41 +83,37 @@ function SelectorEjercicio({ onElegir, ocupado }: { onElegir: (e: EjercicioBibli
         <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Añadir ejercicio</span>
         <span className="ml-auto flex items-center gap-1.5">
           <Search size={12} style={{ color: 'var(--text-muted)' }} />
-          <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar…" className="text-xs px-2 py-1 rounded-lg w-32" style={estiloCampo} />
+          <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar…" autoComplete="off" className="text-xs px-2 py-1 rounded-lg w-36" style={estiloCampo} />
         </span>
       </div>
 
-      {habituales.length > 0 && !busqueda && (
-        <div className="mb-2">
-          <p className="text-[11px] uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Habituales</p>
-          <div className="flex flex-wrap gap-1.5">
-            {habituales.map(e => (
-              <button key={e.id} onClick={() => onElegir(e)} disabled={ocupado} className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text)' }}>{e.nombre}</button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {!busqueda && (
-        <>
-          <div className="flex flex-wrap gap-1.5 mb-1.5">
-            {PESTANAS_EJERCICIO.map(p => <button key={p} onClick={() => { setPestana(p); setMusculo('Todos') }} className="text-xs px-2.5 py-1 rounded-full" style={chip(pestana === p)}>{p}</button>)}
-          </div>
-          {pestana === 'Fuerza' && (
-            <div className="flex flex-wrap gap-1.5 mb-1.5">
-              {(['Todos', ...MUSCULOS] as const).map(m => <button key={m} onClick={() => setMusculo(m)} className="text-[11px] px-2 py-0.5 rounded-full" style={chip(musculo === m)}>{m}</button>)}
+      {busqueda.trim() ? (
+        <div className="rounded-lg" style={{ border: '1px solid var(--border)' }}>{rejilla(resultados)}</div>
+      ) : (
+        <div className="rounded-lg overflow-hidden divide-y" style={{ border: '1px solid var(--border)', borderColor: 'var(--border)' }}>
+          {habituales.length > 0 && (
+            <div>
+              {cabecera(abierta === 'Habituales', 'Habituales', habituales.length, () => setAbierta(abierta === 'Habituales' ? null : 'Habituales'))}
+              {abierta === 'Habituales' && rejilla(habituales)}
             </div>
           )}
-        </>
+          {PESTANAS_EJERCICIO.map(p => (
+            <div key={p}>
+              {cabecera(abierta === p, p, porPestana[p].length, () => { setAbierta(abierta === p ? null : p); setMusculoAbierto(null) })}
+              {abierta === p && (p !== 'Fuerza' ? rejilla(porPestana[p]) : (
+                <div style={{ borderTop: '1px solid var(--border)' }}>
+                  {MUSCULOS.filter(m => porMusculo[m].length > 0).map(m => (
+                    <div key={m}>
+                      {cabecera(musculoAbierto === m, m, porMusculo[m].length, () => setMusculoAbierto(musculoAbierto === m ? null : m), 1)}
+                      {musculoAbierto === m && rejilla(porMusculo[m])}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       )}
-
-      <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto pt-1">
-        {lista.length === 0 ? (
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>No hay ejercicios aquí.</p>
-        ) : lista.map(e => (
-          <button key={e.id} onClick={() => onElegir(e)} disabled={ocupado} className="text-xs px-2.5 py-1 rounded-lg" style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}>{e.nombre}</button>
-        ))}
-      </div>
     </div>
   )
 }
