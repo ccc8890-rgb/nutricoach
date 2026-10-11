@@ -4,9 +4,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Loader2, CheckCircle, ChevronDown, ChevronUp, User, Utensils, ExternalLink, Dumbbell, RefreshCw } from 'lucide-react'
-import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
+import dynamic from 'next/dynamic'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
 import { generarCodigoPublico } from '@/lib/codigo-publico'
+
+const PlantillaEntrenoSelector = dynamic(() => import('@/components/training/PlantillaEntrenoSelector'), { ssr: false })
 
 
 interface OnboardingData {

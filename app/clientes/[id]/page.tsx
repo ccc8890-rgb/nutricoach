@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic'
 import ErrorBoundary from '@/components/ui/ErrorBoundary'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import ClienteEditar from '@/components/ClienteEditar'
 import Link from 'next/link'
 import {
   ArrowLeft, UtensilsCrossed, Dumbbell, Weight,
@@ -16,14 +15,15 @@ import {
   FlaskConical,
 } from 'lucide-react'
 import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
-import ChatPanel from '@/components/PortalCliente/ChatPanel'
 import ResumenCliente, { AvisosCliente, avisosCliente } from '@/components/clientes/ResumenCliente'
-import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSelector'
 import { OBJETIVO_LABELS } from '@/lib/utils'
 import { listaRecordada, useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import { useToast } from '@/components/ui/Toast'
 import type { ResumenDia } from '@/components/clientes/SemanaDietaPlanner'
 
+const ClienteEditar = dynamic(() => import('@/components/ClienteEditar'), { ssr: false, loading: () => <TabSkeleton /> })
+const ChatPanel = dynamic(() => import('@/components/PortalCliente/ChatPanel'), { ssr: false, loading: () => <TabSkeleton /> })
+const PlantillaEntrenoSelector = dynamic(() => import('@/components/training/PlantillaEntrenoSelector'), { ssr: false, loading: () => <TabSkeleton /> })
 const PlanificacionCalendario = dynamic(() => import('@/components/PlanificacionCalendario'), { ssr: false, loading: () => <TabSkeleton /> })
 const AjusteMacrosIA = dynamic(() => import('@/components/AjusteMacrosIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const HistorialDietasIA = dynamic(() => import('@/components/HistorialDietasIA'), { ssr: false, loading: () => <TabSkeleton /> })
