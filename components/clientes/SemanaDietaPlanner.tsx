@@ -369,7 +369,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             {VISTAS.map(v => (
-              <button key={v.semanas} onClick={() => { irAFuturas.current = v.semanas > vista; setVista(v.semanas); setModo(v.semanas >= 2 ? 'resumen' : 'platos') }} className="px-2.5 py-2 text-xs font-medium"
+              <button key={v.semanas} onClick={() => { irAFuturas.current = v.semanas > vista; setVista(v.semanas); setModo('platos') }} className="px-2.5 py-2 text-xs font-medium"
                 style={{ background: vista === v.semanas ? 'var(--primary)' : 'transparent', color: vista === v.semanas ? 'var(--bg)' : 'var(--text-muted)' }}>
                 {v.texto}
               </button>
