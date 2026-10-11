@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
-import { evaluarSistema, type EjecucionAgente, type IntegracionSync } from '@/lib/sistema/estado'
+import { evaluarSistema, type CronRegistro, type EjecucionAgente, type IntegracionSync } from '@/lib/sistema/estado'
 
 export async function GET() {
   const supabase = await createServerSupabase()
@@ -10,16 +10,18 @@ export async function GET() {
   if (profile?.role !== 'coach') return NextResponse.json({ error: 'Acceso restringido al coach' }, { status: 403 })
 
   const db = createServiceSupabase()
-  const [ejec, integ] = await Promise.all([
+  const [ejec, integ, crons] = await Promise.all([
     db.from('agente_ejecuciones').select('modo, origen, dry_run, estado, errores, iniciado_at').order('iniciado_at', { ascending: false }).limit(40),
     db.from('integraciones_cliente').select('proveedor, ultima_sync, error_ultimo').eq('activa', true),
+    db.from('cron_ejecuciones').select('cron, estado, detalle, ejecutado_at').order('ejecutado_at', { ascending: false }).limit(100),
   ])
-  if (ejec.error || integ.error) {
-    console.error('[sistema/estado]', ejec.error ?? integ.error)
+  if (ejec.error || integ.error || crons.error) {
+    console.error('[sistema/estado]', ejec.error ?? integ.error ?? crons.error)
     return NextResponse.json({ error: 'No se pudo comprobar el estado' }, { status: 500 })
   }
   return NextResponse.json(evaluarSistema({
     ejecuciones: (ejec.data ?? []) as EjecucionAgente[],
     integraciones: (integ.data ?? []) as IntegracionSync[],
+    crons: (crons.data ?? []) as CronRegistro[],
   }))
 }

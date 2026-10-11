@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { registrarCron } from '@/lib/sistema/registrar-cron'
 import { DIAS_ENFRIAMIENTO_PROPUESTA_AUTO, debeProponerAutomaticamente, leerModoPlanificacion, planificarConIA } from '@/lib/entrenos/planificar-con-ia'
 
 export const maxDuration = 300
@@ -46,5 +47,6 @@ export async function GET(req: NextRequest) {
       console.error('[proponer-bloques]', id.slice(0, 8), e instanceof Error ? e.message : e)
     }
   }
+  await registrarCron(db, 'proponer-bloques', resumen.errores, `${resumen.atletas} atletas, ${resumen.propuestas} propuestas`)
   return NextResponse.json(resumen)
 }

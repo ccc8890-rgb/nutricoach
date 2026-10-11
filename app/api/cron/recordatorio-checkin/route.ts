@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { registrarCron } from '@/lib/sistema/registrar-cron'
 import { sendRecordatorioCheckinEmail } from '@/lib/emails/recordatorio-checkin'
 
 export async function GET(request: Request) {
@@ -86,6 +87,7 @@ export async function GET(request: Request) {
     }
 
     console.log('[cron/recordatorio-checkin] Resultados:', resultados)
+    await registrarCron(db, 'recordatorio-checkin', resultados.errores, `${resultados.enviados} enviados, ${resultados.saltados} saltados`)
 
     return NextResponse.json(resultados)
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { registrarCron } from '@/lib/sistema/registrar-cron'
 import { generarAvisoRendimiento } from '@/lib/rendimiento/avisos'
 
 export const maxDuration = 120
@@ -36,5 +37,6 @@ export async function GET(req: NextRequest) {
       console.error('[avisos-rendimiento]', id.slice(0, 8), e instanceof Error ? e.message : e)
     }
   }
+  await registrarCron(db, 'avisos-rendimiento', resumen.errores, `${resumen.atletas} atletas, ${resumen.avisos} avisos`)
   return NextResponse.json(resumen)
 }

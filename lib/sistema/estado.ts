@@ -23,6 +23,13 @@ export interface IntegracionSync {
   error_ultimo: string | null
 }
 
+export interface CronRegistro {
+  cron: string
+  estado: 'ok' | 'error'
+  detalle: string | null
+  ejecutado_at: string
+}
+
 const HORA = 3_600_000
 
 function hace(ms: number, ahora: number) {
@@ -58,14 +65,35 @@ function comprobarRelojes(integraciones: IntegracionSync[], ahora: number): Comp
   return { id: 'relojes', nombre, nivel: 'ok', detalle: `Última sincronización ${hace(ultima, ahora)}.` }
 }
 
+const CRONS: { id: string; nombre: string; maxHoras: number }[] = [
+  { id: 'enviar-garmin', nombre: 'Envío de sesiones al reloj', maxHoras: 36 },
+  { id: 'avisos-rendimiento', nombre: 'Avisos de rendimiento', maxHoras: 36 },
+  { id: 'proponer-bloques', nombre: 'Propuesta del siguiente bloque', maxHoras: 36 },
+  { id: 'recordatorio-checkin', nombre: 'Recordatorio de check-in', maxHoras: 9 * 24 },
+]
+
+function comprobarCrons(registros: CronRegistro[], ahora: number): ComprobacionSistema[] {
+  return CRONS.map(({ id, nombre, maxHoras }) => {
+    const ultimo = registros
+      .filter(r => r.cron === id)
+      .sort((a, b) => Date.parse(b.ejecutado_at) - Date.parse(a.ejecutado_at))[0]
+    if (!ultimo) return { id, nombre, nivel: 'aviso' as const, detalle: 'Aún sin registro: se anota desde que corra la próxima vez.' }
+    const t = Date.parse(ultimo.ejecutado_at)
+    if ((ahora - t) / HORA > maxHoras) return { id, nombre, nivel: 'error' as const, detalle: `No corre desde ${hace(t, ahora)}.` }
+    if (ultimo.estado === 'error') return { id, nombre, nivel: 'aviso' as const, detalle: `Corrió ${hace(t, ahora)} con errores${ultimo.detalle ? `: ${ultimo.detalle}` : '.'}` }
+    return { id, nombre, nivel: 'ok' as const, detalle: `Corrió ${hace(t, ahora)}.` }
+  })
+}
+
 export function evaluarSistema(
-  datos: { ejecuciones: EjecucionAgente[]; integraciones: IntegracionSync[] },
+  datos: { ejecuciones: EjecucionAgente[]; integraciones: IntegracionSync[]; crons?: CronRegistro[] },
   ahora: number = Date.now(),
 ): { nivel: NivelEstado; resumen: string; comprobaciones: ComprobacionSistema[] } {
   const comprobaciones = [
     comprobarAgentes('diario', datos.ejecuciones, ahora, 36),
     comprobarAgentes('semanal', datos.ejecuciones, ahora, 9 * 24),
     comprobarRelojes(datos.integraciones, ahora),
+    ...comprobarCrons(datos.crons ?? [], ahora),
   ]
   const errores = comprobaciones.filter(c => c.nivel === 'error')
   const avisos = comprobaciones.filter(c => c.nivel === 'aviso')

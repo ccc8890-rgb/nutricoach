@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
+import { registrarCron } from '@/lib/sistema/registrar-cron'
 import { enviarSesionAGarmin, ErrorGarmin } from '@/lib/integraciones/garmin-workouts'
 import { finHorizonteEnvio, huellaPasos, planearEnvioGarmin } from '@/lib/entrenos/garmin-auto'
 import { ocurrenciasDelDia, sumarDias, type Ajuste } from '@/lib/entrenos/calendario-ajustes'
@@ -82,5 +83,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  await registrarCron(db, 'enviar-garmin', resumen.errores.length, `${resumen.enviados} enviadas${resumen.errores.length ? `; ${resumen.errores[0]}` : ''}`)
   return NextResponse.json(resumen)
 }
