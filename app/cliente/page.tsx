@@ -10,7 +10,7 @@ import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta, marca } f
 import {
   BookOpenText, ClipboardText, SignOut,
   ForkKnife, Barbell, Sun, Moon,
-  CaretRight, CaretLeft, X, 
+  CaretRight, CaretLeft, X,
   ShoppingCart, ChatCircleDots, DeviceMobile,
   Pulse, BowlFood, PersonSimpleRun, SlidersHorizontal,
 } from '@phosphor-icons/react'
@@ -31,6 +31,8 @@ import AjustesTabsEstatico from '@/components/PortalCliente/AjustesTabs'
 import SuplementacionPortalEstatico from '@/components/PortalCliente/SuplementacionPortal'
 import { HoyEditorial, IndustrialTabs, LiquidDock } from '@/components/PortalCliente/editorial'
 import type { LiquidDockItem } from '@/components/PortalCliente/editorial'
+import { useTheme } from '@/components/ThemeProvider'
+import ErrorBoundary from '@/components/ui/ErrorBoundary'
 // Un fallo de render en una pestaña no tumba el portal entero: muestra el error con botón de reintentar.
 function aislar<P extends object>(Componente: ComponentType<P>): ComponentType<P> {
   return function Aislado(props: P) {
@@ -53,8 +55,6 @@ const ChatPanel = aislar(dynamic(() => import('@/components/PortalCliente/ChatPa
 const AjustesTabs = aislar(AjustesTabsEstatico)
 const SuplementacionPortal = aislar(SuplementacionPortalEstatico)
 const IndustrialAtmosphere = dynamic(() => import('@/components/PortalCliente/IndustrialAtmosphere'), { ssr: false })
-import { useTheme } from '@/components/ThemeProvider'
-import ErrorBoundary from '@/components/ui/ErrorBoundary'
 
 type Tab = 'hoy' | 'dieta' | 'entreno' | 'checkin' | 'progreso' | 'compra' | 'recetas' | 'chat' | 'perfil'
 const TABS_VALIDOS: Tab[] = ['hoy', 'dieta', 'entreno', 'checkin', 'progreso', 'compra', 'recetas', 'chat', 'perfil']

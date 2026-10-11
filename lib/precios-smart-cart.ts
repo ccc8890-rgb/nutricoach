@@ -4,7 +4,7 @@
 // ofertas, exportación WhatsApp y heurísticas de ahorro real.
 // ═══════════════════════════════════════════════════════════════
 
-import type { IngredienteSemanal, PrecioOpcion, AsignacionOptimizada, ResultadoOptimizacion, ResumenOptimizacionSuper } from '@/types'
+import type { IngredienteSemanal, AsignacionOptimizada, ResultadoOptimizacion, ResumenOptimizacionSuper } from '@/types'
 
 // ── Helpers ─────────────────────────────────────────────────
 

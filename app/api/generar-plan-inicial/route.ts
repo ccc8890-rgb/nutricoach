@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase, createApiSupabase } from '@/lib/supabase-server'
 import { rateLimit } from '@/lib/rate-limit'
 import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
-
-export const maxDuration = 120
 import { seleccionarProtocolos, formatearEvidenciaParaPrompt } from '@/lib/knowledge-base'
 import { obtenerInformeVigente, necesitaRegeneracion, generarInformeCasoClinico } from '@/lib/inteligencia-clinica'
 import { construirPrompt, generarDietaConIA, type DietaGenerada } from '@/lib/deepseek'
@@ -13,9 +11,7 @@ import { evaluarPerfilEntreno, filtrarPlantillasPorPerfil } from '@/lib/motor-en
 import { generarRecomendacionPeriEntreno, formatearPeriEntrenoParaPrompt } from '@/lib/nutricion-peri-entreno'
 import { validarMicronutrientes } from '@/lib/validacion-micronutrientes'
 import { seleccionarPildoras } from '@/lib/micro-learning'
-import type { MetodologiaCoach } from '@/types'
 import { filtrarRecetasPorSlot, validarYResolverRecetas, calcularTargetSlot, type PlanDeepSeekValidado } from '@/lib/plan-recetas'
-import { calcularGramajeAjustado } from '@/lib/ingredient-roles'
 import { calcularAjustesPeriEntreno } from '@/lib/nutricion-peri-entreno'
 import { getContextoCoach, getContextoClienteClinico, getTargetsComidas } from '@/lib/metodologia-recetario'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
@@ -26,8 +22,10 @@ import {
   reclamarGeneracionInicial,
   type GeneracionInicialResponse,
 } from '@/lib/planes/generacion-inicial'
-import type { PerfilEntrenoCliente, RecetaCandidata, SportModality } from '@/types'
+import type { PerfilEntrenoCliente, SportModality } from '@/types'
 import { generarCodigoPublico } from '@/lib/codigo-publico'
+
+export const maxDuration = 120
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'

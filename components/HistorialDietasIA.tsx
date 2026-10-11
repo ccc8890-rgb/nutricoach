@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Brain, Clock, CheckCircle, XCircle, Loader2, AlertCircle, UtensilsCrossed, ChevronRight, Sparkles } from 'lucide-react'
+import { Brain, Clock, Loader2, AlertCircle, UtensilsCrossed, ChevronRight, Sparkles } from 'lucide-react'
 
 interface Props {
     clienteId: string

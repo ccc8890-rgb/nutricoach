@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Supermercado, PrecioActual, CosteAlimento, CosteComida, CostePorReceta, ProductoSupermercadoDetalle, OpcionEscandallo, EscandalloPlan, ResumenCostesPlan } from '@/types'
+import type { Supermercado, CosteComida, CostePorReceta, ProductoSupermercadoDetalle, OpcionEscandallo, EscandalloPlan, ResumenCostesPlan } from '@/types'
 
 /**
  * Helper: si se pasa un cliente db (service_role), lo usa.

@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import RespuestasClientes from '@/components/RespuestasClientes'
 import type { RespuestaCliente } from '@/types'
-import { MessageSquareReply } from 'lucide-react'
 
 export default function RespuestasPage() {
     const [respuestas, setRespuestas] = useState<RespuestaCliente[]>([])

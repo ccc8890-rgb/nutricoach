@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useDebounce } from '@/lib/useDebounce'
-import { Plus, Search, Loader2, Pencil, Trash2, Apple, UtensilsCrossed, Wheat, Beef, Milk, Egg, Fish, Sun, FlaskConical, Cookie, Coffee, CircleDot, Database, Download, ChevronDown, ChevronRight, Brain, CheckCircle, XCircle } from 'lucide-react'
+import { Plus, Search, Loader2, Pencil, Trash2, Apple, UtensilsCrossed, Wheat, Beef, Milk, Egg, Fish, Sun, FlaskConical, Cookie, Coffee, CircleDot, Database, Download, ChevronDown, ChevronRight } from 'lucide-react'
 import type { Alimento } from '@/types'
 import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'

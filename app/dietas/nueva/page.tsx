@@ -1,8 +1,6 @@
 'use client'
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-
-export const dynamic = 'force-dynamic'
 import { supabase } from '@/lib/supabase'
 import { invalidateCacheKey } from '@/lib/useCachedFetch'
 import {
@@ -12,6 +10,8 @@ import {
 import type { Cliente } from '@/types'
 import { ArrowLeft, Zap } from 'lucide-react'
 import Link from 'next/link'
+
+export const dynamic = 'force-dynamic'
 
 export default function NuevaDietaPage() {
   return (

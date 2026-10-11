@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import { CheckCircle, Clock, Loader2, XCircle, Sparkles, UtensilsCrossed, ChevronDown, ChevronUp, SquareArrowOutUpRight, MessageSquareReply } from 'lucide-react'
+import { CheckCircle, Loader2, XCircle, Sparkles, UtensilsCrossed, ChevronDown, ChevronUp, SquareArrowOutUpRight, MessageSquareReply } from 'lucide-react'
 import type { RespuestaCliente, EstadoRespuesta } from '@/types'
 import Link from 'next/link'
 import { useToast } from '@/components/ui/Toast'

@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
-    Store, Search, X, Euro, Save, Trash2, Plus,
-    ChevronDown, ChevronUp, ExternalLink, RefreshCw,
-    Loader2, Check, AlertCircle, TrendingUp
+  Store, Search, X, Euro, Save, Trash2, Plus, ExternalLink, Loader2, Check, AlertCircle
 } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import type { Supermercado, Alimento, PrecioActual } from '@/types'

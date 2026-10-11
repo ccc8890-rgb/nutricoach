@@ -1,9 +1,8 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
 import { useToast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
-import { Plus, Pencil, Trash2, ClipboardList, Timer, Zap, Droplets, Dumbbell, CalendarDays, Weight, RotateCcw, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, ClipboardList, Timer, Zap, Dumbbell, CalendarDays, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import type { ProtocoloCompeticion, ProtocoloCompeticionForm } from '@/types'
 
 interface Props {

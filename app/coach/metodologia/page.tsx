@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
 import type { MetodologiaCoach } from '@/types'
 
 type FormField = Omit<MetodologiaCoach, 'id' | 'coach_id' | 'updated_at'>

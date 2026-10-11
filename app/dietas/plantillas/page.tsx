@@ -5,6 +5,8 @@ import { useDebounce } from '@/lib/useDebounce'
 import { Plus, LayoutTemplate, Search, Loader2, Pencil, Trash2, FlaskConical, Zap, Timer } from 'lucide-react'
 import type { PlantillaDieta, PlantillaDietaTipo } from '@/types'
 import { PLANTILLA_DIETA_TIPO_LABELS } from '@/types'
+import { useToast } from '@/components/ui/Toast'
+import Modal from '@/components/ui/Modal'
 
 const TIPO_ICON: Record<PlantillaDietaTipo, typeof Zap> = {
     normal: LayoutTemplate,
@@ -23,8 +25,6 @@ const TIPO_BG: Record<PlantillaDietaTipo, string> = {
     carga: 'rgba(161,161,166,0.08)',
     suplementos: '#EFF6FF',
 }
-import { useToast } from '@/components/ui/Toast'
-import Modal from '@/components/ui/Modal'
 
 interface PlantillaForm {
     nombre: string

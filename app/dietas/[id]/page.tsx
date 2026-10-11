@@ -11,6 +11,8 @@ import { calcularMacrosPorCantidad, sumarMacros, COMIDAS_PREDEFINIDAS } from '@/
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { inferirSlotComida } from '@/lib/tipos-comida'
 import type { Macros, PlanNutricion, Alimento } from '@/types'
+import ErrorBoundary from '@/components/ui/ErrorBoundary'
+import ListaCompra from '@/components/ListaCompra'
 
 type ResultadoBusqueda = Alimento & { imagen?: string; _fuente?: string }
 
@@ -27,8 +29,6 @@ interface RecetaConIngredientes {
     alimento?: Alimento | null
   }[]
 }
-import ErrorBoundary from '@/components/ui/ErrorBoundary'
-import ListaCompra from '@/components/ListaCompra'
 
 interface AlimentoEnComida {
   id: string

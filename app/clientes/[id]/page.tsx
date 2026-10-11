@@ -22,6 +22,7 @@ import PlantillaEntrenoSelector from '@/components/training/PlantillaEntrenoSele
 import { OBJETIVO_LABELS } from '@/lib/utils'
 import { listaRecordada, useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import { useToast } from '@/components/ui/Toast'
+import type { ResumenDia } from '@/components/clientes/SemanaDietaPlanner'
 
 const PlanificacionCalendario = dynamic(() => import('@/components/PlanificacionCalendario'), { ssr: false, loading: () => <TabSkeleton /> })
 const AjusteMacrosIA = dynamic(() => import('@/components/AjusteMacrosIA'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -47,7 +48,6 @@ const DecisionesIACliente = dynamic(() => import('@/components/clientes/Decision
 const EntrenoCalendarioKanban = dynamic(() => import('@/components/clientes/EntrenoCalendarioKanban'), { ssr: false, loading: () => <TabSkeleton /> })
 const RutinaSemanaAccordion = dynamic(() => import('@/components/clientes/RutinaSemanaAccordion'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioMes = dynamic(() => import('@/components/clientes/EntrenoCalendarioMes'), { ssr: false, loading: () => <TabSkeleton /> })
-import type { ResumenDia } from '@/components/clientes/SemanaDietaPlanner'
 const SemanaDietaPlanner = dynamic(() => import('@/components/clientes/SemanaDietaPlanner'), { ssr: false, loading: () => <TabSkeleton /> })
 
 function TabSkeleton() {

@@ -4,14 +4,14 @@ import { GeistMono } from 'geist/font/mono'
 import { Instrument_Sans } from 'next/font/google'
 import Script from "next/script"
 import "./globals.css"
+import { ToastProvider } from '@/components/ui/Toast'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 const instrumentSans = Instrument_Sans({
   subsets: ['latin'],
   variable: '--font-instrument',
   display: 'swap',
 })
-import { ToastProvider } from '@/components/ui/Toast'
-import { ThemeProvider } from '@/components/ThemeProvider'
 
 export const metadata: Metadata = {
   title: "Casanova Nutrition",

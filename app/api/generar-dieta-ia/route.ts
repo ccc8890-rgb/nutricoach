@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { rateLimit } from '@/lib/rate-limit'
-
-export const maxDuration = 120
 import { construirPrompt, generarDietaConIA } from '@/lib/deepseek'
 import type { DietaGenerada } from '@/lib/deepseek'
 import { registrarInteraccionIA } from '@/lib/ia-logger'
 import { fetchKnowledgeContext } from '@/lib/knowledge'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
+
+export const maxDuration = 120
 
 /**
  * POST /api/generar-dieta-ia
