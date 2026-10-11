@@ -14,6 +14,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Check, ChevronLeft, ChevronRight, ClipboardPaste, Copy, ExternalLink, Flag, Loader2, Plus, Trash2, Watch, X } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { diaSemanaDe, diferenciaDias, lunesDe, sumarDias, esFechaISO, type Operacion } from '@/lib/entrenos/calendario-ajustes'
+import { CATEGORIAS_SESION, type CategoriaSesion } from '@/lib/entrenos/biblioteca-categorias'
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 const DIAS_ABREV = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
@@ -26,6 +27,19 @@ const FASE_COLOR: Record<string, { bg: string; text: string }> = {
 }
 
 type EstadoGarmin = 'enviada' | 'pendiente' | null
+
+interface SesionBase {
+  id: string
+  nombre: string
+  categoria: CategoriaSesion
+  plantilla: string
+  duracion_min: number | null
+  n_ejercicios: number
+  con_pasos: boolean
+}
+
+const NOMBRES_DIA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+const MAX_REPETICIONES = 120
 
 interface SesionDia {
   id: string
@@ -226,7 +240,14 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
   const [guardando, setGuardando] = useState(false)
   const [fechaMover, setFechaMover] = useState('')
   const [nuevoNombre, setNuevoNombre] = useState('')
-  const [nuevoAlcance, setNuevoAlcance] = useState<'dia' | 'semanal'>('dia')
+  const [nuevoAlcance, setNuevoAlcance] = useState<'dia' | 'repetir' | 'semanal'>('dia')
+  const [biblioteca, setBiblioteca] = useState<SesionBase[] | null>(null)
+  const [bibliotecaError, setBibliotecaError] = useState(false)
+  const [categoria, setCategoria] = useState<CategoriaSesion | 'Todas'>('Todas')
+  const [busqueda, setBusqueda] = useState('')
+  const [baseSel, setBaseSel] = useState<SesionBase | null>(null)
+  const [diasRep, setDiasRep] = useState<number[]>([])
+  const [hastaRep, setHastaRep] = useState('')
   const { addToast } = useToast()
   const hoy = hoyISO()
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
@@ -355,6 +376,28 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
     if (ok) { setSeleccion(null); setFechaMover('') }
   }
 
+  function abrirNueva(fecha: string) {
+    setNuevoNombre(''); setNuevoAlcance('dia'); setBaseSel(null); setBusqueda('')
+    setDiasRep([NOMBRES_DIA.indexOf(diaSemanaDe(fecha))]); setHastaRep(sumarDias(fecha, 27))
+    setSeleccion({ tipo: 'nueva', fecha })
+    if (biblioteca === null) {
+      setBibliotecaError(false)
+      fetch('/api/entrenos/biblioteca-sesiones')
+        .then(r => r.json())
+        .then(d => setBiblioteca(d.sesiones ?? []))
+        .catch(() => { setBiblioteca([]); setBibliotecaError(true) })
+    }
+  }
+
+  function fechasARepetir(fecha: string): string[] {
+    if (nuevoAlcance !== 'repetir') return [fecha]
+    const out: string[] = []
+    for (let f = fecha; f <= hastaRep && out.length < MAX_REPETICIONES; f = sumarDias(f, 1)) {
+      if (diasRep.includes(NOMBRES_DIA.indexOf(diaSemanaDe(f)))) out.push(f)
+    }
+    return out.length > 0 ? out : [fecha]
+  }
+
   async function crearSesion(fecha: string) {
     const nombre = nuevoNombre.trim()
     if (!nombre) return
@@ -363,7 +406,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
       const res = await fetch('/api/entrenos/calendario-sesion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan_id: planId, fecha, nombre, alcance: nuevoAlcance }),
+        body: JSON.stringify({ plan_id: planId, fecha, fechas: fechasARepetir(fecha), nombre, alcance: nuevoAlcance === 'semanal' ? 'semanal' : 'dia', plantilla_sesion_id: baseSel?.id }),
       })
       const json = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(json.error ?? 'error')
@@ -440,7 +483,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
               onSeleccionarSesion={(id, fecha) => setSeleccion({ tipo: 'sesion', sesion_id: id, fecha })}
               onSeleccionarDia={fecha => setSeleccion({ tipo: 'dia', fecha })}
               onPegar={pegar}
-              onNueva={fecha => { setNuevoNombre(''); setNuevoAlcance('dia'); setSeleccion({ tipo: 'nueva', fecha }) }}
+              onNueva={abrirNueva}
             />
           ))}
         </div>
@@ -455,8 +498,61 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
             </div>
             <button onClick={() => setSeleccion(null)} className="p-1.5 rounded-lg flex-shrink-0" style={{ color: 'var(--text-muted)' }} aria-label="Cerrar"><X size={15} /></button>
           </div>
+
+          <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>Sesión base (opcional)</p>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {(['Todas', ...CATEGORIAS_SESION] as const).map(c => (
+              <button
+                key={c}
+                onClick={() => setCategoria(c)}
+                className="text-xs px-2.5 py-1 rounded-full"
+                style={{ background: categoria === c ? 'var(--primary)' : 'transparent', color: categoria === c ? 'var(--bg)' : 'var(--text-muted)', border: '1px solid var(--border)' }}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
           <input
-            autoFocus
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+            placeholder="Buscar sesión (series, tirada, híbrida, pierna…)"
+            className="w-full text-sm px-3 py-2 rounded-lg mb-2"
+            style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
+          />
+          <div className="rounded-lg mb-3 max-h-56 overflow-y-auto" style={{ border: '1px solid var(--border)' }}>
+            {biblioteca === null ? (
+              <div className="flex items-center justify-center py-5"><Loader2 size={15} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
+            ) : (() => {
+              const q = busqueda.trim().toLowerCase()
+              const lista = biblioteca.filter(b => (categoria === 'Todas' || b.categoria === categoria) && (!q || `${b.nombre} ${b.plantilla}`.toLowerCase().includes(q)))
+              if (lista.length === 0) return <p className="text-sm px-3 py-3" style={{ color: 'var(--text-muted)' }}>{bibliotecaError ? 'No se pudo cargar la biblioteca.' : 'No hay sesiones con ese filtro.'}</p>
+              return lista.map(b => (
+                <button
+                  key={b.id}
+                  onClick={() => { setBaseSel(b); setNuevoNombre(b.nombre.slice(0, 80)) }}
+                  className="w-full text-left px-3 py-2 flex items-center justify-between gap-3"
+                  style={{ background: baseSel?.id === b.id ? 'var(--semantic-info-bg)' : 'transparent', borderBottom: '1px solid var(--border)' }}
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm truncate" style={{ color: 'var(--text)' }}>{b.nombre}</span>
+                    <span className="block text-xs truncate" style={{ color: 'var(--text-muted)' }}>{b.categoria} · {b.plantilla}</span>
+                  </span>
+                  <span className="flex items-center gap-2 text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+                    {b.duracion_min ? `${b.duracion_min} min` : `${b.n_ejercicios} ej.`}
+                    {b.con_pasos && <Watch size={12} aria-label="Con pasos de Garmin" />}
+                  </span>
+                </button>
+              ))
+            })()}
+          </div>
+          {baseSel && (
+            <p className="text-xs mb-3 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+              Se copiará «{baseSel.nombre}» con sus ejercicios{baseSel.con_pasos ? ' y pasos de Garmin' : ''}.
+              <button onClick={() => { setBaseSel(null); setNuevoNombre('') }} className="underline">Quitar</button>
+            </p>
+          )}
+
+          <input
             value={nuevoNombre}
             onChange={e => setNuevoNombre(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') crearSesion(seleccion.fecha) }}
@@ -465,21 +561,51 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
             className="w-full text-sm px-3 py-2 rounded-lg mb-3"
             style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
           />
-          <div className="flex flex-wrap gap-4 mb-3 text-sm" style={{ color: 'var(--text)' }}>
+
+          <div className="flex flex-wrap gap-4 mb-2 text-sm" style={{ color: 'var(--text)' }}>
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input type="radio" checked={nuevoAlcance === 'dia'} onChange={() => setNuevoAlcance('dia')} /> Solo este día
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" checked={nuevoAlcance === 'repetir'} onChange={() => setNuevoAlcance('repetir')} /> Repetir en los días que elija
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input type="radio" checked={nuevoAlcance === 'semanal'} onChange={() => setNuevoAlcance('semanal')} /> Todos los {diaSemanaDe(seleccion.fecha).toLowerCase()} del bloque
             </label>
           </div>
+          {nuevoAlcance === 'repetir' && (
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              {DIAS_ABREV.map((d, i) => (
+                <button
+                  key={d}
+                  onClick={() => setDiasRep(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])}
+                  className="w-8 h-8 rounded-full text-xs font-semibold"
+                  style={{ background: diasRep.includes(i) ? 'var(--primary)' : 'transparent', color: diasRep.includes(i) ? 'var(--bg)' : 'var(--text-muted)', border: '1px solid var(--border)' }}
+                  aria-label={NOMBRES_DIA[i]}
+                >
+                  {d}
+                </button>
+              ))}
+              <span className="text-xs ml-1" style={{ color: 'var(--text-muted)' }}>hasta</span>
+              <input
+                type="date"
+                value={hastaRep}
+                min={seleccion.fecha}
+                onChange={e => setHastaRep(e.target.value)}
+                className="text-sm px-2 py-1 rounded-lg"
+                style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
+              />
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>({fechasARepetir(seleccion.fecha).length} {fechasARepetir(seleccion.fecha).length === 1 ? 'día' : 'días'})</span>
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
             <button onClick={() => crearSesion(seleccion.fecha)} disabled={guardando || !nuevoNombre.trim()} className="btn-primary btn-sm">
               {guardando ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />} Añadir sesión
             </button>
             <button onClick={() => setSeleccion(null)} className="btn-secondary btn-sm">Cancelar</button>
           </div>
-          <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Se crea vacía: después puedes añadirle ejercicios desde «Abrir plan».</p>
+          {!baseSel && <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Sin sesión base se crea vacía: después puedes añadirle ejercicios desde «Editar en el plan».</p>}
         </div>
       )}
 
@@ -567,7 +693,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => copiarDia(seleccion.fecha)} className="btn-secondary btn-sm"><Copy size={13} /> Copiar día</button>
                 <button onClick={() => copiarSemana(seleccion.fecha)} className="btn-secondary btn-sm"><Copy size={13} /> Copiar semana</button>
-                <button onClick={() => { setNuevoNombre(''); setNuevoAlcance('dia'); setSeleccion({ tipo: 'nueva', fecha: seleccion.fecha }) }} className="btn-secondary btn-sm"><Plus size={13} /> Nueva sesión</button>
+                <button onClick={() => abrirNueva(seleccion.fecha)} className="btn-secondary btn-sm"><Plus size={13} /> Nueva sesión</button>
                 {portapapeles && <button onClick={() => pegar(seleccion.fecha)} disabled={guardando} className="btn-primary btn-sm"><ClipboardPaste size={13} /> Pegar aquí</button>}
               </div>
             </>
