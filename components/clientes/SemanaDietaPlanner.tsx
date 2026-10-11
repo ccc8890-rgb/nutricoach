@@ -506,14 +506,6 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
               </button>
             ))}
           </div>
-          {vista > 1 && (
-            <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }} title="Platos: cada día con sus comidas. Resumen: kcal y macros por día para comparar semanas de un vistazo">
-              {([['resumen', 'Resumen'], ['platos', 'Platos']] as const).map(([m, t]) => (
-                <button key={m} onClick={() => setModo(m)} className="px-2.5 py-2 text-xs font-medium"
-                  style={{ background: modo === m ? 'var(--primary)' : 'transparent', color: modo === m ? 'var(--bg)' : 'var(--text-muted)' }}>{t}</button>
-              ))}
-            </div>
-          )}
           <button onClick={() => setModalPlantilla('lista')} title="Aplicar una plantilla guardada" className="rounded-xl px-3 py-2 text-xs font-medium" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>Plantillas</button>
           <button onClick={() => setModalPlantilla('guardar')} disabled={contarPlatosPl(semanasVisibles) === 0} title={`Guardar ${vista === 1 ? 'esta semana' : vista === 2 ? 'estas 2 semanas' : 'estas 4 semanas'} como plantilla`} className="rounded-xl px-3 py-2 text-xs font-medium disabled:opacity-50" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>Guardar plantilla</button>
           {accionExtra}
