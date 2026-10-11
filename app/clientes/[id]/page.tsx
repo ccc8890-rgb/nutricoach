@@ -14,7 +14,7 @@ import {
   ShieldCheck, BookOpen, Target, Copy, RotateCcw,
   FlaskConical,
 } from 'lucide-react'
-import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio } from '@/types'
+import type { Cliente, PlanNutricion, PlanEntrenamiento, SeguimientoPeso, CheckIn, PlantillaEntrenamiento } from '@/types'
 import ResumenCliente, { AvisosCliente, avisosCliente } from '@/components/clientes/ResumenCliente'
 import { OBJETIVO_LABELS } from '@/lib/utils'
 import { listaRecordada, useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
@@ -40,6 +40,7 @@ const CosteSemanalCard = dynamic(() => import('@/components/clientes/CosteSemana
 const AdherenciaScoreCard = dynamic(() => import('@/components/clientes/AdherenciaScore'), { ssr: false, loading: () => <div className="h-24 rounded-xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const MealAdherenciaHeatmap = dynamic(() => import('@/components/clientes/MealAdherenciaHeatmap'), { ssr: false, loading: () => <div className="h-32 rounded-2xl animate-pulse" style={{ background: 'var(--surface)' }} /> })
 const ActividadClientePanel = dynamic(() => import('@/components/clientes/ActividadClientePanel'), { ssr: false, loading: () => <TabSkeleton /> })
+const GuardarPlanComoPlantilla = dynamic(() => import('@/components/clientes/GuardarPlanComoPlantilla'), { ssr: false })
 const PlanificarConIA = dynamic(() => import('@/components/clientes/PlanificarConIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const InformeCaso = dynamic(() => import('@/components/clientes/InformeCaso'), { ssr: false, loading: () => <TabSkeleton /> })
 const DecisionesIACliente = dynamic(() => import('@/components/clientes/DecisionesIACliente'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -640,27 +641,23 @@ export default function ClienteDetallePage() {
   async function crearPlanDesdePlantilla() {
     if (!plantillaSeleccionada) return
     setCreandoPlan(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setCreandoPlan(false); return }
-    const { data: plan, error } = await supabase.from('planes_entrenamiento').insert({
-      coach_id: user.id, cliente_id: id as string,
-      nombre: plantillaSeleccionada.nombre,
-      descripcion: plantillaSeleccionada.descripcion ?? null,
-      duracion_semanas: plantillaSeleccionada.duracion_semanas ?? null,
-      activo: true,
-    }).select().single()
-    if (error || !plan) { addToast({ type: 'error', title: 'Error', message: 'No se pudo crear el plan' }); setCreandoPlan(false); return }
-    for (const sesion of (plantillaSeleccionada.sesiones ?? []) as PlantillaSesion[]) {
-      const { data: nuevaSesion } = await supabase.from('sesiones_entrenamiento').insert({ plan_id: plan.id, nombre: sesion.nombre, dia_semana: sesion.dia_semana ?? null, orden: sesion.orden, notas: sesion.notas ?? null }).select('id').single()
-      if (!nuevaSesion) continue
-      for (const ej of (sesion.ejercicios ?? []) as PlantillaSesionEjercicio[]) {
-        await supabase.from('sesion_ejercicios').insert({ sesion_id: nuevaSesion.id, ejercicio_id: ej.ejercicio_id, series: ej.series ?? null, repeticiones: ej.repeticiones ?? null, descanso_segundos: ej.descanso_segundos ?? null, peso_sugerido: ej.peso_sugerido ?? null, notas: ej.notas ?? null, orden: ej.orden })
-      }
+    try {
+      // Misma copia completa que «Asignar» en Plantillas: ejercicios, pasos de Garmin, fase y notas del coach.
+      const res = await fetch(`/api/plantillas-entreno/${plantillaSeleccionada.id}/asignar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cliente_id: id, nombre: plantillaSeleccionada.nombre }),
+      })
+      if (!res.ok) throw new Error()
+      addToast({ type: 'success', title: 'Plan creado', message: `"${plantillaSeleccionada.nombre}" asignado correctamente` })
+      setShowSelectorPlantilla(false); setPlantillaSeleccionada(null)
+      const { data: nuevosEntrenos } = await supabase.from('planes_entrenamiento').select('*').eq('cliente_id', id).order('created_at', { ascending: false })
+      setEntrenos(nuevosEntrenos ?? [])
+    } catch {
+      addToast({ type: 'error', title: 'Error', message: 'No se pudo crear el plan' })
+    } finally {
+      setCreandoPlan(false)
     }
-    addToast({ type: 'success', title: 'Plan creado', message: `"${plan.nombre}" asignado correctamente` })
-    setShowSelectorPlantilla(false); setPlantillaSeleccionada(null); setCreandoPlan(false)
-    const { data: nuevosEntrenos } = await supabase.from('planes_entrenamiento').select('*').eq('cliente_id', id).order('created_at', { ascending: false })
-    setEntrenos(nuevosEntrenos ?? [])
   }
 
   if (loading) return (
@@ -958,6 +955,7 @@ export default function ClienteDetallePage() {
                       <div className="absolute right-0 mt-1 z-10 flex flex-col gap-1 p-2 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)', minWidth: 180 }}>
                         {entrenoActivo && <Link href={`/entrenos/${entrenoActivo.id}?returnTo=${volverAqui}`} className="btn-secondary btn-sm">Abrir plan <ExternalLink size={12} /></Link>}
                         <button className="btn-secondary btn-sm" onClick={() => setShowSelectorPlantilla(true)}><CopyPlus size={13} /> Plantilla</button>
+                        {entrenoActivo && <GuardarPlanComoPlantilla planId={entrenoActivo.id} nombreInicial={entrenoActivo.nombre} />}
                         <Link href={`/entrenos/nueva?cliente=${id}`} className="btn-secondary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link>
                       </div>
                     </details>

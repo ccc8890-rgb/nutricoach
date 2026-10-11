@@ -1,28 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
-
-type PlantillaEjercicioRow = {
-  ejercicio_id: string
-  series?: number | null
-  repeticiones?: string | null
-  descanso_segundos?: number | null
-  peso_sugerido?: string | null
-  carga_valor?: number | null
-  notas?: string | null
-  notas_tecnicas?: string | null
-  orden?: number | null
-}
-
-type PlantillaSesionRow = {
-  id: string
-  nombre: string
-  dia_semana?: string | null
-  orden?: number | null
-  notas?: string | null
-  descripcion?: string | null
-  duracion_estimada_min?: number | null
-  ejercicios?: PlantillaEjercicioRow[]
-}
+import { copiarSesionesPlantillaAPlan } from '@/lib/entrenos/copiar-plan'
 
 export async function POST(
   request: NextRequest,
@@ -70,19 +48,8 @@ export async function POST(
       return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 })
     }
 
-    const { data: sesiones, error: sesionesError } = await admin
-      .from('plantilla_sesiones')
-      .select('*, ejercicios:plantilla_sesion_ejercicios(*)')
-      .eq('plantilla_id', id)
-      .order('orden')
-
-    if (sesionesError) {
-      return NextResponse.json({ error: 'Error al obtener sesiones de la plantilla' }, { status: 500 })
-    }
-
-    if (!sesiones?.length) {
-      return NextResponse.json({ error: 'La plantilla no tiene sesiones' }, { status: 400 })
-    }
+    // Un solo plan activo por cliente: el nuevo sustituye al anterior.
+    await admin.from('planes_entrenamiento').update({ activo: false }).eq('cliente_id', clienteId).eq('activo', true)
 
     const { data: plan, error: planError } = await admin
       .from('planes_entrenamiento')
@@ -98,47 +65,14 @@ export async function POST(
       .single()
 
     if (planError || !plan) {
-      return NextResponse.json({ error: planError?.message ?? 'Error al crear el plan' }, { status: 500 })
+      return NextResponse.json({ error: 'Error al crear el plan' }, { status: 500 })
     }
 
-    for (const sesion of sesiones as PlantillaSesionRow[]) {
-      const { data: nuevaSesion, error: sesionError } = await admin
-        .from('sesiones_entrenamiento')
-        .insert({
-          plan_id: plan.id,
-          nombre: sesion.nombre,
-          dia_semana: sesion.dia_semana ?? null,
-          orden: sesion.orden ?? null,
-          notas: sesion.notas ?? sesion.descripcion ?? null,
-          duracion_estimada_min: sesion.duracion_estimada_min ?? null,
-        })
-        .select('id')
-        .single()
-
-      if (sesionError || !nuevaSesion) {
-        await admin.from('planes_entrenamiento').delete().eq('id', plan.id)
-        return NextResponse.json({ error: sesionError?.message ?? 'Error al insertar sesión' }, { status: 500 })
-      }
-
-      for (const ejercicio of sesion.ejercicios ?? []) {
-        const { error: ejercicioError } = await admin
-          .from('sesion_ejercicios')
-          .insert({
-            sesion_id: nuevaSesion.id,
-            ejercicio_id: ejercicio.ejercicio_id,
-            series: ejercicio.series ?? null,
-            repeticiones: ejercicio.repeticiones ?? null,
-            descanso_segundos: ejercicio.descanso_segundos ?? null,
-            peso_sugerido: ejercicio.peso_sugerido ?? ejercicio.carga_valor?.toString() ?? null,
-            notas: ejercicio.notas ?? ejercicio.notas_tecnicas ?? null,
-            orden: ejercicio.orden ?? null,
-          })
-
-        if (ejercicioError) {
-          await admin.from('planes_entrenamiento').delete().eq('id', plan.id)
-          return NextResponse.json({ error: ejercicioError.message }, { status: 500 })
-        }
-      }
+    // Copia completa: ejercicios, pasos de Garmin, fase del bloque y notas del coach.
+    const copia = await copiarSesionesPlantillaAPlan(admin, id, plan.id)
+    if (!copia.ok) {
+      await admin.from('planes_entrenamiento').delete().eq('id', plan.id)
+      return NextResponse.json({ error: 'La plantilla no tiene sesiones o no se pudieron copiar' }, { status: 400 })
     }
 
     return NextResponse.json({ ok: true, plan_id: plan.id })
