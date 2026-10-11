@@ -14,6 +14,17 @@ Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/inter
 - **Recuperar un archivo:** `git checkout bd7d691~1 -- <ruta>` (p. ej. `lib/recetas/auto-match-ingrediente.ts`). Todo el conjunto: `git checkout bd7d691~1 -- app/api lib/recetas lib/scraping/motores` (cuidado: también restauraría otros borrados de esas carpetas).
 - La limpieza anterior (52 archivos) está en `873c556`; se recupera igual con `git checkout 873c556~1 -- <ruta>`.
 
+## ✅ SESIÓN 11-10-2026 (noche, Claude, 2.ª parte) — Selector de ejercicios plegable por disciplina y músculo
+
+Carlos: el selector de «Añadir ejercicio» del editor de sesión (≈60 botones a la vez) abrumaba. Probado por él en producción: «mucho mejor así». Commits `8c60a0d`→`a58a43f` en `main`, sin migraciones.
+
+- **`components/clientes/EditorSesionCalendario.tsx` (`SelectorEjercicio`):** todo cerrado al abrir; lista de secciones plegables (Habituales con los 8 más usados, Calentamiento, Fuerza, Core, Cardio, Funcional) con contador, una abierta a la vez; Fuerza se despliega por músculo y Calentamiento/Cardio por subgrupo (si solo hay un subgrupo sale directo). El buscador sustituye todo por una lista plana. Rejilla de 2 columnas con scroll interno, letra 14 px.
+- **`lib/entrenos/ejercicio-categorias.ts`:** `subgrupoDe(e, pestaña)` por nombre. Calentamiento: Movilidad, Estiramientos, Foam y rodillo, Pedaleo, Trote y calma. Cardio: **Suave y bajo impacto** (primero), Carrera, Bici, Remo y SkiErg; lo demás «Otros».
+- **Datos (tabla `ejercicios`, insertados con service role, visibles a todos los coaches):** 12 ejercicios nuevos de bajo impacto para gente poco deportista: Caminar en cinta, Caminar en cinta con inclinación, Paseo ligero, Caminata rápida, Senderismo, Elíptica, Subir escaleras / stepper, Natación suave, Aquagym, Marcha nórdica (tipo `cardio`), Pilates suave y Tai chi (tipo `flexibilidad`). Los suaves se añaden por defecto con 1 × 30 min (`porDefecto`).
+- **Lección:** no meter `camin` en `RE_CARDIO`: movería «Zancadas caminando» (fuerza) y «Caminata del granjero» (funcional) a Cardio. Los ejercicios nuevos ya llevan `tipo: cardio`.
+- **Auditoría de cierre:** `tsc` y ESLint limpios, sin secretos ni rutas nuevas (solo UI, constantes y 12 filas del catálogo). Pendiente: limpieza real de la BD de ejercicios (músculos, duplicados); revisar si algún ejercicio cae en un subgrupo erróneo al usarlo.
+- **Aviso:** otra sesión subió en paralelo (`94c6eec`, `683508a`: pulso/base aeróbica) y deja `app/api/cliente/sesion/[id]/route.ts` sin commitear; no es de esta sesión.
+
 ## ✅ SESIÓN 11-10-2026 (noche, Claude) — Decisiones de IA sin duplicados, agentes de entreno antiguos apagados, calendario mensual interactivo y Garmin a 3 semanas
 
 Todo en `main`, `tsc`, ESLint y `npm run verificar:motor` (43/43) limpios. **Nada visto aún en navegador** (ni el arrastre real del calendario).
