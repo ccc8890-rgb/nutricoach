@@ -520,7 +520,7 @@ export default function EditarDietaPage() {
   async function copiarEnlacePublico() {
     if (!plan?.codigo_publico) return
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/cliente/${plan.codigo_publico}`)
+      await navigator.clipboard.writeText(`${window.location.origin}/cliente`)
       setCopiadoId(true)
       addToast({ type: 'success', title: 'Enlace copiado', message: 'Enlace público copiado al portapapeles' })
       setTimeout(() => setCopiadoId(false), 2000)

@@ -748,7 +748,7 @@ export default function ClienteDetallePage() {
               {dietaActiva?.codigo_publico && (
                 <button
                   className="btn-secondary btn-sm px-2 sm:px-3"
-                  onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/cliente/${dietaActiva.codigo_publico}`); addToast({ type: 'success', title: 'Enlace copiado', message: 'Portal del cliente copiado' }) }}
+                  onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/cliente`); addToast({ type: 'success', title: 'Enlace copiado', message: 'Portal del cliente copiado' }) }}
                   title="Copiar portal cliente"
                 >
                   <Link2 size={14} />

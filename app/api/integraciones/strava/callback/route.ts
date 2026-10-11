@@ -26,16 +26,8 @@ export async function GET(req: NextRequest) {
 
   const db = createServiceSupabase()
 
-  // Buscar codigo_publico del portal para redirigir de vuelta al cliente correcto
-  const { data: plan } = await db
-    .from('planes_nutricion')
-    .select('codigo_publico')
-    .eq('cliente_id', clienteId)
-    .eq('activo', true)
-    .single()
-  const portalUrl = plan?.codigo_publico
-    ? `${APP_URL}/cliente/${plan.codigo_publico}`
-    : `${APP_URL}/`
+  // El portal del cliente es siempre /cliente (pestaña Ajustes → Apps)
+  const portalUrl = `${APP_URL}/cliente?tab=perfil`
 
   try {
     const tokens = await stravaProvider.handleCallback(code, state)
@@ -56,8 +48,8 @@ export async function GET(req: NextRequest) {
     }
   } catch (err) {
     console.error('[strava-callback]', err)
-    return NextResponse.redirect(`${portalUrl}?error=strava_error`)
+    return NextResponse.redirect(`${portalUrl}&error=strava_error`)
   }
 
-  return NextResponse.redirect(`${portalUrl}?connected=strava`)
+  return NextResponse.redirect(`${portalUrl}&connected=strava`)
 }

@@ -43,5 +43,19 @@ Para clientes y anónimos el portal antiguo no sirve. Lo único que se perdería
 4. Verificar: `tsc`, `npm run build`, `node scripts/audit-portal-patterns.mjs`, y probar conectar Strava y abrir un enlace antiguo.
 **Volver atrás:** `git revert` de ese commit devuelve los archivos y las rutas tal cual.
 
-### Decisión pendiente de Carlos
-¿Necesitas la vista previa del portal del cliente desde tu cuenta de coach? Si sí, se mantiene (o se sustituye por «entrar como cliente» en el portal activo). Si no, se ejecuta el plan de arriba.
+### Decisión de Carlos y ejecución (11-10-2026)
+Carlos no usa la vista previa: el portal antiguo se elimina y `/cliente` queda como único portal del cliente.
+Hecho en un solo commit («chore: elimina el portal antiguo /cliente/[codigo]…»):
+- `app/cliente/[codigo]/page.tsx` → solo `redirect('/cliente')` (los enlaces viejos siguen funcionando; sin sesión, `/cliente` manda al login). Borrados su `layout.tsx` y `ClientePublicoPwaGuard.tsx`.
+- Borrados `DashboardCliente`, `ProgresoCharts`, `GarminMiniCard`, `RegistrarEntrenoModal` (≈2.300 líneas).
+- Callbacks OAuth Strava/COROS/Terra → `/cliente?tab=perfil&connected=…` (ya no consultan `planes_nutricion`).
+- Botones «copiar enlace» (`dietas/[id]`, `clientes/[id]`) → `${origin}/cliente`.
+- `sesion/[id]`: la vuelta es siempre `/cliente?tab=entreno`.
+- `audit-portal-patterns.mjs`: regla 5 reescrita (la ruta solo redirige, nunca monta un portal propio) y regla 6 eliminada.
+Verificado: `tsc` limpio, `npm run build` OK, auditoría de patrones sin problemas, `curl /cliente/abc123` → 307 a `/cliente`.
+**No se tocó:** `lib/tipos-comida.ts` (lo usan APIs del coach) ni las APIs `/api/cliente/[codigo]/*` (siguen en uso por el portal activo y sus tests). El parámetro `?codigo=` de `/api/cliente/sesion/[id]` queda sin quien lo envíe; limpiarlo en una pasada de APIs huérfanas.
+**Volver atrás:** `git revert <sha del commit chore del portal antiguo>` restaura archivos y rutas.
+**Futuro (no construido):** si se quiere «ver como cliente» desde la cuenta de coach, hacerlo sobre el portal activo (`/cliente` con el cliente elegido), no resucitando este.
+
+## Siguiente pasada (pendiente)
+Auditar las rutas `/api/cliente/[codigo]/*` que ya nadie llama (p. ej. `garmin-resumen`, `micronutrientes`, `mis-platos`) comprobando cada una contra el portal activo y los tests.

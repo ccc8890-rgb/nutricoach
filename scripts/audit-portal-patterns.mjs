@@ -123,53 +123,24 @@ if (mainContent.includes("router.replace('/cliente/semana')")) {
   })
 }
 
-// ─── Regla 5: /cliente/[codigo] no debe renderizar portal antiguo si hay sesión ─
-// Esta ruta existe por compatibilidad pública, pero un cliente autenticado debe
-// acabar siempre en /cliente. Si no, el historial puede volver a DashboardCliente.
+// ─── Regla 5: /cliente/[codigo] solo reenvía a /cliente ──────────────────────
+// El portal antiguo por código se eliminó (11-10-2026). La ruta queda como
+// reenvío para enlaces viejos: nunca debe volver a renderizar un portal propio.
 const PUBLIC_CODE_PORTAL = join(ROOT, 'app/cliente/[codigo]/page.tsx')
 const publicCodeContent = readFile(PUBLIC_CODE_PORTAL)
-if (publicCodeContent.includes("'use client'") || publicCodeContent.includes('"use client"')) {
-  errors.push({
-    file: rel(PUBLIC_CODE_PORTAL),
-    line: 1,
-    rule: 'CLIENT_CODE_PORTAL_MUST_BE_SERVER_GUARDED',
-    msg: `/cliente/[codigo] debe ser Server Component para redirigir a /cliente antes de renderizar DashboardCliente`,
-    code: publicCodeContent.split('\n')[0]?.trim(),
-  })
-}
 if (!publicCodeContent.includes("redirect('/cliente')") && !publicCodeContent.includes('redirect("/cliente")')) {
   errors.push({
     file: rel(PUBLIC_CODE_PORTAL),
-    rule: 'MISSING_CLIENT_ROLE_REDIRECT',
-    msg: `/cliente/[codigo] debe redirigir a /cliente cuando detecta sesión con role cliente`,
+    rule: 'CODE_PORTAL_MUST_REDIRECT',
+    msg: `/cliente/[codigo] debe limitarse a redirigir a /cliente (no renderizar un portal antiguo)`,
   })
 }
-if (!publicCodeContent.includes('createServerSupabase')) {
+if (publicCodeContent.includes('DashboardCliente')) {
   errors.push({
     file: rel(PUBLIC_CODE_PORTAL),
-    rule: 'MISSING_SERVER_SESSION_CHECK',
-    msg: `/cliente/[codigo] debe comprobar sesión en servidor antes de renderizar DashboardCliente`,
+    rule: 'OLD_PORTAL_RETURNED',
+    msg: `/cliente/[codigo] no debe volver a montar DashboardCliente`,
   })
-}
-
-// ─── Regla 6: links públicos a sesiones deben conservar codigo ───────────────
-// El coach puede revisar el portal público por código. Si DashboardCliente abre
-// /cliente/sesion/[id] sin codigo, la API intenta resolver cliente por sesión
-// autenticada y un coach cae en "Sesión no encontrada" → /cliente → /dashboard.
-const PUBLIC_DASHBOARD = join(ROOT, 'components/PortalCliente/DashboardCliente.tsx')
-const publicDashboardContent = readFile(PUBLIC_DASHBOARD)
-const publicDashboardLines = publicDashboardContent.split('\n')
-for (let i = 0; i < publicDashboardLines.length; i++) {
-  const line = publicDashboardLines[i]
-  if (line.includes('/cliente/sesion/') && !line.includes('codigo=')) {
-    errors.push({
-      file: rel(PUBLIC_DASHBOARD),
-      line: i + 1,
-      rule: 'PUBLIC_SESSION_LINK_NEEDS_CODE',
-      msg: `Links desde DashboardCliente a /cliente/sesion deben incluir ?codigo=... para que el flujo público/coach no dependa del usuario autenticado`,
-      code: line.trim(),
-    })
-  }
 }
 
 // ─── Regla 7: Service Worker no debe cachear APIs de cliente ─────────────────

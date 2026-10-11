@@ -18,10 +18,8 @@ export async function GET(req: NextRequest) {
 
   const db = createServiceSupabase()
 
-  // Buscar codigo_publico para redirigir al portal
-  const { data: plan } = await db
-    .from('planes_nutricion').select('codigo_publico').eq('cliente_id', referenceId).eq('activo', true).single()
-  const portalUrl = plan?.codigo_publico ? `${APP_URL}/cliente/${plan.codigo_publico}` : `${APP_URL}/`
+  // El portal del cliente es siempre /cliente (pestaña Ajustes → Apps)
+  const portalUrl = `${APP_URL}/cliente?tab=perfil`
 
   try {
     await db.from('terra_usuarios').upsert(
@@ -36,8 +34,8 @@ export async function GET(req: NextRequest) {
     )
   } catch (err) {
     console.error('[terra-callback]', err)
-    return NextResponse.redirect(`${portalUrl}?error=terra_error`)
+    return NextResponse.redirect(`${portalUrl}&error=terra_error`)
   }
 
-  return NextResponse.redirect(`${portalUrl}?connected=terra_${provider.toLowerCase()}`)
+  return NextResponse.redirect(`${portalUrl}&connected=terra_${provider.toLowerCase()}`)
 }
