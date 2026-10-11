@@ -107,12 +107,14 @@ function minutos(s: number | null) {
   return s ? `${Math.round(s / 60)} min` : null
 }
 
-function ChipSesion({ sesion, fecha, seleccionada, esPasado, onSeleccionar }: {
+function ChipSesion({ sesion, fecha, seleccionada, esPasado, onSeleccionar, resumen }: {
   sesion: SesionDia
   fecha: string
   seleccionada: boolean
   esPasado: boolean
   onSeleccionar: () => void
+  /** Vista semanal: pasos o ejercicios de la sesión, para ver el día de un vistazo. */
+  resumen?: string[]
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `${sesion.id}|${fecha}` })
   const color = sesion.fase_bloque ? FASE_COLOR[sesion.fase_bloque] : undefined
@@ -141,11 +143,17 @@ function ChipSesion({ sesion, fecha, seleccionada, esPasado, onSeleccionar }: {
         <span className="truncate flex-1">{sesion.nombre}</span>
         {garmin && <Watch size={10} className="flex-shrink-0" style={{ opacity: garmin === 'enviada' ? 1 : 0.45 }} aria-label={garmin === 'enviada' ? 'En el reloj' : 'Pendiente de enviar al reloj'} />}
       </p>
+      {resumen && resumen.length > 0 && (
+        <ul className="mt-1 px-1 space-y-0.5">
+          {resumen.slice(0, 7).map((l, i) => <li key={i} className="text-[11px] leading-snug" style={{ color: 'var(--text-muted)' }}>{l}</li>)}
+          {resumen.length > 7 && <li className="text-[11px]" style={{ color: 'var(--text-muted)' }}>+{resumen.length - 7} más</li>}
+        </ul>
+      )}
     </div>
   )
 }
 
-function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSeleccionarDia, onPegar, onNueva }: {
+function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSeleccionarDia, onPegar, onNueva, resumenDe, alta }: {
   dia: DiaMes
   hoy: string
   seleccion: Seleccion
@@ -154,6 +162,8 @@ function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSe
   onSeleccionarDia: (fecha: string) => void
   onPegar: (fecha: string) => void
   onNueva: (fecha: string) => void
+  resumenDe?: (sesionId: string) => string[]
+  alta?: boolean
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: dia.fecha })
   const esHoy = dia.fecha === hoy
@@ -163,7 +173,7 @@ function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSe
   return (
     <div
       ref={setNodeRef}
-      className="rounded-lg p-1.5 min-h-[104px] flex flex-col min-w-0"
+      className={`rounded-lg p-1.5 flex flex-col min-w-0 ${alta ? 'min-h-[260px]' : 'min-h-[104px]'}`}
       style={{
         background: isOver ? 'var(--semantic-info-bg)' : esHoy ? 'var(--semantic-info-bg)' : 'var(--bg)',
         border: `1px ${isOver ? 'dashed' : 'solid'} ${isOver || esHoy ? 'var(--semantic-info-border)' : 'var(--border)'}`,
@@ -224,6 +234,7 @@ function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSe
           esPasado={esPasado}
           seleccionada={seleccion?.tipo === 'sesion' && seleccion.sesion_id === s.id && seleccion.fecha === dia.fecha}
           onSeleccionar={() => onSeleccionarSesion(s.id, dia.fecha)}
+          resumen={resumenDe?.(s.id)}
         />
       ))}
 
@@ -232,8 +243,9 @@ function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSe
   )
 }
 
-export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
+export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId: string; vista?: 'mes' | 'semana' }) {
   const now = new Date()
+  const [semanaLunes, setSemanaLunes] = useState(() => lunesDe(hoyISO()))
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1) // 1-12
   const [dias, setDias] = useState<DiaMes[] | null>(null)
@@ -276,6 +288,19 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
+
+  function cambiarSemana(delta: number) {
+    const nuevo = sumarDias(semanaLunes, delta * 7)
+    setDias(null)
+    setSemanaLunes(nuevo)
+    setYear(Number(nuevo.slice(0, 4))); setMonth(Number(nuevo.slice(5, 7)))
+  }
+
+  function resumenDe(sesionId: string): string[] {
+    const c = catalogo[sesionId]
+    if (!c) return []
+    return c.pasos ?? c.ejercicios.map(e => `${e.nombre}${e.series ? ` · ${e.series}×${e.repeticiones ?? '?'}` : ''}${e.peso_sugerido ? ` · ${e.peso_sugerido}` : ''}`)
+  }
 
   function cambiarMes(delta: number) {
     let m = month + delta
@@ -447,16 +472,18 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-base font-semibold" style={{ color: 'var(--text)' }}>{MESES[month - 1]} {year}</p>
+        <p className="text-base font-semibold" style={{ color: 'var(--text)' }}>
+          {vista === 'semana' ? `Semana del ${parseInt(semanaLunes.slice(8), 10)} de ${MESES[Number(semanaLunes.slice(5, 7)) - 1].toLowerCase()} al ${parseInt(sumarDias(semanaLunes, 6).slice(8), 10)} de ${MESES[Number(sumarDias(semanaLunes, 6).slice(5, 7)) - 1].toLowerCase()}` : `${MESES[month - 1]} ${year}`}
+        </p>
         <div className="flex items-center gap-1.5">
           {guardando && <Loader2 size={14} className="animate-spin mr-1" style={{ color: 'var(--text-muted)' }} />}
-          <button onClick={() => cambiarMes(-1)} className="p-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} aria-label="Mes anterior"><ChevronLeft size={15} /></button>
-          <button onClick={() => cambiarMes(1)} className="p-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} aria-label="Mes siguiente"><ChevronRight size={15} /></button>
+          <button onClick={() => (vista === 'semana' ? cambiarSemana(-1) : cambiarMes(-1))} className="p-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} aria-label={vista === 'semana' ? 'Semana anterior' : 'Mes anterior'}><ChevronLeft size={15} /></button>
+          <button onClick={() => (vista === 'semana' ? cambiarSemana(1) : cambiarMes(1))} className="p-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} aria-label={vista === 'semana' ? 'Semana siguiente' : 'Mes siguiente'}><ChevronRight size={15} /></button>
         </div>
       </div>
 
       <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-        Arrastra una sesión a otro día para moverla solo esa fecha. Pulsa una sesión para ver su detalle, copiarla o quitarla; pulsa el número de un día para copiar el día o la semana.
+        {vista === 'semana' ? 'Cada día se edita por separado: arrastra una sesión a otro día, o púlsala para editar sus ejercicios, cargas y repeticiones solo en esa fecha.' : 'Arrastra una sesión a otro día para moverla solo esa fecha. Pulsa una sesión para ver su detalle, copiarla o quitarla; pulsa el número de un día para copiar el día o la semana.'}
         <span className="ml-1">↷ movida · <Copy size={10} className="inline" /> copia · <Check size={10} className="inline" /> hecho (Garmin) · <Watch size={10} className="inline" /> en el reloj</span>
       </p>
 
@@ -470,6 +497,8 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
       )}
 
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className={vista === 'semana' ? 'overflow-x-auto pb-1' : ''}>
+        <div className={vista === 'semana' ? 'min-w-[900px]' : ''}>
         <div className="grid grid-cols-7 gap-1.5 mb-1.5">
           {DIAS_ABREV.map(d => (
             <p key={d} className="text-center text-xs font-semibold uppercase tracking-wider py-1" style={{ color: 'var(--text-muted)' }}>{d}</p>
@@ -477,7 +506,7 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
         </div>
 
         <div className="grid grid-cols-7 gap-1.5">
-          {dias.map(dia => (
+          {(vista === 'semana' ? dias.filter(d => d.fecha >= semanaLunes && d.fecha <= sumarDias(semanaLunes, 6)) : dias).map(dia => (
             <Celda
               key={dia.fecha}
               dia={dia}
@@ -488,8 +517,12 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
               onSeleccionarDia={fecha => setSeleccion({ tipo: 'dia', fecha })}
               onPegar={pegar}
               onNueva={abrirNueva}
+              resumenDe={vista === 'semana' ? resumenDe : undefined}
+              alta={vista === 'semana'}
             />
           ))}
+        </div>
+        </div>
         </div>
       </DndContext>
 

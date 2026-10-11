@@ -44,7 +44,6 @@ const GuardarPlanComoPlantilla = dynamic(() => import('@/components/clientes/Gua
 const PlanificarConIA = dynamic(() => import('@/components/clientes/PlanificarConIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const InformeCaso = dynamic(() => import('@/components/clientes/InformeCaso'), { ssr: false, loading: () => <TabSkeleton /> })
 const DecisionesIACliente = dynamic(() => import('@/components/clientes/DecisionesIACliente'), { ssr: false, loading: () => <TabSkeleton /> })
-const EntrenoCalendarioKanban = dynamic(() => import('@/components/clientes/EntrenoCalendarioKanban'), { ssr: false, loading: () => <TabSkeleton /> })
 const RutinaSemanaAccordion = dynamic(() => import('@/components/clientes/RutinaSemanaAccordion'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioMes = dynamic(() => import('@/components/clientes/EntrenoCalendarioMes'), { ssr: false, loading: () => <TabSkeleton /> })
 const SemanaDietaPlanner = dynamic(() => import('@/components/clientes/SemanaDietaPlanner'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -983,7 +982,7 @@ export default function ClienteDetallePage() {
             ) : subTabEntreno === 'calendario' ? (
               <WorkCard
                 title={vistaCalendarioEntreno === 'semana' ? 'Calendario semanal' : 'Calendario mensual'}
-                kicker={vistaCalendarioEntreno === 'semana' ? 'Arrastra para reorganizar' : 'Mueve, copia y pega por fechas — sesiones, hechos y competiciones'}
+                kicker={vistaCalendarioEntreno === 'semana' ? 'Día a día: mueve, copia y edita cada sesión por fecha' : 'Mueve, copia y pega por fechas — sesiones, hechos y competiciones'}
                 icon={ClipboardCheck}
                 action={
                   <div className="flex gap-1 rounded-lg p-0.5" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
@@ -1006,9 +1005,9 @@ export default function ClienteDetallePage() {
                 {entrenoActivo ? (
                   <ErrorBoundary>
                     {vistaCalendarioEntreno === 'semana' ? (
-                      <EntrenoCalendarioKanban planId={entrenoActivo.id} />
+                      <EntrenoCalendarioMes key="semana" planId={entrenoActivo.id} vista="semana" />
                     ) : (
-                      <EntrenoCalendarioMes planId={entrenoActivo.id} />
+                      <EntrenoCalendarioMes key="mes" planId={entrenoActivo.id} />
                     )}
                   </ErrorBoundary>
                 ) : (
