@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DetalleDiaDieta from './DetalleDiaDieta'
 import { DndContext, DragOverlay, PointerSensor, pointerWithin, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
-import { Activity, BadgeCheck, CalendarDays, ClipboardPaste, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
+import { Activity, BadgeCheck, CalendarDays, ClipboardPaste, Copy, Loader2, Maximize2, Minimize2, MoreHorizontal, Play, Plus, Search, SlidersHorizontal, Sparkles, Trash2, Video, X } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 import { GuardarPlantillaModal, ListaPlantillasModal, type PlantillaSemana, type SemanaPlantilla } from './PlantillasSemanaDieta'
 
@@ -19,6 +19,37 @@ type Tamano = { col: string; dia: string; diaKcal: string; card: string; label: 
 
 const DIAS_ORDEN = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const VISTAS = [{ semanas: 1, texto: '1 semana' }, { semanas: 2, texto: '2 semanas' }, { semanas: 4, texto: 'Mes' }]
+
+// Menú «más»: agrupa las acciones secundarias para no llenar la cabecera de botones
+type ItemMenu = { texto: string; icono?: React.ReactNode; onClick: () => void; disabled?: boolean }
+function MenuMas({ items, extra, titulo = 'Más opciones' }: { items: ItemMenu[]; extra?: React.ReactNode; titulo?: string }) {
+  const [abierto, setAbierto] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!abierto) return
+    const fuera = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setAbierto(false) }
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setAbierto(false) }
+    document.addEventListener('mousedown', fuera); document.addEventListener('keydown', esc)
+    return () => { document.removeEventListener('mousedown', fuera); document.removeEventListener('keydown', esc) }
+  }, [abierto])
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => setAbierto(a => !a)} title={titulo} aria-haspopup="menu" aria-expanded={abierto} className="rounded-xl p-2" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+        <MoreHorizontal size={14} />
+      </button>
+      {abierto && (
+        <div role="menu" className="absolute right-0 top-full mt-1 z-[65] min-w-[210px] rounded-xl p-1 shadow-lg" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }} onClick={() => setAbierto(false)}>
+          {items.map(i => (
+            <button key={i.texto} role="menuitem" disabled={i.disabled} onClick={i.onClick} className="w-full text-left rounded-lg px-2.5 py-2 text-[13px] flex items-center gap-2 disabled:opacity-50" style={{ color: 'var(--text)' }}>
+              {i.icono}{i.texto}
+            </button>
+          ))}
+          {extra}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function colorDesvio(real: number, objetivo: number | null) {
   if (!objetivo) return 'var(--text-muted)'
@@ -217,6 +248,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const zonaFuturas = useRef<HTMLDivElement>(null)
   const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
   // En 2 semanas / mes el detalle del día va plegado para ver varias semanas a la vez; se despliega a petición
+  const [ajustesGen, setAjustesGen] = useState(false)
   const [detalleAbierto, setDetalleAbierto] = useState(false)
   const seleccionarDia = (dia: string, semana: number | null) => { setDiaSel({ dia, semana }); setDetalleAbierto(false) }
   const [version, setVersion] = useState(0)
@@ -506,20 +538,19 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
               </button>
             ))}
           </div>
-          <button onClick={() => setModalPlantilla('lista')} title="Aplicar una plantilla guardada" className="rounded-xl px-3 py-2 text-xs font-medium" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>Plantillas</button>
-          <button onClick={() => setModalPlantilla('guardar')} disabled={contarPlatosPl(semanasVisibles) === 0} title={`Guardar ${vista === 1 ? 'esta semana' : vista === 2 ? 'estas 2 semanas' : 'estas 4 semanas'} como plantilla`} className="rounded-xl px-3 py-2 text-xs font-medium disabled:opacity-50" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>Guardar plantilla</button>
-          {accionExtra}
           <button onClick={() => setAmpliado(a => !a)} title={ampliado ? 'Volver al tamaño normal' : 'Ver en pantalla completa'}
             className="rounded-xl p-2" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             {ampliado ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
-          {Object.values(objetivosDia).some(o => o.label) && (
-            <button onClick={reajustarAlEntreno} disabled={ocupado !== null} title="Recalcula las cantidades de cada día según su entrenamiento"
-              className="rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-60" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
-              {ocupado === 'reajustar' ? <Loader2 size={13} className="animate-spin" /> : <Activity size={13} />}
-              {ocupado === 'reajustar' ? 'Ajustando…' : 'Ajustar al entreno'}
-            </button>
-          )}
+          <MenuMas
+            items={[
+              { texto: 'Ajustes de generación', icono: <SlidersHorizontal size={13} />, onClick: () => setAjustesGen(a => !a) },
+              { texto: 'Aplicar plantilla', icono: <ClipboardPaste size={13} />, onClick: () => setModalPlantilla('lista') },
+              { texto: `Guardar ${vista === 1 ? 'esta semana' : vista === 2 ? 'estas 2 semanas' : 'estas 4 semanas'} como plantilla`, icono: <Copy size={13} />, onClick: () => setModalPlantilla('guardar'), disabled: contarPlatosPl(semanasVisibles) === 0 },
+              ...(Object.values(objetivosDia).some(o => o.label) ? [{ texto: 'Ajustar al entreno', icono: <Activity size={13} />, onClick: () => { void reajustarAlEntreno() }, disabled: ocupado !== null }] : []),
+            ]}
+            extra={accionExtra ? <div className="mt-1 pt-1 px-1" style={{ borderTop: '1px solid var(--border)' }}>{accionExtra}</div> : undefined}
+          />
           <button onClick={generarSemana} disabled={ocupado !== null}
             className="rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1.5 disabled:opacity-60"
             style={{ background: 'var(--primary)', color: 'var(--bg)' }}>
@@ -529,8 +560,10 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 mb-3">
-        <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Generar:</span>
+      {ajustesGen && (
+      <div className="rounded-xl p-3 mb-3 space-y-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+      <div className="flex flex-wrap items-center gap-1.5 ">
+        <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Franjas a generar:</span>
         {franjas.map(f => {
           const activa = seleccion.includes(f)
           return (
@@ -541,11 +574,10 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             </button>
           )
         })}
-        <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>· media mañana, merienda o peri-entreno solo si los marcas</span>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-xl p-3 mb-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-        <label className="flex items-center gap-2 text-xs font-semibold flex-shrink-0" style={{ color: 'var(--text)' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 rounded-xl" >
+        <label className="flex items-center gap-2 text-xs font-semibold flex-shrink-0" style={{ color: 'var(--text)' }} title="Si lo fijas, Generar semana usa estas franjas aunque el plan tenga comidas sueltas. 2 = Comida + Cena; 3 = Desayuno + Comida + Cena; 4 = añade Merienda; 5 = las cinco.">
           Comidas al día
           <select
             value={comidasDia ?? ''}
@@ -562,10 +594,9 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           </select>
           {guardandoComidasDia && <Loader2 size={13} className="animate-spin" style={{ color: 'var(--text-muted)' }} />}
         </label>
-        <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          Si lo fijas, Generar semana usa estas franjas aunque el plan tenga comidas sueltas. 2 = Comida + Cena; 3 = Desayuno + Comida + Cena; 4 = añade Merienda; 5 = las cinco.
-        </p>
       </div>
+      </div>
+      )}
 
       {resultado && (
         <div className="rounded-xl p-2.5 mb-3 text-xs flex justify-between gap-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}>
@@ -626,23 +657,17 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
               <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
                 Semana +{s.semana} · {rangoSemana(s.semana)} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· planificada, el cliente no la ve{m ? ` · media estimada sin complementos ${m.kcal} kcal · P${m.p} C${m.c} G${m.g}` : ' · vacía'}</span>
               </p>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <button className={btnSec} style={{ border: '1px solid var(--border)', color: 'var(--text)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'generar')}>
-                  {ocupado === `generar-${s.semana}` ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />} Generar
-                </button>
-                <button className={btnSec} style={{ border: '1px solid var(--border)', color: 'var(--text)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'copiar')}>
-                  {ocupado === `copiar-${s.semana}` ? <Loader2 size={12} className="animate-spin" /> : <Copy size={12} />} Copiar semana en curso
-                </button>
-                {!vacia && (
-                  <button className={btnSec} style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'vaciar')}>
-                    <Trash2 size={12} /> Vaciar
-                  </button>
-                )}
+              <div className="flex items-center gap-1.5">
                 {s.semana === 1 && !vacia && (
                   <button className={btnSec} style={{ background: 'var(--primary)', color: 'var(--bg)' }} disabled={ocupado !== null} onClick={() => accionFutura(s.semana, 'activar')}>
-                    {ocupado === `activar-${s.semana}` ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />} Activar como semana en curso
+                    {ocupado === `activar-${s.semana}` ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />} Activar
                   </button>
                 )}
+                <MenuMas titulo={`Opciones de la semana +${s.semana}`} items={[
+                  { texto: ocupado === `generar-${s.semana}` ? 'Generando…' : 'Generar con IA', icono: <Sparkles size={13} />, onClick: () => accionFutura(s.semana, 'generar'), disabled: ocupado !== null },
+                  { texto: 'Copiar semana en curso', icono: <Copy size={13} />, onClick: () => accionFutura(s.semana, 'copiar'), disabled: ocupado !== null },
+                  ...(!vacia ? [{ texto: 'Vaciar semana', icono: <Trash2 size={13} />, onClick: () => accionFutura(s.semana, 'vaciar'), disabled: ocupado !== null }] : []),
+                ]} />
               </div>
             </div>
             {modo === 'resumen'
