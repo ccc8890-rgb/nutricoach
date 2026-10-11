@@ -10,6 +10,9 @@ import {
   type ClienteRow, type SortKey,
 } from '@/lib/clientes-utils'
 
+// Rejilla compartida por cabecera y filas: el espacio se reparte entre columnas en vez de quedar en una sola
+const GRID = '48px minmax(240px, 2.2fr) minmax(130px, 1.1fr) minmax(80px, 0.7fr) minmax(130px, 1.1fr) 70px minmax(80px, 0.7fr) minmax(130px, 1fr) 20px'
+
 interface Props {
   clientes: ClienteRow[]
   sort: SortKey
@@ -21,7 +24,7 @@ function ColHeader({ label, sortKey, current, onSort }: { label: string; sortKey
   return (
     <button
       onClick={() => onSort(sortKey)}
-      className="text-left text-[9px] font-bold uppercase tracking-widest transition-colors whitespace-nowrap"
+      className="text-left text-[12px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap"
       style={{ color: active ? 'var(--text)' : 'var(--text-muted)' }}
     >
       {label}{active ? ' ↓' : ''}
@@ -44,20 +47,20 @@ function MembresiaCell({ c }: { c: ClienteRow }) {
       {c.tipo_membresia ? (
         <>
           <span
-            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full capitalize"
+            className="text-[12px] font-bold px-2 py-0.5 rounded-full capitalize"
             style={{ background: 'rgba(165,180,252,0.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,0.18)' }}
           >
             {c.tipo_membresia}
           </span>
-          <div className="text-[9px] mt-0.5" style={{ color: dias !== null && dias <= 30 ? 'var(--error)' : 'var(--text-muted)' }}>
+          <div className="text-[13px] mt-1" style={{ color: dias !== null && dias <= 30 ? 'var(--error)' : 'var(--text-muted)' }}>
             {dias === null ? '—' : dias <= 0 ? 'Caducada' : `${dias} d`}
           </div>
-          <div className="h-[2px] rounded-full mt-0.5 w-full" style={{ background: 'var(--border)' }}>
+          <div className="h-[3px] rounded-full mt-1 w-full max-w-[120px]" style={{ background: 'var(--border)' }}>
             <div className="h-full rounded-full" style={{ width: `${barWidth}%`, background: barColor, opacity: 0.8 }} />
           </div>
         </>
       ) : (
-        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>—</span>
+        <span className="text-[14px]" style={{ color: 'var(--text-muted)' }}>—</span>
       )}
     </div>
   )
@@ -67,35 +70,21 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
   if (clientes.length === 0) return null
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <div className="rounded-2xl overflow-hidden max-w-[1500px]" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
       {/* Cabecera */}
       <div
-        className="hidden lg:flex items-center gap-0 px-3 py-2"
-        style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
+        className="hidden lg:grid items-center gap-x-4 px-4 py-3"
+        style={{ gridTemplateColumns: GRID, background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
       >
-        <div style={{ width: '36px' }} />
-        <div style={{ flex: 1, paddingRight: '8px' }}>
-          <ColHeader label="Cliente" sortKey="nombre" current={sort} onSort={onSort} />
-        </div>
-        <div style={{ width: '108px', paddingRight: '6px' }}>
-          <ColHeader label="Membresía" sortKey="membresia_caduca" current={sort} onSort={onSort} />
-        </div>
-        <div style={{ width: '60px', paddingRight: '4px', textAlign: 'center' }}>
-          <ColHeader label="Check-in" sortKey="checkin" current={sort} onSort={onSort} />
-        </div>
-        <div style={{ width: '88px', paddingRight: '6px' }}>
-          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Objetivo</span>
-        </div>
-        <div style={{ width: '48px', paddingRight: '4px', textAlign: 'center' }}>
-          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Planes</span>
-        </div>
-        <div style={{ width: '60px', paddingRight: '6px', textAlign: 'center' }}>
-          <ColHeader label="Adh." sortKey="score_adherencia" current={sort} onSort={onSort} />
-        </div>
-        <div style={{ width: '88px', paddingRight: '6px', textAlign: 'right' }}>
-          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Estado</span>
-        </div>
-        <div style={{ width: '16px' }} />
+        <div />
+        <ColHeader label="Cliente" sortKey="nombre" current={sort} onSort={onSort} />
+        <ColHeader label="Membresía" sortKey="membresia_caduca" current={sort} onSort={onSort} />
+        <ColHeader label="Check-in" sortKey="checkin" current={sort} onSort={onSort} />
+        <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Objetivo</span>
+        <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Planes</span>
+        <ColHeader label="Adherencia" sortKey="score_adherencia" current={sort} onSort={onSort} />
+        <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Estado</span>
+        <div />
       </div>
 
       {/* Filas */}
@@ -109,8 +98,9 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
           <Link
             key={c.id}
             href={href}
-            className="group flex items-center gap-0 px-3 py-2.5 transition-colors"
+            className="group grid items-center gap-x-4 px-4 py-4 transition-colors"
             style={{
+              gridTemplateColumns: GRID,
               borderBottom: i < clientes.length - 1 ? '1px solid var(--border)' : undefined,
               background: 'transparent',
             }}
@@ -119,88 +109,84 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
           >
             {/* Avatar */}
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-[11px] flex-shrink-0 mr-2"
+              className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-[16px]"
               style={{ background: 'var(--bg-subtle)', color: 'var(--text)', border: '1px solid var(--border)' }}
             >
               {c.profile?.nombre?.[0]?.toUpperCase() ?? '?'}
             </div>
 
             {/* Cliente */}
-            <div style={{ flex: 1, paddingRight: '8px', minWidth: 0 }}>
-              <div className="font-bold text-[13px] truncate" style={{ color: 'var(--text)' }}>
+            <div style={{ minWidth: 0 }}>
+              <div className="font-bold text-[17px] truncate" style={{ color: 'var(--text)' }}>
                 {nombreCliente(c)}
-                {c.es_predictor_baja && <span className="ml-1.5 text-[9px]" style={{ color: 'var(--error)' }}>⚠</span>}
+                {c.es_predictor_baja && <span className="ml-2 text-[13px]" style={{ color: 'var(--error)' }}>⚠</span>}
               </div>
-              <div className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>
+              <div className="text-[14px] truncate" style={{ color: 'var(--text-muted)' }}>
                 {c.profile?.email}
               </div>
             </div>
 
             {/* Membresía */}
-            <div style={{ width: '108px', paddingRight: '6px', flexShrink: 0 }}>
-              <MembresiaCell c={c} />
-            </div>
+            <MembresiaCell c={c} />
 
             {/* Check-in */}
-            <div style={{ width: '60px', paddingRight: '4px', flexShrink: 0, textAlign: 'center' }}>
-              <div className="font-data text-[13px] font-black" style={{ color: checkinColor(dias) }}>
-                {dias === 999 ? '—' : `${dias}d`}
+            <div>
+              <div className="font-data text-[18px] font-black" style={{ color: checkinColor(dias) }}>
+                {dias === 999 ? '—' : `${dias} d`}
               </div>
-              <div className="text-[9px]" style={{ color: 'var(--text-muted)' }}>check</div>
+              <div className="text-[13px]" style={{ color: 'var(--text-muted)' }}>sin check-in</div>
             </div>
 
             {/* Objetivo */}
-            <div style={{ width: '88px', paddingRight: '6px', flexShrink: 0 }}>
+            <div>
               {c.objetivo && (
                 <span
-                  className="text-[9px] px-1.5 py-0.5 rounded"
-                  style={{ background: 'var(--bg-subtle)', color: 'var(--text-muted)' }}
+                  className="inline-block text-[14px] px-2.5 py-1 rounded-lg"
+                  style={{ background: 'var(--bg-subtle)', color: 'var(--text-secondary)' }}
                 >
                   {OBJETIVO_LABELS[c.objetivo] ?? c.objetivo}
                 </span>
               )}
             </div>
 
-            {/* Planes (2 dots) */}
-            <div style={{ width: '48px', paddingRight: '4px', flexShrink: 0, textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '3px', alignItems: 'center' }}>
+            {/* Planes */}
+            <div className="flex items-center gap-2">
               <span
-                className="inline-block w-1.5 h-1.5 rounded-full"
+                className="inline-block w-2.5 h-2.5 rounded-full"
                 style={{ background: c.tiene_dieta_activa ? 'var(--success)' : 'var(--border)' }}
                 title="Dieta"
               />
               <span
-                className="inline-block w-1.5 h-1.5 rounded-full"
+                className="inline-block w-2.5 h-2.5 rounded-full"
                 style={{ background: c.tiene_entreno_activo ? 'var(--success)' : 'var(--border)' }}
                 title="Entreno"
               />
             </div>
 
-            {/* Score adherencia */}
-            <div style={{ width: '60px', paddingRight: '6px', flexShrink: 0, textAlign: 'center' }}>
+            {/* Adherencia */}
+            <div>
               {score !== undefined ? (
-                <>
-                  <div className="font-data text-[13px] font-black" style={{ color: scoreColor(score) }}>{score}</div>
-                  <div className="text-[9px]" style={{ color: 'var(--text-muted)' }}>/100</div>
-                </>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-data text-[18px] font-black" style={{ color: scoreColor(score) }}>{score}</span>
+                  <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>/100</span>
+                </div>
               ) : (
-                <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>—</span>
+                <span className="text-[14px]" style={{ color: 'var(--text-muted)' }}>—</span>
               )}
             </div>
 
             {/* Estado */}
-            <div style={{ width: '88px', paddingRight: '6px', flexShrink: 0, textAlign: 'right' }}>
+            <div>
               <span
-                className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                className="inline-block text-[14px] font-bold px-3 py-1 rounded-full whitespace-nowrap"
                 style={estadoStyle(estado.tone)}
               >
                 {estado.label}
               </span>
             </div>
 
-            {/* Arrow */}
-            <div style={{ width: '16px', flexShrink: 0 }}>
-              <ArrowRight size={13} style={{ color: 'var(--text-muted)' }} className="transition-transform group-hover:translate-x-0.5" />
-            </div>
+            {/* Flecha */}
+            <ArrowRight size={18} style={{ color: 'var(--text-muted)' }} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
         )
       })}

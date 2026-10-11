@@ -95,7 +95,7 @@ export default function ClientesToolbar({
             <button
               key={f}
               onClick={() => onFiltro(f)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[14px] font-semibold transition-all whitespace-nowrap"
               style={active
                 ? { background: 'var(--text)', color: 'var(--bg)' }
                 : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
@@ -104,7 +104,7 @@ export default function ClientesToolbar({
               {FILTRO_LABELS[f]}
               {cnt !== undefined && cnt > 0 && (
                 <span
-                  className="rounded-full px-1 text-[10px] font-data"
+                  className="rounded-full px-1 text-[12px] font-data"
                   style={{
                     background: active ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)',
                     minWidth: '16px',
@@ -126,7 +126,7 @@ export default function ClientesToolbar({
       <div className="flex gap-1.5 flex-wrap">
         <button
           onClick={() => onCaducaPronte(!caducaPronte)}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[14px] font-semibold transition-all whitespace-nowrap"
           style={caducaPronte
             ? { background: 'rgba(255,69,58,0.15)', color: 'var(--error)', border: '1px solid rgba(255,69,58,0.3)' }
             : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
@@ -134,7 +134,7 @@ export default function ClientesToolbar({
         >
           ⏰ Caduca pronto
           {counts.caduca_pronto > 0 && (
-            <span className="rounded-full px-1 text-[10px] font-data" style={{ background: 'rgba(255,69,58,0.2)' }}>
+            <span className="rounded-full px-1 text-[12px] font-data" style={{ background: 'rgba(255,69,58,0.2)' }}>
               {counts.caduca_pronto}
             </span>
           )}
@@ -143,7 +143,7 @@ export default function ClientesToolbar({
         <select
           value={filtroAlta ?? ''}
           onChange={e => onFiltroAlta((e.target.value as FiltroAlta) || null)}
-          className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold"
+          className="px-3.5 py-2 rounded-lg text-[14px] font-semibold"
           style={{ background: filtroAlta ? 'rgba(99,102,241,0.12)' : 'var(--bg-subtle)', color: filtroAlta ? '#818cf8' : 'var(--text-secondary)', border: `1px solid ${filtroAlta ? 'rgba(129,140,248,0.3)' : 'var(--border)'}`, height: '32px' }}
         >
           <option value="">📅 Alta: cualquiera</option>
@@ -153,7 +153,7 @@ export default function ClientesToolbar({
 
         <button
           onClick={() => onFiltroRevisiones(!filtroRevisiones)}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[14px] font-semibold transition-all whitespace-nowrap"
           style={filtroRevisiones
             ? { background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)' }
             : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
@@ -161,7 +161,7 @@ export default function ClientesToolbar({
         >
           📅 Revisiones
           {counts.revisiones_proximas > 0 && (
-            <span className="rounded-full px-1 text-[10px] font-data" style={{ background: 'rgba(129,140,248,0.15)' }}>
+            <span className="rounded-full px-1 text-[12px] font-data" style={{ background: 'rgba(129,140,248,0.15)' }}>
               {counts.revisiones_proximas}
             </span>
           )}
@@ -169,7 +169,7 @@ export default function ClientesToolbar({
 
         <button
           onClick={() => onFiltroChats(!filtroChats)}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[14px] font-semibold transition-all whitespace-nowrap"
           style={filtroChats
             ? { background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)' }
             : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
@@ -177,7 +177,7 @@ export default function ClientesToolbar({
         >
           💬 Chats sin leer
           {counts.chats_sin_leer > 0 && (
-            <span className="rounded-full px-1 text-[10px] font-data" style={{ background: 'rgba(129,140,248,0.15)' }}>
+            <span className="rounded-full px-1 text-[12px] font-data" style={{ background: 'rgba(129,140,248,0.15)' }}>
               {counts.chats_sin_leer}
             </span>
           )}
@@ -192,7 +192,7 @@ export default function ClientesToolbar({
         <select
           value={sort}
           onChange={e => onSort(e.target.value as SortKey)}
-          className="px-2.5 pr-7 py-1.5 rounded-lg text-[11px] font-semibold appearance-none"
+          className="px-2.5 pr-7 py-1.5 rounded-lg text-[14px] font-semibold appearance-none"
           style={{ background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)', height: '32px' }}
         >
           {(Object.keys(SORT_LABELS) as SortKey[]).map(k => (
