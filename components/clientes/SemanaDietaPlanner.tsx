@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DetalleDiaDieta from './DetalleDiaDieta'
-import ListaCompra from '@/components/ListaCompra'
 import { Activity, BadgeCheck, CalendarDays, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 
@@ -68,7 +67,7 @@ function SemanaResumen({ dias, kcalObjetivo, objetivos, semana, diaSel, onDia, r
                 {d.comidas.map(c => {
                   const veces = c.receta ? repeticiones.get(c.receta.id) ?? 1 : 1
                   return (
-                    <span key={c.id} className="block text-[10px] leading-tight truncate" title={`${c.nombre}: ${c.receta?.nombre ?? 'Sin receta'}${veces > 1 ? ` · se repite ${veces} veces` : ''}`}
+                    <span key={c.id} className="block text-[11px] leading-snug line-clamp-2 break-words" title={`${c.nombre}: ${c.receta?.nombre ?? 'Sin receta'}${veces > 1 ? ` · se repite ${veces} veces` : ''}`}
                       style={{ color: veces > 1 ? 'var(--warning)' : 'var(--text)' }}>
                       {veces > 1 ? '↻ ' : ''}{c.receta?.nombre ?? 'Sin receta'}
                     </span>
@@ -366,19 +365,16 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Planificador</p>
           <h3 className="font-bold flex items-center gap-2" style={{ color: 'var(--text)' }}><CalendarDays size={16} /> {plan.nombre}</h3>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            Objetivo {plan.kcal_objetivo ?? '—'} kcal · {plan.proteinas_objetivo ?? '—'} g proteína · toca un hueco para elegir receta · <Video size={11} className="inline" /> para grabar
-          </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             {VISTAS.map(v => (
+              <button key={v.semanas} onClick={() => { irAFuturas.current = v.semanas > vista; setVista(v.semanas); setModo(v.semanas >= 2 ? 'resumen' : 'platos') }} className="px-2.5 py-2 text-xs font-medium"
+                style={{ background: vista === v.semanas ? 'var(--primary)' : 'transparent', color: vista === v.semanas ? 'var(--bg)' : 'var(--text-muted)' }}>
+                {v.texto}
               </button>
             ))}
           </div>
-              <button key={v.semanas} onClick={() => { irAFuturas.current = v.semanas > vista; setVista(v.semanas); setModo(v.semanas >= 4 ? 'resumen' : 'platos') }} className="px-2.5 py-2 text-xs font-medium"
-                style={{ background: vista === v.semanas ? 'var(--primary)' : 'transparent', color: vista === v.semanas ? 'var(--bg)' : 'var(--text-muted)' }}>
-                {v.texto}
           {vista > 1 && (
             <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }} title="Platos: cada día con sus comidas. Resumen: kcal y macros por día para comparar semanas de un vistazo">
               {([['resumen', 'Resumen'], ['platos', 'Platos']] as const).map(([m, t]) => (
@@ -467,14 +463,14 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
       {error && (
         <div className="rounded-xl p-2.5 mb-3 text-xs flex justify-between gap-2" style={{ background: 'var(--error-bg)', color: 'var(--error)' }}>
           <span>{error}</span><button onClick={() => setError(null)}><X size={13} /></button>
+        </div>
+      )}
+
       {vista > 1 && modo === 'resumen' && (
         <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>
           {platosRepetidos > 0 ? <><span style={{ color: 'var(--warning)' }}>↻</span> {platosRepetidos} {platosRepetidos === 1 ? 'receta se repite' : 'recetas se repiten'} en estas semanas (en ámbar). </> : 'Sin recetas repetidas en estas semanas. '}Pasa el ratón sobre un plato para ver la comida y las veces.
         </p>
       )}
-        </div>
-      )}
-
       {vista > 1 && (
         <p className="text-sm font-semibold mb-1.5" style={{ color: 'var(--text)' }}>
           Semana en curso · {rangoSemana(null)} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· lo que ve el cliente{mediaActual ? ` · media ${mediaActual.kcal} kcal · P${mediaActual.p} C${mediaActual.c} G${mediaActual.g}` : ''}</span>
@@ -482,10 +478,10 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
       )}
       {vista > 1 && modo === 'resumen'
         ? <SemanaResumen dias={dias} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} repeticiones={repeticiones} />
-      <div ref={zonaFuturas} className="scroll-mt-4" />
         : <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />}
-      {!(vista > 1 && modo === 'resumen') && detalle(null)}
+      {detalle(null)}
 
+      <div ref={zonaFuturas} className="scroll-mt-4" />
       {futuras.map(s => {
         const m = media(s.dias)
         const vacia = !m
@@ -517,12 +513,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             {modo === 'resumen'
               ? <SemanaResumen dias={s.dias} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} repeticiones={repeticiones} />
               : <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />}
-            {modo !== 'resumen' && detalle(s.semana)}
-            {!vacia && modo !== 'resumen' && <div className="mt-2"><ListaCompra planId={plan.id} clienteId={clienteId} semanaFutura={s.semana} nombrePlan={`${plan.nombre} · semana +${s.semana}`} rol="coach" /></div>}
+            {detalle(s.semana)}
           </div>
-      {/* En modo Resumen el detalle del día elegido va una sola vez, bajo todas las semanas */}
-      {vista > 1 && modo === 'resumen' && <div className="mt-5">{detalle(diaSel?.semana ?? null)}</div>}
-
         )
       })}
 
