@@ -124,7 +124,7 @@ function Metric({ label, value, icon: Icon, tooltip }: { label: string; value: s
     <div className="rounded-xl px-3 py-3" title={tooltip} style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
       <div className="flex items-center gap-2 mb-2">
         <Icon size={14} style={{ color: 'var(--text-muted)' }} />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{label}</span>
+        <span className="text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{label}</span>
       </div>
       <p className="text-lg font-semibold tabular-nums leading-none" style={{ color: 'var(--text)' }}>{value}</p>
     </div>
@@ -242,7 +242,7 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Brain size={16} style={{ color: tone.fg }} />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>Training OS</span>
+              <span className="text-[12px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>Training OS</span>
             </div>
             <h3 className="text-lg sm:text-xl font-semibold leading-tight" style={{ color: 'var(--text)' }}>
               Decisiones de entrenamiento, carga y recuperación
@@ -283,11 +283,11 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
               return (
                 <div key={card.label} className="rounded-xl border p-3" style={{ borderColor: cardTone.border, background: cardTone.bg }}>
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{card.label}</p>
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>{card.label}</p>
                     <span className="h-2 w-2 rounded-full" style={{ background: cardTone.fg }} />
                   </div>
                   <p className="mt-2 text-sm font-semibold leading-tight" style={{ color: 'var(--text)' }}>{card.value}</p>
-                  <p className="mt-1 text-[11px] font-medium" style={{ color: cardTone.fg }}>{card.action}</p>
+                  <p className="mt-1 text-[13px] font-medium" style={{ color: cardTone.fg }}>{card.action}</p>
                 </div>
               )
             })}
@@ -297,7 +297,7 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-4 lg:items-center">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="px-2 py-1 rounded-lg text-[11px] font-bold uppercase tracking-[0.12em]" style={{ background: 'rgba(201,169,110,0.14)', color: 'rgb(201,169,110)', border: '1px solid rgba(201,169,110,0.28)' }}>
+                  <span className="px-2 py-1 rounded-lg text-[13px] font-bold uppercase tracking-[0.12em]" style={{ background: 'rgba(201,169,110,0.14)', color: 'rgb(201,169,110)', border: '1px solid rgba(201,169,110,0.28)' }}>
                     {coachDesk.phase}
                   </span>
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Siguiente paso del coach</span>
@@ -306,7 +306,7 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
                 {coachDesk.blockers.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {coachDesk.blockers.map(blocker => (
-                      <span key={blocker} className="px-2 py-1 rounded-lg text-[11px]" style={{ background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                      <span key={blocker} className="px-2 py-1 rounded-lg text-[13px]" style={{ background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                         {blocker}
                       </span>
                     ))}
@@ -335,7 +335,7 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-4 lg:items-center">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="px-2 py-1 rounded-lg text-[11px] font-bold uppercase tracking-[0.12em]" style={{ background: 'var(--surface)', color: decisionTone.fg, border: `1px solid ${decisionTone.border}` }}>
+                  <span className="px-2 py-1 rounded-lg text-[13px] font-bold uppercase tracking-[0.12em]" style={{ background: 'var(--surface)', color: decisionTone.fg, border: `1px solid ${decisionTone.border}` }}>
                     {decisionTraining.estado}
                   </span>
                   <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
@@ -392,10 +392,10 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
                 <div className="space-y-2">
                   <p className="text-sm" style={{ color: 'var(--text)' }}>{data.recomendacion.foco_principal}</p>
                   <div className="flex flex-wrap gap-1.5">
-                    <span className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{ background: 'rgba(201,169,110,0.12)', color: 'rgb(201,169,110)' }}>{data.recomendacion.tier}</span>
-                    <span className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }}>{data.recomendacion.volumen} volumen</span>
-                    <span className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }}>{data.recomendacion.intensidad}</span>
-                    <span className="px-2 py-1 rounded-lg text-[11px] font-semibold" style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }}>{data.recomendacion.dias_semana} d/sem</span>
+                    <span className="px-2 py-1 rounded-lg text-[13px] font-semibold" style={{ background: 'rgba(201,169,110,0.12)', color: 'rgb(201,169,110)' }}>{data.recomendacion.tier}</span>
+                    <span className="px-2 py-1 rounded-lg text-[13px] font-semibold" style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }}>{data.recomendacion.volumen} volumen</span>
+                    <span className="px-2 py-1 rounded-lg text-[13px] font-semibold" style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }}>{data.recomendacion.intensidad}</span>
+                    <span className="px-2 py-1 rounded-lg text-[13px] font-semibold" style={{ background: 'rgba(128,128,128,0.1)', color: 'var(--text-muted)' }}>{data.recomendacion.dias_semana} d/sem</span>
                   </div>
                   {[...data.recomendacion.advertencias, ...data.recomendacion.ajustes_adicionales].slice(0, 3).map((item, index) => (
                     <p key={index} className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{item}</p>
@@ -432,17 +432,17 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
               ))}
             </div>
             <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-2" style={{ color: 'var(--text-muted)' }}>Señales próximas</p>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.12em] mb-2" style={{ color: 'var(--text-muted)' }}>Señales próximas</p>
               <div className="flex flex-wrap gap-1.5">
                 {decisionTraining.senales.slice(0, 5).map(senal => (
-                  <span key={senal} className="px-2 py-1 rounded-lg text-[11px]" style={{ background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                  <span key={senal} className="px-2 py-1 rounded-lg text-[13px]" style={{ background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                     {senal}
                   </span>
                 ))}
               </div>
             </div>
             {decisionTraining.fuentes.fuentes_activas.length > 0 && (
-              <p className="text-[11px] mt-3" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[13px] mt-3" style={{ color: 'var(--text-muted)' }}>
                 Fuentes: {decisionTraining.fuentes.fuentes_activas.join(', ')}
               </p>
             )}
@@ -457,7 +457,7 @@ export default function TrainingCoachPanel({ clienteId }: { clienteId: string })
               <div className="space-y-2">
                 {data.tareas_pendientes.slice(0, 3).map(tarea => (
                   <div key={tarea.id} className="rounded-lg p-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--text-muted)' }}>{tarea.tipo.replaceAll('_', ' ')}</p>
+                    <p className="text-[13px] font-semibold uppercase tracking-[0.12em] mb-1" style={{ color: 'var(--text-muted)' }}>{tarea.tipo.replaceAll('_', ' ')}</p>
                     <p className="text-xs leading-relaxed line-clamp-3" style={{ color: 'var(--text)' }}>{tarea.propuesta}</p>
                   </div>
                 ))}

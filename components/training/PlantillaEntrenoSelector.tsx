@@ -131,7 +131,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                 <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{p.dias_por_semana} días/sem · {p.nivel}</span>
                                 {tier === 'elite' && (
                                     <span
-                                        className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full border"
+                                        className="inline-flex items-center gap-0.5 text-[12px] font-semibold px-1.5 py-0.5 rounded-full border"
                                         style={{ background: 'rgba(201,169,110,0.15)', borderColor: 'rgba(201,169,110,0.4)', color: '#C9A96E' }}
                                     >
                                         <Crown size={9} /> Elite
@@ -139,7 +139,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                 )}
                                 {cfg && (
                                     <span
-                                        className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full border"
+                                        className="inline-flex items-center gap-0.5 text-[12px] font-medium px-1.5 py-0.5 rounded-full border"
                                         style={{ background: cfg.bgRgba, color: cfg.colorRgb, borderColor: cfg.bgRgba.replace('0.15', '0.35') }}
                                     >
                                         <cfg.Icon size={11} />
@@ -149,7 +149,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                 {!modality && (() => {
                                     const sub = detectarSubcategoriaLegacy(p.nombre ?? '')
                                     return sub
-                                        ? <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ color: 'var(--text-muted)', background: 'rgba(128,128,128,0.12)' }}>{sub}</span>
+                                        ? <span className="text-[12px] font-medium px-1.5 py-0.5 rounded-full" style={{ color: 'var(--text-muted)', background: 'rgba(128,128,128,0.12)' }}>{sub}</span>
                                         : null
                                 })()}
                             </div>
@@ -157,7 +157,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
 
                         <div className="flex gap-1.5 flex-wrap justify-end">
                             {p.objetivo && (
-                                <span className={`badge text-[11px] ${OBJETIVO_COLOR[p.objetivo] ?? 'badge-gray'}`}>
+                                <span className={`badge text-[13px] ${OBJETIVO_COLOR[p.objetivo] ?? 'badge-gray'}`}>
                                     {p.objetivo.replace(/_/g, ' ')}
                                 </span>
                             )}
@@ -192,19 +192,19 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                             <div className="flex items-center justify-between mb-1">
                                                 <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Semana {sem.semana} · {sem.titulo}</p>
                                                 <span
-                                                    className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                                                    className="text-[12px] font-medium px-1.5 py-0.5 rounded"
                                                     style={{ color: 'var(--text-muted)', background: 'rgba(128,128,128,0.15)' }}
                                                 >
                                                     {sem.descripcion?.match(/RPE [\d-]+\/10/)?.[0] || ''}
                                                 </span>
                                             </div>
-                                            <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{sem.descripcion}</p>
+                                            <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{sem.descripcion}</p>
                                             {sem.ajustes && sem.ajustes.length > 0 && (
                                                 <div className="mt-1 flex flex-col gap-0.5">
                                                     {sem.ajustes.map((a: string, i: number) => (
                                                         <p
                                                             key={i}
-                                                            className="text-[10px] pl-2"
+                                                            className="text-[12px] pl-2"
                                                             style={{ color: 'var(--text-muted)', borderLeft: '2px solid var(--border)' }}
                                                         >{a}</p>
                                                     ))}
@@ -259,8 +259,8 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                 className="mt-3 rounded-lg p-2.5"
                                 style={{ background: 'var(--semantic-info-bg)', border: '1px solid var(--semantic-info-border)' }}
                             >
-                                <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--semantic-info)' }}>Individualización</p>
-                                <p className="text-[11px] leading-relaxed" style={{ color: 'var(--semantic-info)' }}>{p.descripcion.split(INDIVIDUALIZACION_MARKER)[1]?.trim()}</p>
+                                <p className="text-[12px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--semantic-info)' }}>Individualización</p>
+                                <p className="text-[13px] leading-relaxed" style={{ color: 'var(--semantic-info)' }}>{p.descripcion.split(INDIVIDUALIZACION_MARKER)[1]?.trim()}</p>
                             </div>
                         )}
                     </div>
@@ -288,7 +288,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                     <div className="flex items-start gap-2">
                         <Sparkles size={13} style={{ color: 'var(--semantic-info)' }} className="mt-0.5 flex-shrink-0" />
                         <div>
-                            <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--semantic-info)' }}>Motor de recomendación</p>
+                            <p className="text-[12px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--semantic-info)' }}>Motor de recomendación</p>
                             <p className="text-xs" style={{ color: 'var(--semantic-info)' }}>{recomendacion.foco_principal}</p>
                         </div>
                     </div>
@@ -297,7 +297,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                             {recomendacion.advertencias.map((adv, i) => (
                                 <div key={i} className="flex items-start gap-1.5">
                                     <AlertTriangle size={11} style={{ color: '#C9A96E' }} className="mt-0.5 flex-shrink-0" />
-                                    <p className="text-[11px]" style={{ color: '#C9A96E' }}>{adv}</p>
+                                    <p className="text-[13px]" style={{ color: '#C9A96E' }}>{adv}</p>
                                 </div>
                             ))}
                         </div>
@@ -307,7 +307,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                             {recomendacion.ajustes_adicionales.map((aj, i) => (
                                 <p
                                     key={i}
-                                    className="text-[11px] pl-3"
+                                    className="text-[13px] pl-3"
                                     style={{ color: 'var(--text-muted)', borderLeft: '2px solid var(--semantic-info-border)' }}
                                 >{aj}</p>
                             ))}
@@ -326,7 +326,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                             <button
                                 key={t}
                                 onClick={() => setFiltroTier(t === 'all' ? null : t as TrainingTier)}
-                                className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full border transition-colors"
+                                className="inline-flex items-center gap-1 text-[13px] font-medium px-2.5 py-1 rounded-full border transition-colors"
                                 style={isActive
                                     ? t === 'elite'
                                         ? { background: 'rgba(201,169,110,0.2)', borderColor: 'rgba(201,169,110,0.5)', color: '#C9A96E' }
@@ -348,7 +348,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                     <div className="flex gap-1.5 flex-wrap">
                         <button
                             onClick={() => setFiltroModalidad(null)}
-                            className="text-[11px] font-medium px-2.5 py-1 rounded-full border transition-colors"
+                            className="text-[13px] font-medium px-2.5 py-1 rounded-full border transition-colors"
                             style={filtroModalidad === null
                                 ? { background: 'var(--semantic-info-bg)', borderColor: 'var(--semantic-info-border)', color: 'var(--semantic-info)' }
                                 : { background: 'transparent', borderColor: 'var(--border)', color: 'var(--text-muted)' }
@@ -362,7 +362,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                 <button
                                     key={m}
                                     onClick={() => setFiltroModalidad(filtroModalidad === m ? null : m)}
-                                    className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full border transition-colors"
+                                    className="inline-flex items-center gap-1 text-[13px] font-medium px-2.5 py-1 rounded-full border transition-colors"
                                     style={filtroModalidad === m
                                         ? { background: c.bgRgba, color: c.colorRgb, borderColor: c.bgRgba.replace('0.15', '0.4') }
                                         : { background: 'transparent', borderColor: 'var(--border)', color: 'var(--text-muted)' }

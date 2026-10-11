@@ -244,7 +244,7 @@ export default function EjerciciosMediaPage() {
     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] mb-2" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[13px] font-semibold uppercase tracking-[0.16em] mb-2" style={{ color: 'var(--text-muted)' }}>
             Biblioteca · Ejecución
           </p>
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-none" style={{ color: 'var(--text)' }}>
@@ -302,7 +302,7 @@ export default function EjerciciosMediaPage() {
         <section className="rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))' }}>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
                 Workspace por grupos
               </p>
               <h2 className="mt-1 text-xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
@@ -313,15 +313,15 @@ export default function EjerciciosMediaPage() {
               </p>
               <div className="mt-4 grid grid-cols-3 gap-2 max-w-md">
                 <div className="rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Readiness</p>
+                  <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Readiness</p>
                   <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{assetQueue.assetReadinessPct}%</p>
                 </div>
                 <div className="rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Completos</p>
+                  <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Completos</p>
                   <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{assetQueue.completos}</p>
                 </div>
                 <div className="rounded-2xl border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Prioridad</p>
+                  <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Prioridad</p>
                   <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{assetQueue.prioritarios.length}</p>
                 </div>
               </div>
@@ -329,7 +329,7 @@ export default function EjerciciosMediaPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Abrir categoría</p>
-                    <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Elige un grupo y evita revisar la lista completa.</p>
+                    <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Elige un grupo y evita revisar la lista completa.</p>
                   </div>
                   <select value={grupo} onChange={e => setGrupo(e.target.value)} className="input text-sm sm:w-56">
                     <option value="">Seleccionar grupo</option>
@@ -353,14 +353,14 @@ export default function EjerciciosMediaPage() {
                     >
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{item.grupo}</p>
-                        <span className="text-[11px] font-semibold" style={{ color: item.pendientes ? 'var(--semantic-warn)' : 'var(--semantic-active)' }}>
+                        <span className="text-[13px] font-semibold" style={{ color: item.pendientes ? 'var(--semantic-warn)' : 'var(--semantic-active)' }}>
                           {item.readinessPct}%
                         </span>
                       </div>
-                      <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                      <p className="mt-1 text-[13px]" style={{ color: 'var(--text-muted)' }}>
                         {item.total} ejercicios · {item.listos} listos · {item.pendientes} por revisar
                       </p>
-                      <p className="mt-1 text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+                      <p className="mt-1 text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>
                         {item.primaryGap}
                       </p>
                       <ReadinessBar value={item.readinessPct} tone={item.pendientes ? 'warn' : 'active'} />
@@ -374,7 +374,7 @@ export default function EjerciciosMediaPage() {
                 <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
                   {selectedGroup ? `Grupo activo: ${selectedGroup.grupo}` : 'Cola prioritaria'}
                 </p>
-                <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{assetQueue.prioritarios.length} ejercicios</span>
+                <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>{assetQueue.prioritarios.length} ejercicios</span>
               </div>
               {selectedGroup && (
                 <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
@@ -391,12 +391,12 @@ export default function EjerciciosMediaPage() {
                 <div className="mt-3 rounded-2xl border p-3" style={{ borderColor: 'var(--semantic-info-border)', background: 'var(--semantic-info-bg)' }}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--semantic-info)' }}>
+                      <p className="text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--semantic-info)' }}>
                         Batch recomendado
                       </p>
                       <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{batchPlan.focus}</p>
                     </div>
-                    <span className="rounded-full border px-2 py-1 text-[11px] font-semibold" style={{ borderColor: 'var(--semantic-info-border)', color: 'var(--semantic-info)', background: 'var(--bg)' }}>
+                    <span className="rounded-full border px-2 py-1 text-[13px] font-semibold" style={{ borderColor: 'var(--semantic-info-border)', color: 'var(--semantic-info)', background: 'var(--bg)' }}>
                       {batchPlan.estimatedMinutes} min
                     </span>
                   </div>
@@ -417,9 +417,9 @@ export default function EjerciciosMediaPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <p className="truncate text-xs font-semibold" style={{ color: 'var(--text)' }}>{item.nombre}</p>
-                      <span className="text-[11px] font-semibold" style={{ color: 'var(--semantic-warn)' }}>{item.score}%</span>
+                      <span className="text-[13px] font-semibold" style={{ color: 'var(--semantic-warn)' }}>{item.score}%</span>
                     </div>
-                    <p className="mt-0.5 line-clamp-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
+                    <p className="mt-0.5 line-clamp-1 text-[13px]" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
                   </button>
                 )) : (
                   <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
@@ -437,7 +437,7 @@ export default function EjerciciosMediaPage() {
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Filtros de trabajo</p>
-              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
                 {visibles.length} de {ejercicios.length} ejercicios visibles{filtrosActivos ? ` · ${filtrosActivos} filtros activos` : ''}
               </p>
             </div>
@@ -535,9 +535,9 @@ export default function EjerciciosMediaPage() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{item.grupo}</p>
-                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{item.total}</span>
+                  <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>{item.total}</span>
                 </div>
-                <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>{item.primaryGap}</p>
+                <p className="mt-1 text-[13px]" style={{ color: 'var(--text-muted)' }}>{item.primaryGap}</p>
               </button>
             ))}
           </div>
@@ -559,12 +559,12 @@ export default function EjerciciosMediaPage() {
                   <div className="col-span-full mt-2 flex items-center justify-between rounded-2xl border px-4 py-3" style={{ borderColor: 'var(--border)', background: 'var(--bg-subtle)' }}>
                     <div>
                       <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{ej.grupo_muscular || 'Sin grupo'}</p>
-                      <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Bloque operativo para revisar y asignar</p>
+                      <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Bloque operativo para revisar y asignar</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setGrupo(ej.grupo_muscular || '')}
-                      className="rounded-full border px-3 py-1 text-[11px] font-semibold"
+                      className="rounded-full border px-3 py-1 text-[13px] font-semibold"
                       style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}
                     >
                       Filtrar grupo
@@ -598,7 +598,7 @@ export default function EjerciciosMediaPage() {
                     <div className="flex min-w-0 items-center gap-2">
                       <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>{ej.nombre}</p>
                       <span
-                        className="hidden rounded-full border px-2 py-0.5 text-[11px] font-semibold sm:inline-flex"
+                        className="hidden rounded-full border px-2 py-0.5 text-[13px] font-semibold sm:inline-flex"
                         style={{
                           background: completo ? 'var(--semantic-active-bg)' : quality.status === 'usable' ? 'var(--semantic-info-bg)' : 'var(--semantic-warn-bg)',
                           color: completo ? 'var(--semantic-active)' : quality.status === 'usable' ? 'var(--semantic-info)' : 'var(--semantic-warn)',
@@ -612,17 +612,17 @@ export default function EjerciciosMediaPage() {
                       {ej.grupo_muscular || 'Sin grupo'} · {ej.tipo || 'Sin tipo'}
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[13px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
                         <ImageSquare size={12} /> {ej.foto_url ? 'Foto' : 'Sin foto'}
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[13px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
                         <VideoCamera size={12} /> {ej.video_url ? (ej.video_tipo || 'Vídeo') : 'Sin vídeo'}
                       </span>
-                      <span className="rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                      <span className="rounded-full px-2 py-0.5 text-[13px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
                         Dificultad {ej.dificultad_nivel ?? '-'}/5
                       </span>
                       {quality.gaps.slice(0, 2).map(gap => (
-                        <span key={gap} className="rounded-full px-2 py-0.5 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
+                        <span key={gap} className="rounded-full px-2 py-0.5 text-[13px]" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
                           {gap}
                         </span>
                       ))}

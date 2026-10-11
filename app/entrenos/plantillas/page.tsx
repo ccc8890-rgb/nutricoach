@@ -195,7 +195,7 @@ export default function PlantillasEntrenoPage() {
                                 <p className="font-semibold text-[15px]" style={{ color: 'var(--text)' }}>{p.nombre}</p>
                                 {tier === 'elite' && (
                                     <span
-                                        className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full border"
+                                        className="inline-flex items-center gap-0.5 text-[12px] font-semibold px-1.5 py-0.5 rounded-full border"
                                         style={{ background: 'rgba(201,169,110,0.15)', borderColor: 'rgba(201,169,110,0.4)', color: '#C9A96E' }}
                                     >
                                         <Crown size={9} /> Elite
@@ -203,7 +203,7 @@ export default function PlantillasEntrenoPage() {
                                 )}
                                 {cfg && (
                                     <span
-                                        className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full border"
+                                        className="inline-flex items-center gap-0.5 text-[12px] font-medium px-1.5 py-0.5 rounded-full border"
                                         style={{ background: cfg.bgRgba, color: cfg.colorRgb, borderColor: cfg.bgRgba.replace('0.15', '0.35') }}
                                     >
                                         <cfg.Icon size={11} />
@@ -212,7 +212,7 @@ export default function PlantillasEntrenoPage() {
                                 )}
                                 {subcategoria && (
                                     <span
-                                        className="text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                                        className="text-[12px] font-medium px-1.5 py-0.5 rounded-full"
                                         style={{ color: 'var(--text-muted)', background: 'rgba(128,128,128,0.12)' }}
                                     >
                                         {subcategoria}
@@ -221,7 +221,7 @@ export default function PlantillasEntrenoPage() {
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <span
-                                    className="text-[11px] font-medium px-1.5 py-0.5 rounded"
+                                    className="text-[13px] font-medium px-1.5 py-0.5 rounded"
                                     style={nivelStyle(p.nivel)}
                                 >
                                     {p.nivel}
@@ -235,7 +235,7 @@ export default function PlantillasEntrenoPage() {
 
                         <div className="flex gap-1.5 flex-wrap justify-end items-start">
                             <span
-                                className="text-[11px] font-semibold px-2 py-1 rounded-full border"
+                                className="text-[13px] font-semibold px-2 py-1 rounded-full border"
                                 style={{
                                     color: quality.status === 'top' ? 'var(--semantic-active)' : quality.status === 'usable' ? 'var(--semantic-info)' : 'var(--semantic-warn)',
                                     borderColor: quality.status === 'top' ? 'var(--semantic-active-border)' : quality.status === 'usable' ? 'var(--semantic-info-border)' : 'var(--semantic-warn-border)',
@@ -245,7 +245,7 @@ export default function PlantillasEntrenoPage() {
                                 {quality.score}% · {quality.label}
                             </span>
                             {p.objetivo && (
-                                <span className={`badge text-[11px] ${OBJETIVO_COLOR[p.objetivo] ?? 'badge-gray'}`}>
+                                <span className={`badge text-[13px] ${OBJETIVO_COLOR[p.objetivo] ?? 'badge-gray'}`}>
                                     {p.objetivo.replace(/_/g, ' ')}
                                 </span>
                             )}
@@ -277,7 +277,7 @@ export default function PlantillasEntrenoPage() {
                     {quality.gaps.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-1.5">
                             {quality.gaps.slice(0, 4).map(gap => (
-                                <span key={gap} className="rounded-full border px-2 py-0.5 text-[10px] font-medium" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', background: 'var(--bg)' }}>
+                                <span key={gap} className="rounded-full border px-2 py-0.5 text-[12px] font-medium" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', background: 'var(--bg)' }}>
                                     {gap}
                                 </span>
                             ))}
@@ -303,19 +303,19 @@ export default function PlantillasEntrenoPage() {
                                             <div className="flex items-center justify-between mb-1">
                                                 <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Semana {sem.semana} · {sem.titulo}</p>
                                                 <span
-                                                    className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                                                    className="text-[12px] font-medium px-1.5 py-0.5 rounded"
                                                     style={{ color: 'var(--text-muted)', background: 'rgba(128,128,128,0.15)' }}
                                                 >
                                                     {sem.descripcion?.match(/RPE [\d-]+\/10/)?.[0] || ''}
                                                 </span>
                                             </div>
-                                            <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{sem.descripcion}</p>
+                                            <p className="text-[13px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{sem.descripcion}</p>
                                             {sem.ajustes && sem.ajustes.length > 0 && (
                                                 <div className="mt-1 flex flex-col gap-0.5">
                                                     {sem.ajustes.map((a: string, i: number) => (
                                                         <p
                                                             key={i}
-                                                            className="text-[10px] pl-2"
+                                                            className="text-[12px] pl-2"
                                                             style={{ color: 'var(--text-muted)', borderLeft: '2px solid var(--border)' }}
                                                         >{a}</p>
                                                     ))}
@@ -429,7 +429,7 @@ export default function PlantillasEntrenoPage() {
             {/* Header */}
             <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-6">
                 <div className="max-w-3xl">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] mb-2" style={{ color: 'var(--text-muted)' }}>
+                    <p className="text-[13px] font-semibold uppercase tracking-[0.16em] mb-2" style={{ color: 'var(--text-muted)' }}>
                         Biblioteca · Planificación
                     </p>
                     <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-none" style={{ color: 'var(--text)' }}>
@@ -469,7 +469,7 @@ export default function PlantillasEntrenoPage() {
                 ].map(item => (
                     <div key={item.label} className="rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                         <p className="text-2xl font-semibold leading-none" style={{ color: 'var(--text)' }}>{item.value}</p>
-                        <p className="text-[11px] mt-1 font-medium" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
+                        <p className="text-[13px] mt-1 font-medium" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
                     </div>
                 ))}
             </section>
@@ -477,7 +477,7 @@ export default function PlantillasEntrenoPage() {
             <section className="mb-5 rounded-3xl border p-4" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, var(--surface), var(--bg-subtle))' }}>
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
                     <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
+                        <p className="text-[13px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
                             Plan operativo
                         </p>
                         <h2 className="mt-1 text-xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
@@ -714,7 +714,7 @@ export default function PlantillasEntrenoPage() {
 function AssetMetric({ label, value }: { label: string; value: string | number }) {
     return (
         <div className="rounded-xl border px-2 py-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>{label}</p>
             <p className="font-data mt-1 text-sm font-semibold" style={{ color: 'var(--text)' }}>{value}</p>
         </div>
     )
