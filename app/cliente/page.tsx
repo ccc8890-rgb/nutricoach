@@ -9,8 +9,8 @@ import { supabase } from '@/lib/supabase'
 import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta, marca } from '@/lib/cliente/cache-swr'
 import {
   BookOpenText, ClipboardText, SignOut,
-  ForkKnife, Barbell, Scales, Trophy, Sun, Moon,
-  CaretRight, CaretLeft, X, TrendDown, TrendUp,
+  ForkKnife, Barbell, Sun, Moon,
+  CaretRight, CaretLeft, X, 
   ShoppingCart, ChatCircleDots, DeviceMobile,
   Pulse, BowlFood, PersonSimpleRun, SlidersHorizontal,
 } from '@phosphor-icons/react'
@@ -40,7 +40,6 @@ function aislar<P extends object>(Componente: ComponentType<P>): ComponentType<P
 
 const GraficoPeso = aislar(dynamic(() => import('@/components/PortalCliente/GraficoPeso')))
 const GaleriaFotosProgreso = aislar(dynamic(() => import('@/components/PortalCliente/GaleriaFotosProgreso')))
-const MilestonesLogros = aislar(dynamic(() => import('@/components/PortalCliente/MilestonesLogros')))
 const CheckInForm = aislar(dynamic(() => import('@/components/PortalCliente/CheckInForm')))
 const HistorialCheckins = aislar(dynamic(() => import('@/components/PortalCliente/HistorialCheckins')))
 const NotasCoach = aislar(NotasCoachEstatico)
@@ -187,9 +186,6 @@ function PortalClientePageContent() {
     return TABS_VALIDOS.includes(tabParam as Tab) ? (tabParam as Tab) : 'hoy'
   })
   const [subRecetas, setSubRecetas] = useState<'plan' | 'recetario' | null>(null)
-  const [peso, setPeso] = useState('')
-  const [notaPeso, setNotaPeso] = useState('')
-  const [guardandoPeso, setGuardandoPeso] = useState(false)
   const [historialPeso, setHistorialPeso] = useState<SeguimientoPeso[]>([])
   const [checkinKey, setCheckinKey] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -362,21 +358,6 @@ function PortalClientePageContent() {
     ))
   }
 
-  async function guardarPeso() {
-    if (!peso || !cliente) return
-    setGuardandoPeso(true)
-    const { data } = await supabase.from('seguimiento_peso').insert({
-      cliente_id: cliente.id,
-      peso: parseFloat(peso),
-      notas: notaPeso || null,
-      fecha: new Date().toISOString().split('T')[0],
-    }).select().single()
-    if (data) setHistorialPeso(prev => [data, ...prev])
-    setPeso('')
-    setNotaPeso('')
-    setGuardandoPeso(false)
-  }
-
   async function handleLogout() {
     borrarCachePortal()
     await supabase.auth.signOut()
@@ -398,6 +379,7 @@ function PortalClientePageContent() {
   const primerNombre = profile?.nombre?.split(' ')[0] ?? 'cliente'
   const ultimoPeso = historialPeso[0]?.peso
   const penultimoPeso = historialPeso[1]?.peso
+  const cambioPesoTotal = historialPeso.length >= 2 && ultimoPeso ? ultimoPeso - (historialPeso[historialPeso.length - 1]?.peso ?? ultimoPeso) : null
   const diffPeso = ultimoPeso && penultimoPeso ? ultimoPeso - penultimoPeso : null
   const sesionesSemana = entreno?.sesiones?.length ?? 0
   const comidasDia = comidasHoyDeDieta().length
@@ -578,38 +560,22 @@ function PortalClientePageContent() {
           <div className="flex flex-col gap-4">
             <VolverAHoy setTab={setTab} />
 
-            {/* Registrar peso */}
-            <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <h2 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                <Scales size={15} style={{ color: 'var(--accent)' }} />
-                Registrar peso
-              </h2>
-              <div className="flex gap-2 mb-3">
-                <input
-                  type="number" step="0.1" inputMode="decimal"
-                  className="input flex-1 rounded-xl"
-                  placeholder="74.5"
-                  value={peso}
-                  onChange={e => setPeso(e.target.value)}
-                />
-                <span className="flex items-center font-semibold px-2 text-sm" style={{ color: 'var(--text-secondary)' }}>kg</span>
+            {ultimoPeso ? (
+              <div className="px-1">
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Peso actual</p>
+                <p className="text-4xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
+                  {ultimoPeso} <span className="text-lg font-medium" style={{ color: 'var(--text-secondary)' }}>kg</span>
+                </p>
+                {cambioPesoTotal !== null && (
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    {cambioPesoTotal > 0 ? '+' : ''}{cambioPesoTotal.toFixed(1)} kg desde el inicio
+                  </p>
+                )}
               </div>
-              <input
-                className="input mb-3 rounded-xl w-full"
-                placeholder="Nota (opcional)…"
-                value={notaPeso}
-                onChange={e => setNotaPeso(e.target.value)}
-              />
-              <button
-                className="btn btn-primary w-full justify-center rounded-xl cursor-pointer"
-                onClick={guardarPeso}
-                disabled={!peso || guardandoPeso}
-              >
-                {guardandoPeso ? 'Guardando…' : 'Guardar registro'}
-              </button>
-            </div>
+            ) : (
+              <EmptyState icon={ClipboardText} text="Aún no hay pesos registrados" />
+            )}
 
-            {/* Gráfico */}
             {historialPeso.length >= 2 && (
               <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <GraficoPeso
@@ -618,58 +584,14 @@ function PortalClientePageContent() {
               </div>
             )}
 
-            {/* Historial peso */}
-            {historialPeso.length > 0 && (
-              <div className="rounded-3xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <div className="px-5 pt-4 pb-2">
-                  <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>Historial de peso</h2>
-                </div>
-                <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-                  {historialPeso.map((r, idx) => {
-                    const ant = historialPeso[idx + 1]
-                    const diff = ant && r.peso && ant.peso ? r.peso - ant.peso : null
-                    return (
-                      <div key={r.id} className="flex items-center justify-between px-5 py-3">
-                        <div>
-                          <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-                            {new Date(r.fecha).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })}
-                          </p>
-                          {r.notas && <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{r.notas}</p>}
-                        </div>
-                        <div className="text-right flex items-center gap-2">
-                          {diff !== null && (
-                            diff < 0
-                              ? <TrendDown size={13} style={{ color: '#52B788' }} />
-                              : diff > 0
-                              ? <TrendUp size={13} style={{ color: '#F4A261' }} />
-                              : null
-                          )}
-                          <div>
-                            <p className="font-bold text-sm" style={{ color: 'var(--text)' }}>{r.peso} kg</p>
-                            {diff !== null && (
-                              <p className="text-[10px]" style={{ color: diff < 0 ? '#52B788' : diff > 0 ? '#F4A261' : 'var(--text-muted)' }}>
-                                {diff > 0 ? '+' : ''}{diff.toFixed(1)} kg
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+            <button
+              className="btn btn-primary w-full justify-center rounded-xl cursor-pointer"
+              onClick={() => setTab('checkin')}
+            >
+              Hacer check-in
+            </button>
 
-            {/* Fotos de progreso */}
             {codigo && <GaleriaFotosProgreso codigo={codigo} />}
-
-            {/* Logros */}
-            {codigo ? (
-              <MilestonesLogros codigo={codigo} />
-            ) : (
-              <EmptyState icon={Trophy} text="Activa un plan para ver tus logros" />
-            )}
-
           </div>
         )}
 

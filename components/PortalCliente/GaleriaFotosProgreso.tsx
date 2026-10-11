@@ -24,15 +24,15 @@ export default function GaleriaFotosProgreso({ codigo }: { codigo: string }) {
     if (loading) return null
 
     if (!fotos.length) return (
-        <div className="card mt-4 text-center py-8">
+        <div className="card text-center py-8">
             <p className="text-sm text-gray-400">Aún no has subido fotos de progreso.</p>
             <p className="text-xs text-gray-400 mt-1">Añade una en tu próximo check-in.</p>
         </div>
     )
 
     return (
-        <div className="card mt-4">
-            <h2 className="font-semibold text-[var(--text)] mb-3">📸 Fotos de progreso</h2>
+        <div className="card">
+            <h2 className="font-semibold text-[var(--text)] mb-3">Fotos de progreso</h2>
             <div className="flex gap-3 overflow-x-auto pb-2">
                 {fotos.map(f => (
                     <div key={f.id} className="flex-shrink-0 w-28">
