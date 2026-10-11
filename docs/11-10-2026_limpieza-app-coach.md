@@ -45,3 +45,4 @@ Total: ~9.200 líneas menos.
 - **«Planes activos» quitada del menú** (`components/Sidebar.tsx`) y de las tarjetas de `/nutricion`: cada cliente ya tiene su plan en la ficha → Nutrición. La ruta `/dietas` y `/dietas/[id]` siguen existiendo (los enlaces desde la ficha usan `/dietas/[id]`).
 - Restaurar: reinsertar desde el JSON de copia (planes → comidas → comida_alimentos).
 - **«Resumen» de Nutrición quitado del menú** (era una página de tarjetas que repetía el propio menú). El botón de la sección Nutrición lleva ahora a Plantillas y `/nutricion` redirige a `/dietas/plantillas`.
+- **«Resumen» de Entrenamiento quitado del menú** (lista de clientes repetida con Clientes). La página `/entrenos` se mantiene porque la usan enlaces internos (volver, cancelar, acceso del dashboard). El botón de la sección lleva a Plantillas.

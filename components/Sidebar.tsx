@@ -74,7 +74,6 @@ const NUTRICION_ITEMS: NavItem[] = [
 ]
 
 const ENTRENAMIENTO_ITEMS: NavItem[] = [
-  { href: '/entrenos', label: 'Resumen', icon: Dumbbell, exact: true },
   { href: '/entrenos/nueva', label: 'Crear plan', icon: FilePlus2 },
   { href: '/entrenos/plantillas', label: 'Plantillas', icon: ListChecks },
   { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Database },
@@ -485,7 +484,7 @@ export default function Sidebar() {
 
   const sections: NavSection[] = [
     { key: 'nutricion', label: 'Nutrición', href: '/dietas/plantillas', icon: Utensils, badge: recetasPendientes, items: nutricionItems },
-    { key: 'entrenamiento', label: 'Entrenamiento', href: '/entrenos', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
+    { key: 'entrenamiento', label: 'Entrenamiento', href: '/entrenos/plantillas', icon: Dumbbell, items: ENTRENAMIENTO_ITEMS },
   ]
 
   useEffect(() => {
