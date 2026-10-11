@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback, createContext, useContext } from 'react'
+import { usePathname } from 'next/navigation'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 
 type ToastType = 'success' | 'error' | 'info' | 'warning'
@@ -27,11 +28,17 @@ export function useToast() {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
     const [toasts, setToasts] = useState<Toast[]>([])
+    const pathname = usePathname()
+    // En el panel del coach no se avisa de cada cambio correcto (mover, guardar, copiar…): la pantalla ya
+    // muestra el resultado y el aviso estorba. Siguen los errores y avisos, y los de «copiado» (no se ve nada).
+    // El portal del cliente (/cliente) conserva todos sus avisos.
+    const esPortalCliente = pathname?.startsWith('/cliente') ?? false
 
     const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
+        if (!esPortalCliente && (toast.type === 'success' || toast.type === 'info') && !/copiad/i.test(toast.title)) return
         const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
         setToasts(prev => [...prev, { ...toast, id }])
-    }, [])
+    }, [esPortalCliente])
 
     const removeToast = useCallback((id: string) => {
         setToasts(prev => prev.filter(t => t.id !== id))
