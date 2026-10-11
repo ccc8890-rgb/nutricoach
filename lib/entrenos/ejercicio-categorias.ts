@@ -18,6 +18,7 @@ const SUBGRUPOS: Partial<Record<PestanaEjercicio, [string, RegExp][]>> = {
     ['Trote y calma', /trote|calent|vuelta a la calma/],
   ],
   Cardio: [
+    ['Suave y bajo impacto', /camin|paseo|senderismo|eliptica|escalera|stepper|estatica/],
     ['Carrera', /carrera|trote|correr|cinta|cuestas|intervalos/],
     ['Bici', /pedaleo|bicicleta|ciclismo|sweet spot|over-under/],
     ['Remo y SkiErg', /skierg|remo|ergometro|assault/],
@@ -42,7 +43,7 @@ const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,
 
 const RE_CALENTAMIENTO = /calent|vuelta a la calma|movilidad|estiramiento|activacion|pedaleo z1|foam|rodillo/
 const RE_CORE = /plancha|abdominal|crunch|core|elevacion de piernas|russian twist|dead bug|bird dog|hollow|pallof|rueda|l-sit/
-const RE_CARDIO = /skierg|pedaleo|bicicleta|ciclismo|ergometro|eliptica|carrera|trote|cinta|correr|assault|natacion|intervalos|over-under|sweet spot|cuestas/
+const RE_CARDIO = /skierg|pedaleo|bicicleta|ciclismo|ergometro|eliptica|carrera|trote|cinta|correr|assault|natacion|paseo|senderismo|escalera|stepper|intervalos|over-under|sweet spot|cuestas/
 
 export function pestanaDe(e: EjercicioBiblioteca): PestanaEjercicio {
   const n = norm(e.nombre)
