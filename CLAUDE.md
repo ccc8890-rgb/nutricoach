@@ -14,6 +14,12 @@ Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/inter
 - **Recuperar un archivo:** `git checkout bd7d691~1 -- <ruta>` (p. ej. `lib/recetas/auto-match-ingrediente.ts`). Todo el conjunto: `git checkout bd7d691~1 -- app/api lib/recetas lib/scraping/motores` (cuidado: también restauraría otros borrados de esas carpetas).
 - La limpieza anterior (52 archivos) está en `873c556`; se recupera igual con `git checkout 873c556~1 -- <ruta>`.
 
+## ✅ SESIÓN 11-10-2026 (noche tardía, 3.ª parte, Claude) — Estudio de modelos de IA para generar planes
+
+- Banco de pruebas `scripts/benchmark-modelos-plan.ts` + `lib/entrenos/evaluar-plan-ia.ts`; `generarPlanEntrenoIA` acepta `proveedor`. 4 casos × 5 modelos. Resultado: deepseek-chat 96 pts/22 s, deepseek-v4-pro 1 de 4 con JSON inválido (74), gpt-5.5 94 pts/67 s y el mejor razonamiento de coach, Gemini Pro no disponible (retirado / sin cuota). Claude sin probar (sin clave API).
+- Hallazgo: el esqueleto determinista pesa más que el modelo; la puntuación objetiva se satura. El estudio cazó un fallo real (híbrida con carrera el día antes de la tirada) ya corregido en `repartirHibridas`.
+- Pendiente: elegir modelo por tarea (propuesta: gpt-5.5 + respaldo DeepSeek), reintento de JSON, bucle de corrección con validadores, evidencia dirigida. Detalle: `docs/11-10-2026_estudio-modelos-ia-plan.md`.
+
 ## ✅ SESIÓN 11-10-2026 (noche tardía, 2.ª parte, Claude) — El motor detecta planes por debajo de la carga real
 
 - Hallazgo: las guardas solo vigilaban pasarse; el plan Base de Carlos (97 min/17 km por semana) quedaba un 35-40 % por debajo de lo que corre (150-165 min/28-30 km). El motor partía de la media de 4 semanas (89 min), hundida por viajes.

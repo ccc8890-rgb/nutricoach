@@ -15,11 +15,16 @@ export type TipoRunEsqueleto = 'rodaje' | 'tirada' | 'tempo' | 'series' | 'ritmo
 const ES_CALIDAD = (t: string) => t === 'tempo' || t === 'series' || t === 'ritmo_carrera'
 
 export interface RunFijo { tipo: string; dia: number }
-export interface HibridaPlan { pierna: boolean }
+export interface HibridaPlan { pierna: boolean; /** Lleva carrera tras la estación (Hyrox): no el día antes de la tirada. */ conCarrera?: boolean }
 
 const PIERNA = /sentadilla|squat|wall ?ball|zancada|lunge|peso muerto|deadlift|sled push|empuje de trineo|prensa|hip thrust|b[uú]lgara|burpee broad|step ?up|thruster/i
 
 /** ¿La sesión tiene trabajo de pierna? Mira el nombre y los ejercicios. */
+/** ¿La sesión híbrida incluye carrera tras la estación (ejercicio «Carrera continua»)? */
+export function tieneCarreraTrasEstacion(s: { ejercicios?: { nombre?: string | null }[] | null }): boolean {
+  return (s.ejercicios ?? []).some(e => /carrera continua|carrera comprometida/i.test(e.nombre ?? ''))
+}
+
 export function tieneTrabajoDePierna(s: { nombre?: string | null; ejercicios?: { nombre?: string | null; bloque?: string | null }[] | null }): boolean {
   if (PIERNA.test(s.nombre ?? '')) return true
   return (s.ejercicios ?? []).some(e => e.bloque !== 'calentamiento' && e.bloque !== 'movilidad' && PIERNA.test(e.nombre ?? ''))
@@ -77,6 +82,8 @@ export function repartirHibridas(runs: RunFijo[], hibridas: HibridaPlan[], diasD
       for (let i = 0; i < n; i++) {
         const d = asign[i]
         if (clave.includes(d)) { duras++; puntos += 1000 } // ni tirada ni calidad el mismo día
+        // Carrera tras la estación: carga las piernas menos que una de pierna, pero no el día antes de la tirada larga.
+        if (hibridas[i].conCarrera && tirada.includes(d + 1)) puntos += 500
         if (hibridas[i].pierna) {
           if (antesDeClave.has(d)) { duras++; puntos += 1000 }
           if (despuesDeTirada.has(d)) puntos += 40 // pierna el día después de la tirada: se evita, no es regla dura

@@ -8,7 +8,7 @@ import { siguienteFaseBloque, type FaseBloque } from '@/lib/entrenos/bloques'
 import type { PerfilEntrenoCliente } from '@/types'
 import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
 import { validarSemanaCarrera, tipoDeSesionCarrera, type ContextoValidacion, type ResultadoValidacion } from '@/lib/entrenos/validar-plan-carrera'
-import { DIAS_NOMBRE, diaNumero, repartirHibridas, tieneTrabajoDePierna, validarRepartoSemana } from '@/lib/entrenos/reparto-semana'
+import { DIAS_NOMBRE, diaNumero, repartirHibridas, tieneCarreraTrasEstacion, tieneTrabajoDePierna, validarRepartoSemana } from '@/lib/entrenos/reparto-semana'
 import { planificarMacrociclo, type ResultadoMacro } from '@/lib/entrenos/macrociclo'
 import { construirEntradaMacro } from '@/lib/entrenos/macro-desde-cliente'
 import { formatearRitmo } from '@/lib/entrenos/ritmos'
@@ -16,6 +16,19 @@ import { normalizarDuracionSemanas } from '@/lib/entrenos/guardar-plan'
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com/v1/chat/completions'
 const MODEL = 'deepseek-chat'
+
+/** Proveedor y modelo con los que se genera el plan (API compatible con «chat/completions»). Por defecto, DeepSeek; el banco de pruebas de modelos pasa otros. */
+export interface ProveedorIA {
+  nombre: string
+  url: string
+  /** Nombre de la variable de entorno con la clave. */
+  claveEnv: string
+  modelo: string
+  maxTokens?: number
+  /** Los modelos de razonamiento de OpenAI exigen `max_completion_tokens` y no admiten otra temperatura. */
+  razonamientoOpenAI?: boolean
+}
+export const PROVEEDOR_POR_DEFECTO: ProveedorIA = { nombre: 'deepseek-chat', url: DEEPSEEK_BASE, claveEnv: 'DEEPSEEK_API_KEY', modelo: MODEL, maxTokens: 6000 }
 
 export class ErrorGeneracionPlan extends Error {
   constructor(public codigo: 'CLIENTE_NO_ENCONTRADO' | 'IA_ERROR' | 'IA_RESPUESTA_INVALIDA', public estado: number, mensaje: string) { super(mensaje) }
@@ -32,10 +45,11 @@ export interface ResultadoGeneracionPlan {
   macrociclo: ResultadoMacro | null
   /** Minutos de carrera por semana que hace de verdad (reloj, últimas 4 semanas completas); null si no hay datos. */
   minutosRealesSemana: number | null
-  metadata: { rpe_promedio: number | null; ajuste_rpe: string; modalidad: string; recomendacion_motor: unknown; papers_usados: number; generado_con: string }
+  metadata: { rpe_promedio: number | null; ajuste_rpe: string; modalidad: string; recomendacion_motor: unknown; papers_usados: number; generado_con: string; uso?: unknown }
 }
 
-export async function generarPlanEntrenoIA(sb: SupabaseClient, opts: { clienteId: string; faseBloqueObjetivo?: FaseBloque }): Promise<ResultadoGeneracionPlan> {
+export async function generarPlanEntrenoIA(sb: SupabaseClient, opts: { clienteId: string; faseBloqueObjetivo?: FaseBloque; proveedor?: ProveedorIA }): Promise<ResultadoGeneracionPlan> {
+    const proveedor = opts.proveedor ?? PROVEEDOR_POR_DEFECTO
     const cliente_id = opts.clienteId
     const faseBloqueObjetivoBody = opts.faseBloqueObjetivo
 
@@ -421,27 +435,26 @@ ${instruccionDuracion}
   }
 }`
 
-    const response = await fetch(DEEPSEEK_BASE, {
+    const response = await fetch(proveedor.url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+        Authorization: `Bearer ${process.env[proveedor.claveEnv]}`,
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: proveedor.modelo,
         messages: [
           { role: 'system', content: promptSistema },
           { role: 'user', content: promptUsuario },
         ],
         response_format: { type: 'json_object' },
-        temperature: 0.35,
-        max_tokens: 6000,
+        ...(proveedor.razonamientoOpenAI ? { max_completion_tokens: proveedor.maxTokens ?? 6000 } : { temperature: 0.35, max_tokens: proveedor.maxTokens ?? 6000 }),
       }),
     })
 
     if (!response.ok) {
       const err = await response.text()
-      console.error('DeepSeek error:', err)
+      console.error(`Error de ${proveedor.nombre}:`, err.slice(0, 300))
       throw new ErrorGeneracionPlan('IA_ERROR', 502, 'Error al generar el plan con IA')
     }
 
@@ -485,7 +498,7 @@ ${instruccionDuracion}
         avisosReparto.push(`La IA devolvió ${carreras.length} sesiones de carrera y el esqueleto prevé ${esqueletoSemana.sesiones.length}: se respetan los días que puso la IA para la carrera.`)
         runsFijos = carreras.map(c => ({ tipo: tipoMacro(tipoDeSesionCarrera({ nombre: String(c.nombre ?? '') })), dia: diaNumero(c.dia_semana) })).filter(r => r.dia >= 0)
       }
-      const rep = repartirHibridas(runsFijos, hibridas.map(h => ({ pierna: tieneTrabajoDePierna({ nombre: String(h.nombre ?? ''), ejercicios: h.ejercicios }) })), diasDisponiblesPerfil)
+      const rep = repartirHibridas(runsFijos, hibridas.map(h => ({ pierna: tieneTrabajoDePierna({ nombre: String(h.nombre ?? ''), ejercicios: h.ejercicios }), conCarrera: tieneCarreraTrasEstacion({ ejercicios: h.ejercicios }) })), diasDisponiblesPerfil)
       hibridas.forEach((h, i) => {
         const nuevo = DIAS_NOMBRE[rep.dias[i]]
         if (h.dia_semana !== nuevo) cambios.push({ nombre: String(h.nombre ?? ''), de: h.dia_semana ?? null, a: nuevo })
@@ -516,6 +529,6 @@ ${instruccionDuracion}
       validacion,
       macrociclo,
       minutosRealesSemana: contextoValidacion.minutosRealesSemana,
-      metadata: { rpe_promedio: rpePromedio, ajuste_rpe: ajusteRpe, modalidad: modalidadFoco, recomendacion_motor: recomendacion, papers_usados: papers.length, generado_con: MODEL },
+      metadata: { rpe_promedio: rpePromedio, ajuste_rpe: ajusteRpe, modalidad: modalidadFoco, recomendacion_motor: recomendacion, papers_usados: papers.length, generado_con: proveedor.modelo, uso: ds.usage ?? null },
     }
 }

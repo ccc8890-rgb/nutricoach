@@ -73,4 +73,8 @@ assert.ok(!validarRepartoSemana([hibCarrera('Jueves'), tiradaSab], null).some(h 
 const sieteDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(d => ({ nombre: 'x', dia_semana: d, esCarrera: true, tipoCarrera: 'rodaje' }))
 assert.ok(validarRepartoSemana(sieteDias, null).some(h => h.codigo === 'sin_dia_de_descanso'))
 
+// Híbridas con carrera tras la estación: ninguna cae el día antes de la tirada (sábado=5) si hay hueco
+const rc = repartirHibridas([{ tipo: 'tirada', dia: 5 }, { tipo: 'series', dia: 1 }, { tipo: 'rodaje', dia: 3 }], [{ pierna: true, conCarrera: true }, { pierna: false, conCarrera: true }, { pierna: false, conCarrera: true }], 5)
+assert.ok(rc.dias.every(d => d !== 4), `ninguna híbrida con carrera el viernes: ${rc.dias}`)
+
 console.log('reparto-semana: OK')
