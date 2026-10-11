@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DetalleDiaDieta from './DetalleDiaDieta'
-import { Activity, BadgeCheck, CalendarDays, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
+import { DndContext, DragOverlay, PointerSensor, pointerWithin, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
+import { Activity, BadgeCheck, CalendarDays, ClipboardPaste, Copy, Loader2, Maximize2, Minimize2, Play, Plus, Search, Sparkles, Trash2, Video, X } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 
 type Receta = { id: string; nombre: string; imagen_url: string | null; contenido_estado: string | null; verificacion: string | null }
@@ -82,11 +83,34 @@ function SemanaResumen({ dias, kcalObjetivo, objetivos, semana, diaSel, onDia, r
   )
 }
 
+type Origen = { comida: Comida; dia: string; semana: number | null }
+type Portapapeles = { nombre: string; items: { franja: string; receta_id: string }[] }
+const idHueco = (semana: number | null, dia: string, franja: string) => `${semana ?? 0}|${dia}|${franja}`
+
+// Cada hueco (vacío u ocupado) es un destino al que se puede soltar un plato
+function HuecoSoltable({ id, className, style, children }: { id: string; className?: string; style?: React.CSSProperties; children: React.ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id })
+  return <div ref={setNodeRef} className={className} style={{ ...style, outline: isOver ? '2px solid var(--primary)' : undefined }}>{children}</div>
+}
+
+// Tarjeta de plato: se arrastra (mover; con Alt, copiar) y a la vez es destino de otros platos
+function PlatoArrastrable({ origen, id, className, style, children }: { origen: Origen; id: string; className?: string; style?: React.CSSProperties; children: React.ReactNode }) {
+  const drop = useDroppable({ id })
+  const drag = useDraggable({ id: `c:${origen.comida.id}`, data: origen, disabled: !origen.comida.receta })
+  return (
+    <div ref={n => { drop.setNodeRef(n); drag.setNodeRef(n) }} {...drag.listeners} className={className}
+      style={{ ...style, opacity: drag.isDragging ? 0.35 : 1, cursor: origen.comida.receta ? 'grab' : undefined, outline: drop.isOver && !drag.isDragging ? '2px solid var(--primary)' : undefined }}>
+      {children}
+    </div>
+  )
+}
+
 // Rejilla de 7 días: las franjas en su orden, con los huecos vacíos en su sitio
-function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel, onDia, onHueco, onQuitar, onGrabar }: {
+function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel, onDia, onHueco, onQuitar, onGrabar, portapapeles, onCopiar, onCopiarDia, onPegar }: {
   dias: Dia[]; franjas: string[]; T: Tamano; kcalObjetivo: number | null; objetivos: Record<string, ObjetivoDia>; semana: number | null
   diaSel: { dia: string; semana: number | null } | null; onDia: (dia: string, semana: number | null) => void
   onHueco: (h: Hueco) => void; onQuitar: (c: Comida, semana: number | null) => void; onGrabar: (r: Receta) => void
+  portapapeles: Portapapeles | null; onCopiar: (c: Comida) => void; onCopiarDia: (d: Dia) => void; onPegar: (dia: string, semana: number | null, franja?: string) => void
 }) {
   const posicion = (f: string) => { const i = franjas.indexOf(f); return i === -1 ? franjas.length : i }
   return (
@@ -114,23 +138,32 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
                 </span>
               )}
             </button>
+            <div className="flex items-center justify-end gap-2 mb-1.5 -mt-1" style={{ color: 'var(--text-muted)' }}>
+              {d.comidas.some(c => c.receta) && <button title="Copiar todos los platos del día" onClick={() => onCopiarDia(d)} className="flex items-center gap-0.5 text-[10px]"><Copy size={11} /> día</button>}
+              {portapapeles && <button title="Pegar en este día (sustituye las franjas copiadas)" onClick={() => onPegar(d.dia, semana)} className="flex items-center gap-0.5 text-[10px]" style={{ color: 'var(--primary)' }}><ClipboardPaste size={11} /> pegar</button>}
+            </div>
             <div className="space-y-1.5">
               {items.map(it => {
                 if (it.tipo === 'hueco') return (
-                  <button key={it.f} onClick={() => onHueco({ dia: d.dia, franja: it.f, semana })}
-                    className={`w-full rounded-lg ${T.hueco} flex items-center gap-1 justify-center`}
-                    style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
-                    <Plus size={11} /> {it.f}
-                  </button>
+                  <HuecoSoltable key={it.f} id={idHueco(semana, d.dia, it.f)} className="flex gap-1">
+                    <button onClick={() => onHueco({ dia: d.dia, franja: it.f, semana })}
+                      className={`flex-1 rounded-lg ${T.hueco} flex items-center gap-1 justify-center`}
+                      style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
+                      <Plus size={11} /> {it.f}
+                    </button>
+                    {portapapeles?.items.length === 1 && <button title="Pegar aquí" onClick={() => onPegar(d.dia, semana, it.f)} className="rounded-lg px-1.5" style={{ border: '1px dashed var(--primary)', color: 'var(--primary)' }}><ClipboardPaste size={12} /></button>}
+                  </HuecoSoltable>
                 )
                 const c = it.c
                 return (
-                  <div key={c.id} className={`rounded-lg ${T.card}`} style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <PlatoArrastrable key={c.id} id={idHueco(semana, d.dia, c.nombre)} origen={{ comida: c, dia: d.dia, semana }} className={`rounded-lg ${T.card}`} style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                     <div className="flex items-center justify-between gap-1">
                       <button className={`${T.label} font-semibold uppercase tracking-wide text-left`} style={{ color: 'var(--text-muted)' }} onClick={() => onHueco({ dia: d.dia, franja: c.nombre, semana })}>
                         {c.nombre}{c.recurrente ? ' · diario' : ''}{objetivos[d.dia]?.momento?.pre === c.nombre ? ' · pre' : objetivos[d.dia]?.momento?.post === c.nombre ? ' · post' : ''}
                       </button>
                       <div className="flex items-center gap-1">
+                        {c.receta && <button title="Copiar este plato" onClick={() => onCopiar(c)} style={{ color: 'var(--text-muted)' }}><Copy size={12} /></button>}
+                        {portapapeles?.items.length === 1 && <button title="Pegar aquí (sustituye este plato)" onClick={() => onPegar(d.dia, semana, c.nombre)} style={{ color: 'var(--primary)' }}><ClipboardPaste size={12} /></button>}
                         {c.receta && (
                           <button title="Para grabar → grabada → nada" onClick={() => onGrabar(c.receta!)}
                             style={{ color: c.receta.contenido_estado === 'para_grabar' ? 'var(--warning)' : c.receta.contenido_estado === 'grabada' ? 'var(--success)' : 'var(--text-muted)', opacity: c.receta.contenido_estado ? 1 : 0.45 }}>
@@ -144,7 +177,7 @@ function SemanaGrid({ dias, franjas, T, kcalObjetivo, objetivos, semana, diaSel,
                       {c.receta?.nombre ?? 'Sin receta'}
                     </button>
                     <p className={`${T.macros} mt-0.5`} style={{ color: 'var(--text-muted)' }}>{c.kcal} · P{c.p} C{c.c} G{c.g}</p>
-                  </div>
+                  </PlatoArrastrable>
                 )
               })}
             </div>
@@ -181,6 +214,16 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const zonaFuturas = useRef<HTMLDivElement>(null)
   const [diaSel, setDiaSel] = useState<{ dia: string; semana: number | null } | null>(null)
   const [version, setVersion] = useState(0)
+  const [portapapeles, setPortapapeles] = useState<Portapapeles | null>(null)
+  const [arrastrando, setArrastrando] = useState<string | null>(null)
+  const altRef = useRef(false)
+  const sensores = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
+  useEffect(() => {
+    const alt = (e: KeyboardEvent | PointerEvent) => { altRef.current = e.altKey }
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setPortapapeles(null) }
+    window.addEventListener('keydown', alt); window.addEventListener('keyup', alt); window.addEventListener('pointermove', alt); window.addEventListener('keydown', esc)
+    return () => { window.removeEventListener('keydown', alt); window.removeEventListener('keyup', alt); window.removeEventListener('pointermove', alt); window.removeEventListener('keydown', esc) }
+  }, [])
   const [objetivosDia, setObjetivosDia] = useState<Record<string, ObjetivoDia>>({})
   const [comidasDia, setComidasDia] = useState<2 | 3 | 4 | 5 | null>(null)
   const [guardandoComidasDia, setGuardandoComidasDia] = useState(false)
@@ -263,8 +306,8 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
     setHueco(null); setBusqueda(''); await Promise.all([cargar(), cargarFuturas(vista)])
   }
 
-  async function quitar(c: Comida, semana: number | null) {
-    if (!confirm('¿Quitar esta comida de ese día?')) return
+  async function quitar(c: Comida, semana: number | null, sinConfirmar = false) {
+    if (!sinConfirmar && !confirm('¿Quitar esta comida de ese día?')) return
     const base = `/api/clientes/${clienteId}/semana-dieta`
     const data = semana ? await llamar(`${base}/futuras?id=${c.id}`, 'DELETE') : await llamar(`${base}?comida_id=${c.id}`, 'DELETE')
     if (data) await Promise.all([cargar(), cargarFuturas(vista)])
@@ -352,6 +395,53 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
       onQuitar={(id) => quitar({ id } as Comida, semana)}
       franjas={franjas} onCambioDatos={() => { void Promise.all([cargar(), cargarFuturas(vista)]) }} />
   ) : null
+  const diaDe = (semana: number | null, dia: string) => (semana == null ? dias : futuras.find(f => f.semana === semana)?.dias)?.find(d => d.dia === dia)
+  const recargar = () => Promise.all([cargar(), cargarFuturas(vista)])
+
+  // Asigna recetas a franjas de un día (la semana en curso o una planificada); reutiliza las rutas de asignar
+  async function colocar(items: { franja: string; receta_id: string }[], dia: string, semana: number | null) {
+    const base = `/api/clientes/${clienteId}/semana-dieta`
+    for (const it of items) {
+      const data = semana
+        ? await llamar(`${base}/futuras`, 'POST', { semana, dia, franja: it.franja, receta_id: it.receta_id })
+        : await llamar(base, 'POST', { dia, franja: it.franja, receta_id: it.receta_id })
+      if (!data) return false
+    }
+    return true
+  }
+
+  function copiar(c: Comida) {
+    if (c.receta) setPortapapeles({ nombre: c.receta.nombre, items: [{ franja: c.nombre, receta_id: c.receta.id }] })
+  }
+  function copiarDia(d: Dia) {
+    const items = d.comidas.filter(c => c.receta).map(c => ({ franja: c.nombre, receta_id: c.receta!.id }))
+    if (items.length) setPortapapeles({ nombre: `${d.dia} (${items.length} platos)`, items })
+  }
+  async function pegar(dia: string, semana: number | null, franja?: string) {
+    if (!portapapeles) return
+    const items = franja ? [{ franja, receta_id: portapapeles.items[0].receta_id }] : portapapeles.items
+    const ocupados = items.filter(it => diaDe(semana, dia)?.comidas.some(c => c.nombre === it.franja && c.receta && c.receta.id !== it.receta_id))
+    if (ocupados.length && !confirm(`${dia}: se sustituirán ${ocupados.length} plato${ocupados.length > 1 ? 's' : ''} (${ocupados.map(o => o.franja).join(', ')}). ¿Seguir?`)) return
+    setOcupado('mover'); setError(null)
+    await colocar(items, dia, semana)
+    setOcupado(null); await recargar()
+  }
+  async function soltar(e: DragEndEvent) {
+    setArrastrando(null)
+    const o = e.active.data.current as Origen | undefined
+    const over = e.over ? String(e.over.id) : null
+    if (!o?.comida.receta || !over) return
+    const [sem, dia, franja] = over.split('|')
+    const semana = sem === '0' ? null : Number(sem)
+    if (semana === o.semana && dia === o.dia && franja === o.comida.nombre) return
+    const copia = altRef.current || o.comida.recurrente
+    const destino = diaDe(semana, dia)?.comidas.find(c => c.nombre === franja)
+    if (destino?.receta && destino.receta.id !== o.comida.receta.id && !confirm(`${franja} · ${dia}: ¿sustituir «${destino.receta.nombre}» por «${o.comida.receta.nombre}»?`)) return
+    setOcupado('mover'); setError(null)
+    const ok = await colocar([{ franja, receta_id: o.comida.receta.id }], dia, semana)
+    if (ok && !copia) await quitar(o.comida, o.semana, true)
+    setOcupado(null); await recargar()
+  }
   const btnSec = 'rounded-lg px-2.5 py-1.5 text-[11px] font-medium flex items-center gap-1 disabled:opacity-50'
   const mediaActual = media(dias)
   // Cuántas veces aparece cada receta en las semanas visibles (para marcar repeticiones en el Resumen)
@@ -360,6 +450,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
   const platosRepetidos = [...repeticiones.values()].filter(n => n > 1).length
 
   return (
+    <DndContext sensors={sensores} collisionDetection={pointerWithin} onDragStart={(e: DragStartEvent) => setArrastrando((e.active.data.current as Origen | undefined)?.comida.receta?.nombre ?? null)} onDragEnd={soltar} onDragCancel={() => setArrastrando(null)}>
     <section className={ampliado ? 'fixed inset-0 z-[60] overflow-auto p-6' : 'rounded-2xl p-4'} style={{ background: ampliado ? 'var(--bg)' : 'var(--surface)', border: ampliado ? 'none' : '1px solid var(--border)' }}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
@@ -471,6 +562,16 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           {platosRepetidos > 0 ? <><span style={{ color: 'var(--warning)' }}>↻</span> {platosRepetidos} {platosRepetidos === 1 ? 'receta se repite' : 'recetas se repiten'} en estas semanas (en ámbar). </> : 'Sin recetas repetidas en estas semanas. '}Pasa el ratón sobre un plato para ver la comida y las veces.
         </p>
       )}
+      {modo === 'platos' && (
+        portapapeles ? (
+          <div className="rounded-xl p-2.5 mb-3 text-xs flex items-center justify-between gap-2" style={{ background: 'var(--bg)', border: '1px solid var(--primary)', color: 'var(--text)' }}>
+            <span>Copiado: <b>{portapapeles.nombre}</b>. Pulsa «pegar» en un hueco o en un día (Esc para cancelar).</span>
+            <button onClick={() => setPortapapeles(null)}><X size={13} /></button>
+          </div>
+        ) : (
+          <p className="text-[11px] mb-2" style={{ color: 'var(--text-muted)' }}>Arrastra un plato a otro hueco, día o semana para moverlo (con Alt, para copiarlo), o usa el icono de copiar y «pegar».{ocupado === 'mover' ? ' Moviendo…' : ''}</p>
+        )
+      )}
       {vista > 1 && (
         <p className="text-sm font-semibold mb-1.5" style={{ color: 'var(--text)' }}>
           Semana en curso · {rangoSemana(null)} <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· lo que ve el cliente{mediaActual ? ` · media ${mediaActual.kcal} kcal · P${mediaActual.p} C${mediaActual.c} G${mediaActual.g}` : ''}</span>
@@ -478,7 +579,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
       )}
       {vista > 1 && modo === 'resumen'
         ? <SemanaResumen dias={dias} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} repeticiones={repeticiones} />
-        : <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />}
+        : <SemanaGrid dias={dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={objetivosDia} semana={null} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} portapapeles={portapapeles} onCopiar={copiar} onCopiarDia={copiarDia} onPegar={pegar} />}
       {detalle(null)}
 
       <div ref={zonaFuturas} className="scroll-mt-4" />
@@ -512,7 +613,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
             </div>
             {modo === 'resumen'
               ? <SemanaResumen dias={s.dias} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} repeticiones={repeticiones} />
-              : <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} />}
+              : <SemanaGrid dias={s.dias} franjas={franjas} T={T} kcalObjetivo={plan.kcal_objetivo} objetivos={s.objetivos ?? objetivosDia} semana={s.semana} diaSel={diaSel} onDia={(dia, semana) => setDiaSel({ dia, semana })} onHueco={setHueco} onQuitar={quitar} onGrabar={alternarGrabar} portapapeles={portapapeles} onCopiar={copiar} onCopiarDia={copiarDia} onPegar={pegar} />}
             {detalle(s.semana)}
           </div>
         )
@@ -554,6 +655,10 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
           </div>
         </div>
       )}
+      <DragOverlay dropAnimation={null}>
+        {arrastrando && <div className="rounded-lg px-2.5 py-1.5 text-xs font-medium shadow-lg max-w-[220px]" style={{ background: 'var(--surface)', border: '1px solid var(--primary)', color: 'var(--text)' }}>{arrastrando}</div>}
+      </DragOverlay>
     </section>
+    </DndContext>
   )
 }
