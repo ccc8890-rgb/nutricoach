@@ -286,7 +286,12 @@ export function planificarMacrociclo(e: EntradaMacro): ResultadoMacro {
   const picoTipico = PICO_MIN[clase][nivel]
   const semanasDeCarga = fases.filter(f => f !== 'tapering' && f !== 'carrera' && f !== 'retorno').length
   const alcanzable = base * Math.pow(1 + crecimiento, Math.max(0, semanasDeCarga - Math.floor(semanasDeCarga / descargaCada)))
-  const pico = Math.max(base, Math.min(picoTipico, alcanzable))
+  // Híbridos con 3+ sesiones de fuerza fijas: la fuerza consume la misma recuperación que la carrera, así que el volumen de carrera no puede crecer sin techo
+  // (criterio de entrenador; el entrenamiento concurrente exige repartir la tolerancia entre ambos estímulos).
+  const TOPE_HIBRIDO = 1.35
+  const hibrido = e.sesionesFuerzaFijas >= 3
+  const pico = Math.max(base, Math.min(picoTipico, alcanzable, hibrido ? base * TOPE_HIBRIDO : Infinity))
+  if (hibrido && Math.min(picoTipico, alcanzable) > base * TOPE_HIBRIDO) avisos.push(`Con ${e.sesionesFuerzaFijas} sesiones de fuerza fijas a la semana, el volumen de carrera se limita a ~${Math.round(base * TOPE_HIBRIDO)} min/semana (35 % sobre su base): subir más compite con la recuperación de la fuerza. Es criterio de entrenador; se revisa con cómo responda.`)
   if (comp && alcanzable < picoTipico * 0.9 && semanasDeCarga > 0) {
     avisos.push(`En el tiempo disponible el volumen solo puede llegar a ~${Math.round(pico)} min/semana (lo habitual para esta prueba y nivel es ~${picoTipico}): el objetivo realista es llegar bien, no el volumen típico de un plan completo.`)
   }

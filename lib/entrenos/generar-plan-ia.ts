@@ -16,6 +16,7 @@ import { normalizarDuracionSemanas } from '@/lib/entrenos/guardar-plan'
 import { estudiosParaPlan } from '@/lib/rendimiento/evidencia'
 import { llamarIA } from '@/lib/ia/enrutador'
 import { problemasDelPlan, promptDeReparacion } from '@/lib/entrenos/reparar-plan'
+import { senalesRecuperacion, textoSenales } from '@/lib/entrenos/senales-recuperacion'
 import { extraerJsonPlan, resolverEvidenciaPlan } from '@/lib/entrenos/evidencia-plan'
 
 /** Proveedor y modelo con los que se genera el plan (API compatible con «chat/completions»). Por defecto, DeepSeek; el banco de pruebas de modelos pasa otros. */
@@ -292,6 +293,12 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
       } else {
         lineas.push('- Sin VDOT: indica ritmos orientativos con margen amplio y avisa en las notas de que el coach debe fijarlos con un test o una carrera reciente.')
       }
+      {
+        const desde14 = new Date(Date.now() - 14 * 86_400_000).toISOString().slice(0, 10)
+        const { data: dias14 } = await sb.from('actividad_externa_cliente').select('fecha,rhr,hrv,sueno_h,training_readiness,body_battery_max')
+          .eq('cliente_id', cliente_id).eq('proveedor', 'garmin_connect').gte('fecha', desde14).order('fecha', { ascending: true })
+        lineas.push(textoSenales(senalesRecuperacion((dias14 ?? []) as never)))
+      }
       bloqueReloj = `\n## DATOS REALES DEL RELOJ Y RITMOS\n${lineas.join('\n')}\n`
 
       // Esqueleto del macrociclo calculado con reglas (Daniels, Pfitzinger, Fitzgerald…): la IA lo detalla pero no lo cambia.
@@ -402,7 +409,7 @@ ${instruccionDuracion}
 3. Cada sesión: nombre descriptivo, 4-6 ejercicios ordenados (compuestos primero)
 4. Cada ejercicio: series, reps exactas, descanso calculado, RPE objetivo, nota con el POR QUÉ
 5. Incluir progresión: cómo escalar cada 2 semanas
-5b. "decisiones_clave": entre 6 y 10, cubriendo OBLIGATORIAMENTE: reparto de intensidad y volumen, progresión y descarga, ordenación de las sesiones (interferencia fuerza-resistencia, pierna antes de tirada), individualización (lesiones, salud, edad, nivel, datos del reloj) y selección de los ejercicios o ritmos clave. En cada una que se apoye en un estudio de la lista, pon tipo "estudio" y sus claves K#; si ninguno aplica, tipo "criterio_entrenador" y evidencia vacía. NUNCA inventes un estudio, un autor ni una clave que no esté en la lista.${instruccionCargasConcretas}
+5b. "decisiones_clave": entre 6 y 10, cubriendo OBLIGATORIAMENTE: reparto de intensidad y volumen, progresión y descarga, ordenación de las sesiones (interferencia fuerza-resistencia, pierna antes de tirada), individualización (lesiones, salud, edad, nivel, datos del reloj) y selección de los ejercicios o ritmos clave. En cada una que se apoye en un estudio de la lista, pon tipo "estudio" y sus claves K#; si ninguno aplica, tipo "criterio_entrenador" y evidencia vacía. NUNCA inventes un estudio, un autor ni una clave que no esté en la lista. En "decisiones_clave" NO nombres días de la semana (el sistema coloca los días después): habla de «la sesión de pierna», «las series», «la tirada larga». Si propones autorregular según señales del reloj, usa solo las que el bloque de datos marque como FIABLES.${instruccionCargasConcretas}
 
 ## FORMATO JSON EXACTO
 {
@@ -513,6 +520,7 @@ ${instruccionDuracion}
         sesiones: ses.length,
         sesionesEsperadas: esHibridoHyroxRunning ? 6 : null,
         evidencia: resolverEvidenciaPlan(plan, estudios),
+        sinDiasEnTexto: esHibridoHyroxRunning,
       })
     }
     if (proveedor.llamar) {

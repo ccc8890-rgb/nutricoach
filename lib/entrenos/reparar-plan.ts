@@ -4,12 +4,16 @@
 import type { Hallazgo } from './validar-plan-carrera'
 import type { EvidenciaPlan } from './evidencia-plan'
 
+const RE_DIA = /\b(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\b/i
+
 export interface EntradaProblemas {
   hallazgos: Hallazgo[]
   sesiones: number
   /** Sesiones por semana que debe tener el plan (6 en el híbrido); null si no hay un número fijo. */
   sesionesEsperadas: number | null
   evidencia: EvidenciaPlan | null
+  /** Si el sistema decide los días (híbridos), el razonamiento no debe nombrarlos: luego no coincidirían con la semana final. */
+  sinDiasEnTexto?: boolean
 }
 
 /** Cada problema es una frase accionable para la IA. Lista vacía = el plan está bien. */
@@ -21,6 +25,7 @@ export function problemasDelPlan(e: EntradaProblemas): string[] {
     if (e.evidencia.clavesInventadas > 0) p.push('Citas claves [K#] que no existen en la lista de estudios ofrecida: usa solo las claves de la lista o marca la decisión como «criterio_entrenador».')
     if (e.evidencia.autoresNoVerificables.length > 0) p.push(`Mencionas autores que no están en la lista de estudios (${e.evidencia.autoresNoVerificables.join(', ')}): quítalos o cita solo por clave K#.`)
     if (e.evidencia.decisiones.length < 5) p.push('"decisiones_clave" debe tener entre 6 y 10 decisiones.')
+    if (e.sinDiasEnTexto && e.evidencia.decisiones.some(d => RE_DIA.test(`${d.decision} ${d.motivo}`))) p.push('En "decisiones_clave" no nombres días de la semana (lunes, martes…): el sistema coloca los días después. Refiérete a «la sesión de pierna», «las series», «la tirada larga», etc.')
   }
   return p
 }

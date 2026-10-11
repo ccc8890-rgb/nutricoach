@@ -44,6 +44,7 @@ const GuardarPlanComoPlantilla = dynamic(() => import('@/components/clientes/Gua
 const PlanificarConIA = dynamic(() => import('@/components/clientes/PlanificarConIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const InformeCaso = dynamic(() => import('@/components/clientes/InformeCaso'), { ssr: false, loading: () => <TabSkeleton /> })
 const DecisionesIACliente = dynamic(() => import('@/components/clientes/DecisionesIACliente'), { ssr: false, loading: () => <TabSkeleton /> })
+const HojaDeRuta = dynamic(() => import('@/components/clientes/HojaDeRuta'), { ssr: false, loading: () => <TabSkeleton /> })
 const RutinaSemanaAccordion = dynamic(() => import('@/components/clientes/RutinaSemanaAccordion'), { ssr: false, loading: () => <TabSkeleton /> })
 const EntrenoCalendarioMes = dynamic(() => import('@/components/clientes/EntrenoCalendarioMes'), { ssr: false, loading: () => <TabSkeleton /> })
 const SemanaDietaPlanner = dynamic(() => import('@/components/clientes/SemanaDietaPlanner'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -966,6 +967,10 @@ export default function ClienteDetallePage() {
                     <ErrorBoundary><RutinaSemanaAccordion planId={entrenoActivo.id} /></ErrorBoundary>
                   </WorkCard>
                 )}
+
+                <WorkCard title="Hoja de ruta · próximas semanas" kicker="Previsión del motor frente a lo realizado" icon={Dumbbell}>
+                  <ErrorBoundary><HojaDeRuta clienteId={id as string} /></ErrorBoundary>
+                </WorkCard>
 
                 <div id="decisiones-ia">
                   <ErrorBoundary>

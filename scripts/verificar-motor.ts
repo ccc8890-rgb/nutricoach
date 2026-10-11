@@ -7,7 +7,7 @@ const TESTS = [
   // análisis de lo entrenado
   'reglas', 'estado', 'guardas', 'motor', 'evidencia', 'seguimiento', 'hitos', 'intensidad', 'deportes', 'deriva', 'tecnica', 'fit-actividad', 'analisis-rendimiento', 'rendimiento',
   // planes de carrera
-  'ritmos', 'pasos', 'running-plantillas', 'validar-plan-carrera', 'reparto-semana', 'macrociclo', 'macro-desde-cliente', 'plan-vs-realidad', 'evidencia-plan', 'enrutador-ia', 'reparar-plan', 'macro-a-sesiones', 'informe-caso', 'informe-caso-datos', 'informe-caso-html', 'informe-caso-render', 'presentacion', 'presentacion-render', 'tareas-unicas', 'planificar-modo', 'guardar-plan', 'planificar-con-ia', 'aplicar-plan-ia', 'planificar-ia-ruta', 'competicion', 'suplementos', 'proxima-fecha', 'garmin-auto', 'garmin-workouts-formato',
+  'ritmos', 'pasos', 'running-plantillas', 'validar-plan-carrera', 'reparto-semana', 'macrociclo', 'macro-desde-cliente', 'plan-vs-realidad', 'evidencia-plan', 'enrutador-ia', 'reparar-plan', 'senales-recuperacion', 'hoja-de-ruta', 'macro-a-sesiones', 'informe-caso', 'informe-caso-datos', 'informe-caso-html', 'informe-caso-render', 'presentacion', 'presentacion-render', 'tareas-unicas', 'planificar-modo', 'guardar-plan', 'planificar-con-ia', 'aplicar-plan-ia', 'planificar-ia-ruta', 'competicion', 'suplementos', 'proxima-fecha', 'garmin-auto', 'garmin-workouts-formato',
 ]
 
 interface Resultado { nombre: string; ok: boolean; detalle: string }

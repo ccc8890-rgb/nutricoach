@@ -3,12 +3,15 @@
 import { resumirPropuesta, TEXTO_ESTADO, type EstadoPresentacion } from '@/lib/rendimiento/presentacion'
 import type { PayloadPlanEntrenoIA } from '@/lib/entrenos/planificar-con-ia'
 import type { EvidenciaPlan } from '@/lib/entrenos/evidencia-plan'
+import { construirHojaDeRuta } from '@/lib/entrenos/hoja-de-ruta'
+import { TablaHojaDeRuta } from './HojaDeRuta'
 
 // Estructura y contenido de la propuesta de plan; el acabado visual lo pule Codex (ver docs/10-10-2026_traspaso-codex-presentacion.md).
 const COLOR_ESTADO: Record<EstadoPresentacion, string> = { ok: '#6AAF85', mirar: '#C8A96A', revisar: '#E0557A' }
 
 export default function PropuestaPlanEntreno({ payload }: { payload: PayloadPlanEntrenoIA }) {
   const r = resumirPropuesta(payload)
+  const semanasMacro = payload.macrociclo?.semanas ?? []
   const evidencia = ((payload.plan as Record<string, unknown> | undefined)?._evidencia ?? null) as EvidenciaPlan | null
   return (
     <div className="space-y-3 text-sm" style={{ color: 'var(--text)' }}>
@@ -35,6 +38,13 @@ export default function PropuestaPlanEntreno({ payload }: { payload: PayloadPlan
           ))}
         </ul>
       </section>
+
+      {semanasMacro.length > 1 && (
+        <details className="text-xs" open>
+          <summary className="cursor-pointer select-none font-semibold">Las próximas {semanasMacro.length} semanas (previsión del motor)</summary>
+          <div className="mt-2"><TablaHojaDeRuta filas={construirHojaDeRuta(semanasMacro, [], payload.generado_en?.slice(0, 10) ?? '2000-01-01')} /></div>
+        </details>
+      )}
 
       {evidencia && evidencia.decisiones.length > 0 && (
         <details className="text-xs">
