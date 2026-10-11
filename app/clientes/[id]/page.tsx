@@ -8,7 +8,7 @@ import Link from 'next/link'
 import {
   ArrowLeft, UtensilsCrossed, Dumbbell, Weight,
   Info, Brain, Link2, MessageSquareText, ClipboardCheck, Loader2,
-  Bot, CopyPlus, X, Activity, PersonStanding, ChartLine,
+  CopyPlus, X, Activity, PersonStanding, ChartLine,
   ChevronRight, ChevronDown, RefreshCw, Pencil, Flame, Beef, Wheat, Droplets,
   ExternalLink, Send, AlertTriangle, MessageCircle, HeartPulse,
   ShieldCheck, BookOpen, Target, Copy, RotateCcw,
@@ -27,7 +27,6 @@ const PlantillaEntrenoSelector = dynamic(() => import('@/components/training/Pla
 const PlanificacionCalendario = dynamic(() => import('@/components/PlanificacionCalendario'), { ssr: false, loading: () => <TabSkeleton /> })
 const AjusteMacrosIA = dynamic(() => import('@/components/AjusteMacrosIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const HistorialDietasIA = dynamic(() => import('@/components/HistorialDietasIA'), { ssr: false, loading: () => <TabSkeleton /> })
-const ConversacionesIA = dynamic(() => import('@/components/ConversacionesIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const ProtocoloCompeticion = dynamic(() => import('@/components/ProtocoloCompeticion'), { ssr: false, loading: () => <TabSkeleton /> })
 const PerfilEntrenoForm = dynamic(() => import('@/components/training/PerfilEntrenoForm'), { ssr: false, loading: () => <TabSkeleton /> })
 const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -1212,12 +1211,6 @@ export default function ClienteDetallePage() {
                 )}
               </div>
             </WorkCard>
-
-            <div className="xl:col-span-2">
-              <WorkCard title="Conversaciones IA" kicker="Contexto generado" icon={Bot}>
-                <ConversacionesIA clienteId={id as string} />
-              </WorkCard>
-            </div>
           </div>
 
         ) : tabActiva === 'perfil' ? (
