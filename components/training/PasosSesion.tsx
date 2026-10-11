@@ -84,12 +84,6 @@ export default function PasosSesion({ sesionId, pasos, ritmos, garmin }: Props) 
           Sin VDOT en tu perfil no puedo calcular los ritmos; añádelo en Perfil atleta y se rellenarán solos.
         </p>
       )}
-      {ritmos && (
-        <p className="text-xs mt-3 font-data" style={{ color: 'var(--text-muted)' }}>
-          Tus ritmos: E {formatearRitmo(ritmos.E)} · M {formatearRitmo(ritmos.M)} · T {formatearRitmo(ritmos.T)} · I {formatearRitmo(ritmos.I)} · R {formatearRitmo(ritmos.R)} /km
-        </p>
-      )}
-
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -108,6 +102,18 @@ export default function PasosSesion({ sesionId, pasos, ritmos, garmin }: Props) 
         )}
       </div>
       {error && <p className="text-xs mt-2" style={{ color: 'var(--semantic-danger, #c0392b)' }}>{error}</p>}
+      {ritmos && (
+        <div className="mt-4 pt-3 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+          <p className="font-semibold mb-1">Tus ritmos de referencia (/km)</p>
+          <ul className="space-y-0.5 font-data">
+            <li>Suave (E) {formatearRitmo(ritmos.E)} · rodajes y tirada larga, puedes hablar</li>
+            <li>Maratón (M) {formatearRitmo(ritmos.M)} · ritmo de carrera en maratón</li>
+            <li>Umbral (T) {formatearRitmo(ritmos.T)} · tempo, cómodamente duro</li>
+            <li>Intervalos (I) {formatearRitmo(ritmos.I)} · series de 3-5 min</li>
+            <li>Repeticiones (R) {formatearRitmo(ritmos.R)} · series cortas y rápidas</li>
+          </ul>
+        </div>
+      )}
     </section>
   )
 }
