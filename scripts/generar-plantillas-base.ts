@@ -19,11 +19,15 @@ const FRANJAS: SlotComida[] = ['Desayuno', 'Comida', 'Merienda', 'Cena']
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
 const KCALS = [1600, 2000, 2500, 3000]
-const DIETAS: { id: string; nombre: string; restricciones: string[] }[] = [
+// `kcals`: niveles que se generan (las intolerancias solo en los dos niveles centrales, para no llenar la lista de plantillas)
+const DIETAS: { id: string; nombre: string; restricciones: string[]; kcals?: number[] }[] = [
   { id: 'omnivoro', nombre: 'Omnívora', restricciones: [] },
   { id: 'vegetariano', nombre: 'Vegetariana', restricciones: ['vegetariano'] },
   { id: 'vegano', nombre: 'Vegana', restricciones: ['vegano'] },
+  { id: 'sin-gluten', nombre: 'Sin gluten', restricciones: ['sin gluten'], kcals: [2000, 2500] },
+  { id: 'sin-lactosa', nombre: 'Sin lactosa', restricciones: ['sin lactosa'], kcals: [2000, 2500] },
 ]
+const MAX_REPETIDAS = 4
 const pctProteina = (k: number) => (k <= 1600 ? 0.24 : k <= 2000 ? 0.23 : k <= 2500 ? 0.22 : 0.21)
 
 async function lienzo() {
@@ -57,9 +61,12 @@ async function main() {
   for (const kcal of KCALS) for (const dieta of DIETAS) {
     const clave = `${kcal}-${dieta.id}`
     if (solo && solo !== clave) continue
+    if (dieta.kcals && !dieta.kcals.includes(kcal)) continue
     const p = Math.round(kcal * pctProteina(kcal) / 4), c = Math.round(kcal * 0.48 / 4), g = Math.round((kcal - p * 4 - c * 4) / 9)
     const objetivo = { id: plan!.id, nombre: 'Lienzo', kcal_objetivo: kcal, proteinas_objetivo: p, carbohidratos_objetivo: c, grasas_objetivo: g }
     await db.from('planes_nutricion').update({ kcal_objetivo: kcal, proteinas_objetivo: p, carbohidratos_objetivo: c, grasas_objetivo: g }).eq('id', plan!.id)
+    // El motor evita lo asignado hace poco: sin borrar el historial del lienzo, cada plantilla vería menos recetas que la anterior
+    await db.from('receta_interacciones_cliente').delete().eq('cliente_id', clienteId)
     await db.from('onboarding_responses').delete().eq('cliente_id', clienteId)
     const { error: eo } = await db.from('onboarding_responses').insert({ cliente_id: clienteId, objetivo: 'salud_general', actividad_base: 'moderado', dias_entreno: 0, tipo_entreno: [], restricciones: dieta.restricciones, nivel_cocina: 'intermedio', tiempo_cocina_min: 40 })
     if (eo) throw new Error(`onboarding: ${eo.message}`)
@@ -82,7 +89,13 @@ async function main() {
     })
     if (r.sinCubrir.length) console.log('  SIN CUBRIR:', r.sinCubrir.map(h => `${h.dia} ${h.franja}`).join(', '))
     if (r.errores.length) console.log('  ERRORES:', JSON.stringify(r.errores.slice(0, 3)))
-    if (guardar && r.errores.length === 0 && r.sinCubrir.length === 0) {
+    // Una plantilla base con muchos platos repetidos es paja: el recetario no da para ese perfil. No se guarda (y se retira la anterior)
+    const demasiadasRepetidas = r.repetidas > MAX_REPETIDAS
+    if (guardar && demasiadasRepetidas) {
+      await db.from('plantillas_semana_dieta').delete().eq('coach_id', COACH_ID).eq('clave', clave)
+      console.log(`  ✗ NO guardada: ${r.repetidas} platos repetidos (máx. ${MAX_REPETIDAS}); faltan recetas para este perfil`)
+    }
+    if (guardar && r.errores.length === 0 && r.sinCubrir.length === 0 && !demasiadasRepetidas) {
       await db.from('plantillas_semana_dieta').delete().eq('coach_id', COACH_ID).eq('clave', clave)
       const { error } = await db.from('plantillas_semana_dieta').insert({
         coach_id: COACH_ID, nombre: `Base ${kcal} kcal · ${dieta.nombre}`, descripcion: `Plantilla base de 1 semana, 4 comidas al día, sin entrenamiento específico. Objetivo ${kcal} kcal · P${p} C${c} G${g}.`,
