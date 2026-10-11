@@ -14,6 +14,10 @@ Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/inter
 - **Recuperar un archivo:** `git checkout bd7d691~1 -- <ruta>` (p. ej. `lib/recetas/auto-match-ingrediente.ts`). Todo el conjunto: `git checkout bd7d691~1 -- app/api lib/recetas lib/scraping/motores` (cuidado: también restauraría otros borrados de esas carpetas).
 - La limpieza anterior (52 archivos) está en `873c556`; se recupera igual con `git checkout 873c556~1 -- <ruta>`.
 
+## ✅ SESIÓN 11-10-2026 (tarde, Claude) — Planificador de dieta más limpio
+
+Carlos pidió menos botones y ruido en el planificador y poder ver 3-4 semanas a la vez. Cabecera con menú `⋯`, ajustes de generación plegados, menú por semana, semanas plegables y detalle del día plegado con «Desplegar detalle» en cada semana (2 semanas y Mes). Selector Resumen/Platos quitado. Solo `SemanaDietaPlanner.tsx`, commits `eecdd67`→`97ed38e`, sin migraciones. Probado por Carlos en 2 semanas; falta Mes. Detalle y pendientes: [`docs/11-10-2026_planificador-dieta-limpio.md`](docs/11-10-2026_planificador-dieta-limpio.md).
+
 ## ✅ SESIÓN 11-10-2026 (mediodía, Claude) — Limpieza y optimización de la app coach
 
 Carlos pidió quitar paja, rutas vacías y código sin uso del panel del coach y dejarlo «listo para futuro» sin romper nada. Registro completo: [`docs/11-10-2026_limpieza-app-coach.md`](docs/11-10-2026_limpieza-app-coach.md). Commits `873c556`, `5625581`, el de optimización y el de cierre; todo en `main`, sin migraciones.
