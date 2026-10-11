@@ -13,6 +13,8 @@ import { planificarMacrociclo, type ResultadoMacro } from '@/lib/entrenos/macroc
 import { construirEntradaMacro } from '@/lib/entrenos/macro-desde-cliente'
 import { formatearRitmo } from '@/lib/entrenos/ritmos'
 import { normalizarDuracionSemanas } from '@/lib/entrenos/guardar-plan'
+import { estudiosParaPlan } from '@/lib/rendimiento/evidencia'
+import { extraerJsonPlan, resolverEvidenciaPlan } from '@/lib/entrenos/evidencia-plan'
 
 const DEEPSEEK_BASE = 'https://api.deepseek.com/v1/chat/completions'
 const MODEL = 'deepseek-chat'
@@ -27,6 +29,8 @@ export interface ProveedorIA {
   maxTokens?: number
   /** Los modelos de razonamiento de OpenAI exigen `max_completion_tokens` y no admiten otra temperatura. */
   razonamientoOpenAI?: boolean
+  /** Llamada propia (p. ej. la CLI de Claude): sustituye al `fetch` estándar. Devuelve el texto de la respuesta. */
+  llamar?: (sistema: string, usuario: string) => Promise<{ texto: string; uso?: unknown }>
 }
 export const PROVEEDOR_POR_DEFECTO: ProveedorIA = { nombre: 'deepseek-chat', url: DEEPSEEK_BASE, claveEnv: 'DEEPSEEK_API_KEY', modelo: MODEL, maxTokens: 6000 }
 
@@ -97,23 +101,6 @@ export async function generarPlanEntrenoIA(sb: SupabaseClient, opts: { clienteId
       modalidadFoco = perfilEntreno.sport_modality ?? 'funcional'
     }
 
-    // Papeles relevantes de KB según modalidad
-    // Bug corregido (25-09-2026): `knowledge_base.referencias` no existe
-    // (la cita vive en la columna `fuente`) — el select entero fallaba en
-    // silencio (`kbRes.data ?? []`  no comprobaba `.error`), así que TODO
-    // plan generado hasta ahora se apoyaba en 0 papers reales pese a haber
-    // 307 en la tabla.
-    const kbRes = await sb.from('knowledge_base')
-      .select('titulo, resumen, fuente, tags')
-      .or(`tags.cs.{${modalidadFoco}},tags.cs.{fuerza},tags.cs.{cardio},tags.cs.{hiit}`)
-      .limit(5)
-    if (kbRes.error) console.error('proponer-plan-ciencia KB error:', kbRes.error)
-    const papers = kbRes.data ?? []
-
-    const evidenciasTexto = papers.length > 0
-      ? papers.map(p => `• ${p.titulo}\n  ${p.resumen?.slice(0, 200) ?? ''}\n  Fuente: ${p.fuente ?? 'sin cita'}`).join('\n\n')
-      : 'Sin papers específicos — usar principios ACSM/NSCA generales.'
-
     // Informe clínico del cliente (inyectar si existe)
     const informeClinico = await obtenerInformeVigente(cliente_id)
     const informeClinicoBlock = informeClinico?.instrucciones_ia
@@ -126,6 +113,16 @@ export async function generarPlanEntrenoIA(sb: SupabaseClient, opts: { clienteId
     const diasSemana = perfilEntreno?.dias_disponibles ?? onboarding?.dias_entreno ?? 3
     const objetivo = cliente.objetivo ?? 'salud_general'
     const nivel = cliente.nivel ?? 'principiante'
+
+    // Estudios de la base más relevantes para ESTE caso (modalidad, objetivo, nivel, lesiones, edad, sexo). El plan solo puede citar estos, por clave K#.
+    const estudios = await estudiosParaPlan(sb, {
+      modalidad: modalidadFoco, objetivo: String(objetivo), nivel: String(nivel),
+      lesiones: Array.isArray(perfilEntreno?.patron_lesiones) && perfilEntreno!.patron_lesiones.length > 0,
+      edad: typeof cliente.edad === 'number' ? cliente.edad : null, mujer: /mujer|female|femenin/i.test(String(cliente.sexo ?? '')),
+    })
+    const evidenciasTexto = estudios.length
+      ? `Estos son los ÚNICOS estudios que puedes citar (base de conocimiento del coach, con DOI). Cítalos SOLO por su clave [K#] en "evidencia"; no menciones autores ni estudios que no estén en esta lista.\n${estudios.map(e => `[${e.clave}] ${e.titulo}${e.anio ? ` (${e.anio})` : ''} · ${e.nivel}${e.aporta ? ` · ${e.aporta}` : ''}`).join('\n')}`
+      : 'Sin estudios específicos en la base para este caso: usa criterio de entrenador y dilo en "decisiones_clave" (tipo "criterio_entrenador").'
 
     // Protocolos específicos por modalidad deportiva
     const SPORT_PROTOCOLS: Record<string, string> = {
@@ -394,7 +391,8 @@ ${instruccionDuracion}
 2. Semana tipo: distribución coherente (no 2 días fuerza seguidos sin recuperación)
 3. Cada sesión: nombre descriptivo, 4-6 ejercicios ordenados (compuestos primero)
 4. Cada ejercicio: series, reps exactas, descanso calculado, RPE objetivo, nota con el POR QUÉ
-5. Incluir progresión: cómo escalar cada 2 semanas${instruccionCargasConcretas}
+5. Incluir progresión: cómo escalar cada 2 semanas
+5b. "decisiones_clave": entre 6 y 10, cubriendo OBLIGATORIAMENTE: reparto de intensidad y volumen, progresión y descarga, ordenación de las sesiones (interferencia fuerza-resistencia, pierna antes de tirada), individualización (lesiones, salud, edad, nivel, datos del reloj) y selección de los ejercicios o ritmos clave. En cada una que se apoye en un estudio de la lista, pon tipo "estudio" y sus claves K#; si ninguno aplica, tipo "criterio_entrenador" y evidencia vacía. NUNCA inventes un estudio, un autor ni una clave que no esté en la lista.${instruccionCargasConcretas}
 
 ## FORMATO JSON EXACTO
 {
@@ -402,6 +400,14 @@ ${instruccionDuracion}
   "objetivo": "string",
   "duracion_semanas": number,
   "fundamentacion": "2-3 frases del enfoque científico específico para ${modalidadFoco}",
+  "decisiones_clave": [
+    {
+      "decision": "string — qué se decide y con qué números (ej: 'Una sola sesión de pierna pesada, 72 h antes de la tirada')",
+      "motivo": "string — por qué, en 1-2 frases, aplicado a ESTE cliente (no genérico)",
+      "tipo": "estudio|criterio_entrenador",
+      "evidencia": ["K3", "K7"]
+    }
+  ],
   "notas_cliente_entreno": "Mensaje personal al cliente (3-4 frases): qué va a conseguir, por qué este plan, qué sentirá en las primeras semanas",
   "sesiones": [
     {
@@ -435,37 +441,51 @@ ${instruccionDuracion}
   }
 }`
 
-    const response = await fetch(proveedor.url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env[proveedor.claveEnv]}`,
-      },
-      body: JSON.stringify({
-        model: proveedor.modelo,
-        messages: [
-          { role: 'system', content: promptSistema },
-          { role: 'user', content: promptUsuario },
-        ],
-        response_format: { type: 'json_object' },
-        ...(proveedor.razonamientoOpenAI ? { max_completion_tokens: proveedor.maxTokens ?? 6000 } : { temperature: 0.35, max_tokens: proveedor.maxTokens ?? 6000 }),
-      }),
-    })
-
-    if (!response.ok) {
-      const err = await response.text()
-      console.error(`Error de ${proveedor.nombre}:`, err.slice(0, 300))
-      throw new ErrorGeneracionPlan('IA_ERROR', 502, 'Error al generar el plan con IA')
+    let planTexto = ''
+    let usoIA: unknown = null
+    if (proveedor.llamar) {
+      try {
+        const r = await proveedor.llamar(promptSistema, promptUsuario)
+        planTexto = r.texto
+        usoIA = r.uso ?? null
+      } catch (e) {
+        console.error(`Error de ${proveedor.nombre}:`, e instanceof Error ? e.message.slice(0, 300) : e)
+        throw new ErrorGeneracionPlan('IA_ERROR', 502, 'Error al generar el plan con IA')
+      }
+    } else {
+      const response = await fetch(proveedor.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env[proveedor.claveEnv]}`,
+        },
+        body: JSON.stringify({
+          model: proveedor.modelo,
+          messages: [
+            { role: 'system', content: promptSistema },
+            { role: 'user', content: promptUsuario },
+          ],
+          response_format: { type: 'json_object' },
+          ...(proveedor.razonamientoOpenAI ? { max_completion_tokens: proveedor.maxTokens ?? 6000 } : { temperature: 0.35, max_tokens: proveedor.maxTokens ?? 6000 }),
+        }),
+      })
+      if (!response.ok) {
+        const err = await response.text()
+        console.error(`Error de ${proveedor.nombre}:`, err.slice(0, 300))
+        throw new ErrorGeneracionPlan('IA_ERROR', 502, 'Error al generar el plan con IA')
+      }
+      const ds = await response.json()
+      planTexto = ds.choices?.[0]?.message?.content ?? ''
+      usoIA = ds.usage ?? null
     }
-
-    const ds = await response.json()
-    const planTexto = ds.choices?.[0]?.message?.content ?? ''
     let planIA: Record<string, unknown>
     try {
-      planIA = JSON.parse(planTexto)
+      planIA = extraerJsonPlan(planTexto)
     } catch {
       throw new ErrorGeneracionPlan('IA_RESPUESTA_INVALIDA', 502, 'Respuesta IA no válida')
     }
+    // Las claves K# del plan se resuelven a los estudios reales; una clave inventada se elimina y se cuenta (el modelo no puede atribuir ideas a estudios que no están).
+    ;(planIA as Record<string, unknown>)._evidencia = resolverEvidenciaPlan(planIA, estudios)
 
     // Reparto de días determinista (plan híbrido): la IA redacta las sesiones pero no decide el día de cada una. Las de carrera toman los días del
     // esqueleto del macrociclo y las híbridas se colocan alrededor con reglas fijas (pierna lejos de tirada/calidad, días disponibles, descanso).
@@ -529,6 +549,6 @@ ${instruccionDuracion}
       validacion,
       macrociclo,
       minutosRealesSemana: contextoValidacion.minutosRealesSemana,
-      metadata: { rpe_promedio: rpePromedio, ajuste_rpe: ajusteRpe, modalidad: modalidadFoco, recomendacion_motor: recomendacion, papers_usados: papers.length, generado_con: proveedor.modelo, uso: ds.usage ?? null },
+      metadata: { rpe_promedio: rpePromedio, ajuste_rpe: ajusteRpe, modalidad: modalidadFoco, recomendacion_motor: recomendacion, papers_usados: estudios.length, generado_con: proveedor.modelo, uso: usoIA },
     }
 }

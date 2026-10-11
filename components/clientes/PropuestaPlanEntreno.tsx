@@ -2,12 +2,14 @@
 
 import { resumirPropuesta, TEXTO_ESTADO, type EstadoPresentacion } from '@/lib/rendimiento/presentacion'
 import type { PayloadPlanEntrenoIA } from '@/lib/entrenos/planificar-con-ia'
+import type { EvidenciaPlan } from '@/lib/entrenos/evidencia-plan'
 
 // Estructura y contenido de la propuesta de plan; el acabado visual lo pule Codex (ver docs/10-10-2026_traspaso-codex-presentacion.md).
 const COLOR_ESTADO: Record<EstadoPresentacion, string> = { ok: '#6AAF85', mirar: '#C8A96A', revisar: '#E0557A' }
 
 export default function PropuestaPlanEntreno({ payload }: { payload: PayloadPlanEntrenoIA }) {
   const r = resumirPropuesta(payload)
+  const evidencia = ((payload.plan as Record<string, unknown> | undefined)?._evidencia ?? null) as EvidenciaPlan | null
   return (
     <div className="space-y-3 text-sm" style={{ color: 'var(--text)' }}>
       <div className="flex flex-wrap items-center gap-2">
@@ -33,6 +35,32 @@ export default function PropuestaPlanEntreno({ payload }: { payload: PayloadPlan
           ))}
         </ul>
       </section>
+
+      {evidencia && evidencia.decisiones.length > 0 && (
+        <details className="text-xs">
+          <summary className="cursor-pointer select-none font-semibold">Por qué este plan ({evidencia.decisiones.filter(d => d.tipo === 'estudio').length} decisiones con estudios · {evidencia.estudiosCitados.length} estudios)</summary>
+          <ul className="mt-2 space-y-2">
+            {evidencia.decisiones.map((d, i) => (
+              <li key={i}>
+                <p className="font-medium">{d.decision}</p>
+                {d.motivo && <p style={{ color: 'var(--text-secondary)' }}>{d.motivo}</p>}
+                {d.estudios.length > 0
+                  ? <ul className="mt-0.5 list-disc pl-5" style={{ color: 'var(--text-muted)' }}>
+                      {d.estudios.map((e, j) => (
+                        <li key={j}>{e.doi ? <a href={`https://doi.org/${e.doi}`} target="_blank" rel="noreferrer" className="underline">{e.titulo}</a> : e.titulo}{e.anio ? ` (${e.anio})` : ''}</li>
+                      ))}
+                    </ul>
+                  : <p style={{ color: 'var(--text-muted)' }}>Criterio de entrenador (sin estudio de la base que lo respalde directamente).</p>}
+              </li>
+            ))}
+          </ul>
+          {(evidencia.clavesInventadas > 0 || evidencia.autoresNoVerificables.length > 0) && (
+            <p className="mt-2" style={{ color: COLOR_ESTADO.mirar }}>
+              Aviso: el modelo citó {evidencia.clavesInventadas > 0 ? `${evidencia.clavesInventadas} clave(s) que no existían (descartadas)` : ''}{evidencia.clavesInventadas > 0 && evidencia.autoresNoVerificables.length > 0 ? ' y ' : ''}{evidencia.autoresNoVerificables.length > 0 ? `autores que no están en la base (${evidencia.autoresNoVerificables.join(', ')})` : ''}. Revisa esas partes.
+            </p>
+          )}
+        </details>
+      )}
 
       {r.revisar.length > 0 && (
         <section>

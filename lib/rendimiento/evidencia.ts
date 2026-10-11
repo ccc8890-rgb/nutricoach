@@ -153,3 +153,61 @@ export async function estudiosPorDoi(db: SupabaseClient, dois: string[]): Promis
   }
   return mapa
 }
+
+// ───────────────────────── Estudios para PLANES de entrenamiento (dirigidos al caso) ─────────────────────────
+
+/** Etiquetas de la base que interesan según el tipo de atleta; se suman a las comunes de planificación. */
+const TAGS_BASE_PLAN = ['periodizacion', 'carga_entrenamiento', 'progresion_volumen', 'recuperacion', 'rendimiento', 'monitorizacion', 'tapering']
+const TAGS_POR_MODALIDAD: Record<string, string[]> = {
+  hibrido: ['hibrido', 'hyrox', 'entrenamiento_concurrente', 'fuerza', 'entrenamiento_fuerza', 'running', 'entrenamiento_resistencia', 'distribucion_intensidad', 'polarizado', 'hiit'],
+  hyrox: ['hyrox', 'hibrido', 'entrenamiento_concurrente', 'fuerza', 'running', 'hiit', 'entrenamiento_resistencia'],
+  running: ['running', 'maraton', 'entrenamiento_resistencia', 'distribucion_intensidad', 'polarizado', 'piramidal', 'economia_carrera', 'vo2max', 'umbral', 'corredor_popular', 'tirada_larga', 'fuerza_resistencia'],
+  gym_fuerza: ['hipertrofia', 'fuerza', 'entrenamiento_fuerza', 'entrenamiento_de_fuerza', 'volumen', 'series', 'dosis-respuesta', 'potencia', 'fuerza_muscular'],
+  gym_estetica: ['hipertrofia', 'fuerza', 'entrenamiento_fuerza', 'volumen', 'series', 'dosis-respuesta'],
+  ciclismo: ['entrenamiento_resistencia', 'polarizado', 'distribucion_intensidad', 'vo2max', 'hiit'],
+  funcional: ['hiit', 'entrenamiento_concurrente', 'fuerza', 'entrenamiento_resistencia'],
+  calistenia: ['fuerza', 'entrenamiento_fuerza', 'hipertrofia', 'potencia'],
+}
+
+export interface CasoParaEvidencia {
+  modalidad: string
+  /** Texto libre del objetivo y del nivel para detectar más etiquetas (competición, salud, edad…). */
+  objetivo?: string | null
+  nivel?: string | null
+  lesiones?: boolean
+  edad?: number | null
+  mujer?: boolean
+}
+
+/** Etiquetas del caso: modalidad + comunes + las que se deducen de lesiones, edad, competición o salud. */
+export function etiquetasDelCaso(c: CasoParaEvidencia): string[] {
+  const t = new Set<string>([...TAGS_BASE_PLAN, ...(TAGS_POR_MODALIDAD[c.modalidad] ?? TAGS_POR_MODALIDAD.funcional)])
+  const obj = (c.objetivo ?? '').toLowerCase()
+  if (c.lesiones) { t.add('lesiones'); t.add('prevencion'); t.add('prevención') }
+  if (c.edad && c.edad >= 45) { t.add('veteranos'); t.add('adultos_mayores') }
+  if (c.mujer) t.add('mujeres')
+  if (/maraton|marathon|media|10k|5k|carrera|competi|hyrox/.test(obj)) { t.add('competicion'); t.add('tapering') }
+  if (/ldl|colesterol|hipertens|diabet|glucosa|anemia|hierro|patolog|analitica|analítica/.test(obj)) { t.add('hipertension'); t.add('diabetes'); t.add('obesidad'); t.add('ejercicio') }
+  if (/grasa|peso|recomposicion|recomposición|definicion|definición/.test(obj)) { t.add('composicion_corporal'); t.add('obesidad') }
+  if (/principiante/.test((c.nivel ?? '').toLowerCase())) t.add('principiantes')
+  return [...t]
+}
+
+/** Puntúa cuántas etiquetas del caso tiene cada estudio: lo más relevante primero, y a igualdad la mejor evidencia. */
+export function ordenarPorRelevancia(filas: FilaEstudio[], etiquetas: string[]): FilaEstudio[] {
+  const set = new Set(etiquetas.map(e => e.toLowerCase()))
+  const rel = (f: FilaEstudio) => (f.tags ?? []).filter(x => set.has(x.toLowerCase())).length
+  return [...filas].sort((a, b) => rel(b) - rel(a) || (PESO_NIVEL[b.nivel_evidencia ?? ''] ?? 0) - (PESO_NIVEL[a.nivel_evidencia ?? ''] ?? 0))
+}
+
+/** Estudios de la base (con DOI) más relevantes para ESTE caso, con claves K1…; el plan solo puede citar estos. */
+export async function estudiosParaPlan(db: SupabaseClient, caso: CasoParaEvidencia, limite = 16): Promise<EstudioCitable[]> {
+  const campos = 'titulo,fuente,doi,nivel_evidencia,puntos_clave,resumen,tags,verificado'
+  const etiquetas = etiquetasDelCaso(caso)
+  const lista = etiquetas.map(t => `"${t}"`).join(',')
+  const { data, error } = await db.from('knowledge_base').select(campos).eq('activo', true).not('doi', 'is', null).or(`tags.ov.{${lista}}`).limit(200)
+  if (error || !data) return []
+  const ordenadas = ordenarPorRelevancia(data as FilaEstudio[], etiquetas)
+  // `elegirEstudios` filtra sin DOI, quita duplicados y reordena por calidad: se le pasan solo los más relevantes.
+  return elegirEstudios(ordenadas.slice(0, limite * 3), limite)
+}

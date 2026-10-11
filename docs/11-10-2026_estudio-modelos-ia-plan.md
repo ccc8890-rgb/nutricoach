@@ -28,3 +28,21 @@ Claude no se pudo probar: no hay clave de API de Anthropic en el proyecto.
 - El modelo se elige por tarea: **gpt-5.5 para el informe del caso y el plan** (razona mejor, 0 fallos), con **deepseek-v4-pro o deepseek-chat como respaldo** si falla o se agota el saldo, y **todo pasando por los validadores y un bucle de corrección** (la IA corrige hasta 3 veces lo que el validador marque).
 - Añadir reintento de JSON y comparar también con Claude (hace falta clave de API de Anthropic) y con otros casos (nutrición).
 - Coste en dólares no medido (solo tokens); el plan se genera una vez por bloque, así que el coste por plan es pequeño frente a su valor.
+
+---
+
+# Ronda 2 (11-10-2026, noche) — Uso real de los estudios y Claude incluido
+
+**Cambio:** el plan ya no recibe 5 papers genéricos sin clave. `estudiosParaPlan` (lib/rendimiento/evidencia.ts) elige hasta 16 estudios con DOI de la base según el caso (modalidad, objetivo, nivel, lesiones, edad, sexo; ej. entrenamiento concurrente e Hyrox en híbridos) con claves K#. El JSON del plan lleva `decisiones_clave` (6-10: intensidad/volumen, progresión y descarga, interferencia, individualización, selección) con `tipo` («estudio» o «criterio_entrenador») y `evidencia: [K#]`. `resolverEvidenciaPlan` (lib/entrenos/evidencia-plan.ts) convierte las claves en estudios reales, descarta las inventadas y detecta «Autor año» en el texto libre que no esté en la lista ofrecida. El coach lo ve en «Por qué este plan» (PropuestaPlanEntreno). Test: `scripts/evidencia-plan.test.ts` (en `verificar:motor`).
+
+**Claude:** no hay clave de API de Anthropic en ningún sitio (se buscó en .env, Vercel, shell y ~/.claude); Claude Code va con la suscripción. En el banco de pruebas se llama por la CLI (`claude -p`, sin herramientas ni CLAUDE.md), solo para estudiar; en producción haría falta clave de API. Coste equivalente medido de Opus: ~0,2 USD por plan.
+
+| Modelo | Casos OK | Decisiones con estudio (media) | Estudios distintos citados | Claves inventadas | Autores no verificables | Nota |
+|---|---|---|---|---|---|---|
+| deepseek-chat | 4/4 | 5,2 | 8,5 | 0 | 0 | 22-25 s; alguna cita forzada (p. ej. un metaanálisis de maratón para justificar la carrera tras estación) |
+| deepseek-v4-pro | **1/4** | 3 | 6 | 0 | 0 | 3 de 4 con JSON inválido o cortado (100-114 s): no fiable así |
+| gpt-5.5 | 4/4 | 5,5 | 11,8 | 0 | 0 | 70-90 s; notas más largas (143 caracteres de media) |
+| claude-opus (CLI) | 4/4 | 5,8 | 11,2 | 0 | 0 | ~105 s; personaliza con los datos (CTL, fatiga, reparto de intensidad) |
+| claude-sonnet (CLI) | 0/1 | — | — | — | — | Se colgó 16 min (CLI); sin resultado |
+
+**Lectura:** con la evidencia dirigida los tres modelos que responden citan estudios reales y relevantes (concurrent training, distribución de intensidad, prevención de lesiones) y ninguno inventa. Antes citaban 0-3. La decisión de «carrera tras la estación» (Hyrox) queda sin estudio porque la base apenas tiene papers de Hyrox: se marca como criterio de entrenador, sin inventar. **Límite:** el sistema verifica que el estudio existe y es de la lista, no que respalde esa decisión concreta (relevancia): hace falta un paso de auditoría (otro modelo o el coach).

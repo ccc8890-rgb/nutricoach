@@ -2,6 +2,7 @@
 // Puntuación objetiva de un plan generado por IA: validadores deterministas del motor + completitud + estructura. No juzga estilo ni acierto
 // científico fino (eso lo revisa una persona); sirve para comparar modelos con las mismas reglas y detectar los que fallan en lo básico.
 import type { ResultadoGeneracionPlan } from './generar-plan-ia'
+import type { EvidenciaPlan } from './evidencia-plan'
 
 export interface MetricasPlanIA {
   sesiones: number
@@ -15,14 +16,19 @@ export interface MetricasPlanIA {
   completitudCarrera: number
   tieneProgresion: boolean
   tieneDeload: boolean
-  /** Citas tipo «Autor 2018» o «Autor et al. 2018» en la fundamentación y en las notas. */
-  citas: number
+  /** Decisiones clave del plan, cuántas se apoyan en un estudio real de la base y cuántos estudios distintos se citan. */
+  decisiones: number
+  decisionesConEstudio: number
+  estudiosDistintos: number
+  /** Claves K# citadas que no existen en la lista ofrecida (invención). */
+  clavesInventadas: number
+  /** «Autor año» en el texto libre que no corresponde a ningún estudio ofrecido. */
+  autoresNoVerificables: number
   longitudNotaMedia: number
 }
 
 export interface EvaluacionPlanIA { puntuacion: number; metricas: MetricasPlanIA }
 
-const RE_CITA = /[A-ZÁÉÍÓÚ][\p{L}-]+(?: et al\.?| & [A-ZÁÉÍÓÚ][\p{L}-]+)?,? \(?(?:19|20)\d{2}\)?/gu
 const texto = (x: unknown) => (typeof x === 'string' ? x : '')
 const pct = (a: number, b: number) => (b === 0 ? 100 : Math.round((a / b) * 100))
 
@@ -40,8 +46,8 @@ export function evaluarPlanIA(res: ResultadoGeneracionPlan, sesionesEsperadas: n
   const carrerasOk = carreras.filter(s => texto(s.ritmo_objetivo) && typeof s.duracion_min === 'number')
 
   const notas = ejercicios.map(e => texto(e.notas).length)
-  const fundamentacion = texto(plan.fundamentacion) + ' ' + ejercicios.map(e => texto(e.notas)).join(' ') + ' ' + texto(plan.progresion_semanal)
-  const citas = new Set((fundamentacion.match(RE_CITA) ?? []).map(c => c.toLowerCase())).size
+  const ev = (plan._evidencia ?? null) as EvidenciaPlan | null
+  const decisiones = ev?.decisiones ?? []
 
   const m: MetricasPlanIA = {
     sesiones: sesiones.length,
@@ -53,7 +59,11 @@ export function evaluarPlanIA(res: ResultadoGeneracionPlan, sesionesEsperadas: n
     completitudCarrera: pct(carrerasOk.length, carreras.length),
     tieneProgresion: texto(plan.progresion_semanal).length >= 30,
     tieneDeload: texto(plan.semana_deload).length >= 20,
-    citas,
+    decisiones: decisiones.length,
+    decisionesConEstudio: decisiones.filter(d => d.tipo === 'estudio').length,
+    estudiosDistintos: ev?.estudiosCitados.length ?? 0,
+    clavesInventadas: ev?.clavesInventadas ?? 0,
+    autoresNoVerificables: ev?.autoresNoVerificables.length ?? 0,
     longitudNotaMedia: notas.length ? Math.round(notas.reduce((a, b) => a + b, 0) / notas.length) : 0,
   }
 
@@ -66,6 +76,10 @@ export function evaluarPlanIA(res: ResultadoGeneracionPlan, sesionesEsperadas: n
   p -= Math.round((100 - m.completitudCarrera) * 0.15)
   if (!m.tieneProgresion) p -= 5
   if (!m.tieneDeload) p -= 3
-  if (citas < 2) p -= 5
+  // Uso real de los estudios: el sentido de tener la base es que el plan se apoye en ella, no en conocimiento genérico.
+  if (m.decisiones < 5) p -= 10
+  if (m.decisionesConEstudio < 3) p -= 10
+  p -= Math.min(20, m.clavesInventadas * 5)
+  p -= Math.min(15, m.autoresNoVerificables * 3)
   return { puntuacion: Math.max(0, p), metricas: m }
 }

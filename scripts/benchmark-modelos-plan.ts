@@ -4,6 +4,8 @@
 import { createClient } from '@supabase/supabase-js'
 import fs from 'node:fs'
 import path from 'node:path'
+import os from 'node:os'
+import { spawn } from 'node:child_process'
 import { generarPlanEntrenoIA, type ProveedorIA } from '../lib/entrenos/generar-plan-ia'
 import { evaluarPlanIA } from '../lib/entrenos/evaluar-plan-ia'
 
@@ -14,13 +16,35 @@ for (const l of fs.readFileSync('.env.local', 'utf8').split('\n')) {
 const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 
 const DEEPSEEK = 'https://api.deepseek.com/v1/chat/completions'
-const GEMINI = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
 const OPENAI = 'https://api.openai.com/v1/chat/completions'
+/** Claude por la CLI (usa el inicio de sesión de la suscripción, sin clave de API). Solo para el banco de pruebas: no es utilizable en Vercel. */
+function claudeCLI(nombre: string, modelo: string): ProveedorIA {
+  return {
+    nombre, url: '', claveEnv: '', modelo,
+    llamar: (sistema, usuario) => new Promise((resolve, reject) => {
+      const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-claude-')) // carpeta vacía: que no cargue el CLAUDE.md del proyecto
+      const hijo = spawn('claude', ['-p', '--model', modelo, '--system-prompt', sistema, '--tools', '', '--setting-sources', '', '--no-session-persistence', '--output-format', 'json', '--effort', 'high'], { cwd })
+      let out = '', err = ''
+      hijo.stdout.on('data', d => { out += d })
+      hijo.stderr.on('data', d => { err += d })
+      hijo.on('error', reject)
+      hijo.on('close', code => {
+        try {
+          const j = JSON.parse(out)
+          if (code !== 0 || j.is_error) return reject(new Error(String(j.result ?? err).slice(0, 300)))
+          resolve({ texto: String(j.result ?? ''), uso: { completion_tokens: j.usage?.output_tokens ?? null, prompt_tokens: j.usage?.input_tokens ?? null, coste_equivalente_usd: j.total_cost_usd ?? null } })
+        } catch { reject(new Error((err || out).slice(0, 300))) }
+      })
+      hijo.stdin.end(usuario)
+    }),
+  }
+}
+
 const MODELOS: ProveedorIA[] = [
+  claudeCLI('claude-opus', 'opus'),
+  claudeCLI('claude-sonnet', 'sonnet'),
   { nombre: 'deepseek-chat (actual)', url: DEEPSEEK, claveEnv: 'DEEPSEEK_API_KEY', modelo: 'deepseek-chat', maxTokens: 6000 },
   { nombre: 'deepseek-v4-pro', url: DEEPSEEK, claveEnv: 'DEEPSEEK_API_KEY', modelo: 'deepseek-v4-pro', maxTokens: 16000 },
-  { nombre: 'gemini-2.5-pro', url: GEMINI, claveEnv: 'GEMINI_API_KEY', modelo: 'gemini-2.5-pro', maxTokens: 20000 },
-  { nombre: 'gemini-3.1-pro', url: GEMINI, claveEnv: 'GEMINI_API_KEY', modelo: 'gemini-3.1-pro-preview', maxTokens: 20000 },
   { nombre: 'gpt-5.5', url: OPENAI, claveEnv: 'OPENAI_API_KEY', modelo: 'gpt-5.5-2026-04-23', maxTokens: 20000, razonamientoOpenAI: true },
 ]
 const CASOS = [

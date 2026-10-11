@@ -18,7 +18,7 @@ Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/inter
 
 - Banco de pruebas `scripts/benchmark-modelos-plan.ts` + `lib/entrenos/evaluar-plan-ia.ts`; `generarPlanEntrenoIA` acepta `proveedor`. 4 casos × 5 modelos. Resultado: deepseek-chat 96 pts/22 s, deepseek-v4-pro 1 de 4 con JSON inválido (74), gpt-5.5 94 pts/67 s y el mejor razonamiento de coach, Gemini Pro no disponible (retirado / sin cuota). Claude sin probar (sin clave API).
 - Hallazgo: el esqueleto determinista pesa más que el modelo; la puntuación objetiva se satura. El estudio cazó un fallo real (híbrida con carrera el día antes de la tirada) ya corregido en `repartirHibridas`.
-- Pendiente: elegir modelo por tarea (propuesta: gpt-5.5 + respaldo DeepSeek), reintento de JSON, bucle de corrección con validadores, evidencia dirigida. Detalle: `docs/11-10-2026_estudio-modelos-ia-plan.md`.
+- Ronda 2: evidencia dirigida al caso (`estudiosParaPlan`, claves K#, `decisiones_clave` con estudios verificables, «Por qué este plan» en la propuesta). Todos los modelos pasan de citar 0-3 a 4-14 estudios reales, 0 inventados; Claude Opus ~0,2 USD/plan por CLI (no hay clave de API; Sonnet se colgó). Pendiente: elegir modelo por tarea (propuesta: gpt-5.5/Opus + respaldo DeepSeek), reintento de JSON, bucle de corrección, auditoría de relevancia de las citas. Detalle: `docs/11-10-2026_estudio-modelos-ia-plan.md`.
 
 ## ✅ SESIÓN 11-10-2026 (noche tardía, 2.ª parte, Claude) — El motor detecta planes por debajo de la carga real
 
