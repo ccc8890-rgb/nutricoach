@@ -431,7 +431,8 @@ export default function EntrenoCalendarioMes({ planId }: { planId: string }) {
                 </ul>
               )}
 
-              {detalle && detalle.ejercicios.length > 0 && (
+              {/* Si la sesión tiene pasos de Garmin, ya están todos arriba: la lista de ejercicios sería redundante. */}
+              {detalle && !detalle.pasos && detalle.ejercicios.length > 0 && (
                 <ul className="space-y-1.5 mb-4">
                   {detalle.ejercicios.map(e => {
                     const stats = [e.series && `${e.series}x${e.repeticiones ?? '?'}`, e.peso_sugerido, e.rpe && `RPE ${e.rpe}`].filter(Boolean)
