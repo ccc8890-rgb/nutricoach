@@ -14,7 +14,7 @@ const STOP_WORDS = new Set(['con', 'de', 'en', 'el', 'la', 'los', 'las', 'y', 'a
 // "Carrera Series Cortas" (8x400m) se vinculó a "Series de crol 50m" —
 // ambos con `tipo` inconsistente o de otra disciplina, y el nivel 3
 // devolvía el primer resultado de Postgres sin ninguna preferencia.
-const OTRA_DISCIPLINA_RE = /crol|natación|natacion|nado\b|ski\s?erg|sled|wall\s?ball|remo\b|rowing|bici|kettlebell|mancuerna|dominada|sentadilla|press\s|peso muerto|farmer|granjero/i
+const OTRA_DISCIPLINA_RE = /crol|natación|natacion|nado\b|ski\s?erg|sled|wall\s?ball|remo\b|rowing|bici|kettlebell|mancuerna|dominada|sentadilla|press\s|peso muerto|farmer|granjero|pilates|tai ?chi|yoga|aquagym|el[ií]ptica/i
 
 export type TipoPreferido = 'cardio' | 'fuerza' | 'cardio_funcional'
 
@@ -36,8 +36,17 @@ const SINONIMOS: Record<string, string> = {
   'back squat': 'sentadilla con barra',
 }
 
+/** En una sesión de carrera, «trote suave de activación» es el «Trote de calentamiento» del catálogo y «trote final» la «Vuelta a la calma» (si no, «suave» empataba con Pilates suave). */
+export function canonicoCarrera(nombre: string): string | null {
+  const n = sinAcentos(nombre.toLowerCase().trim())
+  if (/^(vuelta a la calma|enfriamiento)/.test(n) || /^(trote|carrera|rodaje)\b.*\b(final|calma|enfriamiento|recuperacion)\b/.test(n)) return 'vuelta a la calma'
+  if (/^(trote|carrera|rodaje)\b.*\b(calentamiento|activacion|inicial)\b/.test(n)) return 'trote de calentamiento'
+  return null
+}
+
 export async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPreferido?: TipoPreferido): Promise<string | null> {
-  const normalizado = SINONIMOS[sinAcentos(nombre.toLowerCase().trim())] ?? nombre.toLowerCase().trim()
+  const canonico = tipoPreferido === 'cardio' ? canonicoCarrera(nombre) : null
+  const normalizado = canonico ?? SINONIMOS[sinAcentos(nombre.toLowerCase().trim())] ?? nombre.toLowerCase().trim()
   // En sesiones de carrera, «rodaje/tirada continuo Z2» es la «Carrera continua» del catálogo (no comparten ninguna palabra útil).
   if (tipoPreferido === 'cardio' && /^(rodaje|tirada)\b/.test(normalizado) && /continu[oa]/.test(normalizado)) {
     const idContinua = await matchEjercicio(sb, 'carrera continua', tipoPreferido)
@@ -110,7 +119,12 @@ export async function idEjercicioDeLaIA(sb: SupabaseClient, sesion: SesionIA, ej
   // La pliometría (saltos) es funcional/fuerza aunque vaya dentro de una sesión de carrera: sin filtro de tipo, para que no se descarte.
   const tipo: TipoPreferido | undefined = esPliometria(ej) ? undefined : (tipoPreferidoDeSesion(sesion) ?? (midePorDistanciaOTiempo(ej.repeticiones) ? 'cardio_funcional' : undefined))
   const nombreIntervalos = nombreCatalogoPorDistancia(nombreEj, ej.series, ej.repeticiones)
-  return (nombreIntervalos ? await matchEjercicio(sb, nombreIntervalos, tipo) : null) ?? await matchEjercicio(sb, nombreEj, tipo)
+  // Intervalos: solo vale la distancia exacta del catálogo (si no existe, antes empataba con «Intervalos 1km» por ser el nombre más corto).
+  if (nombreIntervalos) {
+    const { data: exacto } = await sb.from('ejercicios').select('id').ilike('nombre', nombreIntervalos).limit(1)
+    if (exacto?.length) return exacto[0].id as string
+  }
+  return await matchEjercicio(sb, nombreEj, tipo)
 }
 
 export interface EjercicioIA {

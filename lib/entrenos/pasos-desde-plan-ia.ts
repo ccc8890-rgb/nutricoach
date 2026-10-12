@@ -39,7 +39,10 @@ const duracionBloque = (s: SesionIA, bloque: string) => {
 export function pasosDeSesionCarrera(s: SesionIA, semana: SemanaMacro | undefined): Paso[] | null {
   if (!semana || typeof s.ritmo_objetivo !== 'string' || !s.ritmo_objetivo.trim() || !s.dia_semana) return null
   const dia = DIAS.indexOf(norm(s.dia_semana))
-  const macro = semana.sesiones.find(m => m.dia === dia)
+  // Si el coach o el atleta cambió el día de la sesión, se busca la del esqueleto por tipo (solo si hay una).
+  const tipoNombre = /tirada|largo/.test(norm(s.nombre ?? '')) ? 'tirada' : /series|intervalo/.test(norm(s.nombre ?? '')) ? 'series' : /tempo|umbral/.test(norm(s.nombre ?? '')) ? 'tempo' : /rodaje|regenerativ|z2|suave/.test(norm(s.nombre ?? '')) ? 'rodaje' : null
+  const delTipo = tipoNombre ? semana.sesiones.filter(m => m.tipo === tipoNombre) : []
+  const macro = semana.sesiones.find(m => m.dia === dia) ?? (delTipo.length === 1 ? delTipo[0] : undefined)
   if (!macro) return null
   const total = macro.minutos * 60
   let pasos: Paso[] | null = null
