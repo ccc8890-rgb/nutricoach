@@ -5,7 +5,8 @@ import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 // Cliente admin para endpoints públicos (sin autenticación)
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { global: { fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }) } }
 )
 
 export async function GET(

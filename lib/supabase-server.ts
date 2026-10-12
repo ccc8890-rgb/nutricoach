@@ -4,6 +4,13 @@ import { cookies } from 'next/headers'
 import { type NextRequest } from 'next/server'
 
 /**
+ * Next cachea por defecto las llamadas `fetch` de las rutas del servidor. Supabase usa `fetch` por debajo, así que
+ * la bandeja de recetas llegó a servir datos de hace días (710 recetas / 0 pendientes del 06-10 cuando había 854 / 58)
+ * y una receta recién aprobada seguía apareciendo como pendiente. Los datos de la app son siempre en vivo: sin caché.
+ */
+const fetchSinCache: typeof fetch = (input, init) => fetch(input, { ...init, cache: 'no-store' })
+
+/**
  * Crea un cliente Supabase para Server Components y Server Actions.
  * Usa `next/headers` para acceder a las cookies de la petición entrante.
  */
@@ -14,6 +21,7 @@ export async function createServerSupabase() {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
+            global: { fetch: fetchSinCache },
             cookies: {
                 getAll() {
                     return cookieStore.getAll()
@@ -46,7 +54,7 @@ export function createServiceSupabase() {
     return createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        { auth: { persistSession: false } }
+        { auth: { persistSession: false }, global: { fetch: fetchSinCache } }
     )
 }
 
@@ -66,6 +74,7 @@ export function createApiSupabase(request: NextRequest) {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
+            global: { fetch: fetchSinCache },
             cookies: {
                 getAll() {
                     return request.cookies.getAll()
