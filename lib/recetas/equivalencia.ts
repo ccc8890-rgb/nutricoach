@@ -39,7 +39,12 @@ export function formatoCantidad(
   const base = `${escalarGramos(gramos, factor)}g`
   if (cantidadOriginal && unidadDisplay?.trim()) {
     const n = Math.round(cantidadOriginal * factor * 10) / 10
-    return `${base} (${n} ${unidadDisplay.trim()})`
+    const unidad = unidadDisplay.trim()
+    // «265g (265 g)»: si el original ya eran gramos (o ml con el mismo número), repetirlo no aporta nada
+    const esPeso = /^(g|gr|grs|gramos?|ml)$/i.test(unidad)
+    if (esPeso && Math.abs(n - gramos * factor) < 0.6) return base
+    if (/^(g|gr|grs|gramos?)$/i.test(unidad)) return base
+    return `${base} (${n} ${unidad})`
   }
   const auto = nombre ? equivalenciaAuto(nombre, gramos * factor) : null
   return auto ? `${base} (${auto.n} ${auto.unidad})` : base
