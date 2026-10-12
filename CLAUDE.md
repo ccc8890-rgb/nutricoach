@@ -14,6 +14,31 @@ Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/inter
 - **Recuperar un archivo:** `git checkout bd7d691~1 -- <ruta>` (p. ej. `lib/recetas/auto-match-ingrediente.ts`). Todo el conjunto: `git checkout bd7d691~1 -- app/api lib/recetas lib/scraping/motores` (cuidado: también restauraría otros borrados de esas carpetas).
 - La limpieza anterior (52 archivos) está en `873c556`; se recupera igual con `git checkout 873c556~1 -- <ruta>`.
 
+## 🧭 REGLAS PERMANENTES — vínculos, unidades y pantallas (12-10-2026)
+
+Detalle, causas y cómo comprobar cada una: [`docs/12-10-2026_patrones-vinculos-unidades-y-pantallas.md`](docs/12-10-2026_patrones-vinculos-unidades-y-pantallas.md). Resumen:
+1. **Ejercicios IA → catálogo:** usar `idEjercicioDeLaIA` / `matchEjercicio` (puntúa todas las palabras; carrera pura estricta). Tras generar o aplicar un plan por IA: `npx tsx scripts/auditar-vinculos-ejercicios.ts` (simula) y esperar 0.
+2. **Pausas:** siempre `descansoVisible(tipo, seg, series)`; nunca `descanso_segundos` directo (una serie = sin pausa).
+3. **Unidades:** app cliente con el running en **km** (`kmDeSesion`/`textoKm`); series de pista en **metros**; rodaje/tirada/tempo **por tiempo**, también en Garmin (decisión de Carlos, reabrir solo si lo pide).
+4. **Solo lo esencial a la vista:** una línea por ejercicio (nombre, series × reps, pausa, ritmo/peso); explicación tras un toque; notas de la IA ≤ 120 caracteres y un solo RPE.
+5. **Detalles desplegables** se abren bajo el elemento tocado; **textos largos** deben poder partirse (CSS); la **previsión** se marca y usa los días de la semana tipo del atleta.
+6. Antes de subir cambios de planes: `npm run verificar:motor` (56 comprobaciones). Probar siempre en producción como cliente a 390 px y comparar API y pantalla.
+
+## ✅ SESIÓN 12-10-2026 (mañana, Claude) — Prueba como cliente: vínculos de ejercicios, km, previsión y pantalla esencial
+
+Probado en producción con la sesión de Carlos a 390 px. 15 commits en `main`, sin migraciones. `verificar:motor` 56/56, `tsc` y ESLint limpios. Respaldos en `salidas/12-10-2026_copia-*.json` (ignoradas por git).
+
+- **«Tu bloque» (cliente):** probado; sin natación el martes y sin scroll horizontal. Km por semana (`≈ 25 km · 145 min`) con las 8 semanas del macrociclo y las posteriores al bloque marcadas «previsión». Tarjeta verde «Tu plan está listo» **eliminada** (`lib/cliente/bienvenida-plan.ts` queda sin uso).
+- **Km en la app:** Hoy, Semana, Mes y «Tu bloque» (`lib/entrenos/km-sesion.ts`, desde los pasos y el VDOT; rodaje 8,5 km, tirada 10,2 km). **Garmin sigue por tiempo** en rodajes/tirada.
+- **Series en metros:** la sesión del martes pasó a 5 × 500 m (copia en `salidas/12-10-2026_copia-series-en-metros.json`; el cron la reenvía al Garmin); la IA las escribe así de ahora en adelante y `pasos-desde-plan-ia` cuenta metros con recuperación por tiempo.
+- **Vínculos de ejercicios:** auditados los planes activos con IA: 8 correcciones en el plan de Carlos (Remo ergómetro ×2, Intervalos 400m ×3, Remo con mancuerna, Sentadilla goblet, Vuelta a la calma). 7 tipos del catálogo corregidos (SkiErg, Farmer Carry, movilidades, bici). Emparejador reescrito.
+- **Previsión en Mes:** semanas 5-8 del macrociclo con carrera (km aproximados) y fuerza/híbridas de la semana tipo, en los días que Carlos tiene realmente (movió pierna al lunes y rodaje al viernes). Los ejercicios se crean al cerrar el bloque (cron `proponer-bloques`, hacia el 1-nov; el cron del 18-10 es la primera prueba real).
+- **Pantalla esencial:** fila de ejercicio en una línea, sin RPE por semanas; tarjeta de Garmin resumida en una línea con botón pequeño; detalle de Semana bajo su sesión; «5 × 500m» no se parte; pausa oculta en series únicas.
+- **Tope de gasto de Anthropic:** Carlos no puso tope pero **desactivó la recarga automática**: el límite es el saldo; al agotarse, cae a DeepSeek. No volver a pedirlo.
+- **Auditoría de seguridad:** sin secretos en lo añadido; solo `mes-completo` y `semana-completa` tocadas (sesión + filtro por el cliente del usuario, sin `err.message`); sin migraciones ni tablas nuevas; los respaldos y `.env*` ignorados.
+- **Pendiente:** (1) **ver en el Garmin** que la sesión del martes llega con 500 m y las 3 de carrera salen con pasos; (2) cron `proponer-bloques` del 18-10 y aprobar el bloque 2; (3) km en las vistas del coach (PlanTimeline, RutinaSemanaAccordion, EntrenoCalendarioKanban) si lo pide; (4) previsión en Semana; (5) duplicados de catálogo («Farmer's carry»/«Farmer Carry»); (6) informe semanal IA sigue sin llamarse.
+- **Lecciones:** (a) el emparejador por primera palabra falla con nombres de la IA; (b) un dato «mal» puede ser una acción del usuario (movió sesiones): comparar API y pantalla antes de corregir; (c) un test que copia las expresiones no prueba nada: extraer las funciones y probar las reales; (d) al comprobar un despliegue, sondear el propio DOM/endpoint; (e) lo esencial primero: preguntar qué se necesita ver antes de añadir un dato a una pantalla.
+
 ## ✅ SESIÓN 12-10-2026 (madrugada, Claude) — Propuesta aprobada, «Tu bloque», pasos al reloj, ejercicios correctos y Opus en dietas/análisis
 
 Commits `d60ec15`→`64b8204` en `main`, sin migraciones. `verificar:motor` 51/51, `tsc`, ESLint y `npm run build` limpios. **Visto en producción** con la sesión de Carlos: hoja de ruta, propuesta («Por qué este plan»), aprobación, ejercicios del plan y generación de dieta con Opus. **NO visto:** «Tu bloque» en el portal del cliente (hay que entrar como cliente) ni las sesiones en el reloj.

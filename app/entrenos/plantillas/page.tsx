@@ -352,7 +352,7 @@ export default function PlantillasEntrenoPage() {
                                                         <span>
                                                             {ej.series}×{ej.repeticiones}
                                                             {ej.rpe ? ` · RPE ${ej.rpe}` : ''}
-                                                            {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? ` · ${ej.descanso_segundos}s` : ''}
+                                                            {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos, ej.series) ? ` · ${ej.descanso_segundos}s` : ''}
                                                         </span>
                                                     </div>
                                                 ))}

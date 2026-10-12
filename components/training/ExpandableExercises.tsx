@@ -22,7 +22,7 @@ export interface EjercicioDetalle {
 
 /** Descanso entre series: con una sola serie no hay nada que descansar (calentamiento de 1 × 5 min), así que no se muestra. */
 function descansoDe(ej: EjercicioDetalle): number {
-  return (ej.series ?? 0) > 1 ? descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) : 0
+  return descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos, ej.series)
 }
 
 /** Descanso compartido por todos los ejercicios del bloque (2+), para mostrarlo una sola vez. */

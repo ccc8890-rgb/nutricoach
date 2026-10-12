@@ -1,0 +1,29 @@
+# Patrones para no repetir fallos (12-10-2026)
+
+Salieron de probar la app como cliente (Carlos, 390 px). Cada fallo tiene su causa, la regla que lo evita y cómo comprobarlo.
+Antes de subir cambios de planes: `npm run verificar:motor` (56 comprobaciones, incluye los tests de este documento).
+
+| # | Fallo visto | Causa real | Regla | Dónde vive | Cómo comprobar |
+|---|-------------|-----------|-------|-----------|----------------|
+| 1 | «Remo en ergómetro» acababa en «Remo con barra» (fuerza); «Carrera continua 4×400 m» | `matchEjercicio` miraba solo la primera palabra y los 5 primeros resultados alfabéticos; la IA nombra de forma imprecisa | El emparejado **puntúa todas las palabras** (gana la que más comparte). Un término de otra disciplina (remo, SkiErg, natación…) solo descarta si la petición NO lo pide; en **carrera pura** descarta siempre. Ejercicio medido en m/min → busca entre cardio y funcional. «Carrera continua» con series de metros → «Intervalos 400m». Sinónimos explícitos (`SINONIMOS`) | `lib/entrenos/guardar-plan.ts` (`matchEjercicio`, `idEjercicioDeLaIA`, `nombreCatalogoPorDistancia`) | `npx tsx scripts/auditar-vinculos-ejercicios.ts` (simula; `--apply` corrige con copia en `salidas/`). Esperado: 0 (salvo duplicados de catálogo como «Farmer's carry»/«Farmer Carry») |
+| 2 | Ejercicios con tipo equivocado en el catálogo (SkiErg como fuerza…) | Altas manuales sin criterio | El **tipo** manda en pausa, selector y emparejado: revisarlo al añadir ejercicios | tabla `ejercicios` (7 corregidos; copia en `salidas/12-10-2026_copia-tipos-ejercicios.json`) | `node scripts/auditar-tipos-ejercicios.mjs` (solo lectura) |
+| 3 | «60 s» bajo un calentamiento de 1 serie | La pausa se pintaba aunque no hubiera segunda serie | **Toda pausa se enseña con `descansoVisible(tipo, seg, series)`**; nunca leer `descanso_segundos` directo. Formato «2:00» (`pausa()`) | `lib/entrenos/descanso-visible.ts` (usado en ExpandableExercises, PlanTimeline, PlantillaEntrenoSelector, entrenos/plantillas) | `scripts/descanso-visible.test.ts` |
+| 4 | Running en minutos, series «5×2 min» | El generador no distinguía unidades | **App cliente: running en km** (`kmDeSesion`, `textoKm`). **Series de pista en metros**; rodaje, tirada y tempo **por tiempo** (también en Garmin: decisión de Carlos, ver memoria). La IA escribe las series en metros (`generar-plan-ia.ts` regla 4a) y `pasos-desde-plan-ia` cuenta metros con recuperación por tiempo | `lib/entrenos/km-sesion.ts`, `pasos-desde-plan-ia.ts` | `scripts/km-sesion.test.ts`, `pasos-desde-plan-ia.test.ts` |
+| 5 | En Semana, el detalle de la sesión 1 salía debajo de la sesión 2 | El detalle se pintaba al final del día, no bajo su tarjeta | Un detalle desplegable se abre **justo debajo del elemento tocado** (Fragment dentro del `map`) | `components/training/EntrenoKanban.tsx` | Abrir un día con ×2 en Semana |
+| 6 | Texto largo que se salía de la pantalla («10 balanceos de pierna…») | `.technical-row__meta { flex: none }` | Un texto que puede ser largo debe poder partirse (`flex: 0 1 auto; max-width; overflow-wrap`); lo corto no se parte (`5 × 500m` con espacios duros) | `app/cliente/cliente.css`, `ExpandableExercises` | Comprobar `scrollWidth <= innerWidth` a 390 px |
+| 7 | El Mes terminaba en noviembre y parecía que el plan acababa | Solo hay sesiones creadas para el bloque (4 semanas); las 8 semanas eran previsión no visible | La **previsión** se enseña marcada (`prevision`, iconos tenues, «Previsión · ≈ 8,5 km»), con tipo/minutos del macrociclo y **los días de la semana tipo del atleta**, nunca los del macrociclo si los movió. No se piden detalles de ids `prev-` | `lib/entrenos/prevision.ts`, `mes-completo`, `CalendarioMesEntreno` | `scripts/prevision.test.ts` |
+| 8 | Demasiado texto por ejercicio (RPE «(sem 1-2) · 7-8 (sem 3)», 120s, 4:15 en 3 líneas) | La IA escribía notas largas y la UI pintaba todo | **Solo lo esencial a la vista**: nombre, series × reps, pausa, ritmo/peso en una línea; explicación tras un toque con «Esfuerzo 7 de 10». Notas de la IA ≤ 120 caracteres, un solo RPE | `lib/training/ejercicio-texto.ts`, `ExpandableExercises`, prompt de `generar-plan-ia.ts` | `scripts/ejercicios-texto.test.ts` |
+| 9 | Tarjeta de Garmin enorme y repetida | Mostraba todos los pasos + botón grande + leyenda con RPE | Resumen en una línea («8:00 suave + 5 × (500 m a 4:15 + 2:00 trote) + 4:00 suave»), botón pequeño, leyenda corta | `PasosSesion.tsx`, `textoCorto` en `pasos.ts` | `scripts/pasos.test.ts` |
+
+## Cómo se encontraron (repetir el método)
+1. **Probar como cliente en producción** (`browse --headed` + handoff de login, 390 px) y leer el DOM, no solo mirar la captura.
+2. **Comparar API y pantalla**: `fetch('/api/entrenos/mes-completo…')` desde la página mostró que las sesiones estaban movidas por el cliente (no era un fallo) y que la previsión usaba días del macrociclo (sí lo era).
+3. **Auditar contra los nombres originales de la IA** (`agente_tareas.payload`), no contra lo guardado: así se ven los vínculos erróneos.
+4. **Un fallo visto = auditar la clase entera** (otros planes, otro componente, el catálogo) y dejar una regla + un test.
+
+## Pendiente de aplicar en otros sitios
+- Vistas del **coach** (PlanTimeline, RutinaSemanaAccordion, EntrenoCalendarioKanban) siguen mostrando minutos de carrera; pasar a km si Carlos lo pide (`kmDeSesion` ya existe).
+- La previsión solo está en **Mes**; Semana enseña la semana en curso.
+- Planes sin tarea de IA (plantillas) no se pueden auditar por nombre: comprobar tipo vs unidad a mano (fuerza medida en m/min = sospechoso).
+- Catálogo con duplicados («Farmer's carry» / «Farmer Carry»): unificar con confirmación, hay filas de planes que los usan.
+- Al comprobar un despliegue, sondear el propio endpoint/DOM (`vercel ls` en bucle no devolvió nada útil).

@@ -140,7 +140,7 @@ function SortableEjercicioCard({
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             {ej.series}×{ej.repeticiones}
             {ej.rpe ? ` @RPE${ej.rpe}` : ''}
-            {descansoVisible(ej.tipo, ej.descanso_segundos) > 0 ? ` · ${ej.descanso_segundos}s` : ''}
+            {descansoVisible(ej.tipo, ej.descanso_segundos, ej.series) > 0 ? ` · ${ej.descanso_segundos}s` : ''}
           </p>
         </div>
 
