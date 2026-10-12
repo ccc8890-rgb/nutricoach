@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useSWRConfig } from 'swr'
 import {
     DndContext,
@@ -123,35 +123,33 @@ function DiaColumna({ dia, sesiones, seleccionadaId, moverId, detalles, extras, 
             <div className="training-week-day__label"><span>{DIAS_ABREV[dia]}</span><small>{dia.slice(0, 3)}</small>{sesiones.length > 1 && <em className="training-week-day__count">×{sesiones.length}</em>}</div>
             <div className="training-week-day__content">
                 {sesiones.length === 0 ? <p className="training-week-rest">Descanso</p> : sesiones.map((s, i) => (
-                    <SesionCard
-                        key={s.id}
-                        sesion={s}
-                        orden={sesiones.length > 1 ? `${i + 1}/${sesiones.length}` : undefined}
-                        seleccionada={seleccionadaId === s.id}
-                        moviendo={moverId === s.id}
-                        onSeleccionar={() => onSeleccionar(s.id)}
-                        onAbrirMover={() => onAbrirMover(s.id)}
-                    />
+                    <Fragment key={s.id}>
+                        <SesionCard
+                            sesion={s}
+                            orden={sesiones.length > 1 ? `${i + 1}/${sesiones.length}` : undefined}
+                            seleccionada={seleccionadaId === s.id}
+                            moviendo={moverId === s.id}
+                            onSeleccionar={() => onSeleccionar(s.id)}
+                            onAbrirMover={() => onAbrirMover(s.id)}
+                        />
+                        {seleccionadaId === s.id && (
+                            <div className="training-week-detail">
+                                <p>{tituloSesionSinModalidad(s.nombre, s.tipo_sesion)}</p>
+                                {detalles[s.id] === 'cargando' ? (
+                                    <div className="flex justify-center py-6"><SpinnerGap size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
+                                ) : (
+                                    <>
+                                        {extras[s.id] && <PasosSesion sesionId={s.id} {...extras[s.id]!} />}
+                                        <ListaEjerciciosExpandible ejercicios={(detalles[s.id] as EjercicioDetalle[]) ?? []} />
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </Fragment>
                 ))}
                 {moverId && sesiones.some(s => s.id === moverId) && (
                     <div className="training-week-move-picker" aria-label="Mover entrenamiento a otro día">
                         {DIAS.map(destino => <button key={destino} type="button" disabled={destino === dia} onClick={() => onMover(destino)}>{DIAS_ABREV[destino]}</button>)}
-                    </div>
-                )}
-                {seleccionadaId && sesiones.some(s => s.id === seleccionadaId) && (
-                    <div className="training-week-detail">
-                        <p>{(() => {
-                            const sesion = sesiones.find(s => s.id === seleccionadaId)
-                            return sesion ? tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion) : 'Sesión'
-                        })()}</p>
-                        {detalles[seleccionadaId] === 'cargando' ? (
-                            <div className="flex justify-center py-6"><SpinnerGap size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
-                        ) : (
-                            <>
-                                {extras[seleccionadaId] && <PasosSesion sesionId={seleccionadaId} {...extras[seleccionadaId]!} />}
-                                <ListaEjerciciosExpandible ejercicios={(detalles[seleccionadaId] as EjercicioDetalle[]) ?? []} />
-                            </>
-                        )}
                     </div>
                 )}
             </div>
