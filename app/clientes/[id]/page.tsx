@@ -963,9 +963,20 @@ export default function ClienteDetallePage() {
                 </section>
 
                 {entrenoActivo && (
-                  <WorkCard title="Rutina de la semana" icon={Dumbbell}>
-                    <ErrorBoundary><RutinaSemanaAccordion planId={entrenoActivo.id} /></ErrorBoundary>
-                  </WorkCard>
+                  <details className="group rounded-2xl p-4 sm:p-5 min-w-0" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    <summary className="flex items-center justify-between gap-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                      <span className="flex items-center gap-3 min-w-0">
+                        <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text)' }}>
+                          <Dumbbell size={17} />
+                        </span>
+                        <span className="font-bold leading-tight" style={{ color: 'var(--text)' }}>Rutina de la semana</span>
+                      </span>
+                      <ChevronDown size={16} className="transition-transform group-open:rotate-180" style={{ color: 'var(--text-muted)' }} />
+                    </summary>
+                    <div className="mt-4">
+                      <ErrorBoundary><RutinaSemanaAccordion planId={entrenoActivo.id} /></ErrorBoundary>
+                    </div>
+                  </details>
                 )}
 
                 <WorkCard title="Hoja de ruta · próximas semanas" kicker="Previsión del motor frente a lo realizado" icon={Dumbbell}>
