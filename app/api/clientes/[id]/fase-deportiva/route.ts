@@ -4,6 +4,7 @@ import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 import { faseEnFecha } from '@/lib/nutricion/competicion'
 import { objetivosPorDia } from '@/lib/nutricion/objetivo-dia'
 import { DIAS_SEMANA } from '@/lib/nutricion/comidas-dia'
+import { normalizarEstado, normalizarPrioridad, planificarAnio, type ObjetivoAnual } from '@/lib/entrenos/objetivos-anuales'
 
 export async function GET(
     request: NextRequest,
@@ -21,16 +22,6 @@ export async function GET(
         const acceso = await autorizarCoachCliente(serviceSb, { userId: user.id, clienteId: id })
         if (!acceso.ok) return NextResponse.json({ error: acceso.mensaje }, { status: acceso.status })
 
-        // Fase deportiva activa (próxima competición)
-        const { data: fase } = await serviceSb
-            .from('fase_deportiva_cliente')
-            .select('*')
-            .eq('cliente_id', id)
-            .neq('fase_actual', 'finalizada')
-            .order('fecha_competicion', { ascending: true })
-            .limit(1)
-            .single()
-
         // Todas las competiciones del cliente (activas)
         const { data: competiciones } = await serviceSb
             .from('competiciones')
@@ -38,6 +29,17 @@ export async function GET(
             .eq('cliente_id', id)
             .eq('activo', true)
             .order('fecha_competicion', { ascending: true })
+
+        // Fase deportiva activa: la próxima competición CONFIRMADA (una «posible» planifica el entreno, pero no cambia la dieta)
+        const confirmadas = new Set((competiciones ?? []).filter(c => normalizarEstado(c.estado) === 'confirmada').map(c => c.id as string))
+        const { data: fases } = await serviceSb
+            .from('fase_deportiva_cliente')
+            .select('*')
+            .eq('cliente_id', id)
+            .neq('fase_actual', 'finalizada')
+            .order('fecha_competicion', { ascending: true })
+            .limit(10)
+        const fase = (fases ?? []).find(f => confirmadas.has(f.competicion_id as string)) ?? null
 
         // La fase y el objetivo de hoy salen del MISMO motor que el planificador (ventana de tapering por disciplina,
         // carga de hidratos por duración); antes esta tarjeta usaba una tabla propia que decía otra cosa.
@@ -67,6 +69,10 @@ export async function GET(
             fase_activa: faseMotor,
             competiciones: competiciones ?? [],
             objetivo_hoy: objetivoHoy,
+            plan_anual: planificarAnio(
+                (competiciones ?? []).map(c => ({ nombre: String(c.nombre), fecha: String(c.fecha_competicion), disciplina: (c.disciplina as string | null) ?? null, prioridad: normalizarPrioridad(c.prioridad), estado: normalizarEstado(c.estado) }) as ObjetivoAnual),
+                hoy, 52,
+            ),
         })
     } catch (err) {
         console.error('Error en GET /api/clientes/[id]/fase-deportiva:', err)
@@ -96,6 +102,8 @@ export async function POST(
         if (!accesoPost.ok) return NextResponse.json({ error: accesoPost.mensaje }, { status: accesoPost.status })
 
         const { nombre, disciplina, fecha_competicion, objetivo, tiempo_objetivo_min, notas } = body
+        const prioridad = normalizarPrioridad(body.prioridad)
+        const estado = normalizarEstado(body.estado)
         if (!nombre || !disciplina || !fecha_competicion) {
             return NextResponse.json(
                 { error: 'nombre, disciplina y fecha_competicion son obligatorios' },
@@ -114,6 +122,8 @@ export async function POST(
                 objetivo: objetivo ?? 'completar',
                 tiempo_objetivo_min: tiempo_objetivo_min || null,
                 notas: notas || null,
+                prioridad,
+                estado,
             })
             .select()
             .single()
@@ -165,6 +175,40 @@ export async function DELETE(
         return NextResponse.json({ success: true })
     } catch (err) {
         console.error('Error en DELETE /api/clientes/[id]/fase-deportiva:', err)
+        return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+    }
+}
+
+/** Cambia la prioridad o el estado (confirmar una prueba «posible», descartarla como C…). */
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const supabase = createApiSupabase(request)
+        const { id: clienteId } = await params
+        const body = await request.json().catch(() => ({}))
+        if (typeof body.competicion_id !== 'string') return NextResponse.json({ error: 'competicion_id requerido' }, { status: 400 })
+
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        if (profile?.role !== 'coach') return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+
+        const serviceSb = createServiceSupabase()
+        const acceso = await autorizarCoachCliente(serviceSb, { userId: user.id, clienteId })
+        if (!acceso.ok) return NextResponse.json({ error: acceso.mensaje }, { status: acceso.status })
+
+        const cambios: Record<string, string> = {}
+        if ('prioridad' in body) cambios.prioridad = normalizarPrioridad(body.prioridad)
+        if ('estado' in body) cambios.estado = normalizarEstado(body.estado)
+        if (Object.keys(cambios).length === 0) return NextResponse.json({ error: 'Nada que cambiar' }, { status: 400 })
+
+        const { error } = await serviceSb.from('competiciones').update(cambios).eq('id', body.competicion_id).eq('cliente_id', clienteId)
+        if (error) return NextResponse.json({ error: 'Error al guardar' }, { status: 500 })
+        return NextResponse.json({ success: true })
+    } catch (err) {
+        console.error('Error en PATCH /api/clientes/[id]/fase-deportiva:', err)
         return NextResponse.json({ error: 'Error interno' }, { status: 500 })
     }
 }

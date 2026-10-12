@@ -47,7 +47,7 @@ export async function objetivosPorDia(db: SupabaseClient, clienteId: string, pla
     fecha.setUTCDate(fecha.getUTCDate() + i)
     return fecha.toISOString().slice(0, 10)
   })
-  const { data: competiciones } = await db.from('competiciones').select('nombre, disciplina, fecha_competicion, tiempo_objetivo_min').eq('cliente_id', clienteId).eq('activo', true)
+  const { data: competiciones } = await db.from('competiciones').select('nombre, disciplina, fecha_competicion, tiempo_objetivo_min').eq('cliente_id', clienteId).eq('activo', true).neq('estado', 'posible')
   const ajustesCompeticion = DIAS_SEMANA.map((_, i) => {
     const fecha = fechas[i]
     const aplicables = (competiciones ?? []).map(c => ({ ...c, dias: Math.round((Date.parse(`${c.fecha_competicion}T00:00:00Z`) - Date.parse(`${fecha}T00:00:00Z`)) / 86_400_000) }))

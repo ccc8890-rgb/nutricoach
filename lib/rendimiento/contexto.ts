@@ -64,7 +64,7 @@ export async function construirContextoRendimiento(db: SupabaseClient, clienteId
     db.from('actividad_externa_cliente').select('fecha,rhr,training_readiness,body_battery_max,sueno_h,stress_avg').eq('cliente_id', clienteId).eq('proveedor', 'garmin_connect').gte('fecha', desde60).order('fecha'),
     leerUmbrales(db, clienteId),
     db.from('perfil_entreno_cliente').select('vdot,nivel,sport_modality,objetivo_especifico,dias_disponibles,capacidad_recuperacion,patron_lesiones,restricciones_temporales').eq('cliente_id', clienteId).maybeSingle(),
-    db.from('competiciones').select('nombre,disciplina,fecha_competicion,objetivo,tiempo_objetivo_min').eq('cliente_id', clienteId).eq('activo', true).gte('fecha_competicion', hoy).order('fecha_competicion').limit(3),
+    db.from('competiciones').select('nombre,disciplina,fecha_competicion,objetivo,tiempo_objetivo_min,prioridad,estado').eq('cliente_id', clienteId).eq('activo', true).gte('fecha_competicion', hoy).order('fecha_competicion').limit(3),
     db.from('planes_entrenamiento').select('id,nombre').eq('cliente_id', clienteId).eq('activo', true).maybeSingle(),
     db.from('agente_aprendizaje').select('decision,propuesta_original,propuesta_final,comentario_coach,created_at').eq('cliente_id', clienteId).eq('tipo_tarea', 'analisis_rendimiento').order('created_at', { ascending: false }).limit(5),
   ])

@@ -16,6 +16,7 @@ import { normalizarDuracionSemanas } from '@/lib/entrenos/guardar-plan'
 import { estudiosParaPlan } from '@/lib/rendimiento/evidencia'
 import { llamarIA } from '@/lib/ia/enrutador'
 import { problemasDelPlan, promptDeReparacion } from '@/lib/entrenos/reparar-plan'
+import { faseDeBloqueSegunObjetivos, normalizarEstado, normalizarPrioridad, textoObjetivos, type ObjetivoAnual } from '@/lib/entrenos/objetivos-anuales'
 import { ESTACIONES_POR_FASE, nombreEstacion, textoPliometriaParaNivel, validarHibridoHyrox } from '@/lib/entrenos/hyrox-estaciones'
 import { senalesRecuperacion, textoSenales } from '@/lib/entrenos/senales-recuperacion'
 import { extraerJsonPlan, resolverEvidenciaPlan } from '@/lib/entrenos/evidencia-plan'
@@ -229,6 +230,10 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
     // Si no se especifica fase de bloque, calcularla a partir del plan más
     // reciente del cliente (activo o no) — así "generar siguiente bloque"
     // funciona sin que el frontend tenga que saber la rotación.
+    // Objetivos del año (confirmados o posibles, A/B/C): marcan la fase del bloque y el pico del macrociclo.
+    const hoyObjetivos = new Date().toISOString().slice(0, 10)
+    const { data: objetivosBD } = await sb.from('competiciones').select('nombre,fecha_competicion,disciplina,prioridad,estado').eq('cliente_id', cliente_id).eq('activo', true).gte('fecha_competicion', hoyObjetivos).order('fecha_competicion').limit(12)
+    const objetivosAnio: ObjetivoAnual[] = (objetivosBD ?? []).map(o => ({ nombre: String(o.nombre), fecha: String(o.fecha_competicion), disciplina: (o.disciplina as string | null) ?? null, prioridad: normalizarPrioridad(o.prioridad), estado: normalizarEstado(o.estado) }))
     let faseBloqueObjetivo: FaseBloque = 'Base'
     if (esHibridoHyroxRunning) {
       if (faseBloqueObjetivoBody) {
@@ -253,7 +258,8 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
             .maybeSingle()
           faseAnterior = (sesionPrevia?.fase_bloque as FaseBloque | undefined) ?? null
         }
-        faseBloqueObjetivo = siguienteFaseBloque(faseAnterior)
+        // Con un objetivo A/B en el calendario manda la fecha de la prueba; sin él, la rotación Base → Fuerza → Resistencia → Descarga.
+        faseBloqueObjetivo = faseDeBloqueSegunObjetivos(objetivosAnio, hoyObjetivos) ?? siguienteFaseBloque(faseAnterior)
       }
     }
 
@@ -309,7 +315,7 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
       if (/running|carrera|hibrido|hyrox|trail|maraton/i.test(modalidadFoco) || e.carreras6sem > 0) {
         const hoyIso = new Date().toISOString().slice(0, 10)
         const [{ data: comp }, { data: onbPro }, { data: entrenosMacro }, { data: planFijo }] = await Promise.all([
-          sb.from('competiciones').select('fecha_competicion,disciplina,tiempo_objetivo_min,objetivo').eq('cliente_id', cliente_id).eq('activo', true).gte('fecha_competicion', hoyIso).order('fecha_competicion').limit(1),
+          sb.from('competiciones').select('fecha_competicion,disciplina,tiempo_objetivo_min,objetivo').eq('cliente_id', cliente_id).eq('activo', true).in('prioridad', ['A', 'B']).gte('fecha_competicion', hoyIso).order('fecha_competicion').limit(1),
           sb.from('onboarding_perfil_profundo').select('condiciones_salud,fecha_competicion,tipo_competicion').eq('cliente_id', cliente_id).maybeSingle(),
           sb.from('entrenos_realizados').select('fecha,tipo,duracion_s').eq('cliente_id', cliente_id).gte('fecha', new Date(Date.now() - 120 * 86_400_000).toISOString().slice(0, 10)),
           sb.from('planes_entrenamiento').select('sesiones:sesiones_entrenamiento(nombre)').eq('cliente_id', cliente_id).eq('activo', true).maybeSingle(),
@@ -328,6 +334,7 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
         // El protocolo híbrido fija 3 sesiones de carrera por semana.
         if (esHibridoHyroxRunning) entrada.diasCorrer = 3
         macrociclo = planificarMacrociclo(entrada)
+        bloqueReloj += textoObjetivos(objetivosAnio, hoyObjetivos)
         macroFaltan = faltan
         const w = macrociclo.semanas[0]
         if (w) {

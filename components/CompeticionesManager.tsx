@@ -13,6 +13,14 @@ interface Competicion {
     objetivo: string
     tiempo_objetivo_min: number | null
     notas: string | null
+    prioridad?: 'A' | 'B' | 'C'
+    estado?: 'confirmada' | 'posible'
+}
+
+interface TramoAnual { desde: string; hasta: string; fase: string; semanas: number; objetivo: string | null }
+
+const FASES_ANUALES: Record<string, string> = {
+    base: 'Base', fuerza: 'Fuerza', resistencia: 'Resistencia', afinado: 'Afinado', carrera: 'Semana de la prueba', recuperacion: 'Recuperación', mantenimiento: 'Mantenimiento',
 }
 
 interface FaseActiva {
@@ -49,12 +57,15 @@ const FORM_VACIO = {
     objetivo: 'completar',
     tiempo_objetivo_min: '',
     notas: '',
+    prioridad: 'A',
+    estado: 'confirmada',
 }
 
 export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
     const [competiciones, setCompeticiones] = useState<Competicion[]>([])
     const [faseActiva, setFaseActiva] = useState<FaseActiva | null>(null)
     const [objetivoHoy, setObjetivoHoy] = useState<ObjetivoHoy | null>(null)
+    const [planAnual, setPlanAnual] = useState<TramoAnual[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [form, setForm] = useState(FORM_VACIO)
@@ -69,6 +80,7 @@ export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
             setCompeticiones(data.competiciones ?? [])
             setFaseActiva(data.fase_activa ?? null)
             setObjetivoHoy(data.objetivo_hoy ?? null)
+            setPlanAnual(data.plan_anual ?? [])
         } catch {
             // silencioso — no es crítico
         } finally {
@@ -108,6 +120,11 @@ export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
         } finally {
             setGuardando(false)
         }
+    }
+
+    async function cambiar(id: string, cambios: { prioridad?: string; estado?: string }) {
+        await fetch(`/api/clientes/${clienteId}/fase-deportiva`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ competicion_id: id, ...cambios }) })
+        load()
     }
 
     async function handleEliminar(id: string) {
@@ -205,6 +222,32 @@ export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
                                         onChange={e => setForm(f => ({ ...f, tiempo_objetivo_min: e.target.value }))} />
                                 </div>
                             )}
+                            <div>
+                                <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text-secondary)' }}>
+                                    Prioridad
+                                </label>
+                                <select className="input w-full" value={form.prioridad}
+                                    onChange={e => setForm(f => ({ ...f, prioridad: e.target.value }))}>
+                                    <option value="A">A · objetivo principal</option>
+                                    <option value="B">B · secundaria (mini-pico)</option>
+                                    <option value="C">C · de paso (no cambia el plan)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text-secondary)' }}>
+                                    Estado
+                                </label>
+                                <select className="input w-full" value={form.estado}
+                                    onChange={e => setForm(f => ({ ...f, estado: e.target.value }))}>
+                                    <option value="confirmada">Confirmada (inscrito)</option>
+                                    <option value="posible">Posible (planificar por si acaso)</option>
+                                </select>
+                            </div>
+                            {form.estado === 'posible' && (
+                                <p className="col-span-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                                    Una prueba posible orienta el entrenamiento del año, pero no cambia la dieta (sin tapering ni carga de hidratos) hasta que la confirmes.
+                                </p>
+                            )}
                             <div className="col-span-2">
                                 <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text-secondary)' }}>
                                     Notas (opcional)
@@ -254,8 +297,16 @@ export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
                                             {dias > 0 && (
                                                 <span style={{ color: 'var(--text-muted)' }}> · {dias}d</span>
                                             )}
+                                            <span style={{ color: 'var(--text-muted)' }}> · prioridad {c.prioridad ?? 'A'} · {c.estado === 'posible' ? 'posible' : 'confirmada'}</span>
                                         </p>
                                     </div>
+                                    {c.estado === 'posible' && (
+                                        <button onClick={() => cambiar(c.id, { estado: 'confirmada' })}
+                                            className="text-xs font-medium px-2 py-1 rounded-lg flex-shrink-0"
+                                            style={{ background: 'var(--primary-bg)', color: 'var(--primary)' }}>
+                                            Confirmar
+                                        </button>
+                                    )}
                                     <button onClick={() => handleEliminar(c.id)}
                                         className="p-1.5 rounded-lg flex-shrink-0"
                                         style={{ color: 'var(--text-muted)' }}>
@@ -267,6 +318,27 @@ export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
                     </div>
                 )}
             </div>
+
+            {/* Plan del año: fase de cada tramo según los objetivos A/B */}
+            {planAnual.length > 0 && competiciones.some(c => (c.prioridad ?? 'A') !== 'C') && (
+                <div className="card overflow-hidden">
+                    <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+                        <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Plan del año</span>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Fases aproximadas hacia tus objetivos A y B. Se recalcula si cambias fechas o prioridades.</p>
+                    </div>
+                    <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+                        {planAnual.slice(0, 14).map(t => (
+                            <div key={t.desde} className="flex items-center gap-3 px-4 py-2 text-sm">
+                                <span className="w-40 flex-shrink-0 text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                                    {new Date(t.desde).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} – {new Date(t.hasta).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                                </span>
+                                <span className="font-medium" style={{ color: 'var(--text)' }}>{FASES_ANUALES[t.fase] ?? t.fase}</span>
+                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{t.semanas} sem{t.objetivo ? ` · ${t.objetivo}` : ''}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
