@@ -15,6 +15,9 @@ export function useInstallPrompt() {
     const [canInstall, setCanInstall] = useState(false)
 
     useEffect(() => {
+        // Solo dispositivos táctiles (móvil/tablet): en Mac/PC no tiene sentido el banner
+        if (!window.matchMedia('(pointer: coarse)').matches) return
+
         // Comprobar si el usuario ya descartó el banner recientemente
         const dismissedAt = localStorage.getItem(DISMISS_KEY)
         if (dismissedAt) {

@@ -11,8 +11,8 @@ export default function InstallBanner() {
         <div
             className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
             style={{
-                background: 'white',
-                borderTop: '1px solid #E5E7EB',
+                background: 'var(--surface, #fff)',
+                borderTop: '1px solid var(--border, #E5E7EB)',
                 paddingBottom: 'env(safe-area-inset-bottom, 0px)',
                 boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
             }}
@@ -29,7 +29,7 @@ export default function InstallBanner() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                         onClick={dismiss}
-                        className="text-xs text-gray-400 px-2 py-1"
+                        className="text-xs text-[var(--text-muted)] px-2 py-1"
                     >
                         No, gracias
                     </button>
