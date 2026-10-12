@@ -13,6 +13,7 @@ export interface EjercicioEditable {
   descanso_segundos: number | null
   peso_sugerido: string | null
   rpe: string | null
+  encadenado?: boolean
 }
 
 const CATEGORIAS_GUARDABLES = CATEGORIAS_SESION.filter(c => c !== 'Otros')
@@ -215,8 +216,9 @@ export default function EditorSesionCalendario({ sesionId, fecha, nombre, duraci
           <div className="hidden sm:grid grid-cols-[1fr_56px_72px_72px_56px_64px_28px] gap-2 text-[11px] uppercase tracking-wider px-1" style={{ color: 'var(--text-muted)' }}>
             <span>Ejercicio</span><span>Series</span><span>Reps</span><span>Carga</span><span>RPE</span><span>Desc. (s)</span><span />
           </div>
-          {ejercicios.map(e => (
-            <div key={`${e.id}-${e.series}-${e.repeticiones}-${e.peso_sugerido}-${e.rpe}-${e.descanso_segundos}`} className="grid grid-cols-[1fr_56px_72px_72px_56px_64px_28px] gap-2 items-center">
+          {ejercicios.map((e, idx) => (
+            <div key={`${e.id}-${e.series}-${e.repeticiones}-${e.peso_sugerido}-${e.rpe}-${e.descanso_segundos}-${e.encadenado}`}>
+            <div className="grid grid-cols-[1fr_56px_72px_72px_56px_64px_28px] gap-2 items-center">
               <span className="text-sm truncate" style={{ color: 'var(--text)' }} title={e.nombre}>{e.nombre}</span>
               <input type="number" min={1} max={20} defaultValue={e.series ?? ''} className={campo} style={estiloCampo} aria-label="Series"
                 onBlur={ev => { const v = num(ev.target.value); if (v && v !== e.series) guardarEjercicio(e.id, { series: v }) }} />
@@ -229,6 +231,15 @@ export default function EditorSesionCalendario({ sesionId, fecha, nombre, duraci
               <input type="number" min={0} max={900} defaultValue={e.descanso_segundos ?? ''} className={campo} style={estiloCampo} aria-label="Descanso en segundos"
                 onBlur={ev => { const v = num(ev.target.value); if (v !== e.descanso_segundos && (v === null || (v >= 0 && v <= 900))) guardarEjercicio(e.id, { descanso_segundos: v }) }} />
               <button onClick={() => quitarEjercicio(e.id)} disabled={ocupado} className="p-1 rounded" style={{ color: 'var(--text-muted)' }} aria-label={`Quitar ${e.nombre}`}><Trash2 size={14} /></button>
+            </div>
+            {idx < ejercicios.length - 1 && (
+              <button type="button" onClick={() => guardarEjercicio(e.id, { encadenado: !e.encadenado })} disabled={ocupado}
+                className="mt-1 mb-0.5 ml-1 text-[11px] uppercase tracking-wider rounded px-2 py-0.5"
+                style={e.encadenado ? { background: 'color-mix(in srgb, var(--semantic-active) 14%, transparent)', color: 'var(--semantic-active)' } : { color: 'var(--text-muted)' }}
+                aria-pressed={!!e.encadenado}>
+                {e.encadenado ? '↓ Sin parar con el siguiente' : '↓ Con pausa · enlazar sin parar'}
+              </button>
+            )}
             </div>
           ))}
         </div>

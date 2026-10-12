@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
   const { data: sesiones } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, fase_bloque, hora_inicio, duracion_estimada_min, contexto_ia, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, ejercicios:sesion_ejercicios(id, series, repeticiones, descanso_segundos, peso_sugerido, rpe, notas, orden, ejercicio:ejercicios(nombre))')
+    .select('id, nombre, dia_semana, fase_bloque, hora_inicio, duracion_estimada_min, contexto_ia, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, ejercicios:sesion_ejercicios(id, series, repeticiones, descanso_segundos, encadenado, peso_sugerido, rpe, notas, orden, ejercicio:ejercicios(nombre))')
     .eq('plan_id', plan.id)
     .order('orden')
     .order('id')
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
       contexto_ia: s.contexto_ia,
       ejercicios: [...(s.ejercicios ?? [])]
         .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-        .map(e => ({ id: e.id, nombre: (e.ejercicio as { nombre?: string } | null)?.nombre ?? 'Ejercicio', series: e.series, repeticiones: e.repeticiones, descanso_segundos: e.descanso_segundos, peso_sugerido: e.peso_sugerido, rpe: e.rpe, notas: e.notas })),
+        .map(e => ({ id: e.id, nombre: (e.ejercicio as { nombre?: string } | null)?.nombre ?? 'Ejercicio', series: e.series, repeticiones: e.repeticiones, descanso_segundos: e.descanso_segundos, encadenado: e.encadenado ?? false, peso_sugerido: e.peso_sugerido, rpe: e.rpe, notas: e.notas })),
       pasos: resumen ? resumen.lineas : null,
       distancia_m: resumen?.distancia_m ?? null,
       duracion_s: resumen?.duracion_s ?? null,

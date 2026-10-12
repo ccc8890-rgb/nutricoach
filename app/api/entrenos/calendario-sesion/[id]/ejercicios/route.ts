@@ -34,6 +34,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if ('descanso_segundos' in b) { const v = b.descanso_segundos === null ? null : entero(b.descanso_segundos, 0, 900); if (v === null && b.descanso_segundos !== null) return NextResponse.json({ error: 'Descanso inválido' }, { status: 400 }); cambios.descanso_segundos = v }
   if ('peso_sugerido' in b) { const v = b.peso_sugerido === null ? null : texto(b.peso_sugerido, 30); if (v === null && b.peso_sugerido !== null) return NextResponse.json({ error: 'Carga inválida' }, { status: 400 }); cambios.peso_sugerido = v }
   if ('rpe' in b) { const v = b.rpe === null ? null : texto(b.rpe, 20); if (v === null && b.rpe !== null) return NextResponse.json({ error: 'RPE inválido' }, { status: 400 }); cambios.rpe = v }
+  if ('encadenado' in b) { if (typeof b.encadenado !== 'boolean') return NextResponse.json({ error: 'Valor inválido' }, { status: 400 }); cambios.encadenado = b.encadenado }
   if ('notas' in b) { const v = b.notas === null ? null : texto(b.notas, 500); if (v === null && b.notas !== null) return NextResponse.json({ error: 'Notas inválidas' }, { status: 400 }); cambios.notas = v }
   if (Object.keys(cambios).length === 0) return NextResponse.json({ error: 'Nada que cambiar' }, { status: 400 })
   const { error } = await a.ctx.admin.from('sesion_ejercicios').update(cambios).eq('id', b.fila_id).eq('sesion_id', id)
