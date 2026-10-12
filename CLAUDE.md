@@ -31,7 +31,8 @@ Detalle, causas y cómo comprobar cada una: [`docs/12-10-2026_patrones-vinculos-
 - **Cierre de bloque** (tarjeta en Entreno cuando quedan ≤ 7 días del bloque, `components/training/CierreBloque.tsx`, `GET/POST /api/cliente/cierre-bloque`, tabla `feedback_bloque`): por cada ejercicio clave del plan (sentadilla, banca, sled push, carrera) «floja / justa / pesada». Solo aparece mientras falte por responder y es descartable.
 - **Generador:** `textoMarcasYFeedback` añade al prompt las marcas y el feedback del último bloque («pesada → mantener o bajar 5 %», «floja → +5 %»); lo dicho por el atleta manda sobre las estimaciones.
 - El análisis semanal de rendimiento ya deja marca en «Estado del sistema» (`analisis-rendimiento`). `verificar:motor` 61/61.
-- **Pendiente:** ver en pantalla a 390 px; pregunta suelta en Hoy (descartada de momento); el coach aún no ve el feedback del bloque en su panel; grabar las sesiones híbridas en el reloj como Fuerza/HIIT.
+- **Coach:** tarjeta «Lo que dice el atleta» en ficha → Entrenamiento → Perfil atleta (`GET /api/clientes/[id]/marcas-feedback`, solo lectura). Además `/api/perfil-entreno/[clienteId]` ahora exige ser el coach propietario (antes bastaba con tener sesión: IDOR).
+- **Pendiente:** ver en pantalla a 390 px; pregunta suelta en Hoy (descartada de momento); el coach no puede editar las marcas, solo verlas; grabar las sesiones híbridas en el reloj como Fuerza/HIIT; calendario del coach (`mes-coach`) aún muestra la semana 1; Carlos añadirá sus pruebas posibles en Competiciones.
 
 ## ✅ SESIÓN 12-10-2026 (tarde-noche, Claude) — Progresión semanal real y objetivos del año (A/B/C, posibles)
 
