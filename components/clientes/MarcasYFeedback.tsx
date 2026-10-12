@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import useSWR from 'swr'
 import { MARCAS, PREGUNTAS_CIERRE, VALORACIONES } from '@/lib/entrenos/marcas'
 
@@ -8,16 +9,49 @@ const COLOR: Record<string, string> = { flojo: 'var(--semantic-active)', justo: 
 
 /** Lo que el propio atleta ha dicho (marcas y cierre de bloque): dato real que el generador usa para el siguiente plan. */
 export default function MarcasYFeedback({ clienteId }: { clienteId: string }) {
-  const { data } = useSWR<Datos | null>(`/api/clientes/${clienteId}/marcas-feedback`, fetchJson, { revalidateOnFocus: false })
+  const { data, mutate } = useSWR<Datos | null>(`/api/clientes/${clienteId}/marcas-feedback`, fetchJson, { revalidateOnFocus: false })
+  const [editando, setEditando] = useState(false)
+  const [valores, setValores] = useState<Record<string, string>>({})
+  const [guardando, setGuardando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   if (!data) return null
+
+  const empezar = () => { setValores(Object.fromEntries(MARCAS.map(m => [m.clave, data.marcas[m.clave] != null ? String(data.marcas[m.clave]) : '']))); setError(null); setEditando(true) }
+  const guardar = async () => {
+    setGuardando(true); setError(null)
+    const res = await fetch(`/api/clientes/${clienteId}/marcas-feedback`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ marcas: valores }) })
+    setGuardando(false)
+    if (!res.ok) { setError((await res.json().catch(() => null))?.error ?? 'No se pudo guardar'); return }
+    await mutate(); setEditando(false)
+  }
   const marcas = MARCAS.filter(m => data.marcas[m.clave] != null)
   return (
     <div className="card p-4">
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Lo que dice el atleta</h3>
       <p className="text-xs mt-0.5 mb-3" style={{ color: 'var(--text-muted)' }}>Marcas y cómo fueron las cargas de cada bloque. El siguiente plan parte de esto.</p>
 
-      <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Marcas</p>
-      {marcas.length === 0 ? (
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Marcas</p>
+        {!editando && <button type="button" onClick={empezar} className="text-xs underline" style={{ color: 'var(--text-secondary)' }}>Editar</button>}
+      </div>
+      {editando ? (
+        <div className="mb-3 space-y-2">
+          {MARCAS.map(m => (
+            <label key={m.clave} className="flex items-center justify-between gap-3 text-sm" style={{ color: 'var(--text)' }}>
+              <span>{m.etiqueta}</span>
+              <span className="flex items-center gap-1">
+                <input inputMode="decimal" value={valores[m.clave] ?? ''} onChange={e => setValores(v => ({ ...v, [m.clave]: e.target.value }))} className="input w-20 text-right" autoComplete="off" />
+                <span className="text-xs w-8" style={{ color: 'var(--text-muted)' }}>{m.unidad}</span>
+              </span>
+            </label>
+          ))}
+          {error && <p className="text-xs" style={{ color: 'var(--semantic-alert-text, var(--text))' }}>{error}</p>}
+          <div className="flex gap-3 text-sm">
+            <button type="button" onClick={guardar} disabled={guardando} className="font-semibold underline" style={{ color: 'var(--text)' }}>{guardando ? 'Guardando…' : 'Guardar'}</button>
+            <button type="button" onClick={() => setEditando(false)} style={{ color: 'var(--text-muted)' }}>Cancelar</button>
+          </div>
+        </div>
+      ) : marcas.length === 0 ? (
         <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>Aún no ha puesto ninguna. Los pesos del plan son estimaciones.</p>
       ) : (
         <ul className="mb-3 space-y-1">

@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
+import { validarMarcas } from '@/lib/entrenos/marcas'
+import { guardarMarcasPerfil } from '@/lib/entrenos/guardar-marcas'
+
+/** El coach propietario corrige o completa las marcas del atleta (mismas reglas y mismo guardado que «Mis marcas»). */
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const { data: { user } } = await createApiSupabase(request).auth.getUser()
+  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  const db = createServiceSupabase()
+  const acceso = await autorizarCoachCliente(db, { userId: user.id, clienteId: id })
+  if (!acceso.ok) return NextResponse.json({ error: acceso.mensaje }, { status: acceso.status })
+  const body = await request.json().catch(() => null) as { marcas?: unknown } | null
+  const v = validarMarcas(body?.marcas)
+  if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 })
+  const r = await guardarMarcasPerfil(db, id, v.marcas)
+  if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status })
+  return NextResponse.json({ ok: true, marcas: r.marcas })
+}
 
 /** Lo que el atleta ha dicho de sí mismo: sus marcas y cómo fueron las cargas de cada bloque. Solo el coach propietario. */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
