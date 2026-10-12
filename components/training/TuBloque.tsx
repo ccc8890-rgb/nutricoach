@@ -24,7 +24,7 @@ export default function TuBloque({ datos, fase, semanaActual, semanasTotales }: 
                 {datos.semanas.map(s => (
                   <li key={s.n} className="flex items-center justify-between text-sm" style={{ color: 'var(--text)' }}>
                     <span>{s.actual ? 'Esta semana' : `Semana del ${dia(s.lunes)}`}{s.descarga ? ' · descarga' : ''}</span>
-                    <span className="tabular-nums font-semibold">{s.minutos} min{s.km ? ` · ≈ ${s.km} km` : ''}</span>
+                    <span className="tabular-nums font-semibold">{s.km ? `≈ ${s.km} km · ${s.minutos} min` : `${s.minutos} min`}</span>
                   </li>
                 ))}
               </ul>
