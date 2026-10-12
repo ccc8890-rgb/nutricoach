@@ -23,7 +23,8 @@ export async function GET(
     .single()
 
   if (error && error.code !== 'PGRST116') {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('perfil-entreno GET:', error.message)
+    return NextResponse.json({ error: 'No se pudo leer el perfil' }, { status: 500 })
   }
 
   return NextResponse.json({ perfil: data ?? null })
@@ -54,7 +55,10 @@ export async function PUT(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('perfil-entreno PUT:', error.message)
+    return NextResponse.json({ error: 'No se pudo guardar el perfil' }, { status: 500 })
+  }
 
   return NextResponse.json({ perfil: data })
 }
