@@ -53,10 +53,10 @@ export function resumirHoy(c: CommandData): ResumenHoy {
     casos: c.inbox_ia.slice(0, MAX_CASOS).map(t => ({ id: t.id, titulo: t.cliente_nombre, detalle: t.tipo.replaceAll('_', ' '), href: t.href })),
   }
 
-  const accionesAltas = c.hoy.filter(a => a.tipo === 'plan' || a.tipo === 'onboarding' || a.tipo === 'competicion')
+  const accionesAltas = c.hoy.filter(a => a.tipo === 'plan' || a.tipo === 'onboarding' || a.tipo === 'competicion' || a.tipo === 'cambio_cliente')
   const altas: TarjetaHoy = {
     id: 'altas',
-    titulo: 'Planes, altas y pruebas',
+    titulo: 'Planes, altas y cambios',
     total: accionesAltas.length,
     tono: tonoDe(accionesAltas.length, accionesAltas.some(a => a.severity === 'critica')),
     href: '/clientes',

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
+import { registrarCambioCliente } from '@/lib/entrenos/cambios-cliente'
 
 /** Coloca una sesión en la posición de otra del mismo día; la que estaba ahí se desplaza. */
 export async function POST(request: NextRequest) {
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
 
   const { data: sesion } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, plan_id, dia_semana, plan:planes_entrenamiento!inner(cliente_id)')
+    .select('id, nombre, plan_id, dia_semana, plan:planes_entrenamiento!inner(cliente_id)')
     .eq('id', sesionId)
     .single()
 
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
 
   const { data: delDia } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, orden')
+    .select('id, nombre, orden')
     .eq('plan_id', sesion.plan_id)
     .eq('dia_semana', sesion.dia_semana)
     .order('orden')
@@ -58,5 +59,11 @@ export async function POST(request: NextRequest) {
   )
   if (resultados.some(r => r.error)) return NextResponse.json({ error: 'No se pudo cambiar el orden' }, { status: 500 })
 
+  // El orden dentro del día es de la semana tipo del coach: si lo cambia el atleta, queda constancia.
+  await registrarCambioCliente(admin, {
+    clienteId: clienteData.id, planId: sesion.plan_id, tipo: 'sesion_reordenada',
+    resumen: `Cambió el orden del ${String(sesion.dia_semana ?? '').toLowerCase()}: «${lista[pos].nombre}» ahora va ${pos < destino ? 'después' : 'antes'} de «${lista[destino].nombre}»`,
+    detalle: { sesion_id: sesionId, destino_id: destinoId, dia: sesion.dia_semana },
+  })
   return NextResponse.json({ ok: true })
 }

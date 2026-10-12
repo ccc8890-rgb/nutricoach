@@ -3,7 +3,7 @@
 // encuentre un plan distinto al que programó sin saber por qué.
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-export type TipoCambioCliente = 'sesion_movida' | 'sesion_devuelta' | 'comida_movida' | 'dieta_por_dias'
+export type TipoCambioCliente = 'sesion_movida' | 'sesion_devuelta' | 'sesion_reordenada' | 'comida_movida' | 'dieta_por_dias'
 
 const DIAS_LARGOS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']

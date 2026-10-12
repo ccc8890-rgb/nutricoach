@@ -74,4 +74,10 @@ assert.equal(altas.todoAlDia, false)
 // Con solo una acción de plan ya no es 'todo al día'
 assert.equal(resumirHoy({ ...base, hoy: [accion('p', 'plan', 'media')] }).todoAlDia, false)
 
+// Un cambio del cliente en su plan sin revisar cuenta como acción del coach (el plan nace en el coach: que no haya sorpresas)
+const cam = resumirHoy({ ...base, hoy: [accion('cambios-x', 'cambio_cliente', 'media')] })
+assert.equal(cam.todoAlDia, false)
+assert.equal(cam.tarjetas.find(t => t.id === 'altas')!.total, 1)
+assert.equal(cam.tarjetas.find(t => t.id === 'altas')!.titulo, 'Planes, altas y cambios')
+
 console.log('dashboard-hoy: OK')

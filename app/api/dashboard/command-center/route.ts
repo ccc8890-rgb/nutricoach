@@ -299,6 +299,27 @@ export async function GET() {
       })
     }
 
+    // Cambios que el atleta ha hecho en su plan y el coach aún no ha visto (el plan nace en el coach: que no haya sorpresas).
+    const { data: cambiosPendientes } = await db.from('cambios_cliente').select('cliente_id, resumen, created_at').in('cliente_id', activeClientes.map(c => c.id)).eq('visto', false).order('created_at', { ascending: false }).limit(200)
+    for (const cliente of activeClientes) {
+      const suyos = (cambiosPendientes ?? []).filter(x => x.cliente_id === cliente.id)
+      if (suyos.length > 0) {
+        hoy.push({
+          id: `cambios-${cliente.id}`,
+          tipo: 'cambio_cliente',
+          title: suyos.length === 1 ? 'Ha cambiado algo en su plan' : `Ha hecho ${suyos.length} cambios en su plan`,
+          cliente_id: cliente.id,
+          cliente_nombre: profileName(cliente.profile),
+          detail: suyos[0].resumen,
+          meta: 'sin revisar',
+          severity: 'media' as Severity,
+          href: `/clientes/${cliente.id}`,
+          cta: 'Revisar',
+          created_at: suyos[0].created_at,
+        })
+      }
+    }
+
     for (const cliente of activeClientes) {
       const nombre = profileName(cliente.profile)
       if (!nutricionActiva.has(cliente.id)) {
