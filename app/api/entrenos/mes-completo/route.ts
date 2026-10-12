@@ -2,7 +2,7 @@ import { kmDeSesion, ritmosDeVdot } from '@/lib/entrenos/km-sesion'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { clasificarTipoSesion, fechaFinBloque } from '@/lib/entrenos/bloques'
-import { cargarSemanasMacro, sesionesPrevision, type SesionPlantilla } from '@/lib/entrenos/prevision'
+import { cargarSemanasMacro, sesionesPrevision, type CarreraPlantilla, type SesionPlantilla } from '@/lib/entrenos/prevision'
 
 function toISODate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -125,9 +125,11 @@ export async function GET(request: NextRequest) {
   // Previsión tras el bloque en curso: carrera del macrociclo + fuerza/híbridas de la semana tipo.
   const semanasMacro = await cargarSemanasMacro(admin, { cliente_id: clienteData.id, created_at: planEntreno.created_at })
   const noCarreraPorDia = new Map<string, SesionPlantilla[]>()
+  const carreraPlantilla: CarreraPlantilla[] = []
   for (const x of sesiones) {
     const tipo_sesion = clasificarTipoSesion(tiposPorSesion[x.id] ?? [])
-    if (tipo_sesion === 'carrera' || !x.dia_semana) continue
+    if (!x.dia_semana) continue
+    if (tipo_sesion === 'carrera') { carreraPlantilla.push({ dia_semana: x.dia_semana, nombre: x.nombre }); continue }
     noCarreraPorDia.set(x.dia_semana, [...(noCarreraPorDia.get(x.dia_semana) ?? []), { nombre: x.nombre, tipo_sesion }])
   }
 
@@ -147,7 +149,7 @@ export async function GET(request: NextRequest) {
       : false
 
     if (bloquePendiente && semanasMacro.length > 0) {
-      const prev = sesionesPrevision(fecha, diaSemana, semanasMacro, noCarreraPorDia, ritmosAtleta?.E ?? null)
+      const prev = sesionesPrevision(fecha, diaSemana, semanasMacro, noCarreraPorDia, ritmosAtleta?.E ?? null, carreraPlantilla)
       if (prev) {
         return { fecha, dia_semana: diaSemana, sesion: prev.sesiones[0] ?? null, sesiones: prev.sesiones, fase_bloque: prev.fase, bloque_pendiente: false, prevision: true }
       }

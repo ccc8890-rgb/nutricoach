@@ -13,6 +13,8 @@ export interface SemanaMacroPrevision {
   sesiones: { dia: number; tipo: string; minutos: number }[]
 }
 export interface SesionPlantilla { nombre: string; tipo_sesion: 'hibrido' | 'carrera' | 'mixto' }
+/** Sesión de carrera de la semana tipo del plan (el día que tiene realmente, aunque el atleta la haya movido). */
+export interface CarreraPlantilla { dia_semana: string; nombre: string }
 export interface SesionPrevision {
   id: string
   nombre: string
@@ -25,6 +27,22 @@ export interface SesionPrevision {
 
 const NOMBRE_TIPO: Record<string, string> = {
   rodaje: 'Rodaje fácil', tirada: 'Tirada larga', series: 'Series', tempo: 'Tempo', strides: 'Rodaje con progresiones', ritmo_carrera: 'Ritmo de carrera',
+}
+
+const sinAcentos = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+const DIAS = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
+type Clase = 'calidad' | 'tirada' | 'rodaje'
+const claseMacro = (tipo: string): Clase => tipo === 'tirada' ? 'tirada' : ['series', 'tempo', 'ritmo_carrera'].includes(tipo) ? 'calidad' : 'rodaje'
+const clasePlantilla = (nombre: string): Clase | null => /tirada|larga/i.test(nombre) ? 'tirada' : /series|tempo|ritmo|intervalos|fartlek/i.test(nombre) ? 'calidad' : /rodaje|trote|carrera/i.test(nombre) ? 'rodaje' : null
+
+/** Día (0 = lunes) de cada sesión de carrera del macrociclo: el que tiene su equivalente en la semana tipo; si no hay equivalente, el del macrociclo. */
+export function diasDeCarrera(semana: SemanaMacroPrevision, plantilla: CarreraPlantilla[]): { dia: number; tipo: string; minutos: number }[] {
+  const libres = plantilla.map(p => ({ clase: clasePlantilla(p.nombre), dia: DIAS.indexOf(sinAcentos(p.dia_semana)), usada: false }))
+  return semana.sesiones.map(s => {
+    const hueco = libres.find(l => !l.usada && l.dia >= 0 && l.clase === claseMacro(s.tipo))
+    if (hueco) hueco.usada = true
+    return { ...s, dia: hueco ? hueco.dia : s.dia }
+  })
 }
 
 /** Semana del macrociclo que contiene la fecha, o null si cae fuera. */
@@ -43,11 +61,12 @@ export function sesionesPrevision(
   semanas: SemanaMacroPrevision[],
   noCarreraPorDia: Map<string, SesionPlantilla[]>,
   ritmoRodajeSegKm: number | null,
+  carreraPlantilla: CarreraPlantilla[] = [],
 ): { fase: string; sesiones: SesionPrevision[] } | null {
   const semana = semanaMacroDe(fecha, semanas)
   if (!semana) return null
   const indice = (new Date(`${fecha}T12:00:00`).getDay() + 6) % 7 // 0 = lunes
-  const carrera: SesionPrevision[] = semana.sesiones.filter(s => s.dia === indice).map((s, i) => ({
+  const carrera: SesionPrevision[] = diasDeCarrera(semana, carreraPlantilla).filter(s => s.dia === indice).map((s, i) => ({
     id: `prev-${fecha}-c${i}`,
     nombre: NOMBRE_TIPO[s.tipo] ?? 'Carrera',
     tipo_sesion: 'carrera' as const,
