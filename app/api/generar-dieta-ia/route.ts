@@ -7,7 +7,7 @@ import { registrarInteraccionIA } from '@/lib/ia-logger'
 import { fetchKnowledgeContext } from '@/lib/knowledge'
 import { aplicarRecetaAComida } from '@/lib/recetas/aplicar-receta-comida'
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 /**
  * POST /api/generar-dieta-ia

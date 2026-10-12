@@ -13,6 +13,9 @@
  *   const resultado = await generarDietaConIA(promptData)
  */
 
+import { llamarIA } from '@/lib/ia/enrutador'
+import { extraerJsonPlan } from '@/lib/entrenos/evidencia-plan'
+
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 // Modelo actual: deepseek-chat (V3). NO usar deepseek-v4-pro ni deepseek-v4-flash (deprecados)
 // GET https://api.deepseek.com/v1/models
@@ -167,18 +170,15 @@ SCHEMA DE SALIDA JSON (respeta todos los campos):
 }`
 }
 
+/** Tiempo máximo de la generación (las rutas dejan 300 s; queda margen para cargar datos antes y guardar después). */
+const PRESUPUESTO_DIETA_MS = 240_000
+
 /**
- * Llama a DeepSeek V3 para generar una dieta.
- * Lanza error si la API falla o el JSON de respuesta no es válido.
- * Devuelve { data, total_tokens } para poder loguear el consumo.
+ * Genera una dieta con el modelo que toque según el enrutador (ya no solo DeepSeek).
+ * Lanza error si ningún modelo responde o el JSON no es válido.
+ * Devuelve { data, total_tokens, modelo } para poder loguear el consumo.
  */
-export async function generarDietaConIA(prompt: string, contextoClinico?: string): Promise<{ data: DietaGenerada; total_tokens: number }> {
-    const apiKey = process.env.DEEPSEEK_API_KEY
-
-    if (!apiKey) {
-        throw new Error('DEEPSEEK_API_KEY no configurada. Añádela en .env.local')
-    }
-
+export async function generarDietaConIA(prompt: string, contextoClinico?: string): Promise<{ data: DietaGenerada; total_tokens: number; modelo?: string }> {
     const SYSTEM_PROMPT_ELITE = `Eres un nutricionista deportivo de élite con 20 años de experiencia trabajando con atletas recreacionales y profesionales en España. Tienes certificación ISSN (International Society of Sports Nutrition) y especialización en running, CrossFit, triatlón e Hyrox.
 
 TU MISIÓN:
@@ -221,57 +221,23 @@ RESPONDE ÚNICAMENTE EN JSON VÁLIDO. Sin markdown, sin explicaciones fuera del 
         ? `${SYSTEM_PROMPT_ELITE}\n\n${contextoClinico}`
         : SYSTEM_PROMPT_ELITE
 
-    const messages: DeepSeekMessage[] = [
-        { role: 'system', content: systemContent },
-        { role: 'user', content: prompt },
-    ]
-
-    const response = await fetch(DEEPSEEK_API_URL, {
-        method: 'POST',
-        signal: AbortSignal.timeout(60_000),
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-            model: DEEPSEEK_MODEL,
-            messages,
-            temperature: 0.35,
-            max_tokens: 6000,
-        }),
-    })
-
-    if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`DeepSeek API error ${response.status}: ${errorText}`)
-    }
-
-    const data: DeepSeekResponse = await response.json()
-
-    const content = data.choices?.[0]?.message?.content
-    if (!content) {
-        throw new Error('DeepSeek: respuesta vacía')
-    }
-
-    // Intentar extraer JSON del contenido (por si viene con markdown)
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-        throw new Error(`DeepSeek: respuesta no contiene JSON válido. Contenido: ${content.slice(0, 500)}`)
-    }
+    // Modelo según `lib/ia/enrutador.ts` (plan_dieta: Claude → GPT → DeepSeek; salta los que no tengan clave, fallen o no tengan tiempo).
+    const r = await llamarIA('plan_dieta', { sistema: systemContent, usuario: prompt, json: true, presupuestoMs: PRESUPUESTO_DIETA_MS, maxTokens: 16000, esfuerzo: 'medium' })
+    const total_tokens = (r.uso.entrada ?? 0) + (r.uso.salida ?? 0)
 
     try {
-        const parsed: DietaGenerada = JSON.parse(jsonMatch[0])
+        const parsed = extraerJsonPlan(r.texto) as unknown as DietaGenerada
 
         // Validar estructura mínima (los campos pro son opcionales)
         if (!parsed.comidas || !parsed.macros_totales) {
-            throw new Error('DeepSeek: JSON incompleto. Faltan comidas o macros_totales.')
+            throw new Error('JSON incompleto. Faltan comidas o macros_totales.')
         }
         // plantilla_id_elegida puede ser null si el coach no tiene plantillas definidas
         if (!parsed.plantilla_id_elegida) parsed.plantilla_id_elegida = ''
 
-        return { data: parsed, total_tokens: data.usage.total_tokens }
+        return { data: parsed, total_tokens, modelo: `${r.proveedor}:${r.modelo}` }
     } catch (parseError) {
-        throw new Error(`DeepSeek: error al parsear JSON: ${parseError instanceof Error ? parseError.message : 'error desconocido'}`)
+        throw new Error(`${r.modelo}: error al parsear la dieta: ${parseError instanceof Error ? parseError.message : 'error desconocido'}`)
     }
 }
 

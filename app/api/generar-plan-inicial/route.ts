@@ -25,7 +25,7 @@ import {
 import type { PerfilEntrenoCliente, SportModality } from '@/types'
 import { generarCodigoPublico } from '@/lib/codigo-publico'
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
