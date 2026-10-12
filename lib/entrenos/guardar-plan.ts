@@ -17,13 +17,19 @@ const OTRA_DISCIPLINA_RE = /crol|natación|natacion|nado\b|ski\s?erg|sled|wall\s
 
 export async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPreferido?: 'cardio' | 'fuerza'): Promise<string | null> {
   const normalizado = nombre.toLowerCase().trim()
+  // En sesiones de carrera, «rodaje/tirada continuo Z2» es la «Carrera continua» del catálogo (no comparten ninguna palabra útil).
+  if (tipoPreferido === 'cardio' && /^(rodaje|tirada)\b/.test(normalizado) && /continu[oa]/.test(normalizado)) {
+    const idContinua = await matchEjercicio(sb, 'carrera continua', tipoPreferido)
+    if (idContinua) return idContinua
+  }
 
   function elegirMejor(candidatos: { id: string; nombre: string; tipo: string | null }[]): string | null {
     if (candidatos.length === 0) return null
     if (!tipoPreferido) return candidatos[0].id
     // Entre varios candidatos para la misma palabra, prioriza: tipo
     // correcto Y sin pinta de ser de otra disciplina (SkiErg, natación...).
-    const buenos = candidatos.filter(c => c.tipo === tipoPreferido && !OTRA_DISCIPLINA_RE.test(c.nombre))
+    // En carrera, la movilidad/flexibilidad del calentamiento también vale.
+    const buenos = candidatos.filter(c => (c.tipo === tipoPreferido || (tipoPreferido === 'cardio' && c.tipo === 'flexibilidad')) && !OTRA_DISCIPLINA_RE.test(c.nombre))
     if (buenos.length > 0) return buenos[0].id
     // Ningún candidato de ESTA palabra es de fiar (todos son de otra
     // disciplina, ej. la única "series..." de la BD es de natación) — mejor
@@ -36,17 +42,20 @@ export async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPre
 
   // Nivel 1: match exacto (case-insensitive)
   const { data: exacto } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', normalizado).limit(5)
-  if (exacto?.length) return elegirMejor(exacto)
+  const idExacto = exacto?.length ? elegirMejor(exacto) : null
+  if (idExacto) return idExacto
 
   // Nivel 2: match parcial — nombre del ejercicio contiene la búsqueda
   const { data: parcial } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', `%${normalizado}%`).limit(5)
-  if (parcial?.length) return elegirMejor(parcial)
+  const idParcial = parcial?.length ? elegirMejor(parcial) : null
+  if (idParcial) return idParcial
 
   // Nivel 3: buscar por palabras significativas (>3 chars, sin stop words)
   const palabras = normalizado.split(/\s+/).filter(p => p.length > 3 && !STOP_WORDS.has(p))
   for (const palabra of palabras) {
     const { data: porPalabra } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', `%${palabra}%`).limit(5)
-    if (porPalabra?.length) return elegirMejor(porPalabra)
+    const idPalabra = porPalabra?.length ? elegirMejor(porPalabra) : null
+    if (idPalabra) return idPalabra
   }
 
   return null
@@ -111,7 +120,8 @@ export async function guardarPlanEntreno(sb: SupabaseClient, d: DatosGuardadoPla
 
       // Una sesión de carrera pura debe vincularse a ejercicios de carrera, nunca a un aparato de otra disciplina.
       const nombreSesion = (s.nombre ?? '').toLowerCase()
-      const esSesionCarrera = /carrera|tirada|rodaje|running|tempo run/i.test(nombreSesion) && !/híbrid|hibrid|hyrox/i.test(nombreSesion)
+      // El ritmo objetivo solo lo trae una sesión de carrera (series, tempo…), aunque su nombre no diga «carrera».
+      const esSesionCarrera = (/carrera|tirada|rodaje|running|tempo run|^series\b|intervalos|fartlek/i.test(nombreSesion) || (typeof s.ritmo_objetivo === 'string' && s.ritmo_objetivo.trim() !== '')) && !/híbrid|hibrid|hyrox/i.test(nombreSesion)
       const tipoPreferido: 'cardio' | 'fuerza' | undefined = esSesionCarrera ? 'cardio' : undefined
 
       const ejercicios = s.ejercicios ?? []
