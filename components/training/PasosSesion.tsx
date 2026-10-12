@@ -64,8 +64,9 @@ export default function PasosSesion({ sesionId, pasos, ritmos, fc, garmin }: Pro
         <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
           <Watch size={14} className="mr-1.5 inline align-[-2px]" />
           Se envía a tu Garmin
-          <span className="font-data font-normal" style={{ color: 'var(--text-muted)' }}>
-            {' · '}{(resumen.distancia_m / 1000).toFixed(1).replace('.', ',')} km{resumen.duracion_s !== null ? ` · ${Math.round(resumen.duracion_s / 60)} min` : ''}
+          {' '}
+          <span className="font-data font-normal whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+            · {(resumen.distancia_m / 1000).toFixed(1).replace('.', ',')}&nbsp;km{resumen.duracion_s !== null ? <> · {Math.round(resumen.duracion_s / 60)}&nbsp;min</> : null}
           </span>
         </p>
         <button
