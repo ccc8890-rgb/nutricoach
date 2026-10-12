@@ -333,6 +333,7 @@
 .training-calendar__day.is-pending { background: color-mix(in srgb, var(--bg) 84%, var(--surface)); opacity: 0.48; }
 .training-calendar__day.is-run,
 .training-calendar__day.is-strength { background: color-mix(in srgb, var(--metal-mid) 12%, var(--calendar-cell)); color: var(--text-secondary); }
+.training-calendar__day.is-forecast { opacity: 0.72; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--metal-mid) 38%, transparent); }
 .training-calendar__day.is-complete { background: color-mix(in srgb, var(--metal-bright) 14%, var(--calendar-cell)); color: var(--text); }
 .training-calendar__day-icons { display: inline-flex; align-items: center; gap: 0.15rem; }
 .training-calendar__session + .training-calendar__session { margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--calendar-rule); }

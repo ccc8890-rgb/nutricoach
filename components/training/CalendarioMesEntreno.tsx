@@ -7,7 +7,7 @@ import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableEx
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
 
-interface SesionMes { id: string; nombre: string; tipo_sesion: 'hibrido' | 'carrera' | 'mixto'; ejercicios_count: number; km?: number | null; completada: boolean }
+interface SesionMes { id: string; nombre: string; tipo_sesion: 'hibrido' | 'carrera' | 'mixto'; ejercicios_count: number; km?: number | null; completada: boolean; prevision?: boolean }
 
 export interface DiaMes {
   fecha: string
@@ -17,6 +17,8 @@ export interface DiaMes {
   sesiones?: SesionMes[]
   fase_bloque: string | null
   bloque_pendiente: boolean
+  /** Semana posterior al bloque en curso: previsión del macrociclo, sin sesiones creadas aún. */
+  prevision?: boolean
 }
 
 function sesionesDe(dia: DiaMes | null): SesionMes[] {
@@ -98,7 +100,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
   const idsDia = sesionesDia.map(x => x.id).join(',')
 
   useEffect(() => {
-    idsDia.split(',').filter(Boolean).forEach(sesionId => {
+    idsDia.split(',').filter(id => id && !id.startsWith('prev-')).forEach(sesionId => {
       if (detalles[sesionId]) return
       setDetalles(prev => ({ ...prev, [sesionId]: 'cargando' }))
       fetch(`/api/cliente/sesion/${sesionId}`)
@@ -125,7 +127,8 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
     const lista = sesionesDe(dia)
     if (lista.length === 0) return 'is-rest'
     if (lista.every(x => x.completada)) return 'is-complete'
-    return lista.every(x => x.tipo_sesion === 'carrera') ? 'is-run' : 'is-strength'
+    const base = lista.every(x => x.tipo_sesion === 'carrera') ? 'is-run' : 'is-strength'
+    return dia.prevision ? `${base} is-forecast` : base
   }
 
   return (
@@ -255,10 +258,15 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                         {tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion)}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                        {textoKm(sesion.km) ? `${textoKm(sesion.km)} · ` : ''}{sesion.ejercicios_count} ejercicios{sesion.completada ? ' · registrada' : ''}
+                        {sesion.prevision ? `Previsión${textoKm(sesion.km) ? ` · ≈ ${textoKm(sesion.km)}` : ''}` : <>{textoKm(sesion.km) ? `${textoKm(sesion.km)} · ` : ''}{sesion.ejercicios_count} ejercicios{sesion.completada ? ' · registrada' : ''}</>}
                       </p>
                     </div>
                   </div>
+                  {sesion.prevision ? (
+                    <p className="mt-3 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                      Previsión: los ejercicios se concretan cuando se cierre el bloque actual.
+                    </p>
+                  ) : (
                   <div className="mt-3">
                     {detalles[sesion.id] === 'cargando' ? (
                       <div className="flex justify-center py-6"><CircleNotch size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
@@ -269,6 +277,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                       </>
                     )}
                   </div>
+                  )}
                 </div>
               ))}
             </>

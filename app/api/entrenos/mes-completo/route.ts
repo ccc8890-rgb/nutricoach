@@ -2,6 +2,7 @@ import { kmDeSesion, ritmosDeVdot } from '@/lib/entrenos/km-sesion'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { clasificarTipoSesion, fechaFinBloque } from '@/lib/entrenos/bloques'
+import { cargarSemanasMacro, sesionesPrevision, type SesionPlantilla } from '@/lib/entrenos/prevision'
 
 function toISODate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -121,6 +122,15 @@ export async function GET(request: NextRequest) {
   const fechaInicioPlan = planEntreno.created_at
   const duracionSemanas = planEntreno.duracion_semanas as number | null
 
+  // Previsión tras el bloque en curso: carrera del macrociclo + fuerza/híbridas de la semana tipo.
+  const semanasMacro = await cargarSemanasMacro(admin, { cliente_id: clienteData.id, created_at: planEntreno.created_at })
+  const noCarreraPorDia = new Map<string, SesionPlantilla[]>()
+  for (const x of sesiones) {
+    const tipo_sesion = clasificarTipoSesion(tiposPorSesion[x.id] ?? [])
+    if (tipo_sesion === 'carrera' || !x.dia_semana) continue
+    noCarreraPorDia.set(x.dia_semana, [...(noCarreraPorDia.get(x.dia_semana) ?? []), { nombre: x.nombre, tipo_sesion }])
+  }
+
   const dias = diasDelMes.map(d => {
     const fecha = toISODate(d)
     const diaSemana = DIAS_SEMANA_POR_INDICE[d.getDay()]
@@ -135,6 +145,13 @@ export async function GET(request: NextRequest) {
     const bloquePendiente = duracionSemanas
       ? d.getTime() >= fechaFinBloque(fechaInicioPlan, duracionSemanas).getTime()
       : false
+
+    if (bloquePendiente && semanasMacro.length > 0) {
+      const prev = sesionesPrevision(fecha, diaSemana, semanasMacro, noCarreraPorDia, ritmosAtleta?.E ?? null)
+      if (prev) {
+        return { fecha, dia_semana: diaSemana, sesion: prev.sesiones[0] ?? null, sesiones: prev.sesiones, fase_bloque: prev.fase, bloque_pendiente: false, prevision: true }
+      }
+    }
 
     if (antesDeInicio || bloquePendiente || !sesion) {
       return {
