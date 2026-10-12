@@ -50,7 +50,7 @@ const BARRA = /sentadilla (con barra|trasera)|press banca|peso muerto|press mili
 const TRINEO = /sled (push|pull)|trineo/i
 const FARMER = /farmer|granjero/i
 const ESTACION_CARDIO = /ski ?erg|remo erg|rowing/i
-const COMPROMETIDA = /^(intervalos \d|carrera continua)/i
+const COMPROMETIDA = /^(intervalos \d|series run \d|carrera continua)/i
 
 function leerPeso(t: string | null): { valor: number; unidad: string } | null {
   const m = (t ?? '').match(/^\s*(\d+(?:[.,]\d+)?)\s*(kg|kilos?)\s*$/i)

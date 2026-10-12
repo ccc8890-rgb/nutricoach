@@ -49,7 +49,7 @@ const ejercicios = [{ id: 'e1', nombre: 'Rodaje continuo', tipo: 'cardio' }, { i
 async function main() {
   // Una sesión de series (con ritmo objetivo pero sin «carrera» en el nombre) no puede acabar en ejercicios de natación.
   {
-    const nat = fakeDb({ ejercicios: [{ id: 'n1', nombre: 'Natación crol técnica', tipo: 'cardio' }, { id: 'n2', nombre: 'Series de crol 50m', tipo: 'cardio' }, { id: 'i1', nombre: 'Intervalos 400m', tipo: 'cardio' }] })
+    const nat = fakeDb({ ejercicios: [{ id: 'n1', nombre: 'Natación crol técnica', tipo: 'cardio' }, { id: 'n2', nombre: 'Series de crol 50m', tipo: 'cardio' }, { id: 'i1', nombre: 'Series run 400m', tipo: 'cardio' }] })
     await guardarPlanEntreno(nat.db, datos([{ nombre: 'Series · 5×2 min a ritmo de intervalos', ritmo_objetivo: '4:15/km', ejercicios: [{ nombre: 'Series a ritmo de intervalos', series: 5 }, { nombre: 'Natación crol técnica', series: 1 }] }]))
     const ids = nat.ops.filter(o => o.tabla === 'sesion_ejercicios' && o.op === 'insert').map(o => (o.payload as { ejercicio_id: string }).ejercicio_id)
     assert.deepEqual(ids.filter(id => id.startsWith('n')), [], `vinculó natación: ${ids}`)

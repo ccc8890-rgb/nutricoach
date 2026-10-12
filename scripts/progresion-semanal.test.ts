@@ -67,7 +67,7 @@ import { ejerciciosParaFecha } from '../lib/entrenos/sesion-semana'
 const planProg = { created_at: '2026-10-12T12:00:00Z', duracion_semanas: 4, progresion: prog }
 const filas = [
   { series: 3, repeticiones: '25m', peso_sugerido: '110kg', bloque: 'principal', encadenado: true, ejercicio: { nombre: 'Sled push' } },
-  { series: 3, repeticiones: '500m', peso_sugerido: null, bloque: 'principal', encadenado: false, ejercicio: { nombre: 'Intervalos 500m' } },
+  { series: 3, repeticiones: '500m', peso_sugerido: null, bloque: 'principal', encadenado: false, ejercicio: { nombre: 'Series run 500m' } },
 ]
 for (const f of ['2026-10-13', '2026-10-27', '2026-11-03']) { const r = ejerciciosParaFecha(planProg, filas, f); assert.equal(r[0].series, r[1].series) }
 assert.equal(ejerciciosParaFecha(planProg, filas, '2026-10-27')[0].series, 4)

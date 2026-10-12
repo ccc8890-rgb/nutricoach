@@ -2,8 +2,8 @@ import assert from 'node:assert/strict'
 import { canonicoCarrera, nombreCatalogoPorDistancia, midePorDistanciaOTiempo, tipoPreferidoDeSesion } from '../lib/entrenos/guardar-plan'
 
 // «Carrera continua» con series de distancia son intervalos
-assert.equal(nombreCatalogoPorDistancia('Carrera continua', 4, '400m'), 'Intervalos 400m')
-assert.equal(nombreCatalogoPorDistancia('Carrera continua', 5, '400 m'), 'Intervalos 400m')
+assert.equal(nombreCatalogoPorDistancia('Carrera continua', 4, '400m'), 'Series run 400m')
+assert.equal(nombreCatalogoPorDistancia('Carrera continua', 5, '400 m'), 'Series run 400m')
 // Una sola serie (rodaje de 34 min) o sin distancia: no se toca
 assert.equal(nombreCatalogoPorDistancia('Carrera continua', 1, '34min'), null)
 assert.equal(nombreCatalogoPorDistancia('Carrera continua', 1, '400m'), null)

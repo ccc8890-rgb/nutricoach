@@ -94,11 +94,11 @@ export async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPre
   return aptos[0].id
 }
 
-/** «Carrera continua» con series de distancia (4 × 400 m) son intervalos: el catálogo tiene «Intervalos 400m». */
+/** «Carrera continua» con series de distancia (4 × 400 m) son intervalos: el catálogo tiene «Series run 400m». */
 export function nombreCatalogoPorDistancia(nombre: string, series: unknown, repeticiones: unknown): string | null {
   const m = String(repeticiones ?? '').trim().match(/^(\d{3,4})\s*m$/i)
   if (!m || typeof series !== 'number' || series < 2) return null
-  return /^(carrera|rodaje|trote)\s+continu[oa]$/i.test(nombre.trim()) ? `Intervalos ${m[1]}m` : null
+  return /^(carrera|rodaje|trote)\s+continu[oa]$/i.test(nombre.trim()) ? `Series run ${m[1]}m` : null
 }
 
 /** Ejercicio medido en metros o minutos (SkiErg 500 m, remo 5 min…): se busca entre cardio y funcional. */
@@ -119,7 +119,7 @@ export async function idEjercicioDeLaIA(sb: SupabaseClient, sesion: SesionIA, ej
   // La pliometría (saltos) es funcional/fuerza aunque vaya dentro de una sesión de carrera: sin filtro de tipo, para que no se descarte.
   const tipo: TipoPreferido | undefined = esPliometria(ej) ? undefined : (tipoPreferidoDeSesion(sesion) ?? (midePorDistanciaOTiempo(ej.repeticiones) ? 'cardio_funcional' : undefined))
   const nombreIntervalos = nombreCatalogoPorDistancia(nombreEj, ej.series, ej.repeticiones)
-  // Intervalos: solo vale la distancia exacta del catálogo (si no existe, antes empataba con «Intervalos 1km» por ser el nombre más corto).
+  // Intervalos: solo vale la distancia exacta del catálogo (si no existe, antes empataba con «Series run 1km» por ser el nombre más corto).
   if (nombreIntervalos) {
     const { data: exacto } = await sb.from('ejercicios').select('id').ilike('nombre', nombreIntervalos).limit(1)
     if (exacto?.length) return exacto[0].id as string

@@ -13,13 +13,13 @@ assert.deepEqual(h.map(x => x.codigo).sort(), ['estaciones_incompletas', 'sin_pl
 
 // Semana completa de Base con pliometría: sin avisos.
 h = validarHibridoHyrox([
-  { nombre: 'Pierna', ejercicios: [{ nombre: 'Box jumps', bloque: 'pliometria' }, { nombre: 'Sled push', encadenado: true, series: 4 }, { nombre: 'Intervalos 400m', series: 4 }, { nombre: 'Wall balls' }] },
+  { nombre: 'Pierna', ejercicios: [{ nombre: 'Box jumps', bloque: 'pliometria' }, { nombre: 'Sled push', encadenado: true, series: 4 }, { nombre: 'Series run 400m', series: 4 }, { nombre: 'Wall balls' }] },
   { nombre: 'A', ejercicios: [{ nombre: 'SkiErg' }, { nombre: 'Sled pull' }] },
   { nombre: 'B', ejercicios: [{ nombre: 'Remo ergómetro' }, { nombre: "Farmer's carry" }] },
 ], 'Base')
 assert.equal(h.length, 0)
 
 // Encadenado mal formado.
-h = validarHibridoHyrox([{ nombre: 'X', ejercicios: [{ nombre: 'Box jumps', bloque: 'pliometria' }, { nombre: 'Sled push', encadenado: true, series: 4 }, { nombre: 'Intervalos 400m', series: 3 }, { nombre: 'SkiErg' }, { nombre: 'Remo ergómetro' }] }], 'Deload')
+h = validarHibridoHyrox([{ nombre: 'X', ejercicios: [{ nombre: 'Box jumps', bloque: 'pliometria' }, { nombre: 'Sled push', encadenado: true, series: 4 }, { nombre: 'Series run 400m', series: 3 }, { nombre: 'SkiErg' }, { nombre: 'Remo ergómetro' }] }], 'Deload')
 assert.deepEqual(h.map(x => x.codigo), ['encadenado_series_distintas'])
 console.log('hyrox-estaciones OK')

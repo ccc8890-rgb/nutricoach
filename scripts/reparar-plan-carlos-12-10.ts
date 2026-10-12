@@ -14,20 +14,20 @@ async function idEjercicio(nombre: string) { const { data } = await db.from('eje
 ;(async () => {
   // 1) Intervalos de distancias que faltaban en el catálogo
   for (const m of [300, 500, 600]) {
-    const nombre = `Intervalos ${m}m`
+    const nombre = `Series run ${m}m`
     if (await idEjercicio(nombre)) continue
     console.log(`${APPLY ? 'añade' : 'añadiría'} al catálogo: ${nombre}`)
     if (APPLY) await db.from('ejercicios').insert({ nombre, grupo_muscular: 'Cardio', tipo: 'cardio', descripcion: `${m} m a ritmo rápido con recuperación en trote.`, custom: false, coach_id: null, video_tipo: 'youtube', equipamiento: [], musculos_secundarios: [], dificultad_nivel: 3 })
   }
   const { data: plan } = await db.from('planes_entrenamiento').select('id').eq('cliente_id', CLIENTE).eq('activo', true).single()
   const { data: ses } = await db.from('sesiones_entrenamiento').select('id,nombre,dia_semana,sesion_ejercicios(id,bloque,repeticiones,ejercicio:ejercicios(nombre))').eq('plan_id', plan!.id)
-  const i500 = APPLY ? await idEjercicio('Intervalos 500m') : 'id-simulado'
+  const i500 = APPLY ? await idEjercicio('Series run 500m') : 'id-simulado'
   const trote = await idEjercicio('Trote de calentamiento'); const calma = await idEjercicio('Vuelta a la calma')
   for (const s of ses ?? []) {
     for (const e of (s as any).sesion_ejercicios ?? []) {
       const nombre = e.ejercicio?.nombre as string
       let nuevo: string | undefined; let motivo = ''
-      if (nombre === 'Intervalos 1km' && /^500\s*m$/i.test(e.repeticiones ?? '')) { nuevo = i500; motivo = '1km → 500m' }
+      if (nombre === 'Series run 1km' && /^500\s*m$/i.test(e.repeticiones ?? '')) { nuevo = i500; motivo = '1km → 500m' }
       else if (nombre === 'Pilates suave' && e.bloque === 'calentamiento') { nuevo = trote; motivo = 'Pilates → Trote de calentamiento' }
       else if (nombre === 'Pilates suave' && e.bloque === 'vuelta_calma') { nuevo = calma; motivo = 'Pilates → Vuelta a la calma' }
       if (!nuevo) continue
