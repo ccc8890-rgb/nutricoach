@@ -59,7 +59,7 @@ assert.deepEqual(pasosDeLaSemana(tirada, 'Tirada larga Z2', null, 3), tirada)
 assert.deepEqual(pasosDeLaSemana(tirada, 'Híbrida Pierna · Sled Push', prog, 3), tirada)
 
 assert.equal(nombreSinCifras('Tirada larga Z2 · 60 min'), 'Tirada larga Z2')
-assert.equal(nombreSinCifras('Series · 5 × 400 m a ritmo de intervalos + pliometría reactiva'), 'Series a ritmo de intervalos + pliometría reactiva')
+assert.equal(nombreSinCifras('Series · 5 × 400 m a ritmo de intervalos + pliometría reactiva'), 'Series + Pliometría reactiva')
 console.log('progresion-semanal OK')
 
 // Cadena «sin parar»: sled push + intervalos comparten series (rondas) en cada semana

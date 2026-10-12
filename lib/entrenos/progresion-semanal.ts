@@ -49,7 +49,7 @@ export interface EjercicioSemana { series: number | null; repeticiones: string |
 const BARRA = /sentadilla (con barra|trasera)|press banca|peso muerto|press militar con barra|remo con barra|hip thrust/i
 const TRINEO = /sled (push|pull)|trineo/i
 const FARMER = /farmer|granjero/i
-const ESTACION_CARDIO = /ski ?erg|remo erg|rowing/i
+const ESTACION_CARDIO = /ski ?erg|remo erg|remo \(row\)|rowing/i
 const COMPROMETIDA = /^(intervalos \d|series run \d|carrera continua)/i
 
 function leerPeso(t: string | null): { valor: number; unidad: string } | null {
@@ -134,7 +134,7 @@ export function pasosDeLaSemana(pasosBase: unknown, nombreSesion: string, prog: 
 
 /** Nombre sin cifras de duración o repeticiones (que cambian de una semana a otra): «Tirada larga Z2 · 60 min» → «Tirada larga Z2». */
 export function nombreSinCifras(nombre: string): string {
-  return nombre.replace(/\s*[·\-–]\s*\d+\s*min\b/gi, '').replace(/\s*[·\-–]\s*\d+\s*[×x]\s*\d+\s*m\b/gi, '').replace(/\s+\d+\s*[×x]\s*\d+\s*m\s+a\s+/gi, ' a ').replace(/\s{2,}/g, ' ').trim()
+  return nombre.replace(/\s*[·\-–]\s*\d+\s*min\b/gi, '').replace(/\s*[·\-–]\s*\d+\s*[×x]\s*\d+\s*m\b/gi, '').replace(/\s+\d+\s*[×x]\s*\d+\s*m\s+a\s+/gi, ' a ').replace(/\s+a ritmo de intervalos/gi, '').replace(/\+\s*([a-záéíóúñ])/g, (_, c: string) => `+ ${c.toUpperCase()}`).replace(/\s{2,}/g, ' ').trim()
 }
 
 /**
