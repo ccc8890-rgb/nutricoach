@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   if (!autorizado(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const db = createServiceSupabase()
-  const resumen = { clientes: 0, enviados: 0, al_dia: 0, errores: [] as string[] }
+  const resumen = { clientes: 0, enviados: 0, al_dia: 0, limpiados: 0, errores: [] as string[] }
 
   const { data: conexiones } = await db
     .from('integraciones_cliente')
@@ -84,8 +84,23 @@ export async function GET(req: NextRequest) {
         resumen.errores.push(`${s.nombre}: ${msg}`)
       }
     }
+
+    // Entrenos de planes que ya no están activos (el coach cambió de plan): se quitan de Garmin para que no queden pasados ni repetidos.
+    const { data: inactivos } = await db.from('planes_entrenamiento').select('id').eq('cliente_id', clienteId).eq('activo', false)
+    const idsInactivos = (inactivos ?? []).map(p => p.id as string)
+    if (idsInactivos.length) {
+      const { data: viejas } = await db.from('sesiones_entrenamiento').select('id, nombre').in('plan_id', idsInactivos).not('garmin_workout_id', 'is', null).limit(MAX_ENVIOS)
+      for (const v of viejas ?? []) {
+        try {
+          await enviarSesionAGarmin(db, v.id, undefined, { modo: 'borrar', fechas: [] })
+          resumen.limpiados++
+        } catch (e) {
+          resumen.errores.push(`limpiar ${v.nombre}: ${e instanceof ErrorGarmin ? e.mensaje : 'error inesperado'}`)
+        }
+      }
+    }
   }
 
-  await registrarCron(db, 'enviar-garmin', resumen.errores.length, `${resumen.enviados} enviadas${resumen.errores.length ? `; ${resumen.errores[0]}` : ''}`)
+  await registrarCron(db, 'enviar-garmin', resumen.errores.length, `${resumen.enviados} enviadas${resumen.limpiados ? `, ${resumen.limpiados} antiguas quitadas` : ''}${resumen.errores.length ? `; ${resumen.errores[0]}` : ''}`)
   return NextResponse.json(resumen)
 }
