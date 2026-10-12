@@ -25,7 +25,7 @@ export const RUTAS_POR_DEFECTO: Record<TareaIA, RutaModelo[]> = {
   plan_entreno: [CLAUDE_OPUS, GPT, DEEPSEEK],
   plan_dieta: [CLAUDE_OPUS, GPT, DEEPSEEK],
   auditoria: [GPT, CLAUDE_SONNET, DEEPSEEK],
-  analisis_rendimiento: [CLAUDE_SONNET, GPT, DEEPSEEK],
+  analisis_rendimiento: [CLAUDE_OPUS, GPT, DEEPSEEK],
   texto_barato: [DEEPSEEK, DEEPSEEK_PRO],
 }
 

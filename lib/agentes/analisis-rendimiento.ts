@@ -5,7 +5,8 @@
 // SIEMPRE supervisado: crea una tarea para el coach; aprobarla solo deja constancia
 // y alimenta el aprendizaje, no modifica el plan ni escribe al cliente.
 // ================================================================
-import { llamarDeepSeek, guardarTareaAgente } from './executor'
+import { guardarTareaAgente } from './executor'
+import { llamarIA } from '@/lib/ia/enrutador'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { construirContextoRendimiento } from '@/lib/rendimiento/contexto'
 import { validarPasos, type Paso } from '@/lib/entrenos/pasos'
@@ -140,7 +141,8 @@ export async function ejecutarAnalisisRendimiento(clienteId: string, opciones: {
 
   let json: unknown = null
   try {
-    const crudo = await llamarDeepSeek(SYSTEM, `DATOS DEL ATLETA\n\n${ctx.texto}\n\n${textoMotor(motor)}`, 0.25)
+    // Modelo según el enrutador (analisis_rendimiento: Claude → GPT → DeepSeek).
+    const crudo = (await llamarIA('analisis_rendimiento', { sistema: SYSTEM, usuario: `DATOS DEL ATLETA\n\n${ctx.texto}\n\n${textoMotor(motor)}`, json: true, presupuestoMs: 240_000, maxTokens: 16000, esfuerzo: 'medium' })).texto
     try { json = JSON.parse(crudo) } catch {
       const m = crudo.match(/\{[\s\S]*\}/)
       try { json = m ? JSON.parse(m[0]) : null } catch { json = null }

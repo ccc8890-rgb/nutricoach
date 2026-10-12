@@ -4,7 +4,7 @@ import { autorizarCoachCliente } from '@/lib/auth/autorizar-coach-cliente'
 import { ejecutarAnalisisRendimiento } from '@/lib/agentes/analisis-rendimiento'
 import { vistaPreviaDecision, type DecisionGuardada } from '@/lib/rendimiento/aplicar-decision'
 
-export const maxDuration = 90
+export const maxDuration = 300
 
 async function autorizar(request: NextRequest, clienteId: string) {
   const { data: { user } } = await createApiSupabase(request).auth.getUser()

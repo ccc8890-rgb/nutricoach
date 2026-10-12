@@ -3,6 +3,8 @@ import { createServerSupabase } from '@/lib/supabase-server'
 import { construirPromptAjusteMacros, recalcularMacrosIA } from '@/lib/deepseek'
 import { registrarInteraccionIA } from '@/lib/ia-logger'
 
+export const maxDuration = 300
+
 export async function POST(
     _request: Request,
     { params }: { params: Promise<{ id: string }> }

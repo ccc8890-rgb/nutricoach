@@ -444,57 +444,21 @@ RESPONDE CON ESTE JSON EXACTO:
  * Llama a DeepSeek para recalcular macros objetivo basados en la evolución del cliente.
  * Devuelve { data, total_tokens } para poder loguear el consumo.
  */
-export async function recalcularMacrosIA(prompt: string): Promise<{ data: SugerenciaMacros; total_tokens: number }> {
-    const apiKey = process.env.DEEPSEEK_API_KEY
-
-    if (!apiKey) {
-        throw new Error('DEEPSEEK_API_KEY no configurada. Añádela en .env.local')
-    }
-
-    const messages: DeepSeekMessage[] = [
-        { role: 'system', content: 'Eres un coach nutricional experto en ajuste de macronutrientes. Respondes siempre en español, solo con JSON válido.' },
-        { role: 'user', content: prompt },
-    ]
-
-    const response = await fetch(DEEPSEEK_API_URL, {
-        method: 'POST',
-        signal: AbortSignal.timeout(60_000),
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-            model: DEEPSEEK_MODEL,
-            messages,
-            temperature: 0.3,
-            max_tokens: 1500,
-        }),
+export async function recalcularMacrosIA(prompt: string): Promise<{ data: SugerenciaMacros; total_tokens: number; modelo?: string }> {
+    // Modelo según el enrutador (plan_dieta: Claude → GPT → DeepSeek).
+    const r = await llamarIA('plan_dieta', {
+        sistema: 'Eres un coach nutricional experto en ajuste de macronutrientes. Respondes siempre en español, solo con JSON válido.',
+        usuario: prompt, json: true, presupuestoMs: PRESUPUESTO_DIETA_MS, maxTokens: 8000, esfuerzo: 'medium',
     })
-
-    if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`DeepSeek API error ${response.status}: ${errorText}`)
-    }
-
-    const data: DeepSeekResponse = await response.json()
-    const content = data.choices?.[0]?.message?.content
-    if (!content) {
-        throw new Error('DeepSeek: respuesta vacía')
-    }
-
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-        throw new Error(`DeepSeek: respuesta no contiene JSON. Contenido: ${content.slice(0, 300)}`)
-    }
-
+    const total_tokens = (r.uso.entrada ?? 0) + (r.uso.salida ?? 0)
     try {
-        const parsed: SugerenciaMacros = JSON.parse(jsonMatch[0])
+        const parsed = extraerJsonPlan(r.texto) as unknown as SugerenciaMacros
         if (!parsed.kcal || !parsed.proteinas || !parsed.carbohidratos || !parsed.grasas) {
-            throw new Error('DeepSeek: JSON incompleto, faltan campos requeridos')
+            throw new Error('JSON incompleto, faltan campos requeridos')
         }
-        return { data: parsed, total_tokens: data.usage.total_tokens }
+        return { data: parsed, total_tokens, modelo: `${r.proveedor}:${r.modelo}` }
     } catch (parseError) {
-        throw new Error(`DeepSeek: error al parsear JSON: ${parseError instanceof Error ? parseError.message : 'error desconocido'}`)
+        throw new Error(`${r.modelo}: error al parsear el ajuste de macros: ${parseError instanceof Error ? parseError.message : 'error desconocido'}`)
     }
 }
 
