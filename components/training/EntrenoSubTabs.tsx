@@ -76,7 +76,6 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
         index="02 / TRAIN"
         eyebrow={bloque ? `Bloque ${bloque.fase} · Semana ${bloque.semana_actual}/${bloque.semanas_totales}` : 'Plan de entrenamiento'}
         title={planNombre}
-        meta="SESIÓN / CARGA / EJECUCIÓN"
       />
 
       {!loading && tuBloque && <TuBloque datos={tuBloque} fase={bloque?.fase} semanaActual={bloque?.semana_actual} semanasTotales={bloque?.semanas_totales} />}
