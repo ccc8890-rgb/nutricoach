@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { calcularBloqueInfo, clasificarTipoSesion } from '@/lib/entrenos/bloques'
 import { construirTuBloque } from '@/lib/entrenos/tu-bloque'
-import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
+import { kmDeSesion, ritmosDeVdot } from '@/lib/entrenos/km-sesion'
 
 function startOfWeek() {
   const now = new Date()
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   const [{ data: sesRaw }, { data: registros }] = await Promise.all([
     admin
       .from('sesiones_entrenamiento')
-      .select('id, nombre, dia_semana, duracion_estimada_min, contexto_ia, fase_bloque, sesion_ejercicios(id, ejercicio:ejercicios(tipo))')
+      .select('id, nombre, dia_semana, duracion_estimada_min, contexto_ia, fase_bloque, pasos, sesion_ejercicios(id, ejercicio:ejercicios(tipo))')
       .eq('plan_id', planEntreno.id)
       .order('orden')
       .order('id'),
@@ -100,6 +100,9 @@ export async function GET(request: NextRequest) {
   const faseBloqueDelPlan = sesData.find(s => s.fase_bloque)?.fase_bloque as string | undefined
   const bloque = calcularBloqueInfo(planEntreno.created_at, planEntreno.duracion_semanas, faseBloqueDelPlan)
 
+  const { data: perfilVdot } = await admin.from('perfil_entreno_cliente').select('vdot').eq('cliente_id', planEntreno.cliente_id).maybeSingle()
+  const ritmosAtleta = ritmosDeVdot(perfilVdot?.vdot)
+
   const sesiones = sesData.map(s => {
     const diaOffset = DIAS_ORDER[s.dia_semana ?? ''] ?? 0
     const fecha = toISODate(new Date(weekStart.getTime() + diaOffset * 86400000))
@@ -115,6 +118,7 @@ export async function GET(request: NextRequest) {
       registros_count: registrosPorSesion[s.id] ?? 0,
       completada: (registrosPorSesion[s.id] ?? 0) > 0,
       esHoy: fecha === today,
+      km: kmDeSesion((s as { pasos?: unknown }).pasos, ritmosAtleta),
     }
   })
 
@@ -126,9 +130,7 @@ export async function GET(request: NextRequest) {
   const salioDeLaTarea = !!tareaPlan?.aplicado_at && Math.abs(new Date(planEntreno.created_at).getTime() - new Date(tareaPlan.aplicado_at).getTime()) < 5 * 60_000
   let ritmoRodaje: number | null = null
   if (tareaPlan && salioDeLaTarea) {
-    const { data: perfil } = await admin.from('perfil_entreno_cliente').select('vdot').eq('cliente_id', planEntreno.cliente_id).maybeSingle()
-    const vdot = perfil?.vdot != null && perfil.vdot !== '' ? Number(perfil.vdot) : null
-    ritmoRodaje = vdot ? ritmosDesdeVdot(vdot)?.E ?? null : null
+    ritmoRodaje = ritmosAtleta?.E ?? null
   }
   const tu_bloque = tareaPlan && salioDeLaTarea ? construirTuBloque(tareaPlan.payload, today, ritmoRodaje) : null
 

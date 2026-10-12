@@ -1,3 +1,4 @@
+import { kmDeSesion, ritmosDeVdot } from '@/lib/entrenos/km-sesion'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { clasificarTipoSesion, fechaFinBloque } from '@/lib/entrenos/bloques'
@@ -57,12 +58,14 @@ export async function GET(request: NextRequest) {
 
   const { data: sesData } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, fase_bloque')
+    .select('id, nombre, dia_semana, fase_bloque, pasos')
     .eq('plan_id', planEntreno.id)
     .order('orden')
     .order('id')
 
   const sesiones = sesData ?? []
+  const { data: perfilVdot } = await admin.from('perfil_entreno_cliente').select('vdot').eq('cliente_id', clienteData.id).maybeSingle()
+  const ritmosAtleta = ritmosDeVdot(perfilVdot?.vdot)
   const sesIds = sesiones.map(s => s.id)
 
   let ejData: { id: string; sesion_id: string; ejercicio: { tipo: string | null } | null }[] = []
@@ -149,6 +152,7 @@ export async function GET(request: NextRequest) {
       nombre: x.nombre,
       tipo_sesion: clasificarTipoSesion(tiposPorSesion[x.id] ?? []),
       ejercicios_count: ejCountBySesion[x.id] ?? 0,
+      km: kmDeSesion((x as { pasos?: unknown }).pasos, ritmosAtleta),
       completada: sesionesCompletadasPorFecha.get(fecha)?.has(x.id) ?? false,
     })
 

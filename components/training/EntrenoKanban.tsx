@@ -18,6 +18,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { Barbell, CaretDown, CheckCircle, PersonSimpleRun, SpinnerGap } from '@phosphor-icons/react'
 import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
+import { textoKm } from '@/lib/entrenos/km-sesion'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { etiquetaTipoSesion, tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
@@ -33,6 +34,7 @@ interface SesionKanban {
     dia_semana: string
     tipo_sesion: 'hibrido' | 'carrera' | 'mixto'
     ejercicios_count: number
+    km?: number | null
     completada: boolean
 }
 
@@ -84,7 +86,7 @@ function SesionCard({ sesion, orden, seleccionada, moviendo, onSeleccionar, onAb
                     {etiquetaTipoSesion(sesion.tipo_sesion)}{orden ? ` · ${orden}` : ''}
                 </span>
                 <strong>{tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion)}</strong>
-                <span className="training-week-session__meta">{sesion.ejercicios_count} ejercicios</span>
+                <span className="training-week-session__meta">{textoKm(sesion.km) ? `${textoKm(sesion.km)} · ` : ''}{sesion.ejercicios_count} ejercicios</span>
                 <CaretDown size={14} className={seleccionada ? 'rotate-180' : ''} />
             </button>
             <button

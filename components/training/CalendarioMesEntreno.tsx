@@ -1,4 +1,5 @@
 'use client'
+import { textoKm } from '@/lib/entrenos/km-sesion'
 import { useEffect, useMemo, useState } from 'react'
 import { Barbell, CaretLeft, CaretRight, CircleDashed, CircleNotch, Footprints, Warning } from '@phosphor-icons/react'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
@@ -6,7 +7,7 @@ import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableEx
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
 
-interface SesionMes { id: string; nombre: string; tipo_sesion: 'hibrido' | 'carrera' | 'mixto'; ejercicios_count: number; completada: boolean }
+interface SesionMes { id: string; nombre: string; tipo_sesion: 'hibrido' | 'carrera' | 'mixto'; ejercicios_count: number; km?: number | null; completada: boolean }
 
 export interface DiaMes {
   fecha: string
@@ -254,7 +255,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                         {tituloSesionSinModalidad(sesion.nombre, sesion.tipo_sesion)}
                       </p>
                       <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                        {sesion.ejercicios_count} ejercicios{sesion.completada ? ' · registrada' : ''}
+                        {textoKm(sesion.km) ? `${textoKm(sesion.km)} · ` : ''}{sesion.ejercicios_count} ejercicios{sesion.completada ? ' · registrada' : ''}
                       </p>
                     </div>
                   </div>

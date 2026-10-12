@@ -8,6 +8,7 @@ import CalendarioMesEntreno from './CalendarioMesEntreno'
 import TuBloque from './TuBloque'
 import type { TuBloque as TuBloqueDatos } from '@/lib/entrenos/tu-bloque'
 import EntrenoKanban from './EntrenoKanban'
+import { textoKm } from '@/lib/entrenos/km-sesion'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { EditorialMasthead, IndustrialTabs } from '@/components/PortalCliente/editorial'
@@ -21,6 +22,7 @@ interface SesionSemana {
   duracion_estimada_min: number | null
   contexto_ia: string | null
   ejercicios_count: number
+  km?: number | null
   tipo_sesion: 'hibrido' | 'carrera' | 'mixto'
   fecha: string
   registros_count: number
@@ -107,6 +109,7 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
                 <p className="mt-1 font-bold leading-tight" style={{ color: 'var(--text)' }}>
                   {tituloSesionSinModalidad(sesionDia.nombre, sesionDia.tipo_sesion)}
                 </p>
+                {textoKm(sesionDia.km) && <p className="mt-1 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{textoKm(sesionDia.km)}</p>}
               </div>
             </div>
             {sesionDia.contexto_ia && (
