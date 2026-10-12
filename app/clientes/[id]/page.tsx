@@ -953,7 +953,6 @@ export default function ClienteDetallePage() {
                   </div>
                   <div className="flex flex-wrap items-start gap-3">
                     <PlanificarConIA clienteId={id as string} />
-                    <InformeCaso clienteId={id as string} />
                     <details className="relative">
                       <summary className="btn-secondary btn-sm cursor-pointer list-none">Más opciones</summary>
                       <div className="absolute right-0 mt-1 z-10 flex flex-col gap-1 p-2 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)', minWidth: 180 }}>
@@ -1174,6 +1173,7 @@ export default function ClienteDetallePage() {
 
         ) : tabActiva === 'comunicacion' ? (
           <div className="grid grid-cols-1 gap-4">
+            <InformeCaso clienteId={id as string} />
             <WorkCard title="Chat con cliente" kicker="Conversación directa" icon={MessageCircle}>
               <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <ChatPanel clienteId={id as string} pollingInterval={30000} esCoach={true} />
