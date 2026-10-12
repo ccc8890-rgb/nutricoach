@@ -16,7 +16,9 @@ const REGLAS: { re: RegExp; no?: RegExp; g: number; uno: string; varios: string;
 
 const normalizar = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()
 
-function equivalenciaAuto(nombre: string, gramos: number): { n: number; unidad: string } | null {
+const CONTABLE = /^(unidad(es)?|u|uds?|piezas?|dientes?|hojas?|rodajas?|lonchas?|rebanadas?|huevos?|claras?|yemas?|yogur(es)?)$/i
+
+function equivalenciaAuto(nombre: string, gramos: number): { n: number; unidad: string; contable: boolean } | null {
   const nom = normalizar(nombre)
   const regla = REGLAS.find(r => r.re.test(nom) && !(r.no && r.no.test(nom)))
   if (!regla || gramos <= 0) return null
@@ -24,7 +26,7 @@ function equivalenciaAuto(nombre: string, gramos: number): { n: number; unidad: 
   const n = regla.entero ? Math.round(gramos / regla.g) : Math.round((gramos / regla.g) * 2) / 2
   const tope = regla.uno === 'cucharada' ? 6 : 12
   if (n < 1 || n > tope || Math.abs(gramos - n * regla.g) > regla.g * 0.1) return null
-  return { n, unidad: n === 1 ? regla.uno : regla.varios }
+  return { n, unidad: n === 1 ? regla.uno : regla.varios, contable: !!regla.entero }
 }
 
 /** «120g (2 huevos)»: los gramos mandan (macros), la equivalencia casera evita pesar.
@@ -37,15 +39,13 @@ export function formatoCantidad(
   nombre?: string | null,
 ): string {
   const base = `${escalarGramos(gramos, factor)}g`
+  // Solo se añade el paréntesis cuando ayuda a ver «cuántos» (2 huevos, 3 dientes…). Taza, cucharada, cucharadita,
+  // «1 unidad» o los mismos gramos repetidos no aportan: los gramos mandan.
   if (cantidadOriginal && unidadDisplay?.trim()) {
     const n = Math.round(cantidadOriginal * factor * 10) / 10
     const unidad = unidadDisplay.trim()
-    // «265g (265 g)»: si el original ya eran gramos (o ml con el mismo número), repetirlo no aporta nada
-    const esPeso = /^(g|gr|grs|gramos?|ml)$/i.test(unidad)
-    if (esPeso && Math.abs(n - gramos * factor) < 0.6) return base
-    if (/^(g|gr|grs|gramos?)$/i.test(unidad)) return base
-    return `${base} (${n} ${unidad})`
+    return n >= 2 && CONTABLE.test(unidad) ? `${base} (${n} ${unidad})` : base
   }
   const auto = nombre ? equivalenciaAuto(nombre, gramos * factor) : null
-  return auto ? `${base} (${auto.n} ${auto.unidad})` : base
+  return auto && auto.contable && auto.n >= 2 ? `${base} (${auto.n} ${auto.unidad})` : base
 }
