@@ -157,13 +157,24 @@ export default function DetalleRecetaPage() {
     }
 
     setAccionando(true)
-    await fetch(`/api/recetas/${id}/estado`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ estado: nuevoEstado }),
-    })
-    setReceta((prev: RecetaDetalle | null) => prev ? { ...prev, estado: nuevoEstado } : prev)
-    setAccionando(false)
+    try {
+      const res = await fetch(`/api/recetas/${id}/estado`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: nuevoEstado }),
+      })
+      if (!res.ok) {
+        // antes se mostraba «aprobada» aunque el servidor la rechazara y la receta seguía pendiente en la lista
+        const json = await res.json().catch(() => ({}))
+        alert(`No se pudo ${nuevoEstado === 'aprobada' ? 'aprobar' : 'descartar'}: ${[json.error, ...(json.bloqueantes ?? [])].filter(Boolean).join(' · ') || `error ${res.status}`}`)
+        return
+      }
+      setReceta((prev: RecetaDetalle | null) => prev ? { ...prev, estado: nuevoEstado } : prev)
+      // viniendo de la bandeja de revisión, vuelve a ella para seguir con la siguiente
+      if (returnPath.startsWith('/recetas/revisar')) window.location.href = returnTo
+    } finally {
+      setAccionando(false)
+    }
   }
 
   useEffect(() => {
