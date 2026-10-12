@@ -67,7 +67,7 @@ export async function GET(
   const { data: ejercicios } = await admin
     .from('sesion_ejercicios')
     .select(`
-      id, orden, bloque, series, repeticiones, descanso_segundos,
+      id, orden, bloque, series, repeticiones, descanso_segundos, encadenado,
       peso_sugerido, notas, contexto_ia,
       ejercicio:ejercicios(id, nombre, grupo_muscular, tipo, video_url, foto_url)
     `)

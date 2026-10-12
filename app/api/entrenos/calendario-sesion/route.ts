@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
       instruccion_ejercicio: e.instruccion_ejercicio ?? null,
       tempo: e.tempo ?? null,
       rpe: e.rpe ?? null,
+      encadenado: e.encadenado ?? false,
     }))))
     if (eEj) { await deshacer(); return NextResponse.json({ error: 'No se pudo crear la sesión' }, { status: 500 }) }
   }

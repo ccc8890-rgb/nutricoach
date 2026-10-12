@@ -113,7 +113,7 @@ export async function idEjercicioDeLaIA(sb: SupabaseClient, sesion: SesionIA, ej
 
 export interface EjercicioIA {
   nombre?: string; bloque?: unknown; series?: unknown; repeticiones?: unknown
-  descanso_segundos?: unknown; rpe_objetivo?: unknown; notas?: unknown; peso_estimado_kg?: unknown
+  descanso_segundos?: unknown; rpe_objetivo?: unknown; notas?: unknown; peso_estimado_kg?: unknown; encadenado?: unknown
 }
 export interface SesionIA { nombre?: string; dia_semana?: string | null; ritmo_objetivo?: unknown; ejercicios?: EjercicioIA[]; /** Pasos estructurados de carrera (zonas), calculados al aplicar el plan. */ pasos?: unknown }
 export interface DatosGuardadoPlan {
@@ -185,6 +185,8 @@ export async function guardarPlanEntreno(sb: SupabaseClient, d: DatosGuardadoPla
           descanso_segundos: typeof ej.descanso_segundos === 'number' ? ej.descanso_segundos : null,
           notas: [ej.rpe_objetivo ? `RPE ${ej.rpe_objetivo}` : null, ej.notas].filter(Boolean).join(' — ') || null,
           orden: j + 1,
+          // «Sin parar»: solo si de verdad hay un ejercicio siguiente al que enlazar.
+          encadenado: ej.encadenado === true && j < ejercicios.length - 1,
           peso_sugerido: typeof ej.peso_estimado_kg === 'number' && ej.peso_estimado_kg > 0 ? `${ej.peso_estimado_kg}kg` : null,
         })
         if (errEj) throw new Error('ejercicio')

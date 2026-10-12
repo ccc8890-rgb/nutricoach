@@ -214,7 +214,7 @@ ${MODULACION_POR_FASE[fase]}
 REPARTO SEMANAL OBLIGATORIO — EXACTAMENTE 6 SESIONES EN TOTAL, NI UNA MÁS:
 • 3 sesiones HÍBRIDAS (y solo 3): cada una incluye 1-2 estaciones reales de Hyrox (SkiErg, Sled Push, Sled Pull, Burpee Broad Jumps, Farmers Carry, Wall Balls, Row) MÁS un bloque de fuerza/hipertrofia accesoria. La hipertrofia accesoria debe ROTAR entre las 3 sesiones para cubrir espalda, pecho, bíceps y hombro a lo largo de la semana — no repitas el mismo grupo muscular en las 3 sesiones híbridas.
 • SOLO UNA de las 3 sesiones híbridas lleva trabajo pesado de PIERNA (sentadilla, peso muerto, zancadas/búlgara, Sled Push, Wall Balls, Burpee Broad Jumps): ponle «Pierna» en el nombre. Las otras dos usan estaciones de tren superior (SkiErg, Row, Sled Pull, Farmers Carry) e hipertrofia de tren superior o core, SIN ejercicios de pierna: la carrera ya carga las piernas tres veces por semana y el motor necesita piernas frescas para la tirada y la calidad.
-• CARRERA COMPROMETIDA (Hyrox real = 8 × 1 km corriendo + estación): en CADA sesión híbrida incluye, justo después de la estación principal, un ejercicio «Carrera continua» de 3-5 series de 400-500 metros (1,5-2,5 km en total) a ritmo de maratón/umbral, sin pausa larga tras la estación. Es correr con las piernas cargadas; NO cuenta como una de las 3 sesiones de carrera ni cambia el esqueleto. En la sesión de Pierna, 3-4 series; en las de tren superior, 4-5 series de 400 m.
+• CARRERA COMPROMETIDA (Hyrox real = 8 × 1 km corriendo + estación): en CADA sesión híbrida incluye, justo después de la estación principal, un ejercicio «Carrera continua» de 3-5 series de 400-500 metros (1,5-2,5 km en total) a ritmo de maratón/umbral, sin pausa larga tras la estación: la estación lleva "encadenado": true y descanso_segundos 0, y la carrera va justo debajo con las MISMAS series y la pausa de recuperación entre rondas (90-120 s). Así se hace en rondas (estación + carrera, sin parar). Es correr con las piernas cargadas; NO cuenta como una de las 3 sesiones de carrera ni cambia el esqueleto. En la sesión de Pierna, 3-4 series; en las de tren superior, 4-5 series de 400 m.
 ${lineasCarrera}
 
 FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 2010/2017 (hipertrofia accesoria).`
@@ -442,6 +442,7 @@ ${instruccionDuracion}
           "series": number,
           "repeticiones": "string — '8-10' o '30s' o '400m' o '3x5min'",
           "descanso_segundos": number,
+          "encadenado": "boolean — true SOLO si este ejercicio se hace sin parar y enlaza directo con el SIGUIENTE de la lista (misma ronda). Si es true, descanso_segundos = 0 y el siguiente lleva las mismas series. Omitir si no se encadena",
           "rpe_objetivo": "string — UN solo número o rango simple ('7' o '7-8'), sin variantes por semana ni RIR",
           "peso_estimado_kg": "number — peso de partida estimado en kg. Solo para ejercicios de fuerza; omitir en ejercicios de carrera/cardio",
           "notas": "string — UNA frase corta (máx. 120 caracteres) con la clave de ejecución. Sin justificación científica: eso va en decisiones_clave"

@@ -6,6 +6,7 @@ import { descansoVisible } from '@/lib/entrenos/descanso-visible'
 import { notaLegible, pausa, ritmoDeLaNota } from '@/lib/training/ejercicio-texto'
 import { parseExerciseChecklist, toggleExerciseChecklist } from '@/lib/training/exercise-checklist'
 import { crearPresentacionEjercicios } from '@/lib/training/session-blocks'
+import { agruparEncadenados } from '@/lib/training/encadenados'
 
 export interface EjercicioDetalle {
   id: string
@@ -14,6 +15,7 @@ export interface EjercicioDetalle {
   series: number | null
   repeticiones: string | null
   descanso_segundos: number | null
+  encadenado?: boolean | null
   peso_sugerido: string | null
   notas: string | null
   contexto_ia: string | null
@@ -61,15 +63,8 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
 
   const grupos = crearPresentacionEjercicios(ejercicios)
 
-  return (
-    <div className="training-exercise-list">
-      {grupos.map(grupo => (
-        <section key={grupo.bloque} className="training-exercise-group">
-          <p className="mb-2 mt-4 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] first:mt-0" style={{ color: 'var(--text-muted)' }}>
-            {grupo.label}{descansoComun(grupo.items) ? ` · pausa ${pausa(descansoComun(grupo.items) as number)}` : ''}
-          </p>
-          {grupo.items.map(ej => {
-            const comun = descansoComun(grupo.items)
+  const renderFila = (ej: EjercicioDetalle & { indiceGlobal: number }, grupoItems: Array<EjercicioDetalle & { indiceGlobal: number }>, ocultarPausa = false) => {
+            const comun = ocultarPausa ? 1 : descansoComun(grupoItems)
             const open = abierto === ej.id
             const detalle = ej.notas || ej.contexto_ia
             const completado = completados.has(ej.id)
@@ -125,6 +120,33 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                   <p className="px-3 pb-2.5 text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{notaLegible(detalle)}</p>
                 )}
               </TechnicalRow>
+            )
+  }
+
+  return (
+    <div className="training-exercise-list">
+      {grupos.map(grupo => (
+        <section key={grupo.bloque} className="training-exercise-group">
+          <p className="mb-2 mt-4 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] first:mt-0" style={{ color: 'var(--text-muted)' }}>
+            {grupo.label}{descansoComun(grupo.items) ? ` · pausa ${pausa(descansoComun(grupo.items) as number)}` : ''}
+          </p>
+          {agruparEncadenados(grupo.items).map(unidad => {
+            if (unidad.tipo === 'solo') return renderFila(unidad.item, grupo.items)
+            const pausaRonda = unidad.pausaRonda
+            return (
+              <div key={unidad.items[0].id} className="training-chain">
+                <p className="training-chain__tag">
+                  <span>Sin parar</span>
+                  {unidad.rondas ? <span>{unidad.rondas} rondas</span> : null}
+                  {pausaRonda ? <span>pausa {pausa(pausaRonda)} entre rondas</span> : null}
+                </p>
+                {unidad.items.map((ej, k) => (
+                  <div key={ej.id}>
+                    {renderFila(ej, grupo.items, true)}
+                    {k < unidad.items.length - 1 && <p className="training-chain__link" aria-hidden="true">sale directo</p>}
+                  </div>
+                ))}
+              </div>
             )
           })}
         </section>
