@@ -17,6 +17,7 @@ import { estudiosParaPlan } from '@/lib/rendimiento/evidencia'
 import { llamarIA } from '@/lib/ia/enrutador'
 import { problemasDelPlan, promptDeReparacion } from '@/lib/entrenos/reparar-plan'
 import { faseDeBloqueSegunObjetivos, normalizarEstado, normalizarPrioridad, textoObjetivos, type ObjetivoAnual } from '@/lib/entrenos/objetivos-anuales'
+import { esValoracion, textoMarcasYFeedback, type Marcas } from '@/lib/entrenos/marcas'
 import { ESTACIONES_POR_FASE, nombreEstacion, textoPliometriaParaNivel, validarHibridoHyrox } from '@/lib/entrenos/hyrox-estaciones'
 import { senalesRecuperacion, textoSenales } from '@/lib/entrenos/senales-recuperacion'
 import { extraerJsonPlan, resolverEvidenciaPlan } from '@/lib/entrenos/evidencia-plan'
@@ -113,6 +114,14 @@ export async function generarPlanEntrenoIA(sb: SupabaseClient, opts: { clienteId
       recomendacion = evaluarPerfilEntreno(perfilEntreno)
       modalidadFoco = perfilEntreno.sport_modality ?? 'funcional'
     }
+
+    // Lo que el atleta ha dicho de sí mismo: sus marcas (5 reps) y cómo fueron las cargas del último bloque.
+    const { data: fbRows } = await sb.from('feedback_bloque').select('plan_id, clave, valoracion, created_at').eq('cliente_id', cliente_id).order('created_at', { ascending: false }).limit(12)
+    const ultimoPlanFb = fbRows?.[0]?.plan_id
+    const textoMarcas = textoMarcasYFeedback(
+      (perfilEntreno as unknown as { marcas?: Marcas } | null)?.marcas,
+      (fbRows ?? []).filter(r => r.plan_id === ultimoPlanFb && esValoracion(r.valoracion)).map(r => ({ clave: String(r.clave), valoracion: r.valoracion as 'flojo' | 'justo' | 'pesado' })),
+    )
 
     // Informe clínico del cliente (inyectar si existe)
     const informeClinico = await obtenerInformeVigente(cliente_id)
@@ -391,6 +400,7 @@ ${perfilEntreno?.vdot ? `- VDOT running: ${perfilEntreno.vdot} → ritmos de ent
 ${perfilEntreno?.rm_sentadilla_kg ? `- RM sentadilla: ${perfilEntreno.rm_sentadilla_kg}kg` : ''}
 ${perfilEntreno?.rm_banca_kg ? `- RM press banca: ${perfilEntreno.rm_banca_kg}kg` : ''}
 ${perfilEntreno?.rm_peso_muerto_kg ? `- RM peso muerto: ${perfilEntreno.rm_peso_muerto_kg}kg` : ''}
+${textoMarcas}
 ${perfilEntreno?.patron_lesiones?.length ? `- ⚠️ LESIONES: ${perfilEntreno.patron_lesiones.map((l) => `${l.zona} (${l.frecuencia})`).join(', ')} — EVITAR ejercicios que comprometan estas zonas` : ''}
 
 ## PROTOCOLO CIENTÍFICO PARA ESTA MODALIDAD

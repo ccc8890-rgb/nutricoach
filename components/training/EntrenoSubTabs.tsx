@@ -6,6 +6,7 @@ import { Dumbbell, Loader2, CircleDashed } from 'lucide-react'
 import { SneakerMove } from '@phosphor-icons/react'
 import CalendarioMesEntreno from './CalendarioMesEntreno'
 import TuBloque from './TuBloque'
+import CierreBloque from './CierreBloque'
 import type { TuBloque as TuBloqueDatos } from '@/lib/entrenos/tu-bloque'
 import EntrenoKanban from './EntrenoKanban'
 import { textoKm } from '@/lib/entrenos/km-sesion'
@@ -81,6 +82,8 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
       />
 
       {!loading && tuBloque && <TuBloque datos={tuBloque} fase={bloque?.fase} semanaActual={bloque?.semana_actual} semanasTotales={bloque?.semanas_totales} />}
+
+      <CierreBloque />
 
       <IndustrialTabs
         ariaLabel="Vista del entrenamiento"

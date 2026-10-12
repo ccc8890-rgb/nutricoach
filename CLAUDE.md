@@ -24,6 +24,15 @@ Detalle, causas y cómo comprobar cada una: [`docs/12-10-2026_patrones-vinculos-
 5. **Detalles desplegables** se abren bajo el elemento tocado; **textos largos** deben poder partirse (CSS); la **previsión** se marca y usa los días de la semana tipo del atleta.
 6. Antes de subir cambios de planes: `npm run verificar:motor` (56 comprobaciones). Probar siempre en producción como cliente a 390 px y comparar API y pantalla.
 
+## ✅ SESIÓN 12-10-2026 (noche, Claude) — «Mis marcas» y cierre de bloque (datos que solo sabe el atleta)
+
+- **Por qué:** `perfil_entreno_cliente` tenía huecos para RM, dominadas y lesiones pero estaban al 0 % y solo el coach podía rellenarlos; las sesiones de fuerza/híbridas no llegan al reloj ni piden RPE. Sin datos, los pesos del plan son estimaciones y el motor no sabe si fueron flojos o fuertes.
+- **«Mis marcas»** (Ajustes → Perfil, opcional, `components/PortalCliente/MisMarcas.tsx`, `GET/PUT /api/cliente/marcas`): peso de 5 reps en sentadilla, banca y peso muerto, dominadas máx. y sled push cómodo. Se guarda en `perfil_entreno_cliente.marcas` y las RM se rellenan con la estimación de Epley desde el 5RM (`rm_*_kg`), que es lo que ya lee el motor.
+- **Cierre de bloque** (tarjeta en Entreno cuando quedan ≤ 7 días del bloque, `components/training/CierreBloque.tsx`, `GET/POST /api/cliente/cierre-bloque`, tabla `feedback_bloque`): por cada ejercicio clave del plan (sentadilla, banca, sled push, carrera) «floja / justa / pesada». Solo aparece mientras falte por responder y es descartable.
+- **Generador:** `textoMarcasYFeedback` añade al prompt las marcas y el feedback del último bloque («pesada → mantener o bajar 5 %», «floja → +5 %»); lo dicho por el atleta manda sobre las estimaciones.
+- El análisis semanal de rendimiento ya deja marca en «Estado del sistema» (`analisis-rendimiento`). `verificar:motor` 61/61.
+- **Pendiente:** ver en pantalla a 390 px; pregunta suelta en Hoy (descartada de momento); el coach aún no ve el feedback del bloque en su panel; grabar las sesiones híbridas en el reloj como Fuerza/HIIT.
+
 ## ✅ SESIÓN 12-10-2026 (tarde-noche, Claude) — Progresión semanal real y objetivos del año (A/B/C, posibles)
 
 - **Progresión semanal real dentro del bloque** (antes la semana tipo se repetía igual las 4 semanas y la progresión del plan era solo texto). `lib/entrenos/progresion-semanal.ts`: la semana tipo = semana 1; las demás se **calculan al leer** (no hay copias que se desfasen): minutos de cada sesión de carrera y descarga salen del macrociclo (`planes_entrenamiento.progresion`, se guarda al aplicar el plan); fuerza: semanas 1-2 igual, desde la 3 +2,5 kg en básicos de barra, +10 kg en trineos, +2 kg en farmers y +1 serie en SkiErg/remo/carrera comprometida/pliometría; descarga: −35 % de series (mín. 2), cargas −10 %, pliometría a la mitad. Los ejercicios encadenados comparten series (rondas). Se muestra junto al peso la referencia Open masculina (`PESOS_OPEN_MASCULINO`, **confirmar con el reglamento de la temporada**).

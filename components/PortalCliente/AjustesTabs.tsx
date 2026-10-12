@@ -11,6 +11,7 @@ import { useTheme } from '@/components/ThemeProvider'
 import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import IntegracionesPanel from './IntegracionesPanel'
+import MisMarcas from './MisMarcas'
 import type { Profile, Cliente } from '@/types'
 import { IndustrialTabs, TechnicalRow } from './editorial'
 
@@ -139,6 +140,8 @@ export default function AjustesTabs({ codigo, clienteId, profile, cliente }: Aju
                             {guardandoRestricciones ? 'Guardando…' : 'Guardar'}
                         </button>
                     </section>
+
+                    <MisMarcas />
 
                     <button
                         type="button"
