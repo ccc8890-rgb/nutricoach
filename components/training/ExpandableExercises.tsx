@@ -19,10 +19,15 @@ export interface EjercicioDetalle {
   ejercicio: { id: string; nombre: string; grupo_muscular: string | null; tipo: string | null } | null
 }
 
+/** Descanso entre series: con una sola serie no hay nada que descansar (calentamiento de 1 × 5 min), así que no se muestra. */
+function descansoDe(ej: EjercicioDetalle): number {
+  return (ej.series ?? 0) > 1 ? descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) : 0
+}
+
 /** Descanso compartido por todos los ejercicios del bloque (2+), para mostrarlo una sola vez. */
 function descansoComun(items: EjercicioDetalle[]): number | null {
   if (items.length < 2) return null
-  const valores = items.map(ej => (descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? ej.descanso_segundos : null))
+  const valores = items.map(ej => (descansoDe(ej) ? ej.descanso_segundos : null))
   const primero = valores[0]
   return primero && valores.every(v => v === primero) ? primero : null
 }
@@ -94,9 +99,9 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                 >
                   <div className="min-w-0">
                     <p className="sr-only">{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
-                    {((!comun && descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos)) || ej.peso_sugerido) && (
+                    {((!comun && descansoDe(ej)) || ej.peso_sugerido) && (
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                        {!comun && descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos) ? (
+                        {!comun && descansoDe(ej) ? (
                           <span className="inline-flex items-center gap-1"><Clock size={11} /> {ej.descanso_segundos}s</span>
                         ) : null}
                         {ej.peso_sugerido && <span>{ej.peso_sugerido}</span>}

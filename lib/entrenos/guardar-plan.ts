@@ -15,29 +15,48 @@ const STOP_WORDS = new Set(['con', 'de', 'en', 'el', 'la', 'los', 'las', 'y', 'a
 // devolvía el primer resultado de Postgres sin ninguna preferencia.
 const OTRA_DISCIPLINA_RE = /crol|natación|natacion|nado\b|ski\s?erg|sled|wall\s?ball|remo\b|rowing|bici|kettlebell|mancuerna|dominada|sentadilla|press\s|peso muerto|farmer|granjero/i
 
-export async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPreferido?: 'cardio' | 'fuerza'): Promise<string | null> {
-  const normalizado = nombre.toLowerCase().trim()
+export type TipoPreferido = 'cardio' | 'fuerza' | 'cardio_funcional'
+
+const sinAcentos = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+const OTRA_GLOBAL = new RegExp(OTRA_DISCIPLINA_RE.source, 'gi')
+const clave = (t: string) => sinAcentos(t.trim().toLowerCase()).replace(/\s+/g, '')
+const terminosAjenos = (texto: string) => (sinAcentos(texto).match(OTRA_GLOBAL) ?? []).map(clave)
+
+/**
+ * Empareja el nombre que escribió la IA con un ejercicio del catálogo.
+ * - `tipoPreferido`: cardio (sesión de carrera), fuerza, o cardio_funcional (ejercicio medido en metros/minutos dentro de una híbrida).
+ * - Un término de otra disciplina (remo, SkiErg, natación…) solo descarta un candidato si la petición NO lo pide (salvo en carrera pura, donde siempre descarta):
+ *   «Remo en ergómetro» pide remo, así que «Remo ergómetro» vale; «Carrera continua» no pide SkiErg, así que «Carrera + SkiErg combinado» no.
+ */
+// Nombres habituales de la IA que son otro ejercicio del catálogo (la búsqueda por palabras empataría con ejercicios distintos).
+const SINONIMOS: Record<string, string> = {
+  'sentadilla trasera': 'sentadilla con barra',
+  'sentadilla trasera con barra': 'sentadilla con barra',
+  'back squat': 'sentadilla con barra',
+}
+
+export async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPreferido?: TipoPreferido): Promise<string | null> {
+  const normalizado = SINONIMOS[sinAcentos(nombre.toLowerCase().trim())] ?? nombre.toLowerCase().trim()
   // En sesiones de carrera, «rodaje/tirada continuo Z2» es la «Carrera continua» del catálogo (no comparten ninguna palabra útil).
   if (tipoPreferido === 'cardio' && /^(rodaje|tirada)\b/.test(normalizado) && /continu[oa]/.test(normalizado)) {
     const idContinua = await matchEjercicio(sb, 'carrera continua', tipoPreferido)
     if (idContinua) return idContinua
   }
 
-  function elegirMejor(candidatos: { id: string; nombre: string; tipo: string | null }[]): string | null {
+  // En una sesión de carrera pura no vale ningún aparato de otra disciplina, ni siquiera si la IA lo escribe.
+  const pedidos = new Set(tipoPreferido === 'cardio' ? [] : terminosAjenos(normalizado))
+  const tiposOk: string[] | null = tipoPreferido === 'cardio' ? ['cardio', 'flexibilidad']
+    : tipoPreferido === 'cardio_funcional' ? ['cardio', 'funcional']
+    : tipoPreferido ? [tipoPreferido] : null
+  type Cand = { id: string; nombre: string; tipo: string | null }
+  const esBueno = (c: Cand) => (!tiposOk || (c.tipo != null && tiposOk.includes(c.tipo))) && !terminosAjenos(c.nombre).some(t => !pedidos.has(t))
+
+  function elegirMejor(candidatos: Cand[]): string | null {
     if (candidatos.length === 0) return null
     if (!tipoPreferido) return candidatos[0].id
-    // Entre varios candidatos para la misma palabra, prioriza: tipo
-    // correcto Y sin pinta de ser de otra disciplina (SkiErg, natación...).
-    // En carrera, la movilidad/flexibilidad del calentamiento también vale.
-    const buenos = candidatos.filter(c => (c.tipo === tipoPreferido || (tipoPreferido === 'cardio' && c.tipo === 'flexibilidad')) && !OTRA_DISCIPLINA_RE.test(c.nombre))
-    if (buenos.length > 0) return buenos[0].id
-    // Ningún candidato de ESTA palabra es de fiar (todos son de otra
-    // disciplina, ej. la única "series..." de la BD es de natación) — mejor
-    // devolver null y dejar que el nivel de arriba pruebe la siguiente
-    // palabra ("800m" en vez de "series") que si busca directamente sin
-    // ella habría encontrado "Intervalos 800m". Aceptar aquí el primer
-    // candidato malo bloqueaba esa segunda oportunidad.
-    return null
+    // Ningún candidato de fiar → null, para que el nivel de arriba pruebe la siguiente palabra
+    // (aceptar el primero malo bloqueaba esa segunda oportunidad).
+    return candidatos.find(esBueno)?.id ?? null
   }
 
   // Nivel 1: match exacto (case-insensitive)
@@ -50,15 +69,46 @@ export async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPre
   const idParcial = parcial?.length ? elegirMejor(parcial) : null
   if (idParcial) return idParcial
 
-  // Nivel 3: buscar por palabras significativas (>3 chars, sin stop words)
+  // Nivel 3: candidatos de TODAS las palabras significativas (>3 chars, sin stop words); gana el que más palabras comparte
+  // (antes mandaba la primera palabra: «Remo en ergómetro» acababa en «Remo con barra»).
   const palabras = normalizado.split(/\s+/).filter(p => p.length > 3 && !STOP_WORDS.has(p))
+  const pool = new Map<string, Cand>()
   for (const palabra of palabras) {
-    const { data: porPalabra } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', `%${palabra}%`).limit(5)
-    const idPalabra = porPalabra?.length ? elegirMejor(porPalabra) : null
-    if (idPalabra) return idPalabra
+    const { data } = await sb.from('ejercicios').select('id, nombre, tipo').ilike('nombre', `%${palabra}%`).limit(40)
+    for (const c of data ?? []) pool.set(c.id, c)
   }
+  const aptos = [...pool.values()].filter(c => !tipoPreferido || esBueno(c))
+  if (aptos.length === 0) return null
+  const puntos = (c: Cand) => palabras.filter(p => sinAcentos(c.nombre.toLowerCase()).includes(sinAcentos(p))).length
+  aptos.sort((x, y) => puntos(y) - puntos(x) || x.nombre.length - y.nombre.length)
+  return aptos[0].id
+}
 
-  return null
+/** «Carrera continua» con series de distancia (4 × 400 m) son intervalos: el catálogo tiene «Intervalos 400m». */
+export function nombreCatalogoPorDistancia(nombre: string, series: unknown, repeticiones: unknown): string | null {
+  const m = String(repeticiones ?? '').trim().match(/^(\d{3,4})\s*m$/i)
+  if (!m || typeof series !== 'number' || series < 2) return null
+  return /^(carrera|rodaje|trote)\s+continu[oa]$/i.test(nombre.trim()) ? `Intervalos ${m[1]}m` : null
+}
+
+/** Ejercicio medido en metros o minutos (SkiErg 500 m, remo 5 min…): se busca entre cardio y funcional. */
+export const midePorDistanciaOTiempo = (repeticiones: unknown) => /^\s*\d+([.,]\d+)?\s*(m|km|min|s|seg)\b/i.test(String(repeticiones ?? ''))
+
+/** Una sesión de carrera pura debe vincularse a ejercicios de carrera, nunca a un aparato de otra disciplina. */
+export function tipoPreferidoDeSesion(s: SesionIA): TipoPreferido | undefined {
+  const nombreSesion = (s.nombre ?? '').toLowerCase()
+  // El ritmo objetivo solo lo trae una sesión de carrera (series, tempo…), aunque su nombre no diga «carrera».
+  const esSesionCarrera = (/carrera|tirada|rodaje|running|tempo run|^series\b|intervalos|fartlek/i.test(nombreSesion) || (typeof s.ritmo_objetivo === 'string' && s.ritmo_objetivo.trim() !== '')) && !/híbrid|hibrid|hyrox/i.test(nombreSesion)
+  return esSesionCarrera ? 'cardio' : undefined
+}
+
+/** Ejercicio del catálogo que corresponde a un ejercicio escrito por la IA (null si no hay uno fiable). */
+export async function idEjercicioDeLaIA(sb: SupabaseClient, sesion: SesionIA, ej: EjercicioIA): Promise<string | null> {
+  const nombreEj = (ej.nombre ?? '').trim()
+  if (!nombreEj) return null
+  const tipo: TipoPreferido | undefined = tipoPreferidoDeSesion(sesion) ?? (midePorDistanciaOTiempo(ej.repeticiones) ? 'cardio_funcional' : undefined)
+  const nombreIntervalos = nombreCatalogoPorDistancia(nombreEj, ej.series, ej.repeticiones)
+  return (nombreIntervalos ? await matchEjercicio(sb, nombreIntervalos, tipo) : null) ?? await matchEjercicio(sb, nombreEj, tipo)
 }
 
 export interface EjercicioIA {
@@ -119,18 +169,12 @@ export async function guardarPlanEntreno(sb: SupabaseClient, d: DatosGuardadoPla
       if (errSes || !sesion) throw new Error('sesión')
       sesionesCreadas.push(sesion.id as string)
 
-      // Una sesión de carrera pura debe vincularse a ejercicios de carrera, nunca a un aparato de otra disciplina.
-      const nombreSesion = (s.nombre ?? '').toLowerCase()
-      // El ritmo objetivo solo lo trae una sesión de carrera (series, tempo…), aunque su nombre no diga «carrera».
-      const esSesionCarrera = (/carrera|tirada|rodaje|running|tempo run|^series\b|intervalos|fartlek/i.test(nombreSesion) || (typeof s.ritmo_objetivo === 'string' && s.ritmo_objetivo.trim() !== '')) && !/híbrid|hibrid|hyrox/i.test(nombreSesion)
-      const tipoPreferido: 'cardio' | 'fuerza' | undefined = esSesionCarrera ? 'cardio' : undefined
-
       const ejercicios = s.ejercicios ?? []
       for (let j = 0; j < ejercicios.length; j++) {
         const ej = ejercicios[j]
         const nombreEj = (ej.nombre ?? '').trim()
         if (!nombreEj) continue
-        const ejercicioId = await matchEjercicio(sb, nombreEj, tipoPreferido)
+        const ejercicioId = await idEjercicioDeLaIA(sb, s, ej)
         if (!ejercicioId) { omitidos.push(nombreEj); continue }
         const { error: errEj } = await sb.from('sesion_ejercicios').insert({
           sesion_id: sesion.id,
