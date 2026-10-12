@@ -35,10 +35,10 @@ async function main() {
     console.log(`${p ? (p.activo ? '● NutriCoach (plan activo)' : '○ NutriCoach (plan ANTIGUO)') : '· de Carlos / otro'} | ${w.workoutId} | ${w.workoutName} | ${(w.createdDate ?? w.updatedDate ?? '').slice(0, 10)}`)
   }
 
-  console.log('\n## CALENDARIO (octubre–diciembre 2026)')
+  console.log('\n## CALENDARIO (junio–diciembre 2026)')
   const entradas: { fecha: string; titulo: string; workoutId?: string }[] = []
   const vistos = new Set<string>() // el calendario devuelve los días de borde de un mes también en el siguiente
-  for (const mes of [9, 10, 11]) {
+  for (const mes of [5, 6, 7, 8, 9, 10, 11]) {
     try {
       const r = (await gc.client.get(`${api}/calendar-service/year/2026/month/${mes}`)) as { calendarItems?: { id?: number; date: string; title: string; itemType: string; workoutId?: number }[] }
       for (const it of r.calendarItems ?? []) if (it.itemType === 'workout' && !vistos.has(String(it.id ?? `${it.date}-${it.workoutId}`)) && vistos.add(String(it.id ?? `${it.date}-${it.workoutId}`))) entradas.push({ fecha: it.date, titulo: it.title, workoutId: it.workoutId ? String(it.workoutId) : undefined })
