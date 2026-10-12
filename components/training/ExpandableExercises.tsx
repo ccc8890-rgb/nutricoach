@@ -1,8 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { ChevronDown, Clock } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { TechnicalRow } from '@/components/PortalCliente/editorial'
 import { descansoVisible } from '@/lib/entrenos/descanso-visible'
+import { notaLegible, pausa, ritmoDeLaNota } from '@/lib/training/ejercicio-texto'
 import { parseExerciseChecklist, toggleExerciseChecklist } from '@/lib/training/exercise-checklist'
 import { crearPresentacionEjercicios } from '@/lib/training/session-blocks'
 
@@ -65,7 +66,7 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
       {grupos.map(grupo => (
         <section key={grupo.bloque} className="training-exercise-group">
           <p className="mb-2 mt-4 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] first:mt-0" style={{ color: 'var(--text-muted)' }}>
-            {grupo.label}{descansoComun(grupo.items) ? ` · descanso ${descansoComun(grupo.items)}s` : ''}
+            {grupo.label}{descansoComun(grupo.items) ? ` · pausa ${pausa(descansoComun(grupo.items) as number)}` : ''}
           </p>
           {grupo.items.map(ej => {
             const comun = descansoComun(grupo.items)
@@ -99,17 +100,18 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                 >
                   <div className="min-w-0">
                     <p className="sr-only">{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
-                    {((!comun && descansoDe(ej)) || ej.peso_sugerido) && (
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                        {!comun && descansoDe(ej) ? (
-                          <span className="inline-flex items-center gap-1"><Clock size={11} /> {ej.descanso_segundos}s</span>
-                        ) : null}
-                        {ej.peso_sugerido && <span>{ej.peso_sugerido}</span>}
-                      </div>
-                    )}
-                    {detalle && !open && (
-                      <p className="mt-1 line-clamp-2 text-[11px] leading-snug" style={{ color: 'var(--text-secondary)' }}>{detalle}</p>
-                    )}
+                    {(() => {
+                      const chips: string[] = []
+                      if (!comun && descansoDe(ej)) chips.push(`pausa ${pausa(ej.descanso_segundos as number)}`)
+                      const ritmo = ritmoDeLaNota(detalle)
+                      if (ritmo) chips.push(ritmo)
+                      if (ej.peso_sugerido) chips.push(ej.peso_sugerido)
+                      return chips.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                          {chips.map(c => <span key={c}>{c}</span>)}
+                        </div>
+                      ) : null
+                    })()}
                   </div>
                   {detalle && (
                     <ChevronDown
@@ -120,7 +122,7 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                   )}
                 </button>
                 {open && detalle && (
-                  <p className="px-3 pb-2.5 text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{detalle}</p>
+                  <p className="px-3 pb-2.5 text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{notaLegible(detalle)}</p>
                 )}
               </TechnicalRow>
             )

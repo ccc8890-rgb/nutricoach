@@ -442,9 +442,9 @@ ${instruccionDuracion}
           "series": number,
           "repeticiones": "string — '8-10' o '30s' o '400m' o '3x5min'",
           "descanso_segundos": number,
-          "rpe_objetivo": "string — '7-8' o '8 RIR 2'",
+          "rpe_objetivo": "string — UN solo número o rango simple ('7' o '7-8'), sin variantes por semana ni RIR",
           "peso_estimado_kg": "number — peso de partida estimado en kg. Solo para ejercicios de fuerza; omitir en ejercicios de carrera/cardio",
-          "notas": "string — técnica clave + justificación científica de POR QUÉ este ejercicio aquí"
+          "notas": "string — UNA frase corta (máx. 120 caracteres) con la clave de ejecución. Sin justificación científica: eso va en decisiones_clave"
         }
       ]
     }
