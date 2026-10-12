@@ -19,6 +19,8 @@ import { Barbell, CaretDown, CheckCircle, PersonSimpleRun, SpinnerGap } from '@p
 import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import { textoKm } from '@/lib/entrenos/km-sesion'
+import { DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
+import { lunesDe, sumarDias } from '@/lib/entrenos/calendario-ajustes'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { etiquetaTipoSesion, tituloSesionSinModalidad } from '@/lib/training/session-type-presentation'
@@ -167,6 +169,14 @@ const colision: CollisionDetection = (args) => {
     return sesiones.length > 0 ? sesiones : impactos.filter(i => i.id !== args.active.id)
 }
 
+/** Fecha (esta semana) del día de una sesión: la progresión del bloque depende de la semana. */
+function fechaDeSesion(dia: string | null | undefined): string {
+    const hoy = new Date()
+    const iso = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+    const orden = dia ? DIAS_SEMANA_ORDEN[dia] : undefined
+    return orden === undefined ? iso : sumarDias(lunesDe(iso), orden)
+}
+
 export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }) {
     const [sesionesLocal, setSesionesLocal] = useState(sesiones)
     const [moviendo, setMoviendo] = useState(false)
@@ -187,7 +197,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
         if (detalles[sesionId] && detalles[sesionId] !== 'cargando') return
         setDetalles(prev => ({ ...prev, [sesionId]: 'cargando' }))
         try {
-            const res = await fetch(`/api/cliente/sesion/${sesionId}`)
+            const res = await fetch(`/api/cliente/sesion/${sesionId}?fecha=${fechaDeSesion(sesionesLocal.find(x => x.id === sesionId)?.dia_semana)}`)
             const data = await res.json()
             setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] }))
             setExtras(prev => ({ ...prev, [sesionId]: extrasDeRespuesta(data.sesion) }))

@@ -7,6 +7,8 @@ import { leerUmbrales } from '@/lib/rendimiento/garmin-entrenos'
 import { finHorizonteEnvio, huellaPasos, planearEnvioGarmin } from '@/lib/entrenos/garmin-auto'
 import { ocurrenciasDelDia, sumarDias, type Ajuste } from '@/lib/entrenos/calendario-ajustes'
 import { plantillaActivaEn } from '@/lib/entrenos/ventana-plan'
+import { semanaDeFecha } from '@/lib/entrenos/sesion-semana'
+import { pasosDeLaSemana } from '@/lib/entrenos/progresion-semanal'
 
 export const maxDuration = 300
 
@@ -41,7 +43,7 @@ export async function GET(req: NextRequest) {
     if (resumen.enviados >= MAX_ENVIOS) break
     resumen.clientes++
 
-    const { data: planes } = await db.from('planes_entrenamiento').select('id, created_at, duracion_semanas').eq('cliente_id', clienteId).eq('activo', true)
+    const { data: planes } = await db.from('planes_entrenamiento').select('id, created_at, duracion_semanas, progresion').eq('cliente_id', clienteId).eq('activo', true)
     const planIds = (planes ?? []).map(p => p.id as string)
     if (!planIds.length) continue
 
@@ -51,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     const { data: sesiones } = await db
       .from('sesiones_entrenamiento')
-      .select('id, plan_id, nombre, dia_semana, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, garmin_pasos_hash')
+      .select('id, plan_id, nombre, dia_semana, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, garmin_pasos_hash, garmin_variantes')
       .in('plan_id', planIds)
       .not('pasos', 'is', null)
 
@@ -74,14 +76,47 @@ export async function GET(req: NextRequest) {
       const activa = plan ? plantillaActivaEn(plan.created_at, plan.duracion_semanas as number | null) : () => true
       const delPlan = (sesiones ?? []).filter(x => x.plan_id === s.plan_id)
       const deseadas = dias.filter(f => ocurrenciasDelDia(f, delPlan, ajustes, activa(f)).some(o => o.sesion.id === s.id))
-      const decision = planearEnvioGarmin({ ...s, garmin_fechas: Array.isArray(s.garmin_fechas) ? s.garmin_fechas : [] }, huellaPasos(s.pasos, vdot, techoFcE), deseadas, hoy)
-      if (decision.accion === 'nada') { resumen.al_dia++; continue }
-      try {
-        await enviarSesionAGarmin(db, s.id, undefined, { modo: decision.accion, fechas: decision.accion === 'borrar' ? [] : decision.fechas })
-        resumen.enviados++
-      } catch (e) {
-        const msg = e instanceof ErrorGarmin ? e.mensaje : 'error inesperado'
-        resumen.errores.push(`${s.nombre}: ${msg}`)
+      const prog = plan ? semanaDeFecha(plan, hoy).prog : null
+      // Con progresión semanal cada semana del bloque tiene sus pasos: un entreno de Garmin por (sesión, semana). Sin progresión, un solo entreno como siempre.
+      if (!prog) {
+        const decision = planearEnvioGarmin({ ...s, garmin_fechas: Array.isArray(s.garmin_fechas) ? s.garmin_fechas : [] }, huellaPasos(s.pasos, vdot, techoFcE), deseadas, hoy)
+        if (decision.accion === 'nada') { resumen.al_dia++; continue }
+        try {
+          await enviarSesionAGarmin(db, s.id, undefined, { modo: decision.accion, fechas: decision.accion === 'borrar' ? [] : decision.fechas })
+          resumen.enviados++
+        } catch (e) {
+          resumen.errores.push(`${s.nombre}: ${e instanceof ErrorGarmin ? e.mensaje : 'error inesperado'}`)
+        }
+        continue
+      }
+      const porSemana = new Map<number, string[]>()
+      for (const f of deseadas) {
+        const n = semanaDeFecha(plan!, f).n
+        if (n) porSemana.set(n, [...(porSemana.get(n) ?? []), f])
+      }
+      const variantes = (s.garmin_variantes && typeof s.garmin_variantes === 'object' ? s.garmin_variantes : {}) as Record<string, { workout_id: string | null; fechas: string[]; hash: string | null }>
+      // Entreno antiguo de la plantilla (antes de la progresión): se quita una vez.
+      const trabajos: { modo: 'recrear' | 'anadir' | 'borrar'; fechas: string[]; variante?: { n: number; pasos: unknown } }[] = []
+      if (s.garmin_workout_id) trabajos.push({ modo: 'borrar', fechas: [] })
+      for (const [n, fechas] of porSemana) {
+        const pasosN = pasosDeLaSemana(s.pasos, s.nombre, prog, n)
+        if (!pasosN) continue
+        const v = variantes[String(n)]
+        const d = planearEnvioGarmin({ garmin_workout_id: v?.workout_id ?? null, garmin_programado_fecha: null, garmin_fechas: v?.fechas ?? [], garmin_pasos_hash: v?.hash ?? null }, huellaPasos(pasosN, vdot, techoFcE), fechas, hoy)
+        if (d.accion === 'recrear' || d.accion === 'anadir') trabajos.push({ modo: d.accion, fechas: d.fechas, variante: { n, pasos: pasosN } })
+      }
+      // Semanas que ya no tienen fechas por delante: se quitan de Garmin.
+      for (const [k, v] of Object.entries(variantes)) {
+        if (v?.workout_id && !porSemana.has(Number(k))) trabajos.push({ modo: 'borrar', fechas: [], variante: { n: Number(k), pasos: s.pasos } })
+      }
+      if (!trabajos.length) { resumen.al_dia++; continue }
+      for (const t of trabajos) {
+        try {
+          await enviarSesionAGarmin(db, s.id, undefined, t)
+          resumen.enviados++
+        } catch (e) {
+          resumen.errores.push(`${s.nombre}${t.variante ? ` S${t.variante.n}` : ''}: ${e instanceof ErrorGarmin ? e.mensaje : 'error inesperado'}`)
+        }
       }
     }
 

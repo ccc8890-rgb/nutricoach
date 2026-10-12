@@ -34,6 +34,8 @@ function iconoTipo(tipo: SesionSemana['tipo_sesion'], size = 16) {
   return tipo === 'carrera' ? <SneakerMove size={size} weight="regular" /> : <Dumbbell size={size} />
 }
 
+const fechaLocalHoy = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
+
 export default function EntrenoSubTabs({ planNombre }: { planId: string; planNombre: string }) {
   const [subTab, setSubTab] = useState<'hoy' | 'semana' | 'mes'>('hoy')
   // Datos desde la caché compartida (precargada por el portal): sin espera al abrir la pestaña.
@@ -53,7 +55,7 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
     if (detalles[sesionId] && detalles[sesionId] !== 'cargando') return
     setDetalles(prev => ({ ...prev, [sesionId]: 'cargando' }))
     try {
-      const res = await fetch(`/api/cliente/sesion/${sesionId}`)
+      const res = await fetch(`/api/cliente/sesion/${sesionId}?fecha=${fechaLocalHoy()}`)
       const data = await res.json()
       setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] }))
       setExtras(prev => ({ ...prev, [sesionId]: extrasDeRespuesta(data.sesion) }))

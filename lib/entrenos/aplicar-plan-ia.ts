@@ -5,6 +5,7 @@ import type { AgenteTarea } from '@/lib/agentes/types'
 import type { AplicarTareaResult } from '@/lib/agentes/aplicar'
 import { guardarPlanEntreno, type SesionIA } from './guardar-plan'
 import { pasosDeSesionCarrera } from './pasos-desde-plan-ia'
+import { nombreSinCifras, progresionDeMacro } from './progresion-semanal'
 import type { PayloadPlanEntrenoIA } from './planificar-con-ia'
 
 const MODOS = ['crear', 'siguiente_bloque']
@@ -43,8 +44,11 @@ export async function aplicarPlanEntrenoIA(db: SupabaseClient, tarea: AgenteTare
       descripcion: typeof p.plan.fundamentacion === 'string' ? p.plan.fundamentacion : null,
       duracionSemanas: p.duracion_semanas, faseBloque: p.fase_bloque,
       // Las sesiones de carrera salen con pasos (zonas) para el reloj y el portal.
-      sesiones: (p.plan.sesiones as SesionIA[]).map(s => ({ ...s, pasos: pasosDeSesionCarrera(s, p.macrociclo?.semanas?.[0]) ?? undefined })),
+      sesiones: (p.plan.sesiones as SesionIA[]).map(s => ({ ...s, nombre: s.nombre ? nombreSinCifras(s.nombre) : s.nombre, pasos: pasosDeSesionCarrera(s, p.macrociclo?.semanas?.[0]) ?? undefined })),
     })
+    // Progresión semana a semana (minutos de carrera por sesión y descarga, del macrociclo): las semanas 2-4 ya no son copia de la 1.
+    const progresion = progresionDeMacro(p.macrociclo?.semanas as never, p.duracion_semanas)
+    if (progresion) await db.from('planes_entrenamiento').update({ progresion }).eq('id', g.planId)
     // Historial de versiones (pantalla «revisar plan»).
     await db.from('registros_ia').insert({
       cliente_id: tarea.cliente_id, tipo: 'plan_entreno_ia',

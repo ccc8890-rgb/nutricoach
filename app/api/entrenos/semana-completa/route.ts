@@ -3,6 +3,7 @@ import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { calcularBloqueInfo, clasificarTipoSesion } from '@/lib/entrenos/bloques'
 import { construirTuBloque } from '@/lib/entrenos/tu-bloque'
 import { kmDeSesion, ritmosDeVdot } from '@/lib/entrenos/km-sesion'
+import { pasosParaFecha } from '@/lib/entrenos/sesion-semana'
 
 function startOfWeek() {
   const now = new Date()
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
   // Plan activo y cliente en una sola consulta (join interno por profile_id).
   const { data: planEntreno } = await admin
     .from('planes_entrenamiento')
-    .select('id, nombre, created_at, duracion_semanas, cliente_id, cliente:clientes!inner(profile_id)')
+    .select('id, nombre, created_at, duracion_semanas, progresion, cliente_id, cliente:clientes!inner(profile_id)')
     .eq('cliente.profile_id', user.id)
     .eq('activo', true)
     .order('created_at', { ascending: false })
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
       registros_count: registrosPorSesion[s.id] ?? 0,
       completada: (registrosPorSesion[s.id] ?? 0) > 0,
       esHoy: fecha === today,
-      km: kmDeSesion((s as { pasos?: unknown }).pasos, ritmosAtleta),
+      km: kmDeSesion(pasosParaFecha(planEntreno, { nombre: s.nombre, pasos: (s as { pasos?: unknown }).pasos }, fecha), ritmosAtleta),
     }
   })
 

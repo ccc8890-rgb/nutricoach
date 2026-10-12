@@ -101,18 +101,20 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
 
   useEffect(() => {
     idsDia.split(',').filter(id => id && !id.startsWith('prev-')).forEach(sesionId => {
-      if (detalles[sesionId]) return
-      setDetalles(prev => ({ ...prev, [sesionId]: 'cargando' }))
-      fetch(`/api/cliente/sesion/${sesionId}`)
+      // La misma sesión se repite cada semana con la progresión de esa semana: la clave incluye la fecha.
+      const clave = `${sesionId}|${diaSeleccionado}`
+      if (detalles[clave]) return
+      setDetalles(prev => ({ ...prev, [clave]: 'cargando' }))
+      fetch(`/api/cliente/sesion/${sesionId}?fecha=${diaSeleccionado}`)
         .then(r => r.json())
         .then(data => {
-          setDetalles(prev => ({ ...prev, [sesionId]: data.sesion?.ejercicios ?? [] }))
-          setExtras(prev => ({ ...prev, [sesionId]: extrasDeRespuesta(data.sesion) }))
+          setDetalles(prev => ({ ...prev, [clave]: data.sesion?.ejercicios ?? [] }))
+          setExtras(prev => ({ ...prev, [clave]: extrasDeRespuesta(data.sesion) }))
         })
-        .catch(() => setDetalles(prev => ({ ...prev, [sesionId]: [] })))
+        .catch(() => setDetalles(prev => ({ ...prev, [clave]: [] })))
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idsDia])
+  }, [idsDia, diaSeleccionado])
 
   function mesAnterior() {
     if (month === 1) { setMonth(12); setYear(y => y - 1) } else setMonth(m => m - 1)
@@ -268,12 +270,12 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                     </p>
                   ) : (
                   <div className="mt-3">
-                    {detalles[sesion.id] === 'cargando' ? (
+                    {detalles[`${sesion.id}|${diaSeleccionado}`] === 'cargando' ? (
                       <div className="flex justify-center py-6"><CircleNotch size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} /></div>
                     ) : (
                       <>
-                        {extras[sesion.id] && <PasosSesion sesionId={sesion.id} {...extras[sesion.id]!} />}
-                        <ListaEjerciciosExpandible ejercicios={(detalles[sesion.id] as EjercicioDetalle[]) ?? []} />
+                        {extras[`${sesion.id}|${diaSeleccionado}`] && <PasosSesion sesionId={sesion.id} {...extras[`${sesion.id}|${diaSeleccionado}`]!} />}
+                        <ListaEjerciciosExpandible ejercicios={(detalles[`${sesion.id}|${diaSeleccionado}`] as EjercicioDetalle[]) ?? []} />
                       </>
                     )}
                   </div>

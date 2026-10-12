@@ -16,6 +16,10 @@ export interface EjercicioDetalle {
   repeticiones: string | null
   descanso_segundos: number | null
   encadenado?: boolean | null
+  /** Peso de la prueba Open para esta estación (referencia junto al peso de entreno). */
+  objetivo_open?: string | null
+  /** El valor de esta semana difiere de la semana 1 (progresión o descarga). */
+  cambio_semana?: boolean
   peso_sugerido: string | null
   notas: string | null
   contexto_ia: string | null
@@ -101,6 +105,7 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                       const ritmo = ritmoDeLaNota(detalle)
                       if (ritmo) chips.push(ritmo)
                       if (ej.peso_sugerido && !/^\s*0([.,]0+)?\s*kg\s*$/i.test(ej.peso_sugerido)) chips.push(ej.peso_sugerido)
+                      if (ej.objetivo_open && ej.peso_sugerido) chips.push(`Open ${ej.objetivo_open}`)
                       return chips.length > 0 ? (
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
                           {chips.map(c => <span key={c}>{c}</span>)}

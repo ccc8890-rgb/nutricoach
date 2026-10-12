@@ -3,6 +3,9 @@ import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
 import { zonasFcDesde } from '@/lib/entrenos/zonas-fc'
 import { leerUmbrales } from '@/lib/rendimiento/garmin-entrenos'
+import { ejerciciosParaFecha, pasosParaFecha, semanaDeFecha } from '@/lib/entrenos/sesion-semana'
+
+const hoyMadrid = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' })
 
 export async function GET(
   request: NextRequest,
@@ -50,7 +53,7 @@ export async function GET(
   // Verify ownership via plan
   const { data: plan } = await admin
     .from('planes_entrenamiento')
-    .select('id, nombre, cliente_id')
+    .select('id, nombre, cliente_id, created_at, duracion_semanas, progresion')
     .eq('id', sesion.plan_id)
     .single()
 
@@ -74,16 +77,24 @@ export async function GET(
     .eq('sesion_id', id)
     .order('orden')
 
+  // Semana del bloque a la que corresponde la fecha pedida (por defecto, hoy): la semana tipo con su progresión aplicada.
+  const fechaParam = searchParams.get('fecha')
+  const fecha = fechaParam && /^\d{4}-\d{2}-\d{2}$/.test(fechaParam) ? fechaParam : hoyMadrid()
+  const semana = semanaDeFecha(plan, fecha)
+  const ejerciciosSemana = ejerciciosParaFecha(plan, (ejercicios ?? []) as unknown as Parameters<typeof ejerciciosParaFecha>[1], fecha)
+  const pasosSemana = pasosParaFecha(plan, { nombre: sesion.nombre, pasos: sesion.pasos }, fecha)
+
   return NextResponse.json({
     sesion: {
+      semana: semana.n && semana.prog ? { n: semana.n, total: plan.duracion_semanas, descarga: semana.descarga } : null,
       id: sesion.id,
       nombre: sesion.nombre,
       dia_semana: sesion.dia_semana,
       notas: sesion.notas,
       contexto_ia: sesion.contexto_ia,
       plan: { nombre: plan.nombre, cliente_id: plan.cliente_id },
-      ejercicios: ejercicios ?? [],
-      pasos: sesion.pasos ?? null,
+      ejercicios: ejerciciosSemana,
+      pasos: pasosSemana ?? null,
       ritmos,
       fc,
       garmin: { workoutId: sesion.garmin_workout_id ?? null, fecha: sesion.garmin_programado_fecha ?? null },

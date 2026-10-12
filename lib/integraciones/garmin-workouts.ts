@@ -21,7 +21,11 @@ const FECHA_RE = /^\d{4}-\d{2}-\d{2}$/
 export interface OpcionesEnvioMulti {
   modo: 'recrear' | 'anadir' | 'borrar'
   fechas: string[]
+  /** Semana del bloque: el entreno lleva los pasos de esa semana y su estado se guarda en `garmin_variantes[n]` (no en las columnas base). */
+  variante?: { n: number; pasos: unknown }
 }
+
+interface EstadoVariante { workout_id: string | null; fechas: string[]; hash: string | null }
 
 export async function enviarSesionAGarmin(
   db: SupabaseClient,
@@ -34,12 +38,13 @@ export async function enviarSesionAGarmin(
 
   const { data: sesion } = await db
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, notas, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, plan_id')
+    .select('id, nombre, dia_semana, notas, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, garmin_variantes, plan_id')
     .eq('id', sesionId)
     .single()
   if (!sesion) throw new ErrorGarmin('Sesión no encontrada', 404)
 
-  const validacion = validarPasos(sesion.pasos)
+  const pasosEfectivos = multi?.variante ? multi.variante.pasos : sesion.pasos
+  const validacion = validarPasos(pasosEfectivos)
   if (!validacion.ok) throw new ErrorGarmin(`Esta sesión no tiene pasos de carrera válidos: ${validacion.error}`)
 
   const { data: plan } = await db.from('planes_entrenamiento').select('cliente_id').eq('id', sesion.plan_id).single()
@@ -84,11 +89,31 @@ export async function enviarSesionAGarmin(
   }
 
   const api = () => (gc as unknown as { url: { GC_API: string } }).url.GC_API // `url` es privado en los tipos de la librería, pero existe en runtime.
-  const huella = huellaPasos(sesion.pasos, perfil?.vdot ? Number(perfil.vdot) : null, fc?.E?.max ?? null)
+  const huella = huellaPasos(pasosEfectivos, perfil?.vdot ? Number(perfil.vdot) : null, fc?.E?.max ?? null)
   const programar = (workoutId: string, fecha: string) => gc.client.post(`${api()}/workout-service/schedule/${workoutId}`, { date: fecha })
+  const variantes = (sesion.garmin_variantes && typeof sesion.garmin_variantes === 'object' ? sesion.garmin_variantes : {}) as Record<string, EstadoVariante>
+  const claveVar = multi?.variante ? String(multi.variante.n) : null
+  const estadoPrevio: EstadoVariante = claveVar
+    ? (variantes[claveVar] ?? { workout_id: null, fechas: [], hash: null })
+    : { workout_id: sesion.garmin_workout_id as string | null, fechas: [...new Set([...(Array.isArray(sesion.garmin_fechas) ? (sesion.garmin_fechas as string[]) : []), ...(sesion.garmin_programado_fecha ? [sesion.garmin_programado_fecha as string] : [])])], hash: null }
   const borrarAnterior = async () => {
-    if (!sesion.garmin_workout_id) return
-    try { await gc.deleteWorkout({ workoutId: sesion.garmin_workout_id }) } catch { /* ya borrado en Garmin: no es un error */ }
+    if (!estadoPrevio.workout_id) return
+    try { await gc.deleteWorkout({ workoutId: estadoPrevio.workout_id }) } catch { /* ya borrado en Garmin: no es un error */ }
+  }
+  /** Guarda el estado del envío: en la variante de la semana, o en las columnas base de siempre. */
+  const guardarEstado = async (workoutId: string | null, fechas: string[]) => {
+    if (claveVar) {
+      const nuevas = { ...variantes }
+      if (workoutId) nuevas[claveVar] = { workout_id: workoutId, fechas, hash: huella }
+      else delete nuevas[claveVar]
+      await db.from('sesiones_entrenamiento').update({ garmin_variantes: nuevas }).eq('id', sesionId)
+    } else {
+      await db.from('sesiones_entrenamiento')
+        .update(workoutId
+          ? { garmin_workout_id: workoutId, garmin_fechas: fechas, garmin_programado_fecha: fechas[0] ?? null, garmin_pasos_hash: huella }
+          : { garmin_workout_id: null, garmin_programado_fecha: null, garmin_fechas: [], garmin_pasos_hash: null })
+        .eq('id', sesionId)
+    }
   }
   const guardarTokens = async () => {
     try {
@@ -100,7 +125,7 @@ export async function enviarSesionAGarmin(
     } catch { /* no crítico */ }
   }
   const crear = async (): Promise<string> => {
-    const payload = pasosAGarmin(sesion.nombre, validacion.pasos, ritmos, sesion.notas ?? undefined, fc)
+    const payload = pasosAGarmin(multi?.variante ? `${sesion.nombre} · S${multi.variante.n}` : sesion.nombre, validacion.pasos, ritmos, sesion.notas ?? undefined, fc)
     try {
       const creado = await gc.addWorkout(payload as never)
       return String((creado as unknown as { workoutId: number | string }).workoutId)
@@ -110,16 +135,14 @@ export async function enviarSesionAGarmin(
   }
 
   if (multi) {
-    // Incluye la fecha única del envío antiguo (garmin_programado_fecha) para no perderla ni duplicarla.
-    const previas = [...new Set([...(Array.isArray(sesion.garmin_fechas) ? (sesion.garmin_fechas as string[]) : []), ...(sesion.garmin_programado_fecha ? [sesion.garmin_programado_fecha as string] : [])])]
     if (multi.modo === 'borrar') {
       await borrarAnterior()
-      await db.from('sesiones_entrenamiento').update({ garmin_workout_id: null, garmin_programado_fecha: null, garmin_fechas: [], garmin_pasos_hash: null }).eq('id', sesionId)
+      await guardarEstado(null, [])
       await guardarTokens()
       return { workoutId: '', fecha: null }
     }
-    let workoutId = sesion.garmin_workout_id as string | null
-    let programadas = previas
+    let workoutId = estadoPrevio.workout_id
+    let programadas = estadoPrevio.fechas
     if (multi.modo === 'recrear' || !workoutId) {
       await borrarAnterior()
       workoutId = await crear()
@@ -130,10 +153,7 @@ export async function enviarSesionAGarmin(
       for (const f of multi.fechas) { await programar(workoutId, f); hechas.push(f) }
     } finally {
       // Se guarda lo que sí quedó programado aunque una fecha falle, para no duplicar en el siguiente intento.
-      const todas = [...new Set([...programadas, ...hechas])].sort()
-      await db.from('sesiones_entrenamiento')
-        .update({ garmin_workout_id: workoutId, garmin_fechas: todas, garmin_programado_fecha: todas[0] ?? null, garmin_pasos_hash: huella })
-        .eq('id', sesionId)
+      await guardarEstado(workoutId, [...new Set([...programadas, ...hechas])].sort())
     }
     await guardarTokens()
     return { workoutId, fecha: hechas[0] ?? null }

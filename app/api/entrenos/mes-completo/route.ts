@@ -1,4 +1,5 @@
 import { kmDeSesion, ritmosDeVdot } from '@/lib/entrenos/km-sesion'
+import { pasosParaFecha } from '@/lib/entrenos/sesion-semana'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { clasificarTipoSesion, fechaFinBloque } from '@/lib/entrenos/bloques'
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
 
   const { data: planEntreno } = await admin
     .from('planes_entrenamiento')
-    .select('id, nombre, created_at, duracion_semanas')
+    .select('id, nombre, created_at, duracion_semanas, progresion')
     .eq('cliente_id', clienteData.id)
     .eq('activo', true)
     .order('created_at', { ascending: false })
@@ -171,7 +172,7 @@ export async function GET(request: NextRequest) {
       nombre: x.nombre,
       tipo_sesion: clasificarTipoSesion(tiposPorSesion[x.id] ?? []),
       ejercicios_count: ejCountBySesion[x.id] ?? 0,
-      km: kmDeSesion((x as { pasos?: unknown }).pasos, ritmosAtleta),
+      km: kmDeSesion(pasosParaFecha(planEntreno, { nombre: x.nombre, pasos: (x as { pasos?: unknown }).pasos }, fecha), ritmosAtleta),
       completada: sesionesCompletadasPorFecha.get(fecha)?.has(x.id) ?? false,
     })
 
