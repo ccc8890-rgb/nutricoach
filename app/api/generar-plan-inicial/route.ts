@@ -955,8 +955,10 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
   // ── 11. Llamar a DeepSeek ──────────────────────────────────────────────────
   let planJson: Record<string, unknown> = {}
   let tokensUsados = 0
+  let modeloUsado: string = DEEPSEEK_MODEL
   let dietaIA: DietaGenerada | null = null
-  const apiKey = process.env.DEEPSEEK_API_KEY
+  // El enrutador elige el modelo: basta con que haya clave de alguno de los tres proveedores.
+  const apiKey = process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.DEEPSEEK_API_KEY
 
   try {
     if (apiKey) {
@@ -965,6 +967,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
       const dietaGenerada = resultado.data
       dietaIA = dietaGenerada
       tokensUsados = resultado.total_tokens
+      modeloUsado = resultado.modelo ?? modeloUsado
 
       // Mapear respuesta de DietaGenerada al formato del plan
       planJson = {
@@ -1442,7 +1445,7 @@ REGLA ABSOLUTA: receta_id y alternativas DEBEN ser IDs de la lista *_CANDIDATAS.
         plan_nutricion_id: planId,
         plan_entrenamiento_id: planEntrenoId,
       },
-      modelo: DEEPSEEK_MODEL,
+      modelo: modeloUsado,
       tokens_usados: tokensUsados,
     })
   } catch {
