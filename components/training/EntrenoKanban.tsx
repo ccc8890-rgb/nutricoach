@@ -38,6 +38,8 @@ interface SesionKanban {
     ejercicios_count: number
     km?: number | null
     completada: boolean
+    /** Fecha de esta ocurrencia dentro de la semana (la mueve el atleta o el coach solo para ese día). */
+    fecha?: string
 }
 
 interface SemanaEntrenoCache {
@@ -211,7 +213,8 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
         if (!sesion || sesion.dia_semana === nuevoDia) return
 
         const anterior = sesion.dia_semana
-        setSesionesLocal(prev => prev.map(s => s.id === sesion.id ? { ...s, dia_semana: nuevoDia } : s))
+        const nuevaFecha = sesion.fecha ? sumarDias(lunesDe(sesion.fecha), DIAS_SEMANA_ORDEN[nuevoDia] ?? 0) : undefined
+        setSesionesLocal(prev => prev.map(s => s.id === sesion.id ? { ...s, dia_semana: nuevoDia, fecha: nuevaFecha ?? s.fecha } : s))
         await mutate<SemanaEntrenoCache>(
             SEMANA_ENTRENO_KEY,
             datos => actualizarDiaEnCache(datos, sesion.id, nuevoDia),
@@ -222,7 +225,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
             const res = await fetch('/api/cliente/entrenos/mover-dia', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sesion_id: sesion.id, dia_semana: nuevoDia }),
+                body: JSON.stringify({ sesion_id: sesion.id, dia_semana: nuevoDia, fecha_origen: sesion.fecha }),
             })
             const data = await res.json().catch(() => null)
             if (!res.ok) throw new Error(data?.error || 'No se pudo mover la sesión')
@@ -230,7 +233,7 @@ export default function EntrenoKanban({ sesiones }: { sesiones: SesionKanban[] }
             setMoverId(null)
             void mutate(SEMANA_ENTRENO_KEY)
         } catch (err) {
-            setSesionesLocal(prev => prev.map(s => s.id === sesion.id ? { ...s, dia_semana: anterior } : s))
+            setSesionesLocal(prev => prev.map(s => s.id === sesion.id ? { ...s, dia_semana: anterior, fecha: sesion.fecha } : s))
             await mutate<SemanaEntrenoCache>(
                 SEMANA_ENTRENO_KEY,
                 datos => actualizarDiaEnCache(datos, sesion.id, anterior),

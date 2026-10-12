@@ -17,7 +17,7 @@ import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 export async function autorizarEscrituraPlan(
   request: NextRequest,
   codigo: string
-): Promise<{ planId: string; clienteId: string } | NextResponse> {
+): Promise<{ planId: string; clienteId: string; /** true si quien escribe es el propio cliente (no su coach). */ esCliente: boolean } | NextResponse> {
   try {
     const supabase = createApiSupabase(request)
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -45,7 +45,7 @@ export async function autorizarEscrituraPlan(
     }
 
     if (cliente.profile_id && cliente.profile_id === user.id) {
-      return { planId: plan.id, clienteId: plan.cliente_id }
+      return { planId: plan.id, clienteId: plan.cliente_id, esCliente: true }
     }
 
     if (cliente.coach_id && cliente.coach_id === user.id) {
@@ -55,7 +55,7 @@ export async function autorizarEscrituraPlan(
         .eq('id', user.id)
         .single()
       if (!perfilError && perfil?.role === 'coach') {
-        return { planId: plan.id, clienteId: plan.cliente_id }
+        return { planId: plan.id, clienteId: plan.cliente_id, esCliente: false }
       }
     }
 

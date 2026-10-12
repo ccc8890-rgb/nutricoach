@@ -5,6 +5,8 @@ import { estadoVentanaPlan } from '@/lib/entrenos/ventana-plan'
 import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
 import { resumenSesion, validarPasos } from '@/lib/entrenos/pasos'
 import { ejerciciosParaFecha, pasosParaFecha, semanaDeFecha } from '@/lib/entrenos/sesion-semana'
+import { cargarSemanasMacro, sesionesPrevision, type CarreraPlantilla, type SesionPlantilla } from '@/lib/entrenos/prevision'
+import { clasificarTipoSesion } from '@/lib/entrenos/bloques'
 
 // Variante coach de /api/entrenos/mes-completo: aquella resuelve el cliente
 // por sesión autenticada (portal cliente); esta la usa el coach para ver el
@@ -117,6 +119,17 @@ export async function GET(request: NextRequest) {
 
   const estado = estadoVentanaPlan(plan.created_at, plan.duracion_semanas as number | null)
 
+  // Previsión tras el bloque en curso (la misma que ve el atleta): carrera del macrociclo + fuerza/híbridas de la semana tipo.
+  const semanasMacro = await cargarSemanasMacro(admin, { cliente_id: plan.cliente_id, created_at: plan.created_at })
+  const noCarreraPorDia = new Map<string, SesionPlantilla[]>()
+  const carreraPlantilla: CarreraPlantilla[] = []
+  for (const x of sesiones ?? []) {
+    if (!x.dia_semana) continue
+    const tipo_sesion = clasificarTipoSesion((x.ejercicios ?? []).map(e => (e.ejercicio as { tipo?: string | null } | null)?.tipo ?? '').filter(Boolean))
+    if (tipo_sesion === 'carrera') { carreraPlantilla.push({ dia_semana: x.dia_semana, nombre: x.nombre }); continue }
+    noCarreraPorDia.set(x.dia_semana, [...(noCarreraPorDia.get(x.dia_semana) ?? []), { nombre: x.nombre, tipo_sesion }])
+  }
+
   // Lo que de verdad toca cada fecha (semana del bloque con su progresión): el catálogo de arriba es la semana tipo (semana 1) y es lo que se edita.
   const catalogoSemana: Record<string, unknown> = {}
   const registrarSemana = (s: NonNullable<typeof sesiones>[number], fecha: string) => {
@@ -142,6 +155,9 @@ export async function GET(request: NextRequest) {
     const { antesDeInicio, bloquePendiente } = estado(fecha)
     const ocurrencias = ocurrenciasDelDia(fecha, sesiones ?? [], ajustes, !antesDeInicio && !bloquePendiente)
     for (const { sesion } of ocurrencias) registrarSemana(sesion as never, fecha)
+    const prev = bloquePendiente && ocurrencias.length === 0 && semanasMacro.length > 0
+      ? sesionesPrevision(fecha, DIAS_SEMANA_POR_INDICE[d.getDay()], semanasMacro, noCarreraPorDia, ritmos?.E ?? null, carreraPlantilla)
+      : null
 
     return {
       fecha,
@@ -157,7 +173,8 @@ export async function GET(request: NextRequest) {
         // Solo las sesiones con pasos viajan al reloj: enviada (a esta fecha) o pendiente del próximo envío.
         garmin: !sesion.pasos ? null : (sesion.garmin_workout_id && (sesion.garmin_programado_fecha === fecha || (Array.isArray(sesion.garmin_fechas) && sesion.garmin_fechas.includes(fecha))) ? 'enviada' : 'pendiente'),
       })),
-      bloque_pendiente: bloquePendiente && ocurrencias.length === 0,
+      bloque_pendiente: bloquePendiente && ocurrencias.length === 0 && !(prev && prev.sesiones.length > 0),
+      prevision: prev ? { fase: prev.fase, sesiones: prev.sesiones.map(x => ({ id: x.id, nombre: x.nombre, tipo_sesion: x.tipo_sesion, km: x.km })) } : null,
       competiciones: competicionesPorFecha.get(fecha) ?? [],
       realizados: (hechosPorFecha.get(fecha) ?? []).map(h => ({ id: h.id, tipo: h.tipo, nombre: h.nombre, distancia_m: h.distancia_m, duracion_s: h.duracion_s })),
     }

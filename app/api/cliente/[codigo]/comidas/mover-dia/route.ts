@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
+import { registrarCambioCliente } from '@/lib/entrenos/cambios-cliente'
 
 const DIAS_VALIDOS = new Set(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'])
 
@@ -32,7 +33,7 @@ export async function POST(
 
     const { data: comida } = await admin
       .from('comidas')
-      .select('id, plan_id, dia_semana')
+      .select('id, plan_id, dia_semana, nombre')
       .eq('id', comidaId)
       .single()
 
@@ -50,6 +51,14 @@ export async function POST(
     const { error } = await admin.from('comidas').update(update).eq('id', comidaId)
     if (error) return NextResponse.json({ error: 'No se pudo mover la comida' }, { status: 500 })
 
+    // El plan de dieta nace en el coach: si lo cambia el propio cliente, queda constancia para que el coach lo vea.
+    if (auth.esCliente) {
+      await registrarCambioCliente(admin, {
+        clienteId: auth.clienteId, planId, tipo: 'comida_movida',
+        resumen: `Movió «${comida.nombre ?? 'una comida'}» del ${String(comida.dia_semana).toLowerCase()} al ${diaSemana.toLowerCase()}${nombre && nombre !== comida.nombre ? ` (ahora como ${nombre})` : ''}`,
+        detalle: { comida_id: comidaId, desde: comida.dia_semana, hasta: diaSemana },
+      })
+    }
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[comidas/mover-dia] Error:', err)

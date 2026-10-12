@@ -28,6 +28,7 @@ const PlanificacionCalendario = dynamic(() => import('@/components/Planificacion
 const AjusteMacrosIA = dynamic(() => import('@/components/AjusteMacrosIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const HistorialDietasIA = dynamic(() => import('@/components/HistorialDietasIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const ProtocoloCompeticion = dynamic(() => import('@/components/ProtocoloCompeticion'), { ssr: false, loading: () => <TabSkeleton /> })
+const CambiosDelCliente = dynamic(() => import('@/components/clientes/CambiosDelCliente'), { ssr: false })
 const MarcasYFeedback = dynamic(() => import('@/components/clientes/MarcasYFeedback'), { ssr: false })
 const PerfilEntrenoForm = dynamic(() => import('@/components/training/PerfilEntrenoForm'), { ssr: false, loading: () => <TabSkeleton /> })
 const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -825,6 +826,8 @@ export default function ClienteDetallePage() {
             </button>
           ))}
         </div>
+
+        <CambiosDelCliente clienteId={id as string} />
 
         <AvisosCliente
           avisos={avisosCliente({ id, cliente, dietaActiva, entrenoActivo, checkins, noLeidosChat })}

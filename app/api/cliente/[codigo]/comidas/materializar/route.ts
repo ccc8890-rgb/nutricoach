@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarEscrituraPlan } from '@/lib/cliente/autorizar-escritura-plan'
+import { registrarCambioCliente } from '@/lib/entrenos/cambios-cliente'
 
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
@@ -92,6 +93,13 @@ export async function POST(
       await admin.from('comidas').delete().eq('id', comida.id)
     }
 
+    if (auth.esCliente) {
+      await registrarCambioCliente(admin, {
+        clienteId: auth.clienteId, planId, tipo: 'dieta_por_dias',
+        resumen: `Activó su dieta por días (${recurrentes.length} ${recurrentes.length === 1 ? 'comida' : 'comidas'} pasan a ser independientes cada día de la semana)`,
+        detalle: { comidas: recurrentes.map(r => r.nombre) },
+      })
+    }
     return NextResponse.json({ ok: true, materializadas: recurrentes.length })
   } catch (err) {
     console.error('[comidas/materializar] Error:', err)

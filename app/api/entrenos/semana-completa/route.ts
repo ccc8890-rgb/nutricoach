@@ -4,6 +4,8 @@ import { calcularBloqueInfo, clasificarTipoSesion } from '@/lib/entrenos/bloques
 import { construirTuBloque } from '@/lib/entrenos/tu-bloque'
 import { kmDeSesion, ritmosDeVdot } from '@/lib/entrenos/km-sesion'
 import { pasosParaFecha } from '@/lib/entrenos/sesion-semana'
+import { ocurrenciasDelDia, type Ajuste } from '@/lib/entrenos/calendario-ajustes'
+import { plantillaActivaEn } from '@/lib/entrenos/ventana-plan'
 
 function startOfWeek() {
   const now = new Date()
@@ -86,9 +88,6 @@ export async function GET(request: NextRequest) {
   }
 
   const today = toISODate(new Date())
-  const DIAS_ORDER: Record<string, number> = {
-    Lunes: 0, Martes: 1, Miércoles: 2, Jueves: 3, Viernes: 4, Sábado: 5, Domingo: 6,
-  }
 
   const tiposPorSesion: Record<string, string[]> = {}
   for (const ej of ejData) {
@@ -104,13 +103,17 @@ export async function GET(request: NextRequest) {
   const { data: perfilVdot } = await admin.from('perfil_entreno_cliente').select('vdot').eq('cliente_id', planEntreno.cliente_id).maybeSingle()
   const ritmosAtleta = ritmosDeVdot(perfilVdot?.vdot)
 
-  const sesiones = sesData.map(s => {
-    const diaOffset = DIAS_ORDER[s.dia_semana ?? ''] ?? 0
-    const fecha = toISODate(new Date(weekStart.getTime() + diaOffset * 86400000))
-    return {
+  // Lo que toca cada día de esta semana: la plantilla semanal más lo que el coach movió, copió o quitó en una fecha concreta.
+  const { data: ajustesBD } = await admin.from('calendario_entreno_ajustes').select('id, sesion_id, tipo, fecha_origen, fecha').eq('plan_id', planEntreno.id)
+  const ajustes = (ajustesBD ?? []) as Ajuste[]
+  const activa = plantillaActivaEn(planEntreno.created_at, planEntreno.duracion_semanas as number | null)
+  const NOMBRE_DIA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+  const sesiones = Array.from({ length: 7 }, (_, i) => i).flatMap(i => {
+    const fecha = toISODate(new Date(weekStart.getTime() + i * 86400000))
+    return ocurrenciasDelDia(fecha, sesData, ajustes, activa(fecha)).map(({ sesion: s, ajuste }) => ({
       id: s.id,
       nombre: s.nombre,
-      dia_semana: s.dia_semana ?? '',
+      dia_semana: NOMBRE_DIA[i],
       duracion_estimada_min: s.duracion_estimada_min ?? null,
       contexto_ia: s.contexto_ia ?? null,
       ejercicios_count: ejCountBySesion[s.id] ?? 0,
@@ -120,7 +123,9 @@ export async function GET(request: NextRequest) {
       completada: (registrosPorSesion[s.id] ?? 0) > 0,
       esHoy: fecha === today,
       km: kmDeSesion(pasosParaFecha(planEntreno, { nombre: s.nombre, pasos: (s as { pasos?: unknown }).pasos }, fecha), ritmosAtleta),
-    }
+      // Colocada por el coach en esta fecha (movida o copiada): la plantilla no se toca.
+      ajuste: ajuste ? ajuste.tipo : null,
+    }))
   })
 
   // «Tu bloque»: mensaje, próximas semanas y mejoras del último plan de IA aprobado de este cliente.

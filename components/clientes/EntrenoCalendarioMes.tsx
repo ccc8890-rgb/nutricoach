@@ -65,6 +65,8 @@ interface DiaMes {
   dia_semana: string
   sesiones: SesionDia[]
   bloque_pendiente: boolean
+  /** Sesiones orientativas del macrociclo para fechas posteriores al bloque en curso (aún sin crear). */
+  prevision?: { fase: string; sesiones: { id: string; nombre: string; tipo_sesion: string; km: number | null }[] } | null
   competiciones: { id: string; nombre: string; disciplina: string | null }[]
   realizados: Realizado[]
 }
@@ -238,6 +240,12 @@ function Celda({ dia, hoy, seleccion, hayPortapapeles, onSeleccionarSesion, onSe
           onSeleccionar={() => onSeleccionarSesion(s.id, dia.fecha)}
           resumen={resumenDe?.(s.id)}
         />
+      ))}
+
+      {dia.prevision?.sesiones.map(p => (
+        <p key={p.id} className="text-[11px] px-1.5 py-1 rounded-md mb-1 truncate" style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }} title={`Previsión (${dia.prevision?.fase}): se crea al cerrar el bloque`}>
+          {p.nombre}{p.km ? ` · ≈ ${p.km.toFixed(1).replace('.', ',')} km` : ''}
+        </p>
       ))}
 
       {dia.bloque_pendiente && <span className="text-[11px]" style={{ color: 'var(--text-disabled)' }}>Bloque siguiente sin generar</span>}

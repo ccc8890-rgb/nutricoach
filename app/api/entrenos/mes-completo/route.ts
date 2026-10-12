@@ -1,5 +1,6 @@
 import { kmDeSesion, ritmosDeVdot } from '@/lib/entrenos/km-sesion'
 import { pasosParaFecha } from '@/lib/entrenos/sesion-semana'
+import { ocurrenciasDelDia, type Ajuste } from '@/lib/entrenos/calendario-ajustes'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { clasificarTipoSesion, fechaFinBloque } from '@/lib/entrenos/bloques'
@@ -66,6 +67,9 @@ export async function GET(request: NextRequest) {
     .order('id')
 
   const sesiones = sesData ?? []
+  // Lo que el coach movió, copió o quitó en una fecha concreta también lo ve el atleta (el plan nace en el coach).
+  const { data: ajustesBD } = await admin.from('calendario_entreno_ajustes').select('id, sesion_id, tipo, fecha_origen, fecha').eq('plan_id', planEntreno.id)
+  const ajustes = (ajustesBD ?? []) as Ajuste[]
   const { data: perfilVdot } = await admin.from('perfil_entreno_cliente').select('vdot').eq('cliente_id', clienteData.id).maybeSingle()
   const ritmosAtleta = ritmosDeVdot(perfilVdot?.vdot)
   const sesIds = sesiones.map(s => s.id)
@@ -137,26 +141,22 @@ export async function GET(request: NextRequest) {
   const dias = diasDelMes.map(d => {
     const fecha = toISODate(d)
     const diaSemana = DIAS_SEMANA_POR_INDICE[d.getDay()]
-    const delDia = sesionesPorDia.get(diaSemana) ?? []
-    const sesion = delDia[0]
-
-    // Antes del inicio del plan actual: no tenemos datos de qué se hizo ese día.
+    // Antes del inicio del plan actual no hay plantilla; después de su bloque (aún sin generar el siguiente) tampoco: solo valen los ajustes del coach.
     const antesDeInicio = fecha < toISODate(new Date(fechaInicioPlan))
-    // Después de que termine el bloque activo y aún no se generó el siguiente.
-    // Comparado por día de calendario (fechaFinBloque ya trunca a medianoche),
-    // no por diferencia exacta de horas desde la creación del plan.
     const bloquePendiente = duracionSemanas
       ? d.getTime() >= fechaFinBloque(fechaInicioPlan, duracionSemanas).getTime()
       : false
+    const delDia = ocurrenciasDelDia(fecha, sesiones, ajustes, !antesDeInicio && !bloquePendiente).map(o => o.sesion)
+    const sesion = delDia[0]
 
-    if (bloquePendiente && semanasMacro.length > 0) {
+    if (bloquePendiente && !sesion && semanasMacro.length > 0) {
       const prev = sesionesPrevision(fecha, diaSemana, semanasMacro, noCarreraPorDia, ritmosAtleta?.E ?? null, carreraPlantilla)
       if (prev) {
         return { fecha, dia_semana: diaSemana, sesion: prev.sesiones[0] ?? null, sesiones: prev.sesiones, fase_bloque: prev.fase, bloque_pendiente: false, prevision: true }
       }
     }
 
-    if (antesDeInicio || bloquePendiente || !sesion) {
+    if (!sesion) {
       return {
         fecha,
         dia_semana: diaSemana,
