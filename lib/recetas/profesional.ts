@@ -51,6 +51,8 @@ export interface ScoreCalidadReceta {
   banda: BandaCalidad
   bloqueantes: string[]
   avisos: string[]
+  /** qué ingrediente (y por qué) causa cada bloqueo: «Salsa de soja 120 g», «Tofu → Pimentón»… */
+  detalles?: Record<string, string[]>
   desglose: {
     ingredientes: number
     macros: number
@@ -102,9 +104,20 @@ function tokensSignificativos(s: string): string[] {
   return tokens.filter(t => !genericos.has(t))
 }
 
+// Palabras distintas que nombran lo mismo en el recetario (cada grupo es un solo concepto)
+const SINONIMOS: string[][] = [
+  ['cebollin', 'cebolleta'], ['cacahuate', 'cacahuete', 'mani'], ['paprika', 'pimenton'], ['chile', 'guindilla'],
+  ['jugo', 'salmuera'], ['especias', 'pimenton'], ['glaseado', 'glas'], ['alino', 'aceite'], ['espaguetis', 'spaghetti', 'pasta'],
+]
+function canonico(token: string): string {
+  const t = singularizarToken(token)
+  const grupo = SINONIMOS.find(g => g.includes(token) || g.includes(t))
+  return grupo ? grupo[0] : t
+}
+
 function tokensCompartidos(a: string[], b: string[]): number {
-  const setB = new Set(b)
-  return a.filter(t => setB.has(t) || setB.has(singularizarToken(t))).length
+  const setB = new Set(b.map(canonico))
+  return a.filter(t => setB.has(canonico(t))).length
 }
 
 function normalizarStr(s: string): string {
@@ -161,10 +174,15 @@ function validarMatchSemantico(ing: IngredienteProfesionalInput): string | null 
   return null
 }
 
-function validarCantidadesSospechosas(ing: IngredienteProfesionalInput): string | null {
-  const gramos = ing.cantidad_gramos ?? 0
+/** Una receta de 6 raciones lleva ~3 veces más especia/salsa que una de 1: los umbrales eran por receta entera. */
+function gramosEfectivos(gramos: number, porciones?: number | null): number {
+  return gramos / Math.max(1, (porciones ?? 1) / 2)
+}
+
+function validarCantidadesSospechosas(ing: IngredienteProfesionalInput, porciones?: number | null): string | null {
+  const gramos = gramosEfectivos(ing.cantidad_gramos ?? 0, porciones)
   if (gramos <= 0) return null
-  const nombre = normalizarStr(ing.nombre_libre || '')
+  const nombre = normalizarStr((ing.nombre_libre || '').replace(/\([^)]*\)/g, ' '))
   // Sal > 10g
   if (/^sal\b/.test(nombre) && gramos > 10) return 'cantidades_sospechosas'
   // Ralladura/cascara/piel de citrico > 10g
@@ -228,7 +246,7 @@ function validarAlimentoCeroKcal(ing: IngredienteProfesionalInput): string | nul
   const nombre = normalizarStr(ing.nombre_libre || '')
   const alimento = normalizarStr(ing.nombre_alimento || '')
   // allowed zero‑kcal ingredients
-  const permitidos = /^(agua|hielo|sal|flor de sal|sal marina|vinagre|especia|edulcorante|gelatina 0|infusión|infusion)(\s|$)/
+  const permitidos = /^(agua|hielo|sal|flor de sal|sal marina|vinagre|especia|edulcorante|endulzante|sustituto de azucar|eritritol|xilitol|stevia|gelatina 0|infusión|infusion)(\s|$)/
   if (permitidos.test(nombre) || permitidos.test(alimento)) return null
   return 'alimento_cero_kcal'
 }
@@ -240,13 +258,14 @@ function validarCantidadMuyPequena(ing: IngredienteProfesionalInput): string | n
   // only flag if it looks like a main ingredient (protein, cereal, legume, dairy, fruit, vegetable)
   const principal = /(pollo|ternera|cerdo|pescado|huevo|tofu|seitan|arroz|pasta|\bpan\b|avena|quinoa|legumbre|lenteja|garbanzo|alubia|leche|yogur|queso|requesón|fruta|verdura|hortaliza|espinaca|brócoli|zanahoria|tomate|cebolla|ajo|pimiento|calabacín|berenjena|patata|boniato|calabaza)/i
   if (!principal.test(nombre)) return null
+  if (/papel de arroz|hojas? de arroz|obleas?/.test(nombre)) return null // ~4 g por hoja
   // aromáticos que se usan en cantidades de 1-4 g por ración (ajo, cebolla/ajo en polvo): no son ingrediente principal
   if (/(\bajo\b|en polvo|deshidratad)/i.test(nombre) && cantidad >= 1) return null
   return 'cantidad_muy_pequena'
 }
 
-function validarPotenciadorExcesivo(ing: IngredienteProfesionalInput): string | null {
-  const cantidad = n(ing.cantidad_gramos)
+function validarPotenciadorExcesivo(ing: IngredienteProfesionalInput, porciones?: number | null): string | null {
+  const cantidad = gramosEfectivos(n(ing.cantidad_gramos), porciones)
   if (cantidad <= 0) return null
   const nombre = normalizarStr(ing.nombre_libre || '')
   const alimento = normalizarStr(ing.nombre_alimento || '')
@@ -256,7 +275,7 @@ function validarPotenciadorExcesivo(ing: IngredienteProfesionalInput): string | 
   // tabasco / sriracha
   if (/(tabasco|sriracha)/.test(texto) && cantidad > 20) return 'potenciador_excesivo'
   // salsa de soja
-  if (/(salsa soja|soja|soya)/.test(texto) && cantidad > 50) return 'potenciador_excesivo'
+  if (/(salsa( de)? soja|salsa( de)? soya|tamari|shoyu)/.test(texto) && cantidad > 50) return 'potenciador_excesivo'
   return null
 }
 
@@ -343,28 +362,37 @@ export function calcularScoreCalidadReceta(receta: RecetaProfesionalInput): Scor
   const conPrecio = ingredientes.filter(i => i.tiene_precio !== false)
   let bloqueantes: string[] = []
   let avisos: string[] = []
+  const detalles0: Record<string, string[]> = {}
 
   if (ingredientes.length === 0) bloqueantes.push('sin_ingredientes')
-  if (ingredientes.some(i => !i.alimento_id)) bloqueantes.push('ingredientes_sin_alimento')
+  if (ingredientes.some(i => !i.alimento_id)) {
+    bloqueantes.push('ingredientes_sin_alimento')
+    ;(detalles0.ingredientes_sin_alimento ??= []).push(...ingredientes.filter(i => !i.alimento_id).map(i => `«${i.nombre_libre}» sin alimento enlazado`))
+  }
   if (ingredientes.some(i => n(i.cantidad_gramos) <= 0)) bloqueantes.push('cantidades_invalidas')
   if (!receta.porciones || receta.porciones <= 0) bloqueantes.push('porciones_invalidas')
   if (!receta.kcal || receta.kcal <= 0) bloqueantes.push('sin_macros')
 
   // New semantic and quantity checks
-  for (const ing of ingredientes) {
-    const sem = validarMatchSemantico(ing)
-    if (sem) bloqueantes.push(sem)
-    const cant = validarCantidadesSospechosas(ing)
-    if (cant) bloqueantes.push(cant)
-    const cero = validarAlimentoCeroKcal(ing)
-    if (cero) bloqueantes.push(cero)
-    const pequena = validarCantidadMuyPequena(ing)
-    if (pequena) bloqueantes.push(pequena)
-    const potenciador = validarPotenciadorExcesivo(ing)
-    if (potenciador) bloqueantes.push(potenciador)
-    const absurda = validarCantidadAbsurda(ing)
-    if (absurda) bloqueantes.push(absurda)
+  const detalles: Record<string, string[]> = {}
+  const marcar = (codigo: string | null, ing: IngredienteProfesionalInput, extra = '') => {
+    if (!codigo) return
+    bloqueantes.push(codigo)
+    const g = n(ing.cantidad_gramos)
+    const txt = codigo === 'match_semantico_sospechoso'
+      ? `«${ing.nombre_libre}» está enlazado a «${ing.nombre_alimento ?? '—'}»`
+      : `${ing.nombre_libre ?? 'ingrediente'} ${Math.round(g * 10) / 10} g${extra}`
+    ;(detalles[codigo] ??= []).push(txt)
   }
+  for (const ing of ingredientes) {
+    marcar(validarMatchSemantico(ing), ing)
+    marcar(validarCantidadesSospechosas(ing, receta.porciones), ing, receta.porciones && receta.porciones > 1 ? ` (${receta.porciones} raciones)` : '')
+    marcar(validarAlimentoCeroKcal(ing), ing, ' (el alimento enlazado tiene 0 kcal)')
+    marcar(validarCantidadMuyPequena(ing), ing)
+    marcar(validarPotenciadorExcesivo(ing, receta.porciones), ing, receta.porciones && receta.porciones > 1 ? ` (${receta.porciones} raciones)` : '')
+    marcar(validarCantidadAbsurda(ing), ing)
+  }
+  for (const [k, v] of Object.entries(detalles0)) detalles[k] = [...(detalles[k] ?? []), ...v]
   const incoherente = validarRecetaSemanticaIncoherente(receta)
   if (incoherente) bloqueantes.push(incoherente)
   const instrVacias = validarInstruccionesVacias(receta)
@@ -434,6 +462,7 @@ export function calcularScoreCalidadReceta(receta: RecetaProfesionalInput): Scor
     banda,
     bloqueantes,
     avisos,
+    detalles,
     desglose: {
       ingredientes: Math.round(ingredientesScore),
       macros: Math.round(macrosScore),

@@ -11,6 +11,7 @@ import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
 import { MacroRing, IngredientChecklist, StepByStep } from '@/components/premium'
 import { listaRecordada } from '@/lib/useEstadoUrl'
+import BarraRevision from '@/components/recetas/BarraRevision'
 import { formatoCantidad } from '@/lib/recetas/equivalencia'
 import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
@@ -118,6 +119,7 @@ export default function DetalleRecetaPage() {
     }
   })()
   const isClientView = returnPath.startsWith('/cliente')
+  const enBandeja = !isClientView && returnPath.startsWith('/recetas/revisar')
   const clienteCodigo = isClientView ? returnPath.split('/').filter(Boolean)[1] : null
   const [receta, setReceta] = useState<RecetaDetalle | null>(null)
   const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
@@ -141,18 +143,18 @@ export default function DetalleRecetaPage() {
     } catch { /* fallback silencioso */ }
   }
 
-  async function handleEstado(nuevoEstado: 'aprobada' | 'descartada') {
+  async function handleEstado(nuevoEstado: 'aprobada' | 'descartada'): Promise<boolean> {
     if (nuevoEstado === 'aprobada' && quality) {
       const bloqueantes = quality.issues.filter(i => i.severity === 'bloqueante')
       if (bloqueantes.length > 0) {
         alert(`No apruebes todavía: ${bloqueantes.map(i => i.mensaje).join(' ')}`)
-        return
+        return false
       }
 
       const requiereRevision = quality.issues.filter(i => i.severity === 'revisar')
       if (requiereRevision.length > 0) {
         const ok = confirm(`Esta receta tiene avisos antes de aprobar:\n\n${requiereRevision.map(i => `- ${i.mensaje}`).join('\n')}\n\n¿Aprobar igualmente?`)
-        if (!ok) return
+        if (!ok) return false
       }
     }
 
@@ -167,7 +169,7 @@ export default function DetalleRecetaPage() {
         // antes se mostraba «aprobada» aunque el servidor la rechazara y la receta seguía pendiente en la lista
         const json = await res.json().catch(() => ({}))
         alert(`No se pudo ${nuevoEstado === 'aprobada' ? 'aprobar' : 'descartar'}: ${[json.error, ...(json.bloqueantes ?? [])].filter(Boolean).join(' · ') || `error ${res.status}`}`)
-        return
+        return false
       }
       setReceta((prev: RecetaDetalle | null) => prev ? { ...prev, estado: nuevoEstado } : prev)
       try {
@@ -175,8 +177,7 @@ export default function DetalleRecetaPage() {
         const actuales: string[] = JSON.parse(sessionStorage.getItem(clave) || '[]')
         sessionStorage.setItem(clave, JSON.stringify([...new Set([...actuales, id])]))
       } catch { /* sin almacenamiento */ }
-      // viniendo de la bandeja de revisión, vuelve a ella para seguir con la siguiente
-      if (returnPath.startsWith('/recetas/revisar')) window.location.href = returnTo
+      return true
     } finally {
       setAccionando(false)
     }
@@ -393,7 +394,7 @@ export default function DetalleRecetaPage() {
       </div>
 
       {/* ═══════ CONTENIDO PRINCIPAL ═══════ */}
-      <div className="max-w-3xl mx-auto px-6 -mt-16 relative z-20 pb-safe">
+      <div className={`max-w-3xl mx-auto px-6 -mt-16 relative z-20 pb-safe${enBandeja ? ' pb-28' : ''}`}>
         {/* Banner de revisión */}
         {!isClientView && (receta.estado === 'en_revision' || receta.estado === 'borrador') && (
           <ScaleIn delay={0.05}>
@@ -405,7 +406,7 @@ export default function DetalleRecetaPage() {
                 <p className="font-semibold text-sm" style={{ color: 'var(--warning)' }}>Pendiente de revisión</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Revisa los datos antes de aprobar</p>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
+              {!enBandeja && <div className="flex gap-2 flex-shrink-0">
                 <button disabled={accionando} onClick={() => handleEstado('aprobada')}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-all duration-200"
                   style={{ background: 'var(--success)' }}>
@@ -416,7 +417,7 @@ export default function DetalleRecetaPage() {
                   style={{ background: 'var(--error)' }}>
                   {accionando ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />} Descartar
                 </button>
-              </div>
+              </div>}
             </div>
           </ScaleIn>
         )}
@@ -891,6 +892,9 @@ export default function DetalleRecetaPage() {
           </div>
         </FadeIn>
       </div>
+      {enBandeja && (
+        <BarraRevision id={id} pendiente={receta.estado === 'en_revision' || receta.estado === 'borrador'} returnTo={returnTo} accion={handleEstado} />
+      )}
     </PageTransition>
   )
 }

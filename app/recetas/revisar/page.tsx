@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ArrowLeft, Check, ChevronDown, ExternalLink, ImageOff, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react'
 import RevisionTabs from '@/components/recetas/RevisionTabs'
+import { etiquetaCalidad } from '@/lib/recetas/etiquetas-calidad'
 import { useToast } from '@/components/ui/Toast'
 import { APTAS_CLIENTE, NIVELES_FIT, TIPOS_USO } from '@/lib/recetas/profesional'
 import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
@@ -67,21 +68,24 @@ function scoreColor(score: number | null) {
 function ChipsCalidad({ issues }: { issues: QualityIssues | null }) {
   const bloqueantes = issues?.bloqueantes ?? []
   const avisos = issues?.avisos ?? []
+  const detalles = issues?.detalles ?? {}
   if (bloqueantes.length === 0 && avisos.length === 0) {
-    return <span className="text-xs" style={{ color: 'var(--success)' }}>Sin incidencias</span>
+    return <span className="text-xs" style={{ color: 'var(--success)' }}>Lista para aprobar</span>
   }
   return (
-    <div className="flex flex-wrap gap-1">
-      {bloqueantes.map(motivo => (
-        <span key={`b-${motivo}`} title={motivo} className="max-w-[240px] truncate rounded-full px-2 py-1 text-[11px] font-medium" style={{ color: 'var(--error)', background: 'color-mix(in srgb, var(--error) 12%, transparent)' }}>
-          Bloqueo: {motivo}
-        </span>
-      ))}
-      {avisos.map(aviso => (
-        <span key={`a-${aviso}`} title={aviso} className="max-w-[240px] truncate rounded-full px-2 py-1 text-[11px] font-medium" style={{ color: 'var(--warning)', background: 'color-mix(in srgb, var(--warning) 12%, transparent)' }}>
-          Aviso: {aviso}
-        </span>
-      ))}
+    <div className="flex flex-col gap-1">
+      {bloqueantes.map(motivo => {
+        const et = etiquetaCalidad(motivo)
+        const concretos = detalles[motivo]
+        return (
+          <span key={`b-${motivo}`} title={`${et.ayuda}${concretos?.length ? '\n' + concretos.join('\n') : ''}`} className="rounded-lg px-2 py-1 text-[11px] font-medium leading-snug" style={{ color: 'var(--error)', background: 'color-mix(in srgb, var(--error) 12%, transparent)' }}>
+            <strong>{et.corto}</strong>{concretos?.length ? ` · ${concretos.slice(0, 2).join(' · ')}${concretos.length > 2 ? ` · +${concretos.length - 2}` : ''}` : ''}
+          </span>
+        )
+      })}
+      {avisos.length > 0 && <div className="flex flex-wrap gap-1">{avisos.map(aviso => (
+        <span key={`a-${aviso}`} title={etiquetaCalidad(aviso).ayuda} className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ color: 'var(--warning)', background: 'color-mix(in srgb, var(--warning) 12%, transparent)' }}>{etiquetaCalidad(aviso).corto}</span>
+      ))}</div>}
     </div>
   )
 }
@@ -156,6 +160,11 @@ export default function RevisarRecetasPage() {
     document.addEventListener('visibilitychange', alVerse)
     return () => { window.removeEventListener('pageshow', alMostrar); document.removeEventListener('visibilitychange', alVerse) }
   }, [cargar, quitarResueltas])
+
+  // En Pendientes: primero las que se aprueban ya (sin bloqueos), después las que necesitan arreglo
+  const listas = useMemo(() => (respuesta?.data ?? []).filter(r => esRecetaAprobable(r.estado, r.quality_issues)), [respuesta])
+  const necesitanArreglo = useMemo(() => (respuesta?.data ?? []).filter(r => !esRecetaAprobable(r.estado, r.quality_issues)), [respuesta])
+  const ordenadas = tarea === 'pendientes' ? [...listas, ...necesitanArreglo] : (respuesta?.data ?? [])
 
   function cambiarTarea(value: TareaRevision) {
     setTarea(value)
@@ -280,15 +289,18 @@ export default function RevisarRecetasPage() {
           <div className="space-y-2">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-28 animate-pulse rounded-2xl" style={{ background: 'var(--surface)' }} />)}</div>
         ) : respuesta?.data.length ? (
           <>
+            {tarea === 'pendientes' && listas.length > 0 && necesitanArreglo.length > 0 && (
+              <p className="px-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Listas para aprobar ({listas.length}) · después, las que necesitan arreglo ({necesitanArreglo.length})</p>
+            )}
             <div className="grid gap-3 2xl:hidden">
-              {respuesta.data.map(receta => <RecetaCard key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} />)}
+              {ordenadas.map(receta => <RecetaCard key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} />)}
             </div>
             <div className="hidden overflow-x-auto rounded-2xl border 2xl:block" style={{ borderColor: 'var(--border)' }}>
               <table className="w-full text-left text-sm">
                 <thead style={{ background: 'var(--surface)' }}><tr className="border-b" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
                   {['Foto', 'Receta', 'Macros/ración', 'Calidad', 'Estado y alta', 'Acciones'].map(label => <th key={label} className={`px-3 py-3 text-xs font-semibold${label === 'Acciones' ? ' sticky right-0' : ''}`} style={label === 'Acciones' ? { background: 'var(--surface)' } : undefined}>{label}</th>)}
                 </tr></thead>
-                <tbody>{respuesta.data.map(receta => <RecetaFila key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} />)}</tbody>
+                <tbody>{ordenadas.map(receta => <RecetaFila key={receta.id} receta={receta} busy={procesando.has(receta.id)} onEstado={cambiarEstado} />)}</tbody>
               </table>
             </div>
           </>

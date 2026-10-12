@@ -133,6 +133,7 @@ export async function auditarRecetaProfesional(
   const issues = {
     bloqueantes: score.bloqueantes,
     avisos: score.avisos,
+    detalles: score.detalles ?? {},
     banda: score.banda,
     estado_sugerido: resumen.estado_sugerido,
   }

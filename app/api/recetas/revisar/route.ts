@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       if (value === 'pendientes') return query.in('estado', ['en_revision', 'borrador'])
       if (value === 'nuevas_hoy') return query.gte('created_at', inicio).lt('created_at', fin)
       if (value === 'bloqueos') return query.in('estado', ['en_revision', 'borrador']).not('quality_issues->bloqueantes', 'eq', '[]')
-      if (value === 'sin_foto') return query.or('imagen_url.is.null,imagen_url.eq.')
+      if (value === 'sin_foto') return query.in('estado', ['en_revision', 'borrador']).or('imagen_url.is.null,imagen_url.eq.')
       return query
     }
 

@@ -5,6 +5,7 @@ export type TareaRevision = (typeof TAREAS_REVISION)[number]
 export type QualityIssues = {
   bloqueantes?: string[] | null
   avisos?: string[] | null
+  detalles?: Record<string, string[]> | null
 }
 
 export function normalizarTareaRevision(value: string | null): TareaRevision {
