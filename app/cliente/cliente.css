@@ -85,6 +85,8 @@
 .technical-row h3 { color: var(--text); font-size: 0.92rem; font-weight: 600; line-height: 1.2; }
 .technical-row__detail { margin-top: 0.35rem; color: var(--text-muted); font-size: 0.72rem; line-height: 1.45; }
 .technical-row__meta { flex: none; color: var(--text-secondary); font-size: 0.66rem; }
+.training-exercise-row .technical-row__heading > div { min-width: 0; flex: 1 1 auto; }
+.training-exercise-row .technical-row__meta { flex: 0 1 auto; max-width: 42%; text-align: right; overflow-wrap: anywhere; }
 .technical-row__action { display: flex; align-items: center; padding: 0.5rem; }
 
 .industrial-tabs { display: grid; grid-auto-columns: minmax(5rem, 1fr); grid-auto-flow: column; overflow-x: auto; border-block: 1px solid var(--editorial-rule); background: var(--editorial-rule); gap: 1px; }
