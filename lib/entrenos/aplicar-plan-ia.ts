@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AgenteTarea } from '@/lib/agentes/types'
 import type { AplicarTareaResult } from '@/lib/agentes/aplicar'
 import { guardarPlanEntreno, type SesionIA } from './guardar-plan'
+import { pasosDeSesionCarrera } from './pasos-desde-plan-ia'
 import type { PayloadPlanEntrenoIA } from './planificar-con-ia'
 
 const MODOS = ['crear', 'siguiente_bloque']
@@ -40,7 +41,9 @@ export async function aplicarPlanEntrenoIA(db: SupabaseClient, tarea: AgenteTare
     const g = await guardarPlanEntreno(db, {
       coachId: cliente.coach_id as string, clienteId: tarea.cliente_id, nombre: p.nombre_plan,
       descripcion: typeof p.plan.fundamentacion === 'string' ? p.plan.fundamentacion : null,
-      duracionSemanas: p.duracion_semanas, faseBloque: p.fase_bloque, sesiones: p.plan.sesiones as SesionIA[],
+      duracionSemanas: p.duracion_semanas, faseBloque: p.fase_bloque,
+      // Las sesiones de carrera salen con pasos (zonas) para el reloj y el portal.
+      sesiones: (p.plan.sesiones as SesionIA[]).map(s => ({ ...s, pasos: pasosDeSesionCarrera(s, p.macrociclo?.semanas?.[0]) ?? undefined })),
     })
     // Historial de versiones (pantalla «revisar plan»).
     await db.from('registros_ia').insert({

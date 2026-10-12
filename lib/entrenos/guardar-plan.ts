@@ -65,7 +65,7 @@ export interface EjercicioIA {
   nombre?: string; bloque?: unknown; series?: unknown; repeticiones?: unknown
   descanso_segundos?: unknown; rpe_objetivo?: unknown; notas?: unknown; peso_estimado_kg?: unknown
 }
-export interface SesionIA { nombre?: string; dia_semana?: string | null; ritmo_objetivo?: unknown; ejercicios?: EjercicioIA[] }
+export interface SesionIA { nombre?: string; dia_semana?: string | null; ritmo_objetivo?: unknown; ejercicios?: EjercicioIA[]; /** Pasos estructurados de carrera (zonas), calculados al aplicar el plan. */ pasos?: unknown }
 export interface DatosGuardadoPlan {
   coachId: string; clienteId: string; nombre: string; descripcion: string | null
   duracionSemanas: number | null
@@ -114,6 +114,7 @@ export async function guardarPlanEntreno(sb: SupabaseClient, d: DatosGuardadoPla
         notas: null,
         fase_bloque: d.faseBloque,
         contexto_ia: d.faseBloque && s.ritmo_objetivo ? String(s.ritmo_objetivo) : null,
+        ...(Array.isArray(s.pasos) && s.pasos.length ? { pasos: s.pasos } : {}),
       }).select('id').single()
       if (errSes || !sesion) throw new Error('sesión')
       sesionesCreadas.push(sesion.id as string)
