@@ -9,7 +9,7 @@ const TESTS = [
   // planes de carrera
   'ritmos', 'pasos', 'running-plantillas', 'validar-plan-carrera', 'reparto-semana', 'macrociclo', 'macro-desde-cliente', 'plan-vs-realidad', 'evidencia-plan', 'enrutador-ia', 'reparar-plan', 'senales-recuperacion', 'hoja-de-ruta', 'tu-bloque', 'pasos-desde-plan-ia', 'macro-a-sesiones', 'informe-caso', 'informe-caso-datos', 'informe-caso-html', 'informe-caso-render', 'presentacion', 'presentacion-render', 'tareas-unicas', 'planificar-modo', 'guardar-plan', 'planificar-con-ia', 'aplicar-plan-ia', 'planificar-ia-ruta', 'competicion', 'suplementos', 'proxima-fecha', 'garmin-auto', 'garmin-workouts-formato',
   // vínculos de ejercicios, km, previsión y texto esencial (12-10-2026)
-  'guardar-plan-vinculos', 'km-sesion', 'prevision', 'descanso-visible', 'ejercicios-texto',
+  'guardar-plan-vinculos', 'km-sesion', 'prevision', 'descanso-visible', 'ejercicios-texto', 'encadenados', 'hyrox-estaciones',
 ]
 
 interface Resultado { nombre: string; ok: boolean; detalle: string }

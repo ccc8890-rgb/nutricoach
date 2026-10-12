@@ -16,6 +16,7 @@ import { normalizarDuracionSemanas } from '@/lib/entrenos/guardar-plan'
 import { estudiosParaPlan } from '@/lib/rendimiento/evidencia'
 import { llamarIA } from '@/lib/ia/enrutador'
 import { problemasDelPlan, promptDeReparacion } from '@/lib/entrenos/reparar-plan'
+import { ESTACIONES_POR_FASE, nombreEstacion, textoPliometriaParaNivel, validarHibridoHyrox } from '@/lib/entrenos/hyrox-estaciones'
 import { senalesRecuperacion, textoSenales } from '@/lib/entrenos/senales-recuperacion'
 import { extraerJsonPlan, resolverEvidenciaPlan } from '@/lib/entrenos/evidencia-plan'
 
@@ -202,7 +203,7 @@ export async function generarPlanEntrenoIA(sb: SupabaseClient, opts: { clienteId
      * pidió más peso al running sin recortar las híbridas, así que ahora se
      * incluyen las dos variantes entre semana en vez de elegir una.
      */
-    function construirProtocoloHibridoHyroxRunning(fase: FaseBloque, carreraDelEsqueleto?: string): string {
+    function construirProtocoloHibridoHyroxRunning(fase: FaseBloque, carreraDelEsqueleto?: string, nivelAtleta?: string | null): string {
       const lineasCarrera = carreraDelEsqueleto
         ? `• 3 sesiones de CARRERA, EXACTAMENTE las del esqueleto calculado (tipo y duración): ${carreraDelEsqueleto}. No añadas ni cambies tipos: si el esqueleto no incluye series o tempo, NO los incluyas (la calidad está limitada a propósito por el motor). Pon en "tipo_sesion": "carrera" y en el nombre el tipo (Tirada larga, Rodaje, Series, Tempo). El DÍA de cada sesión lo fija el sistema: pon cualquiera.`
         : `• 1 sesión de CARRERA — tirada larga, en fin de semana (Sábado o Domingo): rodaje continuo a ritmo aeróbico Z2, duración progresiva.
@@ -212,10 +213,12 @@ export async function generarPlanEntrenoIA(sb: SupabaseClient, opts: { clienteId
 ${MODULACION_POR_FASE[fase]}
 
 REPARTO SEMANAL OBLIGATORIO — EXACTAMENTE 6 SESIONES EN TOTAL, NI UNA MÁS:
-• 3 sesiones HÍBRIDAS (y solo 3): cada una incluye 1-2 estaciones reales de Hyrox (SkiErg, Sled Push, Sled Pull, Burpee Broad Jumps, Farmers Carry, Wall Balls, Row) MÁS un bloque de fuerza/hipertrofia accesoria. La hipertrofia accesoria debe ROTAR entre las 3 sesiones para cubrir espalda, pecho, bíceps y hombro a lo largo de la semana — no repitas el mismo grupo muscular en las 3 sesiones híbridas.
-• SOLO UNA de las 3 sesiones híbridas lleva trabajo pesado de PIERNA (sentadilla, peso muerto, zancadas/búlgara, Sled Push, Wall Balls, Burpee Broad Jumps): ponle «Pierna» en el nombre. Las otras dos usan estaciones de tren superior (SkiErg, Row, Sled Pull, Farmers Carry) e hipertrofia de tren superior o core, SIN ejercicios de pierna: la carrera ya carga las piernas tres veces por semana y el motor necesita piernas frescas para la tirada y la calidad.
-• CARRERA COMPROMETIDA (Hyrox real = 8 × 1 km corriendo + estación): en CADA sesión híbrida incluye, justo después de la estación principal, un ejercicio «Carrera continua» de 3-5 series de 400-500 metros (1,5-2,5 km en total) a ritmo de maratón/umbral, sin pausa larga tras la estación: la estación lleva "encadenado": true y descanso_segundos 0, y la carrera va justo debajo con las MISMAS series y la pausa de recuperación entre rondas (90-120 s). Es correr con las piernas cargadas; NO cuenta como una de las 3 sesiones de carrera ni cambia el esqueleto. En la sesión de Pierna, 3-4 series; en las de tren superior, 4-5 series de 400 m.
-• TRABAJO COMBINADO («sin parar»): cualquier combinación que se haga una detrás de otra (estación + carrera, estación + estación como Wall Balls → Burpee Broad Jumps, Farmers Carry → carrera, carrera → estación, superseries o circuitos) se escribe como ejercicios CONSECUTIVOS donde todos menos el último llevan "encadenado": true y descanso_segundos 0, con las MISMAS series (= rondas); la pausa entre rondas va en el último ejercicio del grupo. Si el objetivo es trabajar en fatiga (simulación Hyrox), enlázalo; si cada estación va con su descanso, NO pongas "encadenado". Nunca encadenes más de 3 ejercicios y explica en "notas" del primero el orden y el objetivo.
+• 3 sesiones HÍBRIDAS (y solo 3): cada una incluye 2-3 estaciones reales de Hyrox MÁS un bloque de fuerza/hipertrofia accesoria. Las 8 estaciones son: SkiErg, Sled Push, Sled Pull, Burpee Broad Jumps, Remo (Row), Farmers Carry, Sandbag Lunges y Wall Balls. La hipertrofia accesoria debe ROTAR entre las 3 sesiones para cubrir espalda, pecho, bíceps y hombro a lo largo de la semana — no repitas el mismo grupo muscular en las 3 sesiones híbridas.
+• ESTACIONES QUE TOCA CUBRIR EN ESTA FASE (${fase}): ${ESTACIONES_POR_FASE[fase].map(nombreEstacion).join(', ')}. Entre Base, Fuerza y Resistencia salen las 8 en un ciclo, así que no repitas siempre las mismas cuatro. Reparto: las estaciones de pierna (Sled Push, Wall Balls, Burpee Broad Jumps, Sandbag Lunges) van en la sesión de Pierna; SkiErg y Sled Pull en una sesión de tren superior; Remo y Farmers Carry en la otra. En Resistencia añade un simulacro parcial: 2-3 estaciones encadenadas con 400-1000 m corriendo entre ellas.
+• SOLO UNA de las 3 sesiones híbridas lleva trabajo pesado de PIERNA (sentadilla, peso muerto, zancadas/búlgara, Sled Push, Wall Balls, Burpee Broad Jumps, Sandbag Lunges): ponle «Pierna» en el nombre. Las otras dos usan estaciones de tren superior (SkiErg, Row, Sled Pull, Farmers Carry) e hipertrofia de tren superior o core, SIN ejercicios de pierna: la carrera ya carga las piernas tres veces por semana y el motor necesita piernas frescas para la tirada y la calidad.
+• CARRERA COMPROMETIDA (Hyrox real = 8 × 1 km corriendo + estación): en CADA sesión híbrida incluye, justo después de la estación principal, un ejercicio «Carrera continua» de 3-5 series de 400-500 metros (1,5-2,5 km en total) a ritmo de maratón/umbral. Es correr con las piernas cargadas; NO cuenta como una de las 3 sesiones de carrera ni cambia el esqueleto. En la sesión de Pierna, 3-4 series; en las de tren superior, 4-5 series de 400 m.
+• TRABAJO COMBINADO («sin parar»): lo que se hace una cosa detrás de otra (estación + carrera, estación + estación como Wall Balls → Burpee Broad Jumps, Farmers Carry → carrera, carrera → estación, superseries o circuitos) se escribe como ejercicios CONSECUTIVOS donde todos menos el último llevan "encadenado": true y descanso_segundos 0, con las MISMAS series (= rondas); la pausa entre rondas (90-120 s) va en el último ejercicio del grupo. La estación seguida de su carrera va siempre encadenada: así se trabaja en fatiga, como en la prueba. Si cada estación se hace con su descanso, NO pongas "encadenado". Máximo 3 ejercicios encadenados seguidos, y explica en las notas del primero el orden y para qué sirve.
+• PLIOMETRÍA (saltos, con o sin carga): añade un bloque corto con "bloque": "pliometria" en la sesión de Pierna (antes de la sentadilla: potencia con el sistema nervioso fresco) y en UNA sesión de carrera de calidad (series o tempo) después del calentamiento. NUNCA en rodajes suaves ni en la tirada larga, ni el día antes de la tirada. Contactos según el nivel (abajo), la mitad en Deload. ${textoPliometriaParaNivel(nivelAtleta)} Progresión por fase: Base = bajo impacto y reactivo (pogo jumps, saltos al cajón bajo, skipping, saltos con contramovimiento); Fuerza = potencia con carga ligera (sentadilla con salto con carga, salto con barra hexagonal, box jumps con peso); Resistencia = continuos y elásticos (bounding, saltos de vallas, saltos a una pierna). Evita pliometría si hay lesión de rodilla, tobillo o aquiles. Evidencia: el entrenamiento de saltos mejora la economía de carrera y el rendimiento en contrarreloj en corredores de fondo (Ramírez-Campillo 2021, meta-análisis de 21 estudios), pero su efecto sobre la economía es menor que el de la fuerza máxima con cargas altas (Eihara 2022), por eso es un complemento de la fuerza, no un sustituto.
 ${lineasCarrera}
 
 FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 2010/2017 (hipertrofia accesoria).`
@@ -255,7 +258,7 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
     }
 
     let protocoloDeporte = esHibridoHyroxRunning
-      ? construirProtocoloHibridoHyroxRunning(faseBloqueObjetivo)
+      ? construirProtocoloHibridoHyroxRunning(faseBloqueObjetivo, undefined, String(nivel))
       : (SPORT_PROTOCOLS[modalidadFoco] ?? SPORT_PROTOCOLS.funcional)
 
     const instruccionDuracion = esHibridoHyroxRunning
@@ -330,7 +333,7 @@ FUENTES: Laursen & Buchheit (Hyrox/HIIT), Daniels (VDOT running), Schoenfeld 201
         if (w) {
           if (esHibridoHyroxRunning) {
             const NOMBRE_TIPO: Record<string, string> = { rodaje: 'rodaje fácil', tirada: 'tirada larga', tempo: 'tempo', series: 'series', ritmo_carrera: 'ritmo de carrera', strides: 'rodaje con progresiones' }
-            protocoloDeporte = construirProtocoloHibridoHyroxRunning(faseBloqueObjetivo, w.sesiones.map(x => `${NOMBRE_TIPO[x.tipo] ?? x.tipo} ${x.minutos} min`).join(' + '))
+            protocoloDeporte = construirProtocoloHibridoHyroxRunning(faseBloqueObjetivo, w.sesiones.map(x => `${NOMBRE_TIPO[x.tipo] ?? x.tipo} ${x.minutos} min`).join(' + '), String(nivel))
           }
           contextoValidacion.esqueleto = { minutos: w.minutos, salidas: w.salidas, tiradaMin: w.tiradaMin, sesionesCalidad: w.sesiones.filter(x => ['tempo', 'series', 'ritmo_carrera'].includes(x.tipo)).length }
           const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo']
@@ -520,7 +523,7 @@ ${instruccionDuracion}
       }))
       const hay = ses.some(x => x.tipo_sesion === 'carrera' || /carrera|tirada|rodaje|tempo|series/i.test(x.nombre))
       return problemasDelPlan({
-        hallazgos: hay ? validarSemanaCarrera(ses, contextoValidacion).hallazgos : [],
+        hallazgos: [...(hay ? validarSemanaCarrera(ses, contextoValidacion).hallazgos : []), ...(esHibridoHyroxRunning ? validarHibridoHyrox((plan.sesiones as Record<string, unknown>[]) ?? [], faseBloqueObjetivo) : [])],
         sesiones: ses.length,
         sesionesEsperadas: esHibridoHyroxRunning ? 6 : null,
         evidencia: resolverEvidenciaPlan(plan, estudios),
@@ -598,6 +601,7 @@ ${instruccionDuracion}
     }))
     const validacion = sesionesGeneradas.some(x => x.tipo_sesion === 'carrera' || /carrera|tirada|rodaje|tempo|series/i.test(x.nombre)) ? validarSemanaCarrera(sesionesGeneradas, contextoValidacion) : null
     if (validacion && esHibridoHyroxRunning) {
+      validacion.hallazgos.push(...validarHibridoHyrox(sesionesBrutas, faseBloqueObjetivo))
       validacion.hallazgos.push(...validarRepartoSemana(sesionesBrutas.map(x => ({ nombre: String(x.nombre ?? ''), dia_semana: x.dia_semana ?? null, ejercicios: x.ejercicios, esCarrera: esCarreraBruta(x), tipoCarrera: esCarreraBruta(x) ? tipoDeSesionCarrera({ nombre: String(x.nombre ?? '') }) : undefined })), diasDisponiblesPerfil))
     }
 

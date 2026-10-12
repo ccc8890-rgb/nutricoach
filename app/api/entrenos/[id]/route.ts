@@ -26,6 +26,7 @@ export const PLAN_EDITOR_SESIONES_SELECT = `
     series,
     repeticiones,
     descanso_segundos,
+    encadenado,
     peso_sugerido,
     rpe,
     notas,

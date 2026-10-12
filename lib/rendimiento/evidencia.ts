@@ -159,9 +159,9 @@ export async function estudiosPorDoi(db: SupabaseClient, dois: string[]): Promis
 /** Etiquetas de la base que interesan según el tipo de atleta; se suman a las comunes de planificación. */
 const TAGS_BASE_PLAN = ['periodizacion', 'carga_entrenamiento', 'progresion_volumen', 'recuperacion', 'rendimiento', 'monitorizacion', 'tapering']
 const TAGS_POR_MODALIDAD: Record<string, string[]> = {
-  hibrido: ['hibrido', 'hyrox', 'entrenamiento_concurrente', 'fuerza', 'entrenamiento_fuerza', 'running', 'entrenamiento_resistencia', 'distribucion_intensidad', 'polarizado', 'hiit'],
-  hyrox: ['hyrox', 'hibrido', 'entrenamiento_concurrente', 'fuerza', 'running', 'hiit', 'entrenamiento_resistencia'],
-  running: ['running', 'maraton', 'entrenamiento_resistencia', 'distribucion_intensidad', 'polarizado', 'piramidal', 'economia_carrera', 'vo2max', 'umbral', 'corredor_popular', 'tirada_larga', 'fuerza_resistencia'],
+  hibrido: ['hibrido', 'hyrox', 'pliometria', 'saltos', 'economia_carrera', 'entrenamiento_concurrente', 'fuerza', 'entrenamiento_fuerza', 'running', 'entrenamiento_resistencia', 'distribucion_intensidad', 'polarizado', 'hiit'],
+  hyrox: ['hyrox', 'hibrido', 'pliometria', 'saltos', 'entrenamiento_concurrente', 'fuerza', 'running', 'hiit', 'entrenamiento_resistencia'],
+  running: ['running', 'pliometria', 'saltos', 'maraton', 'entrenamiento_resistencia', 'distribucion_intensidad', 'polarizado', 'piramidal', 'economia_carrera', 'vo2max', 'umbral', 'corredor_popular', 'tirada_larga', 'fuerza_resistencia'],
   gym_fuerza: ['hipertrofia', 'fuerza', 'entrenamiento_fuerza', 'entrenamiento_de_fuerza', 'volumen', 'series', 'dosis-respuesta', 'potencia', 'fuerza_muscular'],
   gym_estetica: ['hipertrofia', 'fuerza', 'entrenamiento_fuerza', 'volumen', 'series', 'dosis-respuesta'],
   ciclismo: ['entrenamiento_resistencia', 'polarizado', 'distribucion_intensidad', 'vo2max', 'hiit'],

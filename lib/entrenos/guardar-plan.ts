@@ -2,6 +2,7 @@
 // Guarda un plan de entreno generado por IA sin dejar nunca al cliente sin plan (ver guardarPlanEntreno).
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { bloqueEjercicioGenerado } from '@/lib/training/generated-session-blocks'
+import { esPliometria } from '@/lib/entrenos/hyrox-estaciones'
 
 // Palabras genéricas que no aportan al matching
 const STOP_WORDS = new Set(['con', 'de', 'en', 'el', 'la', 'los', 'las', 'y', 'a', 'al', 'del'])
@@ -106,7 +107,8 @@ export function tipoPreferidoDeSesion(s: SesionIA): TipoPreferido | undefined {
 export async function idEjercicioDeLaIA(sb: SupabaseClient, sesion: SesionIA, ej: EjercicioIA): Promise<string | null> {
   const nombreEj = (ej.nombre ?? '').trim()
   if (!nombreEj) return null
-  const tipo: TipoPreferido | undefined = tipoPreferidoDeSesion(sesion) ?? (midePorDistanciaOTiempo(ej.repeticiones) ? 'cardio_funcional' : undefined)
+  // La pliometría (saltos) es funcional/fuerza aunque vaya dentro de una sesión de carrera: sin filtro de tipo, para que no se descarte.
+  const tipo: TipoPreferido | undefined = esPliometria(ej) ? undefined : (tipoPreferidoDeSesion(sesion) ?? (midePorDistanciaOTiempo(ej.repeticiones) ? 'cardio_funcional' : undefined))
   const nombreIntervalos = nombreCatalogoPorDistancia(nombreEj, ej.series, ej.repeticiones)
   return (nombreIntervalos ? await matchEjercicio(sb, nombreIntervalos, tipo) : null) ?? await matchEjercicio(sb, nombreEj, tipo)
 }

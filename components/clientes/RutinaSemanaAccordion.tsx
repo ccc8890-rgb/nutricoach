@@ -12,6 +12,7 @@ interface Ejercicio {
   series: number | null
   repeticiones: string | null
   descanso_segundos: number | null
+  encadenado?: boolean | null
   peso_sugerido: string | null
   rpe: string | null
   notas: string | null
@@ -195,6 +196,7 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
                         <div className="flex items-center gap-2">
                           <Dumbbell size={14} className="flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
                           <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{ej.ejercicio?.nombre ?? 'Ejercicio'}</span>
+                          {ej.encadenado && <span className="text-[11px] uppercase tracking-wider" style={{ color: 'var(--semantic-active)' }}>↓ sin parar</span>}
                         </div>
                         {stats.length > 0 && (
                           <p className="text-sm mt-1.5 pl-[22px] tabular-nums" style={{ color: 'var(--text-muted)' }}>

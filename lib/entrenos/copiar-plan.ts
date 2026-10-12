@@ -16,6 +16,7 @@ function sesionBase(s: Fila): Fila {
 function ejercicioBase(e: Fila): Fila {
   const out: Fila = {}
   for (const c of CAMPOS_EJERCICIO) out[c] = e[c] ?? null
+  out.encadenado = e.encadenado === true
   // Las plantillas pueden guardar la carga en otros campos.
   if (out.peso_sugerido == null && e.carga_valor != null) out.peso_sugerido = String(e.carga_valor)
   if (out.notas == null && e.notas_tecnicas != null) out.notas = e.notas_tecnicas

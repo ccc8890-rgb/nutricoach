@@ -706,6 +706,7 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
                     return (
                       <li key={e.id} className="text-sm" style={{ color: 'var(--text)' }}>
                         {e.nombre}{stats.length > 0 && <span className="ml-2 text-xs tabular-nums" style={{ color: 'var(--text-muted)' }}>{stats.join(' · ')}</span>}
+                        {e.encadenado && <span className="ml-2 text-[11px] uppercase tracking-wider" style={{ color: 'var(--semantic-active)' }}>↓ sin parar</span>}
                       </li>
                     )
                   })}
