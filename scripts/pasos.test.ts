@@ -1,6 +1,6 @@
 // scripts/pasos.test.ts
 import assert from 'node:assert/strict'
-import { validarPasos, resumenSesion, lineaPaso, type Paso } from '../lib/entrenos/pasos'
+import { validarPasos, resumenSesion, lineaPaso, textoCorto, type Paso } from '../lib/entrenos/pasos'
 import { ritmosDesdeVdot } from '../lib/entrenos/ritmos'
 
 const series: Paso[] = [
@@ -55,4 +55,17 @@ assert.equal(
   'Recuperación 1:00'
 )
 
+// Línea-resumen de la sesión (la de la tarjeta «Se envía a tu Garmin»)
+{
+  const r = ritmosDesdeVdot(45)!
+  const pista: Paso[] = [
+    { tipo: 'calentamiento', duracion: { unidad: 'segundos', valor: 480 }, objetivo: { tipo: 'zona', zona: 'E' } },
+    { tipo: 'repetir', veces: 5, pasos: [
+      { tipo: 'trabajo', duracion: { unidad: 'metros', valor: 500 }, objetivo: { tipo: 'zona', zona: 'I' } },
+      { tipo: 'recuperacion', duracion: { unidad: 'segundos', valor: 120 }, objetivo: { tipo: 'zona', zona: 'E' } }] },
+    { tipo: 'enfriamiento', duracion: { unidad: 'segundos', valor: 240 }, objetivo: { tipo: 'zona', zona: 'E' } },
+  ]
+  assert.equal(textoCorto(pista, r), '8:00 suave + 5 × (500 m a 4:15 + 2:00 trote) + 4:00 suave')
+  assert.equal(textoCorto([{ tipo: 'trabajo', duracion: { unidad: 'segundos', valor: 3000 }, objetivo: { tipo: 'zona', zona: 'E' } }], r), '50:00 suave')
+}
 console.log('pasos.test.ts OK')

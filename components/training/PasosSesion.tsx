@@ -2,8 +2,8 @@
 'use client'
 import { useMemo, useState } from 'react'
 import { Watch } from '@phosphor-icons/react'
-import { validarPasos, resumenSesion, lineaPaso, zonasUsadas, ZONAS_RITMO, type PasoSimple } from '@/lib/entrenos/pasos'
-import { formatearRitmo, type Ritmos } from '@/lib/entrenos/ritmos'
+import { validarPasos, resumenSesion, textoCorto, zonasUsadas, ZONAS_RITMO } from '@/lib/entrenos/pasos'
+import type { Ritmos } from '@/lib/entrenos/ritmos'
 import type { ZonasFc } from '@/lib/entrenos/zonas-fc'
 
 export interface ExtrasSesion {
@@ -56,67 +56,42 @@ export default function PasosSesion({ sesionId, pasos, ritmos, fc, garmin }: Pro
     }
   }
 
+  const zonasTxt = zonas.map(z => `${ZONAS_RITMO[z].nombre}${fc?.[z] ? ` ${z === 'E' ? 'máx. ' + fc[z]!.max : `${fc[z]!.min}–${fc[z]!.max}`} ppm` : ''}`).join(' · ')
+
   return (
-    <section className="rounded-2xl p-4 mb-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-      <div className="flex items-baseline justify-between gap-3 mb-3">
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Estructura de la sesión</h2>
-        <p className="text-xs font-data" style={{ color: 'var(--text-muted)' }}>
-          {(resumen.distancia_m / 1000).toFixed(1)} km
-          {resumen.duracion_s !== null ? ` · ${Math.round(resumen.duracion_s / 60)} min` : ''}
+    <section className="rounded-2xl px-3.5 py-3 mb-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
+          <Watch size={14} className="mr-1.5 inline align-[-2px]" />
+          Se envía a tu Garmin
+          <span className="font-data font-normal" style={{ color: 'var(--text-muted)' }}>
+            {' · '}{(resumen.distancia_m / 1000).toFixed(1).replace('.', ',')} km{resumen.duracion_s !== null ? ` · ${Math.round(resumen.duracion_s / 60)} min` : ''}
+          </span>
         </p>
-      </div>
-
-      <ol className="space-y-2">
-        {valido.pasos.map((p, i) =>
-          p.tipo === 'repetir' ? (
-            <li key={i} className="rounded-xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-              <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text)' }}>{p.veces} ×</p>
-              <ul className="space-y-0.5">
-                {p.pasos.map((q: PasoSimple, j: number) => (
-                  <li key={j} className="text-sm" style={{ color: 'var(--text-secondary)' }}>{lineaPaso(q, ritmos)}</li>
-                ))}
-              </ul>
-            </li>
-          ) : (
-            <li key={i} className="text-sm px-1" style={{ color: 'var(--text-secondary)' }}>{lineaPaso(p, ritmos)}</li>
-          ),
-        )}
-      </ol>
-
-      {!ritmos && (
-        <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
-          Sin VDOT en tu perfil no puedo calcular los ritmos; añádelo en Perfil atleta y se rellenarán solos.
-        </p>
-      )}
-      <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={enviar}
           disabled={enviando}
-          className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold active:scale-[0.98] disabled:opacity-60"
-          style={{ background: 'var(--semantic-active)', color: '#fff' }}
+          className="shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold active:scale-[0.98] disabled:opacity-60"
+          style={{ color: 'var(--text)', border: '1px solid var(--border)' }}
         >
-          <Watch size={16} />
-          {enviando ? 'Enviando…' : estado.workoutId ? 'Reenviar a Garmin' : 'Enviar a Garmin'}
+          {enviando ? 'Enviando…' : estado.workoutId ? 'Reenviar' : 'Enviar'}
         </button>
-        {estado.workoutId && (
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            {estado.fecha ? `Programado en tu Garmin para el ${fechaLegible(estado.fecha)}` : 'Creado en tu Garmin (sin fecha)'}
-          </p>
-        )}
       </div>
-      {error && <p className="text-xs mt-2" style={{ color: 'var(--semantic-danger, #c0392b)' }}>{error}</p>}
-      {zonas.length > 0 && (
-        <ul className="mt-4 pt-3 space-y-0.5 text-xs" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-          {zonas.map(z => (
-            <li key={z}>
-              <span className="font-semibold">{ZONAS_RITMO[z].nombre}</span>
-              {fc?.[z] ? ` · ${z === 'E' ? 'techo ' + fc[z]!.max : `${fc[z]!.min}–${fc[z]!.max}`} ppm` : ''}
-              {` · RPE ${ZONAS_RITMO[z].rpe}`}: {ZONAS_RITMO[z].uso}
-            </li>
-          ))}
-        </ul>
+
+      <p className="mt-2 text-[13px] leading-snug" style={{ color: 'var(--text-secondary)' }}>{textoCorto(valido.pasos, ritmos)}</p>
+
+      <p className="mt-1.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+        {estado.workoutId ? (estado.fecha ? `Programado para el ${fechaLegible(estado.fecha).slice(0, 5)}` : 'Creado en tu Garmin') : 'Aún no enviada'}
+        {zonasTxt ? ` · ${zonasTxt}` : ''}
+      </p>
+
+      {!ritmos && (
+        <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+          Sin VDOT en tu perfil no se calculan los ritmos; añádelo en Perfil atleta.
+        </p>
       )}
+      {error && <p className="text-xs mt-2" style={{ color: 'var(--semantic-danger, #c0392b)' }}>{error}</p>}
     </section>
   )
 }
