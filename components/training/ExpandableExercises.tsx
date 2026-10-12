@@ -105,7 +105,7 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                       if (!comun && descansoDe(ej)) chips.push(`pausa ${pausa(ej.descanso_segundos as number)}`)
                       const ritmo = ritmoDeLaNota(detalle)
                       if (ritmo) chips.push(ritmo)
-                      if (ej.peso_sugerido) chips.push(ej.peso_sugerido)
+                      if (ej.peso_sugerido && !/^\s*0([.,]0+)?\s*kg\s*$/i.test(ej.peso_sugerido)) chips.push(ej.peso_sugerido)
                       return chips.length > 0 ? (
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
                           {chips.map(c => <span key={c}>{c}</span>)}

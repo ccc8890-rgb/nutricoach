@@ -185,7 +185,7 @@ export async function guardarPlanEntreno(sb: SupabaseClient, d: DatosGuardadoPla
           descanso_segundos: typeof ej.descanso_segundos === 'number' ? ej.descanso_segundos : null,
           notas: [ej.rpe_objetivo ? `RPE ${ej.rpe_objetivo}` : null, ej.notas].filter(Boolean).join(' — ') || null,
           orden: j + 1,
-          peso_sugerido: typeof ej.peso_estimado_kg === 'number' ? `${ej.peso_estimado_kg}kg` : null,
+          peso_sugerido: typeof ej.peso_estimado_kg === 'number' && ej.peso_estimado_kg > 0 ? `${ej.peso_estimado_kg}kg` : null,
         })
         if (errEj) throw new Error('ejercicio')
         vinculados++
