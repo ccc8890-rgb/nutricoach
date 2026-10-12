@@ -15,9 +15,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   // Lo aprobado manda; si no hay, se enseña la propuesta pendiente (marcada como tal).
   const { data: tareas } = await db.from('agente_tareas').select('estado,payload,created_at').eq('cliente_id', clienteId).eq('tipo', 'plan_entreno_ia')
-    .in('estado', ['aprobado', 'modificado', 'pendiente', 'en_revision']).order('created_at', { ascending: false }).limit(10)
+    .in('estado', ['aplicado', 'aprobada', 'aprobado', 'modificado', 'pendiente', 'en_revision']).order('created_at', { ascending: false }).limit(10)
   const lista = tareas ?? []
-  const elegida = lista.find(t => t.estado === 'aprobado' || t.estado === 'modificado') ?? lista[0]
+  const APROBADOS = ['aplicado', 'aprobada', 'aprobado', 'modificado']
+  const elegida = lista.find(t => APROBADOS.includes(t.estado)) ?? lista[0]
   const payload = elegida?.payload as PayloadPlanEntrenoIA | undefined
   if (!payload?.macrociclo?.semanas?.length) return NextResponse.json({ origen: null, filas: [] })
 
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { data: entrenos } = await db.from('entrenos_realizados').select('fecha,tipo,duracion_s').eq('cliente_id', clienteId).gte('fecha', desde)
   const plan = (payload.plan ?? {}) as Record<string, unknown>
   return NextResponse.json({
-    origen: elegida.estado === 'aprobado' || elegida.estado === 'modificado' ? 'aprobada' : 'propuesta',
+    origen: APROBADOS.includes(elegida.estado) ? 'aprobada' : 'propuesta',
     generado: elegida.created_at,
     filas: construirHojaDeRuta(payload.macrociclo.semanas, entrenos ?? [], hoy),
     progresion: typeof plan.progresion_semanal === 'string' ? plan.progresion_semanal : null,
