@@ -451,6 +451,7 @@ ${instruccionDuracion}
   "progresion_semanal": "string — modelo exacto de progresión (ej: +2 reps semana 2-3, +2.5kg semana 4)",
   "semana_deload": "string — descripción de la semana de descarga (cuándo y cómo)",
   "indicadores_mejora": ["métrica 1 medible en 4 semanas", "métrica 2", "métrica 3"],
+  "mejoras_cliente": ["2-3 frases cortas para el CLIENTE, lenguaje llano y sin siglas ni estudios, de qué notará mejorar al final del bloque (ej: 'Aguantarás la tirada larga con el pulso más tranquilo')"],
   "senales_ajuste_coach": {
     "si_rpe_alto": "qué hacer si RPE > 8.5 dos semanas seguidas",
     "si_rpe_bajo": "qué hacer si RPE < 6 dos semanas seguidas",

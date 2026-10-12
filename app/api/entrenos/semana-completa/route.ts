@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { calcularBloqueInfo, clasificarTipoSesion } from '@/lib/entrenos/bloques'
+import { construirTuBloque } from '@/lib/entrenos/tu-bloque'
 
 function startOfWeek() {
   const now = new Date()
@@ -116,5 +117,13 @@ export async function GET(request: NextRequest) {
     }
   })
 
-  return NextResponse.json({ sesiones, plan_nombre: planEntreno.nombre, bloque })
+  // «Tu bloque»: mensaje, próximas semanas y mejoras del último plan de IA aprobado de este cliente.
+  const { data: tareaPlan } = await admin.from('agente_tareas').select('payload, aplicado_at')
+    .eq('cliente_id', planEntreno.cliente_id).eq('tipo', 'plan_entreno_ia')
+    .in('estado', ['aplicado', 'aprobada', 'aprobado', 'modificado']).order('created_at', { ascending: false }).limit(1).maybeSingle()
+  // Solo si el plan activo es el que salió de esa tarea (si el coach lo cambió a mano después, no se enseña un mensaje ajeno).
+  const salioDeLaTarea = !!tareaPlan?.aplicado_at && Math.abs(new Date(planEntreno.created_at).getTime() - new Date(tareaPlan.aplicado_at).getTime()) < 5 * 60_000
+  const tu_bloque = tareaPlan && salioDeLaTarea ? construirTuBloque(tareaPlan.payload, today) : null
+
+  return NextResponse.json({ sesiones, plan_nombre: planEntreno.nombre, bloque, tu_bloque })
 }

@@ -5,6 +5,8 @@ import { fetchJson } from '@/lib/cliente/cache-swr'
 import { Dumbbell, Loader2, CircleDashed } from 'lucide-react'
 import { SneakerMove } from '@phosphor-icons/react'
 import CalendarioMesEntreno from './CalendarioMesEntreno'
+import TuBloque from './TuBloque'
+import type { TuBloque as TuBloqueDatos } from '@/lib/entrenos/tu-bloque'
 import EntrenoKanban from './EntrenoKanban'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
@@ -36,9 +38,11 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
   const { data: semana, isLoading } = useSWR<{
     sesiones?: SesionSemana[]
     bloque?: { fase: string; semana_actual: number; semanas_totales: number } | null
+    tu_bloque?: TuBloqueDatos | null
   }>('/api/entrenos/semana-completa', fetchJson)
   const sesiones = semana?.sesiones ?? []
   const bloque = semana?.bloque ?? null
+  const tuBloque = semana?.tu_bloque ?? null
   const loading = isLoading && !semana
   const [detalles, setDetalles] = useState<Record<string, EjercicioDetalle[] | 'cargando'>>({})
   const [extras, setExtras] = useState<Record<string, ExtrasSesion | null>>({})
@@ -79,6 +83,8 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
         items={[{ key: 'hoy', label: 'Hoy' }, { key: 'semana', label: 'Semana' }, { key: 'mes', label: 'Mes' }]}
         onChange={setSubTab}
       />
+
+      {!loading && subTab === 'hoy' && tuBloque && <TuBloque datos={tuBloque} fase={bloque?.fase} semanaActual={bloque?.semana_actual} semanasTotales={bloque?.semanas_totales} />}
 
       {loading ? (
         <div className="flex justify-center py-12">
