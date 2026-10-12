@@ -72,3 +72,14 @@ const filas = [
 for (const f of ['2026-10-13', '2026-10-27', '2026-11-03']) { const r = ejerciciosParaFecha(planProg, filas, f); assert.equal(r[0].series, r[1].series) }
 assert.equal(ejerciciosParaFecha(planProg, filas, '2026-10-27')[0].series, 4)
 console.log('progresion-semanal (cadenas) OK')
+
+// La lista de ejercicios de la tirada sigue los minutos de la semana (coincide con los pasos del reloj)
+import { ejercicioDeCarreraDeLaSemana } from '../lib/entrenos/progresion-semanal'
+const cc = { nombre: 'Carrera continua', bloque: 'principal', series: 1, repeticiones: '45min' }
+assert.equal(ejercicioDeCarreraDeLaSemana(cc, 'Tirada larga Z2', prog, 1).repeticiones, '45min')
+assert.equal(ejercicioDeCarreraDeLaSemana(cc, 'Tirada larga Z2', prog, 2).repeticiones, '50min')
+assert.equal(ejercicioDeCarreraDeLaSemana(cc, 'Tirada larga Z2', prog, 3).repeticiones, '60min')
+assert.equal(ejercicioDeCarreraDeLaSemana(cc, 'Tirada larga Z2', prog, 4).repeticiones, '25min')
+assert.equal(ejercicioDeCarreraDeLaSemana({ nombre: 'Series a ritmo de intervalos', bloque: 'principal', series: 5, repeticiones: '400m' }, 'Series a ritmo de intervalos + pliometría', prog, 2).series, 6)
+assert.equal(ejercicioDeCarreraDeLaSemana(cc, 'Híbrida Pierna', prog, 3).repeticiones, '45min')
+console.log('progresion-semanal (carrera) OK')

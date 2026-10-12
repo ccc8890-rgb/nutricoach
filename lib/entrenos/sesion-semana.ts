@@ -1,6 +1,6 @@
 // lib/entrenos/sesion-semana.ts
 // Lo que de verdad toca en una FECHA: la semana tipo del plan con la progresión de esa semana del bloque aplicada.
-import { ejercicioDeLaSemana, nombreSinCifras, pasosDeLaSemana, semanaDelBloque, type ProgresionPlan } from './progresion-semanal'
+import { ejercicioDeCarreraDeLaSemana, ejercicioDeLaSemana, nombreSinCifras, pasosDeLaSemana, semanaDelBloque, type ProgresionPlan } from './progresion-semanal'
 
 export interface PlanConProgresion { created_at: string; duracion_semanas: number | null; progresion?: unknown }
 
@@ -25,9 +25,11 @@ export function pasosParaFecha(plan: PlanConProgresion, sesion: { nombre: string
 }
 
 /** Ejercicios de una sesión en la semana de esa fecha; mantiene el resto de campos y añade `objetivo_open` y `cambio_semana`. */
-export function ejerciciosParaFecha<E extends EjercicioCrudo>(plan: PlanConProgresion, ejercicios: E[], fecha: string): (E & { objetivo_open: string | null; cambio_semana: boolean })[] {
+export function ejerciciosParaFecha<E extends EjercicioCrudo>(plan: PlanConProgresion, ejercicios: E[], fecha: string, nombreSesion = ''): (E & { objetivo_open: string | null; cambio_semana: boolean })[] {
   const { n, prog, descarga } = semanaDeFecha(plan, fecha)
   const salida = ejercicios.map(e => {
+    const carrera = ejercicioDeCarreraDeLaSemana({ nombre: e.ejercicio?.nombre ?? '', bloque: e.bloque, series: e.series, repeticiones: e.repeticiones }, nombreSesion, prog, n)
+    if (carrera.series !== e.series || carrera.repeticiones !== e.repeticiones) return { ...e, series: carrera.series, repeticiones: carrera.repeticiones, objetivo_open: null, cambio_semana: true }
     const r = ejercicioDeLaSemana({ nombre: e.ejercicio?.nombre ?? '', bloque: e.bloque, tipo: e.ejercicio?.tipo, series: e.series, repeticiones: e.repeticiones, peso_sugerido: e.peso_sugerido }, prog && n ? n : 1, prog ? descarga : false)
     return { ...e, series: r.series, repeticiones: r.repeticiones, peso_sugerido: r.peso_sugerido, objetivo_open: r.objetivo_open, cambio_semana: r.cambio }
   })

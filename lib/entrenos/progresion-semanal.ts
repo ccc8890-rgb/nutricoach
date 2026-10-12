@@ -136,3 +136,19 @@ export function pasosDeLaSemana(pasosBase: unknown, nombreSesion: string, prog: 
 export function nombreSinCifras(nombre: string): string {
   return nombre.replace(/\s*[·\-–]\s*\d+\s*min\b/gi, '').replace(/\s*[·\-–]\s*\d+\s*[×x]\s*\d+\s*m\b/gi, '').replace(/\s+\d+\s*[×x]\s*\d+\s*m\s+a\s+/gi, ' a ').replace(/\s{2,}/g, ' ').trim()
 }
+
+/**
+ * Ejercicios de una sesión de carrera en la semana n: la carrera continua suma o resta los minutos que cambia la sesión según el macrociclo
+ * (así la lista coincide con los pasos del reloj) y las series de pista siguen el mismo reparto que los pasos.
+ */
+export function ejercicioDeCarreraDeLaSemana(e: { nombre: string; bloque?: string | null; series: number | null; repeticiones: string | null }, nombreSesion: string, prog: ProgresionPlan | null, n: number | null): { series: number | null; repeticiones: string | null } {
+  const base = { series: e.series, repeticiones: e.repeticiones }
+  const tipo = tipoCarreraDeNombre(nombreSesion)
+  if (!prog || !n || n === 1 || !tipo || e.bloque !== 'principal') return base
+  const m1 = minutosDe(prog, 1, tipo); const mn = minutosDe(prog, n, tipo)
+  if (!m1 || !mn || m1 === mn) return base
+  const min = (e.repeticiones ?? '').match(/^\s*(\d+)\s*min\s*$/i)
+  if (min && (e.series ?? 1) <= 1) return { series: e.series, repeticiones: `${Math.max(10, Number(min[1]) + (mn - m1))}min` }
+  if (/^\s*\d{3,4}\s*m\s*$/i.test(e.repeticiones ?? '') && (e.series ?? 0) >= 2) return { series: Math.min(e.series! + 4, Math.max(3, Math.round(e.series! * (mn / m1)))), repeticiones: e.repeticiones }
+  return base
+}

@@ -81,7 +81,7 @@ export async function GET(
   const fechaParam = searchParams.get('fecha')
   const fecha = fechaParam && /^\d{4}-\d{2}-\d{2}$/.test(fechaParam) ? fechaParam : hoyMadrid()
   const semana = semanaDeFecha(plan, fecha)
-  const ejerciciosSemana = ejerciciosParaFecha(plan, (ejercicios ?? []) as unknown as Parameters<typeof ejerciciosParaFecha>[1], fecha)
+  const ejerciciosSemana = ejerciciosParaFecha(plan, (ejercicios ?? []) as unknown as Parameters<typeof ejerciciosParaFecha>[1], fecha, sesion.nombre)
   const pasosSemana = pasosParaFecha(plan, { nombre: sesion.nombre, pasos: sesion.pasos }, fecha)
 
   return NextResponse.json({
