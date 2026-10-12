@@ -22,6 +22,15 @@ export function segundosDe(txt: unknown): number | null {
   return s ? Number(s[1]) : null
 }
 
+/** «500m», «1km», «1.000 m» → metros; null si no es una distancia (los «20m skipping» de técnica tampoco cuentan). */
+export function metrosDe(txt: unknown): number | null {
+  if (typeof txt !== 'string') return null
+  const km = txt.match(/^\s*(\d+(?:[.,]\d+)?)\s*km\s*$/i)
+  if (km) return Math.round(parseFloat(km[1].replace(',', '.')) * 1000)
+  const m = txt.match(/^\s*(\d{1,2}(?:[.]\d{3})|\d{3,4})\s*m\s*$/i)
+  return m ? Number(m[1].replace('.', '')) : null
+}
+
 const duracionBloque = (s: SesionIA, bloque: string) => {
   const t = (s.ejercicios ?? []).filter(e => e.bloque === bloque).map(e => segundosDe(e.repeticiones)).filter((x): x is number => x !== null)
   return t.length ? t.reduce((a, b) => a + b, 0) : null
@@ -48,16 +57,21 @@ export function pasosDeSesionCarrera(s: SesionIA, semana: SemanaMacro | undefine
   } else if (macro.tipo === 'series') {
     const principal = (s.ejercicios ?? []).find(e => e.bloque === 'principal' && typeof e.series === 'number' && e.series >= 2)
     const reps = principal ? (principal.series as number) : 0
-    const trabajo = principal ? segundosDe(principal.repeticiones) : null
-    if (reps >= 2 && trabajo) {
-      const resto = Math.max(0, total - reps * 2 * trabajo)
+    const metros = principal ? metrosDe(principal.repeticiones) : null
+    // Series por distancia (pista): el trabajo cuenta metros y la recuperación va por tiempo (trote). Para repartir el resto de la sesión se estima ~4:30/km.
+    const trabajo = metros ? Math.round(metros * 0.27) : principal ? segundosDe(principal.repeticiones) : null
+    const recuperacion = metros
+      ? (typeof principal?.descanso_segundos === 'number' && principal.descanso_segundos > 0 ? principal.descanso_segundos : 120)
+      : trabajo
+    if (reps >= 2 && trabajo && recuperacion) {
+      const resto = Math.max(0, total - reps * (trabajo + recuperacion))
       const calentamiento = duracionBloque(s, 'calentamiento') ?? Math.ceil(resto * 0.6)
       const enfriamiento = duracionBloque(s, 'vuelta_calma') ?? Math.max(resto - calentamiento, 180)
       pasos = [
         { tipo: 'calentamiento', duracion: seg(calentamiento), objetivo: E },
         { tipo: 'repetir', veces: reps, pasos: [
-          { tipo: 'trabajo', duracion: seg(trabajo), objetivo: { tipo: 'zona', zona: 'I' } },
-          { tipo: 'recuperacion', duracion: seg(trabajo), objetivo: E, nota: 'Trote suave, sin parar.' },
+          { tipo: 'trabajo', duracion: metros ? { unidad: 'metros' as const, valor: metros } : seg(trabajo), objetivo: { tipo: 'zona', zona: 'I' } },
+          { tipo: 'recuperacion', duracion: seg(recuperacion), objetivo: E, nota: 'Trote suave, sin parar.' },
         ] },
         { tipo: 'enfriamiento', duracion: seg(enfriamiento), objetivo: E },
       ]

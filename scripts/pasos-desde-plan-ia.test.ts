@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { pasosDeSesionCarrera, segundosDe } from '../lib/entrenos/pasos-desde-plan-ia'
+import { pasosDeSesionCarrera, segundosDe, metrosDe } from '../lib/entrenos/pasos-desde-plan-ia'
 import type { SemanaMacro } from '../lib/entrenos/macrociclo'
 
 const semana = { n: 1, lunes: '2026-10-12', fase: 'base', descarga: false, minutos: 145, salidas: 3, tiradaMin: 60, pctSuave: 80, fuerza: 3, notas: [],
@@ -10,6 +10,12 @@ assert.equal(segundosDe('2 min'), 120)
 assert.equal(segundosDe('30s'), 30)
 assert.equal(segundosDe('20m skipping'), null)
 assert.equal(segundosDe(5), null)
+assert.equal(metrosDe('500m'), 500)
+assert.equal(metrosDe('1000 m'), 1000)
+assert.equal(metrosDe('1.000m'), 1000)
+assert.equal(metrosDe('1km'), 1000)
+assert.equal(metrosDe('20m skipping + 20m talones'), null)
+assert.equal(metrosDe('2min'), null)
 
 const series = { nombre: 'Series · 5×2 min', dia_semana: 'Martes', ritmo_objetivo: '4:15/km', ejercicios: [
   { bloque: 'calentamiento', repeticiones: '8min', series: 1 }, { bloque: 'calentamiento', repeticiones: '20m skipping', series: 3 },
@@ -33,7 +39,16 @@ assert.equal(tempo.reduce((a, p) => a + (p as { duracion: { valor: number } }).d
 
 // Sin pasos (nunca se inventan): híbrida (sin ritmo), series sin reps legibles, día sin sesión de carrera, sin esqueleto
 assert.equal(pasosDeSesionCarrera({ nombre: 'Híbrido', dia_semana: 'Miércoles', ejercicios: [] }, semana), null)
-assert.equal(pasosDeSesionCarrera({ ...series, ejercicios: [{ bloque: 'principal', series: 5, repeticiones: '400m' }] }, semana), null)
+assert.equal(pasosDeSesionCarrera({ ...series, ejercicios: [{ bloque: 'principal', series: 5, repeticiones: 'al límite' }] }, semana), null)
+
+// Series en pista, por distancia: el trabajo va en metros y la recuperación por tiempo (trote)
+const pista = pasosDeSesionCarrera({ ...series, nombre: 'Series · 5×500 m', ejercicios: [
+  { bloque: 'calentamiento', repeticiones: '8min', series: 1 },
+  { bloque: 'principal', series: 5, repeticiones: '500m', descanso_segundos: 120 }, { bloque: 'vuelta_calma', repeticiones: '4min', series: 1 }] }, semana)!
+const bloque = pista[1] as { tipo: string; veces: number; pasos: { tipo: string; duracion: { unidad: string; valor: number } }[] }
+assert.equal(bloque.tipo, 'repetir'); assert.equal(bloque.veces, 5)
+assert.deepEqual(bloque.pasos[0].duracion, { unidad: 'metros', valor: 500 })
+assert.deepEqual(bloque.pasos[1].duracion, { unidad: 'segundos', valor: 120 })
 assert.equal(pasosDeSesionCarrera({ ...rodaje2(), dia_semana: 'Domingo' }, semana), null)
 assert.equal(pasosDeSesionCarrera(series, undefined), null)
 function rodaje2() { return { nombre: 'x', ritmo_objetivo: '5:00/km', ejercicios: [] } }
