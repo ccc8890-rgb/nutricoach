@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { ArrowLeft, X, Search, Plus, Trash2, Upload } from 'lucide-react'
@@ -27,6 +27,8 @@ interface Ingrediente {
 export default function EditarRecetaPage() {
     const { id } = useParams<{ id: string }>()
     const router = useRouter()
+    const returnToParam = useSearchParams().get('returnTo')
+    const volverReceta = returnToParam ? `/recetas/${id}?returnTo=${encodeURIComponent(returnToParam)}` : `/recetas/${id}`
     const fileRef = useRef<HTMLInputElement>(null)
     const { addToast } = useToast()
 
@@ -311,7 +313,7 @@ export default function EditarRecetaPage() {
         }
 
         addToast({ type: 'success', title: 'Guardado', message: 'Receta actualizada correctamente' })
-        router.push(`/recetas/${id}`)
+        router.push(volverReceta)
     }
 
     if (loading) return (
@@ -326,7 +328,7 @@ export default function EditarRecetaPage() {
         <PageTransition>
             <div className="p-6 max-w-3xl mx-auto pb-safe">
                 <div className="flex items-center gap-3 mb-8">
-                    <Link href={`/recetas/${id}`} className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
+                    <Link href={volverReceta} className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
                     <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Editar receta</h1>
                 </div>
 
@@ -647,7 +649,7 @@ export default function EditarRecetaPage() {
                     {/* Guardar */}
                     <FadeIn delay={0.25}>
                         <div className="flex gap-3 justify-end pb-8">
-                            <Link href={`/recetas/${id}`} className="btn-secondary">Cancelar</Link>
+                            <Link href={volverReceta} className="btn-secondary">Cancelar</Link>
                             <button
                                 onClick={guardar}
                                 disabled={!form.nombre.trim() || guardando}

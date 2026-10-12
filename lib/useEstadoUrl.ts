@@ -45,7 +45,12 @@ const PREFIJO_LISTA = 'nc:lista:'
 /** Recuerda la URL (con filtros) de un listado para que «Volver» desde el detalle regrese a ella. */
 export function useRecordarLista(clave: string) {
   useEffect(() => {
-    try { sessionStorage.setItem(PREFIJO_LISTA + clave, window.location.pathname + window.location.search) } catch { /* sin almacenamiento */ }
+    try {
+      const url = window.location.pathname + window.location.search
+      sessionStorage.setItem(PREFIJO_LISTA + clave, url)
+      // última lista visitada (recetario o bandeja de revisión): respaldo del «Volver» de una receta
+      if (clave === 'recetas' || clave === 'revisar') sessionStorage.setItem(PREFIJO_LISTA + 'ultima', url)
+    } catch { /* sin almacenamiento */ }
   })
 }
 

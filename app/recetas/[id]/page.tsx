@@ -109,7 +109,7 @@ function parsePasos(text: string | null | undefined): { number: number; content:
 export default function DetalleRecetaPage() {
   const { id } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
-  const returnTo = searchParams.get('returnTo') || listaRecordada('recetas', '/recetas')
+  const returnTo = searchParams.get('returnTo') || listaRecordada('ultima', listaRecordada('recetas', '/recetas'))
   const returnPath = (() => {
     try {
       return new URL(returnTo, 'http://localhost').pathname
@@ -211,7 +211,7 @@ export default function DetalleRecetaPage() {
     if (!confirm('¿Borrar esta receta? Esta acción no se puede deshacer.')) return
     setBorrando(true)
     await supabase.from('recetas').delete().eq('id', id)
-    window.location.href = '/recetas'
+    window.location.href = returnTo.startsWith('/') ? returnTo : '/recetas'
   }
 
   if (loading) return (
@@ -357,7 +357,7 @@ export default function DetalleRecetaPage() {
           {!isClientView && (
             <>
               <Link
-                href={`/recetas/${id}/editar`}
+                href={`/recetas/${id}/editar?returnTo=${encodeURIComponent(returnTo)}`}
                 className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
                 style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', color: '#FFFFFF' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
@@ -862,7 +862,7 @@ export default function DetalleRecetaPage() {
             </Link>
             {!isClientView && (
             <div className="flex gap-2">
-              <Link href={`/recetas/${id}/editar`}
+              <Link href={`/recetas/${id}/editar?returnTo=${encodeURIComponent(returnTo)}`}
                 className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200"
                 style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
