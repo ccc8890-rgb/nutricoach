@@ -23,11 +23,12 @@ export default function TuBloque({ datos, fase, semanaActual, semanasTotales }: 
               <ul className="mt-2 flex flex-col gap-1.5">
                 {datos.semanas.map(s => (
                   <li key={s.n} className="flex items-center justify-between text-sm" style={{ color: 'var(--text)' }}>
-                    <span>{s.actual ? 'Esta semana' : `Semana del ${dia(s.lunes)}`}{s.descarga ? ' · descarga' : ''}</span>
+                    <span>{s.actual ? 'Esta semana' : `Semana del ${dia(s.lunes)}`}{s.descarga ? ' · descarga' : ''}{s.prevision ? ' · previsión' : ''}</span>
                     <span className="tabular-nums font-semibold">{s.km ? `≈ ${s.km} km · ${s.minutos} min` : `${s.minutos} min`}</span>
                   </li>
                 ))}
               </ul>
+              {datos.semanas.some(s => s.prevision) && <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Las semanas de previsión son orientativas: tu coach las confirma y crea las sesiones al terminar este bloque.</p>}
               {datos.semanas.some(s => s.descarga) && <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Las semanas de descarga bajan el volumen a propósito: ahí es donde el cuerpo asimila el trabajo.</p>}
             </div>
           )}
