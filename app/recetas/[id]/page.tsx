@@ -170,6 +170,11 @@ export default function DetalleRecetaPage() {
         return
       }
       setReceta((prev: RecetaDetalle | null) => prev ? { ...prev, estado: nuevoEstado } : prev)
+      try {
+        const clave = 'nc:revision-resueltas'
+        const actuales: string[] = JSON.parse(sessionStorage.getItem(clave) || '[]')
+        sessionStorage.setItem(clave, JSON.stringify([...new Set([...actuales, id])]))
+      } catch { /* sin almacenamiento */ }
       // viniendo de la bandeja de revisión, vuelve a ella para seguir con la siguiente
       if (returnPath.startsWith('/recetas/revisar')) window.location.href = returnTo
     } finally {

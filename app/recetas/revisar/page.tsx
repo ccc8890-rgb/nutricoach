@@ -122,6 +122,7 @@ export default function RevisarRecetasPage() {
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || `Error ${res.status}`)
       setRespuesta(json)
+      try { sessionStorage.removeItem('nc:revision-resueltas') } catch { /* sin almacenamiento */ }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return
       setError(err instanceof Error ? err.message : 'No se pudo cargar la bandeja')
@@ -135,6 +136,26 @@ export default function RevisarRecetasPage() {
     const timer = window.setTimeout(() => cargar(controller.signal), 250)
     return () => { window.clearTimeout(timer); controller.abort() }
   }, [cargar])
+
+  // Recetas aprobadas/descartadas desde su ficha: fuera de la lista al momento, sin esperar a la recarga
+  const quitarResueltas = useCallback(() => {
+    try {
+      const ids: string[] = JSON.parse(sessionStorage.getItem('nc:revision-resueltas') || '[]')
+      if (ids.length === 0) return
+      setRespuesta(actual => actual ? { ...actual, data: actual.data.filter(item => !ids.includes(item.id) || item.estado === 'aprobada' && tarea === 'todas'), aprobablesIds: actual.aprobablesIds.filter(id => !ids.includes(id)) } : actual)
+    } catch { /* sin almacenamiento */ }
+  }, [tarea])
+
+  useEffect(() => {
+    quitarResueltas()
+    // «atrás» del navegador puede devolver la página tal como estaba (caché de páginas): volver a pedir los datos
+    const alVolver = () => { quitarResueltas(); cargar() }
+    const alMostrar = (event: PageTransitionEvent) => { if (event.persisted) alVolver() }
+    const alVerse = () => { if (document.visibilityState === 'visible') alVolver() }
+    window.addEventListener('pageshow', alMostrar)
+    document.addEventListener('visibilitychange', alVerse)
+    return () => { window.removeEventListener('pageshow', alMostrar); document.removeEventListener('visibilitychange', alVerse) }
+  }, [cargar, quitarResueltas])
 
   function cambiarTarea(value: TareaRevision) {
     setTarea(value)
