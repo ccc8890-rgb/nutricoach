@@ -70,6 +70,7 @@ const CRONS: { id: string; nombre: string; maxHoras: number }[] = [
   { id: 'avisos-rendimiento', nombre: 'Avisos de rendimiento', maxHoras: 36 },
   { id: 'proponer-bloques', nombre: 'Propuesta del siguiente bloque', maxHoras: 36 },
   { id: 'recordatorio-checkin', nombre: 'Recordatorio de check-in', maxHoras: 9 * 24 },
+  { id: 'analisis-rendimiento', nombre: 'Análisis semanal de rendimiento', maxHoras: 9 * 24 },
 ]
 
 function comprobarCrons(registros: CronRegistro[], ahora: number): ComprobacionSistema[] {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { ejecutarAnalisisRendimiento } from '@/lib/agentes/analisis-rendimiento'
+import { registrarCron } from '@/lib/sistema/registrar-cron'
 
 export const maxDuration = 300
 
@@ -34,5 +35,8 @@ export async function GET(req: NextRequest) {
     if (r.ok) resumen.generados++
     else resumen.omitidos.push(`${id.slice(0, 8)}: ${r.motivo}`)
   }
+  // Los motivos de omisión normales («ya hay uno pendiente», sin datos) no son errores; solo cuenta como error si no se generó nada habiendo atletas.
+  const fallo = resumen.atletas > 0 && resumen.generados === 0 && resumen.omitidos.some(o => /error|fall|no se pudo/i.test(o))
+  await registrarCron(db, 'analisis-rendimiento', fallo ? 1 : 0, `${resumen.generados} de ${resumen.atletas} analizados${resumen.omitidos.length ? `; ${resumen.omitidos[0]}` : ''}`)
   return NextResponse.json(resumen)
 }

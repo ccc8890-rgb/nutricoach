@@ -7,7 +7,7 @@ const ej = (modo: 'diario' | 'semanal', horas: number, estado: EjecucionAgente['
   ({ modo, origen: 'cron', dry_run: false, estado, errores: [], iniciado_at: h(horas), ...extra })
 
 const cr = (cron: string, horas: number, estado: 'ok' | 'error' = 'ok') => ({ cron, estado, detalle: null, ejecutado_at: h(horas) })
-const todos = [cr('enviar-garmin', 5), cr('avisos-rendimiento', 5), cr('proponer-bloques', 5), cr('recordatorio-checkin', 100)]
+const todos = [cr('enviar-garmin', 5), cr('avisos-rendimiento', 5), cr('proponer-bloques', 5), cr('recordatorio-checkin', 100), cr('analisis-rendimiento', 100)]
 
 // Todo bien
 let r = evaluarSistema({ ejecuciones: [ej('diario', 5), ej('semanal', 50)], integraciones: [{ proveedor: 'garmin_connect', ultima_sync: h(6), error_ultimo: null }], crons: todos }, AHORA)
@@ -52,6 +52,6 @@ assert.equal(c.nivel, 'aviso')
 c = evaluarSistema({ ...base, crons: [cr('enviar-garmin', 40), ...todos.slice(1)] }, AHORA)
 assert.equal(c.nivel, 'error'); assert.match(c.resumen, /reloj/)
 // último con errores → aviso
-c = evaluarSistema({ ...base, crons: [cr('proponer-bloques', 2, 'error'), cr('enviar-garmin', 5), cr('avisos-rendimiento', 5), cr('recordatorio-checkin', 100)] }, AHORA)
+c = evaluarSistema({ ...base, crons: [cr('proponer-bloques', 2, 'error'), cr('enviar-garmin', 5), cr('avisos-rendimiento', 5), cr('recordatorio-checkin', 100), cr('analisis-rendimiento', 100)] }, AHORA)
 assert.equal(c.nivel, 'aviso')
 console.log('sistema-estado crons: OK')
