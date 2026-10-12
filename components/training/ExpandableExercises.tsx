@@ -90,7 +90,7 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                 ) : String(ej.indiceGlobal).padStart(2, '0')}
                 interactiveIndex={Boolean(checklistKey)}
                 label={<span className="training-exercise-name">{nombre}</span>}
-                meta={ej.series ? `${ej.series} × ${ej.repeticiones ?? '-'}` : undefined}
+                meta={ej.series ? `${ej.series}\u00a0×\u00a0${ej.repeticiones ?? '-'}` : undefined}
                 className={`training-exercise-row ${completado ? 'is-checked' : ''}`}
               >
                 <button
