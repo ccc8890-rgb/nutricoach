@@ -5,9 +5,13 @@ import { DIAS_ENFRIAMIENTO_PROPUESTA_AUTO, debeProponerAutomaticamente, leerModo
 
 export const maxDuration = 300
 
-/** Máximo de propuestas por ejecución (cada una es una llamada a la IA) y tiempo máximo. */
+/**
+ * Máximo de propuestas por ejecución (cada una es una llamada a la IA) y último instante en que se puede EMPEZAR una.
+ * Una propuesta con Opus tarda 140-250 s y `maxDuration` es 300 s: solo se empieza si caben entera. En la práctica, una por ejecución;
+ * las demás se hacen en los días siguientes (el enfriamiento y la tarea pendiente evitan repetir).
+ */
 const MAX_PROPUESTAS = 5
-const PRESUPUESTO_MS = 240_000
+const LIMITE_INICIO_MS = 40_000
 
 function autorizado(req: NextRequest): boolean {
   const secreto = process.env.CRON_SECRET
@@ -34,7 +38,7 @@ export async function GET(req: NextRequest) {
   const resumen = { atletas: atletas.length, propuestas: 0, omitidos: 0, errores: 0 }
   const hace = new Date(Date.now() - DIAS_ENFRIAMIENTO_PROPUESTA_AUTO * 86_400_000).toISOString()
   for (const id of atletas) {
-    if (resumen.propuestas >= MAX_PROPUESTAS || Date.now() - inicio > PRESUPUESTO_MS) break
+    if (resumen.propuestas >= MAX_PROPUESTAS || Date.now() - inicio > LIMITE_INICIO_MS) break
     try {
       const decision = await leerModoPlanificacion(db, id)
       const { count } = await db.from('agente_tareas').select('id', { count: 'exact', head: true }).eq('cliente_id', id).eq('tipo', 'plan_entreno_ia').gte('created_at', hace)
