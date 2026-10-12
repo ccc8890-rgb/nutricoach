@@ -6,6 +6,7 @@ import type { AplicarTareaResult } from '@/lib/agentes/aplicar'
 import { guardarPlanEntreno, type SesionIA } from './guardar-plan'
 import { pasosDeSesionCarrera } from './pasos-desde-plan-ia'
 import { nombreSinCifras, progresionDeMacro } from './progresion-semanal'
+import { comprobarCoherenciaPlan } from './coherencia-plan'
 import type { PayloadPlanEntrenoIA } from './planificar-con-ia'
 
 const MODOS = ['crear', 'siguiente_bloque']
@@ -48,14 +49,25 @@ export async function aplicarPlanEntrenoIA(db: SupabaseClient, tarea: AgenteTare
     })
     // Progresión semana a semana (minutos de carrera por sesión y descarga, del macrociclo): las semanas 2-4 ya no son copia de la 1.
     const progresion = progresionDeMacro(p.macrociclo?.semanas as never, p.duracion_semanas)
-    if (progresion) await db.from('planes_entrenamiento').update({ progresion }).eq('id', g.planId)
+    let avisoCoherencia = ''
+    if (progresion) {
+      await db.from('planes_entrenamiento').update({ progresion }).eq('id', g.planId)
+      // Regla: lista, pasos y rondas de todas las semanas deben coincidir; si no, se deja constancia en el resultado de la aplicación.
+      try {
+        const { data: ses } = await db.from('sesiones_entrenamiento').select('id, nombre, pasos').eq('plan_id', g.planId)
+        const { data: ejs } = await db.from('sesion_ejercicios').select('sesion_id, orden, bloque, series, repeticiones, peso_sugerido, encadenado, ejercicio:ejercicios(nombre, tipo)').in('sesion_id', (ses ?? []).map(x => x.id))
+        const plan = { created_at: new Date().toISOString(), duracion_semanas: p.duracion_semanas, progresion }
+        const problemas = comprobarCoherenciaPlan(plan as never, (ses ?? []).map(x => ({ nombre: x.nombre, pasos: x.pasos, ejercicios: (ejs ?? []).filter(e => e.sesion_id === x.id) as never })))
+        if (problemas.length) avisoCoherencia = ` · ⚠ ${problemas.length} desajuste(s) entre lista, pasos y rondas: ${problemas[0]}`
+      } catch { /* la comprobación no debe impedir crear el plan */ }
+    }
     // Historial de versiones (pantalla «revisar plan»).
     await db.from('registros_ia').insert({
       cliente_id: tarea.cliente_id, tipo: 'plan_entreno_ia',
       respuesta_json: { ...p.plan, ...(p.validacion ? { _validacion: p.validacion } : {}), ...(p.macrociclo ? { _macrociclo: p.macrociclo } : {}) },
     })
     const omitidos = g.ejerciciosOmitidos.length ? ` · sin ejercicio equivalente en la biblioteca, omitidos: ${g.ejerciciosOmitidos.join(', ')}` : ''
-    const mensaje = `Plan creado: ${g.sesiones} sesiones, ${g.ejerciciosVinculados} ejercicios vinculados${omitidos}`
+    const mensaje = `Plan creado: ${g.sesiones} sesiones, ${g.ejerciciosVinculados} ejercicios vinculados${omitidos}${avisoCoherencia}`
     // El resultado queda en la tarea (los ejercicios omitidos no se pierden) y la tarea pasa a aplicada.
     await db.from('agente_tareas').update({ estado: 'aplicado', payload: { ...tarea.payload, resultado_aplicacion: mensaje } }).eq('id', tarea.id)
     return { ok: true, codigo: 'APPLIED', mensaje }

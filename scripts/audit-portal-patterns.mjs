@@ -203,6 +203,26 @@ if (!cleanSwContent.includes('/login?next=%2Fcliente&limpiado=1')) {
   })
 }
 
+// ─── Regla 7: una sola fuente para lo que el atleta ve de una sesión en una fecha ─────────────
+// Lista de ejercicios, pasos del reloj y km salen de lib/entrenos/sesion-semana.ts (progresión semanal). Si una ruta del atleta calcula km o
+// devuelve pasos/ejercicios sin pasar por esos helpers, las semanas 2-4 dejan de coincidir con la lista y con Garmin.
+const RUTAS_ATLETA = [
+  'app/api/cliente/sesion/[id]/route.ts',
+  'app/api/entrenos/semana-completa/route.ts',
+  'app/api/entrenos/mes-completo/route.ts',
+]
+for (const f of RUTAS_ATLETA) {
+  const c = readFile(join(ROOT, f))
+  const usaKm = /kmDeSesion\(/.test(c)
+  const devuelvePasos = /pasos:\s*sesion\.pasos\s*\?\?\s*null/.test(c)
+  if ((usaKm && !/pasosParaFecha\(/.test(c)) || devuelvePasos) {
+    errors.push({ file: f, rule: 'SESION_SIN_PROGRESION_SEMANAL', msg: 'Calcula km/pasos de una sesión sin pasosParaFecha/ejerciciosParaFecha (lib/entrenos/sesion-semana.ts): las semanas del bloque quedarían desincronizadas.' })
+  }
+  if (f.includes('cliente/sesion') && !/ejerciciosParaFecha\(/.test(c)) {
+    errors.push({ file: f, rule: 'SESION_SIN_PROGRESION_SEMANAL', msg: 'Devuelve los ejercicios de la sesión sin ejerciciosParaFecha.' })
+  }
+}
+
 // ─── Resultado ────────────────────────────────────────────────────────────────
 console.log('\n🔍 Auditoría patrones portal cliente\n')
 

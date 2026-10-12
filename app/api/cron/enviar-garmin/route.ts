@@ -9,6 +9,7 @@ import { ocurrenciasDelDia, sumarDias, type Ajuste } from '@/lib/entrenos/calend
 import { plantillaActivaEn } from '@/lib/entrenos/ventana-plan'
 import { semanaDeFecha } from '@/lib/entrenos/sesion-semana'
 import { pasosDeLaSemana } from '@/lib/entrenos/progresion-semanal'
+import { comprobarCoherenciaPlan } from '@/lib/entrenos/coherencia-plan'
 
 export const maxDuration = 300
 
@@ -68,6 +69,17 @@ export async function GET(req: NextRequest) {
     const fin = finHorizonteEnvio(hoy)
     const dias: string[] = []
     for (let f = hoy; f <= fin; f = sumarDias(f, 1)) dias.push(f)
+
+    // Guardia diaria: lista de ejercicios, pasos del reloj y rondas de cada semana del bloque tienen que coincidir. Si no, el cron queda en error y se ve en «Estado del sistema».
+    for (const plan of (planes ?? []).filter(p => p.progresion)) {
+      const delPlan = (sesiones ?? []).filter(x => x.plan_id === plan.id)
+      if (!delPlan.length) continue
+      const { data: ejs } = await db.from('sesion_ejercicios').select('sesion_id, orden, bloque, series, repeticiones, peso_sugerido, encadenado, ejercicio:ejercicios(nombre, tipo)').in('sesion_id', delPlan.map(x => x.id))
+      const porSesion = new Map<string, unknown[]>()
+      for (const e of ejs ?? []) porSesion.set(e.sesion_id as string, [...(porSesion.get(e.sesion_id as string) ?? []), e])
+      const problemas = comprobarCoherenciaPlan(plan as never, delPlan.map(x => ({ nombre: x.nombre, pasos: x.pasos, ejercicios: (porSesion.get(x.id) ?? []) as never })))
+      for (const m of problemas.slice(0, 3)) resumen.errores.push(`coherencia: ${m}`)
+    }
 
     for (const s of sesiones ?? []) {
       if (resumen.enviados >= MAX_ENVIOS) break

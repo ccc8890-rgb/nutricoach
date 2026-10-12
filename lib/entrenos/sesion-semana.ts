@@ -1,6 +1,6 @@
 // lib/entrenos/sesion-semana.ts
 // Lo que de verdad toca en una FECHA: la semana tipo del plan con la progresión de esa semana del bloque aplicada.
-import { ejercicioDeCarreraDeLaSemana, ejercicioDeLaSemana, nombreSinCifras, pasosDeLaSemana, semanaDelBloque, type ProgresionPlan } from './progresion-semanal'
+import { ejercicioDeCarreraDeLaSemana, ejercicioDeLaSemana, nombreSinCifras, tipoCarreraDeNombre, pasosDeLaSemana, semanaDelBloque, type ProgresionPlan } from './progresion-semanal'
 
 export interface PlanConProgresion { created_at: string; duracion_semanas: number | null; progresion?: unknown }
 
@@ -29,6 +29,8 @@ export function ejerciciosParaFecha<E extends EjercicioCrudo>(plan: PlanConProgr
   const { n, prog, descarga } = semanaDeFecha(plan, fecha)
   const salida = ejercicios.map(e => {
     const carrera = ejercicioDeCarreraDeLaSemana({ nombre: e.ejercicio?.nombre ?? '', bloque: e.bloque, series: e.series, repeticiones: e.repeticiones }, nombreSesion, prog, n)
+    // En una sesión de carrera manda SIEMPRE el reparto de los pasos (macrociclo): la regla general de fuerza no debe tocar sus series ni sus minutos, salvo la pliometría.
+    if (tipoCarreraDeNombre(nombreSesion) && e.bloque !== 'pliometria') return { ...e, series: carrera.series, repeticiones: carrera.repeticiones, objetivo_open: null, cambio_semana: carrera.series !== e.series || carrera.repeticiones !== e.repeticiones }
     if (carrera.series !== e.series || carrera.repeticiones !== e.repeticiones) return { ...e, series: carrera.series, repeticiones: carrera.repeticiones, objetivo_open: null, cambio_semana: true }
     const r = ejercicioDeLaSemana({ nombre: e.ejercicio?.nombre ?? '', bloque: e.bloque, tipo: e.ejercicio?.tipo, series: e.series, repeticiones: e.repeticiones, peso_sugerido: e.peso_sugerido }, prog && n ? n : 1, prog ? descarga : false)
     return { ...e, series: r.series, repeticiones: r.repeticiones, peso_sugerido: r.peso_sugerido, objetivo_open: r.objetivo_open, cambio_semana: r.cambio }
