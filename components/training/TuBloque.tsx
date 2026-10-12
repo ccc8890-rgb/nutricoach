@@ -9,9 +9,12 @@ export default function TuBloque({ datos, fase, semanaActual, semanasTotales }: 
   const [abierto, setAbierto] = useState(false)
   const titulo = fase && semanaActual && semanasTotales ? `Tu bloque · ${fase}, semana ${semanaActual} de ${semanasTotales}` : 'Tu bloque'
   return (
-    <section className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <section className="training-sheet">
       <button type="button" onClick={() => setAbierto(a => !a)} aria-expanded={abierto} className="flex w-full items-center justify-between gap-3 text-left">
-        <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{titulo}</span>
+        <span className="min-w-0">
+          <span className="block font-mono text-[10px] font-semibold tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>TU BLOQUE</span>
+          <span className="mt-1 block font-bold leading-tight" style={{ color: 'var(--text)' }}>{titulo.replace('Tu bloque · ', '').replace('Tu bloque', 'Tu plan')}</span>
+        </span>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{abierto ? 'Ocultar' : 'Ver'}</span>
       </button>
       {abierto && (

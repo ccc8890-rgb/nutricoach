@@ -79,14 +79,14 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
         meta="SESIÓN / CARGA / EJECUCIÓN"
       />
 
+      {!loading && tuBloque && <TuBloque datos={tuBloque} fase={bloque?.fase} semanaActual={bloque?.semana_actual} semanasTotales={bloque?.semanas_totales} />}
+
       <IndustrialTabs
         ariaLabel="Vista del entrenamiento"
         activeKey={subTab}
         items={[{ key: 'hoy', label: 'Hoy' }, { key: 'semana', label: 'Semana' }, { key: 'mes', label: 'Mes' }]}
         onChange={setSubTab}
       />
-
-      {!loading && subTab === 'hoy' && tuBloque && <TuBloque datos={tuBloque} fase={bloque?.fase} semanaActual={bloque?.semana_actual} semanasTotales={bloque?.semanas_totales} />}
 
       {loading ? (
         <div className="flex justify-center py-12">
