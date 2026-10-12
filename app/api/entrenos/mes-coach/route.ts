@@ -4,6 +4,7 @@ import { diferenciaDias, lunesDe, ocurrenciasDelDia, sumarDias, type Ajuste } fr
 import { estadoVentanaPlan } from '@/lib/entrenos/ventana-plan'
 import { ritmosDesdeVdot } from '@/lib/entrenos/ritmos'
 import { resumenSesion, validarPasos } from '@/lib/entrenos/pasos'
+import { ejerciciosParaFecha, pasosParaFecha, semanaDeFecha } from '@/lib/entrenos/sesion-semana'
 
 // Variante coach de /api/entrenos/mes-completo: aquella resuelve el cliente
 // por sesión autenticada (portal cliente); esta la usa el coach para ver el
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
 
   const { data: plan } = await admin
     .from('planes_entrenamiento')
-    .select('id, nombre, cliente_id, coach_id, created_at, duracion_semanas')
+    .select('id, nombre, cliente_id, coach_id, created_at, duracion_semanas, progresion')
     .eq('id', planId)
     .maybeSingle()
 
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
 
   const { data: sesiones } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, fase_bloque, hora_inicio, duracion_estimada_min, contexto_ia, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, ejercicios:sesion_ejercicios(id, series, repeticiones, descanso_segundos, encadenado, peso_sugerido, rpe, notas, orden, ejercicio:ejercicios(nombre))')
+    .select('id, nombre, dia_semana, fase_bloque, hora_inicio, duracion_estimada_min, contexto_ia, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, ejercicios:sesion_ejercicios(id, bloque, series, repeticiones, descanso_segundos, encadenado, peso_sugerido, rpe, notas, orden, ejercicio:ejercicios(nombre, tipo))')
     .eq('plan_id', plan.id)
     .order('orden')
     .order('id')
@@ -116,10 +117,31 @@ export async function GET(request: NextRequest) {
 
   const estado = estadoVentanaPlan(plan.created_at, plan.duracion_semanas as number | null)
 
+  // Lo que de verdad toca cada fecha (semana del bloque con su progresión): el catálogo de arriba es la semana tipo (semana 1) y es lo que se edita.
+  const catalogoSemana: Record<string, unknown> = {}
+  const registrarSemana = (s: NonNullable<typeof sesiones>[number], fecha: string) => {
+    const clave = `${s.id}|${fecha}`
+    if (clave in catalogoSemana) return
+    const sem = semanaDeFecha(plan, fecha)
+    if (!sem.prog || !sem.n) return
+    const pasos = pasosParaFecha(plan, { nombre: s.nombre, pasos: s.pasos }, fecha)
+    const v = pasos ? validarPasos(pasos) : null
+    const resumen = v?.ok ? resumenSesion(v.pasos, ritmos) : null
+    const lista = ejerciciosParaFecha(plan, [...(s.ejercicios ?? [])].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)) as never, fecha, s.nombre) as unknown as { id: string; ejercicio?: { nombre?: string } | null; series: number | null; repeticiones: string | null; descanso_segundos: number | null; encadenado?: boolean | null; peso_sugerido: string | null; rpe: string | null; notas: string | null }[]
+    catalogoSemana[clave] = {
+      semana: { n: sem.n, total: plan.duracion_semanas, descarga: sem.descarga },
+      ejercicios: lista.map(e => ({ id: e.id, nombre: e.ejercicio?.nombre ?? 'Ejercicio', series: e.series, repeticiones: e.repeticiones, descanso_segundos: e.descanso_segundos, encadenado: e.encadenado ?? false, peso_sugerido: e.peso_sugerido, rpe: e.rpe, notas: e.notas })),
+      pasos: resumen ? resumen.lineas : null,
+      distancia_m: resumen?.distancia_m ?? null,
+      duracion_s: resumen?.duracion_s ?? null,
+    }
+  }
+
   const dias = diasDelMes.map(d => {
     const fecha = toISODate(d)
     const { antesDeInicio, bloquePendiente } = estado(fecha)
     const ocurrencias = ocurrenciasDelDia(fecha, sesiones ?? [], ajustes, !antesDeInicio && !bloquePendiente)
+    for (const { sesion } of ocurrencias) registrarSemana(sesion as never, fecha)
 
     return {
       fecha,
@@ -141,5 +163,5 @@ export async function GET(request: NextRequest) {
     }
   })
 
-  return NextResponse.json({ plan_nombre: plan.nombre, dias, catalogo })
+  return NextResponse.json({ plan_nombre: plan.nombre, dias, catalogo, catalogo_semana: catalogoSemana })
 }

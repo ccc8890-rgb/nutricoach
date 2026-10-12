@@ -69,6 +69,8 @@ interface DiaMes {
   realizados: Realizado[]
 }
 
+interface DetalleSemana extends Omit<DetalleSesion, 'nombre' | 'hora_inicio' | 'duracion_estimada_min' | 'contexto_ia'> { semana: { n: number; total: number | null; descarga: boolean } }
+
 interface DetalleSesion {
   nombre: string
   hora_inicio: string | null
@@ -250,6 +252,7 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
   const [month, setMonth] = useState(now.getMonth() + 1) // 1-12
   const [dias, setDias] = useState<DiaMes[] | null>(null)
   const [catalogo, setCatalogo] = useState<Record<string, DetalleSesion>>({})
+  const [catalogoSemana, setCatalogoSemana] = useState<Record<string, DetalleSemana>>({})
   const [seleccion, setSeleccion] = useState<Seleccion>(null)
   const [portapapeles, setPortapapeles] = useState<Portapapeles>(null)
   const [guardando, setGuardando] = useState(false)
@@ -274,6 +277,7 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
       const data = await r.json()
       setDias(data.dias ?? [])
       setCatalogo(data.catalogo ?? {})
+      setCatalogoSemana(data.catalogo_semana ?? {})
     } catch {
       setDias(prev => prev ?? [])
     }
@@ -463,7 +467,10 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
   const selSesion = seleccion?.tipo === 'sesion' ? seleccion : null
   const diaSel = seleccion ? diaDe(seleccion.fecha) : null
   const sesionSel = selSesion ? diaSel?.sesiones.find(s => s.id === selSesion.sesion_id) ?? null : null
-  const detalle = selSesion ? catalogo[selSesion.sesion_id] : null
+  // `base` = semana tipo (lo que se edita); `detalle` = lo que toca en ESTA fecha (semana del bloque con su progresión).
+  const base = selSesion ? catalogo[selSesion.sesion_id] : null
+  const deLaSemana = selSesion ? catalogoSemana[`${selSesion.sesion_id}|${selSesion.fecha}`] : undefined
+  const detalle = base ? (deLaSemana ? { ...base, ...deLaSemana } : base) : null
 
   const mensajeGarmin = (s: SesionDia, fecha: string) => {
     if (!detalle?.pasos) return 'Sin pasos de Garmin: esta sesión no se envía al reloj.'
@@ -667,6 +674,7 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
             <>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
                 {sesionSel.fase_bloque && <span>Fase {sesionSel.fase_bloque}</span>}
+                {deLaSemana && <span>Semana {deLaSemana.semana.n}{deLaSemana.semana.total ? ` de ${deLaSemana.semana.total}` : ''}{deLaSemana.semana.descarga ? ' · descarga' : ''}</span>}
                 {detalle?.hora_inicio && <span>{detalle.hora_inicio}</span>}
                 {(detalle?.duracion_estimada_min || minutos(detalle?.duracion_s ?? null)) && <span>{detalle?.duracion_estimada_min ? `${detalle.duracion_estimada_min} min` : minutos(detalle?.duracion_s ?? null)}</span>}
                 {detalle?.distancia_m ? <span>{(detalle.distancia_m / 1000).toFixed(1).replace('.', ',')} km</span> : null}
@@ -683,6 +691,10 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
                 </ul>
               )}
 
+              {editando === selSesion.sesion_id && detalle && deLaSemana && (
+                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Estás editando la semana tipo (semana 1): el resto de semanas del bloque se calculan desde ella (más carga, descarga…).</p>
+              )}
+
               {editando === selSesion.sesion_id && detalle && (
                 <EditorSesionCalendario
                   key={selSesion.sesion_id}
@@ -690,7 +702,7 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
                   fecha={selSesion.fecha}
                   nombre={detalle.nombre}
                   duracionMin={detalle.duracion_estimada_min}
-                  ejercicios={detalle.ejercicios}
+                  ejercicios={base?.ejercicios ?? detalle.ejercicios}
                   compartida={sesionSel.compartida}
                   conPasos={!!detalle.pasos}
                   onCambio={cargar}
