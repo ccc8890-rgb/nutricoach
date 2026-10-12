@@ -19,12 +19,12 @@ export default function TuBloque({ datos, fase, semanaActual, semanasTotales }: 
           {datos.mensaje && <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{datos.mensaje}</p>}
           {datos.semanas.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Próximas semanas · minutos de carrera</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Próximas semanas · carrera</p>
               <ul className="mt-2 flex flex-col gap-1.5">
                 {datos.semanas.map(s => (
                   <li key={s.n} className="flex items-center justify-between text-sm" style={{ color: 'var(--text)' }}>
                     <span>{s.actual ? 'Esta semana' : `Semana del ${dia(s.lunes)}`}{s.descarga ? ' · descarga' : ''}</span>
-                    <span className="tabular-nums font-semibold">{s.minutos} min</span>
+                    <span className="tabular-nums font-semibold">{s.minutos} min{s.km ? ` · ≈ ${s.km} km` : ''}</span>
                   </li>
                 ))}
               </ul>

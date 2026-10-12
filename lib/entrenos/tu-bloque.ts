@@ -9,6 +9,8 @@ export interface SemanaTuBloque {
   descarga: boolean
   /** Minutos de carrera previstos esa semana. */
   minutos: number
+  /** Km aproximados a su ritmo de rodaje; null si no hay VDOT para calcularlo. */
+  km: number | null
   actual: boolean
 }
 
@@ -28,7 +30,7 @@ function texto(v: unknown, max: number): string | null {
 }
 
 /** Devuelve null si la tarea no trae nada que enseñar al cliente. */
-export function construirTuBloque(payload: unknown, hoy: string): TuBloque | null {
+export function construirTuBloque(payload: unknown, hoy: string, ritmoRodajeSegKm: number | null = null): TuBloque | null {
   const p = (payload ?? {}) as { plan?: Record<string, unknown>; macrociclo?: { semanas?: { n: number; lunes: string; fase: string; descarga: boolean; minutos: number }[] } }
   const mensaje = texto(p.plan?.notas_cliente_entreno, 900)
   const mejoras = (Array.isArray(p.plan?.mejoras_cliente) ? p.plan.mejoras_cliente : [])
@@ -38,7 +40,7 @@ export function construirTuBloque(payload: unknown, hoy: string): TuBloque | nul
   const todas = p.macrociclo?.semanas ?? []
   // Desde la semana en curso: lo pasado ya no le sirve al cliente.
   const futuras = todas.filter(w => w.lunes >= lunesHoy).slice(0, SEMANAS_VISIBLES)
-  const semanas = futuras.map(w => ({ n: w.n, lunes: w.lunes, fase: w.fase, descarga: w.descarga, minutos: Math.round(w.minutos), actual: w.lunes === lunesHoy }))
+  const semanas = futuras.map(w => ({ n: w.n, lunes: w.lunes, fase: w.fase, descarga: w.descarga, minutos: Math.round(w.minutos), km: ritmoRodajeSegKm ? Math.round((w.minutos * 60) / ritmoRodajeSegKm) : null, actual: w.lunes === lunesHoy }))
 
   if (!mensaje && !mejoras.length && !semanas.length) return null
   return { mensaje, mejoras, semanas }

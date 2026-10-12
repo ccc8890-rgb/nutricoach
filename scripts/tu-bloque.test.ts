@@ -22,6 +22,9 @@ assert.equal(r.semanas[0].minutos, 145)
 assert.equal(r.semanas[2].descarga, true)
 // Solo sale lo que debe ver el cliente
 assert.deepEqual(Object.keys(r).sort(), ['mejoras', 'mensaje', 'semanas'])
+// Km a ritmo de rodaje: 145,4 min a 5:54/km (354 s) ≈ 25 km; sin ritmo no se inventa
+assert.equal(r.semanas[0].km, null)
+assert.equal(construirTuBloque(payload, '2026-10-14', 354)!.semanas[0].km, 25)
 // Sin nada que enseñar: null
 assert.equal(construirTuBloque({}, '2026-10-14'), null)
 assert.equal(construirTuBloque(null, '2026-10-14'), null)
