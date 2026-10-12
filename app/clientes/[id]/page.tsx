@@ -28,6 +28,7 @@ const PlanificacionCalendario = dynamic(() => import('@/components/Planificacion
 const AjusteMacrosIA = dynamic(() => import('@/components/AjusteMacrosIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const HistorialDietasIA = dynamic(() => import('@/components/HistorialDietasIA'), { ssr: false, loading: () => <TabSkeleton /> })
 const ProtocoloCompeticion = dynamic(() => import('@/components/ProtocoloCompeticion'), { ssr: false, loading: () => <TabSkeleton /> })
+const MarcasYFeedback = dynamic(() => import('@/components/clientes/MarcasYFeedback'), { ssr: false })
 const PerfilEntrenoForm = dynamic(() => import('@/components/training/PerfilEntrenoForm'), { ssr: false, loading: () => <TabSkeleton /> })
 const PeriodizacionPanel = dynamic(() => import('@/components/PeriodizacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
 const SuplementacionPanel = dynamic(() => import('@/components/clientes/SuplementacionPanel'), { ssr: false, loading: () => <TabSkeleton /> })
@@ -1066,7 +1067,10 @@ export default function ClienteDetallePage() {
 
             ) : subTabEntreno === 'perfil-atleta' ? (
               <WorkCard title="Perfil atleta" kicker="Motor de decisión" icon={PersonStanding}>
-                <ErrorBoundary><PerfilEntrenoForm clienteId={id as string} /></ErrorBoundary>
+                <div className="space-y-4">
+                  <ErrorBoundary><MarcasYFeedback clienteId={id as string} /></ErrorBoundary>
+                  <ErrorBoundary><PerfilEntrenoForm clienteId={id as string} /></ErrorBoundary>
+                </div>
               </WorkCard>
 
             ) : (
