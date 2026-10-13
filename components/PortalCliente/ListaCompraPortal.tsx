@@ -152,7 +152,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                             className="shopping-list-editorial__day w-full px-3 py-1.5 text-xs font-semibold"
                             style={{
                                 background: dia === 'Semana' ? 'var(--diet-warm)' : 'var(--diet-paper)',
-                                color: dia === 'Semana' ? 'var(--atelier-carbon)' : 'var(--text-muted)',
+                                color: dia === 'Semana' ? 'var(--atelier-carbon)' : 'var(--text-secondary)',
                                 border: `1px solid ${dia === 'Semana' ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
                             }}
                         >
@@ -167,7 +167,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                     className="shopping-list-editorial__day inline-flex flex-col items-center justify-center gap-0.5 py-1.5 text-xs font-semibold"
                                     style={{
                                         background: dia === d ? 'var(--diet-warm)' : 'var(--diet-paper)',
-                                        color: dia === d ? 'var(--atelier-carbon)' : 'var(--text-muted)',
+                                        color: dia === d ? 'var(--atelier-carbon)' : 'var(--text-secondary)',
                                         border: `1px solid ${dia === d ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
                                     }}
                                 >
@@ -322,7 +322,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                         className="px-3 py-2 text-xs font-semibold"
                         style={{
                             background: vista === v ? 'var(--diet-warm)' : 'var(--diet-paper)',
-                            color: vista === v ? 'var(--atelier-carbon)' : 'var(--text-muted)',
+                            color: vista === v ? 'var(--atelier-carbon)' : 'var(--text-secondary)',
                             border: `1px solid ${vista === v ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
                         }}
                     >
@@ -361,14 +361,14 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                 aria-pressed={elegido}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
                                 style={{
-                                    background: elegido ? 'var(--diet-paper)' : 'var(--surface)',
+                                    background: elegido ? 'color-mix(in srgb, var(--diet-warm) 22%, var(--surface))' : 'var(--surface)',
                                     border: `1px solid ${elegido ? 'var(--diet-warm)' : 'var(--border)'}`,
                                 }}
                             >
                                 <div
                                     className="w-5 h-5 flex-shrink-0 flex items-center justify-center"
                                     style={{
-                                        border: `1px solid ${elegido ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
+                                        border: `1px solid ${elegido ? 'var(--diet-warm)' : 'var(--border-strong)'}`,
                                         background: elegido ? 'var(--diet-warm)' : 'transparent',
                                     }}
                                 >
@@ -377,7 +377,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{plato.nombre}</p>
                                     {detalle && (
-                                        <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>{detalle}</p>
+                                        <p className="text-[11px] truncate" style={{ color: 'var(--text-secondary)' }}>{detalle}</p>
                                     )}
                                 </div>
                                 <span className="text-[11px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
@@ -468,7 +468,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                             <div
                                                 className="shopping-list-editorial__check w-5 h-5 flex-shrink-0 flex items-center justify-center transition-all"
                                                 style={{
-                                                    borderColor: checked ? 'var(--diet-warm)' : 'var(--diet-rule)',
+                                                    borderColor: checked ? 'var(--diet-warm)' : 'var(--border-strong)',
                                                     background: checked ? 'var(--diet-warm)' : 'transparent',
                                                 }}
                                             >
@@ -487,7 +487,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                                     {item.nombre}
                                                 </p>
                                                 {item.origen.length > 0 && (
-                                                    <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>
+                                                    <p className="text-[10px] truncate" style={{ color: 'var(--text-secondary)' }}>
                                                         {item.origen.join(' · ')}
                                                     </p>
                                                 )}

@@ -183,6 +183,7 @@
 .shopping-list-editorial__days { width: 100%; min-width: 0; max-width: 100%; scrollbar-width: none; }
 .shopping-list-editorial__days::-webkit-scrollbar { display: none; }
 .shopping-list-editorial__day { border-radius: 0.18rem !important; font-family: var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.03em; }
+.light .shopping-list-editorial { --diet-warm-muted: #7a5c2b; }
 .shopping-list-editorial__accent { color: var(--diet-warm-muted); }
 .shopping-list-editorial__overview { width: 100%; border: 1px solid var(--diet-rule); background: var(--diet-paper); }
 .shopping-list-editorial__metrics { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--diet-rule); gap: 1px; }
