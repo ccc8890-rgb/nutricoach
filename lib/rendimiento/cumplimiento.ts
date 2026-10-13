@@ -155,9 +155,13 @@ export function emparejarEntreno(
   hoy: string,
   entrenos: EntrenoEmparejable[],
   esDeCarrera: (tipo: string | null) => boolean,
+  workoutId?: string | number | null,
 ): { estado: EstadoSesion; entreno: EntrenoEmparejable | null } {
+  // Si el reloj ejecutó el entreno enviado desde la app, el id de Garmin manda sobre cualquier otro criterio.
+  const esSuyo = (e: EntrenoEmparejable) => (workoutId != null && e.raw?.workout_id != null && String(e.raw.workout_id) === String(workoutId) ? 1 : 0)
   const mejor = (lista: EntrenoEmparejable[]) =>
     [...lista].sort((a, b) => {
+      if (esSuyo(a) !== esSuyo(b)) return esSuyo(b) - esSuyo(a)
       const ra = a.vueltas?.some(v => v.tipo === 'ACTIVE') ? 1 : 0
       const rb = b.vueltas?.some(v => v.tipo === 'ACTIVE') ? 1 : 0
       return rb - ra || (b.duracion_s ?? 0) - (a.duracion_s ?? 0)

@@ -31,7 +31,7 @@ export async function construirEjecucion(db: SupabaseClient, clienteId: string, 
   if (!plan) return { sesiones: [], desdeSemana: null, planNombre: null }
 
   const [{ data: sesiones }, { data: perfil }] = await Promise.all([
-    db.from('sesiones_entrenamiento').select('id,nombre,dia_semana,pasos').eq('plan_id', plan.id).not('pasos', 'is', null),
+    db.from('sesiones_entrenamiento').select('id,nombre,dia_semana,pasos,garmin_workout_id').eq('plan_id', plan.id).not('pasos', 'is', null),
     db.from('perfil_entreno_cliente').select('vdot').eq('cliente_id', clienteId).maybeSingle(),
   ])
   const ritmos = perfil?.vdot ? ritmosDesdeVdot(Number(perfil.vdot)) : null
@@ -62,7 +62,7 @@ export async function construirEjecucion(db: SupabaseClient, clienteId: string, 
       const v = validarPasos(s.pasos)
       const fecha = fechaDeLaSemana(semana, s.dia_semana ?? '')
       if (!v.ok || !fecha) continue
-      const { estado, entreno } = emparejarEntreno(fecha, hoy, lista, esCarrera)
+      const { estado, entreno } = emparejarEntreno(fecha, hoy, lista, esCarrera, s.garmin_workout_id)
       salida.push({
         sesionId: s.id,
         nombre: s.nombre,
