@@ -83,8 +83,8 @@ export default function PasosSesion({ sesionId, pasos, ritmos, fc, garmin }: Pro
       <p className="mt-2 text-[13px] leading-snug" style={{ color: 'var(--text-secondary)' }}>{textoCorto(valido.pasos, ritmos)}</p>
 
       <p className="mt-1.5 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-        {estado.workoutId ? (estado.fecha ? `Programado para el ${fechaLegible(estado.fecha).slice(0, 5)}` : 'Creado en tu Garmin') : 'Aún no enviada'}
-        {zonasTxt ? ` · ${zonasTxt}` : ''}
+        {estado.workoutId ? (estado.fecha ? `Programado para el ${fechaLegible(estado.fecha).slice(0, 5)}` : 'Creado en tu Garmin') : null}
+        {estado.workoutId && zonasTxt ? ' · ' : ''}{zonasTxt}
       </p>
 
       {!ritmos && (
