@@ -1,6 +1,6 @@
 // components/training/PasosSesion.tsx
 'use client'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Watch } from '@phosphor-icons/react'
 import { validarPasos, resumenSesion, textoCorto, zonasUsadas, ZONAS_RITMO } from '@/lib/entrenos/pasos'
 import type { Ritmos } from '@/lib/entrenos/ritmos'
@@ -31,30 +31,13 @@ function fechaLegible(iso: string): string {
   return `${d}-${m}-${y}`
 }
 
-export default function PasosSesion({ sesionId, pasos, ritmos, fc, garmin }: Props) {
+export default function PasosSesion({ pasos, ritmos, fc, garmin }: Props) {
   const valido = useMemo(() => validarPasos(pasos), [pasos])
-  const [enviando, setEnviando] = useState(false)
-  const [estado, setEstado] = useState(garmin)
-  const [error, setError] = useState('')
+  const estado = garmin
 
   if (!valido.ok) return null // JSON corrupto: no se muestra, la sesión sigue funcionando
   const resumen = resumenSesion(valido.pasos, ritmos)
   const zonas = zonasUsadas(valido.pasos)
-
-  async function enviar() {
-    setEnviando(true)
-    setError('')
-    try {
-      const res = await fetch(`/api/entrenos/sesiones/${sesionId}/garmin`, { method: 'POST' })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'No se pudo enviar a Garmin')
-      setEstado({ workoutId: data.workoutId, fecha: data.fecha })
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo enviar a Garmin')
-    } finally {
-      setEnviando(false)
-    }
-  }
 
   const zonasTxt = zonas.map(z => `${ZONAS_RITMO[z].nombre}${fc?.[z] ? ` ${z === 'E' ? 'máx. ' + fc[z]!.max : `${fc[z]!.min}–${fc[z]!.max}`} ppm` : ''}`).join(' · ')
 
@@ -63,21 +46,12 @@ export default function PasosSesion({ sesionId, pasos, ritmos, fc, garmin }: Pro
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
           <Watch size={14} className="mr-1.5 inline align-[-2px]" />
-          Se envía a tu Garmin
+          Se envía solo a tu Garmin
           {' '}
           <span className="font-data font-normal whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
             {(resumen.distancia_m / 1000).toFixed(1).replace('.', ',')}&nbsp;km{resumen.duracion_s !== null ? <> · {Math.round(resumen.duracion_s / 60)}&nbsp;min</> : null}
           </span>
         </p>
-        <button
-          type="button"
-          onClick={enviar}
-          disabled={enviando}
-          className="shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold active:scale-[0.98] disabled:opacity-60"
-          style={{ color: 'var(--text)', border: '1px solid var(--border)' }}
-        >
-          {enviando ? 'Enviando…' : estado.workoutId ? 'Reenviar' : 'Enviar'}
-        </button>
       </div>
 
       <p className="mt-2 text-[13px] leading-snug" style={{ color: 'var(--text-secondary)' }}>{textoCorto(valido.pasos, ritmos)}</p>
@@ -92,7 +66,6 @@ export default function PasosSesion({ sesionId, pasos, ritmos, fc, garmin }: Pro
           Sin VDOT en tu perfil no se calculan los ritmos; añádelo en Perfil atleta.
         </p>
       )}
-      {error && <p className="text-xs mt-2" style={{ color: 'var(--semantic-danger, #c0392b)' }}>{error}</p>}
     </section>
   )
 }
