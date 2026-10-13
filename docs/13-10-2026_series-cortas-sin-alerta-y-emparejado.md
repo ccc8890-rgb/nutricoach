@@ -15,7 +15,7 @@ Verificado: `tsc`, `garmin-workouts-formato.test.ts`, `garmin-auto.test.ts`, `pa
 
 ## Cómo volver atrás
 - **Solo las alertas:** en `garmin-workouts-formato.ts`, `SERIES_CORTAS_SIN_ALERTA = true` → `false`. Umbrales: `SERIE_CORTA_METROS` (600) y `SERIE_CORTA_SEGUNDOS` (150).
-- **Todo:** `git revert bd6e1a0 6698561` y push. El cron `enviar-garmin` reenvía las sesiones al cambiar el hash de pasos; si no se ve, `scripts/_lanzar-cron-garmin.ts` o el botón «Reenviar a Garmin» del calendario del coach.
+- **Todo:** `git revert bd6e1a0 6698561` y push. **Ojo, reenvío:** la huella (`huellaPasos`, `lib/entrenos/garmin-auto.ts`) se calcula con pasos, VDOT, techo de pulso y nombre, NO con el formato enviado. Este cambio (y su reversión) no se aplica solo a lo ya programado en el reloj: solo a sesiones nuevas o cuyos pasos cambien. Para aplicarlo (o deshacerlo) en lo ya programado, usar «Reenviar a Garmin» del calendario del coach (`/api/entrenos/planes/[id]/garmin-reenviar`).
 - Ajustar solo el umbral (p. ej. 400 m) en vez de revertir si el problema son los 600 m.
 
 ## Contexto aprendido (no cambia código)
@@ -28,3 +28,8 @@ Verificado: `tsc`, `garmin-workouts-formato.test.ts`, `garmin-auto.test.ts`, `pa
 - Ver en el reloj cómo sale la descripción del paso y si compensa mantener la alerta en series > 600 m.
 - Aviso de tiempo objetivo por 100 m en el texto del paso; revisar alertas de voz del reloj.
 - El emparejado por id solo ayuda con el entreno vigente: el `garmin_workout_id` de semanas pasadas se sobrescribe.
+
+## Auditoría de fallos (13-10-2026)
+- **Corregido:** el cambio no reenviaba lo ya programado (huella sin el formato): documentado, hay que usar «Reenviar a Garmin».
+- **Corregido:** una serie corta con zona suave (E) habría perdido su objetivo de pulso; ahora la zona E queda fuera.
+- **Aceptado:** el emparejado por id solo sirve para el entreno vigente; seguridad: sin rutas ni claves nuevas, solo lógica pura y una columna ya existente (`garmin_workout_id`).

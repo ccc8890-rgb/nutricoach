@@ -88,7 +88,8 @@ function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: 
   if (p.nota) paso.description = p.nota.slice(0, 512)
 
   const o = p.objetivo
-  if (esSerieCorta(p) && (o?.tipo === 'ritmo' || o?.tipo === 'zona')) {
+  // La zona suave (E) se rige por pulso, no por ritmo: no entra aquí.
+  if (esSerieCorta(p) && (o?.tipo === 'ritmo' || (o?.tipo === 'zona' && o.zona !== 'E'))) {
     const ritmo = ritmoDelPaso(p, ritmos)
     if (ritmo !== null) {
       const parcial = p.duracion.unidad === 'metros' ? ` (${formatearRitmo((ritmo * p.duracion.valor) / 1000)} los ${p.duracion.valor} m)` : ''
