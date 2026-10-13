@@ -405,8 +405,8 @@ function PortalClientePageContent() {
             <button
               type="button"
               onClick={() => setTab('perfil')}
-              className="cliente-avatar w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 cursor-pointer"
-              style={{ background: 'var(--surface-elevated)', color: 'var(--text)', border: tab === 'perfil' ? '1px solid var(--text-muted)' : '1px solid var(--border)' }}
+              className="cliente-avatar w-9 h-9 flex items-center justify-center flex-shrink-0 cursor-pointer"
+              aria-current={tab === 'perfil'}
               aria-label="Ajustes"
             >
               {iniciales}
