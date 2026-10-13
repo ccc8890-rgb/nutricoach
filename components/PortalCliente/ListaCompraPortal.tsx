@@ -245,7 +245,6 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     const totalItems = filas.length
     const totalMarcados = marcadosVista.size
     const optimizacion = data?.optimizacion
-    const ahorro = optimizacion?.ahorro_vs_peor_super ?? data?.proyeccion_ahorro?.ahorro_semanal ?? 0
 
     function togglePlato(id: string) {
         setPlatosElegidos(prev => {
@@ -290,15 +289,9 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                 <section className="shopping-list-editorial__overview" aria-label="Resumen de compra">
                     <div className="shopping-list-editorial__metrics">
                         <div className="shopping-list-editorial__metric">
-                            <p>Cesta</p>
+                            <p>Coste estimado de la cesta</p>
                             <strong>
                                 {formatEuro(optimizacion.coste_total_multi_super)}
-                            </strong>
-                        </div>
-                        <div className="shopping-list-editorial__metric">
-                            <p>Ahorro</p>
-                            <strong className="shopping-list-editorial__accent">
-                                {formatEuro(Math.max(0, ahorro))}
                             </strong>
                         </div>
                     </div>
