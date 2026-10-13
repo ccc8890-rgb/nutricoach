@@ -286,6 +286,70 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     return (
         <div className="shopping-list-editorial space-y-2">
             {selector}
+            {!enPlatos && optimizacion && (
+                <section className="shopping-list-editorial__overview" aria-label="Resumen de compra">
+                    <div className="shopping-list-editorial__metrics">
+                        <div className="shopping-list-editorial__metric">
+                            <p>Cesta</p>
+                            <strong>
+                                {formatEuro(optimizacion.coste_total_multi_super)}
+                            </strong>
+                        </div>
+                        <div className="shopping-list-editorial__metric">
+                            <p>Ahorro</p>
+                            <strong className="shopping-list-editorial__accent">
+                                {formatEuro(Math.max(0, ahorro))}
+                            </strong>
+                        </div>
+                        <div className="shopping-list-editorial__metric">
+                            <p>Ofertas</p>
+                            <strong>
+                                {data?.ofertas?.length ?? 0}
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div className="shopping-list-editorial__routes">
+                        {data?.whatsapp?.deepLink && (
+                            <a
+                                href={data.whatsapp.deepLink}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="shopping-list-editorial__share"
+                            >
+                                <PaperPlaneTilt size={14} weight="regular" />
+                                <span>Enviar lista</span>
+                                <small>WhatsApp</small>
+                            </a>
+                        )}
+                        {optimizacion.resumen_por_super.slice(0, 2).map(supermercado => (
+                            <div
+                                key={supermercado.supermercado_id}
+                                className="shopping-list-editorial__store"
+                            >
+                                <Storefront size={14} weight="regular" />
+                                <span>{supermercado.supermercado_nombre}</span>
+                                <strong>{formatEuro(supermercado.coste)}</strong>
+                            </div>
+                        ))}
+                    </div>
+
+                    {!!data?.sustitutos_economicos?.length && (
+                        <div className="shopping-list-editorial__savings">
+                            <p>
+                                <TrendDown size={13} weight="regular" />
+                                Ahorros destacados
+                            </p>
+                            {data.sustitutos_economicos.slice(0, 2).map(item => (
+                                <p key={item.alimento_id} className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                    {item.alimento_nombre}: {formatEuro(item.ahorro_euros)} en {item.supermercado_recomendado}
+                                </p>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            )}
+
             <div className="grid grid-cols-2 gap-1.5" role="tablist" aria-label="Cómo ver la lista">
                 {(['ingredientes', 'platos'] as const).map(v => (
                     <button
@@ -300,7 +364,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                             border: `1px solid ${vista === v ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
                         }}
                     >
-                        {v === 'ingredientes' ? 'Por ingredientes' : 'Por platos'}
+                        {v === 'ingredientes' ? 'Por categorías' : 'Por platos'}
                     </button>
                 ))}
             </div>
@@ -367,70 +431,6 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                 <p className="text-center py-4 text-sm" style={{ color: 'var(--text-muted)' }}>
                     Marca uno o varios platos y verás solo sus ingredientes.
                 </p>
-            )}
-
-            {!enPlatos && optimizacion && (
-                <section className="shopping-list-editorial__overview" aria-label="Resumen de compra">
-                    <div className="shopping-list-editorial__metrics">
-                        <div className="shopping-list-editorial__metric">
-                            <p>Cesta</p>
-                            <strong>
-                                {formatEuro(optimizacion.coste_total_multi_super)}
-                            </strong>
-                        </div>
-                        <div className="shopping-list-editorial__metric">
-                            <p>Ahorro</p>
-                            <strong className="shopping-list-editorial__accent">
-                                {formatEuro(Math.max(0, ahorro))}
-                            </strong>
-                        </div>
-                        <div className="shopping-list-editorial__metric">
-                            <p>Ofertas</p>
-                            <strong>
-                                {data?.ofertas?.length ?? 0}
-                            </strong>
-                        </div>
-                    </div>
-
-                    <div className="shopping-list-editorial__routes">
-                        {data?.whatsapp?.deepLink && (
-                            <a
-                                href={data.whatsapp.deepLink}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="shopping-list-editorial__share"
-                            >
-                                <PaperPlaneTilt size={14} weight="regular" />
-                                <span>Enviar lista</span>
-                                <small>WhatsApp</small>
-                            </a>
-                        )}
-                        {optimizacion.resumen_por_super.slice(0, 2).map(supermercado => (
-                            <div
-                                key={supermercado.supermercado_id}
-                                className="shopping-list-editorial__store"
-                            >
-                                <Storefront size={14} weight="regular" />
-                                <span>{supermercado.supermercado_nombre}</span>
-                                <strong>{formatEuro(supermercado.coste)}</strong>
-                            </div>
-                        ))}
-                    </div>
-
-                    {!!data?.sustitutos_economicos?.length && (
-                        <div className="shopping-list-editorial__savings">
-                            <p>
-                                <TrendDown size={13} weight="regular" />
-                                Ahorros destacados
-                            </p>
-                            {data.sustitutos_economicos.slice(0, 2).map(item => (
-                                <p key={item.alimento_id} className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                    {item.alimento_nombre}: {formatEuro(item.ahorro_euros)} en {item.supermercado_recomendado}
-                                </p>
-                            ))}
-                        </div>
-                    )}
-                </section>
             )}
 
             {/* Progreso */}
