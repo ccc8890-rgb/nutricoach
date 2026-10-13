@@ -379,8 +379,8 @@ function PortalClientePageContent() {
   const TABS: LiquidDockItem<Tab>[] = [
     { key: 'hoy',     label: 'Hoy',      icon: Pulse },
     { key: 'dieta',   label: 'Dieta',    icon: BowlFood },
-    { key: 'entreno', label: 'Entreno',  icon: PersonSimpleRun },
     { key: 'recetas', label: 'Recetas',  icon: BookOpenText },
+    { key: 'entreno', label: 'Entreno',  icon: PersonSimpleRun },
     { key: 'datos',   label: 'Datos',    icon: ChartLineUp },
   ]
 
