@@ -4,6 +4,7 @@ import useSWR, { useSWRConfig } from 'swr'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useReducedMotion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { borrarCachePortal, fetchJson, claveReceta, precalentarReceta, marca } from '@/lib/cliente/cache-swr'
@@ -254,6 +255,24 @@ function PortalClientePageContent() {
   const [montado, setMontado] = useState(false)
   useEffect(() => { marca('nc:montado'); setMontado(true) }, [])
   useEffect(() => { if (!loading) marca('nc:contenido-commit') }, [loading])
+
+  // «En tu plan»: al volver de una receta se recupera el scroll (el archivo completo guarda el suyo aparte)
+  useEffect(() => {
+    if (loading) return
+    try {
+      const raw = sessionStorage.getItem('nc:plan:scroll')
+      if (!raw) return
+      sessionStorage.removeItem('nc:plan:scroll')
+      const d = JSON.parse(raw)
+      if (d.url !== window.location.search || Date.now() - d.t > 30 * 60_000 || !(d.y > 0)) return
+      let intentos = 0
+      const aplicar = () => {
+        window.scrollTo({ top: d.y, behavior: 'instant' })
+        if (Math.abs(window.scrollY - d.y) > 2 && ++intentos < 60) requestAnimationFrame(aplicar)
+      }
+      requestAnimationFrame(aplicar)
+    } catch { /* sin almacenamiento */ }
+  }, [loading])
   const { mutate, cache } = useSWRConfig()
   const { data: boot } = useSWR('portal:bootstrap', cargarPortal)
 
@@ -577,9 +596,13 @@ function PortalClientePageContent() {
                     <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>En tu plan</h2>
                     <div className="recipe-editorial-list">
                       {recetasDelPlan().map((r, index) => (
-                        <a
+                        <Link
                           key={r.id}
                           href={recetaHref(r.id)}
+                          prefetch={false}
+                          onClick={() => {
+                            try { sessionStorage.setItem('nc:plan:scroll', JSON.stringify({ url: window.location.search, y: window.scrollY, t: Date.now() })) } catch { /* sin almacenamiento */ }
+                          }}
                           className={`recipe-editorial-item ${index % 5 === 0 ? 'is-featured' : ''}`}
                           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                         >
@@ -598,7 +621,7 @@ function PortalClientePageContent() {
                               <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>{r.kcal} kcal · {r.proteinas}g P</p>
                             ) : null}
                           </div>
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </div>
