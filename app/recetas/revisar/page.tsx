@@ -31,6 +31,8 @@ type RecetaRevision = {
   quality_issues: QualityIssues | null
   created_at: string | null
   num_ingredientes: number
+  tags?: string[] | null
+  notas_coach?: string | null
 }
 
 type RespuestaRevision = {
@@ -45,6 +47,7 @@ type RespuestaRevision = {
 
 const TAREAS: Array<{ id: TareaRevision; label: string }> = [
   { id: 'pendientes', label: 'Pendientes' },
+  { id: 'corregir', label: 'Para corregir' },
   { id: 'nuevas_hoy', label: 'Nuevas hoy' },
   { id: 'bloqueos', label: 'Con bloqueos' },
   { id: 'sin_foto', label: 'Sin foto' },
@@ -344,9 +347,21 @@ function Acciones({ receta, busy, onEstado }: { receta: RecetaRevision; busy: bo
   </div>
 }
 
+function NotaCorreccion({ receta }: { receta: RecetaRevision }) {
+  if (!receta.tags?.includes('Corregir')) return null
+  const ultima = (receta.notas_coach ?? '').split('\n').filter(l => l.includes('A corregir:')).pop() ?? 'Marcada para corregir'
+  return (
+    <div className="mt-3 flex items-start justify-between gap-2 rounded-lg px-2.5 py-2 text-xs" style={{ background: 'color-mix(in srgb, var(--warning) 12%, transparent)', color: 'var(--warning)' }}>
+      <span><strong>Para corregir.</strong> {ultima.replace(/^\[[^\]]*\]\s*A corregir:\s*/, '')}</span>
+      <button onClick={async () => { await fetch(`/api/recetas/${receta.id}/correccion`, { method: 'DELETE' }); window.location.reload() }} className="shrink-0 underline">Quitar marca</button>
+    </div>
+  )
+}
+
 function RecetaCard({ receta, busy, onEstado }: { receta: RecetaRevision; busy: boolean; onEstado: (receta: RecetaRevision, estado: 'aprobada' | 'descartada') => void }) {
   return <article className="rounded-2xl border p-3" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
     <div className="flex gap-3"><FotoReceta receta={receta} /><div className="min-w-0 flex-1"><EnlaceReceta id={receta.id} className="block font-semibold leading-tight hover:underline" style={{ color: 'var(--text)' }}>{receta.nombre}</EnlaceReceta><p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{receta.tipo_plato ?? receta.categoria ?? 'Sin tipo'} · alta {fechaAlta(receta.created_at)}</p><p className="mt-2 text-xs tabular-nums" style={{ color: 'var(--text-secondary)' }}>{Math.round(receta.kcal ?? 0)} kcal · P {Math.round(receta.proteinas ?? 0)} · C {Math.round(receta.carbohidratos ?? 0)} · G {Math.round(receta.grasas ?? 0)}</p></div><span className="text-sm font-bold" style={{ color: scoreColor(receta.score_calidad) }}>{receta.score_calidad ?? '—'}</span></div>
+    <NotaCorreccion receta={receta} />
     <div className="mt-3"><ChipsCalidad issues={receta.quality_issues} /></div>
     <div className="mt-3 flex items-center justify-between gap-2"><span className="rounded-full px-2 py-1 text-[11px]" style={{ background: 'var(--bg)', color: 'var(--text-secondary)' }}>{receta.estado?.replaceAll('_', ' ') ?? 'sin estado'}</span><Acciones receta={receta} busy={busy} onEstado={onEstado} /></div>
   </article>

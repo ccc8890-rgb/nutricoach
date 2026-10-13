@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verificarRecetasCompletas } from '@/lib/recetas/verificacion-auto'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
+import { marcarFotoRevisada } from '@/lib/recetas/imagen-revision'
 import { inicioFinDiaMadridUtc, normalizarTareaRevision, type TareaRevision } from '@/lib/recetas/revision'
 
 export const dynamic = 'force-dynamic'
@@ -44,8 +45,11 @@ export async function GET(request: NextRequest) {
       lt: (column: string, value: string) => T
       not: (column: string, operator: string, value: string) => T
       or: (filters: string) => T
+      filter: (column: string, operator: string, value: string) => T
     }>(query: T, value: TareaRevision): T => {
-      if (value === 'pendientes') return query.in('estado', ['en_revision', 'borrador'])
+      // «Pendientes» no incluye las marcadas «Corregir»: esas esperan su pasada de IA en su propia pestaña
+      if (value === 'pendientes') return query.in('estado', ['en_revision', 'borrador']).not('tags', 'cs', '{Corregir}')
+      if (value === 'corregir') return query.in('estado', ['en_revision', 'borrador']).filter('tags', 'cs', '{Corregir}')
       if (value === 'nuevas_hoy') return query.gte('created_at', inicio).lt('created_at', fin)
       if (value === 'bloqueos') return query.in('estado', ['en_revision', 'borrador']).not('quality_issues->bloqueantes', 'eq', '[]')
       if (value === 'sin_foto') return query.in('estado', ['en_revision', 'borrador']).or('imagen_url.is.null,imagen_url.eq.')
@@ -67,7 +71,7 @@ export async function GET(request: NextRequest) {
     let query = supabase.from('recetas').select(`
       id, nombre, categoria, tipo_plato, porciones,
       kcal, proteinas, carbohidratos, grasas,
-      imagen_url, estado, score_calidad, nivel_fit, tipo_uso, apta_cliente,
+      imagen_url, estado, score_calidad, nivel_fit, tipo_uso, apta_cliente, tags, notas_coach,
       quality_estado_sugerido, quality_issues, quality_actualizado_at, created_at
     `, { count: 'exact' })
     query = aplicarAvanzados(aplicarTarea(query, tarea))
@@ -84,8 +88,8 @@ export async function GET(request: NextRequest) {
       return total ?? 0
     }
 
-    const [pendientes, nuevasHoy, bloqueos, sinFoto, todas] = await Promise.all([
-      contar('pendientes'), contar('nuevas_hoy'), contar('bloqueos'), contar('sin_foto'), contar('todas'),
+    const [pendientes, corregir, nuevasHoy, bloqueos, sinFoto, todas] = await Promise.all([
+      contar('pendientes'), contar('corregir'), contar('nuevas_hoy'), contar('bloqueos'), contar('sin_foto'), contar('todas'),
     ])
 
     let aprobablesQuery = supabase
@@ -93,6 +97,7 @@ export async function GET(request: NextRequest) {
       .select('id')
       .in('estado', ['en_revision', 'borrador'])
       .or('quality_issues->bloqueantes.eq.[],quality_issues.is.null')
+      .not('tags', 'cs', '{Corregir}')
     aprobablesQuery = aplicarAvanzados(aplicarTarea(aprobablesQuery, tarea))
     const { data: aprobables, error: aprobablesError } = await aprobablesQuery.order('created_at', { ascending: false }).limit(250)
     if (aprobablesError) return NextResponse.json({ error: aprobablesError.message }, { status: 500 })
@@ -113,7 +118,7 @@ export async function GET(request: NextRequest) {
       page,
       pageSize,
       totalPages: count ? Math.ceil(count / pageSize) : 0,
-      counts: { pendientes, nuevas_hoy: nuevasHoy, bloqueos, sin_foto: sinFoto, todas },
+      counts: { pendientes, corregir, nuevas_hoy: nuevasHoy, bloqueos, sin_foto: sinFoto, todas },
       aprobablesIds: (aprobables ?? []).map(r => r.id),
     })
   } catch (err) {
@@ -149,6 +154,7 @@ export async function POST(request: NextRequest) {
       const { error: updateError } = await supabase.from('recetas').update({ estado: 'aprobada' }).in('id', aprobables)
       if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
       await Promise.all(aprobables.map(id => auditarRecetaProfesional(supabase, id, 'aprobada_lote', 'api_recetas_revisar')))
+      await marcarFotoRevisada(supabase, aprobables).catch(() => null)
       // Sin verificar, el motor de planes no las usaría: se verifican las completas (instrucciones, ingredientes, franja, etiquetas, tiempo)
       verificadasAuto = (await verificarRecetasCompletas(supabase, aprobables).catch(() => ({ verificadas: 0, incompletas: [] }))).verificadas
     }

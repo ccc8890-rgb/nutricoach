@@ -2,6 +2,7 @@ import { verificarRecetasCompletas } from '@/lib/recetas/verificacion-auto'
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiSupabase, createServiceSupabase } from '@/lib/supabase-server'
 import { auditarRecetaProfesional } from '@/lib/recetas/auditoria'
+import { marcarFotoRevisada } from '@/lib/recetas/imagen-revision'
 
 export async function PATCH(
   req: NextRequest,
@@ -71,6 +72,8 @@ export async function PATCH(
       estado === 'aprobada' ? 'aprobada_manual' : `estado_${estado}`,
       'api_receta_estado'
     )
+
+    if (estado === 'aprobada') await marcarFotoRevisada(createServiceSupabase(), [id]).catch(() => null)
 
     // Aprobar sin verificar deja la receta fuera de los planes: se verifica si está completa
     const verif = estado === 'aprobada' ? await verificarRecetasCompletas(createServiceSupabase(), [id]).catch(() => null) : null
