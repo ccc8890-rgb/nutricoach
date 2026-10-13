@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import useSWR from 'swr'
 import { fetchJson } from '@/lib/cliente/cache-swr'
 import Image from 'next/image'
-import { MagnifyingGlass, ForkKnife, SlidersHorizontal, X } from '@phosphor-icons/react'
+import { MagnifyingGlass, ForkKnife, SlidersHorizontal, X, Rows, SquaresFour } from '@phosphor-icons/react'
 
 const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre'] as const
 
@@ -34,6 +34,17 @@ export default function RecetarioExplorador({
   const [categoria, setCategoria] = useState<string>('Todos')
   const [tag, setTag] = useState<string | null>(null)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
+  const [vista, setVista] = useState<'lista' | 'cuadricula'>('lista')
+  useEffect(() => {
+    try {
+      const guardada = localStorage.getItem('recetario-vista')
+      if (guardada === 'lista' || guardada === 'cuadricula') setVista(guardada)
+    } catch {}
+  }, [])
+  function cambiarVista(v: 'lista' | 'cuadricula') {
+    setVista(v)
+    try { localStorage.setItem('recetario-vista', v) } catch {}
+  }
   // Primera página sin filtros: viene de la caché compartida (precargada por el portal).
   const sinFiltros = !q.trim() && categoria === 'Todos' && !tag
   const { data: inicial, error: errorInicial } = useSWR<{ recetas?: RecetaCatalogo[]; hayMas?: boolean }>(
@@ -106,6 +117,14 @@ export default function RecetarioExplorador({
           />
         </div>
         <button
+          onClick={() => cambiarVista(vista === 'lista' ? 'cuadricula' : 'lista')}
+          className="recipe-filter-toggle shrink-0 px-3 flex items-center justify-center"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+          aria-label={vista === 'lista' ? 'Ver en cuadrícula' : 'Ver en lista'}
+        >
+          {vista === 'lista' ? <SquaresFour size={16} /> : <Rows size={16} />}
+        </button>
+        <button
           onClick={() => setMostrarFiltros(v => !v)}
           className="recipe-filter-toggle shrink-0 px-3 flex items-center justify-center"
           style={{
@@ -175,6 +194,27 @@ export default function RecetarioExplorador({
         </div>
       ) : (
         <>
+          {vista === 'cuadricula' ? (
+            <div className="recipe-grid-compact">
+              {recetas.map(r => (
+                <a key={r.id} href={recetaHref(r.id)} className="recipe-grid-compact__item">
+                  <div className="recipe-grid-compact__img">
+                    {r.imagen_url ? (
+                      <Image src={r.imagen_url} alt={r.nombre} fill className="object-cover" sizes="33vw" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ForkKnife size={20} style={{ color: 'var(--text-muted)' }} />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[11px] font-semibold leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
+                  {r.kcal ? (
+                    <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{r.kcal} kcal</p>
+                  ) : null}
+                </a>
+              ))}
+            </div>
+          ) : (
           <div className="recipe-editorial-list">
             {recetas.map((r, index) => (
               <a
@@ -201,6 +241,7 @@ export default function RecetarioExplorador({
               </a>
             ))}
           </div>
+          )}
 
           {hayMas && (
             <button
