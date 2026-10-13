@@ -1,11 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, ArrowLeft, Check, ChevronDown, ExternalLink, ImageOff, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react'
-import RevisionTabs from '@/components/recetas/RevisionTabs'
+import { AlertTriangle, Check, ChevronDown, ExternalLink, ImageOff, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react'
+import EnlaceReceta from '@/components/recetas/EnlaceReceta'
 import { etiquetaCalidad } from '@/lib/recetas/etiquetas-calidad'
 import { useToast } from '@/components/ui/Toast'
 import { APTAS_CLIENTE, NIVELES_FIT, TIPOS_USO } from '@/lib/recetas/profesional'
@@ -240,11 +239,9 @@ export default function RevisarRecetasPage() {
   return (
     <main className="min-h-screen" style={{ background: 'var(--bg)' }}>
       <header className="sticky top-0 z-20 border-b" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--bg) 94%, transparent)', backdropFilter: 'blur(12px)' }}>
-        <div className="mx-auto max-w-7xl px-4 pt-3"><RevisionTabs /></div>
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 pb-4">
-          <Link href="/recetas" aria-label="Volver al recetario" className="rounded-lg p-2" style={{ color: 'var(--text-secondary)' }}><ArrowLeft size={20} /></Link>
           <div className="min-w-[180px] flex-1">
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Bandeja de revisión</h1>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Recetas por aprobar</h2>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{respuesta ? `${respuesta.total} resultados en este filtro` : 'Cargando…'}</p>
           </div>
           <button onClick={() => cargar()} aria-label="Actualizar" className="rounded-xl border p-2.5" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)', background: 'var(--surface)' }}><RefreshCw size={16} /></button>
@@ -319,16 +316,6 @@ export default function RevisarRecetasPage() {
       </div>
     </main>
   )
-}
-
-/** Abre la receta y «volver» regresa a esta misma pestaña y filtros (la URL se lee al hacer clic, no al pintar). */
-function EnlaceReceta({ id, className, style, title, children }: { id: string; className?: string; style?: React.CSSProperties; title?: string; children: React.ReactNode }) {
-  const router = useRouter()
-  return <a href={`/recetas/${id}`} title={title} className={className} style={style} onClick={event => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
-    event.preventDefault()
-    router.push(`/recetas/${id}?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`)
-  }}>{children}</a>
 }
 
 function FotoReceta({ receta }: { receta: RecetaRevision }) {

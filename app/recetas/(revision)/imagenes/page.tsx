@@ -18,7 +18,8 @@ import {
   X,
   XCircle,
 } from 'lucide-react'
-import RevisionTabs from '@/components/recetas/RevisionTabs'
+import EnlaceReceta from '@/components/recetas/EnlaceReceta'
+import { useRecordarLista } from '@/lib/useEstadoUrl'
 import { useEstadoUrl, useRestaurarScroll } from '@/lib/useEstadoUrl'
 
 type FiltroImagen = 'pendientes' | 'sin_imagen' | 'sospechosas' | 'ai' | 'scraped' | 'aprobadas' | 'rechazadas' | 'todas'
@@ -154,7 +155,7 @@ function ImagenCard({
   return (
     <article className="overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
       <div className="grid gap-0 md:grid-cols-[260px_1fr]">
-        <Link href={`/recetas/${receta.id}`} className="relative block min-h-[260px] bg-zinc-100">
+        <EnlaceReceta id={receta.id} className="relative block min-h-[260px] bg-zinc-100">
           {receta.imagen_url ? (
             <img src={receta.imagen_url} alt={receta.nombre} className="absolute inset-0 h-full w-full object-cover" />
           ) : (
@@ -173,7 +174,7 @@ function ImagenCard({
               </span>
             )}
           </div>
-        </Link>
+        </EnlaceReceta>
 
         <div className="flex flex-col gap-4 p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -181,9 +182,9 @@ function ImagenCard({
               <p className="text-xs font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
                 {receta.categoria ?? receta.tipo_plato ?? 'Receta'} · {receta.imagen_estado ?? 'pendiente'}
               </p>
-              <Link href={`/recetas/${receta.id}`} className="mt-1 block text-lg font-semibold leading-tight hover:underline" style={{ color: 'var(--text)' }}>
+              <EnlaceReceta id={receta.id} className="mt-1 block text-lg font-semibold leading-tight hover:underline" style={{ color: 'var(--text)' }}>
                 {receta.nombre}
-              </Link>
+              </EnlaceReceta>
               <p className="mt-2 line-clamp-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                 {receta.descripcion ?? 'Sin descripción corta.'}
               </p>
@@ -342,6 +343,7 @@ function ImagenCard({
 }
 
 export default function RecetasImagenesPage() {
+  useRecordarLista('imagenes')
   const [data, setData] = useState<ImagenesResponse | null>(null)
   const [filtro, setFiltro] = useEstadoUrl<FiltroImagen>('filtro', 'pendientes', ['pendientes', 'sin_imagen', 'sospechosas', 'ai', 'scraped', 'aprobadas', 'rechazadas', 'todas'])
   const [query, setQuery] = useEstadoUrl<string>('q', '')
@@ -388,7 +390,6 @@ export default function RecetasImagenesPage() {
   return (
     <main className="min-h-screen layout-main p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
-        <RevisionTabs />
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>

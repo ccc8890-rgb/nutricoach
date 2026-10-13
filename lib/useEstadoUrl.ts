@@ -48,8 +48,8 @@ export function useRecordarLista(clave: string) {
     try {
       const url = window.location.pathname + window.location.search
       sessionStorage.setItem(PREFIJO_LISTA + clave, url)
-      // última lista visitada (recetario o bandeja de revisión): respaldo del «Volver» de una receta
-      if (clave === 'recetas' || clave === 'revisar') sessionStorage.setItem(PREFIJO_LISTA + 'ultima', url)
+      // última lista visitada (recetario, revisión o imágenes): respaldo del «Volver» de una receta
+      if (clave === 'recetas' || clave === 'revisar' || clave === 'imagenes') sessionStorage.setItem(PREFIJO_LISTA + 'ultima', url)
     } catch { /* sin almacenamiento */ }
   })
 }
