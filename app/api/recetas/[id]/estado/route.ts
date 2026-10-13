@@ -73,7 +73,13 @@ export async function PATCH(
       'api_receta_estado'
     )
 
-    if (estado === 'aprobada') await marcarFotoRevisada(createServiceSupabase(), [id]).catch(() => null)
+    if (estado === 'aprobada') {
+      await marcarFotoRevisada(createServiceSupabase(), [id]).catch(() => null)
+      // aprobada = ya no está «para corregir»
+      const srvTags = createServiceSupabase()
+      const { data: t } = await srvTags.from('recetas').select('tags').eq('id', id).maybeSingle()
+      if (t?.tags?.includes('Corregir')) await srvTags.from('recetas').update({ tags: t.tags.filter((x: string) => x !== 'Corregir') }).eq('id', id)
+    }
 
     // Aprobar sin verificar deja la receta fuera de los planes: se verifica si está completa
     const verif = estado === 'aprobada' ? await verificarRecetasCompletas(createServiceSupabase(), [id]).catch(() => null) : null
