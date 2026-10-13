@@ -14,6 +14,30 @@ Rutas API: `auto-coach/analizar`, `checkins/pendientes`, `cliente/[codigo]/inter
 - **Recuperar un archivo:** `git checkout bd7d691~1 -- <ruta>` (p. ej. `lib/recetas/auto-match-ingrediente.ts`). Todo el conjunto: `git checkout bd7d691~1 -- app/api lib/recetas lib/scraping/motores` (cuidado: también restauraría otros borrados de esas carpetas).
 - La limpieza anterior (52 archivos) está en `873c556`; se recupera igual con `git checkout 873c556~1 -- <ruta>`.
 
+## ✅ SESIÓN 12→13-10-2026 (Claude) — Revisión de recetas del puente: datos limpios, espacio de trabajo único, revisión continua y 3 cachés que enseñaban datos viejos
+
+Todo en `main` (nutricoach y Content-Radar), `tsc` limpio, build OK, `verificar:motor` 63/63. Comprobado en producción con la sesión de Carlos salvo lo anotado en «Sin ver en pantalla».
+
+**Datos (46 recetas del puente en `en_revision` desde el 06-10):** cantidades por defecto (80/100/200 g) estimadas a mano, enlaces ingrediente→alimento erróneos (col→colágeno, arroz cocido contado como crudo, chocolate 85 %→batido, sal marina→chips, maní→mantequilla, yogur 0 %→97 kcal…), raciones y macros recalculadas (Aceite de cebollino 1.179→131 kcal/ración, Granola 813→271…). Script `Content-Radar/scripts/pulir_recetas_semana.py` (simula por defecto; copia en `Content-Radar/salidas/12-10-2026_copia-pulido-recetas.json`). Fotos = miniatura del reel retocada, revisadas (solo «Aceite de cebollino» muestra otro plato). Temperaturas °F→°C, oz→g, pulgadas→cm en 21 recetas (`receta_calidad.metrizar`, también al ingerir). 45 nombres de alimentos con coma o marca renombrados (copias en `Content-Radar/salidas/12-10-2026_copia-renombrar-*.json`). Ingredientes ya no repiten gramos en paréntesis ni muestran «1 taza/cucharadita» (`lib/recetas/equivalencia.ts`: solo contables ≥2: «2 huevos», «3 dientes»). El motor de ingesta (`bridge_nutricoach.py`) incorpora todo: scoop = 30 g, cucharada de polvo (cacao 7 g), enlaces forzados nuevos y más precisos.
+
+**Espacio de trabajo «Revisión de recetas»** (`app/recetas/(revision)/`, URLs sin cambios): `CabeceraRevision` común con pestañas **Recetas** e **Imágenes** (con contadores). Desde Imágenes la flecha vuelve a Recetas por aprobar; desde Recetas, al recetario. Las pestañas conservan historial.
+- **Bandeja** (`/recetas/revisar`): «Pendientes» ordena primero las listas para aprobar; bloqueos con etiqueta clara y el ingrediente concreto (`quality_issues.detalles`, `lib/recetas/etiquetas-calidad.ts`); «Sin foto» solo cuenta lo pendiente; foto y nombre abren la receta con `returnTo` (`EnlaceReceta`).
+- **Revisión continua** (`BarraRevision` en el detalle): n de N, «Aprobar y siguiente», atajos A aprobar · C corregir · D descartar · ← →.
+- **Flujo «Corregir»:** marca aspectos + nota (tag `Corregir`, evento `correccion_solicitada`, pestaña «Para corregir»; sale de Pendientes y de «Aprobar aprobables»). La pasada de IA la hace Claude **solo si Carlos dice «pasa las correcciones»**: `npx tsx scripts/correcciones.ts` (lista) / `resolver <id>`. Aprobar quita la marca.
+- **Imágenes:** aprobar una receta da por revisada su foto (`marcarFotoRevisada`); «Pendientes» = recetas por revisar con foto sin aprobar o fotos marcadas «revisar/rechazada» (antes `imagen_needs_review` estaba activo en TODAS). 383 aprobadas con foto marcadas como revisadas (copia `Content-Radar/salidas/13-10-2026_copia-foto-revisada.json`). API de imágenes ahora exige rol coach.
+- **Control de calidad** (`lib/recetas/profesional.ts`): umbrales de cantidad escalan con las raciones, sinónimos (cebollín/cebolleta, cacahuate/cacahuete…), bebida de soja ≠ salsa de soja, papel de arroz ≠ ingrediente principal, sustitutos de azúcar a 0 kcal permitidos. Refresco de pendientes: `npx tsx scripts/refrescar-calidad-pendientes.ts`.
+
+**Por qué la bandeja enseñaba datos viejos (3 causas, todas corregidas):**
+1. **Caché de datos de Next** sobre las consultas Supabase del servidor (servía 710 recetas/0 pendientes del 06-10 cuando había 854/58): `createServiceSupabase`/`createApiSupabase`/`createServerSupabase` usan `fetchSinCache` (`lib/supabase-server.ts`). Afectaba a TODAS las rutas.
+2. **Service worker:** `/api/recetas` estaba en stale-while-revalidate y devolvía siempre la versión anterior. `public/sw.js` v8: ninguna API se cachea.
+3. **Detalle de receta** no comprobaba la respuesta del PATCH de estado y mostraba «aprobada» aunque el servidor la rechazara (409 del control de calidad).
+
+**Reglas nuevas:** (a) si algo «no se actualiza», mirar cachés (Next, service worker, bfcache) antes que los datos; (b) en rutas con Supabase usar siempre los clientes de `lib/supabase-server.ts`, no `createClient` suelto (o pasar `global.fetch` con `cache: 'no-store'`); (c) toda acción de UI que escribe debe comprobar `res.ok`; (d) cambios de datos con script: simular, copia en `salidas/`, aplicar.
+
+**Sin ver en pantalla:** el «atrás» del navegador entre Imágenes y Recetas tras el último arreglo, y la barra con el panel «Corregir» completo en móvil. El navegador de pruebas (`browse --headed` + handoff) pierde la sesión a menudo: ver memoria `feedback-browse-handoff-pierde-sesion`.
+
+**Pendiente:** (1) Carlos aprueba las 19 pendientes y revisa la foto de «Aceite de cebollino» y las raciones de «Noodles con tofu marinado» (997 kcal/2 raciones, quizá 3); (2) las 27 aprobadas con foto marcada «revisar» en Imágenes; (3) «Creamy Udon Noodles» es un borrador intuido (sin audio): completar a mano; (4) 5 enlaces menores en recetas antiguas aprobadas (Caramel Slice, Cheesecake Nutella…); (5) `CabeceraRevision` pide hasta 200 recetas de Imágenes en cada cambio de vista solo para contar (mejorable con un contador en la API); (6) si algún contador de otra pantalla parecía raro, era la caché: revisar.
+
 ## 🧭 REGLAS PERMANENTES — vínculos, unidades y pantallas (12-10-2026)
 
 Detalle, causas y cómo comprobar cada una: [`docs/12-10-2026_patrones-vinculos-unidades-y-pantallas.md`](docs/12-10-2026_patrones-vinculos-unidades-y-pantallas.md). Resumen:

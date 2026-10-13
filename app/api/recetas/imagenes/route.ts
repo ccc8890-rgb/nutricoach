@@ -12,6 +12,9 @@ export async function GET(request: NextRequest) {
   const auth = createApiSupabase(request)
   const { data: { user } } = await auth.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  // Solo el coach: lista el recetario con sus puntuaciones internas
+  const { data: perfil } = await createServiceSupabase().from('profiles').select('role').eq('id', user.id).maybeSingle()
+  if (perfil?.role !== 'coach') return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
 
   const { searchParams } = new URL(request.url)
   const filtro = normalizarFiltro(searchParams.get('filtro'))
