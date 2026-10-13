@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { destinoVolver } from '@/lib/cliente/retorno'
 import { ArrowLeft, Barbell, Brain, CheckCircle, CircleNotch, Clock, Play, Target, Trophy } from '@phosphor-icons/react'
 import SesionCardMobile, { type SetData, type EjercicioCard } from '@/components/training/SesionCardMobile'
 import EjercicioDemoModal from '@/components/training/EjercicioDemoModal'
@@ -56,7 +57,7 @@ export default function EjecucionSesionPage() {
   const searchParams = useSearchParams()
   const sesionStartRef = useRef(Date.now())
   const codigo = searchParams.get('codigo')
-  const backHref = '/cliente?tab=entreno'
+  const backHref = destinoVolver('/cliente?tab=entreno')
 
   const [sesion, setSesion] = useState<SesionInfo | null>(null)
   const [loading, setLoading] = useState(true)

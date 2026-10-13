@@ -27,6 +27,7 @@ import NotasCoachEstatico from '@/components/PortalCliente/NotasCoach'
 import MiPlanEstatico from '@/components/PortalCliente/MiPlan'
 import EntrenoSubTabsEstatico from '@/components/training/EntrenoSubTabs'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
+import { useMarcarSalidaAlAbrirDetalle, useRestaurarRetorno } from '@/lib/cliente/retorno'
 import RecetarioExploradorEstatico from '@/components/PortalCliente/RecetarioExplorador'
 import AjustesTabsEstatico from '@/components/PortalCliente/AjustesTabs'
 import SuplementacionPortalEstatico from '@/components/PortalCliente/SuplementacionPortal'
@@ -246,7 +247,9 @@ function PortalClientePageContent() {
     // Conserva el resto de parámetros (sub, q, cat, tag) para que «atrás» devuelva la pantalla tal cual
     const url = new URL(window.location.href)
     url.searchParams.set('tab', tab)
-    if (tab !== 'recetas') ['sub', 'q', 'cat', 'tag'].forEach(k => url.searchParams.delete(k))
+    // Cada pestaña solo conserva sus propios parámetros
+    const propios: Record<string, string[]> = { recetas: ['sub', 'q', 'cat', 'tag'], dieta: ['vista', 'dd'], entreno: ['et', 'em', 'ed'] }
+    Object.entries(propios).forEach(([t, claves]) => { if (t !== tab) claves.forEach(k => url.searchParams.delete(k)) })
     window.history.replaceState(window.history.state, '', url)
   }, [tab])
 
@@ -256,23 +259,9 @@ function PortalClientePageContent() {
   useEffect(() => { marca('nc:montado'); setMontado(true) }, [])
   useEffect(() => { if (!loading) marca('nc:contenido-commit') }, [loading])
 
-  // «En tu plan»: al volver de una receta se recupera el scroll (el archivo completo guarda el suyo aparte)
-  useEffect(() => {
-    if (loading) return
-    try {
-      const raw = sessionStorage.getItem('nc:plan:scroll')
-      if (!raw) return
-      sessionStorage.removeItem('nc:plan:scroll')
-      const d = JSON.parse(raw)
-      if (d.url !== window.location.search || Date.now() - d.t > 30 * 60_000 || !(d.y > 0)) return
-      let intentos = 0
-      const aplicar = () => {
-        window.scrollTo({ top: d.y, behavior: 'instant' })
-        if (Math.abs(window.scrollY - d.y) > 2 && ++intentos < 60) requestAnimationFrame(aplicar)
-      }
-      requestAnimationFrame(aplicar)
-    } catch { /* sin almacenamiento */ }
-  }, [loading])
+  // Al volver de una receta o sesión se recupera el scroll (el archivo completo guarda el suyo aparte)
+  useMarcarSalidaAlAbrirDetalle()
+  useRestaurarRetorno(!loading)
   const { mutate, cache } = useSWRConfig()
   const { data: boot } = useSWR('portal:bootstrap', cargarPortal)
 
@@ -600,9 +589,6 @@ function PortalClientePageContent() {
                           key={r.id}
                           href={recetaHref(r.id)}
                           prefetch={false}
-                          onClick={() => {
-                            try { sessionStorage.setItem('nc:plan:scroll', JSON.stringify({ url: window.location.search, y: window.scrollY, t: Date.now() })) } catch { /* sin almacenamiento */ }
-                          }}
                           className={`recipe-editorial-item ${index % 5 === 0 ? 'is-featured' : ''}`}
                           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                         >

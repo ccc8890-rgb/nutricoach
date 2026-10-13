@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import {
     ArrowSquareOut as ExternalLink,
     CaretDown as ChevronDown,
@@ -165,7 +166,7 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
     // Antes apuntaba a /cliente/[codigo] (portal público legacy): ese route
     // redirige a /cliente para clientes autenticados pero pierde ?tab= en
     // la redirección server-side — "Volver" caía siempre en Hoy.
-    const dietReturnTo = `/cliente?tab=dieta`
+    const dietReturnTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/cliente?tab=dieta'
     // /recetas/[id] es la página de coach (envuelta en CoachShell), que
     // redirige a cualquier rol "cliente" de vuelta a /cliente sin avisar —
     // "Ver receta" desde el portal cliente nunca funcionó de verdad. Ruta
@@ -324,8 +325,8 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
         }
     }
     const [descargando, setDescargando] = useState(false)
-    const [vistaActual, setVistaActual] = useState<'hoy' | 'semana' | 'compra'>('hoy')
-    const [diaActivo, setDiaActivo] = useState<string>(() => diaActualEspana())
+    const [vistaActual, setVistaActual] = useEstadoUrl<'hoy' | 'semana' | 'compra'>('vista', 'hoy', ['hoy', 'semana', 'compra'])
+    const [diaActivo, setDiaActivo] = useEstadoUrl<string>('dd', diaActualEspana())
     const [mostrarCompra, setMostrarCompra] = useState(false)
     const { addToast } = useToast()
 

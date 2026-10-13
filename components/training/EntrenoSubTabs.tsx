@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import useSWR from 'swr'
 import { fetchJson } from '@/lib/cliente/cache-swr'
 import { Dumbbell, Loader2, CircleDashed } from 'lucide-react'
@@ -38,7 +39,7 @@ function iconoTipo(tipo: SesionSemana['tipo_sesion'], size = 16) {
 const fechaLocalHoy = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
 
 export default function EntrenoSubTabs({ planNombre }: { planId: string; planNombre: string }) {
-  const [subTab, setSubTab] = useState<'hoy' | 'semana' | 'mes'>('hoy')
+  const [subTab, setSubTab] = useEstadoUrl<'hoy' | 'semana' | 'mes'>('et', 'hoy', ['hoy', 'semana', 'mes'])
   // Datos desde la caché compartida (precargada por el portal): sin espera al abrir la pestaña.
   const { data: semana, isLoading } = useSWR<{
     sesiones?: SesionSemana[]

@@ -1,6 +1,7 @@
 'use client'
 import { textoKm } from '@/lib/entrenos/km-sesion'
 import { useEffect, useMemo, useState } from 'react'
+import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { Barbell, CaretLeft, CaretRight, CircleDashed, CircleNotch, Footprints, Warning } from '@phosphor-icons/react'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
@@ -65,13 +66,17 @@ interface CalendarioMesEntrenoProps {
 export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: CalendarioMesEntrenoProps) {
   const hoy = new Date()
   const [modo, setModo] = useState<'semana' | 'mes'>(mostrarToggleSemanaMes ? 'semana' : 'mes')
-  const [year, setYear] = useState(hoy.getFullYear())
-  const [month, setMonth] = useState(hoy.getMonth() + 1)
+  // Mes y día elegidos en la URL: al abrir una sesión y volver, el calendario sigue donde estaba
+  const [mesUrl, setMesUrl] = useEstadoUrl<string>('em', `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`)
+  const [yearUrl, monthUrl] = mesUrl.split('-').map(Number)
+  const year = yearUrl > 2000 && monthUrl >= 1 && monthUrl <= 12 ? yearUrl : hoy.getFullYear()
+  const month = yearUrl > 2000 && monthUrl >= 1 && monthUrl <= 12 ? monthUrl : hoy.getMonth() + 1
+  const irAMes = (y: number, m: number) => setMesUrl(`${y}-${String(m).padStart(2, '0')}`)
   const [dias, setDias] = useState<DiaMes[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const hoyISO = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
-  const [diaSeleccionado, setDiaSeleccionado] = useState<string>(hoyISO)
+  const [diaSeleccionado, setDiaSeleccionado] = useEstadoUrl<string>('ed', hoyISO)
   const [detalles, setDetalles] = useState<Record<string, EjercicioDetalle[] | 'cargando'>>({})
   const [extras, setExtras] = useState<Record<string, ExtrasSesion | null>>({})
 
@@ -117,10 +122,10 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
   }, [idsDia, diaSeleccionado])
 
   function mesAnterior() {
-    if (month === 1) { setMonth(12); setYear(y => y - 1) } else setMonth(m => m - 1)
+    if (month === 1) irAMes(year - 1, 12); else irAMes(year, month - 1)
   }
   function mesSiguiente() {
-    if (month === 12) { setMonth(1); setYear(y => y + 1) } else setMonth(m => m + 1)
+    if (month === 12) irAMes(year + 1, 1); else irAMes(year, month + 1)
   }
 
   function estadoDia(dia: DiaMes) {

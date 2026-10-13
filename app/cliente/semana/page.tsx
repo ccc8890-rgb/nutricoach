@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
+import { useRestaurarRetorno } from '@/lib/cliente/retorno'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -86,6 +87,7 @@ export default function VistaSemanalClientePage() {
   const [planNombre, setPlanNombre] = useState('')
   const [bloque, setBloque] = useState<{ fase: string; semana_actual: number; semanas_totales: number } | null>(null)
   const [error, setError] = useState('')
+  useRestaurarRetorno(!loading)
 
 
   useEffect(() => {
