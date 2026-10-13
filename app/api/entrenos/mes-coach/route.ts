@@ -22,6 +22,13 @@ function toISODate(date: Date) {
 
 const DIAS_SEMANA_POR_INDICE = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
+/** Enviada a Garmin en esa fecha: por el envío de siempre o por el de su semana (garmin_variantes). */
+function enviadaEnGarmin(s: { garmin_workout_id?: unknown; garmin_programado_fecha?: unknown; garmin_fechas?: unknown; garmin_variantes?: unknown }, fecha: string): boolean {
+  if (s.garmin_workout_id && (s.garmin_programado_fecha === fecha || (Array.isArray(s.garmin_fechas) && s.garmin_fechas.includes(fecha)))) return true
+  const v = s.garmin_variantes && typeof s.garmin_variantes === 'object' ? Object.values(s.garmin_variantes as Record<string, { workout_id?: string | null; fechas?: string[] }>) : []
+  return v.some(x => !!x?.workout_id && Array.isArray(x.fechas) && x.fechas.includes(fecha))
+}
+
 export async function GET(request: NextRequest) {
   const supabase = createApiSupabase(request)
   const { data: { user } } = await supabase.auth.getUser()
@@ -56,7 +63,7 @@ export async function GET(request: NextRequest) {
 
   const { data: sesiones } = await admin
     .from('sesiones_entrenamiento')
-    .select('id, nombre, dia_semana, fase_bloque, hora_inicio, duracion_estimada_min, contexto_ia, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, ejercicios:sesion_ejercicios(id, bloque, series, repeticiones, descanso_segundos, encadenado, peso_sugerido, rpe, notas, orden, ejercicio:ejercicios(nombre, tipo))')
+    .select('id, nombre, dia_semana, fase_bloque, hora_inicio, duracion_estimada_min, contexto_ia, pasos, garmin_workout_id, garmin_programado_fecha, garmin_fechas, garmin_variantes, ejercicios:sesion_ejercicios(id, bloque, series, repeticiones, descanso_segundos, encadenado, peso_sugerido, rpe, notas, orden, ejercicio:ejercicios(nombre, tipo))')
     .eq('plan_id', plan.id)
     .order('orden')
     .order('id')
@@ -171,7 +178,7 @@ export async function GET(request: NextRequest) {
         // Se repite en otras fechas (plantilla semanal o varias colocaciones): editarla cambia todas.
         compartida: !!sesion.dia_semana || ajustes.filter(x => x.sesion_id === sesion.id && x.fecha !== null && x.tipo !== 'omitir').length > 1,
         // Solo las sesiones con pasos viajan al reloj: enviada (a esta fecha) o pendiente del próximo envío.
-        garmin: !sesion.pasos ? null : (sesion.garmin_workout_id && (sesion.garmin_programado_fecha === fecha || (Array.isArray(sesion.garmin_fechas) && sesion.garmin_fechas.includes(fecha))) ? 'enviada' : 'pendiente'),
+        garmin: !sesion.pasos ? null : (enviadaEnGarmin(sesion, fecha) ? 'enviada' : 'pendiente'),
       })),
       bloque_pendiente: bloquePendiente && ocurrencias.length === 0 && !(prev && prev.sesiones.length > 0),
       prevision: prev ? { fase: prev.fase, sesiones: prev.sesiones.map(x => ({ id: x.id, nombre: x.nombre, tipo_sesion: x.tipo_sesion, km: x.km })) } : null,
