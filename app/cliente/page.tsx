@@ -25,6 +25,7 @@ import TLSGaugeEstatico from '@/components/PortalCliente/TLSGauge'
 import NotasCoachEstatico from '@/components/PortalCliente/NotasCoach'
 import MiPlanEstatico from '@/components/PortalCliente/MiPlan'
 import EntrenoSubTabsEstatico from '@/components/training/EntrenoSubTabs'
+import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import RecetarioExploradorEstatico from '@/components/PortalCliente/RecetarioExplorador'
 import AjustesTabsEstatico from '@/components/PortalCliente/AjustesTabs'
 import SuplementacionPortalEstatico from '@/components/PortalCliente/SuplementacionPortal'
@@ -184,7 +185,8 @@ function PortalClientePageContent() {
     const tabParam = searchParams.get('tab')
     return TABS_VALIDOS.includes(tabParam as Tab) ? (tabParam as Tab) : 'hoy'
   })
-  const [subRecetas, setSubRecetas] = useState<'plan' | 'recetario' | null>(null)
+  // En la URL (no en estado local): al volver desde una receta reaparece «Archivo completo», no «En tu plan»
+  const [subRecetas, setSubRecetas] = useEstadoUrl<'plan' | 'recetario' | null>('sub', null, ['plan', 'recetario'])
   const [historialPeso, setHistorialPeso] = useState<SeguimientoPeso[]>([])
   const [checkinKey, setCheckinKey] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -240,7 +242,11 @@ function PortalClientePageContent() {
   }, [tab])
 
   useEffect(() => {
-    window.history.replaceState(window.history.state, '', `/cliente?tab=${tab}`)
+    // Conserva el resto de parámetros (sub, q, cat, tag) para que «atrás» devuelva la pantalla tal cual
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', tab)
+    if (tab !== 'recetas') ['sub', 'q', 'cat', 'tag'].forEach(k => url.searchParams.delete(k))
+    window.history.replaceState(window.history.state, '', url)
   }, [tab])
 
   // `montado` evita desajuste de hidratación: el servidor pinta la pantalla de carga, y la caché
@@ -332,7 +338,9 @@ function PortalClientePageContent() {
   }
 
   const recetaHref = (recetaId: string) =>
-    `/cliente/receta/${recetaId}?codigo=${encodeURIComponent(codigo)}&returnTo=${encodeURIComponent('/cliente?tab=recetas')}`
+    `/cliente/receta/${recetaId}?codigo=${encodeURIComponent(codigo)}&returnTo=${encodeURIComponent(
+      typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/cliente?tab=recetas',
+    )}`
 
   function calcMacrosDia() {
     if (!dieta) return null

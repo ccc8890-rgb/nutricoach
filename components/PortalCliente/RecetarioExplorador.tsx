@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import useSWR from 'swr'
 import { fetchJson } from '@/lib/cliente/cache-swr'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useEstadoUrl } from '@/lib/useEstadoUrl'
 import { MagnifyingGlass, ForkKnife, SlidersHorizontal, X, Rows, SquaresFour } from '@phosphor-icons/react'
 
 const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 'Postre'] as const
@@ -13,6 +15,20 @@ const CATEGORIAS = ['Todos', 'Desayuno', 'Comida', 'Cena', 'Merienda', 'Snack', 
 // es un sistema nuevo, solo se expone aquí como chips. Curado a los
 // ingredientes con cobertura real en el recetario (ver auditoría 28-09).
 const TAGS_INGREDIENTE = ['Pollo', 'Carne', 'Pescado', 'Pasta', 'Arroz', 'Legumbre', 'Patata', 'Yogur'] as const
+
+const CLAVE_SNAPSHOT = 'nc:recetario:snapshot'
+
+function leerSnapshot(): { recetas: RecetaCatalogo[]; page: number; hayMas: boolean; scroll: number } | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(CLAVE_SNAPSHOT)
+    if (!raw) return null
+    const d = JSON.parse(raw)
+    // Solo vale para la misma URL (filtros) y reciente
+    if (d.url !== window.location.search || Date.now() - d.t > 30 * 60_000) return null
+    return d
+  } catch { return null }
+}
 
 interface RecetaCatalogo {
   id: string
@@ -30,9 +46,10 @@ export default function RecetarioExplorador({
   codigo: string
   recetaHref: (recetaId: string) => string
 }) {
-  const [q, setQ] = useState('')
-  const [categoria, setCategoria] = useState<string>('Todos')
-  const [tag, setTag] = useState<string | null>(null)
+  // Filtros en la URL: al abrir una receta y volver, la búsqueda sigue igual
+  const [q, setQ] = useEstadoUrl<string>('q', '')
+  const [categoria, setCategoria] = useEstadoUrl<string>('cat', 'Todos')
+  const [tag, setTag] = useEstadoUrl<string | null>('tag', null)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
   const [vista, setVista] = useState<'lista' | 'cuadricula'>('lista')
   useEffect(() => {
@@ -50,14 +67,36 @@ export default function RecetarioExplorador({
   const { data: inicial, error: errorInicial } = useSWR<{ recetas?: RecetaCatalogo[]; hayMas?: boolean }>(
     `/api/cliente/${codigo}/recetario?page=0`, fetchJson,
   )
-  const [recetas, setRecetas] = useState<RecetaCatalogo[]>(inicial?.recetas ?? [])
-  const [page, setPage] = useState(0)
-  const [hayMas, setHayMas] = useState(Boolean(inicial?.hayMas))
-  const [cargando, setCargando] = useState(!inicial)
+  // Foto de la lista (recetas cargadas, páginas, scroll) al abrir una receta: «atrás» vuelve a la misma línea
+  const [snapshot] = useState(leerSnapshot)
+  const restaurado = useRef(Boolean(snapshot))
+  const [recetas, setRecetas] = useState<RecetaCatalogo[]>(snapshot?.recetas ?? inicial?.recetas ?? [])
+  const [page, setPage] = useState(snapshot?.page ?? 0)
+  const [hayMas, setHayMas] = useState(snapshot ? snapshot.hayMas : Boolean(inicial?.hayMas))
+  const [cargando, setCargando] = useState(!snapshot && !inicial)
+
+  useEffect(() => {
+    if (!snapshot) return
+    let intentos = 0
+    const aplicar = () => {
+      window.scrollTo({ top: snapshot.scroll, behavior: 'instant' })
+      if (Math.abs(window.scrollY - snapshot.scroll) > 2 && ++intentos < 60) requestAnimationFrame(aplicar)
+    }
+    requestAnimationFrame(aplicar)
+  }, [snapshot])
+
+  function guardarSnapshot() {
+    try {
+      sessionStorage.setItem(CLAVE_SNAPSHOT, JSON.stringify({
+        url: window.location.search, t: Date.now(), recetas, page, hayMas, scroll: window.scrollY,
+      }))
+    } catch { /* sin almacenamiento */ }
+  }
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!sinFiltros) return
+    if (restaurado.current) { restaurado.current = false; return }
     if (!inicial) { if (errorInicial) setCargando(false); return }
     setRecetas(inicial.recetas ?? [])
     setHayMas(Boolean(inicial.hayMas))
@@ -67,6 +106,7 @@ export default function RecetarioExplorador({
 
   useEffect(() => {
     if (sinFiltros) return
+    if (restaurado.current) { restaurado.current = false; return }
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setPage(0)
@@ -160,7 +200,7 @@ export default function RecetarioExplorador({
           {TAGS_INGREDIENTE.map(t => (
             <button
               key={t}
-              onClick={() => setTag(prev => prev === t ? null : t)}
+              onClick={() => setTag(tag === t ? null : t)}
               className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold"
               style={{
                 background: tag === t ? 'var(--accent)' : 'var(--surface)',
@@ -197,7 +237,7 @@ export default function RecetarioExplorador({
           {vista === 'cuadricula' ? (
             <div className="recipe-grid-compact">
               {recetas.map(r => (
-                <a key={r.id} href={recetaHref(r.id)} className="recipe-grid-compact__item">
+                <Link key={r.id} href={recetaHref(r.id)} prefetch={false} onClick={guardarSnapshot} className="recipe-grid-compact__item">
                   <div className="recipe-grid-compact__img">
                     {r.imagen_url ? (
                       <Image src={r.imagen_url} alt={r.nombre} fill className="object-cover" sizes="33vw" />
@@ -211,15 +251,17 @@ export default function RecetarioExplorador({
                   {r.kcal ? (
                     <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{r.kcal} kcal</p>
                   ) : null}
-                </a>
+                </Link>
               ))}
             </div>
           ) : (
           <div className="recipe-editorial-list">
             {recetas.map((r, index) => (
-              <a
+              <Link
                 key={r.id}
                 href={recetaHref(r.id)}
+                prefetch={false}
+                onClick={guardarSnapshot}
                 className={`recipe-editorial-item ${index % 5 === 0 ? 'is-featured' : ''}`}
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
               >
@@ -238,7 +280,7 @@ export default function RecetarioExplorador({
                     <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>{r.kcal} kcal · {r.proteinas}g P</p>
                   ) : null}
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
           )}
