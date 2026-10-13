@@ -38,10 +38,11 @@ export async function GET(request: NextRequest) {
     query = query.ilike('nombre', `%${q}%`)
   }
 
-  // Pendiente = receta aún por revisar con su foto sin aprobar, foto que el coach marcó «revisar»/«rechazada», o aprobada sin foto.
+  // Pendiente = receta aún por revisar con su foto sin aprobar, o foto que el coach marcó «revisar»/«rechazada».
+  // Las aprobadas sin foto no son revisión: están en el filtro «Sin imagen».
   // (imagen_needs_review estaba activo en TODAS las recetas y nunca se apagaba al aprobar.)
   if (filtro === 'pendientes') {
-    query = query.or('and(estado.in.(en_revision,borrador),imagen_estado.neq.aprobada),imagen_estado.in.(revisar,rechazada),imagen_url.is.null,imagen_url.eq.')
+    query = query.or('and(estado.in.(en_revision,borrador),or(imagen_estado.is.null,imagen_estado.neq.aprobada)),imagen_estado.in.(revisar,rechazada)')
   }
   if (filtro === 'sin_imagen') query = query.or('imagen_url.is.null,imagen_url.eq.')
   if (filtro === 'sospechosas') query = query.or('imagen_quality_score.lt.55,imagen_realismo_score.lt.55,imagen_match_receta_score.lt.55,imagen_estado.eq.revisar')
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
   const recetas = data ?? []
   const stats = {
     total: recetas.length,
-    pendientes: recetas.filter(r => ['en_revision', 'borrador'].includes(r.estado ?? '') && r.imagen_estado !== 'aprobada' || ['revisar', 'rechazada'].includes(r.imagen_estado ?? '') || !r.imagen_url).length,
+    pendientes: recetas.filter(r => ['en_revision', 'borrador'].includes(r.estado ?? '') && r.imagen_estado !== 'aprobada' || ['revisar', 'rechazada'].includes(r.imagen_estado ?? '')).length,
     sin_imagen: recetas.filter(r => !r.imagen_url).length,
     ai: recetas.filter(r => r.imagen_origen === 'ai').length,
     scraped: recetas.filter(r => r.imagen_origen === 'scraped').length,
