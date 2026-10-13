@@ -12,6 +12,7 @@ import {
 } from '@/lib/lista-compra/inteligente'
 import { canonicalizarItemCompra, esIngredienteBasicoNoCompra, normalizarNombreCompra } from '@/lib/lista-compra/filtros'
 import { esComidaDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
+import type { PlatoCompra } from '@/lib/lista-compra/por-platos'
 import type { IngredienteSemanal, PrecioOpcion } from '@/types'
 import { autorizarAccesoPlan } from '@/lib/cliente/autorizar-escritura-plan'
 
@@ -55,7 +56,7 @@ export async function GET(
 
     const { data: comidas } = await db
         .from('comidas')
-        .select('nombre, dia_semana, comida_alimentos(cantidad_gramos, alimento:alimentos(id, nombre, categoria, es_generico))')
+        .select('id, nombre, dia_semana, receta:recetas(nombre), comida_alimentos(cantidad_gramos, alimento:alimentos(id, nombre, categoria, es_generico))')
         .eq('plan_id', plan.id)
 
     // Bug corregido (25-09-2026): con `?dia=X`, una comida recurrente (sin
@@ -69,9 +70,19 @@ export async function GET(
 
     if (!comidasFiltradas.length) return NextResponse.json({ items: [] })
 
-    // Agregar cantidades por alimento
+    // Agregar cantidades por alimento (y, a la vez, por plato para la vista «Por platos»)
     const mapa = new Map<string, ItemListaCompra>()
+    const platos: PlatoCompra[] = []
     for (const comida of comidasFiltradas) {
+        const receta = comida.receta as unknown as { nombre: string } | { nombre: string }[] | null
+        const nombreReceta = (Array.isArray(receta) ? receta[0]?.nombre : receta?.nombre) ?? null
+        const plato: PlatoCompra = {
+            id: comida.id,
+            nombre: nombreReceta ?? comida.nombre,
+            franja: nombreReceta ? comida.nombre : null,
+            dia: comida.dia_semana || null,
+            ingredientes: [],
+        }
         const alimentos = comida.comida_alimentos as unknown as {
             cantidad_gramos: number
             alimento: { id: string; nombre: string; categoria: string; es_generico?: boolean } | null
@@ -83,6 +94,17 @@ export async function GET(
             if (esNoComestibleLista(nombre, categoria ?? '')) continue
 
             const canonical = canonicalizarItemCompra({ id, nombre, categoria })
+            const enPlato = plato.ingredientes.find(i => i.clave === canonical.key)
+            if (enPlato) {
+                enPlato.cantidad_gramos += ca.cantidad_gramos
+            } else {
+                plato.ingredientes.push({
+                    clave: canonical.key,
+                    nombre: canonical.nombre,
+                    categoria: canonical.categoria,
+                    cantidad_gramos: ca.cantidad_gramos,
+                })
+            }
             if (mapa.has(canonical.key)) {
                 const existing = mapa.get(canonical.key)!
                 existing.cantidad_gramos += ca.cantidad_gramos
@@ -103,6 +125,7 @@ export async function GET(
                 })
             }
         }
+        if (plato.ingredientes.length) platos.push(plato)
     }
 
     const items = Array.from(mapa.values()).sort((a, b) =>
@@ -190,6 +213,7 @@ export async function GET(
 
     return NextResponse.json({
         items,
+        platos,
         ingredientes,
         optimizacion,
         ofertas,

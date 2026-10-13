@@ -6,6 +6,7 @@ import type { ItemListaCompra } from '@/app/api/cliente/[codigo]/lista-compra/ro
 import type { ResultadoOptimizacion } from '@/types'
 import type { OfertaDetectada, MensajeWhatsApp, ProyeccionAhorroAnual } from '@/lib/precios-smart-cart'
 import type { SustitutoEconomico } from '@/lib/lista-compra/inteligente'
+import { ingredientesDePlatos, type PlatoCompra } from '@/lib/lista-compra/por-platos'
 
 interface ListaCompraPortalProps {
     codigo: string
@@ -60,8 +61,18 @@ function formatEuro(valor: number): string {
     }).format(valor)
 }
 
+interface FilaLista {
+    id: string
+    nombre: string
+    categoria: string
+    cantidad: string
+    origen: string[]
+    oferta: boolean
+}
+
 interface ListaCompraResponse {
     items: ItemListaCompra[]
+    platos?: PlatoCompra[]
     optimizacion: ResultadoOptimizacion | null
     ofertas: OfertaDetectada[]
     sustitutos_economicos: SustitutoEconomico[]
@@ -79,7 +90,15 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     const [marcados, setMarcados] = useState<Set<string>>(new Set())
     const [colapsadas, setColapsadas] = useState<Set<string>>(new Set())
     const [dia, setDia] = useState<string>(diaInicial ?? 'Semana')
+    const [vista, setVista] = useState<'ingredientes' | 'platos'>('ingredientes')
+    const [platosElegidos, setPlatosElegidos] = useState<Set<string>>(new Set())
+    const [marcadosPlatos, setMarcadosPlatos] = useState<Set<string>>(new Set())
     const storageKey = `nutricoach:lista-compra:${codigo}:${dia}`
+    const storageKeyPlatos = `${storageKey}:platos`
+
+    useEffect(() => {
+        if (diaInicial) setDia(diaInicial)
+    }, [diaInicial])
 
     useEffect(() => {
         setLoading(true)
@@ -90,38 +109,62 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
             .then((res: ListaCompraResponse) => {
                 setData(res)
                 setItems(res.items ?? [])
+                setPlatosElegidos(new Set())
                 try {
                     const raw = localStorage.getItem(storageKey)
                     setMarcados(new Set(raw ? JSON.parse(raw) as string[] : []))
+                    const rawPlatos = localStorage.getItem(storageKeyPlatos)
+                    setMarcadosPlatos(new Set(rawPlatos ? JSON.parse(rawPlatos) as string[] : []))
                 } catch {
                     setMarcados(new Set())
+                    setMarcadosPlatos(new Set())
                 }
             })
             .catch(() => setError(true))
             .finally(() => setLoading(false))
-    }, [codigo, dia, storageKey])
+    }, [codigo, dia, storageKey, storageKeyPlatos])
 
     useEffect(() => {
         if (loading) return
         localStorage.setItem(storageKey, JSON.stringify(Array.from(marcados)))
     }, [loading, marcados, storageKey])
 
+    useEffect(() => {
+        if (loading) return
+        localStorage.setItem(storageKeyPlatos, JSON.stringify(Array.from(marcadosPlatos)))
+    }, [loading, marcadosPlatos, storageKeyPlatos])
+
+    const hoyNombre = DIAS_COMPRA[(new Date().getDay() + 6) % 7]
+    const tituloDia = dia === 'Semana' ? 'Semana completa' : `${dia}${dia === hoyNombre ? ' · hoy' : ''}`
+
     const selector = (
-        <div className="shopping-list-editorial__days flex gap-1.5 overflow-x-auto pb-1">
-            {['Semana', ...DIAS_COMPRA].map(d => (
-                <button
-                    key={d}
-                    onClick={() => setDia(d)}
-                    className="shopping-list-editorial__day shrink-0 px-3 py-1.5 text-xs font-semibold"
-                    style={{
-                        background: dia === d ? 'var(--diet-warm)' : 'var(--diet-paper)',
-                        color: dia === d ? 'var(--atelier-carbon)' : 'var(--text-muted)',
-                        border: `1px solid ${dia === d ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
-                    }}
-                >
-                    {d === 'Semana' ? 'Semana' : d.slice(0, 3)}
-                </button>
-            ))}
+        <div className="space-y-2">
+            <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                    Lista de la compra para
+                </p>
+                <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{tituloDia}</p>
+            </div>
+            <div className="shopping-list-editorial__days flex gap-1.5 overflow-x-auto pb-1">
+                {['Semana', ...DIAS_COMPRA].map(d => (
+                    <button
+                        key={d}
+                        onClick={() => setDia(d)}
+                        aria-pressed={dia === d}
+                        className="shopping-list-editorial__day shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold"
+                        style={{
+                            background: dia === d ? 'var(--diet-warm)' : 'var(--diet-paper)',
+                            color: dia === d ? 'var(--atelier-carbon)' : 'var(--text-muted)',
+                            border: `1px solid ${dia === d ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
+                        }}
+                    >
+                        {d === 'Semana' ? 'Semana' : d.slice(0, 3)}
+                        {d === hoyNombre && (
+                            <span aria-label="hoy" style={{ width: 4, height: 4, borderRadius: '50%', background: 'currentColor' }} />
+                        )}
+                    </button>
+                ))}
+            </div>
         </div>
     )
 
@@ -150,21 +193,59 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
         </div>
     )
 
+    const platos = data?.platos ?? []
+    const enPlatos = vista === 'platos'
+    const sinPlatosElegidos = enPlatos && platosElegidos.size === 0
+
+    // Una sola lista para las dos vistas: todos los ingredientes o solo los de los platos elegidos
+    const filas: FilaLista[] = enPlatos
+        ? ingredientesDePlatos(platos, platosElegidos).map(i => ({
+            id: i.clave,
+            nombre: i.nombre,
+            categoria: i.categoria,
+            cantidad: i.cantidad_compra,
+            origen: i.platos,
+            oferta: false,
+        }))
+        : items.map(i => ({
+            id: i.alimento_id,
+            nombre: i.nombre,
+            categoria: i.categoria,
+            cantidad: i.cantidad_compra ?? formatGramos(i.cantidad_gramos),
+            origen: i.comidas_origen,
+            oferta: !!data?.ofertas?.some(o => o.alimento_id === i.alimento_id),
+        }))
+    const marcadosVista = enPlatos ? marcadosPlatos : marcados
+    const setMarcadosVista = enPlatos ? setMarcadosPlatos : setMarcados
+    const storageKeyVista = enPlatos ? storageKeyPlatos : storageKey
+
     // Agrupar por categoría
-    const porCategoria = items.reduce<Record<string, ItemListaCompra[]>>((acc, item) => {
+    const porCategoria = filas.reduce<Record<string, FilaLista[]>>((acc, item) => {
         const cat = item.categoria
         if (!acc[cat]) acc[cat] = []
         acc[cat].push(item)
         return acc
     }, {})
 
-    const totalItems = items.length
-    const totalMarcados = marcados.size
+    const totalItems = filas.length
+    const totalMarcados = marcadosVista.size
     const optimizacion = data?.optimizacion
     const ahorro = optimizacion?.ahorro_vs_peor_super ?? data?.proyeccion_ahorro?.ahorro_semanal ?? 0
 
+    function togglePlato(id: string) {
+        setPlatosElegidos(prev => {
+            const next = new Set(prev)
+            if (next.has(id)) {
+                next.delete(id)
+            } else {
+                next.add(id)
+            }
+            return next
+        })
+    }
+
     function toggleMarcado(id: string) {
-        setMarcados(prev => {
+        setMarcadosVista(prev => {
             const next = new Set(prev)
             if (next.has(id)) {
                 next.delete(id)
@@ -190,7 +271,90 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     return (
         <div className="shopping-list-editorial space-y-2">
             {selector}
-            {optimizacion && (
+            <div className="grid grid-cols-2 gap-1.5" role="tablist" aria-label="Cómo ver la lista">
+                {(['ingredientes', 'platos'] as const).map(v => (
+                    <button
+                        key={v}
+                        role="tab"
+                        aria-selected={vista === v}
+                        onClick={() => setVista(v)}
+                        className="px-3 py-2 text-xs font-semibold"
+                        style={{
+                            background: vista === v ? 'var(--diet-warm)' : 'var(--diet-paper)',
+                            color: vista === v ? 'var(--atelier-carbon)' : 'var(--text-muted)',
+                            border: `1px solid ${vista === v ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
+                        }}
+                    >
+                        {v === 'ingredientes' ? 'Por ingredientes' : 'Por platos'}
+                    </button>
+                ))}
+            </div>
+
+            {enPlatos && (
+                <section className="space-y-1.5" aria-label="Elige los platos">
+                    <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
+                        <span>
+                            {platosElegidos.size
+                                ? `${platosElegidos.size} de ${platos.length} platos elegidos`
+                                : 'Elige los platos que vas a preparar'}
+                        </span>
+                        {platos.length > 1 && (
+                            <button
+                                className="font-semibold"
+                                style={{ color: 'var(--diet-warm)' }}
+                                onClick={() => setPlatosElegidos(
+                                    platosElegidos.size === platos.length ? new Set() : new Set(platos.map(p => p.id))
+                                )}
+                            >
+                                {platosElegidos.size === platos.length ? 'Quitar todos' : 'Elegir todos'}
+                            </button>
+                        )}
+                    </div>
+                    {platos.map(plato => {
+                        const elegido = platosElegidos.has(plato.id)
+                        const detalle = [plato.dia, plato.franja].filter(Boolean).join(' · ')
+                        return (
+                            <button
+                                key={plato.id}
+                                onClick={() => togglePlato(plato.id)}
+                                aria-pressed={elegido}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
+                                style={{
+                                    background: elegido ? 'var(--diet-paper)' : 'var(--surface)',
+                                    border: `1px solid ${elegido ? 'var(--diet-warm)' : 'var(--border)'}`,
+                                }}
+                            >
+                                <div
+                                    className="w-5 h-5 flex-shrink-0 flex items-center justify-center"
+                                    style={{
+                                        border: `1px solid ${elegido ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
+                                        background: elegido ? 'var(--diet-warm)' : 'transparent',
+                                    }}
+                                >
+                                    {elegido && <Check size={11} color="var(--atelier-carbon)" weight="bold" />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{plato.nombre}</p>
+                                    {detalle && (
+                                        <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>{detalle}</p>
+                                    )}
+                                </div>
+                                <span className="text-[11px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+                                    {plato.ingredientes.length} ingr.
+                                </span>
+                            </button>
+                        )
+                    })}
+                </section>
+            )}
+
+            {sinPlatosElegidos && (
+                <p className="text-center py-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+                    Marca uno o varios platos y verás solo sus ingredientes.
+                </p>
+            )}
+
+            {!enPlatos && optimizacion && (
                 <section className="shopping-list-editorial__overview" aria-label="Resumen de compra">
                     <div className="shopping-list-editorial__metrics">
                         <div className="shopping-list-editorial__metric">
@@ -255,14 +419,19 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
             )}
 
             {/* Progreso */}
+            {!sinPlatosElegidos && (
             <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
-                <span>{totalItems} ingredientes · {Object.keys(porCategoria).length} categorías</span>
+                <span>
+                    {totalItems} ingredientes · {Object.keys(porCategoria).length} categorías
+                    {enPlatos ? ` · ${platosElegidos.size} ${platosElegidos.size === 1 ? 'plato' : 'platos'}` : ''}
+                </span>
                 {totalMarcados > 0 && (
                     <span className="shopping-list-editorial__accent font-medium">
                         {totalMarcados}/{totalItems} en el carro
                     </span>
                 )}
             </div>
+            )}
             {totalMarcados > 0 && (
                 <div className="shopping-list-editorial__progress">
                     <div
@@ -276,7 +445,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
             {Object.entries(porCategoria).map(([cat, catItems]) => {
                 const colapsar = colapsadas.has(cat)
                 const abbr = categoriaAbbr(cat)
-                const todosMarcados = catItems.every(i => marcados.has(i.alimento_id))
+                const todosMarcados = catItems.every(i => marcadosVista.has(i.id))
 
                 return (
                     <div key={cat} className="shopping-list-editorial__category overflow-hidden">
@@ -310,11 +479,11 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                         {!colapsar && (
                             <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
                                 {catItems.map(item => {
-                                    const checked = marcados.has(item.alimento_id)
+                                    const checked = marcadosVista.has(item.id)
                                     return (
                                         <button
-                                            key={item.alimento_id}
-                                            onClick={() => toggleMarcado(item.alimento_id)}
+                                            key={item.id}
+                                            onClick={() => toggleMarcado(item.id)}
                                             className="shopping-list-editorial__item w-full flex items-center gap-3 text-left transition-colors"
                                             style={{ background: checked ? 'var(--bg)' : 'var(--surface)' }}
                                         >
@@ -340,9 +509,9 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                                 >
                                                     {item.nombre}
                                                 </p>
-                                                {item.comidas_origen.length > 0 && (
+                                                {item.origen.length > 0 && (
                                                     <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>
-                                                        {item.comidas_origen.join(' · ')}
+                                                        {item.origen.join(' · ')}
                                                     </p>
                                                 )}
                                             </div>
@@ -352,8 +521,8 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                                 className="text-xs font-semibold flex-shrink-0 inline-flex items-center gap-1"
                                                 style={{ color: checked ? 'var(--text-muted)' : 'var(--diet-warm-muted, var(--text-secondary))' }}
                                             >
-                                                {item.cantidad_compra ?? formatGramos(item.cantidad_gramos)}
-                                                {data?.ofertas?.some(o => o.alimento_id === item.alimento_id) && <Tag size={11} />}
+                                                {item.cantidad}
+                                                {item.oferta && <Tag size={11} />}
                                             </span>
                                         </button>
                                     )
@@ -370,8 +539,8 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                     className="shopping-list-editorial__clear w-full text-xs py-2 transition-colors"
                     style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
                     onClick={() => {
-                        setMarcados(new Set())
-                        localStorage.removeItem(storageKey)
+                        setMarcadosVista(new Set())
+                        localStorage.removeItem(storageKeyVista)
                     }}
                 >
                     Limpiar selección
