@@ -14,11 +14,13 @@ const VISTAS = [
 
 /**
  * Cabecera única del espacio de trabajo «Revisión»: recetas e imágenes son dos vistas de lo mismo (aprobar recetas).
- * Un solo «volver» (al recetario) y pestañas que reemplazan la entrada del historial en vez de apilarla.
+ * «Volver» desde Imágenes regresa a la lista de recetas por aprobar (de donde se entra); desde Recetas, al recetario.
+ * Las pestañas añaden historial normal: el «atrás» del navegador también regresa a la vista anterior.
  */
 export default function CabeceraRevision() {
   const pathname = usePathname()
   const [cuentas, setCuentas] = useState<Cuentas>({ recetas: null, imagenes: null })
+  const enImagenes = pathname === '/recetas/imagenes'
 
   useEffect(() => {
     let vivo = true
@@ -37,7 +39,7 @@ export default function CabeceraRevision() {
   return (
     <div className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 pt-3">
-        <Link href="/recetas" aria-label="Volver al recetario" className="rounded-lg p-1.5" style={{ color: 'var(--text-secondary)' }}><ArrowLeft size={18} /></Link>
+        <Link href={enImagenes ? '/recetas/revisar' : '/recetas'} aria-label={enImagenes ? 'Volver a recetas por aprobar' : 'Volver al recetario'} className="rounded-lg p-1.5" style={{ color: 'var(--text-secondary)' }}><ArrowLeft size={18} /></Link>
         <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Revisión de recetas</h1>
       </div>
       <nav className="mx-auto flex max-w-7xl gap-1 px-4" aria-label="Vistas de revisión">
@@ -45,7 +47,7 @@ export default function CabeceraRevision() {
           const activa = pathname === v.href
           const n = cuentas[v.clave]
           return (
-            <Link key={v.href} href={v.href} replace className="-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors" style={{ borderColor: activa ? 'var(--primary)' : 'transparent', color: activa ? 'var(--text)' : 'var(--text-muted)' }}>
+            <Link key={v.href} href={v.href} className="-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors" style={{ borderColor: activa ? 'var(--primary)' : 'transparent', color: activa ? 'var(--text)' : 'var(--text-muted)' }}>
               {v.label}{n !== null && n > 0 && <span className="ml-1.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold" style={{ background: activa ? 'var(--primary-bg)' : 'var(--surface)', color: activa ? 'var(--primary)' : 'var(--text-secondary)' }}>{n}</span>}
             </Link>
           )
