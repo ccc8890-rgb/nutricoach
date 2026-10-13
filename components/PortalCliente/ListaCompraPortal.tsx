@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { CaretDown, CaretUp, Check, CircleNotch, PaperPlaneTilt, Tag } from '@phosphor-icons/react'
 import type { ItemListaCompra } from '@/app/api/cliente/[codigo]/lista-compra/route'
 import type { ResultadoOptimizacion } from '@/types'
-import type { OfertaDetectada, MensajeWhatsApp, ProyeccionAhorroAnual } from '@/lib/precios-smart-cart'
+import type { OfertaDetectada, ProyeccionAhorroAnual } from '@/lib/precios-smart-cart'
 import type { SustitutoEconomico } from '@/lib/lista-compra/inteligente'
 import { ingredientesDePlatos, type PlatoCompra } from '@/lib/lista-compra/por-platos'
 
@@ -77,7 +77,6 @@ interface ListaCompraResponse {
     ofertas: OfertaDetectada[]
     sustitutos_economicos: SustitutoEconomico[]
     proyeccion_ahorro: ProyeccionAhorroAnual | null
-    whatsapp: MensajeWhatsApp | null
     coste_total: number
     coste_diario_estimado: number
 }
@@ -282,9 +281,41 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
         })
     }
 
+    // Mensaje de WhatsApp: texto limpio, igual que la lista que se ve en pantalla
+    function textoWhatsApp(): string {
+        const lineas: string[] = [`Lista de la compra · ${tituloDia}`]
+        if (enPlatos) {
+            const nombres = platos.filter(p => platosElegidos.has(p.id)).map(p => p.nombre)
+            if (nombres.length) lineas.push(`Platos: ${nombres.join(', ')}`)
+        }
+        for (const [cat, lista] of Object.entries(porCategoria)) {
+            lineas.push('', cat.toUpperCase())
+            for (const f of lista) lineas.push(`- ${f.nombre} · ${f.cantidad}`)
+        }
+        if (!enPlatos && optimizacion) {
+            lineas.push('', `Coste estimado: ${formatEuro(optimizacion.coste_total_multi_super)}`)
+        }
+        return lineas.join('\n')
+    }
+
+    const botonWhatsApp = totalItems > 0 && (
+        <a
+            href={`https://wa.me/?text=${encodeURIComponent(textoWhatsApp())}`}
+            target="_blank"
+            rel="noreferrer"
+            className="shopping-list-editorial__share"
+        >
+            <PaperPlaneTilt size={14} weight="regular" />
+            <span>Enviar lista por WhatsApp</span>
+        </a>
+    )
+
     return (
         <div className="shopping-list-editorial diet-notebook space-y-2">
             {selector}
+            {enPlatos && !sinPlatosElegidos && (
+                <div className="shopping-list-editorial__routes">{botonWhatsApp}</div>
+            )}
             {!enPlatos && optimizacion && (
                 <section className="shopping-list-editorial__overview" aria-label="Resumen de compra">
                     <div className="shopping-list-editorial__metrics">
@@ -297,17 +328,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                     </div>
 
                     <div className="shopping-list-editorial__routes">
-                        {data?.whatsapp?.deepLink && (
-                            <a
-                                href={data.whatsapp.deepLink}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="shopping-list-editorial__share"
-                            >
-                                <PaperPlaneTilt size={14} weight="regular" />
-                                <span>Enviar lista por WhatsApp</span>
-                            </a>
-                        )}
+                        {botonWhatsApp}
                     </div>
                 </section>
             )}
