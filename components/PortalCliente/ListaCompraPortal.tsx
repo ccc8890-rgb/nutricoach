@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CaretDown, CaretUp, Check, CircleNotch, PaperPlaneTilt, Storefront, Tag, TrendDown } from '@phosphor-icons/react'
+import { CaretDown, CaretUp, Check, CircleNotch, PaperPlaneTilt, Tag } from '@phosphor-icons/react'
 import type { ItemListaCompra } from '@/app/api/cliente/[codigo]/lista-compra/route'
 import type { ResultadoOptimizacion } from '@/types'
 import type { OfertaDetectada, MensajeWhatsApp, ProyeccionAhorroAnual } from '@/lib/precios-smart-cart'
@@ -322,31 +322,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                 <small>WhatsApp</small>
                             </a>
                         )}
-                        {optimizacion.resumen_por_super.slice(0, 2).map(supermercado => (
-                            <div
-                                key={supermercado.supermercado_id}
-                                className="shopping-list-editorial__store"
-                            >
-                                <Storefront size={14} weight="regular" />
-                                <span>{supermercado.supermercado_nombre}</span>
-                                <strong>{formatEuro(supermercado.coste)}</strong>
-                            </div>
-                        ))}
                     </div>
-
-                    {!!data?.sustitutos_economicos?.length && (
-                        <div className="shopping-list-editorial__savings">
-                            <p>
-                                <TrendDown size={13} weight="regular" />
-                                Ahorros destacados
-                            </p>
-                            {data.sustitutos_economicos.slice(0, 2).map(item => (
-                                <p key={item.alimento_id} className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                    {item.alimento_nombre}: {formatEuro(item.ahorro_euros)} en {item.supermercado_recomendado}
-                                </p>
-                            ))}
-                        </div>
-                    )}
                 </section>
             )}
 
