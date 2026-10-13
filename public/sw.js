@@ -1,4 +1,4 @@
-const CACHE = 'nutricoach-v7'
+const CACHE = 'nutricoach-v8'
 const STATIC_ASSETS = [
     '/manifest.json',
     '/icon-192.svg',
@@ -6,10 +6,9 @@ const STATIC_ASSETS = [
     '/limpiar-sw.html',
 ]
 
-// Rutas de API que queremos cachear para offline parcial
-const API_CACHE_ROUTES = [
-    '/api/recetas',
-]
+// Ninguna API se cachea: «servir lo guardado y actualizar por detrás» enseñaba SIEMPRE la versión anterior
+// (la bandeja de revisión seguía mostrando recetas ya aprobadas hasta la carga siguiente). Los datos son en vivo.
+const API_CACHE_ROUTES = []
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
