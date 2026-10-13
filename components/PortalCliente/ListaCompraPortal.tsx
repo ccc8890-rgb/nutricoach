@@ -184,7 +184,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     )
 
     if (loading) return (
-        <div>
+        <div className="diet-notebook">
             {selector}
             <div className="flex items-center justify-center py-8">
                 <CircleNotch size={20} className="animate-spin" style={{ color: 'var(--diet-warm)' }} />
@@ -193,14 +193,14 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     )
 
     if (error) return (
-        <div className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>
+        <div className="diet-notebook text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>
             {selector}
             No se pudo cargar la lista. Inténtalo de nuevo.
         </div>
     )
 
     if (!items.length) return (
-        <div>
+        <div className="diet-notebook">
             {selector}
             <div className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>
                 No hay ingredientes para esta vista.
@@ -284,7 +284,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     }
 
     return (
-        <div className="shopping-list-editorial space-y-2">
+        <div className="shopping-list-editorial diet-notebook space-y-2">
             {selector}
             {!enPlatos && optimizacion && (
                 <section className="shopping-list-editorial__overview" aria-label="Resumen de compra">
@@ -301,12 +301,6 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                 {formatEuro(Math.max(0, ahorro))}
                             </strong>
                         </div>
-                        <div className="shopping-list-editorial__metric">
-                            <p>Ofertas</p>
-                            <strong>
-                                {data?.ofertas?.length ?? 0}
-                            </strong>
-                        </div>
                     </div>
 
                     <div className="shopping-list-editorial__routes">
@@ -318,8 +312,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                                 className="shopping-list-editorial__share"
                             >
                                 <PaperPlaneTilt size={14} weight="regular" />
-                                <span>Enviar lista</span>
-                                <small>WhatsApp</small>
+                                <span>Enviar lista por WhatsApp</span>
                             </a>
                         )}
                     </div>
