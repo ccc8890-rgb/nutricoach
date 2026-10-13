@@ -145,25 +145,40 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
                 </p>
                 <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{tituloDia}</p>
             </div>
-            <div className="shopping-list-editorial__days flex gap-1.5 overflow-x-auto pb-1">
-                {['Semana', ...DIAS_COMPRA].map(d => (
-                    <button
-                        key={d}
-                        onClick={() => setDia(d)}
-                        aria-pressed={dia === d}
-                        className="shopping-list-editorial__day shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold"
-                        style={{
-                            background: dia === d ? 'var(--diet-warm)' : 'var(--diet-paper)',
-                            color: dia === d ? 'var(--atelier-carbon)' : 'var(--text-muted)',
-                            border: `1px solid ${dia === d ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
-                        }}
-                    >
-                        {d === 'Semana' ? 'Semana' : d.slice(0, 3)}
-                        {d === hoyNombre && (
-                            <span aria-label="hoy" style={{ width: 4, height: 4, borderRadius: '50%', background: 'currentColor' }} />
-                        )}
-                    </button>
-                ))}
+            <div className="shopping-list-editorial__days space-y-1.5">
+                        <button
+                            onClick={() => setDia('Semana')}
+                            aria-pressed={dia === 'Semana'}
+                            className="shopping-list-editorial__day w-full px-3 py-1.5 text-xs font-semibold"
+                            style={{
+                                background: dia === 'Semana' ? 'var(--diet-warm)' : 'var(--diet-paper)',
+                                color: dia === 'Semana' ? 'var(--atelier-carbon)' : 'var(--text-muted)',
+                                border: `1px solid ${dia === 'Semana' ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
+                            }}
+                        >
+                            Semana completa
+                        </button>
+                        <div className="grid grid-cols-7 gap-1">
+                            {DIAS_COMPRA.map(d => (
+                                <button
+                                    key={d}
+                                    onClick={() => setDia(d)}
+                                    aria-pressed={dia === d}
+                                    className="shopping-list-editorial__day inline-flex flex-col items-center justify-center gap-0.5 py-1.5 text-xs font-semibold"
+                                    style={{
+                                        background: dia === d ? 'var(--diet-warm)' : 'var(--diet-paper)',
+                                        color: dia === d ? 'var(--atelier-carbon)' : 'var(--text-muted)',
+                                        border: `1px solid ${dia === d ? 'var(--diet-warm)' : 'var(--diet-rule)'}`,
+                                    }}
+                                >
+                                    {d.slice(0, 3)}
+                                    <span
+                                        aria-label={d === hoyNombre ? 'hoy' : undefined}
+                                        style={{ width: 4, height: 4, borderRadius: '50%', background: d === hoyNombre ? 'currentColor' : 'transparent' }}
+                                    />
+                                </button>
+                            ))}
+                        </div>
             </div>
         </div>
     )
