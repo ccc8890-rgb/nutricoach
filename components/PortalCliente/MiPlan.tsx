@@ -13,7 +13,6 @@ import {
     CircleNotch as Loader2,
     DownloadSimple as Download,
     ForkKnife as UtensilsCrossed,
-    Lightning as Zap,
     PencilLine,
 } from '@phosphor-icons/react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -22,7 +21,6 @@ import { useToast } from '@/components/ui/Toast'
 import { emitPortalFeedback } from '@/lib/cliente/portal-feedback'
 import DietaKanban from './DietaKanban'
 import ListaCompraPortal from './ListaCompraPortal'
-import { getAjusteDesdeNombreSesion } from '@/lib/periodizacion/dia-entreno-nutricion'
 import { esComidaDelDia, indiceDiaDesdeTexto } from '@/lib/nutricion/comidas-dia'
 import { IndustrialTabs, ProgressInstrument, TechnicalRow } from './editorial'
 
@@ -147,7 +145,7 @@ interface MiPlanProps {
 }
 
 
-export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: MiPlanProps) {
+export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps) {
     const [expandidas, setExpandidas] = useState<Record<string, boolean>>({})
     const [planState, setPlanState] = useState(plan)
     const planLocal = planState
@@ -453,32 +451,6 @@ export default function MiPlan({ codigo, plan, registros_comidas, sesion_hoy }: 
                     )
                 })}
             </div>
-
-            {/* Card ajuste nutricional según entreno de hoy — solo en día actual */}
-            {diaActivo === diaActualEspana() && (() => {
-                const ajuste = getAjusteDesdeNombreSesion(sesion_hoy?.nombre, !!sesion_hoy)
-                const esDescanso = ajuste.tipo === 'descanso_activo' || ajuste.tipo === 'descanso_total'
-                const color = esDescanso ? '#808088' : '#C8A96A'
-                const bg = esDescanso ? 'rgba(128,128,136,0.08)' : 'rgba(200,169,106,0.08)'
-                const border = esDescanso ? 'rgba(128,128,136,0.2)' : 'rgba(200,169,106,0.2)'
-                return (
-                    <div className="diet-adjustment flex items-start gap-3" style={{ background: bg, borderColor: border }}>
-                        <Zap size={16} style={{ color, flexShrink: 0, marginTop: 2 }} />
-                        <div className="min-w-0">
-                            <p className="text-xs font-semibold" style={{ color }}>
-                                {ajuste.label}
-                                {ajuste.ajuste_cho_pct !== 0 && (
-                                    <span className="ml-2 font-normal" style={{ color: 'var(--text-muted)' }}>
-                                        CHO {ajuste.ajuste_cho_pct > 0 ? '+' : ''}{ajuste.ajuste_cho_pct}%
-                                        {ajuste.ajuste_kcal_pct !== 0 && ` · ${ajuste.ajuste_kcal_pct > 0 ? '+' : ''}${ajuste.ajuste_kcal_pct}% kcal`}
-                                    </span>
-                                )}
-                            </p>
-                            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{ajuste.consejo}</p>
-                        </div>
-                    </div>
-                )
-            })()}
 
             {/* Resumen macros + adherencia del día */}
             <section className="diet-document-summary diet-notebook__summary">
