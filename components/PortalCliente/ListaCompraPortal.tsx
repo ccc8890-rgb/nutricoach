@@ -243,7 +243,7 @@ export default function ListaCompraPortal({ codigo, diaInicial }: ListaCompraPor
     }, {})
 
     const totalItems = filas.length
-    const totalMarcados = marcadosVista.size
+    const totalMarcados = filas.filter(f => marcadosVista.has(f.id)).length
     const optimizacion = data?.optimizacion
 
     function togglePlato(id: string) {
