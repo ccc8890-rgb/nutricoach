@@ -15,7 +15,8 @@ assert.match(page, /cliente-header-hidden/, 'La cabecera debe poder replegarse a
 assert.match(page, /addEventListener\(['"]scroll['"]/, 'La cabecera debe reaccionar a la dirección del scroll')
 assert.match(styles, /translate3d\(0, calc\(-100% - 1px\), 0\)/, 'La cabecera replegada debe liberar campo visual')
 assert.match(page, /IndustrialAtmosphere/, 'El portal debe incorporar la atmósfera industrial del nuevo sistema visual')
-assert.match(page, /layoutId="cliente-nav-active"/, 'La pestaña activa debe moverse físicamente entre secciones')
+const dock = readFileSync(resolve(root, 'components/PortalCliente/editorial/LiquidDock.tsx'), 'utf8')
+assert.match(dock, /layoutId="cliente-nav-active"/, 'La pestaña activa debe moverse físicamente entre secciones')
 assert.doesNotMatch(page, /active \? 'var\(--accent\)'/, 'La navegación principal no debe depender de un acento azul')
 
 console.log('cliente-visual-system: OK')

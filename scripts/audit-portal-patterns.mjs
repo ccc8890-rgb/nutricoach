@@ -81,11 +81,10 @@ for (const file of PORTAL_COMPONENTS) {
 }
 
 // ─── Regla 3: Links sin replace en páginas secundarias del portal ─────────────
-// Las páginas /cliente/sesion/[id] y /cliente/semana deben usar replace=true
+// La página /cliente/sesion/[id] debe usar replace=true
 // en todos los links de vuelta a /cliente para evitar acumulación de historial.
 const SECONDARY_PORTAL_PAGES = [
   join(ROOT, 'app/cliente/sesion/[id]/page.tsx'),
-  join(ROOT, 'app/cliente/semana/page.tsx'),
 ]
 
 for (const file of SECONDARY_PORTAL_PAGES) {
@@ -108,19 +107,6 @@ for (const file of SECONDARY_PORTAL_PAGES) {
       }
     }
   }
-}
-
-// ─── Regla 4: router.push hacia /cliente/semana desde portal principal ────────
-// El "Ver semana completa" en /cliente/page.tsx debe usar push (no replace).
-// Ya está correcto — esta regla verifica que no se cambie a replace.
-const MAIN_PORTAL = join(ROOT, 'app/cliente/page.tsx')
-const mainContent = readFile(MAIN_PORTAL)
-if (mainContent.includes("router.replace('/cliente/semana')")) {
-  warnings.push({
-    file: rel(MAIN_PORTAL),
-    rule: 'SEMANA_SHOULD_USE_PUSH',
-    msg: `"Ver semana completa" debe usar router.push (no replace) para que iOS swipe-back vuelva al portal`,
-  })
 }
 
 // ─── Regla 5: /cliente/[codigo] solo reenvía a /cliente ──────────────────────

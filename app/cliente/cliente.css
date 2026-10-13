@@ -153,7 +153,6 @@
 .diet-chapter__body > [role='button'] { padding-inline: 1rem; }
 .diet-notebook__meals .diet-chapter__body > [role='button']:hover { background: color-mix(in srgb, var(--diet-warm) 7%, transparent) !important; }
 .diet-notebook__meals .diet-chapter__body img { filter: saturate(0.9) contrast(1.02); }
-.diet-adjustment { padding: 0.85rem 1rem; border-width: 1px 1px 1px 3px; border-style: solid; }
 .diet-meal-thumb { border: 1px solid var(--diet-rule); border-radius: 0.18rem; }
 .diet-status-tag { padding: 0.12rem 0.38rem; border-left: 2px solid currentColor; background: transparent; font: 600 0.58rem/1.15 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.04em; text-transform: uppercase; }
 .diet-status-tag[data-state='done'] { color: #6f8f79; }
@@ -505,67 +504,6 @@
   border-color: var(--metal-bright) !important;
 }
 
-.cliente-plan-hero {
-  border-radius: 0.5rem;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--metal-bright) 9%, var(--surface)), var(--surface) 58%) !important;
-  border-color: color-mix(in srgb, var(--metal-mid) 48%, var(--border)) !important;
-}
-
-.cliente-plan-hero::after {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 4px;
-  content: '';
-  background: linear-gradient(90deg, var(--metal-mid), var(--metal-bright), var(--accent));
-  opacity: 1;
-}
-
-.cliente-eyebrow {
-  letter-spacing: 0.14em;
-}
-
-.cliente-plan-title {
-  max-width: 18ch;
-  text-wrap: balance;
-  font-size: clamp(1.85rem, 8vw, 3rem) !important;
-  font-weight: 520 !important;
-  line-height: 0.98 !important;
-}
-
-.cliente-plan-stats,
-.cliente-bento,
-.cliente-quick-grid {
-  border: 1px solid var(--cliente-line);
-  border-radius: 0.375rem;
-  background: var(--cliente-line);
-}
-
-.cliente-plan-stat,
-.cliente-stat,
-.cliente-quick-action {
-  min-width: 0;
-}
-
-.cliente-stat,
-.cliente-quick-action {
-  background: var(--surface);
-  transition: background-color 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong);
-}
-
-.cliente-quick-action {
-  border: 0 !important;
-  border-radius: 0 !important;
-}
-
-.cliente-stat:hover,
-.cliente-quick-action:hover {
-  background: var(--surface-hover) !important;
-}
-
-.cliente-checkin-cta {
-  border-radius: 0.5rem;
-}
-
 .cliente-bottom-nav {
   padding: 0 0 max(0px, calc(env(safe-area-inset-bottom, 0px) - 0.5rem));
   background:
@@ -679,8 +617,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cliente-stat,
-  .cliente-quick-action,
   .cliente-portal-header,
   .cliente-bottom-item {
     transition: none;
