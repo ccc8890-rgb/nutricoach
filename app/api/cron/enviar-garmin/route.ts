@@ -31,14 +31,19 @@ function autorizado(req: NextRequest): boolean {
 export async function GET(req: NextRequest) {
   if (!autorizado(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  // `cliente` + `forzar`: el coach reenvía todo lo programado de un cliente (se ignora lo ya enviado; se recrea sin duplicar).
+  const soloCliente = req.nextUrl.searchParams.get('cliente')
+  const forzar = !!soloCliente && req.nextUrl.searchParams.get('forzar') === '1'
   const db = createServiceSupabase()
   const resumen = { clientes: 0, enviados: 0, al_dia: 0, limpiados: 0, errores: [] as string[] }
 
-  const { data: conexiones } = await db
+  let consulta = db
     .from('integraciones_cliente')
     .select('cliente_id')
     .eq('proveedor', 'garmin_connect')
     .eq('activa', true)
+  if (soloCliente) consulta = consulta.eq('cliente_id', soloCliente)
+  const { data: conexiones } = await consulta
 
   for (const { cliente_id: clienteId } of conexiones ?? []) {
     if (resumen.enviados >= MAX_ENVIOS) break
@@ -91,7 +96,7 @@ export async function GET(req: NextRequest) {
       const prog = plan ? semanaDeFecha(plan, hoy).prog : null
       // Con progresión semanal cada semana del bloque tiene sus pasos: un entreno de Garmin por (sesión, semana). Sin progresión, un solo entreno como siempre.
       if (!prog) {
-        const decision = planearEnvioGarmin({ ...s, garmin_fechas: Array.isArray(s.garmin_fechas) ? s.garmin_fechas : [] }, huellaPasos(s.pasos, vdot, techoFcE, s.nombre), deseadas, hoy)
+        const decision = planearEnvioGarmin({ ...s, garmin_pasos_hash: forzar ? null : s.garmin_pasos_hash, garmin_fechas: Array.isArray(s.garmin_fechas) ? s.garmin_fechas : [] }, huellaPasos(s.pasos, vdot, techoFcE, s.nombre), deseadas, hoy)
         if (decision.accion === 'nada') { resumen.al_dia++; continue }
         try {
           await enviarSesionAGarmin(db, s.id, undefined, { modo: decision.accion, fechas: decision.accion === 'borrar' ? [] : decision.fechas })
@@ -114,7 +119,7 @@ export async function GET(req: NextRequest) {
         const pasosN = pasosDeLaSemana(s.pasos, s.nombre, prog, n)
         if (!pasosN) continue
         const v = variantes[String(n)]
-        const d = planearEnvioGarmin({ garmin_workout_id: v?.workout_id ?? null, garmin_programado_fecha: null, garmin_fechas: v?.fechas ?? [], garmin_pasos_hash: v?.hash ?? null }, huellaPasos(pasosN, vdot, techoFcE, s.nombre), fechas, hoy)
+        const d = planearEnvioGarmin({ garmin_workout_id: v?.workout_id ?? null, garmin_programado_fecha: null, garmin_fechas: v?.fechas ?? [], garmin_pasos_hash: forzar ? null : v?.hash ?? null }, huellaPasos(pasosN, vdot, techoFcE, s.nombre), fechas, hoy)
         if (d.accion === 'recrear' || d.accion === 'anadir') trabajos.push({ modo: d.accion, fechas: d.fechas, variante: { n, pasos: pasosN } })
       }
       // Semanas que ya no tienen fechas por delante: se quitan de Garmin.
@@ -148,6 +153,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  await registrarCron(db, 'enviar-garmin', resumen.errores.length, `${resumen.enviados} enviadas${resumen.limpiados ? `, ${resumen.limpiados} antiguas quitadas` : ''}${resumen.errores.length ? `; ${resumen.errores[0]}` : ''}`)
+  if (!forzar) await registrarCron(db, 'enviar-garmin', resumen.errores.length, `${resumen.enviados} enviadas${resumen.limpiados ? `, ${resumen.limpiados} antiguas quitadas` : ''}${resumen.errores.length ? `; ${resumen.errores[0]}` : ''}`)
   return NextResponse.json(resumen)
 }

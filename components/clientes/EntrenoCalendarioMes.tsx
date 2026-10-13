@@ -276,6 +276,21 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
   const [hastaRep, setHastaRep] = useState('')
   const [editando, setEditando] = useState<string | null>(null)
   const { addToast } = useToast()
+  const [reenviando, setReenviando] = useState(false)
+  const reenviarGarmin = async () => {
+    if (!window.confirm('¿Reenviar a Garmin todo lo programado de este cliente? Se vuelve a crear en su calendario sin duplicar.')) return
+    setReenviando(true)
+    try {
+      const res = await fetch(`/api/entrenos/planes/${planId}/garmin-reenviar`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'No se pudo reenviar')
+      addToast(data.errores?.length ? { type: 'error', title: `Reenviadas ${data.enviados}; fallo: ${data.errores[0]}` } : { type: 'success', title: `Reenviadas ${data.enviados} sesiones a Garmin` })
+    } catch (e) {
+      addToast({ type: 'error', title: e instanceof Error ? e.message : 'No se pudo reenviar' })
+    } finally {
+      setReenviando(false)
+    }
+  }
   const hoy = hoyISO()
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
 
@@ -494,6 +509,9 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
           {vista === 'semana' ? `Semana del ${parseInt(semanaLunes.slice(8), 10)} de ${MESES[Number(semanaLunes.slice(5, 7)) - 1].toLowerCase()} al ${parseInt(sumarDias(semanaLunes, 6).slice(8), 10)} de ${MESES[Number(sumarDias(semanaLunes, 6).slice(5, 7)) - 1].toLowerCase()}` : `${MESES[month - 1]} ${year}`}
         </p>
         <div className="flex items-center gap-1.5">
+          <button onClick={reenviarGarmin} disabled={reenviando} className="mr-1 flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs font-medium disabled:opacity-60" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} title="Vuelve a mandar al reloj todo lo programado (por si el envío automático falló)">
+            {reenviando ? <Loader2 size={13} className="animate-spin" /> : <Watch size={13} />} Reenviar a Garmin
+          </button>
           {guardando && <Loader2 size={14} className="animate-spin mr-1" style={{ color: 'var(--text-muted)' }} />}
           <button onClick={() => (vista === 'semana' ? cambiarSemana(-1) : cambiarMes(-1))} className="p-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} aria-label={vista === 'semana' ? 'Semana anterior' : 'Mes anterior'}><ChevronLeft size={15} /></button>
           <button onClick={() => (vista === 'semana' ? cambiarSemana(1) : cambiarMes(1))} className="p-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }} aria-label={vista === 'semana' ? 'Semana siguiente' : 'Mes siguiente'}><ChevronRight size={15} /></button>
