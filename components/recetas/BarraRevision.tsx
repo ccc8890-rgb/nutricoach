@@ -101,7 +101,7 @@ export default function BarraRevision({ id, pendiente, returnTo, accion }: {
           <div className="flex flex-wrap gap-1.5">
             {ASPECTOS_CORRECCION.map(a => {
               const on = aspectos.includes(a.id)
-              return <button key={a.id} onClick={() => setAspectos(on ? aspectos.filter(x => x !== a.id) : [...aspectos, a.id])} className="rounded-full border px-2.5 py-1 text-xs font-medium" style={{ borderColor: on ? 'var(--warning)' : 'var(--border)', color: on ? 'var(--warning)' : 'var(--text-secondary)', background: on ? 'color-mix(in srgb, var(--warning) 12%, transparent)' : 'transparent' }}>{a.label}</button>
+              return <button key={a.id} onClick={() => setAspectos(prev => prev.includes(a.id) ? prev.filter(x => x !== a.id) : [...prev, a.id])} className="rounded-full border px-2.5 py-1 text-xs font-medium" style={{ borderColor: on ? 'var(--warning)' : 'var(--border)', color: on ? 'var(--warning)' : 'var(--text-secondary)', background: on ? 'color-mix(in srgb, var(--warning) 12%, transparent)' : 'transparent' }}>{a.label}</button>
             })}
           </div>
           <textarea value={nota} onChange={e => setNota(e.target.value)} rows={2} maxLength={600} placeholder="Detalle (opcional): «la salsa de soja son 15 g, no 45», «el título no encaja»…" className="mt-2 w-full rounded-lg border px-2.5 py-2 text-xs outline-none" style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />
