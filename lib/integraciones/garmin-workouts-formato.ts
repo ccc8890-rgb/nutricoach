@@ -1,6 +1,6 @@
 // lib/integraciones/garmin-workouts-formato.ts
 import { ritmoDelPaso, type Paso, type PasoSimple } from '@/lib/entrenos/pasos'
-import type { Ritmos } from '@/lib/entrenos/ritmos'
+import { formatearRitmo, type Ritmos } from '@/lib/entrenos/ritmos'
 import type { ZonasFc } from '@/lib/entrenos/zonas-fc'
 
 const SPORT_RUNNING = { sportTypeId: 1, sportTypeKey: 'running' }
@@ -27,6 +27,21 @@ const TARGET = {
 
 /** Margen alrededor del ritmo de una zona (±3 %). */
 const MARGEN_ZONA = 0.03
+
+/**
+ * Las series cortas se envían sin alerta de ritmo: el reloj usa un ritmo suavizado que tarda
+ * 5-15 s en asentarse, así que en 400 m avisa tarde y mal. El objetivo va en la descripción del paso.
+ * Poner a false para volver al comportamiento anterior (objetivo de ritmo en cada serie).
+ */
+const SERIES_CORTAS_SIN_ALERTA = true
+const SERIE_CORTA_METROS = 600
+const SERIE_CORTA_SEGUNDOS = 150
+
+function esSerieCorta(p: PasoSimple): boolean {
+  if (!SERIES_CORTAS_SIN_ALERTA || p.tipo !== 'trabajo') return false
+  const d = p.duracion
+  return (d.unidad === 'metros' && d.valor <= SERIE_CORTA_METROS) || (d.unidad === 'segundos' && d.valor <= SERIE_CORTA_SEGUNDOS)
+}
 
 export interface GarminStep {
   type: 'ExecutableStepDTO'
@@ -73,6 +88,14 @@ function convertirPaso(p: PasoSimple, orden: number, ritmos: Ritmos | null, fc: 
   if (p.nota) paso.description = p.nota.slice(0, 512)
 
   const o = p.objetivo
+  if (esSerieCorta(p) && (o?.tipo === 'ritmo' || o?.tipo === 'zona')) {
+    const ritmo = ritmoDelPaso(p, ritmos)
+    if (ritmo !== null) {
+      const parcial = p.duracion.unidad === 'metros' ? ` (${formatearRitmo((ritmo * p.duracion.valor) / 1000)} los ${p.duracion.valor} m)` : ''
+      paso.description = [p.nota, `Objetivo ${formatearRitmo(ritmo)}/km${parcial}`].filter(Boolean).join(' · ').slice(0, 512)
+      return paso
+    }
+  }
   if (o?.tipo === 'fc') {
     paso.targetType = { ...TARGET.fc }
     paso.targetValueOne = o.min
