@@ -94,11 +94,11 @@ export async function matchEjercicio(sb: SupabaseClient, nombre: string, tipoPre
   return aptos[0].id
 }
 
-/** «Carrera continua» con series de distancia (4 × 400 m) son intervalos: el catálogo tiene «Series run 400m». */
+/** «Carrera continua» con series de distancia (4 × 400 m) son intervalos: el catálogo tiene «Series Run 400m». */
 export function nombreCatalogoPorDistancia(nombre: string, series: unknown, repeticiones: unknown): string | null {
   const m = String(repeticiones ?? '').trim().match(/^(\d{3,4})\s*m$/i)
   if (!m || typeof series !== 'number' || series < 2) return null
-  return /^(carrera|rodaje|trote)\s+continu[oa]$/i.test(nombre.trim()) ? `Series run ${m[1]}m` : null
+  return /^(carrera|rodaje|trote)\s+continu[oa]$/i.test(nombre.trim()) ? `Series Run ${m[1]}m` : null
 }
 
 /** Ejercicio medido en metros o minutos (SkiErg 500 m, remo 5 min…): se busca entre cardio y funcional. */

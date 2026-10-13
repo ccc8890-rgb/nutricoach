@@ -10,3 +10,4 @@ assert.equal(notaLegible(nota), 'Esfuerzo 6-7 de 10. A 4:15/km, con 2 min de rec
 assert.equal(notaLegible('RPE 7 (RIR 2-3) — Escápulas retraídas'), 'Esfuerzo 7 de 10. Escápulas retraídas')
 assert.equal(notaLegible('Sin prefijo de esfuerzo'), 'Sin prefijo de esfuerzo')
 console.log('ejercicios-texto OK')
+assert.equal(notaLegible('RPE 7 — 1:42 por 400 y 90 s de trote.'), 'Esfuerzo 7 de 10. 4:15/km y 90 s de trote.')

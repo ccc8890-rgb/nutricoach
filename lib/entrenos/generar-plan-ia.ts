@@ -466,7 +466,7 @@ ${instruccionDuracion}
           "encadenado": "boolean — true SOLO si este ejercicio se hace sin parar y enlaza directo con el SIGUIENTE de la lista (misma ronda). Si es true, descanso_segundos = 0 y el siguiente lleva las mismas series. Omitir si no se encadena",
           "rpe_objetivo": "string — UN solo número o rango simple ('7' o '7-8'), sin variantes por semana ni RIR",
           "peso_estimado_kg": "number — peso de partida estimado en kg. Solo para ejercicios de fuerza; omitir en ejercicios de carrera/cardio",
-          "notas": "string — UNA frase corta (máx. 120 caracteres) con la clave de ejecución. Sin justificación científica: eso va en decisiones_clave"
+          "notas": "string — UNA frase corta (máx. 120 caracteres) con la clave de ejecución. Sin justificación científica: eso va en decisiones_clave. En series de carrera da el ritmo en min/km (ej. '4:15/km'), NUNCA el tiempo parcial de la serie (no '1:42 por 400')"
         }
       ]
     }
