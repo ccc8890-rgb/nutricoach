@@ -100,10 +100,8 @@ const NOMBRE_TIPO: Record<TipoPasoSimple, string> = {
 function textoDuracion(d: Duracion): string {
   if (d.unidad === 'lap') return 'hasta pulsar lap'
   if (d.unidad === 'metros') return `${d.valor} m`
-  const m = Math.floor(d.valor / 60)
-  const s = Math.round(d.valor % 60)
-  if (m === 0) return `${s}''`
-  return s === 0 ? `${m}'` : `${m}'${String(s).padStart(2, '0')}''`
+  const total = Math.round(d.valor)
+  return total % 60 === 0 ? `${total / 60}'` : `${total}''`
 }
 
 export const ZONAS_RITMO: Record<ZonaRitmo, { nombre: string; rpe: string; uso: string }> = {
@@ -135,7 +133,7 @@ export function lineaPaso(p: PasoSimple, ritmos: Ritmos | null): string {
   return `${NOMBRE_TIPO[p.tipo]} ${textoDuracion(p.duracion)}${textoObjetivo(p, ritmos)}`
 }
 
-/** Un paso en pocas palabras: «8' suave», «500 m a 4:15», «1'30'' trote». */
+/** Un paso en pocas palabras: «8' suave», «500 m a 4:15», «90'' trote». */
 function textoCorto1(p: PasoSimple, ritmos: Ritmos | null): string {
   const dur = textoDuracion(p.duracion)
   if (p.tipo === 'recuperacion') return `${dur} trote`
