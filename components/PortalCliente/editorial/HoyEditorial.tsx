@@ -21,10 +21,10 @@ export type HoyEditorialProps = {
   onNavigate: (destination: HoyDestination) => void
 }
 
-function Action({ label, icon: Icon, onClick }: { label: string; icon: typeof ClipboardText; onClick: () => void }) {
+function Action({ label, icon: Icon, onClick, tile = false }: { label: string; icon: typeof ClipboardText; onClick: () => void; tile?: boolean }) {
   return (
-    <button type="button" className="editorial-action" onClick={onClick}>
-      <Icon size={15} />
+    <button type="button" className={`editorial-action ${tile ? 'editorial-action--tile' : ''}`.trim()} onClick={onClick}>
+      <Icon size={tile ? 22 : 15} />
       <span>{label}</span>
       <span aria-hidden="true">↗</span>
     </button>
@@ -73,8 +73,8 @@ export default function HoyEditorial({ firstName, calories, meals, weeklySession
       </section>
       <div className="hoy-editorial__section-label"><span>Accesos rápidos</span><samp>TOOLS</samp></div>
       <nav className="hoy-editorial__utilities" aria-label="Accesos rápidos">
-        <Action label="Lista de compra" icon={ShoppingCart} onClick={() => onNavigate('compra')} />
-        <Action label="Chat con coach" icon={ChatCircleDots} onClick={() => onNavigate('chat')} />
+        <Action tile label="Lista de compra" icon={ShoppingCart} onClick={() => onNavigate('compra')} />
+        <Action tile label="Chat con coach" icon={ChatCircleDots} onClick={() => onNavigate('chat')} />
       </nav>
       <div className="hoy-editorial__section-label"><span>Secuencia del día</span><samp>04 UNITS</samp></div>
       <TimelineSequence items={sequence} />
