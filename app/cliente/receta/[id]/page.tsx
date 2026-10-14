@@ -6,7 +6,7 @@ import FotoReceta from '@/components/PortalCliente/FotoReceta'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Clock, Loader2, AlertTriangle, UtensilsCrossed, PlayCircle } from 'lucide-react'
-import { MacroRing } from '@/components/premium/MacroRing'
+import MacroTriangulo from '@/components/PortalCliente/MacroTriangulo'
 import { IngredientChecklist } from '@/components/premium/IngredientChecklist'
 import { StepByStep } from '@/components/premium/StepByStep'
 import type { Racion } from '@/lib/nutricion/racion'
@@ -183,9 +183,7 @@ export default function RecetaClientePage() {
               <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Tu ración · {racion.franja}</p>
                 <p className="text-3xl font-bold mt-1" style={{ color: 'var(--text)' }}>{racion.total.kcal} <span className="text-base font-semibold" style={{ color: 'var(--text-muted)' }}>kcal</span></p>
-                <p className="text-sm mt-1 font-data" style={{ color: 'var(--text-secondary)' }}>
-                  <span style={{ color: '#30D158' }}>P {racion.total.p} g</span> · <span style={{ color: '#FF9F0A' }}>C {racion.total.c} g</span> · <span style={{ color: '#64D2FF' }}>G {racion.total.g} g</span>
-                </p>
+                <div className="mt-3"><MacroTriangulo kcal={racion.total.kcal} p={racion.total.p} c={racion.total.c} g={racion.total.g} mostrarKcal={false} /></div>
                 {racion.complementos.length > 0 && (
                   <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
                     Incluye el plato ({racion.plato.kcal} kcal) y, además: {racion.complementos.map(c => `${c.nombre} ${c.gramos} g`).join(', ')}.
@@ -217,14 +215,7 @@ export default function RecetaClientePage() {
               </div>
             ) : (
               <>
-                <div className="flex justify-center py-2">
-                  <MacroRing
-                    kcal={receta.kcal ?? 0}
-                    proteinas={receta.proteinas ?? 0}
-                    carbohidratos={receta.carbohidratos ?? 0}
-                    grasas={receta.grasas ?? 0}
-                  />
-                </div>
+                <MacroTriangulo kcal={receta.kcal ?? 0} p={receta.proteinas ?? 0} c={receta.carbohidratos ?? 0} g={receta.grasas ?? 0} />
                 <p className="text-center text-[11px] -mt-1" style={{ color: 'var(--text-muted)' }}>Valores por ración</p>
                 <SelectorRaciones original={porciones} valor={nVista} onChange={setRacionesVista} kcalRacion={receta.kcal} />
               </>
