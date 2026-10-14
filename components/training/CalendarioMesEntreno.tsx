@@ -2,7 +2,7 @@
 import { textoKm } from '@/lib/entrenos/km-sesion'
 import { useEffect, useMemo, useState } from 'react'
 import { useEstadoUrl } from '@/lib/useEstadoUrl'
-import { Barbell, CaretLeft, CaretRight, CircleDashed, CircleNotch, Footprints, Warning } from '@phosphor-icons/react'
+import { Barbell, CaretLeft, CaretRight, CircleDashed, CircleNotch, PersonSimpleRun, Warning } from '@phosphor-icons/react'
 import { DIAS_SEMANA_ABREVIATURA, DIAS_SEMANA_ORDEN } from '@/lib/entrenos/bloques'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
@@ -220,7 +220,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                               {sesionesDe(dia).length > 0 ? (
                                 <span className="training-calendar__day-icons">
                                   {sesionesDe(dia).map(x => (
-                                    x.tipo_sesion === 'carrera' ? <Footprints key={x.id} size={12} weight="regular" /> : <Barbell key={x.id} size={12} weight="regular" />
+                                    x.tipo_sesion === 'carrera' ? <PersonSimpleRun key={x.id} size={14} weight="regular" /> : <Barbell key={x.id} size={14} weight="regular" />
                                   ))}
                                 </span>
                               ) : modo === 'semana' ? (
@@ -252,7 +252,7 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                   <div className="mt-2 flex items-center gap-3">
                     <div className="training-calendar__session-icon">
                       {sesion.tipo_sesion === 'carrera'
-                        ? <Footprints size={19} weight="regular" />
+                        ? <PersonSimpleRun size={19} weight="regular" />
                         : <Barbell size={19} weight="regular" />}
                     </div>
                     <div className="min-w-0 flex-1">
