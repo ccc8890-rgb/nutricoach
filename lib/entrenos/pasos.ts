@@ -1,5 +1,6 @@
 // lib/entrenos/pasos.ts
 import { formatearRitmo, type Ritmos, type ZonaRitmo } from './ritmos'
+import { duracionCorta } from './duracion'
 
 export type Duracion =
   | { unidad: 'metros' | 'segundos'; valor: number }
@@ -100,8 +101,7 @@ const NOMBRE_TIPO: Record<TipoPasoSimple, string> = {
 function textoDuracion(d: Duracion): string {
   if (d.unidad === 'lap') return 'hasta pulsar lap'
   if (d.unidad === 'metros') return `${d.valor} m`
-  const total = Math.round(d.valor)
-  return total % 60 === 0 ? `${total / 60}'` : `${total}''`
+  return duracionCorta(d.valor)
 }
 
 export const ZONAS_RITMO: Record<ZonaRitmo, { nombre: string; rpe: string; uso: string }> = {

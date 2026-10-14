@@ -1,4 +1,5 @@
 'use client'
+import { duracionCorta } from '@/lib/entrenos/duracion'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { PlantillaEntrenamiento, PlantillaSesion, PlantillaSesionEjercicio, ProgresionPlantilla, SportModality, TrainingTier, PerfilEntrenoCliente } from '@/types'
@@ -242,7 +243,7 @@ export default function PlantillaEntrenoSelector({ onSeleccionar, seleccionada, 
                                                         <span>
                                                             {ej.series}×{ej.repeticiones}
                                                             {ej.rpe ? ` · RPE ${ej.rpe}` : ''}
-                                                            {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos, ej.series) ? ` · ${ej.descanso_segundos}s` : ''}
+                                                            {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos, ej.series) ? ` · ${duracionCorta(ej.descanso_segundos ?? 0)}` : ''}
                                                         </span>
                                                     </div>
                                                 ))}

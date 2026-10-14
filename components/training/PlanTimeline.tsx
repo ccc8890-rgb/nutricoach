@@ -1,4 +1,5 @@
 'use client'
+import { duracionCorta } from '@/lib/entrenos/duracion'
 import { useState } from 'react'
 import {
   DndContext,
@@ -140,7 +141,7 @@ function SortableEjercicioCard({
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             {ej.series}×{ej.repeticiones}
             {ej.rpe ? ` @RPE${ej.rpe}` : ''}
-            {descansoVisible(ej.tipo, ej.descanso_segundos, ej.series) > 0 ? ` · ${ej.descanso_segundos}s` : ''}
+            {descansoVisible(ej.tipo, ej.descanso_segundos, ej.series) > 0 ? ` · ${duracionCorta(ej.descanso_segundos)}` : ''}
           </p>
         </div>
 

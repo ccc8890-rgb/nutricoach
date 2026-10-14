@@ -1,5 +1,6 @@
 'use client'
 
+import { duracionCorta } from '@/lib/entrenos/duracion'
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
@@ -352,7 +353,7 @@ export default function PlantillasEntrenoPage() {
                                                         <span>
                                                             {ej.series}×{ej.repeticiones}
                                                             {ej.rpe ? ` · RPE ${ej.rpe}` : ''}
-                                                            {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos, ej.series) ? ` · ${ej.descanso_segundos}s` : ''}
+                                                            {descansoVisible(ej.ejercicio?.tipo, ej.descanso_segundos, ej.series) ? ` · ${duracionCorta(ej.descanso_segundos ?? 0)}` : ''}
                                                         </span>
                                                     </div>
                                                 ))}

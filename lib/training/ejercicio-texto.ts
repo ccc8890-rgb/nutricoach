@@ -1,9 +1,10 @@
+import { duracionCorta } from '@/lib/entrenos/duracion'
 // lib/training/ejercicio-texto.ts
 // Texto mínimo de cada ejercicio: solo lo esencial a la vista y el resto, más corto, detrás de un toque.
 
-/** «120» → «2:00»; menos de un minuto → «45s». */
+/** «120» → «2'»; «90» → «90''»; «45» → «45''». */
 export function pausa(seg: number): string {
-  return seg >= 60 ? `${Math.floor(seg / 60)}:${String(seg % 60).padStart(2, '0')}` : `${seg}s`
+  return duracionCorta(seg)
 }
 
 /** Ritmo objetivo («4:15/km») si la nota lo dice: es lo único de la nota que hace falta ver sin abrirla. */
