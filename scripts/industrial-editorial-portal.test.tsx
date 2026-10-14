@@ -91,7 +91,7 @@ const hoy = renderToStaticMarkup(
     onNavigate={noop}
   />,
 )
-assert.match(hoy, /01 \/ TODAY/)
+assert.match(hoy, /01<\/span><span>TODAY/)
 assert.match(hoy, /Carlos/)
 assert.match(hoy, /2187/)
 assert.match(hoy, /Secuencia del día/)

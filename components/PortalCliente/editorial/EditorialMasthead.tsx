@@ -12,7 +12,9 @@ export type EditorialMastheadProps = {
 export default function EditorialMasthead({ index, eyebrow, title, meta, aside, className = '' }: EditorialMastheadProps) {
   return (
     <header className={`editorial-masthead ${className}`.trim()}>
-      <div className="editorial-masthead__register" aria-hidden="true">{index}</div>
+      <div className="editorial-masthead__register" aria-hidden="true">
+        {index.split(' / ').map((parte, i) => <span key={i}>{parte}</span>)}
+      </div>
       <div className="editorial-masthead__body">
         <p className="editorial-kicker">{eyebrow}</p>
         <h1 className="editorial-masthead__title">{title}</h1>
