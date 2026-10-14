@@ -74,13 +74,38 @@ async function prepararCanvas(w: number, h: number) {
   ctx.lineWidth = 2
   ctx.strokeStyle = 'rgba(201,204,211,0.38)'
   ctx.stroke()
+  marcasEsquina(ctx, w, h)
   return { canvas, ctx, sans, mono }
 }
 
 const aBlob = (c: HTMLCanvasElement) => new Promise<Blob>((ok, ko) => c.toBlob(b => (b ? ok(b) : ko(new Error('canvas'))), 'image/png'))
 
+/** Marcas de registro en las cuatro esquinas, como un instrumento de medida. */
+function marcasEsquina(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  const m = 22, l = 16
+  ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(201,204,211,0.5)'; ctx.lineCap = 'butt'
+  for (const [x, y, dx, dy] of [[m, m, 1, 1], [w - m, m, -1, 1], [m, h - m, 1, -1], [w - m, h - m, -1, -1]] as const) {
+    ctx.beginPath(); ctx.moveTo(x + dx * l, y); ctx.lineTo(x, y); ctx.lineTo(x, y + dy * l); ctx.stroke()
+  }
+}
+
+/** Símbolo de la app: aro con marcas y un trazo que acaba en un punto luminoso. Sin nombre. */
+function glifo(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const TAU = Math.PI * 2
+  ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(201,204,211,0.6)'; ctx.stroke()
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * TAU
+    ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * (r + 3), cy + Math.sin(a) * (r + 3)); ctx.lineTo(cx + Math.cos(a) * (r + 6), cy + Math.sin(a) * (r + 6))
+    ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(201,204,211,0.4)'; ctx.stroke()
+  }
+  ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, 0.9); ctx.lineWidth = 3; ctx.strokeStyle = '#FFFFFF'; ctx.stroke()
+  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 10
+  ctx.beginPath(); ctx.arc(cx + Math.cos(0.9) * r, cy + Math.sin(0.9) * r, 3.2, 0, TAU); ctx.fillStyle = '#FFF'; ctx.fill(); ctx.restore()
+}
+
 /** Anillo de la app: aro fino con marcas y trazos de metal que acaban en un punto luminoso. */
-function dibujarAnillo(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, tramos: Array<{ frac: number; color: string }>) {
+function dibujarAnillo(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, tramos: Array<{ frac: number; color: string }>): number[] {
   const TAU = Math.PI * 2
   ctx.lineCap = 'round'
   // aro fino
@@ -100,10 +125,12 @@ function dibujarAnillo(ctx: CanvasRenderingContext2D, cx: number, cy: number, R:
   const hueco = tramos.length > 1 ? 0.07 : 0
   let ang = -Math.PI / 2 + hueco / 2
   let fin = ang
+  const medios: number[] = []
   tramos.forEach(t => {
     const sweep = Math.max(0.03, (t.frac / total) * (TAU - hueco * tramos.length))
     ctx.beginPath(); ctx.arc(cx, cy, R, ang, ang + sweep); ctx.lineWidth = 14; ctx.strokeStyle = t.color; ctx.stroke()
     fin = ang + sweep
+    medios.push(ang + sweep / 2)
     ang += sweep + hueco
   })
   // punto luminoso al final
@@ -111,6 +138,7 @@ function dibujarAnillo(ctx: CanvasRenderingContext2D, cx: number, cy: number, R:
   ctx.shadowColor = 'rgba(237,237,240,0.9)'; ctx.shadowBlur = 24
   ctx.beginPath(); ctx.arc(cx + Math.cos(fin) * R, cy + Math.sin(fin) * R, 9, 0, TAU); ctx.fillStyle = '#FFFFFF'; ctx.fill()
   ctx.restore()
+  return medios
 }
 
 const W_TARJETA = 440
@@ -119,9 +147,9 @@ const W_TARJETA = 440
 export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
   const filas = d.ejercicios.slice(0, 6)
   const W = 520
-  const P = 40
+  const P = 46
   const rowH = 104
-  const H = P * 2 + rowH * filas.length - 20
+  const H = P * 2 + rowH * filas.length - 20 + 44
   const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
   filas.forEach((e, i) => {
     const y = P + rowH * i
@@ -129,6 +157,9 @@ export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
     const base = y + 58
     ctx.fillStyle = METAL
     ctx.fillRect(P, y + 8, 4, 58)
+    // Una marca por serie, a la derecha (hasta 8)
+    const n = Math.min(e.series ?? 0, 8)
+    for (let k = 0; k < n; k++) { ctx.beginPath(); ctx.arc(W - P - k * 17, base - 24, 5, 0, Math.PI * 2); ctx.fillStyle = k === 0 ? '#FFFFFF' : METAL; ctx.fill() }
     ctx.textAlign = 'left'
     ctx.font = `300 66px ${sans}`
     let x = P + 24
@@ -142,6 +173,7 @@ export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
     ctx.fillStyle = MUTED
     ctx.fillText(recortar(ctx, [e.nombre, e.peso].filter(Boolean).join('  ·  ').toUpperCase(), W - P * 2 - 24), P + 24, base + 28)
   })
+  glifo(ctx, W / 2, H - 40, 11)
   return aBlob(canvas)
 }
 
@@ -151,15 +183,22 @@ export interface DatosPlato { nombre: string; kcal: number; p: number; c: number
 export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
   const W = W_TARJETA
   const R = 96
-  const H = 56 + (R + 40) * 2 + 24 + 78 + 22
+  const H = 56 + (R + 40) * 2 + 24 + 78 + 62
   const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
   const cx = W / 2
   const cy = 56 + R + 40
-  dibujarAnillo(ctx, cx, cy, R, [
+  const kp = Math.max(d.p, 0) * 4, kc = Math.max(d.c, 0) * 4, kg = Math.max(d.g, 0) * 9
+  const medios = dibujarAnillo(ctx, cx, cy, R, [
     { frac: Math.max(d.p, 0) * 4, color: '#FFFFFF' },
     { frac: Math.max(d.c, 0) * 4, color: '#979BA5' },
     { frac: Math.max(d.g, 0) * 9, color: '#4F5159' },
   ])
+  const totalK = kp + kc + kg || 1
+  ctx.textAlign = 'center'; ctx.font = `600 15px ${mono}`; ctx.fillStyle = MUTED
+  ;[kp, kc, kg].forEach((k, i) => {
+    const rr = R + 52
+    ctx.fillText(`${Math.round((k / totalK) * 100)}`, cx + Math.cos(medios[i]) * rr, cy + Math.sin(medios[i]) * rr + 5)
+  })
   ctx.textAlign = 'center'
   ctx.font = `200 80px ${sans}`
   ctx.fillStyle = INK
@@ -181,5 +220,6 @@ export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
     ctx.fillText(l, x + 8, y + 24)
     ctx.beginPath(); ctx.arc(x - ctx.measureText(l).width / 2 - 2, y + 19, 5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill()
   })
+  glifo(ctx, W / 2, H - 38, 11)
   return aBlob(canvas)
 }
