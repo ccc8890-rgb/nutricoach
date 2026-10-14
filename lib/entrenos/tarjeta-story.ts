@@ -314,7 +314,7 @@ export async function dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
     ctx.font = `600 13px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(`${l}  ${pc}%`, 146, y)
   })
   ctx.textAlign = 'left'
-  firma(ctx, 360, H - 30, mono)
+  firma(ctx, W, H - 30, mono)
   return aBlob(canvas)
 }
 
