@@ -89,36 +89,54 @@ function marcasEsquina(ctx: CanvasRenderingContext2D, w: number, h: number) {
   }
 }
 
-/** Símbolo de la app: aro con marcas y un trazo que acaba en un punto luminoso. Sin nombre. */
-function glifo(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+export type VarianteMarca = '1' | '3' | 'h'
+let varianteMarca: VarianteMarca = '3'
+/** Para probar variantes del símbolo de la firma. */
+export function usarVarianteMarca(v: VarianteMarca) { varianteMarca = v }
+
+/** Símbolo: triángulo (proteína · carbos · grasa) con un punto luminoso que marca el equilibrio. */
+function marcaTriangulo(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, v: VarianteMarca) {
   const TAU = Math.PI * 2
-  ctx.lineCap = 'round'
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(201,204,211,0.6)'; ctx.stroke()
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * TAU
-    ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * (r + 3), cy + Math.sin(a) * (r + 3)); ctx.lineTo(cx + Math.cos(a) * (r + 6), cy + Math.sin(a) * (r + 6))
-    ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(201,204,211,0.4)'; ctx.stroke()
+  const vert = [0, 1, 2].map(i => ({ x: cx + Math.sin((i * TAU) / 3) * r, y: cy - Math.cos((i * TAU) / 3) * r + r * 0.12 }))
+  const F = [0.36, 0.34, 0.3]
+  const px = vert.reduce((a, q, i) => a + q.x * F[i], 0), py = vert.reduce((a, q, i) => a + q.y * F[i], 0)
+  const tonos = ['#FFFFFF', '#979BA5', '#5C5E67']
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round'
+  if (v === '1') {
+    ctx.beginPath(); vert.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y))); ctx.closePath()
+    ctx.lineWidth = 1.6; ctx.strokeStyle = '#C9CCD3'; ctx.stroke()
   }
-  ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, 0.9); ctx.lineWidth = 3; ctx.strokeStyle = '#FFFFFF'; ctx.stroke()
-  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 10
-  ctx.beginPath(); ctx.arc(cx + Math.cos(0.9) * r, cy + Math.sin(0.9) * r, 3.2, 0, TAU); ctx.fillStyle = '#FFF'; ctx.fill(); ctx.restore()
+  if (v === '1' || v === 'h') {
+    const m = vert.map((q, i) => ({ x: (q.x + vert[(i + 1) % 3].x) / 2, y: (q.y + vert[(i + 1) % 3].y) / 2 }))
+    ctx.beginPath(); m.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y))); ctx.closePath()
+    ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(201,204,211,0.35)'; ctx.stroke()
+  }
+  if (v === '3' || v === 'h') {
+    for (let i = 0; i < 3; i++) {
+      const a = vert[i], b = vert[(i + 1) % 3]
+      const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, g = r * 0.2
+      ctx.beginPath(); ctx.moveTo(a.x + ux * g, a.y + uy * g); ctx.lineTo(b.x - ux * g, b.y - uy * g)
+      ctx.lineWidth = 2; ctx.strokeStyle = tonos[i]; ctx.stroke()
+    }
+  }
+  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.95)'; ctx.shadowBlur = 8
+  ctx.beginPath(); ctx.arc(px, py, 2.8, 0, TAU); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.restore()
 }
 
-/** Firma: símbolo del aro + «RATIO» en mono espaciado, centrada. */
+/** Firma: símbolo + «RATIO» en mono espaciado, centrada. */
 function firma(ctx: CanvasRenderingContext2D, w: number, y: number, mono: string) {
   ctx.font = `600 15px ${mono}`
   ;(ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '6px'
   const texto = 'RATIO'
   const ancho = ctx.measureText(texto).width - 6
-  const total = 22 + 16 + ancho
+  const total = 28 + 16 + ancho
   const x0 = (w - total) / 2
-  glifo(ctx, x0 + 11, y, 9)
+  marcaTriangulo(ctx, x0 + 12, y - 1, 14, varianteMarca)
   ctx.textAlign = 'left'
   ctx.fillStyle = '#C9CCD3'
-  ctx.fillText(texto, x0 + 38, y + 5)
+  ctx.fillText(texto, x0 + 44, y + 5)
   ;(ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px'
 }
-
 
 /** Sticker de la sesión: filas «01 · nombre · 4×6 · 80 kg» separadas por líneas finas. Sin títulos. */
 export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
@@ -296,6 +314,7 @@ export async function dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
     ctx.font = `600 13px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(`${l}  ${pc}%`, 146, y)
   })
   ctx.textAlign = 'left'
+  firma(ctx, 360, H - 30, mono)
   return aBlob(canvas)
 }
 
