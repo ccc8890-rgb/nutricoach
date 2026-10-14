@@ -4,6 +4,16 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 14-10-2026 (tarde-noche, Claude) — Tarjetas para stories, diagrama ternario e icono nuevo
+
+- **Qué hay:** botón (icono de Instagram) en Entreno → Hoy y en el detalle de receta → vista previa → «Compartir» (hoja de iOS) o «Copiar». Tarjetas PNG pequeñas, panel translúcido y esquinas casi rectas, pensadas como **sticker sobre foto/vídeo propio**. Todo se genera en el navegador (canvas): sin rutas API, sin subir nada. Código: `lib/entrenos/tarjeta-story.ts` (`dibujarTarjeta` entreno, `dibujarPlatoTernario` plato, firma con `marcaTriangulo`), `components/training/CompartirSesion.tsx` (modal + compartir/copiar), `components/PortalCliente/MacroTriangulo.tsx` (versión en pantalla), estilos `.share-story*` en `app/cliente/cliente.css`.
+- **Diagrama ternario:** posición = reparto de kcal (proteína y carbos ×4, grasa ×9). Describe la composición de la receta; **no** dice si el ratio es «adecuado» (no hay zona objetivo). Si se añade, que sea con rangos verificados contra la base de estudios o con los macros del plan de la persona.
+- **Icono PWA** con el triángulo (rejilla + punto): PNG 180/192/512 sin alfa, `sw.js` a v10. El anterior (aro B2) está en git y en `salidas/14-10-2026_icono/`. Hay que reinstalar la PWA en iPhone para verlo.
+- **Nombre «Ratio»:** solo prueba. Existe «Ratio – Workout Log & Programs» (Kompa, App Store, getratio.app) y los dominios `ratio.app/.com/.fit/.coach…` están ocupados; sin comprobar EUIPO/OEPM (clases 9, 41, 44). No usar en público sin decidir nombre.
+- **Código sin uso (no borrado):** `MacroRing`, `dibujarTarjetaPlato`, `dibujarPlatoRegla`, `dibujarPlatoMedidor`, `usarVarianteMarca`. Variante de firma fijada a '3'.
+- **Auditoría:** `tsc` limpio, ESLint sin errores (1 aviso de `<img>` por imagen generada), `cliente-visual-system` OK, `audit-portal-patterns` sin hallazgos nuevos, sin secretos en los diffs, sin rutas ni tablas nuevas. **No visto en iPhone ni en Instagram** (la transparencia de las esquinas al pegar desde Fotos no está comprobada).
+- Commits `f53dccc`, `29ee3ce`, `172a84c`, `9c1f74f`, `dad7665`, `491ed5b`, `4a1d240`, `5c9f33c`, `0009e00`, `8c28a37`, `1cc1c2b`, `bf2c65e`, `90d35cc`, `ac0c7c0`, `4480b66`, `df6044c`.
+
 ## ✅ 14-10-2026 (tarde, Claude) — Icono de la PWA, «Tu bloque» y service worker v9
 
 - **Icono:** PNG reales en `public/icons/` (`apple-touch-icon` 180, `icon-192`, `icon-512`; sin alfa), variante **B2** (anillo con marcas + trazo luminoso). Se regeneran con `sharp` desde un SVG de 1024 px (`flatten` sobre `#070708`); los SVG fuente y las variantes descartadas están en `salidas/14-10-2026_icono/` (local). `app/layout.tsx` y los 3 manifests apuntan a los PNG (`purpose: "any"`, sin variante maskable).
