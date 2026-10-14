@@ -120,35 +120,34 @@ function firma(ctx: CanvasRenderingContext2D, w: number, y: number, mono: string
 }
 
 
-/** Sticker de la sesión: solo «4×500» grande y el nombre pequeño debajo. Fondo transparente fuera del panel. */
+/** Sticker de la sesión: filas «01 · nombre · 4×6 · 80 kg» separadas por líneas finas. Sin títulos. */
 export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
   const filas = d.ejercicios.slice(0, 6)
-  const W = 520
-  const P = 46
-  const rowH = 104
-  const H = P * 2 + rowH * filas.length - 20 + 44
+  const W = 640
+  const P = 48
+  const rowH = 62
+  const H = P + rowH * filas.length + 74
   const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
   filas.forEach((e, i) => {
     const y = P + rowH * i
-    const [grande, unidad] = partesSeries(e)
-    const base = y + 58
-    ctx.fillStyle = METAL
-    ctx.fillRect(P, y + 8, 4, 58)
-    // Una marca por serie, a la derecha (hasta 8)
-    const n = Math.min(e.series ?? 0, 8)
-    for (let k = 0; k < n; k++) { ctx.beginPath(); ctx.arc(W - P - k * 17, base - 24, 5, 0, Math.PI * 2); ctx.fillStyle = k === 0 ? '#FFFFFF' : METAL; ctx.fill() }
+    const base = y + 38
     ctx.textAlign = 'left'
-    ctx.font = `300 66px ${sans}`
-    let x = P + 24
-    for (const ch of grande) {
-      ctx.fillStyle = ch === '×' ? METAL : INK
-      ctx.fillText(ch, x, base)
-      x += ctx.measureText(ch).width
-    }
-    if (unidad) { ctx.font = `600 20px ${mono}`; ctx.fillStyle = METAL; ctx.fillText(unidad, x + 8, base) }
-    ctx.font = `600 16px ${mono}`
+    ctx.font = `600 14px ${mono}`
     ctx.fillStyle = MUTED
-    ctx.fillText(recortar(ctx, [e.nombre, e.peso].filter(Boolean).join('  ·  ').toUpperCase(), W - P * 2 - 24), P + 24, base + 28)
+    ctx.fillText(String(i + 1).padStart(2, '0'), P, base - 2)
+    const [grande, unidad] = partesSeries(e)
+    const der = [`${grande}${unidad ? ' ' + unidad.toLowerCase() : ''}`, e.peso].filter(Boolean).join(' · ')
+    ctx.font = `600 18px ${mono}`
+    const anchoDer = ctx.measureText(der).width
+    ctx.fillStyle = METAL
+    ctx.textAlign = 'right'
+    ctx.fillText(der, W - P, base - 2)
+    ctx.textAlign = 'left'
+    ctx.font = `500 22px ${sans}`
+    ctx.fillStyle = INK
+    ctx.fillText(recortar(ctx, e.nombre, W - P * 2 - 48 - anchoDer - 20), P + 46, base)
+    ctx.fillStyle = 'rgba(201,204,211,0.16)'
+    if (i < filas.length - 1) ctx.fillRect(P, y + rowH - 4, W - P * 2, 1.5)
   })
   firma(ctx, W, H - 40, mono)
   return aBlob(canvas)
