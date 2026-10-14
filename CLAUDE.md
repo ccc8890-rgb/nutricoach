@@ -4,6 +4,14 @@
 
 Antes de dar por bueno (o subir) cualquier cambio en `lib/rendimiento/`, `lib/entrenos/` (macrociclo, validador, ritmos) o en `proponer-plan-ciencia`: **`npm run verificar:motor`** (29 comprobaciones: tests, tipos, eslint, simulación de evolución, estudios citados). Si aparece un error nuevo: primero el test que lo reproduce, luego el arreglo, y una fila en `docs/10-10-2026_errores-conocidos-motor.md`. El motor nunca inventa: lo que falta va a `datosFaltantes`/`supuestos`, y cada regla lleva su origen (`fundamentos`: estudio / libro / criterio).
 
+## ✅ 14-10-2026 (tarde, Claude) — Icono de la PWA, «Tu bloque» y service worker v9
+
+- **Icono:** PNG reales en `public/icons/` (`apple-touch-icon` 180, `icon-192`, `icon-512`; sin alfa), variante **B2** (anillo con marcas + trazo luminoso). Se regeneran con `sharp` desde un SVG de 1024 px (`flatten` sobre `#070708`); los SVG fuente y las variantes descartadas están en `salidas/14-10-2026_icono/` (local). `app/layout.tsx` y los 3 manifests apuntan a los PNG (`purpose: "any"`, sin variante maskable).
+- **Regla:** iOS ignora los SVG como icono de pantalla de inicio y no actualiza el de una app ya instalada: tras cambiar el icono, borrar la PWA y añadirla de nuevo desde Safari en `/cliente`. Si se cambia un icono con la misma URL, subir `CACHE` en `public/sw.js` (hoy `nutricoach-v9`; los iconos van «caché primero y actualizar por detrás»).
+- **«Tu bloque»** (`components/training/TuBloque.tsx`, `.tu-bloque__*` en `app/cliente/cliente.css`): cabecera con rótulo mono, fase como título, «SEMANA n/N» mono y barra de N tramos (`data-estado` hecha/actual/pendiente). Sin bloque muestra «Tu plan».
+- **Nombre de la app:** pendiente. Mise (ocupado), Ratio (solo una app antigua de cocina), Tempo (app de running). Sin comprobar dominios ni marca. El nombre bajo el icono es `appleWebApp.title`.
+- **Pendiente:** ver todo en iPhone; decidir nombre; borrar `public/icon-*.svg` si nada los usa (solo los usaba el precache antiguo).
+
 ## 🗑️ Archivos borrados en la limpieza del 11-10-2026 — cómo recuperarlos
 
 Se borraron como «sin uso» (nadie los importa ni los llama por `fetch`; `tsc` limpio). Carlos no recuerda si eran antiguos o previstos para más adelante: **no se sabe**, por eso queda aquí el modo de recuperarlos. Los 14 salieron juntos en el commit `bd7d691` (se coló en un arreglo del planificador; era la «segunda limpieza» de otra sesión, luego formalizada en `5625581`).
