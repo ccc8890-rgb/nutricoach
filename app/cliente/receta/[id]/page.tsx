@@ -13,7 +13,7 @@ import type { Racion } from '@/lib/nutricion/racion'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
 import { formatoCantidad } from '@/lib/recetas/equivalencia'
 import CompartirSesion from '@/components/training/CompartirSesion'
-import { dibujarTarjetaPlato } from '@/lib/entrenos/tarjeta-story'
+import { dibujarPlatoTernario } from '@/lib/entrenos/tarjeta-story'
 import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
 
 interface RecetaDetalle {
@@ -161,7 +161,7 @@ export default function RecetaClientePage() {
                 ) : null}
                 {receta.porciones ? <span>{receta.porciones} {receta.porciones === 1 ? 'porción' : 'porciones'}</span> : null}
               </div>
-              <CompartirSesion generar={() => dibujarTarjetaPlato({
+              <CompartirSesion generar={() => dibujarPlatoTernario({
                 nombre: receta.nombre,
                 kcal: racion?.total.kcal ?? receta.kcal ?? 0,
                 p: racion?.total.p ?? receta.proteinas ?? 0,

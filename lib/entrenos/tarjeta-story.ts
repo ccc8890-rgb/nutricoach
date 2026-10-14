@@ -68,7 +68,7 @@ async function prepararCanvas(w: number, h: number) {
   const ctx = canvas.getContext('2d')!
   // Panel oscuro translúcido con borde fino: se lee sobre cualquier foto o vídeo
   ctx.beginPath()
-  ctx.roundRect(2, 2, w - 4, h - 4, 36)
+  ctx.roundRect(2, 2, w - 4, h - 4, 6)
   ctx.fillStyle = 'rgba(7,7,8,0.74)'
   ctx.fill()
   ctx.lineWidth = 2
