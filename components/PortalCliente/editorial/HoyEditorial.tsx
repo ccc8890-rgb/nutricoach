@@ -63,7 +63,7 @@ export default function HoyEditorial({ firstName, calories, meals, weeklySession
       <EditorialMasthead
         index="01 / TODAY"
         eyebrow="Protocolo diario"
-        title={<>{firstName},<br />esto es lo de hoy.</>}
+        title={<>{firstName},<br />hoy toca.</>}
         aside={<TechnicalReadout label="Objetivo energético" value={Math.round(calories)} unit="kcal"/>}
       />
       <section className="hoy-editorial__instruments" aria-label="Objetivos de macronutrientes">
