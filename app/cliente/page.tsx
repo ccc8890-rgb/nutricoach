@@ -13,7 +13,7 @@ import {
   ForkKnife, Barbell, Sun, Moon,
   CaretLeft,
   ShoppingCart, ChatCircleDots, DeviceMobile,
-  Pulse, BowlFood, PersonSimpleRun, ChartLineUp,
+  Pulse, BowlFood, PersonSimpleRun, ChartLineUp, SquaresFour, Rows,
 } from '@phosphor-icons/react'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
 import { comidasDelDia, diaActualIndex } from '@/lib/nutricion/comidas-dia'
@@ -189,6 +189,17 @@ function PortalClientePageContent() {
   })
   // En la URL (no en estado local): al volver desde una receta reaparece «Archivo completo», no «En tu plan»
   const [subRecetas, setSubRecetas] = useEstadoUrl<'plan' | 'recetario' | null>('sub', null, ['plan', 'recetario'])
+  const [vistaPlan, setVistaPlan] = useState<'lista' | 'cuadricula'>('lista')
+  useEffect(() => {
+    try {
+      const g = localStorage.getItem('recetario-vista')
+      if (g === 'lista' || g === 'cuadricula') setVistaPlan(g)
+    } catch {}
+  }, [])
+  function cambiarVistaPlan(v: 'lista' | 'cuadricula') {
+    setVistaPlan(v)
+    try { localStorage.setItem('recetario-vista', v) } catch {}
+  }
   const [historialPeso, setHistorialPeso] = useState<SeguimientoPeso[]>([])
   const [checkinKey, setCheckinKey] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -584,7 +595,39 @@ function PortalClientePageContent() {
 
                 {(subRecetas ?? (recetasDelPlan().length > 0 ? 'plan' : 'recetario')) === 'plan' && recetasDelPlan().length > 0 && (
                   <div className="flex flex-col gap-3">
-                    <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>En tu plan</h2>
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>En tu plan</h2>
+                      <button
+                        type="button"
+                        onClick={() => cambiarVistaPlan(vistaPlan === 'lista' ? 'cuadricula' : 'lista')}
+                        className="recipe-filter-toggle shrink-0 px-3 py-1.5 flex items-center justify-center"
+                        style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                        aria-label={vistaPlan === 'lista' ? 'Ver en cuadrícula' : 'Ver en lista'}
+                      >
+                        {vistaPlan === 'lista' ? <SquaresFour size={16} /> : <Rows size={16} />}
+                      </button>
+                    </div>
+                    {vistaPlan === 'cuadricula' ? (
+                      <div className="recipe-grid-compact">
+                        {recetasDelPlan().map(r => (
+                          <Link key={r.id} href={recetaHref(r.id)} prefetch={false} className="recipe-grid-compact__item">
+                            <div className="recipe-grid-compact__img">
+                              {r.imagen_url ? (
+                                <Image src={r.imagen_url} alt={r.nombre} fill className="object-cover" sizes="33vw" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <BookOpenText size={20} style={{ color: 'var(--text-muted)' }} />
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-[11px] font-semibold leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{r.nombre}</p>
+                            {r.kcal ? (
+                              <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{r.kcal} kcal</p>
+                            ) : null}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
                     <div className="recipe-editorial-list">
                       {recetasDelPlan().map((r, index) => (
                         <Link
@@ -612,6 +655,7 @@ function PortalClientePageContent() {
                         </Link>
                       ))}
                     </div>
+                    )}
                   </div>
                 )}
 
