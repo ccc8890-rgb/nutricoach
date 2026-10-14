@@ -119,44 +119,6 @@ function firma(ctx: CanvasRenderingContext2D, w: number, y: number, mono: string
   ;(ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px'
 }
 
-/** Anillo de la app: aro fino con marcas y trazos de metal que acaban en un punto luminoso. */
-function dibujarAnillo(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, tramos: Array<{ frac: number; color: string }>): number[] {
-  const TAU = Math.PI * 2
-  ctx.lineCap = 'round'
-  // aro fino
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(201,204,211,0.28)'; ctx.stroke()
-  // marcas alrededor
-  for (let i = 0; i < 60; i++) {
-    const a = (i / 60) * TAU
-    const largo = i % 5 === 0 ? 14 : 7
-    ctx.beginPath()
-    ctx.moveTo(cx + Math.cos(a) * (R + 16), cy + Math.sin(a) * (R + 16))
-    ctx.lineTo(cx + Math.cos(a) * (R + 16 + largo), cy + Math.sin(a) * (R + 16 + largo))
-    ctx.lineWidth = 2; ctx.strokeStyle = i % 5 === 0 ? 'rgba(201,204,211,0.55)' : 'rgba(201,204,211,0.22)'; ctx.stroke()
-  }
-  // trazos
-  // Cada trazo ocupa su parte exacta del círculo (reparto de kcal); entre trazos un hueco fijo
-  const total = tramos.reduce((acc, t) => acc + t.frac, 0) || 1
-  const hueco = tramos.length > 1 ? 0.07 : 0
-  let ang = -Math.PI / 2 + hueco / 2
-  let fin = ang
-  const medios: number[] = []
-  tramos.forEach(t => {
-    const sweep = Math.max(0.03, (t.frac / total) * (TAU - hueco * tramos.length))
-    ctx.beginPath(); ctx.arc(cx, cy, R, ang, ang + sweep); ctx.lineWidth = 14; ctx.strokeStyle = t.color; ctx.stroke()
-    fin = ang + sweep
-    medios.push(ang + sweep / 2)
-    ang += sweep + hueco
-  })
-  // punto luminoso al final
-  ctx.save()
-  ctx.shadowColor = 'rgba(237,237,240,0.9)'; ctx.shadowBlur = 24
-  ctx.beginPath(); ctx.arc(cx + Math.cos(fin) * R, cy + Math.sin(fin) * R, 9, 0, TAU); ctx.fillStyle = '#FFFFFF'; ctx.fill()
-  ctx.restore()
-  return medios
-}
-
-const W_TARJETA = 440
 
 /** Sticker de la sesión: solo «4×500» grande y el nombre pequeño debajo. Fondo transparente fuera del panel. */
 export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
@@ -194,47 +156,55 @@ export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
 
 export interface DatosPlato { nombre: string; kcal: number; p: number; c: number; g: number; detalle?: string | null }
 
-/** Sticker del plato: anillo con el reparto de kcal entre proteína, carbos y grasa y las kcal en el centro. */
-export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
-  const W = W_TARJETA
-  const R = 96
-  const H = 56 + (R + 40) * 2 + 24 + 78 + 62
-  const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
-  const cx = W / 2
-  const cy = 56 + R + 40
-  const kp = Math.max(d.p, 0) * 4, kc = Math.max(d.c, 0) * 4, kg = Math.max(d.g, 0) * 9
-  const medios = dibujarAnillo(ctx, cx, cy, R, [
-    { frac: Math.max(d.p, 0) * 4, color: '#FFFFFF' },
-    { frac: Math.max(d.c, 0) * 4, color: '#979BA5' },
-    { frac: Math.max(d.g, 0) * 9, color: '#4F5159' },
-  ])
-  const totalK = kp + kc + kg || 1
-  ctx.textAlign = 'center'; ctx.font = `600 15px ${mono}`; ctx.fillStyle = MUTED
-  ;[kp, kc, kg].forEach((k, i) => {
-    const rr = R + 52
-    ctx.fillText(`${Math.round((k / totalK) * 100)}`, cx + Math.cos(medios[i]) * rr, cy + Math.sin(medios[i]) * rr + 5)
+/** Anillo limpio (sin marcas de reloj): aro tenue, trazos proporcionales y punto luminoso al final. */
+function anilloLimpio(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, tramos: Array<{ frac: number; color: string }>) {
+  const TAU = Math.PI * 2
+  ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(201,204,211,0.14)'; ctx.stroke()
+  const total = tramos.reduce((acc, t) => acc + t.frac, 0)
+  const hueco = tramos.length > 1 ? 0.12 : 0
+  let ang = -Math.PI / 2 + hueco / 2
+  let fin = ang
+  tramos.forEach(t => {
+    const sweep = Math.max(0.05, t.frac * (tramos.length > 1 ? (TAU - hueco * tramos.length) / (total || 1) : TAU))
+    ctx.beginPath(); ctx.arc(cx, cy, R, ang, ang + sweep); ctx.lineWidth = 8; ctx.strokeStyle = t.color; ctx.stroke()
+    fin = ang + sweep
+    ang += sweep + hueco
   })
-  ctx.textAlign = 'center'
-  ctx.font = `200 80px ${sans}`
-  ctx.fillStyle = INK
-  ctx.fillText(String(Math.round(d.kcal)), cx, cy + 20)
-  ctx.font = `600 16px ${mono}`
-  ctx.fillStyle = MUTED
-  ctx.fillText('KCAL', cx, cy + 50)
-  const col = (W - 100) / 3
-  const macros: Array<[number, string, string]> = [[d.p, 'PROT', '#FFFFFF'], [d.c, 'CARB', '#979BA5'], [d.g, 'GRASA', '#5C5E67']]
-  const y = cy + R + 40 + 24 + 38
-  macros.forEach(([v, l, color], i) => {
-    const x = 50 + col * i + col / 2
+  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 14
+  ctx.beginPath(); ctx.arc(cx + Math.cos(fin) * R, cy + Math.sin(fin) * R, 5.5, 0, TAU); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.restore()
+}
+
+/** Sticker rectangular del plato: cuatro anillos (kcal repartidas + proteína, carbos y grasa). Sin nombre. */
+export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
+  const W = 720
+  const H = 296
+  const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
+  const kp = Math.max(d.p, 0) * 4, kc = Math.max(d.c, 0) * 4, kg = Math.max(d.g, 0) * 9
+  const totalK = kp + kc + kg || 1
+  const PROT = '#FFFFFF', CARB = '#979BA5', GRASA = '#5C5E67'
+  const R = 46
+  const cy = 112
+  const colW = (W - 88) / 4
+  const cols: Array<{ valor: string; sub: string; etiqueta: string; tramos: Array<{ frac: number; color: string }> }> = [
+    { valor: String(Math.round(d.kcal)), sub: '', etiqueta: 'KCAL', tramos: [{ frac: kp, color: PROT }, { frac: kc, color: CARB }, { frac: kg, color: GRASA }] },
+    { valor: String(Math.round(d.p)), sub: 'g', etiqueta: 'PROTEÍNA', tramos: [{ frac: kp / totalK, color: PROT }] },
+    { valor: String(Math.round(d.c)), sub: 'g', etiqueta: 'CARBOS', tramos: [{ frac: kc / totalK, color: CARB }] },
+    { valor: String(Math.round(d.g)), sub: 'g', etiqueta: 'GRASA', tramos: [{ frac: kg / totalK, color: GRASA }] },
+  ]
+  cols.forEach((c, i) => {
+    const cx = 44 + colW * i + colW / 2
+    anilloLimpio(ctx, cx, cy, R, c.tramos)
     ctx.textAlign = 'center'
-    ctx.font = `300 44px ${sans}`
+    ctx.font = `300 ${i === 0 ? 38 : 36}px ${sans}`
     ctx.fillStyle = INK
-    ctx.fillText(String(Math.round(v)), x, y)
+    ctx.fillText(c.valor, cx, cy + 13)
+    ctx.textAlign = 'center'
     ctx.font = `600 14px ${mono}`
     ctx.fillStyle = MUTED
-    ctx.fillText(l, x + 8, y + 24)
-    ctx.beginPath(); ctx.arc(x - ctx.measureText(l).width / 2 - 2, y + 19, 5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill()
+    ctx.fillText(c.etiqueta, cx, cy + R + 36)
+    if (i > 0) { ctx.fillStyle = METAL; ctx.fillText(`${Math.round(c.tramos[0].frac * 100)}%`, cx, cy + R + 58) }
   })
-  firma(ctx, W, H - 38, mono)
+  firma(ctx, W, H - 34, mono)
   return aBlob(canvas)
 }
