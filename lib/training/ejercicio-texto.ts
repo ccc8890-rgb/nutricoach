@@ -26,3 +26,11 @@ export function ritmoPorKm(texto: string): string {
     return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}/km`
   })
 }
+
+/** ¿La nota ya dice la pausa («90 s de trote suave», «2 min de recuperación»)? Entonces no se repite delante. */
+export function notaExplicaPausa(nota: string | null | undefined, seg: number): boolean {
+  if (!nota) return false
+  const t = nota.toLowerCase()
+  if (new RegExp(`\\b${seg}\\s*(s|seg|segundos)\\b`).test(t)) return true
+  return seg % 60 === 0 && new RegExp(`\\b${seg / 60}\\s*(min|minutos?)\\b`).test(t)
+}

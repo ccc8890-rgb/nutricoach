@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { TechnicalRow } from '@/components/PortalCliente/editorial'
 import { descansoVisible } from '@/lib/entrenos/descanso-visible'
-import { notaLegible, pausa } from '@/lib/training/ejercicio-texto'
+import { notaExplicaPausa, notaLegible, pausa } from '@/lib/training/ejercicio-texto'
 import { parseExerciseChecklist, toggleExerciseChecklist } from '@/lib/training/exercise-checklist'
 import { crearPresentacionEjercicios } from '@/lib/training/session-blocks'
 import { agruparEncadenados } from '@/lib/training/encadenados'
@@ -101,7 +101,7 @@ export default function ListaEjerciciosExpandible({ ejercicios, checklistKey }: 
                     <p className="sr-only">{ej.ejercicio?.nombre ?? 'Ejercicio'}</p>
                     {(() => {
                       const chips: string[] = []
-                      if (!comun && descansoDe(ej)) chips.push(`pausa ${pausa(ej.descanso_segundos as number)}`)
+                      if (!comun && descansoDe(ej) && !notaExplicaPausa(detalle, ej.descanso_segundos as number)) chips.push(`pausa ${pausa(ej.descanso_segundos as number)}`)
                       if (ej.peso_sugerido && !/^\s*0([.,]0+)?\s*kg\s*$/i.test(ej.peso_sugerido)) chips.push(ej.peso_sugerido)
                       if (ej.objetivo_open && ej.peso_sugerido) chips.push(`Open ${ej.objetivo_open}`)
                       if (ej.cambio_semana) chips.push('cambia esta semana')
