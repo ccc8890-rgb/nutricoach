@@ -102,7 +102,7 @@ function dibujarAnillo(ctx: CanvasRenderingContext2D, cx: number, cy: number, R:
   let fin = ang
   tramos.forEach(t => {
     const sweep = Math.max(0.03, (t.frac / total) * (TAU - hueco * tramos.length))
-    ctx.beginPath(); ctx.arc(cx, cy, R, ang, ang + sweep); ctx.lineWidth = 12; ctx.strokeStyle = t.color; ctx.stroke()
+    ctx.beginPath(); ctx.arc(cx, cy, R, ang, ang + sweep); ctx.lineWidth = 14; ctx.strokeStyle = t.color; ctx.stroke()
     fin = ang + sweep
     ang += sweep + hueco
   })
@@ -151,7 +151,7 @@ export interface DatosPlato { nombre: string; kcal: number; p: number; c: number
 export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
   const W = W_TARJETA
   const R = 96
-  const H = 56 + (R + 40) * 2 + 24 + 64 + 28
+  const H = 56 + (R + 40) * 2 + 24 + 78 + 22
   const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
   const cx = W / 2
   const cy = 56 + R + 40
@@ -168,19 +168,18 @@ export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
   ctx.fillStyle = MUTED
   ctx.fillText('KCAL', cx, cy + 50)
   const col = (W - 100) / 3
-  const macros: Array<[number, string, string]> = [[d.p, 'P', '#FFFFFF'], [d.c, 'C', '#979BA5'], [d.g, 'G', '#6B6E77']]
-  const y = cy + R + 40 + 24 + 40
+  const macros: Array<[number, string, string]> = [[d.p, 'PROT', '#FFFFFF'], [d.c, 'CARB', '#979BA5'], [d.g, 'GRASA', '#5C5E67']]
+  const y = cy + R + 40 + 24 + 38
   macros.forEach(([v, l, color], i) => {
     const x = 50 + col * i + col / 2
-    ctx.font = `300 42px ${sans}`
-    ctx.fillStyle = INK
-    const t = String(Math.round(v))
-    ctx.fillText(t, x - 6, y)
-    ctx.textAlign = 'left'
-    ctx.font = `600 16px ${mono}`
-    ctx.fillStyle = color
-    ctx.fillText(l, x - 6 + ctx.measureText(t).width / 2 + 8, y - 22)
     ctx.textAlign = 'center'
+    ctx.font = `300 44px ${sans}`
+    ctx.fillStyle = INK
+    ctx.fillText(String(Math.round(v)), x, y)
+    ctx.font = `600 14px ${mono}`
+    ctx.fillStyle = MUTED
+    ctx.fillText(l, x + 8, y + 24)
+    ctx.beginPath(); ctx.arc(x - ctx.measureText(l).width / 2 - 2, y + 19, 5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill()
   })
   return aBlob(canvas)
 }
