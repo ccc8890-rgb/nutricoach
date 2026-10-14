@@ -37,7 +37,7 @@
 }
 
 .editorial-masthead__register {
-  padding: 1rem 0.65rem;
+  padding: 1rem 0; writing-mode: vertical-rl; white-space: nowrap; text-align: start; display: flex; align-items: center; overflow: hidden;
   border-right: 1px solid var(--editorial-rule);
   color: var(--text-muted);
   font: 600 0.625rem/1 var(--font-geist-mono), ui-monospace, monospace;
