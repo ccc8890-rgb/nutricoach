@@ -102,7 +102,8 @@ function textoDuracion(d: Duracion): string {
   if (d.unidad === 'metros') return `${d.valor} m`
   const m = Math.floor(d.valor / 60)
   const s = Math.round(d.valor % 60)
-  return `${m}:${String(s).padStart(2, '0')}`
+  if (m === 0) return `${s}''`
+  return s === 0 ? `${m}'` : `${m}'${String(s).padStart(2, '0')}''`
 }
 
 export const ZONAS_RITMO: Record<ZonaRitmo, { nombre: string; rpe: string; uso: string }> = {
@@ -134,10 +135,9 @@ export function lineaPaso(p: PasoSimple, ritmos: Ritmos | null): string {
   return `${NOMBRE_TIPO[p.tipo]} ${textoDuracion(p.duracion)}${textoObjetivo(p, ritmos)}`
 }
 
-/** Un paso en pocas palabras: «8' suave», «500 m a 4:15», «2' trote». */
+/** Un paso en pocas palabras: «8' suave», «500 m a 4:15», «1'30'' trote». */
 function textoCorto1(p: PasoSimple, ritmos: Ritmos | null): string {
-  const d = p.duracion
-  const dur = d.unidad === 'segundos' && d.valor % 60 === 0 ? `${d.valor / 60}'` : textoDuracion(d)
+  const dur = textoDuracion(p.duracion)
   if (p.tipo === 'recuperacion') return `${dur} trote`
   const o = p.objetivo
   if (o?.tipo === 'zona') return o.zona === 'E' || !ritmos ? `${dur} ${ZONAS_RITMO[o.zona].nombre}` : `${dur} a ${formatearRitmo(ritmos[o.zona])}`

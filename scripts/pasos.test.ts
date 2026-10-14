@@ -52,7 +52,7 @@ assert.ok(!/\d:\d\d\/km/.test(sin.lineas[1]))
 
 assert.equal(
   lineaPaso({ tipo: 'recuperacion', duracion: { unidad: 'segundos', valor: 60 } }, null),
-  'Recuperación 1:00'
+  "Recuperación 1'"
 )
 
 // Línea-resumen de la sesión (la de la tarjeta «Se envía a tu Garmin»)
