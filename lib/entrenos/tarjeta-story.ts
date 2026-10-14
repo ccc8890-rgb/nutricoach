@@ -104,6 +104,21 @@ function glifo(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number)
   ctx.beginPath(); ctx.arc(cx + Math.cos(0.9) * r, cy + Math.sin(0.9) * r, 3.2, 0, TAU); ctx.fillStyle = '#FFF'; ctx.fill(); ctx.restore()
 }
 
+/** Firma: símbolo del aro + «RATIO» en mono espaciado, centrada. */
+function firma(ctx: CanvasRenderingContext2D, w: number, y: number, mono: string) {
+  ctx.font = `600 15px ${mono}`
+  ;(ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '6px'
+  const texto = 'RATIO'
+  const ancho = ctx.measureText(texto).width - 6
+  const total = 22 + 16 + ancho
+  const x0 = (w - total) / 2
+  glifo(ctx, x0 + 11, y, 9)
+  ctx.textAlign = 'left'
+  ctx.fillStyle = '#C9CCD3'
+  ctx.fillText(texto, x0 + 38, y + 5)
+  ;(ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px'
+}
+
 /** Anillo de la app: aro fino con marcas y trazos de metal que acaban en un punto luminoso. */
 function dibujarAnillo(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, tramos: Array<{ frac: number; color: string }>): number[] {
   const TAU = Math.PI * 2
@@ -173,7 +188,7 @@ export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
     ctx.fillStyle = MUTED
     ctx.fillText(recortar(ctx, [e.nombre, e.peso].filter(Boolean).join('  ·  ').toUpperCase(), W - P * 2 - 24), P + 24, base + 28)
   })
-  glifo(ctx, W / 2, H - 40, 11)
+  firma(ctx, W, H - 40, mono)
   return aBlob(canvas)
 }
 
@@ -220,6 +235,6 @@ export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
     ctx.fillText(l, x + 8, y + 24)
     ctx.beginPath(); ctx.arc(x - ctx.measureText(l).width / 2 - 2, y + 19, 5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill()
   })
-  glifo(ctx, W / 2, H - 38, 11)
+  firma(ctx, W, H - 38, mono)
   return aBlob(canvas)
 }
