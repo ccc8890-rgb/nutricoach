@@ -219,9 +219,10 @@ export default function CalendarioMesEntreno({ mostrarToggleSemanaMes = true }: 
                               {Number(dia.fecha.split('-')[2])}
                               {sesionesDe(dia).length > 0 ? (
                                 <span className="training-calendar__day-icons">
-                                  {sesionesDe(dia).map(x => (
-                                    x.tipo_sesion === 'carrera' ? <PersonSimpleRun key={x.id} size={14} weight="regular" /> : <Barbell key={x.id} size={14} weight="regular" />
-                                  ))}
+                                  {sesionesDe(dia).map((x, _, todas) => {
+                                    const tam = todas.length >= 3 ? 11 : 14
+                                    return x.tipo_sesion === 'carrera' ? <PersonSimpleRun key={x.id} size={tam} weight="regular" /> : <Barbell key={x.id} size={tam} weight="regular" />
+                                  })}
                                 </span>
                               ) : modo === 'semana' ? (
                                 <CircleDashed size={11} style={{ opacity: 0.5 }} />
