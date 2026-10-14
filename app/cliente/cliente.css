@@ -44,6 +44,7 @@
   letter-spacing: 0.08em;
 }
 
+.editorial-masthead__register > span { transform: rotate(180deg); }
 .editorial-masthead__body { min-width: 0; padding: 1.15rem 1rem 1.4rem; }
 .editorial-masthead__title {
   max-width: 13ch;
