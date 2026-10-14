@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ShareNetwork, X } from '@phosphor-icons/react'
+import { InstagramLogo, X } from '@phosphor-icons/react'
 
 /** Botón «Compartir» + vista previa de la tarjeta vertical para Instagram Stories. */
 export default function CompartirSesion({ generar }: { generar: () => Promise<Blob> }) {
@@ -44,7 +44,7 @@ export default function CompartirSesion({ generar }: { generar: () => Promise<Bl
   return (
     <>
       <button type="button" onClick={() => setAbierto(true)} className="share-story__open" aria-label="Compartir en una story">
-        <ShareNetwork size={14} /> Compartir
+        <InstagramLogo size={16} />
       </button>
       {abierto && createPortal(
         <div className="share-story" role="dialog" aria-modal="true" aria-label="Tarjeta para story">

@@ -207,3 +207,121 @@ export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
   firma(ctx, W, H - 34, mono)
   return aBlob(canvas)
 }
+
+// ── Variantes no circulares del plato (a elegir) ─────────────────────────────
+const C_PROT = '#FFFFFF'
+const C_CARB = '#979BA5'
+const C_GRASA = '#5C5E67'
+
+function repartoPlato(d: DatosPlato) {
+  const kp = Math.max(d.p, 0) * 4, kc = Math.max(d.c, 0) * 4, kg = Math.max(d.g, 0) * 9
+  const t = kp + kc + kg || 1
+  return { fp: kp / t, fc: kc / t, fg: kg / t, pp: Math.round((kp / t) * 100), pc: Math.round((kc / t) * 100), pg: Math.round((kg / t) * 100) }
+}
+
+/** V1 «Regla»: una barra proporcional con escala de medición y el ratio escrito P : C : G. */
+export async function dibujarPlatoRegla(d: DatosPlato): Promise<Blob> {
+  const W = 720, H = 300, P = 48
+  const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
+  const r = repartoPlato(d)
+  ctx.textAlign = 'left'
+  ctx.font = `200 72px ${sans}`; ctx.fillStyle = INK
+  const k = String(Math.round(d.kcal)); ctx.fillText(k, P, 112)
+  const wk = ctx.measureText(k).width
+  ctx.font = `600 15px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText('KCAL', P + wk + 8, 112)
+  ctx.textAlign = 'right'
+  ctx.font = `600 30px ${mono}`; ctx.fillStyle = INK; ctx.fillText(`${r.pp} : ${r.pc} : ${r.pg}`, W - P, 94)
+  ctx.font = `600 13px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText('PROT : CARB : GRASA', W - P, 116)
+  // barra
+  const bw = W - P * 2, by = 150, bh = 16, gap = 5
+  const anchos = [r.fp, r.fc, r.fg].map(f => f * (bw - gap * 2))
+  let x = P
+  ;[C_PROT, C_CARB, C_GRASA].forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(x, by, anchos[i], bh); x += anchos[i] + gap })
+  // escala: marca cada 2 %, más larga cada 10 %
+  for (let i = 0; i <= 50; i++) {
+    const tx = P + (bw * i) / 50
+    ctx.fillStyle = i % 5 === 0 ? 'rgba(201,204,211,0.6)' : 'rgba(201,204,211,0.25)'
+    ctx.fillRect(tx - 0.75, by + bh + 8, 1.5, i % 5 === 0 ? 12 : 6)
+  }
+  // etiquetas al inicio de cada tramo
+  x = P
+  ctx.textAlign = 'left'
+  ;[[d.p, 'PROT', C_PROT], [d.c, 'CARB', C_CARB], [d.g, 'GRASA', C_GRASA]].forEach(([g, l, c], i) => {
+    ctx.font = `300 28px ${sans}`; ctx.fillStyle = INK; ctx.fillText(`${Math.round(g as number)}`, x, by + bh + 58)
+    const wn = ctx.measureText(`${Math.round(g as number)}`).width
+    ctx.font = `600 13px ${mono}`; ctx.fillStyle = c as string; ctx.fillText(`g ${l}`, x + wn + 6, by + bh + 58)
+    x += anchos[i] + gap
+  })
+  firma(ctx, W, H - 28, mono)
+  return aBlob(canvas)
+}
+
+/** V2 «Ternario»: un punto en un triángulo (proteína · carbos · grasa); su posición ES el ratio del plato. */
+export async function dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
+  const W = 720, H = 300
+  const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
+  const r = repartoPlato(d)
+  const side = 200, hgt = side * Math.sqrt(3) / 2
+  const cx = W - 150, top = 52
+  const vp = { x: cx, y: top }, vc = { x: cx - side / 2, y: top + hgt }, vg = { x: cx + side / 2, y: top + hgt }
+  // rejilla al 25 / 50 / 75 %
+  ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(201,204,211,0.16)'
+  for (const f of [0.25, 0.5, 0.75]) {
+    const lerp = (a: { x: number; y: number }, b: { x: number; y: number }) => ({ x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f })
+    for (const [a, b, c] of [[vp, vc, vg], [vc, vg, vp], [vg, vp, vc]] as const) {
+      const p1 = lerp(a, b), p2 = lerp(a, c)
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke()
+    }
+  }
+  ctx.beginPath(); ctx.moveTo(vp.x, vp.y); ctx.lineTo(vc.x, vc.y); ctx.lineTo(vg.x, vg.y); ctx.closePath()
+  ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(201,204,211,0.5)'; ctx.stroke()
+  const px = vp.x * r.fp + vc.x * r.fc + vg.x * r.fg
+  const py = vp.y * r.fp + vc.y * r.fc + vg.y * r.fg
+  ctx.setLineDash([4, 5]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.35)'
+  for (const v of [vp, vc, vg]) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(v.x, v.y); ctx.stroke() }
+  ctx.setLineDash([])
+  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.95)'; ctx.shadowBlur = 20
+  ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI * 2); ctx.fillStyle = '#FFF'; ctx.fill(); ctx.restore()
+  ctx.font = `600 14px ${mono}`; ctx.fillStyle = MUTED; ctx.textAlign = 'center'
+  ctx.fillText('P', vp.x, vp.y - 10); ctx.fillText('C', vc.x - 14, vc.y + 5); ctx.fillText('G', vg.x + 14, vg.y + 5)
+  // lectura a la izquierda
+  ctx.textAlign = 'left'
+  ctx.font = `200 84px ${sans}`; ctx.fillStyle = INK
+  const k = String(Math.round(d.kcal)); ctx.fillText(k, 48, 118)
+  ctx.font = `600 15px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText('KCAL', 48, 146)
+  ;[[d.p, 'PROT', r.pp, C_PROT], [d.c, 'CARB', r.pc, C_CARB], [d.g, 'GRASA', r.pg, C_GRASA]].forEach(([g, l, pc, c], i) => {
+    const y = 188 + i * 26
+    ctx.fillStyle = c as string; ctx.fillRect(48, y - 12, 10, 10)
+    ctx.font = `300 22px ${sans}`; ctx.fillStyle = INK; ctx.fillText(`${Math.round(g as number)} g`, 70, y)
+    ctx.font = `600 13px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(`${l}  ${pc}%`, 146, y)
+  })
+  ctx.textAlign = 'left'
+  return aBlob(canvas)
+}
+
+/** V3 «Medidor»: tres columnas de 20 segmentos (5 % cada uno), encendidas según el reparto de kcal. */
+export async function dibujarPlatoMedidor(d: DatosPlato): Promise<Blob> {
+  const W = 720, H = 300
+  const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
+  const r = repartoPlato(d)
+  ctx.textAlign = 'left'
+  ctx.font = `200 84px ${sans}`; ctx.fillStyle = INK
+  ctx.fillText(String(Math.round(d.kcal)), 48, 122)
+  ctx.font = `600 15px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText('KCAL POR RACIÓN', 48, 152)
+  firma(ctx, 330, H - 34, mono)
+  const cols: Array<[number, number, string, string]> = [[r.pp, d.p, 'PROT', C_PROT], [r.pc, d.c, 'CARB', C_CARB], [r.pg, d.g, 'GRASA', C_GRASA]]
+  const x0 = 380, colW = 100, seg = 20, sh = 6, sg = 3
+  cols.forEach(([pc, g, l, c], i) => {
+    const x = x0 + i * colW
+    const enc = Math.max(1, Math.round(pc / 5))
+    for (let s = 0; s < seg; s++) {
+      const y = 44 + (seg - 1 - s) * (sh + sg)
+      ctx.fillStyle = s < enc ? c : 'rgba(201,204,211,0.12)'
+      ctx.fillRect(x, y, 56, sh)
+    }
+    ctx.textAlign = 'left'
+    ctx.font = `300 26px ${sans}`; ctx.fillStyle = INK; ctx.fillText(`${Math.round(g)}`, x, 44 + seg * (sh + sg) + 26)
+    ctx.font = `600 12px ${mono}`; ctx.fillStyle = MUTED; ctx.fillText(`${l} ${pc}%`, x, 44 + seg * (sh + sg) + 44)
+  })
+  return aBlob(canvas)
+}

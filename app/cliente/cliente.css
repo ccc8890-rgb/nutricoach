@@ -650,7 +650,7 @@
 }
 
 /* Tarjeta para stories (Entreno → Hoy → Compartir) */
-.share-story__open { display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 0.6rem; padding: 0.4rem 0.7rem; border: 1px solid var(--editorial-rule); border-radius: var(--editorial-radius-sm); background: transparent; color: var(--text-secondary); font: 600 0.62rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.12em; text-transform: uppercase; }
+.share-story__open { display: inline-flex; align-items: center; justify-content: center; margin-top: 0.6rem; width: 2rem; height: 2rem; padding: 0; border: 1px solid var(--editorial-rule); border-radius: var(--editorial-radius-sm); background: transparent; color: var(--text-secondary); font: 600 0.62rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.12em; text-transform: uppercase; }
 .share-story { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: max(env(safe-area-inset-top), 1rem) 1rem max(env(safe-area-inset-bottom), 1rem); background: rgba(5, 5, 6, 0.94); }
 .share-story__close { align-self: flex-end; padding: 0.5rem; color: #e9e9ec; }
 .share-story__preview { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; color: #8c8c95; font: 600 0.75rem var(--font-geist-mono), monospace; }
