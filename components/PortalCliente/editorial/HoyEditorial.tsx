@@ -61,7 +61,7 @@ export default function HoyEditorial({ firstName, calories, meals, weeklySession
   return (
     <div className="hoy-editorial">
       <EditorialMasthead
-        index="01 / TODAY"
+        index="01 / HOY"
         eyebrow="Protocolo diario"
         title={<>{firstName},<br />cumple lo esencial.</>}
         aside={<TechnicalReadout label="Objetivo energético" value={Math.round(calories)} unit="kcal" detail="Plan activo de hoy" />}
