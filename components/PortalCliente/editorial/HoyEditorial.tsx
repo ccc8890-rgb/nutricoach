@@ -67,7 +67,6 @@ export default function HoyEditorial({ firstName, calories, meals, weeklySession
         aside={<TechnicalReadout label="Objetivo energético" value={Math.round(calories)} unit="kcal"/>}
       />
       <section className="hoy-editorial__instruments" aria-label="Objetivos de macronutrientes">
-        <p className="editorial-kicker">Macros de hoy</p>
         {macros.map(macro => (
           <ProgressInstrument key={macro.label} label={macro.label} value={macro.value} max={macro.target} unit={macro.unit} detail={`${Math.round(macro.value)} de ${Math.round(macro.target)} ${macro.unit}`} />
         ))}
