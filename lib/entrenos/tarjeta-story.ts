@@ -95,16 +95,16 @@ function dibujarAnillo(ctx: CanvasRenderingContext2D, cx: number, cy: number, R:
     ctx.lineWidth = 2; ctx.strokeStyle = i % 5 === 0 ? 'rgba(201,204,211,0.55)' : 'rgba(201,204,211,0.22)'; ctx.stroke()
   }
   // trazos
-  const total = tramos.reduce((a, t) => a + t.frac, 0) || 1
-  const hueco = tramos.length > 1 ? 0.045 : 0
-  const barrido = 0.92 * TAU
-  let ang = -Math.PI / 2 + 0.04 * TAU
+  // Cada trazo ocupa su parte exacta del círculo (reparto de kcal); entre trazos un hueco fijo
+  const total = tramos.reduce((acc, t) => acc + t.frac, 0) || 1
+  const hueco = tramos.length > 1 ? 0.07 : 0
+  let ang = -Math.PI / 2 + hueco / 2
   let fin = ang
   tramos.forEach(t => {
-    const sweep = Math.max(0.02, (t.frac / total) * (barrido - hueco * TAU * tramos.length))
+    const sweep = Math.max(0.03, (t.frac / total) * (TAU - hueco * tramos.length))
     ctx.beginPath(); ctx.arc(cx, cy, R, ang, ang + sweep); ctx.lineWidth = 12; ctx.strokeStyle = t.color; ctx.stroke()
     fin = ang + sweep
-    ang += sweep + hueco * TAU
+    ang += sweep + hueco
   })
   // punto luminoso al final
   ctx.save()
@@ -157,8 +157,8 @@ export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
   const cy = 56 + R + 40
   dibujarAnillo(ctx, cx, cy, R, [
     { frac: Math.max(d.p, 0) * 4, color: '#FFFFFF' },
-    { frac: Math.max(d.c, 0) * 4, color: METAL },
-    { frac: Math.max(d.g, 0) * 9, color: '#6E7079' },
+    { frac: Math.max(d.c, 0) * 4, color: '#979BA5' },
+    { frac: Math.max(d.g, 0) * 9, color: '#4F5159' },
   ])
   ctx.textAlign = 'center'
   ctx.font = `200 80px ${sans}`
@@ -168,7 +168,7 @@ export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
   ctx.fillStyle = MUTED
   ctx.fillText('KCAL', cx, cy + 50)
   const col = (W - 100) / 3
-  const macros: Array<[number, string, string]> = [[d.p, 'P', '#FFFFFF'], [d.c, 'C', METAL], [d.g, 'G', '#8A8C95']]
+  const macros: Array<[number, string, string]> = [[d.p, 'P', '#FFFFFF'], [d.c, 'C', '#979BA5'], [d.g, 'G', '#6B6E77']]
   const y = cy + R + 40 + 24 + 40
   macros.forEach(([v, l, color], i) => {
     const x = 50 + col * i + col / 2
