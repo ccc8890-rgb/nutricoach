@@ -22,7 +22,6 @@ import InstallBanner from '@/components/PortalCliente/InstallBanner'
 import './cliente.css'
 // Pestañas principales con import estático: un componente diferido (dynamic/lazy) hace que React retenga toda la
 // pantalla hasta 300 ms (su temporizador anti-parpadeo de Suspense) aunque el JS ya esté en caché.
-import TLSGaugeEstatico from '@/components/PortalCliente/TLSGauge'
 import NotasCoachEstatico from '@/components/PortalCliente/NotasCoach'
 import MiPlanEstatico from '@/components/PortalCliente/MiPlan'
 import EntrenoSubTabsEstatico from '@/components/training/EntrenoSubTabs'
@@ -47,7 +46,6 @@ const GaleriaFotosProgreso = aislar(dynamic(() => import('@/components/PortalCli
 const CheckInForm = aislar(dynamic(() => import('@/components/PortalCliente/CheckInForm')))
 const HistorialCheckins = aislar(dynamic(() => import('@/components/PortalCliente/HistorialCheckins')))
 const NotasCoach = aislar(NotasCoachEstatico)
-const TLSGauge = aislar(TLSGaugeEstatico)
 const MiPlan = aislar(MiPlanEstatico)
 const EntrenoSubTabs = aislar(EntrenoSubTabsEstatico)
 const ListaCompraPortal = aislar(dynamic(() => import('@/components/PortalCliente/ListaCompraPortal')))
@@ -480,7 +478,6 @@ function PortalClientePageContent() {
               <EmptyState icon={ForkKnife} text="Tu coach aún no ha asignado un plan de dieta" />
             )}
 
-            {codigo && <TLSGauge codigo={codigo} onRegistrar={() => setTab('checkin')} />}
             {codigo && <NotasCoach codigo={codigo} />}
           </div>
         )}

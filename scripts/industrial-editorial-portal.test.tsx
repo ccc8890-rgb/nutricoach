@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { TLSPanel } from '../components/PortalCliente/TLSGauge'
 import CalendarioMesEntreno from '../components/training/CalendarioMesEntreno'
 import {
   EditorialMasthead,
@@ -97,26 +96,6 @@ assert.match(hoy, /Carlos/)
 assert.match(hoy, /2187/)
 assert.match(hoy, /Secuencia del día/)
 assert.match(hoy, /Fuerza inferior/)
-
-const tls = renderToStaticMarkup(
-  <TLSPanel
-    data={{
-      tls_semana_actual: 0,
-      num_sesiones: 0,
-      tls_promedio_4sem: 0,
-      umbral: 80,
-      porcentaje_umbral: 0,
-      semaforo: 'bajo',
-      sesiones_recientes: [],
-    }}
-    onRegistrar={noop}
-  />,
-)
-assert.match(tls, /03 \/ LOAD/)
-assert.match(tls, /Carga semanal/)
-assert.match(tls, /aria-valuenow="0"/)
-assert.match(tls, /Registrar sesión/)
-assert.doesNotMatch(tls, /#ECFDF5|rounded-full/)
 
 const calendar = renderToStaticMarkup(<CalendarioMesEntreno />)
 assert.match(calendar, /training-calendar/)
