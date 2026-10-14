@@ -10,15 +10,21 @@ const frases = (texto: string) => texto.split(/\n+|(?<=[.!?])\s+/).map(f => f.tr
 /** «Tu bloque» (cliente): qué se busca, cómo evolucionan las próximas semanas y el mensaje del coach. Plegada por defecto. */
 export default function TuBloque({ datos, fase, semanaActual, semanasTotales }: { datos: Datos; fase?: string; semanaActual?: number; semanasTotales?: number }) {
   const [abierto, setAbierto] = useState(false)
-  const titulo = fase && semanaActual && semanasTotales ? `Tu bloque · ${fase}, semana ${semanaActual} de ${semanasTotales}` : 'Tu bloque'
+  const conBloque = !!(fase && semanaActual && semanasTotales)
   return (
     <section className="training-sheet">
-      <button type="button" onClick={() => setAbierto(a => !a)} aria-expanded={abierto} className="flex w-full items-center justify-between gap-3 text-left">
-        <span className="min-w-0">
-          <span className="block font-mono text-[10px] font-semibold tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>TU BLOQUE</span>
-          <span className="mt-1 block font-bold leading-tight" style={{ color: 'var(--text)' }}>{titulo.replace('Tu bloque · ', '').replace('Tu bloque', 'Tu plan')}</span>
+      <button type="button" onClick={() => setAbierto(a => !a)} aria-expanded={abierto} className="tu-bloque__head">
+        <span className="editorial-kicker">Tu bloque</span>
+        <span className="tu-bloque__row">
+          <span className="tu-bloque__fase">{conBloque ? fase : 'Tu plan'}</span>
+          {conBloque && <span className="tu-bloque__semana">Semana <b>{semanaActual}</b>/{semanasTotales}</span>}
+          <span className="tu-bloque__toggle" aria-hidden="true">{abierto ? '−' : '+'}</span>
         </span>
-        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{abierto ? 'Ocultar' : 'Ver'}</span>
+        {conBloque && (
+          <span className="tu-bloque__pasos" aria-hidden="true">
+            {Array.from({ length: semanasTotales! }, (_, i) => <span key={i} data-estado={i + 1 < semanaActual! ? 'hecha' : i + 1 === semanaActual ? 'actual' : 'pendiente'} />)}
+          </span>
+        )}
       </button>
       {abierto && (
         <div className="mt-4 flex flex-col gap-4">
@@ -36,7 +42,7 @@ export default function TuBloque({ datos, fase, semanaActual, semanasTotales }: 
           })()}
           {datos.semanas.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Próximas semanas · carrera</p>
+              <p className="editorial-kicker">Próximas semanas · carrera</p>
               <ul className="mt-2 flex flex-col gap-1.5">
                 {datos.semanas.map(s => (
                   <li key={s.n} className="flex items-center justify-between text-sm" style={{ color: 'var(--text)' }}>
@@ -51,7 +57,7 @@ export default function TuBloque({ datos, fase, semanaActual, semanasTotales }: 
           )}
           {datos.mejoras.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Qué debería mejorar</p>
+              <p className="editorial-kicker">Qué debería mejorar</p>
               <ul className="mt-2 flex flex-col gap-1.5 text-sm" style={{ color: 'var(--text)' }}>
                 {datos.mejoras.map((m, i) => <li key={i}>· {m}</li>)}
               </ul>

@@ -259,6 +259,16 @@
 .diet-week-activation__button { display: inline-flex; min-height: 2.8rem; grid-column: 1 / -1; align-items: center; justify-content: center; gap: 0.45rem; border-top: 1px solid var(--diet-rule); background: color-mix(in srgb, var(--diet-warm) 14%, var(--diet-paper)); color: var(--text); font: 650 0.58rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.06em; text-transform: uppercase; }
 .diet-week-shopping { border: 1px solid var(--diet-rule); }
 .training-sheet { padding: 1.1rem 1rem 1.3rem; border-block: 1px solid var(--editorial-rule); background: color-mix(in srgb, var(--editorial-panel) 82%, transparent); }
+.tu-bloque__head { display: flex; width: 100%; flex-direction: column; gap: 0.55rem; text-align: left; }
+.tu-bloque__row { display: flex; align-items: baseline; gap: 0.9rem; }
+.tu-bloque__fase { color: var(--editorial-ink, var(--text)); font-size: 1.7rem; font-weight: 560; letter-spacing: -0.045em; line-height: 1; }
+.tu-bloque__semana { margin-left: auto; color: var(--text-muted); font: 600 0.625rem/1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.14em; text-transform: uppercase; }
+.tu-bloque__semana b { color: var(--text); font-weight: 700; }
+.tu-bloque__toggle { color: var(--text-muted); font: 400 1rem/1 var(--font-geist-mono), ui-monospace, monospace; }
+.tu-bloque__pasos { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0.3rem; }
+.tu-bloque__pasos > span { height: 3px; background: var(--editorial-rule); }
+.tu-bloque__pasos > span[data-estado='hecha'] { background: color-mix(in srgb, var(--metal-mid) 70%, var(--editorial-rule)); }
+.tu-bloque__pasos > span[data-estado='actual'] { background: var(--text); }
 .training-session-mark { display: grid; width: 2.8rem; height: 2.8rem; flex: none; place-items: center; border: 1px solid var(--editorial-rule); border-radius: 0.22rem; background: var(--editorial-field); color: var(--text-secondary); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--metal-bright) 8%, transparent); }
 .training-exercise-block-marker { display: block; margin-bottom: 0.5rem; overflow: hidden; color: var(--text-muted); font: 600 0.5rem/1.1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.1em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
 .training-exercise-list { border-bottom: 1px solid var(--editorial-rule); }
