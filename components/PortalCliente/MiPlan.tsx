@@ -377,13 +377,6 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
         grasas: planLocal.grasas_objetivo ?? null,
     }
 
-    const saludo = (() => {
-        const h = new Date().getHours()
-        if (h < 12) return 'Buenos días'
-        if (h < 20) return 'Buenas tardes'
-        return 'Buenas noches'
-    })()
-
     return (
         <div className="diet-notebook space-y-4 print-area">
             {/* Toggle Hoy / Semana */}
@@ -454,26 +447,9 @@ export default function MiPlan({ codigo, plan, registros_comidas }: MiPlanProps)
 
             {/* Resumen macros + adherencia del día */}
             <section className="diet-document-summary diet-notebook__summary">
-                <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
-                            {saludo}
-                        </p>
-                        <h2 className="text-xl font-bold mt-1" style={{ color: 'var(--text)' }}>
-                            {diaActivo === diaActualEspana() ? 'Dieta de hoy' : `Dieta de ${diaActivo}`}
-                        </h2>
-                    </div>
-                    <div className="text-right shrink-0">
-                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                            {diaActivo === diaActualEspana()
-                                ? new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })
-                                : diaActivo}
-                        </p>
-                        <p className="text-xs font-semibold mt-1" style={{ color: ringColor }}>
-                            {comidasHechas}/{totalComidas} comidas
-                        </p>
-                    </div>
-                </div>
+                <p className="text-xs font-semibold mb-3 text-right" style={{ color: ringColor }}>
+                    {comidasHechas}/{totalComidas} comidas
+                </p>
 
                 <div className="diet-macro-rail">
                     <ProgressInstrument label="Energía" value={totalDia.calorias} max={targets.kcal ?? totalDia.calorias} unit=" kcal" />
