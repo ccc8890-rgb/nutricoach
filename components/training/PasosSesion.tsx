@@ -46,7 +46,7 @@ export default function PasosSesion({ pasos, ritmos, fc, garmin }: Props) {
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
           <Watch size={14} className="mr-1.5 inline align-[-2px]" />
-          Se envía solo a tu Garmin
+          Se envía a tu Garmin
           {' '}
           <span className="font-data font-normal whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
             {(resumen.distancia_m / 1000).toFixed(1).replace('.', ',')}&nbsp;km{resumen.duracion_s !== null ? <> · {Math.round(resumen.duracion_s / 60)}&nbsp;min</> : null}

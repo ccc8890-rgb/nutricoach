@@ -65,7 +65,7 @@ assert.equal(
       { tipo: 'recuperacion', duracion: { unidad: 'segundos', valor: 120 }, objetivo: { tipo: 'zona', zona: 'E' } }] },
     { tipo: 'enfriamiento', duracion: { unidad: 'segundos', valor: 240 }, objetivo: { tipo: 'zona', zona: 'E' } },
   ]
-  assert.equal(textoCorto(pista, r), '8:00 suave + 5 × (500 m a 4:15 + 2:00 trote) + 4:00 suave')
-  assert.equal(textoCorto([{ tipo: 'trabajo', duracion: { unidad: 'segundos', valor: 3000 }, objetivo: { tipo: 'zona', zona: 'E' } }], r), '50:00 suave')
+  assert.equal(textoCorto(pista, r), "8' suave + 5 × (500 m a 4:15 + 2' trote) + 4' suave")
+  assert.equal(textoCorto([{ tipo: 'trabajo', duracion: { unidad: 'segundos', valor: 3000 }, objetivo: { tipo: 'zona', zona: 'E' } }], r), "50' suave")
 }
 console.log('pasos.test.ts OK')

@@ -134,9 +134,10 @@ export function lineaPaso(p: PasoSimple, ritmos: Ritmos | null): string {
   return `${NOMBRE_TIPO[p.tipo]} ${textoDuracion(p.duracion)}${textoObjetivo(p, ritmos)}`
 }
 
-/** Un paso en pocas palabras: «8:00 suave», «500 m a 4:15», «2:00 trote». */
+/** Un paso en pocas palabras: «8' suave», «500 m a 4:15», «2' trote». */
 function textoCorto1(p: PasoSimple, ritmos: Ritmos | null): string {
-  const dur = textoDuracion(p.duracion)
+  const d = p.duracion
+  const dur = d.unidad === 'segundos' && d.valor % 60 === 0 ? `${d.valor / 60}'` : textoDuracion(d)
   if (p.tipo === 'recuperacion') return `${dur} trote`
   const o = p.objetivo
   if (o?.tipo === 'zona') return o.zona === 'E' || !ritmos ? `${dur} ${ZONAS_RITMO[o.zona].nombre}` : `${dur} a ${formatearRitmo(ritmos[o.zona])}`
@@ -144,7 +145,7 @@ function textoCorto1(p: PasoSimple, ritmos: Ritmos | null): string {
   return dur
 }
 
-/** Toda la sesión en una línea: «8:00 suave + 5 × (500 m a 4:15 + 2:00 trote) + 4:00 suave». */
+/** Toda la sesión en una línea: «8' suave + 5 × (500 m a 4:15 + 2' trote) + 4' suave». */
 export function textoCorto(pasos: Paso[], ritmos: Ritmos | null): string {
   return pasos.map(p => p.tipo === 'repetir' ? `${p.veces} × (${p.pasos.map(q => textoCorto1(q, ritmos)).join(' + ')})` : textoCorto1(p, ritmos)).join(' + ')
 }
