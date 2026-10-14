@@ -477,7 +477,7 @@ function PortalClientePageContent() {
         {/* ─── DIETA ─── */}
         {visitadas.has('dieta') && (
           <div className="flex flex-col gap-4" style={tab !== 'dieta' ? { display: 'none' } : undefined}>
-            <EditorialMasthead index="02 / DIETA" eyebrow="Plan de alimentación" title="Dieta" />
+            <EditorialMasthead index="02 / DIET" eyebrow="Plan de alimentación" title="Dieta" />
             {dieta ? (
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <MiPlan codigo={codigo} plan={dieta as any} />
@@ -567,7 +567,7 @@ function PortalClientePageContent() {
 
         {visitadas.has('recetas') && (
           <div className="flex flex-col gap-6" style={tab !== 'recetas' ? { display: 'none' } : undefined}>
-            <EditorialMasthead index="03 / RECETAS" eyebrow="Tu recetario" title="Recetas" />
+            <EditorialMasthead index="03 / RECIPES" eyebrow="Tu recetario" title="Recetas" />
             {codigo && cliente ? (
               <>
                 {(() => {
@@ -647,7 +647,7 @@ function PortalClientePageContent() {
 
         {visitadas.has('datos') && (
           <div className="flex flex-col gap-4" style={tab !== 'datos' ? { display: 'none' } : undefined}>
-            <EditorialMasthead index="05 / DATOS" eyebrow="Seguimiento y rendimiento" title="Datos" />
+            <EditorialMasthead index="05 / DATA" eyebrow="Seguimiento y rendimiento" title="Datos" />
             {codigo ? (
               <DatosCliente
                 codigo={codigo}

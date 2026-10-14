@@ -77,7 +77,7 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
   return (
     <div className="flex flex-col gap-4">
       <EditorialMasthead
-        index="04 / ENTRENO"
+        index="04 / TRAIN"
         eyebrow={bloque ? `Bloque ${bloque.fase} · Semana ${bloque.semana_actual}/${bloque.semanas_totales}` : 'Plan de entrenamiento'}
         title={planNombre}
       />

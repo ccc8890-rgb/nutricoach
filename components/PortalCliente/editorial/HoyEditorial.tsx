@@ -61,7 +61,7 @@ export default function HoyEditorial({ firstName, calories, meals, weeklySession
   return (
     <div className="hoy-editorial">
       <EditorialMasthead
-        index="01 / HOY"
+        index="01 / TODAY"
         eyebrow="Protocolo diario"
         title={<>{firstName},<br />cumple lo esencial.</>}
         aside={<TechnicalReadout label="Objetivo energético" value={Math.round(calories)} unit="kcal" detail="Plan activo de hoy" />}
@@ -72,7 +72,7 @@ export default function HoyEditorial({ firstName, calories, meals, weeklySession
           <ProgressInstrument key={macro.label} label={macro.label} value={macro.value} max={macro.target} unit={macro.unit} detail={`${Math.round(macro.value)} de ${Math.round(macro.target)} ${macro.unit}`} />
         ))}
       </section>
-      <div className="hoy-editorial__section-label"><span>Accesos rápidos</span><samp>02 TOOLS</samp></div>
+      <div className="hoy-editorial__section-label"><span>Accesos rápidos</span><samp>TOOLS</samp></div>
       <nav className="hoy-editorial__utilities" aria-label="Accesos rápidos">
         <Action label="Lista de compra" icon={ShoppingCart} onClick={() => onNavigate('compra')} />
         <Action label="Chat con coach" icon={ChatCircleDots} onClick={() => onNavigate('chat')} />
