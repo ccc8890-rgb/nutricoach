@@ -2,21 +2,20 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ShareNetwork, X } from '@phosphor-icons/react'
-import { dibujarTarjeta, ejerciciosPrincipales, type DatosTarjeta } from '@/lib/entrenos/tarjeta-story'
 
 /** Botón «Compartir» + vista previa de la tarjeta vertical para Instagram Stories. */
-export default function CompartirSesion({ datos }: { datos: () => DatosTarjeta }) {
+export default function CompartirSesion({ generar }: { generar: () => Promise<Blob> }) {
   const [abierto, setAbierto] = useState(false)
   const [blob, setBlob] = useState<Blob | null>(null)
   const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState(false)
+  const [copiado, setCopiado] = useState(false)
 
   useEffect(() => {
     if (!abierto) return
     let vivo = true
     setBlob(null); setUrl(null); setError(false)
-    const d = datos()
-    dibujarTarjeta({ ...d, ejercicios: ejerciciosPrincipales(d.ejercicios) })
+    generar()
       .then(b => { if (vivo) { setBlob(b); setUrl(URL.createObjectURL(b)) } })
       .catch(() => { if (vivo) setError(true) })
     return () => { vivo = false }
@@ -37,6 +36,11 @@ export default function CompartirSesion({ datos }: { datos: () => DatosTarjeta }
     a.click()
   }
 
+  async function copiar() {
+    if (!blob) return
+    try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); setCopiado(true); setTimeout(() => setCopiado(false), 2000) } catch { compartir() }
+  }
+
   return (
     <>
       <button type="button" onClick={() => setAbierto(true)} className="share-story__open" aria-label="Compartir en una story">
@@ -48,7 +52,11 @@ export default function CompartirSesion({ datos }: { datos: () => DatosTarjeta }
           <div className="share-story__preview">
             {url ? <img src={url} alt="Tarjeta de la sesión" /> : <p>{error ? 'No se pudo crear la imagen' : 'Creando tarjeta…'}</p>}
           </div>
-          <button type="button" className="share-story__go" onClick={compartir} disabled={!blob}>Compartir imagen</button>
+          <p className="share-story__hint">Añádela como sticker sobre tu foto o vídeo en la story</p>
+          <div className="share-story__btns">
+            <button type="button" className="share-story__go" onClick={compartir} disabled={!blob}>Compartir</button>
+            <button type="button" className="share-story__go share-story__go--alt" onClick={copiar} disabled={!blob}>{copiado ? 'Copiado' : 'Copiar'}</button>
+          </div>
         </div>,
         document.body,
       )}

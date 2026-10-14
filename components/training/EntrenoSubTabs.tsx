@@ -13,6 +13,7 @@ import EntrenoKanban from './EntrenoKanban'
 import { textoKm } from '@/lib/entrenos/km-sesion'
 import ListaEjerciciosExpandible, { type EjercicioDetalle } from './ExpandableExercises'
 import CompartirSesion from './CompartirSesion'
+import { dibujarTarjeta, ejerciciosPrincipales } from '@/lib/entrenos/tarjeta-story'
 import PasosSesion, { extrasDeRespuesta, type ExtrasSesion } from './PasosSesion'
 import { EditorialMasthead, IndustrialTabs } from '@/components/PortalCliente/editorial'
 import { buildExerciseChecklistKey } from '@/lib/training/exercise-checklist'
@@ -117,16 +118,16 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
                 </p>
                 {textoKm(sesionDia.km) && <p className="mt-1 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{textoKm(sesionDia.km)}</p>}
                 {Array.isArray(detalles[sesionDia.id]) && (
-                  <CompartirSesion datos={() => ({
+                  <CompartirSesion generar={() => dibujarTarjeta({
                     fecha: sesionDia.fecha,
                     tipo: etiquetaTipoSesion(sesionDia.tipo_sesion),
                     titulo: tituloSesionSinModalidad(sesionDia.nombre, sesionDia.tipo_sesion),
                     semana: bloque ? `SEMANA ${bloque.semana_actual}/${bloque.semanas_totales}` : null,
                     duracionMin: sesionDia.duracion_estimada_min,
                     km: sesionDia.km,
-                    ejercicios: (detalles[sesionDia.id] as EjercicioDetalle[]).map(e => ({
+                    ejercicios: ejerciciosPrincipales((detalles[sesionDia.id] as EjercicioDetalle[]).map(e => ({
                       nombre: e.ejercicio?.nombre ?? '', series: e.series, repeticiones: e.repeticiones, peso: e.peso_sugerido, bloque: e.bloque,
-                    })).filter(e => e.nombre),
+                    })).filter(e => e.nombre)),
                   })} />
                 )}
               </div>
