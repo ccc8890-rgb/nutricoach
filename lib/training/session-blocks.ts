@@ -1,6 +1,6 @@
 export const BLOQUES_SESION = [
-  'calentamiento',
   'movilidad',
+  'calentamiento',
   'pliometria',
   'principal',
   'accesorios',

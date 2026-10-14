@@ -16,4 +16,11 @@ assert.deepEqual(vista.map(grupo => grupo.label), [
 assert.deepEqual(vista.flatMap(grupo => grupo.items.map(item => item.indiceGlobal)), [1, 2, 3, 4])
 assert.equal(vista.some(grupo => grupo.label === 'MOVILIDAD / ACTIVACIÓN'), false)
 
+const conMov = crearPresentacionEjercicios([
+  { id: 'trote', orden: 1, bloque: 'calentamiento' },
+  { id: 'main', orden: 2, bloque: 'principal' },
+  { id: 'mov', orden: 3, bloque: 'movilidad' },
+])
+assert.deepEqual(conMov.map(g => g.items[0].id), ['mov', 'trote', 'main'])
+
 console.log('✓ presentación de bloques para cliente')

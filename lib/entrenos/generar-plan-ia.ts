@@ -377,7 +377,7 @@ REGLAS ABSOLUTAS:
 - Nombres de ejercicios en español (Sentadilla, Press Banca, Peso Muerto, Remo con Barra...)
 - RPE nunca > 9 en semanas 1-2 (adaptación inicial)
 - Crear el calentamiento como ejercicios reales y específicos dentro del bloque "calentamiento", no esconderlo en notas
-- Usar "movilidad" solo si prepara el patrón del día, existe una limitación relevante o la sesión es de recuperación
+- Usar "movilidad" solo si prepara el patrón del día, existe una limitación relevante o la sesión es de recuperación. La movilidad se hace ANTES del calentamiento: en el reloj no se registra, y así la sesión se lee en orden (movilidad → calentamiento → principal → vuelta a la calma)
 - Usar "pliometria" solo si objetivo, nivel, fatiga y lesiones permiten trabajo de potencia o economía de carrera
 - Reservar "principal" para el estímulo prioritario y "accesorios" para complementos que no compitan con él
 - Crear "vuelta_calma" cuando aporte valor por la intensidad o el tipo de trabajo, nunca como relleno
