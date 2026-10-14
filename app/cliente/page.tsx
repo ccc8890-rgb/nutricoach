@@ -391,7 +391,7 @@ function PortalClientePageContent() {
   const diffPeso = ultimoPeso && penultimoPeso ? ultimoPeso - penultimoPeso : null
   const sesionesSemana = entreno?.sesiones?.length ?? 0
   const comidasDia = comidasHoyDeDieta().length
-  const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
+  const fechaHoy = new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '').replace(/,\s*/, ' · ')
 
   const TABS: LiquidDockItem<Tab>[] = [
     { key: 'hoy',     label: 'Hoy',      icon: Pulse },
@@ -421,12 +421,8 @@ function PortalClientePageContent() {
               {iniciales}
             </button>
             <div>
-              <p className="text-sm font-semibold leading-tight" style={{ color: 'var(--text)' }}>
-                {profile?.nombre}
-              </p>
-              <p className="text-[11px] leading-tight first-letter:uppercase" style={{ color: 'var(--text-muted)' }}>
-                {fechaHoy}
-              </p>
+              <p className="cliente-header__name">{profile?.nombre}</p>
+              <p className="editorial-kicker cliente-header__date">{fechaHoy}</p>
             </div>
           </div>
           {/* Actions */}

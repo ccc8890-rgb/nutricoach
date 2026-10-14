@@ -487,6 +487,8 @@
   transform: translate3d(0, calc(-100% - 1px), 0);
 }
 
+.cliente-header__name { color: var(--text); font: 600 0.8125rem/1.1 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.04em; text-transform: uppercase; }
+.cliente-header__date { margin-top: 0.3rem; }
 .cliente-avatar {
   border-radius: var(--editorial-radius-sm) !important;
   border: 1px solid var(--editorial-rule) !important;
