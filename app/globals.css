@@ -235,6 +235,92 @@
   .coach-client-tabs { border-inline: 0; border-radius: 0; }
 }
 
+/* Coach · Nutrición — directorio, planes y superficies de edición */
+.coach-nutrition-hub,
+.coach-diet-index { --nutrition-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%); }
+.coach-module-directory {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--client-rule, var(--border));
+  border-radius: 0.25rem;
+  background: var(--border);
+  gap: 1px;
+  overflow: hidden;
+}
+
+.coach-module-link {
+  min-height: 7rem;
+  padding: 1.2rem;
+  background: var(--surface);
+  color: var(--text-secondary);
+  transition: background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong), box-shadow 180ms var(--ease-out-strong);
+}
+.coach-module-link:hover { background: var(--surface-hover); color: var(--text); box-shadow: inset 3px 0 0 var(--accent); }
+.coach-module-link:active { transform: translateY(1px); }
+.coach-module-link__icon {
+  display: flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 0.2rem;
+  background: var(--surface-elevated);
+  color: var(--text);
+}
+
+.coach-plan-row {
+  min-height: 4.6rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  background: var(--surface);
+  transition: background-color 180ms var(--ease-out-strong), box-shadow 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong);
+}
+.coach-plan-row:hover { background: var(--surface-hover); box-shadow: inset 3px 0 0 var(--accent); }
+.coach-plan-row:active { transform: translateY(1px); }
+
+.coach-diet-editor,
+.coach-food-library {
+  --nutrition-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%);
+  --nutrition-paper: color-mix(in srgb, var(--surface) 95%, transparent);
+}
+.coach-diet-header {
+  padding: 0.85rem 0;
+  border-block: 1px solid var(--nutrition-rule);
+}
+.coach-diet-module {
+  border: 1px solid var(--nutrition-rule) !important;
+  border-radius: 0.25rem;
+  background: var(--nutrition-paper) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent);
+}
+.coach-diet-module > summary {
+  border-bottom: 1px solid transparent;
+  background: color-mix(in srgb, var(--surface-elevated) 48%, transparent);
+}
+.coach-diet-module[open] > summary { border-bottom-color: var(--nutrition-rule); }
+.coach-diet-module > summary p:first-child,
+.coach-food-library header + div label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.08em;
+}
+.coach-diet-editor .card,
+.coach-food-library .card {
+  border-radius: 0.25rem;
+  box-shadow: none;
+}
+.coach-food-library > header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--nutrition-rule);
+}
+
+@media (max-width: 767px) {
+  .coach-module-directory { grid-template-columns: 1fr; }
+  .coach-module-link { min-height: 5.75rem; }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    THEME — LIGHT — Graphite Apple Pro
    ═══════════════════════════════════════════════════════════════ */
