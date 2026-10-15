@@ -168,7 +168,7 @@ export default function EscandalloPage() {
     const totalSemanal = clientes.reduce((sum, c) => sum + (c.precio_total || 0), 0)
 
     return (
-        <div className="max-w-6xl mx-auto p-6 space-y-6">
+        <div className="coach-costing-page max-w-6xl mx-auto p-6 space-y-6">
             {/* Cabecera */}
             <div className="flex items-start justify-between flex-wrap gap-4">
                 <div>

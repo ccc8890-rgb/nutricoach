@@ -48,7 +48,7 @@ export default function ComparadorSupermercados({ data, cargando }: Props) {
     const mejor = supermercados[0]
 
     return (
-        <div className="space-y-6">
+        <div className="coach-supermarket-comparison space-y-6">
             {/* Header */}
             <div className="flex items-center gap-2">
                 <Store className="w-5 h-5 text-emerald-600" />

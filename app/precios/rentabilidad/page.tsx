@@ -37,7 +37,7 @@ export default function RentabilidadPage() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        <div className="coach-profitability-page max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
             {/* Selector de cliente */}
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-4 sm:p-6">
                 <div className="flex items-center gap-2 mb-4">

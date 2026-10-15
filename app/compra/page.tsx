@@ -255,7 +255,7 @@ export default function ListaCompraPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        <div className="coach-shopping-page max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
 
             {/* Cabecera */}
             <div className="flex items-start justify-between gap-3">

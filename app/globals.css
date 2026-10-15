@@ -363,6 +363,50 @@
 .coach-recipe-coverage section,
 .coach-recipe-images section { border-radius: var(--recipe-panel-radius); }
 
+/* Coach · Operaciones — precios, costes, rentabilidad y compra */
+.coach-price-admin,
+.coach-costing-page,
+.coach-profitability-page,
+.coach-recipe-costing,
+.coach-profitability-dashboard,
+.coach-supermarket-comparison,
+.coach-shopping-page,
+.coach-shopping-card {
+  --commerce-rule: color-mix(in srgb, var(--border) 86%, var(--text-muted) 14%);
+  --commerce-radius: 0.25rem;
+}
+.coach-price-admin .rounded-2xl,
+.coach-price-admin .rounded-xl,
+.coach-costing-page .rounded-xl,
+.coach-profitability-page .rounded-xl,
+.coach-recipe-costing .rounded-xl,
+.coach-profitability-dashboard .rounded-xl,
+.coach-supermarket-comparison .rounded-xl,
+.coach-shopping-page .rounded-xl,
+.coach-shopping-card.rounded-xl,
+.coach-shopping-card .rounded-xl { border-radius: var(--commerce-radius); }
+.coach-price-admin .btn-primary,
+.coach-costing-page button,
+.coach-costing-page select,
+.coach-profitability-page button,
+.coach-profitability-page input,
+.coach-recipe-costing select,
+.coach-profitability-dashboard button,
+.coach-profitability-dashboard input,
+.coach-profitability-dashboard select,
+.coach-shopping-page button { border-radius: var(--commerce-radius); }
+.coach-profitability-page > div:first-child,
+.coach-profitability-dashboard > div,
+.coach-supermarket-comparison > div,
+.coach-shopping-card {
+  border-color: var(--commerce-rule) !important;
+  box-shadow: none;
+}
+.coach-price-admin h2,
+.coach-costing-page h1,
+.coach-profitability-dashboard h1,
+.coach-shopping-page h1 { letter-spacing: -0.025em; }
+
 /* Coach · Nutrición — directorio, planes y superficies de edición */
 .coach-nutrition-hub,
 .coach-diet-index { --nutrition-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%); }

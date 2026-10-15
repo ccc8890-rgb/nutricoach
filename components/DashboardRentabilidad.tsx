@@ -150,7 +150,7 @@ export default function DashboardRentabilidad({ clienteId, planId }: Props) {
     const mejor = supermercados[0]
 
     return (
-        <div className="space-y-6">
+        <div className="coach-profitability-dashboard space-y-6">
             {/* ── Header ─────────────────────────────── */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

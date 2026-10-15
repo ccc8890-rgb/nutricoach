@@ -146,7 +146,7 @@ export default function EscandalloReceta({ recetaId }: EscandalloRecetaProps) {
     const sinPrecio = data.ingredientes.filter(i => i.precio_por_kg === 0)
 
     return (
-        <div className="space-y-5">
+        <div className="coach-recipe-costing space-y-5">
 
             {/* Selector de supermercado */}
             <div className="flex items-center gap-3 flex-wrap">

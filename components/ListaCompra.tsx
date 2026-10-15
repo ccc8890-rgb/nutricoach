@@ -155,7 +155,7 @@ export default function ListaCompra({ planId, clienteId, semanaInicio, semanaFut
     const totalItems = datos?.ingredientes.length ?? 0
 
     return (
-        <div className="card overflow-hidden">
+        <div className="coach-shopping-card card overflow-hidden">
             {/* Header */}
             <button
                 onClick={() => setAbierto(!abierto)}
