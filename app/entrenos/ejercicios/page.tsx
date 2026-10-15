@@ -241,7 +241,7 @@ export default function EjerciciosMediaPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 space-y-5">
+    <div className="coach-exercise-library mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <p className="text-[13px] font-semibold uppercase tracking-[0.16em] mb-2" style={{ color: 'var(--text-muted)' }}>

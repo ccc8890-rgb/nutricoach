@@ -426,7 +426,7 @@ export default function PlantillasEntrenoPage() {
 
     return (
         <>
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="coach-training-templates p-4 sm:p-6 max-w-7xl mx-auto">
             {/* Header */}
             <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-6">
                 <div className="max-w-3xl">

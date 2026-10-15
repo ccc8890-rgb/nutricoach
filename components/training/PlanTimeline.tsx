@@ -242,7 +242,7 @@ export default function PlanTimeline({ semanas, selectedSesionId, onReorder, onM
   }
 
   return (
-    <div>
+    <div className="coach-plan-timeline">
       {semanas.map(semana => {
         const sesiones = selectedSesionId
           ? semana.sesiones.filter(sesion => sesion.id === selectedSesionId)

@@ -271,7 +271,7 @@ export default function PlanEditorPage() {
   if (!plan) return null
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+    <div className="coach-training-plan p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <Link href={volverHref} style={{ color: 'var(--text-muted)' }} aria-label="Volver">

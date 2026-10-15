@@ -235,6 +235,63 @@
   .coach-client-tabs { border-inline: 0; border-radius: 0; }
 }
 
+/* Coach · Entrenamiento — command center y editores técnicos */
+.coach-training-command,
+.coach-training-plan,
+.coach-training-templates,
+.coach-exercise-library {
+  --training-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%);
+  --training-panel: color-mix(in srgb, var(--surface) 95%, transparent);
+}
+.coach-training-cockpit {
+  border: 1px solid var(--training-rule);
+  border-radius: 0.25rem;
+  background: var(--training-panel);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent);
+}
+.coach-training-stat {
+  min-height: 5.25rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--training-rule);
+  border-radius: 0.25rem;
+  background: var(--surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent);
+  transition: background-color 180ms var(--ease-out-strong), box-shadow 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong);
+}
+.coach-training-stat:hover { background: var(--surface-hover); box-shadow: inset 0 -2px 0 var(--accent); }
+.coach-training-client {
+  border: 1px solid var(--training-rule);
+  border-radius: 0.2rem;
+  background: var(--surface);
+  transition: background-color 180ms var(--ease-out-strong), box-shadow 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong);
+}
+.coach-training-client:hover { background: var(--surface-hover) !important; box-shadow: inset 3px 0 0 var(--accent); }
+.coach-training-plan > div:first-child,
+.coach-training-templates > header,
+.coach-exercise-library > div:first-child {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--training-rule);
+}
+.coach-training-plan .glass-card,
+.coach-training-templates section,
+.coach-training-templates .card,
+.coach-exercise-library section {
+  border-radius: 0.25rem !important;
+  box-shadow: none !important;
+}
+.coach-training-templates > div[class*='rounded-2xl'],
+.coach-exercise-library > div[class*='rounded'] {
+  border-radius: 0.25rem !important;
+}
+.coach-plan-timeline > div > div:first-child span,
+.coach-training-plan aside p:first-child {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.09em;
+}
+.coach-plan-timeline [id^='sesion-'] {
+  border-left-color: var(--accent) !important;
+}
+
 /* Coach · Nutrición — directorio, planes y superficies de edición */
 .coach-nutrition-hub,
 .coach-diet-index { --nutrition-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%); }
