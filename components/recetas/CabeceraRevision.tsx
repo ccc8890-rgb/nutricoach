@@ -37,7 +37,7 @@ export default function CabeceraRevision() {
   }, [pathname])
 
   return (
-    <div className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+    <div className="coach-review-header border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 pt-3">
         <Link href={enImagenes ? '/recetas/revisar' : '/recetas'} aria-label={enImagenes ? 'Volver a recetas por aprobar' : 'Volver al recetario'} className="rounded-lg p-1.5" style={{ color: 'var(--text-secondary)' }}><ArrowLeft size={18} /></Link>
         <h1 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Revisión de recetas</h1>

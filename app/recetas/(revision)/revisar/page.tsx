@@ -237,7 +237,7 @@ export default function RevisarRecetasPage() {
   }
 
   return (
-    <main className="min-h-screen" style={{ background: 'var(--bg)' }}>
+    <main className="coach-recipe-review min-h-screen" style={{ background: 'var(--bg)' }}>
       <header className="sticky top-0 z-20 border-b" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--bg) 94%, transparent)', backdropFilter: 'blur(12px)' }}>
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 pb-4">
           <div className="min-w-[180px] flex-1">

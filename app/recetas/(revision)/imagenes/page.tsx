@@ -388,7 +388,7 @@ export default function RecetasImagenesPage() {
   const cards = useMemo(() => data?.recetas ?? [], [data])
 
   return (
-    <main className="min-h-screen layout-main p-4 md:p-6">
+    <main className="coach-recipe-images min-h-screen layout-main p-4 md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>

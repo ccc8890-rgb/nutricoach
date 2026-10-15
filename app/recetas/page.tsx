@@ -300,10 +300,10 @@ export default function RecetasPage() {
   ]
 
   return (
-    <PageTransition>
+    <PageTransition className="coach-recipe-library">
       {/* ═══════ HERO SECTION ═══════ */}
       <div
-        className="relative overflow-hidden pb-8 mb-6"
+        className="coach-recipe-hero relative overflow-hidden pb-8 mb-6"
         style={{
           background: 'linear-gradient(180deg, var(--accent-bg) 0%, transparent 100%)',
         }}
@@ -366,7 +366,7 @@ export default function RecetasPage() {
           </FadeIn>
 
           <FadeIn delay={0.08}>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="coach-recipe-metrics grid gap-px sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { label: 'Chef healthy', value: statsCuracion.chef, icon: ChefHat },
                 { label: 'Alta adherencia', value: statsCuracion.altaAdherencia, icon: Sparkles },

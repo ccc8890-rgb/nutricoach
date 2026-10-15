@@ -83,20 +83,20 @@ export function RecipeCardPremium({
     return (
         <Link
             href={`/recetas/${id}`}
-            className={`group relative flex flex-col overflow-hidden rounded-2xl ${className}`}
+            className={`coach-recipe-card group relative flex flex-col overflow-hidden ${className}`}
             style={{
                 aspectRatio: '3/4',
                 background: 'var(--surface)',
-                boxShadow: '0 2px 16px rgba(0,0,0,0.12)',
+                boxShadow: '0 8px 24px color-mix(in srgb, var(--text) 8%, transparent)',
                 transition: 'box-shadow 0.3s ease, transform 0.25s ease',
             }}
             onMouseEnter={e => {
                 e.currentTarget.style.transform = 'translateY(-4px)'
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.25), 0 0 20px var(--accent-glow)'
+                e.currentTarget.style.boxShadow = '0 14px 30px color-mix(in srgb, var(--text) 14%, transparent)'
             }}
             onMouseLeave={e => {
                 e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 2px 16px rgba(0,0,0,0.12)'
+                e.currentTarget.style.boxShadow = '0 8px 24px color-mix(in srgb, var(--text) 8%, transparent)'
             }}
         >
             <div className="relative flex-1 min-h-0 overflow-hidden">

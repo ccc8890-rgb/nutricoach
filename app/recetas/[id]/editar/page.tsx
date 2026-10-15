@@ -325,7 +325,7 @@ export default function EditarRecetaPage() {
     const imagenPreviewFinal = imagenPreview ?? imagenExistente
 
     return (
-        <PageTransition>
+        <PageTransition className="coach-recipe-editor">
             <div className="p-6 max-w-3xl mx-auto pb-safe">
                 <div className="flex items-center gap-3 mb-8">
                     <Link href={volverReceta} className="btn-secondary p-2"><ArrowLeft size={18} /></Link>

@@ -317,7 +317,7 @@ export default function DetalleRecetaPage() {
     nVista !== porcionesReceta ? { ...p, content: quitarCifras(p.content), title: p.title ? quitarCifras(p.title) : p.title } : p)
 
   return (
-    <PageTransition>
+    <PageTransition className="coach-recipe-detail">
       {/* ═══════ HERO FULL-BLEED ═══════ */}
       <div className="relative w-full">
         {receta.imagen_url ? (

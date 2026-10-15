@@ -441,7 +441,7 @@ export default function NuevaRecetaPage() {
 
   if (modoFormulario) {
     return (
-      <div className="p-6 max-w-3xl mx-auto">
+      <div className="coach-recipe-create p-6 max-w-3xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <Link href="/recetas" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
           <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Nueva receta</h1>
@@ -452,7 +452,7 @@ export default function NuevaRecetaPage() {
   }
 
   return (
-    <div className="p-8 max-w-xl mx-auto flex flex-col items-center justify-center min-h-[60vh]">
+    <div className="coach-recipe-create p-8 max-w-xl mx-auto flex flex-col items-center justify-center min-h-[60vh]">
       <div className="w-full text-center mb-8">
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'var(--primary-bg)' }}>
           <Link2 size={28} style={{ color: 'var(--primary)' }} />

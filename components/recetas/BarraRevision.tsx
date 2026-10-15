@@ -81,7 +81,7 @@ export default function BarraRevision({ id, pendiente, returnTo, accion }: {
 
   const total = cola?.length ?? 0
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t px-3 py-2.5" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--bg) 92%, transparent)', backdropFilter: 'blur(12px)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.6rem)' }}>
+    <div className="coach-review-bar fixed inset-x-0 bottom-0 z-40 border-t px-3 py-2.5" style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--bg) 92%, transparent)', backdropFilter: 'blur(12px)', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.6rem)' }}>
       <div className="mx-auto flex max-w-3xl items-center gap-2">
         <button disabled={!anterior} onClick={() => ir(anterior)} aria-label="Anterior" className="rounded-lg border p-2 disabled:opacity-30" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}><ChevronLeft size={16} /></button>
         <div className="min-w-0 flex-1 text-xs" style={{ color: 'var(--text-secondary)' }}>

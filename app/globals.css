@@ -292,6 +292,77 @@
   border-left-color: var(--accent) !important;
 }
 
+/* Coach · Recetario — biblioteca editorial y flujo de revisión */
+.coach-recipe-library {
+  --recipe-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%);
+  --recipe-panel: color-mix(in srgb, var(--surface) 95%, transparent);
+}
+.coach-recipe-hero {
+  border-bottom: 1px solid var(--recipe-rule);
+  background: color-mix(in srgb, var(--surface) 72%, transparent) !important;
+}
+.coach-recipe-hero::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 12rem, transparent 12rem);
+  content: '';
+  opacity: 0.72;
+}
+.coach-recipe-metrics {
+  overflow: hidden;
+  border: 1px solid var(--recipe-rule);
+  border-radius: 0.25rem;
+  background: var(--recipe-rule);
+}
+.coach-recipe-metrics > div {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--recipe-panel) !important;
+}
+.coach-recipe-card {
+  border: 1px solid var(--recipe-rule);
+  border-radius: 0.3rem;
+  isolation: isolate;
+}
+.coach-recipe-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.coach-recipe-library [class*='rounded-full'] { border-radius: 0.25rem; }
+.coach-review-header {
+  border-color: var(--recipe-rule, var(--border)) !important;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--text) 3%, transparent);
+}
+.coach-review-header nav { font-family: var(--font-geist-mono), ui-monospace, monospace; }
+.coach-review-bar {
+  box-shadow: 0 -14px 32px color-mix(in srgb, var(--text) 7%, transparent);
+}
+.coach-review-bar button,
+.coach-review-bar textarea { border-radius: 0.25rem !important; }
+.coach-recipe-detail,
+.coach-recipe-editor,
+.coach-recipe-create,
+.coach-recipe-audit,
+.coach-recipe-coverage,
+.coach-recipe-images,
+.coach-recipe-review { --recipe-panel-radius: 0.25rem; }
+.coach-recipe-editor .card,
+.coach-recipe-create .card,
+.coach-recipe-audit .card,
+.coach-recipe-coverage .card,
+.coach-recipe-images .card,
+.coach-recipe-review .card {
+  border-radius: var(--recipe-panel-radius);
+  box-shadow: none;
+}
+.coach-recipe-editor .btn-primary,
+.coach-recipe-editor .btn-secondary,
+.coach-recipe-create .btn-primary,
+.coach-recipe-create .btn-secondary,
+.coach-recipe-audit .btn-primary,
+.coach-recipe-audit .btn-secondary { border-radius: var(--recipe-panel-radius); }
+.coach-recipe-review header,
+.coach-recipe-coverage section,
+.coach-recipe-images section { border-radius: var(--recipe-panel-radius); }
+
 /* Coach · Nutrición — directorio, planes y superficies de edición */
 .coach-nutrition-hub,
 .coach-diet-index { --nutrition-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%); }

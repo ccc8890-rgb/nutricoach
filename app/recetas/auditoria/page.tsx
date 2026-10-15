@@ -124,7 +124,7 @@ export default function AuditoriaIngredientesPage() {
   const totalSospechosos = filas.filter(f => f.sospechoso).length
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="coach-recipe-audit p-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/recetas" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
         <div className="flex-1">
