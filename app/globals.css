@@ -115,6 +115,126 @@
   --primary-bg: var(--accent-bg);
 }
 
+/* Coach · Clientes — lenguaje editorial/industrial del portal cliente */
+.coach-client-index,
+.coach-client-detail {
+  --client-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%);
+  --client-panel: color-mix(in srgb, var(--surface) 94%, transparent);
+  --client-field: color-mix(in srgb, var(--bg-subtle) 88%, transparent);
+}
+
+.coach-client-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem;
+  border: 1px solid var(--client-rule);
+  border-radius: 0.25rem;
+  background: var(--client-panel);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.coach-client-search {
+  width: 12.5rem;
+  height: 2.25rem;
+  padding-left: 1.85rem !important;
+  border-radius: 0.2rem !important;
+  font-size: 0.75rem !important;
+}
+
+.coach-client-filter,
+.coach-client-sort {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.42rem 0.65rem;
+  border-radius: 0.18rem !important;
+  font: 600 0.68rem/1 var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  transition: background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong);
+}
+
+.coach-client-sort { padding-inline: 1.75rem; }
+.coach-client-filter:hover,
+.coach-client-sort:hover { color: var(--text) !important; }
+.coach-client-filter:active,
+.coach-client-sort:active { transform: translateY(1px); }
+
+.coach-client-table,
+.coach-client-mobile-list {
+  border: 1px solid var(--client-rule);
+  border-radius: 0.25rem;
+  background: var(--client-panel);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.coach-client-table [role='row']:not(:first-child) { min-height: 3.75rem; }
+.coach-client-table [role='columnheader'] { font-family: var(--font-geist-mono), ui-monospace, monospace; }
+.coach-client-table [role='row']:not(:first-child):hover { box-shadow: inset 3px 0 0 var(--accent); }
+.coach-client-table [role='cell'] { font-variant-numeric: tabular-nums; }
+
+.coach-client-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 1.15rem;
+  border: 1px solid var(--client-rule);
+  border-radius: 0.25rem;
+  background: var(--client-panel);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.coach-client-hero::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--accent);
+  content: '';
+}
+
+.coach-client-tabs {
+  display: flex;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--client-rule);
+  border-radius: 0.25rem;
+  background: var(--client-rule);
+}
+
+.coach-client-tab {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 0.9rem;
+  border: 0;
+  border-radius: 0.15rem;
+  background: var(--surface);
+  color: var(--text-muted);
+  font: 600 0.72rem/1 var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  transition: background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong), box-shadow 180ms var(--ease-out-strong);
+}
+
+.coach-client-tab:hover { background: var(--surface-hover); color: var(--text); }
+.coach-client-tab[data-active='true'] {
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+.coach-client-tab:active { transform: translateY(1px); }
+
+@media (max-width: 767px) {
+  .coach-client-toolbar { align-items: stretch; }
+  .coach-client-toolbar > div:first-child,
+  .coach-client-search { width: 100%; }
+  .coach-client-hero { padding: 0.9rem; }
+  .coach-client-tabs { border-inline: 0; border-radius: 0; }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    THEME — LIGHT — Graphite Apple Pro
    ═══════════════════════════════════════════════════════════════ */
