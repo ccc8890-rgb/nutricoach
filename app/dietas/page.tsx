@@ -46,7 +46,7 @@ export default function DietasPage() {
   )
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="coach-diet-index p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       <header className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Planes de dieta</h1>
@@ -85,7 +85,7 @@ export default function DietasPage() {
           {filtrados.map(p => (
             <StaggerItem key={p.id}>
               <Link href={`/dietas/${p.id}`}
-                className="card flex items-center gap-4 block">
+                className="coach-plan-row flex items-center gap-4">
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'var(--primary-bg)' }}>
                   <UtensilsCrossed size={20} style={{ color: 'var(--primary)' }} />
                 </div>

@@ -362,7 +362,7 @@ export function CollapsibleModule({
     <details
       open={defaultOpen}
       onToggle={e => { if (e.currentTarget.open) setVisto(true) }}
-      className="group rounded-3xl mb-6 overflow-hidden"
+      className="coach-diet-module group mb-6 overflow-hidden"
       style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4 sm:p-5 active:scale-[0.995]">
@@ -381,4 +381,3 @@ export function CollapsibleModule({
     </details>
   )
 }
-

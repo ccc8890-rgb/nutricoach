@@ -779,9 +779,9 @@ export default function EditarDietaPage() {
   return (
     <>
       <BackButton href={backHref} />
-      <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto pt-16 lg:pt-6">
+      <div className="coach-diet-editor px-4 sm:px-6 py-6 max-w-7xl mx-auto pt-16 lg:pt-6">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-6">
+        <div className="coach-diet-header flex flex-col lg:flex-row lg:items-center gap-3 mb-6">
           <Link href={backHref} className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
