@@ -210,7 +210,7 @@ export default function AgentesInboxPage() {
   const agentesUnicos = [...new Set(tareas.map((t) => t.agente))]
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 overflow-x-hidden">
+    <div className="coach-agent-inbox w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 overflow-x-hidden">
       <header className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-5 mb-6">
         <div className="min-w-0">
           <p className="text-xs font-semibold tracking-[0.14em] uppercase mb-2" style={{ color: 'var(--text-muted)' }}>

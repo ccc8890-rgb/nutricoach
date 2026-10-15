@@ -407,6 +407,26 @@
 .coach-profitability-dashboard h1,
 .coach-shopping-page h1 { letter-spacing: -0.025em; }
 
+/* Coach · Superficies finales — builder de entreno e inbox IA */
+.coach-training-builder,
+.coach-agent-inbox {
+  --workspace-rule: color-mix(in srgb, var(--border) 86%, var(--text-muted) 14%);
+  --workspace-radius: 0.25rem;
+}
+.coach-training-builder .rounded-3xl,
+.coach-training-builder .rounded-2xl,
+.coach-training-builder .rounded-xl,
+.coach-agent-inbox .rounded-3xl,
+.coach-agent-inbox .rounded-2xl,
+.coach-agent-inbox .rounded-xl,
+.coach-agent-inbox .rounded-\[1\.35rem\] { border-radius: var(--workspace-radius); }
+.coach-training-builder [class*='border'],
+.coach-agent-inbox article,
+.coach-agent-inbox > div { box-shadow: none; }
+.coach-training-builder h1,
+.coach-agent-inbox h1 { letter-spacing: -0.035em; }
+.coach-agent-inbox article { border-color: var(--workspace-rule) !important; }
+
 /* Coach · Nutrición — directorio, planes y superficies de edición */
 .coach-nutrition-hub,
 .coach-diet-index { --nutrition-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%); }

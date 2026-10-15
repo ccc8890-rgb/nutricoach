@@ -263,7 +263,7 @@ function NuevoEntrenoForm() {
   }
 
   return (
-    <div className="px-4 py-5 sm:px-6 lg:px-8">
+    <div className="coach-training-builder px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1500px]">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex items-center gap-3">
