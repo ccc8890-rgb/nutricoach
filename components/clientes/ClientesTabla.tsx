@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight } from '@phosphor-icons/react'
+import { ArrowRight, Warning } from '@phosphor-icons/react'
 import { OBJETIVO_LABELS } from '@/lib/utils'
 import {
   nombreCliente, getEstadoCliente, estadoStyle, scoreColor,
@@ -70,7 +70,7 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
   if (clientes.length === 0) return null
 
   return (
-    <div className="rounded-2xl overflow-hidden max-w-[1500px]" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <div className="coach-client-table overflow-hidden max-w-[1500px]">
       {/* Cabecera */}
       <div
         className="hidden lg:grid items-center gap-x-4 px-4 py-3"
@@ -119,7 +119,7 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
             <div style={{ minWidth: 0 }}>
               <div className="font-bold text-[17px] truncate" style={{ color: 'var(--text)' }}>
                 {nombreCliente(c)}
-                {c.es_predictor_baja && <span className="ml-2 text-[13px]" style={{ color: 'var(--error)' }}>⚠</span>}
+                {c.es_predictor_baja && <Warning weight="fill" size={13} className="inline ml-2" style={{ color: 'var(--error)' }} aria-label="Riesgo de baja" />}
               </div>
               <div className="text-[14px] truncate" style={{ color: 'var(--text-muted)' }}>
                 {c.profile?.email}

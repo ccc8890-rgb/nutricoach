@@ -231,7 +231,7 @@ export default function ClientesPage() {
   )
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 overflow-x-hidden">
+    <div className="coach-client-index w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 overflow-x-hidden">
       {/* Header */}
       <header className="flex items-center justify-between gap-4 mb-5">
         {/* Back button — visible en móvil */}
@@ -252,7 +252,7 @@ export default function ClientesPage() {
           <button
             onClick={() => setModalLinkOpen(true)}
             className="btn-primary flex items-center gap-1.5 text-sm px-3 py-2 whitespace-nowrap">
-            <span>＋</span> Generar link de pago
+            <Plus size={14} /> Generar link de pago
           </button>
           <button
             onClick={handleInvitar}

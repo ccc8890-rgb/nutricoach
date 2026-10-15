@@ -63,7 +63,7 @@ export default function ClientesToolbar({
 
   return (
     <div
-      className="rounded-2xl p-2.5 mb-4 flex flex-wrap items-center gap-2"
+      className="coach-client-toolbar mb-4"
       style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
     >
       {/* Búsqueda compacta */}
@@ -74,7 +74,7 @@ export default function ClientesToolbar({
           style={{ color: 'var(--text-muted)' }}
         />
         <input
-          className="input"
+          className="input coach-client-search"
           style={{ width: '185px', paddingLeft: '28px', height: '32px', fontSize: '12px' }}
           placeholder="Buscar cliente…"
           value={busqueda}

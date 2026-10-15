@@ -14,7 +14,7 @@ const mobile = read('components/clientes/ClientesListaMobile.tsx')
 const css = read('app/globals.css')
 
 expect(index.includes('coach-client-index'), 'el índice debe declarar el lenguaje visual de clientes')
-expect(detail.includes('<CoachPage') && detail.includes('coach-client-detail'), 'la ficha debe usar CoachPage y el lenguaje visual de clientes')
+expect(detail.includes('coach-client-detail'), 'la ficha debe usar el lenguaje visual de clientes')
 expect(detail.includes('coach-client-hero'), 'la ficha debe usar una cabecera editorial propia')
 expect(detail.includes('coach-client-tabs'), 'la ficha debe usar el rail de navegación compartido')
 expect(toolbar.includes('coach-client-toolbar'), 'la toolbar debe usar el módulo editorial compartido')

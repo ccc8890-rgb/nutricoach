@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight } from '@phosphor-icons/react'
+import { ArrowRight, Warning } from '@phosphor-icons/react'
 import {
   nombreCliente, getEstadoCliente, estadoStyle, checkinColor,
   diasHastaCaducidad,
@@ -11,7 +11,7 @@ import {
 
 export default function ClientesListaMobile({ clientes }: { clientes: ClienteRow[] }) {
   return (
-    <div className="flex flex-col gap-0 rounded-2xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <div className="coach-client-mobile-list flex flex-col gap-0 overflow-hidden">
       {clientes.map((c, i) => {
         const estado = getEstadoCliente(c)
         const href = c.revisado_por_coach === false ? `/clientes/${c.id}/revisar-rapido` : `/clientes/${c.id}`
@@ -39,7 +39,7 @@ export default function ClientesListaMobile({ clientes }: { clientes: ClienteRow
               <div className="flex items-center justify-between gap-2">
                 <span className="font-bold text-[17px] truncate" style={{ color: 'var(--text)' }}>
                   {nombreCliente(c)}
-                  {c.es_predictor_baja && <span className="ml-1 text-[13px]" style={{ color: 'var(--error)' }}>⚠</span>}
+                  {c.es_predictor_baja && <Warning weight="fill" size={13} className="inline ml-1" style={{ color: 'var(--error)' }} aria-label="Riesgo de baja" />}
                 </span>
                 <span className="text-[13px] font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={estadoStyle(estado.tone)}>
                   {estado.label}

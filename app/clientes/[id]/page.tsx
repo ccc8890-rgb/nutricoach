@@ -690,7 +690,7 @@ export default function ClienteDetallePage() {
 
   return (
     <>
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 pt-16 lg:pt-6 overflow-x-hidden">
+      <div className="coach-client-detail w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 pt-16 lg:pt-6 overflow-x-hidden">
 
         {/* ── Back ── */}
         <Link href={listaRecordada('clientes', '/clientes')} className="inline-flex items-center gap-1.5 text-sm mb-5 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
@@ -698,7 +698,7 @@ export default function ClienteDetallePage() {
         </Link>
 
         {/* ── Hero card ── */}
-        <div className="rounded-2xl p-3 sm:p-5 mb-3 sm:mb-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="coach-client-hero mb-3 sm:mb-5">
           <div className="flex items-start gap-3 sm:gap-4">
             {/* Avatar */}
             <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-base sm:text-lg font-bold flex-shrink-0" style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
@@ -801,12 +801,13 @@ export default function ClienteDetallePage() {
         </div>
 
         {/* ── Tabs ── */}
-        <div className="flex gap-1 overflow-x-auto pb-1 mb-5 scrollbar-none">
+        <div className="coach-client-tabs overflow-x-auto mb-5 scrollbar-none">
           {TABS.map(({ key, label, icon: Icon, badge }) => (
             <button
               key={key}
               onClick={() => { setTabActiva(key); setIsEditando(false) }}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0"
+              className="coach-client-tab flex-shrink-0"
+              data-active={tabActiva === key}
               style={tabActiva === key
                 ? { background: 'var(--text)', color: 'var(--bg)' }
                 : { background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
