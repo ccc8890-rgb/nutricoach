@@ -433,7 +433,7 @@ export default function AlimentosPage() {
             </header>
 
             {/* Filtros */}
-            <div className="flex items-center gap-3 mb-6 flex-wrap">
+            <div className="coach-food-filters flex items-center gap-3 mb-6 flex-wrap">
                 <div className="relative flex-1 min-w-[200px] max-w-sm">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
@@ -521,7 +521,7 @@ export default function AlimentosPage() {
                                             {items.map(a => (
                                                 <div
                                                     key={a.id}
-                                                    className="card p-3 relative group"
+                                                    className="coach-food-card card p-3 relative group"
                                                 >
                                                     {/* Badges superior */}
                                                     <div className="absolute top-2 right-2 flex gap-1">

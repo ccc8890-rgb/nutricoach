@@ -109,7 +109,7 @@ function NuevaDietaForm() {
   }
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
+    <div className="coach-new-diet p-8 max-w-2xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
         <Link href="/dietas" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
         <div>
@@ -145,7 +145,7 @@ function NuevaDietaForm() {
 
         {/* Calculadora TMB — solo si el cliente tiene datos */}
         {puedeCalcular && (
-          <div className="card" style={{ borderColor: '#86efac', backgroundColor: '#f0fdf4' }}>
+          <div className="coach-tmb-panel card">
             <div className="flex items-center gap-2 mb-3">
               <Zap size={16} style={{ color: '#16a34a' }} />
               <h2 className="font-semibold" style={{ color: '#166534' }}>Calcular con TMB (Mifflin-St Jeor)</h2>

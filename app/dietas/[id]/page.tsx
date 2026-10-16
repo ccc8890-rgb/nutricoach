@@ -860,7 +860,7 @@ export default function EditarDietaPage() {
             <MacroDial label="Carbos" value={totalDia.carbohidratos} target={macroObjetivos.carbohidratos} color="#FF9500" icon={Wheat} unit="g" />
             <MacroDial label="Grasas" value={totalDia.grasas} target={macroObjetivos.grasas} color="#0A84FF" icon={Droplets} unit="g" />
           </div>
-          <div className="mt-4 rounded-2xl p-3 sm:p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+          <div className="coach-diet-macro-editor mt-4 p-3 sm:p-4">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-3">
               <div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Distribución de macros objetivo</p>
@@ -978,7 +978,7 @@ export default function EditarDietaPage() {
             Detecta desviaciones de macros, comidas sin receta, días vacíos y equivalentes insuficientes para que el coach ajuste rápido.
           </p>
           <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-5">
-            <div className="grid grid-cols-3 gap-2 w-full xl:w-auto">
+            <div className="coach-diet-audit-rail grid grid-cols-3 gap-px w-full xl:w-auto">
               <div className="rounded-2xl px-3 py-2" style={{ background: auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').bg, border: `1px solid ${auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').border}` }}>
                 <p className="text-[12px] uppercase font-semibold" style={{ color: 'var(--text-muted)' }}>Score</p>
                 <p className="text-2xl font-bold tabular-nums" style={{ color: auditTone(criticosSemana > 0 ? 'critico' : avisosSemana > 0 ? 'aviso' : 'ok').text }}>{scoreSemana}</p>
@@ -1073,7 +1073,7 @@ export default function EditarDietaPage() {
             </div>
           }
         >
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+          <div className="coach-diet-day-grid grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-px">
             {auditoriaSemana.map(({ dia, comidas: comidasDelDia, macros, score, criticos, avisos }) => {
               const activo = dia === diaActivo
               const status = criticos > 0 ? 'critico' : avisos > 0 ? 'aviso' : 'ok'
@@ -1138,7 +1138,7 @@ export default function EditarDietaPage() {
             const alternativas = alternativasPorComida[comida.id] ?? []
             const opcionesCliente = comida.alternativas_receta_ids ?? []
             return (
-              <div key={comida.id} className="card">
+              <div key={comida.id} className="coach-diet-meal-card card">
                 {/* Header comida */}
                 <div className="flex items-start gap-3 mb-4">
                   <button onClick={() => setComidas(prev => prev.map(c => c.id === comida.id ? { ...c, expandida: !c.expandida } : c))}

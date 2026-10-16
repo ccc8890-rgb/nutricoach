@@ -173,7 +173,7 @@ export default function PlantillasPage() {
     // MODO EDITOR
     if (showEditor) {
         return (
-            <div className="p-8 max-w-3xl mx-auto">
+            <div className="coach-diet-templates p-8 max-w-3xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
@@ -295,7 +295,7 @@ export default function PlantillasPage() {
 
     // MODO LISTADO
     return (
-        <div className="p-8 max-w-5xl mx-auto">
+        <div className="coach-diet-templates p-8 max-w-5xl mx-auto">
             {/* Modal de confirmación eliminar */}
             <Modal
                 abierto={modalDelete.abierto}
@@ -366,7 +366,7 @@ export default function PlantillasPage() {
                         const tipo = (p.tipo || 'normal') as PlantillaDietaTipo
                         const TipoIcon = TIPO_ICON[tipo]
                         return (
-                            <div key={p.id} className="card flex items-center gap-4">
+                            <div key={p.id} className="coach-diet-template-card card flex items-center gap-4">
                                 <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
                                     style={{ background: TIPO_BG[tipo] }}>
                                     <TipoIcon size={20} style={{ color: TIPO_COLOR[tipo] }} />

@@ -786,6 +786,103 @@
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--nutrition-rule);
 }
+.coach-diet-macro-editor,
+.coach-new-diet .card,
+.coach-diet-templates .card {
+  border: 1px solid var(--nutrition-rule);
+  border-radius: 0.22rem;
+  background: var(--nutrition-paper, var(--surface));
+  box-shadow: none;
+}
+.coach-diet-macro-editor > div:first-child {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--nutrition-rule);
+}
+.coach-diet-macro-editor span[class*='rounded-full'] { border-radius: 0.12rem; }
+.coach-diet-audit-rail {
+  overflow: hidden;
+  border: 1px solid var(--nutrition-rule);
+  border-radius: 0.18rem;
+  background: var(--nutrition-rule);
+}
+.coach-diet-audit-rail > div {
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+.coach-diet-day-grid {
+  overflow: hidden;
+  border: 1px solid var(--nutrition-rule);
+  border-radius: 0.18rem;
+  background: var(--nutrition-rule);
+}
+.coach-diet-day-grid > button {
+  border: 0 !important;
+  border-radius: 0 !important;
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+}
+.coach-diet-day-grid span[class*='rounded-full'] { border-radius: 0.1rem; }
+.coach-diet-meal-card {
+  border-color: var(--nutrition-rule);
+  border-radius: 0.22rem !important;
+  background: var(--nutrition-paper);
+}
+.coach-diet-meal-card > div:first-child a { border-radius: 0.16rem !important; }
+.coach-diet-meal-card [class*='rounded-2xl'],
+.coach-diet-meal-card [class*='rounded-xl'] { border-radius: 0.16rem; }
+
+.coach-food-filters {
+  padding: 0.65rem;
+  border: 1px solid var(--nutrition-rule);
+  border-radius: 0.2rem;
+  background: var(--nutrition-paper);
+}
+.coach-food-filters label {
+  color: var(--text-secondary) !important;
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif !important;
+  letter-spacing: -0.01em !important;
+}
+.coach-food-filters input,
+.coach-food-filters select { border-radius: 0.16rem; }
+.coach-food-card {
+  border-color: var(--nutrition-rule);
+  border-radius: 0.2rem !important;
+}
+.coach-food-card:hover { border-color: var(--border-strong); box-shadow: inset 3px 0 0 var(--accent); }
+.coach-food-card span[class*='rounded-full'] { border-radius: 0.1rem; }
+
+.coach-diet-templates {
+  --nutrition-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%);
+  --nutrition-paper: color-mix(in srgb, var(--surface) 95%, transparent);
+}
+.coach-diet-templates > header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--nutrition-rule);
+}
+.coach-diet-template-card { transition: border-color 180ms var(--ease-out-strong), box-shadow 180ms var(--ease-out-strong); }
+.coach-diet-template-card:hover { border-color: var(--border-strong); box-shadow: inset 3px 0 0 var(--accent); }
+.coach-diet-template-card > div:first-child { border-radius: 0.16rem !important; }
+.coach-diet-template-card span[class*='rounded-full'] { border-radius: 0.1rem; }
+
+.coach-new-diet {
+  --nutrition-rule: color-mix(in srgb, var(--border) 84%, var(--text-muted) 16%);
+  --nutrition-paper: color-mix(in srgb, var(--surface) 95%, transparent);
+}
+.coach-new-diet > div:first-child {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--nutrition-rule);
+}
+.coach-new-diet input,
+.coach-new-diet select,
+.coach-new-diet textarea,
+.coach-new-diet button { border-radius: 0.16rem; }
+.coach-tmb-panel {
+  border-color: var(--semantic-active-border) !important;
+  background: var(--semantic-active-bg) !important;
+}
+.coach-tmb-panel h2,
+.coach-tmb-panel p,
+.coach-tmb-panel label { color: var(--text-secondary) !important; }
+.coach-tmb-panel svg { color: var(--semantic-active) !important; }
 
 @media (max-width: 767px) {
   .coach-module-directory { grid-template-columns: 1fr; }
