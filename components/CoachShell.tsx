@@ -90,7 +90,10 @@ function getCoachContext(pathname: string): CoachContext {
   if (pathname.startsWith('/nutricion')) {
     return { area: 'Nutrición', title: 'Dashboard nutrición', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
   }
-  if (pathname.startsWith('/dietas') || pathname.startsWith('/compra')) {
+  if (pathname.startsWith('/compra')) {
+    return { area: 'Nutrición', title: 'Compra y costes', actionHref: '/precios/escandallo', actionLabel: 'Escandallo', actionIcon: FilePlus2 }
+  }
+  if (pathname.startsWith('/dietas')) {
     return { area: 'Nutrición', title: 'Planes y alimentos', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
   }
   if (pathname.startsWith('/recetas')) {
