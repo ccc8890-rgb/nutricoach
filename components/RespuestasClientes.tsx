@@ -120,7 +120,7 @@ export default function RespuestasClientes({ respuestas, onActualizar }: Props) 
     }
 
     return (
-        <div className="space-y-4">
+        <section className="coach-responses-list space-y-4">
             {/* Modal de confirmación */}
             <Modal
                 abierto={modalConfirmar.abierto}
@@ -319,6 +319,6 @@ export default function RespuestasClientes({ respuestas, onActualizar }: Props) 
                     })}
                 </div>
             )}
-        </div>
+        </section>
     )
 }

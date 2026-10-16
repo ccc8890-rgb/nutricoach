@@ -38,7 +38,7 @@ export default function RespuestasPage() {
     }, [load])
 
     return (
-        <div className="p-8 max-w-5xl mx-auto">
+        <main className="coach-responses p-4 sm:p-8 max-w-6xl mx-auto">
             <header className="mb-8">
                 <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Consultas pendientes</h1>
                 <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
@@ -65,6 +65,6 @@ export default function RespuestasPage() {
                     onActualizar={() => window.location.reload()}
                 />
             )}
-        </div>
+        </main>
     )
 }

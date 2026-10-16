@@ -115,7 +115,7 @@ export default function AjustesPanel() {
   const iniciales = perfil ? `${perfil.nombre?.[0] ?? ''}${perfil.apellidos?.[0] ?? ''}`.toUpperCase() || '·' : ''
 
   return (
-    <div className="px-4 py-5 sm:px-6 lg:px-8">
+    <main className="coach-settings px-4 py-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl space-y-4">
         <section className="flex items-center gap-3 rounded-2xl border p-4 sm:p-5" style={cardStyle}>
           <span
@@ -248,6 +248,6 @@ export default function AjustesPanel() {
           </div>
         </Seccion>
       </div>
-    </div>
+    </main>
   )
 }

@@ -128,7 +128,7 @@ export default function CuestionarioCreador({ preguntasIniciales = [], onGuardar
         tipo === 'select' || tipo === 'multiselect' || tipo === 'checkbox'
 
     return (
-        <div className="space-y-4">
+        <section className="coach-questionnaire-builder space-y-4">
             {preguntas.map((pregunta, index) => (
                 <div
                     key={pregunta.id}
@@ -295,6 +295,6 @@ export default function CuestionarioCreador({ preguntasIniciales = [], onGuardar
             {preguntas.every(p => !p.titulo.trim()) && (
                 <p className="text-xs" style={{ color: '#8E8E93' }}>Añade al menos una pregunta con título para guardar.</p>
             )}
-        </div>
+        </section>
     )
 }
