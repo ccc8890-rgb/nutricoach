@@ -657,8 +657,13 @@
 .share-story__preview { width: 100%; border-radius: 12px; background: repeating-conic-gradient(#2a2a2e 0% 25%, #1c1c1f 0% 50%) 0 0 / 20px 20px; }
 .share-story__preview img { max-height: 100%; max-width: 86%; }
 .share-story__hint { color: #8c8c95; font: 600 0.68rem var(--font-geist-mono), monospace; letter-spacing: 0.06em; text-align: center; }
-.share-story__btns { display: flex; gap: 0.6rem; width: 100%; max-width: 22rem; }
+.share-story__btns { display: flex; gap: 0.5rem; width: 100%; max-width: 26rem; }
 .share-story__btns .share-story__go { flex: 1; }
+.share-story__go { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.8rem; }
 .share-story__go--alt { background: transparent; color: #e9e9ec; border: 1px solid #55555c; }
 .share-story__go { width: 100%; max-width: 22rem; padding: 0.9rem; border-radius: var(--editorial-radius); background: #e9e9ec; color: #070708; font-weight: 700; }
 .share-story__go:disabled { opacity: 0.5; }
+.share-story__editor { position: relative; aspect-ratio: 9 / 16; height: 100%; max-height: 100%; background-size: cover; background-position: center; border-radius: 6px; overflow: hidden; touch-action: none; }
+.share-story__editor img { position: absolute; transform: translate(-50%, -50%); max-width: none; max-height: none; cursor: grab; touch-action: none; user-select: none; }
+.share-story__size { display: flex; align-items: center; gap: 0.7rem; width: 100%; max-width: 22rem; color: #8c8c95; font: 600 0.62rem var(--font-geist-mono), monospace; letter-spacing: 0.12em; }
+.share-story__size input { flex: 1; }

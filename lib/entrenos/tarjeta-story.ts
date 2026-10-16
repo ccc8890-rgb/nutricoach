@@ -55,6 +55,8 @@ const INK = '#EDEDF0'
 const MUTED = '#9A9AA4'
 const METAL = '#C9CCD3'
 
+const ESCALA_PNG = 3
+
 async function prepararCanvas(w: number, h: number) {
   const css = getComputedStyle(document.documentElement)
   const sans = css.getPropertyValue('--font-instrument').trim() || 'system-ui, sans-serif'
@@ -62,10 +64,12 @@ async function prepararCanvas(w: number, h: number) {
   try {
     await Promise.all([document.fonts.load(`300 80px ${sans}`), document.fonts.load(`700 40px ${sans}`), document.fonts.load(`600 30px ${mono}`)])
   } catch { /* fuente de respaldo */ }
+  // Se dibuja a 3× para que no pierda definición cuando Instagram la reescala y comprime
   const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
+  canvas.width = w * ESCALA_PNG
+  canvas.height = h * ESCALA_PNG
   const ctx = canvas.getContext('2d')!
+  ctx.scale(ESCALA_PNG, ESCALA_PNG)
   // Panel oscuro translúcido con borde fino: se lee sobre cualquier foto o vídeo
   ctx.beginPath()
   ctx.roundRect(2, 2, w - 4, h - 4, 6)
@@ -123,19 +127,10 @@ function marcaTriangulo(ctx: CanvasRenderingContext2D, cx: number, cy: number, r
   ctx.beginPath(); ctx.arc(px, py, 2.8, 0, TAU); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.restore()
 }
 
-/** Firma: símbolo + «RATIO» en mono espaciado, centrada. */
-function firma(ctx: CanvasRenderingContext2D, w: number, y: number, mono: string) {
-  ctx.font = `600 15px ${mono}`
-  ;(ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '6px'
-  const texto = 'RATIO'
-  const ancho = ctx.measureText(texto).width - 6
-  const total = 28 + 16 + ancho
-  const x0 = (w - total) / 2
-  marcaTriangulo(ctx, x0 + 12, y - 1, 14, varianteMarca)
-  ctx.textAlign = 'left'
-  ctx.fillStyle = '#C9CCD3'
-  ctx.fillText(texto, x0 + 44, y + 5)
-  ;(ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px'
+/** Firma: solo el símbolo del triángulo, centrado (sin nombre mientras no esté decidido). */
+function firma(ctx: CanvasRenderingContext2D, w: number, y: number, _mono: string) {
+  void _mono
+  marcaTriangulo(ctx, w / 2, y - 1, 15, varianteMarca)
 }
 
 /** Sticker de la sesión: filas «01 · nombre · 4×6 · 80 kg» separadas por líneas finas. Sin títulos. */
