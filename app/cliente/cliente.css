@@ -667,3 +667,6 @@
 .share-story__editor img { position: absolute; transform: translate(-50%, -50%); max-width: none; max-height: none; cursor: grab; touch-action: none; user-select: none; }
 .share-story__size { display: flex; align-items: center; gap: 0.7rem; width: 100%; max-width: 22rem; color: #8c8c95; font: 600 0.62rem var(--font-geist-mono), monospace; letter-spacing: 0.12em; }
 .share-story__size input { flex: 1; }
+.share-story__tema { display: flex; border: 1px solid #3a3a40; border-radius: 3px; overflow: hidden; }
+.share-story__tema button { padding: 0.4rem 0.9rem; color: #8c8c95; font: 600 0.62rem var(--font-geist-mono), monospace; letter-spacing: 0.12em; }
+.share-story__tema button.is-on { background: #e9e9ec; color: #070708; }

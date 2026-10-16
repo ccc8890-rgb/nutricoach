@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ImageSquare, InstagramLogo, X } from '@phosphor-icons/react'
+import type { TemaTarjeta } from '@/lib/entrenos/tarjeta-story'
 
 const W_STORY = 1080
 const H_STORY = 1920
@@ -11,12 +12,13 @@ function cargarImagen(src: string): Promise<HTMLImageElement> {
 }
 
 /** Botón de Instagram + vista previa de la tarjeta. Permite colocarla sobre una foto del carrete y exportar 1080×1920. */
-export default function CompartirSesion({ generar }: { generar: () => Promise<Blob> }) {
+export default function CompartirSesion({ generar }: { generar: (tema: TemaTarjeta) => Promise<Blob> }) {
   const [abierto, setAbierto] = useState(false)
   const [blob, setBlob] = useState<Blob | null>(null)
   const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState(false)
   const [foto, setFoto] = useState<string | null>(null)
+  const [tema, setTema] = useState<TemaTarjeta>('oscuro')
   // Centro de la tarjeta (0-1 sobre la story) y su ancho (fracción del ancho de la story)
   const [pos, setPos] = useState({ x: 0.5, y: 0.5, ancho: 0.8 })
   const editor = useRef<HTMLDivElement>(null)
@@ -27,12 +29,12 @@ export default function CompartirSesion({ generar }: { generar: () => Promise<Bl
     if (!abierto) return
     let vivo = true
     setBlob(null); setUrl(null); setError(false)
-    generar()
+    generar(tema)
       .then(b => { if (vivo) { setBlob(b); setUrl(URL.createObjectURL(b)) } })
       .catch(() => { if (vivo) setError(true) })
     return () => { vivo = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [abierto])
+  }, [abierto, tema])
 
   useEffect(() => () => { if (url) URL.revokeObjectURL(url) }, [url])
   useEffect(() => () => { if (foto) URL.revokeObjectURL(foto) }, [foto])
@@ -120,6 +122,11 @@ export default function CompartirSesion({ generar }: { generar: () => Promise<Bl
               <input type="range" min="30" max="100" value={Math.round(pos.ancho * 100)} onChange={e => setPos(p => ({ ...p, ancho: Number(e.target.value) / 100 }))} />
             </label>
           )}
+          <div className="share-story__tema" role="group" aria-label="Estilo de la tarjeta">
+            {(['oscuro', 'claro'] as const).map(t => (
+              <button key={t} type="button" onClick={() => setTema(t)} aria-pressed={tema === t} className={tema === t ? 'is-on' : ''}>{t === 'oscuro' ? 'OSCURA' : 'CLARA'}</button>
+            ))}
+          </div>
           <p className="share-story__hint">{foto ? 'Arrastra la tarjeta para colocarla' : 'Compártela suelta o ponla sobre una foto tuya'}</p>
           <input ref={inputFoto} type="file" accept="image/*" hidden onChange={elegirFoto} />
           <div className="share-story__btns">

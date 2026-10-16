@@ -161,14 +161,14 @@ export default function RecetaClientePage() {
                 ) : null}
                 {receta.porciones ? <span>{receta.porciones} {receta.porciones === 1 ? 'porción' : 'porciones'}</span> : null}
               </div>
-              <CompartirSesion generar={() => dibujarPlatoTernario({
+              <CompartirSesion generar={(tema) => dibujarPlatoTernario({
                 nombre: receta.nombre,
                 kcal: racion?.total.kcal ?? receta.kcal ?? 0,
                 p: racion?.total.p ?? receta.proteinas ?? 0,
                 c: racion?.total.c ?? receta.carbohidratos ?? 0,
                 g: racion?.total.g ?? receta.grasas ?? 0,
                 detalle: receta.tiempo_prep_min ? `${receta.tiempo_prep_min} min` : null,
-              })} />
+              }, tema)} />
               {/* Solo llega si el coach ha activado el vídeo para este cliente */}
               {receta.url_origen && /instagram\.com|tiktok\.com|youtube\.com|youtu\.be/.test(receta.url_origen) && (
                 <a href={receta.url_origen} target="_blank" rel="noopener noreferrer"

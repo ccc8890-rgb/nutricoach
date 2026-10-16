@@ -51,9 +51,28 @@ function partesSeries(e: DatosTarjeta['ejercicios'][number]): [string, string] {
   return [grande, unidad]
 }
 
-const INK = '#EDEDF0'
-const MUTED = '#9A9AA4'
-const METAL = '#C9CCD3'
+export type TemaTarjeta = 'oscuro' | 'claro'
+const PALETAS = {
+  oscuro: { fondo: '#0B0B0C', ink: '#EDEDF0', muted: '#9A9AA4', metal: '#C9CCD3', rgb: '201,204,211', punto: '#FFFFFF', glow: '255,255,255', prot: '#FFFFFF', carb: '#979BA5', grasa: '#5C5E67' },
+  claro: { fondo: '#F3F1EC', ink: '#121214', muted: '#6B6B73', metal: '#3A3C44', rgb: '20,20,22', punto: '#121214', glow: '20,20,22', prot: '#121214', carb: '#6B6F79', grasa: '#B4B6BD' },
+} as const
+let INK: string = PALETAS.oscuro.ink, MUTED: string = PALETAS.oscuro.muted, METAL: string = PALETAS.oscuro.metal
+let FONDO: string = PALETAS.oscuro.fondo, RGB: string = PALETAS.oscuro.rgb, PUNTO: string = PALETAS.oscuro.punto, GLOW: string = PALETAS.oscuro.glow
+let C_PROT: string = PALETAS.oscuro.prot, C_CARB: string = PALETAS.oscuro.carb, C_GRASA: string = PALETAS.oscuro.grasa
+
+function aplicarTema(t: TemaTarjeta) {
+  const q = PALETAS[t]
+  INK = q.ink; MUTED = q.muted; METAL = q.metal; FONDO = q.fondo; RGB = q.rgb; PUNTO = q.punto; GLOW = q.glow
+  C_PROT = q.prot; C_CARB = q.carb; C_GRASA = q.grasa
+}
+
+// Las tarjetas se dibujan de una en una (la paleta es compartida)
+let cola: Promise<unknown> = Promise.resolve()
+function enCola<T>(f: () => Promise<T>): Promise<T> {
+  const r = cola.then(f, f)
+  cola = r.catch(() => undefined)
+  return r
+}
 
 const ESCALA_PNG = 3
 
@@ -71,10 +90,10 @@ async function prepararCanvas(w: number, h: number) {
   const ctx = canvas.getContext('2d')!
   ctx.scale(ESCALA_PNG, ESCALA_PNG)
   // Panel opaco y rectangular (sin transparencia: Instagram rellena de negro lo transparente)
-  ctx.fillStyle = '#0B0B0C'
+  ctx.fillStyle = FONDO
   ctx.fillRect(0, 0, w, h)
   ctx.lineWidth = 2
-  ctx.strokeStyle = 'rgba(201,204,211,0.38)'
+  ctx.strokeStyle = `rgba(${RGB},0.38)`
   ctx.strokeRect(1, 1, w - 2, h - 2)
   marcasEsquina(ctx, w, h)
   return { canvas, ctx, sans, mono }
@@ -85,7 +104,7 @@ const aBlob = (c: HTMLCanvasElement) => new Promise<Blob>((ok, ko) => c.toBlob(b
 /** Marcas de registro en las cuatro esquinas, como un instrumento de medida. */
 function marcasEsquina(ctx: CanvasRenderingContext2D, w: number, h: number) {
   const m = 22, l = 16
-  ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(201,204,211,0.5)'; ctx.lineCap = 'butt'
+  ctx.lineWidth = 2; ctx.strokeStyle = `rgba(${RGB},0.5)`; ctx.lineCap = 'butt'
   for (const [x, y, dx, dy] of [[m, m, 1, 1], [w - m, m, -1, 1], [m, h - m, 1, -1], [w - m, h - m, -1, -1]] as const) {
     ctx.beginPath(); ctx.moveTo(x + dx * l, y); ctx.lineTo(x, y); ctx.lineTo(x, y + dy * l); ctx.stroke()
   }
@@ -102,16 +121,16 @@ function marcaTriangulo(ctx: CanvasRenderingContext2D, cx: number, cy: number, r
   const vert = [0, 1, 2].map(i => ({ x: cx + Math.sin((i * TAU) / 3) * r, y: cy - Math.cos((i * TAU) / 3) * r + r * 0.12 }))
   const F = [0.36, 0.34, 0.3]
   const px = vert.reduce((a, q, i) => a + q.x * F[i], 0), py = vert.reduce((a, q, i) => a + q.y * F[i], 0)
-  const tonos = ['#FFFFFF', '#979BA5', '#5C5E67']
+  const tonos = [C_PROT, C_CARB, C_GRASA]
   ctx.lineJoin = 'round'; ctx.lineCap = 'round'
   if (v === '1') {
     ctx.beginPath(); vert.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y))); ctx.closePath()
-    ctx.lineWidth = 1.6; ctx.strokeStyle = '#C9CCD3'; ctx.stroke()
+    ctx.lineWidth = 1.6; ctx.strokeStyle = METAL; ctx.stroke()
   }
   if (v === '1' || v === 'h') {
     const m = vert.map((q, i) => ({ x: (q.x + vert[(i + 1) % 3].x) / 2, y: (q.y + vert[(i + 1) % 3].y) / 2 }))
     ctx.beginPath(); m.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y))); ctx.closePath()
-    ctx.lineWidth = 0.8; ctx.strokeStyle = 'rgba(201,204,211,0.35)'; ctx.stroke()
+    ctx.lineWidth = 0.8; ctx.strokeStyle = `rgba(${RGB},0.35)`; ctx.stroke()
   }
   if (v === '3' || v === 'h') {
     for (let i = 0; i < 3; i++) {
@@ -121,8 +140,8 @@ function marcaTriangulo(ctx: CanvasRenderingContext2D, cx: number, cy: number, r
       ctx.lineWidth = 2; ctx.strokeStyle = tonos[i]; ctx.stroke()
     }
   }
-  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.95)'; ctx.shadowBlur = 8
-  ctx.beginPath(); ctx.arc(px, py, 2.8, 0, TAU); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.restore()
+  ctx.save(); ctx.shadowColor = `rgba(${GLOW},0.95)`; ctx.shadowBlur = 8
+  ctx.beginPath(); ctx.arc(px, py, 2.8, 0, TAU); ctx.fillStyle = PUNTO; ctx.fill(); ctx.restore()
 }
 
 /** Firma: solo el símbolo del triángulo, centrado (sin nombre mientras no esté decidido). */
@@ -132,7 +151,7 @@ function firma(ctx: CanvasRenderingContext2D, w: number, y: number, _mono: strin
 }
 
 /** Sticker de la sesión: filas «01 · nombre · 4×6 · 80 kg» separadas por líneas finas. Sin títulos. */
-export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
+async function _dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
   const filas = d.ejercicios.slice(0, 6)
   const W = 640
   const P = 48
@@ -157,7 +176,7 @@ export async function dibujarTarjeta(d: DatosTarjeta): Promise<Blob> {
     ctx.font = `500 22px ${sans}`
     ctx.fillStyle = INK
     ctx.fillText(recortar(ctx, e.nombre, W - P * 2 - 48 - anchoDer - 20), P + 46, base)
-    ctx.fillStyle = 'rgba(201,204,211,0.16)'
+    ctx.fillStyle = `rgba(${RGB},0.16)`
     if (i < filas.length - 1) ctx.fillRect(P, y + rowH - 4, W - P * 2, 1.5)
   })
   firma(ctx, W, H - 40, mono)
@@ -170,7 +189,7 @@ export interface DatosPlato { nombre: string; kcal: number; p: number; c: number
 function anilloLimpio(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, tramos: Array<{ frac: number; color: string }>) {
   const TAU = Math.PI * 2
   ctx.lineCap = 'round'
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(201,204,211,0.14)'; ctx.stroke()
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.lineWidth = 6; ctx.strokeStyle = `rgba(${RGB},0.14)`; ctx.stroke()
   const total = tramos.reduce((acc, t) => acc + t.frac, 0)
   const hueco = tramos.length > 1 ? 0.12 : 0
   let ang = -Math.PI / 2 + hueco / 2
@@ -181,18 +200,18 @@ function anilloLimpio(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: 
     fin = ang + sweep
     ang += sweep + hueco
   })
-  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 14
-  ctx.beginPath(); ctx.arc(cx + Math.cos(fin) * R, cy + Math.sin(fin) * R, 5.5, 0, TAU); ctx.fillStyle = '#FFFFFF'; ctx.fill(); ctx.restore()
+  ctx.save(); ctx.shadowColor = `rgba(${GLOW},0.9)`; ctx.shadowBlur = 14
+  ctx.beginPath(); ctx.arc(cx + Math.cos(fin) * R, cy + Math.sin(fin) * R, 5.5, 0, TAU); ctx.fillStyle = PUNTO; ctx.fill(); ctx.restore()
 }
 
 /** Sticker rectangular del plato: cuatro anillos (kcal repartidas + proteína, carbos y grasa). Sin nombre. */
-export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
+async function _dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
   const W = 720
   const H = 296
   const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
   const kp = Math.max(d.p, 0) * 4, kc = Math.max(d.c, 0) * 4, kg = Math.max(d.g, 0) * 9
   const totalK = kp + kc + kg || 1
-  const PROT = '#FFFFFF', CARB = '#979BA5', GRASA = '#5C5E67'
+  const PROT = C_PROT, CARB = C_CARB, GRASA = C_GRASA
   const R = 46
   const cy = 112
   const colW = (W - 88) / 4
@@ -220,9 +239,6 @@ export async function dibujarTarjetaPlato(d: DatosPlato): Promise<Blob> {
 }
 
 // ── Variantes no circulares del plato (a elegir) ─────────────────────────────
-const C_PROT = '#FFFFFF'
-const C_CARB = '#979BA5'
-const C_GRASA = '#5C5E67'
 
 function repartoPlato(d: DatosPlato) {
   const kp = Math.max(d.p, 0) * 4, kc = Math.max(d.c, 0) * 4, kg = Math.max(d.g, 0) * 9
@@ -231,7 +247,7 @@ function repartoPlato(d: DatosPlato) {
 }
 
 /** V1 «Regla»: una barra proporcional con escala de medición y el ratio escrito P : C : G. */
-export async function dibujarPlatoRegla(d: DatosPlato): Promise<Blob> {
+async function _dibujarPlatoRegla(d: DatosPlato): Promise<Blob> {
   const W = 720, H = 300, P = 48
   const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
   const r = repartoPlato(d)
@@ -251,7 +267,7 @@ export async function dibujarPlatoRegla(d: DatosPlato): Promise<Blob> {
   // escala: marca cada 2 %, más larga cada 10 %
   for (let i = 0; i <= 50; i++) {
     const tx = P + (bw * i) / 50
-    ctx.fillStyle = i % 5 === 0 ? 'rgba(201,204,211,0.6)' : 'rgba(201,204,211,0.25)'
+    ctx.fillStyle = i % 5 === 0 ? `rgba(${RGB},0.6)` : `rgba(${RGB},0.25)`
     ctx.fillRect(tx - 0.75, by + bh + 8, 1.5, i % 5 === 0 ? 12 : 6)
   }
   // etiquetas al inicio de cada tramo
@@ -268,7 +284,7 @@ export async function dibujarPlatoRegla(d: DatosPlato): Promise<Blob> {
 }
 
 /** V2 «Ternario»: un punto en un triángulo (proteína · carbos · grasa); su posición ES el ratio del plato. */
-export async function dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
+async function _dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
   const W = 720, H = 300
   const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
   const r = repartoPlato(d)
@@ -276,7 +292,7 @@ export async function dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
   const cx = W - 150, top = 52
   const vp = { x: cx, y: top }, vc = { x: cx - side / 2, y: top + hgt }, vg = { x: cx + side / 2, y: top + hgt }
   // rejilla al 25 / 50 / 75 %
-  ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(201,204,211,0.16)'
+  ctx.lineWidth = 1; ctx.strokeStyle = `rgba(${RGB},0.16)`
   for (const f of [0.25, 0.5, 0.75]) {
     const lerp = (a: { x: number; y: number }, b: { x: number; y: number }) => ({ x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f })
     for (const [a, b, c] of [[vp, vc, vg], [vc, vg, vp], [vg, vp, vc]] as const) {
@@ -285,14 +301,14 @@ export async function dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
     }
   }
   ctx.beginPath(); ctx.moveTo(vp.x, vp.y); ctx.lineTo(vc.x, vc.y); ctx.lineTo(vg.x, vg.y); ctx.closePath()
-  ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(201,204,211,0.5)'; ctx.stroke()
+  ctx.lineWidth = 2; ctx.strokeStyle = `rgba(${RGB},0.5)`; ctx.stroke()
   const px = vp.x * r.fp + vc.x * r.fc + vg.x * r.fg
   const py = vp.y * r.fp + vc.y * r.fc + vg.y * r.fg
-  ctx.setLineDash([4, 5]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,0.35)'
+  ctx.setLineDash([4, 5]); ctx.lineWidth = 1.5; ctx.strokeStyle = `rgba(${GLOW},0.35)`
   for (const v of [vp, vc, vg]) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(v.x, v.y); ctx.stroke() }
   ctx.setLineDash([])
-  ctx.save(); ctx.shadowColor = 'rgba(255,255,255,0.95)'; ctx.shadowBlur = 20
-  ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI * 2); ctx.fillStyle = '#FFF'; ctx.fill(); ctx.restore()
+  ctx.save(); ctx.shadowColor = `rgba(${GLOW},0.95)`; ctx.shadowBlur = 20
+  ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI * 2); ctx.fillStyle = PUNTO; ctx.fill(); ctx.restore()
   ctx.font = `600 14px ${mono}`; ctx.fillStyle = MUTED; ctx.textAlign = 'center'
   ctx.fillText('P', vp.x, vp.y - 10); ctx.fillText('C', vc.x - 14, vc.y + 5); ctx.fillText('G', vg.x + 14, vg.y + 5)
   // lectura a la izquierda
@@ -312,7 +328,7 @@ export async function dibujarPlatoTernario(d: DatosPlato): Promise<Blob> {
 }
 
 /** V3 «Medidor»: tres columnas de 20 segmentos (5 % cada uno), encendidas según el reparto de kcal. */
-export async function dibujarPlatoMedidor(d: DatosPlato): Promise<Blob> {
+async function _dibujarPlatoMedidor(d: DatosPlato): Promise<Blob> {
   const W = 720, H = 300
   const { canvas, ctx, sans, mono } = await prepararCanvas(W, H)
   const r = repartoPlato(d)
@@ -328,7 +344,7 @@ export async function dibujarPlatoMedidor(d: DatosPlato): Promise<Blob> {
     const enc = Math.max(1, Math.round(pc / 5))
     for (let s = 0; s < seg; s++) {
       const y = 44 + (seg - 1 - s) * (sh + sg)
-      ctx.fillStyle = s < enc ? c : 'rgba(201,204,211,0.12)'
+      ctx.fillStyle = s < enc ? c : `rgba(${RGB},0.12)`
       ctx.fillRect(x, y, 56, sh)
     }
     ctx.textAlign = 'left'
@@ -337,3 +353,8 @@ export async function dibujarPlatoMedidor(d: DatosPlato): Promise<Blob> {
   })
   return aBlob(canvas)
 }
+export const dibujarTarjeta = (d: DatosTarjeta, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarTarjeta(d) })
+export const dibujarTarjetaPlato = (d: DatosPlato, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarTarjetaPlato(d) })
+export const dibujarPlatoRegla = (d: DatosPlato, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarPlatoRegla(d) })
+export const dibujarPlatoTernario = (d: DatosPlato, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarPlatoTernario(d) })
+export const dibujarPlatoMedidor = (d: DatosPlato, tema: TemaTarjeta = 'oscuro') => enCola(() => { aplicarTema(tema); return _dibujarPlatoMedidor(d) })

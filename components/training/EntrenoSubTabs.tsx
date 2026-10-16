@@ -118,7 +118,7 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
                 </p>
                 {textoKm(sesionDia.km) && <p className="mt-1 text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{textoKm(sesionDia.km)}</p>}
                 {Array.isArray(detalles[sesionDia.id]) && (
-                  <CompartirSesion generar={() => dibujarTarjeta({
+                  <CompartirSesion generar={(tema) => dibujarTarjeta({
                     fecha: sesionDia.fecha,
                     tipo: etiquetaTipoSesion(sesionDia.tipo_sesion),
                     titulo: tituloSesionSinModalidad(sesionDia.nombre, sesionDia.tipo_sesion),
@@ -128,7 +128,7 @@ export default function EntrenoSubTabs({ planNombre }: { planId: string; planNom
                     ejercicios: ejerciciosPrincipales((detalles[sesionDia.id] as EjercicioDetalle[]).map(e => ({
                       nombre: e.ejercicio?.nombre ?? '', series: e.series, repeticiones: e.repeticiones, peso: e.peso_sugerido, bloque: e.bloque,
                     })).filter(e => e.nombre)),
-                  })} />
+                  }, tema)} />
                 )}
               </div>
             </div>
