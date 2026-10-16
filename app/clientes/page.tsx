@@ -7,7 +7,7 @@ import { invalidateCacheKey, useCachedFetch } from '@/lib/useCachedFetch'
 import { useDebounce } from '@/lib/useDebounce'
 import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import Link from 'next/link'
-import { ArrowLeft, Check, Link as LinkIcon, Plus, SpinnerGap, UsersThree } from '@phosphor-icons/react'
+import { Check, CreditCard, Link as LinkIcon, Plus, SpinnerGap, UsersThree } from '@phosphor-icons/react'
 import {
   type ClienteRow, type Filtro, type FiltroAlta, type SortKey, type ToolbarCounts,
   calcularScoreAdherencia, esPredictorBaja, calcularDeudaAtencion,
@@ -231,46 +231,9 @@ export default function ClientesPage() {
   )
 
   return (
-    <div className="coach-client-index w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 overflow-x-hidden">
-      {/* Header */}
-      <header className="flex items-center justify-between gap-4 mb-5">
-        {/* Back button — visible en móvil */}
-        <Link
-          href="/dashboard"
-          className="lg:hidden flex items-center gap-1.5 text-sm font-semibold"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          <ArrowLeft size={16} />
-          <span>Dashboard</span>
-        </Link>
-
-        <div className="hidden lg:block">
-          <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text)' }}>Clientes</h1>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setModalLinkOpen(true)}
-            className="btn-primary flex items-center gap-1.5 text-sm px-3 py-2 whitespace-nowrap">
-            <Plus size={14} /> Generar link de pago
-          </button>
-          <button
-            onClick={handleInvitar}
-            className="btn-secondary btn-sm"
-            disabled={invitando === 'loading'}
-          >
-            {invitando === 'loading' ? <SpinnerGap size={14} className="animate-spin" /> : invitando === 'done' ? <Check size={14} /> : <LinkIcon size={14} />}
-            <span className="hidden sm:inline">{invitando === 'done' ? 'Copiado' : 'Invitar'}</span>
-          </button>
-          <Link href="/clientes/nuevo" className="btn-primary btn-sm">
-            <Plus size={14} />
-            <span className="hidden sm:inline">Nuevo</span>
-          </Link>
-        </div>
-      </header>
-
-      {/* Tabs */}
-      <div className="flex items-center gap-1 mb-4 border-b" style={{ borderColor: 'var(--border)' }}>
+    <div className="coach-client-index w-full max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 overflow-x-hidden">
+      <div className="coach-client-index-nav mb-4 border-b" style={{ borderColor: 'var(--border)' }}>
+        <nav className="flex min-w-0 items-center gap-1" aria-label="Vistas de clientes">
         {([
           { key: 'clientes', label: 'Clientes', count: clientes.length },
           { key: 'formularios', label: 'Formularios', count: formulariosBadge },
@@ -304,6 +267,17 @@ export default function ClientesPage() {
             )}
           </button>
         ))}
+        </nav>
+
+        <div className="coach-client-index-actions flex items-center gap-1">
+          <button type="button" onClick={() => setModalLinkOpen(true)} className="coach-client-utility-action">
+            <CreditCard size={14} /> <span>Link de pago</span>
+          </button>
+          <button type="button" onClick={handleInvitar} className="coach-client-utility-action" disabled={invitando === 'loading'}>
+            {invitando === 'loading' ? <SpinnerGap size={14} className="animate-spin" /> : invitando === 'done' ? <Check size={14} /> : <LinkIcon size={14} />}
+            <span>{invitando === 'done' ? 'Enlace copiado' : 'Invitar'}</span>
+          </button>
+        </div>
       </div>
 
       {tabActiva === 'formularios' ? (

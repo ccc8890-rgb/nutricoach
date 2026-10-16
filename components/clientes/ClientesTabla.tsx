@@ -11,7 +11,7 @@ import {
 } from '@/lib/clientes-utils'
 
 // Rejilla compartida por cabecera y filas: el espacio se reparte entre columnas en vez de quedar en una sola
-const GRID = '48px minmax(240px, 2.2fr) minmax(130px, 1.1fr) minmax(80px, 0.7fr) minmax(130px, 1.1fr) 70px minmax(80px, 0.7fr) minmax(130px, 1fr) 20px'
+const GRID = '44px minmax(260px, 2.4fr) minmax(130px, 1fr) minmax(150px, 1.15fr) minmax(110px, 0.8fr) minmax(130px, 1fr) 20px'
 
 interface Props {
   clientes: ClienteRow[]
@@ -79,10 +79,8 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
         <div />
         <ColHeader label="Cliente" sortKey="nombre" current={sort} onSort={onSort} />
         <ColHeader label="Membresía" sortKey="membresia_caduca" current={sort} onSort={onSort} />
-        <ColHeader label="Check-in" sortKey="checkin" current={sort} onSort={onSort} />
-        <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Objetivo</span>
-        <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Planes</span>
-        <ColHeader label="Adherencia" sortKey="score_adherencia" current={sort} onSort={onSort} />
+        <ColHeader label="Seguimiento" sortKey="checkin" current={sort} onSort={onSort} />
+        <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Plan</span>
         <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Estado</span>
         <div />
       </div>
@@ -124,29 +122,22 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
               <div className="text-[14px] truncate" style={{ color: 'var(--text-muted)' }}>
                 {c.profile?.email}
               </div>
+              {c.objetivo && <div className="mt-1 text-[12px]" style={{ color: 'var(--text-secondary)' }}>{OBJETIVO_LABELS[c.objetivo] ?? c.objetivo}</div>}
             </div>
 
             {/* Membresía */}
             <MembresiaCell c={c} />
 
-            {/* Check-in */}
-            <div>
-              <div className="font-data text-[18px] font-black" style={{ color: checkinColor(dias) }}>
-                {dias === 999 ? '—' : `${dias} d`}
+            {/* Seguimiento */}
+            <div className="flex items-center gap-5">
+              <div>
+                <div className="font-data text-[17px] font-semibold" style={{ color: checkinColor(dias) }}>{dias === 999 ? '—' : `${dias} d`}</div>
+                <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>último check-in</div>
               </div>
-              <div className="text-[13px]" style={{ color: 'var(--text-muted)' }}>sin check-in</div>
-            </div>
-
-            {/* Objetivo */}
-            <div>
-              {c.objetivo && (
-                <span
-                  className="inline-block text-[14px] px-2.5 py-1 rounded-lg"
-                  style={{ background: 'var(--bg-subtle)', color: 'var(--text-secondary)' }}
-                >
-                  {OBJETIVO_LABELS[c.objetivo] ?? c.objetivo}
-                </span>
-              )}
+              <div>
+                <div className="font-data text-[17px] font-semibold" style={{ color: score !== undefined ? scoreColor(score) : 'var(--text-muted)' }}>{score ?? '—'}</div>
+                <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>adherencia</div>
+              </div>
             </div>
 
             {/* Planes */}
@@ -161,18 +152,6 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
                 style={{ background: c.tiene_entreno_activo ? 'var(--success)' : 'var(--border)' }}
                 title="Entreno"
               />
-            </div>
-
-            {/* Adherencia */}
-            <div>
-              {score !== undefined ? (
-                <div className="flex items-baseline gap-1">
-                  <span className="font-data text-[18px] font-black" style={{ color: scoreColor(score) }}>{score}</span>
-                  <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>/100</span>
-                </div>
-              ) : (
-                <span className="text-[14px]" style={{ color: 'var(--text-muted)' }}>—</span>
-              )}
             </div>
 
             {/* Estado */}

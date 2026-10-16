@@ -1,7 +1,7 @@
 // components/clientes/ClientesToolbar.tsx
 'use client'
 
-import { MagnifyingGlass, CaretDown } from '@phosphor-icons/react'
+import { CalendarBlank, CaretDown, ChatCircle, Clock, FadersHorizontal, MagnifyingGlass } from '@phosphor-icons/react'
 import type { Filtro, FiltroAlta, SortKey, ToolbarCounts } from '@/lib/clientes-utils'
 
 const FILTRO_LABELS: Record<Filtro, string> = {
@@ -50,7 +50,7 @@ export default function ClientesToolbar({
   sort, onSort,
   counts,
 }: Props) {
-  const statusFiltros: Filtro[] = ['atencion', 'todos', 'riesgo', 'sin_checkin', 'nuevos', 'activos', 'sin_membresia']
+  const statusFiltros: Filtro[] = ['atencion', 'todos', 'riesgo', 'nuevos', 'activos']
   const statusCounts: Partial<Record<Filtro, number>> = {
     atencion: counts.atencion,
     todos: counts.total,
@@ -64,7 +64,7 @@ export default function ClientesToolbar({
   return (
     <div
       className="coach-client-toolbar mb-4"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      style={{ background: 'transparent' }}
     >
       {/* Búsqueda compacta */}
       <div className="relative flex-shrink-0">
@@ -83,9 +83,6 @@ export default function ClientesToolbar({
         />
       </div>
 
-      {/* Separador */}
-      <div className="hidden sm:block w-px h-5 flex-shrink-0" style={{ background: 'var(--border)' }} />
-
       {/* Filtros de estado */}
       <div className="flex gap-1.5 flex-wrap">
         {statusFiltros.map(f => {
@@ -95,7 +92,7 @@ export default function ClientesToolbar({
             <button
               key={f}
               onClick={() => onFiltro(f)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[14px] font-semibold transition-all whitespace-nowrap"
+              className="coach-client-filter flex items-center gap-1.5 whitespace-nowrap"
               style={active
                 ? { background: 'var(--text)', color: 'var(--bg)' }
                 : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
@@ -119,73 +116,55 @@ export default function ClientesToolbar({
         })}
       </div>
 
-      {/* Separador */}
-      <div className="hidden sm:block w-px h-5 flex-shrink-0" style={{ background: 'var(--border)' }} />
+      <div className="flex-1" />
 
-      {/* Filtros membresía + fechas */}
-      <div className="flex gap-1.5 flex-wrap">
+      <details className="coach-client-more-filters relative">
+        <summary className="coach-client-filter flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap">
+          <FadersHorizontal size={14} /> Más filtros
+          {(caducaPronte || filtroAlta || filtroRevisiones || filtroChats || filtro === 'sin_checkin' || filtro === 'sin_membresia') && <span className="coach-filter-dot" />}
+        </summary>
+        <div className="coach-client-filter-popover">
+          <button onClick={() => onFiltro('sin_checkin')} className="coach-client-filter-row" data-active={filtro === 'sin_checkin'}>
+            <Clock size={15} /> Sin check-in <span>{counts.sin_checkin}</span>
+          </button>
+          <button onClick={() => onFiltro('sin_membresia')} className="coach-client-filter-row" data-active={filtro === 'sin_membresia'}>
+            <FadersHorizontal size={15} /> Sin membresía <span>{counts.sin_membresia}</span>
+          </button>
         <button
           onClick={() => onCaducaPronte(!caducaPronte)}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[14px] font-semibold transition-all whitespace-nowrap"
-          style={caducaPronte
-            ? { background: 'rgba(255,69,58,0.15)', color: 'var(--error)', border: '1px solid rgba(255,69,58,0.3)' }
-            : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
-          }
+          className="coach-client-filter-row"
+          data-active={caducaPronte}
         >
-          ⏰ Caduca pronto
-          {counts.caduca_pronto > 0 && (
-            <span className="rounded-full px-1 text-[12px] font-data" style={{ background: 'rgba(255,69,58,0.2)' }}>
-              {counts.caduca_pronto}
-            </span>
-          )}
+          <Clock size={15} /> Caduca pronto <span>{counts.caduca_pronto}</span>
         </button>
 
         <select
           value={filtroAlta ?? ''}
           onChange={e => onFiltroAlta((e.target.value as FiltroAlta) || null)}
-          className="px-3.5 py-2 rounded-lg text-[14px] font-semibold"
-          style={{ background: filtroAlta ? 'rgba(99,102,241,0.12)' : 'var(--bg-subtle)', color: filtroAlta ? '#818cf8' : 'var(--text-secondary)', border: `1px solid ${filtroAlta ? 'rgba(129,140,248,0.3)' : 'var(--border)'}`, height: '32px' }}
+          className="coach-client-filter-select"
         >
-          <option value="">📅 Alta: cualquiera</option>
+          <option value="">Alta: cualquiera</option>
           <option value="mes">Alta: este mes</option>
           <option value="trimestre">Alta: últimos 3 meses</option>
         </select>
 
         <button
           onClick={() => onFiltroRevisiones(!filtroRevisiones)}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[14px] font-semibold transition-all whitespace-nowrap"
-          style={filtroRevisiones
-            ? { background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)' }
-            : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
-          }
+          className="coach-client-filter-row"
+          data-active={filtroRevisiones}
         >
-          📅 Revisiones
-          {counts.revisiones_proximas > 0 && (
-            <span className="rounded-full px-1 text-[12px] font-data" style={{ background: 'rgba(129,140,248,0.15)' }}>
-              {counts.revisiones_proximas}
-            </span>
-          )}
+          <CalendarBlank size={15} /> Revisiones <span>{counts.revisiones_proximas}</span>
         </button>
 
         <button
           onClick={() => onFiltroChats(!filtroChats)}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[14px] font-semibold transition-all whitespace-nowrap"
-          style={filtroChats
-            ? { background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.3)' }
-            : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
-          }
+          className="coach-client-filter-row"
+          data-active={filtroChats}
         >
-          💬 Chats sin leer
-          {counts.chats_sin_leer > 0 && (
-            <span className="rounded-full px-1 text-[12px] font-data" style={{ background: 'rgba(129,140,248,0.15)' }}>
-              {counts.chats_sin_leer}
-            </span>
-          )}
+          <ChatCircle size={15} /> Chats sin leer <span>{counts.chats_sin_leer}</span>
         </button>
-      </div>
-
-      {/* Espaciador */}
-      <div className="flex-1" />
+        </div>
+      </details>
 
       {/* Ordenación */}
       <div className="relative flex-shrink-0">

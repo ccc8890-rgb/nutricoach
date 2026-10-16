@@ -178,18 +178,20 @@ function CoachTopBar({ pathname }: { pathname: string }) {
         </div>
 
         <div className="coach-atelier-actions flex min-w-0 items-center gap-2">
-          <Link
-            href="/clientes"
-            className="coach-atelier-search hidden h-10 min-w-[19rem] items-center gap-2 border px-3 lg:flex"
-            style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text-muted)' }}
-            aria-label="Buscar cliente, plan o tarea"
-          >
-            <Search size={15} />
-            <span className="truncate text-sm">Buscar cliente, plan o tarea</span>
-            <span className="ml-auto border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ borderColor: 'var(--border)' }}>
-              Buscar
-            </span>
-          </Link>
+          {!pathname.startsWith('/clientes') && (
+            <Link
+              href="/clientes"
+              className="coach-atelier-search hidden h-10 min-w-[19rem] items-center gap-2 border px-3 lg:flex"
+              style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text-muted)' }}
+              aria-label="Buscar cliente"
+            >
+              <Search size={15} />
+              <span className="truncate text-sm">Buscar cliente</span>
+              <span className="ml-auto border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ borderColor: 'var(--border)' }}>
+                Abrir
+              </span>
+            </Link>
+          )}
           <Link href={context.actionHref} prefetch className="btn btn-primary btn-sm">
             <ActionIcon size={14} />
             {context.actionLabel}
