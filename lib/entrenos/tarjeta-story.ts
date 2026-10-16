@@ -70,14 +70,12 @@ async function prepararCanvas(w: number, h: number) {
   canvas.height = h * ESCALA_PNG
   const ctx = canvas.getContext('2d')!
   ctx.scale(ESCALA_PNG, ESCALA_PNG)
-  // Panel oscuro translúcido con borde fino: se lee sobre cualquier foto o vídeo
-  ctx.beginPath()
-  ctx.roundRect(2, 2, w - 4, h - 4, 6)
-  ctx.fillStyle = 'rgba(7,7,8,0.74)'
-  ctx.fill()
+  // Panel opaco y rectangular (sin transparencia: Instagram rellena de negro lo transparente)
+  ctx.fillStyle = '#0B0B0C'
+  ctx.fillRect(0, 0, w, h)
   ctx.lineWidth = 2
   ctx.strokeStyle = 'rgba(201,204,211,0.38)'
-  ctx.stroke()
+  ctx.strokeRect(1, 1, w - 2, h - 2)
   marcasEsquina(ctx, w, h)
   return { canvas, ctx, sans, mono }
 }
