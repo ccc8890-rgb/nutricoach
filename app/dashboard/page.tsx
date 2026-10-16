@@ -62,22 +62,35 @@ export default function DashboardPage() {
 
   return (
     <main className="coach-dashboard-shell flex-1 px-4 py-6 sm:px-6 sm:py-9 lg:px-10 lg:py-12">
-      <div className="coach-dashboard mx-auto max-w-6xl space-y-7">
+      <div className="coach-dashboard mx-auto space-y-7">
         <header className="coach-dashboard-hero">
           <p className="coach-dashboard-eyebrow mb-3 text-xs capitalize" style={{ color: DASHBOARD_MUTED }}>{fecha}</p>
           <h1 className="coach-dashboard-title text-3xl font-semibold tracking-[-0.04em] sm:text-4xl" style={{ color: 'var(--text)' }}>
             {commandLoading || !resumen ? 'Hoy' : totalPendiente > 0 ? `Hoy tienes ${totalPendiente} ${totalPendiente === 1 ? 'cosa' : 'cosas'} por revisar` : 'Hoy, todo al día'}
           </h1>
           <p className="coach-dashboard-intro mt-3 max-w-xl text-sm" style={{ color: DASHBOARD_MUTED }}>
-            Prioridades, actividad y salud del negocio en una sola lectura.
+            Lo que necesita decisión hoy. El resto puede esperar.
           </p>
         </header>
 
         <EstadoSistemaBarra />
 
-        {commandError ? <ErrorState message={commandError} onRetry={loadCommand} /> : <HoyCards resumen={resumen} loading={commandLoading} />}
-
-        <Accesos />
+        <div className="coach-dashboard-workspace">
+          <div className="coach-dashboard-main">
+            <div className="coach-dashboard-section-heading">
+              <p>Cola de trabajo</p>
+              <span>{totalPendiente > 0 ? `${totalPendiente} pendientes` : 'Sin pendientes'}</span>
+            </div>
+            {commandError ? <ErrorState message={commandError} onRetry={loadCommand} /> : <HoyCards resumen={resumen} loading={commandLoading} />}
+          </div>
+          <aside className="coach-dashboard-side">
+            <div className="coach-dashboard-section-heading">
+              <p>Atajos</p>
+              <span>Acciones frecuentes</span>
+            </div>
+            <Accesos />
+          </aside>
+        </div>
 
         <NumerosClave
           operacion={command?.operacion ?? null}

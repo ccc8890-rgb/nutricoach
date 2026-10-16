@@ -17,8 +17,8 @@ const ICONO = { checkins: ClipboardText, riesgo: Warning, ia: Brain, altas: User
 export default function HoyCards({ resumen, loading }: { resumen: ResumenHoy | null; loading: boolean }) {
   if (loading || !resumen) {
     return (
-      <div className="coach-dashboard-priorities grid gap-px overflow-hidden rounded-xl md:grid-cols-2 lg:grid-cols-4">
-        {[0, 1, 2, 3].map(i => <div key={i} className="h-52 skeleton" />)}
+      <div className="coach-dashboard-priorities">
+        {[0, 1, 2, 3].map(i => <div key={i} className="h-24 skeleton" />)}
       </div>
     )
   }
@@ -34,23 +34,22 @@ export default function HoyCards({ resumen, loading }: { resumen: ResumenHoy | n
   }
 
   return (
-    <div className="coach-dashboard-priorities grid gap-px overflow-hidden rounded-xl md:grid-cols-2 lg:grid-cols-4">
+    <section className="coach-dashboard-priorities" aria-label="Prioridades de hoy">
       {resumen.tarjetas.map(t => {
         const tono = TONO[t.tono]
         const Icon = ICONO[t.id]
         return (
-          <section key={t.id} className="coach-dashboard-priority flex flex-col p-5" style={{ '--priority-color': tono.color, background: 'var(--surface)' } as CSSProperties}>
-            <Link href={t.href} className="coach-dashboard-link mb-5 flex items-start justify-between gap-3 active:scale-[0.99]">
-              <div>
-                <div className="mb-1.5 flex items-center gap-2">
-                  <Icon size={14} weight="regular" style={{ color: tono.color }} />
-                  <h2 className="text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text)' }}>{t.titulo}</h2>
-                </div>
-                <p className="text-[11px]" style={{ color: DASHBOARD_MUTED }}>{t.total > 0 ? 'Toca para ver todos' : 'Nada pendiente'}</p>
+          <article key={t.id} className="coach-dashboard-priority" style={{ '--priority-color': tono.color } as CSSProperties}>
+            <Link href={t.href} className="coach-dashboard-link flex items-center gap-4 active:scale-[0.99]">
+              <span className="coach-dashboard-priority-icon"><Icon size={17} weight="regular" /></span>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{t.titulo}</h2>
+                <p className="mt-0.5 text-xs" style={{ color: DASHBOARD_MUTED }}>{t.total > 0 ? `${t.total} ${t.total === 1 ? 'elemento requiere' : 'elementos requieren'} atención` : 'Sin acciones pendientes'}</p>
               </div>
-              <p className="font-data text-5xl font-medium leading-none tracking-[-0.08em]" style={{ color: tono.color }}>{t.total}</p>
+              <p className="font-data coach-dashboard-priority-count" style={{ color: tono.color }}>{t.total}</p>
+              <ArrowRight size={15} style={{ color: DASHBOARD_MUTED }} />
             </Link>
-            <div className="mt-auto space-y-1.5">
+            <div className="coach-dashboard-cases">
               {t.casos.map(caso => (
                 <Link key={caso.id} href={caso.href} className="coach-dashboard-case flex items-center justify-between gap-2 px-3 py-2.5 active:scale-[0.99]">
                   <div className="min-w-0">
@@ -61,9 +60,9 @@ export default function HoyCards({ resumen, loading }: { resumen: ResumenHoy | n
                 </Link>
               ))}
             </div>
-          </section>
+          </article>
         )
       })}
-    </div>
+    </section>
   )
 }
