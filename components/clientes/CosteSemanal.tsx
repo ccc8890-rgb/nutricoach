@@ -40,7 +40,7 @@ export default function CosteSemanalCard({ clienteId }: Props) {
   if (error || !data) return null
 
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+    <div className="coach-nutrition-module coach-cost-module overflow-hidden">
       {/* Header */}
       <button
         className="w-full flex items-center justify-between px-4 py-3"

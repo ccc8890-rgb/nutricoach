@@ -132,7 +132,7 @@ export default function ResumenCliente({ cliente, checkins, seguimiento }: {
 
   return (
     <div>
-      <section className="rounded-2xl p-4 sm:p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <section className="coach-summary-panel p-4 sm:p-5">
         <p className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>Evolución</p>
         {pesoActual == null && metricas.length === 0 ? (
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Aún no hay datos de peso ni de check-ins.</p>
@@ -153,7 +153,7 @@ export default function ResumenCliente({ cliente, checkins, seguimiento }: {
             {metricas.length > 0 && (
               <div className="grid grid-cols-3 gap-2">
                 {metricas.map(([nombre, v, antes]) => (
-                  <div key={nombre} className="rounded-xl p-2.5" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                  <div key={nombre} className="coach-summary-metric p-2.5">
                     <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{nombre}</p>
                     <p className="text-lg font-bold font-data" style={{ color: 'var(--text)' }}>{v}<span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>/10</span></p>
                     {antes != null && <Delta valor={Number(v) - Number(antes)} />}

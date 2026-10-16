@@ -66,7 +66,7 @@ export default function MealAdherenciaHeatmap({ clienteId }: Props) {
   const ultimos14 = registros.slice(0, 14)
 
   return (
-    <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+    <div className="coach-meal-heatmap overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
         <div className="flex items-center gap-2">

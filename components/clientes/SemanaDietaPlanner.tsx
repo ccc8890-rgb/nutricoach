@@ -544,7 +544,7 @@ export default function SemanaDietaPlanner({ clienteId, accionExtra, onResumen }
 
   return (
     <DndContext sensors={sensores} collisionDetection={pointerWithin} onDragStart={(e: DragStartEvent) => setArrastrando((e.active.data.current as Origen | undefined)?.comida.receta?.nombre ?? null)} onDragEnd={soltar} onDragCancel={() => setArrastrando(null)}>
-    <section className={ampliado ? 'fixed inset-0 z-[60] overflow-auto p-6' : 'rounded-2xl p-4'} style={{ background: ampliado ? 'var(--bg)' : 'var(--surface)', border: ampliado ? 'none' : '1px solid var(--border)' }}>
+    <section className={ampliado ? 'coach-diet-planner is-expanded fixed inset-0 z-[60] overflow-auto p-6' : 'coach-diet-planner p-4'} style={{ background: ampliado ? 'var(--bg)' : undefined, border: ampliado ? 'none' : undefined }}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <p className="text-[12px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Planificador</p>

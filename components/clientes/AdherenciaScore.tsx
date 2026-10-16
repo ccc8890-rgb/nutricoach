@@ -39,11 +39,11 @@ export default function AdherenciaScoreCard({ clienteId }: Props) {
     data.tendencia === 'bajando' ? '#ef4444' : 'var(--text-muted)'
 
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+    <div className="coach-adherence-score overflow-hidden">
       <div className="px-4 py-3 flex items-center gap-3">
         {/* Score circular */}
         <div
-          className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0"
+          className="coach-adherence-score__value w-14 h-14 flex items-center justify-center font-bold text-lg shrink-0"
           style={{ background: riesgo.color }}
         >
           {data.score}

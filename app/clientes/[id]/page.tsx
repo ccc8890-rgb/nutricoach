@@ -148,15 +148,15 @@ function WorkCard({ title, kicker, icon: Icon, children, action }: {
   action?: React.ReactNode
 }) {
   return (
-    <section className="rounded-2xl p-4 sm:p-5 min-w-0" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-      <div className="flex items-start justify-between gap-3 mb-4">
+    <section className="coach-work-card min-w-0">
+      <div className="coach-work-card__header flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text)' }}>
+          <div className="coach-work-card__icon flex items-center justify-center flex-shrink-0">
             <Icon size={17} />
           </div>
           <div className="min-w-0">
-            {kicker && <p className="text-[12px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>{kicker}</p>}
-            <h2 className="font-bold leading-tight" style={{ color: 'var(--text)' }}>{title}</h2>
+            {kicker && <p className="coach-work-card__kicker">{kicker}</p>}
+            <h2 className="coach-work-card__title">{title}</h2>
           </div>
         </div>
         {action}
@@ -176,7 +176,7 @@ function SubTabs<T extends string>({ tabs, active, onChange }: {
   onChange: (key: T) => void
 }) {
   return (
-    <div className="flex gap-1 overflow-x-auto border-b mb-4" style={{ borderColor: 'var(--border)' }}>
+    <div className="coach-subtabs flex gap-1 overflow-x-auto mb-4">
       {tabs.map(tab => {
         const isActive = tab.key === active
         return (
@@ -207,7 +207,7 @@ function PlanListItem({ href, title, meta, active }: {
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 p-3 rounded-xl transition-all min-w-0"
+      className="coach-plan-list-item flex items-center gap-3 p-3 transition-all min-w-0"
       style={{ border: '1px solid var(--border)' }}
       onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-elevated, var(--border))')}
       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -231,7 +231,7 @@ function EmptyModule({ icon: Icon, title, text, action }: {
   action?: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl px-4 py-8 text-center" style={{ background: 'var(--bg)', border: '1px dashed var(--border)' }}>
+    <div className="coach-empty-module px-4 py-8 text-center">
       <Icon size={30} className="mx-auto mb-3 opacity-40" style={{ color: 'var(--text-muted)' }} />
       <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{title}</p>
       <p className="text-xs mt-1 mb-4 max-w-sm mx-auto" style={{ color: 'var(--text-muted)' }}>{text}</p>
@@ -839,7 +839,7 @@ export default function ClienteDetallePage() {
         {isEditando ? (
           <ClienteEditar cliente={cliente} onSave={() => { setIsEditando(false); recargarCliente() }} onCancel={() => setIsEditando(false)} />
         ) : tabActiva === 'resumen' ? (
-          <div className="space-y-4">
+          <div className="coach-client-section coach-client-overview space-y-4">
             <ResumenCliente cliente={cliente} checkins={checkins} seguimiento={seguimiento} />
 
             <AdherenciaScoreCard clienteId={id} />
@@ -847,7 +847,7 @@ export default function ClienteDetallePage() {
 
             {/* Notes + restrictions */}
             {(cliente.notas || cliente.restricciones_alimentarias) && (
-              <div className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <div className="coach-client-notes p-4">
                 {cliente.restricciones_alimentarias && (
                   <div className="mb-2">
                     <p className="text-[12px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Restricciones</p>
@@ -865,7 +865,7 @@ export default function ClienteDetallePage() {
           </div>
 
         ) : tabActiva === 'nutricion' ? (
-          <div className="space-y-4">
+          <div className="coach-client-section coach-client-nutrition space-y-4">
             {!dietaActiva && (
               <WorkCard title="Plan nutricional" kicker="Trabajo activo" icon={UtensilsCrossed} action={<Link href={`/dietas/nueva?cliente=${id}`} className="btn-primary btn-sm"><CopyPlus size={13} /> Nuevo</Link>}>
                 <EmptyModule
@@ -879,11 +879,10 @@ export default function ClienteDetallePage() {
 
             <ErrorBoundary><SemanaDietaPlanner clienteId={id} onResumen={setResumenDia} accionExtra={dietaActiva ? <Link href={`/dietas/nueva?cliente=${id}`} className="btn-secondary btn-sm"><CopyPlus size={13} /> Nuevo plan</Link> : undefined} /></ErrorBoundary>
 
-            <div>
+            <div className="coach-client-tools">
               <button
                 onClick={() => setVerHerramientasNutri(v => !v)}
-                className="w-full flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                className="coach-tools-toggle w-full flex items-center justify-between px-4 py-3 text-sm font-semibold"
               >
                 <span>Más herramientas <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>· control de cambios con IA, planes guardados, coste y periodización</span></span>
                 <ChevronDown size={16} style={{ transform: verHerramientasNutri ? 'rotate(180deg)' : undefined, color: 'var(--text-muted)' }} />
