@@ -1084,7 +1084,7 @@ export default function ClienteDetallePage() {
           </div>
 
         ) : tabActiva === 'seguimiento' ? (
-          <div className="space-y-3">
+          <div className="coach-client-section coach-client-followup space-y-3">
             <ActividadClientePanel clienteId={id as string} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -1124,7 +1124,7 @@ export default function ClienteDetallePage() {
                 <p className="text-sm">El cliente aún no ha hecho check-ins</p>
               </div>
             ) : checkins.map(c => (
-              <div key={c.id} className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <article key={c.id} className="coach-checkin-card p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
                     {new Date(c.fecha).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'long' })}
@@ -1166,26 +1166,26 @@ export default function ClienteDetallePage() {
                     </div>
                   )}
                 </div>
-              </div>
+              </article>
             ))}
             </WorkCard>
           </div>
 
         ) : tabActiva === 'comunicacion' ? (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="coach-client-section coach-client-communication grid grid-cols-1 gap-4">
             <InformeCaso clienteId={id as string} />
             <WorkCard title="Chat con cliente" kicker="Conversación directa" icon={MessageCircle}>
-              <div className="rounded-2xl overflow-hidden border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+              <div className="coach-chat-shell overflow-hidden border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <ChatPanel clienteId={id as string} pollingInterval={30000} esCoach={true} />
               </div>
             </WorkCard>
           </div>
 
         ) : tabActiva === 'perfil' ? (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="coach-client-section coach-client-profile grid grid-cols-1 gap-4">
             <WorkCard title="Perfil y planificación" icon={PersonStanding}>
               <div className="space-y-4">
-                <label className="flex items-start gap-3 rounded-2xl p-4 cursor-pointer" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                <label className="coach-profile-setting flex items-start gap-3 p-4 cursor-pointer" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                   <input type="checkbox" className="mt-0.5" checked={verVideoRecetas} onChange={e => alternarVerVideo(e.target.checked)} />
                   <span>
                     <span className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>Mostrar el vídeo original de las recetas</span>
@@ -1193,7 +1193,7 @@ export default function ClienteDetallePage() {
                   </span>
                 </label>
                 {(cliente.notas || cliente.restricciones_alimentarias) && (
-                  <div className="rounded-2xl p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                  <div className="coach-profile-notes p-4" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                     {cliente.restricciones_alimentarias && (
                       <div className="mb-3">
                         <p className="text-[12px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Restricciones</p>
@@ -1208,7 +1208,7 @@ export default function ClienteDetallePage() {
                     )}
                   </div>
                 )}
-                <details className="rounded-2xl" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+                <details className="coach-profile-calendar" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                   <summary className="cursor-pointer px-4 py-3 text-sm font-semibold" style={{ color: 'var(--text)' }}>Calendario y revisión</summary>
                   <div className="p-3">
                     <ErrorBoundary>
@@ -1243,7 +1243,7 @@ export default function ClienteDetallePage() {
             </div>
 
             {/* Membresía */}
-            <div className="xl:col-span-2 rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <section className="coach-membership-panel xl:col-span-2 p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <h3 className="font-bold text-sm mb-3" style={{ color: 'var(--text)' }}>Membresía</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
@@ -1285,7 +1285,7 @@ export default function ClienteDetallePage() {
               >
                 {guardandoMembresia ? 'Guardando…' : 'Guardar membresía'}
               </button>
-            </div>
+            </section>
 
             <div className="xl:col-span-2 rounded-2xl p-4" style={{ border: '1px solid rgba(255,69,58,0.2)', background: 'rgba(255,69,58,0.04)' }}>
               {!confirmandoEliminar ? (

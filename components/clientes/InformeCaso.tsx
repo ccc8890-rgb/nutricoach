@@ -25,7 +25,7 @@ export function PanelInformeCaso({ informe, clienteId, pestanaInicial = 'mensaje
   }
 
   return (
-    <div className="space-y-3 text-sm" style={{ color: 'var(--text)' }}>
+    <div className="coach-case-report space-y-3 text-sm" style={{ color: 'var(--text)' }}>
       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{informe.situacion.titulo}{informe.plan ? ` · ${informe.plan}` : ''}</p>
       <div className="flex flex-wrap gap-1" role="tablist">
         {PESTANAS.map(p => (

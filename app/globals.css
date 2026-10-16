@@ -406,6 +406,117 @@
 }
 .coach-subtabs button { font-family: var(--font-instrument), var(--font-geist-sans), sans-serif; }
 
+/* Ficha cliente · Seguimiento, comunicación y perfil */
+.coach-client-followup,
+.coach-client-communication,
+.coach-client-profile {
+  --client-detail-rule: color-mix(in srgb, var(--border) 90%, var(--text-muted) 10%);
+  --client-detail-panel: color-mix(in srgb, var(--client-panel) 94%, var(--bg));
+}
+.coach-activity-panel,
+.coach-checkin-card,
+.coach-chat-shell,
+.coach-membership-panel,
+.coach-client-edit {
+  border-radius: 0.22rem;
+  border-color: var(--client-detail-rule, var(--client-rule)) !important;
+  background: var(--client-detail-panel, var(--client-panel)) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent);
+}
+.coach-activity-panel h2,
+.coach-membership-panel h3,
+.coach-client-edit h2 {
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+  letter-spacing: -0.025em;
+}
+.coach-activity-panel > div:first-child {
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--client-detail-rule, var(--client-rule));
+}
+.coach-activity-panel [class*='rounded-2xl'],
+.coach-activity-panel [class*='rounded-xl'],
+.coach-activity-panel select { border-radius: 0.16rem; }
+.coach-activity-panel [class*='font-bold'] { font-variant-numeric: tabular-nums; }
+
+.coach-checkin-card { margin-bottom: 0.65rem; }
+.coach-checkin-card:last-child { margin-bottom: 0; }
+.coach-checkin-card > div:first-child {
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--client-detail-rule, var(--client-rule));
+}
+.coach-checkin-card p[class*='rounded-xl'],
+.coach-checkin-card input,
+.coach-checkin-card button { border-radius: 0.14rem; }
+.coach-checkin-card strong,
+.coach-checkin-card > div:first-child span:last-child { font-variant-numeric: tabular-nums; }
+
+.coach-client-communication { grid-template-columns: minmax(0, 1fr); }
+.coach-client-communication > .coach-work-card { min-width: 0; }
+.coach-chat-shell { border-radius: 0.18rem; }
+.coach-client-communication .coach-case-report {
+  padding: 0.85rem;
+  border-left: 2px solid var(--accent);
+  background: var(--client-field);
+}
+.coach-client-communication .coach-case-report [class*='rounded-xl'],
+.coach-client-communication .coach-case-report button,
+.coach-client-communication .coach-case-report a { border-radius: 0.14rem; }
+.coach-client-communication .coach-chat-panel { background: var(--client-field); }
+.coach-client-communication .coach-chat-panel > div:first-child { background: transparent !important; }
+.coach-client-communication .coach-chat-panel [class*='rounded-2xl'],
+.coach-client-communication .coach-chat-panel [class*='rounded-full'],
+.coach-client-communication .coach-chat-panel button { border-radius: 0.16rem; }
+.coach-client-communication .coach-chat-panel form { background: var(--client-panel) !important; }
+
+.coach-profile-setting,
+.coach-profile-notes,
+.coach-profile-calendar,
+.coach-clinical-analytics label,
+.coach-membership-panel { border-radius: 0.18rem; }
+.coach-profile-setting:hover { border-color: var(--border-strong) !important; background: var(--surface-hover) !important; }
+.coach-profile-setting:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.coach-profile-calendar > summary {
+  padding-bottom: 0.85rem;
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+}
+.coach-profile-calendar[open] > summary { border-bottom: 1px solid var(--client-detail-rule, var(--client-rule)); }
+.coach-clinical-analytics fieldset + fieldset {
+  padding-top: 1rem;
+  border-top: 1px solid var(--client-detail-rule, var(--client-rule));
+}
+.coach-clinical-analytics label { background: var(--client-field) !important; }
+.coach-clinical-analytics input,
+.coach-clinical-analytics textarea,
+.coach-membership-panel input,
+.coach-membership-panel select { border-radius: 0.14rem !important; }
+.coach-membership-panel > h3 {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--client-detail-rule, var(--client-rule));
+}
+
+.coach-client-edit { padding: 1rem; }
+.coach-client-edit__header {
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--client-rule);
+}
+.coach-client-edit__header > p {
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+  font: 600 0.58rem/1 var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.coach-client-edit label { color: var(--text-secondary); }
+.coach-client-edit input,
+.coach-client-edit select,
+.coach-client-edit textarea,
+.coach-client-edit button { border-radius: 0.14rem; }
+
+@media (min-width: 80rem) {
+  .coach-client-communication { grid-template-columns: minmax(18rem, 0.7fr) minmax(0, 1.3fr); align-items: start; }
+  .coach-client-communication > .coach-work-card { grid-column: 2; grid-row: 1 / span 2; }
+}
+
 /* Ficha cliente · Entrenamiento profundo */
 .coach-client-training {
   --training-detail-rule: color-mix(in srgb, var(--border) 88%, var(--semantic-info) 12%);

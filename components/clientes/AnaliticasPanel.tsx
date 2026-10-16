@@ -86,7 +86,7 @@ export default function AnaliticasPanel({ clienteId }: { clienteId: string }) {
   if (error) return <div className="space-y-3"><p className="text-sm" role="alert" style={{ color: 'var(--text-secondary)' }}>No se pudieron cargar las analíticas.</p><button type="button" className="btn-secondary btn-sm" onClick={() => setIntento(i => i + 1)}>Reintentar</button></div>
 
   return (
-    <form onSubmit={guardar} className="space-y-5">
+    <form onSubmit={guardar} className="coach-clinical-analytics space-y-5">
       <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>Introduce solo los resultados disponibles. La unidad y el rango se muestran como referencia del laboratorio.</p>
       {GRUPOS.map(grupo => (
         <fieldset key={grupo.key} className="space-y-2">

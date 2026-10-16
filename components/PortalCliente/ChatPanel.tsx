@@ -118,7 +118,7 @@ export default function ChatPanel({ codigo, clienteId, pollingInterval = 10000, 
   }
 
   return (
-    <div className="flex h-[calc(100dvh-12rem)] min-h-[18rem] max-h-[46rem] flex-col overflow-hidden sm:h-[65vh]">
+    <div className="coach-chat-panel flex h-[calc(100dvh-12rem)] min-h-[18rem] max-h-[46rem] flex-col overflow-hidden sm:h-[65vh]">
       {/* Cabecera */}
       {mensajes.length > 0 && (
         <div className="flex items-center gap-2 px-4 py-2.5 border-b shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>

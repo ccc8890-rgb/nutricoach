@@ -215,7 +215,7 @@ export default function ActividadClientePanel({ clienteId }: { clienteId: string
   const ausenciaInterpretable = data.integraciones.some(intg => intg.activa && intg.salud.puedeInterpretarAusencia)
 
   return (
-    <section className="rounded-2xl p-4 sm:p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <section className="coach-activity-panel p-4 sm:p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Datos externos</p>

@@ -61,8 +61,11 @@ export default function ClienteEditar({ cliente, onSave, onCancel }: Props) {
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">Editar cliente</h2>
+    <section className="coach-client-edit space-y-4">
+      <header className="coach-client-edit__header">
+        <p>Perfil operativo</p>
+        <h2 className="text-lg font-semibold">Editar cliente</h2>
+      </header>
       {error && (
         <div className="text-red-500 text-sm">{error}</div>
       )}
@@ -190,6 +193,6 @@ export default function ClienteEditar({ cliente, onSave, onCancel }: Props) {
           {loading ? 'Guardando...' : 'Guardar'}
         </button>
       </div>
-    </div>
+    </section>
   )
 }
