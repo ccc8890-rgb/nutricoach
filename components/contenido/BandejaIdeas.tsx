@@ -51,7 +51,7 @@ export default function BandejaIdeas() {
   }
 
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
+    <section className="coach-content-inbox" style={{ display: 'grid', gap: 12 }}>
       <form onSubmit={e => { e.preventDefault(); apuntar() }} style={{ display: 'flex', gap: 8 }}>
         <input className="input" style={{ flex: 1 }} value={texto} onChange={e => setTexto(e.target.value)}
           placeholder="Una nota, un enlace del reel o ambos…" aria-label="Apuntar una idea" />
@@ -86,6 +86,6 @@ export default function BandejaIdeas() {
           {enlazando === p.id && <SelectorReceta onElegir={r => cambiar(p.id, { receta_id: r.id })} />}
         </div>
       ))}
-    </div>
+    </section>
   )
 }

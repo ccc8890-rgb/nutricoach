@@ -20,19 +20,21 @@ export default function ContenidoPage() {
   const fechaTanda = fechaTandaUrl ?? undefined
 
   return (
-    <div style={{ padding: 16, display: 'grid', gap: 16, maxWidth: 1100 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700 }}>Contenido</h1>
-      <div role="tablist" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+    <main className="coach-content-studio">
+      <header className="coach-content-studio__header">
+        <div><p>Operaciones editoriales</p><h1>Contenido</h1></div>
+      </header>
+      <nav className="coach-content-tabs" role="tablist">
         {VISTAS.map(v => (
           <button key={v.id} role="tab" aria-selected={vista === v.id} className={`btn btn-sm ${vista === v.id ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setVista(v.id)}>
             {v.label}
           </button>
         ))}
-      </div>
+      </nav>
       {vista === 'bandeja' && <BandejaIdeas />}
       {vista === 'tanda' && <DiaGrabacion key={fechaTanda ?? 'hoy'} fechaInicial={fechaTanda} />}
       {vista === 'tablero' && <TableroContenido />}
       {vista === 'calendario' && <CalendarioContenido onAbrirDia={f => { setFechaTanda(f); setVista('tanda') }} />}
-    </div>
+    </main>
   )
 }

@@ -1132,6 +1132,137 @@
   border-bottom: 1px solid var(--commerce-rule);
 }
 
+/* Operaciones internas · metodología, conocimiento y contenido */
+.coach-methodology,
+.coach-knowledge,
+.coach-knowledge-create,
+.coach-content-studio {
+  --operations-rule: color-mix(in srgb, var(--border) 88%, var(--text-muted) 12%);
+  --operations-panel: color-mix(in srgb, var(--surface) 94%, var(--bg));
+  --operations-field: color-mix(in srgb, var(--surface) 84%, var(--bg));
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+}
+.coach-methodology .page-header,
+.coach-knowledge > header,
+.coach-knowledge-create > div:first-child,
+.coach-content-studio__header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--operations-rule);
+}
+.coach-methodology h1,
+.coach-knowledge h1,
+.coach-knowledge-create h1,
+.coach-content-studio h1 {
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+  font-weight: 680;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.coach-methodology .card,
+.coach-knowledge .card,
+.coach-knowledge-create .card,
+.coach-content-studio .card {
+  border-color: var(--operations-rule);
+  border-radius: 0.22rem;
+  background: var(--operations-panel);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent);
+}
+.coach-methodology .card > h2,
+.coach-knowledge-create .card > p:first-child {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--operations-rule);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.62rem !important;
+  letter-spacing: 0.08em !important;
+}
+.coach-methodology input,
+.coach-methodology textarea,
+.coach-methodology select,
+.coach-methodology button,
+.coach-knowledge input,
+.coach-knowledge select,
+.coach-knowledge button,
+.coach-knowledge a,
+.coach-knowledge-create input,
+.coach-knowledge-create textarea,
+.coach-knowledge-create select,
+.coach-knowledge-create button,
+.coach-knowledge-create a { border-radius: 0.14rem !important; }
+.coach-methodology [style*='borderRadius'],
+.coach-knowledge [class*='rounded-full'],
+.coach-knowledge [class*='rounded-lg'],
+.coach-knowledge-create [class*='rounded-lg'] { border-radius: 0.16rem !important; }
+.coach-methodology input[type='range'] { accent-color: var(--accent); }
+.coach-methodology .card span[class*='font'],
+.coach-knowledge time { font-variant-numeric: tabular-nums; }
+.coach-knowledge .card { transition: border-color 180ms var(--ease-out-strong), background-color 180ms var(--ease-out-strong); }
+.coach-knowledge .card:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+.coach-knowledge .card > div:first-child { min-height: 5.5rem; }
+.coach-knowledge-create label { font-weight: 600; }
+
+.coach-content-studio {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 75rem);
+  margin-inline: auto;
+  padding: 1rem;
+}
+.coach-content-studio__header > div > p {
+  margin-bottom: 0.3rem;
+  color: var(--text-muted);
+  font: 600 0.6rem/1 var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.coach-content-studio__header h1 { font-size: clamp(1.55rem, 3vw, 2rem); }
+.coach-content-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--operations-rule);
+  border-radius: 0.22rem;
+  background: var(--operations-rule);
+}
+.coach-content-tabs button {
+  flex: 1 1 9rem;
+  min-height: 2.6rem;
+  border-radius: 0.14rem !important;
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+}
+.coach-content-inbox,
+.coach-content-shoot,
+.coach-content-board,
+.coach-content-calendar { min-width: 0; }
+.coach-content-inbox input,
+.coach-content-inbox button,
+.coach-content-shoot input,
+.coach-content-shoot select,
+.coach-content-shoot button,
+.coach-content-board input,
+.coach-content-board select,
+.coach-content-board button,
+.coach-content-calendar input,
+.coach-content-calendar select,
+.coach-content-calendar button { border-radius: 0.14rem !important; }
+.coach-content-board section {
+  padding: 0.75rem;
+  border: 1px solid var(--operations-rule);
+  border-radius: 0.18rem;
+  background: var(--operations-field);
+}
+.coach-content-board section > h3,
+.coach-content-calendar .card > div:first-child {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+.coach-content-calendar .card { min-height: 8.5rem !important; }
+.coach-content-shoot details { border-top: 1px solid var(--operations-rule); padding-top: 0.5rem; }
+
+@media (min-width: 48rem) {
+  .coach-content-studio { padding: 1.5rem; }
+}
+
 /* Coach · Superficies finales — builder de entreno e inbox IA */
 .coach-training-builder,
 .coach-agent-inbox {

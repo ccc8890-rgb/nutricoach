@@ -29,7 +29,7 @@ export default function TableroContenido() {
   const visibles = piezas.filter(p => filtro === 'todas' || (filtro === 'dieta' ? p.plan_id : !p.plan_id))
 
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
+    <section className="coach-content-board" style={{ display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', gap: 6 }}>
         {([['todas', 'Todas'], ['dieta', 'Entran en dieta'], ['prueba', 'Platos de prueba']] as [Filtro, string][]).map(([id, label]) => (
           <button key={id} className={`btn btn-sm ${filtro === id ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setFiltro(id)}>{label}</button>
@@ -61,6 +61,6 @@ export default function TableroContenido() {
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }

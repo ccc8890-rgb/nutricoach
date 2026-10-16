@@ -108,7 +108,7 @@ export default function MetodologiaPage() {
 
   if (loading) {
     return (
-      <div className="page-container">
+      <div className="coach-methodology page-container">
         <div className="page-header">
           <h1 className="page-title">Mi metodología</h1>
         </div>
@@ -122,7 +122,7 @@ export default function MetodologiaPage() {
   }
 
   return (
-    <div className="page-container">
+    <main className="coach-methodology page-container">
       <div className="page-header">
         <div>
           <h1 className="page-title">Mi metodología</h1>
@@ -322,6 +322,6 @@ export default function MetodologiaPage() {
           {saving ? 'Guardando…' : saved ? '✓ Cambios guardados' : 'Guardar cambios'}
         </button>
       </div>
-    </div>
+    </main>
   )
 }

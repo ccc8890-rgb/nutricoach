@@ -99,7 +99,7 @@ export default function DiaGrabacion({ fechaInicial }: { fechaInicial?: string }
   }, [tanda])
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
+    <section className="coach-content-shoot" style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <label>Día <input className="input" type="date" value={fecha} onChange={e => e.target.value && setFecha(e.target.value)} /></label>
         <label>Dieta de{' '}
@@ -195,6 +195,6 @@ export default function DiaGrabacion({ fechaInicial }: { fechaInicial?: string }
           <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>Marca lo que ya tienes en casa. El coste usa el precio más barato de cada ingrediente.</p>
         </div>
       )}
-    </div>
+    </section>
   )
 }

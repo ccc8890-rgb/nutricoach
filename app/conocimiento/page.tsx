@@ -86,7 +86,7 @@ export default function ConocimientoPage() {
     : { background: 'var(--surface)', color: 'var(--text-secondary)', borderColor: 'var(--border)' }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <main className="coach-knowledge p-4 sm:p-6 max-w-6xl mx-auto">
       <header className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Base de Conocimiento</h1>
@@ -268,6 +268,6 @@ export default function ConocimientoPage() {
           ))}
         </div>
       )}
-    </div>
+    </main>
   )
 }

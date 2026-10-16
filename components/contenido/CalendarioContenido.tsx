@@ -57,7 +57,7 @@ export default function CalendarioContenido({ onAbrirDia }: { onAbrirDia: (fecha
   const dias = DIAS.map((nombre, i) => ({ nombre, fecha: sumarDias(lunes, i), comidas: dieta?.find(d => d.dia === NOMBRES_DIA[i])?.comidas ?? [] }))
 
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
+    <section className="coach-content-calendar" style={{ display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button className="btn btn-secondary btn-sm" onClick={() => setLunes(sumarDias(lunes, -7))} aria-label="Semana anterior"><ChevronLeft size={16} /></button>
         <strong>Semana del {formatoFecha(lunes)}</strong>
@@ -96,6 +96,6 @@ export default function CalendarioContenido({ onAbrirDia }: { onAbrirDia: (fecha
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }
