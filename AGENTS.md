@@ -173,6 +173,30 @@ La tabla `alimentos` tiene los **24 campos de micronutrientes** poblados para to
 Revisar invalidación fina tras crear/editar cliente, dieta o plan de entreno para refrescar caches concretos sin volver a cargar todo el modulo.
 <!-- END:ui-navigation-fluidity-20260606 -->
 
+<!-- BEGIN:coach-visual-redesign-20261016 -->
+# ✅ 16-10-2026 — Rediseño visual profundo de la app coach completado
+
+La app coach queda alineada con el sistema visual de la app cliente, manteniendo arquitectura y funcionalidad. Se migraron clientes, Nutrición, Entrenamiento, Recetario, costes, compra, contenido, conocimiento, cuestionarios y ajustes.
+
+## Verificación final
+
+- Auditoría autenticada en producción: escritorio MacBook y móvil.
+- Tipografía efectiva: `Instrument Sans`.
+- 17 suites coach + Training Workspace: PASS.
+- TypeScript y build de 162 rutas: correctos.
+- ESLint: 0 errores; 182 avisos legacy no bloqueantes.
+- Producción `Ready`: https://nutricoach-delta.vercel.app
+
+## Últimos fixes
+
+- `e1e5adc`: `/compra` integrada en `CoachShell`.
+- `f3042f8`: cabecera contextual «Compra y costes» + acceso a «Escandallo».
+
+## Próxima sesión recomendada
+
+Ejecutar la pasada de pulido visual fino documentada en [`docs/16-10-2026_cierre-rediseño-visual-coach.md`](docs/16-10-2026_cierre-rediseño-visual-coach.md). Prioridad: estados cargando/vacío/error, anchos MacBook, densidad de tablas, subtabs profundas de cliente, modo claro y accesibilidad.
+<!-- END:coach-visual-redesign-20261016 -->
+
 <!-- BEGIN:fix-categorias-masivo -->
 # ✅ 23-05-2026 — Corrección masiva de categorías (~350+ alimentos re-categorizados)
 
