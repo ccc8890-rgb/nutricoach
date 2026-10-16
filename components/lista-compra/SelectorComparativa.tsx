@@ -131,7 +131,7 @@ export default function SelectorComparativa({
     }
 
     return (
-        <div className="rounded-xl border overflow-hidden" style={{
+        <div className="coach-shopping-compare rounded-xl border overflow-hidden" style={{
             background: 'var(--card)',
             borderColor: 'var(--border)',
         }}>

@@ -1010,6 +1010,128 @@
 .coach-profitability-dashboard h1,
 .coach-shopping-page h1 { letter-spacing: -0.025em; }
 
+/* Operaciones profundo · escandallos, rentabilidad y compra */
+.coach-costing-page,
+.coach-profitability-page,
+.coach-price-admin,
+.coach-profitability-dashboard,
+.coach-supermarket-comparison,
+.coach-shopping-page,
+.coach-shopping-card,
+.coach-shopping-compare {
+  --commerce-panel: color-mix(in srgb, var(--surface) 94%, var(--bg));
+  --commerce-field: color-mix(in srgb, var(--surface) 82%, var(--bg));
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+}
+.coach-costing-page > div:first-child,
+.coach-profitability-page > div:first-child,
+.coach-shopping-page > div:first-child,
+.coach-price-admin > div:first-child,
+.coach-profitability-dashboard > div:first-child {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--commerce-rule);
+}
+.coach-costing-page h1,
+.coach-profitability-page h1,
+.coach-shopping-page h1,
+.coach-price-admin h1,
+.coach-profitability-dashboard h1 {
+  font-weight: 680;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.coach-costing-page [class*='rounded-xl'],
+.coach-profitability-page [class*='rounded-xl'],
+.coach-price-admin [class*='rounded-2xl'],
+.coach-price-admin [class*='rounded-xl'],
+.coach-profitability-dashboard [class*='rounded-xl'],
+.coach-supermarket-comparison [class*='rounded-xl'],
+.coach-shopping-page [class*='rounded-xl'],
+.coach-shopping-card [class*='rounded-xl'],
+.coach-shopping-compare [class*='rounded-xl'] { border-radius: 0.18rem !important; }
+.coach-costing-page > div[class*='grid'] > div,
+.coach-costing-page > div[class*='rounded'],
+.coach-shopping-page > div[class*='rounded'],
+.coach-shopping-page > div[class*='space-y'] > div[class*='grid'] > div,
+.coach-profitability-dashboard > div,
+.coach-supermarket-comparison > div,
+.coach-price-admin .card,
+.coach-shopping-card,
+.coach-shopping-compare {
+  border-color: var(--commerce-rule) !important;
+  background: var(--commerce-panel) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent) !important;
+}
+.coach-costing-page > div[class*='grid'] > div > div:last-child,
+.coach-shopping-page > div[class*='space-y'] > div[class*='grid'] > div > div:last-child,
+.coach-profitability-dashboard [class*='text-2xl'],
+.coach-price-admin [class*='tabular'] { font-variant-numeric: tabular-nums; }
+.coach-costing-page table,
+.coach-profitability-dashboard table,
+.coach-supermarket-comparison table,
+.coach-price-admin table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.coach-costing-page thead,
+.coach-profitability-dashboard thead,
+.coach-supermarket-comparison thead,
+.coach-price-admin thead {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.035em;
+}
+.coach-costing-page tbody tr:hover,
+.coach-profitability-dashboard tbody tr:hover,
+.coach-supermarket-comparison tbody tr:hover,
+.coach-price-admin tbody tr:hover { background: var(--surface-hover) !important; }
+.coach-costing-page button,
+.coach-costing-page input,
+.coach-costing-page select,
+.coach-profitability-page button,
+.coach-profitability-page input,
+.coach-profitability-page select,
+.coach-price-admin button,
+.coach-price-admin input,
+.coach-price-admin select,
+.coach-profitability-dashboard button,
+.coach-profitability-dashboard input,
+.coach-profitability-dashboard select,
+.coach-supermarket-comparison button,
+.coach-shopping-page button,
+.coach-shopping-page input,
+.coach-shopping-page select,
+.coach-shopping-card button,
+.coach-shopping-compare button { border-radius: 0.14rem !important; }
+.coach-price-admin [class*='bg-white'],
+.coach-profitability-page [class*='bg-white'],
+.coach-profitability-dashboard [class*='bg-white'],
+.coach-supermarket-comparison [class*='bg-white'] {
+  background: var(--commerce-panel) !important;
+  border-color: var(--commerce-rule) !important;
+}
+.coach-profitability-dashboard [class*='bg-gradient'],
+.coach-supermarket-comparison [class*='bg-gradient'],
+.coach-shopping-compare [style*='linear-gradient'] {
+  background: var(--commerce-field) !important;
+  color: var(--text) !important;
+}
+.coach-shopping-page > div:first-child svg,
+.coach-shopping-card > div:first-child svg { color: var(--text-secondary); }
+.coach-shopping-page label,
+.coach-shopping-card [class*='uppercase'] {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.07em;
+}
+.coach-shopping-page button:active,
+.coach-shopping-card button:active,
+.coach-shopping-compare button:active { transform: translateY(1px); }
+.coach-shopping-compare { border-radius: 0.22rem !important; }
+.coach-shopping-compare > div:first-child {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--commerce-rule);
+}
+
 /* Coach · Superficies finales — builder de entreno e inbox IA */
 .coach-training-builder,
 .coach-agent-inbox {
