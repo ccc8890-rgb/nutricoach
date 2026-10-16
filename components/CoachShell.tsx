@@ -155,45 +155,48 @@ function CoachTopBar({ pathname }: { pathname: string }) {
   const ActionIcon = context.actionIcon
 
   return (
-    <div
-      className="coach-atelier-topbar sticky top-0 z-20 border-b px-4 py-3 sm:px-6 lg:px-8"
+    <header
+      className="coach-atelier-topbar sticky top-0 z-20 border-b px-4 sm:px-6 lg:px-8"
       style={{
         borderColor: 'var(--border)',
         background: 'color-mix(in srgb, var(--bg) 96%, transparent)',
       }}
     >
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: 'var(--text-muted)' }}>
-            <Link href="/dashboard" prefetch className="transition-colors hover:text-[var(--text)]">
-              Coach OS
-            </Link>
-            <ChevronRight size={12} />
-            <span>{context.area}</span>
+      <div className="coach-atelier-topbar__inner flex items-center justify-between gap-5">
+        <div className="coach-atelier-context flex min-w-0 items-center gap-4">
+          <div className="hidden min-w-0 sm:block">
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.11em]" style={{ color: 'var(--text-muted)' }}>
+              <Link href="/dashboard" prefetch className="transition-colors hover:text-[var(--text)]">Coach OS</Link>
+              <ChevronRight size={11} />
+              <span>{context.area}</span>
+            </div>
           </div>
-          <h1 className="mt-1 truncate text-xl font-semibold tracking-[-0.035em] sm:text-2xl" style={{ color: 'var(--text)' }}>
+          <span className="coach-atelier-context__rule hidden sm:block" aria-hidden="true" />
+          <h1 className="truncate text-lg font-semibold tracking-[-0.035em] sm:text-xl" style={{ color: 'var(--text)' }}>
             {context.title}
           </h1>
         </div>
 
-        <div className="flex min-w-0 items-center gap-2">
-          <div
-            className="coach-atelier-search hidden h-10 min-w-[260px] items-center gap-2 rounded-lg border px-3 lg:flex"
+        <div className="coach-atelier-actions flex min-w-0 items-center gap-2">
+          <Link
+            href="/clientes"
+            className="coach-atelier-search hidden h-10 min-w-[19rem] items-center gap-2 border px-3 lg:flex"
             style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text-muted)' }}
+            aria-label="Buscar cliente, plan o tarea"
           >
             <Search size={15} />
             <span className="truncate text-sm">Buscar cliente, plan o tarea</span>
-            <span className="ml-auto rounded-lg border px-1.5 py-0.5 text-[10px] font-semibold" style={{ borderColor: 'var(--border)' }}>
-              global
+            <span className="ml-auto border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ borderColor: 'var(--border)' }}>
+              Buscar
             </span>
-          </div>
+          </Link>
           <Link href={context.actionHref} prefetch className="btn btn-primary btn-sm">
             <ActionIcon size={14} />
             {context.actionLabel}
           </Link>
         </div>
       </div>
-    </div>
+    </header>
   )
 }
 

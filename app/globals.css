@@ -2112,8 +2112,8 @@ body {
 }
 
 .sidebar-link.active {
-  background: linear-gradient(115deg, var(--metal-bright), var(--metal-mid));
-  color: var(--atelier-carbon);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+  color: var(--text);
   font-weight: 650;
 }
 
@@ -2155,7 +2155,7 @@ body {
 }
 
 .coach-atelier-sidebar {
-  box-shadow: 1.25rem 0 4rem rgba(0, 0, 0, 0.18);
+  box-shadow: none;
   border-right-color: color-mix(in srgb, var(--metal-mid) 32%, var(--border)) !important;
 }
 
@@ -2168,10 +2168,12 @@ body {
 }
 
 .coach-atelier-mark {
-  background: linear-gradient(145deg, var(--metal-bright), var(--metal-mid) 58%, var(--metal-dark)) !important;
-  color: var(--atelier-carbon) !important;
-  border: 1px solid color-mix(in srgb, var(--metal-bright) 72%, transparent);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--metal-dark) 24%, transparent), inset 0 1px 0 white;
+  background: var(--text) !important;
+  color: var(--bg) !important;
+  border: 1px solid var(--text);
+  border-radius: 0.22rem !important;
+  box-shadow: none;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 .coach-atelier-sidebar .sidebar-link:hover:not(.active) {
@@ -2181,37 +2183,51 @@ body {
 
 .coach-atelier-sidebar .sidebar-link.active svg,
 .coach-atelier-sidebar .sidebar-link.active span {
-  color: var(--atelier-carbon) !important;
+  color: var(--text) !important;
 }
 
 .coach-atelier-topbar {
-  min-height: 5rem;
+  min-height: 4.5rem;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
-.coach-atelier-topbar::after {
-  position: absolute;
-  right: 2rem;
-  bottom: -1px;
-  width: clamp(3rem, 9vw, 8rem);
-  height: 2px;
-  content: '';
-  background: linear-gradient(90deg, var(--metal-mid), var(--metal-bright), var(--accent));
+.coach-atelier-topbar__inner {
+  min-height: 4.5rem;
+}
+
+.coach-atelier-context__rule {
+  width: 1px;
+  height: 1.75rem;
+  background: var(--border-strong);
 }
 
 .coach-atelier-search {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 4%, transparent);
+  border-radius: 0.25rem;
+  box-shadow: none;
+  transition: border-color 180ms var(--ease-out-strong), background-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong);
+}
+
+.coach-atelier-search:hover {
+  border-color: var(--border-strong) !important;
+  background: var(--surface-hover) !important;
+  color: var(--text-secondary) !important;
+}
+
+.coach-atelier-search > span:last-child {
+  border-radius: 0.12rem;
 }
 
 .coach-atelier-shell .btn-primary {
-  background: linear-gradient(115deg, var(--metal-bright), var(--metal-mid));
-  color: var(--atelier-carbon);
-  border-radius: 6px;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 0.22rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .coach-atelier-shell .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(115deg, white, var(--metal-bright));
+  background: var(--accent-light);
 }
 
 @media (prefers-reduced-motion: reduce) {
