@@ -835,6 +835,137 @@
 .coach-recipe-coverage section,
 .coach-recipe-images section { border-radius: var(--recipe-panel-radius); }
 
+/* Recetario profundo · detalle, edición, control de calidad y media */
+.coach-recipe-detail,
+.coach-recipe-editor,
+.coach-recipe-create,
+.coach-recipe-audit,
+.coach-recipe-coverage,
+.coach-recipe-images,
+.coach-recipe-review {
+  --recipe-rule: color-mix(in srgb, var(--border) 88%, var(--text-muted) 12%);
+  --recipe-field: color-mix(in srgb, var(--surface) 90%, var(--bg));
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+}
+.coach-recipe-detail h1,
+.coach-recipe-editor h1,
+.coach-recipe-create h1,
+.coach-recipe-audit h1,
+.coach-recipe-coverage h1,
+.coach-recipe-images h1,
+.coach-recipe-review h1 {
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+  font-weight: 680;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.coach-recipe-detail > div:first-child {
+  border-bottom: 1px solid var(--recipe-rule);
+  background: var(--bg);
+}
+.coach-recipe-detail > div:first-child img { filter: saturate(0.92) contrast(1.02); }
+.coach-recipe-detail > div:nth-child(2) > div,
+.coach-recipe-detail > div:nth-child(2) > section {
+  border-radius: 0.22rem !important;
+  box-shadow: none !important;
+}
+.coach-recipe-detail [class*='rounded-full'],
+.coach-recipe-detail [class*='rounded-2xl'],
+.coach-recipe-detail [class*='rounded-xl'],
+.coach-recipe-detail [class*='rounded-lg'] { border-radius: 0.16rem !important; }
+.coach-recipe-detail [class*='tabular'],
+.coach-recipe-detail strong { font-variant-numeric: tabular-nums; }
+.coach-recipe-detail button,
+.coach-recipe-detail a { transition: background-color 180ms var(--ease-out-strong), border-color 180ms var(--ease-out-strong), color 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong); }
+.coach-recipe-detail button:active,
+.coach-recipe-detail a:active { transform: translateY(1px); }
+
+.coach-recipe-editor > div > div:first-child,
+.coach-recipe-create > div:first-child,
+.coach-recipe-audit > div:first-child,
+.coach-recipe-coverage > div > header,
+.coach-recipe-images > div > header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--recipe-rule);
+}
+.coach-recipe-editor .card,
+.coach-recipe-create .card {
+  border-color: var(--recipe-rule);
+  background: var(--recipe-field);
+}
+.coach-recipe-editor .card > p:first-child,
+.coach-recipe-create .card > p:first-child {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--recipe-rule);
+}
+.coach-recipe-editor label,
+.coach-recipe-create label {
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+.coach-recipe-editor input,
+.coach-recipe-editor textarea,
+.coach-recipe-editor select,
+.coach-recipe-editor button,
+.coach-recipe-create input,
+.coach-recipe-create textarea,
+.coach-recipe-create select,
+.coach-recipe-create button { border-radius: 0.14rem !important; }
+.coach-recipe-editor img,
+.coach-recipe-create img { border-radius: 0.16rem !important; }
+
+.coach-recipe-audit button,
+.coach-recipe-audit input,
+.coach-recipe-audit [class*='rounded-xl'],
+.coach-recipe-audit [class*='rounded-full'] { border-radius: 0.14rem !important; }
+.coach-recipe-audit table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.coach-recipe-audit thead {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+.coach-recipe-audit tbody tr:hover { background: var(--surface-hover) !important; }
+
+.coach-recipe-coverage section,
+.coach-recipe-images section,
+.coach-recipe-review section,
+.coach-recipe-review article {
+  border-color: var(--recipe-rule) !important;
+  border-radius: 0.22rem !important;
+  background: var(--recipe-field) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent);
+}
+.coach-recipe-coverage section > div:first-child,
+.coach-recipe-images section > div:first-child,
+.coach-recipe-review section > div:first-child {
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--recipe-rule);
+}
+.coach-recipe-coverage [class*='rounded-2xl'],
+.coach-recipe-coverage [class*='rounded-xl'],
+.coach-recipe-images [class*='rounded-2xl'],
+.coach-recipe-images [class*='rounded-xl'],
+.coach-recipe-review [class*='rounded-2xl'],
+.coach-recipe-review [class*='rounded-xl'] { border-radius: 0.16rem !important; }
+.coach-recipe-coverage button,
+.coach-recipe-coverage input,
+.coach-recipe-coverage select,
+.coach-recipe-images button,
+.coach-recipe-images input,
+.coach-recipe-images select,
+.coach-recipe-review button,
+.coach-recipe-review input,
+.coach-recipe-review select { border-radius: 0.14rem !important; }
+.coach-recipe-coverage [class*='tabular'],
+.coach-recipe-images [class*='tabular'],
+.coach-recipe-review [class*='tabular'] { font-variant-numeric: tabular-nums; }
+.coach-recipe-review article {
+  transition: border-color 180ms var(--ease-out-strong), background-color 180ms var(--ease-out-strong);
+}
+.coach-recipe-review article:hover { border-color: var(--border-strong) !important; background: var(--surface-hover) !important; }
+
 /* Coach · Operaciones — precios, costes, rentabilidad y compra */
 .coach-price-admin,
 .coach-costing-page,
