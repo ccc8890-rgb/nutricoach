@@ -339,6 +339,106 @@
 }
 .coach-subtabs button { font-family: var(--font-instrument), var(--font-geist-sans), sans-serif; }
 
+/* Ficha cliente · Entrenamiento profundo */
+.coach-client-training {
+  --training-detail-rule: color-mix(in srgb, var(--border) 88%, var(--semantic-info) 12%);
+  --training-detail-panel: color-mix(in srgb, var(--client-panel) 94%, var(--bg));
+}
+.coach-training-plan-header,
+.coach-training-routine,
+.coach-performance-block,
+.coach-competition-manager .card,
+.coach-competition-protocol .card {
+  border: 1px solid var(--training-detail-rule, var(--client-rule));
+  border-radius: 0.22rem;
+  background: var(--training-detail-panel, var(--client-panel));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent);
+}
+.coach-training-plan-header h2 {
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+  font-weight: 660;
+  letter-spacing: -0.035em;
+}
+.coach-training-plan-header details > div {
+  border-radius: 0.18rem !important;
+  box-shadow: 0 1rem 2.5rem color-mix(in srgb, var(--bg) 68%, transparent);
+}
+.coach-training-routine > summary {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--training-detail-rule, var(--client-rule));
+}
+.coach-training-routine > summary > span > span:first-child { border-radius: 0.16rem !important; }
+
+.coach-week-routine > div {
+  border-radius: 0.18rem !important;
+  background: var(--client-field) !important;
+}
+.coach-week-routine > div > button { font-family: var(--font-instrument), var(--font-geist-sans), sans-serif; }
+.coach-week-routine > div > button > div > span:first-child {
+  border-radius: 0.12rem !important;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+.coach-week-routine input,
+.coach-week-routine [class*='rounded-lg'] { border-radius: 0.14rem; }
+
+.coach-training-calendar button,
+.coach-training-calendar [class*='rounded-xl'],
+.coach-training-calendar [class*='rounded-lg'] { border-radius: 0.16rem; }
+.coach-training-calendar button { font-family: var(--font-instrument), var(--font-geist-sans), sans-serif; }
+.coach-training-calendar > div:first-child {
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--training-detail-rule, var(--client-rule));
+}
+
+.coach-training-history button { font-family: var(--font-instrument), var(--font-geist-sans), sans-serif; }
+.coach-training-history [class*='rounded-xl'] {
+  border-radius: 0.16rem;
+  box-shadow: none;
+}
+.coach-training-history section > div[class*='grid'] > div { background: var(--client-field) !important; }
+
+.coach-athlete-profile .card {
+  border-color: var(--training-detail-rule, var(--client-rule));
+  border-radius: 0.22rem;
+  background: var(--training-detail-panel, var(--client-panel));
+  box-shadow: none;
+}
+.coach-athlete-profile h3 {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+}
+.coach-athlete-profile input,
+.coach-athlete-profile select,
+.coach-athlete-profile textarea,
+.coach-athlete-profile button { border-radius: 0.16rem; }
+
+.coach-performance-panel button,
+.coach-performance-panel [class*='rounded-lg'],
+.coach-performance-panel [class*='rounded-xl'],
+.coach-performance-panel [class*='rounded-2xl'] { border-radius: 0.16rem; }
+.coach-performance-panel button { font-family: var(--font-instrument), var(--font-geist-sans), sans-serif; }
+.coach-performance-block { box-shadow: none; }
+.coach-performance-block > h3 {
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.coach-competition-manager .card,
+.coach-competition-protocol .card { box-shadow: none; }
+.coach-competition-manager button,
+.coach-competition-manager input,
+.coach-competition-manager select,
+.coach-competition-protocol button,
+.coach-competition-protocol input,
+.coach-competition-protocol select,
+.coach-competition-protocol textarea { border-radius: 0.16rem; }
+.coach-competition-manager span[class*='rounded-full'] { border-radius: 0.12rem; }
+.coach-competition-protocol .bg-white,
+.coach-competition-protocol .bg-gray-50,
+.coach-competition-protocol .bg-blue-50 { background: var(--client-field) !important; }
+
 @media (max-width: 767px) {
   .coach-client-toolbar { align-items: stretch; }
   .coach-client-toolbar > div:first-child,

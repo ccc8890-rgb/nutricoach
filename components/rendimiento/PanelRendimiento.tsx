@@ -48,7 +48,7 @@ export default function PanelRendimiento({ clienteId }: { clienteId: string }) {
   const vista: Vista = vistas.some(v => v.key === vistaUrl) ? vistaUrl : 'general'
 
   return (
-    <div className="space-y-4">
+    <div className="coach-performance-panel space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Datos de Garmin · carga estimada por ritmo y pulso (TSS)</p>
         <div className="flex gap-1 rounded-lg p-0.5" style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border)' }}>

@@ -117,7 +117,7 @@ export default function RutinaSemanaAccordion({ planId }: { planId: string }) {
   const porDia = [...sesiones].sort((a, b) => (DIAS_SEMANA_ORDEN[a.dia_semana] ?? 99) - (DIAS_SEMANA_ORDEN[b.dia_semana] ?? 99))
 
   return (
-    <div className="space-y-2">
+    <div className="coach-week-routine space-y-2">
       {porDia.map(sesion => {
         const abierto = abiertos.has(sesion.id)
         const esHoy = sesion.dia_semana === HOY_DIA

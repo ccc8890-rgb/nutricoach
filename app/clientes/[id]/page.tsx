@@ -928,7 +928,7 @@ export default function ClienteDetallePage() {
           </div>
 
         ) : tabActiva === 'entrenamiento' ? (
-          <div>
+          <div className="coach-client-section coach-client-training">
             <SubTabs<SubTabEntreno>
               active={subTabEntreno}
               onChange={setSubTabEntreno}
@@ -944,7 +944,7 @@ export default function ClienteDetallePage() {
 
             {subTabEntreno === 'plan' ? (
               <div className="space-y-4">
-                <section className="rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <section className="coach-training-plan-header p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0">
                     <h2 className="text-lg font-semibold leading-tight line-clamp-2" style={{ color: 'var(--text)' }}>{entrenoActivo?.nombre ?? 'Sin plan asignado'}</h2>
                     {entrenoActivo?.duracion_semanas ? (
@@ -966,7 +966,7 @@ export default function ClienteDetallePage() {
                 </section>
 
                 {entrenoActivo && (
-                  <details className="group rounded-2xl p-4 sm:p-5 min-w-0" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <details className="coach-training-routine group p-4 sm:p-5 min-w-0">
                     <summary className="flex items-center justify-between gap-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
                       <span className="flex items-center gap-3 min-w-0">
                         <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text)' }}>

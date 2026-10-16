@@ -37,7 +37,7 @@ export function AyudaPlegable({ id }: { id: AyudaId }) {
 
 export function Bloque({ titulo, nota, ayuda, children }: { titulo: string; nota?: string; ayuda?: AyudaId; children: ReactNode }) {
   return (
-    <section className="rounded-2xl p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <section className="coach-performance-block p-4">
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{titulo}</h3>
       {nota && <p className="mb-2 mt-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>{nota}</p>}
       {children}

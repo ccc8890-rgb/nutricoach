@@ -191,7 +191,7 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
     // EDITOR
     if (showEditor) {
         return (
-            <div className="space-y-6">
+            <div className="coach-competition-protocol space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-bold text-[var(--text)]">
@@ -401,7 +401,7 @@ export default function ProtocoloCompeticion({ clienteId }: Props) {
 
     // LISTADO
     return (
-        <div className="space-y-4">
+        <div className="coach-competition-protocol space-y-4">
             {/* Modal eliminar */}
             <Modal
                 abierto={modalDelete.abierto}

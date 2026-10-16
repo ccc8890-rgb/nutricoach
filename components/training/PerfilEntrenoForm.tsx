@@ -112,7 +112,7 @@ export default function PerfilEntrenoForm({ clienteId }: { clienteId: string }) 
   }
 
   return (
-    <form onSubmit={guardar} className="space-y-6">
+    <form onSubmit={guardar} className="coach-athlete-profile space-y-6">
 
       {/* ── Modalidad y Objetivo ── */}
       <section className="card p-5 space-y-4">

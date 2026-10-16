@@ -138,7 +138,7 @@ export default function CompeticionesManager({ clienteId, pesoKg }: Props) {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="coach-competition-manager space-y-4">
             {/* Fase deportiva activa */}
             {faseActiva && (
                 <FaseDeportivaCard fase={faseActiva} objetivo={objetivoHoy} pesoKg={pesoKg} />

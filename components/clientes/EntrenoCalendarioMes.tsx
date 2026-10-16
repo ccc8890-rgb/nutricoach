@@ -503,7 +503,7 @@ export default function EntrenoCalendarioMes({ planId, vista = 'mes' }: { planId
   }
 
   return (
-    <div>
+    <div className="coach-training-calendar">
       <div className="flex items-center justify-between mb-3">
         <p className="text-base font-semibold" style={{ color: 'var(--text)' }}>
           {vista === 'semana' ? `Semana del ${parseInt(semanaLunes.slice(8), 10)} de ${MESES[Number(semanaLunes.slice(5, 7)) - 1].toLowerCase()} al ${parseInt(sumarDias(semanaLunes, 6).slice(8), 10)} de ${MESES[Number(sumarDias(semanaLunes, 6).slice(5, 7)) - 1].toLowerCase()}` : `${MESES[month - 1]} ${year}`}
