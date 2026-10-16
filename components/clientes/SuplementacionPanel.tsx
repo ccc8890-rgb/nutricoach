@@ -93,14 +93,14 @@ export default function SuplementacionPanel({ clienteId }: { clienteId: string }
   }
 
   if (cargando) return (
-    <section className="card p-4 sm:p-5 animate-pulse space-y-3" aria-busy="true" aria-label="Cargando suplementación">
+    <section className="coach-supplement-panel card p-4 sm:p-5 animate-pulse space-y-3" aria-busy="true" aria-label="Cargando suplementación">
       <div className="h-5 w-1/3 rounded" style={{ background: 'var(--border)' }} />
       {BLOQUES.map(({ ambito }) => <div key={ambito} className="h-24 rounded-xl" style={{ background: 'var(--border)' }} />)}
     </section>
   )
 
   if (error || !datos) return (
-    <section className="card p-4 sm:p-5 space-y-3">
+    <section className="coach-supplement-panel card p-4 sm:p-5 space-y-3">
       <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Suplementación</h2>
       <p className="text-sm" role="alert" style={{ color: 'var(--text-secondary)' }}>No se pudieron cargar las propuestas de suplementación.</p>
       <button type="button" className="btn-secondary btn-sm" onClick={() => setIntento(i => i + 1)}>Reintentar</button>
@@ -108,7 +108,7 @@ export default function SuplementacionPanel({ clienteId }: { clienteId: string }
   )
 
   return (
-    <section className="card overflow-hidden">
+    <section className="coach-supplement-panel card overflow-hidden">
       <header className="p-4 sm:p-5 space-y-2 border-b" style={{ borderColor: 'var(--border)' }}>
         <h2 className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--text)' }}><Pill size={16} style={{ color: 'var(--primary)' }} /> Suplementación</h2>
         <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
@@ -139,7 +139,7 @@ export default function SuplementacionPanel({ clienteId }: { clienteId: string }
                 {datos[ambito].map(propuesta => {
                   const guardando = pendiente === `${ambito}:${propuesta.id}`
                   return (
-                    <article key={propuesta.id} className="rounded-xl p-3 sm:p-4 space-y-3 min-w-0" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }} aria-busy={guardando}>
+                    <article key={propuesta.id} className="coach-supplement-card p-3 sm:p-4 space-y-3 min-w-0" aria-busy={guardando}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 space-y-1.5">
                           <h4 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{propuesta.nombre}</h4>

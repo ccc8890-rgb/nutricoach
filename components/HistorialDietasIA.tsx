@@ -93,7 +93,7 @@ export default function HistorialDietasIA({ clienteId }: Props) {
     )
 
     return (
-        <div className="space-y-4">
+        <div className="coach-diet-history space-y-4">
             {/* Timeline */}
             <div className="relative">
                 {/* Línea vertical */}

@@ -103,7 +103,7 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
     }
 
     return (
-        <div className="card">
+        <div className="coach-macro-adjustment card">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <Brain size={20} className="text-purple-600" />
@@ -132,7 +132,7 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
 
             {/* Error */}
             {error && !loading && (
-                <div className="p-4 rounded-lg text-sm" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
+                <div className="coach-macro-error p-4 text-sm">
                     <p className="font-medium text-red-800 mb-1">Error al recalcular</p>
                     <p className="text-red-600 text-xs">{error}</p>
                     <button
@@ -158,7 +158,7 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
                             const actual = planActual?.[key]
                             const nuevo = sugerencia[key]
                             return (
-                                <div key={key} className="p-3 rounded-lg border" style={{ borderColor: '#E2E8F0', background: '#FAFAFA' }}>
+                                <div key={key} className="coach-macro-comparison p-3">
                                     <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
                                     <div className="flex items-center gap-1.5">
                                         {actual ? (
@@ -178,7 +178,7 @@ export default function AjusteMacrosIA({ clienteId, onApplied }: Props) {
                     </div>
 
                     {/* Razonamiento */}
-                    <div className="p-3 rounded-lg text-sm" style={{ background: '#F5F3FF', border: '1px solid #EDE9FE' }}>
+                    <div className="coach-macro-reasoning p-3 text-sm">
                         <p className="font-medium text-purple-800 text-xs mb-1">🔍 Razonamiento de IA</p>
                         <p className="text-purple-700 text-sm">{sugerencia.razonamiento}</p>
                     </div>

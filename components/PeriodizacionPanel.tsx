@@ -99,7 +99,7 @@ export default function PeriodizacionPanel({ clienteId }: PeriodizacionPanelProp
     const historial = acciones.filter(a => !(a.requiere_aprobacion && a.aprobado_por_coach === null))
 
     return (
-        <div className="space-y-4">
+        <div className="coach-periodization-panel space-y-4">
             {/* Pendientes de aprobación */}
             {pendientes.length > 0 && (
                 <div className="card overflow-hidden">

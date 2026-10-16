@@ -327,6 +327,73 @@
 }
 .coach-nutrition-module > button:hover { background: var(--surface-hover); }
 .coach-cost-module select { border-radius: 0.16rem; }
+.coach-macro-adjustment,
+.coach-periodization-panel .card,
+.coach-supplement-panel.card {
+  border-color: var(--client-section-rule, var(--client-rule));
+  border-radius: 0.22rem;
+  background: var(--client-panel);
+  box-shadow: none;
+}
+.coach-macro-adjustment > div:first-child {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--client-section-rule, var(--client-rule));
+}
+.coach-macro-adjustment .text-purple-600,
+.coach-macro-adjustment .text-purple-500,
+.coach-macro-adjustment .text-purple-800,
+.coach-macro-adjustment .text-purple-700 { color: var(--semantic-info) !important; }
+.coach-macro-error {
+  border: 1px solid var(--semantic-alert-border);
+  border-radius: 0.16rem;
+  background: var(--semantic-alert-bg);
+}
+.coach-macro-error [class*='text-red'] { color: var(--semantic-alert) !important; }
+.coach-macro-comparison {
+  border: 1px solid var(--client-section-rule, var(--client-rule));
+  border-radius: 0.16rem;
+  background: var(--client-field);
+}
+.coach-macro-comparison > div { font-family: var(--font-geist-mono), ui-monospace, monospace; }
+.coach-macro-reasoning {
+  border-left: 2px solid var(--semantic-info);
+  background: var(--semantic-info-bg);
+  color: var(--text-secondary);
+}
+.coach-macro-adjustment button { border-radius: 0.16rem; }
+
+.coach-diet-history .card {
+  border-color: var(--client-section-rule, var(--client-rule));
+  border-radius: 0.18rem;
+  background: var(--client-field);
+  box-shadow: none;
+}
+.coach-diet-history .card:hover { border-color: var(--border-strong); box-shadow: inset 3px 0 0 var(--accent); }
+.coach-diet-history span[class*='rounded-full'] { border-radius: 0.12rem; }
+.coach-diet-history > div > div[class*='absolute'] { background: var(--client-section-rule, var(--client-rule)); }
+
+.coach-periodization-panel .card { overflow: hidden; }
+.coach-periodization-panel .card > div:first-child { background: transparent !important; }
+.coach-periodization-panel [class*='rounded-full'] { border-radius: 0.16rem; }
+.coach-periodization-panel [class*='rounded-lg'] { border-radius: 0.14rem; }
+.coach-periodization-panel button { border-radius: 0.14rem; }
+
+.coach-supplement-panel > header {
+  background: color-mix(in srgb, var(--client-panel) 84%, var(--bg));
+}
+.coach-supplement-card {
+  border: 1px solid var(--client-section-rule, var(--client-rule));
+  border-radius: 0.16rem;
+  background: var(--client-field);
+}
+.coach-supplement-card span[class*='rounded-full'] { border-radius: 0.12rem; }
+.coach-supplement-card input,
+.coach-supplement-card button { border-radius: 0.14rem; }
+.coach-supplement-panel h3 {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+}
 .coach-plan-list-item,
 .coach-empty-module {
   border: 1px solid var(--client-section-rule, var(--client-rule));
