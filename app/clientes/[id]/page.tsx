@@ -690,25 +690,25 @@ export default function ClienteDetallePage() {
 
   return (
     <>
-      <div className="coach-client-detail w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 pt-16 lg:pt-6 overflow-x-hidden">
+      <div className="coach-client-detail w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 pt-16 lg:pt-6 overflow-x-hidden">
 
         {/* ── Back ── */}
-        <Link href={listaRecordada('clientes', '/clientes')} className="inline-flex items-center gap-1.5 text-sm mb-5 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
-          <ArrowLeft size={15} /> Clientes
+        <Link href={listaRecordada('clientes', '/clientes')} className="coach-client-back inline-flex items-center gap-1.5 text-sm mb-5 transition-colors hover:text-[var(--text)]" style={{ color: 'var(--text-muted)' }}>
+          <ArrowLeft size={15} /> Volver a clientes
         </Link>
 
         {/* ── Hero card ── */}
-        <div className="coach-client-hero mb-3 sm:mb-5">
+        <header className="coach-client-hero mb-3 sm:mb-5">
           <div className="flex items-start gap-3 sm:gap-4">
             {/* Avatar */}
-            <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-base sm:text-lg font-bold flex-shrink-0" style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
+            <div className="coach-client-avatar w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center text-base sm:text-lg font-bold flex-shrink-0" style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
               {initials}
             </div>
 
             {/* Name + meta */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg sm:text-xl font-bold truncate" style={{ color: 'var(--text)' }}>{nombre}</h1>
+                <h1 className="coach-client-name truncate" style={{ color: 'var(--text)' }}>{nombre}</h1>
                 {cliente.activo ? (
                   <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,199,89,0.12)', color: '#34C759' }}>Activo</span>
                 ) : (
@@ -724,7 +724,7 @@ export default function ClienteDetallePage() {
               <p className="hidden sm:block text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.email}</p>
 
               {/* Stats row */}
-              <div className="flex gap-1.5 sm:gap-2 flex-wrap mt-2 sm:mt-3">
+              <div className="coach-client-facts flex gap-1.5 sm:gap-2 flex-wrap mt-2 sm:mt-3">
                 {cliente.objetivo && <StatPill label="Objetivo" value={OBJETIVO_LABELS[cliente.objetivo] ?? cliente.objetivo} />}
                 {ultimoPeso && <StatPill label="Peso" value={`${ultimoPeso} kg`} />}
                 {cliente.altura && <div className="hidden sm:block"><StatPill label="Altura" value={`${cliente.altura} cm`} /></div>}
@@ -798,35 +798,28 @@ export default function ClienteDetallePage() {
               </Link>
             </div>
           )}
-        </div>
+        </header>
 
         {/* ── Tabs ── */}
-        <div className="coach-client-tabs overflow-x-auto mb-5 scrollbar-none">
+        <nav className="coach-client-tabs overflow-x-auto mb-5 scrollbar-none" aria-label="Áreas del cliente">
           {TABS.map(({ key, label, icon: Icon, badge }) => (
             <button
               key={key}
               onClick={() => { setTabActiva(key); setIsEditando(false) }}
               className="coach-client-tab flex-shrink-0"
               data-active={tabActiva === key}
-              style={tabActiva === key
-                ? { background: 'var(--text)', color: 'var(--bg)' }
-                : { background: 'var(--surface)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
-              }
             >
               <Icon size={13} />
               {label}
               {badge !== undefined && badge > 0 && (
                 <span className="text-[12px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center"
-                  style={tabActiva === key
-                    ? { background: 'rgba(255,255,255,0.2)', color: 'inherit' }
-                    : { background: 'var(--border)', color: 'var(--text-secondary)' }
-                  }>
+                  >
                   {badge}
                 </span>
               )}
             </button>
           ))}
-        </div>
+        </nav>
 
         <CambiosDelCliente clienteId={id as string} />
 
