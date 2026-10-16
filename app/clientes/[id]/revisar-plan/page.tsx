@@ -561,7 +561,7 @@ export default function RevisarPlanPage() {
   const nombreCompleto = perfil ? `${perfil.nombre} ${perfil.apellidos}` : 'Cliente'
 
   return (
-    <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-6">
+    <main className="coach-client-review max-w-5xl mx-auto p-4 sm:p-6 space-y-6">
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 rounded-full bg-[var(--primary)]/10 flex items-center justify-center">
           <User size={24} style={{ color: 'var(--primary)' }} />
@@ -1171,6 +1171,6 @@ export default function RevisarPlanPage() {
       {errorAprobacion && (
         <p className="text-sm text-red-600 dark:text-red-400 text-center">{errorAprobacion}</p>
       )}
-    </div>
+    </main>
   )
 }

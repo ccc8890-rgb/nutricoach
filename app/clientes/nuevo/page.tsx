@@ -48,8 +48,8 @@ export default function NuevoClientePage() {
   }
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 mb-8">
+    <main className="coach-client-create p-4 sm:p-8 max-w-3xl mx-auto">
+      <header className="coach-client-create__header flex items-center gap-3 mb-8">
         <Link href="/clientes" className="btn-secondary p-2">
           <ArrowLeft size={18} />
         </Link>
@@ -57,11 +57,11 @@ export default function NuevoClientePage() {
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Nuevo cliente</h1>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Crea el perfil de tu nuevo cliente</p>
         </div>
-      </div>
+      </header>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Datos de acceso */}
-        <div className="card">
+        <section className="coach-client-create__section card">
           <h2 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>Datos de acceso</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -81,10 +81,10 @@ export default function NuevoClientePage() {
               <input type="password" className="input" placeholder="Mínimo 6 caracteres" value={form.password} onChange={e => set('password', e.target.value)} required minLength={6} />
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Datos físicos */}
-        <div className="card">
+        <section className="coach-client-create__section card">
           <h2 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>Datos físicos y objetivo</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -129,10 +129,10 @@ export default function NuevoClientePage() {
               <input type="number" className="input" placeholder="175" value={form.altura} onChange={e => set('altura', e.target.value)} />
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Notas */}
-        <div className="card">
+        <section className="coach-client-create__section card">
           <h2 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>Información adicional</h2>
           <div className="flex flex-col gap-4">
             <div>
@@ -144,7 +144,7 @@ export default function NuevoClientePage() {
               <textarea className="input" rows={3} placeholder="Notas que solo tú verás…" value={form.notas} onChange={e => set('notas', e.target.value)} />
             </div>
           </div>
-        </div>
+        </section>
 
         {error && (
           <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: 'var(--error-bg)', border: '1px solid var(--error)', color: 'var(--error)' }}>{error}</div>
@@ -159,6 +159,6 @@ export default function NuevoClientePage() {
           </button>
         </div>
       </form>
-    </div>
+    </main>
   )
 }

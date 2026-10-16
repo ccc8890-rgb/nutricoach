@@ -517,6 +517,88 @@
   .coach-client-communication > .coach-work-card { grid-column: 2; grid-row: 1 / span 2; }
 }
 
+/* Alta y revisión inicial del cliente */
+.coach-client-create,
+.coach-client-review,
+.coach-client-quick-review {
+  --onboarding-rule: color-mix(in srgb, var(--border) 90%, var(--text-muted) 10%);
+  --onboarding-panel: color-mix(in srgb, var(--surface) 94%, var(--bg));
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+}
+.coach-client-create__header,
+.coach-client-review > div:first-child,
+.coach-client-quick-review header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--onboarding-rule);
+}
+.coach-client-create h1,
+.coach-client-review h1,
+.coach-client-quick-review h1 {
+  font-family: var(--font-instrument), var(--font-geist-sans), sans-serif;
+  font-weight: 680;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.coach-client-create__section,
+.coach-client-review .card,
+.coach-client-quick-review .card {
+  border: 1px solid var(--onboarding-rule);
+  border-radius: 0.22rem;
+  background: var(--onboarding-panel);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent);
+}
+.coach-client-create__section > h2,
+.coach-client-review .card > h2,
+.coach-client-quick-review .card > div:first-child p:first-child,
+.coach-client-quick-review section > p:first-child {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--onboarding-rule);
+}
+.coach-client-create label {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.coach-client-create input,
+.coach-client-create select,
+.coach-client-create textarea,
+.coach-client-create button,
+.coach-client-create a,
+.coach-client-review input,
+.coach-client-review select,
+.coach-client-review textarea,
+.coach-client-review button,
+.coach-client-review a,
+.coach-client-quick-review button,
+.coach-client-quick-review a { border-radius: 0.14rem !important; }
+.coach-client-review [class*='rounded-full'],
+.coach-client-review [class*='rounded-xl'],
+.coach-client-review [class*='rounded-lg'],
+.coach-client-quick-review [class*='rounded-full'],
+.coach-client-quick-review [class*='rounded-lg'] { border-radius: 0.16rem !important; }
+.coach-client-review dl,
+.coach-client-review [class*='grid-cols-4'] > div,
+.coach-client-quick-review [class*='grid-cols-3'] > div {
+  font-variant-numeric: tabular-nums;
+}
+.coach-client-review .card > div[class*='bg-[var(--bg)]'],
+.coach-client-review .card [class*='rounded-xl'] { background: var(--client-field); }
+.coach-client-review span[class*='bg-amber'],
+.coach-client-quick-review span[class*='rounded-full'] { border: 1px solid var(--onboarding-rule); }
+.coach-client-quick-review > div:first-child { max-width: 34rem; }
+.coach-client-quick-review article.card {
+  transition: border-color 180ms var(--ease-out-strong), background-color 180ms var(--ease-out-strong);
+}
+.coach-client-quick-review article.card:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+.coach-client-quick-review > div:last-child {
+  background: color-mix(in srgb, var(--surface) 94%, transparent) !important;
+  backdrop-filter: blur(14px);
+}
+
+@media (max-width: 39.99rem) {
+  .coach-client-create form .grid-cols-2 { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* Ficha cliente · Entrenamiento profundo */
 .coach-client-training {
   --training-detail-rule: color-mix(in srgb, var(--border) 88%, var(--semantic-info) 12%);
