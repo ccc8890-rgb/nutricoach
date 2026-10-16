@@ -6,10 +6,12 @@ interface Props {
   c: number
   g: number
   mostrarKcal?: boolean
+  /** Sin borde ni fondo propios (cuando ya va dentro de otra tarjeta). */
+  sinMarco?: boolean
 }
 
 /** Reparto de calorías de una receta en un diagrama ternario: el punto cae donde coinciden proteína, carbos y grasa. */
-export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true }: Props) {
+export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true, sinMarco = false }: Props) {
   const kp = Math.max(p, 0) * 4, kc = Math.max(c, 0) * 4, kg = Math.max(g, 0) * 9
   const total = kp + kc + kg || 1
   const f = [kp / total, kc / total, kg / total]
@@ -36,7 +38,7 @@ export default function MacroTriangulo({ kcal, p, c, g, mostrarKcal = true }: Pr
   ]
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[6px] p-4" style={{ border: '1px solid var(--editorial-rule, var(--border))', background: 'var(--surface)' }}>
+    <div className={`flex items-center justify-between gap-3 ${sinMarco ? '' : 'rounded-[6px] p-4'}`} style={sinMarco ? undefined : { border: '1px solid var(--editorial-rule, var(--border))', background: 'var(--surface)' }}>
       <div className="min-w-0">
         {mostrarKcal && (
           <p className="font-data text-4xl font-light leading-none" style={{ color: 'var(--text)' }}>

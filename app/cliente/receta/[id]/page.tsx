@@ -183,7 +183,7 @@ export default function RecetaClientePage() {
               <div className="rounded-3xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Tu ración · {racion.franja}</p>
                 <p className="text-3xl font-bold mt-1" style={{ color: 'var(--text)' }}>{racion.total.kcal} <span className="text-base font-semibold" style={{ color: 'var(--text-muted)' }}>kcal</span></p>
-                <div className="mt-3"><MacroTriangulo kcal={racion.total.kcal} p={racion.total.p} c={racion.total.c} g={racion.total.g} mostrarKcal={false} /></div>
+                <div className="mt-3"><MacroTriangulo kcal={racion.total.kcal} p={racion.total.p} c={racion.total.c} g={racion.total.g} mostrarKcal={false} sinMarco /></div>
                 {racion.complementos.length > 0 && (
                   <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
                     Incluye el plato ({racion.plato.kcal} kcal) y, además: {racion.complementos.map(c => `${c.nombre} ${c.gramos} g`).join(', ')}.
