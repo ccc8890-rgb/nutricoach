@@ -81,8 +81,17 @@ function getCoachContext(pathname: string): CoachContext {
   if (pathname.startsWith('/clientes')) {
     return { area: 'Inicio', title: 'Clientes', actionHref: '/clientes/nuevo', actionLabel: 'Nuevo cliente', actionIcon: UserPlus }
   }
+  if (pathname.startsWith('/contenido')) {
+    return { area: 'Inicio', title: 'Contenido', actionHref: '/contenido', actionLabel: 'Nueva pieza', actionIcon: Plus }
+  }
   if (pathname.startsWith('/agentes')) {
     return { area: 'Inicio', title: 'Revisión IA', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: Home }
+  }
+  if (pathname.startsWith('/entrenos/plantillas')) {
+    return { area: 'Planes', title: 'Plantillas de entreno', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Dumbbell }
+  }
+  if (pathname.startsWith('/entrenos/ejercicios')) {
+    return { area: 'Planes', title: 'Biblioteca de ejercicios', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Dumbbell }
   }
   if (pathname.startsWith('/entrenos')) {
     return { area: 'Entrenamiento', title: 'Training OS', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Dumbbell }
@@ -91,16 +100,31 @@ function getCoachContext(pathname: string): CoachContext {
     return { area: 'Nutrición', title: 'Dashboard nutrición', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
   }
   if (pathname.startsWith('/compra')) {
-    return { area: 'Nutrición', title: 'Compra y costes', actionHref: '/precios/escandallo', actionLabel: 'Escandallo', actionIcon: FilePlus2 }
+    return { area: 'Compra y costes', title: 'Lista de la compra', actionHref: '/precios', actionLabel: 'Consultar precios', actionIcon: FilePlus2 }
+  }
+  if (pathname.startsWith('/dietas/plantillas')) {
+    return { area: 'Planes', title: 'Plantillas de dieta', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
   }
   if (pathname.startsWith('/dietas')) {
     return { area: 'Nutrición', title: 'Planes y alimentos', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
   }
+  if (pathname.startsWith('/recetas/cobertura')) {
+    return { area: 'Control', title: 'Cobertura de recetas', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }
+  }
+  if (pathname.startsWith('/recetas/revisar')) {
+    return { area: 'Recetario', title: 'Revisión de recetas', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }
+  }
   if (pathname.startsWith('/recetas')) {
     return { area: 'Nutrición', title: 'Recetario', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }
   }
+  if (pathname.startsWith('/precios/escandallo')) {
+    return { area: 'Control', title: 'Coste de recetas', actionHref: '/recetas', actionLabel: 'Ver recetas', actionIcon: FilePlus2 }
+  }
+  if (pathname.startsWith('/precios/rentabilidad')) {
+    return { area: 'Control', title: 'Rentabilidad por cliente', actionHref: '/clientes', actionLabel: 'Ver clientes', actionIcon: UserPlus }
+  }
   if (pathname.startsWith('/precios')) {
-    return { area: 'Nutrición', title: 'Costes y rentabilidad', actionHref: '/precios/escandallo', actionLabel: 'Escandallo', actionIcon: FilePlus2 }
+    return { area: 'Compra y costes', title: 'Precios', actionHref: '/precios/escandallo', actionLabel: 'Coste de recetas', actionIcon: FilePlus2 }
   }
   if (pathname.startsWith('/ajustes') || pathname.startsWith('/sistema')) {
     return { area: 'Ajustes', title: 'Ajustes', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: Home }
@@ -153,48 +177,38 @@ function CoachFloatingControls() {
 function CoachTopBar({ pathname }: { pathname: string }) {
   const context = getCoachContext(pathname)
   const ActionIcon = context.actionIcon
+  const { theme, toggleTheme } = useTheme()
 
   return (
-    <header
-      className="coach-atelier-topbar sticky top-0 z-20 border-b px-4 sm:px-6 lg:px-8"
-      style={{
-        borderColor: 'var(--border)',
-        background: 'color-mix(in srgb, var(--bg) 96%, transparent)',
-      }}
-    >
-      <div className="coach-atelier-topbar__inner flex items-center justify-between gap-5">
-        <div className="coach-atelier-context flex min-w-0 items-center gap-4">
-          <div className="hidden min-w-0 sm:block">
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.11em]" style={{ color: 'var(--text-muted)' }}>
-              <Link href="/dashboard" prefetch className="transition-colors hover:text-[var(--text)]">Coach OS</Link>
-              <ChevronRight size={11} />
-              <span>{context.area}</span>
-            </div>
+    <header className="coach-atelier-topbar sticky top-0 z-20 px-4 sm:px-6 lg:px-8">
+      <div className="coach-atelier-topbar__inner">
+        <div className="coach-atelier-context min-w-0">
+          <div className="coach-atelier-register hidden sm:flex" aria-label={`Coach OS, ${context.area}`}>
+            <Link href="/dashboard" prefetch>Coach OS</Link>
+            <ChevronRight size={10} aria-hidden="true" />
+            <span>{context.area}</span>
           </div>
           <span className="coach-atelier-context__rule hidden sm:block" aria-hidden="true" />
-          <h1 className="truncate text-lg font-semibold tracking-[-0.035em] sm:text-xl" style={{ color: 'var(--text)' }}>
-            {context.title}
-          </h1>
+          <p className="coach-atelier-context__title">{context.title}</p>
         </div>
 
-        <div className="coach-atelier-actions flex min-w-0 items-center gap-2">
+        <div className="coach-atelier-actions">
           {!pathname.startsWith('/clientes') && (
             <Link
               href="/clientes"
-              className="coach-atelier-search hidden h-10 min-w-[19rem] items-center gap-2 border px-3 lg:flex"
-              style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text-muted)' }}
+              className="coach-atelier-search hidden lg:flex"
               aria-label="Buscar cliente"
             >
-              <Search size={15} />
-              <span className="truncate text-sm">Buscar cliente</span>
-              <span className="ml-auto border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em]" style={{ borderColor: 'var(--border)' }}>
-                Abrir
-              </span>
+              <Search size={14} />
+              <span>Buscar cliente</span>
             </Link>
           )}
-          <Link href={context.actionHref} prefetch className="btn btn-primary btn-sm">
+          <button type="button" onClick={toggleTheme} className="coach-atelier-icon-action hidden sm:grid" aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}>
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+          <Link href={context.actionHref} prefetch className="coach-atelier-primary-action">
             <ActionIcon size={14} />
-            {context.actionLabel}
+            <span>{context.actionLabel}</span>
           </Link>
         </div>
       </div>
