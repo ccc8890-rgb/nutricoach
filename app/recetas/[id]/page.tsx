@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, Trash2, ExternalLink, CheckCircle, XCircle, Loader2, AlertTriangle, Clock, Users, ChevronLeft, Euro, Copy, Check, UtensilsCrossed, PlayCircle, Lightbulb } from 'lucide-react'
+import { ArrowLeft, PencilSimple, Trash, ArrowSquareOut, CheckCircle, XCircle, SpinnerGap, Warning, Clock, Users, CaretLeft, CurrencyEur, Copy, Check, ForkKnife, PlayCircle, Lightbulb } from '@phosphor-icons/react'
 import EscandalloReceta from '@/components/EscandalloReceta'
 import { normalizarReceta, clasificarIntolerancia, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { calcularMacrosPorCantidad, sumarMacros } from '@/lib/utils'
@@ -247,7 +247,7 @@ export default function DetalleRecetaPage() {
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
       <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Receta no encontrada</p>
       <Link href={returnTo} className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--accent)' }}>
-        <ChevronLeft size={16} /> {isClientView ? 'Volver al plan' : 'Volver al recetario'}
+        <CaretLeft size={16} /> {isClientView ? 'Volver al plan' : 'Volver al recetario'}
       </Link>
     </div>
   )
@@ -322,9 +322,9 @@ export default function DetalleRecetaPage() {
   return (
     <PageTransition className="coach-recipe-detail">
       {/* ═══════ HERO FULL-BLEED ═══════ */}
-      <div className="relative w-full">
+      <div className="coach-recipe-detail__hero relative w-full">
         {receta.imagen_url ? (
-          <div className="relative w-full h-[45vh] min-h-[320px] max-h-[500px] overflow-hidden">
+          <div className="coach-recipe-detail__image relative w-full h-[45vh] min-h-[320px] max-h-[500px] overflow-hidden">
             <img
               src={receta.imagen_url}
               alt={receta.nombre}
@@ -353,7 +353,7 @@ export default function DetalleRecetaPage() {
             className="w-full h-[30vh] min-h-[240px] flex items-center justify-center"
             style={{ background: 'linear-gradient(135deg, var(--accent-bg), var(--bg-subtle))' }}
           >
-            <UtensilsCrossed size={56} style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
+            <ForkKnife size={56} style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
           </div>
         )}
 
@@ -383,13 +383,13 @@ export default function DetalleRecetaPage() {
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.7)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)' }}
               >
-                <Pencil size={12} /> Editar
+                <PencilSimple size={12} /> Editar
               </Link>
               <button onClick={borrar} disabled={borrando}
                 className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all duration-200"
                 style={{ background: 'rgba(255,69,58,0.3)', backdropFilter: 'blur(12px)', color: '#FF453A' }}
               >
-                <Trash2 size={12} /> {borrando ? '…' : 'Borrar'}
+                <Trash size={12} /> {borrando ? '…' : 'Borrar'}
               </button>
             </>
           )}
@@ -397,7 +397,7 @@ export default function DetalleRecetaPage() {
       </div>
 
       {/* ═══════ CONTENIDO PRINCIPAL ═══════ */}
-      <div className={`max-w-3xl mx-auto px-6 -mt-16 relative z-20 pb-safe${enBandeja ? ' pb-28' : ''}`}>
+      <div className={`coach-recipe-detail__content max-w-5xl mx-auto px-6 -mt-16 relative z-20 pb-safe${enBandeja ? ' pb-28' : ''}`}>
         {/* Banner de revisión */}
         {!isClientView && (receta.estado === 'en_revision' || receta.estado === 'borrador') && (
           <ScaleIn delay={0.05}>
@@ -413,12 +413,12 @@ export default function DetalleRecetaPage() {
                 <button disabled={accionando} onClick={() => handleEstado('aprobada')}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-all duration-200"
                   style={{ background: 'var(--success)' }}>
-                  {accionando ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />} Aprobar
+                  {accionando ? <SpinnerGap size={13} className="animate-spin" /> : <CheckCircle size={13} />} Aprobar
                 </button>
                 <button disabled={accionando} onClick={() => handleEstado('descartada')}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white disabled:opacity-50 transition-all duration-200"
                   style={{ background: 'var(--error)' }}>
-                  {accionando ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />} Descartar
+                  {accionando ? <SpinnerGap size={13} className="animate-spin" /> : <XCircle size={13} />} Descartar
                 </button>
               </div>}
             </div>
@@ -445,7 +445,7 @@ export default function DetalleRecetaPage() {
               }}
             >
               <div className="flex items-start gap-3">
-                <AlertTriangle size={18} style={{ color: quality.ok ? 'var(--success)' : 'var(--warning)' }} />
+                <Warning size={18} style={{ color: quality.ok ? 'var(--success)' : 'var(--warning)' }} />
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <p className="font-semibold text-sm" style={{ color: quality.ok ? 'var(--success)' : 'var(--warning)' }}>
@@ -487,9 +487,9 @@ export default function DetalleRecetaPage() {
 
         {/* ═══════ TÍTULO + META ═══════ */}
         <FadeIn delay={0.1}>
-          <div className="mb-6">
+          <div className="coach-recipe-detail__intro mb-6">
             <div className="flex items-start gap-3 flex-wrap mb-2">
-              <h1 className="text-3xl font-bold tracking-tight flex-1" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
+              <h1 className="coach-recipe-detail__title flex-1" style={{ color: 'var(--text)' }}>{receta.nombre}</h1>
             </div>
             {receta.descripcion && (
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
@@ -499,7 +499,7 @@ export default function DetalleRecetaPage() {
                 <EdicionRapida receta={{ id, nombre: receta.nombre, descripcion: receta.descripcion, tiempo_prep_min: receta.tiempo_prep_min, categoria: receta.categoria, tags: receta.tags }} onGuardado={() => window.location.reload()} />
                 {receta.estado === 'aprobada' && (
                   <button onClick={() => setReportando(true)} className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>
-                    <AlertTriangle size={13} /> Reportar problema
+                    <Warning size={13} /> Reportar problema
                   </button>
                 )}
               </div>
@@ -530,7 +530,7 @@ export default function DetalleRecetaPage() {
         {/* ═══════ MACRO RING + STATS ROW ═══════ */}
         <FadeIn delay={0.15}>
           <div
-            className="rounded-2xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-6"
+            className="coach-recipe-detail__nutrition mb-6 flex flex-col sm:flex-row items-center gap-6"
             style={{
               background: 'var(--surface)',
               border: '1px solid var(--border)',
@@ -660,7 +660,7 @@ export default function DetalleRecetaPage() {
                     onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
                   >
-                    <Euro size={13} /> Ver precios
+                    <CurrencyEur size={13} /> Ver precios
                   </button>
                 )}
               </div>
@@ -675,7 +675,7 @@ export default function DetalleRecetaPage() {
                 ) : (
                   <a href={r.url_origen} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-1 text-xs hover:underline w-fit" style={{ color: 'var(--info)' }}>
-                    <ExternalLink size={12} /> Fuente original
+                    <ArrowSquareOut size={12} /> Fuente original
                   </a>
                 )
               )}
@@ -730,7 +730,7 @@ export default function DetalleRecetaPage() {
                 <SelectorRaciones original={porcionesReceta} valor={nVista} onChange={setRacionesVista} kcalRacion={macrosPorPorcion?.kcal} />
               </div>
               <div
-                className="rounded-2xl p-5 mb-6"
+                className="coach-recipe-detail__section p-5 mb-6"
                 style={{
                   background: 'var(--surface)',
                   border: '1px solid var(--border)',
@@ -833,7 +833,7 @@ export default function DetalleRecetaPage() {
         <FadeIn delay={0.35}>
           {pasos.length > 0 && (
             <div
-              className="rounded-2xl p-5 mb-6"
+              className="coach-recipe-detail__section p-5 mb-6"
               style={{
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
@@ -867,11 +867,11 @@ export default function DetalleRecetaPage() {
         <FadeIn delay={0.42}>
           <div
             id="escandallo-receta"
-            className="rounded-2xl p-5 mb-6 scroll-mt-24"
+            className="coach-recipe-detail__section p-5 mb-6 scroll-mt-24"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
           >
             <h2 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}>
-              <Euro size={15} /> Coste de la receta
+              <CurrencyEur size={15} /> Coste de la receta
             </h2>
             <EscandalloReceta recetaId={id as string} />
           </div>
@@ -888,7 +888,7 @@ export default function DetalleRecetaPage() {
               onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)' }}
             >
-              <ChevronLeft size={16} /> {isClientView ? 'Volver al plan' : 'Volver al recetario'}
+              <CaretLeft size={16} /> {isClientView ? 'Volver al plan' : 'Volver al recetario'}
             </Link>
             {!isClientView && (
             <div className="flex gap-2">
@@ -898,7 +898,7 @@ export default function DetalleRecetaPage() {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
               >
-                <Pencil size={12} /> Editar
+                <PencilSimple size={12} /> Editar
               </Link>
             </div>
             )}

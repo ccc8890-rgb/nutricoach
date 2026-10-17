@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Clock, Users, Flame, Sparkles } from 'lucide-react'
+import { Clock, Users, Fire, Sparkle } from '@phosphor-icons/react'
 
 interface RecipeCardPremiumProps {
     id: string
@@ -84,28 +84,14 @@ export function RecipeCardPremium({
         <Link
             href={`/recetas/${id}`}
             className={`coach-recipe-card group relative flex flex-col overflow-hidden ${className}`}
-            style={{
-                aspectRatio: '3/4',
-                background: 'var(--surface)',
-                boxShadow: '0 8px 24px color-mix(in srgb, var(--text) 8%, transparent)',
-                transition: 'box-shadow 0.3s ease, transform 0.25s ease',
-            }}
-            onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-4px)'
-                e.currentTarget.style.boxShadow = '0 14px 30px color-mix(in srgb, var(--text) 14%, transparent)'
-            }}
-            onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 8px 24px color-mix(in srgb, var(--text) 8%, transparent)'
-            }}
         >
-            <div className="relative flex-1 min-h-0 overflow-hidden">
+            <div className="coach-recipe-card__media relative min-h-0 overflow-hidden">
                 {/* Imagen */}
                 {imagen_url ? (
                     <img
                         src={imagen_url}
                         alt={nombre}
-                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${imgLoaded ? 'opacity-100' : 'opacity-0'
+                        className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-[1.025] ${imgLoaded ? 'opacity-100' : 'opacity-0'
                             }`}
                         onLoad={() => setImgLoaded(true)}
                     />
@@ -136,7 +122,7 @@ export function RecipeCardPremium({
                 {/* Categoría pill — esquina superior */}
                 {categoria && (
                     <span
-                        className="absolute top-3 left-3 max-w-[calc(100%-1.5rem)] truncate text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                    className="coach-recipe-card__eyebrow absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate"
                         style={{
                             background: 'rgba(0,0,0,0.36)',
                             backdropFilter: 'blur(8px)',
@@ -151,7 +137,7 @@ export function RecipeCardPremium({
 
                 {(premium_chef || estilos?.includes('chef_healthy')) && (
                     <span
-                        className="absolute right-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                        className="coach-recipe-card__flag absolute right-3 top-3 max-w-[calc(100%-1.5rem)] truncate"
                         style={{
                             background: 'rgba(255,255,255,0.88)',
                             color: '#1C1C1E',
@@ -164,21 +150,21 @@ export function RecipeCardPremium({
 
                 {adherencia_score !== null && adherencia_score !== undefined && adherencia_score >= 80 && (
                     <span
-                        className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                        className="coach-recipe-card__score absolute bottom-3 left-3 inline-flex items-center gap-1"
                         style={{
                             background: 'rgba(255,255,255,0.88)',
                             color: '#1C1C1E',
                             border: '1px solid rgba(255,255,255,0.34)',
                         }}
                     >
-                        <Sparkles size={11} />
+                        <Sparkle size={11} weight="fill" />
                         {adherencia_score}
                     </span>
                 )}
 
                 {recipe_intelligence_score !== null && recipe_intelligence_score !== undefined && recipe_intelligence_score >= 70 && (
                     <span
-                        className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                        className="coach-recipe-card__iq absolute bottom-3 right-3 inline-flex items-center gap-1"
                         style={{
                             background: recipe_intelligence_tier === 'elite' ? 'rgba(16,185,129,0.92)' : 'rgba(15,23,42,0.78)',
                             color: '#FFFFFF',
@@ -192,21 +178,17 @@ export function RecipeCardPremium({
 
             {/* Info inferior — fuera de la imagen */}
             <div
-                className="shrink-0 p-3 sm:p-4"
-                style={{
-                    borderTop: '1px solid var(--border)',
-                    background: 'color-mix(in srgb, var(--surface) 92%, var(--bg) 8%)',
-                }}
+                className="coach-recipe-card__body shrink-0"
             >
                 <h3
-                    className="text-sm sm:text-base font-bold leading-tight mb-2 line-clamp-2"
+                    className="coach-recipe-card__title line-clamp-2"
                     style={{ color: 'var(--text)' }}
                 >
                     {nombre}
                 </h3>
 
                 {/* Stats row */}
-                <div className="flex items-center gap-x-3 gap-y-1 text-[11px] flex-wrap" style={{ color: 'var(--text-muted)' }}>
+                <div className="coach-recipe-card__meta flex items-center gap-x-3 gap-y-1 flex-wrap">
                     {tiempoTotal !== undefined && tiempoTotal > 0 && (
                         <span className="flex items-center gap-1">
                             <Clock size={12} />
@@ -221,7 +203,7 @@ export function RecipeCardPremium({
                     )}
                     {kcal !== null && kcal !== undefined && kcal > 0 && (
                         <span className="flex items-center gap-1 font-semibold" style={{ color: 'var(--text)' }}>
-                            <Flame size={12} />
+                            <Fire size={12} weight="fill" />
                             {Math.round(kcal)} kcal/p.
                         </span>
                     )}
@@ -229,7 +211,7 @@ export function RecipeCardPremium({
 
                 {/* Macros por porción — siempre visibles */}
                 {hasMacros && (
-                    <div className="flex gap-2 mt-1.5">
+                    <div className="coach-recipe-card__macros">
                         <MacroMini value={proteinas} max={60} color="var(--macro-protein)" label="P" />
                         <MacroMini value={carbohidratos} max={100} color="var(--macro-carbs)" label="C" />
                         <MacroMini value={grasas} max={40} color="var(--macro-fat)" label="G" />
@@ -237,7 +219,7 @@ export function RecipeCardPremium({
                 )}
 
                 {(objetivos?.length || deportes?.length || momentos?.length || estilos?.length || digestibilidad) && (
-                    <div className="mt-2 flex flex-wrap gap-1">
+                    <div className="coach-recipe-card__tags">
                         {[...(momentos ?? []), ...(deportes ?? []), ...(objetivos ?? []), ...(estilos ?? [])].slice(0, 3).map(item => (
                             <span
                                 key={item}

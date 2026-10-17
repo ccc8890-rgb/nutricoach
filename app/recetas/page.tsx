@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, Search, BookOpen, Inbox, CheckSquare, Square, Sparkles, SlidersHorizontal, ChefHat, PackageCheck, Trophy, Zap } from 'lucide-react'
+import { Plus, MagnifyingGlass, BookOpen, Tray, CheckSquare, Square, Sparkle, SlidersHorizontal, ChefHat, Package, Trophy, Lightning } from '@phosphor-icons/react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, SUBCATEGORIAS, ALERGENOS_POSITIVOS, ALERGENOS_NEGATIVOS, DIETETICOS, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
@@ -27,7 +27,7 @@ function BotonCola() {
         .then(({ count: c }) => { setCount(c ?? 0); setLoading(false) })
     })
   }, [])
-  if (loading) return <div className="flex items-center gap-2 opacity-50 text-sm px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}><Inbox size={14} /> Cola</div>
+  if (loading) return <div className="coach-recipe-utility"><Tray size={14} /> Cola</div>
   if (count === null || count === 0) return null
   return (
     <Link href='/recetas/cola'
@@ -36,7 +36,7 @@ function BotonCola() {
       onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
     >
-      <Inbox size={14} />
+      <Tray size={14} />
       Cola
       <span className='absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-white text-[10px] flex items-center justify-center font-bold'
         style={{ background: 'var(--accent)' }}>{count}</span>
@@ -296,9 +296,9 @@ export default function RecetasPage() {
 
   const filtrosCuracion = [
     { id: 'chef', label: 'Chef healthy', detail: 'Atractivas', icon: ChefHat },
-    { id: 'adherencia', label: 'Alta adherencia', detail: 'Score 80+', icon: Sparkles },
-    { id: 'batch', label: 'Batch/tupper', detail: 'Semana real', icon: PackageCheck },
-    { id: 'prepost', label: 'Pre/Post', detail: 'Timing entreno', icon: Zap },
+    { id: 'adherencia', label: 'Alta adherencia', detail: 'Score 80+', icon: Sparkle },
+    { id: 'batch', label: 'Batch/tupper', detail: 'Semana real', icon: Package },
+    { id: 'prepost', label: 'Pre/Post', detail: 'Timing entreno', icon: Lightning },
     { id: 'endurance', label: 'Endurance/Hyrox', detail: 'Rendimiento', icon: Trophy },
     { id: 'rapidas', label: 'Rápidas', detail: '≤20 min', icon: SlidersHorizontal },
   ]
@@ -307,34 +307,30 @@ export default function RecetasPage() {
     <PageTransition className="coach-recipe-library">
       {/* ═══════ HERO SECTION ═══════ */}
       <div
-        className="coach-recipe-hero relative overflow-hidden pb-8 mb-6"
-        style={{
-          background: 'linear-gradient(180deg, var(--accent-bg) 0%, transparent 100%)',
-        }}
+        className="coach-recipe-hero relative overflow-hidden"
       >
         {/* Grid decorativo */}
         <div
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          className="absolute inset-0 opacity-[0.018] pointer-events-none"
           style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, var(--accent) 1px, transparent 0)`,
             backgroundSize: '24px 24px',
           }}
         />
 
-        <div className="relative px-6 pt-8 pb-4 max-w-6xl mx-auto">
+        <div className="relative px-6 pt-8 pb-5 max-w-[110rem] mx-auto">
           <FadeIn delay={0}>
             <div className="flex items-start justify-between mb-6">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}
+                    className="coach-recipe-kicker"
                   >
-                    <Sparkles size={12} />
-                    Recetario premium
+                    <BookOpen size={13} />
+                    Biblioteca culinaria
                   </span>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
+                <h1 className="coach-recipe-title" style={{ color: 'var(--text)' }}>
                   Recetas
                 </h1>
                 <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
@@ -364,23 +360,22 @@ export default function RecetasPage() {
             <div className="coach-recipe-metrics grid gap-px sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { label: 'Chef healthy', value: statsCuracion.chef, icon: ChefHat },
-                { label: 'Alta adherencia', value: statsCuracion.altaAdherencia, icon: Sparkles },
-                { label: 'Batch/tupper', value: statsCuracion.batch, icon: PackageCheck },
+                { label: 'Alta adherencia', value: statsCuracion.altaAdherencia, icon: Sparkle },
+                { label: 'Batch/tupper', value: statsCuracion.batch, icon: Package },
                 { label: 'Rendimiento', value: statsCuracion.performance, icon: Trophy },
               ].map(stat => {
                 const Icon = stat.icon
                 return (
                   <div
                     key={stat.label}
-                    className="rounded-2xl border px-4 py-3"
-                    style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+                    className="coach-recipe-metric"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
                         <p className="mt-1 text-xl font-semibold tabular-nums" style={{ color: 'var(--text)' }}>{stat.value}</p>
                       </div>
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}>
+                      <div className="coach-recipe-metric__icon">
                         <Icon size={17} />
                       </div>
                     </div>
@@ -392,8 +387,8 @@ export default function RecetasPage() {
 
           {/* Buscador */}
           <FadeIn delay={0.1}>
-            <div ref={searchRef} className="relative max-w-md">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+            <div ref={searchRef} className="coach-recipe-search relative max-w-xl">
+              <MagnifyingGlass size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
               <input
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm outline-none transition-all duration-200"
                 placeholder="Buscar por nombre, ingrediente o tipo…"
@@ -447,7 +442,7 @@ export default function RecetasPage() {
         </div>
       </div>
 
-      <div className="px-6 max-w-6xl mx-auto pb-safe">
+      <div className="px-6 max-w-[110rem] mx-auto pb-safe">
         {/* ═══════ FILTROS ═══════ */}
         <FadeIn delay={0.15}>
           {/* Fila utilidad: botón Filtros + Orden */}
@@ -677,7 +672,7 @@ export default function RecetasPage() {
             </select>
           </div>
 
-          <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div className="coach-recipe-curation mb-4 grid gap-px sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {filtrosCuracion.map(filter => {
               const Icon = filter.icon
               const active = curacionFilter === filter.id
@@ -685,7 +680,7 @@ export default function RecetasPage() {
                 <button
                   key={filter.id}
                   onClick={() => setCuracionFilter(active ? null : filter.id)}
-                  className="flex items-center gap-3 rounded-2xl border p-3 text-left transition-all duration-150 active:scale-[0.98]"
+                  className="coach-recipe-curation__item flex items-center gap-3 p-3 text-left transition-all duration-150 active:scale-[0.98]"
                   style={active
                     ? { borderColor: 'rgba(163,230,53,0.48)', background: 'rgba(163,230,53,0.10)', color: '#A3E635' }
                     : { borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
@@ -774,7 +769,7 @@ export default function RecetasPage() {
         {/* ═══════ CONTENIDO ═══════ */}
         <FadeIn delay={0.2}>
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="coach-recipe-grid">
               {[1, 2, 3, 4].map(i => (
                 <div key={i} className="rounded-2xl overflow-hidden" style={{ aspectRatio: '3/4', background: 'var(--surface)' }}>
                   <div className="w-full h-full skeleton" />
@@ -811,7 +806,7 @@ export default function RecetasPage() {
             </div>
           ) : (
             /* Grid de cards premium — tarjetas verticales full-bleed estilo Mela */
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="coach-recipe-grid">
               {filtradas.map(r => (
                 <div key={r.id} className="relative">
                 {seleccionando && (

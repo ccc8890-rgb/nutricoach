@@ -3434,3 +3434,212 @@ html {
 .status-dot-warn   { background: var(--semantic-warn); }
 .status-dot-alert  { background: var(--semantic-alert); }
 .status-dot-muted  { background: var(--text-disabled); border: 1px solid var(--border); }
+
+/* ═══════════════════════════════════════════════════════════════
+   COACH · RECETARIO — biblioteca editorial y ficha operativa
+   ═══════════════════════════════════════════════════════════════ */
+.coach-recipe-library,
+.coach-recipe-detail {
+  --recipe-rule: color-mix(in srgb, var(--border) 86%, var(--text-muted) 14%);
+  --recipe-panel: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+
+.coach-recipe-hero {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--recipe-rule);
+  background: radial-gradient(circle at 76% -30%, color-mix(in srgb, var(--text) 5%, transparent), transparent 38%);
+}
+.coach-recipe-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  font: 600 0.64rem/1 var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.coach-recipe-title {
+  font-size: clamp(2rem, 3.4vw, 3.1rem);
+  font-weight: 680;
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+.coach-recipe-utility {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--recipe-rule);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+.coach-recipe-metrics {
+  overflow: hidden;
+  margin-bottom: 1rem;
+  border-block: 1px solid var(--recipe-rule);
+  background: var(--recipe-rule);
+}
+.coach-recipe-metric {
+  min-width: 0;
+  padding: 0.8rem 1rem;
+  background: var(--bg);
+}
+.coach-recipe-metric__icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  color: var(--text-muted);
+}
+.coach-recipe-search input {
+  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--surface) 74%, transparent) !important;
+}
+.coach-recipe-curation {
+  overflow: hidden;
+  border-block: 1px solid var(--recipe-rule);
+  background: var(--recipe-rule);
+}
+.coach-recipe-curation__item {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--bg) !important;
+}
+.coach-recipe-curation__item:hover {
+  background: var(--surface-hover) !important;
+}
+.coach-recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+.coach-recipe-card {
+  aspect-ratio: auto !important;
+  min-height: 100%;
+  border: 1px solid var(--recipe-rule);
+  border-radius: 0.3rem;
+  background: var(--recipe-panel);
+  box-shadow: none;
+  transition: border-color 220ms var(--ease-out-strong), transform 220ms var(--ease-out-strong), background-color 220ms var(--ease-out-strong);
+}
+.coach-recipe-card:hover {
+  border-color: color-mix(in srgb, var(--text-muted) 48%, var(--border));
+  background: var(--surface-hover);
+  transform: translateY(-2px);
+}
+.coach-recipe-card:active { transform: translateY(0); }
+.coach-recipe-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.coach-recipe-card__media {
+  aspect-ratio: 4 / 3;
+  border-bottom: 1px solid var(--recipe-rule);
+  background: var(--bg-subtle);
+}
+.coach-recipe-card__eyebrow,
+.coach-recipe-card__flag,
+.coach-recipe-card__score,
+.coach-recipe-card__iq {
+  padding: 0.3rem 0.45rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 0.18rem;
+  background: rgba(10,10,11,0.58);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font: 650 0.6rem/1 var(--font-geist-mono), ui-monospace, monospace;
+  letter-spacing: 0.03em;
+}
+.coach-recipe-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 0.95rem;
+  background: transparent;
+}
+.coach-recipe-card__title {
+  min-height: 2.5em;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+  font-size: 0.94rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  text-wrap: pretty;
+}
+.coach-recipe-card__meta {
+  color: var(--text-muted);
+  font: 500 0.64rem/1.2 var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.coach-recipe-card__macros {
+  display: flex;
+  gap: 0.7rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--recipe-rule);
+}
+.coach-recipe-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+
+.coach-recipe-detail__hero {
+  max-width: 76rem;
+  margin: 1.5rem auto 0;
+  padding-inline: 1.5rem;
+}
+.coach-recipe-detail__image,
+.coach-recipe-detail__hero > div:first-child {
+  border: 1px solid var(--recipe-rule);
+  border-radius: 0.35rem;
+}
+.coach-recipe-detail__content { max-width: 68rem; }
+.coach-recipe-detail__intro {
+  padding: 1.4rem;
+  border: 1px solid var(--recipe-rule);
+  border-radius: 0.3rem;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(18px);
+}
+.coach-recipe-detail__title {
+  font-size: clamp(1.8rem, 4vw, 3.35rem);
+  font-weight: 680;
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+.coach-recipe-detail__nutrition,
+.coach-recipe-detail__section {
+  border: 1px solid var(--recipe-rule) !important;
+  border-radius: 0.3rem !important;
+  background: var(--recipe-panel) !important;
+  box-shadow: none !important;
+}
+.coach-recipe-detail__nutrition { padding: 1.4rem; }
+
+@media (min-width: 640px) {
+  .coach-recipe-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .coach-recipe-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1440px) {
+  .coach-recipe-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 1900px) {
+  .coach-recipe-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+@media (max-width: 639px) {
+  .coach-recipe-hero .flex.items-start.justify-between { gap: 1rem; }
+  .coach-recipe-hero .flex.items-center.gap-2 { flex-wrap: wrap; justify-content: flex-end; }
+  .coach-recipe-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .coach-recipe-card__media { aspect-ratio: 16 / 10; }
+  .coach-recipe-detail__hero { margin-top: 0; padding-inline: 0; }
+  .coach-recipe-detail__image,
+  .coach-recipe-detail__hero > div:first-child { border-inline: 0; border-radius: 0; }
+  .coach-recipe-detail__content { padding-inline: 1rem; }
+}
