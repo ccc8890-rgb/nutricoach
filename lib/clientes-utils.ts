@@ -101,7 +101,7 @@ export function estadoStyle(tone: EstadoTone): React.CSSProperties {
   if (tone === 'danger') return { background: 'var(--error-bg)', color: 'var(--error)', border: '1px solid rgba(255,69,58,0.24)' }
   if (tone === 'warning') return { background: 'var(--warning-bg)', color: 'var(--warning)', border: '1px solid rgba(201,169,110,0.24)' }
   if (tone === 'success') return { background: 'var(--success-bg)', color: 'var(--success)', border: '1px solid rgba(48,209,88,0.2)' }
-  if (tone === 'info') return { background: 'rgba(129,140,248,0.1)', color: '#818cf8', border: '1px solid rgba(129,140,248,0.25)' }
+  if (tone === 'info') return { background: 'var(--accent-bg)', color: 'var(--accent)', border: '1px solid color-mix(in srgb, var(--accent) 28%, transparent)' }
   return { background: 'var(--surface-hover)', color: 'var(--text-muted)', border: '1px solid var(--border)' }
 }
 

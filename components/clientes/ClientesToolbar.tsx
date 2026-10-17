@@ -1,7 +1,7 @@
 // components/clientes/ClientesToolbar.tsx
 'use client'
 
-import { CalendarBlank, CaretDown, ChatCircle, Clock, FadersHorizontal, MagnifyingGlass } from '@phosphor-icons/react'
+import { CalendarBlank, CaretDown, ChatCircle, Clock, FadersHorizontal, MagnifyingGlass, UserMinus } from '@phosphor-icons/react'
 import type { Filtro, FiltroAlta, SortKey, ToolbarCounts } from '@/lib/clientes-utils'
 
 const FILTRO_LABELS: Record<Filtro, string> = {
@@ -63,7 +63,7 @@ export default function ClientesToolbar({
 
   return (
     <div
-      className="coach-client-toolbar mb-4"
+      className="coach-client-toolbar mb-5"
       style={{ background: 'transparent' }}
     >
       {/* Búsqueda compacta */}
@@ -93,20 +93,12 @@ export default function ClientesToolbar({
               key={f}
               onClick={() => onFiltro(f)}
               className="coach-client-filter flex items-center gap-1.5 whitespace-nowrap"
-              style={active
-                ? { background: 'var(--text)', color: 'var(--bg)' }
-                : { background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
-              }
+              data-active={active}
             >
               {FILTRO_LABELS[f]}
               {cnt !== undefined && cnt > 0 && (
                 <span
-                  className="rounded-full px-1 text-[12px] font-data"
-                  style={{
-                    background: active ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)',
-                    minWidth: '16px',
-                    textAlign: 'center',
-                  }}
+                  className="coach-client-filter-count"
                 >
                   {cnt}
                 </span>
@@ -128,7 +120,7 @@ export default function ClientesToolbar({
             <Clock size={15} /> Sin check-in <span>{counts.sin_checkin}</span>
           </button>
           <button onClick={() => onFiltro('sin_membresia')} className="coach-client-filter-row" data-active={filtro === 'sin_membresia'}>
-            <FadersHorizontal size={15} /> Sin membresía <span>{counts.sin_membresia}</span>
+            <UserMinus size={15} /> Sin membresía <span>{counts.sin_membresia}</span>
           </button>
         <button
           onClick={() => onCaducaPronte(!caducaPronte)}
@@ -171,8 +163,7 @@ export default function ClientesToolbar({
         <select
           value={sort}
           onChange={e => onSort(e.target.value as SortKey)}
-          className="px-2.5 pr-7 py-1.5 rounded-lg text-[14px] font-semibold appearance-none"
-          style={{ background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border)', height: '32px' }}
+          className="coach-client-sort appearance-none"
         >
           {(Object.keys(SORT_LABELS) as SortKey[]).map(k => (
             <option key={k} value={k}>↕ {SORT_LABELS[k]}</option>

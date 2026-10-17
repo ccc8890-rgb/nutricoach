@@ -2,8 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Warning } from '@phosphor-icons/react'
-import { OBJETIVO_LABELS } from '@/lib/utils'
+import { ArrowRight, Barbell, ForkKnife, Warning } from '@phosphor-icons/react'
 import {
   nombreCliente, getEstadoCliente, estadoStyle, scoreColor,
   checkinColor, diasHastaCaducidad,
@@ -46,10 +45,7 @@ function MembresiaCell({ c }: { c: ClienteRow }) {
     <div>
       {c.tipo_membresia ? (
         <>
-          <span
-            className="text-[12px] font-bold px-2 py-0.5 rounded-full capitalize"
-            style={{ background: 'rgba(165,180,252,0.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,0.18)' }}
-          >
+          <span className="coach-client-membership capitalize">
             {c.tipo_membresia}
           </span>
           <div className="text-[13px] mt-1" style={{ color: dias !== null && dias <= 30 ? 'var(--error)' : 'var(--text-muted)' }}>
@@ -72,10 +68,7 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
   return (
     <div className="coach-client-table overflow-hidden max-w-[1500px]">
       {/* Cabecera */}
-      <div
-        className="hidden lg:grid items-center gap-x-4 px-4 py-3"
-        style={{ gridTemplateColumns: GRID, background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
-      >
+      <div className="coach-client-table-head hidden lg:grid items-center gap-x-4 px-4 py-3" style={{ gridTemplateColumns: GRID }}>
         <div />
         <ColHeader label="Cliente" sortKey="nombre" current={sort} onSort={onSort} />
         <ColHeader label="Membresía" sortKey="membresia_caduca" current={sort} onSort={onSort} />
@@ -96,19 +89,15 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
           <Link
             key={c.id}
             href={href}
-            className="group grid items-center gap-x-4 px-4 py-4 transition-colors"
+            className="coach-client-table-row group grid items-center gap-x-4 px-4 py-4"
             style={{
               gridTemplateColumns: GRID,
               borderBottom: i < clientes.length - 1 ? '1px solid var(--border)' : undefined,
-              background: 'transparent',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             {/* Avatar */}
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-[16px]"
-              style={{ background: 'var(--bg-subtle)', color: 'var(--text)', border: '1px solid var(--border)' }}
+              className="coach-client-row-avatar"
             >
               {c.profile?.nombre?.[0]?.toUpperCase() ?? '?'}
             </div>
@@ -122,7 +111,6 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
               <div className="text-[14px] truncate" style={{ color: 'var(--text-muted)' }}>
                 {c.profile?.email}
               </div>
-              {c.objetivo && <div className="mt-1 text-[12px]" style={{ color: 'var(--text-secondary)' }}>{OBJETIVO_LABELS[c.objetivo] ?? c.objetivo}</div>}
             </div>
 
             {/* Membresía */}
@@ -141,17 +129,9 @@ export default function ClientesTabla({ clientes, sort, onSort }: Props) {
             </div>
 
             {/* Planes */}
-            <div className="flex items-center gap-2">
-              <span
-                className="inline-block w-2.5 h-2.5 rounded-full"
-                style={{ background: c.tiene_dieta_activa ? 'var(--success)' : 'var(--border)' }}
-                title="Dieta"
-              />
-              <span
-                className="inline-block w-2.5 h-2.5 rounded-full"
-                style={{ background: c.tiene_entreno_activo ? 'var(--success)' : 'var(--border)' }}
-                title="Entreno"
-              />
+            <div className="coach-client-plan-status">
+              <span data-active={Boolean(c.tiene_dieta_activa)} title={c.tiene_dieta_activa ? 'Dieta activa' : 'Sin dieta activa'}><ForkKnife size={13} /></span>
+              <span data-active={Boolean(c.tiene_entreno_activo)} title={c.tiene_entreno_activo ? 'Entreno activo' : 'Sin entreno activo'}><Barbell size={13} /></span>
             </div>
 
             {/* Estado */}

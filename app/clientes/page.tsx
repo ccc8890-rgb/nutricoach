@@ -7,7 +7,7 @@ import { invalidateCacheKey, useCachedFetch } from '@/lib/useCachedFetch'
 import { useDebounce } from '@/lib/useDebounce'
 import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
 import Link from 'next/link'
-import { Check, CreditCard, Link as LinkIcon, Plus, SpinnerGap, UsersThree } from '@phosphor-icons/react'
+import { Check, CreditCard, Link as LinkIcon, Plus, SpinnerGap, UserPlus, UsersThree } from '@phosphor-icons/react'
 import {
   type ClienteRow, type Filtro, type FiltroAlta, type SortKey, type ToolbarCounts,
   calcularScoreAdherencia, esPredictorBaja, calcularDeudaAtencion,
@@ -231,9 +231,30 @@ export default function ClientesPage() {
   )
 
   return (
-    <div className="coach-client-index w-full max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 overflow-x-hidden">
-      <div className="coach-client-index-nav mb-4 border-b" style={{ borderColor: 'var(--border)' }}>
-        <nav className="flex min-w-0 items-center gap-1" aria-label="Vistas de clientes">
+    <div className="coach-client-index w-full max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 overflow-x-hidden">
+      <header className="coach-client-directory-header">
+        <div className="coach-client-directory-title">
+          <p>Directorio</p>
+          <div className="flex items-end gap-3">
+            <h1>Clientes</h1>
+            <span>{clientes.length} en total</span>
+          </div>
+        </div>
+
+        <div className="coach-client-directory-actions">
+          <button type="button" onClick={() => setModalLinkOpen(true)} className="coach-client-utility-action">
+            <CreditCard size={15} /> <span>Link de pago</span>
+          </button>
+          <button type="button" onClick={handleInvitar} className="coach-client-utility-action" disabled={invitando === 'loading'}>
+            {invitando === 'loading' ? <SpinnerGap size={15} className="animate-spin" /> : invitando === 'done' ? <Check size={15} /> : <LinkIcon size={15} />}
+            <span>{invitando === 'done' ? 'Enlace copiado' : 'Invitar'}</span>
+          </button>
+          <Link href="/clientes/nuevo" prefetch className="coach-client-primary-action">
+            <UserPlus size={15} /> Nuevo cliente
+          </Link>
+        </div>
+
+        <nav className="coach-client-directory-tabs" aria-label="Vistas de clientes">
         {([
           { key: 'clientes', label: 'Clientes', count: clientes.length },
           { key: 'formularios', label: 'Formularios', count: formulariosBadge },
@@ -241,26 +262,14 @@ export default function ClientesPage() {
           <button
             key={key}
             onClick={() => setTabActiva(key)}
-            className="relative px-4 py-2.5 text-sm font-medium transition-colors"
-            style={{
-              color: tabActiva === key ? 'var(--text)' : 'var(--text-muted)',
-              borderTop: 'none',
-              borderLeft: 'none',
-              borderRight: 'none',
-              borderBottom: tabActiva === key ? '2px solid var(--accent)' : '2px solid transparent',
-              marginBottom: '-1px',
-              background: 'none',
-              cursor: 'pointer',
-            }}
+            className="coach-client-directory-tab"
+            data-active={tabActiva === key}
           >
             {label}
             {count > 0 && (
               <span
-                className="ml-2 text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center inline-block"
-                style={{
-                  background: key === 'formularios' ? 'var(--error)' : 'var(--accent)',
-                  color: '#fff',
-                }}
+                className="coach-client-directory-count"
+                data-alert={key === 'formularios' && count > 0}
               >
                 {count > 99 ? '99+' : count}
               </span>
@@ -268,17 +277,7 @@ export default function ClientesPage() {
           </button>
         ))}
         </nav>
-
-        <div className="coach-client-index-actions flex items-center gap-1">
-          <button type="button" onClick={() => setModalLinkOpen(true)} className="coach-client-utility-action">
-            <CreditCard size={14} /> <span>Link de pago</span>
-          </button>
-          <button type="button" onClick={handleInvitar} className="coach-client-utility-action" disabled={invitando === 'loading'}>
-            {invitando === 'loading' ? <SpinnerGap size={14} className="animate-spin" /> : invitando === 'done' ? <Check size={14} /> : <LinkIcon size={14} />}
-            <span>{invitando === 'done' ? 'Enlace copiado' : 'Invitar'}</span>
-          </button>
-        </div>
-      </div>
+      </header>
 
       {tabActiva === 'formularios' ? (
         <div className="max-w-4xl">

@@ -256,7 +256,7 @@ export default function CoachShell({ children, padded = false }: { children: Rea
       <Sidebar />
       <CoachFloatingControls />
       <main className="coach-atelier-main flex-1 overflow-auto pb-nav-safe layout-main">
-        <CoachTopBar pathname={pathname || '/dashboard'} />
+        {pathname !== '/clientes' && <CoachTopBar pathname={pathname || '/dashboard'} />}
         {padded ? <div className="p-6 max-w-[120rem] mx-auto">{children}</div> : children}
       </main>
     </div>

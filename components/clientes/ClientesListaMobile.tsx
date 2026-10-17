@@ -49,10 +49,7 @@ export default function ClientesListaMobile({ clientes }: { clientes: ClienteRow
               {/* Fila 2: membresía */}
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 {c.tipo_membresia && (
-                  <span
-                    className="text-[13px] font-bold px-2 py-0.5 rounded-full capitalize"
-                    style={{ background: 'rgba(165,180,252,0.1)', color: '#a5b4fc', border: '1px solid rgba(165,180,252,0.18)' }}
-                  >
+                  <span className="coach-client-membership capitalize">
                     {c.tipo_membresia}
                   </span>
                 )}
