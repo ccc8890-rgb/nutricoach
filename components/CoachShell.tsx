@@ -118,10 +118,10 @@ function getCoachContext(pathname: string): CoachContext {
     return { area: 'Nutrición', title: 'Recetario', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }
   }
   if (pathname.startsWith('/precios/escandallo')) {
-    return { area: 'Control', title: 'Coste de recetas', actionHref: '/recetas', actionLabel: 'Ver recetas', actionIcon: FilePlus }
+    return { area: 'Compra y costes', title: 'Coste de recetas', actionHref: '/recetas', actionLabel: 'Ver recetas', actionIcon: FilePlus }
   }
   if (pathname.startsWith('/precios/rentabilidad')) {
-    return { area: 'Control', title: 'Rentabilidad por cliente', actionHref: '/clientes', actionLabel: 'Ver clientes', actionIcon: UserPlus }
+    return { area: 'Compra y costes', title: 'Rentabilidad por cliente', actionHref: '/clientes', actionLabel: 'Ver clientes', actionIcon: UserPlus }
   }
   if (pathname.startsWith('/precios')) {
     return { area: 'Compra y costes', title: 'Precios', actionHref: '/precios/escandallo', actionLabel: 'Coste de recetas', actionIcon: FilePlus }

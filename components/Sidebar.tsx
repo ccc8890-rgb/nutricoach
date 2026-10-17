@@ -10,7 +10,6 @@ import {
   CaretDown,
   CaretRight,
   ChartLineUp,
-  ChartPieSlice,
   ClipboardText,
   Database,
   FilmSlate,
@@ -81,14 +80,10 @@ const RECETARIO_ITEMS: NavItem[] = [
 const COMPRA_ITEMS: NavItem[] = [
   { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
   { href: '/precios', label: 'Precios', icon: Storefront, exact: true },
-]
-
-// Pantallas de control, que se miran de vez en cuando
-const CONTROL_ITEMS: NavItem[] = [
-  { href: '/recetas/cobertura', label: 'Cobertura de recetas', icon: ChartPieSlice },
   { href: '/precios/escandallo', label: 'Coste de recetas', icon: TrendUp },
   { href: '/precios/rentabilidad', label: 'Rentabilidad por cliente', icon: ChartLineUp },
 ]
+
 
 // Ajustes agrupa también estas pantallas (Método y conocimiento)
 const AJUSTES_PREFIJOS = ['/ajustes', '/sistema', '/coach', '/conocimiento', '/cuestionarios']
@@ -416,7 +411,6 @@ export default function Sidebar() {
       items: RECETARIO_ITEMS.map(item => item.href === '/recetas/revisar' ? { ...item, badge: recetasPendientes } : item),
     },
     { key: 'compra', label: 'Compra y costes', href: '/compra', icon: ShoppingCart, items: COMPRA_ITEMS },
-    { key: 'control', label: 'Control', href: '/recetas/cobertura', icon: ChartLineUp, items: CONTROL_ITEMS },
   ]
 
   useEffect(() => {
