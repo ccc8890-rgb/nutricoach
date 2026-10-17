@@ -24,8 +24,10 @@ export default function ReportarProblema({ ids, abierto, onCerrar, onHecho }: {
   const [error, setError] = useState('')
   const [enPlanes, setEnPlanes] = useState<number | null>(null)
 
+  const clave = ids.join(',')
   useEffect(() => {
-    if (!abierto || ids.length === 0) return
+    if (!abierto || !clave) return
+    const ids = clave.split(',')
     setAspectos([]); setNota(''); setOrigen('propio'); setError(''); setEnPlanes(null)
     let vivo = true
     fetch('/api/recetas/uso-en-planes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) })
@@ -33,7 +35,7 @@ export default function ReportarProblema({ ids, abierto, onCerrar, onHecho }: {
       .then((j: Record<string, number> | null) => { if (vivo && j) setEnPlanes(Object.values(j).filter(n => n > 0).length) })
       .catch(() => null)
     return () => { vivo = false }
-  }, [abierto, ids])
+  }, [abierto, clave])
 
   if (!abierto) return null
 

@@ -35,7 +35,7 @@ export function aplicarReporte(
   return {
     estado: receta.estado === 'aprobada' ? 'en_revision' : (receta.estado ?? 'en_revision'),
     tags,
-    notas_coach: [receta.notas_coach, linea].filter(Boolean).join('\n'),
+    notas_coach: (receta.notas_coach ?? '').split('\n').includes(linea) ? (receta.notas_coach ?? '') : [receta.notas_coach, linea].filter(Boolean).join('\n'),
     yaMarcada: previos.includes(TAG_CORREGIR),
   }
 }

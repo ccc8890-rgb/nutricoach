@@ -29,6 +29,11 @@ assert.equal(b.tags.filter(t => t === 'Corregir').length, 1)
 assert.equal(b.yaMarcada, true)
 assert.ok(b.notas_coach.startsWith('previa\n'))
 
+// mismo reporte dos veces el mismo día: la nota no repite la línea
+const c = aplicarReporte({ estado: 'en_revision', tags: ['Corregir'], notas_coach: b.notas_coach }, { ...rep, origen: 'propio' }, hoy)
+assert.ok(c)
+assert.equal(c.notas_coach.split('\n').filter(l => l.includes('A corregir: foto — borrosa')).length, 1)
+
 // descartada: se omite
 assert.equal(aplicarReporte({ estado: 'descartada', tags: [], notas_coach: null }, rep, hoy), null)
 
