@@ -35,7 +35,6 @@ const LABELS: Record<string, string> = {
     ganancia_muscular: 'Ganancia',
     mantenimiento: 'Mantener',
     rendimiento: 'Rendimiento',
-    salud_general: 'Salud',
     running: 'Running',
     hyrox: 'Hyrox',
     endurance: 'Endurance',
@@ -46,6 +45,26 @@ const LABELS: Record<string, string> = {
     chef_healthy: 'Chef healthy',
     comfort_healthy: 'Comfort',
     gourmet_simple: 'Gourmet',
+    media_manana: 'Merienda',
+    merienda: 'Merienda',
+    desayuno: 'Desayuno',
+    comida: 'Comida',
+    cena: 'Cena',
+    snack: 'Snack',
+}
+
+const OMITTED_CARD_TAGS = new Set(['salud_general'])
+
+function normaliseTag(value: string) {
+    return value.trim().toLocaleLowerCase('es-ES').replace(/[\s_-]+/g, '')
+}
+
+function humaniseTag(value: string) {
+    const known = LABELS[value]
+    if (known) return known
+
+    const readable = value.replace(/[_-]+/g, ' ').trim()
+    return readable ? readable.charAt(0).toLocaleUpperCase('es-ES') + readable.slice(1) : ''
 }
 
 /**
@@ -74,11 +93,30 @@ export function RecipeCardPremium({
     recipe_intelligence_tier,
     macro_flex_score,
     planning_roles,
-    digestibilidad,
     className = '',
 }: RecipeCardPremiumProps) {
     const [imgLoaded, setImgLoaded] = useState(false)
     const hasMacros = proteinas > 0 || carbohidratos > 0 || grasas > 0
+    const visibleTags = (() => {
+        const tags: string[] = []
+        const categoryKey = categoria ? normaliseTag(categoria) : ''
+
+        const add = (label: string) => {
+            if (!label || normaliseTag(label) === categoryKey) return
+            if (!tags.some(existing => normaliseTag(existing) === normaliseTag(label))) tags.push(label)
+        }
+
+        ;[...(momentos ?? []), ...(deportes ?? []), ...(objetivos ?? []), ...(estilos ?? [])]
+            .filter(item => !OMITTED_CARD_TAGS.has(item))
+            .forEach(item => add(humaniseTag(item)))
+
+        if (macro_flex_score !== null && macro_flex_score !== undefined && macro_flex_score >= 75) {
+            add('Macros ajustables')
+        }
+        if (planning_roles?.includes('performance_fuel')) add('Nutrición deportiva')
+
+        return tags.slice(0, 2)
+    })()
 
     return (
         <Link
@@ -218,41 +256,17 @@ export function RecipeCardPremium({
                     </div>
                 )}
 
-                {(objetivos?.length || deportes?.length || momentos?.length || estilos?.length || digestibilidad) && (
+                {visibleTags.length > 0 && (
                     <div className="coach-recipe-card__tags">
-                        {[...(momentos ?? []), ...(deportes ?? []), ...(objetivos ?? []), ...(estilos ?? [])].slice(0, 3).map(item => (
+                        {visibleTags.map(item => (
                             <span
                                 key={item}
                                 className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
                                 style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
                             >
-                                {LABELS[item] ?? item}
+                                {item}
                             </span>
                         ))}
-                        {macro_flex_score !== null && macro_flex_score !== undefined && macro_flex_score >= 75 && (
-                            <span
-                                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                                style={{ background: 'rgba(14,165,233,0.12)', color: 'rgb(2,132,199)' }}
-                            >
-                                Ajustable
-                            </span>
-                        )}
-                        {planning_roles?.includes('performance_fuel') && (
-                            <span
-                                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                                style={{ background: 'rgba(249,115,22,0.12)', color: 'rgb(194,65,12)' }}
-                            >
-                                Performance
-                            </span>
-                        )}
-                        {digestibilidad && (
-                            <span
-                                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                                style={{ background: 'rgba(34,197,94,0.10)', color: 'rgb(21,128,61)' }}
-                            >
-                                Digest. {digestibilidad}
-                            </span>
-                        )}
                     </div>
                 )}
             </div>
