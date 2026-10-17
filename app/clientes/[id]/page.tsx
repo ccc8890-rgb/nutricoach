@@ -133,9 +133,9 @@ function MacroBar({ label, value, max, color, icon: Icon, dia, media }: {
 // ── StatPill ─────────────────────────────────────────────────────────────────
 function StatPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col items-center px-3 py-2 rounded-xl" style={{ background: 'var(--surface-elevated, var(--border))' }}>
-      <span className="text-[12px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
-      <span className="text-sm font-bold mt-0.5" style={{ color: 'var(--text)' }}>{value}</span>
+    <div className="coach-client-fact">
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   )
 }
@@ -697,59 +697,47 @@ export default function ClienteDetallePage() {
           <ArrowLeft size={15} /> Volver a clientes
         </Link>
 
-        {/* ── Hero card ── */}
+        {/* ── Identidad del cliente ── */}
         <header className="coach-client-hero mb-3 sm:mb-5">
-          <div className="flex items-start gap-3 sm:gap-4">
-            {/* Avatar */}
-            <div className="coach-client-avatar w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center text-base sm:text-lg font-bold flex-shrink-0" style={{ background: 'var(--accent-bg)', color: 'var(--text-secondary)' }}>
-              {initials}
-            </div>
-
-            {/* Name + meta */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="coach-client-name truncate" style={{ color: 'var(--text)' }}>{nombre}</h1>
-                {cliente.activo ? (
-                  <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,199,89,0.12)', color: '#34C759' }}>Activo</span>
-                ) : (
-                  <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--surface-elevated,var(--border))', color: 'var(--text-muted)' }}>Inactivo</span>
-                )}
-                {cliente.onboarding_completado === false && (
-                  <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>Sin onboarding</span>
-                )}
-                {cliente.revisado_por_coach === false && (
-                  <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,159,10,0.12)', color: '#FF9F0A' }}>Pendiente de revisión</span>
-                )}
-              </div>
-              <p className="hidden sm:block text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.email}</p>
-
-              {/* Stats row */}
-              <div className="coach-client-facts flex gap-1.5 sm:gap-2 flex-wrap mt-2 sm:mt-3">
-                {cliente.objetivo && <StatPill label="Objetivo" value={OBJETIVO_LABELS[cliente.objetivo] ?? cliente.objetivo} />}
-                {ultimoPeso && <StatPill label="Peso" value={`${ultimoPeso} kg`} />}
-                {cliente.altura && <div className="hidden sm:block"><StatPill label="Altura" value={`${cliente.altura} cm`} /></div>}
-                {cliente.edad && <div className="hidden sm:block"><StatPill label="Edad" value={`${cliente.edad} a`} /></div>}
-                {cliente.sexo && <div className="hidden sm:block"><StatPill label="Sexo" value={cliente.sexo === 'hombre' ? 'Hombre' : 'Mujer'} /></div>}
+          <div className="coach-client-hero-top">
+            <div className="coach-client-identity">
+              <div className="coach-client-avatar">{initials}</div>
+              <div className="min-w-0">
+                <p className="coach-client-kicker">Ficha de cliente</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="coach-client-name truncate">{nombre}</h1>
+                  <span className="coach-client-status" data-active={cliente.activo}>{cliente.activo ? 'Activo' : 'Inactivo'}</span>
+                  {cliente.onboarding_completado === false && <span className="coach-client-alert-status">Sin onboarding</span>}
+                  {cliente.revisado_por_coach === false && <span className="coach-client-alert-status">Pendiente de revisión</span>}
+                </div>
+                <p className="coach-client-email">{p.email}</p>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <div className="coach-client-hero-actions">
               {dietaActiva?.codigo_publico && (
                 <button
-                  className="btn-secondary btn-sm px-2 sm:px-3"
+                  className="coach-client-hero-action"
                   onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/cliente`); addToast({ type: 'success', title: 'Enlace copiado', message: 'Portal del cliente copiado' }) }}
                   title="Copiar portal cliente"
                 >
                   <Link2 size={14} />
-                  <span className="hidden sm:inline">Portal</span>
+                  <span>Portal</span>
                 </button>
               )}
-              <button className="btn-secondary btn-sm px-2 sm:px-3" onClick={() => setIsEditando(true)}>
+              <button className="coach-client-hero-action" onClick={() => setIsEditando(true)}>
                 <Pencil size={14} />
-                <span className="hidden sm:inline">Editar</span>
+                <span>Editar</span>
               </button>
             </div>
+          </div>
+
+          <div className="coach-client-facts">
+            {cliente.objetivo && <StatPill label="Objetivo" value={OBJETIVO_LABELS[cliente.objetivo] ?? cliente.objetivo} />}
+            {ultimoPeso && <StatPill label="Peso" value={`${ultimoPeso} kg`} />}
+            {cliente.altura && <StatPill label="Altura" value={`${cliente.altura} cm`} />}
+            {cliente.edad && <StatPill label="Edad" value={`${cliente.edad} a`} />}
+            {cliente.sexo && <StatPill label="Sexo" value={cliente.sexo === 'hombre' ? 'Hombre' : 'Mujer'} />}
           </div>
 
           {/* ── Macros del plan activo (solo en la pestaña Nutrición) ── */}
