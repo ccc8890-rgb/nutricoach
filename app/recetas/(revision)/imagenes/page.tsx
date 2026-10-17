@@ -1,11 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import {
   AlertTriangle,
   CheckCircle2,
-  ChefHat,
   Clipboard,
   ImageOff,
   Images,
@@ -412,14 +410,6 @@ export default function RecetasImagenesPage() {
               <RefreshCw size={15} />
               Actualizar
             </button>
-            <Link
-              href="/recetas/cobertura"
-              className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold"
-              style={{ background: 'var(--text)', color: 'var(--bg)' }}
-            >
-              <ChefHat size={15} />
-              Cobertura
-            </Link>
           </div>
         </header>
 

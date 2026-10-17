@@ -109,7 +109,7 @@ function getCoachContext(pathname: string): CoachContext {
     return { area: 'Nutrición', title: 'Planes y alimentos', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: ForkKnife }
   }
   if (pathname.startsWith('/recetas/cobertura')) {
-    return { area: 'Control', title: 'Cobertura de recetas', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }
+    return { area: 'Recetario', title: 'Cobertura de recetas', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }
   }
   if (pathname.startsWith('/recetas/revisar')) {
     return { area: 'Recetario', title: 'Revisión de recetas', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }

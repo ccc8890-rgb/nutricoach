@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { ArrowLeft, AlertTriangle, Check, ChevronUp, ChevronDown } from 'lucide-react'
+import { AlertTriangle, Check, ChevronUp, ChevronDown } from 'lucide-react'
 import { useToast } from '@/components/ui/Toast'
 
 // Ingredientes que son normales en pequeñas cantidades
@@ -126,7 +126,6 @@ export default function AuditoriaIngredientesPage() {
   return (
     <div className="coach-recipe-audit p-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/recetas" className="btn-secondary p-2"><ArrowLeft size={18} /></Link>
         <div className="flex-1">
           <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Auditoría de ingredientes</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>

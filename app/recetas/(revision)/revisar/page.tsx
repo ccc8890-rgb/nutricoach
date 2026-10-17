@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, Check, ChevronDown, ExternalLink, ImageOff, Loader2, RefreshCw, Search, Trash2 } from 'lucide-react'
 import EnlaceReceta from '@/components/recetas/EnlaceReceta'
+import CandidatasReporte from '@/components/recetas/CandidatasReporte'
 import { etiquetaCalidad } from '@/lib/recetas/etiquetas-calidad'
 import { useToast } from '@/components/ui/Toast'
 import { APTAS_CLIENTE, NIVELES_FIT, TIPOS_USO } from '@/lib/recetas/profesional'
@@ -46,7 +47,7 @@ type RespuestaRevision = {
 
 const TAREAS: Array<{ id: TareaRevision; label: string }> = [
   { id: 'pendientes', label: 'Pendientes' },
-  { id: 'corregir', label: 'Para corregir' },
+  { id: 'corregir', label: 'Reportadas' },
   { id: 'nuevas_hoy', label: 'Nuevas hoy' },
   { id: 'bloqueos', label: 'Con bloqueos' },
   { id: 'sin_foto', label: 'Sin foto' },
@@ -166,7 +167,10 @@ export default function RevisarRecetasPage() {
   // En Pendientes: primero las que se aprueban ya (sin bloqueos), después las que necesitan arreglo
   const listas = useMemo(() => (respuesta?.data ?? []).filter(r => esRecetaAprobable(r.estado, r.quality_issues)), [respuesta])
   const necesitanArreglo = useMemo(() => (respuesta?.data ?? []).filter(r => !esRecetaAprobable(r.estado, r.quality_issues)), [respuesta])
-  const ordenadas = tarea === 'pendientes' ? [...listas, ...necesitanArreglo] : (respuesta?.data ?? [])
+  const deCliente = (r: RecetaRevision) => (r.tags ?? []).includes('Reporte cliente')
+  const ordenadas = tarea === 'pendientes' ? [...listas, ...necesitanArreglo]
+    : tarea === 'corregir' ? [...(respuesta?.data ?? [])].sort((a, b) => Number(deCliente(b)) - Number(deCliente(a)))
+    : (respuesta?.data ?? [])
 
   function cambiarTarea(value: TareaRevision) {
     setTarea(value)
@@ -285,6 +289,12 @@ export default function RevisarRecetasPage() {
 
         {error && <div className="flex items-center gap-2 rounded-xl border p-4 text-sm" style={{ borderColor: 'var(--error)', color: 'var(--error)', background: 'color-mix(in srgb, var(--error) 8%, var(--surface))' }}><AlertTriangle size={17} />{error}</div>}
 
+        {tarea === 'corregir' && (
+          <p className="rounded-xl border px-3 py-2 text-xs" style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text-secondary)' }}>
+            Las reportadas esperan a la IA: dime «pasa las correcciones» y las reviso. También puedes arreglarlas a mano o descartarlas. Para devolverlas al recetario, apruébalas.
+          </p>
+        )}
+
         {loading ? (
           <div className="space-y-2">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-28 animate-pulse rounded-2xl" style={{ background: 'var(--surface)' }} />)}</div>
         ) : respuesta?.data.length ? (
@@ -308,6 +318,8 @@ export default function RevisarRecetasPage() {
           <div className="rounded-2xl border py-16 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}><Check className="mx-auto mb-3" style={{ color: 'var(--success)' }} /><p className="font-semibold" style={{ color: 'var(--text)' }}>No hay recetas en este filtro</p></div>
         )}
 
+        {tarea === 'corregir' && <CandidatasReporte onReportadas={() => cargar()} />}
+
         {respuesta && respuesta.totalPages > 1 && <div className="flex items-center justify-center gap-3">
           <button disabled={pagina <= 1} onClick={() => setPagina(pagina - 1)} className="rounded-lg border px-3 py-2 text-sm disabled:opacity-30" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>Anterior</button>
           <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Página {pagina} de {respuesta.totalPages}</span>
@@ -330,16 +342,18 @@ function Acciones({ receta, busy, onEstado }: { receta: RecetaRevision; busy: bo
   return <div className="flex flex-wrap gap-1.5">
     <button disabled={busy || !aprobable} title={aprobable ? 'Aprobar receta' : motivo} onClick={() => onEstado(receta, 'aprobada')} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40" style={{ background: 'var(--primary)', color: 'var(--bg)' }}>{busy ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}Aprobar</button>
     <button disabled={busy || receta.estado === 'descartada'} onClick={() => onEstado(receta, 'descartada')} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold disabled:opacity-40" style={{ borderColor: 'var(--error)', color: 'var(--error)' }}><Trash2 size={13} />Descartar</button>
+    {receta.tags?.includes('Corregir') && <a href={`/recetas/${receta.id}/editar?returnTo=${encodeURIComponent('/recetas/revisar?tarea=corregir')}`} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>Arreglar a mano</a>}
     <EnlaceReceta id={receta.id} className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-semibold" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>Abrir <ExternalLink size={12} /></EnlaceReceta>
   </div>
 }
 
 function NotaCorreccion({ receta }: { receta: RecetaRevision }) {
   if (!receta.tags?.includes('Corregir')) return null
+  const tags = receta.tags
   const ultima = (receta.notas_coach ?? '').split('\n').filter(l => l.includes('A corregir:')).pop() ?? 'Marcada para corregir'
   return (
     <div className="mt-3 flex items-start justify-between gap-2 rounded-lg px-2.5 py-2 text-xs" style={{ background: 'color-mix(in srgb, var(--warning) 12%, transparent)', color: 'var(--warning)' }}>
-      <span><strong>Para corregir.</strong> {ultima.replace(/^\[[^\]]*\]\s*A corregir:\s*/, '')}</span>
+      <span><strong>Reportada{tags.includes('Reporte cliente') ? ' por un cliente' : ''}.</strong> {ultima.replace(/^\[[^\]]*\]\s*A corregir:\s*/, '')}</span>
       <button onClick={async () => { await fetch(`/api/recetas/${receta.id}/correccion`, { method: 'DELETE' }); window.location.reload() }} className="shrink-0 underline">Quitar marca</button>
     </div>
   )
