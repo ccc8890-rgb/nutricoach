@@ -367,56 +367,6 @@ function RailSection({ section, pathname }: { section: NavSection; pathname: str
   )
 }
 
-function SecondarySidebar({
-  section,
-  pathname,
-}: {
-  section: NavSection | null
-  pathname: string
-}) {
-  if (!section) return null
-
-  const Icon = section.icon
-
-  return (
-    <aside
-      className="hidden w-64 min-h-screen flex-col border-r xl:flex"
-      style={{
-        background: 'color-mix(in srgb, var(--surface) 88%, var(--bg))',
-        borderColor: 'var(--glass-border)',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-      }}
-    >
-      <div className="flex-shrink-0 border-b p-5" style={{ borderColor: 'var(--glass-border)' }}>
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-2xl border"
-            style={{
-              borderColor: 'var(--border)',
-              background: 'var(--surface-elevated)',
-              color: 'var(--text)',
-            }}
-          >
-            <Icon size={18} weight="bold" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
-              Módulo activo
-            </p>
-            <h2 className="truncate text-[15px] font-bold leading-tight" style={{ color: 'var(--text)' }}>
-              {section.label}
-            </h2>
-          </div>
-        </div>
-      </div>
-
-      <nav className="flex-1 overflow-y-auto p-3">
-        <SectionPanelContent section={section} pathname={pathname} />
-      </nav>
-    </aside>
-  )
-}
-
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
@@ -500,7 +450,6 @@ export default function Sidebar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
-  const selectedSection = sections.find(section => expanded[section.key]) ?? null
   const ajustesActivo = AJUSTES_PREFIJOS.some(prefijo => isActivePath(pathname, prefijo))
 
   async function handleLogout() {
@@ -510,7 +459,7 @@ export default function Sidebar() {
 
   const sidebarContent = (
     <>
-      <div className="flex-shrink-0 px-4 py-5 border-b" style={{ borderColor: 'var(--glass-border)' }}>
+      <div className="flex-shrink-0 border-b px-3 py-3" style={{ borderColor: 'var(--glass-border)' }}>
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
@@ -529,7 +478,9 @@ export default function Sidebar() {
               Casanova Lab
             </p>
           </div>
-          <div className="flex flex-shrink-0 items-center gap-0.5">
+          <AccionIcono label="Contraer barra" onClick={alternarBarra} icon={SidebarSimple} />
+        </div>
+        <div className="mt-2 flex items-center justify-end gap-0.5 border-t pt-2" style={{ borderColor: 'var(--glass-border)' }}>
             <AccionIcono
               label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
               onClick={toggleTheme}
@@ -537,7 +488,6 @@ export default function Sidebar() {
             />
             <AccionIcono label="Ajustes" href="/ajustes" icon={Gear} activo={ajustesActivo} />
             <AccionIcono label="Cerrar sesión" onClick={handleLogout} icon={SignOut} />
-          </div>
         </div>
       </div>
 
@@ -569,12 +519,6 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="hidden flex-shrink-0 border-t p-3 lg:block" style={{ borderColor: 'var(--glass-border)' }}>
-        <button type="button" onClick={alternarBarra} className="sidebar-link w-full" aria-label="Contraer barra lateral">
-          <SidebarSimple size={18} weight="regular" />
-          <span>Contraer barra</span>
-        </button>
-      </div>
     </>
   )
 
@@ -663,8 +607,6 @@ export default function Sidebar() {
         </div>
         {collapsed && <div className="hidden min-h-0 flex-1 flex-col lg:flex">{railContent}</div>}
       </aside>
-
-      {!collapsed && <SecondarySidebar section={selectedSection} pathname={pathname || '/dashboard'} />}
     </>
   )
 }
