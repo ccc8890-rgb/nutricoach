@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceSupabase } from '@/lib/supabase-server'
 import { autorizarCoach } from '@/lib/contenido/auth'
 import { normalizarRecetasGeneradas } from '@/lib/recetas/importar-lote'
+import { completarTaxonomia } from '@/lib/recetas/taxonomia-auto'
 import { auditarLoteRecetas } from '@/lib/recetas/post-import-audit'
 
 export async function POST(request: NextRequest) {
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
       .from('recetas')
       .insert({
         ...recetaBase,
+        ...completarTaxonomia(recetaBase),
         coach_id: user.id,
         estado: 'en_revision',
         fuente: 'ia_lote_deepseek',

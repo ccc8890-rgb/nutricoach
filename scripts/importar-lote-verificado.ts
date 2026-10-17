@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { autoTagReceta } from '../lib/auto-tag'
+import { completarTaxonomia } from '../lib/recetas/taxonomia-auto'
 import { auditarLoteRecetas } from '../lib/recetas/post-import-audit'
 
 for (const l of readFileSync(join(__dirname, '..', '.env.local'), 'utf8').split('\n')) {
@@ -150,6 +151,13 @@ async function main() {
       consejos: receta.consejos ?? null,
       intolerancias,
       tags: autoTagReceta({ nombre: receta.nombre, receta_ingredientes: ingredientesTag }),
+      ...completarTaxonomia({
+        tipo_plato: receta.tipo_plato ?? lote.tipo_plato,
+        kcal: macros.kcal, proteinas: macros.proteinas, carbohidratos: macros.carbohidratos,
+        tiempo_prep_min: receta.tiempo_prep_min,
+        perfil: receta.perfil ?? null,
+        apto_rendimiento: lote.apto_rendimiento ?? false,
+      }),
       estado: 'en_revision',
       coach_id: coachId,
       fuente: `${lote.fuente}:${lote.lote}`,
