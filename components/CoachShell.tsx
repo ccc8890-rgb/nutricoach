@@ -4,10 +4,8 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  CaretRight,
   CircleNotch,
   House,
-  MagnifyingGlass,
   Moon,
   Sun,
 } from '@phosphor-icons/react'
@@ -64,17 +62,6 @@ async function getCoachAccess(): Promise<CoachAccess> {
   }
 }
 
-function getCoachArea(pathname: string): string {
-  if (pathname.startsWith('/clientes') || pathname.startsWith('/contenido') || pathname.startsWith('/agentes')) return 'Inicio'
-  if (pathname.startsWith('/entrenos/plantillas') || pathname.startsWith('/entrenos/ejercicios') || pathname.startsWith('/dietas/plantillas')) return 'Planes'
-  if (pathname.startsWith('/entrenos')) return 'Entrenamiento'
-  if (pathname.startsWith('/recetas')) return 'Recetario'
-  if (pathname.startsWith('/compra') || pathname.startsWith('/precios')) return 'Compra y costes'
-  if (pathname.startsWith('/nutricion') || pathname.startsWith('/dietas')) return 'Nutrición'
-  if (pathname.startsWith('/ajustes') || pathname.startsWith('/sistema') || pathname.startsWith('/conocimiento') || pathname.startsWith('/coach') || pathname.startsWith('/cuestionarios')) return 'Ajustes'
-  return 'Inicio'
-}
-
 function CoachFloatingControls() {
   const { theme, toggleTheme } = useTheme()
 
@@ -114,45 +101,9 @@ function CoachFloatingControls() {
   )
 }
 
-function CoachTopBar({ pathname }: { pathname: string }) {
-  const area = getCoachArea(pathname)
-  const { theme, toggleTheme } = useTheme()
-
-  return (
-    <header className="coach-atelier-topbar sticky top-0 z-20 px-4 sm:px-6 lg:px-8">
-      <div className="coach-atelier-topbar__inner">
-        <div className="coach-atelier-context min-w-0">
-          <div className="coach-atelier-register hidden sm:flex" aria-label={`Coach OS, ${area}`}>
-            <Link href="/dashboard" prefetch>Coach OS</Link>
-            <CaretRight size={10} aria-hidden="true" />
-            <span>{area}</span>
-          </div>
-        </div>
-
-        <div className="coach-atelier-actions">
-          {!pathname.startsWith('/clientes') && (
-            <Link
-              href="/clientes"
-              className="coach-atelier-search hidden lg:flex"
-              aria-label="Buscar cliente"
-            >
-              <MagnifyingGlass size={14} />
-              <span>Buscar cliente</span>
-            </Link>
-          )}
-          <button type="button" onClick={toggleTheme} className="coach-atelier-icon-action hidden sm:grid" aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}>
-            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
-        </div>
-      </div>
-    </header>
-  )
-}
-
 export default function CoachShell({ children, padded = false }: { children: React.ReactNode; padded?: boolean }) {
   const router = useRouter()
   const pathname = usePathname()
-  const mostrarBarraContextual = !pathname?.startsWith('/contenido')
   const [ready, setReady] = useState(() => coachAccessCache === 'coach')
 
   useEffect(() => {
@@ -204,7 +155,6 @@ export default function CoachShell({ children, padded = false }: { children: Rea
       <Sidebar />
       <CoachFloatingControls />
       <main className="coach-atelier-main flex-1 overflow-auto pb-nav-safe layout-main">
-        {mostrarBarraContextual && <CoachTopBar pathname={pathname || '/dashboard'} />}
         {padded ? <div className="p-6 max-w-[120rem] mx-auto">{children}</div> : children}
       </main>
     </div>
