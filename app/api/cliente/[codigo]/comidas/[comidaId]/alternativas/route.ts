@@ -39,6 +39,7 @@ export async function GET(
     const { data: existentes } = await db
       .from('recetas')
       .select('id, tipo_plato')
+      .eq('estado', 'aprobada')
       .in('id', alternativaIds)
     const compatibles = new Set((existentes ?? [])
       .filter(r => tipoPlatoCompatibleConSlot(slot, r.tipo_plato))
@@ -93,6 +94,7 @@ export async function GET(
   const { data: recetas } = await db
     .from('recetas')
     .select('id, nombre, imagen_url, url_origen, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_plato')
+    .eq('estado', 'aprobada')
     .in('id', alternativaIds.slice(0, 3))
 
   const orden = new Map(alternativaIds.map((id, index) => [id, index]))

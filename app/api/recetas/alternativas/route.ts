@@ -79,6 +79,7 @@ export async function GET(request: NextRequest) {
   const { data: recetas } = await supabase
     .from('recetas')
     .select('id, nombre, imagen_url, url_origen, kcal, proteinas, carbohidratos, grasas, tiempo_prep_min, tipo_receta, tipo_plato')
+    .eq('estado', 'aprobada')
     .in('id', alternativaIds)
 
   const alternativas = (recetas ?? [])

@@ -29,7 +29,30 @@ const EXCEPCIONES = [
   'app/api/cliente/[codigo]/mis-platos/route.ts',
 ]
 
-const sinFiltro = DEBEN_FILTRAR.filter(f => !/aprobada/.test(readFileSync(f, 'utf8')))
+// Cada consulta `from('recetas')` debe filtrar por «aprobada» dentro de su propia cadena (no basta con que el archivo lo diga en otro sitio).
+function consultasSinFiltro(texto: string): number[] {
+  const malas: number[] = []
+  let desde = 0
+  for (;;) {
+    const i = texto.indexOf("from('recetas')", desde)
+    if (i < 0) break
+    const siguiente = texto.indexOf("from('", i + 15)
+    const cadena = texto.slice(i, siguiente < 0 ? i + 700 : Math.min(siguiente, i + 700))
+    if (!/aprobada/.test(cadena)) malas.push(texto.slice(0, i).split('\n').length)
+    desde = i + 15
+  }
+  return malas
+}
+// Consultas que leen por id algo ya elegido/asignado: se revisan aparte (el archivo cumple el filtro general de arriba).
+const CONSULTA_POR_ID_PERMITIDA: Record<string, string> = {
+  'app/api/cliente/[codigo]/recetas/[recetaId]/route.ts': 'una receta ya asignada al plan se sigue pudiendo abrir',
+  'lib/nutricion/plantilla-semana.ts': 'lee estado para validar y avisar de recetas no aprobadas',
+  'lib/nutricion/semanas-futuras.ts': 'solo carga ingredientes de recetas ya elegidas',
+}
+const sinFiltro = [
+  ...DEBEN_FILTRAR.filter(f => !(f in CONSULTA_POR_ID_PERMITIDA)).flatMap(f => { const l = consultasSinFiltro(readFileSync(f, 'utf8')); return l.length ? [`${f}:${l.join(',')}`] : [] }),
+  ...Object.keys(CONSULTA_POR_ID_PERMITIDA).filter(f => !/aprobada/.test(readFileSync(f, 'utf8'))),
+]
 assert.deepEqual(sinFiltro, [], `Estos archivos leen recetas sin filtrar por «aprobada»: ${sinFiltro.join(', ')}`)
 assert.ok(EXCEPCIONES.length === 4)
 console.log('recetas-solo-aprobadas OK')
