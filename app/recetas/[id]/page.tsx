@@ -12,6 +12,8 @@ import { FadeIn, PageTransition, ScaleIn } from '@/components/ui/Motion'
 import { MacroRing, IngredientChecklist, StepByStep } from '@/components/premium'
 import { listaRecordada } from '@/lib/useEstadoUrl'
 import BarraRevision from '@/components/recetas/BarraRevision'
+import ReportarProblema from '@/components/recetas/ReportarProblema'
+import EdicionRapida from '@/components/recetas/EdicionRapida'
 import { formatoCantidad } from '@/lib/recetas/equivalencia'
 import { SelectorRaciones } from '@/components/premium/SelectorRaciones'
 import { quitarCifras } from '@/lib/nutricion/quitar-cifras'
@@ -122,6 +124,7 @@ export default function DetalleRecetaPage() {
   const enBandeja = !isClientView && returnPath.startsWith('/recetas/revisar')
   const clienteCodigo = isClientView ? returnPath.split('/').filter(Boolean)[1] : null
   const [receta, setReceta] = useState<RecetaDetalle | null>(null)
+  const [reportando, setReportando] = useState(false)
   const [ingredientes, setIngredientes] = useState<IngredienteConAlimento[]>([])
   const [loading, setLoading] = useState(true)
   const [borrando, setBorrando] = useState(false)
@@ -490,6 +493,16 @@ export default function DetalleRecetaPage() {
             </div>
             {receta.descripcion && (
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{receta.descripcion}</p>
+            )}
+            {!isClientView && (
+              <div className="mt-3 flex flex-wrap items-start gap-2">
+                <EdicionRapida receta={{ id, nombre: receta.nombre, descripcion: receta.descripcion, tiempo_prep_min: receta.tiempo_prep_min, categoria: receta.categoria, tags: receta.tags }} onGuardado={() => window.location.reload()} />
+                {receta.estado === 'aprobada' && (
+                  <button onClick={() => setReportando(true)} className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--warning)', color: 'var(--warning)' }}>
+                    <AlertTriangle size={13} /> Reportar problema
+                  </button>
+                )}
+              </div>
             )}
 
             {/* Badges + tags */}
@@ -892,6 +905,7 @@ export default function DetalleRecetaPage() {
           </div>
         </FadeIn>
       </div>
+      <ReportarProblema ids={[id]} abierto={reportando} onCerrar={() => setReportando(false)} onHecho={() => { window.location.href = returnTo.startsWith('/') ? returnTo : '/recetas' }} />
       {enBandeja && (
         <BarraRevision id={id} pendiente={receta.estado === 'en_revision' || receta.estado === 'borrador'} returnTo={returnTo} accion={handleEstado} />
       )}

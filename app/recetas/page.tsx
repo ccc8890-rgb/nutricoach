@@ -2,12 +2,13 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Plus, Search, BookOpen, Inbox, AlertTriangle, Sparkles, SlidersHorizontal, ChefHat, PackageCheck, Trophy, Zap } from 'lucide-react'
+import { Plus, Search, BookOpen, Inbox, CheckSquare, Square, Sparkles, SlidersHorizontal, ChefHat, PackageCheck, Trophy, Zap } from 'lucide-react'
 import { FadeIn, PageTransition } from '@/components/ui/Motion'
 import { CATEGORIAS, TIPOS_COCCION, ICONOS_COCCION, SUBCATEGORIAS, ALERGENOS_POSITIVOS, ALERGENOS_NEGATIVOS, DIETETICOS, normalizarReceta, normalizarIntolerancias } from '@/lib/recetas-constants'
 import { KNOWN_TAGS } from '@/lib/auto-tag'
 import { useToast } from '@/components/ui/Toast'
 import { RecipeCardPremium } from '@/components/premium'
+import ReportarProblema from '@/components/recetas/ReportarProblema'
 import { useEstadoUrl, useRecordarLista, useRestaurarScroll } from '@/lib/useEstadoUrl'
 
 const METODOS_COCCION = [
@@ -96,6 +97,9 @@ type RecetaRow = {
 export default function RecetasPage() {
   const { addToast } = useToast()
   const [recetas, setRecetas] = useState<RecetaRow[]>([])
+  const [seleccionando, setSeleccionando] = useState(false)
+  const [seleccion, setSeleccion] = useState<Set<string>>(new Set())
+  const [reportando, setReportando] = useState(false)
   // Filtros en la URL: al abrir una receta y volver atrás el listado reaparece igual
   useRecordarLista('recetas')
   const [busqueda, setBusqueda] = useEstadoUrl<string>('q', '')
@@ -339,20 +343,11 @@ export default function RecetasPage() {
               </div>
               <div className="flex items-center gap-2">
                 <BotonCola />
-                <Link href="/recetas/auditoria" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200 hide-mobile"
-                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-                >
-                  <AlertTriangle size={13} /> Auditoría
-                </Link>
-                <Link href="/recetas/cobertura" className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200"
-                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-accent)'; e.currentTarget.style.color = 'var(--accent)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-                >
-                  <Sparkles size={13} /> Cobertura
-                </Link>
+                <button type="button" onClick={() => { setSeleccionando(v => !v); setSeleccion(new Set()) }}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-all duration-200"
+                  style={{ borderColor: seleccionando ? 'var(--accent)' : 'var(--border)', color: seleccionando ? 'var(--accent)' : 'var(--text-muted)' }}>
+                  <CheckSquare size={13} /> {seleccionando ? 'Cancelar selección' : 'Seleccionar'}
+                </button>
                 <Link href="/recetas/nueva"
                   className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200"
                   style={{ background: 'var(--accent)', color: '#ffffff' }}
@@ -818,8 +813,16 @@ export default function RecetasPage() {
             /* Grid de cards premium — tarjetas verticales full-bleed estilo Mela */
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {filtradas.map(r => (
+                <div key={r.id} className="relative">
+                {seleccionando && (
+                  <button type="button" aria-label={seleccion.has(r.id) ? 'Quitar de la selección' : 'Seleccionar receta'}
+                    onClick={() => setSeleccion(prev => { const n = new Set(prev); if (n.has(r.id)) n.delete(r.id); else n.add(r.id); return n })}
+                    className="absolute inset-0 z-10 rounded-2xl flex items-start justify-end p-2"
+                    style={{ background: seleccion.has(r.id) ? 'rgba(0,0,0,0.25)' : 'transparent', outline: seleccion.has(r.id) ? '2px solid var(--accent)' : 'none' }}>
+                    {seleccion.has(r.id) ? <CheckSquare size={22} style={{ color: 'var(--accent)', background: 'var(--bg)', borderRadius: 4 }} /> : <Square size={22} style={{ color: 'var(--text-muted)', background: 'var(--bg)', borderRadius: 4 }} />}
+                  </button>
+                )}
                 <RecipeCardPremium
-                  key={r.id}
                   id={r.id}
                   nombre={r.nombre}
                   imagen_url={r.imagen_url}
@@ -842,11 +845,27 @@ export default function RecetasPage() {
                   planning_roles={r.planning_roles}
                   digestibilidad={r.digestibilidad}
                 />
+                </div>
               ))}
             </div>
           )}
         </FadeIn>
       </div>
+      {seleccionando && seleccion.size > 0 && (
+        <div className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-3 px-4 py-3 pb-safe" style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)' }}>
+          <span className="text-sm" style={{ color: 'var(--text)' }}>{seleccion.size} seleccionada{seleccion.size !== 1 ? 's' : ''}</span>
+          <button onClick={() => setReportando(true)} className="px-4 py-2 rounded-xl text-sm font-semibold" style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
+            Reportar {seleccion.size}
+          </button>
+        </div>
+      )}
+      <ReportarProblema ids={[...seleccion]} abierto={reportando} onCerrar={() => setReportando(false)}
+        onHecho={r => {
+          const fuera = new Set(r.reportadas)
+          setRecetas(prev => prev.filter(x => !fuera.has(x.id)))
+          setSeleccion(new Set()); setSeleccionando(false); setReportando(false)
+          addToast({ type: 'warning', title: `${r.reportadas.length} receta${r.reportadas.length !== 1 ? 's' : ''} enviada${r.reportadas.length !== 1 ? 's' : ''} a Revisión → Reportadas` })
+        }} />
     </PageTransition>
   )
 }
