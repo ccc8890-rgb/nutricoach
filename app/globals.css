@@ -2617,22 +2617,6 @@ body {
 .coach-atelier-register a { transition: color 180ms var(--ease-out-strong); }
 .coach-atelier-register a:hover { color: var(--text); }
 
-.coach-atelier-context__title {
-  overflow: hidden;
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  font-weight: 620;
-  letter-spacing: -0.015em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.coach-atelier-context__rule {
-  width: 1px;
-  height: 1.15rem;
-  background: var(--border);
-}
-
 .coach-atelier-actions {
   display: flex;
   min-width: 0;
@@ -2673,25 +2657,7 @@ body {
 }
 .coach-atelier-icon-action:hover { background: var(--surface-hover); color: var(--text); }
 .coach-atelier-icon-action:focus-visible,
-.coach-atelier-primary-action:focus-visible,
 .coach-atelier-search:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-.coach-atelier-primary-action {
-  display: inline-flex;
-  min-height: 2rem;
-  align-items: center;
-  gap: 0.38rem;
-  padding: 0.38rem 0.62rem;
-  border: 1px solid var(--client-rule, var(--border));
-  border-radius: 0.18rem;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 0.68rem;
-  font-weight: 650;
-  transition: background-color 180ms var(--ease-out-strong), border-color 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong);
-}
-.coach-atelier-primary-action:hover { border-color: var(--border-strong); background: var(--surface-hover); }
-.coach-atelier-primary-action:active { transform: translateY(1px); }
 
 @media (max-width: 639px) {
   .coach-atelier-topbar { display: none; }
