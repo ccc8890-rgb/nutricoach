@@ -4,18 +4,18 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  ChevronRight,
-  Dumbbell,
-  FilePlus2,
-  Home,
-  Loader2,
+  Barbell,
+  CaretRight,
+  CircleNotch,
+  FilePlus,
+  ForkKnife,
+  House,
+  MagnifyingGlass,
   Moon,
   Plus,
-  Search,
   Sun,
   UserPlus,
-  Utensils,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import Sidebar from '@/components/Sidebar'
 import { useTheme } from '@/components/ThemeProvider'
 import { supabase } from '@/lib/supabase'
@@ -85,28 +85,28 @@ function getCoachContext(pathname: string): CoachContext {
     return { area: 'Inicio', title: 'Contenido', actionHref: '/contenido', actionLabel: 'Nueva pieza', actionIcon: Plus }
   }
   if (pathname.startsWith('/agentes')) {
-    return { area: 'Inicio', title: 'Revisión IA', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: Home }
+    return { area: 'Inicio', title: 'Revisión IA', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: House }
   }
   if (pathname.startsWith('/entrenos/plantillas')) {
-    return { area: 'Planes', title: 'Plantillas de entreno', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Dumbbell }
+    return { area: 'Planes', title: 'Plantillas de entreno', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Barbell }
   }
   if (pathname.startsWith('/entrenos/ejercicios')) {
-    return { area: 'Planes', title: 'Biblioteca de ejercicios', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Dumbbell }
+    return { area: 'Planes', title: 'Biblioteca de ejercicios', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Barbell }
   }
   if (pathname.startsWith('/entrenos')) {
-    return { area: 'Entrenamiento', title: 'Training OS', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Dumbbell }
+    return { area: 'Entrenamiento', title: 'Training OS', actionHref: '/entrenos/nueva', actionLabel: 'Crear plan', actionIcon: Barbell }
   }
   if (pathname.startsWith('/nutricion')) {
-    return { area: 'Nutrición', title: 'Dashboard nutrición', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
+    return { area: 'Nutrición', title: 'Dashboard nutrición', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: ForkKnife }
   }
   if (pathname.startsWith('/compra')) {
-    return { area: 'Compra y costes', title: 'Lista de la compra', actionHref: '/precios', actionLabel: 'Consultar precios', actionIcon: FilePlus2 }
+    return { area: 'Compra y costes', title: 'Lista de la compra', actionHref: '/precios', actionLabel: 'Consultar precios', actionIcon: FilePlus }
   }
   if (pathname.startsWith('/dietas/plantillas')) {
-    return { area: 'Planes', title: 'Plantillas de dieta', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
+    return { area: 'Planes', title: 'Plantillas de dieta', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: ForkKnife }
   }
   if (pathname.startsWith('/dietas')) {
-    return { area: 'Nutrición', title: 'Planes y alimentos', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: Utensils }
+    return { area: 'Nutrición', title: 'Planes y alimentos', actionHref: '/dietas/nueva', actionLabel: 'Nueva dieta', actionIcon: ForkKnife }
   }
   if (pathname.startsWith('/recetas/cobertura')) {
     return { area: 'Control', title: 'Cobertura de recetas', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }
@@ -118,16 +118,16 @@ function getCoachContext(pathname: string): CoachContext {
     return { area: 'Nutrición', title: 'Recetario', actionHref: '/recetas/nueva', actionLabel: 'Nueva receta', actionIcon: Plus }
   }
   if (pathname.startsWith('/precios/escandallo')) {
-    return { area: 'Control', title: 'Coste de recetas', actionHref: '/recetas', actionLabel: 'Ver recetas', actionIcon: FilePlus2 }
+    return { area: 'Control', title: 'Coste de recetas', actionHref: '/recetas', actionLabel: 'Ver recetas', actionIcon: FilePlus }
   }
   if (pathname.startsWith('/precios/rentabilidad')) {
     return { area: 'Control', title: 'Rentabilidad por cliente', actionHref: '/clientes', actionLabel: 'Ver clientes', actionIcon: UserPlus }
   }
   if (pathname.startsWith('/precios')) {
-    return { area: 'Compra y costes', title: 'Precios', actionHref: '/precios/escandallo', actionLabel: 'Coste de recetas', actionIcon: FilePlus2 }
+    return { area: 'Compra y costes', title: 'Precios', actionHref: '/precios/escandallo', actionLabel: 'Coste de recetas', actionIcon: FilePlus }
   }
   if (pathname.startsWith('/ajustes') || pathname.startsWith('/sistema')) {
-    return { area: 'Ajustes', title: 'Ajustes', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: Home }
+    return { area: 'Ajustes', title: 'Ajustes', actionHref: '/dashboard', actionLabel: 'Volver al dashboard', actionIcon: House }
   }
   if (pathname.startsWith('/conocimiento') || pathname.startsWith('/coach') || pathname.startsWith('/cuestionarios')) {
     return { area: 'Ajustes', title: 'Método y conocimiento', actionHref: '/conocimiento/nueva', actionLabel: 'Nueva nota', actionIcon: Plus }
@@ -153,7 +153,7 @@ function CoachFloatingControls() {
         }}
         aria-label="Ir al dashboard"
       >
-        <Home size={17} />
+        <House size={17} />
       </Link>
       <button
         type="button"
@@ -185,7 +185,7 @@ function CoachTopBar({ pathname }: { pathname: string }) {
         <div className="coach-atelier-context min-w-0">
           <div className="coach-atelier-register hidden sm:flex" aria-label={`Coach OS, ${context.area}`}>
             <Link href="/dashboard" prefetch>Coach OS</Link>
-            <ChevronRight size={10} aria-hidden="true" />
+            <CaretRight size={10} aria-hidden="true" />
             <span>{context.area}</span>
           </div>
           <span className="coach-atelier-context__rule hidden sm:block" aria-hidden="true" />
@@ -199,7 +199,7 @@ function CoachTopBar({ pathname }: { pathname: string }) {
               className="coach-atelier-search hidden lg:flex"
               aria-label="Buscar cliente"
             >
-              <Search size={14} />
+              <MagnifyingGlass size={14} />
               <span>Buscar cliente</span>
             </Link>
           )}
@@ -260,7 +260,7 @@ export default function CoachShell({ children, padded = false }: { children: Rea
   if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-        <Loader2 size={24} className="animate-spin" style={{ color: 'var(--accent)' }} />
+        <CircleNotch size={24} className="animate-spin" style={{ color: 'var(--accent)' }} />
       </div>
     )
   }

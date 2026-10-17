@@ -2,33 +2,32 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ElementType } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { LucideIcon } from 'lucide-react'
 import {
-  Activity,
-  ChefHat,
-  ChartPie,
-  Clapperboard,
-  ChevronDown,
-  ChevronRight,
+  Barbell,
+  BookOpenText,
+  CaretDown,
+  CaretRight,
+  ChartLineUp,
+  ChartPieSlice,
+  ClipboardText,
   Database,
-  Dumbbell, House,
-  ListChecks,
-  LogOut,
-  Menu,
+  FilmSlate,
+  ForkKnife,
+  Gear,
+  House,
+  List,
   Moon,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Settings,
   ShoppingCart,
-  Store,
+  SidebarSimple,
+  SignOut,
+  Storefront,
   Sun,
-  TrendingUp,
-  Utensils,
-  UsersRound,
-  X
-} from 'lucide-react'
+  TrendUp,
+  UsersThree,
+  X,
+} from '@phosphor-icons/react'
 import { useNotificaciones } from '@/lib/useNotificaciones'
 import { useTheme } from '@/components/ThemeProvider'
 
@@ -36,7 +35,7 @@ type NavItem = {
   type?: 'item'
   href: string
   label: string
-  icon: LucideIcon
+  icon: ElementType
   badge?: number
   exact?: boolean
 }
@@ -45,7 +44,7 @@ type NavGroup = {
   type: 'group'
   key: string
   label: string
-  icon: LucideIcon
+  icon: ElementType
   badge?: number
   items: NavItem[]
 }
@@ -56,39 +55,39 @@ type NavSection = {
   key: string
   label: string
   href: string
-  icon: LucideIcon
+  icon: ElementType
   items: NavEntry[]
   badge?: number
 }
 
 const PRIMARY_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Inicio', icon: House },
-  { href: '/clientes', label: 'Clientes', icon: UsersRound },
-  { href: '/contenido', label: 'Contenido', icon: Clapperboard },
+  { href: '/clientes', label: 'Clientes', icon: UsersThree },
+  { href: '/contenido', label: 'Contenido', icon: FilmSlate },
 ]
 
 const PLANES_ITEMS: NavItem[] = [
-  { href: '/dietas/plantillas', label: 'Plantillas de dieta', icon: Utensils },
-  { href: '/entrenos/plantillas', label: 'Plantillas de entreno', icon: Dumbbell },
+  { href: '/dietas/plantillas', label: 'Plantillas de dieta', icon: ForkKnife },
+  { href: '/entrenos/plantillas', label: 'Plantillas de entreno', icon: Barbell },
   { href: '/entrenos/ejercicios', label: 'Ejercicios', icon: Database },
 ]
 
 const RECETARIO_ITEMS: NavItem[] = [
-  { href: '/recetas', label: 'Recetas', icon: ChefHat, exact: true },
+  { href: '/recetas', label: 'Recetas', icon: BookOpenText, exact: true },
   { href: '/dietas/alimentos', label: 'Alimentos', icon: Database },
-  { href: '/recetas/revisar', label: 'Revisión', icon: ListChecks },
+  { href: '/recetas/revisar', label: 'Revisión', icon: ClipboardText },
 ]
 
 const COMPRA_ITEMS: NavItem[] = [
   { href: '/compra', label: 'Lista compra', icon: ShoppingCart },
-  { href: '/precios', label: 'Precios', icon: Store, exact: true },
+  { href: '/precios', label: 'Precios', icon: Storefront, exact: true },
 ]
 
 // Pantallas de control, que se miran de vez en cuando
 const CONTROL_ITEMS: NavItem[] = [
-  { href: '/recetas/cobertura', label: 'Cobertura de recetas', icon: ChartPie },
-  { href: '/precios/escandallo', label: 'Coste de recetas', icon: TrendingUp },
-  { href: '/precios/rentabilidad', label: 'Rentabilidad por cliente', icon: Activity },
+  { href: '/recetas/cobertura', label: 'Cobertura de recetas', icon: ChartPieSlice },
+  { href: '/precios/escandallo', label: 'Coste de recetas', icon: TrendUp },
+  { href: '/precios/rentabilidad', label: 'Rentabilidad por cliente', icon: ChartLineUp },
 ]
 
 // Ajustes agrupa también estas pantallas (Método y conocimiento)
@@ -96,7 +95,7 @@ const AJUSTES_PREFIJOS = ['/ajustes', '/sistema', '/coach', '/conocimiento', '/c
 
 function AccionIcono({ label, icon: Icon, href, onClick, activo = false }: {
   label: string
-  icon: LucideIcon
+  icon: ElementType
   href?: string
   onClick?: () => void
   activo?: boolean
@@ -193,11 +192,11 @@ function NavLink({
           style={{ background: 'var(--accent)' }}
         />
       )}
-      <Icon size={18} strokeWidth={active ? 2.35 : 1.8} />
+      <Icon size={18} weight={active ? 'bold' : 'regular'} />
       <span className="truncate">{item.label}</span>
       {item.badge ? <Badge value={item.badge} tone={badgeTone} /> : null}
       {active && !item.badge && (
-        <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--accent)' }} />
+        <CaretRight size={14} className="ml-auto" style={{ color: 'var(--accent)' }} />
       )}
     </Link>
   )
@@ -218,7 +217,7 @@ function SectionPanelContent({
           return (
             <div key={entry.key} className="pt-1">
               <div className="flex items-center gap-2 px-3 py-1.5">
-                <GroupIcon size={14} strokeWidth={1.9} style={{ color: 'var(--text-muted)' }} />
+                <GroupIcon size={14} weight="regular" style={{ color: 'var(--text-muted)' }} />
                 <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-muted)' }}>
                   {entry.label}
                 </span>
@@ -277,16 +276,16 @@ function SidebarSection({
             style={{ background: 'var(--accent)' }}
           />
         )}
-        <Icon size={18} strokeWidth={active ? 2.35 : 1.8} />
+        <Icon size={18} weight={active ? 'bold' : 'regular'} />
         <span>{section.label}</span>
         {section.badge ? <Badge value={section.badge} tone="danger" /> : null}
         {expanded ? (
           <>
-            <ChevronRight size={14} className="ml-auto hidden xl:block" style={{ color: 'var(--text-muted)' }} />
-            <ChevronDown size={14} className="ml-auto xl:hidden" style={{ color: 'var(--text-muted)' }} />
+            <CaretRight size={14} className="ml-auto hidden xl:block" style={{ color: 'var(--text-muted)' }} />
+            <CaretDown size={14} className="ml-auto xl:hidden" style={{ color: 'var(--text-muted)' }} />
           </>
         ) : (
-          <ChevronRight size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
+          <CaretRight size={14} className="ml-auto" style={{ color: 'var(--text-muted)' }} />
         )}
       </Link>
 
@@ -316,7 +315,7 @@ function RailTooltip({ label }: { label: string }) {
 
 function RailButton({ label, icon: Icon, href, onClick, active = false, badge = 0 }: {
   label: string
-  icon: LucideIcon
+  icon: ElementType
   href?: string
   onClick?: () => void
   active?: boolean
@@ -325,7 +324,7 @@ function RailButton({ label, icon: Icon, href, onClick, active = false, badge = 
   const clases = `sidebar-link group relative !h-11 !w-11 !justify-center !gap-0 !p-0 ${active ? 'active' : ''}`
   const contenido = (
     <>
-      <Icon size={20} strokeWidth={active ? 2.35 : 1.8} />
+      <Icon size={20} weight={active ? 'bold' : 'regular'} />
       {badge > 0 && (
         <span className="absolute right-1 top-1 h-2 w-2 rounded-full" style={{ background: 'var(--error)' }} />
       )}
@@ -398,7 +397,7 @@ function SecondarySidebar({
               color: 'var(--text)',
             }}
           >
-            <Icon size={18} strokeWidth={2.2} />
+            <Icon size={18} weight="bold" />
           </div>
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-muted)' }}>
@@ -461,13 +460,13 @@ export default function Sidebar() {
   })
 
   const sections: NavSection[] = [
-    { key: 'planes', label: 'Planes', href: '/dietas/plantillas', icon: ListChecks, items: PLANES_ITEMS },
+    { key: 'planes', label: 'Planes', href: '/dietas/plantillas', icon: ClipboardText, items: PLANES_ITEMS },
     {
-      key: 'recetario', label: 'Recetario', href: '/recetas', icon: ChefHat, badge: recetasPendientes,
+      key: 'recetario', label: 'Recetario', href: '/recetas', icon: BookOpenText, badge: recetasPendientes,
       items: RECETARIO_ITEMS.map(item => item.href === '/recetas/revisar' ? { ...item, badge: recetasPendientes } : item),
     },
     { key: 'compra', label: 'Compra y costes', href: '/compra', icon: ShoppingCart, items: COMPRA_ITEMS },
-    { key: 'control', label: 'Control', href: '/recetas/cobertura', icon: Activity, items: CONTROL_ITEMS },
+    { key: 'control', label: 'Control', href: '/recetas/cobertura', icon: ChartLineUp, items: CONTROL_ITEMS },
   ]
 
   useEffect(() => {
@@ -536,8 +535,8 @@ export default function Sidebar() {
               onClick={toggleTheme}
               icon={theme === 'dark' ? Sun : Moon}
             />
-            <AccionIcono label="Ajustes" href="/ajustes" icon={Settings} activo={ajustesActivo} />
-            <AccionIcono label="Cerrar sesión" onClick={handleLogout} icon={LogOut} />
+            <AccionIcono label="Ajustes" href="/ajustes" icon={Gear} activo={ajustesActivo} />
+            <AccionIcono label="Cerrar sesión" onClick={handleLogout} icon={SignOut} />
           </div>
         </div>
       </div>
@@ -572,7 +571,7 @@ export default function Sidebar() {
 
       <div className="hidden flex-shrink-0 border-t p-3 lg:block" style={{ borderColor: 'var(--glass-border)' }}>
         <button type="button" onClick={alternarBarra} className="sidebar-link w-full" aria-label="Contraer barra lateral">
-          <PanelLeftClose size={18} strokeWidth={1.8} />
+          <SidebarSimple size={18} weight="regular" />
           <span>Contraer barra</span>
         </button>
       </div>
@@ -594,10 +593,10 @@ export default function Sidebar() {
       </div>
 
       <div className="flex flex-shrink-0 flex-col items-center gap-1 border-b py-3" style={{ borderColor: 'var(--glass-border)' }}>
-        <RailButton label="Ampliar barra" icon={PanelLeftOpen} onClick={alternarBarra} />
+        <RailButton label="Ampliar barra" icon={SidebarSimple} onClick={alternarBarra} />
         <RailButton label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'} icon={theme === 'dark' ? Sun : Moon} onClick={toggleTheme} />
-        <RailButton label="Ajustes" icon={Settings} href="/ajustes" active={ajustesActivo} />
-        <RailButton label="Cerrar sesión" icon={LogOut} onClick={handleLogout} />
+        <RailButton label="Ajustes" icon={Gear} href="/ajustes" active={ajustesActivo} />
+        <RailButton label="Cerrar sesión" icon={SignOut} onClick={handleLogout} />
       </div>
 
       <nav className="flex flex-1 flex-col items-center gap-1 py-3">
@@ -634,7 +633,7 @@ export default function Sidebar() {
           }}
           aria-label={mobileOpen ? 'Cerrar menú' : 'Abrir menú'}
         >
-          {mobileOpen ? <X size={18} style={{ color: 'var(--text)' }} /> : <Menu size={18} style={{ color: 'var(--text)' }} />}
+          {mobileOpen ? <X size={18} style={{ color: 'var(--text)' }} /> : <List size={18} style={{ color: 'var(--text)' }} />}
         </button>
       )}
 
